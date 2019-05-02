@@ -17,6 +17,7 @@ import lama.DatabaseFacade;
 import lama.Expression.Constant;
 import lama.Main.StateToReproduce;
 import lama.Randomly;
+import lama.sqlite3.SQLite3Visitor;
 
 public class Schema {
 
@@ -176,6 +177,23 @@ public class Schema {
 			}
 			return sb.toString();
 		}
+		
+		public String getRowValuesAsString() {
+			StringBuilder sb = new StringBuilder();
+			List<Column> columnsToCheck = table.getColumns();
+			Map<Column, Constant> expectedValues = getValues();
+			for (int i = 0; i < columnsToCheck.size(); i++) {
+				if (i != 0) {
+					sb.append(", ");
+				}
+				Constant expectedColumnValue = expectedValues.get(columnsToCheck.get(i));
+				SQLite3Visitor visitor = new SQLite3Visitor();
+				visitor.visit(expectedColumnValue);
+				sb.append(visitor.get());
+			}
+			return sb.toString();
+		}
+		
 	}
 
 	public Schema(List<Table> databaseTables) {

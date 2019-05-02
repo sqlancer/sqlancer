@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import lama.Expression.BinaryOperation;
@@ -93,10 +92,9 @@ public class QueryGenerator {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT ");
-		getRowValueAsString(rw, sb);
-		StringBuilder logStringBuilder = new StringBuilder();
-		getRowValueAsString(rw, logStringBuilder);
-		state.values = logStringBuilder.toString();
+		String columnNames = rw.getRowValuesAsString();
+		sb.append(columnNames);
+		state.values = columnNames;
 		sb.append(" INTERSECT SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
 		sb.append(queryString);
 		sb.append(")");
@@ -108,20 +106,6 @@ public class QueryGenerator {
 		return isContainedIn;
 	}
 
-	public static void getRowValueAsString(RowValue rw, StringBuilder sb) {
-		List<Column> columnsToCheck = rw.getTable().getColumns();
-		assert columnsToCheck.size() > 0;
-		Map<Column, Constant> expectedValues = rw.getValues();
-		for (int i = 0; i < columnsToCheck.size(); i++) {
-			if (i != 0) {
-				sb.append(", ");
-			}
-			Constant expectedColumnValue = expectedValues.get(columnsToCheck.get(i));
-			SQLite3Visitor visitor = new SQLite3Visitor();
-			visitor.visit(expectedColumnValue);
-			sb.append(visitor.get());
-		}
-	}
 
 	private List<OrderingTerm> generateOrderBy(List<Column> columns, RowValue rw) {
 		List<OrderingTerm> orderBys = new ArrayList<>();
