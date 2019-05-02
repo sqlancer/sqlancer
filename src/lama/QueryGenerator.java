@@ -9,8 +9,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import lama.Expression.BinaryOperation;
@@ -33,13 +31,9 @@ import lama.sqlite3.SQLite3Visitor;
 
 public class QueryGenerator {
 
-	private static final int NR_THREADS = 4;
 	private Connection database;
 	private Schema s;
 	static volatile int nrQueries;
-
-//	@Parameter(names = "--stats", description = "Print statistics during execution")
-//	public boolean debug = false;
 
 	enum Database {
 		MYSQL, SQLITE
@@ -50,34 +44,6 @@ public class QueryGenerator {
 	public QueryGenerator(Connection con) throws SQLException {
 		this.database = con;
 		s = Schema.fromConnection(database);
-	}
-
-	public static void main(String[] args) throws SQLException {
-
-		ExecutorService executor = Executors.newFixedThreadPool(NR_THREADS);
-
-		for (int i = 0; i < NR_THREADS; i++) {
-			executor.execute(new Runnable() {
-
-				@Override
-				public void run() {
-					QueryGenerator queryGenerator;
-					while (true) {
-						try {
-							queryGenerator = new QueryGenerator(DatabaseFacade.getConnection());
-							queryGenerator.generateAndCheckQuery(null);
-						} catch (SQLException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-							System.exit(-1);
-						}
-					}
-//					JCommander.newBuilder().addObject(queryGenerator).build().parse(args);
-
-				}
-			});
-		}
-
 	}
 
 	public void generateAndCheckQuery(StateToReproduce state) throws SQLException {
@@ -107,37 +73,8 @@ public class QueryGenerator {
 		if (!isContainedIn) {
 			state.logInconsistency();
 			throw new Main.ReduceMeException();
-//			throw new IllegalStateException(rw + " row not found");
 		}
 		nrQueries++;
-
-//		Map<Column, Object> expectedValues = rw.getValues();
-//		assert expectedValues.size() > 0;
-//		int[] indexes = new int[expectedValues.size()];
-//		int i = 0;
-//		List<Column> columnsToCheck = rw.getTable().getColumns();
-//		assert columnsToCheck.size() > 0;
-//
-//		for (Column c : columnsToCheck) {
-//			int index = result.findColumn(c.getName());
-//			indexes[i++] = index;
-//		}
-//		outer: while (result.next()) {
-//			for (int c = 0; c < indexes.length; c++) {
-//				Object expectedColumnValue = expectedValues.get(columnsToCheck.get(c));
-//				String actualColumnValue = result.getString(indexes[c]);
-//				if ((actualColumnValue == null && expectedColumnValue != null)
-//						|| (expectedColumnValue == null && actualColumnValue != null)) {
-//					continue outer;
-//				} else if (expectedColumnValue instanceof byte[]) {
-//					throw new AssertionError("ASDF: " + actualColumnValue);
-//				} else if (actualColumnValue != null && !actualColumnValue.equals(expectedColumnValue)) {
-//					continue outer;
-//				}
-//			}
-//			createStatement.close();
-//			return;
-//		}
 	}
 
 	private Expression generateOffset() {
@@ -190,14 +127,7 @@ public class QueryGenerator {
 		List<OrderingTerm> orderBys = new ArrayList<>();
 		for (int i = 0; i < Randomly.smallNumber(); i++) {
 			Expression expr;
-//			if (Randomly.getBoolean()) {
 			expr = Constant.createTextConstant("asdf");
-//			} else { 
-//			do {
-//				expr = generateNewExpression(columns, rw, true, true, 0);
-			// an int in an order to expression refers to the column number
-//			} while (integerConstantOutsideRange(expr, columns.size()));
-//			}
 			Ordering order = Randomly.fromOptions(Ordering.ASC, Ordering.DESC);
 			orderBys.add(new OrderingTerm(expr, order));
 			// TODO RANDOM()
@@ -237,16 +167,6 @@ public class QueryGenerator {
 		} else {
 			return Collections.emptyList();
 		}
-
-		// List<Column> selectedColumns = Randomly.subset(columns);
-//		return selectedColumns.stream().map(c -> new ColumnName(c)).collect(Collectors.toList());
-		// TODO: primary key?
-		// int nrGroupBys = Randomly.smallNumber();
-//		List<Expression> groupBys = new ArrayList<>();
-//		for (int i = 0; i < nrGroupBys; i++) {
-//			groupBys.add(randomConstant());
-//		}
-//		return groupBys;
 	}
 
 	private Expression generateWhereClauseThatContainsRowValue(List<Column> columns, RowValue rw) {
