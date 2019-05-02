@@ -7,8 +7,8 @@ import java.util.List;
 
 import lama.Expression;
 import lama.Main;
-import lama.Randomly;
 import lama.Main.StateToReproduce;
+import lama.Randomly;
 import lama.schema.Schema.Column;
 import lama.schema.Schema.Table;
 import lama.sqlite3.SQLite3Visitor;
@@ -21,16 +21,19 @@ public class Sqlite3RowGenerator {
 			try (Statement s = con.createStatement()) {
 				state.statements.add(query);
 				s.execute(query);
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.err.println(state);
 			}
 		}
 	}
 
 	private static String insertRow(Table table) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("INSERT OR IGNORE INTO " + table.getName());
+		// TODO: see http://sqlite.1065341.n5.nabble.com/UPSERT-clause-does-not-work-with-quot-NOT-NULL-quot-constraint-td106957.html
+		boolean upsert = false; // Randomly.getBooleanWithSmallProbability(); TODO enable after fixed
+		sb.append("INSERT ");
+		if (!upsert || Randomly.getBoolean()) {
+			sb.append("OR IGNORE ");
+		}
+		sb.append("INTO " + table.getName());
 		if (Randomly.getBooleanWithSmallProbability()) {
 			sb.append(" DEFAULT VALUES");
 		} else {
@@ -40,6 +43,10 @@ public class Sqlite3RowGenerator {
 			sb.append(" VALUES ");
 			int nrValues = 1 + Randomly.smallNumber();
 			appendNrValues(sb, columns, nrValues);
+		}
+		if (upsert) {
+			// TODO: fully implement upsert: https://www.sqlite.org/lang_UPSERT.html
+			sb.append(" ON CONFLICT DO NOTHING");
 		}
 		return sb.toString();
 	}
