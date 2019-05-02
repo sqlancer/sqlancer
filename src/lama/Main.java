@@ -34,7 +34,7 @@ public class Main {
 
 	private static final int NR_QUERIES_PER_TABLE = 1000;
 	private static final int NR_THREADS = 16;
-	public static final int NR_INSERT_ROW_TRIES = 1000;
+	public static final int NR_INSERT_ROW_TRIES = 100;
 	public static final int EXPRESSION_MAX_DEPTH = 2;
 
 	public static class ReduceMeException extends RuntimeException {
@@ -175,9 +175,6 @@ public class Main {
 							java.sql.DatabaseMetaData meta = con.getMetaData();
 							state.databaseVersion = meta.getDatabaseProductVersion();
 							Statement createStatement = con.createStatement();
-							createStatement.execute("DROP TABLE if EXISTS test");
-							createStatement.close();
-							createStatement = con.createStatement();
 							SQLite3PragmaGenerator.insertPragmas(con, state, false);
 							String tableQuery = SQLite3TableGenerator.createTableStatement("test", state);
 							createStatement.execute(tableQuery);
