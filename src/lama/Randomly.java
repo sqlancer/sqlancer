@@ -150,6 +150,18 @@ public final class Randomly {
 		return value;
 	}
 
+	public static double getNonZeroReal() {
+		double value;
+		if (smallBiasProbability()) {
+			return Randomly.fromOptions(1.0, -1.0);
+		}
+		do {
+			value = Randomly.getDouble();
+		} while (value == 0.0);
+		assert value != 0.0;
+		return value;
+	}
+
 	public static long getPositiveInteger() {
 		long value;
 		if (smallBiasProbability()) {

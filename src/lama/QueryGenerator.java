@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -298,7 +297,7 @@ public class QueryGenerator {
 		case INT:
 			if (shouldBeTrue && value.asInt() != 0) {
 				return new ColumnName(c);
-			} else if (!shouldBeTrue && (int) value.asInt() == 0) {
+			} else if (!shouldBeTrue && value.asInt() == 0) {
 				return new ColumnName(c);
 			} else {
 				return null;
@@ -358,7 +357,7 @@ public class QueryGenerator {
 	}
 
 	private Expression getStandaloneLiteral(boolean shouldBeTrue) throws AssertionError {
-		switch (Randomly.fromOptions(PrimitiveDataType.INT, PrimitiveDataType.TEXT)) {
+		switch (Randomly.fromOptions(PrimitiveDataType.INT, PrimitiveDataType.TEXT, PrimitiveDataType.REAL)) {
 		case INT:
 			// only a zero integer is false
 			long value;
@@ -376,6 +375,14 @@ public class QueryGenerator {
 				strValue = Randomly.fromOptions("0", "asdf", "c", "-a"); // TODO
 			}
 			return Constant.createTextConstant(strValue);
+		case REAL:
+			double realValue;
+			if (shouldBeTrue) {
+				realValue = Randomly.getNonZeroReal();
+			} else {
+				realValue = Randomly.fromOptions(0.0, -0.0);
+			}
+			return Constant.createRealConstant(realValue);
 		default:
 			throw new AssertionError();
 		}
