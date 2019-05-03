@@ -86,7 +86,6 @@ public class QueryGenerator {
 	}
 
 	private boolean isContainedIn(StateToReproduce state, RowValue rw, String queryString) throws SQLException {
-		ResultSet result;
 		Statement createStatement;
 		createStatement = database.createStatement();
 
@@ -100,10 +99,18 @@ public class QueryGenerator {
 		sb.append(")");
 		String resultingQueryString = sb.toString();
 		state.query = resultingQueryString;
-		result = createStatement.executeQuery(resultingQueryString);
-		boolean isContainedIn = !result.isClosed();
-		createStatement.close();
-		return isContainedIn;
+		try (ResultSet result = createStatement.executeQuery(resultingQueryString)) {
+			boolean isContainedIn = !result.isClosed();
+			createStatement.close();
+			return isContainedIn;
+		} catch (SQLException e) {
+			if (e.getMessage().contentEquals("[SQLITE_ERROR] SQL error or missing database (integer overflow)")) {
+				// IGNORE them
+				return true;
+			} else {
+				throw e;
+			}
+		}
 	}
 
 	private List<OrderingTerm> generateOrderBy(List<Column> columns, RowValue rw) {

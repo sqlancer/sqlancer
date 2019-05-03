@@ -48,6 +48,12 @@ public class Main {
 	static volatile AtomicLong nrQueries = new AtomicLong();
 
 
+	public static class RestartException extends RuntimeException {
+
+		private static final long serialVersionUID = -6490672384034142434L;
+		
+	}
+	
 	public static class ReduceMeException extends RuntimeException {
 
 		private static final long serialVersionUID = -3701934543692760005L;

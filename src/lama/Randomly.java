@@ -51,6 +51,9 @@ public final class Randomly {
 	}
 
 	private static long greaterOrEqual(long intValue) {
+		if (intValue == Long.MAX_VALUE) {
+			return Long.MAX_VALUE;
+		}
 		long result = ThreadLocalRandom.current().nextLong(intValue, Long.MAX_VALUE);
 		assert result >= intValue && result <= Long.MAX_VALUE : intValue + " " + result;
 		return result;
@@ -70,6 +73,9 @@ public final class Randomly {
 	}
 
 	private static long smallerOrEqual(long intValue) {
+		if (intValue == Long.MIN_VALUE) {
+			return Long.MIN_VALUE;
+		}
 		long lessOrEqual = ThreadLocalRandom.current().nextLong(Long.MIN_VALUE, intValue);
 		return lessOrEqual;
 	}
