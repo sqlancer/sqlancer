@@ -43,7 +43,7 @@ public class Main {
 	private static final int TOTAL_NR_THREADS = 100;
 	private static final int NR_CONCURRENT_THREADS = 16;
 	public static final int NR_INSERT_ROW_TRIES = 50;
-	public static final int EXPRESSION_MAX_DEPTH = 3;
+	public static final int EXPRESSION_MAX_DEPTH = 2;
 	public static final File LOG_DIRECTORY = new File("logs");
 	static volatile AtomicLong nrQueries = new AtomicLong();
 
