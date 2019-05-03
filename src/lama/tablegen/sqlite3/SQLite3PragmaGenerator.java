@@ -42,7 +42,7 @@ public class SQLite3PragmaGenerator {
 			if (Randomly.getBoolean()) {
 				sb.append("0");
 			} else {
-				int value = Math.max(10000, Randomly.getInteger());
+				long value = Math.max(10000, Randomly.getInteger());
 				sb.append(value);
 			}
 			break;

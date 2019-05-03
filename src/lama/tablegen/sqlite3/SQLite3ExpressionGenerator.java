@@ -16,7 +16,7 @@ import lama.schema.Schema.Column;
 public class SQLite3ExpressionGenerator {
 
 	private enum LiteralValueType {
-		NUMERIC, STRING, BLOB_LITERAL, NULL, TRUE, FALSE
+		INTEGER, NUMERIC, STRING, BLOB_LITERAL, NULL, TRUE, FALSE
 	}
 
 	/***
@@ -30,6 +30,8 @@ public class SQLite3ExpressionGenerator {
 		while (true) {
 			LiteralValueType randomLiteral = Randomly.fromOptions(LiteralValueType.values());
 			switch (randomLiteral) {
+			case INTEGER:
+				return Constant.createIntConstant(Randomly.getInteger());
 			case NUMERIC: // typeof(3.3) = real
 				// see https://www.sqlite.org/syntax/numeric-literal.html
 				return Constant.createRealConstant(Randomly.getDouble());

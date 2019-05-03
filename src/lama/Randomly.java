@@ -47,53 +47,38 @@ public final class Randomly {
 	}
 
 	public static long greaterOrEqualInt(long intValue) {
-		// TODO adopt to long
-		return greaterOrEqualIntDependingOnRange(intValue, 0);
+		return greaterOrEqual(intValue);
 	}
 
-	private static long greaterOrEqualIntDependingOnRange(long intValue, int startRange) {
-		// TODO change to long
-		long range = (long) Integer.MAX_VALUE - intValue;
-		long result = ThreadLocalRandom.current().nextLong(startRange, range) + intValue;
-		assert result >= intValue && result <= Integer.MAX_VALUE : intValue + " " + result;
-		long greaterOrEqual = (long) result;
-		return greaterOrEqual;
+	private static long greaterOrEqual(long intValue) {
+		long result = ThreadLocalRandom.current().nextLong(intValue, Long.MAX_VALUE);
+		assert result >= intValue && result <= Long.MAX_VALUE : intValue + " " + result;
+		return result;
 	}
 
 	public static long greaterInt(long intValue) {
-		// TODO adopt to long
-		if (intValue == Integer.MAX_VALUE) {
+		if (intValue == Long.MAX_VALUE) {
 			throw new IllegalArgumentException();
 		}
-		return greaterOrEqualIntDependingOnRange(intValue, 1);
+		return greaterOrEqual(intValue + 1);
 	}
 
 	public static long smallerOrEqualInt(long intValue) {
-		// TODO bound must be greater than origin
-		long smallerOrEqualInt = smallerOrEqualDependingOnStartRange(intValue, 0);
+		long smallerOrEqualInt = smallerOrEqual(intValue);
 		assert smallerOrEqualInt <= intValue;
 		return smallerOrEqualInt;
 	}
 
-	private static long smallerOrEqualDependingOnStartRange(long intValue, int startRange) {
-		// TODO adopt for longs
-		long range = (long) Integer.MAX_VALUE - intValue + 1;
-		// TODO bound must be greater than origin
-		try {
-			long lessOrEqual = intValue - ThreadLocalRandom.current().nextLong(startRange, range);
-			assert lessOrEqual >= Integer.MIN_VALUE && lessOrEqual <= intValue : intValue + " " + lessOrEqual;
-			return (int) lessOrEqual;
-		} catch (IllegalArgumentException e) {
-			throw new AssertionError(startRange + " " + range + " " + intValue,  e);
-		}
+	private static long smallerOrEqual(long intValue) {
+		long lessOrEqual = ThreadLocalRandom.current().nextLong(Long.MIN_VALUE, intValue);
+		return lessOrEqual;
 	}
 
 	public static long smallerInt(long intValue) {
-		// TODO adopt for longs
-		if (intValue == Integer.MIN_VALUE) {
+		if (intValue == Long.MIN_VALUE) {
 			throw new IllegalArgumentException();
 		}
-		long smallerInt = smallerOrEqualDependingOnStartRange(intValue, 1);
+		long smallerInt = smallerOrEqual(intValue - 1);
 		assert smallerInt < intValue;
 		return smallerInt;
 	}
@@ -111,16 +96,20 @@ public final class Randomly {
 		do {
 			randomInt = ThreadLocalRandom.current().nextInt();
 		} while (randomInt == intValue);
+		assert intValue != randomInt;
 		return randomInt;
 	}
 
-	public static int getInteger() {
+	public static long getInteger() {
+		if (smallBiasProbability()) {
+			return Randomly.fromOptions(-1l, Long.MAX_VALUE, Long.MIN_VALUE, 1l, 0l);
+		}
 		return ThreadLocalRandom.current().nextInt();
 	}
 
 	public static String getString() {
 		if (smallBiasProbability()) {
-			return Randomly.fromOptions("cafe", "asdf", "test", "TRUE", "FALSE");
+			return Randomly.fromOptions("cafe", "asdf", "test", "TRUE", "FALSE", "0.0");
 		}
 
 		String alphabet = new String("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#<>/.öä~-+' ");
@@ -143,10 +132,10 @@ public final class Randomly {
 		ThreadLocalRandom.current().nextBytes(bytes);
 	}
 
-	public static int getNonZeroInteger() {
-		int value;
+	public static long getNonZeroInteger() {
+		long value;
 		if (smallBiasProbability()) {
-			return Randomly.fromOptions(-1, Integer.MAX_VALUE, Integer.MIN_VALUE, 1);
+			return Randomly.fromOptions(-1l, Long.MAX_VALUE, Long.MIN_VALUE, 1l);
 		}
 		do {
 			value = Randomly.getInteger();
@@ -155,12 +144,15 @@ public final class Randomly {
 		return value;
 	}
 
-	public static int getPositiveInteger() {
+	public static long getPositiveInteger() {
+		long value;
 		if (smallBiasProbability()) {
-			return Randomly.fromOptions(0, Integer.MAX_VALUE, Integer.MIN_VALUE, -1);
+			value = Randomly.fromOptions(0l, Long.MAX_VALUE, 1l);
 		} else {
-			return ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE);
+			value = ThreadLocalRandom.current().nextLong(Long.MAX_VALUE);
 		}
+		assert value >= 0;
+		return value;
 	}
 
 	public static String greaterOrEqualString(String value) {
@@ -173,7 +165,7 @@ public final class Randomly {
 
 	public static double getDouble() {
 		if (smallBiasProbability()) {
-			return Randomly.fromOptions(3.3, 5.0, -8.0);
+			return Randomly.fromOptions(3.3, 5.0, 0.0, -8.0);
 		} else {
 			return ThreadLocalRandom.current().nextDouble();
 		}

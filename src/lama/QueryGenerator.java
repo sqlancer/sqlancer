@@ -351,7 +351,7 @@ public class QueryGenerator {
 		switch (Randomly.fromOptions(PrimitiveDataType.INT, PrimitiveDataType.TEXT)) {
 		case INT:
 			// only a zero integer is false
-			int value;
+			long value;
 			if (shouldBeTrue) {
 				value = Randomly.getNonZeroInteger();
 			} else {
@@ -361,7 +361,7 @@ public class QueryGenerator {
 		case TEXT:
 			String strValue;
 			if (shouldBeTrue) {
-				strValue = Integer.toString(Randomly.getNonZeroInteger());
+				strValue = Long.toString(Randomly.getNonZeroInteger());
 			} else {
 				strValue = Randomly.fromOptions("0", "asdf", "c", "-a"); // TODO
 			}
@@ -383,7 +383,7 @@ public class QueryGenerator {
 
 			switch (randomType) {
 			case INT:
-				int val = Randomly.getInteger();
+				long val = Randomly.getInteger();
 				con = Constant.createIntConstant(val);
 				break;
 			case TEXT:
