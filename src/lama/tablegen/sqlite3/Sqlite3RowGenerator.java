@@ -6,7 +6,6 @@ import java.sql.Statement;
 import java.util.List;
 
 import lama.Expression;
-import lama.Main;
 import lama.Main.StateToReproduce;
 import lama.Randomly;
 import lama.schema.Schema.Column;
@@ -15,19 +14,18 @@ import lama.sqlite3.SQLite3Visitor;
 
 public class Sqlite3RowGenerator {
 
-	public static void insertRows(Table table, Connection con, StateToReproduce state) throws SQLException {
-		for (int i = 0; i < Main.NR_INSERT_ROW_TRIES; i++) {
-			String query = insertRow(table);
-			try (Statement s = con.createStatement()) {
-				state.statements.add(query);
-				s.execute(query);
-			}
+	public static void insertRow(Table table, Connection con, StateToReproduce state) throws SQLException {
+		String query = insertRow(table);
+		try (Statement s = con.createStatement()) {
+			state.statements.add(query);
+			s.execute(query);
 		}
 	}
 
 	private static String insertRow(Table table) {
 		StringBuilder sb = new StringBuilder();
-		// TODO: see http://sqlite.1065341.n5.nabble.com/UPSERT-clause-does-not-work-with-quot-NOT-NULL-quot-constraint-td106957.html
+		// TODO: see
+		// http://sqlite.1065341.n5.nabble.com/UPSERT-clause-does-not-work-with-quot-NOT-NULL-quot-constraint-td106957.html
 		boolean upsert = false; // Randomly.getBooleanWithSmallProbability(); TODO enable after fixed
 		sb.append("INSERT ");
 		if (!upsert || Randomly.getBoolean()) {

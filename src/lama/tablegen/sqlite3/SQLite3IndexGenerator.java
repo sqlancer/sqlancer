@@ -20,14 +20,12 @@ public class SQLite3IndexGenerator {
 
 	public SQLite3IndexGenerator(Connection con, StateToReproduce state) throws SQLException {
 		Schema s = Schema.fromConnection(con);
-		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
 			Table t = s.getRandomTable();
 			String query = createIndex(t, t.getColumns());
 			try (Statement stm = con.createStatement()) {
+				stm.execute(query); // only record successful index creations
 				state.statements.add(query);
-				stm.execute(query);
 			}
-		}
 	}
 
 	private String createIndex(Table t, List<Column> columns) {
@@ -89,7 +87,7 @@ public class SQLite3IndexGenerator {
 		return String.format("index_%d", indexNr++);
 	}
 
-	public static void insertIndexes(Connection con, StateToReproduce state) throws SQLException {
+	public static void insertIndex(Connection con, StateToReproduce state) throws SQLException {
 		new SQLite3IndexGenerator(con, state);
 	}
 

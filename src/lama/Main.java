@@ -38,7 +38,7 @@ public class Main {
 	private static final int NR_QUERIES_PER_TABLE = 5000;
 	private static final int TOTAL_NR_THREADS = 100;
 	private static final int NR_CONCURRENT_THREADS = 1;
-	public static final int NR_INSERT_ROW_TRIES = 500;
+	public static final int NR_INSERT_ROW_TRIES = 50;
 	public static final int EXPRESSION_MAX_DEPTH = 2;
 	public static final File LOG_DIRECTORY = new File("logs");
 
@@ -147,6 +147,10 @@ public class Main {
 
 	static int threadsShutdown;
 
+	private enum Action {
+		PRAGMA, INDEX, INSERT, VACUUM, REINDEX, ANALYZE;
+	}
+
 	public static void main(String[] args) {
 
 		final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -176,63 +180,24 @@ public class Main {
 		setupLogDirectory();
 
 		ExecutorService executor = Executors.newFixedThreadPool(NR_CONCURRENT_THREADS);
+
 		for (int i = 0; i < TOTAL_NR_THREADS; i++) {
 			final String databaseName = "lama" + i;
 			executor.execute(new Runnable() {
 
+				StateToReproduce state;
+
 				@Override
 				public void run() {
+					runThread(databaseName);
+				}
+
+				private void runThread(final String databaseName) {
 					Thread.currentThread().setName(databaseName);
-					StateToReproduce state = null;
 					// we try to reuse the same database since it greatly improves performance
 					try (Connection con = DatabaseFacade.createDatabase(databaseName)) {
 						while (true) {
-							try (Statement s = con.createStatement()) {
-								s.execute("DROP TABLE IF EXISTS test");
-							}
-							state = new StateToReproduce(databaseName);
-							java.sql.DatabaseMetaData meta = con.getMetaData();
-							state.databaseVersion = meta.getDatabaseProductVersion();
-							Statement createStatement = con.createStatement();
-							SQLite3PragmaGenerator.insertPragmas(con, state, false);
-							String tableQuery = SQLite3TableGenerator.createTableStatement("test", state);
-							createStatement.execute(tableQuery);
-							createStatement.close();
-							SQLite3IndexGenerator.insertIndexes(con, state);
-							int nrRows;
-							do {
-								Sqlite3RowGenerator.insertRows(Schema.fromConnection(con).getRandomTable(), con, state);
-								nrRows = getNrRows(con);
-							} while (nrRows == 0);
-							SQLite3PragmaGenerator.insertPragmas(con, state, true);
-							QueryGenerator queryGenerator = new QueryGenerator(con);
-//							JCommander.newBuilder().addObject(queryGenerator).build().parse(args);
-							try {
-								if (Randomly.getBoolean()) {
-									try (Statement s = con.createStatement()) {
-										state.statements.add("VACUUM;");
-										s.execute("VACUUM;");
-									}
-								}
-								if (Randomly.getBoolean()) {
-									try (Statement s = con.createStatement()) {
-										state.statements.add("REINDEX;");
-										s.execute("REINDEX;");
-									}
-								}
-								if (Randomly.getBoolean()) {
-									try (Statement s = con.createStatement()) {
-										state.statements.add("ANALYZE;");
-										s.execute("ANALYZE;");
-									}
-								}
-							} catch (Throwable e) {
-								state.logInconsistency(e);
-								throw new ReduceMeException();
-							}
-							for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
-								queryGenerator.generateAndCheckQuery(state);
-							}
+							state = generateAndTestTable(databaseName, con);
 						}
 					} catch (ReduceMeException reduce) {
 						tryToReduceBug(databaseName, state);
@@ -241,6 +206,117 @@ public class Main {
 						threadsShutdown++;
 						return;
 					}
+				}
+
+				private StateToReproduce generateAndTestTable(final String databaseName, Connection con)
+						throws SQLException {
+					try (Statement s = con.createStatement()) {
+						s.execute("DROP TABLE IF EXISTS test");
+					}
+					state = new StateToReproduce(databaseName);
+					Statement createStatement = con.createStatement();
+					String tableQuery = SQLite3TableGenerator.createTableStatement("test", state);
+					createStatement.execute(tableQuery);
+					createStatement.close();
+
+					java.sql.DatabaseMetaData meta = con.getMetaData();
+					state.databaseVersion = meta.getDatabaseProductVersion();
+
+					int[] nrRemaining = new int[Action.values().length];
+					List<Action> actions = new ArrayList<>();
+					for (int i = 0; i < Action.values().length; i++) {
+						Action action = Action.values()[i];
+						int nrPerformed = 0;
+						switch (action) {
+						case INDEX:
+						case PRAGMA:
+						case REINDEX:
+						case VACUUM:
+						case ANALYZE:
+							nrPerformed = Randomly.smallNumber();
+							break;
+						case INSERT:
+							nrPerformed = NR_INSERT_ROW_TRIES;
+							break;
+						default:
+							throw new AssertionError();
+						}
+						if (nrPerformed != 0) {
+							actions.add(action);
+						}
+						nrRemaining[i] = nrPerformed;
+					}
+					while (!actions.isEmpty()) {
+						Action nextAction = Randomly.fromList(actions);
+						assert nrRemaining[nextAction.ordinal()] > 0;
+						nrRemaining[nextAction.ordinal()]--;
+						if (nrRemaining[nextAction.ordinal()] == 0) {
+							boolean success = actions.remove(nextAction);
+							assert success;
+						}
+						switch (nextAction) {
+						case INDEX:
+							try {
+								SQLite3IndexGenerator.insertIndex(con, state);
+							} catch (SQLException e) {
+								// ignore
+							}
+							break;
+						case INSERT:
+							Sqlite3RowGenerator.insertRow(Schema.fromConnection(con).getRandomTable(), con, state);
+							break;
+						case PRAGMA:
+							SQLite3PragmaGenerator.insertPragma(con, state, false);
+							break;
+						case REINDEX:
+							try {
+								if (Randomly.getBoolean()) {
+									try (Statement s = con.createStatement()) {
+										state.statements.add("REINDEX;");
+										s.execute("REINDEX;");
+									}
+								}
+							} catch (Throwable e) {
+								state.logInconsistency(e);
+								throw new ReduceMeException();
+							}
+							break;
+						case VACUUM:
+							try {
+								if (Randomly.getBoolean()) {
+									try (Statement s = con.createStatement()) {
+										state.statements.add("VACUUM;");
+										s.execute("VACUUM;");
+									}
+								}
+							} catch (Throwable e) {
+								state.logInconsistency(e);
+								throw new ReduceMeException();
+							}
+							break;
+						case ANALYZE:
+							if (Randomly.getBoolean()) {
+								try (Statement s = con.createStatement()) {
+									state.statements.add("ANALYZE;");
+									s.execute("ANALYZE;");
+								}
+							}
+							break;
+						default:
+							throw new AssertionError(nextAction);
+						}
+					}
+					int nrRows;
+					do {
+						Sqlite3RowGenerator.insertRow(Schema.fromConnection(con).getRandomTable(), con, state);
+						nrRows = getNrRows(con);
+					} while (nrRows == 0);
+					QueryGenerator queryGenerator = new QueryGenerator(con);
+
+					for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
+						queryGenerator.generateAndCheckQuery(state);
+					}
+					return state;
 				}
 
 				private void tryToReduceBug(final String databaseName, StateToReproduce state) {
