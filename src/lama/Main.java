@@ -47,13 +47,12 @@ public class Main {
 	public static final File LOG_DIRECTORY = new File("logs");
 	static volatile AtomicLong nrQueries = new AtomicLong();
 
-
 	public static class RestartException extends RuntimeException {
 
 		private static final long serialVersionUID = -6490672384034142434L;
-		
+
 	}
-	
+
 	public static class ReduceMeException extends RuntimeException {
 
 		private static final long serialVersionUID = -3701934543692760005L;
@@ -300,7 +299,13 @@ public class Main {
 					int nrRows;
 					int counter = MAX_INSERT_ROW_TRIES;
 					do {
-						Sqlite3RowGenerator.insertRow(Schema.fromConnection(con).getRandomTable(), con, state);
+						try {
+							Sqlite3RowGenerator.insertRow(Schema.fromConnection(con).getRandomTable(), con, state);
+						} catch (SQLException e) {
+							if (!QueryGenerator.shouldIgnoreException(e)) {
+								throw new AssertionError(e);
+							}
+						}
 						nrRows = getNrRows(con);
 					} while (nrRows == 0 && counter-- != 0);
 					if (nrRows == 0) {

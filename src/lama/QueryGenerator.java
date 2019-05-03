@@ -104,14 +104,18 @@ public class QueryGenerator {
 			createStatement.close();
 			return isContainedIn;
 		} catch (SQLException e) {
-			if (e.getMessage().contentEquals("[SQLITE_ERROR] SQL error or missing database (integer overflow)")) {
-				// IGNORE them
+			if (shouldIgnoreException(e)) {
 				return true;
 			} else {
 				throw e;
 			}
 		}
 	}
+
+	static boolean shouldIgnoreException(SQLException e) {
+		return e.getMessage().contentEquals("[SQLITE_ERROR] SQL error or missing database (integer overflow)");
+	}
+	
 
 	private List<OrderingTerm> generateOrderBy(List<Column> columns, RowValue rw) {
 		List<OrderingTerm> orderBys = new ArrayList<>();
@@ -269,7 +273,7 @@ public class QueryGenerator {
 				try {
 					double d = Double.valueOf(value.asString().substring(0, i));
 					if (d == (int) d) {
-						return Constant.createIntConstant((int) d);
+						return Constant.createIntConstant((long) d);
 					} else {
 						return Constant.createRealConstant(d);
 					}
@@ -314,7 +318,7 @@ public class QueryGenerator {
 			if (numericConstant.getDataType() == PrimitiveDataType.INT) {
 				if (shouldBeTrue && numericConstant.asInt() != 0) {
 					return new ColumnName(c);
-				} else if (!shouldBeTrue && (int) numericConstant.asInt() == 0) {
+				} else if (!shouldBeTrue && numericConstant.asInt() == 0) {
 					return new ColumnName(c);
 				} else {
 					return null;
@@ -779,7 +783,7 @@ public class QueryGenerator {
 		switch (sampledConstant.getDataType()) {
 		case INT:
 			long value = sampledConstant.asInt();
-			if (value == Integer.MAX_VALUE) {
+			if (value == Long.MAX_VALUE) {
 				return null;
 			} else {
 				return Constant.createIntConstant(Randomly.greaterInt(value));
@@ -793,7 +797,7 @@ public class QueryGenerator {
 		switch (sampledConstant.getDataType()) {
 		case INT:
 			long value = sampledConstant.asInt();
-			if (value == Integer.MIN_VALUE) {
+			if (value == Long.MIN_VALUE) {
 				return null;
 			} else {
 				return Constant.createIntConstant(Randomly.smallerInt(value));

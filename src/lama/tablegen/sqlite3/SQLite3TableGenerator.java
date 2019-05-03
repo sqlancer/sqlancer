@@ -1,5 +1,7 @@
 package lama.tablegen.sqlite3;
 
+import java.util.List;
+
 import lama.Main.StateToReproduce;
 import lama.Randomly;
 import lama.sqlite3.SQLite3Visitor;
@@ -65,31 +67,32 @@ public class SQLite3TableGenerator {
 		sb.append(" ");
 		String dataType = Randomly.fromOptions("INT", "TEXT", "BLOB", "REAL", "INTEGER");
 		sb.append(dataType);
-		boolean retry;
-		do {
-			retry = false;
-			switch (Randomly.fromOptions(Constraints.values())) {
-			case NONE:
-				break;
-			case PRIMARY_KEY:
-				// only one primary key is allow if not specified as table constraint
-				if (allowPrimaryKeyInColumn && !containsPrimaryKey) {
-					sb.append(" PRIMARY KEY");
-					containsPrimaryKey = true;
-				} else {
-					retry = true;
+		
+		if (Randomly.getBoolean()) {
+			List<Constraints> constraints = Randomly.subset(Constraints.values());
+			for (Constraints c : constraints) {
+				switch (c) {
+				case NONE:
+					break;
+				case PRIMARY_KEY:
+					// only one primary key is allow if not specified as table constraint
+					if (allowPrimaryKeyInColumn && !containsPrimaryKey) {
+						sb.append(" PRIMARY KEY");
+						containsPrimaryKey = true;
+					}
+					break;
+				case UNIQUE:
+					sb.append(" UNIQUE");
+					break;
+				case NOT_NULL:
+					sb.append(" NOT NULL");
+					break;
+				default:
+					throw new AssertionError();
 				}
-				break;
-			case UNIQUE:
-				sb.append(" UNIQUE");
-				break;
-			case NOT_NULL:
-				sb.append(" NOT NULL");
-				break;
-			default:
-				throw new AssertionError();
 			}
-		} while (retry);
+			
+		}
 		if (Randomly.getBoolean()) {
 			sb.append(" DEFAULT " + SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(false)));
 		}
