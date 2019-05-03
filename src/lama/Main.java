@@ -1,8 +1,10 @@
 package lama;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,6 +25,7 @@ import java.util.logging.SimpleFormatter;
 import java.util.stream.Collectors;
 
 import lama.Expression.Constant;
+import lama.Main.StateToReproduce.ErrorKind;
 import lama.schema.Schema;
 import lama.schema.Schema.Column;
 import lama.tablegen.sqlite3.SQLite3IndexGenerator;
@@ -32,10 +35,11 @@ import lama.tablegen.sqlite3.Sqlite3RowGenerator;
 
 public class Main {
 
-	private static final int NR_QUERIES_PER_TABLE = 1000;
-	private static final int NR_THREADS = 16;
-	public static final int NR_INSERT_ROW_TRIES = 100;
-	public static final int EXPRESSION_MAX_DEPTH = 2;
+	private static final int NR_QUERIES_PER_TABLE = 5000;
+	private static final int NR_THREADS = 1;
+	public static final int NR_INSERT_ROW_TRIES = 50;
+	public static final int EXPRESSION_MAX_DEPTH = 4;
+	public static final File LOG_DIRECTORY = new File("logs");
 
 	public static class ReduceMeException extends RuntimeException {
 
@@ -62,6 +66,8 @@ public class Main {
 
 		public String values;
 
+		private String exception;
+
 		public StateToReproduce(String databaseName) {
 			this.databaseName = databaseName;
 
@@ -70,7 +76,7 @@ public class Main {
 		public Logger getLogger() {
 			if (logger == null) {
 				try {
-					FileHandler fh = new FileHandler("logs" + File.separator + databaseName + ".log");
+					FileHandler fh = new FileHandler(new File(LOG_DIRECTORY, databaseName + ".log").getAbsolutePath());
 					fh.setFormatter(new SimpleFormatter());
 					logger = Logger.getLogger(databaseName);
 					logger.addHandler(fh);
@@ -83,11 +89,17 @@ public class Main {
 		}
 
 		public String logInconsistency(Throwable e1) {
+			this.exception = e1.getMessage();
 			String stackTrace = getStackTrace(e1);
 			getLogger().severe(stackTrace);
 			getLogger().severe(toString());
 			this.errorKind = ErrorKind.EXCEPTION;
 			return toString();
+		}
+
+		public String getException() {
+			assert this.errorKind == ErrorKind.EXCEPTION;
+			return exception;
 		}
 
 		private String getStackTrace(Throwable e1) {
@@ -160,6 +172,20 @@ public class Main {
 			}
 		}, 5, 5, TimeUnit.SECONDS);
 
+		if (!LOG_DIRECTORY.exists()) {
+			try {
+				Files.createDirectories(LOG_DIRECTORY.toPath());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		for (File file : LOG_DIRECTORY.listFiles()) {
+			if (!file.isDirectory()) {
+				file.delete();
+			}
+		}
+
 		ExecutorService executor = Executors.newFixedThreadPool(NR_THREADS);
 		for (int i = 0; i < 100; i++) {
 			final String databaseName = "lama" + i;
@@ -170,8 +196,7 @@ public class Main {
 					Thread.currentThread().setName(databaseName);
 					while (true) {
 						StateToReproduce state = new StateToReproduce(databaseName);
-						try {
-							Connection con = DatabaseFacade.createDatabase(databaseName);
+						try (Connection con = DatabaseFacade.createDatabase(databaseName)) {
 							java.sql.DatabaseMetaData meta = con.getMetaData();
 							state.databaseVersion = meta.getDatabaseProductVersion();
 							Statement createStatement = con.createStatement();
@@ -180,6 +205,7 @@ public class Main {
 							createStatement.execute(tableQuery);
 							createStatement.close();
 							SQLite3IndexGenerator.insertIndexes(con, state);
+
 							int nrRows;
 							do {
 								Sqlite3RowGenerator.insertRows(Schema.fromConnection(con).getRandomTable(), con, state);
@@ -188,57 +214,95 @@ public class Main {
 							SQLite3PragmaGenerator.insertPragmas(con, state, true);
 							QueryGenerator queryGenerator = new QueryGenerator(con);
 //							JCommander.newBuilder().addObject(queryGenerator).build().parse(args);
-							if (Randomly.getBoolean()) {
-								try (Statement s = con.createStatement()) {
-									state.statements.add("VACUUM;");
-									s.execute("VACUUM;");
+							try {
+								if (Randomly.getBoolean()) {
+									try (Statement s = con.createStatement()) {
+										state.statements.add("VACUUM;");
+										s.execute("VACUUM;");
+									}
 								}
-							}
-							if (Randomly.getBoolean()) {
-								try (Statement s = con.createStatement()) {
-									state.statements.add("REINDEX;");
-									s.execute("REINDEX;");
+								if (Randomly.getBoolean()) {
+									try (Statement s = con.createStatement()) {
+										state.statements.add("REINDEX;");
+										s.execute("REINDEX;");
+									}
 								}
+								if (Randomly.getBoolean()) {
+									try (Statement s = con.createStatement()) {
+										state.statements.add("ANALYZE;");
+										s.execute("ANALYZE;");
+									}
+								}
+							} catch (Throwable e) {
+								state.logInconsistency(e);
+								throw new ReduceMeException();
 							}
 							for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
 								queryGenerator.generateAndCheckQuery(state);
 							}
 							con.close();
 						} catch (ReduceMeException reduce) {
-							try {
+							threadsShutdown++;
+							try (Connection con = DatabaseFacade.createDatabase(databaseName + "_reduced")) {
+								try (Statement s = con.createStatement()) {
+									s.execute("DROP TABLE IF EXISTS test");
+								}
 								List<String> reducedStatements = new ArrayList<>(state.statements);
 								int i = 0;
 								outer: while (i < reducedStatements.size()) {
 									List<String> reducedTryStatements = new ArrayList<>(reducedStatements);
+									String exceptionCausingStatement = state.statements.get(state.statements.size() - 1);
+									if (state.getErrorKind() == ErrorKind.EXCEPTION && reducedStatements.get(i)
+											.equals(exceptionCausingStatement)) {
+										i++; // do not reduce the statement that caused the exception
+										if (i >= reducedStatements.size()) {
+											break;
+										}
+									}
 									reducedTryStatements.remove(i);
-									Connection con = DatabaseFacade.createDatabase(databaseName + "_reduced");
 									try (Statement statement = con.createStatement()) {
-										for (String s : reducedTryStatements) {
-											statement.execute(s);
+										for (int j = 0; j < reducedTryStatements.size(); j++) {
+											String statementToExecute = reducedTryStatements.get(j);
+											if (state.getErrorKind() == ErrorKind.EXCEPTION && statementToExecute
+													.equals(exceptionCausingStatement)) {
+												try {
+													statement.execute(statementToExecute);
+												} catch (Throwable t) {
+													assert reducedTryStatements.size() < reducedStatements.size();
+													if (t.getMessage().equals(state.getException())) {
+														reducedStatements = reducedTryStatements;
+													}
+												}
+											} else {
+												statement.execute(statementToExecute);
+											}
 										}
 									} catch (Throwable t) {
 										i++;
 										continue outer;
 									}
-									try (Statement s = con.createStatement()) {
-										try {
-											ResultSet result = s.executeQuery(state.query);
-											boolean isContainedIn = !result.isClosed();
-											if (!isContainedIn) {
-												String checkRowIsInside = "SELECT * FROM test INTERSECT SELECT " + state.values;
-												ResultSet result2 = s.executeQuery(checkRowIsInside);
-												if (!result2.isClosed()) {
-													assert reducedTryStatements.size() < reducedStatements.size();
-													reducedStatements = reducedTryStatements;
+									if (state.getErrorKind() == ErrorKind.ROW_NOT_FOUND) {
+										try (Statement s = con.createStatement()) {
+											try {
+												ResultSet result = s.executeQuery(state.query);
+												boolean isContainedIn = !result.isClosed();
+												if (!isContainedIn) {
+													String checkRowIsInside = "SELECT * FROM test INTERSECT SELECT "
+															+ state.values;
+													ResultSet result2 = s.executeQuery(checkRowIsInside);
+													if (!result2.isClosed()) {
+														assert reducedTryStatements.size() < reducedStatements.size();
+														reducedStatements = reducedTryStatements;
+													} else {
+														i++;
+													}
 												} else {
 													i++;
 												}
-											} else {
+												result.close();
+											} catch (Throwable t) {
 												i++;
 											}
-											result.close();
-										} catch (Throwable t) {
-											i++;
 										}
 									}
 								}
@@ -246,6 +310,7 @@ public class Main {
 								state.statements.add("-- trying to reduce query");
 								state.statements.addAll(reducedStatements);
 								state.logInconsistency();
+								return;
 							} catch (SQLException e) {
 								state.logInconsistency(e);
 							}
