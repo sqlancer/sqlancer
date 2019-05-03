@@ -3,7 +3,6 @@ package lama.tablegen.sqlite3;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
 
 import lama.Main.StateToReproduce;
 import lama.Randomly;
@@ -11,11 +10,11 @@ import lama.Randomly;
 public class SQLite3PragmaGenerator {
 
 	private enum Pragma {
-		APPLICATION_ID, AUTO_VACUUM, AUTOMATIC_INDEX, CACHE_SIZE, CACHE_SPILL_ENABLED, CACHE_SPILL_SIZE,
+		APPLICATION_ID, AUTO_VACUUM, AUTOMATIC_INDEX, BUSY_TIMEOUT, CACHE_SIZE, CACHE_SPILL_ENABLED, CACHE_SPILL_SIZE,
 		// CASE_SENSITIVE_LIKE, // see
 		// https://www.mail-archive.com/sqlite-users@mailinglists.sqlite.org/msg115030.html
-		CHECKPOINT_FULLSYNC, JOURNAL_MODE, JOURNAL_SIZE_LIMIT, LEGACY_ALTER_TABLE, OPTIMIZE, // , LEGACY_FORMAT
-		REVERSE_UNORDERED_SELECTS, SECURE_DELETE, SHRINK_MEMORY, SOFT_HEAP_LIMIT, THREADS
+		CELL_SIZE_CHECK, CHECKPOINT_FULLSYNC, DEFER_FOREIGN_KEY, ENCODING, FOREIGN_KEYS, IGNORE_CHECK_CONSTRAINTS, INCREMENTAL_VACUUM, INTEGRITY_CHECK, JOURNAL_MODE, JOURNAL_SIZE_LIMIT, LEGACY_ALTER_TABLE, OPTIMIZE,
+		LEGACY_FORMAT, REVERSE_UNORDERED_SELECTS, SECURE_DELETE, SHRINK_MEMORY, SOFT_HEAP_LIMIT, THREADS
 	}
 
 	public static void insertPragma(Connection con, StateToReproduce state, boolean afterIndicesCreated)
@@ -38,7 +37,15 @@ public class SQLite3PragmaGenerator {
 			sb.append("PRAGMA automatic_index = ");
 			sb.append(getRandomTextBoolean());
 			break;
-//			case BUSY_TIMEOUT: // not useful?
+		case BUSY_TIMEOUT:
+			sb.append("PRAGMA busy_timeout = ");
+			if (Randomly.getBoolean()) {
+				sb.append("0");
+			} else {
+				int value = Math.max(10000, Randomly.getInteger());
+				sb.append(value);
+			}
+			break;
 		case CACHE_SIZE:
 			sb.append("PRAGMA main.cache_size=");
 			sb.append(Randomly.getInteger());
@@ -59,10 +66,44 @@ public class SQLite3PragmaGenerator {
 //				} else {
 //					continue;
 //				}
-		// case CELL_CHECK_SIZE // not useful?
+		case CELL_SIZE_CHECK:
+			sb.append("PRAGMA cell_size_check=");
+			sb.append(getRandomTextBoolean());
+			break;
 		case CHECKPOINT_FULLSYNC:
 			sb.append("PRAGMA checkpoint_fullfsync=");
 			sb.append(getRandomTextBoolean());
+			break;
+		case DEFER_FOREIGN_KEY:
+			sb.append("PRAGMA defer_foreign_keys =");
+			sb.append(getRandomTextBoolean());
+			break;
+		case ENCODING:
+			sb.append("PRAGMA encoding = \"");
+			sb.append(Randomly.fromOptions("UTF-8", "UTF-16", "UTF-16be", "UTF-16le"));
+			sb.append("\"");
+			break;
+		case FOREIGN_KEYS:
+			sb.append("PRAGMA foreign_keys=");
+			sb.append(getRandomTextBoolean());
+			break;
+		case IGNORE_CHECK_CONSTRAINTS:
+			sb.append("PRAGMA ignore_check_constraints");
+			sb.append(getRandomTextBoolean());
+			break;
+		case INCREMENTAL_VACUUM:
+			if (Randomly.getBoolean()) {
+				sb.append("PRAGMA incremental_vacuum");
+			} else {
+				sb.append(String.format("PRAGMA incremental_vacuum(%d)", Randomly.getInteger()));
+			}
+			break;
+		case INTEGRITY_CHECK:
+			if (Randomly.getBoolean()) {
+				sb.append("PRAGMA integrity_check");
+			} else {
+				sb.append(String.format("PRAGMA integrity_check(%d)", Randomly.getInteger()));
+			}
 			break;
 		case JOURNAL_MODE:
 			sb.append("PRAGMA main.journal_mode=");
@@ -76,10 +117,10 @@ public class SQLite3PragmaGenerator {
 			sb.append("PRAGMA legacy_alter_table=");
 			sb.append(getRandomTextBoolean());
 			break;
-//			case LEGACY_FORMAT:
-//				sb.append("PRAGMA legacy_file_format=");
-//				sb.append(getRandomTextBoolean());
-//				break;
+		case LEGACY_FORMAT:
+			sb.append("PRAGMA legacy_file_format=");
+			sb.append(getRandomTextBoolean());
+			break;
 		case OPTIMIZE:
 			sb.append("PRAGMA optimize");
 			break;
