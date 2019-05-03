@@ -1,6 +1,8 @@
 package lama.tablegen.sqlite3;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import lama.Main.StateToReproduce;
 import lama.Randomly;
@@ -25,6 +27,7 @@ public class SQLite3TableGenerator {
 	private boolean containsPrimaryKey;
 	private boolean containsAutoIncrement;
 	private boolean conflictClauseInserted;
+	private final List<String> columnNames = new ArrayList<>();
 
 	public SQLite3TableGenerator(String tableName) {
 		this.tableName = tableName;
@@ -60,6 +63,18 @@ public class SQLite3TableGenerator {
 			createColumn(allowPrimaryKeyInColumn);
 			columnId++;
 		}
+		if (!containsPrimaryKey && Randomly.getBoolean()) {
+			// TODO check constraints?
+			List<String> selectedColumns = Randomly.nonEmptySubset(columnNames);
+			sb.append(", PRIMARY KEY (");
+			sb.append(selectedColumns.stream().collect(Collectors.joining(", ")));
+			sb.append(")");
+			containsPrimaryKey = true;
+		}
+		if (Randomly.getBoolean()) {
+			addCheckConstraint(); // TODO: incorporate columns
+		}
+
 		sb.append(")");
 		if (containsPrimaryKey && !containsAutoIncrement) {
 			if (Randomly.getBoolean()) {
@@ -75,6 +90,7 @@ public class SQLite3TableGenerator {
 
 	private void createColumn(boolean allowPrimaryKeyInColumn) {
 		String columnName = String.format("c%d", columnId);
+		columnNames.add(columnName);
 		sb.append(columnName);
 		sb.append(" ");
 		String dataType = Randomly.fromOptions("INT", "TEXT", "BLOB", "REAL", "INTEGER");
@@ -121,8 +137,7 @@ public class SQLite3TableGenerator {
 					}
 					break;
 				case CHECK:
-					sb.append(" CHECK ( "
-							+ SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(false)) + ")");
+					addCheckConstraint();
 					break;
 				default:
 					throw new AssertionError();
@@ -136,6 +151,10 @@ public class SQLite3TableGenerator {
 			String randomCollate = SQLite3Common.getRandomCollate();
 			sb.append(randomCollate);
 		}
+	}
+
+	private void addCheckConstraint() {
+		sb.append(" CHECK ( " + SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(false)) + ")");
 	}
 
 	// it seems that only one conflict clause can be inserted
