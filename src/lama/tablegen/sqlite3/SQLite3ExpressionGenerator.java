@@ -16,7 +16,7 @@ import lama.schema.Schema.Column;
 public class SQLite3ExpressionGenerator {
 
 	private enum LiteralValueType {
-		NUMERIC, STRING, BLOB_LITERAL, NULL, TRUE, FALSE, CURRENT_TIME, CURRENT_DATE, CURRENT_TIMESTAMP
+		NUMERIC, STRING, BLOB_LITERAL, NULL, TRUE, FALSE
 	}
 
 	/***
@@ -43,21 +43,6 @@ public class SQLite3ExpressionGenerator {
 				return Constant.createBooleanConstant(true);
 			case FALSE: // typeof(FALSE) = integer
 				return Constant.createBooleanConstant(false);
-			case CURRENT_TIME: // typeof(current_time) = text
-				if (deterministicOnly) {
-					continue;
-				}
-				return Constant.createUninterpretedConstant("current_time");
-			case CURRENT_DATE: // typeof(current_date) = text
-				if (deterministicOnly) {
-					continue;
-				}
-				return Constant.createUninterpretedConstant("current_date");
-			case CURRENT_TIMESTAMP: // typeof(current_timestamp) = text
-				if (deterministicOnly) {
-					continue;
-				}
-				return Constant.createUninterpretedConstant("current_timestamp");
 			default:
 				throw new AssertionError(randomLiteral);
 			}
