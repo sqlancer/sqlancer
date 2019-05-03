@@ -31,6 +31,7 @@ import lama.schema.Schema;
 import lama.schema.Schema.Column;
 import lama.schema.Schema.Table;
 import lama.sqlite3.SQLite3Helper;
+import lama.tablegen.sqlite3.SQLite3DeleteGenerator;
 import lama.tablegen.sqlite3.SQLite3IndexGenerator;
 import lama.tablegen.sqlite3.SQLite3PragmaGenerator;
 import lama.tablegen.sqlite3.SQLite3ReindexGenerator;
@@ -41,10 +42,10 @@ import lama.tablegen.sqlite3.SQLite3VacuumGenerator;
 public class Main {
 
 	private static final int MAX_INSERT_ROW_TRIES = 1;
-	private static final int NR_QUERIES_PER_TABLE = 50000;
+	private static final int NR_QUERIES_PER_TABLE = 500000;
 	private static final int TOTAL_NR_THREADS = 100;
 	private static final int NR_CONCURRENT_THREADS = 16;
-	public static final int NR_INSERT_ROW_TRIES = 50;
+	public static final int NR_INSERT_ROW_TRIES = 500;
 	public static final int EXPRESSION_MAX_DEPTH = 2;
 	public static final File LOG_DIRECTORY = new File("logs");
 	static volatile AtomicLong nrQueries = new AtomicLong();
@@ -163,7 +164,7 @@ public class Main {
 	static int threadsShutdown;
 
 	private enum Action {
-		PRAGMA, INDEX, INSERT, VACUUM, REINDEX, ANALYZE;
+		PRAGMA, INDEX, INSERT, VACUUM, REINDEX, ANALYZE, DELETE;
 	}
 
 	public static void main(String[] args) {
@@ -255,6 +256,9 @@ public class Main {
 						case INSERT:
 							nrPerformed = NR_INSERT_ROW_TRIES;
 							break;
+						case DELETE:
+							nrPerformed = Randomly.getBoolean() ? 1 : 0;
+							break;
 						default:
 							throw new AssertionError();
 						}
@@ -280,6 +284,9 @@ public class Main {
 							} catch (SQLException e) {
 								// ignore
 							}
+							break;
+						case DELETE:
+							SQLite3DeleteGenerator.deleteContent(Randomly.fromList(tables), con, state);
 							break;
 						case INSERT:
 							Table randomTable = Randomly.fromList(tables);
