@@ -29,6 +29,8 @@ import lama.Expression.Constant;
 import lama.Main.StateToReproduce.ErrorKind;
 import lama.schema.Schema;
 import lama.schema.Schema.Column;
+import lama.schema.Schema.Table;
+import lama.sqlite3.SQLite3Helper;
 import lama.tablegen.sqlite3.SQLite3IndexGenerator;
 import lama.tablegen.sqlite3.SQLite3PragmaGenerator;
 import lama.tablegen.sqlite3.SQLite3ReindexGenerator;
@@ -209,18 +211,17 @@ public class Main {
 					// we try to reuse the same database since it greatly improves performance
 					try (Connection con = DatabaseFacade.createDatabase(databaseName)) {
 						while (true) {
-							state = generateAndTestTable(databaseName, con);
+							 generateAndTestTable(databaseName, con);
 						}
 					} catch (ReduceMeException reduce) {
 						tryToReduceBug(databaseName, state);
 					} catch (Throwable e1) {
 						state.logInconsistency(e1);
 						threadsShutdown++;
-						return;
 					}
 				}
 
-				private StateToReproduce generateAndTestTable(final String databaseName, Connection con)
+				private void generateAndTestTable(final String databaseName, Connection con)
 						throws SQLException {
 					try (Statement s = con.createStatement()) {
 						s.execute("DROP TABLE IF EXISTS test");
@@ -258,6 +259,7 @@ public class Main {
 						}
 						nrRemaining[i] = nrPerformed;
 					}
+					Table randomTable = Schema.fromConnection(con).getRandomTable();
 					while (!actions.isEmpty()) {
 						Action nextAction = Randomly.fromList(actions);
 						assert nrRemaining[nextAction.ordinal()] > 0;
@@ -275,7 +277,7 @@ public class Main {
 							}
 							break;
 						case INSERT:
-							SQLite3RowGenerator.insertRow(Schema.fromConnection(con).getRandomTable(), con, state);
+							SQLite3RowGenerator.insertRow(randomTable, con, state);
 							break;
 						case PRAGMA:
 							SQLite3PragmaGenerator.insertPragma(con, state);
@@ -296,28 +298,31 @@ public class Main {
 							throw new AssertionError(nextAction);
 						}
 					}
+					if (!ensureTableHasRows(con, randomTable)) {
+						return;
+					}
+					QueryGenerator queryGenerator = new QueryGenerator(con);
+					for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
+						queryGenerator.generateAndCheckQuery(state);
+						nrQueries.addAndGet(1);
+					}
+				}
+
+				private boolean ensureTableHasRows(Connection con, Table randomTable)
+						throws AssertionError, SQLException {
 					int nrRows;
 					int counter = MAX_INSERT_ROW_TRIES;
 					do {
 						try {
-							SQLite3RowGenerator.insertRow(Schema.fromConnection(con).getRandomTable(), con, state);
+							SQLite3RowGenerator.insertRow(randomTable, con, state);
 						} catch (SQLException e) {
 							if (!QueryGenerator.shouldIgnoreException(e)) {
 								throw new AssertionError(e);
 							}
 						}
-						nrRows = getNrRows(con);
+						nrRows = SQLite3Helper.getNrRows(con, randomTable);
 					} while (nrRows == 0 && counter-- != 0);
-					if (nrRows == 0) {
-						return state;
-					}
-					QueryGenerator queryGenerator = new QueryGenerator(con);
-
-					for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
-						queryGenerator.generateAndCheckQuery(state);
-						nrQueries.addAndGet(1);
-					}
-					return state;
+					return nrRows != 0;
 				}
 
 				private void tryToReduceBug(final String databaseName, StateToReproduce state) {
@@ -395,15 +400,6 @@ public class Main {
 					}
 				}
 
-				private int getNrRows(Connection con) throws SQLException {
-					int nrRows;
-					try (Statement s = con.createStatement()) {
-						ResultSet query = s.executeQuery("SELECT COUNT(*) FROM test");
-						query.next();
-						nrRows = query.getInt(1);
-						return nrRows;
-					}
-				}
 			});
 		}
 	}
