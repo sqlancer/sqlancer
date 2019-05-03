@@ -34,9 +34,9 @@ import lama.sqlite3.SQLite3Helper;
 import lama.tablegen.sqlite3.SQLite3IndexGenerator;
 import lama.tablegen.sqlite3.SQLite3PragmaGenerator;
 import lama.tablegen.sqlite3.SQLite3ReindexGenerator;
+import lama.tablegen.sqlite3.SQLite3RowGenerator;
 import lama.tablegen.sqlite3.SQLite3TableGenerator;
 import lama.tablegen.sqlite3.SQLite3VacuumGenerator;
-import lama.tablegen.sqlite3.SQLite3RowGenerator;
 
 public class Main {
 
@@ -81,6 +81,8 @@ public class Main {
 		public String values;
 
 		private String exception;
+
+		public String queryTargetedTable;
 
 		public StateToReproduce(String databaseName) {
 			this.databaseName = databaseName;
@@ -211,7 +213,7 @@ public class Main {
 					// we try to reuse the same database since it greatly improves performance
 					try (Connection con = DatabaseFacade.createDatabase(databaseName)) {
 						while (true) {
-							 generateAndTestDatabase(databaseName, con);
+							generateAndTestDatabase(databaseName, con);
 						}
 					} catch (ReduceMeException reduce) {
 						tryToReduceBug(databaseName, state);
@@ -221,18 +223,19 @@ public class Main {
 					}
 				}
 
-				private void generateAndTestDatabase(final String databaseName, Connection con)
-						throws SQLException {
-					Schema schema = Schema.fromConnection(con);
-					for (Table t : schema.getDatabaseTables()) {
-						SQLite3Helper.dropTable(con, t);
-					}
+				private void generateAndTestDatabase(final String databaseName, Connection con) throws SQLException {
+					SQLite3Helper.deleteAllTables(con);
 					state = new StateToReproduce(databaseName);
-					Statement createStatement = con.createStatement();
-					String tableQuery = SQLite3TableGenerator.createTableStatement("test", state);
-					createStatement.execute(tableQuery);
-					createStatement.close();
 
+					int nrTablesToCreate = 1 + Randomly.smallNumber();
+					for (int i = 0; i < nrTablesToCreate; i++) {
+						String tableName = String.format("t%d", i);
+						String tableQuery = SQLite3TableGenerator.createTableStatement(tableName, state);
+						try (Statement createTable = con.createStatement()) {
+							createTable.execute(tableQuery);
+
+						}
+					}
 					java.sql.DatabaseMetaData meta = con.getMetaData();
 					state.databaseVersion = meta.getDatabaseProductVersion();
 
@@ -260,7 +263,6 @@ public class Main {
 						}
 						nrRemaining[i] = nrPerformed;
 					}
-					Table randomTable = Schema.fromConnection(con).getRandomTable();
 					while (!actions.isEmpty()) {
 						Action nextAction = Randomly.fromList(actions);
 						assert nrRemaining[nextAction.ordinal()] > 0;
@@ -278,6 +280,7 @@ public class Main {
 							}
 							break;
 						case INSERT:
+							Table randomTable = Schema.fromConnection(con).getRandomTable();
 							SQLite3RowGenerator.insertRow(randomTable, con, state);
 							break;
 						case PRAGMA:
@@ -299,8 +302,11 @@ public class Main {
 							throw new AssertionError(nextAction);
 						}
 					}
-					if (!ensureTableHasRows(con, randomTable)) {
-						return;
+					Schema newSchema = Schema.fromConnection(con);
+					for (Table t : newSchema.getDatabaseTables()) {
+						if (!ensureTableHasRows(con, t)) {
+							return;
+						}
 					}
 					QueryGenerator queryGenerator = new QueryGenerator(con);
 					for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
@@ -329,9 +335,7 @@ public class Main {
 				private void tryToReduceBug(final String databaseName, StateToReproduce state) {
 					threadsShutdown++;
 					try (Connection con = DatabaseFacade.createDatabase(databaseName + "_reduced")) {
-						try (Statement s = con.createStatement()) {
-							s.execute("DROP TABLE IF EXISTS test");
-						}
+						SQLite3Helper.deleteAllTables(con);
 						List<String> reducedStatements = new ArrayList<>(state.statements);
 						int i = 0;
 						outer: while (i < reducedStatements.size()) {
@@ -372,8 +376,8 @@ public class Main {
 										ResultSet result = s.executeQuery(state.query);
 										boolean isContainedIn = !result.isClosed();
 										if (!isContainedIn) {
-											String checkRowIsInside = "SELECT * FROM test INTERSECT SELECT "
-													+ state.values;
+											String checkRowIsInside = "SELECT * FROM " + state.queryTargetedTable
+													+ " INTERSECT SELECT " + state.values;
 											ResultSet result2 = s.executeQuery(checkRowIsInside);
 											if (!result2.isClosed()) {
 												assert reducedTryStatements.size() < reducedStatements.size();

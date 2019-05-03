@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import lama.schema.Schema;
 import lama.schema.Schema.Table;
 
 public class SQLite3Helper {
@@ -21,6 +22,13 @@ public class SQLite3Helper {
 	public static void dropTable(Connection con, Table table) throws SQLException {
 		try (Statement s = con.createStatement()) {
 			s.execute("DROP TABLE IF EXISTS " + table.getName());
+		}
+	}
+
+	public static void deleteAllTables(Connection con) throws SQLException {
+		Schema previousSchema = Schema.fromConnection(con);
+		for (Table t : previousSchema.getDatabaseTables()) {
+			dropTable(con, t);
 		}
 	}
 

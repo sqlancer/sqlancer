@@ -47,6 +47,7 @@ public class QueryGenerator {
 
 	public void generateAndCheckQuery(StateToReproduce state) throws SQLException {
 		Table t = s.getRandomTable();
+		state.queryTargetedTable = t.getName();
 		assert t != null;
 		SelectStatement selectStatement = new SelectStatement();
 		selectStatement.setSelectType(Randomly.fromOptions(SelectStatement.SelectType.values()));
