@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import lama.Expression.BinaryOperation;
 import lama.Expression.BinaryOperation.BinaryOperator;
@@ -106,7 +107,6 @@ public class QueryGenerator {
 		return isContainedIn;
 	}
 
-
 	private List<OrderingTerm> generateOrderBy(List<Column> columns, RowValue rw) {
 		List<OrderingTerm> orderBys = new ArrayList<>();
 		for (int i = 0; i < Randomly.smallNumber(); i++) {
@@ -161,7 +161,7 @@ public class QueryGenerator {
 	}
 
 	private enum NewExpressionType {
-		LITERAL, STANDALONE_COLUMN, DOUBLE_COLUMN, POSTFIX_COLUMN, NOT, UNARY_PLUS, AND, OR, COLLATE
+		LITERAL, STANDALONE_COLUMN, DOUBLE_COLUMN, POSTFIX_COLUMN, NOT, UNARY_PLUS, AND, OR, COLLATE, UNARY_FUNCTION
 	}
 
 	private Expression generateNewExpression(List<Column> columns, RowValue rw, boolean shouldBeTrue, int depth) {
@@ -194,6 +194,13 @@ public class QueryGenerator {
 				return generateSampleBasedColumnPostfix(sampledConstant, new ColumnName(c), shouldBeTrue);
 			case LITERAL:
 				return getStandaloneLiteral(shouldBeTrue);
+			case UNARY_FUNCTION:
+				if (shouldBeTrue) {
+					return getUnaryFunction();
+				} else {
+					retry = true;
+					break;
+				}
 			case NOT:
 				return new UnaryOperation(UnaryOperator.NOT,
 						generateNewExpression(columns, rw, !shouldBeTrue, depth + 1));
@@ -236,6 +243,12 @@ public class QueryGenerator {
 			}
 		} while (retry);
 		throw new AssertionError();
+	}
+
+	private Expression getUnaryFunction() {
+		String functionName = Randomly.fromOptions("sqlite_source_id", "sqlite_version",
+				"total_changes" /* some rows should have been inserted */);
+		return new Expression.Function(functionName);
 	}
 
 	private Constant castToNumeric(Constant value) {
@@ -540,7 +553,8 @@ public class QueryGenerator {
 				operator = operator.reverse();
 			}
 			if (Randomly.getBoolean()) {
-				String functionName = getRandomFunction(operator, shouldBeTrue, sampledConstant.getDataType(), otherValueType);
+				String functionName = getRandomFunction(operator, shouldBeTrue, sampledConstant.getDataType(),
+						otherValueType);
 				if (functionName != null) {
 					Function left = new Expression.Function(functionName, columnName);
 					Function right = new Expression.Function(functionName, new Expression.ColumnName(otherColumn));
@@ -573,7 +587,8 @@ public class QueryGenerator {
 				operator = operator.reverse();
 			}
 			if (Randomly.getBoolean()) {
-				String functionName = getRandomFunction(operator, shouldBeTrue, sampledConstant.getDataType(), otherValueType);
+				String functionName = getRandomFunction(operator, shouldBeTrue, sampledConstant.getDataType(),
+						otherValueType);
 				if (functionName != null) {
 					Function left = new Expression.Function(functionName, columnName);
 					Function right = new Expression.Function(functionName, new Expression.ColumnName(otherColumn));
@@ -588,34 +603,105 @@ public class QueryGenerator {
 		}
 	}
 
-	private String getRandomFunction(BinaryOperator operator, boolean shouldBeTrue, PrimitiveDataType leftDataType, PrimitiveDataType rightDataType) {
-		if (shouldBeTrue) {
-			switch (operator) {
-			case EQUALS:
-				return Randomly.fromOptions("ABS", "CHAR", "HEX", "LENGTH", "LIKELY", "LOWER", "LTRIM", "QUOTE",
-						"RTRIM", "TRIM", "TYPEOF", "UNICODE", "UNLIKELY", "UPPER");
-			case GREATER_EQUALS:
-			case SMALLER_EQUALS: // not for ABS: ABS(-1) >= ABS(1) does not hold
-				// LENGTH(-1) >= LENGTH(1)
-				// char(0) == NULL
-				// quote and floating point ...
-				// TRIMS don't work for floating point
-				// UPPER and LOWER do not work for floating point
-				if ((leftDataType != PrimitiveDataType.INT && leftDataType != PrimitiveDataType.REAL) || (rightDataType != PrimitiveDataType.INT && rightDataType != PrimitiveDataType.REAL)) {
-					return Randomly.fromOptions("LENGTH", "QUOTE", "LTRIM", "RTRIM", "TRIM", "UPPER", "LOWER", "LIKELY", "TYPEOF", "UNLIKELY");
-				}
-				return Randomly.fromOptions("LIKELY", "TYPEOF",
-						"UNLIKELY");
-			default:
-				return null;
-			}
-		} else {
-			switch (operator) { 
-			case EQUALS:
-				return Randomly.fromOptions("QUOTE", "LIKELY", "UNLIKELY", "HEX");
+	enum BinaryFunction {
+
+		ABS("abs")
+
+		{
+			@Override
+			public boolean worksWhenApplied(BinaryOperator operator, PrimitiveDataType leftType,
+					PrimitiveDataType rightType) {
+				switch (operator) {
+				case IS:
+				case EQUALS:
+				case GLOB:
+				case LIKE:
+					return true;
+				case IS_NOT:
+				case SMALLER:
+				case SMALLER_EQUALS:
+				case GREATER:
+				case GREATER_EQUALS:
+				case NOT_EQUALS: // abs(-5) = abs(5)
+					return false;
 				default:
-					return null;
+					throw new AssertionError(operator);
+				}
 			}
+
+		},
+		UNLIKELY("unlikely") {
+
+			@Override
+			public boolean worksWhenApplied(BinaryOperator operator, PrimitiveDataType leftType,
+					PrimitiveDataType rightType) {
+				return true;
+			}
+
+		},
+		LIKELY("likely") {
+			@Override
+			public boolean worksWhenApplied(BinaryOperator operator, PrimitiveDataType leftType,
+					PrimitiveDataType rightType) {
+				return true;
+			}
+		};
+
+		private final String name;
+
+		public String getName() {
+			return name;
+		}
+
+		private BinaryFunction(String name) {
+			this.name = name;
+		}
+
+		public abstract boolean worksWhenApplied(Expression.BinaryOperation.BinaryOperator operator,
+				PrimitiveDataType leftType, PrimitiveDataType rightType);
+
+		public static List<BinaryFunction> getPossibleBinaryFunctionsForOperator(BinaryOperator operator,
+				PrimitiveDataType leftDataType, PrimitiveDataType rightDataType) {
+			return Stream.of(BinaryFunction.values())
+					.filter(fun -> fun.worksWhenApplied(operator, leftDataType, rightDataType))
+					.collect(Collectors.toList());
+		}
+
+	}
+
+	private String getRandomFunction(BinaryOperator operator, boolean shouldBeTrue, PrimitiveDataType leftDataType,
+			PrimitiveDataType rightDataType) {
+		if (!shouldBeTrue) {
+			operator = operator.reverse();
+		}
+		List<BinaryFunction> functions = BinaryFunction.getPossibleBinaryFunctionsForOperator(operator, leftDataType,
+				rightDataType);
+
+		if (!functions.isEmpty() && Randomly.getBoolean()) {
+			return Randomly.fromList(functions).getName();
+		}
+//		if (shouldBeTrue) {
+		switch (operator) {
+		case EQUALS:
+			return Randomly.fromOptions("CHAR", "HEX", "LENGTH", "LOWER", "LTRIM", "QUOTE", "RTRIM",
+					"TRIM", "TYPEOF", "UNICODE", "UPPER");
+		case GREATER_EQUALS:
+		case SMALLER_EQUALS: // not for ABS: ABS(-1) >= ABS(1) does not hold
+			// LENGTH(-1) >= LENGTH(1)
+			// char(0) == NULL
+			// quote and floating point ...
+			// TRIMS don't work for floating point
+			// UPPER and LOWER do not work for floating point
+			if ((leftDataType != PrimitiveDataType.INT && leftDataType != PrimitiveDataType.REAL)
+					|| (rightDataType != PrimitiveDataType.INT && rightDataType != PrimitiveDataType.REAL)) {
+				return Randomly.fromOptions("LENGTH", "QUOTE", "LTRIM", "RTRIM", "TRIM", "UPPER", "LOWER",
+						"TYPEOF");
+			}
+			return Randomly.fromOptions("LIKELY", "TYPEOF", "UNLIKELY");
+		case NOT_EQUALS:
+			return Randomly.fromOptions("QUOTE", "LIKELY", "UNLIKELY", "HEX");
+		default:
+			return null;
 		}
 	}
 

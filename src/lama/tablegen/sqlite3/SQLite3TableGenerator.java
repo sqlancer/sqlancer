@@ -1,6 +1,7 @@
 package lama.tablegen.sqlite3;
 
 import lama.Main.StateToReproduce;
+import lama.sqlite3.SQLite3Visitor;
 import lama.Randomly;
 
 public class SQLite3TableGenerator {
@@ -89,7 +90,11 @@ public class SQLite3TableGenerator {
 			}
 		} while (retry);
 		if (Randomly.getBoolean()) {
-			sb.append(SQLite3Common.getRandomCollate());
+			sb.append(" DEFAULT " + SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(false)));
+		}
+		if (Randomly.getBoolean()) {
+			String randomCollate = SQLite3Common.getRandomCollate();
+			sb.append(randomCollate);
 		}
 	}
 

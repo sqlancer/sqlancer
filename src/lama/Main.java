@@ -194,9 +194,14 @@ public class Main {
 				@Override
 				public void run() {
 					Thread.currentThread().setName(databaseName);
-					while (true) {
-						StateToReproduce state = new StateToReproduce(databaseName);
-						try (Connection con = DatabaseFacade.createDatabase(databaseName)) {
+					StateToReproduce state = null;
+					// we try to reuse the same database since it greatly improves performance
+					try (Connection con = DatabaseFacade.createDatabase(databaseName)) {
+						while (true) {
+							try (Statement s = con.createStatement()) {
+								s.execute("DROP TABLE IF EXISTS test");
+							}
+							state = new StateToReproduce(databaseName);
 							java.sql.DatabaseMetaData meta = con.getMetaData();
 							state.databaseVersion = meta.getDatabaseProductVersion();
 							Statement createStatement = con.createStatement();
@@ -205,7 +210,6 @@ public class Main {
 							createStatement.execute(tableQuery);
 							createStatement.close();
 							SQLite3IndexGenerator.insertIndexes(con, state);
-
 							int nrRows;
 							do {
 								Sqlite3RowGenerator.insertRows(Schema.fromConnection(con).getRandomTable(), con, state);
@@ -240,88 +244,88 @@ public class Main {
 							for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
 								queryGenerator.generateAndCheckQuery(state);
 							}
-							con.close();
-						} catch (ReduceMeException reduce) {
-							threadsShutdown++;
-							try (Connection con = DatabaseFacade.createDatabase(databaseName + "_reduced")) {
-								try (Statement s = con.createStatement()) {
-									s.execute("DROP TABLE IF EXISTS test");
+						}
+					} catch (ReduceMeException reduce) {
+						tryToReduceBug(databaseName, state);
+					} catch (Throwable e1) {
+						state.logInconsistency(e1);
+						threadsShutdown++;
+						return;
+					}
+				}
+
+				private void tryToReduceBug(final String databaseName, StateToReproduce state) {
+					threadsShutdown++;
+					try (Connection con = DatabaseFacade.createDatabase(databaseName + "_reduced")) {
+						try (Statement s = con.createStatement()) {
+							s.execute("DROP TABLE IF EXISTS test");
+						}
+						List<String> reducedStatements = new ArrayList<>(state.statements);
+						int i = 0;
+						outer: while (i < reducedStatements.size()) {
+							List<String> reducedTryStatements = new ArrayList<>(reducedStatements);
+							String exceptionCausingStatement = state.statements.get(state.statements.size() - 1);
+							if (state.getErrorKind() == ErrorKind.EXCEPTION
+									&& reducedStatements.get(i).equals(exceptionCausingStatement)) {
+								i++; // do not reduce the statement that caused the exception
+								if (i >= reducedStatements.size()) {
+									break;
 								}
-								List<String> reducedStatements = new ArrayList<>(state.statements);
-								int i = 0;
-								outer: while (i < reducedStatements.size()) {
-									List<String> reducedTryStatements = new ArrayList<>(reducedStatements);
-									String exceptionCausingStatement = state.statements.get(state.statements.size() - 1);
-									if (state.getErrorKind() == ErrorKind.EXCEPTION && reducedStatements.get(i)
-											.equals(exceptionCausingStatement)) {
-										i++; // do not reduce the statement that caused the exception
-										if (i >= reducedStatements.size()) {
-											break;
-										}
-									}
-									reducedTryStatements.remove(i);
-									try (Statement statement = con.createStatement()) {
-										for (int j = 0; j < reducedTryStatements.size(); j++) {
-											String statementToExecute = reducedTryStatements.get(j);
-											if (state.getErrorKind() == ErrorKind.EXCEPTION && statementToExecute
-													.equals(exceptionCausingStatement)) {
-												try {
-													statement.execute(statementToExecute);
-												} catch (Throwable t) {
-													assert reducedTryStatements.size() < reducedStatements.size();
-													if (t.getMessage().equals(state.getException())) {
-														reducedStatements = reducedTryStatements;
-													}
-												}
-											} else {
-												statement.execute(statementToExecute);
+							}
+							reducedTryStatements.remove(i);
+							try (Statement statement = con.createStatement()) {
+								for (int j = 0; j < reducedTryStatements.size(); j++) {
+									String statementToExecute = reducedTryStatements.get(j);
+									if (state.getErrorKind() == ErrorKind.EXCEPTION
+											&& statementToExecute.equals(exceptionCausingStatement)) {
+										try {
+											statement.execute(statementToExecute);
+										} catch (Throwable t) {
+											assert reducedTryStatements.size() < reducedStatements.size();
+											if (t.getMessage().equals(state.getException())) {
+												reducedStatements = reducedTryStatements;
 											}
 										}
-									} catch (Throwable t) {
-										i++;
-										continue outer;
+									} else {
+										statement.execute(statementToExecute);
 									}
-									if (state.getErrorKind() == ErrorKind.ROW_NOT_FOUND) {
-										try (Statement s = con.createStatement()) {
-											try {
-												ResultSet result = s.executeQuery(state.query);
-												boolean isContainedIn = !result.isClosed();
-												if (!isContainedIn) {
-													String checkRowIsInside = "SELECT * FROM test INTERSECT SELECT "
-															+ state.values;
-													ResultSet result2 = s.executeQuery(checkRowIsInside);
-													if (!result2.isClosed()) {
-														assert reducedTryStatements.size() < reducedStatements.size();
-														reducedStatements = reducedTryStatements;
-													} else {
-														i++;
-													}
-												} else {
-													i++;
-												}
-												result.close();
-											} catch (Throwable t) {
+								}
+							} catch (Throwable t) {
+								i++;
+								continue outer;
+							}
+							if (state.getErrorKind() == ErrorKind.ROW_NOT_FOUND) {
+								try (Statement s = con.createStatement()) {
+									try {
+										ResultSet result = s.executeQuery(state.query);
+										boolean isContainedIn = !result.isClosed();
+										if (!isContainedIn) {
+											String checkRowIsInside = "SELECT * FROM test INTERSECT SELECT "
+													+ state.values;
+											ResultSet result2 = s.executeQuery(checkRowIsInside);
+											if (!result2.isClosed()) {
+												assert reducedTryStatements.size() < reducedStatements.size();
+												reducedStatements = reducedTryStatements;
+											} else {
 												i++;
 											}
+										} else {
+											i++;
 										}
+										result.close();
+									} catch (Throwable t) {
+										i++;
 									}
 								}
-								state.statements = new ArrayList<>();
-								state.statements.add("-- trying to reduce query");
-								state.statements.addAll(reducedStatements);
-								state.logInconsistency();
-								return;
-							} catch (SQLException e) {
-								state.logInconsistency(e);
 							}
-						} catch (Throwable e1) {
-							// TODO Auto-generated catch block
-							state.logInconsistency(e1);
-							threadsShutdown++;
-//							executor.shutdown();
-//							System.exit(-1);
-							return;
 						}
+						state.statements = new ArrayList<>();
+						state.statements.add("-- trying to reduce query");
+						state.statements.addAll(reducedStatements);
+						state.logInconsistency();
+						return;
+					} catch (SQLException e) {
+						state.logInconsistency(e);
 					}
 				}
 

@@ -257,4 +257,10 @@ public class SQLite3Visitor {
 		return sb.toString();
 	}
 
+	public static String asString(Expression expr) {
+		SQLite3Visitor visitor = new SQLite3Visitor();
+		visitor.visit(expr);
+		return visitor.get();
+	}
+
 }
