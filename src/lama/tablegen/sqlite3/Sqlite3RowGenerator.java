@@ -6,6 +6,7 @@ import java.sql.Statement;
 import java.util.List;
 
 import lama.Expression;
+import lama.Expression.Constant;
 import lama.Main.StateToReproduce;
 import lama.Randomly;
 import lama.schema.Schema.Column;
@@ -46,6 +47,7 @@ public class Sqlite3RowGenerator {
 			// TODO: fully implement upsert: https://www.sqlite.org/lang_UPSERT.html
 			sb.append(" ON CONFLICT DO NOTHING");
 		}
+		sb.append(";");
 		return sb.toString();
 	}
 
@@ -65,9 +67,15 @@ public class Sqlite3RowGenerator {
 			if (i != 0) {
 				sb.append(", ");
 			}
-			Expression randomLiteral = SQLite3ExpressionGenerator.getRandomLiteralValue(false);
+			Expression literal;
+			if (columns.get(i).isIntegerPrimaryKey()) {
+				// FIXME: the expression generator actually does not generate int numbers
+				literal = Constant.createIntConstant(Randomly.smallNumber());
+			} else {
+				literal = SQLite3ExpressionGenerator.getRandomLiteralValue(false);
+			}
 			SQLite3Visitor visitor = new SQLite3Visitor();
-			visitor.visit(randomLiteral);
+			visitor.visit(literal);
 			sb.append(visitor.get());
 		}
 	}

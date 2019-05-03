@@ -1,15 +1,12 @@
 package lama;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import lama.QueryGenerator.Database;
-import lama.schema.PrimitiveDataType;
 import lama.schema.Schema.Table;
-import lama.sqlite3.SQLite3SchemaParser;
 
 public class DatabaseFacade {
 	
@@ -37,17 +34,6 @@ public class DatabaseFacade {
 	}
 
 	public static void getColumnType(String columnType) {
-	}
-
-	public static PrimitiveDataType parseColumnType(String columnType) {
-		switch (QueryGenerator.DATABASE) {
-		case MYSQL:
-			return lama.mysql.MySQLSchemaParser.parse(columnType);
-		case SQLITE:
-			return SQLite3SchemaParser.parse(columnType);
-		default:
-			throw new AssertionError();
-		}
 	}
 
 	public static String queryStringToGetRandomTableRow(Table table) {

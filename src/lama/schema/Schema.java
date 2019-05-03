@@ -27,11 +27,16 @@ public class Schema {
 
 		private final String name;
 		private final PrimitiveDataType columnType;
+		private final boolean isPrimaryKey;
+		private final boolean isInteger; // "INTEGER" type, not "INT"
+		private Table table;
 
-		Column(String name, PrimitiveDataType columnType) {
+		Column(String name, PrimitiveDataType columnType, boolean isInteger, boolean isPrimaryKey) {
 			this.name = name;
 			this.columnType = columnType;
-
+			this.isInteger = isInteger;
+			this.isPrimaryKey = isPrimaryKey;
+			assert !isInteger || columnType == PrimitiveDataType.INT;
 		}
 
 		@Override
@@ -61,6 +66,26 @@ public class Schema {
 		public PrimitiveDataType getColumnType() {
 			return columnType;
 		}
+		
+		public boolean isPrimaryKey() {
+			return isPrimaryKey;
+		}
+		
+		public boolean isOnlyPrimaryKey() {
+			return isPrimaryKey && table.getColumns().stream().filter(c -> c.isPrimaryKey()).count() == 1;
+		}
+
+		// see https://www.sqlite.org/lang_createtable.html#rowid
+		/**
+		 * If a table has a single column primary key and the declared type of that column is "INTEGER" and the table is not a WITHOUT ROWID table, then the column is known as an INTEGER PRIMARY KEY. 
+		 */
+		public boolean isIntegerPrimaryKey() {
+			return isInteger && isOnlyPrimaryKey() && !table.hasWithoutRowid();
+		}
+
+		public void setTable(Table table) {
+			this.table = table;
+		}
 
 	}
 
@@ -72,6 +97,11 @@ public class Schema {
 		public Table(String tableName, List<Column> columns) {
 			this.tableName = tableName;
 			this.columns = Collections.unmodifiableList(columns);
+		}
+
+		public boolean hasWithoutRowid() {
+			// TODO FIXME implement
+			return false;
 		}
 
 		@Override
@@ -94,19 +124,18 @@ public class Schema {
 
 		public RowValue getRandomRowValue(Connection db, StateToReproduce state) throws SQLException {
 			String queryStringToGetRandomTableRow = DatabaseFacade.queryStringToGetRandomTableRow(this);
-			ResultSet randomRowValues = db.createStatement()
-					.executeQuery(queryStringToGetRandomTableRow);
+			ResultSet randomRowValues = db.createStatement().executeQuery(queryStringToGetRandomTableRow);
 			Map<Column, Constant> values = new HashMap<>();
 
 			if (!randomRowValues.next()) {
-				throw new AssertionError("could not find random row! " + queryStringToGetRandomTableRow + "\n"+ state);
+				throw new AssertionError("could not find random row! " + queryStringToGetRandomTableRow + "\n" + state);
 			}
 			for (int i = 0; i < columns.size(); i++) {
 				Column column = columns.get(i);
 				int columnIndex = randomRowValues.findColumn(column.getName());
 				Object value;
 				String typeString = randomRowValues.getString(columnIndex + columns.size());
-				PrimitiveDataType valueType = DatabaseFacade.parseColumnType(typeString);
+				PrimitiveDataType valueType = getColumnType(typeString);
 				if (randomRowValues.getString(columnIndex) == null) {
 					value = null;
 				} else {
@@ -164,7 +193,7 @@ public class Schema {
 		public Map<Column, Constant> getValues() {
 			return values;
 		}
-		
+
 		@Override
 		public String toString() {
 			StringBuffer sb = new StringBuffer();
@@ -177,7 +206,7 @@ public class Schema {
 			}
 			return sb.toString();
 		}
-		
+
 		public String getRowValuesAsString() {
 			StringBuilder sb = new StringBuilder();
 			List<Column> columnsToCheck = table.getColumns();
@@ -193,7 +222,7 @@ public class Schema {
 			}
 			return sb.toString();
 		}
-		
+
 	}
 
 	public Schema(List<Table> databaseTables) {
@@ -215,22 +244,66 @@ public class Schema {
 		ResultSet tables = meta.getTables(null, null, null, null);
 		while (tables.next()) {
 			String tableName = tables.getString(3);
-			if (tables.getString(4).equals("SYSTEM TABLE") || tables.getString(4).equals("SYSTEM VIEW") || tables.getString(4).equals("VIEW")) {
+			if (tables.getString(4).equals("SYSTEM TABLE") || tables.getString(4).equals("SYSTEM VIEW")
+					|| tables.getString(4).equals("VIEW")) {
 				continue;
 			}
 			ResultSet columns = meta.getColumns(null, null, tableName, null);
 			List<Column> databaseColumns = new ArrayList<>();
+			List<String> primaryKeysMap = new ArrayList<>();
+			ResultSet primaryKeys = meta.getPrimaryKeys(null, null, tableName);
+			while (primaryKeys.next()) {
+				primaryKeysMap.add(primaryKeys.getString("COLUMN_NAME"));
+			}
 			while (columns.next()) {
 				String columnName = columns.getString(4);
-				String columnType = columns.getString(6);
-				Column c = new Column(columnName, lama.DatabaseFacade.parseColumnType(columnType));
-				databaseColumns.add(c);
+				String columnTypeString = columns.getString(6);
+				PrimitiveDataType columnType = getColumnType(columnTypeString);
+				databaseColumns.add(new Column(columnName, columnType, columnTypeString.contentEquals("INTEGER"), primaryKeysMap.contains(columnName)));
 			}
+
 			Table t = new Table(tableName, databaseColumns);
+			for (Column c : databaseColumns) {
+				c.setTable(t);
+			}
 			databaseTables.add(t);
 		}
 		assert !databaseTables.isEmpty() : database.getSchema();
 		return new Schema(databaseTables);
+	}
+
+	private static PrimitiveDataType getColumnType(String columnTypeString) {
+		columnTypeString = columnTypeString.toUpperCase();
+		PrimitiveDataType columnType;
+		switch (columnTypeString) {
+		case "TEXT":
+			columnType = PrimitiveDataType.TEXT;
+			break;
+		case "INTEGER":
+			columnType = PrimitiveDataType.INT;
+			break;
+		case "INT":
+			columnType = PrimitiveDataType.INT;
+			break;
+		case "DATETIME":
+			columnType = PrimitiveDataType.DATETIME;
+			break;
+		case "":
+			columnType = PrimitiveDataType.NONE;
+			break;
+		case "BLOB":
+			columnType = PrimitiveDataType.BINARY;
+			break;
+		case "REAL":
+			columnType = PrimitiveDataType.REAL;
+			break;
+		case "NULL":
+			columnType = PrimitiveDataType.NULL;
+			break;
+		default:
+			throw new AssertionError(columnTypeString);
+		}
+		return columnType;
 	}
 
 	Random r = new Random();

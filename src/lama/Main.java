@@ -40,8 +40,8 @@ public class Main {
 	private static final int NR_QUERIES_PER_TABLE = 5000;
 	private static final int TOTAL_NR_THREADS = 100;
 	private static final int NR_CONCURRENT_THREADS = 4;
-	public static final int NR_INSERT_ROW_TRIES = 50;
-	public static final int EXPRESSION_MAX_DEPTH = 4;
+	public static final int NR_INSERT_ROW_TRIES = 100;
+	public static final int EXPRESSION_MAX_DEPTH = 3;
 	public static final File LOG_DIRECTORY = new File("logs");
 
 	public static class ReduceMeException extends RuntimeException {
@@ -58,7 +58,7 @@ public class Main {
 
 		private ErrorKind errorKind;
 
-		public List<String> statements = new ArrayList<>();
+		public final List<String> statements = new ArrayList<>();
 		public String query;
 
 		private String databaseName;
@@ -364,7 +364,7 @@ public class Main {
 								}
 							}
 						}
-						state.statements = new ArrayList<>();
+						state.statements.clear();
 						state.statements.add("-- trying to reduce query");
 						state.statements.addAll(reducedStatements);
 						state.logInconsistency();

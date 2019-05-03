@@ -62,7 +62,7 @@ public class SQLite3TableGenerator {
 	private void createColumn(boolean allowPrimaryKeyInColumn) {
 		String columnName = String.format("c%d", columnId);
 		sb.append(columnName);
-		String dataType = Randomly.fromOptions(" INT", " TEXT", " BLOB", " REAL"); // TODO add INTEGER
+		String dataType = Randomly.fromOptions(" INT", " TEXT", " BLOB", " REAL", " INTEGER"); // TODO add INTEGER
 		sb.append(dataType);
 		boolean retry;
 		do {
