@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,7 +34,6 @@ public class QueryGenerator {
 
 	private Connection database;
 	private Schema s;
-	static volatile int nrQueries;
 
 	enum Database {
 		MYSQL, SQLITE
@@ -74,7 +74,6 @@ public class QueryGenerator {
 			state.logInconsistency();
 			throw new Main.ReduceMeException();
 		}
-		nrQueries++;
 	}
 
 	private Expression generateOffset() {

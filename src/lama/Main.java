@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
@@ -39,10 +40,12 @@ public class Main {
 
 	private static final int NR_QUERIES_PER_TABLE = 5000;
 	private static final int TOTAL_NR_THREADS = 100;
-	private static final int NR_CONCURRENT_THREADS = 4;
-	public static final int NR_INSERT_ROW_TRIES = 100;
+	private static final int NR_CONCURRENT_THREADS = 16;
+	public static final int NR_INSERT_ROW_TRIES = 500;
 	public static final int EXPRESSION_MAX_DEPTH = 3;
 	public static final File LOG_DIRECTORY = new File("logs");
+	static volatile AtomicLong nrQueries = new AtomicLong();
+
 
 	public static class ReduceMeException extends RuntimeException {
 
@@ -168,14 +171,15 @@ public class Main {
 			@Override
 			public void run() {
 				long elapsedTimeMillis = System.currentTimeMillis() - timeMillis;
-				long nrCurrentQueries = QueryGenerator.nrQueries - lastNrQueries;
+				long currentNrQueries = nrQueries.get();
+				long nrCurrentQueries = currentNrQueries - lastNrQueries;
 				double throughput = nrCurrentQueries / (elapsedTimeMillis / 1000d);
 				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 				Date date = new Date();
 				System.out.println(String.format("[%s] Executed %d queries (%d queries/s). Threads shut down: %d.",
-						dateFormat.format(date), QueryGenerator.nrQueries, (int) throughput, threadsShutdown));
+						dateFormat.format(date), currentNrQueries, (int) throughput, threadsShutdown));
 				timeMillis = System.currentTimeMillis();
-				lastNrQueries = QueryGenerator.nrQueries;
+				lastNrQueries = currentNrQueries;
 			}
 		}, 5, 5, TimeUnit.SECONDS);
 
@@ -295,6 +299,7 @@ public class Main {
 
 					for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
 						queryGenerator.generateAndCheckQuery(state);
+						nrQueries.addAndGet(1);
 					}
 					return state;
 				}
