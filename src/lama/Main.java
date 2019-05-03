@@ -211,7 +211,7 @@ public class Main {
 					// we try to reuse the same database since it greatly improves performance
 					try (Connection con = DatabaseFacade.createDatabase(databaseName)) {
 						while (true) {
-							 generateAndTestTable(databaseName, con);
+							 generateAndTestDatabase(databaseName, con);
 						}
 					} catch (ReduceMeException reduce) {
 						tryToReduceBug(databaseName, state);
@@ -221,10 +221,11 @@ public class Main {
 					}
 				}
 
-				private void generateAndTestTable(final String databaseName, Connection con)
+				private void generateAndTestDatabase(final String databaseName, Connection con)
 						throws SQLException {
-					try (Statement s = con.createStatement()) {
-						s.execute("DROP TABLE IF EXISTS test");
+					Schema schema = Schema.fromConnection(con);
+					for (Table t : schema.getDatabaseTables()) {
+						SQLite3Helper.dropTable(con, t);
 					}
 					state = new StateToReproduce(databaseName);
 					Statement createStatement = con.createStatement();

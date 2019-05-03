@@ -231,14 +231,14 @@ public class Schema {
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		for (Table t : databaseTables) {
+		for (Table t : getDatabaseTables()) {
 			sb.append(t + "\n");
 		}
 		return sb.toString();
 	}
 
-	static public Schema fromConnection(Connection database) throws SQLException {
-		DatabaseMetaData meta = database.getMetaData();
+	static public Schema fromConnection(Connection con) throws SQLException {
+		DatabaseMetaData meta = con.getMetaData();
 		List<Table> databaseTables = new ArrayList<>();
 		ResultSet tables = meta.getTables(null, null, null, null);
 		while (tables.next()) {
@@ -268,7 +268,6 @@ public class Schema {
 			}
 			databaseTables.add(t);
 		}
-		assert !databaseTables.isEmpty() : database.getSchema();
 		return new Schema(databaseTables);
 	}
 
@@ -306,7 +305,12 @@ public class Schema {
 	Random r = new Random();
 
 	public Table getRandomTable() {
-		return Randomly.fromList(databaseTables);
+		return Randomly.fromList(getDatabaseTables());
 	}
+
+	public List<Table> getDatabaseTables() {
+		return databaseTables;
+	}
+
 
 }
