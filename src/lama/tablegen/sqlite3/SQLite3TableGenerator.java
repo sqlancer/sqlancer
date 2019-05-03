@@ -1,8 +1,8 @@
 package lama.tablegen.sqlite3;
 
 import lama.Main.StateToReproduce;
-import lama.sqlite3.SQLite3Visitor;
 import lama.Randomly;
+import lama.sqlite3.SQLite3Visitor;
 
 public class SQLite3TableGenerator {
 
@@ -62,7 +62,8 @@ public class SQLite3TableGenerator {
 	private void createColumn(boolean allowPrimaryKeyInColumn) {
 		String columnName = String.format("c%d", columnId);
 		sb.append(columnName);
-		String dataType = Randomly.fromOptions(" INT", " TEXT", " BLOB", " REAL", " INTEGER"); // TODO add INTEGER
+		sb.append(" ");
+		String dataType = Randomly.fromOptions("INT", "TEXT", "BLOB", "REAL", "INTEGER");
 		sb.append(dataType);
 		boolean retry;
 		do {
@@ -91,6 +92,9 @@ public class SQLite3TableGenerator {
 		} while (retry);
 		if (Randomly.getBoolean()) {
 			sb.append(" DEFAULT " + SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(false)));
+		}
+		if (Randomly.getBoolean()) {
+			sb.append(" CHECK ( " + SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(false)) + ")");
 		}
 		if (Randomly.getBoolean()) {
 			String randomCollate = SQLite3Common.getRandomCollate();
