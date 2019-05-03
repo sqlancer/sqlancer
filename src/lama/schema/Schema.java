@@ -26,17 +26,17 @@ public class Schema {
 	public static class Column {
 
 		private final String name;
-		private final PrimitiveDataType columnType;
+		private final SQLite3DataType columnType;
 		private final boolean isPrimaryKey;
 		private final boolean isInteger; // "INTEGER" type, not "INT"
 		private Table table;
 
-		Column(String name, PrimitiveDataType columnType, boolean isInteger, boolean isPrimaryKey) {
+		Column(String name, SQLite3DataType columnType, boolean isInteger, boolean isPrimaryKey) {
 			this.name = name;
 			this.columnType = columnType;
 			this.isInteger = isInteger;
 			this.isPrimaryKey = isPrimaryKey;
-			assert !isInteger || columnType == PrimitiveDataType.INT;
+			assert !isInteger || columnType == SQLite3DataType.INT;
 		}
 
 		@Override
@@ -63,21 +63,23 @@ public class Schema {
 			return name;
 		}
 
-		public PrimitiveDataType getColumnType() {
+		public SQLite3DataType getColumnType() {
 			return columnType;
 		}
-		
+
 		public boolean isPrimaryKey() {
 			return isPrimaryKey;
 		}
-		
+
 		public boolean isOnlyPrimaryKey() {
 			return isPrimaryKey && table.getColumns().stream().filter(c -> c.isPrimaryKey()).count() == 1;
 		}
 
 		// see https://www.sqlite.org/lang_createtable.html#rowid
 		/**
-		 * If a table has a single column primary key and the declared type of that column is "INTEGER" and the table is not a WITHOUT ROWID table, then the column is known as an INTEGER PRIMARY KEY. 
+		 * If a table has a single column primary key and the declared type of that
+		 * column is "INTEGER" and the table is not a WITHOUT ROWID table, then the
+		 * column is known as an INTEGER PRIMARY KEY.
 		 */
 		public boolean isIntegerPrimaryKey() {
 			return isInteger && isOnlyPrimaryKey() && !table.hasWithoutRowid();
@@ -135,7 +137,7 @@ public class Schema {
 				int columnIndex = randomRowValues.findColumn(column.getName());
 				Object value;
 				String typeString = randomRowValues.getString(columnIndex + columns.size());
-				PrimitiveDataType valueType = getColumnType(typeString);
+				SQLite3DataType valueType = getColumnType(typeString);
 				if (randomRowValues.getString(columnIndex) == null) {
 					value = null;
 				} else {
@@ -145,9 +147,6 @@ public class Schema {
 						break;
 					case REAL:
 						value = randomRowValues.getDouble(columnIndex);
-						break;
-					case DATETIME:
-						value = randomRowValues.getString(columnIndex);
 						break;
 					case TEXT:
 					case NONE:
@@ -258,8 +257,9 @@ public class Schema {
 			while (columns.next()) {
 				String columnName = columns.getString(4);
 				String columnTypeString = columns.getString(6);
-				PrimitiveDataType columnType = getColumnType(columnTypeString);
-				databaseColumns.add(new Column(columnName, columnType, columnTypeString.contentEquals("INTEGER"), primaryKeysMap.contains(columnName)));
+				SQLite3DataType columnType = getColumnType(columnTypeString);
+				databaseColumns.add(new Column(columnName, columnType, columnTypeString.contentEquals("INTEGER"),
+						primaryKeysMap.contains(columnName)));
 			}
 
 			Table t = new Table(tableName, databaseColumns);
@@ -272,33 +272,30 @@ public class Schema {
 		return new Schema(databaseTables);
 	}
 
-	private static PrimitiveDataType getColumnType(String columnTypeString) {
+	private static SQLite3DataType getColumnType(String columnTypeString) {
 		columnTypeString = columnTypeString.toUpperCase();
-		PrimitiveDataType columnType;
+		SQLite3DataType columnType;
 		switch (columnTypeString) {
 		case "TEXT":
-			columnType = PrimitiveDataType.TEXT;
+			columnType = SQLite3DataType.TEXT;
 			break;
 		case "INTEGER":
-			columnType = PrimitiveDataType.INT;
+			columnType = SQLite3DataType.INT;
 			break;
 		case "INT":
-			columnType = PrimitiveDataType.INT;
-			break;
-		case "DATETIME":
-			columnType = PrimitiveDataType.DATETIME;
+			columnType = SQLite3DataType.INT;
 			break;
 		case "":
-			columnType = PrimitiveDataType.NONE;
+			columnType = SQLite3DataType.NONE;
 			break;
 		case "BLOB":
-			columnType = PrimitiveDataType.BINARY;
+			columnType = SQLite3DataType.BINARY;
 			break;
 		case "REAL":
-			columnType = PrimitiveDataType.REAL;
+			columnType = SQLite3DataType.REAL;
 			break;
 		case "NULL":
-			columnType = PrimitiveDataType.NULL;
+			columnType = SQLite3DataType.NULL;
 			break;
 		default:
 			throw new AssertionError(columnTypeString);

@@ -2,7 +2,7 @@ package lama;
 
 import java.util.Arrays;
 
-import lama.schema.PrimitiveDataType;
+import lama.schema.SQLite3DataType;
 import lama.schema.Schema.Column;
 
 public class Expression {
@@ -320,9 +320,9 @@ public class Expression {
 	public static class Constant extends Expression {
 
 		private final Object value;
-		private final PrimitiveDataType dataType;
+		private final SQLite3DataType dataType;
 
-		private Constant(Object value, PrimitiveDataType dataType) {
+		private Constant(Object value, SQLite3DataType dataType) {
 			if (dataType == null || value instanceof Constant) {
 				throw new IllegalArgumentException();
 			}
@@ -351,7 +351,7 @@ public class Expression {
 			}
 		}
 
-		public PrimitiveDataType getDataType() {
+		public SQLite3DataType getDataType() {
 			return dataType;
 		}
 
@@ -372,30 +372,30 @@ public class Expression {
 		}
 
 		public static Constant createIntConstant(long val) {
-			return new Constant(val, PrimitiveDataType.INT);
+			return new Constant(val, SQLite3DataType.INT);
 		}
 
 		public static Constant createBinaryConstant(byte[] val) {
-			return new Constant(val, PrimitiveDataType.BINARY);
+			return new Constant(val, SQLite3DataType.BINARY);
 		}
 
 		public static Constant createRealConstant(double real) {
-			return new Constant(real, PrimitiveDataType.REAL);
+			return new Constant(real, SQLite3DataType.REAL);
 		}
 
 		public static Constant createTextConstant(String text) {
-			return new Constant(text, PrimitiveDataType.TEXT);
+			return new Constant(text, SQLite3DataType.TEXT);
 		}
 
 		public static Constant createNullConstant() {
-			return new Constant(null, PrimitiveDataType.NULL);
+			return new Constant(null, SQLite3DataType.NULL);
 		}
 
 		public static Constant getRandomBinaryConstant() {
 			int size = Randomly.smallNumber();
 			byte[] arr = new byte[size];
 			Randomly.getBytes(arr);
-			return new Constant(arr, PrimitiveDataType.BINARY);
+			return new Constant(arr, SQLite3DataType.BINARY);
 		}
 
 		@Override
@@ -405,17 +405,14 @@ public class Expression {
 		}
 
 		@Deprecated
-		public static Constant create(Object value2, PrimitiveDataType valueType) {
+		public static Constant create(Object value2, SQLite3DataType valueType) {
 			return new Constant(value2, valueType);
 		}
 
 		public static Expression createBooleanConstant(boolean val) {
-			return new Constant(val, PrimitiveDataType.INT);
+			return new Constant(val, SQLite3DataType.INT);
 		}
 
-		public static Expression createUninterpretedConstant(String val) {
-			return new Constant(val, PrimitiveDataType.UNINTERPRETED);
-		}
 
 	}
 

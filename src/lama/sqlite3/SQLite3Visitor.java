@@ -87,7 +87,6 @@ public class SQLite3Visitor {
 			case REAL:
 				sb.append(c.asDouble());
 				break;
-			case DATETIME:
 			case TEXT:
 				// not escape with double quotes
 				// CREATE TABLE test (c0, c1);
@@ -103,9 +102,6 @@ public class SQLite3Visitor {
 				sb.append(quotes);
 				sb.append(c.asString().replace("'", "''"));
 				sb.append(quotes);
-				break;
-			case UNINTERPRETED:
-				sb.append(c.asString());
 				break;
 			case BINARY:
 				sb.append('x');

@@ -2,13 +2,13 @@ package lama.schema;
 
 public class DataType {
 	
-	private final PrimitiveDataType primitiveType;
+	private final SQLite3DataType primitiveType;
 	
-	public DataType(PrimitiveDataType primitiveType) {
+	public DataType(SQLite3DataType primitiveType) {
 		this.primitiveType = primitiveType;
 	}
 
-	public PrimitiveDataType getPrimitiveType() {
+	public SQLite3DataType getPrimitiveType() {
 		return primitiveType;
 	}
 }

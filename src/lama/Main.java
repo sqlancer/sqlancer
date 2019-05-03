@@ -34,7 +34,7 @@ import lama.tablegen.sqlite3.SQLite3PragmaGenerator;
 import lama.tablegen.sqlite3.SQLite3ReindexGenerator;
 import lama.tablegen.sqlite3.SQLite3TableGenerator;
 import lama.tablegen.sqlite3.SQLite3VacuumGenerator;
-import lama.tablegen.sqlite3.Sqlite3RowGenerator;
+import lama.tablegen.sqlite3.SQLite3RowGenerator;
 
 public class Main {
 
@@ -275,7 +275,7 @@ public class Main {
 							}
 							break;
 						case INSERT:
-							Sqlite3RowGenerator.insertRow(Schema.fromConnection(con).getRandomTable(), con, state);
+							SQLite3RowGenerator.insertRow(Schema.fromConnection(con).getRandomTable(), con, state);
 							break;
 						case PRAGMA:
 							SQLite3PragmaGenerator.insertPragma(con, state);
@@ -300,7 +300,7 @@ public class Main {
 					int counter = MAX_INSERT_ROW_TRIES;
 					do {
 						try {
-							Sqlite3RowGenerator.insertRow(Schema.fromConnection(con).getRandomTable(), con, state);
+							SQLite3RowGenerator.insertRow(Schema.fromConnection(con).getRandomTable(), con, state);
 						} catch (SQLException e) {
 							if (!QueryGenerator.shouldIgnoreException(e)) {
 								throw new AssertionError(e);

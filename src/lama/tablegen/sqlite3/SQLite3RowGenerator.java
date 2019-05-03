@@ -13,7 +13,7 @@ import lama.schema.Schema.Column;
 import lama.schema.Schema.Table;
 import lama.sqlite3.SQLite3Visitor;
 
-public class Sqlite3RowGenerator {
+public class SQLite3RowGenerator {
 
 	public static void insertRow(Table table, Connection con, StateToReproduce state) throws SQLException {
 		String query = insertRow(table);

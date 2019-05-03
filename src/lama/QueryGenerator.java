@@ -22,7 +22,7 @@ import lama.Expression.PostfixUnaryOperation;
 import lama.Expression.UnaryOperation;
 import lama.Expression.UnaryOperation.UnaryOperator;
 import lama.Main.StateToReproduce;
-import lama.schema.PrimitiveDataType;
+import lama.schema.SQLite3DataType;
 import lama.schema.Schema;
 import lama.schema.Schema.Column;
 import lama.schema.Schema.RowValue;
@@ -137,7 +137,7 @@ public class QueryGenerator {
 		if (con.isNull()) {
 			return false;
 		}
-		if (con.getDataType() == PrimitiveDataType.INT) {
+		if (con.getDataType() == SQLite3DataType.INT) {
 			long val = con.asInt();
 			if (val < 1 || val > size) {
 				return false;
@@ -304,9 +304,9 @@ public class QueryGenerator {
 			}
 		case REAL:
 			// TODO: directly comparing to a double is probably not a good idea
-			if (shouldBeTrue && (double) value.asDouble() != 0.0) {
+			if (shouldBeTrue && value.asDouble() != 0.0) {
 				return new ColumnName(c);
-			} else if (!shouldBeTrue && (double) value.asDouble() == 0.0) {
+			} else if (!shouldBeTrue && value.asDouble() == 0.0) {
 				return new ColumnName(c);
 			} else {
 				return null;
@@ -314,7 +314,7 @@ public class QueryGenerator {
 		case TEXT:
 			// TODO: false positive: a column condition was generated with value 0Xe.p9
 			Constant numericConstant = castToNumeric(Constant.createTextConstant(value.asString()));
-			if (numericConstant.getDataType() == PrimitiveDataType.INT) {
+			if (numericConstant.getDataType() == SQLite3DataType.INT) {
 				if (shouldBeTrue && numericConstant.asInt() != 0) {
 					return new ColumnName(c);
 				} else if (!shouldBeTrue && numericConstant.asInt() == 0) {
@@ -357,7 +357,7 @@ public class QueryGenerator {
 	}
 
 	private Expression getStandaloneLiteral(boolean shouldBeTrue) throws AssertionError {
-		switch (Randomly.fromOptions(PrimitiveDataType.INT, PrimitiveDataType.TEXT, PrimitiveDataType.REAL)) {
+		switch (Randomly.fromOptions(SQLite3DataType.INT, SQLite3DataType.TEXT, SQLite3DataType.REAL)) {
 		case INT:
 			// only a zero integer is false
 			long value;
@@ -395,8 +395,8 @@ public class QueryGenerator {
 		if (Randomly.getBoolean()) {
 			// generate opaque predicate
 			Expression con;
-			PrimitiveDataType randomType = Randomly.fromOptions(PrimitiveDataType.INT, PrimitiveDataType.TEXT,
-					PrimitiveDataType.NULL);
+			SQLite3DataType randomType = Randomly.fromOptions(SQLite3DataType.INT, SQLite3DataType.TEXT,
+					SQLite3DataType.NULL);
 
 			switch (randomType) {
 			case INT:
@@ -426,7 +426,7 @@ public class QueryGenerator {
 
 			Expression compareTo;
 			BinaryOperator binaryOperator;
-			PrimitiveDataType valueType = sampledConstant.getDataType();
+			SQLite3DataType valueType = sampledConstant.getDataType();
 
 			Expression columnName = new Expression.ColumnName(selectedColumn);
 			if (Randomly.getBoolean()) {
@@ -471,7 +471,7 @@ public class QueryGenerator {
 		boolean retry;
 		BinaryOperator binaryOperator;
 		Expression compareTo;
-		PrimitiveDataType valueType = sampledConstant.getDataType();
+		SQLite3DataType valueType = sampledConstant.getDataType();
 
 		do {
 			binaryOperator = Randomly.fromOptions(BinaryOperator.GREATER_EQUALS, BinaryOperator.SMALLER_EQUALS,
@@ -483,7 +483,7 @@ public class QueryGenerator {
 				compareTo = Randomly.fromOptions(sampledConstant, columnName);
 				break;
 			case GREATER_EQUALS:
-				if (valueType == PrimitiveDataType.INT) {
+				if (valueType == SQLite3DataType.INT) {
 					compareTo = Randomly.fromOptions(sampledConstant, columnName,
 							smallerOrEqualRandomConstant(sampledConstant));
 				} else {
@@ -500,7 +500,7 @@ public class QueryGenerator {
 				compareTo = Randomly.fromOptions(sampledConstant, columnName);
 				break;
 			case LIKE:
-				if (valueType == PrimitiveDataType.TEXT) {
+				if (valueType == SQLite3DataType.TEXT) {
 					StringBuilder sb = new StringBuilder();
 					if (Randomly.getBoolean()) {
 						sb.append("%");
@@ -523,8 +523,8 @@ public class QueryGenerator {
 				}
 				break;
 			case SMALLER_EQUALS:
-				if (valueType == PrimitiveDataType.INT || valueType == PrimitiveDataType.TEXT
-						|| valueType == PrimitiveDataType.REAL) {
+				if (valueType == SQLite3DataType.INT || valueType == SQLite3DataType.TEXT
+						|| valueType == SQLite3DataType.REAL) {
 					compareTo = Randomly.fromOptions(sampledConstant, columnName,
 							greaterOrEqualRandomConstant(sampledConstant));
 				} else {
@@ -547,8 +547,8 @@ public class QueryGenerator {
 		// relate two columns
 		Column otherColumn = Randomly.fromList(columns);
 		Constant otherValue = rw.getValues().get(otherColumn);
-		PrimitiveDataType otherValueType = otherValue.getDataType();
-		if (sampledConstant.getDataType() == otherValueType && sampledConstant.getDataType() == PrimitiveDataType.INT) {
+		SQLite3DataType otherValueType = otherValue.getDataType();
+		if (sampledConstant.getDataType() == otherValueType && sampledConstant.getDataType() == SQLite3DataType.INT) {
 			long columnValue = sampledConstant.asInt();
 			long otherColumnValue = otherValue.asInt();
 			if (columnValue > otherColumnValue) {
@@ -581,7 +581,7 @@ public class QueryGenerator {
 			}
 			return new BinaryOperation(columnName, new Expression.ColumnName(otherColumn), operator);
 		} else if (sampledConstant.getDataType() == otherValueType
-				&& sampledConstant.getDataType() == PrimitiveDataType.REAL) {
+				&& sampledConstant.getDataType() == SQLite3DataType.REAL) {
 			// duplicated, refactor
 			double columnValue = sampledConstant.asDouble();
 			double otherColumnValue = otherValue.asDouble();
@@ -626,8 +626,8 @@ public class QueryGenerator {
 
 		{
 			@Override
-			public boolean worksWhenApplied(BinaryOperator operator, PrimitiveDataType leftType,
-					PrimitiveDataType rightType) {
+			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+					SQLite3DataType rightType) {
 				switch (operator) {
 				case IS:
 				case EQUALS:
@@ -650,16 +650,16 @@ public class QueryGenerator {
 		UNLIKELY("unlikely") {
 
 			@Override
-			public boolean worksWhenApplied(BinaryOperator operator, PrimitiveDataType leftType,
-					PrimitiveDataType rightType) {
+			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+					SQLite3DataType rightType) {
 				return true;
 			}
 
 		},
 		LIKELY("likely") {
 			@Override
-			public boolean worksWhenApplied(BinaryOperator operator, PrimitiveDataType leftType,
-					PrimitiveDataType rightType) {
+			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+					SQLite3DataType rightType) {
 				return true;
 			}
 		};
@@ -675,10 +675,10 @@ public class QueryGenerator {
 		}
 
 		public abstract boolean worksWhenApplied(Expression.BinaryOperation.BinaryOperator operator,
-				PrimitiveDataType leftType, PrimitiveDataType rightType);
+				SQLite3DataType leftType, SQLite3DataType rightType);
 
 		public static List<BinaryFunction> getPossibleBinaryFunctionsForOperator(BinaryOperator operator,
-				PrimitiveDataType leftDataType, PrimitiveDataType rightDataType) {
+				SQLite3DataType leftDataType, SQLite3DataType rightDataType) {
 			return Stream.of(BinaryFunction.values())
 					.filter(fun -> fun.worksWhenApplied(operator, leftDataType, rightDataType))
 					.collect(Collectors.toList());
@@ -686,8 +686,8 @@ public class QueryGenerator {
 
 	}
 
-	private String getRandomFunction(BinaryOperator operator, boolean shouldBeTrue, PrimitiveDataType leftDataType,
-			PrimitiveDataType rightDataType) {
+	private String getRandomFunction(BinaryOperator operator, boolean shouldBeTrue, SQLite3DataType leftDataType,
+			SQLite3DataType rightDataType) {
 		if (!shouldBeTrue) {
 			operator = operator.reverse();
 		}
@@ -709,8 +709,8 @@ public class QueryGenerator {
 			// quote and floating point ...
 			// TRIMS don't work for floating point
 			// UPPER and LOWER do not work for floating point
-			if ((leftDataType != PrimitiveDataType.INT && leftDataType != PrimitiveDataType.REAL)
-					|| (rightDataType != PrimitiveDataType.INT && rightDataType != PrimitiveDataType.REAL)) {
+			if ((leftDataType != SQLite3DataType.INT && leftDataType != SQLite3DataType.REAL)
+					|| (rightDataType != SQLite3DataType.INT && rightDataType != SQLite3DataType.REAL)) {
 				return Randomly.fromOptions("LENGTH", "QUOTE", "LTRIM", "RTRIM", "TRIM", "UPPER", "LOWER",
 						"TYPEOF");
 			}
@@ -727,7 +727,7 @@ public class QueryGenerator {
 				"RTRIM", "TRIM", "TYPEOF", "UNLIKELY", "UPPER"); // "ZEROBLOB" "UNICODE",
 	}
 
-	private String getPreservingFunctions(PrimitiveDataType dataType) {
+	private String getPreservingFunctions(SQLite3DataType dataType) {
 		switch (dataType) {
 		case TEXT:
 			return Randomly.fromOptions("LOWER", "LTRIM", "QUOTE", "RTRIM", "TRIM", "UPPER"); // "ABS", "CHAR", "HEX",
@@ -771,7 +771,6 @@ public class QueryGenerator {
 		case INT:
 			return Constant.createIntConstant(Randomly.notEqualInt(sampledConstant.asInt()));
 		case TEXT:
-		case DATETIME:
 			return Constant.createTextConstant(sampledConstant.asString() + "asdf");
 		case REAL:
 			return Constant.createRealConstant(sampledConstant.asDouble() % 10 + 0.3);
