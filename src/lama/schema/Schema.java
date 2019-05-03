@@ -240,33 +240,36 @@ public class Schema {
 	static public Schema fromConnection(Connection con) throws SQLException {
 		DatabaseMetaData meta = con.getMetaData();
 		List<Table> databaseTables = new ArrayList<>();
-		ResultSet tables = meta.getTables(null, null, null, null);
-		while (tables.next()) {
-			String tableName = tables.getString(3);
-			if (tables.getString(4).equals("SYSTEM TABLE") || tables.getString(4).equals("SYSTEM VIEW")
-					|| tables.getString(4).equals("VIEW")) {
-				continue;
-			}
-			ResultSet columns = meta.getColumns(null, null, tableName, null);
-			List<Column> databaseColumns = new ArrayList<>();
-			List<String> primaryKeysMap = new ArrayList<>();
-			ResultSet primaryKeys = meta.getPrimaryKeys(null, null, tableName);
-			while (primaryKeys.next()) {
-				primaryKeysMap.add(primaryKeys.getString("COLUMN_NAME"));
-			}
-			while (columns.next()) {
-				String columnName = columns.getString(4);
-				String columnTypeString = columns.getString(6);
-				SQLite3DataType columnType = getColumnType(columnTypeString);
-				databaseColumns.add(new Column(columnName, columnType, columnTypeString.contentEquals("INTEGER"),
-						primaryKeysMap.contains(columnName)));
-			}
+		try (ResultSet tables = meta.getTables(null, null, null, null);) {
+			while (tables.next()) {
+				String tableName = tables.getString(3);
+				if (tables.getString(4).equals("SYSTEM TABLE") || tables.getString(4).equals("SYSTEM VIEW")
+						|| tables.getString(4).equals("VIEW")) {
+					continue;
+				}
+				try (ResultSet columns = meta.getColumns(null, null, tableName, null)) {
+					List<Column> databaseColumns = new ArrayList<>();
+					List<String> primaryKeysMap = new ArrayList<>();
+					try (ResultSet primaryKeys = meta.getPrimaryKeys(null, null, tableName)) {
+						while (primaryKeys.next()) {
+							primaryKeysMap.add(primaryKeys.getString("COLUMN_NAME"));
+						}
+						while (columns.next()) {
+							String columnName = columns.getString(4);
+							String columnTypeString = columns.getString(6);
+							SQLite3DataType columnType = getColumnType(columnTypeString);
+							databaseColumns.add(new Column(columnName, columnType,
+									columnTypeString.contentEquals("INTEGER"), primaryKeysMap.contains(columnName)));
+						}
 
-			Table t = new Table(tableName, databaseColumns);
-			for (Column c : databaseColumns) {
-				c.setTable(t);
+						Table t = new Table(tableName, databaseColumns);
+						for (Column c : databaseColumns) {
+							c.setTable(t);
+						}
+						databaseTables.add(t);
+					}
+				}
 			}
-			databaseTables.add(t);
 		}
 		return new Schema(databaseTables);
 	}
@@ -311,6 +314,5 @@ public class Schema {
 	public List<Table> getDatabaseTables() {
 		return databaseTables;
 	}
-
 
 }

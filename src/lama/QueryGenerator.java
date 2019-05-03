@@ -115,7 +115,6 @@ public class QueryGenerator {
 	static boolean shouldIgnoreException(SQLException e) {
 		return e.getMessage().contentEquals("[SQLITE_ERROR] SQL error or missing database (integer overflow)");
 	}
-	
 
 	private List<OrderingTerm> generateOrderBy(List<Column> columns, RowValue rw) {
 		List<OrderingTerm> orderBys = new ArrayList<>();
@@ -445,12 +444,13 @@ public class QueryGenerator {
 					binaryOperator = t.op;
 				}
 				assert compareTo != null : binaryOperator;
-				if (Randomly.getBoolean() && binaryOperator != BinaryOperator.LIKE
-						&& binaryOperator != BinaryOperator.NOT_EQUALS) {
-					String function = getPreservingFunctions(valueType);
-					// apply function
-					columnName = new Expression.Function(function, columnName);
-					compareTo = new Expression.Function(function, compareTo);
+				if (Randomly.getBoolean() && binaryOperator != BinaryOperator.LIKE && binaryOperator != BinaryOperator.NOT_EQUALS) {
+					String function = getRandomFunction(binaryOperator, true, valueType, valueType);
+					if (function != null) {
+						// apply function
+						columnName = new Expression.Function(function, columnName);
+						compareTo = new Expression.Function(function, compareTo);
+					}
 				}
 				term = new Expression.BinaryOperation(columnName, compareTo, binaryOperator);
 			}
@@ -648,12 +648,310 @@ public class QueryGenerator {
 			}
 
 		},
+		HEX("hex") {
+			@Override
+			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+					SQLite3DataType rightType) {
+				switch (operator) {
+				case IS:
+				case EQUALS:
+				case GLOB:
+				case LIKE:
+				case IS_NOT:
+				case NOT_EQUALS:
+					return true;
+				case SMALLER:
+				case SMALLER_EQUALS:
+				case GREATER:
+				case GREATER_EQUALS:
+					return false;
+				default:
+					throw new AssertionError(operator);
+				}
+			}
+
+		},
+		UNICODE("unicode") {
+			@Override
+			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+					SQLite3DataType rightType) {
+				if (leftType != SQLite3DataType.TEXT || rightType != SQLite3DataType.TEXT) {
+					return false;
+				}
+				switch (operator) {
+				case IS:
+				case EQUALS:
+				case GLOB:
+				case LIKE:
+				case IS_NOT:
+				case NOT_EQUALS:
+				case SMALLER:
+				case SMALLER_EQUALS:
+				case GREATER:
+				case GREATER_EQUALS:
+					if (leftType == SQLite3DataType.TEXT || rightType == SQLite3DataType.TEXT) {
+						// unicode('') == NULL
+						return operator == BinaryOperator.IS_NOT;
+					} else {
+						return true;
+					}
+				default:
+					throw new AssertionError(operator);
+				}
+			}
+		},
+		LTRIM("ltrim") {
+			@Override
+			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+					SQLite3DataType rightType) {
+				switch (operator) {
+				case IS:
+				case EQUALS:
+				case GLOB:
+				case LIKE:
+					return true;
+				case NOT_EQUALS:
+				case IS_NOT:
+					if (leftType != SQLite3DataType.TEXT && rightType != SQLite3DataType.TEXT) {
+						return true;
+					} else {
+						return false;
+					}
+				case SMALLER_EQUALS:
+				case GREATER_EQUALS:
+				case GREATER:
+				case SMALLER:
+					return leftType == SQLite3DataType.TEXT || rightType == SQLite3DataType.TEXT;
+				default:
+					throw new AssertionError(operator);
+				}
+			}
+		},
+		LOWER("lower") {
+
+			@Override
+			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+					SQLite3DataType rightType) {
+				switch (operator) {
+				case IS:
+				case EQUALS:
+				case GLOB:
+				case LIKE:
+				case NOT_EQUALS:
+				case IS_NOT:
+					return true;
+				case SMALLER_EQUALS:
+				case GREATER_EQUALS:
+				case GREATER:
+				case SMALLER:
+					if (!leftType.isNumeric() && !rightType.isNumeric()) {
+						return true;
+					} else {
+						return false;
+					}
+				default:
+					throw new AssertionError(operator);
+				}
+			}
+
+		},
+		QUOTE("quote") {
+			@Override
+			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+					SQLite3DataType rightType) {
+				switch (operator) {
+				case IS:
+				case EQUALS:
+				case GLOB:
+				case LIKE:
+				case IS_NOT:
+				case NOT_EQUALS:
+					return true;
+				case SMALLER_EQUALS:
+				case GREATER_EQUALS:
+				case GREATER:
+				case SMALLER:
+					// does not work due to the e notation
+					if (leftType != SQLite3DataType.REAL || rightType != SQLite3DataType.REAL) {
+						return true;
+					} else {
+						return false;
+					}
+				default:
+					throw new AssertionError(operator);
+				}
+			}
+
+		},
+		ROUND("round") {
+
+			@Override
+			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+					SQLite3DataType rightType) {
+				switch (operator) {
+				case IS:
+				case EQUALS:
+				case GLOB:
+				case LIKE:
+				case SMALLER_EQUALS:
+				case GREATER_EQUALS:
+					return true;
+				case IS_NOT:
+				case NOT_EQUALS:
+				case GREATER:
+				case SMALLER:
+					if (leftType == SQLite3DataType.REAL && rightType == SQLite3DataType.REAL) {
+						return false;
+					} else {
+						return true;
+					}
+				default:
+					throw new AssertionError(operator);
+				}
+			}
+
+		},
+		RTRIM("rtrim") {
+			@Override
+			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+					SQLite3DataType rightType) {
+				switch (operator) {
+				case IS:
+				case EQUALS:
+				case GLOB:
+				case LIKE:
+					return true;
+				case NOT_EQUALS:
+				case IS_NOT:
+					if (leftType != SQLite3DataType.TEXT && rightType != SQLite3DataType.TEXT) {
+						return true;
+					} else {
+						return false;
+					}
+				case SMALLER_EQUALS:
+				case GREATER_EQUALS:
+				case GREATER:
+				case SMALLER:
+					return leftType == SQLite3DataType.TEXT || rightType == SQLite3DataType.TEXT;
+				default:
+					throw new AssertionError(operator);
+				}
+			}
+		},
+		TRIM("trim") {
+			@Override
+			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+					SQLite3DataType rightType) {
+				switch (operator) {
+				case IS:
+				case EQUALS:
+				case GLOB:
+				case LIKE:
+					return true;
+				case NOT_EQUALS:
+				case IS_NOT:
+					if (leftType != SQLite3DataType.TEXT && rightType != SQLite3DataType.TEXT) {
+						return true;
+					} else {
+						return false;
+					}
+				case SMALLER_EQUALS:
+				case GREATER_EQUALS:
+				case GREATER:
+				case SMALLER:
+					return leftType == SQLite3DataType.TEXT || rightType == SQLite3DataType.TEXT;
+				default:
+					throw new AssertionError(operator);
+				}
+			}
+		},
+		TYPEOF("typeof") {
+
+			@Override
+			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+					SQLite3DataType rightType) {
+				switch (operator) {
+				case IS:
+				case EQUALS:
+				case GLOB:
+				case LIKE:
+					return true;
+				case NOT_EQUALS:
+				case IS_NOT:
+				case SMALLER_EQUALS:
+				case GREATER_EQUALS:
+				case GREATER:
+				case SMALLER:
+					return false;
+				default:
+					throw new AssertionError(operator);
+				}
+			}
+
+		},
+
 		UNLIKELY("unlikely") {
 
 			@Override
 			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
 				return true;
+			}
+
+		},
+		UPPER("upper") {
+
+			@Override
+			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+					SQLite3DataType rightType) {
+				switch (operator) {
+				case IS:
+				case EQUALS:
+				case GLOB:
+				case LIKE:
+				case NOT_EQUALS:
+				case IS_NOT:
+					return true;
+				case SMALLER_EQUALS:
+				case GREATER_EQUALS:
+				case GREATER:
+				case SMALLER:
+					if (!leftType.isNumeric() && !rightType.isNumeric()) {
+						return true;
+					} else {
+						return false;
+					}
+				default:
+					throw new AssertionError(operator);
+				}
+			}
+
+		},
+		LENGTH("length") {
+
+			@Override
+			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+					SQLite3DataType rightType) {
+				switch (operator) {
+				case IS:
+				case EQUALS:
+				case GLOB:
+				case LIKE:
+					return true;
+				case IS_NOT:
+				case NOT_EQUALS:
+				case SMALLER_EQUALS:
+				case GREATER_EQUALS:
+				case GREATER:
+				case SMALLER:
+					if (!leftType.isNumeric() && !rightType.isNumeric()) {
+						return true;
+					} else {
+						return false;
+					}
+				default:
+					throw new AssertionError(operator);
+				}
 			}
 
 		},
@@ -698,47 +996,12 @@ public class QueryGenerator {
 		if (!functions.isEmpty() && Randomly.getBoolean()) {
 			return Randomly.fromList(functions).getName();
 		}
-//		if (shouldBeTrue) {
-		switch (operator) {
-		case EQUALS:
-			return Randomly.fromOptions("CHAR", "HEX", "LENGTH", "LOWER", "LTRIM", "QUOTE", "RTRIM",
-					"TRIM", "TYPEOF", "UNICODE", "UPPER");
-		case GREATER_EQUALS:
-		case SMALLER_EQUALS: // not for ABS: ABS(-1) >= ABS(1) does not hold
-			// LENGTH(-1) >= LENGTH(1)
-			// char(0) == NULL
-			// quote and floating point ...
-			// TRIMS don't work for floating point
-			// UPPER and LOWER do not work for floating point
-			if ((leftDataType != SQLite3DataType.INT && leftDataType != SQLite3DataType.REAL)
-					|| (rightDataType != SQLite3DataType.INT && rightDataType != SQLite3DataType.REAL)) {
-				return Randomly.fromOptions("LENGTH", "QUOTE", "LTRIM", "RTRIM", "TRIM", "UPPER", "LOWER",
-						"TYPEOF");
-			}
-			return Randomly.fromOptions("LIKELY", "TYPEOF", "UNLIKELY");
-		case NOT_EQUALS:
-			return Randomly.fromOptions("QUOTE", "LIKELY", "UNLIKELY", "HEX");
-		default:
-			return null;
-		}
+		return null;
 	}
 
 	public static String getRandomUnaryFunction() {
 		return Randomly.fromOptions("ABS", "CHAR", "HEX", "LENGTH", "LIKELY", "LOWER", "LTRIM", "QUOTE", "ROUND",
 				"RTRIM", "TRIM", "TYPEOF", "UNLIKELY", "UPPER"); // "ZEROBLOB" "UNICODE",
-	}
-
-	private String getPreservingFunctions(SQLite3DataType dataType) {
-		switch (dataType) {
-		case TEXT:
-			return Randomly.fromOptions("LOWER", "LTRIM", "QUOTE", "RTRIM", "TRIM", "UPPER"); // "ABS", "CHAR", "HEX",
-																								// "ZEROBLOB" "UNICODE",
-		case INT:
-			return Randomly.fromOptions("QUOTE", "ROUND"); // "ABS", "CHAR", "HEX", "ZEROBLOB" "UNICODE",
-		default:
-			return "";
-		}
-
 	}
 
 	/**

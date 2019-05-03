@@ -40,8 +40,8 @@ import lama.tablegen.sqlite3.SQLite3VacuumGenerator;
 
 public class Main {
 
-	private static final int MAX_INSERT_ROW_TRIES = 10;
-	private static final int NR_QUERIES_PER_TABLE = 5000;
+	private static final int MAX_INSERT_ROW_TRIES = 1;
+	private static final int NR_QUERIES_PER_TABLE = 50000;
 	private static final int TOTAL_NR_THREADS = 100;
 	private static final int NR_CONCURRENT_THREADS = 16;
 	public static final int NR_INSERT_ROW_TRIES = 50;
@@ -263,6 +263,8 @@ public class Main {
 						}
 						nrRemaining[i] = nrPerformed;
 					}
+					Schema newSchema = Schema.fromConnection(con);
+					List<Table> tables = newSchema.getDatabaseTables();
 					while (!actions.isEmpty()) {
 						Action nextAction = Randomly.fromList(actions);
 						assert nrRemaining[nextAction.ordinal()] > 0;
@@ -280,7 +282,7 @@ public class Main {
 							}
 							break;
 						case INSERT:
-							Table randomTable = Schema.fromConnection(con).getRandomTable();
+							Table randomTable = Randomly.fromList(tables);
 							SQLite3RowGenerator.insertRow(randomTable, con, state);
 							break;
 						case PRAGMA:
@@ -302,7 +304,6 @@ public class Main {
 							throw new AssertionError(nextAction);
 						}
 					}
-					Schema newSchema = Schema.fromConnection(con);
 					for (Table t : newSchema.getDatabaseTables()) {
 						if (!ensureTableHasRows(con, t)) {
 							return;
@@ -335,10 +336,10 @@ public class Main {
 				private void tryToReduceBug(final String databaseName, StateToReproduce state) {
 					threadsShutdown++;
 					try (Connection con = DatabaseFacade.createDatabase(databaseName + "_reduced")) {
-						SQLite3Helper.deleteAllTables(con);
 						List<String> reducedStatements = new ArrayList<>(state.statements);
 						int i = 0;
 						outer: while (i < reducedStatements.size()) {
+							SQLite3Helper.deleteAllTables(con);
 							List<String> reducedTryStatements = new ArrayList<>(reducedStatements);
 							String exceptionCausingStatement = state.statements.get(state.statements.size() - 1);
 							if (state.getErrorKind() == ErrorKind.EXCEPTION
