@@ -36,9 +36,10 @@ import lama.tablegen.sqlite3.Sqlite3RowGenerator;
 public class Main {
 
 	private static final int NR_QUERIES_PER_TABLE = 5000;
-	private static final int NR_THREADS = 1;
-	public static final int NR_INSERT_ROW_TRIES = 50;
-	public static final int EXPRESSION_MAX_DEPTH = 4;
+	private static final int TOTAL_NR_THREADS = 100;
+	private static final int NR_CONCURRENT_THREADS = 1;
+	public static final int NR_INSERT_ROW_TRIES = 500;
+	public static final int EXPRESSION_MAX_DEPTH = 2;
 	public static final File LOG_DIRECTORY = new File("logs");
 
 	public static class ReduceMeException extends RuntimeException {
@@ -172,22 +173,10 @@ public class Main {
 			}
 		}, 5, 5, TimeUnit.SECONDS);
 
-		if (!LOG_DIRECTORY.exists()) {
-			try {
-				Files.createDirectories(LOG_DIRECTORY.toPath());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		for (File file : LOG_DIRECTORY.listFiles()) {
-			if (!file.isDirectory()) {
-				file.delete();
-			}
-		}
+		setupLogDirectory();
 
-		ExecutorService executor = Executors.newFixedThreadPool(NR_THREADS);
-		for (int i = 0; i < 100; i++) {
+		ExecutorService executor = Executors.newFixedThreadPool(NR_CONCURRENT_THREADS);
+		for (int i = 0; i < TOTAL_NR_THREADS; i++) {
 			final String databaseName = "lama" + i;
 			executor.execute(new Runnable() {
 
@@ -339,6 +328,22 @@ public class Main {
 					}
 				}
 			});
+		}
+	}
+
+	private static void setupLogDirectory() {
+		if (!LOG_DIRECTORY.exists()) {
+			try {
+				Files.createDirectories(LOG_DIRECTORY.toPath());
+			} catch (IOException e) {
+				throw new AssertionError(e);
+			}
+		}
+		assert LOG_DIRECTORY.exists();
+		for (File file : LOG_DIRECTORY.listFiles()) {
+			if (!file.isDirectory()) {
+				file.delete();
+			}
 		}
 	}
 
