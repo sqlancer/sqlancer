@@ -30,16 +30,18 @@ import lama.schema.Schema;
 import lama.schema.Schema.Column;
 import lama.tablegen.sqlite3.SQLite3IndexGenerator;
 import lama.tablegen.sqlite3.SQLite3PragmaGenerator;
+import lama.tablegen.sqlite3.SQLite3ReindexGenerator;
 import lama.tablegen.sqlite3.SQLite3TableGenerator;
+import lama.tablegen.sqlite3.SQLite3VacuumGenerator;
 import lama.tablegen.sqlite3.Sqlite3RowGenerator;
 
 public class Main {
 
 	private static final int NR_QUERIES_PER_TABLE = 5000;
 	private static final int TOTAL_NR_THREADS = 100;
-	private static final int NR_CONCURRENT_THREADS = 8;
+	private static final int NR_CONCURRENT_THREADS = 4;
 	public static final int NR_INSERT_ROW_TRIES = 50;
-	public static final int EXPRESSION_MAX_DEPTH = 2;
+	public static final int EXPRESSION_MAX_DEPTH = 4;
 	public static final File LOG_DIRECTORY = new File("logs");
 
 	public static class ReduceMeException extends RuntimeException {
@@ -266,40 +268,18 @@ public class Main {
 							Sqlite3RowGenerator.insertRow(Schema.fromConnection(con).getRandomTable(), con, state);
 							break;
 						case PRAGMA:
-							SQLite3PragmaGenerator.insertPragma(con, state, false);
+							SQLite3PragmaGenerator.insertPragma(con, state);
 							break;
 						case REINDEX:
-							try {
-								if (Randomly.getBoolean()) {
-									try (Statement s = con.createStatement()) {
-										state.statements.add("REINDEX;");
-										s.execute("REINDEX;");
-									}
-								}
-							} catch (Throwable e) {
-								state.logInconsistency(e);
-								throw new ReduceMeException();
-							}
+							SQLite3ReindexGenerator.executeReindex(con, state);
 							break;
 						case VACUUM:
-							try {
-								if (Randomly.getBoolean()) {
-									try (Statement s = con.createStatement()) {
-										state.statements.add("VACUUM;");
-										s.execute("VACUUM;");
-									}
-								}
-							} catch (Throwable e) {
-								state.logInconsistency(e);
-								throw new ReduceMeException();
-							}
+							SQLite3VacuumGenerator.executeVacuum(con, state);
 							break;
 						case ANALYZE:
-							if (Randomly.getBoolean()) {
-								try (Statement s = con.createStatement()) {
-									state.statements.add("ANALYZE;");
-									s.execute("ANALYZE;");
-								}
+							try (Statement s = con.createStatement()) {
+								state.statements.add("ANALYZE;");
+								s.execute("ANALYZE;");
 							}
 							break;
 						default:

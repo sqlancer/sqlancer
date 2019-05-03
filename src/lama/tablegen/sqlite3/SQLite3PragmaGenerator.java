@@ -17,7 +17,7 @@ public class SQLite3PragmaGenerator {
 		LEGACY_FORMAT, REVERSE_UNORDERED_SELECTS, SECURE_DELETE, SHRINK_MEMORY, SOFT_HEAP_LIMIT, THREADS
 	}
 
-	public static void insertPragma(Connection con, StateToReproduce state, boolean afterIndicesCreated)
+	public static void insertPragma(Connection con, StateToReproduce state)
 			throws SQLException {
 		if (Randomly.getBoolean()) {
 			return; // we just want to insert pragmas in about half the cases
