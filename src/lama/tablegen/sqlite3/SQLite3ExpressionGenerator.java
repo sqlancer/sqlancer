@@ -4,6 +4,7 @@ import java.util.List;
 
 import lama.Expression;
 import lama.Expression.BinaryOperation.BinaryOperator;
+import lama.Expression.Cast.CastType;
 import lama.Expression.ColumnName;
 import lama.Expression.Constant;
 import lama.Expression.PostfixUnaryOperation.PostfixUnaryOperator;
@@ -52,7 +53,7 @@ public class SQLite3ExpressionGenerator {
 	}
 
 	enum ExpressionType {
-		COLUMN_NAME, LITERAL_VALUE, UNARY_OPERATOR, POSTFIX_UNARY_OPERATOR, BINARY_OPERATOR, BETWEEN_OPERATOR, UNARY_FUNCTION
+		COLUMN_NAME, LITERAL_VALUE, UNARY_OPERATOR, POSTFIX_UNARY_OPERATOR, BINARY_OPERATOR, BETWEEN_OPERATOR, UNARY_FUNCTION, CAST_EXPRESSION
 	}
 
 	public static Expression getRandomExpression(List<Column> columns, boolean deterministicOnly) {
@@ -85,9 +86,17 @@ public class SQLite3ExpressionGenerator {
 			return SQLite3ExpressionGenerator.getBinaryOperator(columns, depth + 1, deterministicOnly);
 		case BETWEEN_OPERATOR:
 			return SQLite3ExpressionGenerator.getBetweenOperator(columns, depth + 1, deterministicOnly);
+		case CAST_EXPRESSION:
+			return getCastOperator(columns, depth + 1, deterministicOnly);
 		default:
 			throw new AssertionError(randomExpressionType);
 		}
+	}
+
+	private static Expression getCastOperator(List<Column> columns, int depth, boolean deterministicOnly) {
+		Expression expr = getRandomExpression(columns, depth + 1, deterministicOnly);
+		CastType type = Randomly.fromOptions(CastType.values());
+		return new Expression.Cast(type, expr);
 	}
 
 	private static Expression getBetweenOperator(List<Column> columns, int depth, boolean deterministicOnly) {

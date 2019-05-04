@@ -7,6 +7,7 @@ import javax.xml.bind.DatatypeConverter;
 import lama.Expression;
 import lama.Expression.BetweenOperation;
 import lama.Expression.BinaryOperation;
+import lama.Expression.Cast;
 import lama.Expression.CollateOperation;
 import lama.Expression.ColumnName;
 import lama.Expression.Constant;
@@ -227,6 +228,14 @@ public class SQLite3Visitor {
 		sb.append(op.getCollate());
 	}
 
+	private void visit(Cast cast) {
+		sb.append("CAST(");
+		visit(cast.getExpression());
+		sb.append(" AS ");
+		sb.append(cast.getType());
+		sb.append(")");
+	}
+
 	private void visit(InOperation op) {
 		visit(op.getLeft());
 		sb.append(" IN ");
@@ -267,6 +276,8 @@ public class SQLite3Visitor {
 			visit((OrderingTerm) expr);
 		} else if (expr instanceof Expression.InOperation) {
 			visit((InOperation) expr);
+		} else if (expr instanceof Cast) {
+			visit((Cast) expr);
 		} else if (expr instanceof Subquery) {
 			visit((Subquery) expr);
 		} else {

@@ -30,7 +30,7 @@ public class SQLite3RowGenerator {
 		boolean upsert = false; // Randomly.getBooleanWithSmallProbability(); TODO enable after fixed
 		sb.append("INSERT ");
 		if (!upsert || Randomly.getBoolean()) {
-			sb.append("OR IGNORE ");
+			sb.append("OR IGNORE "); // TODO: try to generate REPLACE
 		}
 		sb.append("INTO " + table.getName());
 		if (Randomly.getBooleanWithSmallProbability()) {

@@ -26,6 +26,30 @@ public class Expression {
 
 	}
 
+	public static class Cast extends Expression {
+
+		private final CastType type;
+		private final Expression expression;
+
+		public static enum CastType {
+			NONE, TEXT, REAL, INTEGER, NUMERIC
+		}
+
+		public Cast(CastType type, Expression expression) {
+			this.type = type;
+			this.expression = expression;
+		}
+
+		public Expression getExpression() {
+			return expression;
+		}
+
+		public CastType getType() {
+			return type;
+		}
+
+	}
+
 	public static class BetweenOperation extends Expression {
 
 		private final Expression expr;
