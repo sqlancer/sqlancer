@@ -270,6 +270,7 @@ public class Schema {
 					}
 				}
 			}
+			tables.getStatement().close();
 		}
 		return new Schema(databaseTables);
 	}
