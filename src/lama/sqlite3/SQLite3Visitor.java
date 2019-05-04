@@ -15,6 +15,7 @@ import lama.Expression.InOperation;
 import lama.Expression.LogicalOperation;
 import lama.Expression.OrderingTerm;
 import lama.Expression.PostfixUnaryOperation;
+import lama.Expression.Subquery;
 import lama.Expression.UnaryOperation;
 import lama.Randomly;
 import lama.SelectStatement;
@@ -194,7 +195,7 @@ public class SQLite3Visitor {
 			sb.append(" LIMIT ");
 			visit(s.getLimitClause());
 		}
-		
+
 		if (s.getOffsetClause() != null) {
 			sb.append(" OFFSET ");
 			visit(s.getOffsetClause());
@@ -219,13 +220,13 @@ public class SQLite3Visitor {
 		sb.append(" ");
 		sb.append(exp.getOperation().getTextRepresentation());
 	}
-	
+
 	private void visit(CollateOperation op) {
 		visit(op.getExpression());
 		sb.append(" COLLATE ");
 		sb.append(op.getCollate());
 	}
-	
+
 	private void visit(InOperation op) {
 		visit(op.getLeft());
 		sb.append(" IN ");
@@ -237,6 +238,10 @@ public class SQLite3Visitor {
 			visit(op.getRight().get(i));
 		}
 		sb.append(")");
+	}
+
+	private void visit(Subquery query) {
+		sb.append(query.getQuery());
 	}
 
 	public void visit(Expression expr) {
@@ -262,6 +267,8 @@ public class SQLite3Visitor {
 			visit((OrderingTerm) expr);
 		} else if (expr instanceof Expression.InOperation) {
 			visit((InOperation) expr);
+		} else if (expr instanceof Subquery) {
+			visit((Subquery) expr);
 		} else {
 			throw new AssertionError(expr);
 		}

@@ -218,19 +218,24 @@ public class QueryGenerator {
 				Expression left;
 				Expression right;
 				left = generateNewExpression(columns, rw, shouldBeTrue, depth + 1);
-				right = generateNewExpression(columns, rw, shouldBeTrue, depth + 1);
 				if (shouldBeTrue) {
+					right = generateNewExpression(columns, rw, shouldBeTrue, depth + 1);
 					return new Expression.BinaryOperation(left, right, BinaryOperator.AND);
 				} else {
-					return new Expression.BinaryOperation(left, right, BinaryOperator.OR);
+					right = generateNewExpression(columns, rw, Randomly.getBoolean(), depth + 1);
+					return new Expression.BinaryOperation(left, right, BinaryOperator.AND);
 				}
 			case OR:
 				Expression leftExpr = generateNewExpression(columns, rw, shouldBeTrue, depth + 1);
 				Expression rightExpr;
 				if (shouldBeTrue) {
 					// one side can be false
-					// TODO randomly generate
-					rightExpr = generateNewExpression(columns, rw, Randomly.getBoolean(), depth + 1);
+					if (Randomly.getBoolean()) {
+						rightExpr = generateNewExpression(columns, rw, Randomly.getBoolean(), depth + 1);
+					} else {
+						rightExpr = SQLite3ExpressionGenerator.getRandomExpression(columns, false);
+					}
+
 					if (Randomly.getBoolean()) {
 						// swap to allow leftExpr to be false
 						Expression tmpExpression = leftExpr;
@@ -240,7 +245,7 @@ public class QueryGenerator {
 					return new Expression.BinaryOperation(leftExpr, rightExpr, BinaryOperator.OR);
 				} else {
 					rightExpr = generateNewExpression(columns, rw, shouldBeTrue, depth + 1);
-					return new Expression.BinaryOperation(leftExpr, rightExpr, BinaryOperator.AND);
+					return new Expression.BinaryOperation(leftExpr, rightExpr, BinaryOperator.OR);
 				}
 			case IN:
 				c = Randomly.fromList(columns);
@@ -252,19 +257,26 @@ public class QueryGenerator {
 					break;
 				} else {
 					if (shouldBeTrue) {
-						// generate random expressions and add either the column or value
-						for (int i = 0; i < Randomly.smallNumber(); i++) {
-							expressions.add(SQLite3ExpressionGenerator.getRandomExpression(columns, depth + 1, false));
-						}
-						int randomPosition = Randomly.getInteger(0, expressions.size());
 						if (Randomly.getBoolean()) {
-							expressions.add(randomPosition, new Expression.ColumnName(c));
+							// generate random expressions and add either the column or value
+							for (int i = 0; i < Randomly.smallNumber(); i++) {
+								expressions
+										.add(SQLite3ExpressionGenerator.getRandomExpression(columns, depth + 1, false));
+							}
+							int randomPosition = Randomly.getInteger(0, expressions.size());
+							if (Randomly.getBoolean()) {
+								expressions.add(randomPosition, new Expression.ColumnName(c));
+							} else {
+								expressions.add(randomPosition, rw.getValues().get(c));
+							}
 						} else {
-							expressions.add(randomPosition, rw.getValues().get(c));
+							String query = "SELECT " + c.getName() + " FROM " + c.getTable().getName();
+							expressions.add(Expression.Subquery.create(query));
 						}
 					} else {
 						for (int i = 0; i < Randomly.smallNumber(); i++) {
 							expressions.add(notEqualConstant(rw.getValues().get(c)));
+							// TODO also not equals column
 						}
 					}
 				}
@@ -466,7 +478,8 @@ public class QueryGenerator {
 					binaryOperator = t.op;
 				}
 				assert compareTo != null : binaryOperator;
-				if (Randomly.getBoolean() && binaryOperator != BinaryOperator.LIKE && binaryOperator != BinaryOperator.NOT_EQUALS) {
+				if (Randomly.getBoolean() && binaryOperator != BinaryOperator.LIKE
+						&& binaryOperator != BinaryOperator.NOT_EQUALS) {
 					String function = getRandomFunction(binaryOperator, true, valueType, valueType);
 					if (function != null) {
 						// apply function

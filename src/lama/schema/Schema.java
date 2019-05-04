@@ -88,6 +88,10 @@ public class Schema {
 			this.table = table;
 		}
 
+		public Table getTable() {
+			return table;
+		}
+
 	}
 
 	public static class Table {

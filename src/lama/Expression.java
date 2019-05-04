@@ -8,6 +8,24 @@ import lama.schema.Schema.Column;
 
 public class Expression {
 
+	public static class Subquery extends Expression {
+
+		private final String query;
+
+		public Subquery(String query) {
+			this.query = query;
+		}
+
+		public static Expression create(String query) {
+			return new Subquery(query);
+		}
+
+		public String getQuery() {
+			return query;
+		}
+
+	}
+
 	public static class BetweenOperation extends Expression {
 
 		private final Expression expr;
@@ -198,9 +216,9 @@ public class Expression {
 		}
 
 	}
-	
+
 	public static class InOperation extends Expression {
-		
+
 		private final Expression left;
 		private final List<Expression> right;
 
@@ -208,11 +226,11 @@ public class Expression {
 			this.left = left;
 			this.right = right;
 		}
-		
+
 		public Expression getLeft() {
 			return left;
 		}
-		
+
 		public List<Expression> getRight() {
 			return right;
 		}
@@ -432,7 +450,6 @@ public class Expression {
 		public static Expression createBooleanConstant(boolean val) {
 			return new Constant(val, SQLite3DataType.INT);
 		}
-
 
 	}
 
