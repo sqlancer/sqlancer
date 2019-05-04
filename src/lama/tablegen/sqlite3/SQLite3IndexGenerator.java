@@ -16,16 +16,16 @@ import lama.sqlite3.SQLite3Visitor;
 // see https://www.sqlite.org/lang_createindex.html
 public class SQLite3IndexGenerator {
 
-	int indexNr;
+	private int indexNr;
 
 	public SQLite3IndexGenerator(Connection con, StateToReproduce state) throws SQLException {
 		Schema s = Schema.fromConnection(con);
-			Table t = s.getRandomTable();
-			String query = createIndex(t, t.getColumns());
-			try (Statement stm = con.createStatement()) {
-				stm.execute(query); // only record successful index creations
-				state.statements.add(query);
-			}
+		Table t = s.getRandomTable();
+		String query = createIndex(t, t.getColumns());
+		try (Statement stm = con.createStatement()) {
+			stm.execute(query); // only record successful index creations
+			state.statements.add(query);
+		}
 	}
 
 	private String createIndex(Table t, List<Column> columns) {
@@ -68,7 +68,6 @@ public class SQLite3IndexGenerator {
 	enum ExpressionType {
 		COLUMN_NAME, LITERAL_VALUE, UNARY_OPERATOR
 	}
-
 
 	/**
 	 * Appends ASC, DESC, or nothing

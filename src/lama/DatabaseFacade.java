@@ -5,46 +5,30 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import lama.QueryGenerator.Database;
 import lama.schema.Schema.Table;
 
 public class DatabaseFacade {
 	
-	
+	private DatabaseFacade() {
+	}
+
 	public static Connection createDatabase(String fileName) throws SQLException {
-		assert QueryGenerator.DATABASE == Database.SQLITE;
 		File dataBase = new File("." + File.separator + "databases", fileName + ".db");
 		if (dataBase.exists()) {
 			dataBase.delete();
 		}
-        String url = "jdbc:sqlite:" + dataBase.getAbsolutePath();
-        return DriverManager.getConnection(url);
+		String url = "jdbc:sqlite:" + dataBase.getAbsolutePath();
+		return DriverManager.getConnection(url);
 	}
 
 	public static Connection getConnection() throws SQLException {
-		switch (QueryGenerator.DATABASE) {
-		case MYSQL:
-			String url = "jdbc:mysql://localhost:3306/employees?serverTimezone=UTC";
-			return DriverManager.getConnection(url, "lama", "lamalama123!");
-		case SQLITE:
-			return DriverManager.getConnection("jdbc:sqlite:databases/chinook.db");
-		default:
-			throw new AssertionError();
-		}
-	}
-
-	public static void getColumnType(String columnType) {
+		String url = "jdbc:mysql://localhost:3306/employees?serverTimezone=UTC";
+		return DriverManager.getConnection(url, "lama", "lamalama123!");
 	}
 
 	public static String queryStringToGetRandomTableRow(Table table) {
-		switch (QueryGenerator.DATABASE) {
-		case MYSQL: 
-			return "SELECT * FROM " + table + " ORDER BY RAND() LIMIT 1";
-		case SQLITE:
-			return String.format("SELECT %s, %s FROM %s ORDER BY RANDOM() LIMIT 1", table.getColumnsAsString(), table.getColumnsAsString(c -> "typeof(" + c.getName() + ")" ), table.getName());
-		default:
-			throw new AssertionError();
-		}
+		return String.format("SELECT %s, %s FROM %s ORDER BY RANDOM() LIMIT 1", table.getColumnsAsString(),
+				table.getColumnsAsString(c -> "typeof(" + c.getName() + ")"), table.getName());
 	}
 
 }

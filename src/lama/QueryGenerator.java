@@ -31,14 +31,8 @@ import lama.sqlite3.SQLite3Visitor;
 
 public class QueryGenerator {
 
-	private Connection database;
-	private Schema s;
-
-	enum Database {
-		MYSQL, SQLITE
-	}
-
-	public static final Database DATABASE = Database.SQLITE;
+	private final Connection database;
+	private final Schema s;
 
 	public QueryGenerator(Connection con) throws SQLException {
 		this.database = con;

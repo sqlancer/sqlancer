@@ -69,7 +69,6 @@ public class SQLite3RowGenerator {
 			}
 			Expression literal;
 			if (columns.get(i).isIntegerPrimaryKey()) {
-				// FIXME: the expression generator actually does not generate int numbers
 				literal = Constant.createIntConstant(Randomly.getInteger());
 			} else {
 				literal = SQLite3ExpressionGenerator.getRandomLiteralValue(false);

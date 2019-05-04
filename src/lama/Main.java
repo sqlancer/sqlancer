@@ -42,19 +42,13 @@ import lama.tablegen.sqlite3.SQLite3VacuumGenerator;
 public class Main {
 
 	private static final int MAX_INSERT_ROW_TRIES = 1;
-	private static final int NR_QUERIES_PER_TABLE = 500000;
+	private static final int NR_QUERIES_PER_TABLE = 1000;
 	private static final int TOTAL_NR_THREADS = 100;
 	private static final int NR_CONCURRENT_THREADS = 16;
-	public static final int NR_INSERT_ROW_TRIES = 500;
+	public static final int NR_INSERT_ROW_TRIES = 5;
 	public static final int EXPRESSION_MAX_DEPTH = 2;
 	public static final File LOG_DIRECTORY = new File("logs");
 	static volatile AtomicLong nrQueries = new AtomicLong();
-
-	public static class RestartException extends RuntimeException {
-
-		private static final long serialVersionUID = -6490672384034142434L;
-
-	}
 
 	public static class ReduceMeException extends RuntimeException {
 
@@ -265,7 +259,7 @@ public class Main {
 						if (nrPerformed != 0) {
 							actions.add(action);
 						}
-						nrRemaining[i] = nrPerformed;
+						nrRemaining[action.ordinal()] = nrPerformed;
 					}
 					Schema newSchema = Schema.fromConnection(con);
 					List<Table> tables = newSchema.getDatabaseTables();
