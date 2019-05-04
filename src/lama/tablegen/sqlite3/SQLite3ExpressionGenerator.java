@@ -59,7 +59,7 @@ public class SQLite3ExpressionGenerator {
 		return getRandomExpression(columns, 0, deterministicOnly);
 	}
 
-	private static Expression getRandomExpression(List<Column> columns, int depth, boolean deterministicOnly) {
+	public static Expression getRandomExpression(List<Column> columns, int depth, boolean deterministicOnly) {
 		if (depth >= Main.EXPRESSION_MAX_DEPTH) {
 			if (Randomly.getBoolean()) {
 				return getRandomLiteralValue(deterministicOnly);

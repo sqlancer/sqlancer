@@ -1,6 +1,7 @@
 package lama;
 
 import java.util.Arrays;
+import java.util.List;
 
 import lama.schema.SQLite3DataType;
 import lama.schema.Schema.Column;
@@ -196,6 +197,25 @@ public class Expression {
 			return expression;
 		}
 
+	}
+	
+	public static class InOperation extends Expression {
+		
+		private final Expression left;
+		private final List<Expression> right;
+
+		public InOperation(Expression left, List<Expression> right) {
+			this.left = left;
+			this.right = right;
+		}
+		
+		public Expression getLeft() {
+			return left;
+		}
+		
+		public List<Expression> getRight() {
+			return right;
+		}
 	}
 
 	public static class BinaryOperation extends Expression {

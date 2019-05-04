@@ -11,6 +11,7 @@ import lama.Expression.CollateOperation;
 import lama.Expression.ColumnName;
 import lama.Expression.Constant;
 import lama.Expression.Function;
+import lama.Expression.InOperation;
 import lama.Expression.LogicalOperation;
 import lama.Expression.OrderingTerm;
 import lama.Expression.PostfixUnaryOperation;
@@ -181,7 +182,7 @@ public class SQLite3Visitor {
 		}
 		if (!s.getOrderByClause().isEmpty()) {
 			sb.append(" ORDER BY ");
-			List<OrderingTerm> orderBys = s.getOrderByClause();
+			List<Expression> orderBys = s.getOrderByClause();
 			for (int i = 0; i < orderBys.size(); i++) {
 				if (i != 0) {
 					sb.append(", ");
@@ -224,6 +225,19 @@ public class SQLite3Visitor {
 		sb.append(" COLLATE ");
 		sb.append(op.getCollate());
 	}
+	
+	private void visit(InOperation op) {
+		visit(op.getLeft());
+		sb.append(" IN ");
+		sb.append("(");
+		for (int i = 0; i < op.getRight().size(); i++) {
+			if (i != 0) {
+				sb.append(", ");
+			}
+			visit(op.getRight().get(i));
+		}
+		sb.append(")");
+	}
 
 	public void visit(Expression expr) {
 		if (expr instanceof BinaryOperation) {
@@ -244,6 +258,10 @@ public class SQLite3Visitor {
 			visit((BetweenOperation) expr);
 		} else if (expr instanceof CollateOperation) {
 			visit((CollateOperation) expr);
+		} else if (expr instanceof OrderingTerm) {
+			visit((OrderingTerm) expr);
+		} else if (expr instanceof Expression.InOperation) {
+			visit((InOperation) expr);
 		} else {
 			throw new AssertionError(expr);
 		}

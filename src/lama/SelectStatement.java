@@ -12,7 +12,7 @@ public class SelectStatement {
 	private Expression whereClause;
 	private List<Expression> groupByClause;
 	private Expression limitClause;
-	private List<OrderingTerm> orderByClause;
+	private List<Expression> orderByClause;
 	private Expression offsetClause;
 	
 	public enum SelectType {
@@ -73,12 +73,12 @@ public class SelectStatement {
 	}
 
 
-	public List<OrderingTerm> getOrderByClause() {
+	public List<Expression> getOrderByClause() {
 		return orderByClause;
 	}
 
 
-	public void setOrderByClause(List<OrderingTerm> orderBy) {
+	public void setOrderByClause(List<Expression> orderBy) {
 		this.orderByClause = orderBy;
 	}
 

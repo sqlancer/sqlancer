@@ -28,6 +28,7 @@ import lama.schema.Schema.Column;
 import lama.schema.Schema.RowValue;
 import lama.schema.Schema.Table;
 import lama.sqlite3.SQLite3Visitor;
+import lama.tablegen.sqlite3.SQLite3ExpressionGenerator;
 
 public class QueryGenerator {
 
@@ -58,7 +59,7 @@ public class QueryGenerator {
 			Expression offsetClause = generateOffset();
 			selectStatement.setOffsetClause(offsetClause);
 		}
-		List<OrderingTerm> orderBy = generateOrderBy(columns, rw);
+		List<Expression> orderBy = generateOrderBy(columns, rw);
 		selectStatement.setOrderByClause(orderBy);
 		SQLite3Visitor visitor = new SQLite3Visitor();
 		visitor.visit(selectStatement);
@@ -110,11 +111,11 @@ public class QueryGenerator {
 		return e.getMessage().contentEquals("[SQLITE_ERROR] SQL error or missing database (integer overflow)");
 	}
 
-	private List<OrderingTerm> generateOrderBy(List<Column> columns, RowValue rw) {
-		List<OrderingTerm> orderBys = new ArrayList<>();
+	private List<Expression> generateOrderBy(List<Column> columns, RowValue rw) {
+		List<Expression> orderBys = new ArrayList<>();
 		for (int i = 0; i < Randomly.smallNumber(); i++) {
 			Expression expr;
-			expr = Constant.createTextConstant("asdf");
+			expr = Constant.createTextConstant(Randomly.getString());
 			Ordering order = Randomly.fromOptions(Ordering.ASC, Ordering.DESC);
 			orderBys.add(new OrderingTerm(expr, order));
 			// TODO RANDOM()
@@ -164,7 +165,7 @@ public class QueryGenerator {
 	}
 
 	private enum NewExpressionType {
-		LITERAL, STANDALONE_COLUMN, DOUBLE_COLUMN, POSTFIX_COLUMN, NOT, UNARY_PLUS, AND, OR, COLLATE, UNARY_FUNCTION
+		LITERAL, STANDALONE_COLUMN, DOUBLE_COLUMN, POSTFIX_COLUMN, NOT, UNARY_PLUS, AND, OR, COLLATE, UNARY_FUNCTION, IN
 	}
 
 	private Expression generateNewExpression(List<Column> columns, RowValue rw, boolean shouldBeTrue, int depth) {
@@ -228,6 +229,7 @@ public class QueryGenerator {
 				Expression rightExpr;
 				if (shouldBeTrue) {
 					// one side can be false
+					// TODO randomly generate
 					rightExpr = generateNewExpression(columns, rw, Randomly.getBoolean(), depth + 1);
 					if (Randomly.getBoolean()) {
 						// swap to allow leftExpr to be false
@@ -240,7 +242,33 @@ public class QueryGenerator {
 					rightExpr = generateNewExpression(columns, rw, shouldBeTrue, depth + 1);
 					return new Expression.BinaryOperation(leftExpr, rightExpr, BinaryOperator.AND);
 				}
-
+			case IN:
+				c = Randomly.fromList(columns);
+				List<Expression> expressions = new ArrayList<>();
+				if (rw.getValues().get(c).isNull()) {
+					// NULL in (NULL) returns null;
+					// also NULL NOT IN (NULL) returns null.
+					retry = true;
+					break;
+				} else {
+					if (shouldBeTrue) {
+						// generate random expressions and add either the column or value
+						for (int i = 0; i < Randomly.smallNumber(); i++) {
+							expressions.add(SQLite3ExpressionGenerator.getRandomExpression(columns, depth + 1, false));
+						}
+						int randomPosition = Randomly.getInteger(0, expressions.size());
+						if (Randomly.getBoolean()) {
+							expressions.add(randomPosition, new Expression.ColumnName(c));
+						} else {
+							expressions.add(randomPosition, rw.getValues().get(c));
+						}
+					} else {
+						for (int i = 0; i < Randomly.smallNumber(); i++) {
+							expressions.add(notEqualConstant(rw.getValues().get(c)));
+						}
+					}
+				}
+				return new Expression.InOperation(new Expression.ColumnName(c), expressions);
 			default:
 				throw new AssertionError();
 			}
