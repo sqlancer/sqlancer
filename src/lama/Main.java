@@ -322,6 +322,9 @@ public class Main {
 							return;
 						}
 					}
+					if (Randomly.getBoolean()) {
+						SQLite3ReindexGenerator.executeReindex(con, state);
+					}
 					QueryGenerator queryGenerator = new QueryGenerator(con);
 					for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
 						queryGenerator.generateAndCheckQuery(state);
