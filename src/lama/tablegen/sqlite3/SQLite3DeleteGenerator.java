@@ -19,6 +19,9 @@ public class SQLite3DeleteGenerator {
 				s.execute(query);
 			}
 		} catch (Throwable e) {
+			if (e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (integer overflow)")) {
+				return;
+			}
 			state.logInconsistency(e);
 			throw new ReduceMeException();
 		}

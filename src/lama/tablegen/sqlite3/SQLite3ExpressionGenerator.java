@@ -4,7 +4,6 @@ import java.util.List;
 
 import lama.Expression;
 import lama.Expression.BinaryOperation.BinaryOperator;
-import lama.Expression.Cast.CastType;
 import lama.Expression.ColumnName;
 import lama.Expression.Constant;
 import lama.Expression.PostfixUnaryOperation.PostfixUnaryOperator;
@@ -95,7 +94,7 @@ public class SQLite3ExpressionGenerator {
 
 	private static Expression getCastOperator(List<Column> columns, int depth, boolean deterministicOnly) {
 		Expression expr = getRandomExpression(columns, depth + 1, deterministicOnly);
-		CastType type = Randomly.fromOptions(CastType.values());
+		Expression type = new Expression.TypeLiteral(Randomly.fromOptions(Expression.TypeLiteral.Type.values()));
 		return new Expression.Cast(type, expr);
 	}
 
