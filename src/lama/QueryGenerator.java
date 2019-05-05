@@ -1141,6 +1141,13 @@ public class QueryGenerator {
 			} else {
 				return Constant.createIntConstant(Randomly.smallerInt(value));
 			}
+		case REAL:
+			double dValue = sampledConstant.asDouble();
+			if (dValue == Double.MIN_VALUE) {
+				return null;
+			} else {
+				return Constant.createRealConstant(Randomly.smallerDouble(dValue));
+			}
 		default:
 			return null;
 		}
@@ -1151,6 +1158,10 @@ public class QueryGenerator {
 		case INT:
 			long value = sampledConstant.asInt();
 			return Constant.createIntConstant(Randomly.smallerOrEqualInt(value));
+		case REAL:
+			double dValue = sampledConstant.asDouble();
+			return Constant.createRealConstant(Randomly.smallerOrEqualDouble(dValue));
+			// TODO: other data types
 		default:
 			return sampledConstant;
 		}
@@ -1166,7 +1177,7 @@ public class QueryGenerator {
 			return Constant.createTextConstant(Randomly.greaterOrEqualString(strValue));
 		case REAL:
 			return Constant.createRealConstant(Randomly.greaterOrEqualDouble(sampledConstant.asDouble()));
-		default:
+		default: // TODO: other data types
 			return sampledConstant;
 		}
 	}

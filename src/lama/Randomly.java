@@ -89,8 +89,16 @@ public final class Randomly {
 		return smallerInt;
 	}
 
+	public static double smallerDouble(double value) {
+		if (value == -Double.MAX_VALUE) {
+			throw new IllegalArgumentException();
+		}
+		// TODO select randomly
+		return -Double.MAX_VALUE;
+	}
+
 	public static int smallNumber() {
-		return ThreadLocalRandom.current().nextInt(10);
+		return ThreadLocalRandom.current().nextInt(5);
 	}
 
 	public static boolean getBoolean() {
@@ -154,6 +162,10 @@ public final class Randomly {
 		double value;
 		if (smallBiasProbability()) {
 			return Randomly.fromOptions(1.0, -1.0);
+		} else if (smallBiasProbability()) {
+			do {
+				value = Randomly.getInteger();
+			} while (value == 0.0);
 		}
 		do {
 			value = Randomly.getDouble();
@@ -166,6 +178,8 @@ public final class Randomly {
 		long value;
 		if (smallBiasProbability()) {
 			value = Randomly.fromOptions(0l, Long.MAX_VALUE, 1l);
+		} else if (smallBiasProbability()) {
+			value = ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE);
 		} else {
 			value = ThreadLocalRandom.current().nextLong(Long.MAX_VALUE);
 		}
@@ -178,7 +192,17 @@ public final class Randomly {
 	}
 
 	public static double greaterOrEqualDouble(double asDouble) {
-		return asDouble; // TODO
+		if (asDouble == Double.MAX_VALUE) {
+			return asDouble;
+		}
+		return ThreadLocalRandom.current().nextDouble(asDouble, Double.MAX_VALUE);
+	}
+
+	public static double smallerOrEqualDouble(double value) {
+		if (value == -Double.MAX_VALUE) {
+			return value;
+		}
+		return ThreadLocalRandom.current().nextDouble(-Double.MAX_VALUE, value);
 	}
 
 	public static double getDouble() {
@@ -195,6 +219,13 @@ public final class Randomly {
 
 	public static boolean getBooleanWithSmallProbability() {
 		return smallBiasProbability();
+	}
+
+	public static int getInteger(int left, int right) {
+		if (left == right) {
+			return left;
+		}
+		return ThreadLocalRandom.current().nextInt(left, right);
 	}
 
 }
