@@ -158,7 +158,7 @@ public class Main {
 	static int threadsShutdown;
 
 	private enum Action {
-		PRAGMA, INDEX, INSERT, VACUUM, REINDEX, ANALYZE, DELETE;
+		PRAGMA, INDEX, INSERT, VACUUM, REINDEX, ANALYZE, DELETE, TRANSACTION_START;
 	}
 
 	public static void main(String[] args) {
@@ -248,6 +248,7 @@ public class Main {
 						case REINDEX:
 						case VACUUM:
 						case ANALYZE:
+						case TRANSACTION_START:
 							nrPerformed = Randomly.smallNumber();
 							break;
 						case INSERT:
@@ -267,6 +268,7 @@ public class Main {
 					}
 					Schema newSchema = Schema.fromConnection(con);
 					List<Table> tables = newSchema.getDatabaseTables();
+					boolean transactionActive = false;
 					while (total != 0) {
 						Action nextAction = null;
 						int selection = Randomly.getInteger(0, total);
@@ -283,9 +285,28 @@ public class Main {
 						assert nrRemaining[nextAction.ordinal()] > 0;
 						nrRemaining[nextAction.ordinal()]--;
 						switch (nextAction) {
+						case TRANSACTION_START:
+							if (!transactionActive) {
+								try (Statement st = con.createStatement()) {
+									state.statements.add("BEGIN TRANSACTION;");
+									st.execute("BEGIN TRANSACTION;");
+									transactionActive = true;
+								}
+							} else {
+								try (Statement st = con.createStatement()) {
+									transactionActive = false;
+									state.statements.add("COMMIT;");
+									st.execute("COMMIT;");
+								}
+							}
 						case INDEX:
 							try {
 								SQLite3IndexGenerator.insertIndex(con, state);
+								try (Statement st = con.createStatement()) {
+									transactionActive = false;
+									state.statements.add("COMMIT;");
+									st.execute("COMMIT;");
+								}
 							} catch (SQLException e) {
 								// ignore
 							}
@@ -304,6 +325,13 @@ public class Main {
 							SQLite3ReindexGenerator.executeReindex(con, state);
 							break;
 						case VACUUM:
+							if (transactionActive) {
+								try (Statement st = con.createStatement()) {
+									state.statements.add("COMMIT ;");
+									st.execute("COMMIT;");
+								}
+								transactionActive = false;
+							}
 							SQLite3VacuumGenerator.executeVacuum(con, state);
 							break;
 						case ANALYZE:
@@ -324,6 +352,13 @@ public class Main {
 					}
 					if (Randomly.getBoolean()) {
 						SQLite3ReindexGenerator.executeReindex(con, state);
+					}
+					if (transactionActive) {
+						try (Statement st = con.createStatement()) {
+							state.statements.add("END TRANSACTION;");
+							st.execute("END TRANSACTION;");
+						}
+						transactionActive = false;
 					}
 					QueryGenerator queryGenerator = new QueryGenerator(con);
 					for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
