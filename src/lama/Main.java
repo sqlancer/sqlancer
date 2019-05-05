@@ -206,15 +206,17 @@ public class Main {
 				private void runThread(final String databaseName) {
 					Thread.currentThread().setName(databaseName);
 					// we try to reuse the same database since it greatly improves performance
-					try (Connection con = DatabaseFacade.createDatabase(databaseName)) {
-						while (true) {
+					while (true) {
+						try (Connection con = DatabaseFacade.createDatabase(databaseName)) {
 							generateAndTestDatabase(databaseName, con);
+						} catch (ReduceMeException reduce) {
+							tryToReduceBug(databaseName, state);
+						} catch (Throwable e1) {
+							e1.printStackTrace();
+							state.logInconsistency(e1);
+							threadsShutdown++;
 						}
-					} catch (ReduceMeException reduce) {
-						tryToReduceBug(databaseName, state);
-					} catch (Throwable e1) {
-						state.logInconsistency(e1);
-						threadsShutdown++;
+
 					}
 				}
 
