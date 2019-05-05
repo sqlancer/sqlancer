@@ -238,6 +238,7 @@ public class Main {
 
 					int[] nrRemaining = new int[Action.values().length];
 					List<Action> actions = new ArrayList<>();
+					int total = 0;
 					for (int i = 0; i < Action.values().length; i++) {
 						Action action = Action.values()[i];
 						int nrPerformed = 0;
@@ -262,17 +263,25 @@ public class Main {
 							actions.add(action);
 						}
 						nrRemaining[action.ordinal()] = nrPerformed;
+						total += nrPerformed;
 					}
 					Schema newSchema = Schema.fromConnection(con);
 					List<Table> tables = newSchema.getDatabaseTables();
-					while (!actions.isEmpty()) {
-						Action nextAction = Randomly.fromList(actions);
+					while (total != 0) {
+						Action nextAction = null;
+						int selection = Randomly.getInteger(0, total);
+						int previousRange = 0;
+						for (int i = 0; i < nrRemaining.length; i++) {
+							if (previousRange <= selection && selection < previousRange + nrRemaining[i]) {
+								nextAction = Action.values()[i];
+								break;
+							} else {
+								previousRange += nrRemaining[i];
+							}
+						}
+						assert nextAction != null;
 						assert nrRemaining[nextAction.ordinal()] > 0;
 						nrRemaining[nextAction.ordinal()]--;
-						if (nrRemaining[nextAction.ordinal()] == 0) {
-							boolean success = actions.remove(nextAction);
-							assert success;
-						}
 						switch (nextAction) {
 						case INDEX:
 							try {
@@ -306,6 +315,7 @@ public class Main {
 						default:
 							throw new AssertionError(nextAction);
 						}
+						total--;
 					}
 					for (Table t : newSchema.getDatabaseTables()) {
 						if (!ensureTableHasRows(con, t)) {
