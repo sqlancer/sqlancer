@@ -17,6 +17,7 @@ import lama.Expression.LogicalOperation;
 import lama.Expression.OrderingTerm;
 import lama.Expression.PostfixUnaryOperation;
 import lama.Expression.Subquery;
+import lama.Expression.TypeLiteral;
 import lama.Expression.UnaryOperation;
 import lama.Randomly;
 import lama.SelectStatement;
@@ -232,8 +233,12 @@ public class SQLite3Visitor {
 		sb.append("CAST(");
 		visit(cast.getExpression());
 		sb.append(" AS ");
-		sb.append(cast.getType());
+		visit(cast.getType());
 		sb.append(")");
+	}
+
+	private void visit(TypeLiteral literal) {
+		sb.append(literal.getType());
 	}
 
 	private void visit(InOperation op) {
@@ -280,6 +285,8 @@ public class SQLite3Visitor {
 			visit((Cast) expr);
 		} else if (expr instanceof Subquery) {
 			visit((Subquery) expr);
+		} else if (expr instanceof TypeLiteral) {
+			visit((TypeLiteral) expr);
 		} else {
 			throw new AssertionError(expr);
 		}

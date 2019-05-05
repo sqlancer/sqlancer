@@ -26,17 +26,31 @@ public class Expression {
 
 	}
 
-	public static class Cast extends Expression {
+	public static class TypeLiteral extends Expression {
 
-		private final CastType type;
-		private final Expression expression;
+		private final Type type;
 
-		public static enum CastType {
-			NONE, TEXT, REAL, INTEGER, NUMERIC
+		public static enum Type {
+			TEXT, REAL, INTEGER, NUMERIC, BINARY
 		}
 
-		public Cast(CastType type, Expression expression) {
+		public TypeLiteral(Type type) {
 			this.type = type;
+		}
+
+		public Type getType() {
+			return type;
+		}
+
+	}
+
+	public static class Cast extends Expression {
+
+		private final Expression type;
+		private final Expression expression;
+
+		public Cast(Expression typeofExpr, Expression expression) {
+			this.type = typeofExpr;
 			this.expression = expression;
 		}
 
@@ -44,7 +58,7 @@ public class Expression {
 			return expression;
 		}
 
-		public CastType getType() {
+		public Expression getType() {
 			return type;
 		}
 

@@ -19,6 +19,8 @@ import lama.Expression.Function;
 import lama.Expression.OrderingTerm;
 import lama.Expression.OrderingTerm.Ordering;
 import lama.Expression.PostfixUnaryOperation;
+import lama.Expression.TypeLiteral;
+import lama.Expression.TypeLiteral.Type;
 import lama.Expression.UnaryOperation;
 import lama.Expression.UnaryOperation.UnaryOperator;
 import lama.Main.StateToReproduce;
@@ -165,7 +167,8 @@ public class QueryGenerator {
 	}
 
 	private enum NewExpressionType {
-		LITERAL, STANDALONE_COLUMN, DOUBLE_COLUMN, POSTFIX_COLUMN, NOT, UNARY_PLUS, AND, OR, COLLATE, UNARY_FUNCTION, IN
+		CAST_TO_ITSELF, LITERAL, STANDALONE_COLUMN, DOUBLE_COLUMN, POSTFIX_COLUMN, NOT, UNARY_PLUS, AND, OR, COLLATE,
+		UNARY_FUNCTION, IN
 	}
 
 	private Expression generateNewExpression(List<Column> columns, RowValue rw, boolean shouldBeTrue, int depth) {
@@ -179,6 +182,37 @@ public class QueryGenerator {
 		do {
 			retry = false;
 			switch (Randomly.fromOptions(NewExpressionType.values())) {
+			case CAST_TO_ITSELF: // TODO: let each expression have a type so that CAST can be applied without
+									// typeof
+				Expression subExpr = createStandaloneColumn(columns, rw, shouldBeTrue);
+				if (subExpr == null) {
+					retry = true;
+					break;
+				}
+				ColumnName column = (ColumnName) subExpr;
+				Expression.TypeLiteral.Type type;
+				switch (rw.getValues().get(column.getColumn()).getDataType()) {
+				case NONE:
+					throw new AssertionError();
+				case BINARY:
+					type = Type.BINARY;
+					break;
+				case INT:
+					type = Type.INTEGER;
+					break;
+				case NULL:
+					type = Randomly.fromOptions(Type.values());
+				case REAL:
+					type = Type.REAL;
+					break;
+				case TEXT:
+					type = Type.TEXT;
+					break;
+				default:
+					throw new AssertionError();
+				}
+				TypeLiteral typeofExpr = new Expression.TypeLiteral(type);
+				return new Expression.Cast(typeofExpr, subExpr);
 			case STANDALONE_COLUMN:
 				Expression expr = createStandaloneColumn(columns, rw, shouldBeTrue);
 				if (expr == null) {
