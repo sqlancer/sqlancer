@@ -31,7 +31,10 @@ import lama.schema.Schema;
 import lama.schema.Schema.Column;
 import lama.schema.Schema.Table;
 import lama.sqlite3.SQLite3Helper;
+import lama.tablegen.sqlite3.SQLite3AlterTable;
+import lama.tablegen.sqlite3.SQLite3Common;
 import lama.tablegen.sqlite3.SQLite3DeleteGenerator;
+import lama.tablegen.sqlite3.SQLite3DropIndexGenerator;
 import lama.tablegen.sqlite3.SQLite3IndexGenerator;
 import lama.tablegen.sqlite3.SQLite3PragmaGenerator;
 import lama.tablegen.sqlite3.SQLite3ReindexGenerator;
@@ -158,7 +161,7 @@ public class Main {
 	static int threadsShutdown;
 
 	private enum Action {
-		PRAGMA, INDEX, INSERT, VACUUM, REINDEX, ANALYZE, DELETE, TRANSACTION_START;
+		PRAGMA, INDEX, INSERT, VACUUM, REINDEX, ANALYZE, DELETE, TRANSACTION_START, ALTER, DROP_INDEX;
 	}
 
 	public static void main(String[] args) {
@@ -226,11 +229,10 @@ public class Main {
 
 					int nrTablesToCreate = 1 + Randomly.smallNumber();
 					for (int i = 0; i < nrTablesToCreate; i++) {
-						String tableName = String.format("t%d", i);
+						String tableName = SQLite3Common.createTableName(i);
 						String tableQuery = SQLite3TableGenerator.createTableStatement(tableName, state);
 						try (Statement createTable = con.createStatement()) {
 							createTable.execute(tableQuery);
-
 						}
 					}
 					java.sql.DatabaseMetaData meta = con.getMetaData();
@@ -248,7 +250,7 @@ public class Main {
 						case REINDEX:
 						case VACUUM:
 						case ANALYZE:
-						case TRANSACTION_START:
+						case DROP_INDEX:
 							nrPerformed = Randomly.smallNumber();
 							break;
 						case INSERT:
@@ -256,6 +258,9 @@ public class Main {
 							break;
 						case DELETE:
 							nrPerformed = Randomly.getBoolean() ? 1 : 0;
+							break;
+						case ALTER:
+							nrPerformed = Randomly.smallNumber();
 							break;
 						default:
 							throw new AssertionError();
@@ -267,7 +272,6 @@ public class Main {
 						total += nrPerformed;
 					}
 					Schema newSchema = Schema.fromConnection(con);
-					List<Table> tables = newSchema.getDatabaseTables();
 					boolean transactionActive = false;
 					while (total != 0) {
 						Action nextAction = null;
@@ -285,6 +289,10 @@ public class Main {
 						assert nrRemaining[nextAction.ordinal()] > 0;
 						nrRemaining[nextAction.ordinal()]--;
 						switch (nextAction) {
+						case ALTER:
+							SQLite3AlterTable.alterTable(newSchema, con, state);
+							newSchema = Schema.fromConnection(con);
+							break;
 						case TRANSACTION_START:
 							if (!transactionActive) {
 								try (Statement st = con.createStatement()) {
@@ -311,11 +319,14 @@ public class Main {
 								// ignore
 							}
 							break;
+						case DROP_INDEX:
+							SQLite3DropIndexGenerator.dropIndex(con, state, newSchema);
+							break;
 						case DELETE:
-							SQLite3DeleteGenerator.deleteContent(Randomly.fromList(tables), con, state);
+							SQLite3DeleteGenerator.deleteContent(Randomly.fromList(newSchema.getDatabaseTables()), con, state);
 							break;
 						case INSERT:
-							Table randomTable = Randomly.fromList(tables);
+							Table randomTable = Randomly.fromList(newSchema.getDatabaseTables());
 							SQLite3RowGenerator.insertRow(randomTable, con, state);
 							break;
 						case PRAGMA:

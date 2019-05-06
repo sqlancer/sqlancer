@@ -89,7 +89,7 @@ public class SQLite3TableGenerator {
 	}
 
 	private void createColumn(boolean allowPrimaryKeyInColumn) {
-		String columnName = String.format("c%d", columnId);
+		String columnName = SQLite3Common.createColumnName(columnId);
 		columnNames.add(columnName);
 		sb.append(columnName);
 		sb.append(" ");

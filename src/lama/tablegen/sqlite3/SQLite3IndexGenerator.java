@@ -16,6 +16,10 @@ import lama.sqlite3.SQLite3Visitor;
 // see https://www.sqlite.org/lang_createindex.html
 public class SQLite3IndexGenerator {
 
+	public static void insertIndex(Connection con, StateToReproduce state) throws SQLException {
+		new SQLite3IndexGenerator(con, state);
+	}
+
 	private int indexNr;
 
 	public SQLite3IndexGenerator(Connection con, StateToReproduce state) throws SQLException {
@@ -83,11 +87,8 @@ public class SQLite3IndexGenerator {
 	}
 
 	private String getIndexName() {
-		return String.format("index_%d", indexNr++);
+		return SQLite3Common.createIndexName(indexNr++);
 	}
 
-	public static void insertIndex(Connection con, StateToReproduce state) throws SQLException {
-		new SQLite3IndexGenerator(con, state);
-	}
 
 }

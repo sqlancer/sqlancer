@@ -177,6 +177,10 @@ public class Schema {
 			return columns.stream().map(function).collect(Collectors.joining(", "));
 		}
 
+		public Column getRandomColumn() {
+			return Randomly.fromList(columns);
+		}
+
 	}
 
 	public static class RowValue {
@@ -210,8 +214,12 @@ public class Schema {
 		}
 
 		public String getRowValuesAsString() {
-			StringBuilder sb = new StringBuilder();
 			List<Column> columnsToCheck = table.getColumns();
+			return getRowValuesAsString(columnsToCheck);
+		}
+
+		public String getRowValuesAsString(List<Column> columnsToCheck) {
+			StringBuilder sb = new StringBuilder();
 			Map<Column, Constant> expectedValues = getValues();
 			for (int i = 0; i < columnsToCheck.size(); i++) {
 				if (i != 0) {
