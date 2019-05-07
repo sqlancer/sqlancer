@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import lama.Main.StateToReproduce;
+import lama.Query;
+import lama.QueryAdapter;
 import lama.Randomly;
 import lama.schema.Schema;
 import lama.schema.Schema.Column;
@@ -38,11 +40,10 @@ public class SQLite3TableGenerator {
 		this.existingSchema = existingSchema;
 	}
 
-	public static String createTableStatement(String tableName, StateToReproduce state, Schema existingSchema) {
+	public static Query createTableStatement(String tableName, StateToReproduce state, Schema existingSchema) {
 		SQLite3TableGenerator sqLite3TableGenerator = new SQLite3TableGenerator(tableName, existingSchema);
 		sqLite3TableGenerator.start();
-		state.statements.add(sqLite3TableGenerator.sb.toString());
-		return sqLite3TableGenerator.sb.toString();
+		return new QueryAdapter(sqLite3TableGenerator.sb.toString());
 	}
 
 	public void start() {

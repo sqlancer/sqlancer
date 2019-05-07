@@ -8,31 +8,35 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lama.Main.StateToReproduce;
+import lama.Query;
+import lama.QueryAdapter;
 import lama.Randomly;
 import lama.schema.Schema;
 import lama.schema.Schema.Table;
- 
+
 // see https://www.sqlite.org/lang_dropindex.html
 public class SQLite3DropIndexGenerator {
 
 	private boolean sureItExists;
 
-	public static void dropIndex(Connection con, StateToReproduce state, Schema s) throws SQLException {
+	public static Query dropIndex(Connection con, StateToReproduce state, Schema s) throws SQLException {
 		try (Statement stm = con.createStatement()) {
 			SQLite3DropIndexGenerator gen = new SQLite3DropIndexGenerator();
 			String query = gen.dropIndex(con, s);
-
-			try {
-				state.statements.add(query);
-				stm.execute(query);
-			} catch (SQLException e) {
-				if (e.getMessage().startsWith(
-						"[SQLITE_ERROR] SQL error or missing database (index associated with UNIQUE or PRIMARY KEY constraint cannot be dropped)")) {
-					return;
-				} else {
-					throw new AssertionError(e);
-				}
-			}
+			return new QueryAdapter(query) {
+				public void execute(Connection con) throws SQLException {
+					try {
+						super.execute(con);
+					} catch (SQLException e) {
+						if (e.getMessage().startsWith(
+								"[SQLITE_ERROR] SQL error or missing database (index associated with UNIQUE or PRIMARY KEY constraint cannot be dropped)")) {
+							return;
+						} else {
+							throw new AssertionError(e);
+						}
+					}
+				};
+			};
 		}
 	}
 

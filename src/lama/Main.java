@@ -25,6 +25,8 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.stream.Collectors;
 
+import org.sqlite.SQLiteException;
+
 import lama.Expression.Constant;
 import lama.Main.StateToReproduce.ErrorKind;
 import lama.schema.Schema;
@@ -32,6 +34,7 @@ import lama.schema.Schema.Column;
 import lama.schema.Schema.Table;
 import lama.sqlite3.SQLite3Helper;
 import lama.tablegen.sqlite3.SQLite3AlterTable;
+import lama.tablegen.sqlite3.SQLite3AnalyzeGenerator;
 import lama.tablegen.sqlite3.SQLite3Common;
 import lama.tablegen.sqlite3.SQLite3DeleteGenerator;
 import lama.tablegen.sqlite3.SQLite3DropIndexGenerator;
@@ -40,16 +43,25 @@ import lama.tablegen.sqlite3.SQLite3PragmaGenerator;
 import lama.tablegen.sqlite3.SQLite3ReindexGenerator;
 import lama.tablegen.sqlite3.SQLite3RowGenerator;
 import lama.tablegen.sqlite3.SQLite3TableGenerator;
+import lama.tablegen.sqlite3.SQLite3TransactionGenerator;
 import lama.tablegen.sqlite3.SQLite3VacuumGenerator;
 
+// TODO:
+// case
+// between
+// select so that no record should be returned
+// insert with arbitrary expressions
+// views
+// alter table
+// triggers
 public class Main {
 
+	private static final int NR_QUERIES_PER_TABLE = 10000;
 	private static final int MAX_INSERT_ROW_TRIES = 1;
-	private static final int NR_QUERIES_PER_TABLE = 1000;
 	private static final int TOTAL_NR_THREADS = 100;
-	private static final int NR_CONCURRENT_THREADS = 16;
-	public static final int NR_INSERT_ROW_TRIES = 5;
-	public static final int EXPRESSION_MAX_DEPTH = 2;
+	private static final int NR_CONCURRENT_THREADS = 8;
+	public static final int NR_INSERT_ROW_TRIES = 300;
+	public static final int EXPRESSION_MAX_DEPTH = 3;
 	public static final File LOG_DIRECTORY = new File("logs");
 	static volatile AtomicLong nrQueries = new AtomicLong();
 
@@ -67,7 +79,7 @@ public class Main {
 
 		private ErrorKind errorKind;
 
-		public final List<String> statements = new ArrayList<>();
+		private final List<Query> statements = new ArrayList<>();
 		public String query;
 
 		private String databaseName;
@@ -140,7 +152,7 @@ public class Main {
 			}
 			sb.append("-- statements start here\n");
 			if (statements != null) {
-				sb.append(statements.stream().collect(Collectors.joining(";\n")) + "\n");
+				sb.append(statements.stream().map(q -> q.getQueryString()).collect(Collectors.joining(";\n")) + "\n");
 			}
 			if (query != null) {
 				sb.append(query + ";\n");
@@ -208,11 +220,12 @@ public class Main {
 
 				private void runThread(final String databaseName) {
 					Thread.currentThread().setName(databaseName);
-					// we try to reuse the same database since it greatly improves performance
 					while (true) {
 						try (Connection con = DatabaseFacade.createDatabase(databaseName)) {
 							generateAndTestDatabase(databaseName, con);
-						} catch (ReduceMeException reduce) {
+						} catch (Exception reduce) {
+							Thread.currentThread().setName(databaseName + " (reducing)");
+							state.logInconsistency(reduce);
 							tryToReduceBug(databaseName, state);
 						} catch (Throwable e1) {
 							e1.printStackTrace();
@@ -230,12 +243,11 @@ public class Main {
 					for (int i = 0; i < nrTablesToCreate; i++) {
 						newSchema = Schema.fromConnection(con);
 						String tableName = SQLite3Common.createTableName(i);
-						String tableQuery = SQLite3TableGenerator.createTableStatement(tableName, state, newSchema);
-						try (Statement createTable = con.createStatement()) {
-							createTable.execute(tableQuery);
-						}
+						Query tableQuery = SQLite3TableGenerator.createTableStatement(tableName, state, newSchema);
+						state.statements.add(tableQuery);
+						tableQuery.execute(con);
 					}
-					
+
 					newSchema = Schema.fromConnection(con);
 
 					java.sql.DatabaseMetaData meta = con.getMetaData();
@@ -250,10 +262,13 @@ public class Main {
 						switch (action) {
 						case INDEX:
 						case PRAGMA:
+							nrPerformed = Randomly.getInteger(5, 100);
+							break;
 						case REINDEX:
 						case VACUUM:
 						case ANALYZE:
 						case DROP_INDEX:
+						case TRANSACTION_START:
 							nrPerformed = Randomly.smallNumber();
 							break;
 						case INSERT:
@@ -291,73 +306,65 @@ public class Main {
 						assert nextAction != null;
 						assert nrRemaining[nextAction.ordinal()] > 0;
 						nrRemaining[nextAction.ordinal()]--;
+						Query query;
+						boolean affectedSchema = false;
 						switch (nextAction) {
 						case ALTER:
-							SQLite3AlterTable.alterTable(newSchema, con, state);
-							newSchema = Schema.fromConnection(con);
+							query = SQLite3AlterTable.alterTable(newSchema, con, state);
+							affectedSchema = true;
 							break;
 						case TRANSACTION_START:
 							if (!transactionActive) {
-								try (Statement st = con.createStatement()) {
-									state.statements.add("BEGIN TRANSACTION;");
-									st.execute("BEGIN TRANSACTION;");
-									transactionActive = true;
-								}
+								SQLite3TransactionGenerator.generateBeginTransaction(con, state);
+								transactionActive = true;
 							} else {
-								try (Statement st = con.createStatement()) {
-									transactionActive = false;
-									state.statements.add("COMMIT;");
-									st.execute("COMMIT;");
-								}
+								query = SQLite3TransactionGenerator.generateCommit(con, state);
+								transactionActive = false;
 							}
 						case INDEX:
-							try {
-								SQLite3IndexGenerator.insertIndex(con, state);
-								try (Statement st = con.createStatement()) {
-									transactionActive = false;
-									state.statements.add("COMMIT;");
-									st.execute("COMMIT;");
-								}
-							} catch (SQLException e) {
-								// ignore
-							}
+							query = SQLite3IndexGenerator.insertIndex(con, state);
+							state.statements.add(query);
+							query.execute(con);
+							transactionActive = false;
+							query = SQLite3TransactionGenerator.generateCommit(con, state);
 							break;
 						case DROP_INDEX:
-							SQLite3DropIndexGenerator.dropIndex(con, state, newSchema);
+							query = SQLite3DropIndexGenerator.dropIndex(con, state, newSchema);
 							break;
 						case DELETE:
-							SQLite3DeleteGenerator.deleteContent(Randomly.fromList(newSchema.getDatabaseTables()), con, state);
+							query = SQLite3DeleteGenerator
+									.deleteContent(Randomly.fromList(newSchema.getDatabaseTables()), con, state);
 							break;
 						case INSERT:
 							Table randomTable = Randomly.fromList(newSchema.getDatabaseTables());
-							SQLite3RowGenerator.insertRow(randomTable, con, state);
+							query = SQLite3RowGenerator.insertRow(randomTable, con, state);
 							break;
 						case PRAGMA:
-							SQLite3PragmaGenerator.insertPragma(con, state);
+							query = SQLite3PragmaGenerator.insertPragma(con, state);
 							break;
 						case REINDEX:
-							SQLite3ReindexGenerator.executeReindex(con, state);
+							query = SQLite3ReindexGenerator.executeReindex(con, state);
 							break;
 						case VACUUM:
 							if (transactionActive) {
-								try (Statement st = con.createStatement()) {
-									state.statements.add("COMMIT ;");
-									st.execute("COMMIT;");
-								}
+								query = SQLite3TransactionGenerator.generateCommit(con, state);
+								query.execute(con);
 								transactionActive = false;
 							}
-							SQLite3VacuumGenerator.executeVacuum(con, state);
+							query = SQLite3VacuumGenerator.executeVacuum(con, state);
 							break;
 						case ANALYZE:
-							try (Statement s = con.createStatement()) {
-								state.statements.add("ANALYZE;");
-								s.execute("ANALYZE;");
-							}
+							query = SQLite3AnalyzeGenerator.generateAnalyze();
 							break;
 						default:
 							throw new AssertionError(nextAction);
 						}
+						state.statements.add(query);
+						query.execute(con);
 						total--;
+						if (affectedSchema) {
+							newSchema = Schema.fromConnection(con);
+						}
 					}
 					for (Table t : newSchema.getDatabaseTables()) {
 						if (!ensureTableHasRows(con, t)) {
@@ -368,10 +375,7 @@ public class Main {
 						SQLite3ReindexGenerator.executeReindex(con, state);
 					}
 					if (transactionActive) {
-						try (Statement st = con.createStatement()) {
-							state.statements.add("END TRANSACTION;");
-							st.execute("END TRANSACTION;");
-						}
+						SQLite3TransactionGenerator.generateCommit(con, state);
 						transactionActive = false;
 					}
 					QueryGenerator queryGenerator = new QueryGenerator(con);
@@ -387,7 +391,9 @@ public class Main {
 					int counter = MAX_INSERT_ROW_TRIES;
 					do {
 						try {
-							SQLite3RowGenerator.insertRow(randomTable, con, state);
+							Query q = SQLite3RowGenerator.insertRow(randomTable, con, state);
+							state.statements.add(q);
+							q.execute(con);
 						} catch (SQLException e) {
 							if (!QueryGenerator.shouldIgnoreException(e)) {
 								throw new AssertionError(e);
@@ -400,89 +406,74 @@ public class Main {
 
 				private void tryToReduceBug(final String databaseName, StateToReproduce state) {
 					threadsShutdown++;
-					List<String> reducedStatements = new ArrayList<>(state.statements);
-					List<String> removedStatements = new ArrayList<>();
-					int i = 0;
-					outer: while (i < reducedStatements.size()) {
+					List<Query> reducedStatements = new ArrayList<>(state.statements);
+					Query statementThatCausedException = state.statements.get(state.statements.size() - 1);
+					if (state.getErrorKind() == ErrorKind.EXCEPTION) {
+						reducedStatements.remove(statementThatCausedException);
+					}
+					retry: for (int i = 0; i < 100; i++) {
+						List<Query> currentRoundReducedStatements = new ArrayList<>(reducedStatements);
+						if (currentRoundReducedStatements.isEmpty()) {
+							break;
+						}
+						int nrToRemove = currentRoundReducedStatements.size() / 10;
+						for (int j = 0; j < nrToRemove; j++) {
+							Query q = Randomly.fromList(currentRoundReducedStatements);
+							currentRoundReducedStatements.remove(q);
+						}
 						try (Connection con = DatabaseFacade.createDatabase(databaseName + "_reduced")) {
-							List<String> reducedTryStatements = new ArrayList<>(reducedStatements);
-							String exceptionCausingStatement = state.statements.get(state.statements.size() - 1);
-							if (state.getErrorKind() == ErrorKind.EXCEPTION
-									&& reducedStatements.get(i).equals(exceptionCausingStatement)) {
-								i++; // do not reduce the statement that caused the exception
-								if (i >= reducedStatements.size()) {
-									break;
+							for (Query q : currentRoundReducedStatements) {
+								try {
+									q.execute(con);
+								} catch (Throwable t) {
+									continue retry; // unsuccessful;
 								}
 							}
-							String statementToExecute = null;
-							String removedStatement = reducedTryStatements.remove(reducedStatements.size() - i - 1);
-							try (Statement statement = con.createStatement()) {
-								for (int j = 0; j < reducedTryStatements.size(); j++) {
-									statementToExecute = reducedTryStatements.get(j);
-									if (state.getErrorKind() == ErrorKind.EXCEPTION
-											&& statementToExecute.equals(exceptionCausingStatement)) {
-										try {
-											statement.execute(statementToExecute);
-										} catch (Throwable t) {
-											assert reducedTryStatements.size() < reducedStatements.size();
-											if (t.getMessage().equals(state.getException())) {
-												reducedStatements = reducedTryStatements;
-												removedStatements.add(removedStatement);
-											} else {
-												i++;
-												continue outer;
-											}
-										}
-									} else {
-										statement.execute(statementToExecute);
+							if (state.getErrorKind() == ErrorKind.EXCEPTION) {
+								try {
+									statementThatCausedException.execute(con);
+								} catch (Throwable t) {
+									if (!t.getMessage().equals(state.getException())) {
+										continue retry; // unsuccessful
 									}
 								}
-							} catch (Throwable t) {
-								i++;
-								// TODO account for exceptions
-								continue outer;
-							}
-
-							if (state.getErrorKind() == ErrorKind.ROW_NOT_FOUND) {
+							} else {
 								try (Statement s = con.createStatement()) {
-									try {
-										ResultSet result = s.executeQuery(state.query);
+									try (ResultSet result = s.executeQuery(state.query)) {
 										boolean isContainedIn = !result.isClosed();
-										if (!isContainedIn) {
+										if (isContainedIn) {
+											continue retry;
+										} else {
 											String checkRowIsInside = "SELECT * FROM " + state.queryTargetedTable
 													+ " INTERSECT SELECT " + state.values;
 											ResultSet result2 = s.executeQuery(checkRowIsInside);
-											if (!result2.isClosed()) {
-												assert reducedTryStatements.size() < reducedStatements.size();
-												reducedStatements = reducedTryStatements;
-											} else {
-												i++;
+											if (result2.isClosed()) {
+												continue retry;
 											}
-										} else {
-											i++;
+											result.close();
 										}
-										result.close();
-									} catch (Throwable t) {
-										i++;
 									}
+								} catch (Throwable t) {
+									continue retry;
 								}
 							}
+							reducedStatements = currentRoundReducedStatements;
 						} catch (SQLException e) {
-							state.logInconsistency(e);
+							throw new AssertionError(e);
 						}
-
-						state.statements.clear();
-						state.statements.add("-- trying to reduce query");
-						state.statements.addAll(reducedStatements);
-						state.logInconsistency();
-						return;
-
 					}
-				}
 
+					state.statements.clear();
+					state.statements.add(new QueryAdapter("-- trying to reduce query"));
+					state.statements.addAll(reducedStatements);
+					if (state.getErrorKind() == ErrorKind.EXCEPTION) {
+						state.statements.add(statementThatCausedException);
+					}
+					state.logInconsistency();
+					return;
+				}
 			});
 		}
-
 	}
 
 	private static void setupLogDirectory() {

@@ -2,9 +2,10 @@ package lama.tablegen.sqlite3;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import lama.Main.StateToReproduce;
+import lama.Query;
+import lama.QueryAdapter;
 import lama.Randomly;
 import lama.schema.Schema;
 import lama.schema.Schema.Column;
@@ -16,7 +17,7 @@ public class SQLite3AlterTable {
 		RENAME_TABLE, RENAME_COLUMN
 	}
 
-	public static void alterTable(Schema s, Connection con, StateToReproduce state) throws SQLException {
+	public static Query alterTable(Schema s, Connection con, StateToReproduce state) throws SQLException {
 		SQLite3AlterTable alterTable = new SQLite3AlterTable();
 		// TODO implement add column, which has many constraints
 		Option option = Randomly.fromOptions(Option.values());
@@ -30,12 +31,9 @@ public class SQLite3AlterTable {
 		default:
 			throw new AssertionError();
 		}
+		
+		return new QueryAdapter(alterTable.sb.toString());
 
-		try (Statement st = con.createStatement()) {
-			String query = alterTable.sb.toString();
-			state.statements.add(query);
-			st.execute(query);
-		}
 	}
 
 	private void renameColumn(Schema s) {

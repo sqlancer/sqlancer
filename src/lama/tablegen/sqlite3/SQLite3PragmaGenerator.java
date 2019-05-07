@@ -2,9 +2,9 @@ package lama.tablegen.sqlite3;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import lama.Main.StateToReproduce;
+import lama.QueryAdapter;
 import lama.Randomly;
 
 public class SQLite3PragmaGenerator {
@@ -13,15 +13,12 @@ public class SQLite3PragmaGenerator {
 		APPLICATION_ID, AUTO_VACUUM, AUTOMATIC_INDEX, BUSY_TIMEOUT, CACHE_SIZE, CACHE_SPILL_ENABLED, CACHE_SPILL_SIZE,
 		// CASE_SENSITIVE_LIKE, // see
 		// https://www.mail-archive.com/sqlite-users@mailinglists.sqlite.org/msg115030.html
-		CELL_SIZE_CHECK, CHECKPOINT_FULLSYNC, DEFER_FOREIGN_KEY, ENCODING, FOREIGN_KEYS, IGNORE_CHECK_CONSTRAINTS, INCREMENTAL_VACUUM, INTEGRITY_CHECK, JOURNAL_MODE, JOURNAL_SIZE_LIMIT, LEGACY_ALTER_TABLE, OPTIMIZE,
+		CELL_SIZE_CHECK, CHECKPOINT_FULLSYNC, DEFER_FOREIGN_KEY, ENCODING, FOREIGN_KEYS, IGNORE_CHECK_CONSTRAINTS, INCREMENTAL_VACUUM, INTEGRITY_CHECK, JOURNAL_MODE, JOURNAL_SIZE_LIMIT, /* LEGACY_ALTER_TABLE ,*/ OPTIMIZE,
 		LEGACY_FORMAT, REVERSE_UNORDERED_SELECTS, SECURE_DELETE, SHRINK_MEMORY, SOFT_HEAP_LIMIT, THREADS
 	}
 
-	public static void insertPragma(Connection con, StateToReproduce state)
+	public static QueryAdapter insertPragma(Connection con, StateToReproduce state)
 			throws SQLException {
-		if (Randomly.getBoolean()) {
-			return; // we just want to insert pragmas in about half the cases
-		}
 		Pragma p = Randomly.fromOptions(Pragma.values());
 		StringBuilder sb = new StringBuilder();
 		switch (p) {
@@ -88,7 +85,7 @@ public class SQLite3PragmaGenerator {
 			sb.append(getRandomTextBoolean());
 			break;
 		case IGNORE_CHECK_CONSTRAINTS:
-			sb.append("PRAGMA ignore_check_constraints");
+			sb.append("PRAGMA ignore_check_constraints=");
 			sb.append(getRandomTextBoolean());
 			break;
 		case INCREMENTAL_VACUUM:
@@ -113,10 +110,10 @@ public class SQLite3PragmaGenerator {
 			sb.append("PRAGMA main.journal_size_limit=");
 			sb.append(Randomly.getInteger());
 			break;
-		case LEGACY_ALTER_TABLE:
-			sb.append("PRAGMA legacy_alter_table=");
-			sb.append(getRandomTextBoolean());
-			break;
+//		case LEGACY_ALTER_TABLE:
+//			sb.append("PRAGMA legacy_alter_table=");
+//			sb.append(getRandomTextBoolean());
+//			break;
 		case LEGACY_FORMAT:
 			sb.append("PRAGMA legacy_file_format=");
 			sb.append(getRandomTextBoolean());
@@ -148,10 +145,7 @@ public class SQLite3PragmaGenerator {
 		}
 		sb.append(";");
 		String pragmaString = sb.toString();
-		state.statements.add(pragmaString);
-		try (Statement s = con.createStatement()) {
-			s.execute(pragmaString);
-		}
+		return new QueryAdapter(pragmaString);
 	}
 
 	private static String getRandomTextBoolean() {

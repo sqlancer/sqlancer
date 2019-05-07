@@ -2,12 +2,13 @@ package lama.tablegen.sqlite3;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 
 import lama.Expression;
 import lama.Expression.Constant;
 import lama.Main.StateToReproduce;
+import lama.Query;
+import lama.QueryAdapter;
 import lama.Randomly;
 import lama.schema.Schema.Column;
 import lama.schema.Schema.Table;
@@ -15,28 +16,30 @@ import lama.sqlite3.SQLite3Visitor;
 
 public class SQLite3RowGenerator {
 
-	public static void insertRow(Table table, Connection con, StateToReproduce state) throws SQLException {
+	public static Query insertRow(Table table, Connection con, StateToReproduce state) throws SQLException {
 		SQLite3RowGenerator generator = new SQLite3RowGenerator();
 		String query = generator.insertRow(table);
-		try (Statement s = con.createStatement()) {
-			state.statements.add(query);
-			s.execute(query);
-		} catch (SQLException e) {
-			if (generator.mightFail && e.getMessage().startsWith("[SQLITE_CONSTRAINT]")) {
-				return;
-			} else if (e.getMessage().startsWith("[SQLITE_FULL]")) {
-				return;
-			} else if (e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (integer overflow)")) {
-				return;
-			} else if (e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (foreign key mismatch")) {
-				return;
-			} else if (e.getMessage().startsWith("[SQLITE_CONSTRAINT]  Abort due to constraint violation (FOREIGN KEY constraint failed)")) {
-				return;
-			}
-			else {
-				throw new AssertionError(e);
-			}
-		}
+		return new QueryAdapter(query) { 
+			public void execute(Connection con) throws SQLException {
+				try {
+					super.execute(con);
+				} catch (SQLException e) {
+					if (generator.mightFail && e.getMessage().startsWith("[SQLITE_CONSTRAINT]")) {
+						return;
+					} else if (e.getMessage().startsWith("[SQLITE_FULL]")) {
+						return;
+					} else if (e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (integer overflow)")) {
+						return;
+					} else if (e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (foreign key mismatch")) {
+						return;
+					} else if (e.getMessage().startsWith("[SQLITE_CONSTRAINT]  Abort due to constraint violation (FOREIGN KEY constraint failed)")) {
+						return;
+					} else {
+						throw e;
+					}
+				}
+			};
+		};
 	}
 
 	private boolean mightFail;
@@ -46,11 +49,11 @@ public class SQLite3RowGenerator {
 		// TODO: see
 		// http://sqlite.1065341.n5.nabble.com/UPSERT-clause-does-not-work-with-quot-NOT-NULL-quot-constraint-td106957.html
 		sb.append("INSERT ");
-		if (Randomly.getBoolean()) {
+		if (Randomly.getBoolean()) { // FIXME Randomly.getBoolean()
 			sb.append("OR IGNORE "); // TODO: try to generate REPLACE
 		} else {
 			mightFail = true;
-			sb.append(Randomly.fromOptions("OR REPLACE ", "OR ROLLBACK ", "OR ABORT ", "OR FAIL "));
+			sb.append(Randomly.fromOptions("OR REPLACE ", "OR ABORT ", "OR FAIL ")); // "OR ROLLBACK ",
 		}
 		sb.append("INTO " + table.getName());
 		if (Randomly.getBooleanWithSmallProbability()) {
@@ -87,6 +90,7 @@ public class SQLite3RowGenerator {
 			if (columns.get(i).isIntegerPrimaryKey()) {
 				literal = Constant.createIntConstant(Randomly.getInteger());
 			} else {
+//				literal = SQLite3ExpressionGenerator.getRandomExpression(new ArrayList<>(), false);
 				literal = SQLite3ExpressionGenerator.getRandomLiteralValue(false);
 			}
 			SQLite3Visitor visitor = new SQLite3Visitor();
