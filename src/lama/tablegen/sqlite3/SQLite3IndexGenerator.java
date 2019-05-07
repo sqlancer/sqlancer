@@ -27,8 +27,8 @@ public class SQLite3IndexGenerator {
 		Table t = s.getRandomTable();
 		String query = createIndex(t, t.getColumns());
 		try (Statement stm = con.createStatement()) {
-			stm.execute(query); // only record successful index creations
 			state.statements.add(query);
+			stm.execute(query);
 		}
 	}
 
