@@ -224,17 +224,20 @@ public class Main {
 				}
 
 				private void generateAndTestDatabase(final String databaseName, Connection con) throws SQLException {
-					SQLite3Helper.deleteAllTables(con);
 					state = new StateToReproduce(databaseName);
-
+					Schema newSchema = null;
 					int nrTablesToCreate = 1 + Randomly.smallNumber();
 					for (int i = 0; i < nrTablesToCreate; i++) {
+						newSchema = Schema.fromConnection(con);
 						String tableName = SQLite3Common.createTableName(i);
-						String tableQuery = SQLite3TableGenerator.createTableStatement(tableName, state);
+						String tableQuery = SQLite3TableGenerator.createTableStatement(tableName, state, newSchema);
 						try (Statement createTable = con.createStatement()) {
 							createTable.execute(tableQuery);
 						}
 					}
+					
+					newSchema = Schema.fromConnection(con);
+
 					java.sql.DatabaseMetaData meta = con.getMetaData();
 					state.databaseVersion = meta.getDatabaseProductVersion();
 
@@ -271,7 +274,7 @@ public class Main {
 						nrRemaining[action.ordinal()] = nrPerformed;
 						total += nrPerformed;
 					}
-					Schema newSchema = Schema.fromConnection(con);
+
 					boolean transactionActive = false;
 					while (total != 0) {
 						Action nextAction = null;
@@ -397,11 +400,11 @@ public class Main {
 
 				private void tryToReduceBug(final String databaseName, StateToReproduce state) {
 					threadsShutdown++;
-					try (Connection con = DatabaseFacade.createDatabase(databaseName + "_reduced")) {
-						List<String> reducedStatements = new ArrayList<>(state.statements);
-						int i = 0;
-						outer: while (i < reducedStatements.size()) {
-							SQLite3Helper.deleteAllTables(con);
+					List<String> reducedStatements = new ArrayList<>(state.statements);
+					List<String> removedStatements = new ArrayList<>();
+					int i = 0;
+					outer: while (i < reducedStatements.size()) {
+						try (Connection con = DatabaseFacade.createDatabase(databaseName + "_reduced")) {
 							List<String> reducedTryStatements = new ArrayList<>(reducedStatements);
 							String exceptionCausingStatement = state.statements.get(state.statements.size() - 1);
 							if (state.getErrorKind() == ErrorKind.EXCEPTION
@@ -411,10 +414,11 @@ public class Main {
 									break;
 								}
 							}
-							reducedTryStatements.remove(i);
+							String statementToExecute = null;
+							String removedStatement = reducedTryStatements.remove(reducedStatements.size() - i - 1);
 							try (Statement statement = con.createStatement()) {
 								for (int j = 0; j < reducedTryStatements.size(); j++) {
-									String statementToExecute = reducedTryStatements.get(j);
+									statementToExecute = reducedTryStatements.get(j);
 									if (state.getErrorKind() == ErrorKind.EXCEPTION
 											&& statementToExecute.equals(exceptionCausingStatement)) {
 										try {
@@ -423,6 +427,10 @@ public class Main {
 											assert reducedTryStatements.size() < reducedStatements.size();
 											if (t.getMessage().equals(state.getException())) {
 												reducedStatements = reducedTryStatements;
+												removedStatements.add(removedStatement);
+											} else {
+												i++;
+												continue outer;
 											}
 										}
 									} else {
@@ -431,8 +439,10 @@ public class Main {
 								}
 							} catch (Throwable t) {
 								i++;
+								// TODO account for exceptions
 								continue outer;
 							}
+
 							if (state.getErrorKind() == ErrorKind.ROW_NOT_FOUND) {
 								try (Statement s = con.createStatement()) {
 									try {
@@ -457,19 +467,22 @@ public class Main {
 									}
 								}
 							}
+						} catch (SQLException e) {
+							state.logInconsistency(e);
 						}
+
 						state.statements.clear();
 						state.statements.add("-- trying to reduce query");
 						state.statements.addAll(reducedStatements);
 						state.logInconsistency();
 						return;
-					} catch (SQLException e) {
-						state.logInconsistency(e);
+
 					}
 				}
 
 			});
 		}
+
 	}
 
 	private static void setupLogDirectory() {
