@@ -16,4 +16,8 @@ public class SQLite3Common {
 		return String.format("c%d", nr);
 	}
 
+	public static String createIndexName(int nr) {
+		return String.format("i%d", nr);
+	}
+
 }

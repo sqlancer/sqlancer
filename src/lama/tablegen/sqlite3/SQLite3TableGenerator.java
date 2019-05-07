@@ -6,6 +6,9 @@ import java.util.stream.Collectors;
 
 import lama.Main.StateToReproduce;
 import lama.Randomly;
+import lama.schema.Schema;
+import lama.schema.Schema.Column;
+import lama.schema.Schema.Table;
 import lama.sqlite3.SQLite3Visitor;
 
 /**
@@ -28,13 +31,15 @@ public class SQLite3TableGenerator {
 	private boolean containsAutoIncrement;
 	private boolean conflictClauseInserted;
 	private final List<String> columnNames = new ArrayList<>();
+	private final Schema existingSchema;
 
-	public SQLite3TableGenerator(String tableName) {
+	public SQLite3TableGenerator(String tableName, Schema existingSchema) {
 		this.tableName = tableName;
+		this.existingSchema = existingSchema;
 	}
 
-	public static String createTableStatement(String tableName, StateToReproduce state) {
-		SQLite3TableGenerator sqLite3TableGenerator = new SQLite3TableGenerator(tableName);
+	public static String createTableStatement(String tableName, StateToReproduce state, Schema existingSchema) {
+		SQLite3TableGenerator sqLite3TableGenerator = new SQLite3TableGenerator(tableName, existingSchema);
 		sqLite3TableGenerator.start();
 		state.statements.add(sqLite3TableGenerator.sb.toString());
 		return sqLite3TableGenerator.sb.toString();
@@ -71,6 +76,29 @@ public class SQLite3TableGenerator {
 			sb.append(")");
 			containsPrimaryKey = true;
 		}
+
+		if (Randomly.getBoolean()) {
+			// FOREIGN KEY
+			String randomColumn = Randomly.fromList(columnNames);
+			sb.append(", FOREIGN KEY(");
+			sb.append(randomColumn);
+			sb.append(")");
+			sb.append(" REFERENCES ");
+			if (existingSchema.getDatabaseTables().isEmpty() || Randomly.getBooleanWithSmallProbability()) {
+				String otherRandomColumn = Randomly.fromList(columnNames);
+				sb.append(tableName + "(");
+				sb.append(otherRandomColumn);
+			} else {
+				Table otherTable = existingSchema.getRandomTable();
+				Column randomColumn2 = otherTable.getRandomColumn();
+				sb.append(otherTable.getName());
+				sb.append("(");
+				sb.append(randomColumn2.getName());
+				sb.append("");
+			}
+			sb.append(")");
+		}
+
 		if (Randomly.getBoolean()) {
 			addCheckConstraint(); // TODO: incorporate columns
 		}
