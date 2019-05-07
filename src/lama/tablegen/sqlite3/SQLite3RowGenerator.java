@@ -28,7 +28,12 @@ public class SQLite3RowGenerator {
 				return;
 			} else if (e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (integer overflow)")) {
 				return;
-			} else {
+			} else if (e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (foreign key mismatch")) {
+				return;
+			} else if (e.getMessage().startsWith("[SQLITE_CONSTRAINT]  Abort due to constraint violation (FOREIGN KEY constraint failed)")) {
+				return;
+			}
+			else {
 				throw new AssertionError(e);
 			}
 		}
