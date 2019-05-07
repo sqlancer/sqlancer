@@ -92,7 +92,9 @@ public class Main {
 
 		private String exception;
 
-		public String queryTargetedTable;
+		public String queryTargetedTablesString;
+
+		protected String queryTargetedColumnsString;
 
 		public StateToReproduce(String databaseName) {
 			this.databaseName = databaseName;
@@ -223,14 +225,20 @@ public class Main {
 					while (true) {
 						try (Connection con = DatabaseFacade.createDatabase(databaseName)) {
 							generateAndTestDatabase(databaseName, con);
+						} catch (ReduceMeException reduce) {
+							state.logInconsistency();
+							tryToReduceBug(databaseName, state);
+							break;
 						} catch (Exception reduce) {
 							Thread.currentThread().setName(databaseName + " (reducing)");
 							state.logInconsistency(reduce);
 							tryToReduceBug(databaseName, state);
+							break;
 						} catch (Throwable e1) {
 							e1.printStackTrace();
 							state.logInconsistency(e1);
 							threadsShutdown++;
+							break;
 						}
 
 					}
@@ -411,12 +419,12 @@ public class Main {
 					if (state.getErrorKind() == ErrorKind.EXCEPTION) {
 						reducedStatements.remove(statementThatCausedException);
 					}
-					retry: for (int i = 0; i < 100; i++) {
+					retry: for (int i = 0; i < 10; i++) {
 						List<Query> currentRoundReducedStatements = new ArrayList<>(reducedStatements);
 						if (currentRoundReducedStatements.isEmpty()) {
 							break;
 						}
-						int nrToRemove = currentRoundReducedStatements.size() / 10;
+						int nrToRemove = currentRoundReducedStatements.size() / 20;
 						for (int j = 0; j < nrToRemove; j++) {
 							Query q = Randomly.fromList(currentRoundReducedStatements);
 							currentRoundReducedStatements.remove(q);
@@ -444,7 +452,7 @@ public class Main {
 										if (isContainedIn) {
 											continue retry;
 										} else {
-											String checkRowIsInside = "SELECT * FROM " + state.queryTargetedTable
+											String checkRowIsInside = "SELECT " + state.queryTargetedColumnsString + " FROM " + state.queryTargetedTablesString
 													+ " INTERSECT SELECT " + state.values;
 											ResultSet result2 = s.executeQuery(checkRowIsInside);
 											if (result2.isClosed()) {
@@ -463,8 +471,10 @@ public class Main {
 						}
 					}
 
+					int fromSize = state.statements.size();
+					int toSize = reducedStatements.size();
 					state.statements.clear();
-					state.statements.add(new QueryAdapter("-- trying to reduce query"));
+					state.statements.add(new QueryAdapter("-- reduced from " + fromSize + " " + toSize));
 					state.statements.addAll(reducedStatements);
 					if (state.getErrorKind() == ErrorKind.EXCEPTION) {
 						state.statements.add(statementThatCausedException);

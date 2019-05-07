@@ -67,6 +67,7 @@ public class SQLite3IndexGenerator {
 			Expression expr = SQLite3ExpressionGenerator.getRandomExpression(columns, true);
 			SQLite3Visitor visitor = new SQLite3Visitor();
 			visitor.setStringsAsDoubleQuotes(true);
+			visitor.fullyQualifiedNames = false;
 			visitor.visit(expr);
 			sb.append(visitor.get());
 			if (Randomly.getBoolean()) {
@@ -79,6 +80,7 @@ public class SQLite3IndexGenerator {
 			sb.append(" WHERE ");
 			Expression expr = SQLite3ExpressionGenerator.getRandomExpression(columns, true);
 			SQLite3Visitor visitor = new SQLite3Visitor();
+			visitor.fullyQualifiedNames = false;
 			visitor.visit(expr);
 			sb.append(visitor.get());
 		}

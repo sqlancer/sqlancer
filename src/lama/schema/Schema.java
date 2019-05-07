@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,7 +13,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import lama.DatabaseFacade;
 import lama.Expression.Constant;
 import lama.Main.StateToReproduce;
 import lama.Randomly;
@@ -22,7 +22,7 @@ public class Schema {
 
 	private final List<Table> databaseTables;
 
-	public static class Column {
+	public static class Column implements Comparable<Column> {
 
 		private final String name;
 		private final SQLite3DataType columnType;
@@ -40,7 +40,7 @@ public class Schema {
 
 		@Override
 		public String toString() {
-			return String.format("%s: %s", name, columnType);
+			return String.format("%s.%s: %s", table.getName(), name, columnType);
 		}
 
 		@Override
@@ -54,12 +54,16 @@ public class Schema {
 				return false;
 			} else {
 				Column c = (Column) obj;
-				return name.equals(c.name) && columnType.equals(c.columnType);
+				return table.getName().contentEquals(getName()) && name.equals(c.name);
 			}
 		}
 
 		public String getName() {
 			return name;
+		}
+
+		public String getFullQualifiedName() {
+			return table.getName() + "." + getName();
 		}
 
 		public SQLite3DataType getColumnType() {
@@ -92,9 +96,100 @@ public class Schema {
 			return table;
 		}
 
+		@Override
+		public int compareTo(Column o) {
+			if (o.getTable().equals(this.getTable())) {
+				return name.compareTo(o.getName());
+			} else {
+				return o.getTable().compareTo(table);
+			}
+		}
+
 	}
 
-	public static class Table {
+	public static class Tables {
+		private final List<Table> tables;
+		private final List<Column> columns;
+
+		public Tables(List<Table> tables) {
+			this.tables = tables;
+			columns = new ArrayList<>();
+			for (Table t : tables) {
+				columns.addAll(t.getColumns());
+			}
+		}
+
+		public String tableNamesAsString() {
+			return tables.stream().map(t -> t.getName()).collect(Collectors.joining(", "));
+		}
+
+		public List<Table> getTables() {
+			return tables;
+		}
+
+		public List<Column> getColumns() {
+			return columns;
+		}
+
+		public String columnNamesAsString() {
+			return getColumns().stream().map(t -> t.getTable().getName() + "." + t.getName())
+					.collect(Collectors.joining(", "));
+		}
+
+		public String columnNamesAsString(Function<Column, String> function) {
+			return getColumns().stream().map(function).collect(Collectors.joining(", "));
+		}
+
+		public RowValue getRandomRowValue(Connection con, StateToReproduce state) throws SQLException {
+			String randomRow = String.format("SELECT %s, %s FROM %s ORDER BY RANDOM() LIMIT 1", columnNamesAsString(
+					c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
+					columnNamesAsString(c -> "typeof(" + c.getTable().getName() + "." + c.getName() + ")"),
+					tableNamesAsString());
+			Map<Column, Constant> values = new HashMap<>();
+			try (Statement s = con.createStatement()) {
+				ResultSet randomRowValues = s.executeQuery(randomRow);
+				if (!randomRowValues.next()) {
+					throw new AssertionError("could not find random row! " + randomRow + "\n" + state);
+				}
+				for (int i = 0; i < getColumns().size(); i++) {
+					Column column = getColumns().get(i);
+					Object value;
+					int columnIndex = randomRowValues.findColumn(column.getTable().getName() + column.getName());
+					assert columnIndex == i + 1;
+					String typeString = randomRowValues.getString(columnIndex + getColumns().size());
+					SQLite3DataType valueType = getColumnType(typeString);
+					if (randomRowValues.getString(columnIndex) == null) {
+						value = null;
+					} else {
+						switch (valueType) {
+						case INT:
+							value = randomRowValues.getLong(columnIndex);
+							break;
+						case REAL:
+							value = randomRowValues.getDouble(columnIndex);
+							break;
+						case TEXT:
+						case NONE:
+							value = randomRowValues.getString(columnIndex);
+							break;
+						case BINARY:
+							value = randomRowValues.getBytes(columnIndex);
+							break;
+						default:
+							throw new AssertionError();
+						}
+					}
+					values.put(column, Constant.create(value, valueType));
+				}
+				assert (!randomRowValues.next());
+				state.randomRowValues = values;
+				return new RowValue(this, values);
+			}
+
+		}
+	}
+
+	public static class Table implements Comparable<Table> {
 
 		private final String tableName;
 		private final List<Column> columns;
@@ -127,48 +222,6 @@ public class Schema {
 			return columns;
 		}
 
-		public RowValue getRandomRowValue(Connection db, StateToReproduce state) throws SQLException {
-			String queryStringToGetRandomTableRow = DatabaseFacade.queryStringToGetRandomTableRow(this);
-			ResultSet randomRowValues = db.createStatement().executeQuery(queryStringToGetRandomTableRow);
-			Map<Column, Constant> values = new HashMap<>();
-
-			if (!randomRowValues.next()) {
-				throw new AssertionError("could not find random row! " + queryStringToGetRandomTableRow + "\n" + state);
-			}
-			for (int i = 0; i < columns.size(); i++) {
-				Column column = columns.get(i);
-				int columnIndex = randomRowValues.findColumn(column.getName());
-				Object value;
-				String typeString = randomRowValues.getString(columnIndex + columns.size());
-				SQLite3DataType valueType = getColumnType(typeString);
-				if (randomRowValues.getString(columnIndex) == null) {
-					value = null;
-				} else {
-					switch (valueType) {
-					case INT:
-						value = randomRowValues.getLong(columnIndex);
-						break;
-					case REAL:
-						value = randomRowValues.getDouble(columnIndex);
-						break;
-					case TEXT:
-					case NONE:
-						value = randomRowValues.getString(columnIndex);
-						break;
-					case BINARY:
-						value = randomRowValues.getBytes(columnIndex);
-						break;
-					default:
-						throw new AssertionError();
-					}
-				}
-				values.put(column, Constant.create(value, valueType));
-			}
-			assert (!randomRowValues.next());
-			state.randomRowValues = values;
-			return new RowValue(this, values);
-		}
-
 		public String getColumnsAsString() {
 			return columns.stream().map(c -> c.getName()).collect(Collectors.joining(", "));
 		}
@@ -181,19 +234,24 @@ public class Schema {
 			return Randomly.fromList(columns);
 		}
 
+		@Override
+		public int compareTo(Table o) {
+			return o.getName().compareTo(tableName);
+		}
+
 	}
 
 	public static class RowValue {
-		private final Table table;
+		private final Tables tables;
 		private final Map<Column, Constant> values;
 
-		RowValue(Table table, Map<Column, Constant> values) {
-			this.table = table;
+		RowValue(Tables tables, Map<Column, Constant> values) {
+			this.tables = tables;
 			this.values = values;
 		}
 
-		public Table getTable() {
-			return table;
+		public Tables getTable() {
+			return tables;
 		}
 
 		public Map<Column, Constant> getValues() {
@@ -204,7 +262,7 @@ public class Schema {
 		public String toString() {
 			StringBuffer sb = new StringBuffer();
 			int i = 0;
-			for (Column c : table.getColumns()) {
+			for (Column c : tables.getColumns()) {
 				if (i++ != 0) {
 					sb.append(", ");
 				}
@@ -214,7 +272,7 @@ public class Schema {
 		}
 
 		public String getRowValuesAsString() {
-			List<Column> columnsToCheck = table.getColumns();
+			List<Column> columnsToCheck = tables.getColumns();
 			return getRowValuesAsString(columnsToCheck);
 		}
 
@@ -323,6 +381,10 @@ public class Schema {
 
 	public List<Table> getDatabaseTables() {
 		return databaseTables;
+	}
+
+	public Tables getRandomTableNonEmptyTables() {
+		return new Tables(Randomly.nonEmptySubset(databaseTables));
 	}
 
 }

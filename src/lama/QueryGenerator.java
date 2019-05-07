@@ -5,7 +5,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,7 +27,7 @@ import lama.schema.SQLite3DataType;
 import lama.schema.Schema;
 import lama.schema.Schema.Column;
 import lama.schema.Schema.RowValue;
-import lama.schema.Schema.Table;
+import lama.schema.Schema.Tables;
 import lama.sqlite3.SQLite3Visitor;
 import lama.tablegen.sqlite3.SQLite3ExpressionGenerator;
 
@@ -43,22 +42,19 @@ public class QueryGenerator {
 	}
 
 	public void generateAndCheckQuery(StateToReproduce state) throws SQLException {
-		Table t = s.getRandomTable();
-		state.queryTargetedTable = t.getName();
-		assert t != null;
+		Tables tables = s.getRandomTableNonEmptyTables();
+		state.queryTargetedTablesString = tables.tableNamesAsString();
 		SelectStatement selectStatement = new SelectStatement();
 		selectStatement.setSelectType(Randomly.fromOptions(SelectStatement.SelectType.values()));
-		selectStatement.setFromTables(Arrays.asList(t));
-		List<Column> columns = t.getColumns();
+		selectStatement.setFromTables(tables.getTables());
+		List<Column> columns = tables.getColumns();
 		List<Column> fetchColumns;
-		RowValue rw = t.getRandomRowValue(database, state);
-		if (Randomly.getBooleanWithSmallProbability()) {
-			// only check a subset of columns
-			fetchColumns = Randomly.nonEmptySubset(columns);
-			selectStatement.selectFetchColumns(fetchColumns);
-		} else {
-			fetchColumns = columns;
-		}
+		RowValue rw = tables.getRandomRowValue(database, state);
+		// TODO: also implement a wild-card check (*)
+		fetchColumns = Randomly.nonEmptySubset(columns);
+		selectStatement.selectFetchColumns(fetchColumns);
+		state.queryTargetedColumnsString = fetchColumns.stream().map(c -> c.getFullQualifiedName())
+				.collect(Collectors.joining(", "));
 		Expression whereClause = generateWhereClauseThatContainsRowValue(columns, rw);
 		selectStatement.setWhereClause(whereClause);
 		List<Expression> groupByClause = generateGroupByClause(columns);
@@ -76,7 +72,6 @@ public class QueryGenerator {
 		String queryString = visitor.get();
 		boolean isContainedIn = isContainedIn(state, rw, fetchColumns, queryString);
 		if (!isContainedIn) {
-			state.logInconsistency();
 			throw new Main.ReduceMeException();
 		}
 	}
@@ -90,7 +85,8 @@ public class QueryGenerator {
 		}
 	}
 
-	private boolean isContainedIn(StateToReproduce state, RowValue rw, List<Column> fetchColumns, String queryString) throws SQLException {
+	private boolean isContainedIn(StateToReproduce state, RowValue rw, List<Column> fetchColumns, String queryString)
+			throws SQLException {
 		Statement createStatement;
 		createStatement = database.createStatement();
 
@@ -1169,7 +1165,7 @@ public class QueryGenerator {
 		case REAL:
 			double dValue = sampledConstant.asDouble();
 			return Constant.createRealConstant(Randomly.smallerOrEqualDouble(dValue));
-			// TODO: other data types
+		// TODO: other data types
 		default:
 			return sampledConstant;
 		}

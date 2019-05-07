@@ -31,6 +31,8 @@ public class SQLite3Visitor {
 	// https://www.mail-archive.com/sqlite-users@mailinglists.sqlite.org/msg115014.html
 	private boolean stringsAsDoubleQuotes;
 
+	public boolean fullyQualifiedNames = true;
+
 	void visit(BinaryOperation op) {
 		sb.append("(");
 		visit(op.getLeft());
@@ -65,6 +67,10 @@ public class SQLite3Visitor {
 	}
 
 	void visit(ColumnName c) {
+		if (fullyQualifiedNames ) {
+			sb.append(c.getColumn().getTable().getName());
+			sb.append('.');
+		}
 		sb.append(c.getColumn().getName());
 	}
 
