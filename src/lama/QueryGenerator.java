@@ -554,7 +554,7 @@ public class QueryGenerator {
 		do {
 			binaryOperator = Randomly.fromOptions(BinaryOperator.GREATER_EQUALS, BinaryOperator.SMALLER_EQUALS,
 					BinaryOperator.IS, BinaryOperator.NOT_EQUALS, BinaryOperator.GREATER, BinaryOperator.SMALLER,
-					BinaryOperator.LIKE);
+					BinaryOperator.LIKE, BinaryOperator.EQUALS);
 			retry = false;
 			switch (binaryOperator) {
 			case EQUALS:
