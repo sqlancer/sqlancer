@@ -7,13 +7,11 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.sqlite.SQLiteException;
-
-import lama.Randomly;
 import lama.Main.StateToReproduce;
+import lama.Randomly;
 import lama.schema.Schema;
 import lama.schema.Schema.Table;
-
+ 
 // see https://www.sqlite.org/lang_dropindex.html
 public class SQLite3DropIndexGenerator {
 
@@ -23,11 +21,11 @@ public class SQLite3DropIndexGenerator {
 		try (Statement stm = con.createStatement()) {
 			SQLite3DropIndexGenerator gen = new SQLite3DropIndexGenerator();
 			String query = gen.dropIndex(con, s);
-			
+
 			try {
 				state.statements.add(query);
 				stm.execute(query);
-			} catch (SQLiteException e) {
+			} catch (SQLException e) {
 				if (e.getMessage().startsWith(
 						"[SQLITE_ERROR] SQL error or missing database (index associated with UNIQUE or PRIMARY KEY constraint cannot be dropped)")) {
 					return;
@@ -58,24 +56,23 @@ public class SQLite3DropIndexGenerator {
 		INDEX_LIKE, // string that looks like an index
 		RANDOM_STRING
 	}
-	
+
 	private String getRandomIndexName(List<String> indices) throws AssertionError {
 		Options dropOption = Randomly.fromOptions(Options.values());
-		while (true) {
-			switch (dropOption) {
-			case KNOW_INDEX:
-				if (!indices.isEmpty()) {
-					sureItExists = true;
-					return Randomly.fromList(indices);
-				}
-				break;
-			case INDEX_LIKE:
-				return SQLite3Common.createIndexName(0);
-			case RANDOM_STRING:
+		switch (dropOption) {
+		case KNOW_INDEX:
+			if (!indices.isEmpty()) {
+				sureItExists = true;
+				return Randomly.fromList(indices);
+			} else {
 				return Randomly.getString();
-			default:
-				throw new AssertionError();
 			}
+		case INDEX_LIKE:
+			return SQLite3Common.createIndexName(0);
+		case RANDOM_STRING:
+			return Randomly.getString();
+		default:
+			throw new AssertionError();
 		}
 	}
 
