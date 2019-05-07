@@ -21,6 +21,7 @@ import lama.Expression.TypeLiteral;
 import lama.Expression.UnaryOperation;
 import lama.Randomly;
 import lama.SelectStatement;
+import lama.schema.Schema.Column;
 
 public class SQLite3Visitor {
 
@@ -159,8 +160,20 @@ public class SQLite3Visitor {
 			sb.append(Randomly.fromOptions("ALL ", ""));
 			break;
 		}
-		sb.append("* ");
-		sb.append("FROM ");
+		if (s.getFetchColumns() == null) {
+			sb.append("*");
+		} else {
+			for (int i = 0; i < s.getFetchColumns().size(); i++) {
+				if (i != 0) {
+					sb.append(", ");
+				}
+				Column column = s.getFetchColumns().get(i);
+				sb.append(column.getTable().getName());
+				sb.append('.');
+				sb.append(column.getName());
+			}
+		}
+		sb.append(" FROM ");
 		for (int i = 0; i < s.getFromList().size(); i++) {
 			if (i != 0) {
 				sb.append(", ");

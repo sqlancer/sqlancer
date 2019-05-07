@@ -50,7 +50,15 @@ public class QueryGenerator {
 		selectStatement.setSelectType(Randomly.fromOptions(SelectStatement.SelectType.values()));
 		selectStatement.setFromTables(Arrays.asList(t));
 		List<Column> columns = t.getColumns();
+		List<Column> fetchColumns;
 		RowValue rw = t.getRandomRowValue(database, state);
+		if (Randomly.getBooleanWithSmallProbability()) {
+			// only check a subset of columns
+			fetchColumns = Randomly.nonEmptySubset(columns);
+			selectStatement.selectFetchColumns(fetchColumns);
+		} else {
+			fetchColumns = columns;
+		}
 		Expression whereClause = generateWhereClauseThatContainsRowValue(columns, rw);
 		selectStatement.setWhereClause(whereClause);
 		List<Expression> groupByClause = generateGroupByClause(columns);
@@ -66,7 +74,7 @@ public class QueryGenerator {
 		SQLite3Visitor visitor = new SQLite3Visitor();
 		visitor.visit(selectStatement);
 		String queryString = visitor.get();
-		boolean isContainedIn = isContainedIn(state, rw, queryString);
+		boolean isContainedIn = isContainedIn(state, rw, fetchColumns, queryString);
 		if (!isContainedIn) {
 			state.logInconsistency();
 			throw new Main.ReduceMeException();
@@ -82,13 +90,13 @@ public class QueryGenerator {
 		}
 	}
 
-	private boolean isContainedIn(StateToReproduce state, RowValue rw, String queryString) throws SQLException {
+	private boolean isContainedIn(StateToReproduce state, RowValue rw, List<Column> fetchColumns, String queryString) throws SQLException {
 		Statement createStatement;
 		createStatement = database.createStatement();
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT ");
-		String columnNames = rw.getRowValuesAsString();
+		String columnNames = rw.getRowValuesAsString(fetchColumns);
 		sb.append(columnNames);
 		state.values = columnNames;
 		sb.append(" INTERSECT SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions

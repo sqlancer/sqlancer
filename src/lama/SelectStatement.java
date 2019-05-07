@@ -2,7 +2,7 @@ package lama;
 
 import java.util.List;
 
-import lama.Expression.OrderingTerm;
+import lama.schema.Schema.Column;
 import lama.schema.Schema.Table;
 
 public class SelectStatement {
@@ -14,6 +14,7 @@ public class SelectStatement {
 	private Expression limitClause;
 	private List<Expression> orderByClause;
 	private Expression offsetClause;
+	private List<Column> fetchColumns;
 	
 	public enum SelectType {
 		DISTINCT, ALL;
@@ -91,5 +92,13 @@ public class SelectStatement {
 		return offsetClause;
 	}
 
+
+	void selectFetchColumns(List<Column> fetchColumns) {
+		this.fetchColumns = fetchColumns;
+	}
+
+	public List<Column> getFetchColumns() {
+		return fetchColumns;
+	}
 
 }
