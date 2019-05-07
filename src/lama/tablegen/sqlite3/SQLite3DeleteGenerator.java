@@ -21,6 +21,10 @@ public class SQLite3DeleteGenerator {
 		} catch (Throwable e) {
 			if (e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (integer overflow)")) {
 				return;
+			} else if (e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (foreign key mismatch")) {
+				return;
+			} else if (e.getMessage().startsWith("[SQLITE_CONSTRAINT]  Abort due to constraint violation (FOREIGN KEY constraint failed)")) {
+				return;
 			}
 			state.logInconsistency(e);
 			throw new ReduceMeException();
