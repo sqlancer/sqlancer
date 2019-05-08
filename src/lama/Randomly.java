@@ -123,7 +123,7 @@ public final class Randomly {
 
 	public static String getString() {
 		if (smallBiasProbability()) {
-			return Randomly.fromOptions("cafe", "asdf", "test", "TRUE", "FALSE", "0.0");
+			return Randomly.fromOptions("test", "TRUE", "FALSE", "0.0", "-0.0");
 		}
 
 		String alphabet = new String("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#<>/.öä~-+' ");
@@ -207,7 +207,7 @@ public final class Randomly {
 
 	public static double getDouble() {
 		if (smallBiasProbability()) {
-			return Randomly.fromOptions(3.3, 5.0, 0.0, -8.0);
+			return Randomly.fromOptions(3.3, 5.0, 0.0, -8.0, -0.0, Double.MAX_VALUE, -Double.MAX_VALUE);
 		} else {
 			return ThreadLocalRandom.current().nextDouble();
 		}
@@ -226,6 +226,17 @@ public final class Randomly {
 			return left;
 		}
 		return ThreadLocalRandom.current().nextInt(left, right);
+	}
+
+	public static String getNonZeroString() {
+		if (Randomly.getBooleanWithSmallProbability()) {
+			return Randomly.fromOptions("-5x");
+		} else {
+			StringBuilder sb = new StringBuilder();
+			sb.append(Randomly.getNonZeroInteger());
+			sb.append(Randomly.getString());
+			return sb.toString();
+		}
 	}
 
 }

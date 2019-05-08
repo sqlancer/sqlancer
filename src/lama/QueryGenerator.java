@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 
 import lama.Expression.BinaryOperation;
 import lama.Expression.BinaryOperation.BinaryOperator;
+import lama.Expression.Cast;
 import lama.Expression.ColumnName;
 import lama.Expression.Constant;
 import lama.Expression.Function;
@@ -172,12 +173,18 @@ public class QueryGenerator {
 
 	private enum NewExpressionType {
 		CAST_TO_ITSELF, LITERAL, STANDALONE_COLUMN, DOUBLE_COLUMN, POSTFIX_COLUMN, NOT, UNARY_PLUS, AND, OR, COLLATE,
-		UNARY_FUNCTION, IN
+		UNARY_FUNCTION, IN, ALWAYS_TRUE_COLUMN_COMPARISON, CAST_TO_NUMERIC
 	}
 
 	private Expression generateNewExpression(List<Column> columns, RowValue rw, boolean shouldBeTrue, int depth) {
 		if (depth >= Main.EXPRESSION_MAX_DEPTH) {
 			return getStandaloneLiteral(shouldBeTrue);
+		}
+		if (Randomly.getBoolean()) {
+			Column c = Randomly.fromList(columns);
+			Constant sampledConstant = rw.getValues().get(c);
+			return createSampleBasedTwoColumnComparison(columns, rw, sampledConstant, new ColumnName(c),
+					shouldBeTrue);
 		}
 		if (Randomly.getBoolean() && shouldBeTrue) {
 			return generateExpression(columns, rw);
@@ -186,6 +193,26 @@ public class QueryGenerator {
 		do {
 			retry = false;
 			switch (Randomly.fromOptions(NewExpressionType.values())) {
+			case CAST_TO_NUMERIC:
+				Expression subExpr2 = createStandaloneColumn(columns, rw, shouldBeTrue);
+				if (subExpr2 == null) {
+					retry = true;
+					break;
+				} else {
+					Constant value = rw.getValues().get(((ColumnName)subExpr2).getColumn());
+					TypeLiteral typeofExpr = new Expression.TypeLiteral(Type.NUMERIC);
+					Cast castExpr = new Expression.Cast(typeofExpr, value);
+					Constant castConstant = castToNumeric(value);
+					return new BinaryOperation(castExpr, castConstant, shouldBeTrue ? BinaryOperator.EQUALS : BinaryOperator.NOT_EQUALS);
+				}
+			case ALWAYS_TRUE_COLUMN_COMPARISON:
+				Expression alwaysTrue = createAlwaysTrueColumnComparison(columns, rw, shouldBeTrue);
+				if (alwaysTrue == null) {
+					retry = true;
+					continue;
+				} else {
+					return alwaysTrue;
+				}
 			case CAST_TO_ITSELF: // TODO: let each expression have a type so that CAST can be applied without
 									// typeof
 				Expression subExpr = createStandaloneColumn(columns, rw, shouldBeTrue);
@@ -326,24 +353,42 @@ public class QueryGenerator {
 		throw new AssertionError();
 	}
 
+	private Expression createAlwaysTrueColumnComparison(List<Column> columns, RowValue rw, boolean shouldBeTrue) {
+		Column left = Randomly.fromList(columns);
+		Column right = Randomly.fromList(columns);
+		return createAlwaysTrueTwoColumnExpression(left, right, rw, shouldBeTrue);
+	}
+
 	private Expression getUnaryFunction() {
 		String functionName = Randomly.fromOptions("sqlite_source_id", "sqlite_version",
 				"total_changes" /* some rows should have been inserted */);
 		return new Expression.Function(functionName);
 	}
 
-	private Constant castToNumeric(Constant value) {
-		// TODO complete and test
+	/**
+	 * Applies numeric affinity to a value.
+	 */
+	public static Constant castToNumeric(Constant value) {
+		if (value.getDataType() == SQLite3DataType.BINARY) {
+			String text = new String(value.asBinary());
+			value = Constant.createTextConstant(text);
+		}
 		switch (value.getDataType()) {
-		case NULL:
 		case INT:
 		case REAL:
 			return value;
 		case TEXT:
+			if (!value.asString().isEmpty() && Character.isISOControl(value.asString().charAt(0))) {
+				// non-printable characters are ignored by Double.valueOf
+				return Constant.createIntConstant(0);
+			}
 			for (int i = value.asString().length(); i >= 0; i--) {
 				try {
 					double d = Double.valueOf(value.asString().substring(0, i));
-					if (d == (int) d) {
+//					if (value.asString().equals("-0.0")) {
+//						return Constant.createRealConstant(0.0);
+//					} else
+						if (d == (int) d) {
 						return Constant.createIntConstant((long) d);
 					} else {
 						return Constant.createRealConstant(d);
@@ -354,7 +399,7 @@ public class QueryGenerator {
 			}
 			return Constant.createIntConstant(0);
 		default:
-			throw new AssertionError();
+			throw new AssertionError(value);
 		}
 	}
 
@@ -365,66 +410,33 @@ public class QueryGenerator {
 		if (value.isNull()) {
 			return null;
 		}
-		switch (value.getDataType()) {
+		Constant numericValue;
+		if (value.getDataType() == SQLite3DataType.TEXT || value.getDataType() == SQLite3DataType.BINARY) {
+			numericValue = castToNumeric(value);
+		} else {
+			numericValue = value;
+		}
+		assert numericValue.getDataType() != SQLite3DataType.TEXT : numericValue + "should have been converted";
+		switch (numericValue.getDataType()) {
 		case INT:
-			if (shouldBeTrue && value.asInt() != 0) {
+			if (shouldBeTrue && numericValue.asInt() != 0) {
 				return new ColumnName(c);
-			} else if (!shouldBeTrue && value.asInt() == 0) {
+			} else if (!shouldBeTrue && numericValue.asInt() == 0) {
 				return new ColumnName(c);
 			} else {
 				return null;
 			}
 		case REAL:
 			// TODO: directly comparing to a double is probably not a good idea
-			if (shouldBeTrue && value.asDouble() != 0.0) {
+			if (shouldBeTrue && numericValue.asDouble() != 0.0) {
 				return new ColumnName(c);
-			} else if (!shouldBeTrue && value.asDouble() == 0.0) {
+			} else if (!shouldBeTrue && numericValue.asDouble() == 0.0) {
 				return new ColumnName(c);
 			} else {
 				return null;
 			}
-		case TEXT:
-			// TODO: false positive: a column condition was generated with value 0Xe.p9
-			Constant numericConstant = castToNumeric(Constant.createTextConstant(value.asString()));
-			if (numericConstant.getDataType() == SQLite3DataType.INT) {
-				if (shouldBeTrue && numericConstant.asInt() != 0) {
-					return new ColumnName(c);
-				} else if (!shouldBeTrue && numericConstant.asInt() == 0) {
-					return new ColumnName(c);
-				} else {
-					return null;
-				}
-			}
-			return null;
-		// case BINARY:
-//			byte[] bytes = (byte[]) value;
-//			for (int i = 0; i < bytes.length; i++) {
-//				if (bytes[i] == '0' || bytes[i] == '+' || bytes[i] == '-') {
-//					continue;
-//				}
-//				if (bytes[i] >= '1' && bytes[i] <= '9') {
-//					if (shouldBeTrue) {
-//						return new ColumnName(c);
-//					} else {
-//						return null;
-//					}
-//				} else {
-//					if (!shouldBeTrue) {
-//						return new ColumnName(c);
-//					} else {
-//						return null;
-//					}
-//				}
-//			}
-//			if (shouldBeTrue) {
-//				return null;
-//			} else {
-//				// bytes is all zero or bytes.length == 0;
-//				return new ColumnName(c);
-//			}
 		default:
-			return null;
-
+			throw new AssertionError(numericValue);
 		}
 	}
 
@@ -442,9 +454,9 @@ public class QueryGenerator {
 		case TEXT:
 			String strValue;
 			if (shouldBeTrue) {
-				strValue = Long.toString(Randomly.getNonZeroInteger());
+				strValue = Randomly.getNonZeroString();
 			} else {
-				strValue = Randomly.fromOptions("0", "asdf", "c", "-a"); // TODO
+				strValue = Randomly.fromOptions("0", "asdf", "c", "-a");
 			}
 			return Constant.createTextConstant(strValue);
 		case REAL:
@@ -539,6 +551,35 @@ public class QueryGenerator {
 
 		BinaryOperator op;
 		Expression expr;
+	}
+	
+	private Expression createAlwaysTrueTwoColumnExpression(Column left, Column right, RowValue rw, boolean shouldBeTrue) {
+		BinaryOperator binaryOperator = Randomly.fromOptions(BinaryOperator.GREATER_EQUALS, BinaryOperator.SMALLER_EQUALS,
+				BinaryOperator.IS, BinaryOperator.NOT_EQUALS, BinaryOperator.GREATER, BinaryOperator.SMALLER,
+				BinaryOperator.EQUALS);
+		Expression leftColumn = new ColumnName(left);
+		Expression rightColumn = new ColumnName(right);
+		if (rw.getValues().get(left).isNull() || rw.getValues().get(right).isNull()) {
+			// TODO add another OR ISNULL clause
+			return null;
+		}
+		if (Randomly.getBoolean()) {
+			BinaryFunction func;
+			do {
+				func = Randomly.fromOptions(BinaryFunction.values());
+			} while (func == BinaryFunction.UNICODE);
+			leftColumn = new Function(func.getName(), leftColumn);
+			rightColumn = new Function(func.getName(), rightColumn);
+		}
+		BinaryOperation leftExpr = new BinaryOperation(leftColumn, rightColumn, binaryOperator);
+		Expression rightExpr;
+		if (Randomly.getBoolean()) {
+			rightExpr = new BinaryOperation(leftColumn, rightColumn, binaryOperator.reverse());
+		} else {
+			rightExpr = new UnaryOperation(UnaryOperator.NOT, leftExpr);
+		}
+		BinaryOperator conOperator = shouldBeTrue ? BinaryOperator.OR : BinaryOperator.AND;
+		return new BinaryOperation(leftExpr, rightExpr, conOperator);
 	}
 
 	private Tuple createSampleBasedColumnConstantComparison(Constant sampledConstant, Expression columnName) {
