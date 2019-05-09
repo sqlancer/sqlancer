@@ -193,6 +193,7 @@ public class Schema {
 
 		private final String tableName;
 		private final List<Column> columns;
+		private Column rowid;
 
 		public Table(String tableName, List<Column> columns) {
 			this.tableName = tableName;
@@ -237,6 +238,14 @@ public class Schema {
 		@Override
 		public int compareTo(Table o) {
 			return o.getName().compareTo(tableName);
+		}
+
+		public void addRowid(Column rowid) {
+			this.rowid = rowid;
+		}
+
+		public Column getRowid() {
+			return rowid;
 		}
 
 	}
@@ -332,6 +341,19 @@ public class Schema {
 						}
 
 						Table t = new Table(tableName, databaseColumns);
+						try (Statement s = con.createStatement()) {
+							try (ResultSet rs = s.executeQuery("SELECT typeof(rowid) FROM " + tableName)) {
+								if (rs.next()) {
+									String dataType = rs.getString(1);
+									SQLite3DataType columnType = getColumnType(dataType);
+									Column rowid = new Column("rowid", columnType, true, true);
+									t.addRowid(rowid);
+									rowid.setTable(t);
+								}
+							}
+						} catch (SQLException e) {
+							// ignore
+						}
 						for (Column c : databaseColumns) {
 							c.setTable(t);
 						}

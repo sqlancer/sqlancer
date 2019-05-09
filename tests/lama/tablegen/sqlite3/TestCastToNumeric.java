@@ -54,7 +54,7 @@ class TestCastToNumeric {
 		triples.add(new StringTestTriple("-3.2", SQLite3DataType.REAL, -3.2d));
 		triples.add(new StringTestTriple("10e9", SQLite3DataType.REAL, 10000000000.0));
 		triples.add(new StringTestTriple("-0.0", SQLite3DataType.REAL, 0.0d));
-
+		
 		for (StringTestTriple triple : triples) {
 			Constant castVal = QueryGenerator.castToNumeric(Constant.createTextConstant(triple.value));
 			assertEquals(triple.value.toString(), triple.expectedCastValue, castVal.getValue());
@@ -65,6 +65,21 @@ class TestCastToNumeric {
 	void testBinary() {
 		List<StringTestTriple> triples = new ArrayList<>();
 		triples.add(new StringTestTriple("112B3980", SQLite3DataType.INT, 0L)); // +9�
+		triples.add(new StringTestTriple("0936", SQLite3DataType.INT, 6L)); // 6
+		triples.add(new StringTestTriple("0C36", SQLite3DataType.INT, 6L)); // 6
+		triples.add(new StringTestTriple("0a36", SQLite3DataType.INT, 6L)); // 6
+		triples.add(new StringTestTriple("0b36", SQLite3DataType.INT, 6L)); // 6
+		triples.add(new StringTestTriple("0c36", SQLite3DataType.INT, 6L)); // 6
+		triples.add(new StringTestTriple("0d36", SQLite3DataType.INT, 6L)); // 6
+		triples.add(new StringTestTriple("0e36", SQLite3DataType.INT, 0L)); // 6
+		triples.add(new StringTestTriple("1C32", SQLite3DataType.INT, 0L)); // FS2
+		triples.add(new StringTestTriple("1D32", SQLite3DataType.INT, 0L)); // GS2
+		triples.add(new StringTestTriple("1e32", SQLite3DataType.INT, 0L)); // RS2
+		triples.add(new StringTestTriple("1f32", SQLite3DataType.INT, 0L)); // RS2
+		triples.add(new StringTestTriple("2032", SQLite3DataType.INT, 2L)); // RS2
+		triples.add(new StringTestTriple("09013454", SQLite3DataType.INT, 0L)); // RS2
+		
+		
 		for (StringTestTriple triple : triples) {
 			Constant castVal = QueryGenerator
 					.castToNumeric(Constant.createBinaryConstant(DatatypeConverter.parseHexBinary(triple.value)));
