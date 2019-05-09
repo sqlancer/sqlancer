@@ -118,10 +118,21 @@ public class SQLite3TableGenerator {
 			sb.append("");
 		}
 		sb.append(")");
+		addActionClause(" ON DELETE ");
+		addActionClause(" ON UPDATE ");
 		if (Randomly.getBoolean()) {
+			// add a deferrable clause
 			sb.append(" ");
 			String deferrable = Randomly.fromOptions("DEFERRABLE INITIALLY DEFERRED", "NOT DEFERRABLE INITIALLY DEFERRED", "NOT DEFERRABLE INITIALLY IMMEDIATE", "NOT DEFERRABLE", "DEFERRABLE INITIALLY IMMEDIATE", "DEFERRABLE");
 			sb.append(deferrable);
+		}
+	}
+
+	private void addActionClause(String string) {
+		if (Randomly.getBoolean()) {
+			// add an ON DELETE or ON ACTION clause
+			sb.append(string);
+			sb.append(Randomly.fromOptions("NO ACTION", "RESTRICT", "SET NULL", "SET DEFAULT", "CASCADE"));
 		}
 	}
 
