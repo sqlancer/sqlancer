@@ -79,25 +79,7 @@ public class SQLite3TableGenerator {
 		}
 
 		if (Randomly.getBoolean()) {
-			// FOREIGN KEY
-			String randomColumn = Randomly.fromList(columnNames);
-			sb.append(", FOREIGN KEY(");
-			sb.append(randomColumn);
-			sb.append(")");
-			sb.append(" REFERENCES ");
-			if (existingSchema.getDatabaseTables().isEmpty() || Randomly.getBooleanWithSmallProbability()) {
-				String otherRandomColumn = Randomly.fromList(columnNames);
-				sb.append(tableName + "(");
-				sb.append(otherRandomColumn);
-			} else {
-				Table otherTable = existingSchema.getRandomTable();
-				Column randomColumn2 = otherTable.getRandomColumn();
-				sb.append(otherTable.getName());
-				sb.append("(");
-				sb.append(randomColumn2.getName());
-				sb.append("");
-			}
-			sb.append(")");
+			addForeignKey();
 		}
 
 		if (Randomly.getBoolean()) {
@@ -110,6 +92,36 @@ public class SQLite3TableGenerator {
 				// see https://sqlite.org/withoutrowid.html
 				sb.append(" WITHOUT ROWID");
 			}
+		}
+	}
+
+	/**
+	 * @see https://www.sqlite.org/foreignkeys.html
+	 */
+	private void addForeignKey() {
+		String randomColumn = Randomly.fromList(columnNames);
+		sb.append(", FOREIGN KEY(");
+		sb.append(randomColumn);
+		sb.append(")");
+		sb.append(" REFERENCES ");
+		// TODO compound columns
+		if (existingSchema.getDatabaseTables().isEmpty() || Randomly.getBooleanWithSmallProbability()) {
+			String otherRandomColumn = Randomly.fromList(columnNames);
+			sb.append(tableName + "(");
+			sb.append(otherRandomColumn);
+		} else {
+			Table otherTable = existingSchema.getRandomTable();
+			Column randomColumn2 = otherTable.getRandomColumn();
+			sb.append(otherTable.getName());
+			sb.append("(");
+			sb.append(randomColumn2.getName());
+			sb.append("");
+		}
+		sb.append(")");
+		if (Randomly.getBoolean()) {
+			sb.append(" ");
+			String deferrable = Randomly.fromOptions("DEFERRABLE INITIALLY DEFERRED", "NOT DEFERRABLE INITIALLY DEFERRED", "NOT DEFERRABLE INITIALLY IMMEDIATE", "NOT DEFERRABLE", "DEFERRABLE INITIALLY IMMEDIATE", "DEFERRABLE");
+			sb.append(deferrable);
 		}
 	}
 
