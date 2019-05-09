@@ -405,6 +405,10 @@ public class Schema {
 		return databaseTables;
 	}
 
+	public Tables getTables() {
+		return new Tables(databaseTables);
+	}
+
 	public Tables getRandomTableNonEmptyTables() {
 		return new Tables(Randomly.nonEmptySubset(databaseTables));
 	}

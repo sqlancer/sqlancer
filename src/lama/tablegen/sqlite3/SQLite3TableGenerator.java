@@ -1,6 +1,7 @@
 package lama.tablegen.sqlite3;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,7 +10,6 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.schema.Schema;
-import lama.schema.Schema.Column;
 import lama.schema.Schema.Table;
 import lama.sqlite3.SQLite3Visitor;
 
@@ -99,31 +99,46 @@ public class SQLite3TableGenerator {
 	 * @see https://www.sqlite.org/foreignkeys.html
 	 */
 	private void addForeignKey() {
-		String randomColumn = Randomly.fromList(columnNames);
+		List<String> foreignKeyColumns = new ArrayList<>();
+		if (Randomly.getBoolean()) {
+			foreignKeyColumns = Arrays.asList(Randomly.fromList(columnNames));
+		} else {
+			foreignKeyColumns = new ArrayList<>();
+			do {
+				foreignKeyColumns.add(Randomly.fromList(columnNames));
+			} while (Randomly.getBoolean());
+		}
 		sb.append(", FOREIGN KEY(");
-		sb.append(randomColumn);
+		sb.append(foreignKeyColumns.stream().collect(Collectors.joining(", ")));
 		sb.append(")");
 		sb.append(" REFERENCES ");
-		// TODO compound columns
+		String referencedTableName;
+		List<String> columns = new ArrayList<>();
 		if (existingSchema.getDatabaseTables().isEmpty() || Randomly.getBooleanWithSmallProbability()) {
-			String otherRandomColumn = Randomly.fromList(columnNames);
-			sb.append(tableName + "(");
-			sb.append(otherRandomColumn);
+			// the foreign key references our own table
+			referencedTableName = tableName;
+			for (int i = 0; i < foreignKeyColumns.size(); i++) {
+				columns.add(Randomly.fromList(columnNames));
+			}
 		} else {
-			Table otherTable = existingSchema.getRandomTable();
-			Column randomColumn2 = otherTable.getRandomColumn();
-			sb.append(otherTable.getName());
-			sb.append("(");
-			sb.append(randomColumn2.getName());
-			sb.append("");
+			Table randomTable = existingSchema.getRandomTable();
+			referencedTableName = randomTable.getName();
+			for (int i = 0; i < foreignKeyColumns.size(); i++) {
+				columns.add(randomTable.getRandomColumn().getName());
+			}
 		}
+		sb.append(referencedTableName);
+		sb.append("(");
+		sb.append(columns.stream().collect(Collectors.joining(", ")));
 		sb.append(")");
 		addActionClause(" ON DELETE ");
 		addActionClause(" ON UPDATE ");
 		if (Randomly.getBoolean()) {
 			// add a deferrable clause
 			sb.append(" ");
-			String deferrable = Randomly.fromOptions("DEFERRABLE INITIALLY DEFERRED", "NOT DEFERRABLE INITIALLY DEFERRED", "NOT DEFERRABLE INITIALLY IMMEDIATE", "NOT DEFERRABLE", "DEFERRABLE INITIALLY IMMEDIATE", "DEFERRABLE");
+			String deferrable = Randomly.fromOptions("DEFERRABLE INITIALLY DEFERRED",
+					"NOT DEFERRABLE INITIALLY DEFERRED", "NOT DEFERRABLE INITIALLY IMMEDIATE", "NOT DEFERRABLE",
+					"DEFERRABLE INITIALLY IMMEDIATE", "DEFERRABLE");
 			sb.append(deferrable);
 		}
 	}
