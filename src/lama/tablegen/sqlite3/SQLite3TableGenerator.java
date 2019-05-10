@@ -31,7 +31,6 @@ public class SQLite3TableGenerator {
 	private int columnId;
 	private boolean containsPrimaryKey;
 	private boolean containsAutoIncrement;
-	private boolean conflictClauseInserted;
 	private final List<String> columnNames = new ArrayList<>();
 	private final Schema existingSchema;
 
@@ -66,7 +65,18 @@ public class SQLite3TableGenerator {
 			if (i != 0) {
 				sb.append(", ");
 			}
-			createColumn(allowPrimaryKeyInColumn);
+			String columnName = SQLite3Common.createColumnName(columnId);
+			SQLite3ColumnBuilder columnBuilder = new SQLite3ColumnBuilder().allowPrimaryKey(allowPrimaryKeyInColumn && !containsPrimaryKey);
+			sb.append(columnBuilder.createColumn(columnName));
+			sb.append(" ");
+			if (columnBuilder.isContainsAutoIncrement()) {
+				this.containsAutoIncrement = true;
+			}
+			if (columnBuilder.isContainsPrimaryKey()) {
+				this.containsPrimaryKey = true;
+			}
+			
+			columnNames.add(columnName);
 			columnId++;
 		}
 		if (!containsPrimaryKey && Randomly.getBoolean()) {
@@ -83,7 +93,7 @@ public class SQLite3TableGenerator {
 		}
 
 		if (Randomly.getBoolean()) {
-			addCheckConstraint(); // TODO: incorporate columns
+			sb.append(SQLite3Common.getCheckConstraint()); // TODO: incorporate columns
 		}
 
 		sb.append(")");
@@ -151,86 +161,7 @@ public class SQLite3TableGenerator {
 		}
 	}
 
-	private enum Constraints {
-		NOT_NULL, PRIMARY_KEY, UNIQUE, CHECK
-	}
 
-	private void createColumn(boolean allowPrimaryKeyInColumn) {
-		String columnName = SQLite3Common.createColumnName(columnId);
-		columnNames.add(columnName);
-		sb.append(columnName);
-		sb.append(" ");
-		String dataType = Randomly.fromOptions("INT", "TEXT", "BLOB", "REAL", "INTEGER");
-		sb.append(dataType);
 
-		if (Randomly.getBoolean()) {
-			List<Constraints> constraints = Randomly.subset(Constraints.values());
-			for (Constraints c : constraints) {
-				switch (c) {
-				case PRIMARY_KEY:
-					// only one primary key is allow if not specified as table constraint
-					if (allowPrimaryKeyInColumn && !containsPrimaryKey) {
-						sb.append(" PRIMARY KEY");
-						containsPrimaryKey = true;
-						boolean hasOrdering = Randomly.getBoolean();
-						if (hasOrdering) {
-							if (Randomly.getBoolean()) {
-								sb.append(" ASC");
-							} else {
-								sb.append(" DESC");
-							}
-						}
-						if (Randomly.getBoolean()) {
-							insertOnConflictClause();
-						}
-						if (!hasOrdering && dataType.equals("INTEGER")) {
-							if (Randomly.getBoolean()) {
-								containsAutoIncrement = true;
-								sb.append(" AUTOINCREMENT");
-							}
-						}
-					}
-					break;
-				case UNIQUE:
-					sb.append(" UNIQUE");
-					if (Randomly.getBoolean()) {
-						insertOnConflictClause();
-					}
-					break;
-				case NOT_NULL:
-					sb.append(" NOT NULL");
-					if (Randomly.getBoolean()) {
-						insertOnConflictClause();
-					}
-					break;
-				case CHECK:
-					addCheckConstraint();
-					break;
-				default:
-					throw new AssertionError();
-				}
-			}
-		}
-		if (Randomly.getBoolean()) {
-			sb.append(" DEFAULT " + SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(false)));
-		}
-		if (Randomly.getBoolean()) {
-			String randomCollate = SQLite3Common.getRandomCollate();
-			sb.append(randomCollate);
-		}
-	}
-
-	private void addCheckConstraint() {
-		sb.append(" CHECK ( " + SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(false)) + ")");
-	}
-
-	// it seems that only one conflict clause can be inserted
-	private void insertOnConflictClause() {
-		if (!conflictClauseInserted) {
-			sb.append(" ON CONFLICT ");
-			sb.append(Randomly.fromOptions("ROLLBACK", "ABORT", "FAIL", "IGNORE", "REPLACE"));
-			conflictClauseInserted = true;
-		}
-	}
 
 }

@@ -3,6 +3,8 @@ package lama.tablegen.sqlite3;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.sqlite.SQLiteException;
+
 import lama.Main.StateToReproduce;
 import lama.Query;
 import lama.QueryAdapter;
@@ -14,25 +16,39 @@ import lama.schema.Schema.Table;
 public class SQLite3AlterTable {
 
 	private enum Option {
-		RENAME_TABLE, RENAME_COLUMN
+		RENAME_TABLE, RENAME_COLUMN, ADD_COLUMN
 	}
 
 	public static Query alterTable(Schema s, Connection con, StateToReproduce state) throws SQLException {
 		SQLite3AlterTable alterTable = new SQLite3AlterTable();
-		// TODO implement add column, which has many constraints
 		Option option = Randomly.fromOptions(Option.values());
 		switch (option) {
 		case RENAME_TABLE:
 			alterTable.renameTable(s);
-			break;
+			return new QueryAdapter(alterTable.sb.toString());
 		case RENAME_COLUMN:
 			alterTable.renameColumn(s);
-			break;
+			return new QueryAdapter(alterTable.sb.toString());
+		case ADD_COLUMN:
+			alterTable.addColumn(s);
+			return new QueryAdapter(alterTable.sb.toString()) {
+				@Override
+				public void execute(Connection con) throws SQLException {
+					try {
+						super.execute(con);
+					} catch (SQLiteException e) {
+						if (e.getMessage().equals("[SQLITE_ERROR] SQL error or missing database (Cannot add a NOT NULL column with default value NULL)")) {
+							return;
+						} else {
+							throw e;
+						}
+					}
+				}
+			};
 		default:
 			throw new AssertionError();
 		}
 		
-		return new QueryAdapter(alterTable.sb.toString());
 
 	}
 
@@ -51,6 +67,23 @@ public class SQLite3AlterTable {
 		} while (t.getColumns().stream().anyMatch(col -> col.getName().contentEquals(name[0])));
 		sb.append(name[0]);
 	}
+	
+	private void addColumn(Schema s) {
+		Table t = s.getRandomTable();
+		sb.append("ALTER TABLE ");
+		sb.append(t.getName());
+		sb.append(" ADD COLUMN ");
+		int nr = 0;
+		String[] name = new String[1];
+		do {
+			name[0] = SQLite3Common.createColumnName(nr++);
+		} while (t.getColumns().stream().anyMatch(col -> col.getName().contentEquals(name[0])));
+		// The column may not have a PRIMARY KEY or UNIQUE constraint.
+		// The column may not have a default value of CURRENT_TIME, CURRENT_DATE, CURRENT_TIMESTAMP, or an expression in parentheses.
+		// If a NOT NULL constraint is specified, then the column must have a default value other than NULL.
+		// If foreign key constraints are enabled and a column with a REFERENCES clause is added, the column must have a default value of NULL.
+		sb.append(new SQLite3ColumnBuilder().allowPrimaryKey(false).allowUnique(false).allowNotNull(false).allowDefaultValue(false).createColumn(name[0]));
+	} 
 
 	private final StringBuilder sb = new StringBuilder();
 

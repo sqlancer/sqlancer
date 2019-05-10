@@ -1,6 +1,7 @@
 package lama.tablegen.sqlite3;
 
 import lama.Randomly;
+import lama.sqlite3.SQLite3Visitor;
 
 public class SQLite3Common {
 
@@ -19,5 +20,10 @@ public class SQLite3Common {
 	public static String createIndexName(int nr) {
 		return String.format("i%d", nr);
 	}
+	
+	public static String getCheckConstraint() {
+		return(" CHECK ( " + SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(false)) + ")");
+	}
+
 
 }
