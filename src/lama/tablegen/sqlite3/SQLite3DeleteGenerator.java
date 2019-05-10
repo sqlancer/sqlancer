@@ -26,7 +26,7 @@ public class SQLite3DeleteGenerator {
 							.startsWith("[SQLITE_ERROR] SQL error or missing database (foreign key mismatch")) {
 						return;
 					} else if (e.getMessage().startsWith(
-							"[SQLITE_CONSTRAINT]  Abort due to constraint violation (FOREIGN KEY constraint failed)")) {
+							"[SQLITE_CONSTRAINT]  Abort due to constraint violation ")) {
 						return;
 					}
 					throw e;
