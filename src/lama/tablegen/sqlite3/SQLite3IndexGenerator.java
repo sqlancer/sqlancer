@@ -39,6 +39,8 @@ public class SQLite3IndexGenerator {
 				} catch (SQLiteException e) {
 					if (isUnique && e.getMessage().startsWith("[SQLITE_CONSTRAINT]  Abort due to constraint violation (UNIQUE constraint failed")) {
 						return;
+					} else if (e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (integer overflow)")) {
+						return;
 					} else {
 						throw e;
 					}
