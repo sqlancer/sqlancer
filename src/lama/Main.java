@@ -44,9 +44,11 @@ import lama.tablegen.sqlite3.SQLite3ReindexGenerator;
 import lama.tablegen.sqlite3.SQLite3RowGenerator;
 import lama.tablegen.sqlite3.SQLite3TableGenerator;
 import lama.tablegen.sqlite3.SQLite3TransactionGenerator;
+import lama.tablegen.sqlite3.SQLite3UpdateGenerator;
 import lama.tablegen.sqlite3.SQLite3VacuumGenerator;
 
 // TODO:
+// group by
 // case
 // between
 // select so that no record should be returned
@@ -175,7 +177,7 @@ public class Main {
 	static int threadsShutdown;
 
 	private enum Action {
-		PRAGMA, INDEX, INSERT, VACUUM, REINDEX, ANALYZE, DELETE, TRANSACTION_START, ALTER, DROP_INDEX;
+		PRAGMA, INDEX, INSERT, VACUUM, REINDEX, ANALYZE, DELETE, TRANSACTION_START, ALTER, DROP_INDEX, UPDATE;
 	}
 
 	public static void main(String[] args) {
@@ -320,6 +322,9 @@ public class Main {
 						case ALTER:
 							query = SQLite3AlterTable.alterTable(newSchema, con, state);
 							affectedSchema = true;
+							break;
+						case UPDATE:
+							query = SQLite3UpdateGenerator.updateRow(newSchema.getRandomTable(), con, state);
 							break;
 						case TRANSACTION_START:
 							if (!transactionActive) {
