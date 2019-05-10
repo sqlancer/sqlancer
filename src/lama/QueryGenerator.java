@@ -947,7 +947,11 @@ public class QueryGenerator {
 				case LIKE:
 				case SMALLER_EQUALS:
 				case GREATER_EQUALS:
-					return true;
+					if (leftType == SQLite3DataType.REAL || rightType == SQLite3DataType.REAL) {
+						return false;
+					} else {
+						return true;
+					}
 				case IS_NOT:
 				case NOT_EQUALS:
 				case GREATER:
@@ -1226,7 +1230,7 @@ public class QueryGenerator {
 			}
 		case REAL:
 			double dValue = sampledConstant.asDouble();
-			if (dValue == -Double.MAX_VALUE) {
+			if (dValue == Double.NEGATIVE_INFINITY) {
 				return null;
 			} else {
 				return Constant.createRealConstant(Randomly.smallerDouble(dValue));

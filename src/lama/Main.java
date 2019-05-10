@@ -25,8 +25,6 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.stream.Collectors;
 
-import org.sqlite.SQLiteException;
-
 import lama.Expression.Constant;
 import lama.Main.StateToReproduce.ErrorKind;
 import lama.schema.Schema;
@@ -227,6 +225,8 @@ public class Main {
 					while (true) {
 						try (Connection con = DatabaseFacade.createDatabase(databaseName)) {
 							generateAndTestDatabase(databaseName, con);
+						} catch (IgnoreMeException e) {
+							continue;
 						} catch (ReduceMeException reduce) {
 							state.logInconsistency();
 							tryToReduceBug(databaseName, state);

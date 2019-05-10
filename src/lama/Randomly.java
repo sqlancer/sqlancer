@@ -90,11 +90,11 @@ public final class Randomly {
 	}
 
 	public static double smallerDouble(double value) {
-		if (value == -Double.MAX_VALUE) {
+		if (value == Double.NEGATIVE_INFINITY) {
 			throw new IllegalArgumentException();
 		}
 		// TODO select randomly
-		return -Double.MAX_VALUE;
+		return Double.NEGATIVE_INFINITY;
 	}
 
 	public static int smallNumber() {
@@ -122,24 +122,20 @@ public final class Randomly {
 	}
 
 	public static String getString() {
-		if (smallBiasProbability()) {
-			return Randomly.fromOptions("test", "TRUE", "FALSE", "0.0", "-0.0");
+		if (getBoolean()) {
+			return Randomly.fromOptions("test", "TRUE", "FALSE", "0.0", "-0.0", "1e500", "-1e500");
 		}
 
 		String alphabet = new String("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#<>/.öä~-+' ");
 		int n = alphabet.length();
 
 		StringBuilder sb = new StringBuilder();
-//		Random r = new Random();
 
 		for (int i = 0; i < Randomly.smallNumber(); i++) {
 			sb.append(alphabet.charAt(ThreadLocalRandom.current().nextInt(n)));
 		}
 
 		return sb.toString();
-//		byte[] bytes = new byte[Randomly.smallNumber()];
-//		ThreadLocalRandom.current().nextBytes(bytes);
-//		return new String(bytes, Charset.forName("UTF-8")).replace("\"", "\"\"");
 	}
 
 	public static void getBytes(byte[] bytes) {
@@ -192,22 +188,28 @@ public final class Randomly {
 	}
 
 	public static double greaterOrEqualDouble(double asDouble) {
-		if (asDouble == Double.MAX_VALUE) {
+		if (asDouble == Double.POSITIVE_INFINITY) {
 			return asDouble;
+		} else if (asDouble == Double.MAX_VALUE) {
+			return Randomly.fromOptions(Double.POSITIVE_INFINITY, Double.MAX_VALUE);
+		} else {
+			return ThreadLocalRandom.current().nextDouble(asDouble, Double.MAX_VALUE);
 		}
-		return ThreadLocalRandom.current().nextDouble(asDouble, Double.MAX_VALUE);
 	}
 
 	public static double smallerOrEqualDouble(double value) {
-		if (value == -Double.MAX_VALUE) {
+		if (value == Double.NEGATIVE_INFINITY) {
 			return value;
+		} else if (value == -Double.MAX_VALUE) {
+			return Randomly.fromOptions(-Double.MAX_VALUE, Double.NEGATIVE_INFINITY);
+		} else {
+			return ThreadLocalRandom.current().nextDouble(-Double.MAX_VALUE, value);
 		}
-		return ThreadLocalRandom.current().nextDouble(-Double.MAX_VALUE, value);
 	}
 
 	public static double getDouble() {
 		if (smallBiasProbability()) {
-			return Randomly.fromOptions(3.3, 5.0, 0.0, -8.0, -0.0, Double.MAX_VALUE, -Double.MAX_VALUE);
+			return Randomly.fromOptions(3.3, 5.0, 0.0, -8.0, -0.0, Double.MAX_VALUE, -Double.MAX_VALUE, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY);
 		} else {
 			return ThreadLocalRandom.current().nextDouble();
 		}

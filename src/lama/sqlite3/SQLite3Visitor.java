@@ -5,6 +5,7 @@ import java.util.List;
 import javax.xml.bind.DatatypeConverter;
 
 import lama.Expression;
+import lama.IgnoreMeException;
 import lama.Expression.BetweenOperation;
 import lama.Expression.BinaryOperation;
 import lama.Expression.Cast;
@@ -67,7 +68,7 @@ public class SQLite3Visitor {
 	}
 
 	void visit(ColumnName c) {
-		if (fullyQualifiedNames ) {
+		if (fullyQualifiedNames) {
 			sb.append(c.getColumn().getTable().getName());
 			sb.append('.');
 		}
@@ -96,7 +97,17 @@ public class SQLite3Visitor {
 				}
 				break;
 			case REAL:
-				sb.append(c.asDouble());
+				double asDouble = c.asDouble();
+				if (Double.POSITIVE_INFINITY == asDouble) {
+					sb.append("1e500");
+				} else if (Double.NEGATIVE_INFINITY == asDouble) {
+					sb.append("-1e500");
+				} else if (Double.isNaN(asDouble)) {
+					throw new IgnoreMeException();
+//					sb.append("1e500 / 1e500");
+				} else {
+					sb.append(asDouble);
+				}
 				break;
 			case TEXT:
 				// not escape with double quotes
