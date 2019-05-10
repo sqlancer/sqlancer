@@ -92,9 +92,11 @@ public final class Randomly {
 	public static double smallerDouble(double value) {
 		if (value == Double.NEGATIVE_INFINITY) {
 			throw new IllegalArgumentException();
+		} else if (value == -Double.MAX_VALUE) {
+			return Double.NEGATIVE_INFINITY;
+		} else {
+			return ThreadLocalRandom.current().nextDouble(-Double.MAX_VALUE, value);
 		}
-		// TODO select randomly
-		return Double.NEGATIVE_INFINITY;
 	}
 
 	public static int smallNumber() {
@@ -238,6 +240,16 @@ public final class Randomly {
 			sb.append(Randomly.getNonZeroInteger());
 			sb.append(Randomly.getString());
 			return sb.toString();
+		}
+	}
+
+	public static double greaterDouble(double value) {
+		if (value == Double.POSITIVE_INFINITY) {
+			throw new IllegalArgumentException();
+		} else if (value == Double.MAX_VALUE) {
+			return Double.POSITIVE_INFINITY;
+		} else {
+			return ThreadLocalRandom.current().nextDouble(value + 1, Double.MAX_VALUE);
 		}
 	}
 
