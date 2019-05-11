@@ -416,9 +416,9 @@ public class QueryGenerator {
 				try {
 					double d = Double.valueOf(value.asString().substring(0, i));
 //					if (value.asString().equals("-0.0")) {
-//						return Constant.createRealConstant(0.0);
+//						return SQLite3Constant.createRealConstant(0.0);
 //					} else
-					if (d == (int) d) {
+					if (d == (long) d && !value.asString().contains("e")) {
 						return SQLite3Constant.createIntConstant((long) d);
 					} else {
 						return SQLite3Constant.createRealConstant(d);
