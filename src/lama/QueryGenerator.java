@@ -72,7 +72,7 @@ public class QueryGenerator {
 			Expression offsetClause = generateOffset();
 			selectStatement.setOffsetClause(offsetClause);
 		}
-		List<Expression> orderBy = generateOrderBy(columns, rw);
+		List<Expression> orderBy = generateOrderBy(columns);
 		selectStatement.setOrderByClause(orderBy);
 		SQLite3Visitor visitor = new SQLite3Visitor();
 		visitor.visit(selectStatement);
@@ -124,7 +124,7 @@ public class QueryGenerator {
 		return e.getMessage().contentEquals("[SQLITE_ERROR] SQL error or missing database (integer overflow)");
 	}
 
-	private List<Expression> generateOrderBy(List<Column> columns, RowValue rw) {
+	public static List<Expression> generateOrderBy(List<Column> columns) {
 		List<Expression> orderBys = new ArrayList<>();
 		for (int i = 0; i < Randomly.smallNumber(); i++) {
 			Expression expr;
@@ -179,7 +179,7 @@ public class QueryGenerator {
 
 	private enum NewExpressionType {
 		CAST_TO_ITSELF, LITERAL, STANDALONE_COLUMN, DOUBLE_COLUMN, POSTFIX_COLUMN, NOT, UNARY_PLUS, AND, OR, COLLATE,
-		UNARY_FUNCTION, IN, ALWAYS_TRUE_COLUMN_COMPARISON, CAST_TO_NUMERIC
+		UNARY_FUNCTION, IN, ALWAYS_TRUE_COLUMN_COMPARISON, CAST_TO_NUMERIC, SEVERAL_DOUBLE_COLUMN
 	}
 
 	private Expression generateNewExpression(List<Column> columns, RowValue rw, boolean shouldBeTrue, int depth) {
@@ -264,6 +264,19 @@ public class QueryGenerator {
 					}
 					return expr;
 				}
+			case SEVERAL_DOUBLE_COLUMN:
+				int nr = Randomly.smallNumber() + 1;
+				Expression exp = null;
+				for (int i = 0; i < nr; i++) {
+					Expression comp = createSampleBasedTwoColumnComparison(columns, rw, shouldBeTrue);
+					if (exp == null) {
+						exp = comp;
+					} else {
+						exp = new BinaryOperation(exp, comp,
+								Randomly.getBoolean() ? BinaryOperator.OR : BinaryOperator.AND);
+					}
+				}
+				return exp;
 			case DOUBLE_COLUMN:
 				return createSampleBasedTwoColumnComparison(columns, rw,
 						shouldBeTrue);
