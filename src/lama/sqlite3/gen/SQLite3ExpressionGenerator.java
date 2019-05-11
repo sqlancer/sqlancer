@@ -4,9 +4,9 @@ import java.util.List;
 
 import lama.Main;
 import lama.Randomly;
+import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
-import lama.sqlite3.ast.SQLite3Expression.Constant;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation.PostfixUnaryOperator;
 import lama.sqlite3.ast.SQLite3Expression.UnaryOperation.UnaryOperator;
@@ -15,7 +15,7 @@ import lama.sqlite3.schema.SQLite3Schema.Column;
 public class SQLite3ExpressionGenerator {
 
 	private enum LiteralValueType {
-		INTEGER, NUMERIC, STRING, BLOB_LITERAL, NULL, TRUE, FALSE
+		INTEGER, NUMERIC, STRING, BLOB_LITERAL, NULL
 	}
 
 	/***
@@ -30,20 +30,16 @@ public class SQLite3ExpressionGenerator {
 			LiteralValueType randomLiteral = Randomly.fromOptions(LiteralValueType.values());
 			switch (randomLiteral) {
 			case INTEGER:
-				return Constant.createIntConstant(Randomly.getInteger());
+				return SQLite3Constant.createIntConstant(Randomly.getInteger());
 			case NUMERIC: // typeof(3.3) = real
 				// see https://www.sqlite.org/syntax/numeric-literal.html
-				return Constant.createRealConstant(Randomly.getDouble());
+				return SQLite3Constant.createRealConstant(Randomly.getDouble());
 			case STRING:
-				return Constant.createTextConstant(Randomly.getString());
+				return SQLite3Constant.createTextConstant(Randomly.getString());
 			case BLOB_LITERAL: // typeof(X'ABCD') = blob
-				return Constant.getRandomBinaryConstant();
+				return SQLite3Constant.getRandomBinaryConstant();
 			case NULL: // typeof(NULL) = null
-				return Constant.createNullConstant();
-			case TRUE: // typeof(TRUE) = integer
-				return Constant.createBooleanConstant(true);
-			case FALSE: // typeof(FALSE) = integer
-				return Constant.createBooleanConstant(false);
+				return SQLite3Constant.createNullConstant();
 			default:
 				throw new AssertionError(randomLiteral);
 			}

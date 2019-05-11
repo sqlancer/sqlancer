@@ -6,6 +6,7 @@ import javax.xml.bind.DatatypeConverter;
 
 import lama.IgnoreMeException;
 import lama.Randomly;
+import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
@@ -13,7 +14,6 @@ import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
-import lama.sqlite3.ast.SQLite3Expression.Constant;
 import lama.sqlite3.ast.SQLite3Expression.Function;
 import lama.sqlite3.ast.SQLite3Expression.InOperation;
 import lama.sqlite3.ast.SQLite3Expression.LogicalOperation;
@@ -79,14 +79,14 @@ public class SQLite3Visitor {
 		this.stringsAsDoubleQuotes = stringsAsDoubleQuotes;
 	}
 
-	void visit(Constant c) {
+	void visit(SQLite3Constant c) {
 		if (c.isNull()) {
 			sb.append("NULL");
 		} else {
 			switch (c.getDataType()) {
 			case INT:
-				if (c.getValue() instanceof Boolean) {
-					sb.append(c.asBoolean() ? "TRUE" : "FALSE");
+				if ((c.asInt() == 0 || c.asInt() == 1) && Randomly.getBoolean()) {
+					sb.append(c.asInt() == 1 ? "TRUE" : "FALSE");
 				} else {
 					if (Randomly.getBoolean()) {
 						sb.append(c.asInt());
@@ -295,8 +295,8 @@ public class SQLite3Visitor {
 			visit((LogicalOperation) expr);
 		} else if (expr instanceof ColumnName) {
 			visit((ColumnName) expr);
-		} else if (expr instanceof Constant) {
-			visit((Constant) expr);
+		} else if (expr instanceof SQLite3Constant) {
+			visit((SQLite3Constant) expr);
 		} else if (expr instanceof UnaryOperation) {
 			visit((UnaryOperation) expr);
 		} else if (expr instanceof PostfixUnaryOperation) {

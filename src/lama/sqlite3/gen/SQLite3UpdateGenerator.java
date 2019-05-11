@@ -9,7 +9,7 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.sqlite3.SQLite3Visitor;
-import lama.sqlite3.ast.SQLite3Expression.Constant;
+import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 
@@ -68,7 +68,7 @@ public class SQLite3UpdateGenerator {
 			sb.append(columnsToUpdate.get(i).getName());
 			sb.append(" = ");
 			if (columnsToUpdate.get(i).isIntegerPrimaryKey()) {
-				sb.append(SQLite3Visitor.asString(Constant.createIntConstant(Randomly.getInteger())));
+				sb.append(SQLite3Visitor.asString(SQLite3Constant.createIntConstant(Randomly.getInteger())));
 			} else {
 				sb.append(SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(false)));
 			}

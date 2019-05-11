@@ -1,10 +1,8 @@
 package lama.sqlite3.ast;
 
-import java.util.Arrays;
 import java.util.List;
 
 import lama.Randomly;
-import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 
 public class SQLite3Expression {
@@ -390,105 +388,6 @@ public class SQLite3Expression {
 
 		public Column getColumn() {
 			return column;
-		}
-
-	}
-	
-
-	public static class Constant extends SQLite3Expression {
-
-		private final Object value;
-		private final SQLite3DataType dataType;
-
-		private Constant(Object value, SQLite3DataType dataType) {
-			if (dataType == null || value instanceof Constant) {
-				throw new IllegalArgumentException();
-			}
-			this.value = value;
-			this.dataType = dataType;
-		}
-
-		public boolean isNull() {
-			return value == null;
-		}
-
-		public long asInt() {
-			return (long) value;
-		}
-
-		public double asDouble() {
-			return (double) value;
-		}
-
-		public String asString() {
-			// TODO Fixme and use only byte[]
-			if (value instanceof byte[]) {
-				return Arrays.toString((byte[]) value);
-			} else {
-				return value.toString();
-			}
-		}
-
-		public SQLite3DataType getDataType() {
-			return dataType;
-		}
-
-		public String asDate() {
-			return (String) value;
-		}
-
-		public Object getValue() {
-			return value;
-		}
-
-		public boolean asBoolean() {
-			return (Boolean) value;
-		}
-
-		public byte[] asBinary() {
-			return (byte[]) value;
-		}
-
-		public static Constant createIntConstant(long val) {
-			return new Constant(val, SQLite3DataType.INT);
-		}
-
-		public static Constant createBinaryConstant(byte[] val) {
-			return new Constant(val, SQLite3DataType.BINARY);
-		}
-
-		public static Constant createRealConstant(double real) {
-			return new Constant(real, SQLite3DataType.REAL);
-		}
-
-		public static Constant createTextConstant(String text) {
-			return new Constant(text, SQLite3DataType.TEXT);
-		}
-
-		public static Constant createNullConstant() {
-			return new Constant(null, SQLite3DataType.NULL);
-		}
-
-		public static Constant getRandomBinaryConstant() {
-			int size = Randomly.smallNumber();
-			byte[] arr = new byte[size];
-			Randomly.getBytes(arr);
-			return new Constant(arr, SQLite3DataType.BINARY);
-		}
-
-		@Override
-		public String toString() {
-			return String.format("(%s) %s", dataType,
-					value instanceof byte[] ? Arrays.toString((byte[]) value) : value);
-		}
-
-		@Deprecated
-		public static Constant create(Object value2, SQLite3DataType valueType) {
-			return new Constant(value2, valueType);
-		}
-
-		public static SQLite3Expression createBooleanConstant(boolean val) {
-			return new Constant(val, SQLite3DataType.INT);
 		}
 
 	}

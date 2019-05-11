@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 import lama.Main.StateToReproduce.ErrorKind;
 import lama.sqlite3.SQLite3Helper;
-import lama.sqlite3.ast.SQLite3Expression.Constant;
+import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.gen.QueryGenerator;
 import lama.sqlite3.gen.SQLite3AlterTable;
 import lama.sqlite3.gen.SQLite3AnalyzeGenerator;
@@ -84,7 +84,7 @@ public class Main {
 		public String query;
 
 		private String databaseName;
-		public Map<Column, Constant> randomRowValues;
+		public Map<Column, SQLite3Constant> randomRowValues;
 
 		private Logger logger;
 		protected String databaseVersion;

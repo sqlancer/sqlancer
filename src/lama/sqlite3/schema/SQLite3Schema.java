@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import lama.Main.StateToReproduce;
 import lama.Randomly;
 import lama.sqlite3.SQLite3Visitor;
-import lama.sqlite3.ast.SQLite3Expression.Constant;
+import lama.sqlite3.ast.SQLite3Constant;
 
 public class SQLite3Schema {
 
@@ -145,7 +145,7 @@ public class SQLite3Schema {
 					c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
 					columnNamesAsString(c -> "typeof(" + c.getTable().getName() + "." + c.getName() + ")"),
 					tableNamesAsString());
-			Map<Column, Constant> values = new HashMap<>();
+			Map<Column, SQLite3Constant> values = new HashMap<>();
 			try (Statement s = con.createStatement()) {
 				ResultSet randomRowValues = s.executeQuery(randomRow);
 				if (!randomRowValues.next()) {
@@ -158,28 +158,34 @@ public class SQLite3Schema {
 					assert columnIndex == i + 1;
 					String typeString = randomRowValues.getString(columnIndex + getColumns().size());
 					SQLite3DataType valueType = getColumnType(typeString);
+					SQLite3Constant constant;
 					if (randomRowValues.getString(columnIndex) == null) {
 						value = null;
+						constant = SQLite3Constant.createNullConstant();
 					} else {
 						switch (valueType) {
 						case INT:
 							value = randomRowValues.getLong(columnIndex);
+							constant = SQLite3Constant.createIntConstant((long) value);
 							break;
 						case REAL:
 							value = randomRowValues.getDouble(columnIndex);
+							constant = SQLite3Constant.createRealConstant((double) value);
 							break;
 						case TEXT:
 						case NONE:
 							value = randomRowValues.getString(columnIndex);
+							constant = SQLite3Constant.createTextConstant((String) value);
 							break;
 						case BINARY:
 							value = randomRowValues.getBytes(columnIndex);
+							constant = SQLite3Constant.createBinaryConstant((byte[]) value);
 							break;
 						default:
-							throw new AssertionError();
+							throw new AssertionError(valueType);
 						}
 					}
-					values.put(column, Constant.create(value, valueType));
+					values.put(column, constant);
 				}
 				assert (!randomRowValues.next());
 				state.randomRowValues = values;
@@ -252,9 +258,9 @@ public class SQLite3Schema {
 
 	public static class RowValue {
 		private final Tables tables;
-		private final Map<Column, Constant> values;
+		private final Map<Column, SQLite3Constant> values;
 
-		RowValue(Tables tables, Map<Column, Constant> values) {
+		RowValue(Tables tables, Map<Column, SQLite3Constant> values) {
 			this.tables = tables;
 			this.values = values;
 		}
@@ -263,7 +269,7 @@ public class SQLite3Schema {
 			return tables;
 		}
 
-		public Map<Column, Constant> getValues() {
+		public Map<Column, SQLite3Constant> getValues() {
 			return values;
 		}
 
@@ -287,12 +293,12 @@ public class SQLite3Schema {
 
 		public String getRowValuesAsString(List<Column> columnsToCheck) {
 			StringBuilder sb = new StringBuilder();
-			Map<Column, Constant> expectedValues = getValues();
+			Map<Column, SQLite3Constant> expectedValues = getValues();
 			for (int i = 0; i < columnsToCheck.size(); i++) {
 				if (i != 0) {
 					sb.append(", ");
 				}
-				Constant expectedColumnValue = expectedValues.get(columnsToCheck.get(i));
+				SQLite3Constant expectedColumnValue = expectedValues.get(columnsToCheck.get(i));
 				SQLite3Visitor visitor = new SQLite3Visitor();
 				visitor.visit(expectedColumnValue);
 				sb.append(visitor.get());
