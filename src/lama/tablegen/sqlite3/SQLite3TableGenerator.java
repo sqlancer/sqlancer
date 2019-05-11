@@ -11,7 +11,6 @@ import lama.QueryAdapter;
 import lama.Randomly;
 import lama.schema.Schema;
 import lama.schema.Schema.Table;
-import lama.sqlite3.SQLite3Visitor;
 
 /**
  * See https://www.sqlite.org/lang_createtable.html#rowid

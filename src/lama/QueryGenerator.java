@@ -187,9 +187,7 @@ public class QueryGenerator {
 			return getStandaloneLiteral(shouldBeTrue);
 		}
 		if (Randomly.getBoolean()) {
-			Column c = Randomly.fromList(columns);
-			Constant sampledConstant = rw.getValues().get(c);
-			return createSampleBasedTwoColumnComparison(columns, rw, sampledConstant, new ColumnName(c), shouldBeTrue);
+			return createSampleBasedTwoColumnComparison(columns, rw, shouldBeTrue);
 		}
 		if (Randomly.getBoolean() && shouldBeTrue) {
 			return generateExpression(columns, rw);
@@ -197,6 +195,7 @@ public class QueryGenerator {
 		boolean retry;
 		do {
 			retry = false;
+			Constant sampledConstant;
 			switch (Randomly.fromOptions(NewExpressionType.values())) {
 			case CAST_TO_NUMERIC:
 				Expression subExpr2 = createStandaloneColumn(columns, rw, true);
@@ -207,7 +206,7 @@ public class QueryGenerator {
 					Constant value = rw.getValues().get(((ColumnName) subExpr2).getColumn());
 					assert !value.isNull();
 					TypeLiteral typeofExpr = new Expression.TypeLiteral(Type.NUMERIC);
-					Cast castExpr = new Expression.Cast(typeofExpr, value);
+					Cast castExpr = new Expression.Cast(typeofExpr, subExpr2);
 					Constant castConstant = castToNumeric(value);
 					assert castConstant != null;
 					return new BinaryOperation(castExpr, castConstant,
@@ -259,15 +258,17 @@ public class QueryGenerator {
 					retry = true;
 					continue;
 				} else {
+					if (Randomly.getBoolean()) {
+						// TODO combine two standalone columns like this
+						expr = new BinaryOperation(expr, expr, BinaryOperator.MULTIPLY);
+					}
 					return expr;
 				}
 			case DOUBLE_COLUMN:
-				Column c = Randomly.fromList(columns);
-				Constant sampledConstant = rw.getValues().get(c);
-				return createSampleBasedTwoColumnComparison(columns, rw, sampledConstant, new ColumnName(c),
+				return createSampleBasedTwoColumnComparison(columns, rw,
 						shouldBeTrue);
 			case POSTFIX_COLUMN:
-				c = Randomly.fromList(columns);
+				Column c = Randomly.fromList(columns);
 				sampledConstant = rw.getValues().get(c);
 				return generateSampleBasedColumnPostfix(sampledConstant, new ColumnName(c), shouldBeTrue);
 			case LITERAL:
@@ -415,12 +416,13 @@ public class QueryGenerator {
 	private final static byte GROUP_SEPARATOR = 0x1d;
 	private final static byte RECORD_SEPARATOR = 0x1e;
 	private final static byte UNIT_SEPARATOR = 0x1f;
+	private final static byte SYNCHRONOUS_IDLE = 0x16;
 
 	private static boolean unprintAbleCharThatLetsBecomeNumberZero(String s) {
 		// non-printable characters are ignored by Double.valueOf
 		for (int i = 0; i < s.length(); i++) {
 			char charAt = s.charAt(i);
-			if (!Character.isISOControl(charAt)) {
+			if (!Character.isISOControl(charAt) && !Character.isWhitespace(charAt)) {
 				return false;
 			}
 			switch (charAt) {
@@ -428,6 +430,7 @@ public class QueryGenerator {
 			case FILE_SEPARATOR:
 			case RECORD_SEPARATOR:
 			case UNIT_SEPARATOR:
+			case SYNCHRONOUS_IDLE:
 				return true;
 			}
 
@@ -464,7 +467,7 @@ public class QueryGenerator {
 				return null;
 			}
 		case REAL:
-			// TODO: directly comparing to a double is probably not a good idea
+			// directly comparing to a double is probably not a good idea
 			if (shouldBeTrue && numericValue.asDouble() != 0.0) {
 				return new ColumnName(c);
 			} else if (!shouldBeTrue && numericValue.asDouble() == 0.0) {
@@ -511,35 +514,9 @@ public class QueryGenerator {
 
 	private Expression generateExpression(List<Column> columns, RowValue rw) throws AssertionError {
 		Expression term;
-		BinaryOperator operator = Randomly.fromOptions(BinaryOperator.EQUALS, BinaryOperator.GREATER_EQUALS,
-				BinaryOperator.IS, BinaryOperator.SMALLER_EQUALS);
+		
 		if (Randomly.getBoolean()) {
-			// generate opaque predicate
-			Expression con;
-			SQLite3DataType randomType = Randomly.fromOptions(SQLite3DataType.INT, SQLite3DataType.TEXT,
-					SQLite3DataType.NULL);
-
-			switch (randomType) {
-			case INT:
-				long val = Randomly.getInteger();
-				con = Constant.createIntConstant(val);
-				break;
-			case TEXT:
-				con = Constant.createTextConstant(Randomly.getString());
-				break;
-			case NULL:
-				con = Constant.createNullConstant();
-				operator = BinaryOperator.IS;
-				break;
-			default:
-				throw new AssertionError();
-			}
-
-			if (Randomly.getBoolean()) {
-				// apply function
-				con = new Expression.Function(getRandomUnaryFunction(), con);
-			}
-			term = new Expression.BinaryOperation(con, con, operator);
+			term = generateOpaquePredicate(true);
 		} else {
 			// select column
 			Column selectedColumn = Randomly.fromList(columns);
@@ -558,7 +535,7 @@ public class QueryGenerator {
 					binaryOperator = BinaryOperator.IS;
 					compareTo = Randomly.fromOptions(sampledConstant, columnName);
 				} else if (Randomly.getBoolean()) {
-					return createSampleBasedTwoColumnComparison(columns, rw, sampledConstant, columnName, true);
+					return createSampleBasedTwoColumnComparison(columns, rw, true);
 				} else {
 					Tuple t = createSampleBasedColumnConstantComparison(sampledConstant, columnName);
 					compareTo = t.expr;
@@ -579,6 +556,49 @@ public class QueryGenerator {
 		}
 		return term;
 	}
+
+	private Expression generateOpaquePredicate(boolean shouldBeTrue) {
+		BinaryOperator operator = Randomly.fromOptions(BinaryOperator.EQUALS, BinaryOperator.GREATER_EQUALS,
+				BinaryOperator.IS, BinaryOperator.SMALLER_EQUALS);
+		Expression term;
+		// generate opaque predicate
+		Expression con;
+		SQLite3DataType randomType = Randomly.fromOptions(SQLite3DataType.INT, SQLite3DataType.TEXT,
+				SQLite3DataType.NULL);
+
+		switch (randomType) {
+		case INT:
+			long val = Randomly.getInteger();
+			con = Constant.createIntConstant(val);
+			break;
+		case TEXT:
+			con = Constant.createTextConstant(Randomly.getString());
+			break;
+		case BINARY:
+			byte[] bytes = new byte[Randomly.smallNumber()];
+			Randomly.getBytes(bytes);
+			con = Constant.createBinaryConstant(bytes);
+			break;
+		case NULL:
+			con = Constant.createNullConstant();
+			operator = BinaryOperator.IS;
+			break;
+		default:
+			throw new AssertionError();
+		}
+
+		if (Randomly.getBoolean()) {
+			// apply function
+			con = new Expression.Function(getRandomUnaryFunction(), con);
+		}
+		term = new Expression.BinaryOperation(con, con, operator);
+		if (shouldBeTrue) {
+			return term;
+		} else {
+			return new UnaryOperation(UnaryOperation.UnaryOperator.NOT, term);
+		}
+	}
+
 
 	class Tuple {
 		public Tuple(Expression compareTo, BinaryOperator binaryOperator) {
@@ -636,12 +656,8 @@ public class QueryGenerator {
 				compareTo = Randomly.fromOptions(sampledConstant, columnName);
 				break;
 			case GREATER_EQUALS:
-				if (valueType == SQLite3DataType.INT) {
-					compareTo = Randomly.fromOptions(sampledConstant, columnName,
-							smallerOrEqualRandomConstant(sampledConstant));
-				} else {
-					compareTo = Randomly.fromOptions(sampledConstant, columnName);
-				}
+				compareTo = Randomly.fromOptions(sampledConstant, columnName,
+						smallerOrEqualRandomConstant(sampledConstant));
 				break;
 			case GREATER:
 				compareTo = smallerRandomConstant(sampledConstant);
@@ -676,13 +692,8 @@ public class QueryGenerator {
 				}
 				break;
 			case SMALLER_EQUALS:
-				if (valueType == SQLite3DataType.INT || valueType == SQLite3DataType.TEXT
-						|| valueType == SQLite3DataType.REAL) {
-					compareTo = Randomly.fromOptions(sampledConstant, columnName,
-							greaterOrEqualRandomConstant(sampledConstant));
-				} else {
-					compareTo = Randomly.fromOptions(sampledConstant, columnName);
-				}
+				compareTo = Randomly.fromOptions(sampledConstant, columnName,
+						greaterOrEqualRandomConstant(sampledConstant));
 				break;
 			case NOT_EQUALS:
 				compareTo = notEqualConstant(sampledConstant);
@@ -694,16 +705,49 @@ public class QueryGenerator {
 		return new Tuple(compareTo, binaryOperator);
 	}
 
-	private Expression createSampleBasedTwoColumnComparison(List<Column> columns, RowValue rw, Constant sampledConstant,
-			Expression columnName, boolean shouldBeTrue) throws AssertionError {
+	/**
+	 * Selects two random columns and relates them via a comparison operation.
+	 * 
+	 * @param columns
+	 * @param rw
+	 * @param shouldBeTrue
+	 * @return
+	 * @throws AssertionError
+	 */
+	private Expression createSampleBasedTwoColumnComparison(List<Column> columns, RowValue rw,
+			boolean shouldBeTrue) throws AssertionError {
+		
+		Column leftColumn = Randomly.fromList(columns);
+		Expression leftColumnExpr = new Expression.ColumnName(leftColumn);
+		Constant leftColumnValue = rw.getValues().get(leftColumn);
+		SQLite3DataType leftColumnType = leftColumnValue.getDataType();
+		
+		Column rightColumn = Randomly.fromList(columns);
+		Constant rightColumnValue = rw.getValues().get(rightColumn);
+		SQLite3DataType rightColumnType = rightColumnValue.getDataType();
+		Expression rightColumnExpr = new Expression.ColumnName(rightColumn);
+		
 		BinaryOperator operator;
-		// relate two columns
-		Column otherColumn = Randomly.fromList(columns);
-		Constant otherValue = rw.getValues().get(otherColumn);
-		SQLite3DataType otherValueType = otherValue.getDataType();
-		if (sampledConstant.getDataType() == otherValueType && sampledConstant.getDataType() == SQLite3DataType.INT) {
-			long columnValue = sampledConstant.asInt();
-			long otherColumnValue = otherValue.asInt();
+		
+		if (leftColumnType == SQLite3DataType.NULL && rightColumnType != SQLite3DataType.NULL) {
+			do {
+				operator = Randomly.fromOptions(BinaryOperator.values());
+			} while (operator == BinaryOperator.OR || operator == BinaryOperator.AND);
+			if (operator == BinaryOperator.IS || operator == BinaryOperator.IS_NOT) {
+				if ((operator == BinaryOperator.IS) && shouldBeTrue || (operator == BinaryOperator.IS_NOT && !shouldBeTrue)) {
+					operator = operator.reverse();
+				}
+				return new BinaryOperation(leftColumnExpr, rightColumnExpr, operator);
+			}
+			BinaryOperation operation = new BinaryOperation(leftColumnExpr, rightColumnExpr, operator);
+			if (shouldBeTrue) {
+				return new PostfixUnaryOperation(PostfixUnaryOperator.ISNULL, operation);
+			} else {
+				return new PostfixUnaryOperation(PostfixUnaryOperator.NOTNULL, operation);
+			}
+		} else if (leftColumnType == rightColumnType && leftColumnType == SQLite3DataType.INT) {
+			long columnValue = leftColumnValue.asInt();
+			long otherColumnValue = rightColumnValue.asInt();
 			if (columnValue > otherColumnValue) {
 				operator = Randomly.fromOptions(BinaryOperator.GREATER, BinaryOperator.GREATER_EQUALS,
 						BinaryOperator.IS_NOT, BinaryOperator.NOT_EQUALS);
@@ -723,21 +767,21 @@ public class QueryGenerator {
 				operator = operator.reverse();
 			}
 			if (Randomly.getBoolean()) {
-				String functionName = getRandomFunction(operator, shouldBeTrue, sampledConstant.getDataType(),
-						otherValueType);
+				String functionName = getRandomFunction(operator, shouldBeTrue, leftColumnType,
+						rightColumnType);
 				if (functionName != null) {
-					Function left = new Expression.Function(functionName, columnName);
-					Function right = new Expression.Function(functionName, new Expression.ColumnName(otherColumn));
+					Function left = new Expression.Function(functionName, leftColumnExpr);
+					Function right = new Expression.Function(functionName, new Expression.ColumnName(rightColumn));
 					return new BinaryOperation(left, right, operator);
 
 				}
 			}
-			return new BinaryOperation(columnName, new Expression.ColumnName(otherColumn), operator);
-		} else if (sampledConstant.getDataType() == otherValueType
-				&& sampledConstant.getDataType() == SQLite3DataType.REAL) {
+			return new BinaryOperation(leftColumnExpr, new Expression.ColumnName(rightColumn), operator);
+		} else if (leftColumnType == rightColumnType
+				&& leftColumnType == SQLite3DataType.REAL) {
 			// duplicated, refactor
-			double columnValue = sampledConstant.asDouble();
-			double otherColumnValue = otherValue.asDouble();
+			double columnValue = leftColumnValue.asDouble();
+			double otherColumnValue = rightColumnValue.asDouble();
 			if (columnValue > otherColumnValue) {
 				operator = Randomly.fromOptions(BinaryOperator.GREATER, BinaryOperator.GREATER_EQUALS,
 						BinaryOperator.IS_NOT, BinaryOperator.NOT_EQUALS);
@@ -757,16 +801,16 @@ public class QueryGenerator {
 				operator = operator.reverse();
 			}
 			if (Randomly.getBoolean()) {
-				String functionName = getRandomFunction(operator, shouldBeTrue, sampledConstant.getDataType(),
-						otherValueType);
+				String functionName = getRandomFunction(operator, shouldBeTrue, leftColumnType,
+						rightColumnType);
 				if (functionName != null) {
-					Function left = new Expression.Function(functionName, columnName);
-					Function right = new Expression.Function(functionName, new Expression.ColumnName(otherColumn));
+					Function left = new Expression.Function(functionName, leftColumnExpr);
+					Function right = new Expression.Function(functionName, new Expression.ColumnName(rightColumn));
 					return new BinaryOperation(left, right, operator);
 
 				}
 			}
-			return new BinaryOperation(columnName, new Expression.ColumnName(otherColumn), operator);
+			return new BinaryOperation(leftColumnExpr, new Expression.ColumnName(rightColumn), operator);
 		} else {
 			// FIXME: should not need this branch
 			return getStandaloneLiteral(shouldBeTrue);
@@ -1213,6 +1257,13 @@ public class QueryGenerator {
 				return null;
 			} else {
 				return Constant.createIntConstant(Randomly.greaterInt(value));
+			}
+		case REAL:
+			double dValue = sampledConstant.asDouble();
+			if (dValue == Double.POSITIVE_INFINITY) {
+				return null;
+			} else {
+				return Constant.createRealConstant(Randomly.greaterDouble(dValue));
 			}
 		default:
 			return null;

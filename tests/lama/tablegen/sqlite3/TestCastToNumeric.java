@@ -9,8 +9,8 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.junit.jupiter.api.Test;
 
-import lama.Expression.Constant;
 import lama.QueryGenerator;
+import lama.Expression.Constant;
 import lama.schema.SQLite3DataType;
 
 class TestCastToNumeric {
@@ -54,6 +54,8 @@ class TestCastToNumeric {
 		triples.add(new StringTestTriple("-3.2", SQLite3DataType.REAL, -3.2d));
 		triples.add(new StringTestTriple("10e9", SQLite3DataType.REAL, 10000000000.0));
 		triples.add(new StringTestTriple("-0.0", SQLite3DataType.REAL, 0.0d));
+
+		
 		
 		for (StringTestTriple triple : triples) {
 			Constant castVal = QueryGenerator.castToNumeric(Constant.createTextConstant(triple.value));
@@ -72,13 +74,19 @@ class TestCastToNumeric {
 		triples.add(new StringTestTriple("0c36", SQLite3DataType.INT, 6L)); // 6
 		triples.add(new StringTestTriple("0d36", SQLite3DataType.INT, 6L)); // 6
 		triples.add(new StringTestTriple("0e36", SQLite3DataType.INT, 0L)); // 6
+		triples.add(new StringTestTriple("1a347C", SQLite3DataType.INT, 0L)); // 
+		triples.add(new StringTestTriple("1b347C", SQLite3DataType.INT, 0L)); // 
 		triples.add(new StringTestTriple("1C32", SQLite3DataType.INT, 0L)); // FS2
 		triples.add(new StringTestTriple("1D32", SQLite3DataType.INT, 0L)); // GS2
 		triples.add(new StringTestTriple("1e32", SQLite3DataType.INT, 0L)); // RS2
 		triples.add(new StringTestTriple("1f32", SQLite3DataType.INT, 0L)); // RS2
 		triples.add(new StringTestTriple("2032", SQLite3DataType.INT, 2L)); // RS2
 		triples.add(new StringTestTriple("09013454", SQLite3DataType.INT, 0L)); // RS2
-		
+		triples.add(new StringTestTriple("2016347C", SQLite3DataType.INT, 0L)); // 
+		triples.add(new StringTestTriple("2017347C", SQLite3DataType.INT, 0L)); // 
+		triples.add(new StringTestTriple("2018347C", SQLite3DataType.INT, 0L)); // 
+		triples.add(new StringTestTriple("2019347C", SQLite3DataType.INT, 0L)); // 
+
 		
 		for (StringTestTriple triple : triples) {
 			Constant castVal = QueryGenerator
