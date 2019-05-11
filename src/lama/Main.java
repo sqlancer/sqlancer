@@ -1,9 +1,11 @@
 package lama;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -20,9 +22,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.FileHandler;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 import java.util.stream.Collectors;
 
 import lama.Main.StateToReproduce.ErrorKind;
@@ -72,6 +71,124 @@ public class Main {
 
 	}
 
+	public final static class StateLogger {
+
+		private final File loggerFile;
+		private final File reducedFile;
+		private FileWriter logFileWriter;
+		private FileWriter reducedFileWriter;
+
+		private final static class AlsoWriteToConsoleFileWriter extends FileWriter {
+
+			public AlsoWriteToConsoleFileWriter(File file) throws IOException {
+				super(file);
+			}
+
+			@Override
+			public Writer append(CharSequence arg0) throws IOException {
+				System.err.println(arg0);
+				return super.append(arg0);
+			}
+
+			@Override
+			public void write(String str) throws IOException {
+				System.err.println(str);
+				super.write(str);
+			}
+		}
+
+		public StateLogger(String databaseName) {
+			loggerFile = new File(LOG_DIRECTORY, databaseName + ".log");
+			reducedFile = new File(LOG_DIRECTORY, databaseName + "-reduced.log");
+		}
+
+		private FileWriter getLogFileWriter() {
+			if (logFileWriter == null) {
+				try {
+					logFileWriter = new AlsoWriteToConsoleFileWriter(loggerFile);
+				} catch (IOException e) {
+					throw new AssertionError(e);
+				}
+			}
+			return logFileWriter;
+		}
+
+		private FileWriter getReducedFileWriter() {
+			if (reducedFileWriter == null) {
+				try {
+					reducedFileWriter = new FileWriter(reducedFile);
+				} catch (IOException e) {
+					throw new AssertionError(e);
+				}
+			}
+			return reducedFileWriter;
+		}
+
+		public void logRowNotFound(StateToReproduce state) {
+			printState(getLogFileWriter(), state);
+		}
+
+		public void logException(Throwable reduce, StateToReproduce state) {
+			String stackTrace = getStackTrace(reduce);
+			try {
+				getLogFileWriter().write(stackTrace);
+				printState(getLogFileWriter(), state);
+			} catch (IOException e) {
+				throw new AssertionError(e);
+			}
+		}
+
+		private String getStackTrace(Throwable e1) {
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e1.printStackTrace(pw);
+			String stackTrace = sw.toString().replace("\n", "\n;");
+			return stackTrace;
+		}
+
+		public void logReduced(StateToReproduce state, int i, int from, int to) {
+			try {
+				FileWriter fw = getReducedFileWriter();
+				fw.append("-- Reduce run nr " + i + "\n");
+				fw.append("-- Reduced from " + from + " to " + to + "\n");
+				printState(fw, state);
+				reducedFileWriter.close();
+				reducedFileWriter = null;
+			} catch (IOException e) {
+				throw new AssertionError(e);
+			}
+		}
+
+		private void printState(FileWriter writer, StateToReproduce state) {
+			StringBuilder sb = new StringBuilder();
+			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+			Date date = new Date();
+			sb.append("-- Time: " + dateFormat.format(date) + "\n");
+			sb.append("-- Database: " + state.getDatabaseName() + "\n");
+			sb.append("-- SQLite3 version: " + state.getDatabaseVersion() + "\n");
+			for (Query s : state.getStatements()) {
+				if (s.getQueryString().endsWith(";")) {
+					sb.append(s.getQueryString());
+				} else {
+					sb.append(s.getQueryString() + ";");
+				}
+				sb.append('\n');
+			}
+			if (state.getQuery() != null) {
+				sb.append(state.getQuery() + ";\n");
+			}
+			if (state.getRandomRowValues() != null) {
+				sb.append("-- Expected values: " + state.getRandomRowValues() + "\n");
+			}
+			try {
+				writer.write(sb.toString());
+			} catch (IOException e) {
+				throw new AssertionError();
+			}
+		}
+
+	}
+
 	public final static class StateToReproduce {
 
 		public enum ErrorKind {
@@ -86,7 +203,6 @@ public class Main {
 		private String databaseName;
 		public Map<Column, SQLite3Constant> randomRowValues;
 
-		private Logger logger;
 		protected String databaseVersion;
 
 		public String values;
@@ -102,47 +218,29 @@ public class Main {
 
 		}
 
-		public Logger getLogger() {
-			if (logger == null) {
-				try {
-					FileHandler fh = new FileHandler(new File(LOG_DIRECTORY, databaseName + ".log").getAbsolutePath());
-					fh.setFormatter(new SimpleFormatter());
-					logger = Logger.getLogger(databaseName);
-					logger.addHandler(fh);
-				} catch (Exception e) {
-					throw new AssertionError(e);
-				}
-			}
-			assert logger != null;
-			return logger;
-		}
-
-		public String logInconsistency(Throwable e1) {
-			this.exception = e1.getMessage();
-			String stackTrace = getStackTrace(e1);
-			getLogger().severe(stackTrace);
-			getLogger().severe(toString());
-			this.errorKind = ErrorKind.EXCEPTION;
-			return toString();
-		}
-
 		public String getException() {
 			assert this.errorKind == ErrorKind.EXCEPTION;
 			return exception;
 		}
 
-		private String getStackTrace(Throwable e1) {
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			e1.printStackTrace(pw);
-			String stackTrace = sw.toString();
-			return stackTrace;
+		public String getDatabaseName() {
+			return databaseName;
 		}
 
-		public String logInconsistency() {
-			getLogger().severe(toString());
-			this.errorKind = ErrorKind.ROW_NOT_FOUND;
-			return toString();
+		public String getDatabaseVersion() {
+			return databaseVersion;
+		}
+
+		public List<Query> getStatements() {
+			return statements;
+		}
+
+		public String getQuery() {
+			return query;
+		}
+
+		public Map<Column, SQLite3Constant> getRandomRowValues() {
+			return randomRowValues;
 		}
 
 		@Override
@@ -215,6 +313,7 @@ public class Main {
 			executor.execute(new Runnable() {
 
 				StateToReproduce state;
+				StateLogger logger = new StateLogger(databaseName);
 
 				@Override
 				public void run() {
@@ -229,21 +328,20 @@ public class Main {
 						} catch (IgnoreMeException e) {
 							continue;
 						} catch (ReduceMeException reduce) {
-							state.logInconsistency();
+							state.errorKind = ErrorKind.ROW_NOT_FOUND;
+							logger.logRowNotFound(state);
 							tryToReduceBug(databaseName, state);
+							threadsShutdown++;
+
 							break;
-						} catch (Exception reduce) {
-							Thread.currentThread().setName(databaseName + " (reducing)");
-							state.logInconsistency(reduce);
+						} catch (Throwable reduce) {
+							state.errorKind = ErrorKind.EXCEPTION;
+							state.exception = reduce.getMessage();
+							logger.logException(reduce, state);
 							tryToReduceBug(databaseName, state);
-							break;
-						} catch (Throwable e1) {
-							e1.printStackTrace();
-							state.logInconsistency(e1);
 							threadsShutdown++;
 							break;
 						}
-
 					}
 				}
 
@@ -472,24 +570,22 @@ public class Main {
 								}
 							}
 							reducedStatements = currentRoundReducedStatements;
+							state.statements.clear();
+							state.statements.addAll(reducedStatements);
+							if (state.getErrorKind() == ErrorKind.EXCEPTION) {
+								state.statements.add(statementThatCausedException);
+							}
+							logger.logReduced(state, i, initialStatementNr, state.statements.size());
 						} catch (SQLException e) {
 							throw new AssertionError(e);
 						}
 					}
 
-					int fromSize = state.statements.size();
-					int toSize = reducedStatements.size();
-					state.statements.clear();
-					state.statements.add(new QueryAdapter("-- reduced from " + fromSize + " " + toSize));
-					state.statements.addAll(reducedStatements);
-					if (state.getErrorKind() == ErrorKind.EXCEPTION) {
-						state.statements.add(statementThatCausedException);
-					}
-					state.logInconsistency();
 					return;
 				}
 			});
 		}
+
 	}
 
 	private static void setupLogDirectory() {
