@@ -5,8 +5,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import lama.schema.Schema;
-import lama.schema.Schema.Table;
+import lama.sqlite3.schema.SQLite3Schema;
+import lama.sqlite3.schema.SQLite3Schema.Table;
 
 public class SQLite3Helper {
 
@@ -26,7 +26,7 @@ public class SQLite3Helper {
 	}
 
 	public static void deleteAllTables(Connection con) throws SQLException {
-		Schema previousSchema = Schema.fromConnection(con);
+		SQLite3Schema previousSchema = SQLite3Schema.fromConnection(con);
 		for (Table t : previousSchema.getDatabaseTables()) {
 			dropTable(con, t);
 		}

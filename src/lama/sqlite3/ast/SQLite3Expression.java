@@ -1,14 +1,15 @@
-package lama;
+package lama.sqlite3.ast;
 
 import java.util.Arrays;
 import java.util.List;
 
-import lama.schema.SQLite3DataType;
-import lama.schema.Schema.Column;
+import lama.Randomly;
+import lama.sqlite3.schema.SQLite3DataType;
+import lama.sqlite3.schema.SQLite3Schema.Column;
 
-public class Expression {
+public class SQLite3Expression {
 
-	public static class Subquery extends Expression {
+	public static class Subquery extends SQLite3Expression {
 
 		private final String query;
 
@@ -16,7 +17,7 @@ public class Expression {
 			this.query = query;
 		}
 
-		public static Expression create(String query) {
+		public static SQLite3Expression create(String query) {
 			return new Subquery(query);
 		}
 
@@ -26,7 +27,7 @@ public class Expression {
 
 	}
 
-	public static class TypeLiteral extends Expression {
+	public static class TypeLiteral extends SQLite3Expression {
 
 		private final Type type;
 
@@ -44,41 +45,41 @@ public class Expression {
 
 	}
 
-	public static class Cast extends Expression {
+	public static class Cast extends SQLite3Expression {
 
-		private final Expression type;
-		private final Expression expression;
+		private final SQLite3Expression type;
+		private final SQLite3Expression expression;
 
-		public Cast(Expression typeofExpr, Expression expression) {
+		public Cast(SQLite3Expression typeofExpr, SQLite3Expression expression) {
 			this.type = typeofExpr;
 			this.expression = expression;
 		}
 
-		public Expression getExpression() {
+		public SQLite3Expression getExpression() {
 			return expression;
 		}
 
-		public Expression getType() {
+		public SQLite3Expression getType() {
 			return type;
 		}
 
 	}
 
-	public static class BetweenOperation extends Expression {
+	public static class BetweenOperation extends SQLite3Expression {
 
-		private final Expression expr;
+		private final SQLite3Expression expr;
 		private final boolean negated;
-		private final Expression left;
-		private final Expression right;
+		private final SQLite3Expression left;
+		private final SQLite3Expression right;
 
-		public BetweenOperation(Expression expr, boolean negated, Expression left, Expression right) {
+		public BetweenOperation(SQLite3Expression expr, boolean negated, SQLite3Expression left, SQLite3Expression right) {
 			this.expr = expr;
 			this.negated = negated;
 			this.left = left;
 			this.right = right;
 		}
 
-		public Expression getExpression() {
+		public SQLite3Expression getExpression() {
 			return expr;
 		}
 
@@ -86,27 +87,27 @@ public class Expression {
 			return negated;
 		}
 
-		public Expression getLeft() {
+		public SQLite3Expression getLeft() {
 			return left;
 		}
 
-		public Expression getRight() {
+		public SQLite3Expression getRight() {
 			return right;
 		}
 
 	}
 
-	public static class Function extends Expression {
+	public static class Function extends SQLite3Expression {
 
-		private final Expression[] arguments;
+		private final SQLite3Expression[] arguments;
 		private final String name;
 
-		public Function(String name, Expression... arguments) {
+		public Function(String name, SQLite3Expression... arguments) {
 			this.name = name;
 			this.arguments = arguments;
 		}
 
-		public Expression[] getArguments() {
+		public SQLite3Expression[] getArguments() {
 			return arguments;
 		}
 
@@ -116,21 +117,21 @@ public class Expression {
 
 	}
 
-	public static class OrderingTerm extends Expression {
+	public static class OrderingTerm extends SQLite3Expression {
 
-		private final Expression expression;
+		private final SQLite3Expression expression;
 		private final Ordering ordering;
 
 		public enum Ordering {
 			ASC, DESC
 		}
 
-		public OrderingTerm(Expression expression, Ordering ordering) {
+		public OrderingTerm(SQLite3Expression expression, Ordering ordering) {
 			this.expression = expression;
 			this.ordering = ordering;
 		}
 
-		public Expression getExpression() {
+		public SQLite3Expression getExpression() {
 			return expression;
 		}
 
@@ -140,7 +141,7 @@ public class Expression {
 
 	}
 
-	public static class UnaryOperation extends Expression {
+	public static class UnaryOperation extends SQLite3Expression {
 
 		/**
 		 * Supported unary prefix operators are these:
@@ -175,9 +176,9 @@ public class Expression {
 		}
 
 		private final UnaryOperator operation;
-		private final Expression expression;
+		private final SQLite3Expression expression;
 
-		public UnaryOperation(UnaryOperator operation, Expression expression) {
+		public UnaryOperation(UnaryOperator operation, SQLite3Expression expression) {
 			this.operation = operation;
 			this.expression = expression;
 		}
@@ -186,18 +187,18 @@ public class Expression {
 			return operation;
 		}
 
-		public Expression getExpression() {
+		public SQLite3Expression getExpression() {
 			return expression;
 		}
 
 	}
 
-	public static class CollateOperation extends Expression {
+	public static class CollateOperation extends SQLite3Expression {
 
-		private final Expression expression;
+		private final SQLite3Expression expression;
 		private final String collate;
 
-		public CollateOperation(Expression expression, String collate) {
+		public CollateOperation(SQLite3Expression expression, String collate) {
 			this.expression = expression;
 			this.collate = collate;
 		}
@@ -206,13 +207,13 @@ public class Expression {
 			return collate;
 		}
 
-		public Expression getExpression() {
+		public SQLite3Expression getExpression() {
 			return expression;
 		}
 
 	}
 
-	public static class PostfixUnaryOperation extends Expression {
+	public static class PostfixUnaryOperation extends SQLite3Expression {
 
 		public enum PostfixUnaryOperator {
 			ISNULL("ISNULL"), NOT_NULL("NOT NULL"), NOTNULL("NOTNULL");
@@ -238,9 +239,9 @@ public class Expression {
 		}
 
 		private final PostfixUnaryOperator operation;
-		private final Expression expression;
+		private final SQLite3Expression expression;
 
-		public PostfixUnaryOperation(PostfixUnaryOperator operation, Expression expression) {
+		public PostfixUnaryOperation(PostfixUnaryOperator operation, SQLite3Expression expression) {
 			this.operation = operation;
 			this.expression = expression;
 		}
@@ -249,32 +250,32 @@ public class Expression {
 			return operation;
 		}
 
-		public Expression getExpression() {
+		public SQLite3Expression getExpression() {
 			return expression;
 		}
 
 	}
 
-	public static class InOperation extends Expression {
+	public static class InOperation extends SQLite3Expression {
 
-		private final Expression left;
-		private final List<Expression> right;
+		private final SQLite3Expression left;
+		private final List<SQLite3Expression> right;
 
-		public InOperation(Expression left, List<Expression> right) {
+		public InOperation(SQLite3Expression left, List<SQLite3Expression> right) {
 			this.left = left;
 			this.right = right;
 		}
 
-		public Expression getLeft() {
+		public SQLite3Expression getLeft() {
 			return left;
 		}
 
-		public List<Expression> getRight() {
+		public List<SQLite3Expression> getRight() {
 			return right;
 		}
 	}
 
-	public static class BinaryOperation extends Expression {
+	public static class BinaryOperation extends SQLite3Expression {
 
 		public enum BinaryOperator {
 			CONCATENATE("||"), MULTIPLY("*"), DIVIDE("/"), // division by zero results in zero
@@ -326,10 +327,10 @@ public class Expression {
 		}
 
 		private final BinaryOperator operation;
-		private final Expression left;
-		private final Expression right;
+		private final SQLite3Expression left;
+		private final SQLite3Expression right;
 
-		public BinaryOperation(Expression left, Expression right, BinaryOperator operation) {
+		public BinaryOperation(SQLite3Expression left, SQLite3Expression right, BinaryOperator operation) {
 			this.left = left;
 			this.right = right;
 			this.operation = operation;
@@ -339,33 +340,33 @@ public class Expression {
 			return operation;
 		}
 
-		public Expression getLeft() {
+		public SQLite3Expression getLeft() {
 			return left;
 		}
 
-		public Expression getRight() {
+		public SQLite3Expression getRight() {
 			return right;
 		}
 
 	}
 
-	public static class LogicalOperation extends Expression {
+	public static class LogicalOperation extends SQLite3Expression {
 
-		private final Expression left;
-		private final Expression right;
+		private final SQLite3Expression left;
+		private final SQLite3Expression right;
 		private final LogicalOperator operator;
 
-		public LogicalOperation(Expression left, Expression right, LogicalOperator operator) {
+		public LogicalOperation(SQLite3Expression left, SQLite3Expression right, LogicalOperator operator) {
 			this.left = left;
 			this.right = right;
 			this.operator = operator;
 		}
 
-		public Expression getLeft() {
+		public SQLite3Expression getLeft() {
 			return left;
 		}
 
-		public Expression getRight() {
+		public SQLite3Expression getRight() {
 			return right;
 		}
 
@@ -379,7 +380,7 @@ public class Expression {
 
 	}
 
-	public static class ColumnName extends Expression {
+	public static class ColumnName extends SQLite3Expression {
 
 		private final Column column;
 
@@ -392,8 +393,9 @@ public class Expression {
 		}
 
 	}
+	
 
-	public static class Constant extends Expression {
+	public static class Constant extends SQLite3Expression {
 
 		private final Object value;
 		private final SQLite3DataType dataType;
@@ -485,7 +487,7 @@ public class Expression {
 			return new Constant(value2, valueType);
 		}
 
-		public static Expression createBooleanConstant(boolean val) {
+		public static SQLite3Expression createBooleanConstant(boolean val) {
 			return new Constant(val, SQLite3DataType.INT);
 		}
 

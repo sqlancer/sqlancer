@@ -1,4 +1,4 @@
-package lama.tablegen.sqlite3;
+package lama.sqlite3.gen;
 
 import lama.Query;
 import lama.QueryAdapter;

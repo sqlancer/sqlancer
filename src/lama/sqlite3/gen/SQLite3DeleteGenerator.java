@@ -1,4 +1,4 @@
-package lama.tablegen.sqlite3;
+package lama.sqlite3.gen;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -7,8 +7,8 @@ import lama.Main.StateToReproduce;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.schema.Schema.Table;
 import lama.sqlite3.SQLite3Visitor;
+import lama.sqlite3.schema.SQLite3Schema.Table;
 
 public class SQLite3DeleteGenerator {
 

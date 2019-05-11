@@ -5,7 +5,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import lama.schema.Schema.Table;
+import lama.sqlite3.schema.SQLite3Schema.Table;
 
 public class DatabaseFacade {
 	

@@ -4,25 +4,25 @@ import java.util.List;
 
 import javax.xml.bind.DatatypeConverter;
 
-import lama.Expression;
 import lama.IgnoreMeException;
-import lama.Expression.BetweenOperation;
-import lama.Expression.BinaryOperation;
-import lama.Expression.Cast;
-import lama.Expression.CollateOperation;
-import lama.Expression.ColumnName;
-import lama.Expression.Constant;
-import lama.Expression.Function;
-import lama.Expression.InOperation;
-import lama.Expression.LogicalOperation;
-import lama.Expression.OrderingTerm;
-import lama.Expression.PostfixUnaryOperation;
-import lama.Expression.Subquery;
-import lama.Expression.TypeLiteral;
-import lama.Expression.UnaryOperation;
 import lama.Randomly;
-import lama.SelectStatement;
-import lama.schema.Schema.Column;
+import lama.sqlite3.ast.SQLite3Expression;
+import lama.sqlite3.ast.SQLite3SelectStatement;
+import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
+import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
+import lama.sqlite3.ast.SQLite3Expression.Cast;
+import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
+import lama.sqlite3.ast.SQLite3Expression.ColumnName;
+import lama.sqlite3.ast.SQLite3Expression.Constant;
+import lama.sqlite3.ast.SQLite3Expression.Function;
+import lama.sqlite3.ast.SQLite3Expression.InOperation;
+import lama.sqlite3.ast.SQLite3Expression.LogicalOperation;
+import lama.sqlite3.ast.SQLite3Expression.OrderingTerm;
+import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
+import lama.sqlite3.ast.SQLite3Expression.Subquery;
+import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
+import lama.sqlite3.ast.SQLite3Expression.UnaryOperation;
+import lama.sqlite3.schema.SQLite3Schema.Column;
 
 public class SQLite3Visitor {
 
@@ -167,7 +167,7 @@ public class SQLite3Visitor {
 		sb.append(")");
 	}
 
-	public void visit(SelectStatement s) {
+	public void visit(SQLite3SelectStatement s) {
 		sb.append("SELECT ");
 		switch (s.getFromOptions()) {
 		case DISTINCT:
@@ -198,14 +198,14 @@ public class SQLite3Visitor {
 			sb.append(s.getFromList().get(i).getName());
 		}
 		if (s.getWhereClause() != null) {
-			Expression whereClause = s.getWhereClause();
+			SQLite3Expression whereClause = s.getWhereClause();
 			sb.append(" WHERE ");
 			visit(whereClause);
 		}
 		if (s.getGroupByClause() != null && s.getGroupByClause().size() > 0) {
 			sb.append(" ");
 			sb.append("GROUP BY ");
-			List<Expression> groupBys = s.getGroupByClause();
+			List<SQLite3Expression> groupBys = s.getGroupByClause();
 			for (int i = 0; i < groupBys.size(); i++) {
 				if (i != 0) {
 					sb.append(", ");
@@ -215,7 +215,7 @@ public class SQLite3Visitor {
 		}
 		if (!s.getOrderByClause().isEmpty()) {
 			sb.append(" ORDER BY ");
-			List<Expression> orderBys = s.getOrderByClause();
+			List<SQLite3Expression> orderBys = s.getOrderByClause();
 			for (int i = 0; i < orderBys.size(); i++) {
 				if (i != 0) {
 					sb.append(", ");
@@ -288,7 +288,7 @@ public class SQLite3Visitor {
 		sb.append(query.getQuery());
 	}
 
-	public void visit(Expression expr) {
+	public void visit(SQLite3Expression expr) {
 		if (expr instanceof BinaryOperation) {
 			visit((BinaryOperation) expr);
 		} else if (expr instanceof LogicalOperation) {
@@ -309,7 +309,7 @@ public class SQLite3Visitor {
 			visit((CollateOperation) expr);
 		} else if (expr instanceof OrderingTerm) {
 			visit((OrderingTerm) expr);
-		} else if (expr instanceof Expression.InOperation) {
+		} else if (expr instanceof SQLite3Expression.InOperation) {
 			visit((InOperation) expr);
 		} else if (expr instanceof Cast) {
 			visit((Cast) expr);
@@ -326,7 +326,7 @@ public class SQLite3Visitor {
 		return sb.toString();
 	}
 
-	public static String asString(Expression expr) {
+	public static String asString(SQLite3Expression expr) {
 		SQLite3Visitor visitor = new SQLite3Visitor();
 		visitor.visit(expr);
 		return visitor.get();

@@ -1,4 +1,4 @@
-package lama.schema;
+package lama.sqlite3.schema;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -13,12 +13,12 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import lama.Expression.Constant;
 import lama.Main.StateToReproduce;
 import lama.Randomly;
 import lama.sqlite3.SQLite3Visitor;
+import lama.sqlite3.ast.SQLite3Expression.Constant;
 
-public class Schema {
+public class SQLite3Schema {
 
 	private final List<Table> databaseTables;
 
@@ -302,7 +302,7 @@ public class Schema {
 
 	}
 
-	public Schema(List<Table> databaseTables) {
+	public SQLite3Schema(List<Table> databaseTables) {
 		this.databaseTables = Collections.unmodifiableList(databaseTables);
 	}
 
@@ -315,7 +315,7 @@ public class Schema {
 		return sb.toString();
 	}
 
-	static public Schema fromConnection(Connection con) throws SQLException {
+	static public SQLite3Schema fromConnection(Connection con) throws SQLException {
 		DatabaseMetaData meta = con.getMetaData();
 		List<Table> databaseTables = new ArrayList<>();
 		try (ResultSet tables = meta.getTables(null, null, null, null);) {
@@ -363,7 +363,7 @@ public class Schema {
 			}
 			tables.getStatement().close();
 		}
-		return new Schema(databaseTables);
+		return new SQLite3Schema(databaseTables);
 	}
 
 	private static SQLite3DataType getColumnType(String columnTypeString) {

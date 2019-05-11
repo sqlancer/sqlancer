@@ -1,19 +1,19 @@
-package lama;
+package lama.sqlite3.ast;
 
 import java.util.List;
 
-import lama.schema.Schema.Column;
-import lama.schema.Schema.Table;
+import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.Table;
 
-public class SelectStatement {
+public class SQLite3SelectStatement {
 
 	private SelectType fromOptions;
 	private List<Table> fromList;
-	private Expression whereClause;
-	private List<Expression> groupByClause;
-	private Expression limitClause;
-	private List<Expression> orderByClause;
-	private Expression offsetClause;
+	private SQLite3Expression whereClause;
+	private List<SQLite3Expression> groupByClause;
+	private SQLite3Expression limitClause;
+	private List<SQLite3Expression> orderByClause;
+	private SQLite3Expression offsetClause;
 	private List<Column> fetchColumns;
 	
 	public enum SelectType {
@@ -46,54 +46,54 @@ public class SelectStatement {
 	}
 
 
-	public Expression getWhereClause() {
+	public SQLite3Expression getWhereClause() {
 		return whereClause;
 	}
 
 
-	public void setWhereClause(Expression whereClause) {
+	public void setWhereClause(SQLite3Expression whereClause) {
 		this.whereClause = whereClause;
 	}
 
 
-	public void setGroupByClause(List<Expression> groupByClause) {
+	public void setGroupByClause(List<SQLite3Expression> groupByClause) {
 		this.groupByClause = groupByClause;
 	}
 	
-	public List<Expression> getGroupByClause() {
+	public List<SQLite3Expression> getGroupByClause() {
 		return groupByClause;
 	}
 
 
-	public void setLimitClause(Expression limitClause) {
+	public void setLimitClause(SQLite3Expression limitClause) {
 		this.limitClause = limitClause;
 	}
 	
-	public Expression getLimitClause() {
+	public SQLite3Expression getLimitClause() {
 		return limitClause;
 	}
 
 
-	public List<Expression> getOrderByClause() {
+	public List<SQLite3Expression> getOrderByClause() {
 		return orderByClause;
 	}
 
 
-	public void setOrderByClause(List<Expression> orderBy) {
+	public void setOrderByClause(List<SQLite3Expression> orderBy) {
 		this.orderByClause = orderBy;
 	}
 
 
-	public void setOffsetClause(Expression offsetClause) {
+	public void setOffsetClause(SQLite3Expression offsetClause) {
 		this.offsetClause = offsetClause;
 	}
 	
-	public Expression getOffsetClause() {
+	public SQLite3Expression getOffsetClause() {
 		return offsetClause;
 	}
 
 
-	void selectFetchColumns(List<Column> fetchColumns) {
+	public void selectFetchColumns(List<Column> fetchColumns) {
 		this.fetchColumns = fetchColumns;
 	}
 

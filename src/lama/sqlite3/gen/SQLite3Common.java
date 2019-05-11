@@ -1,4 +1,4 @@
-package lama.tablegen.sqlite3;
+package lama.sqlite3.gen;
 
 import lama.Randomly;
 import lama.sqlite3.SQLite3Visitor;

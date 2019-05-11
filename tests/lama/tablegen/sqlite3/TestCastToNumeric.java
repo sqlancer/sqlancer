@@ -9,9 +9,9 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.junit.jupiter.api.Test;
 
-import lama.QueryGenerator;
-import lama.Expression.Constant;
-import lama.schema.SQLite3DataType;
+import lama.sqlite3.ast.SQLite3Expression.Constant;
+import lama.sqlite3.gen.QueryGenerator;
+import lama.sqlite3.schema.SQLite3DataType;
 
 class TestCastToNumeric {
 

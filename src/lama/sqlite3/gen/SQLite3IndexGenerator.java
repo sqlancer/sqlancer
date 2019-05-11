@@ -1,4 +1,4 @@
-package lama.tablegen.sqlite3;
+package lama.sqlite3.gen;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -6,15 +6,15 @@ import java.util.List;
 
 import org.sqlite.SQLiteException;
 
-import lama.Expression;
 import lama.Main.StateToReproduce;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.schema.Schema;
-import lama.schema.Schema.Column;
-import lama.schema.Schema.Table;
 import lama.sqlite3.SQLite3Visitor;
+import lama.sqlite3.ast.SQLite3Expression;
+import lama.sqlite3.schema.SQLite3Schema;
+import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.Table;
 
 // see https://www.sqlite.org/lang_createindex.html
 public class SQLite3IndexGenerator {
@@ -28,7 +28,7 @@ public class SQLite3IndexGenerator {
 	boolean isUnique;
 
 	public SQLite3IndexGenerator(Connection con, StateToReproduce state) throws SQLException {
-		Schema s = Schema.fromConnection(con);
+		SQLite3Schema s = SQLite3Schema.fromConnection(con);
 		Table t = s.getRandomTable();
 		String q = createIndex(t, t.getColumns());
 		query = new QueryAdapter(q) {
@@ -66,7 +66,7 @@ public class SQLite3IndexGenerator {
 			if (i != 0) {
 				sb.append(",");
 			}
-			Expression expr = SQLite3ExpressionGenerator.getRandomExpression(columns, true);
+			SQLite3Expression expr = SQLite3ExpressionGenerator.getRandomExpression(columns, true);
 			SQLite3Visitor visitor = new SQLite3Visitor();
 			visitor.setStringsAsDoubleQuotes(true);
 			visitor.fullyQualifiedNames = false;
@@ -80,7 +80,7 @@ public class SQLite3IndexGenerator {
 		sb.append(")");
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
-			Expression expr = SQLite3ExpressionGenerator.getRandomExpression(columns, true);
+			SQLite3Expression expr = SQLite3ExpressionGenerator.getRandomExpression(columns, true);
 			SQLite3Visitor visitor = new SQLite3Visitor();
 			visitor.fullyQualifiedNames = false;
 			visitor.visit(expr);

@@ -1,4 +1,4 @@
-package lama.tablegen.sqlite3;
+package lama.sqlite3.gen;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -6,12 +6,12 @@ import java.sql.SQLException;
 import org.sqlite.SQLiteException;
 
 import lama.Main.StateToReproduce;
+import lama.sqlite3.schema.SQLite3Schema;
+import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.Table;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.schema.Schema;
-import lama.schema.Schema.Column;
-import lama.schema.Schema.Table;
 
 public class SQLite3AlterTable {
 
@@ -19,7 +19,7 @@ public class SQLite3AlterTable {
 		RENAME_TABLE, RENAME_COLUMN, ADD_COLUMN
 	}
 
-	public static Query alterTable(Schema s, Connection con, StateToReproduce state) throws SQLException {
+	public static Query alterTable(SQLite3Schema s, Connection con, StateToReproduce state) throws SQLException {
 		SQLite3AlterTable alterTable = new SQLite3AlterTable();
 		Option option = Randomly.fromOptions(Option.values());
 		switch (option) {
@@ -52,7 +52,7 @@ public class SQLite3AlterTable {
 
 	}
 
-	private void renameColumn(Schema s) {
+	private void renameColumn(SQLite3Schema s) {
 		Table t = s.getRandomTable();
 		Column c = t.getRandomColumn();
 		sb.append("ALTER TABLE ");
@@ -68,7 +68,7 @@ public class SQLite3AlterTable {
 		sb.append(name[0]);
 	}
 	
-	private void addColumn(Schema s) {
+	private void addColumn(SQLite3Schema s) {
 		Table t = s.getRandomTable();
 		sb.append("ALTER TABLE ");
 		sb.append(t.getName());
@@ -87,7 +87,7 @@ public class SQLite3AlterTable {
 
 	private final StringBuilder sb = new StringBuilder();
 
-	private void renameTable(Schema s) {
+	private void renameTable(SQLite3Schema s) {
 		Table t = s.getRandomTable();
 		sb.append("ALTER TABLE ");
 		sb.append(t.getName());

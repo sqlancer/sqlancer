@@ -25,25 +25,26 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.stream.Collectors;
 
-import lama.Expression.Constant;
 import lama.Main.StateToReproduce.ErrorKind;
-import lama.schema.Schema;
-import lama.schema.Schema.Column;
-import lama.schema.Schema.Table;
 import lama.sqlite3.SQLite3Helper;
-import lama.tablegen.sqlite3.SQLite3AlterTable;
-import lama.tablegen.sqlite3.SQLite3AnalyzeGenerator;
-import lama.tablegen.sqlite3.SQLite3Common;
-import lama.tablegen.sqlite3.SQLite3DeleteGenerator;
-import lama.tablegen.sqlite3.SQLite3DropIndexGenerator;
-import lama.tablegen.sqlite3.SQLite3IndexGenerator;
-import lama.tablegen.sqlite3.SQLite3PragmaGenerator;
-import lama.tablegen.sqlite3.SQLite3ReindexGenerator;
-import lama.tablegen.sqlite3.SQLite3RowGenerator;
-import lama.tablegen.sqlite3.SQLite3TableGenerator;
-import lama.tablegen.sqlite3.SQLite3TransactionGenerator;
-import lama.tablegen.sqlite3.SQLite3UpdateGenerator;
-import lama.tablegen.sqlite3.SQLite3VacuumGenerator;
+import lama.sqlite3.ast.SQLite3Expression.Constant;
+import lama.sqlite3.gen.QueryGenerator;
+import lama.sqlite3.gen.SQLite3AlterTable;
+import lama.sqlite3.gen.SQLite3AnalyzeGenerator;
+import lama.sqlite3.gen.SQLite3Common;
+import lama.sqlite3.gen.SQLite3DeleteGenerator;
+import lama.sqlite3.gen.SQLite3DropIndexGenerator;
+import lama.sqlite3.gen.SQLite3IndexGenerator;
+import lama.sqlite3.gen.SQLite3PragmaGenerator;
+import lama.sqlite3.gen.SQLite3ReindexGenerator;
+import lama.sqlite3.gen.SQLite3RowGenerator;
+import lama.sqlite3.gen.SQLite3TableGenerator;
+import lama.sqlite3.gen.SQLite3TransactionGenerator;
+import lama.sqlite3.gen.SQLite3UpdateGenerator;
+import lama.sqlite3.gen.SQLite3VacuumGenerator;
+import lama.sqlite3.schema.SQLite3Schema;
+import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.Table;
 
 // TODO:
 // group by
@@ -94,7 +95,7 @@ public class Main {
 
 		public String queryTargetedTablesString;
 
-		protected String queryTargetedColumnsString;
+		public String queryTargetedColumnsString;
 
 		public StateToReproduce(String databaseName) {
 			this.databaseName = databaseName;
@@ -248,17 +249,17 @@ public class Main {
 
 				private void generateAndTestDatabase(final String databaseName, Connection con) throws SQLException {
 					state = new StateToReproduce(databaseName);
-					Schema newSchema = null;
+					SQLite3Schema newSchema = null;
 					int nrTablesToCreate = 1 + Randomly.smallNumber();
 					for (int i = 0; i < nrTablesToCreate; i++) {
-						newSchema = Schema.fromConnection(con);
+						newSchema = SQLite3Schema.fromConnection(con);
 						String tableName = SQLite3Common.createTableName(i);
 						Query tableQuery = SQLite3TableGenerator.createTableStatement(tableName, state, newSchema);
 						state.statements.add(tableQuery);
 						tableQuery.execute(con);
 					}
 
-					newSchema = Schema.fromConnection(con);
+					newSchema = SQLite3Schema.fromConnection(con);
 
 					java.sql.DatabaseMetaData meta = con.getMetaData();
 					state.databaseVersion = meta.getDatabaseProductVersion();
@@ -376,7 +377,7 @@ public class Main {
 						query.execute(con);
 						total--;
 						if (affectedSchema) {
-							newSchema = Schema.fromConnection(con);
+							newSchema = SQLite3Schema.fromConnection(con);
 						}
 					}
 					for (Table t : newSchema.getDatabaseTables()) {

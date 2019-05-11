@@ -1,4 +1,4 @@
-package lama.tablegen.sqlite3;
+package lama.sqlite3.gen;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -8,18 +8,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lama.Main.StateToReproduce;
+import lama.sqlite3.schema.SQLite3Schema;
+import lama.sqlite3.schema.SQLite3Schema.Table;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.schema.Schema;
-import lama.schema.Schema.Table;
 
 // see https://www.sqlite.org/lang_dropindex.html
 public class SQLite3DropIndexGenerator {
 
 	private boolean sureItExists;
 
-	public static Query dropIndex(Connection con, StateToReproduce state, Schema s) throws SQLException {
+	public static Query dropIndex(Connection con, StateToReproduce state, SQLite3Schema s) throws SQLException {
 		try (Statement stm = con.createStatement()) {
 			SQLite3DropIndexGenerator gen = new SQLite3DropIndexGenerator();
 			String query = gen.dropIndex(con, s);
@@ -40,7 +40,7 @@ public class SQLite3DropIndexGenerator {
 		}
 	}
 
-	private String dropIndex(Connection con, Schema s) throws SQLException {
+	private String dropIndex(Connection con, SQLite3Schema s) throws SQLException {
 		Table randomTable = s.getRandomTable();
 		List<String> indices = getIndexes(randomTable, con);
 		String indexName = getRandomIndexName(indices);

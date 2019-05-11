@@ -1,4 +1,4 @@
-package lama.tablegen.sqlite3;
+package lama.sqlite3.gen;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import lama.Main.StateToReproduce;
+import lama.sqlite3.schema.SQLite3Schema;
+import lama.sqlite3.schema.SQLite3Schema.Table;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.schema.Schema;
-import lama.schema.Schema.Table;
 
 /**
  * See https://www.sqlite.org/lang_createtable.html#rowid
@@ -31,14 +31,14 @@ public class SQLite3TableGenerator {
 	private boolean containsPrimaryKey;
 	private boolean containsAutoIncrement;
 	private final List<String> columnNames = new ArrayList<>();
-	private final Schema existingSchema;
+	private final SQLite3Schema existingSchema;
 
-	public SQLite3TableGenerator(String tableName, Schema existingSchema) {
+	public SQLite3TableGenerator(String tableName, SQLite3Schema existingSchema) {
 		this.tableName = tableName;
 		this.existingSchema = existingSchema;
 	}
 
-	public static Query createTableStatement(String tableName, StateToReproduce state, Schema existingSchema) {
+	public static Query createTableStatement(String tableName, StateToReproduce state, SQLite3Schema existingSchema) {
 		SQLite3TableGenerator sqLite3TableGenerator = new SQLite3TableGenerator(tableName, existingSchema);
 		sqLite3TableGenerator.start();
 		return new QueryAdapter(sqLite3TableGenerator.sb.toString());

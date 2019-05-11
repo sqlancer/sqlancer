@@ -1,17 +1,16 @@
-package lama.tablegen.sqlite3;
+package lama.sqlite3.gen;
 
 import java.util.List;
 
-import lama.Expression;
-import lama.Expression.BinaryOperation.BinaryOperator;
-import lama.Expression.ColumnName;
-import lama.Expression.Constant;
-import lama.Expression.PostfixUnaryOperation.PostfixUnaryOperator;
-import lama.Expression.UnaryOperation.UnaryOperator;
 import lama.Main;
-import lama.QueryGenerator;
 import lama.Randomly;
-import lama.schema.Schema.Column;
+import lama.sqlite3.ast.SQLite3Expression;
+import lama.sqlite3.ast.SQLite3Expression.ColumnName;
+import lama.sqlite3.ast.SQLite3Expression.Constant;
+import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
+import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation.PostfixUnaryOperator;
+import lama.sqlite3.ast.SQLite3Expression.UnaryOperation.UnaryOperator;
+import lama.sqlite3.schema.SQLite3Schema.Column;
 
 public class SQLite3ExpressionGenerator {
 
@@ -26,7 +25,7 @@ public class SQLite3ExpressionGenerator {
 	 */
 	// TODO: real is hardcoded
 	// TODO: blob is hardcoded
-	public static Expression getRandomLiteralValue(boolean deterministicOnly) {
+	public static SQLite3Expression getRandomLiteralValue(boolean deterministicOnly) {
 		while (true) {
 			LiteralValueType randomLiteral = Randomly.fromOptions(LiteralValueType.values());
 			switch (randomLiteral) {
@@ -55,11 +54,11 @@ public class SQLite3ExpressionGenerator {
 		COLUMN_NAME, LITERAL_VALUE, UNARY_OPERATOR, POSTFIX_UNARY_OPERATOR, BINARY_OPERATOR, BETWEEN_OPERATOR, UNARY_FUNCTION, CAST_EXPRESSION
 	}
 
-	public static Expression getRandomExpression(List<Column> columns, boolean deterministicOnly) {
+	public static SQLite3Expression getRandomExpression(List<Column> columns, boolean deterministicOnly) {
 		return getRandomExpression(columns, 0, deterministicOnly);
 	}
 
-	public static Expression getRandomExpression(List<Column> columns, int depth, boolean deterministicOnly) {
+	public static SQLite3Expression getRandomExpression(List<Column> columns, int depth, boolean deterministicOnly) {
 		if (depth >= Main.EXPRESSION_MAX_DEPTH) {
 			if (Randomly.getBoolean()) {
 				return getRandomLiteralValue(deterministicOnly);
@@ -72,7 +71,7 @@ public class SQLite3ExpressionGenerator {
 		switch (randomExpressionType) {
 		case UNARY_FUNCTION:
 			String name = QueryGenerator.getRandomUnaryFunction();
-			return new Expression.Function(name, getRandomExpression(columns, deterministicOnly));
+			return new SQLite3Expression.Function(name, getRandomExpression(columns, deterministicOnly));
 		case LITERAL_VALUE:
 			return getRandomLiteralValue(deterministicOnly);
 		case COLUMN_NAME:
@@ -92,41 +91,41 @@ public class SQLite3ExpressionGenerator {
 		}
 	}
 
-	private static Expression getCastOperator(List<Column> columns, int depth, boolean deterministicOnly) {
-		Expression expr = getRandomExpression(columns, depth + 1, deterministicOnly);
-		Expression type = new Expression.TypeLiteral(Randomly.fromOptions(Expression.TypeLiteral.Type.values()));
-		return new Expression.Cast(type, expr);
+	private static SQLite3Expression getCastOperator(List<Column> columns, int depth, boolean deterministicOnly) {
+		SQLite3Expression expr = getRandomExpression(columns, depth + 1, deterministicOnly);
+		SQLite3Expression type = new SQLite3Expression.TypeLiteral(Randomly.fromOptions(SQLite3Expression.TypeLiteral.Type.values()));
+		return new SQLite3Expression.Cast(type, expr);
 	}
 
-	private static Expression getBetweenOperator(List<Column> columns, int depth, boolean deterministicOnly) {
+	private static SQLite3Expression getBetweenOperator(List<Column> columns, int depth, boolean deterministicOnly) {
 		boolean tr = Randomly.getBoolean();
-		Expression expr = getRandomExpression(columns, depth + 1, deterministicOnly);
-		Expression left = getRandomExpression(columns, depth + 1, deterministicOnly);
-		Expression right = getRandomExpression(columns, depth + 1, deterministicOnly);
-		return new Expression.BetweenOperation(expr, tr, left, right);
+		SQLite3Expression expr = getRandomExpression(columns, depth + 1, deterministicOnly);
+		SQLite3Expression left = getRandomExpression(columns, depth + 1, deterministicOnly);
+		SQLite3Expression right = getRandomExpression(columns, depth + 1, deterministicOnly);
+		return new SQLite3Expression.BetweenOperation(expr, tr, left, right);
 	}
 
 	// TODO: incomplete
-	private static Expression getBinaryOperator(List<Column> columns, int depth, boolean deterministicOnly) {
-		Expression leftExpression = getRandomExpression(columns, depth + 1, deterministicOnly);
+	private static SQLite3Expression getBinaryOperator(List<Column> columns, int depth, boolean deterministicOnly) {
+		SQLite3Expression leftExpression = getRandomExpression(columns, depth + 1, deterministicOnly);
 		// TODO: operators
 		BinaryOperator operator = BinaryOperator.getRandomOperator();
-		Expression rightExpression = getRandomExpression(columns, depth + 1, deterministicOnly);
-		return new Expression.BinaryOperation(leftExpression, rightExpression, operator);
+		SQLite3Expression rightExpression = getRandomExpression(columns, depth + 1, deterministicOnly);
+		return new SQLite3Expression.BinaryOperation(leftExpression, rightExpression, operator);
 	}
 
 	// complete
-	private static Expression getRandomPostfixUnaryOperator(List<Column> columns, int depth, boolean deterministicOnly) {
-		Expression subExpression = getRandomExpression(columns, depth + 1, deterministicOnly);
+	private static SQLite3Expression getRandomPostfixUnaryOperator(List<Column> columns, int depth, boolean deterministicOnly) {
+		SQLite3Expression subExpression = getRandomExpression(columns, depth + 1, deterministicOnly);
 		PostfixUnaryOperator operator = PostfixUnaryOperator.getRandomOperator();
-		return new Expression.PostfixUnaryOperation(operator, subExpression);
+		return new SQLite3Expression.PostfixUnaryOperation(operator, subExpression);
 	}
 
 	// complete
-	public static Expression getRandomUnaryOperator(List<Column> columns, int depth, boolean deterministicOnly) {
-		Expression subExpression = getRandomExpression(columns, depth + 1, deterministicOnly);
+	public static SQLite3Expression getRandomUnaryOperator(List<Column> columns, int depth, boolean deterministicOnly) {
+		SQLite3Expression subExpression = getRandomExpression(columns, depth + 1, deterministicOnly);
 		UnaryOperator unaryOperation = Randomly.fromOptions(UnaryOperator.values());
-		return new Expression.UnaryOperation(unaryOperation, subExpression);
+		return new SQLite3Expression.UnaryOperation(unaryOperation, subExpression);
 	}
 
 }
