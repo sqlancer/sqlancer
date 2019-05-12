@@ -178,7 +178,19 @@ public class Main {
 				sb.append(state.getQuery() + ";\n");
 			}
 			if (state.getRandomRowValues() != null) {
-				sb.append("-- Expected values: " + state.getRandomRowValues() + "\n");
+				List<Column> columnList = state.getRandomRowValues().keySet().stream().collect(Collectors.toList());
+				List<Table> tableList = columnList.stream().map(c -> c.getTable()).distinct().sorted().collect(Collectors.toList());
+				for (Table t : tableList) {
+					sb.append("-- " + t.getName() + "\n");
+					List<Column> columnsForTable = columnList.stream().filter(c -> c.getTable().equals(t)).collect(Collectors.toList());
+					for (Column c : columnsForTable) {
+						sb.append("--\t");
+						sb.append(c);
+						sb.append("=");
+						sb.append(state.getRandomRowValues().get(c));
+						sb.append("\n");
+					}
+				}
 			}
 			try {
 				writer.write(sb.toString());
