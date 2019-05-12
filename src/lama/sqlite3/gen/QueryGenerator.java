@@ -11,29 +11,24 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import lama.Main;
-import lama.Randomly;
-import lama.Main.ReduceMeException;
 import lama.Main.StateToReproduce;
+import lama.Randomly;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
-import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
+import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
-import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Function;
-import lama.sqlite3.ast.SQLite3Expression.InOperation;
 import lama.sqlite3.ast.SQLite3Expression.OrderingTerm;
-import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
-import lama.sqlite3.ast.SQLite3Expression.Subquery;
-import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
-import lama.sqlite3.ast.SQLite3Expression.UnaryOperation;
-import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
 import lama.sqlite3.ast.SQLite3Expression.OrderingTerm.Ordering;
-import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation.PostfixUnaryOperator;
+import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
+import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral.Type;
+import lama.sqlite3.ast.SQLite3Expression.UnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.UnaryOperation.UnaryOperator;
+import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema;
 import lama.sqlite3.schema.SQLite3Schema.Column;
@@ -190,12 +185,23 @@ public class QueryGenerator {
 		UNARY_FUNCTION, IN, ALWAYS_TRUE_COLUMN_COMPARISON, CAST_TO_NUMERIC, SEVERAL_DOUBLE_COLUMN
 	}
 
-	private SQLite3Expression generateNewExpression(List<Column> columns, RowValue rw, boolean shouldBeTrue, int depth) {
+	private SQLite3Expression generateNewExpression(List<Column> columns, RowValue rw, boolean shouldBeTrue,
+			int depth) {
 		if (depth >= Main.EXPRESSION_MAX_DEPTH) {
 			return getStandaloneLiteral(shouldBeTrue);
 		}
 		if (Randomly.getBoolean()) {
-			return createSampleBasedTwoColumnComparison(columns, rw, shouldBeTrue);
+			int nr = 5;
+			SQLite3Expression exp = null;
+			for (int i = 0; i < nr; i++) {
+				SQLite3Expression comp = createSampleBasedTwoColumnComparison(columns, rw, shouldBeTrue);
+				if (exp == null) {
+					exp = comp;
+				} else {
+					exp = new BinaryOperation(exp, comp,
+							Randomly.getBoolean() ? BinaryOperator.OR : BinaryOperator.AND);
+				}
+			}
 		}
 		if (Randomly.getBoolean() && shouldBeTrue) {
 			return generateExpression(columns, rw);
@@ -286,8 +292,7 @@ public class QueryGenerator {
 				}
 				return exp;
 			case DOUBLE_COLUMN:
-				return createSampleBasedTwoColumnComparison(columns, rw,
-						shouldBeTrue);
+				return createSampleBasedTwoColumnComparison(columns, rw, shouldBeTrue);
 			case POSTFIX_COLUMN:
 				Column c = Randomly.fromList(columns);
 				sampledConstant = rw.getValues().get(c);
@@ -308,7 +313,8 @@ public class QueryGenerator {
 				return new UnaryOperation(UnaryOperator.PLUS,
 						generateNewExpression(columns, rw, shouldBeTrue, depth + 1));
 			case COLLATE:
-				return new SQLite3Expression.CollateOperation(generateNewExpression(columns, rw, shouldBeTrue, depth + 1),
+				return new SQLite3Expression.CollateOperation(
+						generateNewExpression(columns, rw, shouldBeTrue, depth + 1),
 						Randomly.fromOptions("NOCASE", "RTRIM", "BINARY"));
 			case AND:
 				SQLite3Expression left;
@@ -384,7 +390,8 @@ public class QueryGenerator {
 		throw new AssertionError();
 	}
 
-	private SQLite3Expression createAlwaysTrueColumnComparison(List<Column> columns, RowValue rw, boolean shouldBeTrue) {
+	private SQLite3Expression createAlwaysTrueColumnComparison(List<Column> columns, RowValue rw,
+			boolean shouldBeTrue) {
 		Column left = Randomly.fromList(columns);
 		Column right = Randomly.fromList(columns);
 		return createAlwaysTrueTwoColumnExpression(left, right, rw, shouldBeTrue);
@@ -535,7 +542,7 @@ public class QueryGenerator {
 
 	private SQLite3Expression generateExpression(List<Column> columns, RowValue rw) throws AssertionError {
 		SQLite3Expression term;
-		
+
 		if (Randomly.getBoolean()) {
 			term = generateOpaquePredicate(true);
 		} else {
@@ -620,7 +627,6 @@ public class QueryGenerator {
 		}
 	}
 
-
 	class Tuple {
 		public Tuple(SQLite3Expression compareTo, BinaryOperator binaryOperator) {
 			this.op = binaryOperator;
@@ -661,7 +667,8 @@ public class QueryGenerator {
 		return new BinaryOperation(leftExpr, rightExpr, conOperator);
 	}
 
-	private Tuple createSampleBasedColumnConstantComparison(SQLite3Constant sampledConstant, SQLite3Expression columnName) {
+	private Tuple createSampleBasedColumnConstantComparison(SQLite3Constant sampledConstant,
+			SQLite3Expression columnName) {
 		boolean retry;
 		BinaryOperator binaryOperator;
 		SQLite3Expression compareTo;
@@ -737,105 +744,56 @@ public class QueryGenerator {
 	 */
 	private SQLite3Expression createSampleBasedTwoColumnComparison(List<Column> columns, RowValue rw,
 			boolean shouldBeTrue) throws AssertionError {
-		
+
 		Column leftColumn = Randomly.fromList(columns);
 		SQLite3Expression leftColumnExpr = new SQLite3Expression.ColumnName(leftColumn);
 		SQLite3Constant leftColumnValue = rw.getValues().get(leftColumn);
 		SQLite3DataType leftColumnType = leftColumnValue.getDataType();
-		
+
 		Column rightColumn = Randomly.fromList(columns);
 		SQLite3Constant rightColumnValue = rw.getValues().get(rightColumn);
 		SQLite3DataType rightColumnType = rightColumnValue.getDataType();
 		SQLite3Expression rightColumnExpr = new SQLite3Expression.ColumnName(rightColumn);
-		
-		BinaryOperator operator;
-		
-		if (leftColumnType == SQLite3DataType.NULL && rightColumnType != SQLite3DataType.NULL) {
-			do {
-				operator = Randomly.fromOptions(BinaryOperator.values());
-			} while (operator == BinaryOperator.OR || operator == BinaryOperator.AND);
-			if (operator == BinaryOperator.IS || operator == BinaryOperator.IS_NOT) {
-				if ((operator == BinaryOperator.IS) && shouldBeTrue || (operator == BinaryOperator.IS_NOT && !shouldBeTrue)) {
-					operator = operator.reverse();
-				}
-				return new BinaryOperation(leftColumnExpr, rightColumnExpr, operator);
-			}
-			BinaryOperation operation = new BinaryOperation(leftColumnExpr, rightColumnExpr, operator);
-			if (shouldBeTrue) {
-				return new PostfixUnaryOperation(PostfixUnaryOperator.ISNULL, operation);
-			} else {
-				return new PostfixUnaryOperation(PostfixUnaryOperator.NOTNULL, operation);
-			}
-		} else if (leftColumnType == rightColumnType && leftColumnType == SQLite3DataType.INT) {
-			long columnValue = leftColumnValue.asInt();
-			long otherColumnValue = rightColumnValue.asInt();
-			if (columnValue > otherColumnValue) {
-				operator = Randomly.fromOptions(BinaryOperator.GREATER, BinaryOperator.GREATER_EQUALS,
-						BinaryOperator.IS_NOT, BinaryOperator.NOT_EQUALS);
-				// !shouldBeTrue and columnValue > otherColumnValue:
-			} else if (columnValue < otherColumnValue) {
-				operator = Randomly.fromOptions(BinaryOperator.SMALLER, BinaryOperator.SMALLER_EQUALS,
-						BinaryOperator.IS_NOT, BinaryOperator.NOT_EQUALS);
-			} else {
-				operator = Randomly.fromOptions(BinaryOperator.EQUALS, BinaryOperator.IS, BinaryOperator.GREATER_EQUALS,
-						BinaryOperator.SMALLER_EQUALS, BinaryOperator.GLOB);
-			}
-			if (!shouldBeTrue) {
-				if (operator == BinaryOperator.GLOB) {
-					// FIXME
-					return getStandaloneLiteral(shouldBeTrue);
-				}
-				operator = operator.reverse();
-			}
-			if (Randomly.getBoolean()) {
-				String functionName = getRandomFunction(operator, shouldBeTrue, leftColumnType,
-						rightColumnType);
-				if (functionName != null) {
-					Function left = new SQLite3Expression.Function(functionName, leftColumnExpr);
-					Function right = new SQLite3Expression.Function(functionName, new SQLite3Expression.ColumnName(rightColumn));
-					return new BinaryOperation(left, right, operator);
 
-				}
-			}
-			return new BinaryOperation(leftColumnExpr, new SQLite3Expression.ColumnName(rightColumn), operator);
-		} else if (leftColumnType == rightColumnType
-				&& leftColumnType == SQLite3DataType.REAL) {
-			// duplicated, refactor
-			double columnValue = leftColumnValue.asDouble();
-			double otherColumnValue = rightColumnValue.asDouble();
-			if (columnValue > otherColumnValue) {
-				operator = Randomly.fromOptions(BinaryOperator.GREATER, BinaryOperator.GREATER_EQUALS,
-						BinaryOperator.IS_NOT, BinaryOperator.NOT_EQUALS);
-				// !shouldBeTrue and columnValue > otherColumnValue:
-			} else if (columnValue < otherColumnValue) {
-				operator = Randomly.fromOptions(BinaryOperator.SMALLER, BinaryOperator.SMALLER_EQUALS,
-						BinaryOperator.IS_NOT, BinaryOperator.NOT_EQUALS);
-			} else {
-				operator = Randomly.fromOptions(BinaryOperator.EQUALS, BinaryOperator.IS, BinaryOperator.GREATER_EQUALS,
-						BinaryOperator.SMALLER_EQUALS, BinaryOperator.GLOB);
-			}
-			if (!shouldBeTrue) {
-				if (operator == BinaryOperator.GLOB) {
-					// FIXME
-					return getStandaloneLiteral(shouldBeTrue);
-				}
-				operator = operator.reverse();
-			}
-			if (Randomly.getBoolean()) {
-				String functionName = getRandomFunction(operator, shouldBeTrue, leftColumnType,
-						rightColumnType);
-				if (functionName != null) {
-					Function left = new SQLite3Expression.Function(functionName, leftColumnExpr);
-					Function right = new SQLite3Expression.Function(functionName, new SQLite3Expression.ColumnName(rightColumn));
-					return new BinaryOperation(left, right, operator);
+		// If one operand has INTEGER, REAL or NUMERIC affinity and the other operand
+		// has TEXT or BLOB or no affinity then NUMERIC affinity is applied to other
+		// operand.
+		if (leftColumn.getColumnType().isNumeric() && (rightColumn.getColumnType() == SQLite3DataType.TEXT
+				|| rightColumn.getColumnType() == SQLite3DataType.BINARY)) {
+			rightColumnValue = rightColumnValue.applyNumericAffinity();
+		} else if (rightColumn.getColumnType().isNumeric() && (leftColumn.getColumnType() == SQLite3DataType.TEXT
+				|| leftColumn.getColumnType() == SQLite3DataType.BINARY)) {
+			leftColumnValue = leftColumnValue.applyNumericAffinity();
+		}
 
-				}
-			}
-			return new BinaryOperation(leftColumnExpr, new SQLite3Expression.ColumnName(rightColumn), operator);
-		} else {
-			// FIXME: should not need this branch
+		// If one operand has TEXT affinity and the other has no affinity, then TEXT
+		// affinity is applied to the other operand.
+		if (leftColumn.getColumnType() == SQLite3DataType.TEXT && rightColumn.getColumnType() == SQLite3DataType.NONE) {
+			rightColumnValue = rightColumnValue.applyTextAffinity();
+		} else if (rightColumn.getColumnType() == SQLite3DataType.TEXT
+				&& leftColumn.getColumnType() == SQLite3DataType.NONE) {
+			leftColumnValue = leftColumnValue.applyTextAffinity();
+		}
+
+		List<BinaryOperator> newOp = leftColumnValue.compare(rightColumnValue, shouldBeTrue);
+		if (newOp.isEmpty()) {
+			// TODO
 			return getStandaloneLiteral(shouldBeTrue);
 		}
+		BinaryOperator operator = Randomly.fromList(newOp);
+		// Randomly.getBoolean() ? rightColumnExpr : rightColumnValue
+//			if (Randomly.getBoolean()) {
+//				String functionName = getRandomFunction(operator, shouldBeTrue, leftColumnType,
+//						rightColumnType);
+//				if (functionName != null) {
+//					Function left = new SQLite3Expression.Function(functionName, leftColumnExpr);
+//					Function right = new SQLite3Expression.Function(functionName, new SQLite3Expression.ColumnName(rightColumn));
+//					return new BinaryOperation(left, right, operator);
+//					
+//				}
+//			}
+		return new BinaryOperation(leftColumnExpr, rightColumnExpr, operator);
+
 	}
 
 	enum BinaryFunction {
@@ -1235,11 +1193,12 @@ public class QueryGenerator {
 	 * @param columnName
 	 * @return
 	 */
-	private SQLite3Expression generateSampleBasedColumnPostfix(SQLite3Constant sampledConstant, SQLite3Expression columnName,
-			boolean shouldbeTrue) {
+	private SQLite3Expression generateSampleBasedColumnPostfix(SQLite3Constant sampledConstant,
+			SQLite3Expression columnName, boolean shouldbeTrue) {
 		boolean generateIsNull = sampledConstant.isNull() && shouldbeTrue || !sampledConstant.isNull() && !shouldbeTrue;
 		if (generateIsNull) {
-			return new SQLite3Expression.PostfixUnaryOperation(PostfixUnaryOperation.PostfixUnaryOperator.ISNULL, columnName);
+			return new SQLite3Expression.PostfixUnaryOperation(PostfixUnaryOperation.PostfixUnaryOperator.ISNULL,
+					columnName);
 		} else {
 			if (Randomly.getBoolean()) {
 				return new SQLite3Expression.PostfixUnaryOperation(PostfixUnaryOperation.PostfixUnaryOperator.NOT_NULL,
