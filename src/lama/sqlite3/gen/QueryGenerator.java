@@ -44,6 +44,7 @@ public class QueryGenerator {
 	private final Connection database;
 	private final SQLite3Schema s;
 	private final Randomly r;
+	private StateToReproduce state;
 
 	public QueryGenerator(Connection con, Randomly r) throws SQLException {
 		this.database = con;
@@ -52,6 +53,15 @@ public class QueryGenerator {
 	}
 
 	public void generateAndCheckQuery(StateToReproduce state) throws SQLException {
+		String queryString = getQueryThatContainsAtLeastOneRow(state);
+		boolean isContainedIn = isContainedIn(queryString);
+		if (!isContainedIn) {
+			throw new Main.ReduceMeException();
+		}
+	}
+
+	public String getQueryThatContainsAtLeastOneRow(StateToReproduce state) throws SQLException {
+		this.state = state;
 		Tables randomFromTables = s.getRandomTableNonEmptyTables();
 		List<Table> tables = randomFromTables.getTables();
 
@@ -64,8 +74,7 @@ public class QueryGenerator {
 				columns.add(t.getRowid());
 			}
 		}
-		List<Column> fetchColumns;
-		RowValue rw = randomFromTables.getRandomRowValue(database, state);
+		rw = randomFromTables.getRandomRowValue(database, state);
 
 		List<Join> joinStatements = new ArrayList<>();
 		for (int i = 1; i < tables.size(); i++) {
@@ -110,10 +119,7 @@ public class QueryGenerator {
 		SQLite3Visitor visitor = new SQLite3Visitor();
 		visitor.visit(selectStatement);
 		String queryString = visitor.get();
-		boolean isContainedIn = isContainedIn(state, rw, fetchColumns, queryString);
-		if (!isContainedIn) {
-			throw new Main.ReduceMeException();
-		}
+		return queryString;
 	}
 
 	private SQLite3Expression generateOffset() {
@@ -125,7 +131,7 @@ public class QueryGenerator {
 		}
 	}
 
-	private boolean isContainedIn(StateToReproduce state, RowValue rw, List<Column> fetchColumns, String queryString)
+	private boolean isContainedIn(String queryString)
 			throws SQLException {
 		Statement createStatement;
 		createStatement = database.createStatement();
@@ -477,6 +483,8 @@ public class QueryGenerator {
 	private final static byte RECORD_SEPARATOR = 0x1e;
 	private final static byte UNIT_SEPARATOR = 0x1f;
 	private final static byte SYNCHRONOUS_IDLE = 0x16;
+	private RowValue rw;
+	private List<Column> fetchColumns;
 
 	private static boolean unprintAbleCharThatLetsBecomeNumberZero(String s) {
 		// non-printable characters are ignored by Double.valueOf
