@@ -140,22 +140,6 @@ public class QueryGenerator {
 		return orderBys;
 	}
 
-	private boolean integerConstantOutsideRange(SQLite3Expression expr, int size) {
-		if (!(expr instanceof SQLite3Constant)) {
-			return false;
-		}
-		SQLite3Constant con = (SQLite3Constant) expr;
-		if (con.isNull()) {
-			return false;
-		}
-		if (con.getDataType() == SQLite3DataType.INT) {
-			long val = con.asInt();
-			if (val < 1 || val > size) {
-				return false;
-			}
-		}
-		return true;
-	}
 
 	private SQLite3Expression generateLimit() {
 		if (Randomly.getBoolean()) {
@@ -748,12 +732,12 @@ public class QueryGenerator {
 		Column leftColumn = Randomly.fromList(columns);
 		SQLite3Expression leftColumnExpr = new SQLite3Expression.ColumnName(leftColumn);
 		SQLite3Constant leftColumnValue = rw.getValues().get(leftColumn);
-		SQLite3DataType leftColumnType = leftColumnValue.getDataType();
+		SQLite3DataType originalLeftColumnType = leftColumnValue.getDataType();
 
 		Column rightColumn = Randomly.fromList(columns);
 		SQLite3Constant rightColumnValue = rw.getValues().get(rightColumn);
-		SQLite3DataType rightColumnType = rightColumnValue.getDataType();
 		SQLite3Expression rightColumnExpr = new SQLite3Expression.ColumnName(rightColumn);
+		SQLite3DataType originalRightColumnType = rightColumnValue.getDataType();
 
 		// If one operand has INTEGER, REAL or NUMERIC affinity and the other operand
 		// has TEXT or BLOB or no affinity then NUMERIC affinity is applied to other
@@ -782,16 +766,17 @@ public class QueryGenerator {
 		}
 		BinaryOperator operator = Randomly.fromList(newOp);
 		// Randomly.getBoolean() ? rightColumnExpr : rightColumnValue
-//			if (Randomly.getBoolean()) {
-//				String functionName = getRandomFunction(operator, shouldBeTrue, leftColumnType,
-//						rightColumnType);
-//				if (functionName != null) {
-//					Function left = new SQLite3Expression.Function(functionName, leftColumnExpr);
-//					Function right = new SQLite3Expression.Function(functionName, new SQLite3Expression.ColumnName(rightColumn));
-//					return new BinaryOperation(left, right, operator);
-//					
-//				}
-//			}
+		if (Randomly.getBoolean()) {
+			String functionName = getRandomFunction(operator, shouldBeTrue, originalLeftColumnType,
+					originalRightColumnType);
+			if (functionName != null) {
+				Function left = new SQLite3Expression.Function(functionName, leftColumnExpr);
+				Function right = new SQLite3Expression.Function(functionName,
+						new SQLite3Expression.ColumnName(rightColumn));
+				new BinaryOperation(left, right, operator);
+				// TODO
+			}
+		}
 		return new BinaryOperation(leftColumnExpr, rightColumnExpr, operator);
 
 	}
@@ -804,6 +789,10 @@ public class QueryGenerator {
 			@Override
 			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
+				// SELECT ABS(x'F4');
+				if (leftType != rightType) {
+					return false;
+				}
 				switch (operator) {
 				case IS:
 				case EQUALS:
@@ -827,6 +816,9 @@ public class QueryGenerator {
 			@Override
 			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
+				if (leftType != rightType) {
+					return false;
+				}
 				switch (operator) {
 				case IS:
 				case EQUALS:
@@ -850,35 +842,37 @@ public class QueryGenerator {
 			@Override
 			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
-				if (leftType != SQLite3DataType.TEXT || rightType != SQLite3DataType.TEXT) {
-					return false;
-				}
-				switch (operator) {
-				case IS:
-				case EQUALS:
-				case GLOB:
-				case LIKE:
-				case IS_NOT:
-				case NOT_EQUALS:
-				case SMALLER:
-				case SMALLER_EQUALS:
-				case GREATER:
-				case GREATER_EQUALS:
-					if (leftType == SQLite3DataType.TEXT || rightType == SQLite3DataType.TEXT) {
-						// unicode('') == NULL
-						return operator == BinaryOperator.IS_NOT;
-					} else {
-						return true;
-					}
-				default:
-					throw new AssertionError(operator);
-				}
+				return false;
+//				switch (operator) {
+//				case IS:
+//				case EQUALS:
+//				case GLOB:
+//				case LIKE:
+//				case IS_NOT:
+//				case NOT_EQUALS:
+//				case SMALLER:
+//				case SMALLER_EQUALS:
+//				case GREATER:
+//				case GREATER_EQUALS:
+//					if (leftType == SQLite3DataType.TEXT || rightType == SQLite3DataType.TEXT) {
+//						// unicode('') == NULL
+//						return operator == BinaryOperator.IS_NOT;
+//					} else {
+//						return true;
+//					}
+//				default:
+//					throw new AssertionError(operator);
+//				}
 			}
 		},
 		LTRIM("ltrim") {
+
 			@Override
 			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
+				if (leftType != rightType) {
+					return false;
+				}
 				switch (operator) {
 				case IS:
 				case EQUALS:
@@ -907,6 +901,9 @@ public class QueryGenerator {
 			@Override
 			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
+				if (leftType != rightType) {
+					return false;
+				}
 				switch (operator) {
 				case IS:
 				case EQUALS:
@@ -934,27 +931,28 @@ public class QueryGenerator {
 			@Override
 			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
-				switch (operator) {
-				case IS:
-				case EQUALS:
-				case GLOB:
-				case LIKE:
-				case IS_NOT:
-				case NOT_EQUALS:
-					return true;
-				case SMALLER_EQUALS:
-				case GREATER_EQUALS:
-				case GREATER:
-				case SMALLER:
-					// does not work due to the e notation
-					if (leftType != SQLite3DataType.REAL || rightType != SQLite3DataType.REAL) {
-						return true;
-					} else {
-						return false;
-					}
-				default:
-					throw new AssertionError(operator);
-				}
+				return false;
+//				switch (operator) {
+//				case IS:
+//				case EQUALS:
+//				case GLOB:
+//				case LIKE:
+//				case IS_NOT:
+//				case NOT_EQUALS:
+//					return true;
+//				case SMALLER_EQUALS:
+//				case GREATER_EQUALS:
+//				case GREATER:
+//				case SMALLER:
+//					// does not work due to the e notation
+//					if (leftType != SQLite3DataType.REAL || rightType != SQLite3DataType.REAL) {
+//						return true;
+//					} else {
+//						return false;
+//					}
+//				default:
+//					throw new AssertionError(operator);
+//				}
 			}
 
 		},
@@ -963,6 +961,9 @@ public class QueryGenerator {
 			@Override
 			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
+				if (leftType != rightType) {
+					return false;
+				}
 				switch (operator) {
 				case IS:
 				case EQUALS:
@@ -994,6 +995,9 @@ public class QueryGenerator {
 			@Override
 			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
+				if (leftType != rightType) {
+					return false;
+				}
 				switch (operator) {
 				case IS:
 				case EQUALS:
@@ -1021,6 +1025,9 @@ public class QueryGenerator {
 			@Override
 			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
+				if (leftType != rightType) {
+					return false;
+				}
 				switch (operator) {
 				case IS:
 				case EQUALS:
@@ -1083,6 +1090,9 @@ public class QueryGenerator {
 			@Override
 			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
+				if (leftType != rightType) {
+					return false;
+				}
 				switch (operator) {
 				case IS:
 				case EQUALS:
@@ -1166,6 +1176,9 @@ public class QueryGenerator {
 
 	private String getRandomFunction(BinaryOperator operator, boolean shouldBeTrue, SQLite3DataType leftDataType,
 			SQLite3DataType rightDataType) {
+		if (leftDataType == SQLite3DataType.BINARY || rightDataType == SQLite3DataType.BINARY) {
+			return null;
+		}
 		if (!shouldBeTrue) {
 			operator = operator.reverse();
 		}
