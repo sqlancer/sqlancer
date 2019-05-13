@@ -34,7 +34,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 
 		@Override
 		public List<BinaryOperator> compare(SQLite3Constant cons, boolean shouldBeTrue) {
-			
+
 			List<BinaryOperator> values;
 			if (cons instanceof SQLite3NullConstant) {
 				values = Arrays.asList(BinaryOperator.IS);
@@ -193,7 +193,8 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		public List<BinaryOperator> compare(SQLite3Constant cons, boolean shouldBeTrue) {
 			List<BinaryOperator> values;
 			if (cons instanceof SQLite3RealConstant) {
-				// When an INTEGER or REAL is compared to another INTEGER or REAL, a numerical comparison is performed.
+				// When an INTEGER or REAL is compared to another INTEGER or REAL, a numerical
+				// comparison is performed.
 				double otherColumnValue = cons.asDouble();
 				if (value > otherColumnValue) {
 					values = greaterThanList();
@@ -203,7 +204,8 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 					values = equalsList(true);
 				}
 			} else if (cons instanceof SQLite3NullConstant) {
-				// A value with storage class NULL is considered less than any other value (including another value with storage class NULL).
+				// A value with storage class NULL is considered less than any other value
+				// (including another value with storage class NULL).
 
 				// SELECT 0 IS NULL; -- 0
 				// SELECT 0 IS NOT NULL; -- 1
@@ -337,7 +339,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 				values = Arrays.asList(BinaryOperator.IS_NOT);
 			} else {
 				assert cons instanceof SQLite3TextConstant;
-				String otherText = cons.asString();
+//				String otherText = cons.asString();
 				// TODO implement collate
 //				int compareTo = text.compareToIgnoreCase(otherText);
 //				if (compareTo == 0) {
@@ -367,7 +369,8 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 			}
 			// .0, 0.0, -0.0, 00000000
 			if (castValue instanceof SQLite3IntConstant) {
-				if (text.contentEquals("0.0") || text.contentEquals("-0.0") || text.contentEquals(".0") && castValue.asInt() == 0) {
+				if (text.contentEquals("0.0") || text.contentEquals("-0.0") || text.contentEquals(".0")
+						|| text.contentEquals("-0") && castValue.asInt() == 0) {
 					isTextDouble = true;
 				} else {
 					if (text.endsWith(".0")) {

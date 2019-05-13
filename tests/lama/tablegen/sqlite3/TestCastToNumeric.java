@@ -50,6 +50,7 @@ class TestCastToNumeric {
 		triples.add(new StringTestTriple("++9", SQLite3DataType.INT, 0L));
 		triples.add(new StringTestTriple("+-9", SQLite3DataType.INT, 0L));
 		triples.add(new StringTestTriple("-1748799336", SQLite3DataType.INT, -1748799336L));
+		triples.add(new StringTestTriple("-0", SQLite3DataType.INT, 0L));
 
 		
 		
