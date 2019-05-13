@@ -6,11 +6,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import lama.Main.StateToReproduce;
-import lama.sqlite3.schema.SQLite3Schema;
-import lama.sqlite3.schema.SQLite3Schema.Table;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.sqlite3.schema.SQLite3Schema;
+import lama.sqlite3.schema.SQLite3Schema.Table;
+import lama.sqlite3.schema.SQLite3Schema.Table.TableKind;
 
 /**
  * See https://www.sqlite.org/lang_createtable.html#rowid
@@ -32,6 +33,7 @@ public class SQLite3TableGenerator {
 	private boolean containsAutoIncrement;
 	private final List<String> columnNames = new ArrayList<>();
 	private final SQLite3Schema existingSchema;
+	private boolean tempTable;
 
 	public SQLite3TableGenerator(String tableName, SQLite3Schema existingSchema) {
 		this.tableName = tableName;
@@ -46,13 +48,14 @@ public class SQLite3TableGenerator {
 
 	public void start() {
 		sb.append("CREATE ");
-//		if (Randomly.getBoolean()) {
-//			if (Randomly.getBoolean()) {
-//				sb.append("TEMP ");
-//			} else {
-//				sb.append("TEMPORARY ");
-//			}
-//		}
+		if (Randomly.getBoolean()) {
+			tempTable = true;
+			if (Randomly.getBoolean()) {
+				sb.append("TEMP ");
+			} else {
+				sb.append("TEMPORARY ");
+			}
+		}
 		sb.append("TABLE ");
 		if (Randomly.getBoolean()) {
 			sb.append("IF NOT EXISTS ");
@@ -65,7 +68,8 @@ public class SQLite3TableGenerator {
 				sb.append(", ");
 			}
 			String columnName = SQLite3Common.createColumnName(columnId);
-			SQLite3ColumnBuilder columnBuilder = new SQLite3ColumnBuilder().allowPrimaryKey(allowPrimaryKeyInColumn && !containsPrimaryKey);
+			SQLite3ColumnBuilder columnBuilder = new SQLite3ColumnBuilder()
+					.allowPrimaryKey(allowPrimaryKeyInColumn && !containsPrimaryKey);
 			sb.append(columnBuilder.createColumn(columnName));
 			sb.append(" ");
 			if (columnBuilder.isContainsAutoIncrement()) {
@@ -74,7 +78,7 @@ public class SQLite3TableGenerator {
 			if (columnBuilder.isContainsPrimaryKey()) {
 				this.containsPrimaryKey = true;
 			}
-			
+
 			columnNames.add(columnName);
 			columnId++;
 		}
@@ -130,10 +134,20 @@ public class SQLite3TableGenerator {
 				columns.add(Randomly.fromList(columnNames));
 			}
 		} else {
-			Table randomTable = existingSchema.getRandomTable();
-			referencedTableName = randomTable.getName();
-			for (int i = 0; i < foreignKeyColumns.size(); i++) {
-				columns.add(randomTable.getRandomColumn().getName());
+			final TableKind type = tempTable ? TableKind.TEMP : TableKind.MAIN;
+			List<Table> applicableTables = existingSchema.getTables().getTables().stream()
+					.filter(t -> t.getTableType() == type).collect(Collectors.toList());
+			if (applicableTables.isEmpty()) {
+				referencedTableName = tableName;
+				for (int i = 0; i < foreignKeyColumns.size(); i++) {
+					columns.add(Randomly.fromList(columnNames));
+				}
+			} else {
+				Table randomTable = Randomly.fromList(applicableTables);
+				referencedTableName = randomTable.getName();
+				for (int i = 0; i < foreignKeyColumns.size(); i++) {
+					columns.add(randomTable.getRandomColumn().getName());
+				}
 			}
 		}
 		sb.append(referencedTableName);
@@ -159,8 +173,5 @@ public class SQLite3TableGenerator {
 			sb.append(Randomly.fromOptions("NO ACTION", "RESTRICT", "SET NULL", "SET DEFAULT", "CASCADE"));
 		}
 	}
-
-
-
 
 }

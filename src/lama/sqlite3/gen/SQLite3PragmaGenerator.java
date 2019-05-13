@@ -13,7 +13,7 @@ public class SQLite3PragmaGenerator {
 		APPLICATION_ID, AUTO_VACUUM, AUTOMATIC_INDEX, BUSY_TIMEOUT, CACHE_SIZE, CACHE_SPILL_ENABLED, CACHE_SPILL_SIZE,
 		// CASE_SENSITIVE_LIKE, // see
 		// https://www.mail-archive.com/sqlite-users@mailinglists.sqlite.org/msg115030.html
-		CELL_SIZE_CHECK, CHECKPOINT_FULLSYNC, DEFER_FOREIGN_KEY, ENCODING, FOREIGN_KEYS, IGNORE_CHECK_CONSTRAINTS, INCREMENTAL_VACUUM, INTEGRITY_CHECK, JOURNAL_MODE, JOURNAL_SIZE_LIMIT, /* LEGACY_ALTER_TABLE ,*/ OPTIMIZE,
+		CELL_SIZE_CHECK, CHECKPOINT_FULLSYNC, DEFER_FOREIGN_KEY, /*ENCODING,*/ FOREIGN_KEYS, IGNORE_CHECK_CONSTRAINTS, INCREMENTAL_VACUUM, INTEGRITY_CHECK, JOURNAL_MODE, JOURNAL_SIZE_LIMIT, /* LEGACY_ALTER_TABLE ,*/ OPTIMIZE,
 		LEGACY_FORMAT, REVERSE_UNORDERED_SELECTS, SECURE_DELETE, SHRINK_MEMORY, SOFT_HEAP_LIMIT, THREADS
 	}
 
@@ -75,11 +75,12 @@ public class SQLite3PragmaGenerator {
 			sb.append("PRAGMA defer_foreign_keys =");
 			sb.append(getRandomTextBoolean());
 			break;
-		case ENCODING:
-			sb.append("PRAGMA encoding = \"");
-			sb.append(Randomly.fromOptions("UTF-8", "UTF-16", "UTF-16be", "UTF-16le"));
-			sb.append("\"");
-			break;
+			// TODO: [SQLITE_ERROR] SQL error or missing database (attached databases must use the same text encoding as main database)
+//		case ENCODING:
+//			sb.append("PRAGMA encoding = \"");
+//			sb.append(Randomly.fromOptions("UTF-8", "UTF-16", "UTF-16be", "UTF-16le"));
+//			sb.append("\"");
+//			break;
 		case FOREIGN_KEYS:
 			sb.append("PRAGMA foreign_keys=");
 			sb.append(getRandomTextBoolean());
