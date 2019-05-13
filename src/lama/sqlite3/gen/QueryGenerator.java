@@ -26,6 +26,7 @@ import lama.sqlite3.ast.SQLite3Expression.Join.JoinType;
 import lama.sqlite3.ast.SQLite3Expression.OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.OrderingTerm.Ordering;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
+import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation.PostfixUnaryOperator;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral.Type;
 import lama.sqlite3.ast.SQLite3Expression.UnaryOperation;
@@ -370,8 +371,8 @@ public class QueryGenerator {
 						if (Randomly.getBoolean()) {
 							// generate random expressions and add either the column or value
 							for (int i = 0; i < Randomly.smallNumber(); i++) {
-								expressions
-										.add(SQLite3ExpressionGenerator.getRandomExpression(columns, depth + 1, false, r));
+								expressions.add(
+										SQLite3ExpressionGenerator.getRandomExpression(columns, depth + 1, false, r));
 							}
 							int randomPosition = r.getInteger(0, expressions.size());
 							if (Randomly.getBoolean()) {
@@ -671,27 +672,32 @@ public class QueryGenerator {
 				BinaryOperator.SMALLER, BinaryOperator.EQUALS);
 		SQLite3Expression leftColumn = new ColumnName(left);
 		SQLite3Expression rightColumn = new ColumnName(right);
-		if (rw.getValues().get(left).isNull() || rw.getValues().get(right).isNull()) {
-			// TODO add another OR ISNULL clause
-			return null;
-		}
-		if (Randomly.getBoolean()) {
-			BinaryFunction func;
-			do {
-				func = Randomly.fromOptions(BinaryFunction.values());
-			} while (func == BinaryFunction.UNICODE);
-			leftColumn = new Function(func.getName(), leftColumn);
-			rightColumn = new Function(func.getName(), rightColumn);
-		}
+
+		boolean leftIsNull = rw.getValues().get(left).isNull();
+		boolean rightIsNull = rw.getValues().get(right).isNull();
+
+		// generate the left hand expression, for example, a < b
 		BinaryOperation leftExpr = new BinaryOperation(leftColumn, rightColumn, binaryOperator);
+
 		SQLite3Expression rightExpr;
+		// for the right hand side, reverse the expression, for example, a >= b
 		if (Randomly.getBoolean()) {
 			rightExpr = new BinaryOperation(leftColumn, rightColumn, binaryOperator.reverse());
 		} else {
 			rightExpr = new UnaryOperation(UnaryOperator.NOT, leftExpr);
 		}
+
 		BinaryOperator conOperator = shouldBeTrue ? BinaryOperator.OR : BinaryOperator.AND;
-		return new BinaryOperation(leftExpr, rightExpr, conOperator);
+		BinaryOperation binOp = new BinaryOperation(leftExpr, rightExpr, conOperator);
+		if ((leftIsNull || rightIsNull) && binaryOperator != BinaryOperator.IS
+				&& binaryOperator != BinaryOperator.IS_NOT) {
+			if (shouldBeTrue) {
+				return new PostfixUnaryOperation(PostfixUnaryOperator.ISNULL, binOp);
+			} else {
+				return new PostfixUnaryOperation(PostfixUnaryOperator.NOT_NULL, binOp);
+			}
+		}
+		return binOp;
 	}
 
 	private Tuple createSampleBasedColumnConstantComparison(SQLite3Constant sampledConstant,
