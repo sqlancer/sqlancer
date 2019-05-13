@@ -87,7 +87,11 @@ public class QueryGenerator {
 		selectStatement.setFromTables(tables);
 
 		// TODO: also implement a wild-card check (*)
-		fetchColumns = Randomly.nonEmptySubset(columns);
+		// filter out row ids from the select because the hinder the reduction process
+		// once a bug is found
+		List<Column> columnsWithoutRowid = columns.stream().filter(c -> !c.getName().matches("row"))
+				.collect(Collectors.toList());
+		fetchColumns = Randomly.nonEmptySubset(columnsWithoutRowid);
 		selectStatement.selectFetchColumns(fetchColumns);
 		state.queryTargetedColumnsString = fetchColumns.stream().map(c -> c.getFullQualifiedName())
 				.collect(Collectors.joining(", "));
