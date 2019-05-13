@@ -424,17 +424,18 @@ public class QueryGenerator {
 		case REAL:
 			return value;
 		case TEXT:
-			if (!value.asString().isEmpty() && unprintAbleCharThatLetsBecomeNumberZero(value.asString())) {
+			String asString = value.asString();
+			while (startsWithWhitespace(asString)) {
+				asString = asString.substring(1);
+			}
+			if (!asString.isEmpty() && unprintAbleCharThatLetsBecomeNumberZero(asString)) {
 				return SQLite3Constant.createIntConstant(0);
 			}
-			for (int i = value.asString().length(); i >= 0; i--) {
+			for (int i = asString.length(); i >= 0; i--) {
 				try {
-					double d = Double.valueOf(value.asString().substring(0, i));
-//					if (value.asString().equals("-0.0")) {
-//						return SQLite3Constant.createRealConstant(0.0);
-//					} else
-					if (d == (long) d && !value.asString().contains("e")) {
-						return SQLite3Constant.createIntConstant((long) d);
+					double d = Double.valueOf(asString.substring(0, i));
+					if (d == (long) d && !asString.toUpperCase().contains("E")) {
+						return SQLite3Constant.createIntConstant(Long.parseLong(asString.substring(0, i)));
 					} else {
 						return SQLite3Constant.createRealConstant(d);
 					}
@@ -445,6 +446,24 @@ public class QueryGenerator {
 			return SQLite3Constant.createIntConstant(0);
 		default:
 			throw new AssertionError(value);
+		}
+	}
+
+	private static boolean startsWithWhitespace(String asString) {
+		if (asString.isEmpty()) {
+			return false;
+		}
+		char c = asString.charAt(0);
+		switch (c) {
+		case ' ':
+		case '\t':
+		case 0x0b:
+		case '\f':
+		case '\n':
+		case '\r':
+			return true;
+		default:
+			return false;
 		}
 	}
 

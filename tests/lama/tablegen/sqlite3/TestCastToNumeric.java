@@ -53,12 +53,16 @@ class TestCastToNumeric {
 
 		
 		
+		triples.add(new StringTestTriple("8.2250617031974513E18", SQLite3DataType.REAL, 8.2250617031974513E18));
 		triples.add(new StringTestTriple("3.0e+5", SQLite3DataType.REAL, 300000.0));
 		triples.add(new StringTestTriple("-3.2", SQLite3DataType.REAL, -3.2d));
 		triples.add(new StringTestTriple("10e9", SQLite3DataType.REAL, 10000000000.0));
 //		triples.add(new StringTestTriple("-0.0", SQLite3DataType.REAL, 0.0d));
 		triples.add(new StringTestTriple("9223372036854775807", SQLite3DataType.INT, 9223372036854775807L));
-		
+		triples.add(new StringTestTriple("4337561223119921152", SQLite3DataType.INT, 4337561223119921152L));
+		triples.add(new StringTestTriple("-2277224522334683278", SQLite3DataType.INT, -2277224522334683278L));
+		triples.add(new StringTestTriple("7839344951195291815", SQLite3DataType.INT, 7839344951195291815L));
+
 		
 		for (StringTestTriple triple : triples) {
 			SQLite3Constant castVal = QueryGenerator.castToNumeric(SQLite3Constant.createTextConstant(triple.value));
