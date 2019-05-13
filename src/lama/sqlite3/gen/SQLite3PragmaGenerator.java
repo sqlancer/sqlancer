@@ -17,14 +17,14 @@ public class SQLite3PragmaGenerator {
 		LEGACY_FORMAT, REVERSE_UNORDERED_SELECTS, SECURE_DELETE, SHRINK_MEMORY, SOFT_HEAP_LIMIT, THREADS
 	}
 
-	public static QueryAdapter insertPragma(Connection con, StateToReproduce state)
+	public static QueryAdapter insertPragma(Connection con, StateToReproduce state, Randomly r)
 			throws SQLException {
 		Pragma p = Randomly.fromOptions(Pragma.values());
 		StringBuilder sb = new StringBuilder();
 		switch (p) {
 		case APPLICATION_ID:
 			sb.append("PRAGMA main.application_id=");
-			sb.append(Randomly.getInteger());
+			sb.append(r.getInteger());
 			break;
 		case AUTO_VACUUM:
 			sb.append("PRAGMA main.auto_vacuum=");
@@ -39,13 +39,13 @@ public class SQLite3PragmaGenerator {
 			if (Randomly.getBoolean()) {
 				sb.append("0");
 			} else {
-				long value = Math.max(10000, Randomly.getInteger());
+				long value = Math.max(10000, r.getInteger());
 				sb.append(value);
 			}
 			break;
 		case CACHE_SIZE:
 			sb.append("PRAGMA main.cache_size=");
-			sb.append(Randomly.getInteger());
+			sb.append(r.getInteger());
 			break;
 		case CACHE_SPILL_ENABLED:
 			sb.append("PRAGMA cache_spill=");
@@ -53,12 +53,12 @@ public class SQLite3PragmaGenerator {
 			break;
 		case CACHE_SPILL_SIZE:
 			sb.append("PRAGMA main.cache_spill=");
-			sb.append(Randomly.getInteger());
+			sb.append(r.getInteger());
 			break;
 //			case CASE_SENSITIVE_LIKE:
 //				if (afterIndicesCreated) {
 //					sb.append("PRAGMA case_sensitive_like=");
-//					sb.append(Randomly.fromOptions("true", "false"));
+//					sb.append(r.fromOptions("true", "false"));
 //					break;
 //				} else {
 //					continue;
@@ -78,7 +78,7 @@ public class SQLite3PragmaGenerator {
 			// TODO: [SQLITE_ERROR] SQL error or missing database (attached databases must use the same text encoding as main database)
 //		case ENCODING:
 //			sb.append("PRAGMA encoding = \"");
-//			sb.append(Randomly.fromOptions("UTF-8", "UTF-16", "UTF-16be", "UTF-16le"));
+//			sb.append(r.fromOptions("UTF-8", "UTF-16", "UTF-16be", "UTF-16le"));
 //			sb.append("\"");
 //			break;
 		case FOREIGN_KEYS:
@@ -93,14 +93,14 @@ public class SQLite3PragmaGenerator {
 			if (Randomly.getBoolean()) {
 				sb.append("PRAGMA incremental_vacuum");
 			} else {
-				sb.append(String.format("PRAGMA incremental_vacuum(%d)", Randomly.getInteger()));
+				sb.append(String.format("PRAGMA incremental_vacuum(%d)", r.getInteger()));
 			}
 			break;
 		case INTEGRITY_CHECK:
 			if (Randomly.getBoolean()) {
 				sb.append("PRAGMA integrity_check");
 			} else {
-				sb.append(String.format("PRAGMA integrity_check(%d)", Randomly.getInteger()));
+				sb.append(String.format("PRAGMA integrity_check(%d)", r.getInteger()));
 			}
 			break;
 		case JOURNAL_MODE:
@@ -109,7 +109,7 @@ public class SQLite3PragmaGenerator {
 			break;
 		case JOURNAL_SIZE_LIMIT:
 			sb.append("PRAGMA main.journal_size_limit=");
-			sb.append(Randomly.getInteger());
+			sb.append(r.getInteger());
 			break;
 //		case LEGACY_ALTER_TABLE:
 //			sb.append("PRAGMA legacy_alter_table=");
@@ -135,11 +135,11 @@ public class SQLite3PragmaGenerator {
 			break;
 		case SOFT_HEAP_LIMIT:
 			sb.append("PRAGMA soft_heap_limit=");
-			sb.append(Randomly.getPositiveInteger());
+			sb.append(r.getPositiveInteger());
 			break;
 		case THREADS:
 			sb.append("PRAGMA threads=");
-			sb.append(Randomly.getInteger());
+			sb.append(r.getInteger());
 			break;
 		default:
 			throw new AssertionError();

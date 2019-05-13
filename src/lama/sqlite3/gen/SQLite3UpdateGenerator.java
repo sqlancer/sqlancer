@@ -17,9 +17,14 @@ public class SQLite3UpdateGenerator {
 
 	private final StringBuilder sb = new StringBuilder();
 	private boolean mightFail;
+	private final Randomly r;
 
-	public static Query updateRow(Table table, Connection con, StateToReproduce state) {
-		SQLite3UpdateGenerator generator = new SQLite3UpdateGenerator();
+	public SQLite3UpdateGenerator(Randomly r) {
+		this.r = r;
+	}
+
+	public static Query updateRow(Table table, Connection con, StateToReproduce state, Randomly r) {
+		SQLite3UpdateGenerator generator = new SQLite3UpdateGenerator(r);
 		return new QueryAdapter(generator.update(table, con, state)) {
 			public void execute(Connection con) throws SQLException {
 				try {
@@ -68,16 +73,16 @@ public class SQLite3UpdateGenerator {
 			sb.append(columnsToUpdate.get(i).getName());
 			sb.append(" = ");
 			if (columnsToUpdate.get(i).isIntegerPrimaryKey()) {
-				sb.append(SQLite3Visitor.asString(SQLite3Constant.createIntConstant(Randomly.getInteger())));
+				sb.append(SQLite3Visitor.asString(SQLite3Constant.createIntConstant(r.getInteger())));
 			} else {
-				sb.append(SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(false)));
+				sb.append(SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(false, r)));
 			}
 		}
 
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
 			String whereClause = SQLite3Visitor
-					.asString(SQLite3ExpressionGenerator.getRandomExpression(table.getColumns(), false));
+					.asString(SQLite3ExpressionGenerator.getRandomExpression(table.getColumns(), false, r));
 			sb.append(whereClause);
 		}
 

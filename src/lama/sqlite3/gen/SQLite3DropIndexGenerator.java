@@ -18,10 +18,16 @@ import lama.Randomly;
 public class SQLite3DropIndexGenerator {
 
 	private boolean sureItExists;
+	
+	private final Randomly r;
 
-	public static Query dropIndex(Connection con, StateToReproduce state, SQLite3Schema s) throws SQLException {
+	public SQLite3DropIndexGenerator(Randomly r) {
+		this.r = r;
+	}
+
+	public static Query dropIndex(Connection con, StateToReproduce state, SQLite3Schema s, Randomly r) throws SQLException {
 		try (Statement stm = con.createStatement()) {
-			SQLite3DropIndexGenerator gen = new SQLite3DropIndexGenerator();
+			SQLite3DropIndexGenerator gen = new SQLite3DropIndexGenerator(r);
 			String query = gen.dropIndex(con, s);
 			return new QueryAdapter(query) {
 				public void execute(Connection con) throws SQLException {
@@ -69,12 +75,12 @@ public class SQLite3DropIndexGenerator {
 				sureItExists = true;
 				return Randomly.fromList(indices);
 			} else {
-				return Randomly.getString();
+				return r.getString();
 			}
 		case INDEX_LIKE:
 			return SQLite3Common.createIndexName(0);
 		case RANDOM_STRING:
-			return Randomly.getString();
+			return r.getString();
 		default:
 			throw new AssertionError();
 		}

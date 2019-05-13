@@ -19,15 +19,17 @@ import lama.sqlite3.schema.SQLite3Schema.Table;
 // see https://www.sqlite.org/lang_createindex.html
 public class SQLite3IndexGenerator {
 
-	public static Query insertIndex(Connection con, StateToReproduce state) throws SQLException {
-		return new SQLite3IndexGenerator(con, state).query;
+	public static Query insertIndex(Connection con, StateToReproduce state, Randomly r) throws SQLException {
+		return new SQLite3IndexGenerator(con, state, r).query;
 	}
 
 	private int indexNr;
 	private final Query query;
 	boolean isUnique;
+	private final Randomly r;
 
-	public SQLite3IndexGenerator(Connection con, StateToReproduce state) throws SQLException {
+	public SQLite3IndexGenerator(Connection con, StateToReproduce state, Randomly r) throws SQLException {
+		this.r = r;
 		SQLite3Schema s = SQLite3Schema.fromConnection(con);
 		Table t = s.getRandomTable();
 		String q = createIndex(t, t.getColumns());
@@ -66,7 +68,7 @@ public class SQLite3IndexGenerator {
 			if (i != 0) {
 				sb.append(",");
 			}
-			SQLite3Expression expr = SQLite3ExpressionGenerator.getRandomExpression(columns, true);
+			SQLite3Expression expr = SQLite3ExpressionGenerator.getRandomExpression(columns, true, r);
 			SQLite3Visitor visitor = new SQLite3Visitor();
 			visitor.setStringsAsDoubleQuotes(true);
 			visitor.fullyQualifiedNames = false;
@@ -80,7 +82,7 @@ public class SQLite3IndexGenerator {
 		sb.append(")");
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
-			SQLite3Expression expr = SQLite3ExpressionGenerator.getRandomExpression(columns, true);
+			SQLite3Expression expr = SQLite3ExpressionGenerator.getRandomExpression(columns, true, r);
 			SQLite3Visitor visitor = new SQLite3Visitor();
 			visitor.fullyQualifiedNames = false;
 			visitor.visit(expr);

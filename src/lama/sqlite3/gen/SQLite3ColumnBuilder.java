@@ -34,7 +34,7 @@ public class SQLite3ColumnBuilder {
 		return containsPrimaryKey;
 	}
 
-	String createColumn(String columnName) {
+	String createColumn(String columnName, Randomly r) {
 		sb.append(columnName);
 		sb.append(" ");
 		String dataType = Randomly.fromOptions("INT", "TEXT", "BLOB", "REAL", "INTEGER");
@@ -86,7 +86,7 @@ public class SQLite3ColumnBuilder {
 					break;
 				case CHECK:
 					if (allowCheck) {
-						sb.append(SQLite3Common.getCheckConstraint());
+						sb.append(SQLite3Common.getCheckConstraint(r));
 					}
 					break;
 				default:
@@ -95,7 +95,7 @@ public class SQLite3ColumnBuilder {
 			}
 		}
 		if (allowDefaultValue && Randomly.getBoolean()) {
-			sb.append(" DEFAULT " + SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(false)));
+			sb.append(" DEFAULT " + SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(false, r)));
 		}
 		if (Randomly.getBoolean()) {
 			String randomCollate = SQLite3Common.getRandomCollate();

@@ -21,8 +21,8 @@ public class SQLite3Common {
 		return String.format("i%d", nr);
 	}
 	
-	public static String getCheckConstraint() {
-		return(" CHECK ( " + SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(false)) + ")");
+	public static String getCheckConstraint(Randomly r) {
+		return(" CHECK ( " + SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(false, r)) + ")");
 	}
 
 

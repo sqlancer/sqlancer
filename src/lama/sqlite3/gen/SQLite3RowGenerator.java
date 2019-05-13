@@ -16,8 +16,14 @@ import lama.sqlite3.schema.SQLite3Schema.Table;
 
 public class SQLite3RowGenerator {
 
-	public static Query insertRow(Table table, Connection con, StateToReproduce state) throws SQLException {
-		SQLite3RowGenerator generator = new SQLite3RowGenerator();
+	private final Randomly r;
+
+	public SQLite3RowGenerator(Randomly r) {
+		this.r = r;
+	}
+
+	public static Query insertRow(Table table, Connection con, StateToReproduce state, Randomly r) throws SQLException {
+		SQLite3RowGenerator generator = new SQLite3RowGenerator(r);
 		String query = generator.insertRow(table);
 		return new QueryAdapter(query) { 
 			public void execute(Connection con) throws SQLException {
@@ -70,7 +76,7 @@ public class SQLite3RowGenerator {
 		return sb.toString();
 	}
 
-	private static void appendNrValues(StringBuilder sb, List<Column> columns, int nrValues) {
+	private void appendNrValues(StringBuilder sb, List<Column> columns, int nrValues) {
 		for (int i = 0; i < nrValues; i++) {
 			if (i != 0) {
 				sb.append(", ");
@@ -81,17 +87,17 @@ public class SQLite3RowGenerator {
 		}
 	}
 
-	private static void appendValue(StringBuilder sb, List<Column> columns) {
+	private void appendValue(StringBuilder sb, List<Column> columns) {
 		for (int i = 0; i < columns.size(); i++) {
 			if (i != 0) {
 				sb.append(", ");
 			}
 			SQLite3Expression literal;
 			if (columns.get(i).isIntegerPrimaryKey()) {
-				literal = SQLite3Constant.createIntConstant(Randomly.getInteger());
+				literal = SQLite3Constant.createIntConstant(r.getInteger());
 			} else {
 //				literal = SQLite3ExpressionGenerator.getRandomExpression(new ArrayList<>(), false);
-				literal = SQLite3ExpressionGenerator.getRandomLiteralValue(false);
+				literal = SQLite3ExpressionGenerator.getRandomLiteralValue(false, r);
 			}
 			SQLite3Visitor visitor = new SQLite3Visitor();
 			visitor.visit(literal);

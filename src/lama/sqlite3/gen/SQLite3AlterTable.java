@@ -15,12 +15,18 @@ import lama.Randomly;
 
 public class SQLite3AlterTable {
 
+	private final Randomly r;
+
 	private enum Option {
 		RENAME_TABLE, RENAME_COLUMN, ADD_COLUMN
 	}
 
-	public static Query alterTable(SQLite3Schema s, Connection con, StateToReproduce state) throws SQLException {
-		SQLite3AlterTable alterTable = new SQLite3AlterTable();
+	public SQLite3AlterTable(Randomly r) {
+		this.r = r;
+	}
+
+	public static Query alterTable(SQLite3Schema s, Connection con, StateToReproduce state, Randomly r) throws SQLException {
+		SQLite3AlterTable alterTable = new SQLite3AlterTable(r);
 		Option option = Randomly.fromOptions(Option.values());
 		switch (option) {
 		case RENAME_TABLE:
@@ -82,7 +88,7 @@ public class SQLite3AlterTable {
 		// The column may not have a default value of CURRENT_TIME, CURRENT_DATE, CURRENT_TIMESTAMP, or an expression in parentheses.
 		// If a NOT NULL constraint is specified, then the column must have a default value other than NULL.
 		// If foreign key constraints are enabled and a column with a REFERENCES clause is added, the column must have a default value of NULL.
-		sb.append(new SQLite3ColumnBuilder().allowPrimaryKey(false).allowUnique(false).allowNotNull(false).allowDefaultValue(false).createColumn(name[0]));
+		sb.append(new SQLite3ColumnBuilder().allowPrimaryKey(false).allowUnique(false).allowNotNull(false).allowDefaultValue(false).createColumn(name[0], r));
 	} 
 
 	private final StringBuilder sb = new StringBuilder();

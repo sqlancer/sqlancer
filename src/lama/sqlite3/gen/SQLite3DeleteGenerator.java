@@ -12,8 +12,14 @@ import lama.sqlite3.schema.SQLite3Schema.Table;
 
 public class SQLite3DeleteGenerator {
 
-	public static Query deleteContent(Table tableName, Connection con, StateToReproduce state) {
-		String query = new SQLite3DeleteGenerator().getDeleteQuery(tableName);
+	private final Randomly r;
+
+	public SQLite3DeleteGenerator(Randomly r) {
+		this.r = r;
+	}
+
+	public static Query deleteContent(Table tableName, Connection con, StateToReproduce state, Randomly r) {
+		String query = new SQLite3DeleteGenerator(r).getDeleteQuery(tableName);
 		return new QueryAdapter(query) {
 			@Override
 			public void execute(Connection con) throws SQLException {
@@ -44,7 +50,7 @@ public class SQLite3DeleteGenerator {
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
 			sb.append(SQLite3Visitor
-					.asString(SQLite3ExpressionGenerator.getRandomExpression(tableName.getColumns(), false)));
+					.asString(SQLite3ExpressionGenerator.getRandomExpression(tableName.getColumns(), false, r)));
 		}
 		return sb.toString();
 	}

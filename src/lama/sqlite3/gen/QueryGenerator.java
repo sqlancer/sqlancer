@@ -18,11 +18,11 @@ import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
-import lama.sqlite3.ast.SQLite3Expression.Join.JoinType;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Function;
 import lama.sqlite3.ast.SQLite3Expression.Join;
+import lama.sqlite3.ast.SQLite3Expression.Join.JoinType;
 import lama.sqlite3.ast.SQLite3Expression.OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.OrderingTerm.Ordering;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
@@ -42,9 +42,11 @@ public class QueryGenerator {
 
 	private final Connection database;
 	private final SQLite3Schema s;
+	private final Randomly r;
 
-	public QueryGenerator(Connection con) throws SQLException {
+	public QueryGenerator(Connection con, Randomly r) throws SQLException {
 		this.database = con;
+		this.r = r;
 		s = SQLite3Schema.fromConnection(database);
 	}
 
@@ -150,11 +152,11 @@ public class QueryGenerator {
 		return e.getMessage().contentEquals("[SQLITE_ERROR] SQL error or missing database (integer overflow)");
 	}
 
-	public static List<SQLite3Expression> generateOrderBy(List<Column> columns) {
+	public List<SQLite3Expression> generateOrderBy(List<Column> columns) {
 		List<SQLite3Expression> orderBys = new ArrayList<>();
 		for (int i = 0; i < Randomly.smallNumber(); i++) {
 			SQLite3Expression expr;
-			expr = SQLite3Constant.createTextConstant(Randomly.getString());
+			expr = SQLite3Constant.createTextConstant(r.getString());
 			Ordering order = Randomly.fromOptions(Ordering.ASC, Ordering.DESC);
 			orderBys.add(new OrderingTerm(expr, order));
 			// TODO RANDOM()
@@ -341,7 +343,7 @@ public class QueryGenerator {
 					if (Randomly.getBoolean()) {
 						rightExpr = generateNewExpression(columns, rw, Randomly.getBoolean(), depth + 1);
 					} else {
-						rightExpr = SQLite3ExpressionGenerator.getRandomExpression(columns, false);
+						rightExpr = SQLite3ExpressionGenerator.getRandomExpression(columns, false, r);
 					}
 
 					if (Randomly.getBoolean()) {
@@ -369,9 +371,9 @@ public class QueryGenerator {
 							// generate random expressions and add either the column or value
 							for (int i = 0; i < Randomly.smallNumber(); i++) {
 								expressions
-										.add(SQLite3ExpressionGenerator.getRandomExpression(columns, depth + 1, false));
+										.add(SQLite3ExpressionGenerator.getRandomExpression(columns, depth + 1, false, r));
 							}
-							int randomPosition = Randomly.getInteger(0, expressions.size());
+							int randomPosition = r.getInteger(0, expressions.size());
 							if (Randomly.getBoolean()) {
 								expressions.add(randomPosition, new SQLite3Expression.ColumnName(c));
 							} else {
@@ -520,7 +522,7 @@ public class QueryGenerator {
 			// only a zero integer is false
 			long value;
 			if (shouldBeTrue) {
-				value = Randomly.getNonZeroInteger();
+				value = r.getNonZeroInteger();
 			} else {
 				value = 0;
 			}
@@ -528,7 +530,7 @@ public class QueryGenerator {
 		case TEXT:
 			String strValue;
 			if (shouldBeTrue) {
-				strValue = Randomly.getNonZeroString();
+				strValue = r.getNonZeroString();
 			} else {
 				strValue = Randomly.fromOptions("0", "asdf", "c", "-a");
 			}
@@ -536,7 +538,7 @@ public class QueryGenerator {
 		case REAL:
 			double realValue;
 			if (shouldBeTrue) {
-				realValue = Randomly.getNonZeroReal();
+				realValue = r.getNonZeroReal();
 			} else {
 				realValue = Randomly.fromOptions(0.0, -0.0);
 			}
@@ -602,11 +604,11 @@ public class QueryGenerator {
 
 		switch (randomType) {
 		case INT:
-			long val = Randomly.getInteger();
+			long val = r.getInteger();
 			con = SQLite3Constant.createIntConstant(val);
 			break;
 		case TEXT:
-			con = SQLite3Constant.createTextConstant(Randomly.getString());
+			con = SQLite3Constant.createTextConstant(r.getString());
 			break;
 		case BINARY:
 			byte[] bytes = new byte[Randomly.smallNumber()];
@@ -1248,7 +1250,7 @@ public class QueryGenerator {
 	private SQLite3Constant notEqualConstant(SQLite3Constant sampledConstant) {
 		switch (sampledConstant.getDataType()) {
 		case INT:
-			return SQLite3Constant.createIntConstant(Randomly.notEqualInt(sampledConstant.asInt()));
+			return SQLite3Constant.createIntConstant(r.notEqualInt(sampledConstant.asInt()));
 		case TEXT:
 			return SQLite3Constant.createTextConstant(sampledConstant.asString() + "asdf");
 		case REAL:
@@ -1271,14 +1273,14 @@ public class QueryGenerator {
 			if (value == Long.MAX_VALUE) {
 				return null;
 			} else {
-				return SQLite3Constant.createIntConstant(Randomly.greaterInt(value));
+				return SQLite3Constant.createIntConstant(r.greaterInt(value));
 			}
 		case REAL:
 			double dValue = sampledConstant.asDouble();
 			if (dValue == Double.POSITIVE_INFINITY) {
 				return null;
 			} else {
-				return SQLite3Constant.createRealConstant(Randomly.greaterDouble(dValue));
+				return SQLite3Constant.createRealConstant(r.greaterDouble(dValue));
 			}
 		default:
 			return null;
@@ -1292,14 +1294,14 @@ public class QueryGenerator {
 			if (value == Long.MIN_VALUE) {
 				return null;
 			} else {
-				return SQLite3Constant.createIntConstant(Randomly.smallerInt(value));
+				return SQLite3Constant.createIntConstant(r.smallerInt(value));
 			}
 		case REAL:
 			double dValue = sampledConstant.asDouble();
 			if (dValue == Double.NEGATIVE_INFINITY) {
 				return null;
 			} else {
-				return SQLite3Constant.createRealConstant(Randomly.smallerDouble(dValue));
+				return SQLite3Constant.createRealConstant(r.smallerDouble(dValue));
 			}
 		default:
 			return null;
@@ -1310,10 +1312,10 @@ public class QueryGenerator {
 		switch (sampledConstant.getDataType()) {
 		case INT:
 			long value = sampledConstant.asInt();
-			return SQLite3Constant.createIntConstant(Randomly.smallerOrEqualInt(value));
+			return SQLite3Constant.createIntConstant(r.smallerOrEqualInt(value));
 		case REAL:
 			double dValue = sampledConstant.asDouble();
-			return SQLite3Constant.createRealConstant(Randomly.smallerOrEqualDouble(dValue));
+			return SQLite3Constant.createRealConstant(r.smallerOrEqualDouble(dValue));
 		// TODO: other data types
 		default:
 			return sampledConstant;
@@ -1324,12 +1326,12 @@ public class QueryGenerator {
 		switch (sampledConstant.getDataType()) {
 		case INT:
 			long value = sampledConstant.asInt();
-			return SQLite3Constant.createIntConstant(Randomly.greaterOrEqualInt(value));
+			return SQLite3Constant.createIntConstant(r.greaterOrEqualInt(value));
 		case TEXT:
 			String strValue = sampledConstant.asString();
-			return SQLite3Constant.createTextConstant(Randomly.greaterOrEqualString(strValue));
+			return SQLite3Constant.createTextConstant(r.greaterOrEqualString(strValue));
 		case REAL:
-			return SQLite3Constant.createRealConstant(Randomly.greaterOrEqualDouble(sampledConstant.asDouble()));
+			return SQLite3Constant.createRealConstant(r.greaterOrEqualDouble(sampledConstant.asDouble()));
 		default: // TODO: other data types
 			return sampledConstant;
 		}

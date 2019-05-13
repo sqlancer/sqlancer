@@ -31,14 +31,16 @@ public class SQLite3TableGenerator {
 	private final List<String> columnNames = new ArrayList<>();
 	private final SQLite3Schema existingSchema;
 	private boolean tempTable;
+	private Randomly r;
 
-	public SQLite3TableGenerator(String tableName, SQLite3Schema existingSchema) {
+	public SQLite3TableGenerator(String tableName, SQLite3Schema existingSchema, Randomly r) {
 		this.tableName = tableName;
 		this.existingSchema = existingSchema;
+		this.r = r;
 	}
 
-	public static Query createTableStatement(String tableName, StateToReproduce state, SQLite3Schema existingSchema) {
-		SQLite3TableGenerator sqLite3TableGenerator = new SQLite3TableGenerator(tableName, existingSchema);
+	public static Query createTableStatement(String tableName, StateToReproduce state, SQLite3Schema existingSchema, Randomly r) {
+		SQLite3TableGenerator sqLite3TableGenerator = new SQLite3TableGenerator(tableName, existingSchema, r);
 		sqLite3TableGenerator.start();
 		return new QueryAdapter(sqLite3TableGenerator.sb.toString());
 	}
@@ -67,7 +69,7 @@ public class SQLite3TableGenerator {
 			String columnName = SQLite3Common.createColumnName(columnId);
 			SQLite3ColumnBuilder columnBuilder = new SQLite3ColumnBuilder()
 					.allowPrimaryKey(allowPrimaryKeyInColumn && !containsPrimaryKey);
-			sb.append(columnBuilder.createColumn(columnName));
+			sb.append(columnBuilder.createColumn(columnName, r));
 			sb.append(" ");
 			if (columnBuilder.isContainsAutoIncrement()) {
 				this.containsAutoIncrement = true;
@@ -93,7 +95,7 @@ public class SQLite3TableGenerator {
 		}
 
 		if (Randomly.getBoolean()) {
-			sb.append(SQLite3Common.getCheckConstraint()); // TODO: incorporate columns
+			sb.append(SQLite3Common.getCheckConstraint(r)); // TODO: incorporate columns
 		}
 
 		sb.append(")");

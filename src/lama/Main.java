@@ -358,13 +358,14 @@ public class Main {
 				}
 
 				private void generateAndTestDatabase(final String databaseName, Connection con) throws SQLException {
+					Randomly r = new Randomly();
 					state = new StateToReproduce(databaseName);
 					SQLite3Schema newSchema = null;
 					int nrTablesToCreate = 1 + Randomly.smallNumber();
 					for (int i = 0; i < nrTablesToCreate; i++) {
 						newSchema = SQLite3Schema.fromConnection(con);
 						String tableName = SQLite3Common.createTableName(i);
-						Query tableQuery = SQLite3TableGenerator.createTableStatement(tableName, state, newSchema);
+						Query tableQuery = SQLite3TableGenerator.createTableStatement(tableName, state, newSchema, r);
 						state.statements.add(tableQuery);
 						tableQuery.execute(con);
 					}
@@ -431,11 +432,11 @@ public class Main {
 						boolean affectedSchema = false;
 						switch (nextAction) {
 						case ALTER:
-							query = SQLite3AlterTable.alterTable(newSchema, con, state);
+							query = SQLite3AlterTable.alterTable(newSchema, con, state, r);
 							affectedSchema = true;
 							break;
 						case UPDATE:
-							query = SQLite3UpdateGenerator.updateRow(newSchema.getRandomTable(), con, state);
+							query = SQLite3UpdateGenerator.updateRow(newSchema.getRandomTable(), con, state, r);
 							break;
 						case TRANSACTION_START:
 							if (!transactionActive) {
@@ -446,25 +447,25 @@ public class Main {
 								transactionActive = false;
 							}
 						case INDEX:
-							query = SQLite3IndexGenerator.insertIndex(con, state);
+							query = SQLite3IndexGenerator.insertIndex(con, state, r);
 							state.statements.add(query);
 							query.execute(con);
 							transactionActive = false;
 							query = SQLite3TransactionGenerator.generateCommit(con, state);
 							break;
 						case DROP_INDEX:
-							query = SQLite3DropIndexGenerator.dropIndex(con, state, newSchema);
+							query = SQLite3DropIndexGenerator.dropIndex(con, state, newSchema, r);
 							break;
 						case DELETE:
 							query = SQLite3DeleteGenerator
-									.deleteContent(Randomly.fromList(newSchema.getDatabaseTables()), con, state);
+									.deleteContent(Randomly.fromList(newSchema.getDatabaseTables()), con, state, r);
 							break;
 						case INSERT:
 							Table randomTable = Randomly.fromList(newSchema.getDatabaseTables());
-							query = SQLite3RowGenerator.insertRow(randomTable, con, state);
+							query = SQLite3RowGenerator.insertRow(randomTable, con, state, r);
 							break;
 						case PRAGMA:
-							query = SQLite3PragmaGenerator.insertPragma(con, state);
+							query = SQLite3PragmaGenerator.insertPragma(con, state, r);
 							break;
 						case REINDEX:
 							query = SQLite3ReindexGenerator.executeReindex(con, state);
@@ -484,14 +485,19 @@ public class Main {
 							throw new AssertionError(nextAction);
 						}
 						state.statements.add(query);
-						query.execute(con);
+						try {
+							query.execute(con);
+						} catch (Throwable t) {
+							System.err.println(query.getQueryString());
+							throw t;
+						}
 						total--;
 						if (affectedSchema) {
 							newSchema = SQLite3Schema.fromConnection(con);
 						}
 					}
 					for (Table t : newSchema.getDatabaseTables()) {
-						if (!ensureTableHasRows(con, t)) {
+						if (!ensureTableHasRows(con, t, r)) {
 							return;
 						}
 					}
@@ -502,20 +508,20 @@ public class Main {
 						SQLite3TransactionGenerator.generateCommit(con, state);
 						transactionActive = false;
 					}
-					QueryGenerator queryGenerator = new QueryGenerator(con);
+					QueryGenerator queryGenerator = new QueryGenerator(con, r);
 					for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
 						queryGenerator.generateAndCheckQuery(state);
 						nrQueries.addAndGet(1);
 					}
 				}
 
-				private boolean ensureTableHasRows(Connection con, Table randomTable)
+				private boolean ensureTableHasRows(Connection con, Table randomTable, Randomly r)
 						throws AssertionError, SQLException {
 					int nrRows;
 					int counter = MAX_INSERT_ROW_TRIES;
 					do {
 						try {
-							Query q = SQLite3RowGenerator.insertRow(randomTable, con, state);
+							Query q = SQLite3RowGenerator.insertRow(randomTable, con, state, r);
 							state.statements.add(q);
 							q.execute(con);
 						} catch (SQLException e) {
