@@ -14,14 +14,11 @@ import lama.sqlite3.schema.SQLite3Schema.Table;
 import lama.sqlite3.schema.SQLite3Schema.Table.TableKind;
 
 /**
- * See https://www.sqlite.org/lang_createtable.html#rowid
+ * See https://www.sqlite.org/lang_createtable.html
  *
  * TODO What's missing:
  * <ul>
- * <li>TEMP tables (should be supported?)</li>
- * <li>create table as select</li>
- * <li>table constraints</li>
- * <li>foreign key constraints</li>
+ * <li>CREATE TABLE ... AS SELECT Statements</li>
  * </ul>
  */
 public class SQLite3TableGenerator {

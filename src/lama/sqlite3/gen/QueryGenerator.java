@@ -18,9 +18,11 @@ import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
+import lama.sqlite3.ast.SQLite3Expression.Join.JoinType;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Function;
+import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.OrderingTerm.Ordering;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
@@ -47,19 +49,40 @@ public class QueryGenerator {
 	}
 
 	public void generateAndCheckQuery(StateToReproduce state) throws SQLException {
-		Tables tables = s.getRandomTableNonEmptyTables();
-		state.queryTargetedTablesString = tables.tableNamesAsString();
+		Tables randomFromTables = s.getRandomTableNonEmptyTables();
+		List<Table> tables = randomFromTables.getTables();
+
+		state.queryTargetedTablesString = randomFromTables.tableNamesAsString();
 		SQLite3SelectStatement selectStatement = new SQLite3SelectStatement();
 		selectStatement.setSelectType(Randomly.fromOptions(SQLite3SelectStatement.SelectType.values()));
-		selectStatement.setFromTables(tables.getTables());
-		List<Column> columns = tables.getColumns();
-		for (Table t : tables.getTables()) {
+		List<Column> columns = randomFromTables.getColumns();
+		for (Table t : tables) {
 			if (t.getRowid() != null) {
 				columns.add(t.getRowid());
 			}
 		}
 		List<Column> fetchColumns;
-		RowValue rw = tables.getRandomRowValue(database, state);
+		RowValue rw = randomFromTables.getRandomRowValue(database, state);
+
+		List<Join> joinStatements = new ArrayList<>();
+		for (int i = 1; i < tables.size(); i++) {
+			SQLite3Expression joinClause = generateWhereClauseThatContainsRowValue(columns, rw);
+			Table table = Randomly.fromList(tables);
+			tables.remove(table);
+			JoinType options;
+			if (tables.size() == 2) {
+				// allow outer with arbitrary column order (see error: ON clause references
+				// tables to its right)
+				options = Randomly.fromOptions(JoinType.INNER, JoinType.CROSS, JoinType.OUTER);
+			} else {
+				options = Randomly.fromOptions(JoinType.INNER, JoinType.CROSS);
+			}
+			Join j = new SQLite3Expression.Join(table, joinClause, options);
+			joinStatements.add(j);
+		}
+		selectStatement.setJoinClauses(joinStatements);
+		selectStatement.setFromTables(tables);
+
 		// TODO: also implement a wild-card check (*)
 		fetchColumns = Randomly.nonEmptySubset(columns);
 		selectStatement.selectFetchColumns(fetchColumns);
@@ -139,7 +162,6 @@ public class QueryGenerator {
 		// TODO collate
 		return orderBys;
 	}
-
 
 	private SQLite3Expression generateLimit() {
 		if (Randomly.getBoolean()) {

@@ -334,36 +334,37 @@ public class SQLite3Schema {
 	static public SQLite3Schema fromConnection(Connection con) throws SQLException {
 		List<Table> databaseTables = new ArrayList<>();
 		try (Statement s = con.createStatement()) {
-			ResultSet rs = s.executeQuery("SELECT name, type as category FROM sqlite_master UNION "
-					+ "SELECT name, 'temp_table' as category FROM sqlite_temp_master WHERE type='table';");
-			while (rs.next()) {
-				String tableName = rs.getString("name");
-				String tableType = rs.getString("category");
-				if (tableName.startsWith("sqlite_") || tableType.equals("index")) {
-					continue;
-				}
-
-				List<Column> databaseColumns = getTableColumns(con, tableName);
-
-				Table t = new Table(tableName, databaseColumns,
-						tableType.contentEquals("temp_table") ? TableKind.TEMP : TableKind.MAIN);
-				try (Statement s3 = con.createStatement()) {
-					try (ResultSet rs3 = s3.executeQuery("SELECT typeof(rowid) FROM " + tableName)) {
-						if (rs3.next()) {
-							String dataType = rs3.getString(1);
-							SQLite3DataType columnType = getColumnType(dataType);
-							Column rowid = new Column("rowid", columnType, true, true);
-							t.addRowid(rowid);
-							rowid.setTable(t);
-						}
+			try (ResultSet rs = s.executeQuery("SELECT name, type as category FROM sqlite_master UNION "
+					+ "SELECT name, 'temp_table' as category FROM sqlite_temp_master WHERE type='table';")) {
+				while (rs.next()) {
+					String tableName = rs.getString("name");
+					String tableType = rs.getString("category");
+					if (tableName.startsWith("sqlite_") || tableType.equals("index")) {
+						continue;
 					}
-				} catch (SQLException e) {
-					// ignore
+
+					List<Column> databaseColumns = getTableColumns(con, tableName);
+
+					Table t = new Table(tableName, databaseColumns,
+							tableType.contentEquals("temp_table") ? TableKind.TEMP : TableKind.MAIN);
+					try (Statement s3 = con.createStatement()) {
+						try (ResultSet rs3 = s3.executeQuery("SELECT typeof(rowid) FROM " + tableName)) {
+							if (rs3.next()) {
+								String dataType = rs3.getString(1);
+								SQLite3DataType columnType = getColumnType(dataType);
+								Column rowid = new Column("rowid", columnType, true, true);
+								t.addRowid(rowid);
+								rowid.setTable(t);
+							}
+						}
+					} catch (SQLException e) {
+						// ignore
+					}
+					for (Column c : databaseColumns) {
+						c.setTable(t);
+					}
+					databaseTables.add(t);
 				}
-				for (Column c : databaseColumns) {
-					c.setTable(t);
-				}
-				databaseTables.add(t);
 			}
 		}
 		return new SQLite3Schema(databaseTables);

@@ -4,8 +4,39 @@ import java.util.List;
 
 import lama.Randomly;
 import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.Table;
 
 public class SQLite3Expression {
+
+	public static class Join extends SQLite3Expression {
+
+		public static enum JoinType {
+			INNER, CROSS, OUTER, NATURAL;
+		}
+
+		private final Table table;
+		private final SQLite3Expression onClause;
+		private final JoinType type;
+
+		public Join(Table table, SQLite3Expression onClause, JoinType type) {
+			this.table = table;
+			this.onClause = onClause;
+			this.type = type;
+		}
+
+		public Table getTable() {
+			return table;
+		}
+
+		public SQLite3Expression getOnClause() {
+			return onClause;
+		}
+
+		public JoinType getType() {
+			return type;
+		}
+
+	}
 
 	public static class Subquery extends SQLite3Expression {
 
@@ -70,7 +101,8 @@ public class SQLite3Expression {
 		private final SQLite3Expression left;
 		private final SQLite3Expression right;
 
-		public BetweenOperation(SQLite3Expression expr, boolean negated, SQLite3Expression left, SQLite3Expression right) {
+		public BetweenOperation(SQLite3Expression expr, boolean negated, SQLite3Expression left,
+				SQLite3Expression right) {
 			this.expr = expr;
 			this.negated = negated;
 			this.left = left;

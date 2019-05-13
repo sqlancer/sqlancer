@@ -8,7 +8,6 @@ import lama.IgnoreMeException;
 import lama.Randomly;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
-import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
@@ -16,12 +15,14 @@ import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Function;
 import lama.sqlite3.ast.SQLite3Expression.InOperation;
+import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.LogicalOperation;
 import lama.sqlite3.ast.SQLite3Expression.OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Subquery;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import lama.sqlite3.ast.SQLite3Expression.UnaryOperation;
+import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 
 public class SQLite3Visitor {
@@ -197,6 +198,10 @@ public class SQLite3Visitor {
 			}
 			sb.append(s.getFromList().get(i).getName());
 		}
+		for (Join j : s.getJoinClauses()) {
+			visit(j);
+		}
+
 		if (s.getWhereClause() != null) {
 			SQLite3Expression whereClause = s.getWhereClause();
 			sb.append(" WHERE ");
@@ -288,6 +293,30 @@ public class SQLite3Visitor {
 		sb.append(query.getQuery());
 	}
 
+	public void visit(Join join) {
+		sb.append(" ");
+		switch (join.getType()) {
+		case CROSS:
+			sb.append("CROSS");
+			break;
+		case INNER:
+			sb.append("INNER");
+			break;
+		case NATURAL:
+			sb.append("NATURAL");
+			break;
+		case OUTER:
+			sb.append("LEFT OUTER");
+			break;
+		default:
+			throw new AssertionError(join.getType());
+		}
+		sb.append(" JOIN ");
+		sb.append(join.getTable().getName());
+		sb.append(" ON ");
+		visit(join.getOnClause());
+	}
+
 	public void visit(SQLite3Expression expr) {
 		if (expr instanceof BinaryOperation) {
 			visit((BinaryOperation) expr);
@@ -317,6 +346,8 @@ public class SQLite3Visitor {
 			visit((Subquery) expr);
 		} else if (expr instanceof TypeLiteral) {
 			visit((TypeLiteral) expr);
+		} else if (expr instanceof Join) {
+			visit((Join) expr);
 		} else {
 			throw new AssertionError(expr);
 		}
