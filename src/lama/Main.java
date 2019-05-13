@@ -14,6 +14,7 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -361,6 +362,8 @@ public class Main {
 					Randomly r = new Randomly();
 					state = new StateToReproduce(databaseName);
 					SQLite3Schema newSchema = null;
+					
+					addSensiblePragmaDefaults(con);
 					int nrTablesToCreate = 1 + Randomly.smallNumber();
 					for (int i = 0; i < nrTablesToCreate; i++) {
 						newSchema = SQLite3Schema.fromConnection(con);
@@ -512,6 +515,15 @@ public class Main {
 					for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
 						queryGenerator.generateAndCheckQuery(state);
 						nrQueries.addAndGet(1);
+					}
+				}
+
+				private void addSensiblePragmaDefaults(Connection con) throws SQLException {
+					List<String> defaultSettings = Arrays.asList("PRAGMA cache_size = 10000;", "PRAGMA journal_mode=off;", "PRAGMA temp_store=MEMORY;", "PRAGMA synchronous=off;");
+					for (String s : defaultSettings) {
+						Query q = new QueryAdapter(s);
+						state.statements.add(q);
+						q.execute(con);
 					}
 				}
 
