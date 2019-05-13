@@ -1,7 +1,6 @@
 package lama.sqlite3.schema;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -17,6 +16,7 @@ import lama.Main.StateToReproduce;
 import lama.Randomly;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Constant;
+import lama.sqlite3.schema.SQLite3Schema.Table.TableKind;
 
 public class SQLite3Schema {
 
@@ -197,12 +197,18 @@ public class SQLite3Schema {
 
 	public static class Table implements Comparable<Table> {
 
+		public static enum TableKind {
+			MAIN, TEMP;
+		}
+
 		private final String tableName;
 		private final List<Column> columns;
+		private final TableKind tableType;
 		private Column rowid;
 
-		public Table(String tableName, List<Column> columns) {
+		public Table(String tableName, List<Column> columns, TableKind tableType) {
 			this.tableName = tableName;
+			this.tableType = tableType;
 			this.columns = Collections.unmodifiableList(columns);
 		}
 
@@ -252,6 +258,10 @@ public class SQLite3Schema {
 
 		public Column getRowid() {
 			return rowid;
+		}
+
+		public TableKind getTableType() {
+			return tableType;
 		}
 
 	}
@@ -322,54 +332,59 @@ public class SQLite3Schema {
 	}
 
 	static public SQLite3Schema fromConnection(Connection con) throws SQLException {
-		DatabaseMetaData meta = con.getMetaData();
 		List<Table> databaseTables = new ArrayList<>();
-		try (ResultSet tables = meta.getTables(null, null, null, null);) {
-			while (tables.next()) {
-				String tableName = tables.getString(3);
-				if (tables.getString(4).equals("SYSTEM TABLE") || tables.getString(4).equals("SYSTEM VIEW")
-						|| tables.getString(4).equals("VIEW")) {
+		try (Statement s = con.createStatement()) {
+			ResultSet rs = s.executeQuery("SELECT name, type as category FROM sqlite_master UNION "
+					+ "SELECT name, 'temp_table' as category FROM sqlite_temp_master WHERE type='table';");
+			while (rs.next()) {
+				String tableName = rs.getString("name");
+				String tableType = rs.getString("category");
+				if (tableName.startsWith("sqlite_") || tableType.equals("index")) {
 					continue;
 				}
-				try (ResultSet columns = meta.getColumns(null, null, tableName, null)) {
-					List<Column> databaseColumns = new ArrayList<>();
-					List<String> primaryKeysMap = new ArrayList<>();
-					try (ResultSet primaryKeys = meta.getPrimaryKeys(null, null, tableName)) {
-						while (primaryKeys.next()) {
-							primaryKeysMap.add(primaryKeys.getString("COLUMN_NAME"));
-						}
-						while (columns.next()) {
-							String columnName = columns.getString(4);
-							String columnTypeString = columns.getString(6);
-							SQLite3DataType columnType = getColumnType(columnTypeString);
-							databaseColumns.add(new Column(columnName, columnType,
-									columnTypeString.contentEquals("INTEGER"), primaryKeysMap.contains(columnName)));
-						}
 
-						Table t = new Table(tableName, databaseColumns);
-						try (Statement s = con.createStatement()) {
-							try (ResultSet rs = s.executeQuery("SELECT typeof(rowid) FROM " + tableName)) {
-								if (rs.next()) {
-									String dataType = rs.getString(1);
-									SQLite3DataType columnType = getColumnType(dataType);
-									Column rowid = new Column("rowid", columnType, true, true);
-									t.addRowid(rowid);
-									rowid.setTable(t);
-								}
-							}
-						} catch (SQLException e) {
-							// ignore
+				List<Column> databaseColumns = getTableColumns(con, tableName);
+
+				Table t = new Table(tableName, databaseColumns,
+						tableType.contentEquals("temp_table") ? TableKind.TEMP : TableKind.MAIN);
+				try (Statement s3 = con.createStatement()) {
+					try (ResultSet rs3 = s3.executeQuery("SELECT typeof(rowid) FROM " + tableName)) {
+						if (rs3.next()) {
+							String dataType = rs3.getString(1);
+							SQLite3DataType columnType = getColumnType(dataType);
+							Column rowid = new Column("rowid", columnType, true, true);
+							t.addRowid(rowid);
+							rowid.setTable(t);
 						}
-						for (Column c : databaseColumns) {
-							c.setTable(t);
-						}
-						databaseTables.add(t);
 					}
+				} catch (SQLException e) {
+					// ignore
 				}
+				for (Column c : databaseColumns) {
+					c.setTable(t);
+				}
+				databaseTables.add(t);
 			}
-			tables.getStatement().close();
 		}
 		return new SQLite3Schema(databaseTables);
+	}
+
+	private static List<Column> getTableColumns(Connection con, String tableName) throws SQLException {
+		List<Column> databaseColumns = new ArrayList<>();
+		try (Statement s2 = con.createStatement()) {
+			try (ResultSet columnRs = s2.executeQuery(String.format("PRAGMA table_info(%s)", tableName))) {
+				while (columnRs.next()) {
+					String columnName = columnRs.getString("name");
+					String columnTypeString = columnRs.getString("type");
+					boolean isPrimaryKey = columnRs.getBoolean("pk");
+					SQLite3DataType columnType = getColumnType(columnTypeString);
+					databaseColumns.add(new Column(columnName, columnType, columnTypeString.contentEquals("INTEGER"),
+							isPrimaryKey));
+				}
+			}
+		}
+		assert !databaseColumns.isEmpty() : tableName;
+		return databaseColumns;
 	}
 
 	private static SQLite3DataType getColumnType(String columnTypeString) {
