@@ -2,6 +2,7 @@ package lama.sqlite3.gen;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import lama.Main.StateToReproduce;
@@ -17,13 +18,17 @@ import lama.sqlite3.schema.SQLite3Schema.Table;
 public class SQLite3RowGenerator {
 
 	private final Randomly r;
+	private Connection con;
+	private StateToReproduce state;
 
-	public SQLite3RowGenerator(Randomly r) {
+	public SQLite3RowGenerator(Randomly r, Connection con, StateToReproduce state) {
 		this.r = r;
+		this.con = con;
+		this.state = state;
 	}
 
 	public static Query insertRow(Table table, Connection con, StateToReproduce state, Randomly r) throws SQLException {
-		SQLite3RowGenerator generator = new SQLite3RowGenerator(r);
+		SQLite3RowGenerator generator = new SQLite3RowGenerator(r, con, state);
 		String query = generator.insertRow(table);
 		return new QueryAdapter(query) { 
 			public void execute(Connection con) throws SQLException {
@@ -66,11 +71,12 @@ public class SQLite3RowGenerator {
 			sb.append(" DEFAULT VALUES");
 		} else {
 			sb.append("(");
-			List<Column> columns = appendColumnNames(table, sb);
+			List<Column> columns = table.getRandomNonEmptyColumnSubset();
+			appendColumnNames(columns, sb);
 			sb.append(")");
 			sb.append(" VALUES ");
-			int nrValues = 1 + Randomly.smallNumber();
-			appendNrValues(sb, columns, nrValues);
+			int nrRows = 1 + Randomly.smallNumber();
+			appendNrValues(sb, columns, nrRows);
 		}
 		sb.append(";");
 		return sb.toString();
@@ -105,8 +111,7 @@ public class SQLite3RowGenerator {
 		}
 	}
 
-	private static List<Column> appendColumnNames(Table table, StringBuilder sb) {
-		List<Column> columns = table.getColumns();
+	private static List<Column> appendColumnNames(List<Column> columns, StringBuilder sb) {
 		for (int i = 0; i < columns.size(); i++) {
 			if (i != 0) {
 				sb.append(", ");
