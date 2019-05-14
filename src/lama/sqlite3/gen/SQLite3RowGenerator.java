@@ -3,6 +3,7 @@ package lama.sqlite3.gen;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import lama.Main.StateToReproduce;
@@ -30,7 +31,7 @@ public class SQLite3RowGenerator {
 	public static Query insertRow(Table table, Connection con, StateToReproduce state, Randomly r) throws SQLException {
 		SQLite3RowGenerator generator = new SQLite3RowGenerator(r, con, state);
 		String query = generator.insertRow(table);
-		return new QueryAdapter(query) { 
+		return new QueryAdapter(query) {
 			public void execute(Connection con) throws SQLException {
 				try {
 					super.execute(con);
@@ -57,23 +58,29 @@ public class SQLite3RowGenerator {
 
 	private String insertRow(Table table) {
 		StringBuilder sb = new StringBuilder();
-		// TODO: see
-		// http://sqlite.1065341.n5.nabble.com/UPSERT-clause-does-not-work-with-quot-NOT-NULL-quot-constraint-td106957.html
 		sb.append("INSERT ");
-		if (Randomly.getBoolean()) { // FIXME Randomly.getBoolean()
+		if (Randomly.getBoolean()) {
 			sb.append("OR IGNORE "); // TODO: try to generate REPLACE
 		} else {
 			mightFail = true;
-			sb.append(Randomly.fromOptions("OR REPLACE ", "OR ABORT ", "OR FAIL ")); // "OR ROLLBACK ",
+			sb.append(Randomly.fromOptions("OR REPLACE ", "OR ABORT ", "OR FAIL ", "OR ROLLBACK "));
 		}
 		sb.append("INTO " + table.getName());
 		if (Randomly.getBooleanWithSmallProbability()) {
 			sb.append(" DEFAULT VALUES");
 		} else {
-			sb.append("(");
 			List<Column> columns = table.getRandomNonEmptyColumnSubset();
-			appendColumnNames(columns, sb);
-			sb.append(")");
+			if (columns.size() != table.getColumns().size() || Randomly.getBoolean()) {
+				sb.append("(");
+				appendColumnNames(columns, sb);
+				sb.append(")");
+			} else {
+				// If the column-name list after table-name is omitted then the number of values
+				// inserted into each row must be the same as the number of columns in the
+				// table.
+				columns = table.getColumns(); // get them again in sorted order
+				assert columns.size() == table.getColumns().size();
+			}
 			sb.append(" VALUES ");
 			int nrRows = 1 + Randomly.smallNumber();
 			appendNrValues(sb, columns, nrRows);
