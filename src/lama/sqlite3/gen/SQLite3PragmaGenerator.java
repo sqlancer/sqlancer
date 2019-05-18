@@ -17,13 +17,14 @@ public class SQLite3PragmaGenerator {
 	 * 	<li>case_sensitive_like is not generated since the tool discovered that it has some conceptual issues, see https://www.sqlite.org/src/info/a340eef47b0cad5.</li>
 	 * 	<li>legacy_alter_table is not generated since it does not work well with the ALTER command (see docs)</li>
 	 *  <li>journal_mode=off is generated, since it can corrupt the database, see https://www.sqlite.org/src/tktview?name=f4ec250930</li>
+	 *  <li>temp_store deletes all existing temporary tables</li>
 	 * </ul>
 	 */
 	private enum Pragma {
 		APPLICATION_ID, AUTO_VACUUM, AUTOMATIC_INDEX, BUSY_TIMEOUT, CACHE_SIZE, CACHE_SPILL_ENABLED, CACHE_SPILL_SIZE,
 		/* CASE_SENSITIVE_LIKE */ CELL_SIZE_CHECK, CHECKPOINT_FULLSYNC, DEFER_FOREIGN_KEY, /* ENCODING */FOREIGN_KEYS, IGNORE_CHECK_CONSTRAINTS,
 		INCREMENTAL_VACUUM, INTEGRITY_CHECK, JOURNAL_MODE, JOURNAL_SIZE_LIMIT, /* LEGACY_ALTER_TABLE */ OPTIMIZE,
-		LEGACY_FORMAT, REVERSE_UNORDERED_SELECTS, SECURE_DELETE, SHRINK_MEMORY, SOFT_HEAP_LIMIT, THREADS
+		LEGACY_FORMAT, LOCKING_MODE, MMAP_SIZE, RECURSIVE_TRIGGERS, REVERSE_UNORDERED_SELECTS, SECURE_DELETE, SHRINK_MEMORY, SOFT_HEAP_LIMIT, STATS, /*TEMP_STORE, */ THREADS
 	}
 
 	private final StringBuilder sb = new StringBuilder();
@@ -141,8 +142,17 @@ public class SQLite3PragmaGenerator {
 		case LEGACY_FORMAT:
 			createPragma("legacy_file_format", () -> getRandomTextBoolean());
 			break;
+		case LOCKING_MODE:
+			createPragma("locking_mode", () -> Randomly.fromOptions("NORMAL", "EXCLUSIVE"));
+			break;
+		case MMAP_SIZE:
+			createPragma("mmap_size", () -> r.getInteger());
+			break;
 		case OPTIMIZE:
 			createPragma("optimize", () -> null);
+			break;
+		case RECURSIVE_TRIGGERS:
+			createPragma("recursive_triggers", () -> getRandomTextBoolean());
 			break;
 		case REVERSE_UNORDERED_SELECTS:
 			createPragma("reverse_unordered_selects", () -> getRandomTextBoolean());
@@ -162,6 +172,12 @@ public class SQLite3PragmaGenerator {
 				}
 			});
 			break;
+		case STATS:
+			createPragma("stats", () -> null);
+			break;
+//		case TEMP_STORE:
+//			createPragma("temp_store", () -> Randomly.fromOptions("DEFAULT", "FILE", "MEMORY"));
+//			break;
 		case THREADS:
 			createPragma("threads", () -> r.getInteger());
 			break;
