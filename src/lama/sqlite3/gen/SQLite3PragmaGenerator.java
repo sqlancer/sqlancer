@@ -10,12 +10,19 @@ import lama.Randomly;
 
 public class SQLite3PragmaGenerator {
 
+	/**
+	 * Not all pragmas are generated.
+	 *
+	 * <ul>
+	 * 	<li>case_sensitive_like is not generated since the tool discovered that it has some conceptual issues, see https://www.sqlite.org/src/info/a340eef47b0cad5.</li>
+	 * 	<li>legacy_alter_table is not generated since it does not work well with the ALTER command (see docs)</li>
+	 *  <li>journal_mode=off is generated, since it can corrupt the database, see https://www.sqlite.org/src/tktview?name=f4ec250930</li>
+	 * </ul>
+	 */
 	private enum Pragma {
 		APPLICATION_ID, AUTO_VACUUM, AUTOMATIC_INDEX, BUSY_TIMEOUT, CACHE_SIZE, CACHE_SPILL_ENABLED, CACHE_SPILL_SIZE,
-		// CASE_SENSITIVE_LIKE, // see
-		// https://www.mail-archive.com/sqlite-users@mailinglists.sqlite.org/msg115030.html
-		CELL_SIZE_CHECK, CHECKPOINT_FULLSYNC, DEFER_FOREIGN_KEY, /* ENCODING, */FOREIGN_KEYS, IGNORE_CHECK_CONSTRAINTS,
-		INCREMENTAL_VACUUM, INTEGRITY_CHECK, JOURNAL_MODE, JOURNAL_SIZE_LIMIT, /* LEGACY_ALTER_TABLE , */ OPTIMIZE,
+		/* CASE_SENSITIVE_LIKE */ CELL_SIZE_CHECK, CHECKPOINT_FULLSYNC, DEFER_FOREIGN_KEY, /* ENCODING */FOREIGN_KEYS, IGNORE_CHECK_CONSTRAINTS,
+		INCREMENTAL_VACUUM, INTEGRITY_CHECK, JOURNAL_MODE, JOURNAL_SIZE_LIMIT, /* LEGACY_ALTER_TABLE */ OPTIMIZE,
 		LEGACY_FORMAT, REVERSE_UNORDERED_SELECTS, SECURE_DELETE, SHRINK_MEMORY, SOFT_HEAP_LIMIT, THREADS
 	}
 
@@ -131,10 +138,6 @@ public class SQLite3PragmaGenerator {
 
 			});
 			break;
-//	case LEGACY_ALTER_TABLE:
-//		sb.append("PRAGMA legacy_alter_table=");
-//		sb.append(getRandomTextBoolean());
-//		break;
 		case LEGACY_FORMAT:
 			createPragma("legacy_file_format", () -> getRandomTextBoolean());
 			break;
