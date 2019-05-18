@@ -88,7 +88,8 @@ public class SQLite3Visitor {
 				if ((c.asInt() == 0 || c.asInt() == 1) && Randomly.getBoolean()) {
 					sb.append(c.asInt() == 1 ? "TRUE" : "FALSE");
 				} else {
-					if (Randomly.getBoolean()) {
+					// - 0X8000000000000000 results in an error message otherwise
+					if (Randomly.getBoolean() || c.asInt() == Long.MIN_VALUE) {
 						sb.append(c.asInt());
 					} else {
 						long intVal = c.asInt();
