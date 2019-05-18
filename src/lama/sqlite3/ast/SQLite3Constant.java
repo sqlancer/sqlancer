@@ -364,13 +364,25 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 			SQLite3Constant castValue = QueryGenerator.castToNumeric(this);
 			String text = this.asString();
 			text = text.trim();
+			boolean isPositive;
 			if (text.startsWith("+")) {
 				text = text.substring(1);
+				isPositive = true;
+			} else if (text.startsWith("-")) {
+				text = text.substring(1);
+				isPositive = false;
+			} else {
+				isPositive = true;
 			}
+
+			while (text.length() > 1 && text.startsWith("0")) {
+				text = text.substring(1);
+			}
+
 			// .0, 0.0, -0.0, 00000000
 			if (castValue instanceof SQLite3IntConstant) {
-				if (text.contentEquals("0.0") || text.contentEquals("-0.0") || text.contentEquals(".0")
-						|| text.contentEquals("-0") && castValue.asInt() == 0) {
+				if (text.contentEquals(".0") || text.contentEquals("0")) {
+					assert castValue.asInt() == 0;
 					isTextDouble = true;
 				} else {
 					if (text.endsWith(".0")) {
@@ -378,12 +390,12 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 					} else if (text.endsWith(".")) {
 						text = text.substring(0, text.length() - 1);
 					}
-					while (text.startsWith("0") && !text.substring(1).isEmpty()) {
-						text = text.substring(1);
-					}
-					isTextDouble = Long.toString(castValue.asInt()).equals(text);
+					isTextDouble = Long.toString(castValue.asInt()).equals(isPositive ? text : "-" + text);
 				}
 			} else {
+				if (text.toLowerCase().endsWith("d") || text.toLowerCase().endsWith("f")) {
+					return this;
+				}
 				assert castValue instanceof SQLite3RealConstant;
 				try {
 					double d = Double.valueOf(text);
@@ -525,7 +537,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 	}
 
 	public String asString() {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(this.getDataType().toString());
 	}
 
 	public abstract SQLite3DataType getDataType();
