@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import javax.xml.bind.DatatypeConverter;
 
 import lama.Randomly;
+import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
 import lama.sqlite3.gen.QueryGenerator;
 import lama.sqlite3.schema.SQLite3DataType;
@@ -510,7 +511,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 
 		@Override
 		String getStringRepresentation() {
-			String hexRepr = DatatypeConverter.printHexBinary(bytes);
+			String hexRepr = SQLite3Visitor.byteArrayToHex(bytes);
 			return String.format("x'%s'", hexRepr);
 		}
 

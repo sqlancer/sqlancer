@@ -2,8 +2,6 @@ package lama.sqlite3;
 
 import java.util.List;
 
-import javax.xml.bind.DatatypeConverter;
-
 import lama.IgnoreMeException;
 import lama.Randomly;
 import lama.sqlite3.ast.SQLite3Constant;
@@ -136,13 +134,20 @@ public class SQLite3Visitor {
 				} else {
 					arr = c.asString().getBytes();
 				}
-				sb.append(DatatypeConverter.printHexBinary(arr));
+				sb.append(byteArrayToHex(arr));
 				sb.append("'");
 				break;
 			default:
 				throw new AssertionError(c.getDataType());
 			}
 		}
+	}
+
+	public static String byteArrayToHex(byte[] a) {
+		StringBuilder sb = new StringBuilder(a.length * 2);
+		for (byte b : a)
+			sb.append(String.format("%02x", b));
+		return sb.toString();
 	}
 
 	private void asHexString(long intVal) {
