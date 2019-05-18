@@ -37,7 +37,7 @@ public class SQLite3PragmaGenerator {
 		case BUSY_TIMEOUT:
 			sb.append("PRAGMA busy_timeout = ");
 			if (Randomly.getBoolean()) {
-				sb.append("0");
+				sb.append(0);
 			} else {
 				long value = Math.max(10000, r.getInteger());
 				sb.append(value);
@@ -45,7 +45,11 @@ public class SQLite3PragmaGenerator {
 			break;
 		case CACHE_SIZE:
 			sb.append("PRAGMA main.cache_size=");
-			sb.append(r.getInteger());
+			if (Randomly.getBoolean()) {
+				sb.append(0);
+			} else {
+				sb.append(r.getInteger());
+			}
 			break;
 		case CACHE_SPILL_ENABLED:
 			sb.append("PRAGMA cache_spill=");
@@ -110,7 +114,11 @@ public class SQLite3PragmaGenerator {
 			break;
 		case JOURNAL_SIZE_LIMIT:
 			sb.append("PRAGMA main.journal_size_limit=");
-			sb.append(r.getInteger());
+			if (Randomly.getBoolean()) {
+				sb.append(0);
+			} else {
+				sb.append(r.getInteger());
+			}
 			break;
 //		case LEGACY_ALTER_TABLE:
 //			sb.append("PRAGMA legacy_alter_table=");
@@ -136,7 +144,11 @@ public class SQLite3PragmaGenerator {
 			break;
 		case SOFT_HEAP_LIMIT:
 			sb.append("PRAGMA soft_heap_limit=");
-			sb.append(r.getPositiveInteger());
+			if (Randomly.getBoolean()) {
+				sb.append(0);
+			} else {
+				sb.append(r.getPositiveInteger());
+			}
 			break;
 		case THREADS:
 			sb.append("PRAGMA threads=");
