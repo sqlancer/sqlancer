@@ -519,7 +519,7 @@ public class Main {
 				}
 
 				private void addSensiblePragmaDefaults(Connection con) throws SQLException {
-					List<String> defaultSettings = Arrays.asList("PRAGMA cache_size = 10000;", "PRAGMA journal_mode=off;", "PRAGMA temp_store=MEMORY;", "PRAGMA synchronous=off;");
+					List<String> defaultSettings = Arrays.asList("PRAGMA cache_size = 10000;", "PRAGMA temp_store=MEMORY;", "PRAGMA synchronous=off;");
 					for (String s : defaultSettings) {
 						Query q = new QueryAdapter(s);
 						state.statements.add(q);

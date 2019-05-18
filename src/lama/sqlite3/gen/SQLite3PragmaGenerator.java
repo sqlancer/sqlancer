@@ -105,7 +105,8 @@ public class SQLite3PragmaGenerator {
 			break;
 		case JOURNAL_MODE:
 			sb.append("PRAGMA main.journal_mode=");
-			sb.append(Randomly.fromOptions("DELETE", "TRUNCATE", "PERSIST", "MEMORY", "WAL", "OFF"));
+			// OFF is no longer generated, since it might corrupt the database upon failed index creation, see https://www.sqlite.org/src/tktview?name=f4ec250930.
+			sb.append(Randomly.fromOptions("DELETE", "TRUNCATE", "PERSIST", "MEMORY", "WAL"));
 			break;
 		case JOURNAL_SIZE_LIMIT:
 			sb.append("PRAGMA main.journal_size_limit=");
