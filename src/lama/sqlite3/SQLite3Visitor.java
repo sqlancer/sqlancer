@@ -13,6 +13,7 @@ import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
+import lama.sqlite3.ast.SQLite3Expression.Exist;
 import lama.sqlite3.ast.SQLite3Expression.Function;
 import lama.sqlite3.ast.SQLite3Expression.InOperation;
 import lama.sqlite3.ast.SQLite3Expression.Join;
@@ -293,6 +294,12 @@ public class SQLite3Visitor {
 		sb.append(query.getQuery());
 	}
 
+	private void visit(Exist exist) {
+		sb.append(" EXISTS (");
+		visit(exist.getSelect());
+		sb.append(")");
+	}
+
 	public void visit(Join join) {
 		sb.append(" ");
 		switch (join.getType()) {
@@ -348,6 +355,10 @@ public class SQLite3Visitor {
 			visit((TypeLiteral) expr);
 		} else if (expr instanceof Join) {
 			visit((Join) expr);
+		} else if (expr instanceof SQLite3SelectStatement) {
+			visit((SQLite3SelectStatement) expr);
+		} else if (expr instanceof Exist) {
+			visit((Exist) expr);
 		} else {
 			throw new AssertionError(expr);
 		}

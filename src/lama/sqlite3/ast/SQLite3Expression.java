@@ -8,6 +8,20 @@ import lama.sqlite3.schema.SQLite3Schema.Table;
 
 public class SQLite3Expression {
 
+	public static class Exist extends SQLite3Expression {
+
+		private final SQLite3SelectStatement select;
+
+		public Exist(SQLite3SelectStatement select) {
+			this.select = select;
+		}
+
+		public SQLite3SelectStatement getSelect() {
+			return select;
+		}
+
+	}
+
 	public static class Join extends SQLite3Expression {
 
 		public static enum JoinType {
