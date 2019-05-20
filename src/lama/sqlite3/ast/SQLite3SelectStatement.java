@@ -1,22 +1,22 @@
 package lama.sqlite3.ast;
 
+import java.util.Collections;
 import java.util.List;
 
-import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 
-public class SQLite3SelectStatement {
+public class SQLite3SelectStatement extends SQLite3Expression {
 
 	private SelectType fromOptions;
-	private List<Table> fromList;
+	private List<Table> fromList = Collections.emptyList();
 	private SQLite3Expression whereClause;
-	private List<SQLite3Expression> groupByClause;
+	private List<SQLite3Expression> groupByClause = Collections.emptyList();
 	private SQLite3Expression limitClause;
-	private List<SQLite3Expression> orderByClause;
+	private List<SQLite3Expression> orderByClause = Collections.emptyList();
 	private SQLite3Expression offsetClause;
-	private List<Column> fetchColumns;
-	private List<Join> joinStatements;
+	private List<Column> fetchColumns = Collections.emptyList();
+	private List<Join> joinStatements = Collections.emptyList();
 
 	public enum SelectType {
 		DISTINCT, ALL;
