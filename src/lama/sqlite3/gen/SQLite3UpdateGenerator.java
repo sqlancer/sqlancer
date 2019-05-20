@@ -54,7 +54,8 @@ public class SQLite3UpdateGenerator {
 
 			@Override
 			public boolean couldAffectSchema() {
-				return generator.mightRollback;
+				// column could have an ON UPDATE clause
+				return true; // generator.mightRollback;
 			}
 		};
 	}

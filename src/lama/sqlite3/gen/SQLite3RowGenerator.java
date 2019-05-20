@@ -59,7 +59,8 @@ public class SQLite3RowGenerator {
 			
 			@Override
 			public boolean couldAffectSchema() {
-				return generator.isInsertOrRollback;
+				return true; // a column can have an ON INSERT clause
+//				return generator.isInsertOrRollback;
 			}
 		};
 	}
