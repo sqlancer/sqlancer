@@ -195,7 +195,7 @@ public class SQLite3PragmaGenerator {
 					super.execute(con);
 				} catch (SQLiteException e) {
 					// expected within a transaction and when setting WAL
-					if (e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (cannot change into wal mode from within a transaction)")) {
+					if (e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (cannot change ")) {
 						return;
 					}
 					throw e;
