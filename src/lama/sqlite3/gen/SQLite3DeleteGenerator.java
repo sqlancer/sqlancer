@@ -34,6 +34,8 @@ public class SQLite3DeleteGenerator {
 					} else if (e.getMessage().startsWith(
 							"[SQLITE_CONSTRAINT]  Abort due to constraint violation ")) {
 						return;
+					} else if (e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)")) {
+						return;
 					}
 					throw e;
 				}

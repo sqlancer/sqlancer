@@ -38,10 +38,14 @@ public class SQLite3UpdateGenerator {
 					} else if (e.getMessage()
 							.startsWith("[SQLITE_ERROR] SQL error or missing database (foreign key mismatch")) {
 						return;
-					} else if (e.getMessage().startsWith(
-							"[SQLITE_CONSTRAINT]  Abort due to constraint violation")) {
+					} else if (e.getMessage().startsWith("[SQLITE_CONSTRAINT]  Abort due to constraint violation")) {
 						return;
-					} else {
+					} else if (e.getMessage()
+							.startsWith("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)")) {
+						return;
+					}
+
+					else {
 						throw e;
 					}
 				}
