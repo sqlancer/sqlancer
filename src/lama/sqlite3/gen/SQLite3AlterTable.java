@@ -31,10 +31,20 @@ public class SQLite3AlterTable {
 		switch (option) {
 		case RENAME_TABLE:
 			alterTable.renameTable(s);
-			return new QueryAdapter(alterTable.sb.toString());
+			return new QueryAdapter(alterTable.sb.toString()) {
+				@Override
+				public boolean couldAffectSchema() {
+					return true;
+				}
+			};
 		case RENAME_COLUMN:
 			alterTable.renameColumn(s);
-			return new QueryAdapter(alterTable.sb.toString());
+			return new QueryAdapter(alterTable.sb.toString()) {
+				@Override
+				public boolean couldAffectSchema() {
+					return true;
+				}
+			};
 		case ADD_COLUMN:
 			alterTable.addColumn(s);
 			return new QueryAdapter(alterTable.sb.toString()) {
@@ -50,6 +60,11 @@ public class SQLite3AlterTable {
 						}
 					}
 				}
+				@Override
+				public boolean couldAffectSchema() {
+					return true;
+				}
+				
 			};
 		default:
 			throw new AssertionError();

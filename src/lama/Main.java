@@ -432,19 +432,15 @@ public class Main {
 						assert nrRemaining[nextAction.ordinal()] > 0;
 						nrRemaining[nextAction.ordinal()]--;
 						Query query;
-						boolean affectedSchema = false;
 						switch (nextAction) {
 						case ALTER:
 							query = SQLite3AlterTable.alterTable(newSchema, con, state, r);
-							affectedSchema = true;
 							break;
 						case ROLLBACK_TRANSACTION:
 							query = SQLite3TransactionGenerator.generateRollbackTransaction(con, state);
-							affectedSchema = true;
 							break;
 						case UPDATE:
 							query = SQLite3UpdateGenerator.updateRow(newSchema.getRandomTable(), con, state, r);
-							affectedSchema = true; // update or rollback
 							break;
 						case TRANSACTION_START:
 							query = SQLite3TransactionGenerator.generateBeginTransaction(con, state);
@@ -462,7 +458,6 @@ public class Main {
 						case INSERT:
 							Table randomTable = Randomly.fromList(newSchema.getDatabaseTables());
 							query = SQLite3RowGenerator.insertRow(randomTable, con, state, r);
-							affectedSchema = true; // insert or rollback
 							break;
 						case PRAGMA:
 							query = SQLite3PragmaGenerator.insertPragma(con, state, r);
@@ -477,7 +472,6 @@ public class Main {
 							query = SQLite3VacuumGenerator.executeVacuum(con, state);
 							break;
 						case ANALYZE:
-							affectedSchema = true;
 							query = SQLite3AnalyzeGenerator.generateAnalyze();
 							break;
 						default:
@@ -486,14 +480,14 @@ public class Main {
 						state.statements.add(query);
 						try {
 							query.execute(con);
+							if (query.couldAffectSchema()) {
+								newSchema = SQLite3Schema.fromConnection(con);
+							}
 						} catch (Throwable t) {
 							System.err.println(query.getQueryString());
 							throw t;
 						}
 						total--;
-						if (affectedSchema) {
-							newSchema = SQLite3Schema.fromConnection(con);
-						}
 					}
 					Query query = SQLite3TransactionGenerator.generateCommit(con, state);
 					query.execute(con);

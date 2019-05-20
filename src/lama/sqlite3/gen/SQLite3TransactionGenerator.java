@@ -54,6 +54,12 @@ public class SQLite3TransactionGenerator {
 					}
 				}
 			}
+
+			@Override
+			public boolean couldAffectSchema() {
+				return true;
+			}
+			
 		};
 	}
 

@@ -18,6 +18,7 @@ public class SQLite3UpdateGenerator {
 	private final StringBuilder sb = new StringBuilder();
 	private boolean mightFail;
 	private final Randomly r;
+	private boolean mightRollback;
 
 	public SQLite3UpdateGenerator(Randomly r) {
 		this.r = r;
@@ -50,6 +51,11 @@ public class SQLite3UpdateGenerator {
 					}
 				}
 			};
+
+			@Override
+			public boolean couldAffectSchema() {
+				return generator.mightRollback;
+			}
 		};
 	}
 
@@ -60,7 +66,11 @@ public class SQLite3UpdateGenerator {
 		} else {
 			mightFail = true;
 			if (Randomly.getBoolean()) {
-				sb.append(Randomly.fromOptions("OR ROLLBACK", "OR ABORT", "OR REPLACE", "OR FAIL"));
+				String fromOptions = Randomly.fromOptions("OR ROLLBACK", "OR ABORT", "OR REPLACE", "OR FAIL");
+				if (fromOptions.contentEquals("OR ROLLBACK")) {
+					mightRollback = true;
+				}
+				sb.append(fromOptions);
 				sb.append(" ");
 				mightFail = true;
 			}

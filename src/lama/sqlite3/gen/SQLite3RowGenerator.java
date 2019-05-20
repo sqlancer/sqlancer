@@ -21,6 +21,8 @@ public class SQLite3RowGenerator {
 	private final Randomly r;
 	private Connection con;
 	private StateToReproduce state;
+	
+	private boolean isInsertOrRollback;
 
 	public SQLite3RowGenerator(Randomly r, Connection con, StateToReproduce state) {
 		this.r = r;
@@ -54,6 +56,11 @@ public class SQLite3RowGenerator {
 					}
 				}
 			};
+			
+			@Override
+			public boolean couldAffectSchema() {
+				return generator.isInsertOrRollback;
+			}
 		};
 	}
 
@@ -66,7 +73,11 @@ public class SQLite3RowGenerator {
 			sb.append("OR IGNORE "); // TODO: try to generate REPLACE
 		} else {
 			mightFail = true;
-			sb.append(Randomly.fromOptions("OR REPLACE ", "OR ABORT ", "OR FAIL ", "OR ROLLBACK "));
+			String fromOptions = Randomly.fromOptions("OR REPLACE ", "OR ABORT ", "OR FAIL ", "OR ROLLBACK ");
+			if (fromOptions.contentEquals("OR ROLLBACK ")) {
+				isInsertOrRollback = true;
+			}
+			sb.append(fromOptions);
 		}
 		sb.append("INTO " + table.getName());
 		if (Randomly.getBooleanWithSmallProbability()) {

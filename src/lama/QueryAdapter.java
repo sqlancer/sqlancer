@@ -25,4 +25,9 @@ public class QueryAdapter extends Query {
 		}
 	}
 
+	@Override
+	public boolean couldAffectSchema() {
+		return false;
+	}
+
 }
