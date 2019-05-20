@@ -39,9 +39,24 @@ public class SQLite3IndexGenerator {
 				try {
 					super.execute(con);
 				} catch (SQLiteException e) {
-					if (isUnique && e.getMessage().startsWith("[SQLITE_CONSTRAINT]  Abort due to constraint violation (UNIQUE constraint failed")) {
+					if (isUnique && e.getMessage().startsWith(
+							"[SQLITE_CONSTRAINT]  Abort due to constraint violation (UNIQUE constraint failed")) {
 						return;
-					} else if (e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (integer overflow)")) {
+					} else if (e.getMessage()
+							.startsWith("[SQLITE_ERROR] SQL error or missing database (integer overflow)")) {
+						return;
+					} else if (e.getMessage()
+							.startsWith("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)")) {
+						return;
+					} else if (e.getMessage()
+							.startsWith("[SQLITE_ERROR] SQL error or missing database (no such column:")) {
+						/**
+						 * Strings in single quotes are sometimes interpreted as column names. Since we
+						 * found an issue with double quotes, they can no longer be used (see
+						 * https://sqlite.org/src/info/9b78184b). Single quotes are interpreted as
+						 * column names in certain contexts (see
+						 * https://www.mail-archive.com/sqlite-users@mailinglists.sqlite.org/msg115014.html).
+						 */
 						return;
 					} else {
 						throw e;
@@ -70,7 +85,6 @@ public class SQLite3IndexGenerator {
 			}
 			SQLite3Expression expr = SQLite3ExpressionGenerator.getRandomExpression(columns, true, r);
 			SQLite3Visitor visitor = new SQLite3Visitor();
-			visitor.setStringsAsDoubleQuotes(true);
 			visitor.fullyQualifiedNames = false;
 			visitor.visit(expr);
 			sb.append(visitor.get());
@@ -111,6 +125,5 @@ public class SQLite3IndexGenerator {
 	private String getIndexName() {
 		return SQLite3Common.createIndexName(indexNr++);
 	}
-
 
 }

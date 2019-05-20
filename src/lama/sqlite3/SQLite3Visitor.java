@@ -28,19 +28,19 @@ public class SQLite3Visitor {
 
 	StringBuffer sb = new StringBuffer();
 
-	// see
-	// https://www.mail-archive.com/sqlite-users@mailinglists.sqlite.org/msg115014.html
-	private boolean stringsAsDoubleQuotes;
-
 	public boolean fullyQualifiedNames = true;
 
 	void visit(BinaryOperation op) {
 		sb.append("(");
+		sb.append("(");
 		visit(op.getLeft());
+		sb.append(")");
 		sb.append(" ");
 		sb.append(op.getOperator().getTextRepresentation());
 		sb.append(" ");
+		sb.append("(");
 		visit(op.getRight());
+		sb.append(")");
 		sb.append(")");
 	}
 
@@ -75,10 +75,6 @@ public class SQLite3Visitor {
 		sb.append(c.getColumn().getName());
 	}
 
-	public void setStringsAsDoubleQuotes(boolean stringsAsDoubleQuotes) {
-		this.stringsAsDoubleQuotes = stringsAsDoubleQuotes;
-	}
-
 	void visit(SQLite3Constant c) {
 		if (c.isNull()) {
 			sb.append("NULL");
@@ -111,20 +107,9 @@ public class SQLite3Visitor {
 				}
 				break;
 			case TEXT:
-				// not escape with double quotes
-				// CREATE TABLE test (c0, c1);
-				// INSERT INTO test(c0, c1) VALUES ("c1", 0);
-				// SELECT * FROM test WHERE c0 = 'c1';
-				// yields no results
-				String quotes;
-				if (stringsAsDoubleQuotes) {
-					quotes = "\"";
-				} else {
-					quotes = "'";
-				}
-				sb.append(quotes);
+				sb.append("'");
 				sb.append(c.asString().replace("'", "''"));
-				sb.append(quotes);
+				sb.append("'");
 				break;
 			case BINARY:
 				sb.append('x');
