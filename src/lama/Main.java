@@ -287,7 +287,8 @@ public class Main {
 	static int threadsShutdown;
 
 	private enum Action {
-		PRAGMA, INDEX, INSERT, VACUUM, REINDEX, ANALYZE, DELETE, TRANSACTION_START, ALTER, DROP_INDEX, UPDATE;
+		PRAGMA, INDEX, INSERT, VACUUM, REINDEX, ANALYZE, DELETE, TRANSACTION_START, ALTER, DROP_INDEX, UPDATE,
+		ROLLBACK_TRANSACTION, COMMIT;
 	}
 
 	public static void main(String[] args) {
@@ -385,28 +386,28 @@ public class Main {
 						Action action = Action.values()[i];
 						int nrPerformed = 0;
 						switch (action) {
-						case INDEX:
-						case PRAGMA:
-							nrPerformed = Randomly.getInteger(5, 100);
-							break;
-						case REINDEX:
-						case VACUUM:
-						case ANALYZE:
-						case DROP_INDEX:
-						case TRANSACTION_START:
-							nrPerformed = Randomly.smallNumber();
+						case ALTER:
+							nrPerformed = r.getInteger(0, 5);
 							break;
 						case INSERT:
 							nrPerformed = NR_INSERT_ROW_TRIES;
 							break;
+						case ROLLBACK_TRANSACTION:
+							nrPerformed = 0;
+							break;
+						case COMMIT:
+						case TRANSACTION_START:
+						case INDEX:
+						case REINDEX:
+						case VACUUM:
+						case UPDATE:
+						case ANALYZE:
+						case PRAGMA:
+						case DROP_INDEX:
 						case DELETE:
-							nrPerformed = Randomly.getBoolean() ? 1 : 0;
-							break;
-						case ALTER:
-							nrPerformed = Randomly.smallNumber();
-							break;
 						default:
-							throw new AssertionError();
+							nrPerformed = r.getInteger(1, 30);
+							break;
 						}
 						if (nrPerformed != 0) {
 							actions.add(action);
@@ -415,10 +416,9 @@ public class Main {
 						total += nrPerformed;
 					}
 
-					boolean transactionActive = false;
 					while (total != 0) {
 						Action nextAction = null;
-						int selection = Randomly.getInteger(0, total);
+						int selection = r.getInteger(0, total);
 						int previousRange = 0;
 						for (int i = 0; i < nrRemaining.length; i++) {
 							if (previousRange <= selection && selection < previousRange + nrRemaining[i]) {
@@ -438,23 +438,19 @@ public class Main {
 							query = SQLite3AlterTable.alterTable(newSchema, con, state, r);
 							affectedSchema = true;
 							break;
+						case ROLLBACK_TRANSACTION:
+							query = SQLite3TransactionGenerator.generateRollbackTransaction(con, state);
+							affectedSchema = true;
+							break;
 						case UPDATE:
 							query = SQLite3UpdateGenerator.updateRow(newSchema.getRandomTable(), con, state, r);
+							affectedSchema = true; // update or rollback
 							break;
 						case TRANSACTION_START:
-							if (!transactionActive) {
-								SQLite3TransactionGenerator.generateBeginTransaction(con, state);
-								transactionActive = true;
-							} else {
-								query = SQLite3TransactionGenerator.generateCommit(con, state);
-								transactionActive = false;
-							}
+							query = SQLite3TransactionGenerator.generateBeginTransaction(con, state);
+							break;
 						case INDEX:
 							query = SQLite3IndexGenerator.insertIndex(con, state, r);
-							state.statements.add(query);
-							query.execute(con);
-							transactionActive = false;
-							query = SQLite3TransactionGenerator.generateCommit(con, state);
 							break;
 						case DROP_INDEX:
 							query = SQLite3DropIndexGenerator.dropIndex(con, state, newSchema, r);
@@ -466,6 +462,7 @@ public class Main {
 						case INSERT:
 							Table randomTable = Randomly.fromList(newSchema.getDatabaseTables());
 							query = SQLite3RowGenerator.insertRow(randomTable, con, state, r);
+							affectedSchema = true; // insert or rollback
 							break;
 						case PRAGMA:
 							query = SQLite3PragmaGenerator.insertPragma(con, state, r);
@@ -473,15 +470,14 @@ public class Main {
 						case REINDEX:
 							query = SQLite3ReindexGenerator.executeReindex(con, state);
 							break;
+						case COMMIT:
+							query = SQLite3TransactionGenerator.generateCommit(con, state);
+							break;
 						case VACUUM:
-							if (transactionActive) {
-								query = SQLite3TransactionGenerator.generateCommit(con, state);
-								query.execute(con);
-								transactionActive = false;
-							}
 							query = SQLite3VacuumGenerator.executeVacuum(con, state);
 							break;
 						case ANALYZE:
+							affectedSchema = true;
 							query = SQLite3AnalyzeGenerator.generateAnalyze();
 							break;
 						default:
@@ -499,6 +495,8 @@ public class Main {
 							newSchema = SQLite3Schema.fromConnection(con);
 						}
 					}
+					Query query = SQLite3TransactionGenerator.generateCommit(con, state);
+					query.execute(con);
 					for (Table t : newSchema.getDatabaseTables()) {
 						if (!ensureTableHasRows(con, t, r)) {
 							return;
@@ -507,19 +505,17 @@ public class Main {
 					if (Randomly.getBoolean()) {
 						SQLite3ReindexGenerator.executeReindex(con, state);
 					}
-					if (transactionActive) {
-						SQLite3TransactionGenerator.generateCommit(con, state);
-						transactionActive = false;
-					}
+					logger.writeCurrent(state);
 					QueryGenerator queryGenerator = new QueryGenerator(con, r);
 					for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
-						queryGenerator.generateAndCheckQuery(state);
+						queryGenerator.generateAndCheckQuery(state, logger);
 						nrQueries.addAndGet(1);
 					}
 				}
 
 				private void addSensiblePragmaDefaults(Connection con) throws SQLException {
-					List<String> defaultSettings = Arrays.asList("PRAGMA cache_size = 10000;", "PRAGMA temp_store=MEMORY;", "PRAGMA synchronous=off;");
+					List<String> defaultSettings = Arrays.asList("PRAGMA cache_size = 10000;",
+							"PRAGMA temp_store=MEMORY;", "PRAGMA synchronous=off;");
 					for (String s : defaultSettings) {
 						Query q = new QueryAdapter(s);
 						state.statements.add(q);

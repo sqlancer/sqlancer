@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.function.Supplier;
 
+import org.sqlite.SQLiteException;
+
 import lama.Main.StateToReproduce;
 import lama.QueryAdapter;
 import lama.Randomly;
@@ -186,7 +188,20 @@ public class SQLite3PragmaGenerator {
 		}
 		sb.append(";");
 		String pragmaString = sb.toString();
-		return new QueryAdapter(pragmaString);
+		return new QueryAdapter(pragmaString) {
+			@Override
+			public void execute(Connection con) throws SQLException {
+				try {
+					super.execute(con);
+				} catch (SQLiteException e) {
+					// expected within a transaction and when setting WAL
+					if (e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (cannot change into wal mode from within a transaction)")) {
+						return;
+					}
+					throw e;
+				}
+			}
+		};
 	}
 
 	public static QueryAdapter insertPragma(Connection con, StateToReproduce state, Randomly r) throws SQLException {
