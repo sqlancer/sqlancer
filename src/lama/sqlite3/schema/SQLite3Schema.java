@@ -205,16 +205,17 @@ public class SQLite3Schema {
 		private final List<Column> columns;
 		private final TableKind tableType;
 		private Column rowid;
+		private boolean withoutRowid;
 
-		public Table(String tableName, List<Column> columns, TableKind tableType) {
+		public Table(String tableName, List<Column> columns, TableKind tableType, boolean withoutRowid) {
 			this.tableName = tableName;
 			this.tableType = tableType;
+			this.withoutRowid = withoutRowid;
 			this.columns = Collections.unmodifiableList(columns);
 		}
 
 		public boolean hasWithoutRowid() {
-			// TODO FIXME implement
-			return false;
+			return withoutRowid;
 		}
 
 		@Override
@@ -334,19 +335,20 @@ public class SQLite3Schema {
 	static public SQLite3Schema fromConnection(Connection con) throws SQLException {
 		List<Table> databaseTables = new ArrayList<>();
 		try (Statement s = con.createStatement()) {
-			try (ResultSet rs = s.executeQuery("SELECT name, type as category FROM sqlite_master UNION "
-					+ "SELECT name, 'temp_table' as category FROM sqlite_temp_master WHERE type='table';")) {
+			try (ResultSet rs = s.executeQuery("SELECT name, type as category, sql FROM sqlite_master UNION "
+					+ "SELECT name, 'temp_table' as category, sql FROM sqlite_temp_master WHERE type='table';")) {
 				while (rs.next()) {
 					String tableName = rs.getString("name");
 					String tableType = rs.getString("category");
-					if (tableName.startsWith("sqlite_") || tableType.equals("index")) {
+					if ((tableName.startsWith("sqlite_") /* && !tableName.startsWith("sqlite_stat") */)
+							|| tableType.equals("index")) {
 						continue;
 					}
 
 					List<Column> databaseColumns = getTableColumns(con, tableName);
-
+					boolean withoutRowid = rs.getString("sql").toLowerCase().contains("without rowid");
 					Table t = new Table(tableName, databaseColumns,
-							tableType.contentEquals("temp_table") ? TableKind.TEMP : TableKind.MAIN);
+							tableType.contentEquals("temp_table") ? TableKind.TEMP : TableKind.MAIN, withoutRowid);
 					try (Statement s3 = con.createStatement()) {
 						try (ResultSet rs3 = s3.executeQuery("SELECT typeof(rowid) FROM " + tableName)) {
 							if (rs3.next()) {
