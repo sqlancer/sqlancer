@@ -537,22 +537,41 @@ public class Main {
 				}
 
 				private void tryToReduceBug(final String databaseName, StateToReproduce state) {
-					threadsShutdown++;
 					List<Query> reducedStatements = new ArrayList<>(state.statements);
 					Query statementThatCausedException = state.statements.get(state.statements.size() - 1);
+					int initialStatementNr = state.statements.size();
 					if (state.getErrorKind() == ErrorKind.EXCEPTION) {
 						reducedStatements.remove(statementThatCausedException);
 					}
-					retry: for (int i = 0; i < 10; i++) {
+					retry: for (int i = 0; i < 1000; i++) {
 						List<Query> currentRoundReducedStatements = new ArrayList<>(reducedStatements);
 						if (currentRoundReducedStatements.isEmpty()) {
 							break;
 						}
-						int nrToRemove = currentRoundReducedStatements.size() / 20;
-						for (int j = 0; j < nrToRemove; j++) {
-							Query q = Randomly.fromList(currentRoundReducedStatements);
-							currentRoundReducedStatements.remove(q);
+						int nrToRemove;
+						if (i == 0) {
+							// first try to remove all statements that usually do not cause problems
+							for (Query q : new ArrayList<>(currentRoundReducedStatements)) {
+								String string = q.getQueryString();
+								if (string.startsWith("PRAGMA") || string.startsWith("ANALYZE")
+										|| string.startsWith("COMMIT") || string.startsWith("REINDEX")) {
+									currentRoundReducedStatements.remove(q);
+								}
+							}
+						} else {
+							if (i >= 300) {
+								nrToRemove = 1;
+							} else if (i >= 100) {
+								nrToRemove = currentRoundReducedStatements.size() / 20;
+							} else {
+								nrToRemove = currentRoundReducedStatements.size() / 10;
+							}
+							for (int j = 0; j < nrToRemove; j++) {
+								Query q = Randomly.fromList(currentRoundReducedStatements);
+								currentRoundReducedStatements.remove(q);
+							}
 						}
+
 						try (Connection con = DatabaseFacade.createDatabase(databaseName + "_reduced")) {
 							for (Query q : currentRoundReducedStatements) {
 								try {
@@ -576,8 +595,9 @@ public class Main {
 										if (isContainedIn) {
 											continue retry;
 										} else {
-											String checkRowIsInside = "SELECT " + state.queryTargetedColumnsString + " FROM " + state.queryTargetedTablesString
-													+ " INTERSECT SELECT " + state.values;
+											String checkRowIsInside = "SELECT " + state.queryTargetedColumnsString
+													+ " FROM " + state.queryTargetedTablesString + " INTERSECT SELECT "
+													+ state.values;
 											ResultSet result2 = s.executeQuery(checkRowIsInside);
 											if (result2.isClosed()) {
 												continue retry;
