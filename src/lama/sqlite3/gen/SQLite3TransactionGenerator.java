@@ -20,9 +20,14 @@ public class SQLite3TransactionGenerator {
 					// TODO ignore for now
 				}
 			}
+
+			@Override
+			public boolean couldAffectSchema() {
+				return true;
+			}
 		};
 	}
-	
+
 	public static Query generateBeginTransaction(Connection con, StateToReproduce state) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("BEGIN ");
@@ -34,14 +39,15 @@ public class SQLite3TransactionGenerator {
 				try {
 					super.execute(con);
 				} catch (SQLException e) {
-					if (!e.getMessage().contentEquals("[SQLITE_ERROR] SQL error or missing database (cannot start a transaction within a transaction)")) {
+					if (!e.getMessage().contentEquals(
+							"[SQLITE_ERROR] SQL error or missing database (cannot start a transaction within a transaction)")) {
 						throw e;
 					}
 				}
 			}
 		};
 	}
-	
+
 	public static Query generateRollbackTransaction(Connection con, StateToReproduce state) {
 		return new QueryAdapter("ROLLBACK TRANSACTION;") {
 			@Override
@@ -49,7 +55,8 @@ public class SQLite3TransactionGenerator {
 				try {
 					super.execute(con);
 				} catch (SQLException e) {
-					if (!e.getMessage().contentEquals("[SQLITE_ERROR] SQL error or missing database (cannot rollback - no transaction is active)")) {
+					if (!e.getMessage().contentEquals(
+							"[SQLITE_ERROR] SQL error or missing database (cannot rollback - no transaction is active)")) {
 						throw e;
 					}
 				}
@@ -59,9 +66,8 @@ public class SQLite3TransactionGenerator {
 			public boolean couldAffectSchema() {
 				return true;
 			}
-			
+
 		};
 	}
-
 
 }
