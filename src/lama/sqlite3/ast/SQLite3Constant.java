@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import javax.xml.bind.DatatypeConverter;
 
 import lama.Randomly;
 import lama.sqlite3.SQLite3Visitor;
@@ -361,55 +361,14 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 
 		@Override
 		public SQLite3Constant applyNumericAffinity() {
-			boolean isTextDouble;
-			SQLite3Constant castValue = QueryGenerator.castToNumeric(this);
-			String text = this.asString();
-			text = text.trim();
-			boolean isPositive;
-			if (text.startsWith("+")) {
-				text = text.substring(1);
-				isPositive = true;
-			} else if (text.startsWith("-")) {
-				text = text.substring(1);
-				isPositive = false;
-			} else {
-				isPositive = true;
+			Pattern leadingDigitPattern = Pattern.compile("[-+]?((\\d(\\d)*(\\.(\\d)*)?)|\\.(\\d)(\\d)*)([Ee][+-]?(\\d)(\\d)*)?");
+			String trimmedString = text.trim();
+			if (trimmedString.isEmpty()) {
+				return this;
 			}
-
-			while (text.length() > 1 && text.startsWith("0")) {
-				text = text.substring(1);
-			}
-
-			// .0, 0.0, -0.0, 00000000
-			if (castValue instanceof SQLite3IntConstant) {
-				if (text.contentEquals(".0") || text.contentEquals("0")) {
-					assert castValue.asInt() == 0;
-					isTextDouble = true;
-				} else {
-					if (text.endsWith(".0")) {
-						text = text.substring(0, text.length() - 2);
-					} else if (text.endsWith(".")) {
-						text = text.substring(0, text.length() - 1);
-					}
-					isTextDouble = Long.toString(castValue.asInt()).equals(isPositive ? text : "-" + text);
-				}
-			} else {
-				if (text.toLowerCase().endsWith("d") || text.toLowerCase().endsWith("f")) {
-					return this;
-				}
-				assert castValue instanceof SQLite3RealConstant;
-				try {
-					double d = Double.valueOf(text);
-					if (Double.isInfinite(d)) {
-						isTextDouble = true;
-					} else {
-						isTextDouble = Math.abs(castValue.asDouble() - d) < 1e10;
-					}
-				} catch (Exception e) {
-					isTextDouble = false;
-				}
-			}
-			if (isTextDouble) {
+			Matcher matcher = leadingDigitPattern.matcher(trimmedString);
+			if (matcher.matches()) {
+				SQLite3Constant castValue = QueryGenerator.castToNumeric(this);
 				return castValue;
 			} else {
 				return this;
@@ -530,7 +489,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 	}
 
 	public double asDouble() {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(this.getDataType().toString());
 	}
 
 	public byte[] asBinary() {

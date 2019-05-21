@@ -30,6 +30,18 @@ class TestApplyNumericAffinity {
 	}
 
 	@Test
+	void zeroPoint() {
+		SQLite3Constant pointZero = SQLite3TextConstant.createTextConstant("0.").applyNumericAffinity();
+		assertEquals(pointZero.asInt(), 0);
+	}
+
+	@Test
+	void zeroE() {
+		SQLite3Constant pointZero = SQLite3TextConstant.createTextConstant("0e6").applyNumericAffinity();
+		assertEquals(pointZero.asInt(), 0);
+	}
+
+	@Test
 	void minusZero2() {
 		SQLite3Constant value = SQLite3TextConstant.createTextConstant("-0").applyNumericAffinity();
 		assertEquals(value.asInt(), 0);
@@ -98,6 +110,26 @@ class TestApplyNumericAffinity {
 	}
 
 	@Test
+	void testENotation() {
+		expectReal("-1.248781264E9", -1.248781264E9);
+	}
+
+	@Test
+	void testDigit() {
+		expectInt("5", 5);
+	}
+
+	@Test
+	void testLargeNumber() {
+		expectInt("2054756498", 2054756498);
+	}
+
+	@Test
+	void testReal() {
+		expectReal("0.8170119915169454", 0.8170119915169454);
+	}
+
+	@Test
 	void testSpace() {
 		SQLite3Constant value = SQLite3TextConstant.createTextConstant("8 ").applyNumericAffinity();
 		assertEquals(value.asInt(), 8);
@@ -126,5 +158,56 @@ class TestApplyNumericAffinity {
 		SQLite3Constant value = SQLite3TextConstant.createTextConstant("-03").applyNumericAffinity();
 		assertEquals(value.asInt(), -3);
 	}
+
+	@Test
+	void emptyString() {
+		SQLite3Constant value = SQLite3TextConstant.createTextConstant("").applyNumericAffinity();
+		assertEquals(value.asString(), "");
+	}
+
+	@Test
+	void e() {
+		SQLite3Constant value = SQLite3TextConstant.createTextConstant("e").applyNumericAffinity();
+		assertEquals(value.asString(), "e");
+	}
+
+	@Test
+	void sevenE() {
+		SQLite3Constant value = SQLite3TextConstant.createTextConstant("7e").applyNumericAffinity();
+		assertEquals(value.asString(), "7e");
+	}
+
+	@Test
+	void testLeadingZero() {
+		expectInt("08.", 8);
+	}
+
+	@Test
+	void testStrangeExample1() {
+		expectInt("+005.000", 5);
+	}
+
+	@Test
+	void testStrangeExample2() {
+		expectReal("-005.500", -5.5);
+	}
+
+	public void expectInt(String text, int val) {
+		SQLite3Constant value = SQLite3TextConstant.createTextConstant(text).applyNumericAffinity();
+		assertEquals(value.asInt(), val);
+	}
+
+	public void expectReal(String text, double val) {
+		SQLite3Constant value = SQLite3TextConstant.createTextConstant(text).applyNumericAffinity();
+		assertEquals(value.asDouble(), val);
+	}
+
+//	@Test
+//	void testApplyBinaryAffinity() {
+//		SQLite3Constant value = SQLite3TextConstant.createBinaryConstant(new byte[] {(byte) 0x81}).applyTextAffinity();
+//		SQLite3Constant value2 = SQLite3TextConstant.createBinaryConstant(new byte[] {0x06, 0x13, 0x49}).applyTextAffinity();
+//	 List<BinaryOperator> result = value.compare(value, true);
+//		assertEquals(value.asInt(), -3);
+//	}
 
 }
