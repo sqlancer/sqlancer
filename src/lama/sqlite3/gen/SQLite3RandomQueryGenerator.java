@@ -30,7 +30,7 @@ public class SQLite3RandomQueryGenerator {
 		
 		List<Join> joinStatements = new ArrayList<>();
 		for (int i = 1; i < tables.size(); i++) {
-			SQLite3Expression joinClause =  SQLite3ExpressionGenerator.getRandomExpression(columns, false, r);
+			SQLite3Expression joinClause =  new SQLite3ExpressionGenerator().getRandomExpression(columns, false, r);
 			Table table = Randomly.fromList(tables);
 			tables.remove(table);
 			JoinType options;
@@ -51,7 +51,7 @@ public class SQLite3RandomQueryGenerator {
 				.collect(Collectors.toList());
 		List<Column> fetchColumns = Randomly.nonEmptySubset(columnsWithoutRowid);
 		selectStatement.selectFetchColumns(fetchColumns);
-		SQLite3Expression whereClause = SQLite3ExpressionGenerator.getRandomExpression(columns, false, r);
+		SQLite3Expression whereClause = new SQLite3ExpressionGenerator().getRandomExpression(columns, false, r);
 		selectStatement.setWhereClause(whereClause);
 		return selectStatement;
 //		List<SQLite3Expression> groupByClause = generateGroupByClause(columns);

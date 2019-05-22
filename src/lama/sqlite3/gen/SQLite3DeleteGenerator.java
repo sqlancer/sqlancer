@@ -52,7 +52,7 @@ public class SQLite3DeleteGenerator {
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
 			sb.append(SQLite3Visitor
-					.asString(SQLite3ExpressionGenerator.getRandomExpression(tableName.getColumns(), false, r)));
+					.asString(new SQLite3ExpressionGenerator().getRandomExpression(tableName.getColumns(), false, r)));
 		}
 		return sb.toString();
 	}

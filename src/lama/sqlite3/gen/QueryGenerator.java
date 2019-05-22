@@ -20,6 +20,7 @@ import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
+import lama.sqlite3.ast.SQLite3Expression.Exist;
 import lama.sqlite3.ast.SQLite3Expression.Function;
 import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.Join.JoinType;
@@ -52,8 +53,10 @@ public class QueryGenerator {
 		s = SQLite3Schema.fromConnection(database);
 	}
 
-	public void generateAndCheckQuery(StateToReproduce state) throws SQLException {
+	public void generateAndCheckQuery(StateToReproduce state, StateLogger logger) throws SQLException {
 		String queryString = getQueryThatContainsAtLeastOneRow(state);
+		// logger.writeCurrent(queryString);
+
 		boolean isContainedIn = isContainedIn(queryString);
 		if (!isContainedIn) {
 			throw new Main.ReduceMeException();
@@ -98,7 +101,7 @@ public class QueryGenerator {
 		// TODO: also implement a wild-card check (*)
 		// filter out row ids from the select because the hinder the reduction process
 		// once a bug is found
-		List<Column> columnsWithoutRowid = columns.stream().filter(c -> !c.getName().matches("row"))
+		List<Column> columnsWithoutRowid = columns.stream().filter(c -> !c.getName().matches("rowid"))
 				.collect(Collectors.toList());
 		fetchColumns = Randomly.nonEmptySubset(columnsWithoutRowid);
 		selectStatement.selectFetchColumns(fetchColumns);
@@ -106,7 +109,7 @@ public class QueryGenerator {
 				.collect(Collectors.joining(", "));
 		SQLite3Expression whereClause = generateWhereClauseThatContainsRowValue(columns, rw);
 		selectStatement.setWhereClause(whereClause);
-		List<SQLite3Expression> groupByClause = generateGroupByClause(columns);
+		List<SQLite3Expression> groupByClause = generateGroupByClause(columns, rw);
 		selectStatement.setGroupByClause(groupByClause);
 		SQLite3Expression limitClause = generateLimit();
 		selectStatement.setLimitClause(limitClause);
@@ -131,8 +134,7 @@ public class QueryGenerator {
 		}
 	}
 
-	private boolean isContainedIn(String queryString)
-			throws SQLException {
+	private boolean isContainedIn(String queryString) throws SQLException {
 		Statement createStatement;
 		createStatement = database.createStatement();
 
@@ -160,7 +162,8 @@ public class QueryGenerator {
 	}
 
 	public static boolean shouldIgnoreException(SQLException e) {
-		return e.getMessage().contentEquals("[SQLITE_ERROR] SQL error or missing database (integer overflow)");
+		return e.getMessage().contentEquals("[SQLITE_ERROR] SQL error or missing database (integer overflow)")
+				|| e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)");
 	}
 
 	public List<SQLite3Expression> generateOrderBy(List<Column> columns) {
@@ -184,9 +187,9 @@ public class QueryGenerator {
 		}
 	}
 
-	private List<SQLite3Expression> generateGroupByClause(List<Column> columns) {
+	private List<SQLite3Expression> generateGroupByClause(List<Column> columns, RowValue rw) {
 		if (Randomly.getBoolean()) {
-			return columns.stream().map(c -> new ColumnName(c)).collect(Collectors.toList());
+			return columns.stream().map(c -> new ColumnName(c, rw.getValues().get(c))).collect(Collectors.toList());
 		} else {
 			return Collections.emptyList();
 		}
@@ -201,7 +204,8 @@ public class QueryGenerator {
 
 	private enum NewExpressionType {
 		CAST_TO_ITSELF, LITERAL, STANDALONE_COLUMN, DOUBLE_COLUMN, POSTFIX_COLUMN, NOT, UNARY_PLUS, AND, OR, COLLATE,
-		UNARY_FUNCTION, IN, ALWAYS_TRUE_COLUMN_COMPARISON, CAST_TO_NUMERIC, SEVERAL_DOUBLE_COLUMN
+		UNARY_FUNCTION, IN, ALWAYS_TRUE_COLUMN_COMPARISON, CAST_TO_NUMERIC, SEVERAL_DOUBLE_COLUMN,
+		LEFT_RIGHT_SIDE_EQUALS, MORGAN_LAW, KNOWN_EXPRESSION
 	}
 
 	private SQLite3Expression generateNewExpression(List<Column> columns, RowValue rw, boolean shouldBeTrue,
@@ -230,6 +234,30 @@ public class QueryGenerator {
 			retry = false;
 			SQLite3Constant sampledConstant;
 			switch (Randomly.fromOptions(NewExpressionType.values())) {
+			case KNOWN_EXPRESSION:
+				SQLite3Expression expr = new SQLite3ExpressionGenerator(rw).getRandomExpression(columns, false, r);
+				if (expr.getExpectedValue() != null) {
+					if (shouldBeTrue) {
+						return new BinaryOperation(expr.getExpectedValue(), expr, BinaryOperator.IS);
+					} else {
+						return new BinaryOperation(expr.getExpectedValue(), expr, BinaryOperator.IS_NOT);
+
+					}
+//					if (isTrue(expr.getExpectedValue())) {
+//						return expr;
+//					} else {
+//						return new BinaryOperation(expr.getExpectedValue(), expr, BinaryOperator.IS);
+//					}
+				}
+			case MORGAN_LAW:
+				return createMorgansLawClause(columns, rw, shouldBeTrue, depth);
+			case LEFT_RIGHT_SIDE_EQUALS:
+				SQLite3Expression subExpr1 = generateNewExpression(columns, rw, Randomly.getBoolean(), depth + 1);
+				if (shouldBeTrue) {
+					return new BinaryOperation(subExpr1, subExpr1, BinaryOperator.IS);
+				} else {
+					return new BinaryOperation(subExpr1, subExpr1, BinaryOperator.IS_NOT);
+				}
 			case CAST_TO_NUMERIC:
 				SQLite3Expression subExpr2 = createStandaloneColumn(columns, rw, true);
 				if (subExpr2 == null) {
@@ -286,7 +314,7 @@ public class QueryGenerator {
 				TypeLiteral typeofExpr = new SQLite3Expression.TypeLiteral(type);
 				return new SQLite3Expression.Cast(typeofExpr, subExpr);
 			case STANDALONE_COLUMN:
-				SQLite3Expression expr = createStandaloneColumn(columns, rw, shouldBeTrue);
+				expr = createStandaloneColumn(columns, rw, shouldBeTrue);
 				if (expr == null) {
 					retry = true;
 					continue;
@@ -315,7 +343,7 @@ public class QueryGenerator {
 			case POSTFIX_COLUMN:
 				Column c = Randomly.fromList(columns);
 				sampledConstant = rw.getValues().get(c);
-				return generateSampleBasedColumnPostfix(sampledConstant, new ColumnName(c), shouldBeTrue);
+				return generateSampleBasedColumnPostfix(sampledConstant, new ColumnName(c, sampledConstant), shouldBeTrue);
 			case LITERAL:
 				return getStandaloneLiteral(shouldBeTrue);
 			case UNARY_FUNCTION:
@@ -354,7 +382,7 @@ public class QueryGenerator {
 					if (Randomly.getBoolean()) {
 						rightExpr = generateNewExpression(columns, rw, Randomly.getBoolean(), depth + 1);
 					} else {
-						rightExpr = SQLite3ExpressionGenerator.getRandomExpression(columns, false, r);
+						rightExpr = new SQLite3ExpressionGenerator(rw).getRandomExpression(columns, false, r);
 					}
 
 					if (Randomly.getBoolean()) {
@@ -382,11 +410,11 @@ public class QueryGenerator {
 							// generate random expressions and add either the column or value
 							for (int i = 0; i < Randomly.smallNumber(); i++) {
 								expressions.add(
-										SQLite3ExpressionGenerator.getRandomExpression(columns, depth + 1, false, r));
+										new SQLite3ExpressionGenerator(rw).getRandomExpression(columns, depth + 1, false, r));
 							}
 							int randomPosition = r.getInteger(0, expressions.size());
 							if (Randomly.getBoolean()) {
-								expressions.add(randomPosition, new SQLite3Expression.ColumnName(c));
+								expressions.add(randomPosition, new SQLite3Expression.ColumnName(c, rw.getValues().get(c)));
 							} else {
 								expressions.add(randomPosition, rw.getValues().get(c));
 							}
@@ -401,12 +429,42 @@ public class QueryGenerator {
 						}
 					}
 				}
-				return new SQLite3Expression.InOperation(new SQLite3Expression.ColumnName(c), expressions);
+				return new SQLite3Expression.InOperation(new SQLite3Expression.ColumnName(c, rw.getValues().get(c)), expressions);
 			default:
 				throw new AssertionError();
 			}
 		} while (retry);
 		throw new AssertionError();
+	}
+
+	private SQLite3Expression createMorgansLawClause(List<Column> columns, RowValue rw, boolean shouldBeTrue,
+			int depth) {
+		SQLite3Expression l = generateNewExpression(columns, rw, Randomly.getBoolean(), depth + 1);
+		SQLite3Expression r = generateNewExpression(columns, rw, Randomly.getBoolean(), depth + 1);
+		SQLite3Expression ll;
+		SQLite3Expression rr;
+		if (Randomly.getBoolean()) {
+			ll = new UnaryOperation(UnaryOperation.UnaryOperator.NOT, new BinaryOperation(l, r, BinaryOperator.OR)); // not
+																														// (l
+																														// or
+																														// r1)
+			rr = new BinaryOperation(new UnaryOperation(UnaryOperation.UnaryOperator.NOT, l),
+					new UnaryOperation(UnaryOperation.UnaryOperator.NOT, r), BinaryOperation.BinaryOperator.AND); // not
+																													// l
+																													// and
+																													// not
+																													// r1
+
+		} else {
+			ll = new UnaryOperation(UnaryOperation.UnaryOperator.NOT, new BinaryOperation(l, r, BinaryOperator.AND));
+			rr = new BinaryOperation(new UnaryOperation(UnaryOperator.NOT, l), new UnaryOperation(UnaryOperator.NOT, r),
+					BinaryOperator.OR);
+		}
+		if (shouldBeTrue) {
+			return new BinaryOperation(ll, rr, BinaryOperator.IS);
+		} else {
+			return new BinaryOperation(ll, rr, BinaryOperator.IS_NOT);
+		}
 	}
 
 	private SQLite3Expression createAlwaysTrueColumnComparison(List<Column> columns, RowValue rw,
@@ -445,7 +503,7 @@ public class QueryGenerator {
 			for (int i = asString.length(); i >= 0; i--) {
 				try {
 					double d = Double.valueOf(asString.substring(0, i));
-					if (d == (long) d && !asString.toUpperCase().contains("E")) {
+					if (d == (long) d && (!asString.toUpperCase().contains("E") || d == 0)) {
 						return SQLite3Constant.createIntConstant(Long.parseLong(asString.substring(0, i)));
 					} else {
 						return SQLite3Constant.createRealConstant(d);
@@ -510,6 +568,27 @@ public class QueryGenerator {
 		}
 		return false;
 	}
+	
+	private boolean isTrue(SQLite3Constant value) {
+		SQLite3Constant numericValue;
+		if (value.getDataType() == SQLite3DataType.NULL) {
+			return false;
+		}
+		if (value.getDataType() == SQLite3DataType.TEXT || value.getDataType() == SQLite3DataType.BINARY) {
+			numericValue = castToNumeric(value);
+		} else {
+			numericValue = value;
+		}
+		assert numericValue.getDataType() != SQLite3DataType.TEXT : numericValue + "should have been converted";
+		switch (numericValue.getDataType()) {
+		case INT:
+			return numericValue.asInt() != 0;
+		case REAL:
+			return numericValue.asDouble() != 0;
+		default:
+			throw new AssertionError(numericValue);
+		}
+	}
 
 	// e.g., WHERE c0 or
 	private SQLite3Expression createStandaloneColumn(List<Column> columns, RowValue rw, boolean shouldBeTrue) {
@@ -528,18 +607,18 @@ public class QueryGenerator {
 		switch (numericValue.getDataType()) {
 		case INT:
 			if (shouldBeTrue && numericValue.asInt() != 0) {
-				return new ColumnName(c);
+				return new ColumnName(c, value);
 			} else if (!shouldBeTrue && numericValue.asInt() == 0) {
-				return new ColumnName(c);
+				return new ColumnName(c, value);
 			} else {
 				return null;
 			}
 		case REAL:
 			// directly comparing to a double is probably not a good idea
 			if (shouldBeTrue && numericValue.asDouble() != 0.0) {
-				return new ColumnName(c);
+				return new ColumnName(c, value);
 			} else if (!shouldBeTrue && numericValue.asDouble() == 0.0) {
-				return new ColumnName(c);
+				return new ColumnName(c, value);
 			} else {
 				return null;
 			}
@@ -594,7 +673,7 @@ public class QueryGenerator {
 			BinaryOperator binaryOperator;
 			SQLite3DataType valueType = sampledConstant.getDataType();
 
-			SQLite3Expression columnName = new SQLite3Expression.ColumnName(selectedColumn);
+			SQLite3Expression columnName = new SQLite3Expression.ColumnName(selectedColumn, sampledConstant);
 			if (Randomly.getBoolean()) {
 				term = generateSampleBasedColumnPostfix(sampledConstant, columnName, true);
 			} else {
@@ -634,7 +713,14 @@ public class QueryGenerator {
 		SQLite3DataType randomType = Randomly.fromOptions(SQLite3DataType.INT, SQLite3DataType.TEXT,
 				SQLite3DataType.NULL);
 
+		if (Randomly.getBoolean()) {
+			SQLite3SelectStatement randomQuery = SQLite3RandomQueryGenerator.generateRandomQuery(s, r);
+			Exist exist = new Exist(randomQuery);
+			UnaryOperation notExist = new UnaryOperation(UnaryOperator.NOT, exist);
+			term = new SQLite3Expression.BinaryOperation(exist, notExist, BinaryOperator.OR);
+		}
 		switch (randomType) {
+		// TODO REAL
 		case INT:
 			long val = r.getInteger();
 			con = SQLite3Constant.createIntConstant(val);
@@ -682,8 +768,8 @@ public class QueryGenerator {
 		BinaryOperator binaryOperator = Randomly.fromOptions(BinaryOperator.GREATER_EQUALS,
 				BinaryOperator.SMALLER_EQUALS, BinaryOperator.IS, BinaryOperator.NOT_EQUALS, BinaryOperator.GREATER,
 				BinaryOperator.SMALLER, BinaryOperator.EQUALS);
-		SQLite3Expression leftColumn = new ColumnName(left);
-		SQLite3Expression rightColumn = new ColumnName(right);
+		SQLite3Expression leftColumn = new ColumnName(left, rw.getValues().get(left));
+		SQLite3Expression rightColumn = new ColumnName(right, rw.getValues().get(right));
 
 		boolean leftIsNull = rw.getValues().get(left).isNull();
 		boolean rightIsNull = rw.getValues().get(right).isNull();
@@ -791,23 +877,26 @@ public class QueryGenerator {
 			boolean shouldBeTrue) throws AssertionError {
 
 		Column leftColumn = Randomly.fromList(columns);
-		SQLite3Expression leftColumnExpr = new SQLite3Expression.ColumnName(leftColumn);
 		SQLite3Constant leftColumnValue = rw.getValues().get(leftColumn);
+		SQLite3Expression leftColumnExpr = new SQLite3Expression.ColumnName(leftColumn, leftColumnValue);
 		SQLite3DataType originalLeftColumnType = leftColumnValue.getDataType();
 
 		Column rightColumn = Randomly.fromList(columns);
 		SQLite3Constant rightColumnValue = rw.getValues().get(rightColumn);
-		SQLite3Expression rightColumnExpr = new SQLite3Expression.ColumnName(rightColumn);
+		SQLite3Expression rightColumnExpr = new SQLite3Expression.ColumnName(rightColumn, rightColumnValue);
 		SQLite3DataType originalRightColumnType = rightColumnValue.getDataType();
 
 		// If one operand has INTEGER, REAL or NUMERIC affinity and the other operand
 		// has TEXT or BLOB or no affinity then NUMERIC affinity is applied to other
 		// operand.
 		if (leftColumn.getColumnType().isNumeric() && (rightColumn.getColumnType() == SQLite3DataType.TEXT
-				|| rightColumn.getColumnType() == SQLite3DataType.BINARY)) {
+				|| rightColumn.getColumnType() == SQLite3DataType.BINARY
+				|| rightColumn.getColumnType() == SQLite3DataType.NONE)) {
 			rightColumnValue = rightColumnValue.applyNumericAffinity();
-		} else if (rightColumn.getColumnType().isNumeric() && (leftColumn.getColumnType() == SQLite3DataType.TEXT
-				|| leftColumn.getColumnType() == SQLite3DataType.BINARY)) {
+		} else if (rightColumn.getColumnType().isNumeric()
+				&& (leftColumn.getColumnType() == SQLite3DataType.TEXT
+						|| leftColumn.getColumnType() == SQLite3DataType.BINARY)
+				|| leftColumn.getColumnType() == SQLite3DataType.NONE) {
 			leftColumnValue = leftColumnValue.applyNumericAffinity();
 		}
 
@@ -833,7 +922,7 @@ public class QueryGenerator {
 			if (functionName != null) {
 				Function left = new SQLite3Expression.Function(functionName, leftColumnExpr);
 				Function right = new SQLite3Expression.Function(functionName,
-						new SQLite3Expression.ColumnName(rightColumn));
+						new SQLite3Expression.ColumnName(rightColumn, rightColumnValue));
 				new BinaryOperation(left, right, operator);
 				// TODO
 			}

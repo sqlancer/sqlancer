@@ -8,6 +8,10 @@ import lama.sqlite3.schema.SQLite3Schema.Table;
 
 public class SQLite3Expression {
 
+	public SQLite3Constant getExpectedValue() {
+		return null;
+	}
+
 	public static class Exist extends SQLite3Expression {
 
 		private final SQLite3SelectStatement select;
@@ -427,13 +431,20 @@ public class SQLite3Expression {
 	public static class ColumnName extends SQLite3Expression {
 
 		private final Column column;
+		private final SQLite3Constant value;
 
-		public ColumnName(Column name) {
+		public ColumnName(Column name, SQLite3Constant value) {
 			this.column = name;
+			this.value = value;
 		}
 
 		public Column getColumn() {
 			return column;
+		}
+
+		@Override
+		public SQLite3Constant getExpectedValue() {
+			return value;
 		}
 
 	}

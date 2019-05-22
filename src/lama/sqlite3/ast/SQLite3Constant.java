@@ -530,6 +530,11 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 	}
 
 	@Override
+	public SQLite3Constant getExpectedValue() {
+		return this;
+	}
+
+	@Override
 	public String toString() {
 		return String.format("(%s) %s", getDataType(), getStringRepresentation());
 	}
