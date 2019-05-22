@@ -239,15 +239,19 @@ public class SQLite3Visitor {
 	}
 
 	private void visit(UnaryOperation exp) {
+		sb.append("(");
 		sb.append(exp.getOperation().getTextRepresentation());
 		sb.append(" ");
 		visit(exp.getExpression());
+		sb.append(")");
 	}
 
 	private void visit(PostfixUnaryOperation exp) {
+		sb.append("(");
 		visit(exp.getExpression());
 		sb.append(" ");
 		sb.append(exp.getOperation().getTextRepresentation());
+		sb.append(")");
 	}
 
 	private void visit(CollateOperation op) {

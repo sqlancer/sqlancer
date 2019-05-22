@@ -1,8 +1,11 @@
 package lama.sqlite3.ast;
 
 import java.util.List;
+import java.util.Optional;
 
 import lama.Randomly;
+import lama.sqlite3.gen.SQLite3Cast;
+import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 
@@ -200,7 +203,50 @@ public class SQLite3Expression {
 		 *
 		 */
 		public enum UnaryOperator {
-			MINUS("-"), PLUS("+"), NEGATE("~"), NOT("NOT");
+			MINUS("-") {
+				@Override
+				public SQLite3Constant apply(SQLite3Constant constant) {
+					if (constant.isNull()) {
+						return SQLite3Constant.createNullConstant();
+					}
+					if (constant.getDataType() == SQLite3DataType.TEXT
+							|| constant.getDataType() == SQLite3DataType.BINARY) {
+						constant = SQLite3Cast.castToNumeric(constant);
+					}
+					if (constant.getDataType() == SQLite3DataType.INT) {
+						return SQLite3Constant.createIntConstant(-constant.asInt());
+					}
+					if (constant.getDataType() == SQLite3DataType.REAL) {
+						return SQLite3Constant.createRealConstant(-constant.asDouble());
+					}
+					throw new AssertionError(constant);
+				}
+			},
+			PLUS("+") {
+				@Override
+				public SQLite3Constant apply(SQLite3Constant constant) {
+					return constant;
+				}
+			},
+			NEGATE("~") {
+				@Override
+				public SQLite3Constant apply(SQLite3Constant constant) {
+					// TODO implement me
+					return null;
+				}
+			},
+			NOT("NOT") {
+				@Override
+				public SQLite3Constant apply(SQLite3Constant constant) {
+					Optional<Boolean> boolVal = SQLite3Cast.isTrue(constant);
+					if (boolVal.isPresent()) {
+						Boolean negated = !boolVal.get();
+						return SQLite3Constant.createBoolean(negated);
+					} else {
+						return SQLite3Constant.createNullConstant();
+					}
+				}
+			};
 
 			private String textRepresentation;
 
@@ -221,6 +267,8 @@ public class SQLite3Expression {
 				return Randomly.fromOptions(values());
 			}
 
+			public abstract SQLite3Constant apply(SQLite3Constant constant);
+
 		}
 
 		private final UnaryOperator operation;
@@ -237,6 +285,15 @@ public class SQLite3Expression {
 
 		public SQLite3Expression getExpression() {
 			return expression;
+		}
+
+		@Override
+		public SQLite3Constant getExpectedValue() {
+			if (expression.getExpectedValue() == null) {
+				return null;
+			} else {
+				return operation.apply(expression.getExpectedValue());
+			}
 		}
 
 	}
@@ -284,6 +341,7 @@ public class SQLite3Expression {
 			public static PostfixUnaryOperator getRandomOperator() {
 				return Randomly.fromOptions(values());
 			}
+
 		}
 
 		private final PostfixUnaryOperator operation;
@@ -300,6 +358,30 @@ public class SQLite3Expression {
 
 		public SQLite3Expression getExpression() {
 			return expression;
+		}
+
+		@Override
+		public SQLite3Constant getExpectedValue() {
+			if (expression.getExpectedValue() == null) {
+				return null;
+			}
+			switch (operation) {
+			case ISNULL:
+				if (expression.getExpectedValue().isNull()) {
+					return SQLite3Constant.createTrue();
+				} else {
+					return SQLite3Constant.createFalse();
+				}
+			case NOT_NULL:
+			case NOTNULL:
+				if (expression.getExpectedValue().isNull()) {
+					return SQLite3Constant.createFalse();
+				} else {
+					return SQLite3Constant.createTrue();
+				}
+			default:
+				throw new AssertionError(operation);
+			}
 		}
 
 	}

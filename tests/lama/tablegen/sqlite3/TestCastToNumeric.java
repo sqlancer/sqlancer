@@ -10,7 +10,7 @@ import javax.xml.bind.DatatypeConverter;
 import org.junit.jupiter.api.Test;
 
 import lama.sqlite3.ast.SQLite3Constant;
-import lama.sqlite3.gen.QueryGenerator;
+import lama.sqlite3.gen.SQLite3Cast;
 import lama.sqlite3.schema.SQLite3DataType;
 
 class TestCastToNumeric {
@@ -66,7 +66,7 @@ class TestCastToNumeric {
 
 		
 		for (StringTestTriple triple : triples) {
-			SQLite3Constant castVal = QueryGenerator.castToNumeric(SQLite3Constant.createTextConstant(triple.value));
+			SQLite3Constant castVal = SQLite3Cast.castToNumeric(SQLite3Constant.createTextConstant(triple.value));
 			assertEquals(triple.value.toString(), triple.expectedCastValue, castVal.getValue());
 		}
 	}
@@ -97,14 +97,14 @@ class TestCastToNumeric {
 
 		
 		for (StringTestTriple triple : triples) {
-			SQLite3Constant castVal = QueryGenerator
+			SQLite3Constant castVal = SQLite3Cast
 					.castToNumeric(SQLite3Constant.createBinaryConstant(DatatypeConverter.parseHexBinary(triple.value)));
 			assertEquals(triple.value.toString(), triple.expectedCastValue, castVal.getValue());
 		}
 	}
 
 	private long castLongConstant(long constant) {
-		return QueryGenerator.castToNumeric(SQLite3Constant.createIntConstant(constant)).asInt();
+		return SQLite3Cast.castToNumeric(SQLite3Constant.createIntConstant(constant)).asInt();
 	}
 
 }

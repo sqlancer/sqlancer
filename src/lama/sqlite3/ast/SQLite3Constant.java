@@ -1,5 +1,7 @@
 package lama.sqlite3.ast;
 
+import java.awt.event.KeyEvent;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -12,6 +14,7 @@ import lama.Randomly;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
 import lama.sqlite3.gen.QueryGenerator;
+import lama.sqlite3.gen.SQLite3Cast;
 import lama.sqlite3.schema.SQLite3DataType;
 
 public abstract class SQLite3Constant extends SQLite3Expression {
@@ -368,7 +371,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 			}
 			Matcher matcher = leadingDigitPattern.matcher(trimmedString);
 			if (matcher.matches()) {
-				SQLite3Constant castValue = QueryGenerator.castToNumeric(this);
+				SQLite3Constant castValue = SQLite3Cast.castToNumeric(this);
 				return castValue;
 			} else {
 				return this;
@@ -542,5 +545,17 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 	public abstract SQLite3Constant applyNumericAffinity();
 
 	public abstract SQLite3Constant applyTextAffinity();
+
+	public static SQLite3Constant createTrue() {
+		return new SQLite3Constant.SQLite3IntConstant(1);
+	}
+	
+	public static SQLite3Constant createFalse() {
+		return new SQLite3Constant.SQLite3IntConstant(0);
+	}
+	
+	public static SQLite3Constant createBoolean(boolean tr) {
+		return new SQLite3Constant.SQLite3IntConstant(tr ? 1 : 0);
+	}
 
 }
