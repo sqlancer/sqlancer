@@ -6,7 +6,7 @@ import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.schema.SQLite3DataType;
 
 public class SQLite3Cast {
-	
+
 	public static Optional<Boolean> isTrue(SQLite3Constant value) {
 		SQLite3Constant numericValue;
 		if (value.getDataType() == SQLite3DataType.NULL) {
@@ -27,7 +27,52 @@ public class SQLite3Cast {
 			throw new AssertionError(numericValue);
 		}
 	}
-	
+
+	// SELECT CAST('-1.370998801E9' AS INTEGER) == -1
+	public static SQLite3Constant castToInt(SQLite3Constant cons) {
+		if (cons.getDataType() == SQLite3DataType.BINARY) {
+			String text = new String(cons.asBinary());
+			cons = SQLite3Constant.createTextConstant(text);
+		}
+		switch (cons.getDataType()) {
+		case NULL:
+			return SQLite3Constant.createNullConstant();
+		case INT:
+			return cons;
+		case REAL:
+			return SQLite3Constant.createIntConstant((long) cons.asDouble());
+		case TEXT:
+			String asString = cons.asString();
+			while (startsWithWhitespace(asString)) {
+				asString = asString.substring(1);
+			}
+			if (!asString.isEmpty() && unprintAbleCharThatLetsBecomeNumberZero(asString)) {
+				return SQLite3Constant.createIntConstant(0);
+			}
+			for (int i = asString.length(); i >= 0; i--) {
+				try {
+					long val = Long.valueOf(asString.substring(0, i));
+					return SQLite3Constant.createIntConstant(val);
+				} catch (Exception e) {
+
+				}
+			}
+			return SQLite3Constant.createIntConstant(0);
+		default:
+			throw new AssertionError();
+		}
+
+	}
+
+	public static SQLite3Constant castToReal(SQLite3Constant cons) {
+		SQLite3Constant numericValue = castToNumeric(cons);
+		if (numericValue.getDataType() == SQLite3DataType.INT) {
+			return SQLite3Constant.createRealConstant(numericValue.asInt());
+		} else {
+			return numericValue;
+		}
+	}
+
 	/**
 	 * Applies numeric affinity to a value.
 	 */
@@ -91,7 +136,6 @@ public class SQLite3Cast {
 	private final static byte RECORD_SEPARATOR = 0x1e;
 	private final static byte UNIT_SEPARATOR = 0x1f;
 	private final static byte SYNCHRONOUS_IDLE = 0x16;
-
 
 	private static boolean unprintAbleCharThatLetsBecomeNumberZero(String s) {
 		// non-printable characters are ignored by Double.valueOf

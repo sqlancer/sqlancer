@@ -91,14 +91,12 @@ public class SQLite3Expression {
 			}, REAL {
 				@Override
 				public SQLite3Constant apply(SQLite3Constant cons) {
-					// TODO Auto-generated method stub
-					return null;
+					return SQLite3Cast.castToReal(cons);
 				}
 			}, INTEGER {
 				@Override
 				public SQLite3Constant apply(SQLite3Constant cons) {
-					// TODO Auto-generated method stub
-					return null;
+					return SQLite3Cast.castToInt(cons);
 				}
 			}, NUMERIC {
 				@Override
