@@ -88,29 +88,33 @@ public class SQLite3Expression {
 					// TODO Auto-generated method stub
 					return null;
 				}
-			}, REAL {
+			},
+			REAL {
 				@Override
 				public SQLite3Constant apply(SQLite3Constant cons) {
 					return SQLite3Cast.castToReal(cons);
 				}
-			}, INTEGER {
+			},
+			INTEGER {
 				@Override
 				public SQLite3Constant apply(SQLite3Constant cons) {
 					return SQLite3Cast.castToInt(cons);
 				}
-			}, NUMERIC {
+			},
+			NUMERIC {
 				@Override
 				public SQLite3Constant apply(SQLite3Constant cons) {
 					return SQLite3Cast.castToNumeric(cons);
 				}
-			}, BINARY {
+			},
+			BINARY {
 				@Override
 				public SQLite3Constant apply(SQLite3Constant cons) {
 					// TODO Auto-generated method stub
 					return null;
 				}
 			};
-			
+
 			public abstract SQLite3Constant apply(SQLite3Constant cons);
 		}
 
@@ -121,7 +125,7 @@ public class SQLite3Expression {
 		public Type getType() {
 			return type;
 		}
-		
+
 	}
 
 	public static class Cast extends SQLite3Expression {
@@ -141,7 +145,7 @@ public class SQLite3Expression {
 		public TypeLiteral getType() {
 			return type;
 		}
-		
+
 		@Override
 		public SQLite3Constant getExpectedValue() {
 			if (expression.getExpectedValue() == null) {
@@ -454,7 +458,81 @@ public class SQLite3Expression {
 			LIKE("LIKE"), GLOB("GLOB"),
 			// MATCH("MATCH"),
 			// REGEXP("REGEXP"),
-			AND("AND"), OR("OR");
+			AND("AND") {
+
+				@Override
+				public SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
+					if (left.getExpectedValue() == null) {
+						if (right.getExpectedValue() == null) {
+							return null;
+						} else {
+							Optional<Boolean> boolVal = SQLite3Cast.isTrue(right.getExpectedValue());
+							if (boolVal.isPresent()) {
+								if (!boolVal.get()) {
+									return SQLite3Constant.createFalse();
+								}
+							} else {
+								return SQLite3Constant.createNullConstant();
+							}
+						}
+					}
+					Optional<Boolean> boolVal = SQLite3Cast.isTrue(left.getExpectedValue());
+					if (boolVal.isPresent()) {
+						if (!boolVal.get()) {
+							return SQLite3Constant.createFalse();
+						}
+					} else {
+						return SQLite3Constant.createNullConstant();
+					}
+					if (right.getExpectedValue() == null) {
+						return null;
+					} else {
+						if (boolVal.isPresent()) {
+							return SQLite3Constant.createBoolean(boolVal.get());
+						} else {
+							return SQLite3Constant.createNullConstant();
+						}
+					}
+				}
+
+			},
+			OR("OR") {
+				@Override
+				public SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
+					if (left.getExpectedValue() == null) {
+						if (right.getExpectedValue() == null) {
+							return null;
+						} else {
+							Optional<Boolean> boolVal = SQLite3Cast.isTrue(right.getExpectedValue());
+							if (boolVal.isPresent() && boolVal.get()) {
+								return SQLite3Constant.createTrue();
+							} else {
+								return null;
+							}
+						}
+					} else {
+						Optional<Boolean> boolVal = SQLite3Cast.isTrue(left.getExpectedValue());
+						if (boolVal.isPresent() && boolVal.get()) {
+							return SQLite3Constant.createTrue();
+						} else {
+							if (right.getExpectedValue() == null) {
+								return null;
+							} else {
+								boolVal = SQLite3Cast.isTrue(right.getExpectedValue());
+								if (boolVal.isPresent()) {
+									return SQLite3Constant.createBoolean(boolVal.get());
+								} else {
+									return SQLite3Constant.createNullConstant();
+								}
+							}
+						}
+					}
+				}
+			};
+
+			public SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
+				return null;
+			}
 
 			private final String textRepresentation[];
 
