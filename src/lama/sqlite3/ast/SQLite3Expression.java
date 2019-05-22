@@ -15,6 +15,21 @@ public class SQLite3Expression {
 		return null;
 	}
 
+	public static enum TypeAffinity {
+		INTEGER, TEXT, BLOB, REAL, NUMERIC, NONE;
+
+		public boolean isNumeric() {
+			return this == INTEGER || this == REAL || this == NUMERIC;
+		}
+	}
+
+	/**
+	 * See https://www.sqlite.org/datatype3.html 3.2
+	 */
+	public TypeAffinity getAffinity() {
+		return TypeAffinity.NONE;
+	}
+
 	public static class Exist extends SQLite3Expression {
 
 		private final SQLite3SelectStatement select;
@@ -155,6 +170,28 @@ public class SQLite3Expression {
 			}
 		}
 
+		@Override
+		/**
+		 * An expression of the form "CAST(expr AS type)" has an affinity that is the
+		 * same as a column with a declared type of "type".
+		 */
+		public TypeAffinity getAffinity() {
+			switch (type.type) {
+			case BINARY:
+				return TypeAffinity.BLOB;
+			case INTEGER:
+				return TypeAffinity.INTEGER;
+			case NUMERIC:
+				return TypeAffinity.NUMERIC;
+			case REAL:
+				return TypeAffinity.REAL;
+			case TEXT:
+				return TypeAffinity.TEXT;
+			default:
+				throw new AssertionError();
+			}
+		}
+
 	}
 
 	public static class BetweenOperation extends SQLite3Expression {
@@ -256,7 +293,12 @@ public class SQLite3Expression {
 						constant = SQLite3Cast.castToNumeric(constant);
 					}
 					if (constant.getDataType() == SQLite3DataType.INT) {
-						return SQLite3Constant.createIntConstant(-constant.asInt());
+						if (constant.asInt() == Integer.MIN_VALUE) {
+							// SELECT - -9223372036854775808; -- 9.22337203685478e+18
+							return SQLite3Constant.createRealConstant(-(double) Integer.MIN_VALUE);
+						} else {
+							return SQLite3Constant.createIntConstant(-constant.asInt());
+						}
 					}
 					if (constant.getDataType() == SQLite3DataType.REAL) {
 						return SQLite3Constant.createRealConstant(-constant.asDouble());
@@ -450,10 +492,52 @@ public class SQLite3Expression {
 	public static class BinaryOperation extends SQLite3Expression {
 
 		public enum BinaryOperator {
-			CONCATENATE("||"), MULTIPLY("*"), DIVIDE("/"), // division by zero results in zero
+			CONCATENATE("||") {
+				@Override
+				public SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
+					if (left.getExpectedValue() == null || right.getExpectedValue() == null) {
+						return null;
+					}
+					return null;
+					/*
+					 * String leftStr = left.getStringRepresentation(); String rightStr =
+					 * right.getStringRepresentation(); return
+					 * SQLite3Constant.createTextConstant(leftStr + rightStr);
+					 */
+				}
+			},
+			MULTIPLY("*"), DIVIDE("/"), // division by zero results in zero
 			REMAINDER("%"), PLUS("+"), MINUS("-"), SHIFT_LEFT("<<"), SHIFT_RIGHT(">>"), ARITHMETIC_AND("&"),
 			ARITHMETIC_OR("|"), SMALLER("<"), SMALLER_EQUALS("<="), GREATER(">"), GREATER_EQUALS(">="),
-			EQUALS("=", "=="), NOT_EQUALS("!=", "<>"), IS("IS"), IS_NOT("IS NOT"),
+			EQUALS("=", "==") {
+				@Override
+				public SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
+					// If one operand has INTEGER, REAL or NUMERIC affinity and the other operand
+					// has TEXT or BLOB or no affinity then NUMERIC affinity is applied to other
+					// operand.
+					if (left.getAffinity().isNumeric() && (right.getAffinity() == TypeAffinity.TEXT
+							|| right.getAffinity() == TypeAffinity.BLOB
+							|| right.getAffinity() == TypeAffinity.NONE)) {
+						right = right.applyNumericAffinity();
+					} else if (right.getAffinity().isNumeric()
+							&& (left.getAffinity() == TypeAffinity.TEXT
+									|| left.getAffinity() == TypeAffinity.BLOB)
+							|| left.getAffinity() == TypeAffinity.NONE) {
+						left = left.applyNumericAffinity();
+					}
+
+					// If one operand has TEXT affinity and the other has no affinity, then TEXT
+					// affinity is applied to the other operand.
+					if (left.getAffinity() == TypeAffinity.TEXT && right.getAffinity() == TypeAffinity.NONE) {
+						right = right.applyTextAffinity();
+					} else if (right.getAffinity() == TypeAffinity.TEXT
+							&& left.getAffinity() == TypeAffinity.NONE) {
+						left = left.applyTextAffinity();
+					}
+					return left.applyEquals(right);
+				}
+				
+			}, NOT_EQUALS("!=", "<>"), IS("IS"), IS_NOT("IS NOT"),
 			// IN("IN"),
 			LIKE("LIKE"), GLOB("GLOB"),
 			// MATCH("MATCH"),
@@ -643,6 +727,29 @@ public class SQLite3Expression {
 		@Override
 		public SQLite3Constant getExpectedValue() {
 			return value;
+		}
+
+		/*
+		 * When an expression is a simple reference to a column of a real table (not a
+		 * VIEW or subquery) then the expression has the same affinity as the table
+		 * column.
+		 */
+		@Override
+		public TypeAffinity getAffinity() {
+			switch (column.getColumnType()) {
+			case BINARY:
+				return TypeAffinity.BLOB;
+			case INT:
+				return TypeAffinity.INTEGER;
+			case NONE:
+				return TypeAffinity.NONE;
+			case REAL:
+				return TypeAffinity.REAL;
+			case TEXT:
+				return TypeAffinity.TEXT;
+			default:
+				throw new AssertionError(column);
+			}
 		}
 
 	}

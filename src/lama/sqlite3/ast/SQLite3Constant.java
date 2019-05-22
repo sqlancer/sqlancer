@@ -1,6 +1,5 @@
 package lama.sqlite3.ast;
 
-import java.awt.event.KeyEvent;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,7 +12,6 @@ import java.util.stream.Collectors;
 import lama.Randomly;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
-import lama.sqlite3.gen.QueryGenerator;
 import lama.sqlite3.gen.SQLite3Cast;
 import lama.sqlite3.schema.SQLite3DataType;
 
@@ -50,6 +48,11 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 			} else {
 				return getReversed(values);
 			}
+		}
+		
+		@Override
+		public SQLite3Constant applyEquals(SQLite3Constant right) {
+			return SQLite3Constant.createNullConstant();
 		}
 
 		@Override
@@ -95,6 +98,19 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		@Override
 		public SQLite3DataType getDataType() {
 			return SQLite3DataType.INT;
+		}
+		
+		@Override
+		public SQLite3Constant applyEquals(SQLite3Constant right) {
+			if (right instanceof SQLite3RealConstant) {
+				BigDecimal otherColumnValue = BigDecimal.valueOf(right.asDouble());
+				BigDecimal thisColumnValue = BigDecimal.valueOf(value);
+				return SQLite3Constant.createBoolean(thisColumnValue.compareTo(otherColumnValue) == 0);
+			} else if (right instanceof SQLite3IntConstant) {
+				return SQLite3Constant.createBoolean(value == right.asInt());
+			} else {
+				return SQLite3Constant.createFalse();
+			}
 		}
 
 		@Override
@@ -172,6 +188,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		String getStringRepresentation() {
 			return String.valueOf(value);
 		}
+
 	}
 
 	public static class SQLite3RealConstant extends SQLite3Constant {
@@ -191,7 +208,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		public double asDouble() {
 			return value;
 		}
-
+		
 		@Override
 		public Object getValue() {
 			return value;
@@ -200,6 +217,19 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		@Override
 		public SQLite3DataType getDataType() {
 			return SQLite3DataType.REAL;
+		}
+		
+		@Override
+		public SQLite3Constant applyEquals(SQLite3Constant right) {
+			if (right instanceof SQLite3RealConstant) {
+				return SQLite3Constant.createBoolean(value == right.asDouble());
+			} else if (right instanceof SQLite3IntConstant) {
+				BigDecimal thisColumnValue = BigDecimal.valueOf(value);
+				BigDecimal otherColumnValue = BigDecimal.valueOf(right.asInt());
+				return SQLite3Constant.createBoolean(thisColumnValue.compareTo(otherColumnValue) == 0);
+			} else {
+				return SQLite3Constant.createFalse();
+			}
 		}
 
 		@Override
@@ -379,6 +409,13 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 				return getReversed(values);
 			}
 		}
+		
+		@Override
+		public SQLite3Constant applyEquals(SQLite3Constant right) {
+			// TODO implement collate
+			return null;
+		}
+
 
 		@Override
 		public SQLite3Constant applyNumericAffinity() {
@@ -510,6 +547,12 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 			return String.format("x'%s'", hexRepr);
 		}
 
+		@Override
+		public SQLite3Constant applyEquals(SQLite3Constant right) {
+			// FIXME
+			return null;
+		}
+
 	}
 
 	abstract String getStringRepresentation();
@@ -590,5 +633,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 	public static SQLite3Constant createBoolean(boolean tr) {
 		return new SQLite3Constant.SQLite3IntConstant(tr ? 1 : 0);
 	}
+
+	public abstract SQLite3Constant applyEquals(SQLite3Constant right);
 
 }
