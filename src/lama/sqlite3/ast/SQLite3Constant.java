@@ -101,13 +101,22 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		public List<BinaryOperator> compare(SQLite3Constant cons, boolean shouldBeTrue) {
 			List<BinaryOperator> values;
 			if (cons instanceof SQLite3RealConstant) {
-				double otherColumnValue = cons.asDouble();
-				if (value > otherColumnValue) {
-					values = greaterThanList();
-				} else if (value < otherColumnValue) {
+				if (cons.asDouble() == Double.POSITIVE_INFINITY) {
 					values = smallerThanList();
+				} else if (cons.asDouble() == Double.NEGATIVE_INFINITY) {
+					values = greaterThanList();
+				} else if (Double.isNaN(cons.asDouble())) {
+					values = Collections.emptyList();
 				} else {
-					values = equalsList(false);
+					BigDecimal otherColumnValue = BigDecimal.valueOf(cons.asDouble());
+					BigDecimal thisColumnValue = BigDecimal.valueOf(value);
+					if (thisColumnValue.compareTo(otherColumnValue) > 0) {
+						values = greaterThanList();
+					} else if (thisColumnValue.compareTo(otherColumnValue) < 0) {
+						values = smallerThanList();
+					} else {
+						values = equalsList(false);
+					}
 				}
 			} else if (cons instanceof SQLite3NullConstant) {
 				// SELECT 0 IS NULL; -- 0
@@ -216,13 +225,22 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 				// SELECT 0 > NULL; -- NULL
 				values = Arrays.asList(BinaryOperator.IS_NOT);
 			} else if (cons instanceof SQLite3IntConstant) {
-				long otherColumnValue = cons.asInt();
-				if (value > otherColumnValue) {
+				if (value == Double.POSITIVE_INFINITY) {
 					values = greaterThanList();
-				} else if (value < otherColumnValue) {
+				} else if (value == Double.NEGATIVE_INFINITY) {
 					values = smallerThanList();
+				} else if (Double.isNaN(value)) {
+					values = Collections.emptyList();
 				} else {
-					values = equalsList(false);
+					BigDecimal otherColumnValue = BigDecimal.valueOf(cons.asInt());
+					BigDecimal thisColumnValue = BigDecimal.valueOf(value);
+					if (thisColumnValue.compareTo(otherColumnValue) > 0) {
+						values = greaterThanList();
+					} else if (thisColumnValue.compareTo(otherColumnValue) < 0) {
+						values = smallerThanList();
+					} else {
+						values = equalsList(false);
+					}
 				}
 			} else if (cons instanceof SQLite3TextConstant) {
 				// An INTEGER or REAL value is less than any TEXT or BLOB value.
@@ -364,7 +382,8 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 
 		@Override
 		public SQLite3Constant applyNumericAffinity() {
-			Pattern leadingDigitPattern = Pattern.compile("[-+]?((\\d(\\d)*(\\.(\\d)*)?)|\\.(\\d)(\\d)*)([Ee][+-]?(\\d)(\\d)*)?");
+			Pattern leadingDigitPattern = Pattern
+					.compile("[-+]?((\\d(\\d)*(\\.(\\d)*)?)|\\.(\\d)(\\d)*)([Ee][+-]?(\\d)(\\d)*)?");
 			String trimmedString = text.trim();
 			if (trimmedString.isEmpty()) {
 				return this;
@@ -468,7 +487,21 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 
 		@Override
 		public SQLite3Constant applyTextAffinity() {
-			return SQLite3Constant.createTextConstant(new String(bytes));
+			if (bytes.length == 0) {
+				return this;
+			} else {
+				StringBuilder sb = new StringBuilder();
+				for (byte b : bytes) {
+					if (isPrintableChar(b)) {
+						sb.append(b);
+					}
+				}
+				return SQLite3Constant.createTextConstant(sb.toString());
+			}
+		}
+
+		public boolean isPrintableChar(byte b) {
+			return b >= 32;
 		}
 
 		@Override
