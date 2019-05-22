@@ -346,8 +346,6 @@ public class SQLite3Visitor {
 			visit((Cast) expr);
 		} else if (expr instanceof Subquery) {
 			visit((Subquery) expr);
-		} else if (expr instanceof TypeLiteral) {
-			visit((TypeLiteral) expr);
 		} else if (expr instanceof Join) {
 			visit((Join) expr);
 		} else if (expr instanceof SQLite3SelectStatement) {

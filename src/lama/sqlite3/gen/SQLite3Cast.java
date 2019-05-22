@@ -37,6 +37,8 @@ public class SQLite3Cast {
 			value = SQLite3Constant.createTextConstant(text);
 		}
 		switch (value.getDataType()) {
+		case NULL:
+			return SQLite3Constant.createNullConstant();
 		case INT:
 		case REAL:
 			return value;

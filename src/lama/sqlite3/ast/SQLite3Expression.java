@@ -77,12 +77,43 @@ public class SQLite3Expression {
 
 	}
 
-	public static class TypeLiteral extends SQLite3Expression {
+	public static class TypeLiteral {
 
 		private final Type type;
 
 		public static enum Type {
-			TEXT, REAL, INTEGER, NUMERIC, BINARY
+			TEXT {
+				@Override
+				public SQLite3Constant apply(SQLite3Constant cons) {
+					// TODO Auto-generated method stub
+					return null;
+				}
+			}, REAL {
+				@Override
+				public SQLite3Constant apply(SQLite3Constant cons) {
+					// TODO Auto-generated method stub
+					return null;
+				}
+			}, INTEGER {
+				@Override
+				public SQLite3Constant apply(SQLite3Constant cons) {
+					// TODO Auto-generated method stub
+					return null;
+				}
+			}, NUMERIC {
+				@Override
+				public SQLite3Constant apply(SQLite3Constant cons) {
+					return SQLite3Cast.castToNumeric(cons);
+				}
+			}, BINARY {
+				@Override
+				public SQLite3Constant apply(SQLite3Constant cons) {
+					// TODO Auto-generated method stub
+					return null;
+				}
+			};
+			
+			public abstract SQLite3Constant apply(SQLite3Constant cons);
 		}
 
 		public TypeLiteral(Type type) {
@@ -92,15 +123,15 @@ public class SQLite3Expression {
 		public Type getType() {
 			return type;
 		}
-
+		
 	}
 
 	public static class Cast extends SQLite3Expression {
 
-		private final SQLite3Expression type;
+		private final TypeLiteral type;
 		private final SQLite3Expression expression;
 
-		public Cast(SQLite3Expression typeofExpr, SQLite3Expression expression) {
+		public Cast(TypeLiteral typeofExpr, SQLite3Expression expression) {
 			this.type = typeofExpr;
 			this.expression = expression;
 		}
@@ -109,8 +140,17 @@ public class SQLite3Expression {
 			return expression;
 		}
 
-		public SQLite3Expression getType() {
+		public TypeLiteral getType() {
 			return type;
+		}
+		
+		@Override
+		public SQLite3Constant getExpectedValue() {
+			if (expression.getExpectedValue() == null) {
+				return null;
+			} else {
+				return type.type.apply(expression.getExpectedValue());
+			}
 		}
 
 	}
