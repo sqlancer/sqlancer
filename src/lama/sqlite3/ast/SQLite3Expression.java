@@ -293,9 +293,9 @@ public class SQLite3Expression {
 						constant = SQLite3Cast.castToNumeric(constant);
 					}
 					if (constant.getDataType() == SQLite3DataType.INT) {
-						if (constant.asInt() == Integer.MIN_VALUE) {
+						if (constant.asInt() == Long.MIN_VALUE) {
 							// SELECT - -9223372036854775808; -- 9.22337203685478e+18
-							return SQLite3Constant.createRealConstant(-(double) Integer.MIN_VALUE);
+							return SQLite3Constant.createRealConstant(-(double) Long.MIN_VALUE);
 						} else {
 							return SQLite3Constant.createIntConstant(-constant.asInt());
 						}
