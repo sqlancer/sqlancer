@@ -9,6 +9,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.xml.bind.DatatypeConverter;
+
 import lama.Randomly;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
@@ -588,6 +590,11 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 	public static SQLite3Constant createBinaryConstant(byte[] val) {
 		return new SQLite3BinaryConstant(val);
 	}
+	
+	
+	public static SQLite3Constant createBinaryConstant(String val) {
+		return new SQLite3BinaryConstant(SQLite3Visitor.hexStringToByteArray(val));
+	}
 
 	public static SQLite3Constant createRealConstant(double real) {
 		return new SQLite3RealConstant(real);
@@ -635,5 +642,6 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 	}
 
 	public abstract SQLite3Constant applyEquals(SQLite3Constant right);
+
 
 }

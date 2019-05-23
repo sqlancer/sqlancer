@@ -1,6 +1,7 @@
 package lama.sqlite3.gen;
 
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.schema.SQLite3DataType;
@@ -51,8 +52,12 @@ public class SQLite3Cast {
 			}
 			for (int i = asString.length(); i >= 0; i--) {
 				try {
-					long val = Long.valueOf(asString.substring(0, i));
-					return SQLite3Constant.createIntConstant(val);
+					String substring = asString.substring(0, i);
+					Pattern p = Pattern.compile("[+-]?\\d\\d*");
+					if (p.matcher(substring).matches()) {
+						long val = Long.valueOf(substring);
+						return SQLite3Constant.createIntConstant(val);
+					}
 				} catch (Exception e) {
 
 				}
