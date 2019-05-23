@@ -110,6 +110,8 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 				return SQLite3Constant.createBoolean(thisColumnValue.compareTo(otherColumnValue) == 0);
 			} else if (right instanceof SQLite3IntConstant) {
 				return SQLite3Constant.createBoolean(value == right.asInt());
+			} else if (right instanceof SQLite3NullConstant) {
+				return SQLite3Constant.createNullConstant();
 			} else {
 				return SQLite3Constant.createFalse();
 			}
@@ -229,6 +231,8 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 				BigDecimal thisColumnValue = BigDecimal.valueOf(value);
 				BigDecimal otherColumnValue = BigDecimal.valueOf(right.asInt());
 				return SQLite3Constant.createBoolean(thisColumnValue.compareTo(otherColumnValue) == 0);
+			} else if (right instanceof SQLite3NullConstant) {
+				return SQLite3Constant.createNullConstant();
 			} else {
 				return SQLite3Constant.createFalse();
 			}

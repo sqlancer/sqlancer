@@ -508,36 +508,60 @@ public class SQLite3Expression {
 			},
 			MULTIPLY("*"), DIVIDE("/"), // division by zero results in zero
 			REMAINDER("%"), PLUS("+"), MINUS("-"), SHIFT_LEFT("<<"), SHIFT_RIGHT(">>"), ARITHMETIC_AND("&"),
-			ARITHMETIC_OR("|"), SMALLER("<"), SMALLER_EQUALS("<="), GREATER(">"), GREATER_EQUALS(">="),
+			ARITHMETIC_OR("|"), SMALLER("<") {
+				@Override
+				boolean isComparisonOperation() {
+					return true;
+				}
+			},
+			SMALLER_EQUALS("<=") {
+				@Override
+				boolean isComparisonOperation() {
+					return true;
+				}
+			},
+			GREATER(">") {
+				@Override
+				boolean isComparisonOperation() {
+					return true;
+				}
+			},
+			GREATER_EQUALS(">=") {
+				@Override
+				boolean isComparisonOperation() {
+					return true;
+				}
+			},
 			EQUALS("=", "==") {
 				@Override
 				public SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
-					// If one operand has INTEGER, REAL or NUMERIC affinity and the other operand
-					// has TEXT or BLOB or no affinity then NUMERIC affinity is applied to other
-					// operand.
-					if (left.getAffinity().isNumeric() && (right.getAffinity() == TypeAffinity.TEXT
-							|| right.getAffinity() == TypeAffinity.BLOB
-							|| right.getAffinity() == TypeAffinity.NONE)) {
-						right = right.applyNumericAffinity();
-					} else if (right.getAffinity().isNumeric()
-							&& (left.getAffinity() == TypeAffinity.TEXT
-									|| left.getAffinity() == TypeAffinity.BLOB)
-							|| left.getAffinity() == TypeAffinity.NONE) {
-						left = left.applyNumericAffinity();
-					}
-
-					// If one operand has TEXT affinity and the other has no affinity, then TEXT
-					// affinity is applied to the other operand.
-					if (left.getAffinity() == TypeAffinity.TEXT && right.getAffinity() == TypeAffinity.NONE) {
-						right = right.applyTextAffinity();
-					} else if (right.getAffinity() == TypeAffinity.TEXT
-							&& left.getAffinity() == TypeAffinity.NONE) {
-						left = left.applyTextAffinity();
-					}
 					return left.applyEquals(right);
 				}
-				
-			}, NOT_EQUALS("!=", "<>"), IS("IS"), IS_NOT("IS NOT"),
+
+				@Override
+				boolean isComparisonOperation() {
+					return true;
+				}
+
+			},
+			NOT_EQUALS("!=", "<>") {
+				@Override
+				boolean isComparisonOperation() {
+					return true;
+				}
+			},
+			IS("IS") {
+				@Override
+				boolean isComparisonOperation() {
+					return true;
+				}
+			},
+			IS_NOT("IS NOT") {
+				@Override
+				boolean isComparisonOperation() {
+					return true;
+				}
+			},
 			// IN("IN"),
 			LIKE("LIKE"), GLOB("GLOB"),
 			// MATCH("MATCH"),
@@ -546,76 +570,136 @@ public class SQLite3Expression {
 
 				@Override
 				public SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
-					if (left.getExpectedValue() == null) {
-						if (right.getExpectedValue() == null) {
-							return null;
-						} else {
-							Optional<Boolean> boolVal = SQLite3Cast.isTrue(right.getExpectedValue());
-							if (boolVal.isPresent()) {
-								if (!boolVal.get()) {
-									return SQLite3Constant.createFalse();
-								}
-							} else {
-								return SQLite3Constant.createNullConstant();
-							}
-						}
-					}
-					Optional<Boolean> boolVal = SQLite3Cast.isTrue(left.getExpectedValue());
-					if (boolVal.isPresent()) {
-						if (!boolVal.get()) {
-							return SQLite3Constant.createFalse();
-						}
-					} else {
-						return SQLite3Constant.createNullConstant();
-					}
-					if (right.getExpectedValue() == null) {
+
+					if (left.getExpectedValue() == null || right.getExpectedValue() == null) {
 						return null;
 					} else {
-						if (boolVal.isPresent()) {
-							return SQLite3Constant.createBoolean(boolVal.get());
-						} else {
+						Optional<Boolean> leftBoolVal = SQLite3Cast.isTrue(left.getExpectedValue());
+						Optional<Boolean> rightBoolVal = SQLite3Cast.isTrue(right.getExpectedValue());
+						if (leftBoolVal.isPresent() && !leftBoolVal.get()) {
+							return SQLite3Constant.createFalse();
+						} else if (rightBoolVal.isPresent() && !rightBoolVal.get()) {
+							return SQLite3Constant.createFalse();
+						} else if (!rightBoolVal.isPresent() || !leftBoolVal.isPresent()) {
 							return SQLite3Constant.createNullConstant();
+						} else {
+							return SQLite3Constant.createTrue();
 						}
 					}
+					// if (left.getExpectedValue() == null) {
+//						if (right.getExpectedValue() == null) {
+//							return null;
+//						} else {
+//							Optional<Boolean> boolVal = SQLite3Cast.isTrue(right.getExpectedValue());
+//							if (boolVal.isPresent()) {
+//								if (!boolVal.get()) {
+//									return SQLite3Constant.createFalse();
+//								}
+//							} else {
+//								return SQLite3Constant.createNullConstant();
+//							}
+//						}
+//					}
+//					Optional<Boolean> boolVal = SQLite3Cast.isTrue(left.getExpectedValue());
+//					if (boolVal.isPresent()) {
+//						if (!boolVal.get()) {
+//							return SQLite3Constant.createFalse();
+//						}
+//					} else {
+//						return SQLite3Constant.createNullConstant();
+//					}
+//					if (right.getExpectedValue() == null) {
+//						return null;
+//					} else {
+//						if (boolVal.isPresent()) {
+//							return SQLite3Constant.createBoolean(boolVal.get());
+//						} else {
+//							return SQLite3Constant.createNullConstant();
+//						}
+//					}
 				}
 
 			},
 			OR("OR") {
 				@Override
 				public SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
-					if (left.getExpectedValue() == null) {
-						if (right.getExpectedValue() == null) {
-							return null;
-						} else {
-							Optional<Boolean> boolVal = SQLite3Cast.isTrue(right.getExpectedValue());
-							if (boolVal.isPresent() && boolVal.get()) {
-								return SQLite3Constant.createTrue();
-							} else {
-								return null;
-							}
-						}
+					if (left.getExpectedValue() == null || right.getExpectedValue() == null) {
+						return null;
 					} else {
-						Optional<Boolean> boolVal = SQLite3Cast.isTrue(left.getExpectedValue());
-						if (boolVal.isPresent() && boolVal.get()) {
+						Optional<Boolean> leftBoolVal = SQLite3Cast.isTrue(left.getExpectedValue());
+						Optional<Boolean> rightBoolVal = SQLite3Cast.isTrue(right.getExpectedValue());
+						if (leftBoolVal.isPresent() && leftBoolVal.get()) {
 							return SQLite3Constant.createTrue();
+						} else if (rightBoolVal.isPresent() && rightBoolVal.get()) {
+							return SQLite3Constant.createTrue();
+						} else if (!rightBoolVal.isPresent() || !leftBoolVal.isPresent()) {
+							return SQLite3Constant.createNullConstant();
 						} else {
-							if (right.getExpectedValue() == null) {
-								return null;
-							} else {
-								boolVal = SQLite3Cast.isTrue(right.getExpectedValue());
-								if (boolVal.isPresent()) {
-									return SQLite3Constant.createBoolean(boolVal.get());
-								} else {
-									return SQLite3Constant.createNullConstant();
-								}
-							}
+							return SQLite3Constant.createFalse();
 						}
 					}
+//					if (left.getExpectedValue() == null) {
+//						if (right.getExpectedValue() == null) {
+//							return null;
+//						} else {
+//							Optional<Boolean> boolVal = SQLite3Cast.isTrue(right.getExpectedValue());
+//							if (boolVal.isPresent() && boolVal.get()) {
+//								return SQLite3Constant.createTrue();
+//							} else {
+//								return null;
+//							}
+//						}
+//					} else {
+//						Optional<Boolean> boolVal = SQLite3Cast.isTrue(left.getExpectedValue());
+//						if (boolVal.isPresent() && boolVal.get()) {
+//							return SQLite3Constant.createTrue();
+//						} else {
+//							if (right.getExpectedValue() == null) {
+//								return null;
+//							} else {
+//								boolVal = SQLite3Cast.isTrue(right.getExpectedValue());
+//								if (boolVal.isPresent()) {
+//									return SQLite3Constant.createBoolean(boolVal.get());
+//								} else {
+//									return SQLite3Constant.createNullConstant();
+//								}
+//							}
+//						}
+//					}
 				}
 			};
 
-			public SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
+			public SQLite3Constant applyOperand(SQLite3Constant left, SQLite3Constant right) {
+				if (isComparisonOperation()) {
+					// If one operand has INTEGER, REAL or NUMERIC affinity and the other operand
+					// has TEXT or BLOB or no affinity then NUMERIC affinity is applied to other
+					// operand.
+					if (left.getAffinity().isNumeric() && (right.getAffinity() == TypeAffinity.TEXT
+							|| right.getAffinity() == TypeAffinity.BLOB || right.getAffinity() == TypeAffinity.NONE)) {
+						right = right.applyNumericAffinity();
+					} else if (right.getAffinity().isNumeric()
+							&& (left.getAffinity() == TypeAffinity.TEXT || left.getAffinity() == TypeAffinity.BLOB)
+							|| left.getAffinity() == TypeAffinity.NONE) {
+						left = left.applyNumericAffinity();
+					}
+
+					// If one operand has TEXT affinity and the other has no affinity, then TEXT
+					// affinity is applied to the other operand.
+					if (left.getAffinity() == TypeAffinity.TEXT && right.getAffinity() == TypeAffinity.NONE) {
+						right = right.applyTextAffinity();
+					} else if (right.getAffinity() == TypeAffinity.TEXT && left.getAffinity() == TypeAffinity.NONE) {
+						left = left.applyTextAffinity();
+					}
+				}
+				return apply(left, right);
+			}
+
+			SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
 				return null;
+			}
+
+			boolean isComparisonOperation() {
+				return false;
 			}
 
 			private final String textRepresentation[];
@@ -676,6 +760,14 @@ public class SQLite3Expression {
 
 		public SQLite3Expression getRight() {
 			return right;
+		}
+
+		@Override
+		public SQLite3Constant getExpectedValue() {
+			if (left.getExpectedValue() == null || right.getExpectedValue() == null) {
+				return null;
+			}
+			return operation.applyOperand(left.getExpectedValue(), right.getExpectedValue());
 		}
 
 	}
