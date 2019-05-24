@@ -100,8 +100,7 @@ public class SQLite3Expression {
 			TEXT {
 				@Override
 				public SQLite3Constant apply(SQLite3Constant cons) {
-					// TODO Auto-generated method stub
-					return null;
+					return SQLite3Cast.castToText(cons);
 				}
 			},
 			REAL {
@@ -315,8 +314,11 @@ public class SQLite3Expression {
 			NEGATE("~") {
 				@Override
 				public SQLite3Constant apply(SQLite3Constant constant) {
-					// TODO implement me
-					return null;
+					SQLite3Constant intValue = SQLite3Cast.castToInt(constant);
+					if (intValue.isNull()) {
+						return intValue;
+					}
+					return SQLite3Constant.createIntConstant(~intValue.asInt());
 				}
 			},
 			NOT("NOT") {
@@ -498,7 +500,15 @@ public class SQLite3Expression {
 					if (left.getExpectedValue() == null || right.getExpectedValue() == null) {
 						return null;
 					}
-					return null;
+					if (left.getExpectedValue().isNull() || right.getExpectedValue().isNull()) {
+						return SQLite3Constant.createNullConstant();
+					}
+					SQLite3Constant leftText = SQLite3Cast.castToText(left);
+					SQLite3Constant rightText = SQLite3Cast.castToText(right);
+					if (leftText == null || rightText == null) {
+						return null;
+					}
+					return SQLite3Constant.createTextConstant(leftText.asString() + rightText.asString());
 					/*
 					 * String leftStr = left.getStringRepresentation(); String rightStr =
 					 * right.getStringRepresentation(); return
@@ -669,25 +679,25 @@ public class SQLite3Expression {
 				}
 			};
 
-			public SQLite3Constant applyOperand(SQLite3Constant left, SQLite3Constant right) {
+			public SQLite3Constant applyOperand(SQLite3Constant left, TypeAffinity leftAffinity, SQLite3Constant right, TypeAffinity rightAffinity) {
 				if (isComparisonOperation()) {
 					// If one operand has INTEGER, REAL or NUMERIC affinity and the other operand
 					// has TEXT or BLOB or no affinity then NUMERIC affinity is applied to other
 					// operand.
-					if (left.getAffinity().isNumeric() && (right.getAffinity() == TypeAffinity.TEXT
-							|| right.getAffinity() == TypeAffinity.BLOB || right.getAffinity() == TypeAffinity.NONE)) {
+					if (leftAffinity.isNumeric() && (rightAffinity == TypeAffinity.TEXT
+							|| rightAffinity == TypeAffinity.BLOB || rightAffinity == TypeAffinity.NONE)) {
 						right = right.applyNumericAffinity();
-					} else if (right.getAffinity().isNumeric()
-							&& (left.getAffinity() == TypeAffinity.TEXT || left.getAffinity() == TypeAffinity.BLOB)
-							|| left.getAffinity() == TypeAffinity.NONE) {
+					} else if (rightAffinity.isNumeric()
+							&& (leftAffinity == TypeAffinity.TEXT || leftAffinity == TypeAffinity.BLOB)
+							|| leftAffinity == TypeAffinity.NONE) {
 						left = left.applyNumericAffinity();
 					}
 
 					// If one operand has TEXT affinity and the other has no affinity, then TEXT
 					// affinity is applied to the other operand.
-					if (left.getAffinity() == TypeAffinity.TEXT && right.getAffinity() == TypeAffinity.NONE) {
+					if (leftAffinity == TypeAffinity.TEXT && rightAffinity == TypeAffinity.NONE) {
 						right = right.applyTextAffinity();
-					} else if (right.getAffinity() == TypeAffinity.TEXT && left.getAffinity() == TypeAffinity.NONE) {
+					} else if (rightAffinity == TypeAffinity.TEXT && leftAffinity == TypeAffinity.NONE) {
 						left = left.applyTextAffinity();
 					}
 				}
@@ -767,7 +777,7 @@ public class SQLite3Expression {
 			if (left.getExpectedValue() == null || right.getExpectedValue() == null) {
 				return null;
 			}
-			return operation.applyOperand(left.getExpectedValue(), right.getExpectedValue());
+			return operation.applyOperand(left.getExpectedValue(), left.getAffinity(), right.getExpectedValue(), right.getAffinity());
 		}
 
 	}
@@ -843,7 +853,7 @@ public class SQLite3Expression {
 				throw new AssertionError(column);
 			}
 		}
-
+		
 	}
 
 }

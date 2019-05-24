@@ -1,5 +1,6 @@
 package lama.sqlite3.gen;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -165,6 +166,30 @@ public class SQLite3Cast {
 			}
 		}
 		return false;
+	}
+
+	public static SQLite3Constant castToText(SQLite3Constant cons) {
+		if (cons.getDataType() == SQLite3DataType.TEXT) {
+			return cons;
+		}
+		if (cons.getDataType() == SQLite3DataType.NULL) {
+			return cons;
+		}
+//		if (cons.getDataType() == SQLite3DataType.REAL) {
+//			return SQLite3Constant.createTextConstant(String.valueOf(cons.asDouble()));
+//		}
+		if (cons.getDataType() == SQLite3DataType.INT) {
+			return SQLite3Constant.createTextConstant(String.valueOf(cons.asInt()));
+		}
+//		if (cons.getDataType() == SQLite3DataType.BINARY) {
+//			try {
+//				return SQLite3Constant.createTextConstant(new String(cons.asBinary(), "UTF-8").replaceAll("\\p{C}", ""));
+//			} catch (UnsupportedEncodingException e) {
+//				throw new AssertionError(e);
+//			}
+//		}
+		return null;
+//		throw new AssertionError();
 	}
 
 }
