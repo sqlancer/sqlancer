@@ -14,7 +14,7 @@ import lama.Main;
 import lama.Main.StateLogger;
 import lama.Main.StateToReproduce;
 import lama.Randomly;
-import lama.sqlite3.SQLite3Visitor;
+import lama.sqlite3.SQLite3ToStringVisitor;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
@@ -112,6 +112,7 @@ public class QueryGenerator {
 				.collect(Collectors.joining(", "));
 		SQLite3Expression whereClause = generateWhereClauseThatContainsRowValue(columns, rw);
 		selectStatement.setWhereClause(whereClause);
+		state.whereClause = selectStatement;
 		List<SQLite3Expression> groupByClause = generateGroupByClause(columns, rw);
 		selectStatement.setGroupByClause(groupByClause);
 		SQLite3Expression limitClause = generateLimit();
@@ -122,7 +123,7 @@ public class QueryGenerator {
 		}
 		List<SQLite3Expression> orderBy = generateOrderBy(columns);
 		selectStatement.setOrderByClause(orderBy);
-		SQLite3Visitor visitor = new SQLite3Visitor();
+		SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
 		visitor.visit(selectStatement);
 		String queryString = visitor.get();
 		return queryString;
@@ -150,7 +151,7 @@ public class QueryGenerator {
 		sb.append(queryString);
 		sb.append(")");
 		String resultingQueryString = sb.toString();
-		state.query = resultingQueryString;
+		state.queryString = resultingQueryString;
 		try (ResultSet result = createStatement.executeQuery(resultingQueryString)) {
 			boolean isContainedIn = !result.isClosed();
 			createStatement.close();

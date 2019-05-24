@@ -26,8 +26,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import lama.Main.StateToReproduce.ErrorKind;
+import lama.sqlite3.SQLite3ExpectedValueVisitor;
 import lama.sqlite3.SQLite3Helper;
+import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Constant;
+import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.gen.QueryGenerator;
 import lama.sqlite3.gen.SQLite3AlterTable;
 import lama.sqlite3.gen.SQLite3AnalyzeGenerator;
@@ -211,7 +214,7 @@ public class Main {
 		private ErrorKind errorKind;
 
 		private final List<Query> statements = new ArrayList<>();
-		public String query;
+		public String queryString;
 
 		private String databaseName;
 		public Map<Column, SQLite3Constant> randomRowValues;
@@ -226,6 +229,8 @@ public class Main {
 
 		public String queryTargetedColumnsString;
 
+		public SQLite3Expression whereClause;
+		
 		public StateToReproduce(String databaseName) {
 			this.databaseName = databaseName;
 
@@ -248,8 +253,12 @@ public class Main {
 			return statements;
 		}
 
-		public String getQuery() {
-			return query;
+		public String getQueryString() {
+			return queryString;
+		}
+		
+		public SQLite3Expression getWhereClause() {
+			return whereClause;
 		}
 
 		public Map<Column, SQLite3Constant> getRandomRowValues() {
@@ -268,8 +277,8 @@ public class Main {
 			if (statements != null) {
 				sb.append(statements.stream().map(q -> q.getQueryString()).collect(Collectors.joining(";\n")) + "\n");
 			}
-			if (query != null) {
-				sb.append(query + ";\n");
+			if (queryString != null) {
+				sb.append(queryString + ";\n");
 			}
 			return sb.toString();
 		}
@@ -590,7 +599,7 @@ public class Main {
 								}
 							} else {
 								try (Statement s = con.createStatement()) {
-									try (ResultSet result = s.executeQuery(state.query)) {
+									try (ResultSet result = s.executeQuery(state.queryString)) {
 										boolean isContainedIn = !result.isClosed();
 										if (isContainedIn) {
 											continue retry;
