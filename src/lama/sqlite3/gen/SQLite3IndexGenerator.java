@@ -10,7 +10,7 @@ import lama.Main.StateToReproduce;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.sqlite3.SQLite3Visitor;
+import lama.sqlite3.SQLite3ToStringVisitor;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.schema.SQLite3Schema;
 import lama.sqlite3.schema.SQLite3Schema.Column;
@@ -84,7 +84,7 @@ public class SQLite3IndexGenerator {
 				sb.append(",");
 			}
 			SQLite3Expression expr = new SQLite3ExpressionGenerator().getRandomExpression(columns, true, r);
-			SQLite3Visitor visitor = new SQLite3Visitor();
+			SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
 			visitor.fullyQualifiedNames = false;
 			visitor.visit(expr);
 			sb.append(visitor.get());
@@ -97,7 +97,7 @@ public class SQLite3IndexGenerator {
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
 			SQLite3Expression expr = new SQLite3ExpressionGenerator().getRandomExpression(columns, true, r);
-			SQLite3Visitor visitor = new SQLite3Visitor();
+			SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
 			visitor.fullyQualifiedNames = false;
 			visitor.visit(expr);
 			sb.append(visitor.get());
