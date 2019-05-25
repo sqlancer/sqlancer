@@ -36,4 +36,16 @@ public class TestCastToText {
 		assertEquals(intVal.asString(), expected);
 	}
 	
+	@Test
+	void test4() {
+		assertRealCastToText(1562730931.0, "1562730931.0");
+	}
+	
+	
+	void assertRealCastToText(double val, String expected) {
+		SQLite3Constant c = SQLite3Constant.createRealConstant(val);
+		SQLite3Constant intVal = SQLite3Cast.castToText(c);
+		assertEquals(intVal.asString(), expected);
+	}
+	
 }
