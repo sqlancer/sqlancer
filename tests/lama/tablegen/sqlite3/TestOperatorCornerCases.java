@@ -6,12 +6,12 @@ import org.junit.jupiter.api.Test;
 
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
-import lama.sqlite3.ast.SQLite3Expression.Cast;
-import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
-import lama.sqlite3.ast.SQLite3Expression.UnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
-import lama.sqlite3.ast.SQLite3Expression.UnaryOperation.UnaryOperator;
+import lama.sqlite3.ast.SQLite3Expression.Cast;
+import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
+import lama.sqlite3.ast.UnaryOperation;
+import lama.sqlite3.ast.UnaryOperation.UnaryOperator;
 import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 

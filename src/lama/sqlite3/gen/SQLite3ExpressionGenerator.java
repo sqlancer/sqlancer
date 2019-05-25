@@ -6,11 +6,12 @@ import lama.Main;
 import lama.Randomly;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
-import lama.sqlite3.ast.SQLite3Expression.ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
+import lama.sqlite3.ast.SQLite3Expression.ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation.PostfixUnaryOperator;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
-import lama.sqlite3.ast.SQLite3Expression.UnaryOperation.UnaryOperator;
+import lama.sqlite3.ast.UnaryOperation;
+import lama.sqlite3.ast.UnaryOperation.UnaryOperator;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 import lama.sqlite3.schema.SQLite3Schema.RowValue;
 
@@ -147,7 +148,7 @@ public class SQLite3ExpressionGenerator {
 			Randomly r) {
 		SQLite3Expression subExpression = getRandomExpression(columns, depth + 1, deterministicOnly, r);
 		UnaryOperator unaryOperation = Randomly.fromOptions(UnaryOperator.values());
-		return new SQLite3Expression.UnaryOperation(unaryOperation, subExpression);
+		return new UnaryOperation(unaryOperation, subExpression);
 	}
 
 }

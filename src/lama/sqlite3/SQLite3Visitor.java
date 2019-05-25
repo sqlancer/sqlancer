@@ -16,8 +16,8 @@ import lama.sqlite3.ast.SQLite3Expression.OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Subquery;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
-import lama.sqlite3.ast.SQLite3Expression.UnaryOperation;
 import lama.sqlite3.ast.SQLite3SelectStatement;
+import lama.sqlite3.ast.UnaryOperation;
 
 public abstract class SQLite3Visitor {
 

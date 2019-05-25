@@ -7,6 +7,7 @@ import lama.Randomly;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3SelectStatement;
+import lama.sqlite3.ast.UnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
@@ -21,7 +22,6 @@ import lama.sqlite3.ast.SQLite3Expression.OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Subquery;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
-import lama.sqlite3.ast.SQLite3Expression.UnaryOperation;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 
 public class SQLite3ToStringVisitor extends SQLite3Visitor {
