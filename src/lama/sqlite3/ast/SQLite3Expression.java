@@ -100,7 +100,8 @@ public class SQLite3Expression {
 			TEXT {
 				@Override
 				public SQLite3Constant apply(SQLite3Constant cons) {
-					return SQLite3Cast.castToText(cons);
+					return null;
+//					return SQLite3Cast.castToText(cons);
 				}
 			},
 			REAL {
@@ -112,12 +113,14 @@ public class SQLite3Expression {
 			INTEGER {
 				@Override
 				public SQLite3Constant apply(SQLite3Constant cons) {
+//					return null;
 					return SQLite3Cast.castToInt(cons);
 				}
 			},
 			NUMERIC {
 				@Override
 				public SQLite3Constant apply(SQLite3Constant cons) {
+//					return null;
 					return SQLite3Cast.castToNumeric(cons);
 				}
 			},
@@ -517,8 +520,36 @@ public class SQLite3Expression {
 				}
 			},
 			MULTIPLY("*"), DIVIDE("/"), // division by zero results in zero
-			REMAINDER("%"), PLUS("+"), MINUS("-"), SHIFT_LEFT("<<"), SHIFT_RIGHT(">>"), ARITHMETIC_AND("&"),
-			ARITHMETIC_OR("|"), SMALLER("<") {
+			REMAINDER("%"), PLUS("+"), MINUS("-"), SHIFT_LEFT("<<"), SHIFT_RIGHT(">>") {
+
+				@Override
+				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
+					return null;
+//					return applyIntOperation(left, right, (a, b) ->  {
+//						if (Math.abs(b) >= 64) {
+//							return 0L;
+//						} else {
+//							return b >= 0 ? a >> b: a << -b;
+//						}
+//					});
+				}
+
+			},
+			ARITHMETIC_AND("&") {
+				@Override
+				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
+					return applyIntOperation(left, right, (a, b) -> a & b);
+				}
+
+			},
+			ARITHMETIC_OR("|") {
+				@Override
+				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
+					return applyIntOperation(left, right, (a, b) -> a | b);
+				}
+
+			},
+			SMALLER("<") {
 				@Override
 				boolean isComparisonOperation() {
 					return true;
@@ -679,7 +710,8 @@ public class SQLite3Expression {
 				}
 			};
 
-			public SQLite3Constant applyOperand(SQLite3Constant left, TypeAffinity leftAffinity, SQLite3Constant right, TypeAffinity rightAffinity) {
+			public SQLite3Constant applyOperand(SQLite3Constant left, TypeAffinity leftAffinity, SQLite3Constant right,
+					TypeAffinity rightAffinity) {
 				if (isComparisonOperation()) {
 					// If one operand has INTEGER, REAL or NUMERIC affinity and the other operand
 					// has TEXT or BLOB or no affinity then NUMERIC affinity is applied to other
@@ -702,6 +734,17 @@ public class SQLite3Expression {
 					}
 				}
 				return apply(left, right);
+			}
+
+			public SQLite3Constant applyIntOperation(SQLite3Constant left, SQLite3Constant right,
+					java.util.function.BinaryOperator<Long> func) {
+				if (left.isNull() || right.isNull()) {
+					return SQLite3Constant.createNullConstant();
+				}
+				SQLite3Constant leftInt = SQLite3Cast.castToInt(left);
+				SQLite3Constant rightInt = SQLite3Cast.castToInt(right);
+				long result = func.apply(leftInt.asInt(), rightInt.asInt());
+				return SQLite3Constant.createIntConstant(result);
 			}
 
 			SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
@@ -777,7 +820,8 @@ public class SQLite3Expression {
 			if (left.getExpectedValue() == null || right.getExpectedValue() == null) {
 				return null;
 			}
-			return operation.applyOperand(left.getExpectedValue(), left.getAffinity(), right.getExpectedValue(), right.getAffinity());
+			return operation.applyOperand(left.getExpectedValue(), left.getAffinity(), right.getExpectedValue(),
+					right.getAffinity());
 		}
 
 	}
@@ -853,7 +897,7 @@ public class SQLite3Expression {
 				throw new AssertionError(column);
 			}
 		}
-		
+
 	}
 
 }
