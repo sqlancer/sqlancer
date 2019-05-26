@@ -9,6 +9,7 @@ import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.UnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
+import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
@@ -27,7 +28,7 @@ import lama.sqlite3.schema.SQLite3Schema.Column;
 public class SQLite3ToStringVisitor extends SQLite3Visitor {
 
 	StringBuffer sb = new StringBuffer();
-	
+
 	protected void asHexString(long intVal) {
 		String hexVal = Long.toHexString(intVal);
 		String prefix;
@@ -39,7 +40,7 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 		sb.append(prefix);
 		sb.append(hexVal);
 	}
-	
+
 	public void visit(BinaryOperation op) {
 		sb.append("(");
 		sb.append("(");
@@ -53,7 +54,7 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 		sb.append(")");
 		sb.append(")");
 	}
-	
+
 	public void visit(LogicalOperation op) {
 		visit(op.getLeft());
 		switch (op.getOperator()) {
@@ -65,7 +66,7 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 		}
 		visit(op.getRight());
 	}
-	
+
 	public void visit(BetweenOperation op) {
 		visit(op.getExpression());
 		if (op.isNegated()) {
@@ -76,7 +77,7 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 		sb.append(" AND ");
 		visit(op.getRight());
 	}
-	
+
 	public void visit(ColumnName c) {
 		if (fullyQualifiedNames) {
 			sb.append(c.getColumn().getTable().getName());
@@ -84,7 +85,7 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 		}
 		sb.append(c.getColumn().getName());
 	}
-	
+
 	public void visit(Function f) {
 		sb.append(f.getName());
 		sb.append("(");
@@ -96,7 +97,7 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 		}
 		sb.append(")");
 	}
-	
+
 	public void visit(SQLite3SelectStatement s) {
 		sb.append("SELECT ");
 		switch (s.getFromOptions()) {
@@ -167,7 +168,7 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 			visit(s.getOffsetClause());
 		}
 	}
-	
+
 	public void visit(SQLite3Constant c) {
 		if (c.isNull()) {
 			sb.append("NULL");
@@ -182,7 +183,7 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 						sb.append(c.asInt());
 					} else {
 						long intVal = c.asInt();
-						asHexString(intVal); 
+						asHexString(intVal);
 					}
 				}
 				break;
@@ -221,7 +222,7 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 			}
 		}
 	}
-	
+
 	public void visit(Join join) {
 		sb.append(" ");
 		switch (join.getType()) {
@@ -245,7 +246,7 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 		sb.append(" ON ");
 		visit(join.getOnClause());
 	}
-	
+
 	public void visit(OrderingTerm term) {
 		visit(term.getExpression());
 		// TODO make order optional?
@@ -310,8 +311,22 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 		sb.append(")");
 	}
 
-	
 	public String get() {
 		return sb.toString();
+	}
+
+	@Override
+	public void visit(BinaryComparisonOperation op) {
+		sb.append("(");
+		sb.append("(");
+		visit(op.getLeft());
+		sb.append(")");
+		sb.append(" ");
+		sb.append(op.getOperator().getTextRepresentation());
+		sb.append(" ");
+		sb.append("(");
+		visit(op.getRight());
+		sb.append(")");
+		sb.append(")");
 	}
 }

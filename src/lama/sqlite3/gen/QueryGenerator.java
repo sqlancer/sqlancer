@@ -17,6 +17,8 @@ import lama.Randomly;
 import lama.sqlite3.SQLite3ToStringVisitor;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
+import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
+import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation.BinaryComparisonOperator;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
@@ -242,9 +244,9 @@ public class QueryGenerator {
 				SQLite3Expression expr = new SQLite3ExpressionGenerator(rw).getRandomExpression(columns, false, r);
 				if (expr.getExpectedValue() != null) {
 					if (shouldBeTrue) {
-						return new BinaryOperation(expr.getExpectedValue(), expr, BinaryOperator.IS);
+						return new BinaryComparisonOperation(expr.getExpectedValue(), expr, BinaryComparisonOperator.IS);
 					} else {
-						return new BinaryOperation(expr.getExpectedValue(), expr, BinaryOperator.IS_NOT);
+						return new BinaryComparisonOperation(expr.getExpectedValue(), expr, BinaryComparisonOperator.IS_NOT);
 
 					}
 //					if (isTrue(expr.getExpectedValue())) {
@@ -258,9 +260,9 @@ public class QueryGenerator {
 			case LEFT_RIGHT_SIDE_EQUALS:
 				SQLite3Expression subExpr1 = generateNewExpression(columns, rw, Randomly.getBoolean(), depth + 1);
 				if (shouldBeTrue) {
-					return new BinaryOperation(subExpr1, subExpr1, BinaryOperator.IS);
+					return new BinaryComparisonOperation(subExpr1, subExpr1, BinaryComparisonOperator.IS);
 				} else {
-					return new BinaryOperation(subExpr1, subExpr1, BinaryOperator.IS_NOT);
+					return new BinaryComparisonOperation(subExpr1, subExpr1, BinaryComparisonOperator.IS_NOT);
 				}
 			case CAST_TO_NUMERIC:
 				SQLite3Expression subExpr2 = createStandaloneColumn(columns, rw, true);
@@ -274,8 +276,8 @@ public class QueryGenerator {
 					Cast castExpr = new SQLite3Expression.Cast(typeofExpr, subExpr2);
 					SQLite3Constant castConstant = SQLite3Cast.castToNumeric(value);
 					assert castConstant != null;
-					return new BinaryOperation(castExpr, castConstant,
-							shouldBeTrue ? BinaryOperator.EQUALS : BinaryOperator.NOT_EQUALS);
+					return new BinaryComparisonOperation(castExpr, castConstant,
+							shouldBeTrue ? BinaryComparisonOperator.EQUALS : BinaryComparisonOperator.NOT_EQUALS);
 				}
 			case ALWAYS_TRUE_COLUMN_COMPARISON:
 				SQLite3Expression alwaysTrue = createAlwaysTrueColumnComparison(columns, rw, shouldBeTrue);
@@ -465,9 +467,9 @@ public class QueryGenerator {
 					BinaryOperator.OR);
 		}
 		if (shouldBeTrue) {
-			return new BinaryOperation(ll, rr, BinaryOperator.IS);
+			return new BinaryComparisonOperation(ll, rr, BinaryComparisonOperator.IS);
 		} else {
-			return new BinaryOperation(ll, rr, BinaryOperator.IS_NOT);
+			return new BinaryComparisonOperation(ll, rr, BinaryComparisonOperator.IS_NOT);
 		}
 	}
 
@@ -566,7 +568,7 @@ public class QueryGenerator {
 			SQLite3Constant sampledConstant = rw.getValues().get(selectedColumn);
 
 			SQLite3Expression compareTo;
-			BinaryOperator binaryOperator;
+			BinaryComparisonOperator binaryOperator;
 			SQLite3DataType valueType = sampledConstant.getDataType();
 
 			SQLite3Expression columnName = new SQLite3Expression.ColumnName(selectedColumn, sampledConstant);
@@ -575,7 +577,7 @@ public class QueryGenerator {
 			} else {
 				if (sampledConstant.isNull()) {
 					// is null, comparison with >= etc. yields false
-					binaryOperator = BinaryOperator.IS;
+					binaryOperator = BinaryComparisonOperator.IS;
 					compareTo = Randomly.fromOptions(sampledConstant, columnName);
 				} else if (Randomly.getBoolean()) {
 					return createSampleBasedTwoColumnComparison(columns, rw, true);
@@ -585,8 +587,8 @@ public class QueryGenerator {
 					binaryOperator = t.op;
 				}
 				assert compareTo != null : binaryOperator;
-				if (Randomly.getBoolean() && binaryOperator != BinaryOperator.LIKE
-						&& binaryOperator != BinaryOperator.NOT_EQUALS) {
+				if (Randomly.getBoolean() && binaryOperator != BinaryComparisonOperator.LIKE
+						&& binaryOperator != BinaryComparisonOperator.NOT_EQUALS) {
 					String function = getRandomFunction(binaryOperator, true, valueType, valueType);
 					if (function != null) {
 						// apply function
@@ -594,15 +596,15 @@ public class QueryGenerator {
 						compareTo = new SQLite3Expression.Function(function, compareTo);
 					}
 				}
-				term = new SQLite3Expression.BinaryOperation(columnName, compareTo, binaryOperator);
+				term = new SQLite3Expression.BinaryComparisonOperation(columnName, compareTo, binaryOperator);
 			}
 		}
 		return term;
 	}
 
 	private SQLite3Expression generateOpaquePredicate(boolean shouldBeTrue) {
-		BinaryOperator operator = Randomly.fromOptions(BinaryOperator.EQUALS, BinaryOperator.GREATER_EQUALS,
-				BinaryOperator.IS, BinaryOperator.SMALLER_EQUALS);
+		BinaryComparisonOperator operator = Randomly.fromOptions(BinaryComparisonOperator.EQUALS, BinaryComparisonOperator.GREATER_EQUALS,
+				BinaryComparisonOperator.IS, BinaryComparisonOperator.SMALLER_EQUALS);
 		SQLite3Expression term;
 		// generate opaque predicate
 		SQLite3Expression con;
@@ -631,7 +633,7 @@ public class QueryGenerator {
 			break;
 		case NULL:
 			con = SQLite3Constant.createNullConstant();
-			operator = BinaryOperator.IS;
+			operator = BinaryComparisonOperator.IS;
 			break;
 		default:
 			throw new AssertionError();
@@ -641,7 +643,7 @@ public class QueryGenerator {
 			// apply function
 			con = new SQLite3Expression.Function(getRandomUnaryFunction(), con);
 		}
-		term = new SQLite3Expression.BinaryOperation(con, con, operator);
+		term = new SQLite3Expression.BinaryComparisonOperation(con, con, operator);
 		if (shouldBeTrue) {
 			return term;
 		} else {
@@ -650,20 +652,20 @@ public class QueryGenerator {
 	}
 
 	class Tuple {
-		public Tuple(SQLite3Expression compareTo, BinaryOperator binaryOperator) {
+		public Tuple(SQLite3Expression compareTo, BinaryComparisonOperator binaryOperator) {
 			this.op = binaryOperator;
 			this.expr = compareTo;
 		}
 
-		BinaryOperator op;
+		BinaryComparisonOperator op;
 		SQLite3Expression expr;
 	}
 
 	private SQLite3Expression createAlwaysTrueTwoColumnExpression(Column left, Column right, RowValue rw,
 			boolean shouldBeTrue) {
-		BinaryOperator binaryOperator = Randomly.fromOptions(BinaryOperator.GREATER_EQUALS,
-				BinaryOperator.SMALLER_EQUALS, BinaryOperator.IS, BinaryOperator.NOT_EQUALS, BinaryOperator.GREATER,
-				BinaryOperator.SMALLER, BinaryOperator.EQUALS);
+		BinaryComparisonOperator binaryOperator = Randomly.fromOptions(BinaryComparisonOperator.GREATER_EQUALS,
+				BinaryComparisonOperator.SMALLER_EQUALS, BinaryComparisonOperator.IS, BinaryComparisonOperator.NOT_EQUALS, BinaryComparisonOperator.GREATER,
+				BinaryComparisonOperator.SMALLER, BinaryComparisonOperator.EQUALS);
 		SQLite3Expression leftColumn = new ColumnName(left, rw.getValues().get(left));
 		SQLite3Expression rightColumn = new ColumnName(right, rw.getValues().get(right));
 
@@ -671,20 +673,20 @@ public class QueryGenerator {
 		boolean rightIsNull = rw.getValues().get(right).isNull();
 
 		// generate the left hand expression, for example, a < b
-		BinaryOperation leftExpr = new BinaryOperation(leftColumn, rightColumn, binaryOperator);
+		BinaryComparisonOperation leftExpr = BinaryComparisonOperation.create(leftColumn, rightColumn, binaryOperator);
 
 		SQLite3Expression rightExpr;
 		// for the right hand side, reverse the expression, for example, a >= b
 		if (Randomly.getBoolean()) {
-			rightExpr = new BinaryOperation(leftColumn, rightColumn, binaryOperator.reverse());
+			rightExpr = new BinaryComparisonOperation(leftColumn, rightColumn, binaryOperator.reverse());
 		} else {
 			rightExpr = new UnaryOperation(UnaryOperator.NOT, leftExpr);
 		}
 
 		BinaryOperator conOperator = shouldBeTrue ? BinaryOperator.OR : BinaryOperator.AND;
 		BinaryOperation binOp = new BinaryOperation(leftExpr, rightExpr, conOperator);
-		if ((leftIsNull || rightIsNull) && binaryOperator != BinaryOperator.IS
-				&& binaryOperator != BinaryOperator.IS_NOT) {
+		if ((leftIsNull || rightIsNull) && binaryOperator != BinaryComparisonOperator.IS
+				&& binaryOperator != BinaryComparisonOperator.IS_NOT) {
 			if (shouldBeTrue) {
 				return new PostfixUnaryOperation(PostfixUnaryOperator.ISNULL, binOp);
 			} else {
@@ -697,14 +699,14 @@ public class QueryGenerator {
 	private Tuple createSampleBasedColumnConstantComparison(SQLite3Constant sampledConstant,
 			SQLite3Expression columnName) {
 		boolean retry;
-		BinaryOperator binaryOperator;
+		BinaryComparisonOperator binaryOperator;
 		SQLite3Expression compareTo;
 		SQLite3DataType valueType = sampledConstant.getDataType();
 
 		do {
-			binaryOperator = Randomly.fromOptions(BinaryOperator.GREATER_EQUALS, BinaryOperator.SMALLER_EQUALS,
-					BinaryOperator.IS, BinaryOperator.NOT_EQUALS, BinaryOperator.GREATER, BinaryOperator.SMALLER,
-					BinaryOperator.LIKE, BinaryOperator.EQUALS);
+			binaryOperator = Randomly.fromOptions(BinaryComparisonOperator.GREATER_EQUALS, BinaryComparisonOperator.SMALLER_EQUALS,
+					BinaryComparisonOperator.IS, BinaryComparisonOperator.NOT_EQUALS, BinaryComparisonOperator.GREATER, BinaryComparisonOperator.SMALLER,
+					BinaryComparisonOperator.LIKE, BinaryComparisonOperator.EQUALS);
 			retry = false;
 			switch (binaryOperator) {
 			case EQUALS:
@@ -805,12 +807,12 @@ public class QueryGenerator {
 			leftColumnValue = leftColumnValue.applyTextAffinity();
 		}
 
-		List<BinaryOperator> newOp = leftColumnValue.compare(rightColumnValue, shouldBeTrue);
+		List<BinaryComparisonOperator> newOp = leftColumnValue.compare(rightColumnValue, shouldBeTrue);
 		if (newOp.isEmpty()) {
 			// TODO
 			return getStandaloneLiteral(shouldBeTrue);
 		}
-		BinaryOperator operator = Randomly.fromList(newOp);
+		BinaryComparisonOperator operator = Randomly.fromList(newOp);
 		// Randomly.getBoolean() ? rightColumnExpr : rightColumnValue
 		if (Randomly.getBoolean()) {
 			String functionName = getRandomFunction(operator, shouldBeTrue, originalLeftColumnType,
@@ -819,11 +821,11 @@ public class QueryGenerator {
 				Function left = new SQLite3Expression.Function(functionName, leftColumnExpr);
 				Function right = new SQLite3Expression.Function(functionName,
 						new SQLite3Expression.ColumnName(rightColumn, rightColumnValue));
-				new BinaryOperation(left, right, operator);
+				new BinaryComparisonOperation(left, right, operator);
 				// TODO
 			}
 		}
-		return new BinaryOperation(leftColumnExpr, rightColumnExpr, operator);
+		return new BinaryComparisonOperation(leftColumnExpr, rightColumnExpr, operator);
 
 	}
 
@@ -833,7 +835,7 @@ public class QueryGenerator {
 
 		{
 			@Override
-			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+			public boolean worksWhenApplied(BinaryComparisonOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
 				// SELECT ABS(x'F4');
 				if (leftType != rightType) {
@@ -860,7 +862,7 @@ public class QueryGenerator {
 		},
 		HEX("hex") {
 			@Override
-			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+			public boolean worksWhenApplied(BinaryComparisonOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
 				if (leftType != rightType) {
 					return false;
@@ -886,7 +888,7 @@ public class QueryGenerator {
 		},
 		UNICODE("unicode") {
 			@Override
-			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+			public boolean worksWhenApplied(BinaryComparisonOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
 				return false;
 //				switch (operator) {
@@ -914,7 +916,7 @@ public class QueryGenerator {
 		LTRIM("ltrim") {
 
 			@Override
-			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+			public boolean worksWhenApplied(BinaryComparisonOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
 				if (leftType != rightType) {
 					return false;
@@ -945,7 +947,7 @@ public class QueryGenerator {
 		LOWER("lower") {
 
 			@Override
-			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+			public boolean worksWhenApplied(BinaryComparisonOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
 				if (leftType != rightType) {
 					return false;
@@ -975,7 +977,7 @@ public class QueryGenerator {
 		},
 		QUOTE("quote") {
 			@Override
-			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+			public boolean worksWhenApplied(BinaryComparisonOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
 				return false;
 //				switch (operator) {
@@ -1005,7 +1007,7 @@ public class QueryGenerator {
 		ROUND("round") {
 
 			@Override
-			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+			public boolean worksWhenApplied(BinaryComparisonOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
 				if (leftType != rightType) {
 					return false;
@@ -1039,7 +1041,7 @@ public class QueryGenerator {
 		},
 		RTRIM("rtrim") {
 			@Override
-			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+			public boolean worksWhenApplied(BinaryComparisonOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
 				if (leftType != rightType) {
 					return false;
@@ -1069,7 +1071,7 @@ public class QueryGenerator {
 		},
 		TRIM("trim") {
 			@Override
-			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+			public boolean worksWhenApplied(BinaryComparisonOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
 				if (leftType != rightType) {
 					return false;
@@ -1100,7 +1102,7 @@ public class QueryGenerator {
 		TYPEOF("typeof") {
 
 			@Override
-			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+			public boolean worksWhenApplied(BinaryComparisonOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
 				switch (operator) {
 				case IS:
@@ -1125,7 +1127,7 @@ public class QueryGenerator {
 		UNLIKELY("unlikely") {
 
 			@Override
-			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+			public boolean worksWhenApplied(BinaryComparisonOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
 				return true;
 			}
@@ -1134,7 +1136,7 @@ public class QueryGenerator {
 		UPPER("upper") {
 
 			@Override
-			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+			public boolean worksWhenApplied(BinaryComparisonOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
 				if (leftType != rightType) {
 					return false;
@@ -1165,7 +1167,7 @@ public class QueryGenerator {
 		LENGTH("length") {
 
 			@Override
-			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+			public boolean worksWhenApplied(BinaryComparisonOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
 				switch (operator) {
 				case IS:
@@ -1192,7 +1194,7 @@ public class QueryGenerator {
 		},
 		LIKELY("likely") {
 			@Override
-			public boolean worksWhenApplied(BinaryOperator operator, SQLite3DataType leftType,
+			public boolean worksWhenApplied(BinaryComparisonOperator operator, SQLite3DataType leftType,
 					SQLite3DataType rightType) {
 				return true;
 			}
@@ -1208,10 +1210,10 @@ public class QueryGenerator {
 			this.name = name;
 		}
 
-		public abstract boolean worksWhenApplied(SQLite3Expression.BinaryOperation.BinaryOperator operator,
+		public abstract boolean worksWhenApplied(BinaryComparisonOperator operator,
 				SQLite3DataType leftType, SQLite3DataType rightType);
 
-		public static List<BinaryFunction> getPossibleBinaryFunctionsForOperator(BinaryOperator operator,
+		public static List<BinaryFunction> getPossibleBinaryFunctionsForOperator(BinaryComparisonOperator operator,
 				SQLite3DataType leftDataType, SQLite3DataType rightDataType) {
 			return Stream.of(BinaryFunction.values())
 					.filter(fun -> fun.worksWhenApplied(operator, leftDataType, rightDataType))
@@ -1220,7 +1222,7 @@ public class QueryGenerator {
 
 	}
 
-	private String getRandomFunction(BinaryOperator operator, boolean shouldBeTrue, SQLite3DataType leftDataType,
+	private String getRandomFunction(BinaryComparisonOperator operator, boolean shouldBeTrue, SQLite3DataType leftDataType,
 			SQLite3DataType rightDataType) {
 		if (leftDataType == SQLite3DataType.BINARY || rightDataType == SQLite3DataType.BINARY) {
 			return null;

@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
-import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
-import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
+import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
+import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation.BinaryComparisonOperator;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import lama.sqlite3.ast.UnaryOperation;
@@ -54,7 +54,7 @@ public class TestOperatorCornerCases {
 	public void testApplyTextAffinity() {
 		SQLite3Constant intVal = SQLite3Constant.createIntConstant(5);
 		SQLite3Expression textWithAffinityVal = new Cast(new TypeLiteral(TypeLiteral.Type.TEXT), SQLite3Constant.createTextConstant("5"));
-		BinaryOperation op = new SQLite3Expression.BinaryOperation(intVal, textWithAffinityVal, BinaryOperator.EQUALS);
+		BinaryComparisonOperation op = new SQLite3Expression.BinaryComparisonOperation(intVal, textWithAffinityVal, BinaryComparisonOperator.EQUALS);
 		assertEquals(1, op.getExpectedValue().asInt());
 	}
 	

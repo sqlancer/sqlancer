@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import lama.Randomly;
 import lama.sqlite3.gen.SQLite3Cast;
+import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 
@@ -379,6 +380,122 @@ public class SQLite3Expression {
 		}
 	}
 
+	public static class BinaryComparisonOperation extends SQLite3Expression {
+
+		private final BinaryComparisonOperator operation;
+		private final SQLite3Expression left;
+		private final SQLite3Expression right;
+
+		public BinaryComparisonOperation(SQLite3Expression left, SQLite3Expression right,
+				BinaryComparisonOperator operation) {
+			this.left = left;
+			this.right = right;
+			this.operation = operation;
+		}
+
+		public BinaryComparisonOperator getOperator() {
+			return operation;
+		}
+
+		public SQLite3Expression getLeft() {
+			return left;
+		}
+
+		public SQLite3Expression getRight() {
+			return right;
+		}
+
+		@Override
+		public SQLite3Constant getExpectedValue() {
+			if (left.getExpectedValue() == null || right.getExpectedValue() == null) {
+				return null;
+			}
+			return operation.applyOperand(left.getExpectedValue(), left.getAffinity(), right.getExpectedValue(),
+					right.getAffinity());
+		}
+
+		public static BinaryComparisonOperation create(SQLite3Expression leftVal, SQLite3Expression rightVal,
+				BinaryComparisonOperator op) {
+			return new BinaryComparisonOperation(leftVal, rightVal, op);
+		}
+
+		public enum BinaryComparisonOperator {
+			SMALLER("<"), SMALLER_EQUALS("<="), GREATER(">"), GREATER_EQUALS(">="), EQUALS("=", "=="),
+			NOT_EQUALS("!=", "<>"), IS("IS"), IS_NOT("IS NOT"),
+			// IN("IN"),
+			LIKE("LIKE"), GLOB("GLOB");
+			// MATCH("MATCH"),
+			// REGEXP("REGEXP"),
+
+			SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
+				return null;
+			}
+
+			private final String textRepresentation[];
+
+			private BinaryComparisonOperator(String... textRepresentation) {
+				this.textRepresentation = textRepresentation;
+			}
+
+			public static BinaryComparisonOperator getRandomOperator() {
+				return Randomly.fromOptions(values());
+			}
+
+			public String getTextRepresentation() {
+				return Randomly.fromOptions(textRepresentation);
+			}
+
+			public BinaryComparisonOperator reverse() {
+				switch (this) {
+				case IS:
+					return IS_NOT;
+				case IS_NOT:
+					return IS;
+				case EQUALS:
+					return NOT_EQUALS;
+				case NOT_EQUALS:
+					return EQUALS;
+				case GREATER:
+					return SMALLER_EQUALS;
+				case GREATER_EQUALS:
+					return SMALLER;
+				case SMALLER_EQUALS:
+					return GREATER;
+				case SMALLER:
+					return GREATER_EQUALS;
+				default:
+					throw new AssertionError(this);
+				}
+			}
+
+			public SQLite3Constant applyOperand(SQLite3Constant left, TypeAffinity leftAffinity, SQLite3Constant right,
+					TypeAffinity rightAffinity) {
+				// If one operand has INTEGER, REAL or NUMERIC affinity and the other operand
+				// has TEXT or BLOB or no affinity then NUMERIC affinity is applied to other
+				// operand.
+				if (leftAffinity.isNumeric() && (rightAffinity == TypeAffinity.TEXT
+						|| rightAffinity == TypeAffinity.BLOB || rightAffinity == TypeAffinity.NONE)) {
+					right = right.applyNumericAffinity();
+				} else if (rightAffinity.isNumeric()
+						&& (leftAffinity == TypeAffinity.TEXT || leftAffinity == TypeAffinity.BLOB)
+						|| leftAffinity == TypeAffinity.NONE) {
+					left = left.applyNumericAffinity();
+				}
+
+				// If one operand has TEXT affinity and the other has no affinity, then TEXT
+				// affinity is applied to the other operand.
+				if (leftAffinity == TypeAffinity.TEXT && rightAffinity == TypeAffinity.NONE) {
+					right = right.applyTextAffinity();
+				} else if (rightAffinity == TypeAffinity.TEXT && leftAffinity == TypeAffinity.NONE) {
+					left = left.applyTextAffinity();
+				}
+				return apply(left, right);
+			}
+
+		}
+
+	}
+
 	public static class BinaryOperation extends SQLite3Expression {
 
 		public enum BinaryOperator {
@@ -405,7 +522,84 @@ public class SQLite3Expression {
 				}
 			},
 			MULTIPLY("*"), DIVIDE("/"), // division by zero results in zero
-			REMAINDER("%"), PLUS("+"), MINUS("-"), SHIFT_LEFT("<<"), SHIFT_RIGHT(">>") {
+			REMAINDER("%"), PLUS("+") {
+				@Override
+				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
+					SQLite3Constant leftNumeric = SQLite3Cast.castToNumeric(left);
+					SQLite3Constant rightNumeric = SQLite3Cast.castToNumeric(right);
+					if (leftNumeric.isNull() || rightNumeric.isNull()) {
+						return SQLite3Constant.createNullConstant();
+					}
+					if (leftNumeric.getDataType() == SQLite3DataType.INT) {
+						long leftInt = leftNumeric.asInt();
+						if (rightNumeric.getDataType() == SQLite3DataType.INT) {
+							long rightInt = rightNumeric.asInt();
+							try {
+								long intResult = Math.addExact(leftInt, rightInt);
+								return SQLite3Constant.createIntConstant(intResult);
+							} catch (ArithmeticException e) {
+								double realResult = (double) leftInt + (double) rightInt;
+								return SQLite3Constant.createRealConstant(realResult);
+							}
+						} else {
+							assert rightNumeric.getDataType() == SQLite3DataType.REAL;
+							double rightDouble = rightNumeric.asDouble();
+							return SQLite3Constant.createRealConstant(leftInt + rightDouble);
+						}
+					} else {
+						assert leftNumeric.getDataType() == SQLite3DataType.REAL;
+						double leftReal = leftNumeric.asDouble();
+						if (rightNumeric.getDataType() == SQLite3DataType.INT) {
+							long rightInt = rightNumeric.asInt();
+							return SQLite3Constant.createRealConstant(leftReal + rightInt);
+						} else {
+							assert rightNumeric.getDataType() == SQLite3DataType.REAL;
+							double rightReal = rightNumeric.asDouble();
+							return SQLite3Constant.createRealConstant(leftReal + rightReal);
+						}
+					}
+				}
+
+			},
+			MINUS("-") {
+				@Override
+				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
+					SQLite3Constant leftNumeric = SQLite3Cast.castToNumeric(left);
+					SQLite3Constant rightNumeric = SQLite3Cast.castToNumeric(right);
+					if (leftNumeric.isNull() || rightNumeric.isNull()) {
+						return SQLite3Constant.createNullConstant();
+					}
+					if (leftNumeric.getDataType() == SQLite3DataType.INT) {
+						long leftInt = leftNumeric.asInt();
+						if (rightNumeric.getDataType() == SQLite3DataType.INT) {
+							long rightInt = rightNumeric.asInt();
+							try {
+								long intResult = Math.subtractExact(leftInt, rightInt);
+								return SQLite3Constant.createIntConstant(intResult);
+							} catch (ArithmeticException e) {
+								double realResult = (double) leftInt - (double) rightInt;
+								return SQLite3Constant.createRealConstant(realResult);
+							}
+						} else {
+							assert rightNumeric.getDataType() == SQLite3DataType.REAL;
+							double rightDouble = rightNumeric.asDouble();
+							return SQLite3Constant.createRealConstant(leftInt - rightDouble);
+						}
+					} else {
+						assert leftNumeric.getDataType() == SQLite3DataType.REAL;
+						double leftReal = leftNumeric.asDouble();
+						if (rightNumeric.getDataType() == SQLite3DataType.INT) {
+							long rightInt = rightNumeric.asInt();
+							return SQLite3Constant.createRealConstant(leftReal - rightInt);
+						} else {
+							assert rightNumeric.getDataType() == SQLite3DataType.REAL;
+							double rightReal = rightNumeric.asDouble();
+							return SQLite3Constant.createRealConstant(leftReal - rightReal);
+						}
+					}
+				}
+			},
+			SHIFT_LEFT("<<"), SHIFT_RIGHT(">>") {
 
 				@Override
 				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
@@ -434,64 +628,6 @@ public class SQLite3Expression {
 				}
 
 			},
-			SMALLER("<") {
-				@Override
-				boolean isComparisonOperation() {
-					return true;
-				}
-			},
-			SMALLER_EQUALS("<=") {
-				@Override
-				boolean isComparisonOperation() {
-					return true;
-				}
-			},
-			GREATER(">") {
-				@Override
-				boolean isComparisonOperation() {
-					return true;
-				}
-			},
-			GREATER_EQUALS(">=") {
-				@Override
-				boolean isComparisonOperation() {
-					return true;
-				}
-			},
-			EQUALS("=", "==") {
-				@Override
-				public SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
-					return left.applyEquals(right);
-				}
-
-				@Override
-				boolean isComparisonOperation() {
-					return true;
-				}
-
-			},
-			NOT_EQUALS("!=", "<>") {
-				@Override
-				boolean isComparisonOperation() {
-					return true;
-				}
-			},
-			IS("IS") {
-				@Override
-				boolean isComparisonOperation() {
-					return true;
-				}
-			},
-			IS_NOT("IS NOT") {
-				@Override
-				boolean isComparisonOperation() {
-					return true;
-				}
-			},
-			// IN("IN"),
-			LIKE("LIKE"), GLOB("GLOB"),
-			// MATCH("MATCH"),
-			// REGEXP("REGEXP"),
 			AND("AND") {
 
 				@Override
@@ -595,29 +731,22 @@ public class SQLite3Expression {
 				}
 			};
 
+			private final String textRepresentation[];
+
+			private BinaryOperator(String... textRepresentation) {
+				this.textRepresentation = textRepresentation;
+			}
+
+			public static BinaryOperator getRandomOperator() {
+				return Randomly.fromOptions(values());
+			}
+
+			public String getTextRepresentation() {
+				return Randomly.fromOptions(textRepresentation);
+			}
+
 			public SQLite3Constant applyOperand(SQLite3Constant left, TypeAffinity leftAffinity, SQLite3Constant right,
 					TypeAffinity rightAffinity) {
-				if (isComparisonOperation()) {
-					// If one operand has INTEGER, REAL or NUMERIC affinity and the other operand
-					// has TEXT or BLOB or no affinity then NUMERIC affinity is applied to other
-					// operand.
-					if (leftAffinity.isNumeric() && (rightAffinity == TypeAffinity.TEXT
-							|| rightAffinity == TypeAffinity.BLOB || rightAffinity == TypeAffinity.NONE)) {
-						right = right.applyNumericAffinity();
-					} else if (rightAffinity.isNumeric()
-							&& (leftAffinity == TypeAffinity.TEXT || leftAffinity == TypeAffinity.BLOB)
-							|| leftAffinity == TypeAffinity.NONE) {
-						left = left.applyNumericAffinity();
-					}
-
-					// If one operand has TEXT affinity and the other has no affinity, then TEXT
-					// affinity is applied to the other operand.
-					if (leftAffinity == TypeAffinity.TEXT && rightAffinity == TypeAffinity.NONE) {
-						right = right.applyTextAffinity();
-					} else if (rightAffinity == TypeAffinity.TEXT && leftAffinity == TypeAffinity.NONE) {
-						left = left.applyTextAffinity();
-					}
-				}
 				return apply(left, right);
 			}
 
@@ -636,46 +765,6 @@ public class SQLite3Expression {
 				return null;
 			}
 
-			boolean isComparisonOperation() {
-				return false;
-			}
-
-			private final String textRepresentation[];
-
-			private BinaryOperator(String... textRepresentation) {
-				this.textRepresentation = textRepresentation;
-			}
-
-			public static BinaryOperator getRandomOperator() {
-				return Randomly.fromOptions(values());
-			}
-
-			public String getTextRepresentation() {
-				return Randomly.fromOptions(textRepresentation);
-			}
-
-			public BinaryOperator reverse() {
-				switch (this) {
-				case IS:
-					return IS_NOT;
-				case IS_NOT:
-					return IS;
-				case EQUALS:
-					return NOT_EQUALS;
-				case NOT_EQUALS:
-					return EQUALS;
-				case GREATER:
-					return SMALLER_EQUALS;
-				case GREATER_EQUALS:
-					return SMALLER;
-				case SMALLER_EQUALS:
-					return GREATER;
-				case SMALLER:
-					return GREATER_EQUALS;
-				default:
-					throw new AssertionError(this);
-				}
-			}
 		}
 
 		private final BinaryOperator operation;
@@ -707,6 +796,10 @@ public class SQLite3Expression {
 			}
 			return operation.applyOperand(left.getExpectedValue(), left.getAffinity(), right.getExpectedValue(),
 					right.getAffinity());
+		}
+
+		public static BinaryOperation create(SQLite3Expression leftVal, SQLite3Expression rightVal, BinaryOperator op) {
+			return new BinaryOperation(leftVal, rightVal, op);
 		}
 
 	}

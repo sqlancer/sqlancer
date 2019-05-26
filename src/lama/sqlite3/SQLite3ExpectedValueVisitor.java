@@ -3,6 +3,7 @@ package lama.sqlite3;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
+import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
@@ -20,10 +21,9 @@ import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.UnaryOperation;
 
 public class SQLite3ExpectedValueVisitor extends SQLite3Visitor {
-	
+
 	private final StringBuilder sb = new StringBuilder();
 
-	
 	private void print(SQLite3Expression expr) {
 		SQLite3ToStringVisitor v = new SQLite3ToStringVisitor();
 		v.visit(expr);
@@ -129,13 +129,20 @@ public class SQLite3ExpectedValueVisitor extends SQLite3Visitor {
 	@Override
 	public void visit(Exist exist) {
 		print(exist);
-		visit (exist.getSelect());
+		visit(exist.getSelect());
 	}
 
 	@Override
 	public void visit(Join join) {
 		print(join);
 		visit(join.getOnClause());
+	}
+
+	@Override
+	public void visit(BinaryComparisonOperation op) {
+		print(op);
+		visit(op.getLeft());
+		visit(op.getRight());
 	}
 
 	public String get() {

@@ -6,6 +6,7 @@ import lama.Main;
 import lama.Randomly;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
+import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation.BinaryComparisonOperator;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation.PostfixUnaryOperator;
@@ -65,7 +66,7 @@ public class SQLite3ExpressionGenerator {
 
 	enum ExpressionType {
 		COLUMN_NAME, LITERAL_VALUE, UNARY_OPERATOR, POSTFIX_UNARY_OPERATOR, BINARY_OPERATOR, BETWEEN_OPERATOR,
-		UNARY_FUNCTION, CAST_EXPRESSION
+		UNARY_FUNCTION, CAST_EXPRESSION, BINARY_COMPARISON_OPERATOR
 	}
 
 	public SQLite3Expression getRandomExpression(List<Column> columns, boolean deterministicOnly, Randomly r) {
@@ -100,6 +101,8 @@ public class SQLite3ExpressionGenerator {
 			return getRandomPostfixUnaryOperator(columns, depth + 1, deterministicOnly, r);
 		case BINARY_OPERATOR:
 			return getBinaryOperator(columns, depth + 1, deterministicOnly, r);
+		case BINARY_COMPARISON_OPERATOR:
+			return getBinaryComparisonOperator(columns, depth + 1, deterministicOnly, r);
 		case BETWEEN_OPERATOR:
 			return getBetweenOperator(columns, depth + 1, deterministicOnly, r);
 		case CAST_EXPRESSION:
@@ -133,6 +136,14 @@ public class SQLite3ExpressionGenerator {
 		BinaryOperator operator = BinaryOperator.getRandomOperator();
 		SQLite3Expression rightExpression = getRandomExpression(columns, depth + 1, deterministicOnly, r);
 		return new SQLite3Expression.BinaryOperation(leftExpression, rightExpression, operator);
+	}
+
+	private SQLite3Expression getBinaryComparisonOperator(List<Column> columns, int depth, boolean deterministicOnly,
+			Randomly r) {
+		SQLite3Expression leftExpression = getRandomExpression(columns, depth + 1, deterministicOnly, r);
+		BinaryComparisonOperator operator = BinaryComparisonOperator.getRandomOperator();
+		SQLite3Expression rightExpression = getRandomExpression(columns, depth + 1, deterministicOnly, r);
+		return new SQLite3Expression.BinaryComparisonOperation(leftExpression, rightExpression, operator);
 	}
 
 	// complete

@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 import lama.Randomly;
 import lama.sqlite3.SQLite3Visitor;
-import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
+import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation.BinaryComparisonOperator;
 import lama.sqlite3.gen.SQLite3Cast;
 import lama.sqlite3.schema.SQLite3DataType;
 
@@ -35,13 +35,13 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		}
 
 		@Override
-		public List<BinaryOperator> compare(SQLite3Constant cons, boolean shouldBeTrue) {
+		public List<BinaryComparisonOperator> compare(SQLite3Constant cons, boolean shouldBeTrue) {
 
-			List<BinaryOperator> values;
+			List<BinaryComparisonOperator> values;
 			if (cons instanceof SQLite3NullConstant) {
-				values = Arrays.asList(BinaryOperator.IS);
+				values = Arrays.asList(BinaryComparisonOperator.IS);
 			} else {
-				values = Arrays.asList(BinaryOperator.IS_NOT);
+				values = Arrays.asList(BinaryComparisonOperator.IS_NOT);
 			}
 			if (shouldBeTrue) {
 				return values;
@@ -124,8 +124,8 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		}
 
 		@Override
-		public List<BinaryOperator> compare(SQLite3Constant cons, boolean shouldBeTrue) {
-			List<BinaryOperator> values;
+		public List<BinaryComparisonOperator> compare(SQLite3Constant cons, boolean shouldBeTrue) {
+			List<BinaryComparisonOperator> values;
 			if (cons instanceof SQLite3RealConstant) {
 				if (cons.asDouble() == Double.POSITIVE_INFINITY) {
 					values = smallerThanList();
@@ -148,7 +148,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 				// SELECT 0 IS NULL; -- 0
 				// SELECT 0 IS NOT NULL; -- 1
 				// SELECT 0 > NULL; -- NULL
-				values = Arrays.asList(BinaryOperator.IS_NOT);
+				values = Arrays.asList(BinaryComparisonOperator.IS_NOT);
 			} else if (cons instanceof SQLite3IntConstant) {
 				long otherColumnValue = cons.asInt();
 				if (value > otherColumnValue) {
@@ -253,8 +253,8 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		}
 
 		@Override
-		public List<BinaryOperator> compare(SQLite3Constant cons, boolean shouldBeTrue) {
-			List<BinaryOperator> values;
+		public List<BinaryComparisonOperator> compare(SQLite3Constant cons, boolean shouldBeTrue) {
+			List<BinaryComparisonOperator> values;
 			if (cons instanceof SQLite3RealConstant) {
 				// When an INTEGER or REAL is compared to another INTEGER or REAL, a numerical
 				// comparison is performed.
@@ -273,7 +273,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 				// SELECT 0 IS NULL; -- 0
 				// SELECT 0 IS NOT NULL; -- 1
 				// SELECT 0 > NULL; -- NULL
-				values = Arrays.asList(BinaryOperator.IS_NOT);
+				values = Arrays.asList(BinaryComparisonOperator.IS_NOT);
 			} else if (cons instanceof SQLite3IntConstant) {
 				if (value == Double.POSITIVE_INFINITY) {
 					values = greaterThanList();
@@ -302,8 +302,8 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 				// SELECT 3.0 GLOB "3.0"; -- 1
 				// SELECT 3.0 != "3.0"; -- 1
 				// SELECT 3.0 IS NOT "3.0"; -- 1
-				values = new ArrayList<>(Arrays.asList(BinaryOperator.SMALLER, BinaryOperator.SMALLER_EQUALS,
-						BinaryOperator.IS_NOT, BinaryOperator.NOT_EQUALS));
+				values = new ArrayList<>(Arrays.asList(BinaryComparisonOperator.SMALLER, BinaryComparisonOperator.SMALLER_EQUALS,
+						BinaryComparisonOperator.IS_NOT, BinaryComparisonOperator.NOT_EQUALS));
 //				if (String.valueOf(value).contentEquals(cons.asString())) {
 //					values.addAll(Arrays.asList(BinaryOperator.LIKE, BinaryOperator.GLOB));
 //				}
@@ -312,8 +312,8 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 			} else {
 				assert cons instanceof SQLite3BinaryConstant;
 				// An INTEGER or REAL value is less than any TEXT or BLOB value.
-				values = new ArrayList<>(Arrays.asList(BinaryOperator.SMALLER, BinaryOperator.SMALLER_EQUALS,
-						BinaryOperator.IS_NOT, BinaryOperator.NOT_EQUALS));
+				values = new ArrayList<>(Arrays.asList(BinaryComparisonOperator.SMALLER, BinaryComparisonOperator.SMALLER_EQUALS,
+						BinaryComparisonOperator.IS_NOT, BinaryComparisonOperator.NOT_EQUALS));
 				// TODO what about like and glob
 			}
 			if (shouldBeTrue) {
@@ -345,35 +345,35 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 
 	}
 
-	private static List<BinaryOperator> equalsList(boolean withGlob) {
-		List<BinaryOperator> values;
+	private static List<BinaryComparisonOperator> equalsList(boolean withGlob) {
+		List<BinaryComparisonOperator> values;
 		if (withGlob) {
-			values = Arrays.asList(BinaryOperator.EQUALS, BinaryOperator.IS, BinaryOperator.GREATER_EQUALS,
-					BinaryOperator.SMALLER_EQUALS); // , BinaryOperator.GLOB
+			values = Arrays.asList(BinaryComparisonOperator.EQUALS, BinaryComparisonOperator.IS, BinaryComparisonOperator.GREATER_EQUALS,
+					BinaryComparisonOperator.SMALLER_EQUALS); // , BinaryOperator.GLOB
 		} else {
-			values = Arrays.asList(BinaryOperator.EQUALS, BinaryOperator.IS, BinaryOperator.GREATER_EQUALS,
-					BinaryOperator.SMALLER_EQUALS);
+			values = Arrays.asList(BinaryComparisonOperator.EQUALS, BinaryComparisonOperator.IS, BinaryComparisonOperator.GREATER_EQUALS,
+					BinaryComparisonOperator.SMALLER_EQUALS);
 		}
 		return values;
 	}
 
-	private static List<BinaryOperator> smallerThanList() {
-		List<BinaryOperator> values;
-		values = Arrays.asList(BinaryOperator.SMALLER, BinaryOperator.SMALLER_EQUALS, BinaryOperator.IS_NOT,
-				BinaryOperator.NOT_EQUALS);
+	private static List<BinaryComparisonOperator> smallerThanList() {
+		List<BinaryComparisonOperator> values;
+		values = Arrays.asList(BinaryComparisonOperator.SMALLER, BinaryComparisonOperator.SMALLER_EQUALS, BinaryComparisonOperator.IS_NOT,
+				BinaryComparisonOperator.NOT_EQUALS);
 		return values;
 	}
 
-	private static List<BinaryOperator> greaterThanList() {
-		List<BinaryOperator> values;
-		values = Arrays.asList(BinaryOperator.GREATER, BinaryOperator.GREATER_EQUALS, BinaryOperator.IS_NOT,
-				BinaryOperator.NOT_EQUALS);
+	private static List<BinaryComparisonOperator> greaterThanList() {
+		List<BinaryComparisonOperator> values;
+		values = Arrays.asList(BinaryComparisonOperator.GREATER, BinaryComparisonOperator.GREATER_EQUALS, BinaryComparisonOperator.IS_NOT,
+				BinaryComparisonOperator.NOT_EQUALS);
 		return values;
 	}
 
-	public List<BinaryOperator> getReversed(List<BinaryOperator> list) {
-		List<BinaryOperator> l = new ArrayList<>(list);
-		l.remove(BinaryOperator.GLOB);
+	public List<BinaryComparisonOperator> getReversed(List<BinaryComparisonOperator> list) {
+		List<BinaryComparisonOperator> l = new ArrayList<>(list);
+		l.remove(BinaryComparisonOperator.GLOB);
 		return l.stream().map(op -> op.reverse()).collect(Collectors.toList());
 	}
 
@@ -406,14 +406,14 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		}
 
 		@Override
-		public List<BinaryOperator> compare(SQLite3Constant cons, boolean shouldBeTrue) {
-			List<BinaryOperator> values;
+		public List<BinaryComparisonOperator> compare(SQLite3Constant cons, boolean shouldBeTrue) {
+			List<BinaryComparisonOperator> values;
 			if (cons instanceof SQLite3RealConstant || cons instanceof SQLite3IntConstant) {
 				values = greaterThanList();
 			} else if (cons instanceof SQLite3BinaryConstant) {
 				values = smallerThanList();
 			} else if (cons instanceof SQLite3NullConstant) {
-				values = Arrays.asList(BinaryOperator.IS_NOT);
+				values = Arrays.asList(BinaryComparisonOperator.IS_NOT);
 			} else {
 				assert cons instanceof SQLite3TextConstant;
 //				String otherText = cons.asString();
@@ -503,8 +503,8 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		}
 
 		@Override
-		public List<BinaryOperator> compare(SQLite3Constant cons, boolean shouldBeTrue) {
-			List<BinaryOperator> values = new ArrayList<>();
+		public List<BinaryComparisonOperator> compare(SQLite3Constant cons, boolean shouldBeTrue) {
+			List<BinaryComparisonOperator> values = new ArrayList<>();
 			if (cons instanceof SQLite3IntConstant || cons instanceof SQLite3RealConstant
 					|| cons instanceof SQLite3TextConstant) {
 				// An INTEGER or REAL value is less than any TEXT or BLOB value.
@@ -537,7 +537,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 				assert cons instanceof SQLite3NullConstant;
 				// A value with storage class NULL is considered less than any other value
 				// (including another value with storage class NULL).
-				values = Arrays.asList(BinaryOperator.IS_NOT);
+				values = Arrays.asList(BinaryComparisonOperator.IS_NOT);
 			}
 			if (shouldBeTrue) {
 				return values;
@@ -595,7 +595,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 
 	public abstract Object getValue();
 
-	public abstract List<BinaryOperator> compare(SQLite3Constant cons, boolean shouldBeTrue);
+	public abstract List<BinaryComparisonOperator> compare(SQLite3Constant cons, boolean shouldBeTrue);
 
 	public long asInt() {
 		throw new UnsupportedOperationException(this.getDataType().toString());
