@@ -9,8 +9,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import javax.xml.bind.DatatypeConverter;
-
 import lama.Randomly;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
@@ -70,6 +68,11 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		@Override
 		String getStringRepresentation() {
 			return "NULL";
+		}
+
+		@Override
+		public SQLite3Constant castToBoolean() {
+			return SQLite3Cast.asBoolean(this);
 		}
 
 	}
@@ -191,6 +194,11 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		@Override
 		String getStringRepresentation() {
 			return String.valueOf(value);
+		}
+
+		@Override
+		public SQLite3Constant castToBoolean() {
+			return SQLite3Cast.asBoolean(this);
 		}
 
 	}
@@ -324,6 +332,11 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 			return String.valueOf(value);
 		}
 
+		@Override
+		public SQLite3Constant castToBoolean() {
+			return SQLite3Cast.asBoolean(this);
+		}
+
 	}
 
 	private static List<BinaryOperator> equalsList(boolean withGlob) {
@@ -449,6 +462,11 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		String getStringRepresentation() {
 			return text;
 		}
+
+		@Override
+		public SQLite3Constant castToBoolean() {
+			return SQLite3Cast.asBoolean(this);
+		}
 	}
 
 	public static class SQLite3BinaryConstant extends SQLite3Constant {
@@ -559,6 +577,11 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 			return null;
 		}
 
+		@Override
+		public SQLite3Constant castToBoolean() {
+			return SQLite3Cast.asBoolean(this);
+		}
+
 	}
 
 	abstract String getStringRepresentation();
@@ -646,6 +669,8 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 	}
 
 	public abstract SQLite3Constant applyEquals(SQLite3Constant right);
+	
+	public abstract SQLite3Constant castToBoolean();
 
 
 }

@@ -1,6 +1,5 @@
 package lama.sqlite3.gen;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -24,7 +23,7 @@ public class SQLite3Cast {
 		case INT:
 			return Optional.of(numericValue.asInt() != 0);
 		case REAL:
-			return Optional.of(numericValue.asDouble() != 0);
+			return Optional.of(numericValue.asDouble() != 0 && !Double.isNaN(numericValue.asDouble()));
 		default:
 			throw new AssertionError(numericValue);
 		}
@@ -190,6 +189,15 @@ public class SQLite3Cast {
 //		}
 		return null;
 //		throw new AssertionError();
+	}
+
+	public static SQLite3Constant asBoolean(SQLite3Constant val) {
+		Optional<Boolean> boolVal = isTrue(val);
+		if (boolVal.isPresent()) {
+			return SQLite3Constant.createBoolean(boolVal.get());
+		} else {
+			return SQLite3Constant.createNullConstant();
+		}
 	}
 
 }
