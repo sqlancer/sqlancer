@@ -5,10 +5,9 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.DatatypeConverter;
-
 import org.junit.jupiter.api.Test;
 
+import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.gen.SQLite3Cast;
 import lama.sqlite3.schema.SQLite3DataType;
@@ -52,8 +51,6 @@ class TestCastToNumeric {
 		triples.add(new StringTestTriple("-1748799336", SQLite3DataType.INT, -1748799336L));
 		triples.add(new StringTestTriple("-0", SQLite3DataType.INT, 0L));
 
-		
-		
 		triples.add(new StringTestTriple("8.2250617031974513E18", SQLite3DataType.REAL, 8.2250617031974513E18));
 		triples.add(new StringTestTriple("3.0e+5", SQLite3DataType.REAL, 300000.0));
 		triples.add(new StringTestTriple("-3.2", SQLite3DataType.REAL, -3.2d));
@@ -64,7 +61,15 @@ class TestCastToNumeric {
 		triples.add(new StringTestTriple("-2277224522334683278", SQLite3DataType.INT, -2277224522334683278L));
 		triples.add(new StringTestTriple("7839344951195291815", SQLite3DataType.INT, 7839344951195291815L));
 
-		
+		// infinities
+		triples.add(new StringTestTriple("-Infinity", SQLite3DataType.INT, 0L)); //
+		triples.add(new StringTestTriple("Infinity", SQLite3DataType.INT, 0L)); //
+		triples.add(new StringTestTriple("Inf", SQLite3DataType.INT, 0L)); //
+		triples.add(new StringTestTriple("-Inf", SQLite3DataType.INT, 0L)); //
+		triples.add(new StringTestTriple("NaN", SQLite3DataType.INT, 0L)); //
+		triples.add(new StringTestTriple("1e500", SQLite3DataType.REAL, Double.POSITIVE_INFINITY)); //
+		triples.add(new StringTestTriple("-1e500", SQLite3DataType.REAL, Double.NEGATIVE_INFINITY)); //
+
 		for (StringTestTriple triple : triples) {
 			SQLite3Constant castVal = SQLite3Cast.castToNumeric(SQLite3Constant.createTextConstant(triple.value));
 			assertEquals(triple.value.toString(), triple.expectedCastValue, castVal.getValue());
@@ -82,23 +87,22 @@ class TestCastToNumeric {
 		triples.add(new StringTestTriple("0c36", SQLite3DataType.INT, 6L)); // 6
 		triples.add(new StringTestTriple("0d36", SQLite3DataType.INT, 6L)); // 6
 		triples.add(new StringTestTriple("0e36", SQLite3DataType.INT, 0L)); // 6
-		triples.add(new StringTestTriple("1a347C", SQLite3DataType.INT, 0L)); // 
-		triples.add(new StringTestTriple("1b347C", SQLite3DataType.INT, 0L)); // 
+		triples.add(new StringTestTriple("1a347C", SQLite3DataType.INT, 0L)); //
+		triples.add(new StringTestTriple("1b347C", SQLite3DataType.INT, 0L)); //
 		triples.add(new StringTestTriple("1C32", SQLite3DataType.INT, 0L)); // FS2
 		triples.add(new StringTestTriple("1D32", SQLite3DataType.INT, 0L)); // GS2
 		triples.add(new StringTestTriple("1e32", SQLite3DataType.INT, 0L)); // RS2
 		triples.add(new StringTestTriple("1f32", SQLite3DataType.INT, 0L)); // RS2
 		triples.add(new StringTestTriple("2032", SQLite3DataType.INT, 2L)); // RS2
 		triples.add(new StringTestTriple("09013454", SQLite3DataType.INT, 0L)); // RS2
-		triples.add(new StringTestTriple("2016347C", SQLite3DataType.INT, 0L)); // 
-		triples.add(new StringTestTriple("2017347C", SQLite3DataType.INT, 0L)); // 
-		triples.add(new StringTestTriple("2018347C", SQLite3DataType.INT, 0L)); // 
-		triples.add(new StringTestTriple("2019347C", SQLite3DataType.INT, 0L)); // 
+		triples.add(new StringTestTriple("2016347C", SQLite3DataType.INT, 0L)); //
+		triples.add(new StringTestTriple("2017347C", SQLite3DataType.INT, 0L)); //
+		triples.add(new StringTestTriple("2018347C", SQLite3DataType.INT, 0L)); //
+		triples.add(new StringTestTriple("2019347C", SQLite3DataType.INT, 0L)); //
 
-		
 		for (StringTestTriple triple : triples) {
-			SQLite3Constant castVal = SQLite3Cast
-					.castToNumeric(SQLite3Constant.createBinaryConstant(DatatypeConverter.parseHexBinary(triple.value)));
+			SQLite3Constant castVal = SQLite3Cast.castToNumeric(
+					SQLite3Constant.createBinaryConstant(SQLite3Visitor.hexStringToByteArray(triple.value)));
 			assertEquals(triple.value.toString(), triple.expectedCastValue, castVal.getValue());
 		}
 	}

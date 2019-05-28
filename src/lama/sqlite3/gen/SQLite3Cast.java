@@ -100,6 +100,9 @@ public class SQLite3Cast {
 			if (!asString.isEmpty() && unprintAbleCharThatLetsBecomeNumberZero(asString)) {
 				return SQLite3Constant.createIntConstant(0);
 			}
+			if (asString.toLowerCase().startsWith("-infinity") || asString.toLowerCase().startsWith("infinity") || asString.startsWith("NaN")) {
+				return SQLite3Constant.createIntConstant(0);
+			}
 			for (int i = asString.length(); i >= 0; i--) {
 				try {
 					double d = Double.valueOf(asString.substring(0, i));
