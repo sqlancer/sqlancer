@@ -39,6 +39,7 @@ import lama.sqlite3.ast.UnaryOperation.UnaryOperator;
 import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema;
 import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
 import lama.sqlite3.schema.SQLite3Schema.RowValue;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 import lama.sqlite3.schema.SQLite3Schema.Tables;
@@ -368,7 +369,7 @@ public class QueryGenerator {
 			case COLLATE:
 				return new SQLite3Expression.CollateOperation(
 						generateNewExpression(columns, rw, shouldBeTrue, depth + 1),
-						Randomly.fromOptions("NOCASE", "RTRIM", "BINARY"));
+						Randomly.fromOptions(CollateSequence.values()));
 			case AND:
 				SQLite3Expression left;
 				SQLite3Expression right;

@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 
 public class SQLite3SelectStatement extends SQLite3Expression {
@@ -100,6 +101,12 @@ public class SQLite3SelectStatement extends SQLite3Expression {
 
 	public List<Join> getJoinClauses() {
 		return joinStatements;
+	}
+
+	@Override
+	public CollateSequence getExplicitCollateSequence() {
+		// TODO implement?
+		return null;
 	}
 
 }

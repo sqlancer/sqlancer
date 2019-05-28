@@ -7,9 +7,10 @@ import lama.Randomly;
 import lama.sqlite3.gen.SQLite3Cast;
 import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 
-public class SQLite3Expression {
+public abstract class SQLite3Expression {
 
 	public SQLite3Constant getExpectedValue() {
 		return null;
@@ -30,6 +31,19 @@ public class SQLite3Expression {
 		return TypeAffinity.NONE;
 	}
 
+	/**
+	 * See
+	 * https://www.sqlite.org/datatype3.html#assigning_collating_sequences_from_sql
+	 * 7.1
+	 * 
+	 * @return
+	 */
+	public abstract CollateSequence getExplicitCollateSequence();
+
+	public CollateSequence getImplicitCollateSequence() {
+		return null;
+	}
+
 	public static class Exist extends SQLite3Expression {
 
 		private final SQLite3SelectStatement select;
@@ -40,6 +54,11 @@ public class SQLite3Expression {
 
 		public SQLite3SelectStatement getSelect() {
 			return select;
+		}
+
+		@Override
+		public CollateSequence getExplicitCollateSequence() {
+			return null;
 		}
 
 	}
@@ -72,6 +91,11 @@ public class SQLite3Expression {
 			return type;
 		}
 
+		@Override
+		public CollateSequence getExplicitCollateSequence() {
+			return null;
+		}
+
 	}
 
 	public static class Subquery extends SQLite3Expression {
@@ -88,6 +112,11 @@ public class SQLite3Expression {
 
 		public String getQuery() {
 			return query;
+		}
+
+		@Override
+		public CollateSequence getExplicitCollateSequence() {
+			return null;
 		}
 
 	}
@@ -194,6 +223,11 @@ public class SQLite3Expression {
 			}
 		}
 
+		@Override
+		public CollateSequence getExplicitCollateSequence() {
+			return expression.getExplicitCollateSequence();
+		}
+
 	}
 
 	public static class BetweenOperation extends SQLite3Expression {
@@ -227,6 +261,17 @@ public class SQLite3Expression {
 			return right;
 		}
 
+		@Override
+		public CollateSequence getExplicitCollateSequence() {
+			if (expr.getExplicitCollateSequence() != null) {
+				return expr.getExplicitCollateSequence();
+			} else if (left.getExplicitCollateSequence() != null) {
+				return left.getExplicitCollateSequence();
+			} else {
+				return right.getExplicitCollateSequence();
+			}
+		}
+
 	}
 
 	public static class Function extends SQLite3Expression {
@@ -245,6 +290,16 @@ public class SQLite3Expression {
 
 		public String getName() {
 			return name;
+		}
+
+		@Override
+		public CollateSequence getExplicitCollateSequence() {
+			for (SQLite3Expression arg : arguments) {
+				if (arg.getExplicitCollateSequence() != null) {
+					return arg.getExplicitCollateSequence();
+				}
+			}
+			return null;
 		}
 
 	}
@@ -271,24 +326,37 @@ public class SQLite3Expression {
 			return ordering;
 		}
 
+		@Override
+		public CollateSequence getExplicitCollateSequence() {
+			return expression.getExplicitCollateSequence();
+		}
+
 	}
 
 	public static class CollateOperation extends SQLite3Expression {
 
 		private final SQLite3Expression expression;
-		private final String collate;
+		private final CollateSequence collate;
 
-		public CollateOperation(SQLite3Expression expression, String collate) {
+		public CollateOperation(SQLite3Expression expression, CollateSequence collate) {
 			this.expression = expression;
 			this.collate = collate;
 		}
 
-		public String getCollate() {
+		public CollateSequence getCollate() {
 			return collate;
 		}
 
 		public SQLite3Expression getExpression() {
 			return expression;
+		}
+
+		// If either operand has an explicit collating function assignment using the
+		// postfix COLLATE operator, then the explicit collating function is used for
+		// comparison, with precedence to the collating function of the left operand.
+		@Override
+		public CollateSequence getExplicitCollateSequence() {
+			return collate;
 		}
 
 	}
@@ -359,6 +427,11 @@ public class SQLite3Expression {
 			}
 		}
 
+		@Override
+		public CollateSequence getExplicitCollateSequence() {
+			return expression.getExplicitCollateSequence();
+		}
+
 	}
 
 	public static class InOperation extends SQLite3Expression {
@@ -377,6 +450,20 @@ public class SQLite3Expression {
 
 		public List<SQLite3Expression> getRight() {
 			return right;
+		}
+
+		@Override
+		public CollateSequence getExplicitCollateSequence() {
+			if (left.getExplicitCollateSequence() != null) {
+				return left.getExplicitCollateSequence();
+			} else {
+				for (SQLite3Expression expr : getRight()) {
+					if (expr.getExplicitCollateSequence() != null) {
+						return expr.getExplicitCollateSequence();
+					}
+				}
+				return null;
+			}
 		}
 	}
 
@@ -427,7 +514,7 @@ public class SQLite3Expression {
 			// MATCH("MATCH"),
 			// REGEXP("REGEXP"),
 
-			SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
+			SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right, CollateSequence collate) {
 				return null;
 			}
 
@@ -489,9 +576,26 @@ public class SQLite3Expression {
 				} else if (rightAffinity == TypeAffinity.TEXT && leftAffinity == TypeAffinity.NONE) {
 					left = left.applyTextAffinity();
 				}
-				return apply(left, right);
+				CollateSequence seq = left.getExplicitCollateSequence();
+				if (seq == null) {
+					seq = right.getExplicitCollateSequence();
+				}
+				// TODO finish implementing
+//				if (seq == null) {
+//					seq = left.get
+//				}
+				return apply(left, right, null);
 			}
 
+		}
+
+		@Override
+		public CollateSequence getExplicitCollateSequence() {
+			if (left.getExplicitCollateSequence() != null) {
+				return left.getExplicitCollateSequence();
+			} else {
+				return right.getExplicitCollateSequence();
+			}
 		}
 
 	}
@@ -767,6 +871,15 @@ public class SQLite3Expression {
 
 		}
 
+		@Override
+		public CollateSequence getExplicitCollateSequence() {
+			if (left.getExplicitCollateSequence() != null) {
+				return left.getExplicitCollateSequence();
+			} else {
+				return right.getExplicitCollateSequence();
+			}
+		}
+
 		private final BinaryOperator operation;
 		private final SQLite3Expression left;
 		private final SQLite3Expression right;
@@ -828,6 +941,15 @@ public class SQLite3Expression {
 			return operator;
 		}
 
+		@Override
+		public CollateSequence getExplicitCollateSequence() {
+			if (left.getExplicitCollateSequence() != null) {
+				return left.getExplicitCollateSequence();
+			} else {
+				return right.getExplicitCollateSequence();
+			}
+		}
+
 		public enum LogicalOperator {
 			AND, OR
 		}
@@ -874,6 +996,16 @@ public class SQLite3Expression {
 			default:
 				throw new AssertionError(column);
 			}
+		}
+
+		@Override
+		public CollateSequence getExplicitCollateSequence() {
+			return null;
+		}
+
+		@Override
+		public CollateSequence getImplicitCollateSequence() {
+			return column.getCollateSequence();
 		}
 
 	}

@@ -14,6 +14,7 @@ import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation.BinaryComparisonOperator;
 import lama.sqlite3.gen.SQLite3Cast;
 import lama.sqlite3.schema.SQLite3DataType;
+import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
 
 public abstract class SQLite3Constant extends SQLite3Expression {
 
@@ -302,8 +303,9 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 				// SELECT 3.0 GLOB "3.0"; -- 1
 				// SELECT 3.0 != "3.0"; -- 1
 				// SELECT 3.0 IS NOT "3.0"; -- 1
-				values = new ArrayList<>(Arrays.asList(BinaryComparisonOperator.SMALLER, BinaryComparisonOperator.SMALLER_EQUALS,
-						BinaryComparisonOperator.IS_NOT, BinaryComparisonOperator.NOT_EQUALS));
+				values = new ArrayList<>(
+						Arrays.asList(BinaryComparisonOperator.SMALLER, BinaryComparisonOperator.SMALLER_EQUALS,
+								BinaryComparisonOperator.IS_NOT, BinaryComparisonOperator.NOT_EQUALS));
 //				if (String.valueOf(value).contentEquals(cons.asString())) {
 //					values.addAll(Arrays.asList(BinaryOperator.LIKE, BinaryOperator.GLOB));
 //				}
@@ -312,8 +314,9 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 			} else {
 				assert cons instanceof SQLite3BinaryConstant;
 				// An INTEGER or REAL value is less than any TEXT or BLOB value.
-				values = new ArrayList<>(Arrays.asList(BinaryComparisonOperator.SMALLER, BinaryComparisonOperator.SMALLER_EQUALS,
-						BinaryComparisonOperator.IS_NOT, BinaryComparisonOperator.NOT_EQUALS));
+				values = new ArrayList<>(
+						Arrays.asList(BinaryComparisonOperator.SMALLER, BinaryComparisonOperator.SMALLER_EQUALS,
+								BinaryComparisonOperator.IS_NOT, BinaryComparisonOperator.NOT_EQUALS));
 				// TODO what about like and glob
 			}
 			if (shouldBeTrue) {
@@ -348,26 +351,27 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 	private static List<BinaryComparisonOperator> equalsList(boolean withGlob) {
 		List<BinaryComparisonOperator> values;
 		if (withGlob) {
-			values = Arrays.asList(BinaryComparisonOperator.EQUALS, BinaryComparisonOperator.IS, BinaryComparisonOperator.GREATER_EQUALS,
-					BinaryComparisonOperator.SMALLER_EQUALS); // , BinaryOperator.GLOB
+			values = Arrays.asList(BinaryComparisonOperator.EQUALS, BinaryComparisonOperator.IS,
+					BinaryComparisonOperator.GREATER_EQUALS, BinaryComparisonOperator.SMALLER_EQUALS); // ,
+																										// BinaryOperator.GLOB
 		} else {
-			values = Arrays.asList(BinaryComparisonOperator.EQUALS, BinaryComparisonOperator.IS, BinaryComparisonOperator.GREATER_EQUALS,
-					BinaryComparisonOperator.SMALLER_EQUALS);
+			values = Arrays.asList(BinaryComparisonOperator.EQUALS, BinaryComparisonOperator.IS,
+					BinaryComparisonOperator.GREATER_EQUALS, BinaryComparisonOperator.SMALLER_EQUALS);
 		}
 		return values;
 	}
 
 	private static List<BinaryComparisonOperator> smallerThanList() {
 		List<BinaryComparisonOperator> values;
-		values = Arrays.asList(BinaryComparisonOperator.SMALLER, BinaryComparisonOperator.SMALLER_EQUALS, BinaryComparisonOperator.IS_NOT,
-				BinaryComparisonOperator.NOT_EQUALS);
+		values = Arrays.asList(BinaryComparisonOperator.SMALLER, BinaryComparisonOperator.SMALLER_EQUALS,
+				BinaryComparisonOperator.IS_NOT, BinaryComparisonOperator.NOT_EQUALS);
 		return values;
 	}
 
 	private static List<BinaryComparisonOperator> greaterThanList() {
 		List<BinaryComparisonOperator> values;
-		values = Arrays.asList(BinaryComparisonOperator.GREATER, BinaryComparisonOperator.GREATER_EQUALS, BinaryComparisonOperator.IS_NOT,
-				BinaryComparisonOperator.NOT_EQUALS);
+		values = Arrays.asList(BinaryComparisonOperator.GREATER, BinaryComparisonOperator.GREATER_EQUALS,
+				BinaryComparisonOperator.IS_NOT, BinaryComparisonOperator.NOT_EQUALS);
 		return values;
 	}
 
@@ -649,6 +653,11 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 	@Override
 	public SQLite3Constant getExpectedValue() {
 		return this;
+	}
+
+	@Override
+	public CollateSequence getExplicitCollateSequence() {
+		return null;
 	}
 
 	@Override
