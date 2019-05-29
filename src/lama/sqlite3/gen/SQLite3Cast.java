@@ -1,5 +1,6 @@
 package lama.sqlite3.gen;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -55,8 +56,14 @@ public class SQLite3Cast {
 					String substring = asString.substring(0, i);
 					Pattern p = Pattern.compile("[+-]?\\d\\d*");
 					if (p.matcher(substring).matches()) {
-						long val = Long.valueOf(substring);
-						return SQLite3Constant.createIntConstant(val);
+						BigDecimal bg = new BigDecimal(substring);
+						long result;
+						try {
+							result = bg.longValueExact();
+						} catch (ArithmeticException e) {
+							result = Long.MAX_VALUE;
+						}
+						return SQLite3Constant.createIntConstant(result);
 					}
 				} catch (Exception e) {
 

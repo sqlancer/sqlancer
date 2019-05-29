@@ -52,7 +52,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		}
 
 		@Override
-		public SQLite3Constant applyEquals(SQLite3Constant right) {
+		public SQLite3Constant applyEquals(SQLite3Constant right, CollateSequence collate) {
 			return SQLite3Constant.createNullConstant();
 		}
 
@@ -107,7 +107,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		}
 
 		@Override
-		public SQLite3Constant applyEquals(SQLite3Constant right) {
+		public SQLite3Constant applyEquals(SQLite3Constant right, CollateSequence collate) {
 			if (right instanceof SQLite3RealConstant) {
 				if (Double.isInfinite(right.asDouble())) {
 					return SQLite3Constant.createFalse();
@@ -236,7 +236,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		}
 
 		@Override
-		public SQLite3Constant applyEquals(SQLite3Constant right) {
+		public SQLite3Constant applyEquals(SQLite3Constant right, CollateSequence collate) {
 			if (right instanceof SQLite3RealConstant) {
 				return SQLite3Constant.createBoolean(value == right.asDouble());
 			} else if (right instanceof SQLite3IntConstant) {
@@ -440,9 +440,37 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		}
 
 		@Override
-		public SQLite3Constant applyEquals(SQLite3Constant right) {
-			// TODO implement collate
-			return null;
+		public SQLite3Constant applyEquals(SQLite3Constant right, CollateSequence collate) {
+			if (right.isNull()) {
+				return SQLite3Constant.createNullConstant();
+			} else if (right instanceof SQLite3TextConstant) {
+				String other = right.asString();
+				boolean equals;
+				switch (collate) {
+				case BINARY:
+					equals = text.equals(other);
+					break;
+				case NOCASE:
+					equals = text.equalsIgnoreCase(other);
+					break;
+				case RTRIM:
+					equals = rtrim(text).equals(rtrim(other));
+					break;
+				default:
+					throw new AssertionError(collate);
+				}
+				return SQLite3Constant.createBoolean(equals);
+			} else {
+				return SQLite3Constant.createFalse();
+			}
+		}
+
+		private static String rtrim(String s) {
+			int i = s.length() - 1;
+			while (i >= 0 && Character.isWhitespace(s.charAt(i))) {
+				i--;
+			}
+			return s.substring(0, i + 1);
 		}
 
 		@Override
@@ -581,7 +609,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		}
 
 		@Override
-		public SQLite3Constant applyEquals(SQLite3Constant right) {
+		public SQLite3Constant applyEquals(SQLite3Constant right, CollateSequence collate) {
 			// FIXME
 			return null;
 		}
@@ -681,8 +709,12 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		return new SQLite3Constant.SQLite3IntConstant(tr ? 1 : 0);
 	}
 
-	public abstract SQLite3Constant applyEquals(SQLite3Constant right);
+	public abstract SQLite3Constant applyEquals(SQLite3Constant right, CollateSequence collate);
 
 	public abstract SQLite3Constant castToBoolean();
+
+	public SQLite3Constant applyEquals(SQLite3Constant right) {
+		return applyEquals(right, null);
+	}
 
 }

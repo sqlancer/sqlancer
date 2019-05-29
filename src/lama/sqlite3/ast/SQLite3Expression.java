@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import lama.Randomly;
+import lama.sqlite3.ast.SQLite3Constant.SQLite3IntConstant;
 import lama.sqlite3.gen.SQLite3Cast;
 import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema.Column;
@@ -507,8 +508,67 @@ public abstract class SQLite3Expression {
 		}
 
 		public enum BinaryComparisonOperator {
-			SMALLER("<"), SMALLER_EQUALS("<="), GREATER(">"), GREATER_EQUALS(">="), EQUALS("=", "=="),
-			NOT_EQUALS("!=", "<>"), IS("IS"), IS_NOT("IS NOT"),
+			SMALLER("<"), SMALLER_EQUALS("<="), GREATER(">"), GREATER_EQUALS(">="), EQUALS("=", "==") {
+				@Override
+				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right, CollateSequence collate) {
+					return left.applyEquals(right, collate);
+				}
+
+			},
+			NOT_EQUALS("!=", "<>") {
+				@Override
+				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right, CollateSequence collate) {
+					if (left == null || right == null) {
+						return null;
+					}
+					if (left.isNull() || right.isNull()) {
+						return SQLite3Constant.createNullConstant();
+					} else {
+						SQLite3Constant applyEquals = left.applyEquals(right, collate);
+						if (applyEquals == null) {
+							return null;
+						}
+						boolean equals = applyEquals.asInt() == 1;
+						return SQLite3Constant.createBoolean(!equals);
+					}
+				}
+
+			},
+			IS("IS") {
+				@Override
+				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right, CollateSequence collate) {
+					if (left == null || right == null) {
+						return null;
+					} else if (left.isNull()) {
+						return SQLite3Constant.createBoolean(right.isNull());
+					} else if (right.isNull()) {
+						return SQLite3Constant.createFalse();
+					} else {
+						return left.applyEquals(right, collate);
+					}
+				}
+
+			},
+			IS_NOT("IS NOT") {
+				@Override
+				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right, CollateSequence collate) {
+					if (left == null || right == null) {
+						return null;
+					} else if (left.isNull()) {
+						return SQLite3Constant.createBoolean(!right.isNull());
+					} else if (right.isNull()) {
+						return SQLite3Constant.createTrue();
+					} else {
+						SQLite3Constant applyEquals = left.applyEquals(right, collate);
+						if (applyEquals == null) {
+							return null;
+						}
+						boolean equals = applyEquals.asInt() == 1;
+						return SQLite3Constant.createBoolean(!equals);
+					}
+				}
+
+			},
 			// IN("IN"),
 			LIKE("LIKE"), GLOB("GLOB");
 			// MATCH("MATCH"),
@@ -564,8 +624,8 @@ public abstract class SQLite3Expression {
 						|| rightAffinity == TypeAffinity.BLOB || rightAffinity == TypeAffinity.NONE)) {
 					right = right.applyNumericAffinity();
 				} else if (rightAffinity.isNumeric()
-						&& (leftAffinity == TypeAffinity.TEXT || leftAffinity == TypeAffinity.BLOB)
-						|| leftAffinity == TypeAffinity.NONE) {
+						&& (leftAffinity == TypeAffinity.TEXT || leftAffinity == TypeAffinity.BLOB
+						|| leftAffinity == TypeAffinity.NONE)) {
 					left = left.applyNumericAffinity();
 				}
 
@@ -576,15 +636,28 @@ public abstract class SQLite3Expression {
 				} else if (rightAffinity == TypeAffinity.TEXT && leftAffinity == TypeAffinity.NONE) {
 					left = left.applyTextAffinity();
 				}
+				// If either operand has an explicit collating function assignment using the
+				// postfix COLLATE operator, then the explicit collating function is used for
+				// comparison, with precedence to the collating function of the left operand.
 				CollateSequence seq = left.getExplicitCollateSequence();
 				if (seq == null) {
 					seq = right.getExplicitCollateSequence();
 				}
-				// TODO finish implementing
-//				if (seq == null) {
-//					seq = left.get
-//				}
-				return apply(left, right, null);
+				// If either operand is a column, then the collating function of that column is
+				// used with precedence to the left operand. For the purposes of the previous
+				// sentence, a column name preceded by one or more unary "+" operators is still
+				// considered a column name.
+				if (seq == null) {
+					seq = left.getImplicitCollateSequence();
+				}
+				if (seq == null) {
+					seq = right.getImplicitCollateSequence();
+				}
+				// Otherwise, the BINARY collating function is used for comparison.
+				if (seq == null) {
+					seq = CollateSequence.BINARY;
+				}
+				return apply(left, right, seq);
 			}
 
 		}
