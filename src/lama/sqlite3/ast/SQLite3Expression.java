@@ -623,9 +623,8 @@ public abstract class SQLite3Expression {
 				if (leftAffinity.isNumeric() && (rightAffinity == TypeAffinity.TEXT
 						|| rightAffinity == TypeAffinity.BLOB || rightAffinity == TypeAffinity.NONE)) {
 					right = right.applyNumericAffinity();
-				} else if (rightAffinity.isNumeric()
-						&& (leftAffinity == TypeAffinity.TEXT || leftAffinity == TypeAffinity.BLOB
-						|| leftAffinity == TypeAffinity.NONE)) {
+				} else if (rightAffinity.isNumeric() && (leftAffinity == TypeAffinity.TEXT
+						|| leftAffinity == TypeAffinity.BLOB || leftAffinity == TypeAffinity.NONE)) {
 					left = left.applyNumericAffinity();
 				}
 
@@ -691,11 +690,6 @@ public abstract class SQLite3Expression {
 						return null;
 					}
 					return SQLite3Constant.createTextConstant(leftText.asString() + rightText.asString());
-					/*
-					 * String leftStr = left.getStringRepresentation(); String rightStr =
-					 * right.getStringRepresentation(); return
-					 * SQLite3Constant.createTextConstant(leftStr + rightStr);
-					 */
 				}
 			},
 			MULTIPLY("*"), DIVIDE("/"), // division by zero results in zero
@@ -781,15 +775,15 @@ public abstract class SQLite3Expression {
 				@Override
 				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
 					return applyIntOperation(left, right, (leftResult, rightResult) -> {
-						
-							if (rightResult >= 0) {
-								if (rightResult >= Long.SIZE) {
-									return 0L;
-								}
-								return leftResult << rightResult;
-							} else {
-								return SHIFT_RIGHT.apply(left, SQLite3IntConstant.createIntConstant(-rightResult)).asInt();
+
+						if (rightResult >= 0) {
+							if (rightResult >= Long.SIZE) {
+								return 0L;
 							}
+							return leftResult << rightResult;
+						} else {
+							return SHIFT_RIGHT.apply(left, SQLite3IntConstant.createIntConstant(-rightResult)).asInt();
+						}
 
 					});
 				}
@@ -850,37 +844,6 @@ public abstract class SQLite3Expression {
 							return SQLite3Constant.createTrue();
 						}
 					}
-					// if (left.getExpectedValue() == null) {
-//						if (right.getExpectedValue() == null) {
-//							return null;
-//						} else {
-//							Optional<Boolean> boolVal = SQLite3Cast.isTrue(right.getExpectedValue());
-//							if (boolVal.isPresent()) {
-//								if (!boolVal.get()) {
-//									return SQLite3Constant.createFalse();
-//								}
-//							} else {
-//								return SQLite3Constant.createNullConstant();
-//							}
-//						}
-//					}
-//					Optional<Boolean> boolVal = SQLite3Cast.isTrue(left.getExpectedValue());
-//					if (boolVal.isPresent()) {
-//						if (!boolVal.get()) {
-//							return SQLite3Constant.createFalse();
-//						}
-//					} else {
-//						return SQLite3Constant.createNullConstant();
-//					}
-//					if (right.getExpectedValue() == null) {
-//						return null;
-//					} else {
-//						if (boolVal.isPresent()) {
-//							return SQLite3Constant.createBoolean(boolVal.get());
-//						} else {
-//							return SQLite3Constant.createNullConstant();
-//						}
-//					}
 				}
 
 			},
@@ -902,34 +865,6 @@ public abstract class SQLite3Expression {
 							return SQLite3Constant.createFalse();
 						}
 					}
-//					if (left.getExpectedValue() == null) {
-//						if (right.getExpectedValue() == null) {
-//							return null;
-//						} else {
-//							Optional<Boolean> boolVal = SQLite3Cast.isTrue(right.getExpectedValue());
-//							if (boolVal.isPresent() && boolVal.get()) {
-//								return SQLite3Constant.createTrue();
-//							} else {
-//								return null;
-//							}
-//						}
-//					} else {
-//						Optional<Boolean> boolVal = SQLite3Cast.isTrue(left.getExpectedValue());
-//						if (boolVal.isPresent() && boolVal.get()) {
-//							return SQLite3Constant.createTrue();
-//						} else {
-//							if (right.getExpectedValue() == null) {
-//								return null;
-//							} else {
-//								boolVal = SQLite3Cast.isTrue(right.getExpectedValue());
-//								if (boolVal.isPresent()) {
-//									return SQLite3Constant.createBoolean(boolVal.get());
-//								} else {
-//									return SQLite3Constant.createNullConstant();
-//								}
-//							}
-//						}
-//					}
 				}
 			};
 
