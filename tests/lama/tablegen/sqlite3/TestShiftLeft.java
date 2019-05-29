@@ -19,6 +19,7 @@ public class TestShiftLeft {
 	SQLite3Constant intFifty = SQLite3TextConstant.createIntConstant(50);
 	SQLite3Constant intHundred = SQLite3IntConstant.createIntConstant(100);
 	SQLite3Constant intMax = SQLite3IntConstant.createIntConstant(Long.MAX_VALUE);
+	SQLite3Constant intMin = SQLite3Constant.createIntConstant(Long.MIN_VALUE);
 	SQLite3Constant minusThree = SQLite3Constant.createIntConstant(-3);
 	SQLite3Constant intMinusHundred = SQLite3Constant.createIntConstant(-100);
 	SQLite3Constant intMinusOne = SQLite3Constant.createIntConstant(-1);
@@ -87,12 +88,25 @@ public class TestShiftLeft {
 	}
 
 	@Test
-	public void test10() { // SELECT -1285817674 >> -1792583644; -- -1
+	public void test10() { // SELECT -1285817674 >> -1792583644; -- 0
 		SQLite3Constant largeNegative1 = SQLite3Constant.createIntConstant(-1285817674);
 		SQLite3Constant largeNegative2 = SQLite3Constant.createIntConstant(-1792583644);
 		BinaryOperation shift = new SQLite3Expression.BinaryOperation(largeNegative1, largeNegative2,
 				BinaryOperator.SHIFT_RIGHT);
 		assertEquals(0, shift.getExpectedValue().asInt());
+	}
+
+	@Test
+	public void test11() { // SELECT -9223372036854775807 << -9223372036854775807 -- -1
+		BinaryOperation shift = new SQLite3Expression.BinaryOperation(intMin, intMin, BinaryOperator.SHIFT_LEFT);
+		assertEquals(-1, shift.getExpectedValue().asInt());
+	}
+
+	@Test
+	public void test12() { // SELECT -100 << -100 -- -1
+		BinaryOperation shift = new SQLite3Expression.BinaryOperation(intMinusHundred, intMinusHundred,
+				BinaryOperator.SHIFT_LEFT);
+		assertEquals(-1, shift.getExpectedValue().asInt());
 	}
 
 	// right shift
@@ -166,6 +180,13 @@ public class TestShiftLeft {
 		BinaryOperation shift = new SQLite3Expression.BinaryOperation(largeNegative1, largeNegative2,
 				BinaryOperator.SHIFT_RIGHT);
 		assertEquals(0, shift.getExpectedValue().asInt());
+	}
+
+	@Test
+	public void testRightShift11() { // SELECT -1 >> 100; -- -1
+		BinaryOperation shift = new SQLite3Expression.BinaryOperation(intMinusOne, intHundred,
+				BinaryOperator.SHIFT_RIGHT);
+		assertEquals(-1, shift.getExpectedValue().asInt());
 	}
 
 }
