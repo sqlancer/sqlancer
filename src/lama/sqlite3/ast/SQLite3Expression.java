@@ -703,18 +703,41 @@ public abstract class SQLite3Expression {
 					}
 				}
 			},
-			SHIFT_LEFT("<<"), SHIFT_RIGHT(">>") {
+			SHIFT_LEFT("<<") {
 
 				@Override
 				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
-					return null;
-//					return applyIntOperation(left, right, (a, b) ->  {
-//						if (Math.abs(b) >= 64) {
-//							return 0L;
-//						} else {
-//							return b >= 0 ? a >> b: a << -b;
-//						}
-//					});
+					return applyIntOperation(left, right, (leftResult, rightResult) -> {
+						if (Math.abs(rightResult) >= Long.SIZE) {
+							return 0L;
+						} else {
+							if (rightResult >= 0) {
+								return leftResult << rightResult;
+							} else {
+								return leftResult >> -rightResult;
+							}
+						}
+
+					});
+				}
+
+			},
+			SHIFT_RIGHT(">>") {
+
+				@Override
+				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
+					return applyIntOperation(left, right, (leftResult, rightResult) -> {
+						if (Math.abs(rightResult) >= Long.SIZE) {
+							return 0L;
+						} else {
+							if (rightResult >= 0) {
+								return leftResult >> rightResult;
+							} else {
+								return leftResult << -rightResult;
+							}
+						}
+
+					});
 				}
 
 			},
