@@ -214,4 +214,17 @@ public class SQLite3Cast {
 		}
 	}
 
+	public static SQLite3Constant castToBlob(SQLite3Constant cons) {
+		if (cons.isNull()) {
+			return cons;
+		} else {
+			SQLite3Constant stringVal = SQLite3Cast.castToText(cons);
+			if (stringVal == null) {
+				return null;
+			} else {
+				return SQLite3Constant.createBinaryConstant(stringVal.asString().getBytes());
+			}
+		} 
+	}
+
 }

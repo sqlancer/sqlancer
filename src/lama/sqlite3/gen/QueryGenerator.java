@@ -170,7 +170,8 @@ public class QueryGenerator {
 
 	public static boolean shouldIgnoreException(SQLException e) {
 		return e.getMessage().contentEquals("[SQLITE_ERROR] SQL error or missing database (integer overflow)")
-				|| e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)");
+				|| e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)")
+				|| e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (second argument to likelihood() must be a constant between 0.0 and 1.0)");
 	}
 
 	public List<SQLite3Expression> generateOrderBy(List<Column> columns) {
@@ -302,7 +303,7 @@ public class QueryGenerator {
 				case NONE:
 					throw new AssertionError();
 				case BINARY:
-					type = Type.BINARY;
+					type = Type.BLOB;
 					break;
 				case INT:
 					type = Type.INTEGER;
@@ -1239,6 +1240,7 @@ public class QueryGenerator {
 		}
 		return null;
 	}
+	
 
 	public static String getRandomUnaryFunction() {
 		return Randomly.fromOptions("ABS", "CHAR", "HEX", "LENGTH", "LIKELY", "LOWER", "LTRIM", "QUOTE", "ROUND",

@@ -143,22 +143,19 @@ public abstract class SQLite3Expression {
 			INTEGER {
 				@Override
 				public SQLite3Constant apply(SQLite3Constant cons) {
-//					return null;
 					return SQLite3Cast.castToInt(cons);
 				}
 			},
 			NUMERIC {
 				@Override
 				public SQLite3Constant apply(SQLite3Constant cons) {
-//					return null;
 					return SQLite3Cast.castToNumeric(cons);
 				}
 			},
-			BINARY {
+			BLOB {
 				@Override
 				public SQLite3Constant apply(SQLite3Constant cons) {
-					// TODO Auto-generated method stub
-					return null;
+					return SQLite3Cast.castToBlob(cons);
 				}
 			};
 
@@ -209,7 +206,7 @@ public abstract class SQLite3Expression {
 		 */
 		public TypeAffinity getAffinity() {
 			switch (type.type) {
-			case BINARY:
+			case BLOB:
 				return TypeAffinity.BLOB;
 			case INTEGER:
 				return TypeAffinity.INTEGER;
