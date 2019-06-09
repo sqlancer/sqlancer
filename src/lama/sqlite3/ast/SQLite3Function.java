@@ -40,10 +40,16 @@ public class SQLite3Function extends SQLite3Expression {
 			@Override
 			public SQLite3Constant apply(SQLite3Constant... args) {
 				if (args[0].getDataType() == SQLite3DataType.TEXT) {
-					String text = args[0].asString().toLowerCase();
-					return SQLite3Constant.createTextConstant(text);
+					StringBuilder text = new StringBuilder(args[0].asString());
+					for (int i = 0; i < text.length(); i++) {
+						char c = text.charAt(i);
+						if (c >= 'A' && c <= 'Z') {
+							text.setCharAt(i, Character.toLowerCase(c));
+						}
+					}
+					return SQLite3Constant.createTextConstant(text.toString());
 				} else {
-					return args[0];
+					return SQLite3Cast.castToText(args[0]);
 				}
 			}
 		},
@@ -70,10 +76,16 @@ public class SQLite3Function extends SQLite3Expression {
 			@Override
 			public SQLite3Constant apply(SQLite3Constant... args) {
 				if (args[0].getDataType() == SQLite3DataType.TEXT) {
-					String text = args[0].asString().toUpperCase();
-					return SQLite3Constant.createTextConstant(text);
+					StringBuilder text = new StringBuilder(args[0].asString());
+					for (int i = 0; i < text.length(); i++) {
+						char c = text.charAt(i);
+						if (c >= 'a' && c <= 'z') {
+							text.setCharAt(i, Character.toUpperCase(c));
+						}
+					}
+					return SQLite3Constant.createTextConstant(text.toString());
 				} else {
-					return args[0];
+					return SQLite3Cast.castToText(args[0]);
 				}
 			}
 
@@ -136,5 +148,17 @@ public class SQLite3Function extends SQLite3Expression {
 	public ComputableFunction getFunc() {
 		return func;
 	}
+	
+	public SQLite3Constant getExpectedValue() {
+		SQLite3Constant[] constants = new SQLite3Constant[args.length];
+		for (int i = 0; i < constants.length; i++) {
+			constants[i] = args[i].getExpectedValue();
+			if (constants[i] == null) {
+				return null;
+			}
+		}
+		return func.apply(constants);
+		
+	};
 
 }
