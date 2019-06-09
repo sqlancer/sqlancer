@@ -1,5 +1,6 @@
 package lama.sqlite3.ast;
 
+import lama.IgnoreMeException;
 import lama.Randomly;
 import lama.sqlite3.gen.SQLite3Cast;
 import lama.sqlite3.schema.SQLite3DataType;
@@ -58,6 +59,12 @@ public class SQLite3Function extends SQLite3Expression {
 			}
 		},
 		LIKELY(1, "LIKELY") {
+			@Override
+			public SQLite3Constant apply(SQLite3Constant... args) {
+				return args[0];
+			}
+		},
+		LIKELIHOOD(2, "LIKELIHOOD") {
 			@Override
 			public SQLite3Constant apply(SQLite3Constant... args) {
 				return args[0];

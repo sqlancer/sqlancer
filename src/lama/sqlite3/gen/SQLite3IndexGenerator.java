@@ -58,6 +58,9 @@ public class SQLite3IndexGenerator {
 						 * https://www.mail-archive.com/sqlite-users@mailinglists.sqlite.org/msg115014.html).
 						 */
 						return;
+					} else if (e.getMessage().startsWith(
+							"[SQLITE_ERROR] SQL error or missing database (second argument to likelihood() must be a constant between 0.0 and 1.0)")) {
+						return;
 					} else {
 						throw e;
 					}

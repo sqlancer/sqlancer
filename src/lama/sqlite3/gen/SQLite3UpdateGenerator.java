@@ -44,6 +44,9 @@ public class SQLite3UpdateGenerator {
 					} else if (e.getMessage()
 							.startsWith("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)")) {
 						return;
+					} else if (e.getMessage().startsWith(
+							"[SQLITE_ERROR] SQL error or missing database (second argument to likelihood() must be a constant between 0.0 and 1.0)")) {
+						return;
 					}
 
 					else {
