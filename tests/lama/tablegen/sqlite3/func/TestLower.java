@@ -1,4 +1,4 @@
-package lama.tablegen.sqlite3;
+package lama.tablegen.sqlite3.func;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
