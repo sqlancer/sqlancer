@@ -610,8 +610,23 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 
 		@Override
 		public SQLite3Constant applyEquals(SQLite3Constant right, CollateSequence collate) {
-			// FIXME
-			return null;
+			if (right.isNull()) {
+				return SQLite3Constant.createNullConstant();
+			} else if (right.getDataType() == SQLite3DataType.BINARY) {
+				byte[] otherArr = right.asBinary();
+				if (bytes.length == otherArr.length) {
+					for (int i = 0; i < bytes.length; i++) {
+						if (bytes[i] != otherArr[i]) {
+							return SQLite3Constant.createFalse();
+						}
+					}
+					return SQLite3Constant.createTrue();
+				} else {
+					return SQLite3Constant.createFalse();
+				}
+			} else {
+				return SQLite3Constant.createFalse();
+			}
 		}
 
 		@Override
