@@ -6,12 +6,12 @@ import lama.Main;
 import lama.Randomly;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
-import lama.sqlite3.ast.SQLite3Function;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation.BinaryComparisonOperator;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation.PostfixUnaryOperator;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
+import lama.sqlite3.ast.SQLite3Function;
 import lama.sqlite3.ast.SQLite3Function.ComputableFunction;
 import lama.sqlite3.ast.UnaryOperation;
 import lama.sqlite3.ast.UnaryOperation.UnaryOperator;
@@ -126,7 +126,11 @@ public class SQLite3ExpressionGenerator {
 	private SQLite3Expression getComputableFunction(List<Column> columns, int depth, boolean deterministicOnly,
 			Randomly r) {
 		ComputableFunction func = ComputableFunction.getRandomFunction();
-		SQLite3Expression[] args = new SQLite3Expression[func.getNrArgs()];
+		int nrArgs = func.getNrArgs();
+		if (func.isVariadic()) {
+			nrArgs += Randomly.smallNumber();
+		}
+		SQLite3Expression[] args = new SQLite3Expression[nrArgs];
 		for (int i = 0; i < args.length; i++) {
 			args[i] = getRandomExpression(columns, depth + 1, deterministicOnly, r);
 		}

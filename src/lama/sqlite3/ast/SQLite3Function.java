@@ -40,6 +40,25 @@ public class SQLite3Function extends SQLite3Expression {
 			}
 		},
 
+		COALESCE(2, "COALESCE") {
+
+			@Override
+			public SQLite3Constant apply(SQLite3Constant... args) {
+				for (SQLite3Constant arg : args) {
+					if (!arg.isNull()) {
+						return arg;
+					}
+				}
+				return SQLite3Constant.createNullConstant();
+			}
+
+			@Override
+			public boolean isVariadic() {
+				return true;
+			}
+
+		},
+
 		LOWER(1, "LOWER") {
 			@Override
 			public SQLite3Constant apply(SQLite3Constant... args) {
@@ -221,16 +240,19 @@ public class SQLite3Function extends SQLite3Expression {
 			this.functionName = functionName;
 		}
 
+		/**
+		 * Gets the number of arguments if the function is non-variadic. If the function
+		 * is variadic, the minimum number of arguments is returned.
+		 */
 		public int getNrArgs() {
 			return nrArgs;
 		}
 
 		public abstract SQLite3Constant apply(SQLite3Constant... args);
-		
+
 		public SQLite3Constant apply(SQLite3Constant[] evaluatedArgs, CollateSequence collate) {
 			return apply(evaluatedArgs);
 		}
-
 
 		public static ComputableFunction getRandomFunction() {
 			return Randomly.fromOptions(ComputableFunction.values());
@@ -239,6 +261,10 @@ public class SQLite3Function extends SQLite3Expression {
 		@Override
 		public String toString() {
 			return functionName;
+		}
+
+		public boolean isVariadic() {
+			return false;
 		}
 
 	}
