@@ -18,7 +18,7 @@ public class SQLite3Function extends SQLite3Expression {
 
 	public enum ComputableFunction {
 
-		ABS(1) {
+		ABS(1, "ABS") {
 			@Override
 			public SQLite3Constant apply(SQLite3Constant... args) {
 				SQLite3Constant castValue;
@@ -40,7 +40,7 @@ public class SQLite3Function extends SQLite3Expression {
 			}
 		},
 
-		LOWER(1) {
+		LOWER(1, "LOWER") {
 			@Override
 			public SQLite3Constant apply(SQLite3Constant... args) {
 				if (args[0].getDataType() == SQLite3DataType.TEXT) {
@@ -57,13 +57,13 @@ public class SQLite3Function extends SQLite3Expression {
 				}
 			}
 		},
-		LIKELY(1) {
+		LIKELY(1, "LIKELY") {
 			@Override
 			public SQLite3Constant apply(SQLite3Constant... args) {
 				return args[0];
 			}
 		},
-		IFNULL(2) {
+		IFNULL(2, "IFNULL") {
 			@Override
 			public SQLite3Constant apply(SQLite3Constant... args) {
 				for (SQLite3Expression arg : args) {
@@ -75,7 +75,7 @@ public class SQLite3Function extends SQLite3Expression {
 			}
 		},
 
-		UPPER(1) {
+		UPPER(1, "UPPER") {
 
 			@Override
 			public SQLite3Constant apply(SQLite3Constant... args) {
@@ -94,7 +94,7 @@ public class SQLite3Function extends SQLite3Expression {
 			}
 
 		},
-		TRIM(1) {
+		TRIM(1, "TRIM") {
 
 			@Override
 			public SQLite3Constant apply(SQLite3Constant... args) {
@@ -108,7 +108,59 @@ public class SQLite3Function extends SQLite3Expression {
 			}
 
 		},
-		TYPEOF(1) {
+		TRIM_TWO_ARGS(2, "TRIM") {
+
+			@Override
+			public SQLite3Constant apply(SQLite3Constant... args) {
+				if (args[0].isNull() || args[1].isNull()) {
+					return SQLite3Constant.createNullConstant();
+				}
+				SQLite3Constant str = SQLite3Cast.castToText(args[0]);
+				SQLite3Constant castToText = SQLite3Cast.castToText(args[1]);
+				if (str == null || castToText == null) {
+					return null;
+				}
+				String remove = castToText.asString();
+				StringBuilder text = new StringBuilder(str.asString());
+				int i = 0;
+				while (i < text.length()) {
+					boolean shouldRemoveChar = false;
+					char c = text.charAt(i);
+					for (char charToRemove : remove.toCharArray()) {
+						if (charToRemove == c) {
+							shouldRemoveChar = true;
+							break;
+						}
+					}
+					if (shouldRemoveChar) {
+						text.deleteCharAt(i);
+					} else {
+						break;
+					}
+				}
+				i = text.length() - 1;
+				while (i >= 0) {
+					boolean shouldRemoveChar = false;
+					char c = text.charAt(i);
+					for (char charToRemove : remove.toCharArray()) {
+						if (charToRemove == c) {
+							shouldRemoveChar = true;
+							break;
+						}
+					}
+					if (shouldRemoveChar) {
+						text.deleteCharAt(i);
+						i--;
+					} else {
+						break;
+					}
+				}
+				String string = text.toString();
+				assert string != null;
+				return SQLite3Constant.createTextConstant(string);
+			}
+		},
+		TYPEOF(1, "TYPEOF") {
 
 			@Override
 			public SQLite3Constant apply(SQLite3Constant... args) {
@@ -129,18 +181,20 @@ public class SQLite3Function extends SQLite3Expression {
 			}
 
 		},
-		UNLIKELY(1) {
+		UNLIKELY(1, "UNLIKELY") {
 			@Override
 			public SQLite3Constant apply(SQLite3Constant... args) {
 				return args[0];
 			}
 		};
 
-		private ComputableFunction(int nrArgs) {
-			this.nrArgs = nrArgs;
-		}
-
+		private String functionName;
 		final int nrArgs;
+
+		private ComputableFunction(int nrArgs, String functionName) {
+			this.nrArgs = nrArgs;
+			this.functionName = functionName;
+		}
 
 		public int getNrArgs() {
 			return nrArgs;
@@ -150,6 +204,11 @@ public class SQLite3Function extends SQLite3Expression {
 
 		public static ComputableFunction getRandomFunction() {
 			return Randomly.fromOptions(ComputableFunction.values());
+		}
+
+		@Override
+		public String toString() {
+			return functionName;
 		}
 
 	}
