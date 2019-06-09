@@ -61,7 +61,11 @@ public class SQLite3Cast {
 						try {
 							result = bg.longValueExact();
 						} catch (ArithmeticException e) {
-							result = Long.MAX_VALUE;
+							if (substring.startsWith("-")) {
+								result = Long.MIN_VALUE;
+							} else {
+								result = Long.MAX_VALUE;
+							}
 						}
 						return SQLite3Constant.createIntConstant(result);
 					}
