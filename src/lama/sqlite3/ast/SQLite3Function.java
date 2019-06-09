@@ -94,6 +94,20 @@ public class SQLite3Function extends SQLite3Expression {
 			}
 
 		},
+		TRIM(1) {
+
+			@Override
+			public SQLite3Constant apply(SQLite3Constant... args) {
+				SQLite3Constant str = SQLite3Cast.castToText(args[0]);
+				if (args[0].getDataType() == SQLite3DataType.TEXT) {
+					String text = str.asString();
+					return SQLite3Constant.createTextConstant(text.trim());
+				} else {
+					return str;
+				}
+			}
+
+		},
 		TYPEOF(1) {
 
 			@Override
@@ -152,7 +166,7 @@ public class SQLite3Function extends SQLite3Expression {
 	public ComputableFunction getFunc() {
 		return func;
 	}
-	
+
 	public SQLite3Constant getExpectedValue() {
 		SQLite3Constant[] constants = new SQLite3Constant[args.length];
 		for (int i = 0; i < constants.length; i++) {
@@ -162,7 +176,7 @@ public class SQLite3Function extends SQLite3Expression {
 			}
 		}
 		return func.apply(constants);
-		
+
 	};
 
 }
