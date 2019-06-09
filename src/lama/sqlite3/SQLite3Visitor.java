@@ -2,6 +2,7 @@ package lama.sqlite3;
 
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
+import lama.sqlite3.ast.SQLite3Function;
 import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
@@ -78,6 +79,8 @@ public abstract class SQLite3Visitor {
 	public abstract void visit(Exist exist);
 	
 	public abstract void visit(Join join);
+	
+	public abstract void visit(SQLite3Function func);
 
 	public void visit(SQLite3Expression expr) {
 		if (expr instanceof BinaryOperation) {
@@ -114,6 +117,8 @@ public abstract class SQLite3Visitor {
 			visit((Exist) expr);
 		} else if (expr instanceof BinaryComparisonOperation) {
 			visit((BinaryComparisonOperation) expr);
+		} else if (expr instanceof SQLite3Function) {
+			visit((SQLite3Function) expr);
 		} else {
 			throw new AssertionError(expr);
 		}

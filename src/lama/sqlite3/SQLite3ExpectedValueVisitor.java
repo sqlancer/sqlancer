@@ -2,6 +2,7 @@ package lama.sqlite3;
 
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
+import lama.sqlite3.ast.SQLite3Function;
 import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
@@ -147,6 +148,14 @@ public class SQLite3ExpectedValueVisitor extends SQLite3Visitor {
 
 	public String get() {
 		return sb.toString();
+	}
+	
+	@Override
+	public void visit(SQLite3Function func) {
+		print(func);
+		for (SQLite3Expression expr : func.getArgs()) {
+			visit(expr);
+		}
 	}
 
 }

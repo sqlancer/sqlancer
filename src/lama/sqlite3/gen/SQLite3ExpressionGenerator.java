@@ -6,11 +6,13 @@ import lama.Main;
 import lama.Randomly;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
+import lama.sqlite3.ast.SQLite3Function;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation.BinaryComparisonOperator;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation.PostfixUnaryOperator;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
+import lama.sqlite3.ast.SQLite3Function.ComputableFunction;
 import lama.sqlite3.ast.UnaryOperation;
 import lama.sqlite3.ast.UnaryOperation.UnaryOperator;
 import lama.sqlite3.schema.SQLite3Schema.Column;
@@ -66,7 +68,7 @@ public class SQLite3ExpressionGenerator {
 
 	enum ExpressionType {
 		COLUMN_NAME, LITERAL_VALUE, UNARY_OPERATOR, POSTFIX_UNARY_OPERATOR, BINARY_OPERATOR, BETWEEN_OPERATOR,
-		UNARY_FUNCTION, CAST_EXPRESSION, BINARY_COMPARISON_OPERATOR
+		UNARY_FUNCTION, CAST_EXPRESSION, BINARY_COMPARISON_OPERATOR, KNOWN_RESULT_FUNCTION
 	}
 
 	public SQLite3Expression getRandomExpression(List<Column> columns, boolean deterministicOnly, Randomly r) {
@@ -107,6 +109,8 @@ public class SQLite3ExpressionGenerator {
 			return getBetweenOperator(columns, depth + 1, deterministicOnly, r);
 		case CAST_EXPRESSION:
 			return getCastOperator(columns, depth + 1, deterministicOnly, r);
+		case KNOWN_RESULT_FUNCTION:
+			return getComputableFunction(columns, depth + 1, deterministicOnly, r);
 		default:
 			throw new AssertionError(randomExpressionType);
 		}
@@ -117,6 +121,16 @@ public class SQLite3ExpressionGenerator {
 		TypeLiteral type = new SQLite3Expression.TypeLiteral(
 				Randomly.fromOptions(SQLite3Expression.TypeLiteral.Type.values()));
 		return new SQLite3Expression.Cast(type, expr);
+	}
+	
+	private SQLite3Expression getComputableFunction(List<Column> columns, int depth, boolean deterministicOnly,
+			Randomly r) {
+		ComputableFunction func = ComputableFunction.getRandomFunction();
+		SQLite3Expression[] args = new SQLite3Expression[func.getNrArgs()];
+		for (int i = 0; i < args.length; i++) {
+			args[i] = getRandomExpression(columns, depth + 1, deterministicOnly, r);
+		}
+		return new SQLite3Function(func, args);
 	}
 
 	private SQLite3Expression getBetweenOperator(List<Column> columns, int depth, boolean deterministicOnly,

@@ -23,6 +23,7 @@ import lama.sqlite3.ast.SQLite3Expression.OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Subquery;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
+import lama.sqlite3.ast.SQLite3Function;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 
 public class SQLite3ToStringVisitor extends SQLite3Visitor {
@@ -327,6 +328,19 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 		sb.append("(");
 		visit(op.getRight());
 		sb.append(")");
+		sb.append(")");
+	}
+
+	@Override
+	public void visit(SQLite3Function func) {
+		sb.append(func.getFunc());
+		sb.append("(");
+		for (int i = 0; i < func.getArgs().length; i++) {
+			if (i != 0) {
+				sb.append(", ");
+			}
+			visit(func.getArgs()[i]);
+		}
 		sb.append(")");
 	}
 }
