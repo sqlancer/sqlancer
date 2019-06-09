@@ -1,4 +1,4 @@
-package lama.tablegen.sqlite3;
+package lama.tablegen.sqlite3.cast;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.gen.SQLite3Cast;
 
-class TestCastBinaryToInt {
+class TestCastToInt {
 
 	@Test
 	void test1() {
