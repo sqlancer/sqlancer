@@ -2,7 +2,6 @@ package lama.sqlite3.ast;
 
 import lama.Randomly;
 import lama.sqlite3.gen.SQLite3Cast;
-import lama.sqlite3.gen.SQLite3ExpressionGenerator;
 import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
 
@@ -22,7 +21,12 @@ public class SQLite3Function extends SQLite3Expression {
 		ABS(1) {
 			@Override
 			public SQLite3Constant apply(SQLite3Constant... args) {
-				SQLite3Constant castValue = SQLite3Cast.castToInt(args[0]);
+				SQLite3Constant castValue;
+				if (args[0].getDataType() == SQLite3DataType.INT) {
+					castValue = SQLite3Cast.castToInt(args[0]);
+				} else {
+					castValue = SQLite3Cast.castToReal(args[0]);
+				}
 				if (castValue.isNull()) {
 					return castValue;
 				} else if (castValue.getDataType() == SQLite3DataType.INT) {
