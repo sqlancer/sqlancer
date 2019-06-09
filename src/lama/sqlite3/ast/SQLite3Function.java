@@ -1,6 +1,5 @@
 package lama.sqlite3.ast;
 
-import lama.IgnoreMeException;
 import lama.Randomly;
 import lama.sqlite3.gen.SQLite3Cast;
 import lama.sqlite3.schema.SQLite3DataType;
@@ -100,6 +99,25 @@ public class SQLite3Function extends SQLite3Expression {
 				}
 			}
 
+		},
+		NULLIF(2, "NULLIF") {
+			@Override
+			public SQLite3Constant apply(SQLite3Constant[] args, CollateSequence collateSequence) {
+				if (collateSequence == null) {
+					collateSequence = CollateSequence.BINARY;
+				}
+				SQLite3Constant equals = args[0].applyEquals(args[1], collateSequence);
+				if (SQLite3Cast.isTrue(equals).isPresent() && SQLite3Cast.isTrue(equals).get()) {
+					return SQLite3Constant.createNullConstant();
+				} else {
+					return args[0];
+				}
+			}
+
+			@Override
+			public SQLite3Constant apply(SQLite3Constant... args) {
+				return apply(args, null);
+			}
 		},
 		TRIM(1, "TRIM") {
 
@@ -208,6 +226,11 @@ public class SQLite3Function extends SQLite3Expression {
 		}
 
 		public abstract SQLite3Constant apply(SQLite3Constant... args);
+		
+		public SQLite3Constant apply(SQLite3Constant[] evaluatedArgs, CollateSequence collate) {
+			return apply(evaluatedArgs);
+		}
+
 
 		public static ComputableFunction getRandomFunction() {
 			return Randomly.fromOptions(ComputableFunction.values());
@@ -222,6 +245,11 @@ public class SQLite3Function extends SQLite3Expression {
 
 	@Override
 	public CollateSequence getExplicitCollateSequence() {
+		for (SQLite3Expression expr : args) {
+			if (expr.getExplicitCollateSequence() != null) {
+				return expr.getExplicitCollateSequence();
+			}
+		}
 		return null;
 	}
 
@@ -241,7 +269,14 @@ public class SQLite3Function extends SQLite3Expression {
 				return null;
 			}
 		}
-		return func.apply(constants);
+		CollateSequence collate = null;
+		for (int i = 0; i < args.length; i++) {
+			if (args[i].getExplicitCollateSequence() != null) {
+				collate = args[i].getExplicitCollateSequence();
+				break;
+			}
+		}
+		return func.apply(constants, collate);
 
 	};
 
