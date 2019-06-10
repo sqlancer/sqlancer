@@ -130,8 +130,7 @@ public abstract class SQLite3Expression {
 			TEXT {
 				@Override
 				public SQLite3Constant apply(SQLite3Constant cons) {
-					return null;
-//					return SQLite3Cast.castToText(cons);
+					return SQLite3Cast.castToText(cons);
 				}
 			},
 			REAL {
@@ -357,6 +356,11 @@ public abstract class SQLite3Expression {
 			return collate;
 		}
 
+		@Override
+		public SQLite3Constant getExpectedValue() {
+			return expression.getExpectedValue();
+		}
+
 	}
 
 	public static class PostfixUnaryOperation extends SQLite3Expression {
@@ -461,6 +465,46 @@ public abstract class SQLite3Expression {
 					}
 				}
 				return null;
+			}
+		}
+
+		@Override
+		public SQLite3Constant getExpectedValue() {
+			if (left.getExpectedValue() == null) {
+				return null;
+			}
+			if (right.isEmpty()) {
+				return SQLite3Constant.createFalse();
+			} else if (left.getExpectedValue().isNull()) {
+				return SQLite3Constant.createNullConstant();
+			} else {
+				boolean containsNull = false;
+				for (SQLite3Expression expr : getRight()) {
+					if (expr.getExpectedValue() == null) {
+						return null; // TODO: we can still compute something if the value is already contained
+					}
+					CollateSequence collate = left.getExplicitCollateSequence();
+					if (collate == null) {
+						collate = left.getImplicitCollateSequence();
+					}
+					if (collate == null) {
+						collate = CollateSequence.BINARY;
+					}
+					ConstantTuple convertedConstants = applyAffinities(left.getAffinity(), expr.getAffinity(),
+							left.getExpectedValue(), expr.getExpectedValue());
+					SQLite3Constant equals = left.getExpectedValue().applyEquals(convertedConstants.right, collate);
+					Optional<Boolean> isEquals = SQLite3Cast.isTrue(equals);
+					if (isEquals.isPresent() && isEquals.get()) {
+						return SQLite3Constant.createTrue();
+					} else if (!isEquals.isPresent()) {
+						containsNull = true;
+					}
+				}
+				if (containsNull) {
+					return SQLite3Constant.createNullConstant();
+				} else {
+					return SQLite3Constant.createFalse();
+				}
 			}
 		}
 	}
@@ -614,24 +658,11 @@ public abstract class SQLite3Expression {
 
 			public SQLite3Constant applyOperand(SQLite3Constant left, TypeAffinity leftAffinity, SQLite3Constant right,
 					TypeAffinity rightAffinity) {
-				// If one operand has INTEGER, REAL or NUMERIC affinity and the other operand
-				// has TEXT or BLOB or no affinity then NUMERIC affinity is applied to other
-				// operand.
-				if (leftAffinity.isNumeric() && (rightAffinity == TypeAffinity.TEXT
-						|| rightAffinity == TypeAffinity.BLOB || rightAffinity == TypeAffinity.NONE)) {
-					right = right.applyNumericAffinity();
-				} else if (rightAffinity.isNumeric() && (leftAffinity == TypeAffinity.TEXT
-						|| leftAffinity == TypeAffinity.BLOB || leftAffinity == TypeAffinity.NONE)) {
-					left = left.applyNumericAffinity();
-				}
 
-				// If one operand has TEXT affinity and the other has no affinity, then TEXT
-				// affinity is applied to the other operand.
-				if (leftAffinity == TypeAffinity.TEXT && rightAffinity == TypeAffinity.NONE) {
-					right = right.applyTextAffinity();
-				} else if (rightAffinity == TypeAffinity.TEXT && leftAffinity == TypeAffinity.NONE) {
-					left = left.applyTextAffinity();
-				}
+				ConstantTuple vals = applyAffinities(leftAffinity, rightAffinity, left, right);
+				left = vals.left;
+				right = vals.right;
+
 				// If either operand has an explicit collating function assignment using the
 				// postfix COLLATE operator, then the explicit collating function is used for
 				// comparison, with precedence to the collating function of the left operand.
@@ -1038,6 +1069,39 @@ public abstract class SQLite3Expression {
 			return column.getCollateSequence();
 		}
 
+	}
+
+	static class ConstantTuple {
+		private SQLite3Constant left;
+		private SQLite3Constant right;
+
+		public ConstantTuple(SQLite3Constant left, SQLite3Constant right) {
+			this.left = left;
+			this.right = right;
+		}
+	}
+
+	public static ConstantTuple applyAffinities(TypeAffinity leftAffinity, TypeAffinity rightAffinity,
+			SQLite3Constant left, SQLite3Constant right) {
+		// If one operand has INTEGER, REAL or NUMERIC affinity and the other operand
+		// has TEXT or BLOB or no affinity then NUMERIC affinity is applied to other
+		// operand.
+		if (leftAffinity.isNumeric() && (rightAffinity == TypeAffinity.TEXT || rightAffinity == TypeAffinity.BLOB
+				|| rightAffinity == TypeAffinity.NONE)) {
+			right = right.applyNumericAffinity();
+		} else if (rightAffinity.isNumeric() && (leftAffinity == TypeAffinity.TEXT || leftAffinity == TypeAffinity.BLOB
+				|| leftAffinity == TypeAffinity.NONE)) {
+			left = left.applyNumericAffinity();
+		}
+
+		// If one operand has TEXT affinity and the other has no affinity, then TEXT
+		// affinity is applied to the other operand.
+		if (leftAffinity == TypeAffinity.TEXT && rightAffinity == TypeAffinity.NONE) {
+			right = right.applyTextAffinity();
+		} else if (rightAffinity == TypeAffinity.TEXT && leftAffinity == TypeAffinity.NONE) {
+			left = left.applyTextAffinity();
+		}
+		return new ConstantTuple(left, right);
 	}
 
 }
