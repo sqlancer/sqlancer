@@ -1,5 +1,6 @@
 package lama.sqlite3.gen;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import lama.Main;
@@ -8,6 +9,7 @@ import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation.BinaryComparisonOperator;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
+import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation.PostfixUnaryOperator;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
@@ -17,6 +19,7 @@ import lama.sqlite3.ast.UnaryOperation;
 import lama.sqlite3.ast.UnaryOperation.UnaryOperator;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 import lama.sqlite3.schema.SQLite3Schema.RowValue;
+import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
 
 public class SQLite3ExpressionGenerator {
 
@@ -68,7 +71,7 @@ public class SQLite3ExpressionGenerator {
 
 	enum ExpressionType {
 		COLUMN_NAME, LITERAL_VALUE, UNARY_OPERATOR, POSTFIX_UNARY_OPERATOR, BINARY_OPERATOR, BETWEEN_OPERATOR,
-		UNARY_FUNCTION, CAST_EXPRESSION, BINARY_COMPARISON_OPERATOR, KNOWN_RESULT_FUNCTION
+		UNARY_FUNCTION, CAST_EXPRESSION, BINARY_COMPARISON_OPERATOR, KNOWN_RESULT_FUNCTION, IN_OPERATOR, COLLATE
 	}
 
 	public SQLite3Expression getRandomExpression(List<Column> columns, boolean deterministicOnly, Randomly r) {
@@ -111,6 +114,10 @@ public class SQLite3ExpressionGenerator {
 			return getCastOperator(columns, depth + 1, deterministicOnly, r);
 		case KNOWN_RESULT_FUNCTION:
 			return getComputableFunction(columns, depth + 1, deterministicOnly, r);
+		case IN_OPERATOR:
+			return getInOperator(columns, depth + 1, deterministicOnly, r);
+		case COLLATE:
+			return new CollateOperation(getRandomExpression(columns, depth + 1, deterministicOnly,  r), CollateSequence.random());
 		default:
 			throw new AssertionError(randomExpressionType);
 		}
@@ -154,6 +161,16 @@ public class SQLite3ExpressionGenerator {
 		BinaryOperator operator = BinaryOperator.getRandomOperator();
 		SQLite3Expression rightExpression = getRandomExpression(columns, depth + 1, deterministicOnly, r);
 		return new SQLite3Expression.BinaryOperation(leftExpression, rightExpression, operator);
+	}
+	
+	private SQLite3Expression getInOperator(List<Column> columns, int depth, boolean deterministicOnly,
+			Randomly r) {
+		SQLite3Expression leftExpression = getRandomExpression(columns, depth + 1, deterministicOnly, r);
+		List<SQLite3Expression> right = new ArrayList<>();
+		for (int i = 0; i < Randomly.smallNumber(); i++) {
+			right.add(getRandomExpression(columns, depth + 1, deterministicOnly, r));
+		}
+		return new SQLite3Expression.InOperation(leftExpression, right);
 	}
 
 	private SQLite3Expression getBinaryComparisonOperator(List<Column> columns, int depth, boolean deterministicOnly,
