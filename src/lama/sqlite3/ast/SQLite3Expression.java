@@ -360,6 +360,11 @@ public abstract class SQLite3Expression {
 		public SQLite3Constant getExpectedValue() {
 			return expression.getExpectedValue();
 		}
+		
+		@Override
+		public TypeAffinity getAffinity() {
+			return expression.getAffinity();
+		}
 
 	}
 
@@ -455,19 +460,15 @@ public abstract class SQLite3Expression {
 		}
 
 		@Override
+		// The collating sequence used for expressions of the form "x IN (y, z, ...)" is the collating sequence of x.
 		public CollateSequence getExplicitCollateSequence() {
 			if (left.getExplicitCollateSequence() != null) {
 				return left.getExplicitCollateSequence();
 			} else {
-				for (SQLite3Expression expr : getRight()) {
-					if (expr.getExplicitCollateSequence() != null) {
-						return expr.getExplicitCollateSequence();
-					}
-				}
 				return null;
 			}
 		}
-
+		
 		@Override
 		public SQLite3Constant getExpectedValue() {
 			if (left.getExpectedValue() == null) {
@@ -483,14 +484,14 @@ public abstract class SQLite3Expression {
 					if (expr.getExpectedValue() == null) {
 						return null; // TODO: we can still compute something if the value is already contained
 					}
-					CollateSequence collate = left.getExplicitCollateSequence();
+					CollateSequence collate = getExplicitCollateSequence();
 					if (collate == null) {
 						collate = left.getImplicitCollateSequence();
 					}
 					if (collate == null) {
 						collate = CollateSequence.BINARY;
 					}
-					ConstantTuple convertedConstants = applyAffinities(left.getAffinity(), expr.getAffinity(),
+					ConstantTuple convertedConstants = applyAffinities(left.getAffinity(), TypeAffinity.NONE,
 							left.getExpectedValue(), expr.getExpectedValue());
 					SQLite3Constant equals = left.getExpectedValue().applyEquals(convertedConstants.right, collate);
 					Optional<Boolean> isEquals = SQLite3Cast.isTrue(equals);
@@ -540,7 +541,7 @@ public abstract class SQLite3Expression {
 				return null;
 			}
 			return operation.applyOperand(left.getExpectedValue(), left.getAffinity(), right.getExpectedValue(),
-					right.getAffinity());
+					right.getAffinity(), left, right);
 		}
 
 		public static BinaryComparisonOperation create(SQLite3Expression leftVal, SQLite3Expression rightVal,
@@ -657,7 +658,7 @@ public abstract class SQLite3Expression {
 			}
 
 			public SQLite3Constant applyOperand(SQLite3Constant left, TypeAffinity leftAffinity, SQLite3Constant right,
-					TypeAffinity rightAffinity) {
+					TypeAffinity rightAffinity, SQLite3Expression origLeft, SQLite3Expression origRight) {
 
 				ConstantTuple vals = applyAffinities(leftAffinity, rightAffinity, left, right);
 				left = vals.left;
@@ -666,19 +667,19 @@ public abstract class SQLite3Expression {
 				// If either operand has an explicit collating function assignment using the
 				// postfix COLLATE operator, then the explicit collating function is used for
 				// comparison, with precedence to the collating function of the left operand.
-				CollateSequence seq = left.getExplicitCollateSequence();
+				CollateSequence seq = origLeft.getExplicitCollateSequence();
 				if (seq == null) {
-					seq = right.getExplicitCollateSequence();
+					seq = origRight.getExplicitCollateSequence();
 				}
 				// If either operand is a column, then the collating function of that column is
 				// used with precedence to the left operand. For the purposes of the previous
 				// sentence, a column name preceded by one or more unary "+" operators is still
 				// considered a column name.
 				if (seq == null) {
-					seq = left.getImplicitCollateSequence();
+					seq = origLeft.getImplicitCollateSequence();
 				}
 				if (seq == null) {
-					seq = right.getImplicitCollateSequence();
+					seq = origRight.getImplicitCollateSequence();
 				}
 				// Otherwise, the BINARY collating function is used for comparison.
 				if (seq == null) {

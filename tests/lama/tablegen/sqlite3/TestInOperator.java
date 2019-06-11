@@ -32,6 +32,16 @@ public class TestInOperator {
 	SQLite3Constant texta = SQLite3Constant.createTextConstant("a");
 	SQLite3Expression columnNoCaseAffinity = new ColumnName(
 			new Column("c0", SQLite3DataType.TEXT, false, false, CollateSequence.NOCASE), texta);
+	SQLite3Expression columnIntTextAffinity = new ColumnName(
+			new Column("c0", SQLite3DataType.TEXT, false, false, CollateSequence.NOCASE),
+			SQLite3Constant.createTextConstant("-1004118087"));
+
+	@Test
+	public void test() {
+		var inOp = new InOperation(columnIntTextAffinity, Arrays
+				.asList(new Cast(new TypeLiteral(Type.INTEGER), SQLite3Constant.createTextConstant("-1004118087.0"))));
+		assertEquals(1, inOp.getExpectedValue().asInt());
+	}
 
 	@Test // SELECT CAST(2 AS NUMERIC) in ('1', '2', '3') -- 1
 	public void testApplyAffinity1() {

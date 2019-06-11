@@ -8,7 +8,13 @@ import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Constant.SQLite3IntConstant;
 import lama.sqlite3.ast.SQLite3Constant.SQLite3TextConstant;
 import lama.sqlite3.ast.SQLite3Expression;
+import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation.BinaryComparisonOperator;
+import lama.sqlite3.ast.SQLite3Expression.ColumnName;
+import lama.sqlite3.ast.UnaryOperation;
+import lama.sqlite3.ast.UnaryOperation.UnaryOperator;
+import lama.sqlite3.schema.SQLite3DataType;
+import lama.sqlite3.schema.SQLite3Schema.Column;
 import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
 
 public class TestApplyEquals {
@@ -19,6 +25,7 @@ public class TestApplyEquals {
 	private SQLite3Constant zero = SQLite3Constant.createIntConstant(0);
 	private SQLite3Constant textZero = SQLite3Constant.createTextConstant("0");
 	private SQLite3Constant textThree = SQLite3Constant.createTextConstant("3");
+	private ColumnName column = new ColumnName(new Column("c0", SQLite3DataType.TEXT, false, true, null), SQLite3Constant.createBinaryConstant("a5d848c9"));
 
 	@Test
 	public void testNumbertextEquals1() {
@@ -50,6 +57,12 @@ public class TestApplyEquals {
 		assertEquals(0, positiveInf.applyEquals(negativeInf).asInt());
 	}
 
+	@Test // + t1.c0 = t1.c0
+	public void testApplyColumnEqualsInf() {
+		BinaryComparisonOperation isExpr = new BinaryComparisonOperation(new UnaryOperation(UnaryOperator.PLUS, column), column, BinaryComparisonOperator.IS);
+		assertEquals(1, isExpr.getExpectedValue().asInt());
+	}
+	
 	@Test
 	public void testNotEquals() {
 		SQLite3Constant createTextConstant = SQLite3TextConstant.createTextConstant("-21779103");
@@ -88,7 +101,13 @@ public class TestApplyEquals {
 
 		assertNoEqualStrings(" a", "a", CollateSequence.RTRIM);
 	}
-
+	
+	@Test
+	public void testSpaceRtrim() {
+		assertEqualStrings("", " ", CollateSequence.RTRIM);
+		assertEqualStrings(" ", "", CollateSequence.RTRIM);
+	}
+	
 	public void assertEqualStrings(String c1, String c2, CollateSequence collate) {
 		SQLite3Constant leftStr = SQLite3Constant.createTextConstant(c1);
 		SQLite3Constant rightStr = SQLite3Constant.createTextConstant(c2);
