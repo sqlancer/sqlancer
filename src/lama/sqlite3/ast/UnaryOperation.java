@@ -38,7 +38,7 @@ public class UnaryOperation extends SQLite3Expression {
 				}
 				if (constant.getDataType() == SQLite3DataType.TEXT
 						|| constant.getDataType() == SQLite3DataType.BINARY) {
-					constant = SQLite3Cast.castToNumeric(constant);
+					constant = SQLite3Cast.castToNumericFromNumOperand(constant);
 				}
 				if (constant.getDataType() == SQLite3DataType.INT) {
 					if (constant.asInt() == Long.MIN_VALUE) {

@@ -14,6 +14,7 @@ import lama.sqlite3.ast.UnaryOperation;
 import lama.sqlite3.ast.UnaryOperation.UnaryOperator;
 import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
 
 public class TestOperatorCornerCases {
 	
@@ -35,7 +36,7 @@ public class TestOperatorCornerCases {
 	
 	@Test
 	public void testMinusReal() {
-		SQLite3Expression val = new SQLite3Expression.ColumnName(new Column("c", SQLite3DataType.TEXT, false, false), SQLite3Constant.createTextConstant("1562730931.0"));
+		SQLite3Expression val = new SQLite3Expression.ColumnName(new Column("c", SQLite3DataType.TEXT, false, false, null), SQLite3Constant.createTextConstant("1562730931.0"));
 		UnaryOperation op = new UnaryOperation(UnaryOperator.MINUS, val);
 		assertEquals(op.getExpectedValue().asDouble(), -1562730931.0);
 	}
@@ -45,8 +46,15 @@ public class TestOperatorCornerCases {
 	
 	@Test
 	public void testEqualsTextInt() {
-		SQLite3Expression val = new SQLite3Expression.ColumnName(new Column("c", SQLite3DataType.TEXT, false, false), SQLite3Constant.createTextConstant("2126895850"));
+		SQLite3Expression val = new SQLite3Expression.ColumnName(new Column("c", SQLite3DataType.TEXT, false, false, null), SQLite3Constant.createTextConstant("2126895850"));
 		assertEquals(1, val.getExpectedValue().applyEquals(val.getExpectedValue()).asInt());
+	}
+	
+	@Test
+	public void testEqualsImplicitAffinity() {
+		SQLite3Expression val = new SQLite3Expression.ColumnName(new Column("c", SQLite3DataType.TEXT, false, false, CollateSequence.NOCASE), SQLite3Constant.createTextConstant("a"));
+		var equalsOp = new BinaryComparisonOperation(val, SQLite3Constant.createTextConstant("A"), BinaryComparisonOperator.IS);
+		assertEquals(1, equalsOp.getExpectedValue().asInt());
 	}
 	
 	// affinity

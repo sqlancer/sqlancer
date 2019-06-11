@@ -91,11 +91,19 @@ public class SQLite3Cast {
 			return numericValue;
 		}
 	}
+	
+	public static SQLite3Constant castToNumericFromNumOperand(SQLite3Constant value) {
+		return convertInternal(value, false);
+	}
 
 	/**
 	 * Applies numeric affinity to a value.
 	 */
 	public static SQLite3Constant castToNumeric(SQLite3Constant value) {
+		return convertInternal(value, true);
+	}
+
+	private static SQLite3Constant convertInternal(SQLite3Constant value, boolean convertRealToInt) throws AssertionError {
 		if (value.getDataType() == SQLite3DataType.BINARY) {
 			String text = new String(value.asBinary());
 			value = SQLite3Constant.createTextConstant(text);
@@ -125,8 +133,8 @@ public class SQLite3Cast {
 					BigDecimal first = new BigDecimal(substring);
 					long longValue = first.longValue();
 					BigDecimal second = BigDecimal.valueOf(longValue);
-					boolean isWithinConvertibleRange = longValue >= MIN_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED
-							&& longValue <= MAX_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED;
+					boolean isWithinConvertibleRange = (longValue >= MIN_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED
+							&& longValue <= MAX_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED) && convertRealToInt;
 					boolean isFloatingPointNumber = substring.contains(".") || substring.contains("E");
 					boolean doubleShouldBeConvertedToInt = isFloatingPointNumber && first.compareTo(second) == 0
 							&& isWithinConvertibleRange;

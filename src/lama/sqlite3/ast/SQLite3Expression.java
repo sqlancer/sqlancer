@@ -537,10 +537,12 @@ public abstract class SQLite3Expression {
 
 		@Override
 		public SQLite3Constant getExpectedValue() {
-			if (left.getExpectedValue() == null || right.getExpectedValue() == null) {
+			SQLite3Constant leftExpected = left.getExpectedValue();
+			SQLite3Constant rightExpected = right.getExpectedValue();
+			if (leftExpected == null || rightExpected == null) {
 				return null;
 			}
-			return operation.applyOperand(left.getExpectedValue(), left.getAffinity(), right.getExpectedValue(),
+			return operation.applyOperand(leftExpected, left.getAffinity(), rightExpected,
 					right.getAffinity(), left, right);
 		}
 
@@ -725,8 +727,8 @@ public abstract class SQLite3Expression {
 			REMAINDER("%"), PLUS("+") {
 				@Override
 				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
-					SQLite3Constant leftNumeric = SQLite3Cast.castToNumeric(left);
-					SQLite3Constant rightNumeric = SQLite3Cast.castToNumeric(right);
+					SQLite3Constant leftNumeric = SQLite3Cast.castToNumericFromNumOperand(left);
+					SQLite3Constant rightNumeric = SQLite3Cast.castToNumericFromNumOperand(right);
 					if (leftNumeric.isNull() || rightNumeric.isNull()) {
 						return SQLite3Constant.createNullConstant();
 					}
@@ -764,8 +766,8 @@ public abstract class SQLite3Expression {
 			MINUS("-") {
 				@Override
 				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
-					SQLite3Constant leftNumeric = SQLite3Cast.castToNumeric(left);
-					SQLite3Constant rightNumeric = SQLite3Cast.castToNumeric(right);
+					SQLite3Constant leftNumeric = SQLite3Cast.castToNumericFromNumOperand(left);
+					SQLite3Constant rightNumeric = SQLite3Cast.castToNumericFromNumOperand(right);
 					if (leftNumeric.isNull() || rightNumeric.isNull()) {
 						return SQLite3Constant.createNullConstant();
 					}
