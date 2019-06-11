@@ -37,12 +37,16 @@ class TestCastToNumeric {
 	@Test
 	void testString() {
 		List<StringTestTriple> triples = new ArrayList<>();
+		triples.add(new StringTestTriple("-3.0", SQLite3DataType.INT, -3L));
+		triples.add(new StringTestTriple("8.2250617031974513E18", SQLite3DataType.REAL, 8.2250617031974513E18));
+
+		triples.add(new StringTestTriple("-2277224522334683278", SQLite3DataType.INT, -2277224522334683278L));
+
+		triples.add(new StringTestTriple("123a", SQLite3DataType.INT, 123L));
 		triples.add(new StringTestTriple("", SQLite3DataType.INT, 0L));
 		triples.add(new StringTestTriple("a", SQLite3DataType.INT, 0L));
-		triples.add(new StringTestTriple("123a", SQLite3DataType.INT, 123L));
 		triples.add(new StringTestTriple("3", SQLite3DataType.INT, 3L));
 		triples.add(new StringTestTriple("-3", SQLite3DataType.INT, -3L));
-		triples.add(new StringTestTriple("-3.0", SQLite3DataType.INT, -3L));
 		triples.add(new StringTestTriple("0.0", SQLite3DataType.INT, 0L));
 		triples.add(new StringTestTriple("+0", SQLite3DataType.INT, 0L));
 		triples.add(new StringTestTriple("+9", SQLite3DataType.INT, 9L));
@@ -51,14 +55,13 @@ class TestCastToNumeric {
 		triples.add(new StringTestTriple("-1748799336", SQLite3DataType.INT, -1748799336L));
 		triples.add(new StringTestTriple("-0", SQLite3DataType.INT, 0L));
 
-		triples.add(new StringTestTriple("8.2250617031974513E18", SQLite3DataType.REAL, 8.2250617031974513E18));
-		triples.add(new StringTestTriple("3.0e+5", SQLite3DataType.REAL, 300000.0));
+		triples.add(new StringTestTriple("4E ", SQLite3DataType.INT, 4L));
+		triples.add(new StringTestTriple("3.0e+5", SQLite3DataType.INT, 300000L));
 		triples.add(new StringTestTriple("-3.2", SQLite3DataType.REAL, -3.2d));
-		triples.add(new StringTestTriple("10e9", SQLite3DataType.REAL, 10000000000.0));
+		triples.add(new StringTestTriple("10e9", SQLite3DataType.INT, 10000000000L));
 //		triples.add(new StringTestTriple("-0.0", SQLite3DataType.REAL, 0.0d));
 		triples.add(new StringTestTriple("9223372036854775807", SQLite3DataType.INT, 9223372036854775807L));
 		triples.add(new StringTestTriple("4337561223119921152", SQLite3DataType.INT, 4337561223119921152L));
-		triples.add(new StringTestTriple("-2277224522334683278", SQLite3DataType.INT, -2277224522334683278L));
 		triples.add(new StringTestTriple("7839344951195291815", SQLite3DataType.INT, 7839344951195291815L));
 
 		// infinities
@@ -69,7 +72,7 @@ class TestCastToNumeric {
 		triples.add(new StringTestTriple("NaN", SQLite3DataType.INT, 0L)); //
 		triples.add(new StringTestTriple("1e500", SQLite3DataType.REAL, Double.POSITIVE_INFINITY)); //
 		triples.add(new StringTestTriple("-1e500", SQLite3DataType.REAL, Double.NEGATIVE_INFINITY)); //
-
+		
 		for (StringTestTriple triple : triples) {
 			SQLite3Constant castVal = SQLite3Cast.castToNumeric(SQLite3Constant.createTextConstant(triple.value));
 			assertEquals(triple.value.toString(), triple.expectedCastValue, castVal.getValue());

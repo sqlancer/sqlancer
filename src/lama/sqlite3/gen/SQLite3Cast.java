@@ -9,6 +9,9 @@ import lama.sqlite3.schema.SQLite3DataType;
 
 public class SQLite3Cast {
 
+	private static final double MAX_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED = Math.pow(2, 51 - 1) - 1;
+	private static final double MIN_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED = -Math.pow(2, 51 - 1);
+
 	public static Optional<Boolean> isTrue(SQLite3Constant value) {
 		SQLite3Constant numericValue;
 		if (value.getDataType() == SQLite3DataType.NULL) {
@@ -111,19 +114,30 @@ public class SQLite3Cast {
 			if (!asString.isEmpty() && unprintAbleCharThatLetsBecomeNumberZero(asString)) {
 				return SQLite3Constant.createIntConstant(0);
 			}
-			if (asString.toLowerCase().startsWith("-infinity") || asString.toLowerCase().startsWith("infinity") || asString.startsWith("NaN")) {
+			if (asString.toLowerCase().startsWith("-infinity") || asString.toLowerCase().startsWith("infinity")
+					|| asString.startsWith("NaN")) {
 				return SQLite3Constant.createIntConstant(0);
 			}
 			for (int i = asString.length(); i >= 0; i--) {
 				try {
-					double d = Double.valueOf(asString.substring(0, i));
-					if (d == (long) d && (!asString.toUpperCase().contains("E") || d == 0)) {
-						return SQLite3Constant.createIntConstant(Long.parseLong(asString.substring(0, i)));
+					String substring = asString.substring(0, i);
+					double d = Double.valueOf(substring);
+					BigDecimal first = new BigDecimal(substring);
+					long longValue = first.longValue();
+					BigDecimal second = BigDecimal.valueOf(longValue);
+					boolean isWithinConvertibleRange = longValue >= MIN_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED
+							&& longValue <= MAX_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED;
+					boolean isFloatingPointNumber = substring.contains(".") || substring.contains("E");
+					boolean doubleShouldBeConvertedToInt = isFloatingPointNumber && first.compareTo(second) == 0
+							&& isWithinConvertibleRange;
+					boolean isInteger = !isFloatingPointNumber && first.compareTo(second) == 0;
+					if (doubleShouldBeConvertedToInt || isInteger) {
+						// see https://www.sqlite.org/src/tktview/afdc5a29dc
+						return SQLite3Constant.createIntConstant(first.longValue());
 					} else {
 						return SQLite3Constant.createRealConstant(d);
 					}
 				} catch (Exception e) {
-
 				}
 			}
 			return SQLite3Constant.createIntConstant(0);
@@ -224,7 +238,7 @@ public class SQLite3Cast {
 			} else {
 				return SQLite3Constant.createBinaryConstant(stringVal.asString().getBytes());
 			}
-		} 
+		}
 	}
 
 }
