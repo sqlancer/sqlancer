@@ -109,6 +109,13 @@ public class TestShiftLeft {
 		assertEquals(-1, shift.getExpectedValue().asInt());
 	}
 
+	@Test
+	public void test13() { // SELECT (0 << -50000); -- 0
+		BinaryOperation shift = new BinaryOperation(intZero, SQLite3Constant.createIntConstant(-9223372036854775808L),
+				BinaryOperator.SHIFT_LEFT);
+		assertEquals(0, shift.getExpectedValue().asInt());
+	}
+
 	// right shift
 
 	@Test
@@ -187,6 +194,13 @@ public class TestShiftLeft {
 		BinaryOperation shift = new SQLite3Expression.BinaryOperation(intMinusOne, intHundred,
 				BinaryOperator.SHIFT_RIGHT);
 		assertEquals(-1, shift.getExpectedValue().asInt());
+	}
+
+	@Test
+	public void testRightShift12() { // SELECT -1 >> -9223372036854775808; -- 0
+		BinaryOperation shift = new SQLite3Expression.BinaryOperation(intMinusOne,
+				SQLite3Constant.createIntConstant(-9223372036854775808L), BinaryOperator.SHIFT_RIGHT);
+		assertEquals(0, shift.getExpectedValue().asInt());
 	}
 
 }
