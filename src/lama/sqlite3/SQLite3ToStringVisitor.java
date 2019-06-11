@@ -290,6 +290,7 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 	}
 
 	public void visit(InOperation op) {
+		sb.append("(");
 		visit(op.getLeft());
 		sb.append(" IN ");
 		sb.append("(");
@@ -299,6 +300,7 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 			}
 			visit(op.getRight().get(i));
 		}
+		sb.append(")");
 		sb.append(")");
 	}
 

@@ -50,7 +50,7 @@ public class SQLite3ExpectedValueVisitor extends SQLite3Visitor {
 	@Override
 	public void visit(BetweenOperation op) {
 		print(op);
-		visit(op.getExpectedValue());
+		visit(op.getExpression());
 		visit(op.getLeft());
 		visit(op.getRight());
 	}
@@ -115,7 +115,7 @@ public class SQLite3ExpectedValueVisitor extends SQLite3Visitor {
 	@Override
 	public void visit(InOperation op) {
 		print(op);
-		visit(op.getExpectedValue());
+		visit(op.getLeft());
 		for (SQLite3Expression expr : op.getRight()) {
 			visit(expr);
 		}
