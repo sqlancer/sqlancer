@@ -14,6 +14,7 @@ import lama.Main;
 import lama.Main.StateLogger;
 import lama.Main.StateToReproduce;
 import lama.Randomly;
+import lama.sqlite3.SQLite3Provider;
 import lama.sqlite3.SQLite3ToStringVisitor;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
@@ -218,7 +219,7 @@ public class QueryGenerator {
 
 	private SQLite3Expression generateNewExpression(List<Column> columns, RowValue rw, boolean shouldBeTrue,
 			int depth) {
-		if (depth >= Main.EXPRESSION_MAX_DEPTH) {
+		if (depth >= SQLite3Provider.EXPRESSION_MAX_DEPTH) {
 			return getStandaloneLiteral(shouldBeTrue);
 		}
 		if (Randomly.getBoolean()) {

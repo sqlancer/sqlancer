@@ -3,8 +3,8 @@ package lama.sqlite3.gen;
 import java.util.ArrayList;
 import java.util.List;
 
-import lama.Main;
 import lama.Randomly;
+import lama.sqlite3.SQLite3Provider;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation.BinaryComparisonOperator;
@@ -18,8 +18,8 @@ import lama.sqlite3.ast.SQLite3Function.ComputableFunction;
 import lama.sqlite3.ast.UnaryOperation;
 import lama.sqlite3.ast.UnaryOperation.UnaryOperator;
 import lama.sqlite3.schema.SQLite3Schema.Column;
-import lama.sqlite3.schema.SQLite3Schema.RowValue;
 import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
+import lama.sqlite3.schema.SQLite3Schema.RowValue;
 
 public class SQLite3ExpressionGenerator {
 
@@ -80,7 +80,7 @@ public class SQLite3ExpressionGenerator {
 
 	public SQLite3Expression getRandomExpression(List<Column> columns, int depth, boolean deterministicOnly,
 			Randomly r) {
-		if (depth >= Main.EXPRESSION_MAX_DEPTH) {
+		if (depth >= SQLite3Provider.EXPRESSION_MAX_DEPTH) {
 			if (Randomly.getBoolean()) {
 				return getRandomLiteralValue(deterministicOnly, r);
 			} else {
