@@ -3,6 +3,7 @@ package lama.sqlite3.ast;
 import java.util.Optional;
 
 import lama.Randomly;
+import lama.sqlite3.SQLite3CollateHelper;
 import lama.sqlite3.gen.SQLite3Cast;
 import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
@@ -14,12 +15,17 @@ public class UnaryOperation extends SQLite3Expression {
 	@Override
 	public CollateSequence getImplicitCollateSequence() {
 		if (operation == UnaryOperator.PLUS) {
-			// TODO: does this only apply to column names?
-			return expression.getExplicitCollateSequence();
+			if (SQLite3CollateHelper.shouldGetSubexpressionAffinity(expression)) {
+				return expression.getImplicitCollateSequence();
+			} else {
+				return null;
+			}
 		} else {
 			return null;
 		}
 	}
+
+
 
 	/**
 	 * Supported unary prefix operators are these:

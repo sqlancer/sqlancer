@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import lama.Randomly;
+import lama.sqlite3.SQLite3CollateHelper;
 import lama.sqlite3.ast.SQLite3Constant.SQLite3IntConstant;
 import lama.sqlite3.gen.SQLite3Cast;
 import lama.sqlite3.schema.SQLite3DataType;
@@ -223,6 +224,15 @@ public abstract class SQLite3Expression {
 		@Override
 		public CollateSequence getExplicitCollateSequence() {
 			return expression.getExplicitCollateSequence();
+		}
+		
+		@Override
+		public CollateSequence getImplicitCollateSequence() {
+			if (SQLite3CollateHelper.shouldGetSubexpressionAffinity(expression)) {
+				return expression.getImplicitCollateSequence();
+			} else {
+				return null;
+			}
 		}
 
 	}
