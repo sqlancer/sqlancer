@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import lama.Main.StateToReproduce.ErrorKind;
-import lama.sqlite3.SQLite3ExpectedValueVisitor;
 import lama.sqlite3.SQLite3Helper;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Constant;
@@ -58,13 +57,16 @@ import lama.sqlite3.schema.SQLite3Schema.Table;
 // views
 // alter table
 // triggers
+// MIN/MAX
+// as
+// NaN values
 public class Main {
 
-	private static final int NR_QUERIES_PER_TABLE = 10000;
+	private static final int NR_QUERIES_PER_TABLE = 1000;
 	private static final int MAX_INSERT_ROW_TRIES = 1;
 	private static final int TOTAL_NR_THREADS = 100;
-	private static final int NR_CONCURRENT_THREADS = 8;
-	public static final int NR_INSERT_ROW_TRIES = 300;
+	private static final int NR_CONCURRENT_THREADS = 16;
+	public static final int NR_INSERT_ROW_TRIES = 10;
 	public static final int EXPRESSION_MAX_DEPTH = 3;
 	public static final File LOG_DIRECTORY = new File("logs");
 	static volatile AtomicLong nrQueries = new AtomicLong();
@@ -79,8 +81,10 @@ public class Main {
 
 		private final File loggerFile;
 		private final File reducedFile;
+		private File curFile;
 		private FileWriter logFileWriter;
 		private FileWriter reducedFileWriter;
+		private FileWriter currentFileWriter;
 
 		private final static class AlsoWriteToConsoleFileWriter extends FileWriter {
 
@@ -104,6 +108,7 @@ public class Main {
 		public StateLogger(String databaseName) {
 			loggerFile = new File(LOG_DIRECTORY, databaseName + ".log");
 			reducedFile = new File(LOG_DIRECTORY, databaseName + "-reduced.log");
+			curFile = new File(LOG_DIRECTORY, databaseName + "-cur.log");
 		}
 
 		private FileWriter getLogFileWriter() {
@@ -128,15 +133,54 @@ public class Main {
 			return reducedFileWriter;
 		}
 
+		private FileWriter getCurrentFileWriter() {
+			if (currentFileWriter == null) {
+				try {
+					currentFileWriter = new FileWriter(curFile, false);
+				} catch (IOException e) {
+					throw new AssertionError(e);
+				}
+			}
+			return currentFileWriter;
+		}
+
+		public void writeCurrent(StateToReproduce state) {
+			printState(getCurrentFileWriter(), state);
+			try {
+				currentFileWriter.flush();
+
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		public void writeCurrent(String queryString) {
+			try {
+				getCurrentFileWriter().write(queryString + ";\n");
+				currentFileWriter.flush();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
 		public void logRowNotFound(StateToReproduce state) {
 			printState(getLogFileWriter(), state);
+			try {
+				getLogFileWriter().flush();
+			} catch (IOException e) {
+				throw new AssertionError(e);
+			}
 		}
 
 		public void logException(Throwable reduce, StateToReproduce state) {
 			String stackTrace = getStackTrace(reduce);
 			try {
-				getLogFileWriter().write(stackTrace);
-				printState(getLogFileWriter(), state);
+				FileWriter logFileWriter2 = getLogFileWriter();
+				logFileWriter2.write(stackTrace);
+				printState(logFileWriter2, state);
+				logFileWriter2.flush();
 			} catch (IOException e) {
 				throw new AssertionError(e);
 			}
@@ -146,7 +190,7 @@ public class Main {
 			StringWriter sw = new StringWriter();
 			PrintWriter pw = new PrintWriter(sw);
 			e1.printStackTrace(pw);
-			String stackTrace = sw.toString().replace("\n", "\n;");
+			String stackTrace = sw.toString().replace("\n", "\n--");
 			return stackTrace;
 		}
 
@@ -178,15 +222,17 @@ public class Main {
 				}
 				sb.append('\n');
 			}
-			if (state.getQuery() != null) {
-				sb.append(state.getQuery() + ";\n");
+			if (state.getQueryString() != null) {
+				sb.append(state.getQueryString() + ";\n");
 			}
 			if (state.getRandomRowValues() != null) {
 				List<Column> columnList = state.getRandomRowValues().keySet().stream().collect(Collectors.toList());
-				List<Table> tableList = columnList.stream().map(c -> c.getTable()).distinct().sorted().collect(Collectors.toList());
+				List<Table> tableList = columnList.stream().map(c -> c.getTable()).distinct().sorted()
+						.collect(Collectors.toList());
 				for (Table t : tableList) {
 					sb.append("-- " + t.getName() + "\n");
-					List<Column> columnsForTable = columnList.stream().filter(c -> c.getTable().equals(t)).collect(Collectors.toList());
+					List<Column> columnsForTable = columnList.stream().filter(c -> c.getTable().equals(t))
+							.collect(Collectors.toList());
 					for (Column c : columnsForTable) {
 						sb.append("--\t");
 						sb.append(c);
@@ -195,9 +241,12 @@ public class Main {
 						sb.append("\n");
 					}
 				}
+				sb.append("expected values: \n");
+				sb.append(SQLite3Visitor.asExpectedValues(state.getWhereClause()));
 			}
 			try {
 				writer.write(sb.toString());
+				writer.flush();
 			} catch (IOException e) {
 				throw new AssertionError();
 			}
@@ -358,12 +407,22 @@ public class Main {
 
 							break;
 						} catch (Throwable reduce) {
+							reduce.printStackTrace();
 							state.errorKind = ErrorKind.EXCEPTION;
 							state.exception = reduce.getMessage();
 							logger.logException(reduce, state);
 							tryToReduceBug(databaseName, state);
 							threadsShutdown++;
 							break;
+						} finally {
+							try {
+								if (logger.currentFileWriter != null)
+									logger.currentFileWriter.close();
+								logger.currentFileWriter = null;
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 						}
 					}
 				}
@@ -372,11 +431,12 @@ public class Main {
 					Randomly r = new Randomly();
 					state = new StateToReproduce(databaseName);
 					SQLite3Schema newSchema = null;
-					
+
 					addSensiblePragmaDefaults(con);
 					int nrTablesToCreate = 1 + Randomly.smallNumber();
 					for (int i = 0; i < nrTablesToCreate; i++) {
 						newSchema = SQLite3Schema.fromConnection(con);
+						assert newSchema.getDatabaseTables().size() == i : newSchema + " " + i;
 						String tableName = SQLite3Common.createTableName(i);
 						Query tableQuery = SQLite3TableGenerator.createTableStatement(tableName, state, newSchema, r);
 						state.statements.add(tableQuery);
@@ -401,9 +461,6 @@ public class Main {
 						case INSERT:
 							nrPerformed = NR_INSERT_ROW_TRIES;
 							break;
-						case ROLLBACK_TRANSACTION:
-							nrPerformed = 0;
-							break;
 						case COMMIT:
 						case TRANSACTION_START:
 						case INDEX:
@@ -414,6 +471,7 @@ public class Main {
 						case PRAGMA:
 						case DROP_INDEX:
 						case DELETE:
+						case ROLLBACK_TRANSACTION:
 						default:
 							nrPerformed = r.getInteger(1, 30);
 							break;
@@ -500,6 +558,14 @@ public class Main {
 					}
 					Query query = SQLite3TransactionGenerator.generateCommit(con, state);
 					query.execute(con);
+					// also do an abort for DEFERRABLE INITIALLY DEFERRED
+					state.statements.add(query);
+
+					query = SQLite3TransactionGenerator.generateRollbackTransaction(con, state);
+					query.execute(con);
+					state.statements.add(query);
+					newSchema = SQLite3Schema.fromConnection(con);
+
 					for (Table t : newSchema.getDatabaseTables()) {
 						if (!ensureTableHasRows(con, t, r)) {
 							return;
@@ -508,7 +574,9 @@ public class Main {
 					if (Randomly.getBoolean()) {
 						SQLite3ReindexGenerator.executeReindex(con, state);
 					}
-					logger.writeCurrent(state);
+					newSchema = SQLite3Schema.fromConnection(con);
+
+					// logger.writeCurrent(state);
 					QueryGenerator queryGenerator = new QueryGenerator(con, r);
 					for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
 						queryGenerator.generateAndCheckQuery(state, logger);
@@ -525,7 +593,7 @@ public class Main {
 						q.execute(con);
 					}
 				}
-
+				
 				private boolean ensureTableHasRows(Connection con, Table randomTable, Randomly r)
 						throws AssertionError, SQLException {
 					int nrRows;
@@ -535,6 +603,7 @@ public class Main {
 							Query q = SQLite3RowGenerator.insertRow(randomTable, con, state, r);
 							state.statements.add(q);
 							q.execute(con);
+
 						} catch (SQLException e) {
 							if (!QueryGenerator.shouldIgnoreException(e)) {
 								throw new AssertionError(e);
