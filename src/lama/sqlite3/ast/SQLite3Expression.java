@@ -614,7 +614,110 @@ public abstract class SQLite3Expression {
 
 			},
 			// IN("IN"),
-			LIKE("LIKE"), GLOB("GLOB");
+			LIKE("LIKE"), GLOB("GLOB") {
+				
+				@Override
+				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right, CollateSequence collate) {
+					if (left == null || right == null) {
+						return null;
+					}
+					if (left.isNull() || right.isNull()) {
+						return SQLite3Constant.createNullConstant();
+					}
+					SQLite3Constant leftStr = SQLite3Cast.castToText(left);
+					SQLite3Constant rightStr = SQLite3Cast.castToText(right);
+					if (leftStr == null || rightStr == null) {
+						return null;
+					}
+					boolean val = match(leftStr.asString(), rightStr.asString(), 0, 0);
+					return SQLite3Constant.createBoolean(val);
+				}
+
+				private boolean match(String str, String regex, int regexPosition, int strPosition) {
+					if (strPosition == str.length() && regexPosition == regex.length()) {
+						return true;
+					}
+					if (regexPosition >= regex.length()) {
+						return false;
+					}
+					char cur = regex.charAt(regexPosition);
+					if (strPosition >= str.length()) {
+						if (cur == '*') {
+							return match(str, regex, regexPosition + 1, strPosition);
+						} else {
+							return false;
+						}
+					}
+					switch (cur) {
+					case '[':
+						int endingBrackets = regexPosition;
+						do {
+							endingBrackets++;
+							if (endingBrackets >= regex.length()) {
+								return false;
+							}
+						} while (regex.charAt(endingBrackets) != ']');
+						StringBuilder patternInBrackets = new StringBuilder(regex.substring(regexPosition + 1, endingBrackets));
+						boolean inverted;
+						if (patternInBrackets.toString().startsWith("^")) {
+							if (patternInBrackets.length() > 1) {
+								inverted = true;
+								patternInBrackets = new StringBuilder(patternInBrackets.substring(1));
+							} else {
+								return false;
+							}
+						} else {
+							inverted = false;
+						}
+						int currentSearchIndex = 0;
+						boolean found = false;
+						do {
+							int minusPosition = patternInBrackets.toString().indexOf('-', currentSearchIndex);
+							boolean minusAtBoundaries = minusPosition == 0 || minusPosition == patternInBrackets.length() - 1;
+							if (minusPosition == -1 || minusAtBoundaries) {
+								break;
+							}
+							found = true;
+							StringBuilder expandedPattern = new StringBuilder();
+							for (char start = patternInBrackets.charAt(minusPosition - 1); start < patternInBrackets.charAt(minusPosition + 1); start += 1) {
+								expandedPattern.append(start);
+							}
+							patternInBrackets.replace(minusPosition, minusPosition + 1, expandedPattern.toString());
+							currentSearchIndex = minusPosition + expandedPattern.length();
+						} while (found);
+						
+						if (patternInBrackets.length() > 0) {
+							char textChar = str.charAt(strPosition);
+							boolean contains = patternInBrackets.toString().contains(Character.toString(textChar));
+							if (contains && !inverted || !contains && inverted) {
+								return match(str, regex, endingBrackets + 1, strPosition + 1);
+							} else {
+								return false;
+							}
+						} else {
+							return false;
+						}
+						
+					case '*':
+						// match
+						boolean foundMatch = match(str, regex, regexPosition, strPosition + 1);
+						if (!foundMatch) {
+							return match(str, regex, regexPosition + 1, strPosition);
+						} else {
+							return true;
+						}
+					case '?':
+						return match(str, regex, regexPosition + 1, strPosition + 1);
+					default:
+						if (cur == str.charAt(strPosition)) {
+							return match(str, regex, regexPosition + 1, strPosition + 1);
+						} else {
+							return false;
+						}
+					}
+				}
+				
+			};
 			// MATCH("MATCH"),
 			// REGEXP("REGEXP"),
 
