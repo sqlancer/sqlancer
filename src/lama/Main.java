@@ -331,10 +331,13 @@ public class Main {
 	
 	public static class QueryManager {
 		
-		private Connection con;
-		private StateToReproduce state;
+		private final Connection con;
+		private final StateToReproduce state;
 
 		QueryManager(Connection con, StateToReproduce state) {
+			if (con == null || state == null) {
+				throw new IllegalArgumentException();
+			}
 			this.con = con;
 			this.state = state;
 			
@@ -399,8 +402,8 @@ public class Main {
 					Thread.currentThread().setName(databaseName);
 					while (true) {
 						try (Connection con = provider.createDatabase(databaseName)) {
-							QueryManager manager = new QueryManager(con, state);
 							state = new StateToReproduce(databaseName);
+							QueryManager manager = new QueryManager(con, state);
 							java.sql.DatabaseMetaData meta = con.getMetaData();
 							state.databaseVersion = meta.getDatabaseProductVersion();
 							provider.generateAndTestDatabase(databaseName, con, logger, state, manager);
