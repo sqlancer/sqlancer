@@ -24,7 +24,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
+import lama.Main.StateToReproduce;
 import lama.Main.StateToReproduce.ErrorKind;
+import lama.mysql.MySQLProvider;
 import lama.sqlite3.SQLite3Provider;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Constant;
@@ -51,7 +53,7 @@ public class Main {
 	public static final int NR_INSERT_ROW_TRIES = 10;
 	public static final File LOG_DIRECTORY = new File("logs");
 	public static volatile AtomicLong nrQueries = new AtomicLong();
-	static SQLite3Provider provider = new SQLite3Provider();
+	static DatabaseProvider provider = new MySQLProvider();
 
 
 	public static class ReduceMeException extends RuntimeException {
@@ -326,6 +328,28 @@ public class Main {
 	}
 
 	static int threadsShutdown;
+	
+	public static class QueryManager {
+		
+		private Connection con;
+		private StateToReproduce state;
+
+		QueryManager(Connection con, StateToReproduce state) {
+			this.con = con;
+			this.state = state;
+			
+		}
+		
+		public void execute(Query q) throws SQLException {
+			state.statements.add(q);
+			q.execute(con);
+		}
+
+		public void incrementSelectQueryCount() {
+			Main.nrQueries.addAndGet(1);
+		}
+	}
+
 
 	public static void main(String[] args) {
 
@@ -369,12 +393,17 @@ public class Main {
 				public void run() {
 					runThread(databaseName);
 				}
+				
 
 				private void runThread(final String databaseName) {
 					Thread.currentThread().setName(databaseName);
 					while (true) {
 						try (Connection con = provider.createDatabase(databaseName)) {
-							provider.generateAndTestDatabase(databaseName, con, logger);
+							QueryManager manager = new QueryManager(con, state);
+							state = new StateToReproduce(databaseName);
+							java.sql.DatabaseMetaData meta = con.getMetaData();
+							state.databaseVersion = meta.getDatabaseProductVersion();
+							provider.generateAndTestDatabase(databaseName, con, logger, state, manager);
 						} catch (IgnoreMeException e) {
 							continue;
 						} catch (ReduceMeException reduce) {

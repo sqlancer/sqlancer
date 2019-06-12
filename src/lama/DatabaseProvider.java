@@ -3,11 +3,13 @@ package lama;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import lama.Main.QueryManager;
 import lama.Main.StateLogger;
+import lama.Main.StateToReproduce;
 
 public interface DatabaseProvider {
 
-	void generateAndTestDatabase(final String databaseName, Connection con, StateLogger logger) throws SQLException;
+	void generateAndTestDatabase(final String databaseName, Connection con, StateLogger logger, StateToReproduce state, QueryManager manager) throws SQLException;
 
 	Connection createDatabase(String databaseName) throws SQLException;
 }

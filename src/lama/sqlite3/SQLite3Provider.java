@@ -9,6 +9,7 @@ import java.util.List;
 import lama.DatabaseFacade;
 import lama.DatabaseProvider;
 import lama.Main;
+import lama.Main.QueryManager;
 import lama.Main.StateLogger;
 import lama.Main.StateToReproduce;
 import lama.Query;
@@ -42,11 +43,10 @@ public class SQLite3Provider implements DatabaseProvider {
 	private static final int MAX_INSERT_ROW_TRIES = 1;
 	public static final int EXPRESSION_MAX_DEPTH = 3;
 	private StateToReproduce state;
-
+	
 	@Override
-	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger) throws SQLException {
+	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger, StateToReproduce state, QueryManager manager) throws SQLException {
 		Randomly r = new Randomly();
-		state = new StateToReproduce(databaseName);
 		SQLite3Schema newSchema = null;
 
 		addSensiblePragmaDefaults(con);
@@ -56,14 +56,10 @@ public class SQLite3Provider implements DatabaseProvider {
 			assert newSchema.getDatabaseTables().size() == i : newSchema + " " + i;
 			String tableName = SQLite3Common.createTableName(i);
 			Query tableQuery = SQLite3TableGenerator.createTableStatement(tableName, state, newSchema, r);
-			state.statements.add(tableQuery);
-			tableQuery.execute(con);
+			manager.execute(tableQuery);
 		}
 
 		newSchema = SQLite3Schema.fromConnection(con);
-
-		java.sql.DatabaseMetaData meta = con.getMetaData();
-		state.databaseVersion = meta.getDatabaseProductVersion();
 
 		int[] nrRemaining = new int[Action.values().length];
 		List<Action> actions = new ArrayList<>();
@@ -161,9 +157,8 @@ public class SQLite3Provider implements DatabaseProvider {
 			default:
 				throw new AssertionError(nextAction);
 			}
-			state.statements.add(query);
 			try {
-				query.execute(con);
+				manager.execute(query);
 				if (query.couldAffectSchema()) {
 					newSchema = SQLite3Schema.fromConnection(con);
 				}
@@ -174,13 +169,10 @@ public class SQLite3Provider implements DatabaseProvider {
 			total--;
 		}
 		Query query = SQLite3TransactionGenerator.generateCommit(con, state);
-		query.execute(con);
+		manager.execute(query);
 		// also do an abort for DEFERRABLE INITIALLY DEFERRED
-		state.statements.add(query);
-
 		query = SQLite3TransactionGenerator.generateRollbackTransaction(con, state);
-		query.execute(con);
-		state.statements.add(query);
+		manager.execute(query);
 		newSchema = SQLite3Schema.fromConnection(con);
 
 		for (Table t : newSchema.getDatabaseTables()) {
@@ -193,11 +185,10 @@ public class SQLite3Provider implements DatabaseProvider {
 		}
 		newSchema = SQLite3Schema.fromConnection(con);
 
-		// logger.writeCurrent(state);
 		QueryGenerator queryGenerator = new QueryGenerator(con, r);
 		for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
 			queryGenerator.generateAndCheckQuery(state, logger);
-			Main.nrQueries.addAndGet(1);
+			manager.incrementSelectQueryCount();
 		}
 	}
 
