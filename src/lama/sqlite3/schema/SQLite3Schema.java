@@ -14,8 +14,9 @@ import java.util.stream.Collectors;
 
 import lama.Main.StateToReproduce;
 import lama.Randomly;
-import lama.sqlite3.SQLite3Visitor;
+import lama.sqlite3.SQLite3ToStringVisitor;
 import lama.sqlite3.ast.SQLite3Constant;
+import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
 import lama.sqlite3.schema.SQLite3Schema.Table.TableKind;
 
 public class SQLite3Schema {
@@ -29,12 +30,22 @@ public class SQLite3Schema {
 		private final boolean isPrimaryKey;
 		private final boolean isInteger; // "INTEGER" type, not "INT"
 		private Table table;
+		private final CollateSequence collate;
+		
+		public enum CollateSequence {
+			NOCASE, RTRIM, BINARY;
 
-		Column(String name, SQLite3DataType columnType, boolean isInteger, boolean isPrimaryKey) {
+			public static CollateSequence random() {
+				return Randomly.fromOptions(values());
+			}
+		}
+
+		public Column(String name, SQLite3DataType columnType, boolean isInteger, boolean isPrimaryKey, CollateSequence collate) {
 			this.name = name;
 			this.columnType = columnType;
 			this.isInteger = isInteger;
 			this.isPrimaryKey = isPrimaryKey;
+			this.collate = collate;
 			assert !isInteger || columnType == SQLite3DataType.INT;
 		}
 
@@ -103,6 +114,10 @@ public class SQLite3Schema {
 			} else {
 				return o.getTable().compareTo(table);
 			}
+		}
+
+		public CollateSequence getCollateSequence() {
+			return collate;
 		}
 
 	}
@@ -265,6 +280,14 @@ public class SQLite3Schema {
 			return tableType;
 		}
 
+		public List<Column> getRandomNonEmptyColumnSubset() {
+			return Randomly.nonEmptySubset(getColumns());
+		}
+
+		public boolean isSystemTable() {
+			return getName().startsWith("sqlit");
+		}
+
 	}
 
 	public static class RowValue {
@@ -310,7 +333,7 @@ public class SQLite3Schema {
 					sb.append(", ");
 				}
 				SQLite3Constant expectedColumnValue = expectedValues.get(columnsToCheck.get(i));
-				SQLite3Visitor visitor = new SQLite3Visitor();
+				SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
 				visitor.visit(expectedColumnValue);
 				sb.append(visitor.get());
 			}
@@ -344,9 +367,9 @@ public class SQLite3Schema {
 							|| tableType.equals("index")) {
 						continue;
 					}
-
-					List<Column> databaseColumns = getTableColumns(con, tableName);
-					boolean withoutRowid = rs.getString("sql").toLowerCase().contains("without rowid");
+					String string = rs.getString("sql").toLowerCase();
+					List<Column> databaseColumns = getTableColumns(con, tableName, string);
+					boolean withoutRowid = string.contains("without rowid");
 					Table t = new Table(tableName, databaseColumns,
 							tableType.contentEquals("temp_table") ? TableKind.TEMP : TableKind.MAIN, withoutRowid);
 					try (Statement s3 = con.createStatement()) {
@@ -354,7 +377,7 @@ public class SQLite3Schema {
 							if (rs3.next()) {
 								String dataType = rs3.getString(1);
 								SQLite3DataType columnType = getColumnType(dataType);
-								Column rowid = new Column("rowid", columnType, true, true);
+								Column rowid = new Column("rowid", columnType, true, true, null);
 								t.addRowid(rowid);
 								rowid.setTable(t);
 							}
@@ -372,17 +395,31 @@ public class SQLite3Schema {
 		return new SQLite3Schema(databaseTables);
 	}
 
-	private static List<Column> getTableColumns(Connection con, String tableName) throws SQLException {
+	private static List<Column> getTableColumns(Connection con, String tableName, String sql) throws SQLException {
 		List<Column> databaseColumns = new ArrayList<>();
 		try (Statement s2 = con.createStatement()) {
 			try (ResultSet columnRs = s2.executeQuery(String.format("PRAGMA table_info(%s)", tableName))) {
+				String[] columnCreates = sql.split(",");
+				int columnCreateIndex = 0;
 				while (columnRs.next()) {
 					String columnName = columnRs.getString("name");
 					String columnTypeString = columnRs.getString("type");
 					boolean isPrimaryKey = columnRs.getBoolean("pk");
 					SQLite3DataType columnType = getColumnType(columnTypeString);
+					
+					sql = columnCreates[columnCreateIndex++];
+					CollateSequence collate;
+					if (sql.contains("collate binary")) {
+						collate = CollateSequence.BINARY;
+					} else if (sql.contains("collate rtrim")) {
+						collate = CollateSequence.RTRIM;
+					} else if (sql.contains("collate nocase")) {
+						collate = CollateSequence.NOCASE;
+					} else {
+						collate = CollateSequence.BINARY;
+					}
 					databaseColumns.add(new Column(columnName, columnType, columnTypeString.contentEquals("INTEGER"),
-							isPrimaryKey));
+							isPrimaryKey, collate));
 				}
 			}
 		}
