@@ -108,6 +108,14 @@ public class TestApplyEquals {
 		assertEqualStrings(" ", "", CollateSequence.RTRIM);
 	}
 	
+	@Test // SELECT ('MhQl' IS ((+ t0.c3))) from t0; -- 1
+	public void testEqualsCollate() {
+		SQLite3Constant left = SQLite3Constant.createTextConstant("MhQl");
+		ColumnName column = new ColumnName(new Column("c0", SQLite3DataType.TEXT, false, true, CollateSequence.NOCASE), SQLite3Constant.createTextConstant("MHQL"));
+		BinaryComparisonOperation isExpr = new BinaryComparisonOperation(left, new UnaryOperation(UnaryOperator.PLUS, column), BinaryComparisonOperator.IS);
+		assertEquals(1, isExpr.getExpectedValue().asInt());
+	}
+	
 	public void assertEqualStrings(String c1, String c2, CollateSequence collate) {
 		SQLite3Constant leftStr = SQLite3Constant.createTextConstant(c1);
 		SQLite3Constant rightStr = SQLite3Constant.createTextConstant(c2);
