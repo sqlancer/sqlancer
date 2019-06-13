@@ -17,4 +17,11 @@ public class TestUnaryMinus {
 		assertEquals(566656292.0, minus.getExpectedValue().asDouble());
 	}
 	
+	@Test
+	public void testENotation() {
+		var textVal = SQLite3Constant.createTextConstant("9e+1");
+		var minus = new UnaryOperation(UnaryOperator.MINUS, textVal);
+		assertEquals(-90.0, minus.getExpectedValue().asDouble());
+	}
+	
 }

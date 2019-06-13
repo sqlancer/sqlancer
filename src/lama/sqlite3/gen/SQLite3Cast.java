@@ -135,7 +135,7 @@ public class SQLite3Cast {
 					BigDecimal second = BigDecimal.valueOf(longValue);
 					boolean isWithinConvertibleRange = (longValue >= MIN_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED
 							&& longValue <= MAX_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED) && convertRealToInt;
-					boolean isFloatingPointNumber = substring.contains(".") || substring.contains("E");
+					boolean isFloatingPointNumber = substring.contains(".") || substring.toUpperCase().contains("E");
 					boolean doubleShouldBeConvertedToInt = isFloatingPointNumber && first.compareTo(second) == 0
 							&& isWithinConvertibleRange;
 					boolean isInteger = !isFloatingPointNumber && first.compareTo(second) == 0;
