@@ -16,6 +16,18 @@ public class TestTrim {
 	}
 
 	@Test
+	public void testTab() {
+		SQLite3Constant val = SQLite3Constant.createTextConstant("\t");
+		assertEquals("\t", ComputableFunction.TRIM.apply(val).asString());
+	}
+
+	@Test
+	public void testWhitespace() {
+		SQLite3Constant val = SQLite3Constant.createTextConstant(" ");
+		assertEquals(" ", ComputableFunction.TRIM.apply(val).asString());
+	}
+
+	@Test
 	public void testString1() {
 		SQLite3Constant val = SQLite3Constant.createTextConstant(" 5 ");
 		assertEquals("5", ComputableFunction.TRIM.apply(val).asString());
