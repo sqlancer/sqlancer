@@ -1,6 +1,7 @@
 package lama.sqlite3.ast;
 
 import lama.Randomly;
+import lama.sqlite3.ast.SQLite3Constant.SQLite3TextConstant;
 import lama.sqlite3.gen.SQLite3Cast;
 import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
@@ -105,18 +106,14 @@ public class SQLite3Function extends SQLite3Expression {
 			@Override
 			public SQLite3Constant apply(SQLite3Constant... args) {
 				if (args[0].getDataType() == SQLite3DataType.TEXT) {
-					StringBuilder text = new StringBuilder(args[0].asString());
-					for (int i = 0; i < text.length(); i++) {
-						char c = text.charAt(i);
-						if (c >= 'a' && c <= 'z') {
-							text.setCharAt(i, Character.toUpperCase(c));
-						}
-					}
-					return SQLite3Constant.createTextConstant(text.toString());
+					String string = SQLite3TextConstant.toUpper(args[0].asString());
+					return SQLite3Constant.createTextConstant(string);
 				} else {
 					return SQLite3Cast.castToText(args[0]);
 				}
 			}
+
+		
 
 		},
 		NULLIF(2, "NULLIF") {
@@ -135,7 +132,22 @@ public class SQLite3Function extends SQLite3Expression {
 
 			@Override
 			public SQLite3Constant apply(SQLite3Constant... args) {
-				return apply(args, null);
+				CollateSequence collateSequence = null;
+				for (SQLite3Constant con : args) {
+					if (con.getExplicitCollateSequence() != null) {
+						collateSequence = con.getExplicitCollateSequence();
+						break;
+					}
+				}
+				if (collateSequence == null) {
+					for (SQLite3Constant con : args) {
+						if (con.getImplicitCollateSequence() != null) {
+							collateSequence = con.getImplicitCollateSequence();
+							break;
+						}
+					}
+				}
+				return apply(args, collateSequence);
 			}
 		},
 		TRIM(1, "TRIM") {
@@ -230,6 +242,7 @@ public class SQLite3Function extends SQLite3Expression {
 			public SQLite3Constant apply(SQLite3Constant... args) {
 				return args[0];
 			}
+
 		};
 
 		private String functionName;
@@ -267,6 +280,10 @@ public class SQLite3Function extends SQLite3Expression {
 			return false;
 		}
 
+		public TypeAffinity getAffinity(SQLite3Expression... args) {
+			return TypeAffinity.NONE;
+		}
+
 	}
 
 	@Override
@@ -295,15 +312,20 @@ public class SQLite3Function extends SQLite3Expression {
 				return null;
 			}
 		}
-		CollateSequence collate = null;
+		CollateSequence collate = getExplicitCollateSequence();
 		for (int i = 0; i < args.length; i++) {
-			if (args[i].getExplicitCollateSequence() != null) {
-				collate = args[i].getExplicitCollateSequence();
+			if (args[i].getImplicitCollateSequence() != null) {
+				collate = args[i].getImplicitCollateSequence();
 				break;
 			}
 		}
 		return func.apply(constants, collate);
 
 	};
+
+	@Override
+	public TypeAffinity getAffinity() {
+		return func.getAffinity(args);
+	}
 
 }
