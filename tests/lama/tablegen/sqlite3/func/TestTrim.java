@@ -24,7 +24,7 @@ public class TestTrim {
 	@Test
 	public void testWhitespace() {
 		SQLite3Constant val = SQLite3Constant.createTextConstant(" ");
-		assertEquals(" ", ComputableFunction.TRIM.apply(val).asString());
+		assertEquals("", ComputableFunction.TRIM.apply(val).asString());
 	}
 
 	@Test

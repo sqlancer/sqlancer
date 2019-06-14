@@ -145,34 +145,12 @@ public class SQLite3Function extends SQLite3Expression {
 				SQLite3Constant str = SQLite3Cast.castToText(args[0]);
 				if (args[0].getDataType() == SQLite3DataType.TEXT) {
 					String text = str.asString();
-					return SQLite3Constant.createTextConstant(trimLeading(trimTrailing(text)));
+					return SQLite3Constant.createTextConstant(SQLite3TextConstant.trim(text));
 				} else {
 					return str;
 				}
 			}
 			
-			public String trimLeading(String str) {
-				if (str != null) {
-					for (int i = 0; i < str.length(); i++) {
-						if (str.charAt(i) != ' ') {
-							return str.substring(i);
-						}
-					}
-				}
-				return str;
-			}
-
-			public String trimTrailing(String str) {
-				if (str != null) {
-					for (int i = str.length() - 1; i >= 0; --i) {
-						if (str.charAt(i) != ' ') {
-							return str.substring(0, i + 1);
-						}
-					}
-				}
-				return str;
-			}
-
 		},
 		TRIM_TWO_ARGS(2, "TRIM") {
 

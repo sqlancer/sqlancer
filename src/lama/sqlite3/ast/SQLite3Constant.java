@@ -451,10 +451,10 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 					equals = text.equals(other);
 					break;
 				case NOCASE:
-					equals = text.equalsIgnoreCase(other);
+					equals = toUpper(text).equals(toUpper(other));
 					break;
 				case RTRIM:
-					equals = rtrim(text).equals(rtrim(other));
+					equals = trimTrailing(text).equals(trimTrailing(other));
 					break;
 				default:
 					throw new AssertionError(collate);
@@ -465,13 +465,44 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 			}
 		}
 
-		private static String rtrim(String s) {
-			int i = s.length() - 1;
-			while (i >= 0 && Character.isWhitespace(s.charAt(i))) {
-				i--;
+		public static String toUpper(String t) {
+			StringBuilder text = new StringBuilder(t);
+			for (int i = 0; i < text.length(); i++) {
+				char c = text.charAt(i);
+				if (c >= 'a' && c <= 'z') {
+					text.setCharAt(i, Character.toUpperCase(c));
+				}
 			}
-			return s.substring(0, i + 1);
+			String string = text.toString();
+			return string;
 		}
+		
+		public static String trim(String str) {
+			return trimLeading(trimTrailing(str));
+		}
+		
+		public static String trimLeading(String str) {
+			if (str != null) {
+				for (int i = 0; i < str.length(); i++) {
+					if (str.charAt(i) != ' ') {
+						return str.substring(i);
+					}
+				}
+			}
+			return "";
+		}
+
+		public static String trimTrailing(String str) {
+			if (str != null) {
+				for (int i = str.length() - 1; i >= 0; --i) {
+					if (str.charAt(i) != ' ') {
+						return str.substring(0, i + 1);
+					}
+				}
+			}
+			return "";
+		}
+
 
 		@Override
 		public SQLite3Constant applyNumericAffinity() {
