@@ -16,6 +16,7 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.mysql.MySQLSchema.MySQLTable;
+import lama.mysql.gen.MySQLOptimize;
 import lama.mysql.gen.MySQLRepair;
 import lama.mysql.gen.MySQLRowInserter;
 import lama.mysql.gen.MySQLSetGenerator;
@@ -32,7 +33,7 @@ public class MySQLProvider implements DatabaseProvider {
 	private QueryManager manager;
 
 	enum Action {
-		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR;
+		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR, OPTIMIZE;
 	}
 
 	@Override
@@ -65,7 +66,10 @@ public class MySQLProvider implements DatabaseProvider {
 				break;
 			case REPAIR:
 				// see https://bugs.mysql.com/bug.php?id=95820
-				nrPerformed = 0; //r.getInteger(0, 10);
+				nrPerformed = 0; // r.getInteger(0, 10);
+				break;
+			case OPTIMIZE:
+				nrPerformed = r.getInteger(0, 10);
 				break;
 			}
 			if (nrPerformed != 0) {
@@ -74,7 +78,7 @@ public class MySQLProvider implements DatabaseProvider {
 			nrRemaining[action.ordinal()] = nrPerformed;
 			total += nrPerformed;
 		}
-		
+
 		while (total != 0) {
 			Action nextAction = null;
 			int selection = r.getInteger(0, total);
@@ -93,16 +97,19 @@ public class MySQLProvider implements DatabaseProvider {
 			Query query;
 			switch (nextAction) {
 			case SHOW_TABLES:
-				 query = new QueryAdapter("SHOW TABLES");
-				 break;
+				query = new QueryAdapter("SHOW TABLES");
+				break;
 			case INSERT:
-				 query = MySQLRowInserter.insertRow(newSchema.getRandomTable(), r);
-				 break;
+				query = MySQLRowInserter.insertRow(newSchema.getRandomTable(), r);
+				break;
 			case SET_VARIABLE:
 				query = MySQLSetGenerator.set(r);
 				break;
 			case REPAIR:
 				query = MySQLRepair.repair(newSchema.getRandomTable());
+				break;
+			case OPTIMIZE:
+				query = MySQLOptimize.optimize(newSchema.getRandomTable());
 				break;
 			default:
 				throw new AssertionError(nextAction);
@@ -161,6 +168,7 @@ public class MySQLProvider implements DatabaseProvider {
 			}
 		}
 	}
+
 	@Override
 	public Connection createDatabase(String databaseName) throws SQLException {
 		String url = "jdbc:mysql://localhost:3306/?serverTimezone=UTC&useSSL=false";
