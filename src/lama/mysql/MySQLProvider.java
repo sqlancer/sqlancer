@@ -16,6 +16,7 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.mysql.MySQLSchema.MySQLTable;
+import lama.mysql.gen.MySQLRepair;
 import lama.mysql.gen.MySQLRowInserter;
 import lama.mysql.gen.MySQLSetGenerator;
 import lama.mysql.gen.MySQLTableGenerator;
@@ -31,7 +32,7 @@ public class MySQLProvider implements DatabaseProvider {
 	private QueryManager manager;
 
 	enum Action {
-		SHOW_TABLES, INSERT, SET_VARIABLE;
+		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR;
 	}
 
 	@Override
@@ -61,6 +62,10 @@ public class MySQLProvider implements DatabaseProvider {
 				break;
 			case SET_VARIABLE:
 				nrPerformed = r.getInteger(0, 10);
+				break;
+			case REPAIR:
+				// see https://bugs.mysql.com/bug.php?id=95820
+				nrPerformed = 0; //r.getInteger(0, 10);
 				break;
 			}
 			if (nrPerformed != 0) {
@@ -95,6 +100,9 @@ public class MySQLProvider implements DatabaseProvider {
 				 break;
 			case SET_VARIABLE:
 				query = MySQLSetGenerator.set(r);
+				break;
+			case REPAIR:
+				query = MySQLRepair.repair(newSchema.getRandomTable());
 				break;
 			default:
 				throw new AssertionError(nextAction);
