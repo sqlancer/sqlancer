@@ -73,10 +73,11 @@ public class MySQLTableGenerator {
 				//  "NDB": java.sql.SQLSyntaxErrorException: Unknown storage engine 'NDB'
 				// "CSV": java.sql.SQLSyntaxErrorException: Too many keys specified; max 0 keys allowed
 				// "EXAMPLE": java.sql.SQLSyntaxErrorException: Unknown storage engine 'EXAMPLE'
-				sb.append("ENGINE = " + Randomly.fromOptions("InnoDB", "MyISAM", "MEMORY", "HEAP", "MERGE"));
+				// "MERGE": java.sql.SQLException: Table 't0' is read only
+				sb.append("ENGINE = " + Randomly.fromOptions("InnoDB", "MyISAM", "MEMORY", "HEAP"));
 				break;
 			case MIN_ROWS:
-				sb.append("MIN_ROWS = " + r.getPositiveInteger());
+				sb.append("MIN_ROWS = " + r.getLong(1, Long.MAX_VALUE));
 				break;
 			case PACK_KEYS:
 				sb.append("PACK_KEYS = " + Randomly.fromOptions("1", "0", "DEFAULT"));

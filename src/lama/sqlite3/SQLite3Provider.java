@@ -48,6 +48,7 @@ public class SQLite3Provider implements DatabaseProvider {
 	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger, StateToReproduce state, QueryManager manager) throws SQLException {
 		Randomly r = new Randomly();
 		SQLite3Schema newSchema = null;
+		this.state = state;
 
 		addSensiblePragmaDefaults(con);
 		int nrTablesToCreate = 1 + Randomly.smallNumber();
