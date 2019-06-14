@@ -225,7 +225,7 @@ public abstract class SQLite3Expression {
 		public CollateSequence getExplicitCollateSequence() {
 			return expression.getExplicitCollateSequence();
 		}
-		
+
 		@Override
 		public CollateSequence getImplicitCollateSequence() {
 			if (SQLite3CollateHelper.shouldGetSubexpressionAffinity(expression)) {
@@ -370,7 +370,7 @@ public abstract class SQLite3Expression {
 		public SQLite3Constant getExpectedValue() {
 			return expression.getExpectedValue();
 		}
-		
+
 		@Override
 		public TypeAffinity getAffinity() {
 			return expression.getAffinity();
@@ -470,7 +470,8 @@ public abstract class SQLite3Expression {
 		}
 
 		@Override
-		// The collating sequence used for expressions of the form "x IN (y, z, ...)" is the collating sequence of x.
+		// The collating sequence used for expressions of the form "x IN (y, z, ...)" is
+		// the collating sequence of x.
 		public CollateSequence getExplicitCollateSequence() {
 			if (left.getExplicitCollateSequence() != null) {
 				return left.getExplicitCollateSequence();
@@ -478,7 +479,7 @@ public abstract class SQLite3Expression {
 				return null;
 			}
 		}
-		
+
 		@Override
 		public SQLite3Constant getExpectedValue() {
 			if (left.getExpectedValue() == null) {
@@ -552,8 +553,10 @@ public abstract class SQLite3Expression {
 			if (leftExpected == null || rightExpected == null) {
 				return null;
 			}
-			return operation.applyOperand(leftExpected, left.getAffinity(), rightExpected,
-					right.getAffinity(), left, right);
+			TypeAffinity leftAffinity = left.getAffinity();
+			TypeAffinity rightAffinity = right.getAffinity();
+			return operation.applyOperand(leftExpected, leftAffinity, rightExpected, rightAffinity, left, right,
+					operation.shouldApplyAffinity());
 		}
 
 		public static BinaryComparisonOperation create(SQLite3Expression leftVal, SQLite3Expression rightVal,
@@ -624,8 +627,81 @@ public abstract class SQLite3Expression {
 
 			},
 			// IN("IN"),
-			LIKE("LIKE"), GLOB("GLOB") {
-				
+			LIKE("LIKE") {
+				@Override
+				public boolean shouldApplyAffinity() {
+					return false;
+				}
+
+				@Override
+				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right, CollateSequence collate) {
+					if (left == null || right == null) {
+						return null;
+					}
+					if (left.isNull() || right.isNull()) {
+						return SQLite3Constant.createNullConstant();
+					}
+					SQLite3Constant leftStr = SQLite3Cast.castToText(left);
+					SQLite3Constant rightStr = SQLite3Cast.castToText(right);
+					if (leftStr == null || rightStr == null) {
+						return null;
+					}
+					boolean val = match(leftStr.asString(), rightStr.asString(), 0, 0);
+					return SQLite3Constant.createBoolean(val);
+				}
+
+				private boolean match(String str, String regex, int regexPosition, int strPosition) {
+					if (strPosition == str.length() && regexPosition == regex.length()) {
+						return true;
+					}
+					if (regexPosition >= regex.length()) {
+						return false;
+					}
+					char cur = regex.charAt(regexPosition);
+					if (strPosition >= str.length()) {
+						if (cur == '%') {
+							return match(str, regex, regexPosition + 1, strPosition);
+						} else {
+							return false;
+						}
+					}
+					switch (cur) {
+					case '%':
+						// match
+						boolean foundMatch = match(str, regex, regexPosition, strPosition + 1);
+						if (!foundMatch) {
+							return match(str, regex, regexPosition + 1, strPosition);
+						} else {
+							return true;
+						}
+					case '_':
+						return match(str, regex, regexPosition + 1, strPosition + 1);
+					default:
+						if (toUpper(cur) == toUpper(str.charAt(strPosition))) {
+							return match(str, regex, regexPosition + 1, strPosition + 1);
+						} else {
+							return false;
+						}
+					}
+				}
+
+				private char toUpper(char cur) {
+					if (cur >= 'a' && cur <= 'z') {
+						char c = (char) (cur + 'A' - 'a');
+						return c;
+					} else {
+						return cur;
+					}
+				}
+
+			},
+			GLOB("GLOB") {
+
+				@Override
+				public boolean shouldApplyAffinity() {
+					return false;
+				}
+
 				@Override
 				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right, CollateSequence collate) {
 					if (left == null || right == null) {
@@ -667,7 +743,8 @@ public abstract class SQLite3Expression {
 								return false;
 							}
 						} while (regex.charAt(endingBrackets) != ']');
-						StringBuilder patternInBrackets = new StringBuilder(regex.substring(regexPosition + 1, endingBrackets));
+						StringBuilder patternInBrackets = new StringBuilder(
+								regex.substring(regexPosition + 1, endingBrackets));
 						boolean inverted;
 						if (patternInBrackets.toString().startsWith("^")) {
 							if (patternInBrackets.length() > 1) {
@@ -683,19 +760,21 @@ public abstract class SQLite3Expression {
 						boolean found = false;
 						do {
 							int minusPosition = patternInBrackets.toString().indexOf('-', currentSearchIndex);
-							boolean minusAtBoundaries = minusPosition == 0 || minusPosition == patternInBrackets.length() - 1;
+							boolean minusAtBoundaries = minusPosition == 0
+									|| minusPosition == patternInBrackets.length() - 1;
 							if (minusPosition == -1 || minusAtBoundaries) {
 								break;
 							}
 							found = true;
 							StringBuilder expandedPattern = new StringBuilder();
-							for (char start = patternInBrackets.charAt(minusPosition - 1); start < patternInBrackets.charAt(minusPosition + 1); start += 1) {
+							for (char start = patternInBrackets.charAt(minusPosition - 1); start < patternInBrackets
+									.charAt(minusPosition + 1); start += 1) {
 								expandedPattern.append(start);
 							}
 							patternInBrackets.replace(minusPosition, minusPosition + 1, expandedPattern.toString());
 							currentSearchIndex = minusPosition + expandedPattern.length();
 						} while (found);
-						
+
 						if (patternInBrackets.length() > 0) {
 							char textChar = str.charAt(strPosition);
 							boolean contains = patternInBrackets.toString().contains(Character.toString(textChar));
@@ -707,7 +786,7 @@ public abstract class SQLite3Expression {
 						} else {
 							return false;
 						}
-						
+
 					case '*':
 						// match
 						boolean foundMatch = match(str, regex, regexPosition, strPosition + 1);
@@ -726,13 +805,17 @@ public abstract class SQLite3Expression {
 						}
 					}
 				}
-				
+
 			};
 			// MATCH("MATCH"),
 			// REGEXP("REGEXP"),
 
 			SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right, CollateSequence collate) {
 				return null;
+			}
+
+			public boolean shouldApplyAffinity() {
+				return true;
 			}
 
 			private final String textRepresentation[];
@@ -773,11 +856,14 @@ public abstract class SQLite3Expression {
 			}
 
 			public SQLite3Constant applyOperand(SQLite3Constant left, TypeAffinity leftAffinity, SQLite3Constant right,
-					TypeAffinity rightAffinity, SQLite3Expression origLeft, SQLite3Expression origRight) {
+					TypeAffinity rightAffinity, SQLite3Expression origLeft, SQLite3Expression origRight,
+					boolean applyAffinity) {
 
-				ConstantTuple vals = applyAffinities(leftAffinity, rightAffinity, left, right);
-				left = vals.left;
-				right = vals.right;
+				if (applyAffinity) {
+					ConstantTuple vals = applyAffinities(leftAffinity, rightAffinity, left, right);
+					left = vals.left;
+					right = vals.right;
+				}
 
 				// If either operand has an explicit collating function assignment using the
 				// postfix COLLATE operator, then the explicit collating function is used for
