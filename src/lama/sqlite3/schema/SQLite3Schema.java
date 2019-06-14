@@ -377,7 +377,8 @@ public class SQLite3Schema {
 							if (rs3.next()) {
 								String dataType = rs3.getString(1);
 								SQLite3DataType columnType = getColumnType(dataType);
-								Column rowid = new Column("rowid", columnType, true, true, null);
+								String rowId = Randomly.fromOptions("rowid", "_rowid_", "oid");
+								Column rowid = new Column(rowId, columnType, true, true, null);
 								t.addRowid(rowid);
 								rowid.setTable(t);
 							}
