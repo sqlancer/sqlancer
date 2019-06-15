@@ -21,6 +21,7 @@ import lama.sqlite3.gen.SQLite3AnalyzeGenerator;
 import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.gen.SQLite3DeleteGenerator;
 import lama.sqlite3.gen.SQLite3DropIndexGenerator;
+import lama.sqlite3.gen.SQLite3DropTableGenerator;
 import lama.sqlite3.gen.SQLite3IndexGenerator;
 import lama.sqlite3.gen.SQLite3PragmaGenerator;
 import lama.sqlite3.gen.SQLite3ReindexGenerator;
@@ -36,7 +37,7 @@ public class SQLite3Provider implements DatabaseProvider {
 
 	private enum Action {
 		PRAGMA, INDEX, INSERT, VACUUM, REINDEX, ANALYZE, DELETE, TRANSACTION_START, ALTER, DROP_INDEX, UPDATE,
-		ROLLBACK_TRANSACTION, COMMIT;
+		ROLLBACK_TRANSACTION, COMMIT, DROP_TABLE;
 	}
 
 	private static final int NR_QUERIES_PER_TABLE = 1000;
@@ -74,6 +75,9 @@ public class SQLite3Provider implements DatabaseProvider {
 				break;
 			case INSERT:
 				nrPerformed = Main.NR_INSERT_ROW_TRIES;
+				break;
+			case DROP_TABLE:
+				nrPerformed = r.getInteger(0, 2);
 				break;
 			case COMMIT:
 			case TRANSACTION_START:
@@ -154,6 +158,9 @@ public class SQLite3Provider implements DatabaseProvider {
 				break;
 			case ANALYZE:
 				query = SQLite3AnalyzeGenerator.generateAnalyze();
+				break;
+			case DROP_TABLE:
+				query = SQLite3DropTableGenerator.dropTable(newSchema);
 				break;
 			default:
 				throw new AssertionError(nextAction);

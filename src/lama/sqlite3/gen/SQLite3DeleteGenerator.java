@@ -31,13 +31,17 @@ public class SQLite3DeleteGenerator {
 					} else if (e.getMessage()
 							.startsWith("[SQLITE_ERROR] SQL error or missing database (foreign key mismatch")) {
 						return;
+					} else if (e.getMessage().startsWith("[SQLITE_CONSTRAINT]  Abort due to constraint violation ")) {
+						return;
+					} else if (e.getMessage()
+							.startsWith("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)")) {
+						return;
 					} else if (e.getMessage().startsWith(
-							"[SQLITE_CONSTRAINT]  Abort due to constraint violation ")) {
+							"[SQLITE_ERROR] SQL error or missing database (second argument to likelihood() must be a constant between 0.0 and 1.0)")) {
 						return;
-					} else if (e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)")) {
-						return;
-					} else if (e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (second argument to likelihood() must be a constant between 0.0 and 1.0)")) {
-						return;
+					} else if (e.getMessage()
+							.startsWith("[SQLITE_ERROR] SQL error or missing database (no such table:")) {
+						return; // TODO: also check if the table is really missing (caused by a DROP TABLE)
 					}
 					throw e;
 				}

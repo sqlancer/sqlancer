@@ -2,15 +2,13 @@ package lama.sqlite3.gen;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import lama.Main.StateToReproduce;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.sqlite3.SQLite3Visitor;
+import lama.sqlite3.SQLite3ToStringVisitor;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.schema.SQLite3Schema.Column;
@@ -51,7 +49,10 @@ public class SQLite3RowGenerator {
 					} else if (e.getMessage().startsWith(
 							"[SQLITE_CONSTRAINT]  Abort due to constraint violation (FOREIGN KEY constraint failed)")) {
 						return;
-					} else {
+					} else if (e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (no such table:")) {
+						return; // TODO: also check if the table is really missing (caused by a DROP TABLE)
+					}
+					else {
 						throw e;
 					}
 				}
@@ -127,7 +128,7 @@ public class SQLite3RowGenerator {
 //				literal = SQLite3ExpressionGenerator.getRandomExpression(new ArrayList<>(), false);
 				literal = SQLite3ExpressionGenerator.getRandomLiteralValue(false, r);
 			}
-			SQLite3Visitor visitor = new SQLite3Visitor();
+			SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
 			visitor.visit(literal);
 			sb.append(visitor.get());
 		}

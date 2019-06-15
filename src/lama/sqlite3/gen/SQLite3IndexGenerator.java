@@ -23,6 +23,7 @@ public class SQLite3IndexGenerator {
 		return new SQLite3IndexGenerator(con, state, r).query;
 	}
 
+	// FIXME: always i0?;
 	private int indexNr;
 	private final Query query;
 	boolean isUnique;
@@ -126,7 +127,7 @@ public class SQLite3IndexGenerator {
 	}
 
 	private String getIndexName() {
-		return SQLite3Common.createIndexName(indexNr++);
+		return SQLite3Common.createIndexName(r.getInteger(0, 10));
 	}
 
 }
