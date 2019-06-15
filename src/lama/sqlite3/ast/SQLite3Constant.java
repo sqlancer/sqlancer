@@ -76,6 +76,11 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 			return SQLite3Cast.asBoolean(this);
 		}
 
+		@Override
+		public SQLite3Constant applyLess(SQLite3Constant right, CollateSequence collate) {
+			return SQLite3Constant.createNullConstant();
+		}
+
 	}
 
 	public static class SQLite3IntConstant extends SQLite3Constant {
@@ -203,6 +208,28 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		@Override
 		public SQLite3Constant castToBoolean() {
 			return SQLite3Cast.asBoolean(this);
+		}
+
+		@Override
+		public SQLite3Constant applyLess(SQLite3Constant right, CollateSequence collate) {
+			if (right.isNull()) {
+				return right;
+			} else if (right.getDataType() == SQLite3DataType.TEXT || right.getDataType() == SQLite3DataType.BINARY) {
+				return SQLite3Constant.createTrue();
+			} else if (right.getDataType() == SQLite3DataType.INT) {
+				long rightValue = right.asInt();
+				return SQLite3Constant.createBoolean(value < rightValue);
+			} else {
+				if (Double.POSITIVE_INFINITY == right.asDouble()) {
+					return SQLite3Constant.createTrue();
+				} else if (Double.NEGATIVE_INFINITY == right.asDouble()) {
+					return SQLite3Constant.createFalse();
+				}
+				assert right.getDataType() == SQLite3DataType.REAL;
+				BigDecimal otherColumnValue = BigDecimal.valueOf(right.asDouble());
+				BigDecimal thisColumnValue = BigDecimal.valueOf(value);
+				return SQLite3Constant.createBoolean(thisColumnValue.compareTo(otherColumnValue) < 0);
+			}
 		}
 
 	}
@@ -346,6 +373,28 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 			return SQLite3Cast.asBoolean(this);
 		}
 
+		@Override
+		public SQLite3Constant applyLess(SQLite3Constant right, CollateSequence collate) {
+			if (right.isNull()) {
+				return right;
+			} else if (right.getDataType() == SQLite3DataType.TEXT || right.getDataType() == SQLite3DataType.BINARY) {
+				return SQLite3Constant.createTrue();
+			} else if (right.getDataType() == SQLite3DataType.REAL) {
+				double rightValue = right.asDouble();
+				return SQLite3Constant.createBoolean(value < rightValue);
+			} else {
+				if (Double.POSITIVE_INFINITY == value) {
+					return SQLite3Constant.createFalse();
+				} else if (Double.NEGATIVE_INFINITY == value) {
+					return SQLite3Constant.createTrue();
+				}
+				assert right.getDataType() == SQLite3DataType.INT;
+				BigDecimal otherColumnValue = BigDecimal.valueOf(right.asInt());
+				BigDecimal thisColumnValue = BigDecimal.valueOf(value);
+				return SQLite3Constant.createBoolean(thisColumnValue.compareTo(otherColumnValue) < 0);
+			}
+		}
+
 	}
 
 	private static List<BinaryComparisonOperator> equalsList(boolean withGlob) {
@@ -451,7 +500,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 					equals = text.equals(other);
 					break;
 				case NOCASE:
-					equals = toUpper(text).equals(toUpper(other));
+					equals = toLower(text).equals(toLower(other));
 					break;
 				case RTRIM:
 					equals = trimTrailing(text).equals(trimTrailing(other));
@@ -465,6 +514,18 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 			}
 		}
 
+		public static String toLower(String t) {
+			StringBuilder text = new StringBuilder(t);
+			for (int i = 0; i < text.length(); i++) {
+				char c = text.charAt(i);
+				if (c >= 'A' && c <= 'Z') {
+					text.setCharAt(i, Character.toLowerCase(c));
+				}
+			}
+			String string = text.toString();
+			return string;
+		}
+
 		public static String toUpper(String t) {
 			StringBuilder text = new StringBuilder(t);
 			for (int i = 0; i < text.length(); i++) {
@@ -476,11 +537,11 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 			String string = text.toString();
 			return string;
 		}
-		
+
 		public static String trim(String str) {
 			return trimLeading(trimTrailing(str));
 		}
-		
+
 		public static String trimLeading(String str) {
 			if (str != null) {
 				for (int i = 0; i < str.length(); i++) {
@@ -502,7 +563,6 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 			}
 			return "";
 		}
-
 
 		@Override
 		public SQLite3Constant applyNumericAffinity() {
@@ -534,6 +594,35 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		@Override
 		public SQLite3Constant castToBoolean() {
 			return SQLite3Cast.asBoolean(this);
+		}
+
+		@Override
+		public SQLite3Constant applyLess(SQLite3Constant right, CollateSequence collate) {
+			if (right.isNull()) {
+				return right;
+			} else if (right.getDataType() == SQLite3DataType.BINARY) {
+				return SQLite3Constant.createTrue();
+			} else if (right.getDataType() == SQLite3DataType.TEXT) {
+				String other = right.asString();
+				boolean lessThan;
+				switch (collate) {
+				case BINARY:
+					lessThan = text.compareTo(other) < 0;
+					break;
+				case NOCASE:
+					lessThan = toUpper(text).compareTo(toUpper(other)) < 0;
+					break;
+				case RTRIM:
+					lessThan = trimTrailing(text).compareTo(trimTrailing(other)) < 0;
+					break;
+				default:
+					throw new AssertionError(collate);
+				}
+				return SQLite3Constant.createBoolean(lessThan);
+			} else {
+				assert right.getDataType() == SQLite3DataType.REAL || right.getDataType() == SQLite3DataType.INT;
+				return SQLite3Constant.createFalse();
+			}
 		}
 	}
 
@@ -616,21 +705,17 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 
 		@Override
 		public SQLite3Constant applyTextAffinity() {
-			if (bytes.length == 0) {
-				return this;
-			} else {
-				StringBuilder sb = new StringBuilder();
-				for (byte b : bytes) {
-					if (isPrintableChar(b)) {
-						sb.append(b);
-					}
-				}
-				return SQLite3Constant.createTextConstant(sb.toString());
-			}
+			return this;
+			/*
+			 * if (bytes.length == 0) { return this; } else { StringBuilder sb = new
+			 * StringBuilder(); for (byte b : bytes) { if (isPrintableChar(b)) {
+			 * sb.append((char) b); } } return
+			 * SQLite3Constant.createTextConstant(sb.toString()); }
+			 */
 		}
 
 		public boolean isPrintableChar(byte b) {
-			return b >= 32;
+			return Math.abs(b) >= 32;
 		}
 
 		@Override
@@ -663,6 +748,27 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		@Override
 		public SQLite3Constant castToBoolean() {
 			return SQLite3Cast.asBoolean(this);
+		}
+
+		@Override
+		public SQLite3Constant applyLess(SQLite3Constant right, CollateSequence collate) {
+			if (right.isNull()) {
+				return right;
+			} else if (right.getDataType() == SQLite3DataType.TEXT || right.getDataType() == SQLite3DataType.INT
+					|| right.getDataType() == SQLite3DataType.REAL) {
+				return SQLite3Constant.createFalse();
+			} else {
+				byte[] otherArr = right.asBinary();
+				int minLength = Math.min(bytes.length, otherArr.length);
+				for (int i = 0; i < minLength; i++) {
+					if (bytes[i] != otherArr[i]) {
+						return SQLite3Constant.createBoolean((bytes[i] & 0xff) < (otherArr[i] & 0xff));
+					} else if (bytes[i] > otherArr[i]) {
+						return SQLite3Constant.createFalse();
+					}
+				}
+				return SQLite3Constant.createBoolean(bytes.length < otherArr.length);
+			}
 		}
 
 	}
@@ -756,6 +862,8 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 	}
 
 	public abstract SQLite3Constant applyEquals(SQLite3Constant right, CollateSequence collate);
+
+	public abstract SQLite3Constant applyLess(SQLite3Constant right, CollateSequence collate);
 
 	public abstract SQLite3Constant castToBoolean();
 

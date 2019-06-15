@@ -6,7 +6,7 @@ import java.util.Optional;
 import lama.Randomly;
 import lama.sqlite3.SQLite3CollateHelper;
 import lama.sqlite3.ast.SQLite3Constant.SQLite3IntConstant;
-import lama.sqlite3.ast.SQLite3Constant.SQLite3TextConstant;
+import lama.sqlite3.ast.UnaryOperation.UnaryOperator;
 import lama.sqlite3.gen.SQLite3Cast;
 import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema.Column;
@@ -606,7 +606,69 @@ public abstract class SQLite3Expression {
 		}
 
 		public enum BinaryComparisonOperator {
-			SMALLER("<"), SMALLER_EQUALS("<="), GREATER(">"), GREATER_EQUALS(">="), EQUALS("=", "==") {
+			SMALLER("<") {
+				@Override
+				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right, CollateSequence collate) {
+					return left.applyLess(right, collate);
+				}
+
+			},
+			SMALLER_EQUALS("<=") {
+
+				@Override
+				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right, CollateSequence collate) {
+					SQLite3Constant lessThan = left.applyLess(right, collate);
+					if (lessThan == null) {
+						return null;
+					}
+					if (lessThan.getDataType() == SQLite3DataType.INT && lessThan.asInt() == 0) {
+						return left.applyEquals(right, collate);
+					} else {
+						return lessThan;
+					}
+				}
+
+			},
+			GREATER(">") {
+				@Override
+				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right, CollateSequence collate) {
+					SQLite3Constant equals = left.applyEquals(right, collate);
+					if (equals == null) {
+						return null;
+					}
+					if (equals.getDataType() == SQLite3DataType.INT && equals.asInt() == 1) {
+						return SQLite3Constant.createFalse();
+					} else {
+						SQLite3Constant applyLess = left.applyLess(right, collate);
+						if (applyLess == null) {
+							return null;
+						}
+						return UnaryOperator.NOT.apply(applyLess);
+					}
+				}
+
+			},
+			GREATER_EQUALS(">=") {
+
+				@Override
+				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right, CollateSequence collate) {
+					SQLite3Constant equals = left.applyEquals(right, collate);
+					if (equals == null) {
+						return null;
+					}
+					if (equals.getDataType() == SQLite3DataType.INT && equals.asInt() == 1) {
+						return SQLite3Constant.createTrue();
+					} else {
+						SQLite3Constant applyLess = left.applyLess(right, collate);
+						if (applyLess == null) {
+							return null;
+						}
+						return UnaryOperator.NOT.apply(applyLess);
+					}
+				}
+
+			},
+			EQUALS("=", "==") {
 				@Override
 				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right, CollateSequence collate) {
 					return left.applyEquals(right, collate);
@@ -667,7 +729,6 @@ public abstract class SQLite3Expression {
 				}
 
 			},
-			// IN("IN"),
 			LIKE("LIKE") {
 				@Override
 				public boolean shouldApplyAffinity() {
@@ -848,8 +909,6 @@ public abstract class SQLite3Expression {
 				}
 
 			};
-			// MATCH("MATCH"),
-			// REGEXP("REGEXP"),
 
 			SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right, CollateSequence collate) {
 				return null;
