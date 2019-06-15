@@ -6,6 +6,7 @@ import java.util.Optional;
 import lama.Randomly;
 import lama.sqlite3.SQLite3CollateHelper;
 import lama.sqlite3.ast.SQLite3Constant.SQLite3IntConstant;
+import lama.sqlite3.ast.SQLite3Constant.SQLite3TextConstant;
 import lama.sqlite3.gen.SQLite3Cast;
 import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema.Column;
@@ -381,7 +382,61 @@ public abstract class SQLite3Expression {
 	public static class PostfixUnaryOperation extends SQLite3Expression {
 
 		public enum PostfixUnaryOperator {
-			ISNULL("ISNULL"), NOT_NULL("NOT NULL"), NOTNULL("NOTNULL");
+			ISNULL("ISNULL") {
+				@Override
+				public SQLite3Constant apply(SQLite3Constant expectedValue) {
+					if (expectedValue.isNull()) {
+						return SQLite3Constant.createTrue();
+					} else {
+						return SQLite3Constant.createFalse();
+					}
+				}
+			},
+			NOT_NULL("NOT NULL") {
+				@Override
+				public SQLite3Constant apply(SQLite3Constant expectedValue) {
+					if (expectedValue.isNull()) {
+						return SQLite3Constant.createFalse();
+					} else {
+						return SQLite3Constant.createTrue();
+					}
+				}
+
+			},
+
+			NOTNULL("NOTNULL") {
+
+				@Override
+				public SQLite3Constant apply(SQLite3Constant expectedValue) {
+					if (expectedValue.isNull()) {
+						return SQLite3Constant.createFalse();
+					} else {
+						return SQLite3Constant.createTrue();
+					}
+				}
+
+			},
+			IS_TRUE("IS TRUE") {
+
+				@Override
+				public SQLite3Constant apply(SQLite3Constant expectedValue) {
+					if (expectedValue.isNull()) {
+						return SQLite3Constant.createIntConstant(0);
+					}
+					return SQLite3Cast.asBoolean(expectedValue);
+				}
+			},
+			IS_FALSE("IS FALSE") {
+
+				@Override
+				public SQLite3Constant apply(SQLite3Constant expectedValue) {
+					if (expectedValue.isNull()) {
+						return SQLite3Constant.createIntConstant(0);
+					}
+					return UnaryOperation.UnaryOperator.NOT.apply(SQLite3Cast.asBoolean(expectedValue));
+				}
+
+			};
 
 			private final String textRepresentation;
 
@@ -401,6 +456,8 @@ public abstract class SQLite3Expression {
 			public static PostfixUnaryOperator getRandomOperator() {
 				return Randomly.fromOptions(values());
 			}
+
+			public abstract SQLite3Constant apply(SQLite3Constant expectedValue);
 
 		}
 
@@ -425,23 +482,7 @@ public abstract class SQLite3Expression {
 			if (expression.getExpectedValue() == null) {
 				return null;
 			}
-			switch (operation) {
-			case ISNULL:
-				if (expression.getExpectedValue().isNull()) {
-					return SQLite3Constant.createTrue();
-				} else {
-					return SQLite3Constant.createFalse();
-				}
-			case NOT_NULL:
-			case NOTNULL:
-				if (expression.getExpectedValue().isNull()) {
-					return SQLite3Constant.createFalse();
-				} else {
-					return SQLite3Constant.createTrue();
-				}
-			default:
-				throw new AssertionError(operation);
-			}
+			return operation.apply(expression.getExpectedValue());
 		}
 
 		@Override
@@ -1283,6 +1324,7 @@ public abstract class SQLite3Expression {
 			this.left = left;
 			this.right = right;
 		}
+
 	}
 
 	public static ConstantTuple applyAffinities(TypeAffinity leftAffinity, TypeAffinity rightAffinity,
