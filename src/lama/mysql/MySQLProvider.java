@@ -20,6 +20,7 @@ import lama.mysql.gen.MySQLRowInserter;
 import lama.mysql.gen.MySQLSetGenerator;
 import lama.mysql.gen.MySQLTableGenerator;
 import lama.mysql.gen.admin.MySQLFlush;
+import lama.mysql.gen.admin.MySQLReset;
 import lama.mysql.gen.tblmaintenance.MySQLAnalyzeTable;
 import lama.mysql.gen.tblmaintenance.MySQLCheckTable;
 import lama.mysql.gen.tblmaintenance.MySQLChecksum;
@@ -37,7 +38,7 @@ public class MySQLProvider implements DatabaseProvider {
 	private QueryManager manager;
 
 	enum Action {
-		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR, OPTIMIZE, CHECKSUM, CHECK_TABLE, ANALYZE_TABLE, FLUSH;
+		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR, OPTIMIZE, CHECKSUM, CHECK_TABLE, ANALYZE_TABLE, FLUSH, RESET;
 	}
 
 	@Override
@@ -65,27 +66,21 @@ public class MySQLProvider implements DatabaseProvider {
 			case INSERT:
 				nrPerformed = 100;
 				break;
-			case SET_VARIABLE:
-				nrPerformed = r.getInteger(0, 10);
-				break;
 			case REPAIR:
 				// see https://bugs.mysql.com/bug.php?id=95820
 				nrPerformed = 0; // r.getInteger(0, 10);
 				break;
+			case SET_VARIABLE:
 			case OPTIMIZE:
-				nrPerformed = r.getInteger(0, 10);
-				break;
 			case CHECKSUM:
-				nrPerformed = r.getInteger(0, 10);
-				break;
 			case CHECK_TABLE:
-				nrPerformed = r.getInteger(0, 10);
-				break;
 			case ANALYZE_TABLE:
-				nrPerformed = r.getInteger(0, 10);
-				break;
 			case FLUSH:
 				nrPerformed = r.getInteger(0, 10);
+				break;
+			case RESET:
+				// affects the global state, so do not execute
+				nrPerformed = 0;
 				break;
 			}
 			if (nrPerformed != 0) {
@@ -138,6 +133,9 @@ public class MySQLProvider implements DatabaseProvider {
 				break;
 			case FLUSH:
 				query = MySQLFlush.create(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
+				break;
+			case RESET:
+				query = MySQLReset.create();
 				break;
 			default:
 				throw new AssertionError(nextAction);
