@@ -113,7 +113,7 @@ public class MySQLProvider implements DatabaseProvider {
 				query = MySQLRepair.repair(newSchema.getRandomTable());
 				break;
 			case OPTIMIZE:
-				query = MySQLOptimize.optimize(newSchema.getRandomTable());
+				query = MySQLOptimize.optimize(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
 				break;
 			case CHECKSUM:
 				query = MySQLChecksum.checksum(newSchema.getDatabaseTablesRandomSubsetNotEmpty());

@@ -40,7 +40,7 @@ public class SQLite3Provider implements DatabaseProvider {
 	}
 
 	private static final int NR_QUERIES_PER_TABLE = 1000;
-	private static final int MAX_INSERT_ROW_TRIES = 1;
+	private static final int MAX_INSERT_ROW_TRIES = 10;
 	public static final int EXPRESSION_MAX_DEPTH = 3;
 	private StateToReproduce state;
 	

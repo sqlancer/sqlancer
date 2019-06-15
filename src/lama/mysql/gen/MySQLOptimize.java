@@ -1,5 +1,8 @@
 package lama.mysql.gen;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
@@ -7,15 +10,15 @@ import lama.mysql.MySQLSchema.MySQLTable;
 
 public class MySQLOptimize {
 
-	private final MySQLTable randomTable;
+	private final List<MySQLTable> tables;
 	private final StringBuilder sb = new StringBuilder();
 
-	public MySQLOptimize(MySQLTable randomTable) {
-		this.randomTable = randomTable;
+	public MySQLOptimize(List<MySQLTable> tables) {
+		this.tables = tables;
 	}
 
-	public static Query optimize(MySQLTable randomTable) {
-		return new MySQLOptimize(randomTable).optimize();
+	public static Query optimize(List<MySQLTable> tables) {
+		return new MySQLOptimize(tables).optimize();
 	}
 
 	private Query optimize() {
@@ -25,7 +28,7 @@ public class MySQLOptimize {
 			sb.append(Randomly.fromOptions("NO_WRITE_TO_BINLOG", "LOCAL"));
 		}
 		sb.append(" TABLE ");
-		sb.append(randomTable.getName());
+		sb.append(tables.stream().map(t -> t.getName()).collect(Collectors.joining(", ")));
 		return new QueryAdapter(sb.toString());
 	}
 
