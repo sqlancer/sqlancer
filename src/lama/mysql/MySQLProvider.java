@@ -16,6 +16,7 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.mysql.MySQLSchema.MySQLTable;
+import lama.mysql.gen.MySQLCheckTable;
 import lama.mysql.gen.MySQLChecksum;
 import lama.mysql.gen.MySQLOptimize;
 import lama.mysql.gen.MySQLRepair;
@@ -34,7 +35,7 @@ public class MySQLProvider implements DatabaseProvider {
 	private QueryManager manager;
 
 	enum Action {
-		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR, OPTIMIZE, CHECKSUM;
+		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR, OPTIMIZE, CHECKSUM, CHECK_TABLE;
 	}
 
 	@Override
@@ -73,6 +74,9 @@ public class MySQLProvider implements DatabaseProvider {
 				nrPerformed = r.getInteger(0, 10);
 				break;
 			case CHECKSUM:
+				nrPerformed = r.getInteger(0, 10);
+				break;
+			case CHECK_TABLE:
 				nrPerformed = r.getInteger(0, 10);
 				break;
 			}
@@ -117,6 +121,9 @@ public class MySQLProvider implements DatabaseProvider {
 				break;
 			case CHECKSUM:
 				query = MySQLChecksum.checksum(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
+				break;
+			case CHECK_TABLE:
+				query = MySQLCheckTable.check(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
 				break;
 			default:
 				throw new AssertionError(nextAction);
