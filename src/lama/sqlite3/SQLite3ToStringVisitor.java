@@ -176,9 +176,9 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 		} else {
 			switch (c.getDataType()) {
 			case INT:
-				if ((c.asInt() == 0 || c.asInt() == 1) && Randomly.getBoolean()) {
-					sb.append(c.asInt() == 1 ? "TRUE" : "FALSE");
-				} else {
+//				if ((c.asInt() == 0 || c.asInt() == 1) && Randomly.getBoolean()) {
+//					sb.append(c.asInt() == 1 ? "TRUE" : "FALSE");
+//				} else {
 					// - 0X8000000000000000 results in an error message otherwise
 					if (Randomly.getBoolean() || c.asInt() == Long.MIN_VALUE) {
 						sb.append(c.asInt());
@@ -186,7 +186,7 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 						long intVal = c.asInt();
 						asHexString(intVal);
 					}
-				}
+//				}
 				break;
 			case REAL:
 				double asDouble = c.asDouble();
