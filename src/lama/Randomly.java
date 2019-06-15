@@ -1,6 +1,7 @@
 package lama;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -85,6 +86,12 @@ public final class Randomly {
 	@SafeVarargs
 	public static <T> T fromOptions(T... options) {
 		return options[ThreadLocalRandom.current().nextInt(options.length)];
+	}
+	
+	@SafeVarargs
+	public static <T> List<T> nonEmptySubset(T... options) {
+		int nr = 1 + ThreadLocalRandom.current().nextInt(options.length);
+		return extractNrRandomColumns(Arrays.asList(options), nr);
 	}
 
 	public static <T> List<T> nonEmptySubset(List<T> columns) {

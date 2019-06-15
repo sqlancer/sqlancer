@@ -19,6 +19,7 @@ import lama.mysql.MySQLSchema.MySQLTable;
 import lama.mysql.gen.MySQLRowInserter;
 import lama.mysql.gen.MySQLSetGenerator;
 import lama.mysql.gen.MySQLTableGenerator;
+import lama.mysql.gen.admin.MySQLFlush;
 import lama.mysql.gen.tblmaintenance.MySQLAnalyzeTable;
 import lama.mysql.gen.tblmaintenance.MySQLCheckTable;
 import lama.mysql.gen.tblmaintenance.MySQLChecksum;
@@ -36,7 +37,7 @@ public class MySQLProvider implements DatabaseProvider {
 	private QueryManager manager;
 
 	enum Action {
-		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR, OPTIMIZE, CHECKSUM, CHECK_TABLE, ANALYZE_TABLE;
+		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR, OPTIMIZE, CHECKSUM, CHECK_TABLE, ANALYZE_TABLE, FLUSH;
 	}
 
 	@Override
@@ -83,6 +84,9 @@ public class MySQLProvider implements DatabaseProvider {
 			case ANALYZE_TABLE:
 				nrPerformed = r.getInteger(0, 10);
 				break;
+			case FLUSH:
+				nrPerformed = r.getInteger(0, 10);
+				break;
 			}
 			if (nrPerformed != 0) {
 				actions.add(action);
@@ -118,7 +122,7 @@ public class MySQLProvider implements DatabaseProvider {
 				query = MySQLSetGenerator.set(r);
 				break;
 			case REPAIR:
-				query = MySQLRepair.repair(newSchema.getRandomTable());
+				query = MySQLRepair.repair(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
 				break;
 			case OPTIMIZE:
 				query = MySQLOptimize.optimize(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
@@ -131,6 +135,9 @@ public class MySQLProvider implements DatabaseProvider {
 				break;
 			case ANALYZE_TABLE:
 				query = MySQLAnalyzeTable.analyze(newSchema.getDatabaseTablesRandomSubsetNotEmpty(), r);
+				break;
+			case FLUSH:
+				query = MySQLFlush.create(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
 				break;
 			default:
 				throw new AssertionError(nextAction);
