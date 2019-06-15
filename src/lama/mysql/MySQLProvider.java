@@ -16,6 +16,7 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.mysql.MySQLSchema.MySQLTable;
+import lama.mysql.gen.MySQLChecksum;
 import lama.mysql.gen.MySQLOptimize;
 import lama.mysql.gen.MySQLRepair;
 import lama.mysql.gen.MySQLRowInserter;
@@ -33,7 +34,7 @@ public class MySQLProvider implements DatabaseProvider {
 	private QueryManager manager;
 
 	enum Action {
-		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR, OPTIMIZE;
+		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR, OPTIMIZE, CHECKSUM;
 	}
 
 	@Override
@@ -69,6 +70,9 @@ public class MySQLProvider implements DatabaseProvider {
 				nrPerformed = 0; // r.getInteger(0, 10);
 				break;
 			case OPTIMIZE:
+				nrPerformed = r.getInteger(0, 10);
+				break;
+			case CHECKSUM:
 				nrPerformed = r.getInteger(0, 10);
 				break;
 			}
@@ -110,6 +114,9 @@ public class MySQLProvider implements DatabaseProvider {
 				break;
 			case OPTIMIZE:
 				query = MySQLOptimize.optimize(newSchema.getRandomTable());
+				break;
+			case CHECKSUM:
+				query = MySQLChecksum.checksum(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
 				break;
 			default:
 				throw new AssertionError(nextAction);
@@ -171,7 +178,7 @@ public class MySQLProvider implements DatabaseProvider {
 
 	@Override
 	public Connection createDatabase(String databaseName) throws SQLException {
-		String url = "jdbc:mysql://localhost:3306/?serverTimezone=UTC&useSSL=false";
+		String url = "jdbc:mysql://localhost:3306/?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true";
 		Connection con = DriverManager.getConnection(url, "lama", "password");
 		try (Statement s = con.createStatement()) {
 			s.execute("DROP DATABASE IF EXISTS " + databaseName);

@@ -207,4 +207,8 @@ public class MySQLSchema {
 		return databaseTables;
 	}
 
+	public List<MySQLTable> getDatabaseTablesRandomSubsetNotEmpty() {
+		return Randomly.nonEmptySubset(databaseTables);
+	}
+
 }
