@@ -21,6 +21,7 @@ import lama.mysql.gen.MySQLSetGenerator;
 import lama.mysql.gen.MySQLTableGenerator;
 import lama.mysql.gen.admin.MySQLFlush;
 import lama.mysql.gen.admin.MySQLReset;
+import lama.mysql.gen.datadef.CreateIndexGenerator;
 import lama.mysql.gen.tblmaintenance.MySQLAnalyzeTable;
 import lama.mysql.gen.tblmaintenance.MySQLCheckTable;
 import lama.mysql.gen.tblmaintenance.MySQLChecksum;
@@ -38,7 +39,7 @@ public class MySQLProvider implements DatabaseProvider {
 	private QueryManager manager;
 
 	enum Action {
-		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR, OPTIMIZE, CHECKSUM, CHECK_TABLE, ANALYZE_TABLE, FLUSH, RESET;
+		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR, OPTIMIZE, CHECKSUM, CHECK_TABLE, ANALYZE_TABLE, FLUSH, RESET, CREATE_INDEX;
 	}
 
 	@Override
@@ -76,6 +77,7 @@ public class MySQLProvider implements DatabaseProvider {
 			case CHECK_TABLE:
 			case ANALYZE_TABLE:
 			case FLUSH:
+			case CREATE_INDEX:
 				nrPerformed = r.getInteger(0, 10);
 				break;
 			case RESET:
@@ -89,6 +91,7 @@ public class MySQLProvider implements DatabaseProvider {
 			nrRemaining[action.ordinal()] = nrPerformed;
 			total += nrPerformed;
 		}
+		CreateIndexGenerator createIndexGenerator = new CreateIndexGenerator(newSchema.getRandomTable(), r);
 
 		while (total != 0) {
 			Action nextAction = null;
@@ -136,6 +139,9 @@ public class MySQLProvider implements DatabaseProvider {
 				break;
 			case RESET:
 				query = MySQLReset.create();
+				break;
+			case CREATE_INDEX:
+				query = createIndexGenerator.create();
 				break;
 			default:
 				throw new AssertionError(nextAction);
