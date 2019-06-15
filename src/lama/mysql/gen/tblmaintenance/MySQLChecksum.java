@@ -1,4 +1,4 @@
-package lama.mysql.gen;
+package lama.mysql.gen.tblmaintenance;
 
 import java.util.List;
 import java.util.stream.Collectors;
