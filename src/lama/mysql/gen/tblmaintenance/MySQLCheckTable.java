@@ -8,6 +8,9 @@ import lama.QueryAdapter;
 import lama.Randomly;
 import lama.mysql.MySQLSchema.MySQLTable;
 
+/**
+ * @see https://dev.mysql.com/doc/refman/8.0/en/check-table.html
+ */
 public class MySQLCheckTable {
 
 	private final List<MySQLTable> tables;
@@ -21,6 +24,16 @@ public class MySQLCheckTable {
 		return new MySQLCheckTable(tables).generate();
 	}
 
+	// CHECK TABLE tbl_name [, tbl_name] ... [option] ...
+	//
+	// option: {
+	// FOR UPGRADE
+	// | QUICK
+	// | FAST
+	// | MEDIUM
+	// | EXTENDED
+	// | CHANGED
+	// }
 	private Query generate() {
 		sb.append("CHECK TABLE ");
 		sb.append(tables.stream().map(t -> t.getName()).collect(Collectors.joining(", ")));

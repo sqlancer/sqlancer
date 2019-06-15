@@ -8,6 +8,9 @@ import lama.QueryAdapter;
 import lama.Randomly;
 import lama.mysql.MySQLSchema.MySQLTable;
 
+/**
+ * @see https://dev.mysql.com/doc/refman/8.0/en/optimize-table.html
+ */
 public class MySQLOptimize {
 
 	private final List<MySQLTable> tables;
@@ -21,6 +24,8 @@ public class MySQLOptimize {
 		return new MySQLOptimize(tables).optimize();
 	}
 
+	// OPTIMIZE [NO_WRITE_TO_BINLOG | LOCAL]
+    // TABLE tbl_name [, tbl_name] ...
 	private Query optimize() {
 		sb.append("OPTIMIZE");
 		if (Randomly.getBoolean()) {

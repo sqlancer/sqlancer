@@ -9,6 +9,9 @@ import lama.Randomly;
 import lama.mysql.MySQLSchema.MySQLColumn;
 import lama.mysql.MySQLSchema.MySQLTable;
 
+/**
+ * @see https://dev.mysql.com/doc/refman/8.0/en/analyze-table.html
+ */
 public class MySQLAnalyzeTable {
 
 	private final List<MySQLTable> tables;
