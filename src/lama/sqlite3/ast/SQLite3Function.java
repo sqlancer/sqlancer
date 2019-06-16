@@ -26,7 +26,7 @@ public class SQLite3Function extends SQLite3Expression {
 				if (args[0].getDataType() == SQLite3DataType.INT) {
 					castValue = SQLite3Cast.castToInt(args[0]);
 				} else {
-					castValue = SQLite3Cast.castToReal(args[0]);
+					castValue = SQLite3Cast.castToNumericNoNumAsRealZero(args[0]);
 				}
 				if (castValue.isNull()) {
 					return castValue;

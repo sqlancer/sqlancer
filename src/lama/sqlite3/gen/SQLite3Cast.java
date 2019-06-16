@@ -13,8 +13,7 @@ public class SQLite3Cast {
 	private static final double MIN_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED = -Math.pow(2, 51 - 1);
 
 	public static Optional<Boolean> isTrue(SQLite3Constant value) {
-		SQLite3Constant numericValue;
-		if (value.getDataType() == SQLite3DataType.NULL) {
+		SQLite3Constant numericValue;		if (value.getDataType() == SQLite3DataType.NULL) {
 			return Optional.empty();
 		}
 		if (value.getDataType() == SQLite3DataType.TEXT || value.getDataType() == SQLite3DataType.BINARY) {
@@ -27,7 +26,8 @@ public class SQLite3Cast {
 		case INT:
 			return Optional.of(numericValue.asInt() != 0);
 		case REAL:
-			return Optional.of(numericValue.asDouble() != 0 && !Double.isNaN(numericValue.asDouble()));
+			double doubleVal = numericValue.asDouble();
+			return Optional.of(doubleVal != 0 && !Double.isNaN(doubleVal));
 		default:
 			throw new AssertionError(numericValue);
 		}
@@ -92,18 +92,22 @@ public class SQLite3Cast {
 		}
 	}
 	
+	public static SQLite3Constant castToNumericNoNumAsRealZero(SQLite3Constant value) {
+		return convertInternal(value, true, true);
+	}
+	
 	public static SQLite3Constant castToNumericFromNumOperand(SQLite3Constant value) {
-		return convertInternal(value, false);
+		return convertInternal(value, false, false);
 	}
 
 	/**
 	 * Applies numeric affinity to a value.
 	 */
 	public static SQLite3Constant castToNumeric(SQLite3Constant value) {
-		return convertInternal(value, true);
+		return convertInternal(value, true, false);
 	}
 
-	private static SQLite3Constant convertInternal(SQLite3Constant value, boolean convertRealToInt) throws AssertionError {
+	private static SQLite3Constant convertInternal(SQLite3Constant value, boolean convertRealToInt, boolean noNumIsRealZero) throws AssertionError {
 		if (value.getDataType() == SQLite3DataType.BINARY) {
 			String text = new String(value.asBinary());
 			value = SQLite3Constant.createTextConstant(text);
@@ -148,7 +152,11 @@ public class SQLite3Cast {
 				} catch (Exception e) {
 				}
 			}
-			return SQLite3Constant.createIntConstant(0);
+			if (noNumIsRealZero) {
+				return SQLite3Constant.createRealConstant(0.0);
+			} else {
+				return SQLite3Constant.createIntConstant(0);
+			}
 		default:
 			throw new AssertionError(value);
 		}

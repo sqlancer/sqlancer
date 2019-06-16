@@ -56,8 +56,7 @@ public class TestAbs {
 	
 	@Test // SELECT ABS('1147056737'); -- 1147056737
 	public void testString2() {
-		assertEquals(1147056737.0, ComputableFunction.ABS.apply(SQLite3Constant.createTextConstant("1147056737")).asDouble(),
-				0.0000000001);
+		assertEquals(1147056737, ComputableFunction.ABS.apply(SQLite3Constant.createTextConstant("1147056737")).asInt());
 	}
 
 }
