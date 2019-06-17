@@ -27,7 +27,11 @@ public class MySQLTableGenerator {
 	}
 
 	private Query create() {
-		sb.append("CREATE TABLE");
+		sb.append("CREATE");
+		if (Randomly.getBoolean()) {
+//			sb.append(" TEMPORARY"); // FIXME support temporary tables in the schema
+		}
+		sb.append(" TABLE");
 		if (Randomly.getBoolean()) {
 			sb.append(" IF NOT EXISTS");
 		}

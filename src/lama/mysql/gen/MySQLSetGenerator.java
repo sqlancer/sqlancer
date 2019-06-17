@@ -34,11 +34,12 @@ public class MySQLSetGenerator {
 		JOIN_BUFFER_SIZE("join_buffer_size", (r) -> r.getLong(128, Long.MAX_VALUE)), // actually: 18446744073709547520
 //		KEY_BUFFER_SIZE("key_buffer_size", (r) -> r.getLong(8, Long.MAX_VALUE)), // actually: OS_PER_PROCESS_LIMIT
 		MAX_HEAP_TABLE_SIZE("max_heap_table_size", (r) -> r.getLong(16384, Long.MAX_VALUE)), // actually: 1844674407370954752
-		
-		
+		MAX_SEEKS_FOR_KEY("max_seeks_for_key", (r) -> r.getLong(1, Long.MAX_VALUE)), // actually: 18446744073709551615
+		// global
+//		INNODB_FLUSH_METHOD("innodb_flush_method", (r) -> Randomly.fromOptions("fsync", "O_DSYNC", "littlesync", "nosync", "O_DIRECT", "O_DIRECT_NO_FSYNC")),
 		// TODO
 		UNIQUE_CHECKS("unique_checks", (r) -> Randomly.fromOptions("OFF", "ON"))
-		
+		// TODO: https://dev.mysql.com/doc/refman/8.0/en/switchable-optimizations.html
 		; 
 		
 		private String name;

@@ -29,17 +29,17 @@ import lama.mysql.gen.tblmaintenance.MySQLOptimize;
 import lama.mysql.gen.tblmaintenance.MySQLRepair;
 import lama.sqlite3.gen.QueryGenerator;
 import lama.sqlite3.gen.SQLite3Common;
-import lama.sqlite3.gen.SQLite3ReindexGenerator;
 
 public class MySQLProvider implements DatabaseProvider {
 
-	private static final int NR_QUERIES_PER_TABLE = 10000;
-	private static final int MAX_INSERT_ROW_TRIES = 3;
+	private static final int NR_QUERIES_PER_TABLE = 1000;
+	private static final int MAX_INSERT_ROW_TRIES = 100;
 	private final Randomly r = new Randomly();
 	private QueryManager manager;
 
 	enum Action {
-		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR, OPTIMIZE, CHECKSUM, CHECK_TABLE, ANALYZE_TABLE, FLUSH, RESET, CREATE_INDEX;
+		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR, OPTIMIZE, CHECKSUM, CHECK_TABLE, ANALYZE_TABLE, FLUSH, RESET,
+		CREATE_INDEX;
 	}
 
 	@Override
@@ -65,7 +65,7 @@ public class MySQLProvider implements DatabaseProvider {
 				nrPerformed = r.getInteger(0, 1);
 				break;
 			case INSERT:
-				nrPerformed = 100;
+				nrPerformed = MAX_INSERT_ROW_TRIES;
 				break;
 			case REPAIR:
 				// see https://bugs.mysql.com/bug.php?id=95820
@@ -156,21 +156,18 @@ public class MySQLProvider implements DatabaseProvider {
 				throw t;
 			}
 			total--;
-			for (MySQLTable t : newSchema.getDatabaseTables()) {
-				if (!ensureTableHasRows(con, t, r)) {
-					return;
-				}
+		}
+		for (MySQLTable t : newSchema.getDatabaseTables()) {
+			if (!ensureTableHasRows(con, t, r)) {
+				return;
 			}
-			if (Randomly.getBoolean()) {
-				SQLite3ReindexGenerator.executeReindex(con, state);
-			}
-			newSchema = MySQLSchema.fromConnection(con, databaseName);
+		}
+		newSchema = MySQLSchema.fromConnection(con, databaseName);
 
-			MySQLQueryGenerator queryGenerator = new MySQLQueryGenerator(manager, r);
-			for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
-				queryGenerator.generateAndCheckQuery(state, logger);
-				manager.incrementSelectQueryCount();
-			}
+		MySQLQueryGenerator queryGenerator = new MySQLQueryGenerator(manager, r, con, databaseName);
+		for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
+			queryGenerator.generateAndCheckQuery(state, logger);
+			manager.incrementSelectQueryCount();
 		}
 
 	}
