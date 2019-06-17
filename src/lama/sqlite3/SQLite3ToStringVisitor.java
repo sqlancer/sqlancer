@@ -21,6 +21,7 @@ import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.LogicalOperation;
 import lama.sqlite3.ast.SQLite3Expression.OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import lama.sqlite3.ast.SQLite3Expression.Subquery;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import lama.sqlite3.ast.SQLite3Function;
@@ -344,5 +345,11 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 			visit(func.getArgs()[i]);
 		}
 		sb.append(")");
+	}
+
+	@Override
+	public void visit(SQLite3Distinct distinct) {
+		sb.append("DISTINCT ");
+		visit(distinct.getExpression());
 	}
 }

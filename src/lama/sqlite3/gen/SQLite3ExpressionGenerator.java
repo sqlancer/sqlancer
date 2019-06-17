@@ -12,6 +12,7 @@ import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation.PostfixUnaryOperator;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import lama.sqlite3.ast.SQLite3Function;
 import lama.sqlite3.ast.SQLite3Function.ComputableFunction;
@@ -140,8 +141,12 @@ public class SQLite3ExpressionGenerator {
 		SQLite3Expression[] args = new SQLite3Expression[nrArgs];
 		for (int i = 0; i < args.length; i++) {
 			args[i] = getRandomExpression(columns, depth + 1, deterministicOnly, r);
+			if (i == 0 && Randomly.getBoolean()) {
+				args[i] = new SQLite3Distinct(args[i]);
+			}
 		}
-		return new SQLite3Function(func, args);
+		SQLite3Function sqlFunction = new SQLite3Function(func, args);
+		return sqlFunction;
 	}
 
 	private SQLite3Expression getBetweenOperator(List<Column> columns, int depth, boolean deterministicOnly,

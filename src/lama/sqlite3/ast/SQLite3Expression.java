@@ -14,6 +14,30 @@ import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 
 public abstract class SQLite3Expression {
+	
+	public static class SQLite3Distinct extends SQLite3Expression {
+
+		private final SQLite3Expression expr;
+		
+		public SQLite3Distinct(SQLite3Expression expr) {
+			this.expr = expr;
+		}
+		
+		@Override
+		public CollateSequence getExplicitCollateSequence() {
+			return expr.getExplicitCollateSequence();
+		}
+		
+		@Override
+		public SQLite3Constant getExpectedValue() {
+			return expr.getExpectedValue();
+		}
+
+		public SQLite3Expression getExpression() {
+			return expr;
+		}
+		
+	}
 
 	public SQLite3Constant getExpectedValue() {
 		return null;
