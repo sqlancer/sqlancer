@@ -4,10 +4,11 @@ import java.util.List;
 
 import lama.IgnoreMeException;
 import lama.Randomly;
+import lama.sqlite3.ast.SQLite3Case.CasePair;
+import lama.sqlite3.ast.SQLite3Case.SQLite3CaseWithBaseExpression;
+import lama.sqlite3.ast.SQLite3Case.SQLite3CaseWithoutBaseExpression;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
-import lama.sqlite3.ast.SQLite3SelectStatement;
-import lama.sqlite3.ast.UnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
@@ -25,6 +26,8 @@ import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import lama.sqlite3.ast.SQLite3Expression.Subquery;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import lama.sqlite3.ast.SQLite3Function;
+import lama.sqlite3.ast.SQLite3SelectStatement;
+import lama.sqlite3.ast.UnaryOperation;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 
 public class SQLite3ToStringVisitor extends SQLite3Visitor {
@@ -70,14 +73,22 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 	}
 
 	public void visit(BetweenOperation op) {
+		sb.append("(");
+		sb.append("(");
 		visit(op.getExpression());
+		sb.append(")");
 		if (op.isNegated()) {
 			sb.append(" NOT");
 		}
 		sb.append(" BETWEEN ");
+		sb.append("(");
 		visit(op.getLeft());
+		sb.append(")");
 		sb.append(" AND ");
+		sb.append("(");
 		visit(op.getRight());
+		sb.append(")");
+		sb.append(")");
 	}
 
 	public void visit(ColumnName c) {
@@ -351,5 +362,39 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 	public void visit(SQLite3Distinct distinct) {
 		sb.append("DISTINCT ");
 		visit(distinct.getExpression());
+	}
+
+	@Override
+	public void visit(SQLite3CaseWithoutBaseExpression casExpr) {
+		sb.append("CASE");
+		for (CasePair pair : casExpr.getPairs()) {
+			sb.append(" WHEN ");
+			visit(pair.getCond());
+			sb.append(" THEN ");
+			visit(pair.getThen());
+		}
+		if (casExpr.getElseExpr() != null) {
+			sb.append(" ELSE ");
+			visit(casExpr.getElseExpr());
+		}
+		sb.append(" END");
+	}
+
+	@Override
+	public void visit(SQLite3CaseWithBaseExpression casExpr) {
+		sb.append("CASE ");
+		visit(casExpr.getBaseExpr());
+		sb.append(" ");
+		for (CasePair pair : casExpr.getPairs()) {
+			sb.append(" WHEN ");
+			visit(pair.getCond());
+			sb.append(" THEN ");
+			visit(pair.getThen());
+		}
+		if (casExpr.getElseExpr() != null) {
+			sb.append(" ELSE ");
+			visit(casExpr.getElseExpr());
+		}
+		sb.append(" END");
 	}
 }

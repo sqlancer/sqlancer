@@ -5,6 +5,9 @@ import java.util.List;
 
 import lama.Randomly;
 import lama.sqlite3.SQLite3Provider;
+import lama.sqlite3.ast.SQLite3Case.CasePair;
+import lama.sqlite3.ast.SQLite3Case.SQLite3CaseWithBaseExpression;
+import lama.sqlite3.ast.SQLite3Case.SQLite3CaseWithoutBaseExpression;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation.BinaryComparisonOperator;
@@ -72,7 +75,8 @@ public class SQLite3ExpressionGenerator {
 
 	enum ExpressionType {
 		COLUMN_NAME, LITERAL_VALUE, UNARY_OPERATOR, POSTFIX_UNARY_OPERATOR, BINARY_OPERATOR, BETWEEN_OPERATOR,
-		UNARY_FUNCTION, CAST_EXPRESSION, BINARY_COMPARISON_OPERATOR, KNOWN_RESULT_FUNCTION, IN_OPERATOR, COLLATE
+		UNARY_FUNCTION, CAST_EXPRESSION, BINARY_COMPARISON_OPERATOR, KNOWN_RESULT_FUNCTION, IN_OPERATOR, COLLATE,
+		CASE_OPERATOR
 	}
 
 	public SQLite3Expression getRandomExpression(List<Column> columns, boolean deterministicOnly, Randomly r) {
@@ -95,7 +99,7 @@ public class SQLite3ExpressionGenerator {
 		switch (randomExpressionType) {
 		case UNARY_FUNCTION:
 			String name = QueryGenerator.getRandomUnaryFunction();
-			return new SQLite3Expression.Function(name, getRandomExpression(columns, deterministicOnly, r));
+			return new SQLite3Expression.Function(name, getRandomExpression(columns, depth + 1, deterministicOnly, r));
 		case LITERAL_VALUE:
 			return getRandomLiteralValue(deterministicOnly, r);
 		case COLUMN_NAME:
@@ -118,9 +122,35 @@ public class SQLite3ExpressionGenerator {
 		case IN_OPERATOR:
 			return getInOperator(columns, depth + 1, deterministicOnly, r);
 		case COLLATE:
-			return new CollateOperation(getRandomExpression(columns, depth + 1, deterministicOnly,  r), CollateSequence.random());
+			return new CollateOperation(getRandomExpression(columns, depth + 1, deterministicOnly, r),
+					CollateSequence.random());
+		case CASE_OPERATOR:
+			return getCaseOperator(columns, depth + 1, deterministicOnly, r);
 		default:
 			throw new AssertionError(randomExpressionType);
+		}
+	}
+
+	private SQLite3Expression getCaseOperator(List<Column> columns, int depth, boolean deterministicOnly, Randomly r) {
+		int nrCaseExpressions = 1 + Randomly.smallNumber();
+		CasePair[] pairs = new CasePair[nrCaseExpressions];
+		for (int i = 0; i < pairs.length; i++) {
+			SQLite3Expression whenExpr = getRandomExpression(columns, depth + 1, deterministicOnly, r);
+			SQLite3Expression thenExpr = getRandomExpression(columns, depth + 1, deterministicOnly, r);
+			CasePair pair = new CasePair(whenExpr, thenExpr);
+			pairs[i] = pair;
+		}
+		SQLite3Expression elseExpr;
+		if (Randomly.getBoolean()) {
+			elseExpr = getRandomExpression(columns, depth + 1, deterministicOnly, r);
+		} else {
+			elseExpr = null;
+		}
+		if (Randomly.getBoolean()) {
+			return new SQLite3CaseWithoutBaseExpression(pairs, elseExpr);
+		} else {
+			SQLite3Expression baseExpr = getRandomExpression(columns, depth + 1, deterministicOnly, r);
+			return new SQLite3CaseWithBaseExpression(baseExpr, pairs, elseExpr);
 		}
 	}
 
@@ -130,7 +160,7 @@ public class SQLite3ExpressionGenerator {
 				Randomly.fromOptions(SQLite3Expression.TypeLiteral.Type.values()));
 		return new SQLite3Expression.Cast(type, expr);
 	}
-	
+
 	private SQLite3Expression getComputableFunction(List<Column> columns, int depth, boolean deterministicOnly,
 			Randomly r) {
 		ComputableFunction func = ComputableFunction.getRandomFunction();
@@ -167,9 +197,8 @@ public class SQLite3ExpressionGenerator {
 		SQLite3Expression rightExpression = getRandomExpression(columns, depth + 1, deterministicOnly, r);
 		return new SQLite3Expression.BinaryOperation(leftExpression, rightExpression, operator);
 	}
-	
-	private SQLite3Expression getInOperator(List<Column> columns, int depth, boolean deterministicOnly,
-			Randomly r) {
+
+	private SQLite3Expression getInOperator(List<Column> columns, int depth, boolean deterministicOnly, Randomly r) {
 		SQLite3Expression leftExpression = getRandomExpression(columns, depth + 1, deterministicOnly, r);
 		List<SQLite3Expression> right = new ArrayList<>();
 		for (int i = 0; i < Randomly.smallNumber(); i++) {

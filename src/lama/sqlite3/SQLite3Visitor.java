@@ -1,8 +1,9 @@
 package lama.sqlite3;
 
+import lama.sqlite3.ast.SQLite3Case.SQLite3CaseWithBaseExpression;
+import lama.sqlite3.ast.SQLite3Case.SQLite3CaseWithoutBaseExpression;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
-import lama.sqlite3.ast.SQLite3Function;
 import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
@@ -16,8 +17,10 @@ import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.LogicalOperation;
 import lama.sqlite3.ast.SQLite3Expression.OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import lama.sqlite3.ast.SQLite3Expression.Subquery;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
+import lama.sqlite3.ast.SQLite3Function;
 import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.UnaryOperation;
 
@@ -42,10 +45,9 @@ public abstract class SQLite3Visitor {
 		return sb.toString();
 	}
 
-
 	public abstract void visit(BinaryComparisonOperation op);
-	
-	public abstract void visit(BinaryOperation op); 
+
+	public abstract void visit(BinaryOperation op);
 
 	public abstract void visit(LogicalOperation op);
 
@@ -57,7 +59,6 @@ public abstract class SQLite3Visitor {
 
 	public abstract void visit(Function f);
 
-
 	public abstract void visit(SQLite3SelectStatement s);
 
 	public abstract void visit(OrderingTerm term);
@@ -67,7 +68,7 @@ public abstract class SQLite3Visitor {
 	public abstract void visit(PostfixUnaryOperation exp);
 
 	public abstract void visit(CollateOperation op);
-	
+
 	public abstract void visit(Cast cast);
 
 	public abstract void visit(TypeLiteral literal);
@@ -77,10 +78,17 @@ public abstract class SQLite3Visitor {
 	public abstract void visit(Subquery query);
 
 	public abstract void visit(Exist exist);
-	
+
 	public abstract void visit(Join join);
-	
+
 	public abstract void visit(SQLite3Function func);
+
+	public abstract void visit(SQLite3Distinct distinct);
+
+	public abstract void visit(SQLite3CaseWithoutBaseExpression casExpr);
+	
+	public abstract void visit(SQLite3CaseWithBaseExpression casExpr);
+
 
 	public void visit(SQLite3Expression expr) {
 		if (expr instanceof BinaryOperation) {
@@ -119,11 +127,16 @@ public abstract class SQLite3Visitor {
 			visit((BinaryComparisonOperation) expr);
 		} else if (expr instanceof SQLite3Function) {
 			visit((SQLite3Function) expr);
+		} else if (expr instanceof SQLite3Distinct) {
+			visit((SQLite3Distinct) expr);
+		} else if (expr instanceof SQLite3CaseWithoutBaseExpression) {
+			visit((SQLite3CaseWithoutBaseExpression) expr);
+		} else if (expr instanceof SQLite3CaseWithBaseExpression) {
+			visit((SQLite3CaseWithBaseExpression) expr);
 		} else {
 			throw new AssertionError(expr);
 		}
 	}
-
 
 	public static String asString(SQLite3Expression expr) {
 		SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
@@ -136,5 +149,5 @@ public abstract class SQLite3Visitor {
 		visitor.visit(expr);
 		return visitor.get();
 	}
-	
+
 }

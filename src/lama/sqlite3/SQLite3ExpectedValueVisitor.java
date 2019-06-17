@@ -1,8 +1,10 @@
 package lama.sqlite3;
 
+import lama.sqlite3.ast.SQLite3Case.CasePair;
+import lama.sqlite3.ast.SQLite3Case.SQLite3CaseWithBaseExpression;
+import lama.sqlite3.ast.SQLite3Case.SQLite3CaseWithoutBaseExpression;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
-import lama.sqlite3.ast.SQLite3Function;
 import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
@@ -16,8 +18,10 @@ import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.LogicalOperation;
 import lama.sqlite3.ast.SQLite3Expression.OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import lama.sqlite3.ast.SQLite3Expression.Subquery;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
+import lama.sqlite3.ast.SQLite3Function;
 import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.UnaryOperation;
 
@@ -149,12 +153,46 @@ public class SQLite3ExpectedValueVisitor extends SQLite3Visitor {
 	public String get() {
 		return sb.toString();
 	}
-	
+
 	@Override
 	public void visit(SQLite3Function func) {
 		print(func);
 		for (SQLite3Expression expr : func.getArgs()) {
 			visit(expr);
+		}
+	}
+
+	@Override
+	public void visit(SQLite3Distinct distinct) {
+		print(distinct);
+		visit(distinct.getExpression());
+	}
+
+	@Override
+	public void visit(SQLite3CaseWithoutBaseExpression caseExpr) {
+		for (CasePair cExpr : caseExpr.getPairs()) {
+			print(cExpr.getCond());
+			visit(cExpr.getCond());
+			print(cExpr.getThen());
+			visit(cExpr.getThen());
+		}
+		print(caseExpr.getElseExpr());
+		visit(caseExpr.getElseExpr());
+	}
+
+	@Override
+	public void visit(SQLite3CaseWithBaseExpression caseExpr) {
+		print(caseExpr);
+		visit(caseExpr.getBaseExpr());
+		for (CasePair cExpr : caseExpr.getPairs()) {
+			print(cExpr.getCond());
+			visit(cExpr.getCond());
+			print(cExpr.getThen());
+			visit(cExpr.getThen());
+		}
+		if (caseExpr.getElseExpr() != null) {
+			print(caseExpr.getElseExpr());
+			visit(caseExpr.getElseExpr());
 		}
 	}
 
