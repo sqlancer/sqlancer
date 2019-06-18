@@ -64,7 +64,16 @@ public final class Randomly {
 		} else if (Randomly.getBoolean() && !cachedDoubles.isEmpty()) {
 			return String.valueOf(Randomly.fromList(cachedDoubles));
 		} else if (!cachedStrings.isEmpty()) {
-			return Randomly.fromList(cachedStrings);
+			String randomString = Randomly.fromList(cachedStrings);
+			if (Randomly.getBoolean()) {
+				return randomString;
+			} else {
+				if (Randomly.getBoolean()) {
+					return randomString.toLowerCase();
+				} else {
+					return randomString.toUpperCase();
+				}
+			}
 		} else {
 			return null;
 		}
@@ -87,7 +96,7 @@ public final class Randomly {
 	public static <T> T fromOptions(T... options) {
 		return options[ThreadLocalRandom.current().nextInt(options.length)];
 	}
-	
+
 	@SafeVarargs
 	public static <T> List<T> nonEmptySubset(T... options) {
 		int nr = 1 + ThreadLocalRandom.current().nextInt(options.length);
@@ -249,12 +258,19 @@ public final class Randomly {
 			}
 		}
 
-		String alphabet = new String("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#<>/.öä~-+' ");
+		String alphabet = new String(
+				"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#<>/.öä~-+' []^*?%_\t\n");
 		int n = alphabet.length();
 
 		StringBuilder sb = new StringBuilder();
 
-		for (int i = 0; i < Randomly.smallNumber(); i++) {
+		int chars;
+		if (Randomly.getBoolean()) {
+			chars = Randomly.smallNumber();
+		} else {
+			chars = getInteger(0, 100);
+		}
+		for (int i = 0; i < chars; i++) {
 			sb.append(alphabet.charAt(ThreadLocalRandom.current().nextInt(n)));
 		}
 
@@ -387,6 +403,13 @@ public final class Randomly {
 			return left;
 		}
 		return ThreadLocalRandom.current().nextInt(left, right);
+	}
+
+	public long getLong(long left, long right) {
+		if (left == right) {
+			return left;
+		}
+		return ThreadLocalRandom.current().nextLong(left, right);
 	}
 
 	public String getNonZeroString() {
