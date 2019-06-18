@@ -46,7 +46,6 @@ public class MySQLQueryGenerator {
 
 	public void generateAndCheckQuery(StateToReproduce state, StateLogger logger) throws SQLException {
 		String queryString = getQueryThatContainsAtLeastOneRow(state);
-		logger.writeCurrent(queryString);
 
 		boolean isContainedIn = isContainedIn(queryString);
 		if (!isContainedIn) {

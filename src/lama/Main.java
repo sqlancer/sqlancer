@@ -67,6 +67,7 @@ public class Main {
 		private FileWriter reducedFileWriter;
 		public FileWriter currentFileWriter;
 		private static final List<String> initializedProvidersNames = new ArrayList<>();
+		private boolean logEachSelect;
 
 		private final static class AlsoWriteToConsoleFileWriter extends FileWriter {
 
@@ -87,7 +88,7 @@ public class Main {
 			}
 		}
 
-		public StateLogger(String databaseName, DatabaseProvider provider) {
+		public StateLogger(String databaseName, DatabaseProvider provider, MainOptions options) {
 			File dir = new File(LOG_DIRECTORY, provider.getLogFileSubdirectoryName());
 			if (dir.exists() && !dir.isDirectory()) {
 				throw new AssertionError(dir);
@@ -95,7 +96,10 @@ public class Main {
 			ensureExistsAndIsEmpty(dir, provider);
 			loggerFile = new File(dir, databaseName + ".log");
 			reducedFile = new File(dir, databaseName + "-reduced.log");
-			curFile = new File(dir, databaseName + "-cur.log");
+			logEachSelect = options.logEachSelect();
+			if (logEachSelect) {
+				curFile = new File(dir, databaseName + "-cur.log");
+			}
 		}
 
 		private synchronized void ensureExistsAndIsEmpty(File dir, DatabaseProvider provider) {
@@ -140,6 +144,9 @@ public class Main {
 		}
 
 		public FileWriter getCurrentFileWriter() {
+			if (!logEachSelect) {
+				throw new UnsupportedOperationException();
+			}
 			if (currentFileWriter == null) {
 				try {
 					currentFileWriter = new FileWriter(curFile, false);
@@ -151,6 +158,9 @@ public class Main {
 		}
 
 		public void writeCurrent(StateToReproduce state) {
+			if (!logEachSelect) {
+				throw new UnsupportedOperationException();
+			}
 			printState(getCurrentFileWriter(), state);
 			try {
 				currentFileWriter.flush();
@@ -162,6 +172,9 @@ public class Main {
 		}
 
 		public void writeCurrent(String queryString) {
+			if (!logEachSelect) {
+				throw new UnsupportedOperationException();
+			}
 			try {
 				getCurrentFileWriter().write(queryString + ";\n");
 				currentFileWriter.flush();
@@ -429,13 +442,12 @@ public class Main {
 					while (true) {
 						try (Connection con = provider.createDatabase(databaseName)) {
 							state = new StateToReproduce(databaseName);
-							logger = new StateLogger(databaseName, provider);
+							logger = new StateLogger(databaseName, provider, options);
 							QueryManager manager = new QueryManager(con, state);
 							java.sql.DatabaseMetaData meta = con.getMetaData();
 							state.databaseVersion = meta.getDatabaseProductVersion();
-							provider.generateAndTestDatabase(databaseName, con, logger, state, manager);
+							provider.generateAndTestDatabase(databaseName, con, logger, state, manager, options);
 							con.close();
-
 						} catch (IgnoreMeException e) {
 							continue;
 						} catch (ReduceMeException reduce) {
@@ -443,7 +455,6 @@ public class Main {
 							logger.logRowNotFound(state);
 							tryToReduceBug(databaseName, state);
 							threadsShutdown++;
-
 							break;
 						} catch (Throwable reduce) {
 							reduce.printStackTrace();
@@ -455,9 +466,12 @@ public class Main {
 							break;
 						} finally {
 							try {
-								if (logger.currentFileWriter != null)
-									logger.currentFileWriter.close();
-								logger.currentFileWriter = null;
+								if (options.logEachSelect()) {
+									if (logger.currentFileWriter != null) {
+										logger.currentFileWriter.close();
+									}
+									logger.currentFileWriter = null;
+								}
 							} catch (IOException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();

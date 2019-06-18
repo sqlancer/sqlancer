@@ -12,6 +12,7 @@ import lama.DatabaseProvider;
 import lama.Main.QueryManager;
 import lama.Main.StateLogger;
 import lama.Main.StateToReproduce;
+import lama.MainOptions;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
@@ -45,7 +46,7 @@ public class MySQLProvider implements DatabaseProvider {
 
 	@Override
 	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger, StateToReproduce state,
-			QueryManager manager) throws SQLException {
+			QueryManager manager, MainOptions options) throws SQLException {
 
 		this.databaseName = databaseName;
 		this.manager = manager;
