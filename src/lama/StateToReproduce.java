@@ -3,13 +3,15 @@ package lama;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
+import lama.mysql.MySQLSchema.MySQLColumn;
+import lama.mysql.ast.MySQLConstant;
+import lama.mysql.ast.MySQLExpression;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 
-public final class StateToReproduce {
+public abstract class StateToReproduce {
 
 	public enum ErrorKind {
 		EXCEPTION, ROW_NOT_FOUND
@@ -21,7 +23,6 @@ public final class StateToReproduce {
 	public String queryString;
 
 	private String databaseName;
-	public Map<Column, SQLite3Constant> randomRowValues;
 
 	public String databaseVersion;
 
@@ -32,8 +33,6 @@ public final class StateToReproduce {
 	public String queryTargetedTablesString;
 
 	public String queryTargetedColumnsString;
-
-	public SQLite3Expression whereClause;
 
 	public StateToReproduce(String databaseName) {
 		this.databaseName = databaseName;
@@ -61,38 +60,53 @@ public final class StateToReproduce {
 		return queryString;
 	}
 
-	public SQLite3Expression getWhereClause() {
-		return whereClause;
-	}
-
-	public Map<Column, SQLite3Constant> getRandomRowValues() {
-		return randomRowValues;
-	}
-
-	@Override
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		sb.append("database: " + databaseName + "\n");
-		sb.append("version: " + databaseVersion + "\n");
-		if (randomRowValues != null) {
-			sb.append("expected values: " + randomRowValues + "\n");
-		}
-		sb.append("-- statements start here\n");
-		if (statements != null) {
-			sb.append(statements.stream().map(q -> q.getQueryString()).collect(Collectors.joining(";\n")) + "\n");
-		}
-		if (queryString != null) {
-			sb.append(queryString + ";\n");
-		}
-		return sb.toString();
-	}
-
 	public ErrorKind getErrorKind() {
 		return errorKind;
 	}
 
 	public void setErrorKind(ErrorKind errorKind) {
 		this.errorKind = errorKind;
+	}
+	
+	public static class MySQLStateToReproduce extends StateToReproduce {
+
+		public MySQLStateToReproduce(String databaseName) {
+			super(databaseName);
+		}
+
+
+		public Map<MySQLColumn, MySQLConstant> getRandomRowValues() {
+			return randomRowValues;
+		}
+		
+		public Map<MySQLColumn, MySQLConstant> randomRowValues;
+		
+		public MySQLExpression whereClause;
+		
+		public MySQLExpression getWhereClause() {
+			return whereClause;
+		}
+		
+		
+	}
+	
+	public static class SQLite3StateToReproduce extends StateToReproduce {
+		public SQLite3StateToReproduce(String databaseName) {
+			super(databaseName);
+		}
+
+		public Map<Column, SQLite3Constant> getRandomRowValues() {
+			return randomRowValues;
+		}
+		
+		public Map<Column, SQLite3Constant> randomRowValues;
+		
+		public SQLite3Expression whereClause;
+		
+		public SQLite3Expression getWhereClause() {
+			return whereClause;
+		}
+
 	}
 
 }

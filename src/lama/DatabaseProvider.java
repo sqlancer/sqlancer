@@ -1,5 +1,6 @@
 package lama;
 
+import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -13,4 +14,8 @@ public interface DatabaseProvider {
 	Connection createDatabase(String databaseName) throws SQLException;
 
 	String getLogFileSubdirectoryName();
+
+	void printDatabaseSpecificState(FileWriter writer, StateToReproduce state);
+
+	StateToReproduce getStateToReproduce(String databaseName);
 }

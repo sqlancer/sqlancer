@@ -13,7 +13,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import lama.Randomly;
-import lama.StateToReproduce;
+import lama.StateToReproduce.MySQLStateToReproduce;
 import lama.mysql.ast.MySQLConstant;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 
@@ -133,7 +133,7 @@ public class MySQLSchema {
 			return getColumns().stream().map(function).collect(Collectors.joining(", "));
 		}
 
-		public MySQLRowValue getRandomRowValue(Connection con, StateToReproduce state) throws SQLException {
+		public MySQLRowValue getRandomRowValue(Connection con, MySQLStateToReproduce state) throws SQLException {
 			String randomRow = String.format("SELECT %s FROM %s ORDER BY RAND() LIMIT 1", columnNamesAsString(
 					c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
 					// columnNamesAsString(c -> "typeof(" + c.getTable().getName() + "." + c.getName() + ")")
@@ -172,8 +172,7 @@ public class MySQLSchema {
 					values.put(column, constant);
 				}
 				assert (!randomRowValues.next());
-				// FIXME implement/refactor
-//				state.randomRowValues = values;
+				state.randomRowValues = values;
 				return new MySQLRowValue(this, values);
 			}
 

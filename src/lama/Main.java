@@ -21,16 +21,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 import com.beust.jcommander.JCommander;
 
 import lama.StateToReproduce.ErrorKind;
 import lama.mysql.MySQLProvider;
 import lama.sqlite3.SQLite3Provider;
-import lama.sqlite3.SQLite3Visitor;
-import lama.sqlite3.schema.SQLite3Schema.Column;
-import lama.sqlite3.schema.SQLite3Schema.Table;
 
 // TODO:
 // group by
@@ -65,6 +61,7 @@ public class Main {
 		public FileWriter currentFileWriter;
 		private static final List<String> initializedProvidersNames = new ArrayList<>();
 		private boolean logEachSelect;
+		private DatabaseProvider provider;
 
 		private final static class AlsoWriteToConsoleFileWriter extends FileWriter {
 
@@ -86,6 +83,7 @@ public class Main {
 		}
 
 		public StateLogger(String databaseName, DatabaseProvider provider, MainOptions options) {
+			this.provider = provider;
 			File dir = new File(LOG_DIRECTORY, provider.getLogFileSubdirectoryName());
 			if (dir.exists() && !dir.isDirectory()) {
 				throw new AssertionError(dir);
@@ -229,7 +227,7 @@ public class Main {
 			Date date = new Date();
 			sb.append("-- Time: " + dateFormat.format(date) + "\n");
 			sb.append("-- Database: " + state.getDatabaseName() + "\n");
-			sb.append("-- SQLite3 version: " + state.getDatabaseVersion() + "\n");
+			sb.append("-- Database version: " + state.getDatabaseVersion() + "\n");
 			for (Query s : state.getStatements()) {
 				if (s.getQueryString().endsWith(";")) {
 					sb.append(s.getQueryString());
@@ -241,31 +239,12 @@ public class Main {
 			if (state.getQueryString() != null) {
 				sb.append(state.getQueryString() + ";\n");
 			}
-			if (state.getRandomRowValues() != null) {
-				List<Column> columnList = state.getRandomRowValues().keySet().stream().collect(Collectors.toList());
-				List<Table> tableList = columnList.stream().map(c -> c.getTable()).distinct().sorted()
-						.collect(Collectors.toList());
-				for (Table t : tableList) {
-					sb.append("-- " + t.getName() + "\n");
-					List<Column> columnsForTable = columnList.stream().filter(c -> c.getTable().equals(t))
-							.collect(Collectors.toList());
-					for (Column c : columnsForTable) {
-						sb.append("--\t");
-						sb.append(c);
-						sb.append("=");
-						sb.append(state.getRandomRowValues().get(c));
-						sb.append("\n");
-					}
-				}
-				sb.append("expected values: \n");
-				sb.append(SQLite3Visitor.asExpectedValues(state.getWhereClause()));
-			}
 			try {
 				writer.write(sb.toString());
-				writer.flush();
 			} catch (IOException e) {
-				throw new AssertionError();
+				throw new AssertionError(e);
 			}
+			provider.printDatabaseSpecificState(writer, state);
 		}
 
 	}
@@ -351,7 +330,7 @@ public class Main {
 					Thread.currentThread().setName(databaseName);
 					while (true) {
 						try (Connection con = provider.createDatabase(databaseName)) {
-							state = new StateToReproduce(databaseName);
+							state = provider.getStateToReproduce(databaseName);;
 							logger = new StateLogger(databaseName, provider, options);
 							QueryManager manager = new QueryManager(con, state);
 							java.sql.DatabaseMetaData meta = con.getMetaData();

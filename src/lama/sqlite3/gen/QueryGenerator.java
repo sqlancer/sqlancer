@@ -15,6 +15,7 @@ import lama.Main.StateLogger;
 import lama.MainOptions;
 import lama.Randomly;
 import lama.StateToReproduce;
+import lama.StateToReproduce.SQLite3StateToReproduce;
 import lama.sqlite3.SQLite3Provider;
 import lama.sqlite3.SQLite3ToStringVisitor;
 import lama.sqlite3.ast.SQLite3Constant;
@@ -61,7 +62,7 @@ public class QueryGenerator {
 		s = SQLite3Schema.fromConnection(database);
 	}
 
-	public void generateAndCheckQuery(StateToReproduce state, StateLogger logger, MainOptions options) throws SQLException {
+	public void generateAndCheckQuery(SQLite3StateToReproduce state, StateLogger logger, MainOptions options) throws SQLException {
 		String queryString = getQueryThatContainsAtLeastOneRow(state);
 		if (options.logEachSelect()) {
 			logger.writeCurrent(queryString);
@@ -73,7 +74,7 @@ public class QueryGenerator {
 		}
 	}
 
-	public String getQueryThatContainsAtLeastOneRow(StateToReproduce state) throws SQLException {
+	public String getQueryThatContainsAtLeastOneRow(SQLite3StateToReproduce state) throws SQLException {
 		this.state = state;
 		Tables randomFromTables = s.getRandomTableNonEmptyTables();
 		List<Table> tables = randomFromTables.getTables();

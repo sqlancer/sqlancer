@@ -13,6 +13,7 @@ import lama.Main.QueryManager;
 import lama.Main.StateLogger;
 import lama.Randomly;
 import lama.StateToReproduce;
+import lama.StateToReproduce.MySQLStateToReproduce;
 import lama.mysql.MySQLSchema.MySQLColumn;
 import lama.mysql.MySQLSchema.MySQLRowValue;
 import lama.mysql.MySQLSchema.MySQLTable;
@@ -44,7 +45,7 @@ public class MySQLQueryGenerator {
 	}
 
 
-	public void generateAndCheckQuery(StateToReproduce state, StateLogger logger) throws SQLException {
+	public void generateAndCheckQuery(MySQLStateToReproduce state, StateLogger logger) throws SQLException {
 		String queryString = getQueryThatContainsAtLeastOneRow(state);
 
 		boolean isContainedIn = isContainedIn(queryString);
@@ -53,7 +54,7 @@ public class MySQLQueryGenerator {
 		}
 	}
 
-	public String getQueryThatContainsAtLeastOneRow(StateToReproduce state) throws SQLException {
+	public String getQueryThatContainsAtLeastOneRow(MySQLStateToReproduce state) throws SQLException {
 		this.state = state;
 		MySQLTables randomFromTables = s.getRandomTableNonEmptyTables();
 		List<MySQLTable> tables = randomFromTables.getTables();
@@ -61,6 +62,7 @@ public class MySQLQueryGenerator {
 		state.queryTargetedTablesString = randomFromTables.tableNamesAsString();
 		MySQLSelect selectStatement = new MySQLSelect();
 		selectStatement.setSelectType(Randomly.fromOptions(MySQLSelect.SelectType.values()));
+		state.whereClause = selectStatement;
 		List<MySQLColumn> columns = randomFromTables.getColumns();
 //		for (MySQLTable t : tables) {
 //			if (t.getRowid() != null) {

@@ -6,7 +6,7 @@ import java.util.List;
 import lama.mysql.MySQLSchema.MySQLColumn;
 import lama.mysql.MySQLSchema.MySQLTable;
 
-public class MySQLSelect {
+public class MySQLSelect extends MySQLExpression {
 
 	private SelectType fromOptions;
 	private List<MySQLTable> fromList = Collections.emptyList();
@@ -109,6 +109,11 @@ public class MySQLSelect {
 
 	public List<String> getModifiers() {
 		return modifiers;
+	}
+
+	@Override
+	public MySQLConstant getExpectedValue() {
+		return null;
 	}
 	
 }

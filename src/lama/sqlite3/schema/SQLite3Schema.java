@@ -13,7 +13,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import lama.Randomly;
-import lama.StateToReproduce;
+import lama.StateToReproduce.SQLite3StateToReproduce;
 import lama.sqlite3.SQLite3ToStringVisitor;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
@@ -155,7 +155,7 @@ public class SQLite3Schema {
 			return getColumns().stream().map(function).collect(Collectors.joining(", "));
 		}
 
-		public RowValue getRandomRowValue(Connection con, StateToReproduce state) throws SQLException {
+		public RowValue getRandomRowValue(Connection con, SQLite3StateToReproduce state) throws SQLException {
 			String randomRow = String.format("SELECT %s, %s FROM %s ORDER BY RANDOM() LIMIT 1", columnNamesAsString(
 					c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
 					columnNamesAsString(c -> "typeof(" + c.getTable().getName() + "." + c.getName() + ")"),

@@ -115,4 +115,9 @@ public abstract class MySQLConstant extends MySQLExpression {
 		return MySQLConstant.createIntConstant(1);
 	}
 	
+	@Override
+	public String toString() {
+		return getTextRepresentation();
+	}
+	
 }

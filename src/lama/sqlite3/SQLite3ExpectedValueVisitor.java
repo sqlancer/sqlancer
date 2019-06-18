@@ -28,13 +28,24 @@ import lama.sqlite3.ast.UnaryOperation;
 public class SQLite3ExpectedValueVisitor extends SQLite3Visitor {
 
 	private final StringBuilder sb = new StringBuilder();
+	private int nrTabs = 0;
 
 	private void print(SQLite3Expression expr) {
 		SQLite3ToStringVisitor v = new SQLite3ToStringVisitor();
 		v.visit(expr);
+		for (int i = 0; i < nrTabs; i++) {
+			sb.append("\t");
+		}
 		sb.append(v.get());
 		sb.append(" -- " + expr.getExpectedValue());
 		sb.append("\n");
+	}
+
+	@Override
+	public void visit(SQLite3Expression expr) {
+		nrTabs++;
+		super.visit(expr);
+		nrTabs--;
 	}
 
 	@Override

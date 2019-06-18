@@ -19,6 +19,7 @@ public class MySQLToStringVisitor extends MySQLVisitor {
 
 	StringBuffer sb = new StringBuffer();
 
+	@Override
 	public void visit(MySQLSelect s) {
 		sb.append("SELECT ");
 		switch (s.getFromOptions()) {
@@ -182,5 +183,5 @@ public class MySQLToStringVisitor extends MySQLVisitor {
 		visit(op.getRight());
 		sb.append(")");
 	}
-
+	
 }

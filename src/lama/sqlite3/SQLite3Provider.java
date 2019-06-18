@@ -1,11 +1,13 @@
 package lama.sqlite3;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import lama.DatabaseFacade;
 import lama.DatabaseProvider;
@@ -16,6 +18,7 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.StateToReproduce;
+import lama.StateToReproduce.SQLite3StateToReproduce;
 import lama.sqlite3.gen.QueryGenerator;
 import lama.sqlite3.gen.SQLite3AlterTable;
 import lama.sqlite3.gen.SQLite3AnalyzeGenerator;
@@ -32,6 +35,7 @@ import lama.sqlite3.gen.SQLite3TransactionGenerator;
 import lama.sqlite3.gen.SQLite3UpdateGenerator;
 import lama.sqlite3.gen.SQLite3VacuumGenerator;
 import lama.sqlite3.schema.SQLite3Schema;
+import lama.sqlite3.schema.SQLite3Schema.Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 
 public class SQLite3Provider implements DatabaseProvider {
@@ -45,7 +49,7 @@ public class SQLite3Provider implements DatabaseProvider {
 	private static final int NR_QUERIES_PER_TABLE = 10000;
 	private static final int MAX_INSERT_ROW_TRIES = 10;
 	public static final int EXPRESSION_MAX_DEPTH = 8;
-	private StateToReproduce state;
+	private SQLite3StateToReproduce state;
 	private String databaseName;
 
 	@Override
@@ -54,7 +58,7 @@ public class SQLite3Provider implements DatabaseProvider {
 		this.databaseName = databaseName;
 		Randomly r = new Randomly();
 		SQLite3Schema newSchema = null;
-		this.state = state;
+		this.state = (SQLite3StateToReproduce) state;
 
 		addSensiblePragmaDefaults(con);
 		int nrTablesToCreate = 1 + Randomly.smallNumber();
@@ -203,7 +207,7 @@ public class SQLite3Provider implements DatabaseProvider {
 			logger.writeCurrent(state);
 		}
 		for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
-			queryGenerator.generateAndCheckQuery(state, logger, options);
+			queryGenerator.generateAndCheckQuery(this.state, logger, options);
 			manager.incrementSelectQueryCount();
 		}
 		try {
@@ -260,5 +264,42 @@ public class SQLite3Provider implements DatabaseProvider {
 	@Override
 	public String toString() {
 		return String.format("SQLite3Provider [database: %s]", databaseName);
+	}
+
+	@Override
+	public void printDatabaseSpecificState(FileWriter writer, StateToReproduce state) {
+		StringBuilder sb = new StringBuilder();
+		SQLite3StateToReproduce specificState = (SQLite3StateToReproduce) state;
+		if (specificState.getRandomRowValues() != null) {
+			List<Column> columnList = specificState.getRandomRowValues().keySet().stream().collect(Collectors.toList());
+			List<Table> tableList = columnList.stream().map(c -> c.getTable()).distinct().sorted()
+					.collect(Collectors.toList());
+			for (Table t : tableList) {
+				sb.append("-- " + t.getName() + "\n");
+				List<Column> columnsForTable = columnList.stream().filter(c -> c.getTable().equals(t))
+						.collect(Collectors.toList());
+				for (Column c : columnsForTable) {
+					sb.append("--\t");
+					sb.append(c);
+					sb.append("=");
+					sb.append(specificState.getRandomRowValues().get(c));
+					sb.append("\n");
+				}
+			}
+			sb.append("-- expected values: \n");
+			String asExpectedValues = "-- " + SQLite3Visitor.asExpectedValues(specificState.getWhereClause()).replace("\n", "\n-- ");
+			sb.append(asExpectedValues);
+		}
+		try {
+			writer.write(sb.toString());
+			writer.flush();
+		} catch (IOException e) {
+			throw new AssertionError();
+		}
+	}
+
+	@Override
+	public StateToReproduce getStateToReproduce(String databaseName) {
+		return new SQLite3StateToReproduce(databaseName);
 	}
 }
