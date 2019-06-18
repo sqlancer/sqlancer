@@ -542,7 +542,10 @@ public class QueryGenerator {
 		case TEXT:
 			String strValue;
 			if (shouldBeTrue) {
-				strValue = r.getNonZeroString();
+				do {
+					// The loop is a workaround since currently, strings such as 1448905502E-665NlCR*Vx[]!Njxkw can be generated which are false
+					strValue = r.getNonZeroString();
+				} while (!SQLite3Cast.isTrue(SQLite3Constant.createTextConstant(strValue)).get());
 			} else {
 				strValue = Randomly.fromOptions("0", "asdf", "c", "-a");
 			}
