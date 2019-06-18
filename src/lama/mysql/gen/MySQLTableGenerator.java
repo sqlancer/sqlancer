@@ -93,7 +93,7 @@ public class MySQLTableGenerator {
 				sb.append("STATS_PERSISTENT = " + Randomly.fromOptions("1", "0", "DEFAULT"));
 				break;
 			case STATS_SAMPLE_PAGES:
-				sb.append("STATS_SAMPLE_PAGES = " + r.getInteger(0, Short.MAX_VALUE));
+				sb.append("STATS_SAMPLE_PAGES = " + r.getInteger(1, Short.MAX_VALUE));
 				break;
 			default:
 				throw new AssertionError(o);
