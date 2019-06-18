@@ -176,8 +176,10 @@ public class SQLite3ExpectedValueVisitor extends SQLite3Visitor {
 			print(cExpr.getThen());
 			visit(cExpr.getThen());
 		}
-		print(caseExpr.getElseExpr());
-		visit(caseExpr.getElseExpr());
+		if (caseExpr.getElseExpr() != null) {
+			print(caseExpr.getElseExpr());
+			visit(caseExpr.getElseExpr());
+		}
 	}
 
 	@Override
