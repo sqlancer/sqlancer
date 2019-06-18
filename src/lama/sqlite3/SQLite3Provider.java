@@ -1,5 +1,6 @@
 package lama.sqlite3;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -233,5 +234,10 @@ public class SQLite3Provider implements DatabaseProvider {
 	@Override
 	public Connection createDatabase(String databaseName) throws SQLException {
 		return DatabaseFacade.createDatabase(databaseName);
+	}
+
+	@Override
+	public String getLogFileSubdirectoryName() {
+		return "sqlite3";
 	}
 }

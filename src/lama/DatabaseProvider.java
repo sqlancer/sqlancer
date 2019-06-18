@@ -12,4 +12,6 @@ public interface DatabaseProvider {
 	void generateAndTestDatabase(final String databaseName, Connection con, StateLogger logger, StateToReproduce state, QueryManager manager) throws SQLException;
 
 	Connection createDatabase(String databaseName) throws SQLException;
+
+	String getLogFileSubdirectoryName();
 }

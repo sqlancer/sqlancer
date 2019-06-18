@@ -217,4 +217,9 @@ public class MySQLProvider implements DatabaseProvider {
 		return con;
 	}
 
+	@Override
+	public String getLogFileSubdirectoryName() {
+		return "mysql";
+	}
+
 }

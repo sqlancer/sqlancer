@@ -69,7 +69,8 @@ public class Main {
 		private File curFile;
 		private FileWriter logFileWriter;
 		private FileWriter reducedFileWriter;
-		private FileWriter currentFileWriter;
+		public FileWriter currentFileWriter;
+		private static final List<String> initializedProvidersNames = new ArrayList<>();
 
 		private final static class AlsoWriteToConsoleFileWriter extends FileWriter {
 
@@ -90,10 +91,34 @@ public class Main {
 			}
 		}
 
-		public StateLogger(String databaseName) {
-			loggerFile = new File(LOG_DIRECTORY, databaseName + ".log");
-			reducedFile = new File(LOG_DIRECTORY, databaseName + "-reduced.log");
-			curFile = new File(LOG_DIRECTORY, databaseName + "-cur.log");
+		public StateLogger(String databaseName, DatabaseProvider provider) {
+			File dir = new File(LOG_DIRECTORY, provider.getLogFileSubdirectoryName());
+			if (dir.exists() && !dir.isDirectory()) {
+				throw new AssertionError(dir);
+			}
+			ensureExistsAndIsEmpty(dir, provider);
+			loggerFile = new File(dir, databaseName + ".log");
+			reducedFile = new File(dir, databaseName + "-reduced.log");
+			curFile = new File(dir, databaseName + "-cur.log");
+		}
+
+		private synchronized void ensureExistsAndIsEmpty(File dir, DatabaseProvider provider) {
+			if (initializedProvidersNames.contains(provider.getLogFileSubdirectoryName())) {
+				return;
+			}
+			if (!dir.exists()) {
+				try {
+					Files.createDirectories(dir.toPath());
+				} catch (IOException e) {
+					throw new AssertionError(e);
+				}
+			}
+			for (File file : dir.listFiles()) {
+				if (!file.isDirectory()) {
+					file.delete();
+				}
+			}
+			initializedProvidersNames.add(provider.getLogFileSubdirectoryName());
 		}
 
 		private FileWriter getLogFileWriter() {
@@ -118,7 +143,7 @@ public class Main {
 			return reducedFileWriter;
 		}
 
-		private FileWriter getCurrentFileWriter() {
+		public FileWriter getCurrentFileWriter() {
 			if (currentFileWriter == null) {
 				try {
 					currentFileWriter = new FileWriter(curFile, false);
@@ -328,9 +353,9 @@ public class Main {
 	}
 
 	static int threadsShutdown;
-	
+
 	public static class QueryManager {
-		
+
 		private final Connection con;
 		private final StateToReproduce state;
 
@@ -340,9 +365,9 @@ public class Main {
 			}
 			this.con = con;
 			this.state = state;
-			
+
 		}
-		
+
 		public void execute(Query q) throws SQLException {
 			state.statements.add(q);
 			q.execute(con);
@@ -352,7 +377,6 @@ public class Main {
 			Main.nrQueries.addAndGet(1);
 		}
 	}
-
 
 	public static void main(String[] args) {
 
@@ -473,7 +497,7 @@ public class Main {
 							}
 						}
 
-						try (Connection con = DatabaseFacade.createDatabase(databaseName + "_reduced")) {
+						try (Connection con = provider.createDatabase(databaseName + "_reduced")) {
 							for (Query q : currentRoundReducedStatements) {
 								try {
 									q.execute(con);
@@ -527,22 +551,6 @@ public class Main {
 			});
 		}
 
-	}
-
-	private static void setupLogDirectory() {
-		if (!LOG_DIRECTORY.exists()) {
-			try {
-				Files.createDirectories(LOG_DIRECTORY.toPath());
-			} catch (IOException e) {
-				throw new AssertionError(e);
-			}
-		}
-		assert LOG_DIRECTORY.exists();
-		for (File file : LOG_DIRECTORY.listFiles()) {
-			if (!file.isDirectory()) {
-				file.delete();
-			}
-		}
 	}
 
 }
