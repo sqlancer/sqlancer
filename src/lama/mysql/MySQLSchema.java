@@ -11,9 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import lama.Randomly;
 import lama.StateToReproduce.MySQLStateToReproduce;
+import lama.mysql.MySQLSchema.MySQLTable.MySQLEngine;
 import lama.mysql.ast.MySQLConstant;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 
@@ -99,7 +101,6 @@ public class MySQLSchema {
 
 	}
 
-	
 	public static class MySQLTables {
 		private final List<MySQLTable> tables;
 		private final List<MySQLColumn> columns;
@@ -136,7 +137,8 @@ public class MySQLSchema {
 		public MySQLRowValue getRandomRowValue(Connection con, MySQLStateToReproduce state) throws SQLException {
 			String randomRow = String.format("SELECT %s FROM %s ORDER BY RAND() LIMIT 1", columnNamesAsString(
 					c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
-					// columnNamesAsString(c -> "typeof(" + c.getTable().getName() + "." + c.getName() + ")")
+					// columnNamesAsString(c -> "typeof(" + c.getTable().getName() + "." +
+					// c.getName() + ")")
 					tableNamesAsString());
 			Map<MySQLColumn, MySQLConstant> values = new HashMap<>();
 			try (Statement s = con.createStatement()) {
@@ -162,7 +164,7 @@ public class MySQLSchema {
 						constant = MySQLConstant.createNullConstant();
 					} else {
 						value = randomRowValues.getInt(columnIndex);
-							constant = MySQLConstant.createIntConstant((int) value);
+						constant = MySQLConstant.createIntConstant((int) value);
 					}
 //							break;
 //						default:
@@ -184,7 +186,7 @@ public class MySQLSchema {
 	}
 
 	public static class MySQLRowValue {
-		
+
 		private final MySQLTables tables;
 		private final Map<MySQLColumn, MySQLConstant> values;
 
@@ -235,15 +237,36 @@ public class MySQLSchema {
 		}
 
 	}
-	
-	
+
 	public static class MySQLTable implements Comparable<MySQLTable> {
+
+		public static enum MySQLEngine {
+			INNO_DB("InnoDB"), MY_ISAM("MyISAM"), MEMORY("MEMORY"), CSV("CSV"), MERGE("MERGE"), ARCHIVE("ARCHIVE"),
+			FEDERATED("FEDERATED");
+
+			private String s;
+
+			MySQLEngine(String s) {
+				this.s = s;
+			}
+
+			String getTextRepresentation() {
+				return s;
+			}
+
+			public static MySQLEngine get(String val) {
+				return Stream.of(values()).filter(engine -> engine.s.equalsIgnoreCase(val)).findFirst().get();
+			}
+
+		}
 
 		private final String tableName;
 		private final List<MySQLColumn> columns;
+		private final MySQLEngine engine;
 
-		public MySQLTable(String tableName, List<MySQLColumn> columns) {
+		public MySQLTable(String tableName, List<MySQLColumn> columns, MySQLEngine engine) {
 			this.tableName = tableName;
+			this.engine = engine;
 			this.columns = Collections.unmodifiableList(columns);
 		}
 
@@ -285,18 +308,24 @@ public class MySQLSchema {
 		public List<MySQLColumn> getRandomNonEmptyColumnSubset() {
 			return Randomly.nonEmptySubset(getColumns());
 		}
+
+		public MySQLEngine getEngine() {
+			return engine;
+		}
 	}
 
 	static public MySQLSchema fromConnection(Connection con, String databaseName) throws SQLException {
 		List<MySQLTable> databaseTables = new ArrayList<>();
 		try (Statement s = con.createStatement()) {
 			try (ResultSet rs = s
-					.executeQuery("select DISTINCT TABLE_NAME from information_schema.columns where table_schema = '"
+					.executeQuery("select TABLE_NAME, ENGINE from information_schema.TABLES where table_schema = '"
 							+ databaseName + "';")) {
 				while (rs.next()) {
-					String tableName = rs.getString(1);
+					String tableName = rs.getString("TABLE_NAME");
+					String tableEngineStr = rs.getString("ENGINE");
+					MySQLEngine engine = MySQLEngine.get(tableEngineStr);
 					List<MySQLColumn> databaseColumns = getTableColumns(con, tableName, databaseName);
-					MySQLTable t = new MySQLTable(tableName, databaseColumns);
+					MySQLTable t = new MySQLTable(tableName, databaseColumns, engine);
 					for (MySQLColumn c : databaseColumns) {
 						c.setTable(t);
 					}
@@ -344,7 +373,7 @@ public class MySQLSchema {
 	public MySQLTable getRandomTable() {
 		return Randomly.fromList(getDatabaseTables());
 	}
-	
+
 	public MySQLTables getRandomTableNonEmptyTables() {
 		return new MySQLTables(Randomly.nonEmptySubset(databaseTables));
 	}
