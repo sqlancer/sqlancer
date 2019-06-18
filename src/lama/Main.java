@@ -24,7 +24,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-import lama.Main.StateToReproduce;
+import com.beust.jcommander.JCommander;
+
 import lama.Main.StateToReproduce.ErrorKind;
 import lama.mysql.MySQLProvider;
 import lama.sqlite3.SQLite3Provider;
@@ -48,13 +49,8 @@ import lama.sqlite3.schema.SQLite3Schema.Table;
 // NaN values
 public class Main {
 
-	private static final int TOTAL_NR_THREADS = 100;
-	private static final int NR_CONCURRENT_THREADS = 16;
-	public static final int NR_INSERT_ROW_TRIES = 10;
 	public static final File LOG_DIRECTORY = new File("logs");
 	public static volatile AtomicLong nrQueries = new AtomicLong();
-	static DatabaseProvider provider = new MySQLProvider();
-
 
 	public static class ReduceMeException extends RuntimeException {
 
@@ -379,6 +375,8 @@ public class Main {
 	}
 
 	public static void main(String[] args) {
+		MainOptions options = new MainOptions();
+		JCommander.newBuilder().addObject(options).build().parse(args);
 
 		final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 		scheduler.scheduleAtFixedRate(new Runnable() {
@@ -405,32 +403,39 @@ public class Main {
 			}
 		}, 5, 5, TimeUnit.SECONDS);
 
-		setupLogDirectory();
+		ExecutorService executor = Executors.newFixedThreadPool(options.getNumberConcurrentThreads());
 
-		ExecutorService executor = Executors.newFixedThreadPool(NR_CONCURRENT_THREADS);
-
-		for (int i = 0; i < TOTAL_NR_THREADS; i++) {
+		for (int i = 0; i < options.getTotalNumberTries(); i++) {
 			final String databaseName = "lama" + i;
+			final DatabaseProvider provider;
+			if (i % options.getNumberConcurrentThreads() >= options.getTotalNumberMysqlThreads()) {
+				provider = new SQLite3Provider();
+			} else {
+				provider = new MySQLProvider();
+			}
+
 			executor.execute(new Runnable() {
 
 				StateToReproduce state;
-				StateLogger logger = new StateLogger(databaseName);
+				StateLogger logger;
 
 				@Override
 				public void run() {
 					runThread(databaseName);
 				}
-				
 
 				private void runThread(final String databaseName) {
 					Thread.currentThread().setName(databaseName);
 					while (true) {
 						try (Connection con = provider.createDatabase(databaseName)) {
 							state = new StateToReproduce(databaseName);
+							logger = new StateLogger(databaseName, provider);
 							QueryManager manager = new QueryManager(con, state);
 							java.sql.DatabaseMetaData meta = con.getMetaData();
 							state.databaseVersion = meta.getDatabaseProductVersion();
 							provider.generateAndTestDatabase(databaseName, con, logger, state, manager);
+							con.close();
+
 						} catch (IgnoreMeException e) {
 							continue;
 						} catch (ReduceMeException reduce) {

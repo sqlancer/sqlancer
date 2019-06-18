@@ -9,7 +9,6 @@ import java.util.List;
 
 import lama.DatabaseFacade;
 import lama.DatabaseProvider;
-import lama.Main;
 import lama.Main.QueryManager;
 import lama.Main.StateLogger;
 import lama.Main.StateToReproduce;
@@ -41,13 +40,17 @@ public class SQLite3Provider implements DatabaseProvider {
 		ROLLBACK_TRANSACTION, COMMIT, DROP_TABLE;
 	}
 
-	private static final int NR_QUERIES_PER_TABLE = 1000;
+	public static final int NR_INSERT_ROW_TRIES = 10;
+	private static final int NR_QUERIES_PER_TABLE = 10000;
 	private static final int MAX_INSERT_ROW_TRIES = 10;
-	public static final int EXPRESSION_MAX_DEPTH = 3;
+	public static final int EXPRESSION_MAX_DEPTH = 8;
 	private StateToReproduce state;
-	
+	private String databaseName;
+
 	@Override
-	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger, StateToReproduce state, QueryManager manager) throws SQLException {
+	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger, StateToReproduce state,
+			QueryManager manager) throws SQLException {
+		this.databaseName = databaseName;
 		Randomly r = new Randomly();
 		SQLite3Schema newSchema = null;
 		this.state = state;
@@ -75,7 +78,7 @@ public class SQLite3Provider implements DatabaseProvider {
 				nrPerformed = r.getInteger(0, 5);
 				break;
 			case INSERT:
-				nrPerformed = Main.NR_INSERT_ROW_TRIES;
+				nrPerformed = NR_INSERT_ROW_TRIES;
 				break;
 			case DROP_TABLE:
 				nrPerformed = r.getInteger(0, 2);
@@ -195,9 +198,17 @@ public class SQLite3Provider implements DatabaseProvider {
 		newSchema = SQLite3Schema.fromConnection(con);
 
 		QueryGenerator queryGenerator = new QueryGenerator(con, r);
+		logger.writeCurrent(state);
 		for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
 			queryGenerator.generateAndCheckQuery(state, logger);
 			manager.incrementSelectQueryCount();
+		}
+		try {
+			logger.getCurrentFileWriter().close();
+			logger.currentFileWriter = null;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
@@ -239,5 +250,10 @@ public class SQLite3Provider implements DatabaseProvider {
 	@Override
 	public String getLogFileSubdirectoryName() {
 		return "sqlite3";
+	}
+
+	@Override
+	public String toString() {
+		return String.format("SQLite3Provider [database: %s]", databaseName);
 	}
 }

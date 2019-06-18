@@ -33,9 +33,10 @@ import lama.sqlite3.gen.SQLite3Common;
 public class MySQLProvider implements DatabaseProvider {
 
 	private static final int NR_QUERIES_PER_TABLE = 1000;
-	private static final int MAX_INSERT_ROW_TRIES = 100;
+	private static final int MAX_INSERT_ROW_TRIES = 10;
 	private final Randomly r = new Randomly();
 	private QueryManager manager;
+	private String databaseName;
 
 	enum Action {
 		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR, OPTIMIZE, CHECKSUM, CHECK_TABLE, ANALYZE_TABLE, FLUSH, RESET,
@@ -46,6 +47,7 @@ public class MySQLProvider implements DatabaseProvider {
 	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger, StateToReproduce state,
 			QueryManager manager) throws SQLException {
 
+		this.databaseName = databaseName;
 		this.manager = manager;
 		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
 			String tableName = SQLite3Common.createTableName(i);
@@ -220,6 +222,11 @@ public class MySQLProvider implements DatabaseProvider {
 	@Override
 	public String getLogFileSubdirectoryName() {
 		return "mysql";
+	}
+
+	@Override
+	public String toString() {
+		return String.format("MySQLProvider [database: %s]", databaseName);
 	}
 
 }
