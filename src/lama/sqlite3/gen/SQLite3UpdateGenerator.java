@@ -4,10 +4,10 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
-import lama.Main.StateToReproduce;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.StateToReproduce;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.schema.SQLite3Schema.Column;

@@ -12,8 +12,9 @@ import java.util.stream.Stream;
 
 import lama.Main;
 import lama.Main.StateLogger;
-import lama.Main.StateToReproduce;
+import lama.MainOptions;
 import lama.Randomly;
+import lama.StateToReproduce;
 import lama.sqlite3.SQLite3Provider;
 import lama.sqlite3.SQLite3ToStringVisitor;
 import lama.sqlite3.ast.SQLite3Constant;
@@ -60,9 +61,11 @@ public class QueryGenerator {
 		s = SQLite3Schema.fromConnection(database);
 	}
 
-	public void generateAndCheckQuery(StateToReproduce state, StateLogger logger) throws SQLException {
+	public void generateAndCheckQuery(StateToReproduce state, StateLogger logger, MainOptions options) throws SQLException {
 		String queryString = getQueryThatContainsAtLeastOneRow(state);
-		// logger.writeCurrent(queryString);
+		if (options.logEachSelect()) {
+			logger.writeCurrent(queryString);
+		}
 
 		boolean isContainedIn = isContainedIn(queryString);
 		if (!isContainedIn) {

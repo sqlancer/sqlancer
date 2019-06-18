@@ -12,8 +12,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import lama.Main.StateToReproduce;
 import lama.Randomly;
+import lama.StateToReproduce;
 import lama.mysql.ast.MySQLConstant;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 

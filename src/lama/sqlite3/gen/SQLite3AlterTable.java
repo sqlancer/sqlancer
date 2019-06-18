@@ -5,13 +5,13 @@ import java.sql.SQLException;
 
 import org.sqlite.SQLiteException;
 
-import lama.Main.StateToReproduce;
-import lama.sqlite3.schema.SQLite3Schema;
-import lama.sqlite3.schema.SQLite3Schema.Column;
-import lama.sqlite3.schema.SQLite3Schema.Table;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.StateToReproduce;
+import lama.sqlite3.schema.SQLite3Schema;
+import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.Table;
 
 public class SQLite3AlterTable {
 

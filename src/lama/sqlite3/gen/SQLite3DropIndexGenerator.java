@@ -7,12 +7,12 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import lama.Main.StateToReproduce;
-import lama.sqlite3.schema.SQLite3Schema;
-import lama.sqlite3.schema.SQLite3Schema.Table;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.StateToReproduce;
+import lama.sqlite3.schema.SQLite3Schema;
+import lama.sqlite3.schema.SQLite3Schema.Table;
 
 // see https://www.sqlite.org/lang_dropindex.html
 public class SQLite3DropIndexGenerator {

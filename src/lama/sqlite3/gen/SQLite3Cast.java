@@ -1,9 +1,13 @@
 package lama.sqlite3.gen;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import lama.sqlite3.SQLite3Provider;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.schema.SQLite3DataType;
 

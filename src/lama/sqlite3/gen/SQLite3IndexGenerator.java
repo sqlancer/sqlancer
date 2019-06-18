@@ -6,10 +6,10 @@ import java.util.List;
 
 import org.sqlite.SQLiteException;
 
-import lama.Main.StateToReproduce;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.StateToReproduce;
 import lama.sqlite3.SQLite3ToStringVisitor;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.schema.SQLite3Schema;

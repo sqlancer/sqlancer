@@ -6,9 +6,9 @@ import java.util.stream.Collectors;
 
 import lama.Randomly;
 import lama.sqlite3.ast.SQLite3Expression;
-import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.Join.JoinType;
+import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.schema.SQLite3Schema;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;

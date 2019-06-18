@@ -1,9 +1,9 @@
 package lama.sqlite3;
 
 import lama.sqlite3.ast.SQLite3Expression;
-import lama.sqlite3.ast.UnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
+import lama.sqlite3.ast.UnaryOperation;
 import lama.sqlite3.ast.UnaryOperation.UnaryOperator;
 
 public class SQLite3CollateHelper {

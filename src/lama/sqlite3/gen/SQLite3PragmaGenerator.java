@@ -6,9 +6,9 @@ import java.util.function.Supplier;
 
 import org.sqlite.SQLiteException;
 
-import lama.Main.StateToReproduce;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.StateToReproduce;
 
 public class SQLite3PragmaGenerator {
 

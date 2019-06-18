@@ -5,7 +5,6 @@ import java.sql.SQLException;
 
 import lama.Main.QueryManager;
 import lama.Main.StateLogger;
-import lama.Main.StateToReproduce;
 
 public interface DatabaseProvider {
 

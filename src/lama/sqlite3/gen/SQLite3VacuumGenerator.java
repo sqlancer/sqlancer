@@ -5,9 +5,9 @@ import java.sql.SQLException;
 
 import org.sqlite.SQLiteException;
 
-import lama.Main.StateToReproduce;
 import lama.Query;
 import lama.QueryAdapter;
+import lama.StateToReproduce;
 
 /**
  * @see https://www.sqlite.org/lang_vacuum.html

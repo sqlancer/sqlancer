@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.Main.StateToReproduce;
+import lama.StateToReproduce;
 
 public class SQLite3TransactionGenerator {
 

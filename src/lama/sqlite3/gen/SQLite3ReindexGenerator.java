@@ -2,9 +2,9 @@ package lama.sqlite3.gen;
 
 import java.sql.Connection;
 
-import lama.Main.StateToReproduce;
 import lama.Query;
 import lama.QueryAdapter;
+import lama.StateToReproduce;
 
 /**
  * @see https://www.sqlite.org/lang_reindex.html
