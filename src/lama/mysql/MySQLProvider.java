@@ -22,6 +22,7 @@ import lama.StateToReproduce;
 import lama.StateToReproduce.MySQLStateToReproduce;
 import lama.mysql.MySQLSchema.MySQLColumn;
 import lama.mysql.MySQLSchema.MySQLTable;
+import lama.mysql.gen.MySQLAlterTable;
 import lama.mysql.gen.MySQLRowInserter;
 import lama.mysql.gen.MySQLSetGenerator;
 import lama.mysql.gen.MySQLTableGenerator;
@@ -46,7 +47,7 @@ public class MySQLProvider implements DatabaseProvider {
 
 	enum Action {
 		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR, OPTIMIZE, CHECKSUM, CHECK_TABLE, ANALYZE_TABLE, FLUSH, RESET,
-		CREATE_INDEX;
+		CREATE_INDEX, ALTER_TABLE;
 	}
 
 	@Override
@@ -55,12 +56,14 @@ public class MySQLProvider implements DatabaseProvider {
 
 		this.databaseName = databaseName;
 		this.manager = manager;
-		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
-			String tableName = SQLite3Common.createTableName(i);
+		MySQLSchema newSchema = MySQLSchema.fromConnection(con, databaseName);
+
+		while (newSchema.getDatabaseTables().size() < Randomly.smallNumber() + 1) {
+			String tableName = SQLite3Common.createTableName(newSchema.getDatabaseTables().size());
 			Query createTable = MySQLTableGenerator.generate(tableName, r);
 			manager.execute(createTable);
+			newSchema = MySQLSchema.fromConnection(con, databaseName);
 		}
-		MySQLSchema newSchema = MySQLSchema.fromConnection(con, databaseName);
 
 		int[] nrRemaining = new int[Action.values().length];
 		List<Action> actions = new ArrayList<>();
@@ -94,6 +97,9 @@ public class MySQLProvider implements DatabaseProvider {
 			case RESET:
 				// affects the global state, so do not execute
 				nrPerformed = 0;
+				break;
+			case ALTER_TABLE:
+				nrPerformed = r.getInteger(0, 5);
 				break;
 			}
 			if (nrPerformed != 0) {
@@ -153,6 +159,9 @@ public class MySQLProvider implements DatabaseProvider {
 				break;
 			case CREATE_INDEX:
 				query = createIndexGenerator.create();
+				break;
+			case ALTER_TABLE:
+				query = MySQLAlterTable.create(newSchema, r);
 				break;
 			default:
 				throw new AssertionError(nextAction);
@@ -240,7 +249,8 @@ public class MySQLProvider implements DatabaseProvider {
 		StringBuilder sb = new StringBuilder();
 		MySQLStateToReproduce specificState = (MySQLStateToReproduce) state;
 		if (specificState.getRandomRowValues() != null) {
-			List<MySQLColumn> columnList = specificState.getRandomRowValues().keySet().stream().collect(Collectors.toList());
+			List<MySQLColumn> columnList = specificState.getRandomRowValues().keySet().stream()
+					.collect(Collectors.toList());
 			List<MySQLTable> tableList = columnList.stream().map(c -> c.getTable()).distinct().sorted()
 					.collect(Collectors.toList());
 			for (MySQLTable t : tableList) {
@@ -263,7 +273,7 @@ public class MySQLProvider implements DatabaseProvider {
 			writer.flush();
 		} catch (IOException e) {
 			throw new AssertionError();
-		}		
+		}
 	}
 
 	@Override
