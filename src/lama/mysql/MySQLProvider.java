@@ -72,13 +72,16 @@ public class MySQLProvider implements DatabaseProvider {
 				nrPerformed = 0; // r.getInteger(0, 10);
 				break;
 			case SET_VARIABLE:
-			case OPTIMIZE:
 			case CHECKSUM:
 			case CHECK_TABLE:
 			case ANALYZE_TABLE:
 			case FLUSH:
 			case CREATE_INDEX:
 				nrPerformed = r.getInteger(0, 10);
+				break;
+			case OPTIMIZE:
+				// seems to yield low CPU utilization
+				nrPerformed = Randomly.getBooleanWithSmallProbability() ? r.getInteger(1, 10) : 0;
 				break;
 			case RESET:
 				// affects the global state, so do not execute
