@@ -90,6 +90,9 @@ public class MySQLAlterTable {
 			}
 		}
 		if (Randomly.getBooleanWithSmallProbability()) {
+			if (i != 0) {
+				sb.append(", ");
+			}
 			// should be given as last option
 			sb.append(" ORDER BY ");
 			sb.append(table.getRandomNonEmptyColumnSubset().stream().map(c -> c.getName())
