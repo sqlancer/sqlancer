@@ -8,6 +8,7 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.mysql.MySQLSchema.MySQLColumn;
+import lama.mysql.MySQLSchema.MySQLDataType;
 import lama.mysql.MySQLSchema.MySQLTable;
 
 public class MySQLRowInserter {
@@ -80,33 +81,40 @@ public class MySQLRowInserter {
 				if (i++ != 0) {
 					sb.append(", ");
 				}
-				if (Randomly.getBoolean()) {
+
+				if (Randomly.getBooleanWithSmallProbability()) {
+					canFail = true;
+					sb.append('"');
+					sb.append(r.getString());
+					sb.append('"');
+				} else if (Randomly.getBooleanWithSmallProbability()) {
 					sb.append("DEFAULT");
+				} else if (Randomly.getBooleanWithSmallProbability()) {
+					sb.append("NULL");
 				} else {
-					if (Randomly.getBoolean()) {
-						sb.append(r.getInteger());
-					} else {
-						canFail = true;
-						sb.append('"');
-						sb.append(r.getString());
-						sb.append('"');
-					}
+					// try to insert valid value;
+					assert c.getColumnType() == MySQLDataType.INT;
+					sb.append(r.getLong((long) -Math.pow(2, c.getPrecision()) - 1,
+							(long) Math.pow(2, c.getPrecision() - 1) - 1));
 				}
+
 			}
 			sb.append(")");
 		}
-		if (canFail) {
+		if (canFail)
+
+		{
 			return new QueryAdapter(sb.toString()) {
 				public void execute(java.sql.Connection con) throws SQLException {
-					
+
 					try {
 						super.execute(con);
 					} catch (SQLException e) {
 						// IGNORE
 					}
-					
+
 				};
-				
+
 			};
 		} else {
 			return new QueryAdapter(sb.toString());
