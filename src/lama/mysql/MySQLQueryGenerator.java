@@ -37,13 +37,13 @@ public class MySQLQueryGenerator {
 	private MySQLRowValue rw;
 	private List<MySQLColumn> fetchColumns;
 
-	public MySQLQueryGenerator(QueryManager manager, Randomly r, Connection con, String databaseName) throws SQLException {
+	public MySQLQueryGenerator(QueryManager manager, Randomly r, Connection con, String databaseName)
+			throws SQLException {
 		this.manager = manager;
 		this.r = r;
 		this.database = con;
 		this.s = MySQLSchema.fromConnection(con, databaseName);
 	}
-
 
 	public void generateAndCheckQuery(MySQLStateToReproduce state, StateLogger logger) throws SQLException {
 		String queryString = getQueryThatContainsAtLeastOneRow(state);
@@ -96,8 +96,7 @@ public class MySQLQueryGenerator {
 				.collect(Collectors.joining(", "));
 		MySQLExpression whereClause = generateWhereClauseThatContainsRowValue(columns, rw);
 		selectStatement.setWhereClause(whereClause);
-		// TODO FIXME/implement
-//		state.whereClause = selectStatement;
+		state.whereClause = selectStatement;
 		List<MySQLExpression> groupByClause = generateGroupByClause(columns, rw);
 		selectStatement.setGroupByClause(groupByClause);
 		MySQLExpression limitClause = generateLimit();
@@ -106,7 +105,9 @@ public class MySQLQueryGenerator {
 			MySQLExpression offsetClause = generateOffset();
 			selectStatement.setOffsetClause(offsetClause);
 		}
-		List<String> modifiers = Randomly.subset("STRAIGHT_JOIN", "SQL_SMALL_RESULT", "SQL_BIG_RESULT", "SQL_NO_CACHE"); // "SQL_BUFFER_RESULT", "SQL_CALC_FOUND_ROWS", "HIGH_PRIORITY"
+		List<String> modifiers = Randomly.subset("STRAIGHT_JOIN", "SQL_SMALL_RESULT", "SQL_BIG_RESULT", "SQL_NO_CACHE"); // "SQL_BUFFER_RESULT",
+																															// "SQL_CALC_FOUND_ROWS",
+																															// "HIGH_PRIORITY"
 		// TODO: Incorrect usage/placement of 'SQL_BUFFER_RESULT'
 		selectStatement.setModifiers(modifiers);
 //		List<MySQLExpression> orderBy = generateOrderBy(columns);
@@ -116,15 +117,16 @@ public class MySQLQueryGenerator {
 		String queryString = visitor.get();
 		return queryString;
 	}
-	
+
 	private List<MySQLExpression> generateGroupByClause(List<MySQLColumn> columns, MySQLRowValue rw) {
 		if (Randomly.getBoolean()) {
-			return columns.stream().map(c -> MySQLColumnValue.create(c, rw.getValues().get(c))).collect(Collectors.toList());
+			return columns.stream().map(c -> MySQLColumnValue.create(c, rw.getValues().get(c)))
+					.collect(Collectors.toList());
 		} else {
 			return Collections.emptyList();
 		}
 	}
-	
+
 	private MySQLConstant generateLimit() {
 		if (Randomly.getBoolean()) {
 			return MySQLConstant.createIntConstant(Integer.MAX_VALUE);
@@ -132,7 +134,6 @@ public class MySQLQueryGenerator {
 			return null;
 		}
 	}
-
 
 	private MySQLExpression generateOffset() {
 		if (Randomly.getBoolean()) {
@@ -155,24 +156,31 @@ public class MySQLQueryGenerator {
 		}
 	}
 
-
 	private boolean isContainedIn(String queryString) throws SQLException {
 		Statement createStatement;
 		createStatement = database.createStatement();
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT (");
-		String columnNames = rw.getRowValuesAsString(fetchColumns);
-		sb.append(columnNames);
-		state.values = columnNames;
-		sb.append(") IN (SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
+		sb.append("SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
 		sb.append(queryString);
-		sb.append(") as asdf)");
+		sb.append(") as result WHERE ");
+		int i = 0;
+		for (MySQLColumn c : fetchColumns) {
+			if (i++ != 0) {
+				sb.append(" AND ");
+			}
+			sb.append("result." + c.getTable().getName() + c.getName());
+			if (rw.getValues().get(c).isNull()) {
+				sb.append(" IS NULL");
+			} else {
+				sb.append(" = ");
+				sb.append(rw.getValues().get(c).getTextRepresentation());
+			}
+		}
 		String resultingQueryString = sb.toString();
 		state.queryString = resultingQueryString;
 		try (ResultSet result = createStatement.executeQuery(resultingQueryString)) {
-			result.next();
-			boolean isContainedIn = result.getBoolean(1) || result.getString(1) == null; // FIXME: NULL values let IN result become NULL
+			boolean isContainedIn = result.next();
 			createStatement.close();
 			return isContainedIn;
 		} catch (SQLException e) {
