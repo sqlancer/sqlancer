@@ -31,6 +31,7 @@ public class MySQLSchema {
 		private final MySQLDataType columnType;
 		private final boolean isPrimaryKey;
 		private MySQLTable table;
+		private int precision;
 
 		public enum CollateSequence {
 			NOCASE, RTRIM, BINARY;
@@ -40,10 +41,11 @@ public class MySQLSchema {
 			}
 		}
 
-		public MySQLColumn(String name, MySQLDataType columnType, boolean isPrimaryKey) {
+		public MySQLColumn(String name, MySQLDataType columnType, boolean isPrimaryKey, int precision) {
 			this.name = name;
 			this.columnType = columnType;
 			this.isPrimaryKey = isPrimaryKey;
+			this.precision = precision;
 		}
 
 		@Override
@@ -76,6 +78,10 @@ public class MySQLSchema {
 
 		public MySQLDataType getColumnType() {
 			return columnType;
+		}
+		
+		public int getPrecision() {
+			return precision;
 		}
 
 		public boolean isPrimaryKey() {
@@ -163,8 +169,8 @@ public class MySQLSchema {
 					if (randomRowValues.getString(columnIndex) == null) {
 						constant = MySQLConstant.createNullConstant();
 					} else {
-						value = randomRowValues.getInt(columnIndex);
-						constant = MySQLConstant.createIntConstant((int) value);
+						value = randomRowValues.getLong(columnIndex);
+						constant = MySQLConstant.createIntConstant((long) value);
 					}
 //							break;
 //						default:
@@ -241,7 +247,7 @@ public class MySQLSchema {
 	public static class MySQLTable implements Comparable<MySQLTable> {
 
 		public static enum MySQLEngine {
-			INNO_DB("InnoDB"), MY_ISAM("MyISAM"), MEMORY("MEMORY"), CSV("CSV"), MERGE("MERGE"), ARCHIVE("ARCHIVE"),
+			INNO_DB("InnoDB"), MY_ISAM("MyISAM"), MEMORY("MEMORY"), HEAP("HEAP"), CSV("CSV"), MERGE("MERGE"), ARCHIVE("ARCHIVE"),
 			FEDERATED("FEDERATED");
 
 			private String s;
@@ -345,9 +351,9 @@ public class MySQLSchema {
 				while (rs.next()) {
 					String columnName = rs.getString("COLUMN_NAME");
 					String dataType = rs.getString("DATA_TYPE");
-					String precision = rs.getString("NUMERIC_PRECISION");
+					int precision = rs.getInt("NUMERIC_PRECISION");
 					boolean isPrimaryKey = rs.getString("COLUMN_KEY").equals("PRI");
-					MySQLColumn c = new MySQLColumn(columnName, MySQLDataType.INT, isPrimaryKey);
+					MySQLColumn c = new MySQLColumn(columnName, MySQLDataType.INT, isPrimaryKey, precision);
 					columns.add(c);
 				}
 			}

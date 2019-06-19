@@ -258,7 +258,15 @@ public class MySQLTableGenerator {
 	}
 
 	private void appendColumnDefinition() {
-		sb.append(" INT ");
+		sb.append(" ");
+		sb.append(Randomly.fromOptions("TINYINT", "SMALLINT", "MEDIUMINT", "INT", "BIGINT"));
+		sb.append(" ");
+		if (Randomly.getBoolean()) {
+			sb.append(" UNSIGNED");
+		}
+		if (Randomly.getBoolean()) {
+			sb.append(" ZEROFILL");
+		}
 		boolean isNull = false;
 		boolean columnHasPrimaryKey = false;
 
