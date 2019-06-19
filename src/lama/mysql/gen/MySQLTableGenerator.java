@@ -1,10 +1,13 @@
 package lama.mysql.gen;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.mysql.MySQLSchema.MySQLTable.MySQLEngine;
 import lama.sqlite3.gen.SQLite3Common;
 
 public class MySQLTableGenerator {
@@ -15,6 +18,9 @@ public class MySQLTableGenerator {
 	private final String tableName;
 	private final Randomly r;
 	private int columnId;
+	private boolean tableHasNullableColumn;
+	private MySQLEngine engine;
+	private int keysSpecified;
 
 	public MySQLTableGenerator(String tableName, Randomly r) {
 		this.tableName = tableName;
@@ -46,12 +52,54 @@ public class MySQLTableGenerator {
 		sb.append(")");
 		sb.append(" ");
 		appendTableOptions();
+		if ((tableHasNullableColumn || setPrimaryKey) && (engine == MySQLEngine.CSV)) {
+			return new QueryAdapter(sb.toString()) {
+				public void execute(java.sql.Connection con) throws java.sql.SQLException {
+
+					try {
+						super.execute(con);
+						throw new AssertionError("expected error");
+					} catch (SQLException e) {
+						if (e.getMessage()
+								.startsWith("The storage engine for the table doesn't support nullable columns")) {
+							// ignore
+						} else if (e.getMessage().startsWith("Too many keys specified; max 0 keys allowed")) {
+							// ignore
+						} else {
+							throw e;
+						}
+					}
+
+				};
+			};
+		} else if ((tableHasNullableColumn || keysSpecified > 1) && engine == MySQLEngine.ARCHIVE) {
+			return new QueryAdapter(sb.toString()) {
+				@Override
+				public void execute(Connection con) throws SQLException {
+					try {
+						super.execute(con);
+//						throw new AssertionError("expected error");
+					} catch (SQLException e) {
+						if (e.getMessage().startsWith("Too many keys specified; max 1 keys allowed")) {
+							// ignore
+						} else if (e.getMessage().startsWith("Table handler doesn't support NULL in given index")) {
+							// ignore
+						} else if (e.getMessage().startsWith("Got error -1 - 'Unknown error -1' from storage engine")) {
+							// TODO seems to be caused by primary key, see 
+						} else {
+							throw e;
+						}
+					}
+				}
+			};
+		}
 		return new QueryAdapter(sb.toString());
 
 	}
 
 	private enum TableOptions {
-		AUTO_INCREMENT, AVG_ROW_LENGTH, CHECKSUM, ENGINE, MIN_ROWS, PACK_KEYS, STATS_AUTO_RECALC, STATS_PERSISTENT, STATS_SAMPLE_PAGES;
+		AUTO_INCREMENT, AVG_ROW_LENGTH, CHECKSUM, ENGINE, MIN_ROWS, PACK_KEYS, STATS_AUTO_RECALC, STATS_PERSISTENT,
+		STATS_SAMPLE_PAGES;
 	}
 
 	private void appendTableOptions() {
@@ -72,13 +120,14 @@ public class MySQLTableGenerator {
 				sb.append("CHECKSUM = 1");
 				break;
 			case ENGINE:
-				// FEDERATED: java.sql.SQLSyntaxErrorException: Unknown storage engine 'FEDERATED'
-				// "ARCHIVE": java.sql.SQLSyntaxErrorException: Too many keys specified; max 1 keys allowed
-				//  "NDB": java.sql.SQLSyntaxErrorException: Unknown storage engine 'NDB'
-				// "CSV": java.sql.SQLSyntaxErrorException: Too many keys specified; max 0 keys allowed
+				// FEDERATED: java.sql.SQLSyntaxErrorException: Unknown storage engine
+				// 'FEDERATED'
+				// "NDB": java.sql.SQLSyntaxErrorException: Unknown storage engine 'NDB'
 				// "EXAMPLE": java.sql.SQLSyntaxErrorException: Unknown storage engine 'EXAMPLE'
 				// "MERGE": java.sql.SQLException: Table 't0' is read only
-				sb.append("ENGINE = " + Randomly.fromOptions("InnoDB", "MyISAM", "MEMORY", "HEAP"));
+				String fromOptions = Randomly.fromOptions("InnoDB", "MyISAM", "MEMORY", "HEAP", "CSV", "ARCHIVE");
+				this.engine = MySQLEngine.get(fromOptions);
+				sb.append("ENGINE = " + fromOptions);
 				break;
 			case MIN_ROWS:
 				sb.append("MIN_ROWS = " + r.getLong(1, Long.MAX_VALUE));
@@ -107,7 +156,7 @@ public class MySQLTableGenerator {
 		appendColumnDefinition();
 		columnId++;
 	}
-	
+
 	private enum ColumnOptions {
 		NULL_OR_NOT_NULL, UNIQUE, COMMENT, COLUMN_FORMAT, STORAGE, PRIMARY_KEY
 	}
@@ -117,22 +166,28 @@ public class MySQLTableGenerator {
 		boolean isNull = false;
 		boolean columnHasPrimaryKey = false;
 
-		
 		List<ColumnOptions> columnOptions = Randomly.subset(ColumnOptions.values());
+		if (!columnOptions.contains(ColumnOptions.NULL_OR_NOT_NULL)) {
+			tableHasNullableColumn = true;
+		}
 		for (ColumnOptions o : columnOptions) {
 			sb.append(" ");
 			switch (o) {
 			case NULL_OR_NOT_NULL:
 				// PRIMARY KEYs cannot be NULL
-				if (Randomly.getBoolean() && !columnHasPrimaryKey) {
-					sb.append("NULL");
+				if (!columnHasPrimaryKey) {
+					if (Randomly.getBoolean()) {
+						sb.append("NULL");
+					}
+					tableHasNullableColumn = true;
 					isNull = true;
 				} else {
 					sb.append("NOT NULL");
- 				}
+				}
 				break;
 			case UNIQUE:
 				sb.append("UNIQUE");
+				keysSpecified++;
 				if (Randomly.getBoolean()) {
 					sb.append(" KEY");
 				}
@@ -159,7 +214,7 @@ public class MySQLTableGenerator {
 				break;
 			}
 		}
-		
+
 	}
 
 }
