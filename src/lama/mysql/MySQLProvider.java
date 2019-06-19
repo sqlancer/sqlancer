@@ -47,7 +47,7 @@ public class MySQLProvider implements DatabaseProvider {
 
 	enum Action {
 		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR, OPTIMIZE, CHECKSUM, CHECK_TABLE, ANALYZE_TABLE, FLUSH, RESET,
-		CREATE_INDEX, ALTER_TABLE;
+		CREATE_INDEX, ALTER_TABLE, TRUNCATE_TABLE;
 	}
 
 	@Override
@@ -86,13 +86,15 @@ public class MySQLProvider implements DatabaseProvider {
 			case CHECKSUM:
 			case CHECK_TABLE:
 			case ANALYZE_TABLE:
-			case FLUSH:
 			case CREATE_INDEX:
 				nrPerformed = r.getInteger(0, 10);
 				break;
+			case FLUSH:
+				nrPerformed = r.getInteger(0, 1);
+				break;
 			case OPTIMIZE:
 				// seems to yield low CPU utilization
-				nrPerformed = Randomly.getBooleanWithSmallProbability() ? r.getInteger(1, 10) : 0;
+				nrPerformed = r.getInteger(0, 1);
 				break;
 			case RESET:
 				// affects the global state, so do not execute
@@ -100,6 +102,9 @@ public class MySQLProvider implements DatabaseProvider {
 				break;
 			case ALTER_TABLE:
 				nrPerformed = r.getInteger(0, 5);
+				break;
+			case TRUNCATE_TABLE:
+				nrPerformed = r.getInteger(0, 2);
 				break;
 			}
 			if (nrPerformed != 0) {
@@ -162,6 +167,23 @@ public class MySQLProvider implements DatabaseProvider {
 				break;
 			case ALTER_TABLE:
 				query = MySQLAlterTable.create(newSchema, r);
+				break;
+			case TRUNCATE_TABLE:
+				query = new QueryAdapter("TRUNCATE TABLE " + newSchema.getRandomTable().getName()) {
+					@Override
+					public void execute(Connection con) throws SQLException {
+						try {
+							super.execute(con);
+						} catch (SQLException e) {
+							if (e.getMessage().contains("doesn't have this option")) {
+								return;
+							} else {
+								throw e;
+							}
+						}
+					}
+
+				};
 				break;
 			default:
 				throw new AssertionError(nextAction);
