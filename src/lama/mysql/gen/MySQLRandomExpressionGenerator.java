@@ -30,7 +30,7 @@ public class MySQLRandomExpressionGenerator {
 
 	public static MySQLExpression gen(List<MySQLColumn> columns, MySQLRowValue rowVal, int depth, Randomly r) {
 		if (depth > MAX_DEPTH) {
-			if (Randomly.getBoolean()) {
+			if (Randomly.getBoolean() && !columns.isEmpty()) {
 				return generateColumn(columns, rowVal);
 			} else {
 				return generateLiteral(r);

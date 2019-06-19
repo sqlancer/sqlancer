@@ -2,7 +2,9 @@ package lama.mysql.gen;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import lama.Query;
 import lama.QueryAdapter;
@@ -21,6 +23,7 @@ public class MySQLTableGenerator {
 	private boolean tableHasNullableColumn;
 	private MySQLEngine engine;
 	private int keysSpecified;
+	private List<String> columns = new ArrayList<>();
 
 	public MySQLTableGenerator(String tableName, Randomly r) {
 		this.tableName = tableName;
@@ -52,6 +55,7 @@ public class MySQLTableGenerator {
 		sb.append(")");
 		sb.append(" ");
 		appendTableOptions();
+		appendPartitionOptions();
 		if ((tableHasNullableColumn || setPrimaryKey) && (engine == MySQLEngine.CSV)) {
 			return new QueryAdapter(sb.toString()) {
 				public void execute(java.sql.Connection con) throws java.sql.SQLException {
@@ -64,6 +68,8 @@ public class MySQLTableGenerator {
 								.startsWith("The storage engine for the table doesn't support nullable columns")) {
 							// ignore
 						} else if (e.getMessage().startsWith("Too many keys specified; max 0 keys allowed")) {
+							// ignore
+						} else if (shouldIgnoreCommon(e)) {
 							// ignore
 						} else {
 							throw e;
@@ -85,7 +91,9 @@ public class MySQLTableGenerator {
 						} else if (e.getMessage().startsWith("Table handler doesn't support NULL in given index")) {
 							// ignore
 						} else if (e.getMessage().startsWith("Got error -1 - 'Unknown error -1' from storage engine")) {
-							// TODO seems to be caused by primary key, see 
+							// TODO seems to be caused by primary key, see
+						} else if (shouldIgnoreCommon(e)) {
+							// ignore
 						} else {
 							throw e;
 						}
@@ -93,13 +101,75 @@ public class MySQLTableGenerator {
 				}
 			};
 		}
-		return new QueryAdapter(sb.toString());
+		return new QueryAdapter(sb.toString()) {
+			@Override
+			public void execute(Connection con) throws SQLException {
+				try {
+					super.execute(con);
+				} catch (Exception e) {
+					if (shouldIgnoreCommon(e)) {
+						// ignore
+					} else {
+						throw e;
+					}
+				}
+			}
+
+		};
 
 	}
 
+	private boolean shouldIgnoreCommon(Exception e) {
+		return e.getMessage().contains("The storage engine for the table doesn't support")
+				|| e.getMessage().contains("doesn't have this option")
+				|| e.getMessage().contains("must include all columns");
+	}
+
+	private enum PartitionOptions {
+		HASH, KEY
+	}
+
+	private void appendPartitionOptions() {
+		if (engine != MySQLEngine.INNO_DB) {
+			return;
+		}
+		if (Randomly.getBoolean()) {
+			return;
+		}
+		sb.append(" PARTITION BY");
+		switch (Randomly.fromOptions(PartitionOptions.values())) {
+		case HASH:
+			if (Randomly.getBoolean()) {
+				sb.append(" LINEAR");
+			}
+			sb.append(" HASH(");
+			// TODO: consider arbitrary expressions
+			// MySQLExpression expr =
+			// MySQLRandomExpressionGenerator.generateRandomExpression(Collections.emptyList(),
+			// null, r);
+//			sb.append(MySQLVisitor.asString(expr));
+			sb.append(Randomly.fromList(columns));
+			sb.append(")");
+			break;
+		case KEY:
+			if (Randomly.getBoolean()) {
+				sb.append(" LINEAR");
+			}
+			sb.append(" KEY");
+			if (Randomly.getBoolean()) {
+				sb.append(" ALGORITHM=");
+				sb.append(Randomly.fromOptions(1, 2));
+			}
+			sb.append(" (");
+			sb.append(Randomly.nonEmptySubset(columns).stream().collect(Collectors.joining(", ")));
+			sb.append(")");
+			break;
+		}
+	}
+
 	private enum TableOptions {
-		AUTO_INCREMENT, AVG_ROW_LENGTH, CHECKSUM, ENGINE, MIN_ROWS, PACK_KEYS, STATS_AUTO_RECALC, STATS_PERSISTENT,
-		STATS_SAMPLE_PAGES;
+		AUTO_INCREMENT, AVG_ROW_LENGTH, CHECKSUM, COMPRESSION, DELAY_KEY_WRITE, /* ENCRYPTION, */ ENGINE, INSERT_METHOD,
+		KEY_BLOCK_SIZE, MAX_ROWS, MIN_ROWS, PACK_KEYS, STATS_AUTO_RECALC, STATS_PERSISTENT, STATS_SAMPLE_PAGES;
 	}
 
 	private void appendTableOptions() {
@@ -119,6 +189,15 @@ public class MySQLTableGenerator {
 			case CHECKSUM:
 				sb.append("CHECKSUM = 1");
 				break;
+			case COMPRESSION:
+				sb.append("COMPRESSION = '");
+				sb.append(Randomly.fromOptions("ZLIB", "LZ4", "NONE"));
+				sb.append("'");
+				break;
+			case DELAY_KEY_WRITE:
+				sb.append("DELAY_KEY_WRITE = ");
+				sb.append(Randomly.fromOptions(0, 1));
+				break;
 			case ENGINE:
 				// FEDERATED: java.sql.SQLSyntaxErrorException: Unknown storage engine
 				// 'FEDERATED'
@@ -128,6 +207,22 @@ public class MySQLTableGenerator {
 				String fromOptions = Randomly.fromOptions("InnoDB", "MyISAM", "MEMORY", "HEAP", "CSV", "ARCHIVE");
 				this.engine = MySQLEngine.get(fromOptions);
 				sb.append("ENGINE = " + fromOptions);
+				break;
+//			case ENCRYPTION:
+//				sb.append("ENCRYPTION = '");
+//				sb.append(Randomly.fromOptions("Y", "N"));
+//				sb.append("'");
+//				break;
+			case INSERT_METHOD:
+				sb.append("INSERT_METHOD = ");
+				sb.append(Randomly.fromOptions("NO", "FIRST", "LAST"));
+				break;
+			case KEY_BLOCK_SIZE:
+				sb.append("KEY_BLOCK_SIZE = ");
+				sb.append(r.getPositiveInteger());
+				break;
+			case MAX_ROWS:
+				sb.append("MAX_ROWS = " + r.getLong(0, Long.MAX_VALUE));
 				break;
 			case MIN_ROWS:
 				sb.append("MIN_ROWS = " + r.getLong(1, Long.MAX_VALUE));
@@ -152,6 +247,7 @@ public class MySQLTableGenerator {
 
 	private void appendColumn() {
 		String columnName = SQLite3Common.createColumnName(columnId);
+		columns.add(columnName);
 		sb.append(columnName);
 		appendColumnDefinition();
 		columnId++;
