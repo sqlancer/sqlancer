@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import lama.Randomly;
 import lama.mysql.MySQLSchema.MySQLColumn;
+import lama.mysql.ast.MySQLBinaryComparisonOperation;
 import lama.mysql.ast.MySQLBinaryLogicalOperation;
 import lama.mysql.ast.MySQLColumnValue;
 import lama.mysql.ast.MySQLComputableFunction;
@@ -180,6 +181,17 @@ public class MySQLToStringVisitor extends MySQLVisitor {
 		sb.append(op.getTextRepresentation());
 		sb.append(" ");
 		sb.append("(");
+		visit(op.getRight());
+		sb.append(")");
+	}
+
+	@Override
+	public void visit(MySQLBinaryComparisonOperation op) {
+		sb.append("(");
+		visit(op.getLeft());
+		sb.append(") ");
+		sb.append(op.getOp().getTextRepresentation());
+		sb.append(" (");
 		visit(op.getRight());
 		sb.append(")");
 	}

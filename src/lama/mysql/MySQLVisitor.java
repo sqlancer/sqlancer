@@ -1,5 +1,6 @@
 package lama.mysql;
 
+import lama.mysql.ast.MySQLBinaryComparisonOperation;
 import lama.mysql.ast.MySQLBinaryLogicalOperation;
 import lama.mysql.ast.MySQLColumnValue;
 import lama.mysql.ast.MySQLComputableFunction;
@@ -20,10 +21,12 @@ public abstract class MySQLVisitor {
 	public abstract void visit(MySQLUnaryPostfixOperator column);
 
 	public abstract void visit(MySQLComputableFunction f);
-	
+
 	public abstract void visit(MySQLBinaryLogicalOperation op);
-	
+
 	public abstract void visit(MySQLSelect select);
+
+	public abstract void visit(MySQLBinaryComparisonOperation op);
 
 	public void visit(MySQLExpression expr) {
 		if (expr instanceof MySQLConstant) {
@@ -40,6 +43,8 @@ public abstract class MySQLVisitor {
 			visit((MySQLBinaryLogicalOperation) expr);
 		} else if (expr instanceof MySQLSelect) {
 			visit((MySQLSelect) expr);
+		} else if (expr instanceof MySQLBinaryComparisonOperation) {
+			visit((MySQLBinaryComparisonOperation) expr);
 		} else {
 			throw new AssertionError(expr);
 		}
@@ -56,5 +61,5 @@ public abstract class MySQLVisitor {
 		visitor.visit(expr);
 		return visitor.get();
 	}
-	
+
 }

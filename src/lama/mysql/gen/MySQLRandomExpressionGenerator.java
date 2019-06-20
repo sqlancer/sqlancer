@@ -5,6 +5,8 @@ import java.util.List;
 import lama.Randomly;
 import lama.mysql.MySQLSchema.MySQLColumn;
 import lama.mysql.MySQLSchema.MySQLRowValue;
+import lama.mysql.ast.MySQLBinaryComparisonOperation;
+import lama.mysql.ast.MySQLBinaryComparisonOperation.BinaryComparisonOperator;
 import lama.mysql.ast.MySQLBinaryLogicalOperation;
 import lama.mysql.ast.MySQLBinaryLogicalOperation.MySQLBinaryLogicalOperator;
 import lama.mysql.ast.MySQLColumnValue;
@@ -25,7 +27,7 @@ public class MySQLRandomExpressionGenerator {
 	}
 
 	private enum Actions {
-		COLUMN, LITERAL, NOT, UNARY_POSTFIX, FUNCTION, BINARY_LOGICAL_OPERATOR;
+		COLUMN, LITERAL, NOT, UNARY_POSTFIX, FUNCTION, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON_OPERATION;
 	}
 
 	public static MySQLExpression gen(List<MySQLColumn> columns, MySQLRowValue rowVal, int depth, Randomly r) {
@@ -42,7 +44,12 @@ public class MySQLRandomExpressionGenerator {
 		case LITERAL:
 			return generateLiteral(r);
 		case NOT:
-			return new MySQLUnaryNotOperator(gen(columns, rowVal, depth + 1, r));
+			MySQLExpression notSubExpr = gen(columns, rowVal, depth + 1, r);
+			/* workaround for https://bugs.mysql.com/bug.php?id=95900 */
+			while (notSubExpr instanceof MySQLUnaryNotOperator) {
+				notSubExpr = gen(columns, rowVal, depth + 1, r);
+			}
+			return new MySQLUnaryNotOperator(notSubExpr);
 		case UNARY_POSTFIX:
 			return new MySQLUnaryPostfixOperator(gen(columns, rowVal, depth + 1, r),
 					Randomly.fromOptions(MySQLUnaryPostfixOperator.UnaryPostfixOperator.values()),
@@ -50,7 +57,11 @@ public class MySQLRandomExpressionGenerator {
 		case FUNCTION:
 			return getFunction(columns, rowVal, depth + 1, r);
 		case BINARY_LOGICAL_OPERATOR:
-			return new MySQLBinaryLogicalOperation(gen(columns, rowVal, depth + 1, r), gen(columns, rowVal, depth + 1, r), MySQLBinaryLogicalOperator.getRandom());
+			return new MySQLBinaryLogicalOperation(gen(columns, rowVal, depth + 1, r),
+					gen(columns, rowVal, depth + 1, r), MySQLBinaryLogicalOperator.getRandom());
+		case BINARY_COMPARISON_OPERATION:
+			return new MySQLBinaryComparisonOperation(gen(columns, rowVal, depth + 1, r),
+					gen(columns, rowVal, depth + 1, r), BinaryComparisonOperator.getRandom());
 		default:
 			throw new AssertionError();
 		}

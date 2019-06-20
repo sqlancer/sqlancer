@@ -1,5 +1,6 @@
 package lama.mysql;
 
+import lama.mysql.ast.MySQLBinaryComparisonOperation;
 import lama.mysql.ast.MySQLBinaryLogicalOperation;
 import lama.mysql.ast.MySQLColumnValue;
 import lama.mysql.ast.MySQLComputableFunction;
@@ -80,6 +81,13 @@ public class MySQLExpectedValueVisitor extends MySQLVisitor {
 			visit(j);
 		}
 		visit(select.getWhereClause());
+	}
+
+	@Override
+	public void visit(MySQLBinaryComparisonOperation op) {
+		print(op);
+		visit(op.getLeft());
+		visit(op.getRight());
 	}
 
 }
