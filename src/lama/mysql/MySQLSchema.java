@@ -318,6 +318,10 @@ public class MySQLSchema {
 		public MySQLEngine getEngine() {
 			return engine;
 		}
+
+		public boolean hasPrimaryKey() {
+			return columns.stream().anyMatch(c -> c.isPrimaryKey());
+		}
 	}
 
 	static public MySQLSchema fromConnection(Connection con, String databaseName) throws SQLException {

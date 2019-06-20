@@ -1,6 +1,8 @@
 package lama.mysql.gen;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,6 +17,8 @@ public class MySQLAlterTable {
 	private final MySQLSchema schema;
 	private final Randomly r;
 	private final StringBuilder sb = new StringBuilder();
+	boolean couldAffectSchema;
+	private List<Action> selectedActions;
 
 	public MySQLAlterTable(MySQLSchema newSchema, Randomly r) {
 		this.schema = newSchema;
@@ -27,7 +31,15 @@ public class MySQLAlterTable {
 
 	private enum Action {
 		ALGORITHM, CHECKSUM, COMPRESSION, DISABLE_ENABLE_KEYS, FORCE, DELAY_KEY_WRITE, INSERT_METHOD, ROW_FORMAT,
-		STATS_AUTO_RECALC, STATS_PERSISTENT, PACK_KEYS
+		STATS_AUTO_RECALC, STATS_PERSISTENT, PACK_KEYS, DROP_PRIMARY_KEY(
+				"ALGORITHM=INSTANT is not supported. Reason: Dropping a primary key is not allowed without also adding a new primary key. Try ALGORITHM=COPY/INPLACE.");
+
+		private String[] potentialErrors;
+
+		private Action(String... couldCauseErrors) {
+			this.potentialErrors = couldCauseErrors;
+		}
+
 	}
 
 	private Query create() {
@@ -35,9 +47,13 @@ public class MySQLAlterTable {
 		MySQLTable table = schema.getRandomTable();
 		sb.append(table.getName());
 		sb.append(" ");
-		List<Action> actions = Randomly.subset(Action.values());
+		List<Action> list = new ArrayList<>(Arrays.asList(Action.values()));
+		if (!table.hasPrimaryKey() || true /* https://bugs.mysql.com/bug.php?id=95894 */) {
+			list.remove(Action.DROP_PRIMARY_KEY);
+		}
+		selectedActions = Randomly.subset(list);
 		int i = 0;
-		for (Action a : actions) {
+		for (Action a : selectedActions) {
 			if (i++ != 0) {
 				sb.append(", ");
 			}
@@ -63,6 +79,11 @@ public class MySQLAlterTable {
 			case DISABLE_ENABLE_KEYS:
 				sb.append(Randomly.fromOptions("DISABLE", "ENABLE"));
 				sb.append(" KEYS");
+				break;
+			case DROP_PRIMARY_KEY:
+				assert table.hasPrimaryKey();
+				sb.append("DROP PRIMARY KEY");
+				couldAffectSchema = true;
 				break;
 			case FORCE:
 				sb.append("FORCE");
@@ -104,7 +125,9 @@ public class MySQLAlterTable {
 				try {
 					super.execute(con);
 				} catch (SQLException e) {
-					if (e.getMessage().contains("does not support the create option")) {
+					if (errorIsExpected(e.getMessage())) {
+						// ignore
+					} else if (e.getMessage().contains("does not support the create option")) {
 						// ignore
 					} else if (e.getMessage().contains("doesn't have this option")) {
 						// ignore
@@ -116,6 +139,22 @@ public class MySQLAlterTable {
 				}
 
 			};
+
+			private boolean errorIsExpected(String errorMessage) {
+				for (Action a : selectedActions) {
+					for (String error : a.potentialErrors) {
+						if (errorMessage.contains(error)) {
+							return true;
+						}
+					}
+				}
+				return false;
+			}
+
+			@Override
+			public boolean couldAffectSchema() {
+				return couldAffectSchema;
+			}
 
 		};
 	}
