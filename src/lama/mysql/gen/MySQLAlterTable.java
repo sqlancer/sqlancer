@@ -32,8 +32,8 @@ public class MySQLAlterTable {
 	private enum Action {
 		ALGORITHM, CHECKSUM, COMPRESSION, DISABLE_ENABLE_KEYS,
 		DROP_COLUMN("Cannot drop column", "ALGORITHM=INPLACE is not supported.", "ALGORITHM=INSTANT is not supported.",
-				"Duplicate entry", "A primary key index cannot be invisible" /* this error should not occur, see https://bugs.mysql.com/bug.php?id=95897 */),
-		FORCE, DELAY_KEY_WRITE, INSERT_METHOD, ROW_FORMAT, STATS_AUTO_RECALC, STATS_PERSISTENT, PACK_KEYS,
+				"Duplicate entry", "A primary key index cannot be invisible" /* this error should not occur, see https://bugs.mysql.com/bug.php?id=95897 */, "Field in list of fields for partition function not found in table", "in 'partition function'"),
+		FORCE, DELAY_KEY_WRITE, INSERT_METHOD, ROW_FORMAT, STATS_AUTO_RECALC, STATS_PERSISTENT, PACK_KEYS, RENAME("doesn't exist", "already exists"),
 		DROP_PRIMARY_KEY(
 				"ALGORITHM=INSTANT is not supported. Reason: Dropping a primary key is not allowed without also adding a new primary key. Try ALGORITHM=COPY/INPLACE.");
 
@@ -121,6 +121,15 @@ public class MySQLAlterTable {
 			case PACK_KEYS:
 				sb.append("PACK_KEYS ");
 				sb.append(Randomly.fromOptions(0, 1, "DEFAULT"));
+				break;
+			case RENAME:
+				sb.append("RENAME ");
+				if (Randomly.getBoolean()) {
+					sb.append(Randomly.fromOptions("TO", "AS"));
+					sb.append(" ");
+				}
+				sb.append("t" + Randomly.smallNumber());
+				couldAffectSchema = true;
 				break;
 			}
 		}
