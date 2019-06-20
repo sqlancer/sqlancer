@@ -39,15 +39,15 @@ import lama.sqlite3.gen.SQLite3Common;
 
 public class MySQLProvider implements DatabaseProvider {
 
-	private static final int NR_QUERIES_PER_TABLE = 1000;
-	private static final int MAX_INSERT_ROW_TRIES = 10;
+	private static final int NR_QUERIES_PER_TABLE = 100;
+	private static final int MAX_INSERT_ROW_TRIES = 30;
 	private final Randomly r = new Randomly();
 	private QueryManager manager;
 	private String databaseName;
 
 	enum Action {
 		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR, OPTIMIZE, CHECKSUM, CHECK_TABLE, ANALYZE_TABLE, FLUSH, RESET,
-		CREATE_INDEX, ALTER_TABLE, TRUNCATE_TABLE;
+		CREATE_INDEX, ALTER_TABLE, TRUNCATE_TABLE, SELECT_INFO;
 	}
 
 	@Override
@@ -79,10 +79,11 @@ public class MySQLProvider implements DatabaseProvider {
 				nrPerformed = MAX_INSERT_ROW_TRIES;
 				break;
 			case REPAIR:
-				// see https://bugs.mysql.com/bug.php?id=95820
-				nrPerformed = 0; // r.getInteger(0, 10);
+				nrPerformed = r.getInteger(0, 10);
 				break;
 			case SET_VARIABLE:
+				nrPerformed = 0; // r.getInteger(0, 50);
+				break;
 			case CHECKSUM:
 			case CHECK_TABLE:
 			case ANALYZE_TABLE:
@@ -106,6 +107,9 @@ public class MySQLProvider implements DatabaseProvider {
 			case TRUNCATE_TABLE:
 				nrPerformed = r.getInteger(0, 2);
 				break;
+			case SELECT_INFO:
+				nrPerformed = r.getInteger(0, 10);
+				break;
 			}
 			if (nrPerformed != 0) {
 				actions.add(action);
@@ -113,7 +117,7 @@ public class MySQLProvider implements DatabaseProvider {
 			nrRemaining[action.ordinal()] = nrPerformed;
 			total += nrPerformed;
 		}
-		CreateIndexGenerator createIndexGenerator = new CreateIndexGenerator(newSchema.getRandomTable(), r);
+		CreateIndexGenerator createIndexGenerator = new CreateIndexGenerator(newSchema, r);
 
 		while (total != 0) {
 			Action nextAction = null;
@@ -168,6 +172,11 @@ public class MySQLProvider implements DatabaseProvider {
 			case ALTER_TABLE:
 				query = MySQLAlterTable.create(newSchema, r);
 				break;
+			case SELECT_INFO:
+				query = new QueryAdapter(
+						"select TABLE_NAME, ENGINE from information_schema.TABLES where table_schema = '" + databaseName
+								+ "'");
+				break;
 			case TRUNCATE_TABLE:
 				query = new QueryAdapter("TRUNCATE TABLE " + newSchema.getRandomTable().getName()) {
 					@Override
@@ -192,6 +201,7 @@ public class MySQLProvider implements DatabaseProvider {
 				manager.execute(query);
 				if (query.couldAffectSchema()) {
 					newSchema = MySQLSchema.fromConnection(con, databaseName);
+					createIndexGenerator.setNewSchema(newSchema);
 				}
 			} catch (Throwable t) {
 				System.err.println(query.getQueryString());
@@ -204,6 +214,10 @@ public class MySQLProvider implements DatabaseProvider {
 				return;
 			}
 		}
+		QueryAdapter query = new QueryAdapter(
+				"select TABLE_NAME, ENGINE from information_schema.TABLES where table_schema = '" + databaseName + "'");
+		manager.execute(query);
+
 		newSchema = MySQLSchema.fromConnection(con, databaseName);
 
 		MySQLQueryGenerator queryGenerator = new MySQLQueryGenerator(manager, r, con, databaseName);

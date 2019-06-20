@@ -2,29 +2,36 @@ package lama.mysql.gen.datadef;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.mysql.MySQLSchema;
 import lama.mysql.MySQLSchema.MySQLColumn;
+import lama.mysql.MySQLSchema.MySQLDataType;
 import lama.mysql.MySQLSchema.MySQLTable;
+import lama.mysql.MySQLSchema.MySQLTable.MySQLEngine;
+import lama.mysql.MySQLVisitor;
+import lama.mysql.ast.MySQLExpression;
+import lama.mysql.gen.MySQLRandomExpressionGenerator;
 
 public class CreateIndexGenerator {
 
-	private final MySQLTable table;
 	private final Randomly r;
 	private StringBuilder sb = new StringBuilder();
 	private int indexNr;
 	private boolean columnIsPrimaryKey;
 	private boolean containsInPlace;
+	private MySQLSchema schema;
 
-	public CreateIndexGenerator(MySQLTable table, Randomly r) {
-		this.table = table;
+	public CreateIndexGenerator(MySQLSchema schema, Randomly r) {
+		this.schema = schema;
 		this.r = r;
 	}
 
-	public static Query create(Randomly r, MySQLTable table) {
-		return new CreateIndexGenerator(table, r).create();
+	public static Query create(Randomly r, MySQLSchema schema) {
+		return new CreateIndexGenerator(schema, r).create();
 	}
 
 	public Query create() {
@@ -106,5 +113,9 @@ public class CreateIndexGenerator {
 			sb.append(" USING ");
 			sb.append(Randomly.fromOptions("BTREE", "HASH"));
 		}
+	}
+
+	public void setNewSchema(MySQLSchema schema) {
+		this.schema = schema;
 	}
 }
