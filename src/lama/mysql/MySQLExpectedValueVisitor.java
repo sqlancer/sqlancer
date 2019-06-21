@@ -2,6 +2,7 @@ package lama.mysql;
 
 import lama.mysql.ast.MySQLBinaryComparisonOperation;
 import lama.mysql.ast.MySQLBinaryLogicalOperation;
+import lama.mysql.ast.MySQLCastOperation;
 import lama.mysql.ast.MySQLColumnValue;
 import lama.mysql.ast.MySQLComputableFunction;
 import lama.mysql.ast.MySQLConstant;
@@ -88,6 +89,12 @@ public class MySQLExpectedValueVisitor extends MySQLVisitor {
 		print(op);
 		visit(op.getLeft());
 		visit(op.getRight());
+	}
+
+	@Override
+	public void visit(MySQLCastOperation op) {
+		print(op);
+		visit(op.getExpr());
 	}
 
 }

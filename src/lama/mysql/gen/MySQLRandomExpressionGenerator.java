@@ -4,11 +4,13 @@ import java.util.List;
 
 import lama.Randomly;
 import lama.mysql.MySQLSchema.MySQLColumn;
+import lama.mysql.MySQLSchema.MySQLDataType;
 import lama.mysql.MySQLSchema.MySQLRowValue;
 import lama.mysql.ast.MySQLBinaryComparisonOperation;
 import lama.mysql.ast.MySQLBinaryComparisonOperation.BinaryComparisonOperator;
 import lama.mysql.ast.MySQLBinaryLogicalOperation;
 import lama.mysql.ast.MySQLBinaryLogicalOperation.MySQLBinaryLogicalOperator;
+import lama.mysql.ast.MySQLCastOperation;
 import lama.mysql.ast.MySQLColumnValue;
 import lama.mysql.ast.MySQLComputableFunction;
 import lama.mysql.ast.MySQLComputableFunction.MySQLFunction;
@@ -27,7 +29,7 @@ public class MySQLRandomExpressionGenerator {
 	}
 
 	private enum Actions {
-		COLUMN, LITERAL, NOT, UNARY_POSTFIX, FUNCTION, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON_OPERATION;
+		COLUMN, LITERAL, NOT, UNARY_POSTFIX, FUNCTION, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON_OPERATION, CAST;
 	}
 
 	public static MySQLExpression gen(List<MySQLColumn> columns, MySQLRowValue rowVal, int depth, Randomly r) {
@@ -62,6 +64,8 @@ public class MySQLRandomExpressionGenerator {
 		case BINARY_COMPARISON_OPERATION:
 			return new MySQLBinaryComparisonOperation(gen(columns, rowVal, depth + 1, r),
 					gen(columns, rowVal, depth + 1, r), BinaryComparisonOperator.getRandom());
+		case CAST:
+			return new MySQLCastOperation(gen(columns, rowVal, depth + 1, r), MySQLCastOperation.CastType.getRandom());
 		default:
 			throw new AssertionError();
 		}

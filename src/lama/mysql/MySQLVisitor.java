@@ -2,6 +2,7 @@ package lama.mysql;
 
 import lama.mysql.ast.MySQLBinaryComparisonOperation;
 import lama.mysql.ast.MySQLBinaryLogicalOperation;
+import lama.mysql.ast.MySQLCastOperation;
 import lama.mysql.ast.MySQLColumnValue;
 import lama.mysql.ast.MySQLComputableFunction;
 import lama.mysql.ast.MySQLConstant;
@@ -27,6 +28,8 @@ public abstract class MySQLVisitor {
 	public abstract void visit(MySQLSelect select);
 
 	public abstract void visit(MySQLBinaryComparisonOperation op);
+	
+	public abstract void visit(MySQLCastOperation op);
 
 	public void visit(MySQLExpression expr) {
 		if (expr instanceof MySQLConstant) {
@@ -45,6 +48,8 @@ public abstract class MySQLVisitor {
 			visit((MySQLSelect) expr);
 		} else if (expr instanceof MySQLBinaryComparisonOperation) {
 			visit((MySQLBinaryComparisonOperation) expr);
+		} else if (expr instanceof MySQLCastOperation) {
+			visit((MySQLCastOperation) expr);
 		} else {
 			throw new AssertionError(expr);
 		}
