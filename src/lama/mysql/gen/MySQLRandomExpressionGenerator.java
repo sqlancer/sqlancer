@@ -84,8 +84,19 @@ public class MySQLRandomExpressionGenerator {
 		return new MySQLComputableFunction(func, args);
 	}
 
+	private enum ConstantType {
+		INT, NULL;
+	}
+	
 	private static MySQLExpression generateLiteral(Randomly r) {
-		return MySQLConstant.createIntConstant((int) r.getInteger());
+		switch (Randomly.fromOptions(ConstantType.values())) {
+		case INT:
+			return MySQLConstant.createIntConstant((int) r.getInteger());
+		case NULL:
+			return MySQLConstant.createNullConstant();
+		default:
+			throw new AssertionError();
+		}
 	}
 
 	private static MySQLExpression generateColumn(List<MySQLColumn> columns, MySQLRowValue rowVal) {
