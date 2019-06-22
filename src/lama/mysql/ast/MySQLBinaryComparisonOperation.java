@@ -1,6 +1,8 @@
 package lama.mysql.ast;
 
+import lama.LikeImplementationHelper;
 import lama.Randomly;
+import lama.sqlite3.ast.SQLite3Constant;
 
 public class MySQLBinaryComparisonOperation extends MySQLExpression {
 
@@ -10,7 +12,22 @@ public class MySQLBinaryComparisonOperation extends MySQLExpression {
 			public MySQLConstant getExpectedValue(MySQLConstant leftVal, MySQLConstant rightVal) {
 				return leftVal.isEquals(rightVal);
 			}
-		};
+		},
+		LIKE("LIKE") {
+
+			@Override
+			public MySQLConstant getExpectedValue(MySQLConstant leftVal, MySQLConstant rightVal) {
+				if (leftVal.isNull() || rightVal.isNull()) {
+					return MySQLConstant.createNullConstant();
+				}
+				String leftStr = leftVal.castAsString();
+				String rightStr = rightVal.castAsString();
+				boolean matches = LikeImplementationHelper.match(leftStr, rightStr, 0, 0);
+				return MySQLConstant.createBoolean(matches);
+			}
+			
+		}
+		;
 		// https://bugs.mysql.com/bug.php?id=95908
 		/*
 		 * IS_EQUALS_NULL_SAFE("<=>") {
