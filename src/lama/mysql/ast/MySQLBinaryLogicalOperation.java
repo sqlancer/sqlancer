@@ -52,7 +52,7 @@ public class MySQLBinaryLogicalOperation extends MySQLExpression {
 				if (left.isNull() || right.isNull()) {
 					return MySQLConstant.createNullConstant();
 				}
-				boolean xorVal = left.asBooleanNotNull() ^ right.asBooleanNotNull();
+				boolean xorVal = left.asBooleanNotNullIgnoreFloatingPointStrings() ^ right.asBooleanNotNullIgnoreFloatingPointStrings();
 				return MySQLConstant.createBoolean(xorVal);
 			}
 		};

@@ -360,7 +360,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 
 		@Override
 		public SQLite3Constant applyTextAffinity() {
-			return SQLite3Constant.createTextConstant(String.valueOf(value));
+			return SQLite3Cast.castToText(this);
 		}
 
 		@Override
@@ -610,7 +610,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 					lessThan = text.compareTo(other) < 0;
 					break;
 				case NOCASE:
-					lessThan = toUpper(text).compareTo(toUpper(other)) < 0;
+					lessThan = toLower(text).compareTo(toLower(other)) < 0;
 					break;
 				case RTRIM:
 					lessThan = trimTrailing(text).compareTo(trimTrailing(other)) < 0;

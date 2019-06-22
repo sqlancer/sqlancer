@@ -4,7 +4,6 @@ import java.util.List;
 
 import lama.Randomly;
 import lama.mysql.MySQLSchema.MySQLColumn;
-import lama.mysql.MySQLSchema.MySQLDataType;
 import lama.mysql.MySQLSchema.MySQLRowValue;
 import lama.mysql.ast.MySQLBinaryComparisonOperation;
 import lama.mysql.ast.MySQLBinaryComparisonOperation.BinaryComparisonOperator;
@@ -21,7 +20,7 @@ import lama.mysql.ast.MySQLUnaryPostfixOperator;
 
 public class MySQLRandomExpressionGenerator {
 
-	private final static int MAX_DEPTH = 10;
+	private final static int MAX_DEPTH = 1;
 
 	public static MySQLExpression generateRandomExpression(List<MySQLColumn> columns, MySQLRowValue rowVal,
 			Randomly r) {
@@ -79,13 +78,16 @@ public class MySQLRandomExpressionGenerator {
 		}
 		MySQLExpression[] args = new MySQLExpression[nrArgs];
 		for (int i = 0; i < args.length; i++) {
-			args[i] = gen(columns, rowVal, depth + 1, r);
+			do {
+				args[i] = gen(columns, rowVal, depth + 1, r);
+				/* workaround for https://bugs.mysql.com/bug.php?id=95926 */
+			} while (args[i] instanceof MySQLConstant);
 		}
 		return new MySQLComputableFunction(func, args);
 	}
 
 	private enum ConstantType {
-		INT, NULL;
+		INT, NULL, STRING;
 	}
 	
 	private static MySQLExpression generateLiteral(Randomly r) {
@@ -94,6 +96,8 @@ public class MySQLRandomExpressionGenerator {
 			return MySQLConstant.createIntConstant((int) r.getInteger());
 		case NULL:
 			return MySQLConstant.createNullConstant();
+		case STRING:
+			return MySQLConstant.createStringConstant(r.getString());
 		default:
 			throw new AssertionError();
 		}
