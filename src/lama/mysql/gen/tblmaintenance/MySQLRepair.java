@@ -7,6 +7,7 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.mysql.MySQLSchema.MySQLTable;
+import lama.mysql.MySQLSchema.MySQLTable.MySQLEngine;
 
 /**
  * @see https://dev.mysql.com/doc/refman/8.0/en/repair-table.html
@@ -21,6 +22,12 @@ public class MySQLRepair {
 	}
 
 	public static Query repair(List<MySQLTable> tables) {
+		for (MySQLTable table : tables) {
+			// see https://bugs.mysql.com/bug.php?id=95820
+			if (table.getEngine() == MySQLEngine.MY_ISAM) {
+				return new QueryAdapter("SELECT 1");
+			}
+		}
 		return new MySQLRepair(tables).repair();
 	}
 
