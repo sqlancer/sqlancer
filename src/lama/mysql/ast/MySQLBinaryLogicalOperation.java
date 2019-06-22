@@ -1,5 +1,6 @@
 package lama.mysql.ast;
 
+import lama.IgnoreMeException;
 import lama.Randomly;
 
 public class MySQLBinaryLogicalOperation extends MySQLExpression {
@@ -52,7 +53,11 @@ public class MySQLBinaryLogicalOperation extends MySQLExpression {
 				if (left.isNull() || right.isNull()) {
 					return MySQLConstant.createNullConstant();
 				}
-				boolean xorVal = left.asBooleanNotNullIgnoreFloatingPointStrings() ^ right.asBooleanNotNullIgnoreFloatingPointStrings();
+				/* workaround for https://bugs.mysql.com/bug.php?id=95927 */
+				if (left.isString() || right.isString()) {
+					throw new IgnoreMeException();
+				}
+				boolean xorVal = left.asBooleanNotNull() ^ right.asBooleanNotNull();
 				return MySQLConstant.createBoolean(xorVal);
 			}
 		};

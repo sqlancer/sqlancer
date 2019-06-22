@@ -41,12 +41,6 @@ public abstract class MySQLConstant extends MySQLExpression {
 		}
 
 		@Override
-		// workaround for https://bugs.mysql.com/bug.php?id=95927
-		public boolean asBooleanNotNullIgnoreFloatingPointStrings() {
-			return castAs(CastType.SIGNED).asBooleanNotNull();
-		}
-
-		@Override
 		public String getTextRepresentation() {
 			StringBuilder sb = new StringBuilder();
 			String quotes = singleQuotes ? "'" : "\"";
@@ -100,6 +94,11 @@ public abstract class MySQLConstant extends MySQLExpression {
 				}
 			}
 			return MySQLConstant.createIntConstant(0);
+		}
+
+		@Override
+		public String castAsString() {
+			return value;
 		}
 
 	}
@@ -172,6 +171,11 @@ public abstract class MySQLConstant extends MySQLExpression {
 			}
 		}
 
+		@Override
+		public String castAsString() {
+			return String.valueOf(value);
+		}
+
 	}
 
 	public static class MySQLNullConstant extends MySQLConstant {
@@ -199,6 +203,11 @@ public abstract class MySQLConstant extends MySQLExpression {
 		@Override
 		protected MySQLConstant castAs(CastType type) {
 			return this;
+		}
+
+		@Override
+		public String castAsString() {
+			return "NULL";
 		}
 
 	}
@@ -266,13 +275,11 @@ public abstract class MySQLConstant extends MySQLExpression {
 	}
 
 	protected abstract MySQLConstant castAs(CastType type);
+	
+	public abstract String castAsString();
 
 	public static MySQLExpression createStringConstant(String string) {
 		return new MySQLTextConstant(string);
-	}
-
-	public boolean asBooleanNotNullIgnoreFloatingPointStrings() {
-		return asBooleanNotNull();
 	}
 
 }
