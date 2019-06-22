@@ -3,7 +3,6 @@ package lama.mysql.gen;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import lama.Query;
 import lama.QueryAdapter;
@@ -44,7 +43,24 @@ public class MySQLSetGenerator {
 		// global
 //		INNODB_FLUSH_METHOD("innodb_flush_method", (r) -> Randomly.fromOptions("fsync", "O_DSYNC", "littlesync", "nosync", "O_DIRECT", "O_DIRECT_NO_FSYNC")),
 		// TODO
+		OPTIMIZER_PRUNE_LEVEL("optimizer_prune_level", (r) -> Randomly.fromOptions(0, 1)),
+		OPTIMIZER_SEARCH_DEPTH("optimizer_search_depth", (r) -> r.getLong(0, 62)),
 		OPTIMIZER_SWITCH("optimizer_switch", (r) -> getOptimizerSwitchConfiguration(r)),
+		PARSER_MAX_MEM_SIZE("parser_max_mem_size", (r) -> r.getLong(10000000, Long.MAX_VALUE)),
+		PRELOAD_BUFFER_SIZE("preload_buffer_size", (r) -> r.getLong(1024, 1073741824)),
+		QUERY_PREALLOC_SIZE("query_prealloc_size", (r) -> r.getLong(8192, Long.MAX_VALUE)),
+		RANGE_ALLOC_BLOCK_SIZE("range_alloc_block_size", (r) -> r.getLong(4096, Long.MAX_VALUE)),
+		RANGE_OPTIMIZER_MAX_MEM_SIZE("range_optimizer_max_mem_size", (r) -> r.getLong(0, Long.MAX_VALUE)),
+		READ_BUFFER_SIZE("read_buffer_size", (r) -> r.getLong(8200, 2147479552)),
+		READ_RND_BUFFER_SIZE("read_rnd_buffer_size", (r) -> r.getLong(1, 2147483647)),
+		// global
+//		SCHEMA_DEFINITION_CACHE("schema_definition_cache", (r) -> r.getLong(256, 524288)),
+		SORT_BUFFER_SIZE("sort_buffer_size", (r) -> r.getLong(32768, Long.MAX_VALUE)),
+		SQL_AUTO_IS_NULL("sql_auto_is_null", (r) -> Randomly.fromOptions("OFF", "ON")),
+		SQL_BUFFER_RESULT("sql_buffer_result", (r) -> Randomly.fromOptions("OFF", "ON")),
+		SQL_LOG_OFF("sql_log_off", (r) -> Randomly.fromOptions("OFF", "ON")),
+		SQL_QUOTE_SHOW_CREATE("sql_quote_show_create", (r) -> Randomly.fromOptions("OFF", "ON")),
+		TMP_TABLE_SIZE("tmp_table_size", (r) -> r.getLong(1024, Long.MAX_VALUE)),
 		UNIQUE_CHECKS("unique_checks", (r) -> Randomly.fromOptions("OFF", "ON"))
 		// TODO: https://dev.mysql.com/doc/refman/8.0/en/switchable-optimizations.html
 		;
@@ -63,13 +79,15 @@ public class MySQLSetGenerator {
 		private static String getOptimizerSwitchConfiguration(Randomly r) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("'");
-			String[] options = new String[] { "batched_key_access", "block_nested_loop", "condition_fanout_filter",
-					"derived_merge", "engine_condition_pushdown", "index_condition_pushdown", "use_index_extensions",
+			String[] options = new String[] { /*"batched_key_access", "block_nested_loop","condition_fanout_filter",
+					 */"derived_merge", /*"engine_condition_pushdown"};  , "index_condition_pushdown", "use_index_extensions",
 					"index_merge", "index_merge_intersection", "index_merge_sort_union", "index_merge_union",
 					"use_invisible_indexes", "mrr", "mrr_cost_based", "skip_scan", "semijoin", "duplicateweedout",
-					"firstmatch", "loosescan", "materialization", "subquery_materialization_cost_based" };
+					"firstmatch", "loosescan", "materialization", "subquery_materialization_cost_based"  */
+			};
 			List<String> optionSubset = Randomly.nonEmptySubset(options);
-			sb.append(optionSubset.stream().map(s -> s + "=" + Randomly.fromOptions("on", "off")).collect(Collectors.joining(",")));
+			sb.append(optionSubset.stream().map(s -> s + "=" + Randomly.fromOptions("on", "off"))
+					.collect(Collectors.joining(",")));
 			sb.append("'");
 			return sb.toString();
 		}
