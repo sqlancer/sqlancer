@@ -22,7 +22,7 @@ import lama.sqlite3.schema.SQLite3Schema.Column;
 public class MySQLSchema {
 
 	public static enum MySQLDataType {
-		INT;
+		INT, VARCHAR;
 	}
 
 	public static class MySQLColumn implements Comparable<MySQLColumn> {
@@ -169,8 +169,18 @@ public class MySQLSchema {
 					if (randomRowValues.getString(columnIndex) == null) {
 						constant = MySQLConstant.createNullConstant();
 					} else {
-						value = randomRowValues.getLong(columnIndex);
-						constant = MySQLConstant.createIntConstant((long) value);
+						switch (column.getColumnType()) {
+						case INT:
+							value = randomRowValues.getLong(columnIndex);
+							constant = MySQLConstant.createIntConstant((long) value);
+							break;
+						case VARCHAR:
+							value = randomRowValues.getString(columnIndex);
+							constant = MySQLConstant.createStringConstant((String) value);
+							break;
+						default:
+							throw new AssertionError(column.getColumnType());
+						}
 					}
 //							break;
 //						default:
@@ -186,11 +196,24 @@ public class MySQLSchema {
 
 		}
 
-		private MySQLDataType getColumnType(String typeString) {
-			return MySQLDataType.INT;
-		}
 	}
 
+
+	private static MySQLDataType getColumnType(String typeString) {
+		switch (typeString) {
+		case "tinyint":
+		case "smallint":
+		case "mediumint":
+		case "int":
+		case "bigint":
+			return MySQLDataType.INT;
+		case "varchar":
+			return MySQLDataType.VARCHAR;
+		default:
+			throw new AssertionError(typeString);
+		}
+	}
+	
 	public static class MySQLRowValue {
 
 		private final MySQLTables tables;
@@ -357,7 +380,7 @@ public class MySQLSchema {
 					String dataType = rs.getString("DATA_TYPE");
 					int precision = rs.getInt("NUMERIC_PRECISION");
 					boolean isPrimaryKey = rs.getString("COLUMN_KEY").equals("PRI");
-					MySQLColumn c = new MySQLColumn(columnName, MySQLDataType.INT, isPrimaryKey, precision);
+					MySQLColumn c = new MySQLColumn(columnName, getColumnType(dataType), isPrimaryKey, precision);
 					columns.add(c);
 				}
 			}

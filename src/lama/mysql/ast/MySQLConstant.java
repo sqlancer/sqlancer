@@ -278,7 +278,7 @@ public abstract class MySQLConstant extends MySQLExpression {
 	
 	public abstract String castAsString();
 
-	public static MySQLExpression createStringConstant(String string) {
+	public static MySQLConstant createStringConstant(String string) {
 		return new MySQLTextConstant(string);
 	}
 

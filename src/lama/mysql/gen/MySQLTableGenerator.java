@@ -122,7 +122,7 @@ public class MySQLTableGenerator {
 	private boolean shouldIgnoreCommon(Exception e) {
 		return e.getMessage().contains("The storage engine for the table doesn't support")
 				|| e.getMessage().contains("doesn't have this option")
-				|| e.getMessage().contains("must include all columns");
+				|| e.getMessage().contains("must include all columns") || e.getMessage().contains("not allowed type for this type of partitioning");
 	}
 
 	private enum PartitionOptions {
@@ -259,20 +259,32 @@ public class MySQLTableGenerator {
 
 	private void appendColumnDefinition() {
 		sb.append(" ");
-		sb.append(Randomly.fromOptions("TINYINT", "SMALLINT", "MEDIUMINT", "INT", "BIGINT"));
+		boolean isTextType = false;
+		if (Randomly.getBoolean()) {
+			sb.append(Randomly.fromOptions("TINYINT", "SMALLINT", "MEDIUMINT", "INT", "BIGINT"));
+			if (Randomly.getBoolean()) {
+				sb.append(" UNSIGNED");
+			}
+		} else {
+			 isTextType = true;
+			sb.append(Randomly.fromOptions("VARCHAR(5)"));
+		}
 		sb.append(" ");
-		if (Randomly.getBoolean()) {
-			sb.append(" UNSIGNED");
-		}
-		if (Randomly.getBoolean()) {
-			sb.append(" ZEROFILL");
-		}
+		// TODO: this was commented out since it makes the implementation of LIKE more difficult
+//		if (Randomly.getBoolean()) {
+//			sb.append(" ZEROFILL");
+//		}
 		boolean isNull = false;
 		boolean columnHasPrimaryKey = false;
 
 		List<ColumnOptions> columnOptions = Randomly.subset(ColumnOptions.values());
 		if (!columnOptions.contains(ColumnOptions.NULL_OR_NOT_NULL)) {
 			tableHasNullableColumn = true;
+		}
+		if (isTextType) {
+			// TODO: restriction due to the limited key length
+			columnOptions.remove(ColumnOptions.PRIMARY_KEY);
+			columnOptions.remove(ColumnOptions.UNIQUE);
 		}
 		for (ColumnOptions o : columnOptions) {
 			sb.append(" ");
