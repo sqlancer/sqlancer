@@ -46,11 +46,44 @@ public class CreateIndexGenerator {
 		sb.append("INDEX i" + indexNr++);
 		indexType();
 		sb.append(" ON ");
+		MySQLTable table = schema.getRandomTable();
 		sb.append(table.getName());
 		sb.append("(");
-		MySQLColumn randomColumn = table.getRandomColumn();
-		columnIsPrimaryKey = randomColumn.isPrimaryKey();
-		sb.append(randomColumn.getName());
+		if (table.getEngine() == MySQLEngine.INNO_DB) {
+			for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
+				if (i != 0) {
+					sb.append(", ");
+				}
+				sb.append("(");
+				MySQLExpression randExpr = MySQLRandomExpressionGenerator.generateRandomExpression(table.getColumns(),
+						null, r);
+				sb.append(MySQLVisitor.asString(randExpr));
+				sb.append(")");
+
+			}
+		} else {
+			List<MySQLColumn> randomColumn = table.getRandomNonEmptyColumnSubset();
+			int i = 0;
+			for (MySQLColumn c : randomColumn) {
+				if (i++ != 0) {
+					sb.append(", ");
+				}
+				if (c.isPrimaryKey()) {
+					columnIsPrimaryKey = true;
+				}
+				sb.append(c.getName());
+				if (Randomly.getBoolean() && c.getColumnType() != MySQLDataType.INT) {
+					sb.append("(");
+					// TODO for string
+					sb.append(r.getInteger(1, 5));
+					sb.append(")");
+				}
+				if (Randomly.getBoolean()) {
+					sb.append(" ");
+					sb.append(Randomly.fromOptions("ASC", "DESC"));
+				}
+			}
+		}
 		sb.append(")");
 		indexOption();
 		algorithmOption();
@@ -64,12 +97,29 @@ public class CreateIndexGenerator {
 				} catch (java.sql.SQLIntegrityConstraintViolationException e) {
 					// IGNORE;
 				} catch (SQLException e) {
-					if (e.getMessage()
-							.startsWith("ALGORITHM=INPLACE is not supported for this operation. Try ALGORITHM=COPY.")
-							&& containsInPlace) {
+					if (e.getMessage().startsWith("ALGORITHM=INPLACE is not supported") && containsInPlace) {
 						// ignore
 					} else if (e.getMessage().startsWith("A primary key index cannot be invisible")) {
 						// ignore
+					} else if (e.getMessage().startsWith("Table handler doesn't support NULL in given index.")
+							&& table.getEngine() == MySQLEngine.ARCHIVE) {
+						// ignore
+					} else if (e.getMessage().startsWith(
+							"Functional index on a column is not supported. Consider using a regular index instead.")) {
+						// ignore
+						// TODO: what does this mean?
+					} else if (e.getMessage()
+							.startsWith("Incorrect usage of spatial/fulltext/hash index and explicit index order")) {
+						// TODO what does this mean?
+					} else if (e.getMessage()
+							.startsWith("The storage engine for the table doesn't support descending indexes")) {
+						// TODO what does this mean?
+					} else if (e.getMessage().contains("must include all columns")) {
+						// partitioning functions
+					} else if (e.getMessage().contains("cannot index the expression")) {
+						// index NULL
+					} else if (e.getMessage().contains("Data truncation: Truncated incorrect ")) {
+
 					}
 
 					else {
