@@ -252,7 +252,7 @@ public class SQLite3Provider implements DatabaseProvider {
 	}
 
 	@Override
-	public Connection createDatabase(String databaseName) throws SQLException {
+	public Connection createDatabase(String databaseName,  StateToReproduce state) throws SQLException {
 		return DatabaseFacade.createDatabase(databaseName);
 	}
 

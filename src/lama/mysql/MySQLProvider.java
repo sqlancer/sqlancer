@@ -255,7 +255,10 @@ public class MySQLProvider implements DatabaseProvider {
 	}
 
 	@Override
-	public Connection createDatabase(String databaseName) throws SQLException {
+	public Connection createDatabase(String databaseName, StateToReproduce state) throws SQLException {
+		state.statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName));
+		state.statements.add(new QueryAdapter("CREATE DATABASE " + databaseName));
+		state.statements.add(new QueryAdapter("USE " + databaseName));
 		String url = "jdbc:mysql://localhost:3306/?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true";
 		Connection con = DriverManager.getConnection(url, "lama", "password");
 		try (Statement s = con.createStatement()) {
