@@ -8,7 +8,7 @@ import lama.mysql.ast.MySQLComputableFunction;
 import lama.mysql.ast.MySQLConstant;
 import lama.mysql.ast.MySQLExpression;
 import lama.mysql.ast.MySQLSelect;
-import lama.mysql.ast.MySQLUnaryNotOperator;
+import lama.mysql.ast.MySQLUnaryPrefixOperation;
 import lama.mysql.ast.MySQLUnaryPostfixOperator;
 
 public abstract class MySQLVisitor {
@@ -17,7 +17,7 @@ public abstract class MySQLVisitor {
 
 	public abstract void visit(MySQLColumnValue column);
 
-	public abstract void visit(MySQLUnaryNotOperator column);
+	public abstract void visit(MySQLUnaryPrefixOperation column);
 
 	public abstract void visit(MySQLUnaryPostfixOperator column);
 
@@ -36,8 +36,8 @@ public abstract class MySQLVisitor {
 			visit((MySQLConstant) expr);
 		} else if (expr instanceof MySQLColumnValue) {
 			visit((MySQLColumnValue) expr);
-		} else if (expr instanceof MySQLUnaryNotOperator) {
-			visit((MySQLUnaryNotOperator) expr);
+		} else if (expr instanceof MySQLUnaryPrefixOperation) {
+			visit((MySQLUnaryPrefixOperation) expr);
 		} else if (expr instanceof MySQLUnaryPostfixOperator) {
 			visit((MySQLUnaryPostfixOperator) expr);
 		} else if (expr instanceof MySQLComputableFunction) {

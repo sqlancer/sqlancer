@@ -14,7 +14,7 @@ import lama.mysql.ast.MySQLConstant;
 import lama.mysql.ast.MySQLExpression;
 import lama.mysql.ast.MySQLJoin;
 import lama.mysql.ast.MySQLSelect;
-import lama.mysql.ast.MySQLUnaryNotOperator;
+import lama.mysql.ast.MySQLUnaryPrefixOperation;
 import lama.mysql.ast.MySQLUnaryPostfixOperator;
 
 public class MySQLToStringVisitor extends MySQLVisitor {
@@ -121,12 +121,8 @@ public class MySQLToStringVisitor extends MySQLVisitor {
 	}
 
 	@Override
-	public void visit(MySQLUnaryNotOperator column) {
-		if (Randomly.getBoolean()) {
-			sb.append("!");
-		} else {
-			sb.append("NOT ");
-		}
+	public void visit(MySQLUnaryPrefixOperation column) {
+		sb.append(column.getOperatorTextRepresentation());
 		sb.append("(");
 		visit(column.getExpression());
 		sb.append(")");

@@ -9,7 +9,7 @@ import lama.mysql.ast.MySQLConstant;
 import lama.mysql.ast.MySQLExpression;
 import lama.mysql.ast.MySQLJoin;
 import lama.mysql.ast.MySQLSelect;
-import lama.mysql.ast.MySQLUnaryNotOperator;
+import lama.mysql.ast.MySQLUnaryPrefixOperation;
 import lama.mysql.ast.MySQLUnaryPostfixOperator;
 
 public class MySQLExpectedValueVisitor extends MySQLVisitor {
@@ -46,7 +46,7 @@ public class MySQLExpectedValueVisitor extends MySQLVisitor {
 	}
 
 	@Override
-	public void visit(MySQLUnaryNotOperator op) {
+	public void visit(MySQLUnaryPrefixOperation op) {
 		print(op);
 		visit(op.getExpression());
 	}

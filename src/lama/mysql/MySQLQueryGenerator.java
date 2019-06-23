@@ -22,9 +22,10 @@ import lama.mysql.ast.MySQLColumnValue;
 import lama.mysql.ast.MySQLConstant;
 import lama.mysql.ast.MySQLExpression;
 import lama.mysql.ast.MySQLSelect;
-import lama.mysql.ast.MySQLUnaryNotOperator;
 import lama.mysql.ast.MySQLUnaryPostfixOperator;
 import lama.mysql.ast.MySQLUnaryPostfixOperator.UnaryPostfixOperator;
+import lama.mysql.ast.MySQLUnaryPrefixOperation;
+import lama.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 import lama.mysql.gen.MySQLRandomExpressionGenerator;
 
 public class MySQLQueryGenerator {
@@ -152,7 +153,7 @@ public class MySQLQueryGenerator {
 		} else if (expectedValue.asBooleanNotNull()) {
 			return expression;
 		} else {
-			return new MySQLUnaryNotOperator(expression);
+			return new MySQLUnaryPrefixOperation(expression, MySQLUnaryPrefixOperator.NOT);
 		}
 	}
 
