@@ -12,6 +12,7 @@ import lama.mysql.ast.MySQLColumnValue;
 import lama.mysql.ast.MySQLComputableFunction;
 import lama.mysql.ast.MySQLConstant;
 import lama.mysql.ast.MySQLExpression;
+import lama.mysql.ast.MySQLInOperation;
 import lama.mysql.ast.MySQLJoin;
 import lama.mysql.ast.MySQLSelect;
 import lama.mysql.ast.MySQLUnaryPrefixOperation;
@@ -199,6 +200,22 @@ public class MySQLToStringVisitor extends MySQLVisitor {
 		visit(op.getExpr());
 		sb.append(" AS ");
 		sb.append(op.getType());
+		sb.append(")");
+	}
+
+	@Override
+	public void visit(MySQLInOperation op) {
+		sb.append("(");
+		visit(op.getExpr());
+		sb.append(")");
+		sb.append(" IN ");
+		sb.append("(");
+		for (int i = 0; i < op.getListElements().size(); i++) {
+			if (i != 0) {
+				sb.append(", ");
+			}
+			visit(op.getListElements().get(i));
+		}
 		sb.append(")");
 	}
 	

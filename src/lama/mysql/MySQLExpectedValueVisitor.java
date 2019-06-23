@@ -1,5 +1,6 @@
 package lama.mysql;
 
+import lama.IgnoreMeException;
 import lama.mysql.ast.MySQLBinaryComparisonOperation;
 import lama.mysql.ast.MySQLBinaryLogicalOperation;
 import lama.mysql.ast.MySQLCastOperation;
@@ -7,6 +8,7 @@ import lama.mysql.ast.MySQLColumnValue;
 import lama.mysql.ast.MySQLComputableFunction;
 import lama.mysql.ast.MySQLConstant;
 import lama.mysql.ast.MySQLExpression;
+import lama.mysql.ast.MySQLInOperation;
 import lama.mysql.ast.MySQLJoin;
 import lama.mysql.ast.MySQLSelect;
 import lama.mysql.ast.MySQLUnaryPrefixOperation;
@@ -31,7 +33,11 @@ public class MySQLExpectedValueVisitor extends MySQLVisitor {
 	@Override
 	public void visit(MySQLExpression expr) {
 		nrTabs++;
-		super.visit(expr);
+		try {
+			super.visit(expr);
+		} catch (IgnoreMeException e) {
+			
+		}
 		nrTabs--;
 	}
 
@@ -95,6 +101,14 @@ public class MySQLExpectedValueVisitor extends MySQLVisitor {
 	public void visit(MySQLCastOperation op) {
 		print(op);
 		visit(op.getExpr());
+	}
+
+	@Override
+	public void visit(MySQLInOperation op) {
+		print(op);
+		for (MySQLExpression right : op.getListElements()) {
+			visit(right);
+		}
 	}
 
 }
