@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.mysql.MySQLSchema;
 import lama.mysql.MySQLSchema.MySQLTable.MySQLEngine;
 import lama.sqlite3.gen.SQLite3Common;
 
@@ -24,15 +25,17 @@ public class MySQLTableGenerator {
 	private MySQLEngine engine;
 	private int keysSpecified;
 	private List<String> columns = new ArrayList<>();
+	private MySQLSchema schema;
 
-	public MySQLTableGenerator(String tableName, Randomly r) {
+	public MySQLTableGenerator(String tableName, Randomly r, MySQLSchema schema) {
 		this.tableName = tableName;
 		this.r = r;
+		this.schema = schema;
 		allowPrimaryKey = Randomly.getBoolean();
 	}
 
-	public static Query generate(String tableName, Randomly r) {
-		return new MySQLTableGenerator(tableName, r).create();
+	public static Query generate(String tableName, Randomly r, MySQLSchema schema) {
+		return new MySQLTableGenerator(tableName, r, schema).create();
 	}
 
 	private Query create() {
@@ -45,84 +48,92 @@ public class MySQLTableGenerator {
 			sb.append(" IF NOT EXISTS");
 		}
 		sb.append(" " + tableName);
-		sb.append("(");
-		for (int i = 0; i < 3 + Randomly.smallNumber(); i++) {
-			if (i != 0) {
-				sb.append(", ");
+		if (Randomly.getBoolean() && !schema.getDatabaseTables().isEmpty()) {
+			sb.append(" LIKE ");
+			sb.append(schema.getRandomTable().getName());
+			return new QueryAdapter(sb.toString());
+		} else {
+			sb.append("(");
+			for (int i = 0; i < 3 + Randomly.smallNumber(); i++) {
+				if (i != 0) {
+					sb.append(", ");
+				}
+				appendColumn();
 			}
-			appendColumn();
-		}
-		sb.append(")");
-		sb.append(" ");
-		appendTableOptions();
-		appendPartitionOptions();
-		if ((tableHasNullableColumn || setPrimaryKey) && (engine == MySQLEngine.CSV)) {
-			return new QueryAdapter(sb.toString()) {
-				public void execute(java.sql.Connection con) throws java.sql.SQLException {
+			sb.append(")");
+			sb.append(" ");
+			appendTableOptions();
+			appendPartitionOptions();
+			if ((tableHasNullableColumn || setPrimaryKey) && (engine == MySQLEngine.CSV)) {
+				return new QueryAdapter(sb.toString()) {
+					public void execute(java.sql.Connection con) throws java.sql.SQLException {
 
-					try {
-						super.execute(con);
-						throw new AssertionError("expected error");
-					} catch (SQLException e) {
-						if (e.getMessage()
-								.startsWith("The storage engine for the table doesn't support nullable columns")) {
-							// ignore
-						} else if (e.getMessage().startsWith("Too many keys specified; max 0 keys allowed")) {
-							// ignore
-						} else if (shouldIgnoreCommon(e)) {
-							// ignore
-						} else {
-							throw e;
+						try {
+							super.execute(con);
+							throw new AssertionError("expected error");
+						} catch (SQLException e) {
+							if (e.getMessage()
+									.startsWith("The storage engine for the table doesn't support nullable columns")) {
+								// ignore
+							} else if (e.getMessage().startsWith("Too many keys specified; max 0 keys allowed")) {
+								// ignore
+							} else if (shouldIgnoreCommon(e)) {
+								// ignore
+							} else {
+								throw e;
+							}
+						}
+
+					};
+				};
+			} else if ((tableHasNullableColumn || keysSpecified > 1) && engine == MySQLEngine.ARCHIVE) {
+				return new QueryAdapter(sb.toString()) {
+					@Override
+					public void execute(Connection con) throws SQLException {
+						try {
+							super.execute(con);
+//						throw new AssertionError("expected error");
+						} catch (SQLException e) {
+							if (e.getMessage().startsWith("Too many keys specified; max 1 keys allowed")) {
+								// ignore
+							} else if (e.getMessage().startsWith("Table handler doesn't support NULL in given index")) {
+								// ignore
+							} else if (e.getMessage()
+									.startsWith("Got error -1 - 'Unknown error -1' from storage engine")) {
+								// TODO seems to be caused by primary key, see
+							} else if (shouldIgnoreCommon(e)) {
+								// ignore
+							} else {
+								throw e;
+							}
 						}
 					}
-
 				};
-			};
-		} else if ((tableHasNullableColumn || keysSpecified > 1) && engine == MySQLEngine.ARCHIVE) {
+			}
 			return new QueryAdapter(sb.toString()) {
 				@Override
 				public void execute(Connection con) throws SQLException {
 					try {
 						super.execute(con);
-//						throw new AssertionError("expected error");
-					} catch (SQLException e) {
-						if (e.getMessage().startsWith("Too many keys specified; max 1 keys allowed")) {
-							// ignore
-						} else if (e.getMessage().startsWith("Table handler doesn't support NULL in given index")) {
-							// ignore
-						} else if (e.getMessage().startsWith("Got error -1 - 'Unknown error -1' from storage engine")) {
-							// TODO seems to be caused by primary key, see
-						} else if (shouldIgnoreCommon(e)) {
+					} catch (Exception e) {
+						if (shouldIgnoreCommon(e)) {
 							// ignore
 						} else {
 							throw e;
 						}
 					}
 				}
+
 			};
 		}
-		return new QueryAdapter(sb.toString()) {
-			@Override
-			public void execute(Connection con) throws SQLException {
-				try {
-					super.execute(con);
-				} catch (Exception e) {
-					if (shouldIgnoreCommon(e)) {
-						// ignore
-					} else {
-						throw e;
-					}
-				}
-			}
-
-		};
 
 	}
 
 	private boolean shouldIgnoreCommon(Exception e) {
 		return e.getMessage().contains("The storage engine for the table doesn't support")
 				|| e.getMessage().contains("doesn't have this option")
-				|| e.getMessage().contains("must include all columns") || e.getMessage().contains("not allowed type for this type of partitioning");
+				|| e.getMessage().contains("must include all columns")
+				|| e.getMessage().contains("not allowed type for this type of partitioning");
 	}
 
 	private enum PartitionOptions {
@@ -266,11 +277,12 @@ public class MySQLTableGenerator {
 				sb.append(" UNSIGNED");
 			}
 		} else {
-			 isTextType = true;
+			isTextType = true;
 			sb.append(Randomly.fromOptions("VARCHAR(5)"));
 		}
 		sb.append(" ");
-		// TODO: this was commented out since it makes the implementation of LIKE more difficult
+		// TODO: this was commented out since it makes the implementation of LIKE more
+		// difficult
 //		if (Randomly.getBoolean()) {
 //			sb.append(" ZEROFILL");
 //		}

@@ -47,7 +47,7 @@ public class MySQLProvider implements DatabaseProvider {
 
 	enum Action {
 		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR, OPTIMIZE, CHECKSUM, CHECK_TABLE, ANALYZE_TABLE, FLUSH, RESET,
-		CREATE_INDEX, ALTER_TABLE, TRUNCATE_TABLE, SELECT_INFO;
+		CREATE_INDEX, ALTER_TABLE, TRUNCATE_TABLE, SELECT_INFO, CREATE_TABLE;
 	}
 
 	@Override
@@ -60,7 +60,10 @@ public class MySQLProvider implements DatabaseProvider {
 
 		while (newSchema.getDatabaseTables().size() < Randomly.smallNumber() + 1) {
 			String tableName = SQLite3Common.createTableName(newSchema.getDatabaseTables().size());
-			Query createTable = MySQLTableGenerator.generate(tableName, r);
+			Query createTable = MySQLTableGenerator.generate(tableName, r, newSchema);
+			if (options.logEachSelect()) {
+				logger.writeCurrent(createTable.getQueryString());
+			}
 			manager.execute(createTable);
 			newSchema = MySQLSchema.fromConnection(con, databaseName);
 		}
@@ -73,6 +76,9 @@ public class MySQLProvider implements DatabaseProvider {
 			int nrPerformed = 0;
 			switch (action) {
 			case SHOW_TABLES:
+				nrPerformed = r.getInteger(0, 1);
+				break;
+			case CREATE_TABLE:
 				nrPerformed = r.getInteger(0, 1);
 				break;
 			case INSERT:
@@ -194,10 +200,17 @@ public class MySQLProvider implements DatabaseProvider {
 
 				};
 				break;
+			case CREATE_TABLE:
+				String tableName = SQLite3Common.createTableName(newSchema.getDatabaseTables().size());
+				Query createTable = MySQLTableGenerator.generate(tableName, r, newSchema);
+
 			default:
 				throw new AssertionError(nextAction);
 			}
 			try {
+				if (options.logEachSelect()) {
+					logger.writeCurrent(query.getQueryString());
+				}
 				manager.execute(query);
 				if (query.couldAffectSchema()) {
 					newSchema = MySQLSchema.fromConnection(con, databaseName);
