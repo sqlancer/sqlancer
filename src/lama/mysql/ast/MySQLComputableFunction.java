@@ -51,6 +51,20 @@ public class MySQLComputableFunction extends MySQLExpression {
 			}
 
 		},
+		BENCHMARK(2, "BENCHMARK") {
+
+			@Override
+			public MySQLConstant apply(MySQLConstant[] evaluatedArgs, MySQLExpression[] args) {
+				if (evaluatedArgs[0].isNull()) {
+					return MySQLConstant.createNullConstant();
+				}
+				if (evaluatedArgs[0].castAs(CastType.SIGNED).getInt() < 0) {
+					return MySQLConstant.createNullConstant();
+				}
+				return MySQLConstant.createIntConstant(0);
+			}
+
+		},
 		COALESCE(2, "COALESCE") {
 
 			@Override
