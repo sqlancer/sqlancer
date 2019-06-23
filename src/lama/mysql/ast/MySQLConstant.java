@@ -2,6 +2,7 @@ package lama.mysql.ast;
 
 import lama.IgnoreMeException;
 import lama.Randomly;
+import lama.mysql.MySQLSchema.MySQLDataType;
 import lama.mysql.ast.MySQLCastOperation.CastType;
 
 public abstract class MySQLConstant extends MySQLExpression {
@@ -101,6 +102,11 @@ public abstract class MySQLConstant extends MySQLExpression {
 			return value;
 		}
 
+		@Override
+		public MySQLDataType getType() {
+			return MySQLDataType.VARCHAR;
+		}
+
 	}
 
 	public static class MySQLIntConstant extends MySQLConstant {
@@ -176,6 +182,11 @@ public abstract class MySQLConstant extends MySQLExpression {
 			return String.valueOf(value);
 		}
 
+		@Override
+		public MySQLDataType getType() {
+			return MySQLDataType.INT;
+		}
+
 	}
 
 	public static class MySQLNullConstant extends MySQLConstant {
@@ -208,6 +219,11 @@ public abstract class MySQLConstant extends MySQLExpression {
 		@Override
 		public String castAsString() {
 			return "NULL";
+		}
+
+		@Override
+		public MySQLDataType getType() {
+			return null;
 		}
 
 	}
@@ -281,5 +297,7 @@ public abstract class MySQLConstant extends MySQLExpression {
 	public static MySQLConstant createStringConstant(String string) {
 		return new MySQLTextConstant(string);
 	}
+
+	public abstract MySQLDataType getType();
 
 }

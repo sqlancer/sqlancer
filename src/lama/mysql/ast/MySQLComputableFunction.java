@@ -1,6 +1,11 @@
 package lama.mysql.ast;
 
+import java.util.stream.Stream;
+
 import lama.Randomly;
+import lama.mysql.MySQLSchema.MySQLDataType;
+import lama.mysql.ast.MySQLCastOperation.CastType;
+import lama.sqlite3.ast.SQLite3Expression;
 
 public class MySQLComputableFunction extends MySQLExpression {
 
@@ -22,16 +27,28 @@ public class MySQLComputableFunction extends MySQLExpression {
 	}
 
 	public enum MySQLFunction {
+		ABS(1, "ABS") {
+			@Override
+			public MySQLConstant apply(MySQLConstant[] args, MySQLExpression[] origArgs) {
+				if (args[0].isNull()) {
+					return MySQLConstant.createNullConstant();
+				}
+				MySQLConstant intVal = args[0].castAs(CastType.SIGNED);
+				return MySQLConstant.createIntConstant(Math.abs(intVal.getInt()));
+			}
+		},
 		COALESCE(2, "COALESCE") {
 
 			@Override
-			public MySQLConstant apply(MySQLConstant... args) {
+			public MySQLConstant apply(MySQLConstant[] args, MySQLExpression[] origArgs) {
+				MySQLConstant result = MySQLConstant.createNullConstant();
 				for (MySQLConstant arg : args) {
 					if (!arg.isNull()) {
-						return arg;
+						result = MySQLConstant.createStringConstant(arg.castAsString());
+						break;
 					}
 				}
-				return MySQLConstant.createNullConstant();
+				return castToMostGeneralType(result, origArgs);
 			}
 
 			@Override
@@ -46,15 +63,18 @@ public class MySQLComputableFunction extends MySQLExpression {
 		IF(3, "IF") {
 
 			@Override
-			public MySQLConstant apply(MySQLConstant... args) {
+			public MySQLConstant apply(MySQLConstant[] args, MySQLExpression[] origArgs) {
 				MySQLConstant cond = args[0];
 				MySQLConstant left = args[1];
 				MySQLConstant right = args[2];
+				MySQLConstant result;
 				if (cond.isNull() || !cond.asBooleanNotNull()) {
-					return right;
+					result = right;
 				} else {
-					return left;
+					result = left;
 				}
+				return castToMostGeneralType(result, new MySQLExpression[] { origArgs[0], origArgs[1] });
+
 			}
 
 		},
@@ -64,12 +84,14 @@ public class MySQLComputableFunction extends MySQLExpression {
 		IFNULL(2, "IFNULL") {
 
 			@Override
-			public MySQLConstant apply(MySQLConstant... args) {
+			public MySQLConstant apply(MySQLConstant[] args, MySQLExpression[] origArgs) {
+				MySQLConstant result;
 				if (args[0].isNull()) {
-					return args[1];
+					result = args[1];
 				} else {
-					return args[0];
+					result = args[0];
 				}
+				return castToMostGeneralType(result, origArgs);
 			}
 
 		};
@@ -90,7 +112,7 @@ public class MySQLComputableFunction extends MySQLExpression {
 			return nrArgs;
 		}
 
-		public abstract MySQLConstant apply(MySQLConstant... args);
+		public abstract MySQLConstant apply(MySQLConstant[] evaluatedArgs, MySQLExpression[] args);
 
 		public static MySQLFunction getRandomFunction() {
 			return Randomly.fromOptions(values());
@@ -116,7 +138,41 @@ public class MySQLComputableFunction extends MySQLExpression {
 		for (int i = 0; i < constants.length; i++) {
 			constants[i] = args[i].getExpectedValue();
 		}
-		return func.apply(constants);
+		return func.apply(constants, args);
+	}
+
+	public static MySQLConstant castToMostGeneralType(MySQLConstant cons, MySQLExpression... typeExpressions) {
+		if (cons.isNull()) {
+			return cons;
+		}
+		MySQLDataType type = getMostGeneralType(typeExpressions);
+		switch (type) {
+		case INT:
+			return MySQLConstant.createIntConstant(cons.castAs(CastType.SIGNED).getInt());
+		case VARCHAR:
+			return MySQLConstant.createStringConstant(cons.castAsString());
+		default:
+			throw new AssertionError(type);
+		}
+	}
+
+	public static MySQLDataType getMostGeneralType(MySQLExpression... expressions) {
+		MySQLDataType type = null;
+		for (MySQLExpression expr : expressions) {
+			MySQLDataType exprType;
+			if (expr instanceof MySQLColumnValue) {
+				exprType = ((MySQLColumnValue) expr).getColumn().getColumnType();
+			} else {
+				exprType = expr.getExpectedValue().getType();
+			}
+			if (type == null) {
+				type = exprType;
+			} else if (exprType == MySQLDataType.VARCHAR) {
+				type = MySQLDataType.VARCHAR;
+			}
+
+		}
+		return type;
 	}
 
 }

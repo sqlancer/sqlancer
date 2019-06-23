@@ -13,9 +13,10 @@ import lama.mysql.ast.MySQLCastOperation;
 import lama.mysql.ast.MySQLColumnValue;
 import lama.mysql.ast.MySQLComputableFunction;
 import lama.mysql.ast.MySQLComputableFunction.MySQLFunction;
+import lama.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 import lama.mysql.ast.MySQLConstant;
 import lama.mysql.ast.MySQLExpression;
-import lama.mysql.ast.MySQLUnaryNotOperator;
+import lama.mysql.ast.MySQLUnaryPrefixOperation;
 import lama.mysql.ast.MySQLUnaryPostfixOperator;
 
 public class MySQLRandomExpressionGenerator {
@@ -28,7 +29,7 @@ public class MySQLRandomExpressionGenerator {
 	}
 
 	private enum Actions {
-		COLUMN, LITERAL, NOT, UNARY_POSTFIX, FUNCTION, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON_OPERATION, CAST;
+		COLUMN, LITERAL, UNARY_PREFIX_OPERATION, UNARY_POSTFIX, FUNCTION, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON_OPERATION, CAST;
 	}
 
 	public static MySQLExpression gen(List<MySQLColumn> columns, MySQLRowValue rowVal, int depth, Randomly r) {
@@ -44,13 +45,13 @@ public class MySQLRandomExpressionGenerator {
 			return generateColumn(columns, rowVal);
 		case LITERAL:
 			return generateLiteral(r);
-		case NOT:
+		case UNARY_PREFIX_OPERATION:
 			MySQLExpression notSubExpr = gen(columns, rowVal, depth + 1, r);
 			/* workaround for https://bugs.mysql.com/bug.php?id=95900 */
-			while (notSubExpr instanceof MySQLUnaryNotOperator) {
+			while (notSubExpr instanceof MySQLUnaryPrefixOperation) {
 				notSubExpr = gen(columns, rowVal, depth + 1, r);
 			}
-			return new MySQLUnaryNotOperator(notSubExpr);
+			return new MySQLUnaryPrefixOperation(notSubExpr, MySQLUnaryPrefixOperator.getRandom());
 		case UNARY_POSTFIX:
 			return new MySQLUnaryPostfixOperator(gen(columns, rowVal, depth + 1, r),
 					Randomly.fromOptions(MySQLUnaryPostfixOperator.UnaryPostfixOperator.values()),
