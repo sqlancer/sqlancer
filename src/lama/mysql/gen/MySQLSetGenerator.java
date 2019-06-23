@@ -45,7 +45,7 @@ public class MySQLSetGenerator {
 		// TODO
 		OPTIMIZER_PRUNE_LEVEL("optimizer_prune_level", (r) -> Randomly.fromOptions(0, 1)),
 		OPTIMIZER_SEARCH_DEPTH("optimizer_search_depth", (r) -> r.getLong(0, 62)),
-		OPTIMIZER_SWITCH("optimizer_switch", (r) -> getOptimizerSwitchConfiguration(r)),
+//		OPTIMIZER_SWITCH("optimizer_switch", (r) -> getOptimizerSwitchConfiguration(r)),
 		PARSER_MAX_MEM_SIZE("parser_max_mem_size", (r) -> r.getLong(10000000, Long.MAX_VALUE)),
 		PRELOAD_BUFFER_SIZE("preload_buffer_size", (r) -> r.getLong(1024, 1073741824)),
 		QUERY_PREALLOC_SIZE("query_prealloc_size", (r) -> r.getLong(8192, Long.MAX_VALUE)),
@@ -80,7 +80,7 @@ public class MySQLSetGenerator {
 			StringBuilder sb = new StringBuilder();
 			sb.append("'");
 			String[] options = new String[] { /*"batched_key_access", "block_nested_loop","condition_fanout_filter",
-					 */"derived_merge", /*"engine_condition_pushdown"};  , "index_condition_pushdown", "use_index_extensions",
+					 "derived_merge", "engine_condition_pushdown"};  , "index_condition_pushdown", "use_index_extensions",
 					"index_merge", "index_merge_intersection", "index_merge_sort_union", "index_merge_union",
 					"use_invisible_indexes", "mrr", "mrr_cost_based", "skip_scan", "semijoin", "duplicateweedout",
 					"firstmatch", "loosescan", "materialization", "subquery_materialization_cost_based"  */
