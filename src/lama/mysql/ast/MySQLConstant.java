@@ -107,6 +107,25 @@ public abstract class MySQLConstant extends MySQLExpression {
 			return MySQLDataType.VARCHAR;
 		}
 
+		@Override
+		protected MySQLConstant isLessThan(MySQLConstant rightVal) {
+			if (rightVal.isNull()) {
+				return MySQLConstant.createNullConstant();
+			} else if (rightVal.isInt()) {
+				if (asBooleanNotNull()) {
+					// TODO uspport floating point
+					throw new IgnoreMeException();
+				}
+				return castAs(CastType.SIGNED).isLessThan(rightVal);
+			} else if (rightVal.isString()) {
+				// unexpected result for '-' < "!";
+//				return MySQLConstant.createBoolean(value.compareToIgnoreCase(rightVal.getString()) < 0);
+				throw new IgnoreMeException();
+			} else {
+				throw new AssertionError(rightVal);
+			}
+		}
+
 	}
 
 	public static class MySQLIntConstant extends MySQLConstant {
@@ -187,6 +206,24 @@ public abstract class MySQLConstant extends MySQLExpression {
 			return MySQLDataType.INT;
 		}
 
+		@Override
+		protected MySQLConstant isLessThan(MySQLConstant rightVal) {
+			if (rightVal.isInt()) {
+				long intVal = rightVal.getInt();
+				return MySQLConstant.createBoolean(value < intVal);
+			} else if (rightVal.isNull()) {
+				return MySQLConstant.createNullConstant();
+			} else if (rightVal.isString()) {
+				if (rightVal.asBooleanNotNull()) {
+					// TODO support float
+					throw new IgnoreMeException();
+				}
+				return isLessThan(rightVal.castAs(CastType.SIGNED));
+			} else {
+				throw new AssertionError(rightVal);
+			}
+		}
+
 	}
 
 	public static class MySQLNullConstant extends MySQLConstant {
@@ -224,6 +261,11 @@ public abstract class MySQLConstant extends MySQLExpression {
 		@Override
 		public MySQLDataType getType() {
 			return null;
+		}
+
+		@Override
+		protected MySQLConstant isLessThan(MySQLConstant rightVal) {
+			return this;
 		}
 
 	}
@@ -299,5 +341,7 @@ public abstract class MySQLConstant extends MySQLExpression {
 	}
 
 	public abstract MySQLDataType getType();
+
+	protected abstract MySQLConstant isLessThan(MySQLConstant rightVal);
 
 }

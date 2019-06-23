@@ -2,7 +2,8 @@ package lama.mysql.ast;
 
 import lama.LikeImplementationHelper;
 import lama.Randomly;
-import lama.sqlite3.ast.SQLite3Constant;
+import lama.mysql.MySQLSchema.MySQLDataType;
+import lama.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 
 public class MySQLBinaryComparisonOperation extends MySQLExpression {
 
@@ -12,6 +13,70 @@ public class MySQLBinaryComparisonOperation extends MySQLExpression {
 			public MySQLConstant getExpectedValue(MySQLConstant leftVal, MySQLConstant rightVal) {
 				return leftVal.isEquals(rightVal);
 			}
+		},
+		NOT_EQUALS("!=") {
+			@Override
+			public MySQLConstant getExpectedValue(MySQLConstant leftVal, MySQLConstant rightVal) {
+				MySQLConstant isEquals = leftVal.isEquals(rightVal);
+				if (isEquals.getType() == MySQLDataType.INT) {
+					return MySQLConstant.createIntConstant(1 - isEquals.getInt());
+				}
+				return isEquals;
+			}
+		},
+		LESS("<") {
+
+			@Override
+			public MySQLConstant getExpectedValue(MySQLConstant leftVal, MySQLConstant rightVal) {
+				return leftVal.isLessThan(rightVal);
+			}
+		},
+		LESS_EQUALS("<=") {
+
+			@Override
+			public MySQLConstant getExpectedValue(MySQLConstant leftVal, MySQLConstant rightVal) {
+				MySQLConstant lessThan = leftVal.isLessThan(rightVal);
+				if (lessThan == null) {
+					return null;
+				}
+				if (lessThan.getType() == MySQLDataType.INT && lessThan.getInt() == 0) {
+					return leftVal.isEquals(rightVal);
+				} else {
+					return lessThan;
+				}
+			}
+		},
+		GREATER(">") {
+			@Override
+			public MySQLConstant getExpectedValue(MySQLConstant leftVal, MySQLConstant rightVal) {
+				MySQLConstant equals = leftVal.isEquals(rightVal);
+				if (equals.getType() == MySQLDataType.INT && equals.getInt() == 1) {
+					return MySQLConstant.createFalse();
+				} else {
+					MySQLConstant applyLess = leftVal.isLessThan(rightVal);
+					if (applyLess.isNull()) {
+						return MySQLConstant.createNullConstant();
+					}
+					return MySQLUnaryPrefixOperator.NOT.applyNotNull(applyLess);
+				}
+			}
+		},
+		GREATER_EQUALS(">=") {
+
+			@Override
+			public MySQLConstant getExpectedValue(MySQLConstant leftVal, MySQLConstant rightVal) {
+				MySQLConstant equals = leftVal.isEquals(rightVal);
+				if (equals.getType() == MySQLDataType.INT && equals.getInt() == 1) {
+					return MySQLConstant.createTrue();
+				} else {
+					MySQLConstant applyLess = leftVal.isLessThan(rightVal);
+					if (applyLess.isNull()) {
+						return MySQLConstant.createNullConstant();
+					}
+					return MySQLUnaryPrefixOperator.NOT.applyNotNull(applyLess);
+				}
+			}
+
 		},
 		LIKE("LIKE") {
 
@@ -25,9 +90,8 @@ public class MySQLBinaryComparisonOperation extends MySQLExpression {
 				boolean matches = LikeImplementationHelper.match(leftStr, rightStr, 0, 0);
 				return MySQLConstant.createBoolean(matches);
 			}
-			
-		}
-		;
+
+		};
 		// https://bugs.mysql.com/bug.php?id=95908
 		/*
 		 * IS_EQUALS_NULL_SAFE("<=>") {
