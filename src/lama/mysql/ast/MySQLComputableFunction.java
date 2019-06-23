@@ -73,7 +73,7 @@ public class MySQLComputableFunction extends MySQLExpression {
 				} else {
 					result = left;
 				}
-				return castToMostGeneralType(result, new MySQLExpression[] { origArgs[0], origArgs[1] });
+				return castToMostGeneralType(result, new MySQLExpression[] { origArgs[1], origArgs[2] });
 
 			}
 

@@ -31,7 +31,8 @@ public class MySQLRandomExpressionGenerator {
 	}
 
 	private enum Actions {
-		COLUMN, LITERAL, UNARY_PREFIX_OPERATION, UNARY_POSTFIX, FUNCTION, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON_OPERATION, CAST, IN_OPERATION;
+		COLUMN, LITERAL, UNARY_PREFIX_OPERATION, UNARY_POSTFIX, FUNCTION, BINARY_LOGICAL_OPERATOR,
+		BINARY_COMPARISON_OPERATION, CAST, IN_OPERATION;
 	}
 
 	public static MySQLExpression gen(List<MySQLColumn> columns, MySQLRowValue rowVal, int depth, Randomly r) {
@@ -74,7 +75,7 @@ public class MySQLRandomExpressionGenerator {
 			for (int i = 0; i < 1 + Randomly.smallNumber(); i++) {
 				rightList.add(gen(columns, rowVal, depth + 1, r));
 			}
-			return new MySQLInOperation(expr, rightList);
+			return new MySQLInOperation(expr, rightList, Randomly.getBoolean());
 		default:
 			throw new AssertionError();
 		}
@@ -99,7 +100,7 @@ public class MySQLRandomExpressionGenerator {
 	private enum ConstantType {
 		INT, NULL, STRING;
 	}
-	
+
 	private static MySQLExpression generateLiteral(Randomly r) {
 		switch (Randomly.fromOptions(ConstantType.values())) {
 		case INT:

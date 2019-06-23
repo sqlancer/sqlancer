@@ -208,6 +208,9 @@ public class MySQLToStringVisitor extends MySQLVisitor {
 		sb.append("(");
 		visit(op.getExpr());
 		sb.append(")");
+		if (!op.isTrue()) {
+			sb.append(" NOT");
+		}
 		sb.append(" IN ");
 		sb.append("(");
 		for (int i = 0; i < op.getListElements().size(); i++) {
