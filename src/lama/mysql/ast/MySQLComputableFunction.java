@@ -1,11 +1,8 @@
 package lama.mysql.ast;
 
-import java.util.stream.Stream;
-
 import lama.Randomly;
 import lama.mysql.MySQLSchema.MySQLDataType;
 import lama.mysql.ast.MySQLCastOperation.CastType;
-import lama.sqlite3.ast.SQLite3Expression;
 
 public class MySQLComputableFunction extends MySQLExpression {
 
@@ -36,6 +33,23 @@ public class MySQLComputableFunction extends MySQLExpression {
 				MySQLConstant intVal = args[0].castAs(CastType.SIGNED);
 				return MySQLConstant.createIntConstant(Math.abs(intVal.getInt()));
 			}
+		},
+		/**
+		 * @see https://dev.mysql.com/doc/refman/8.0/en/bit-functions.html#function_bit-count
+		 */
+		BIT_COUNT(1, "BIT_COUNT") {
+
+			@Override
+			public MySQLConstant apply(MySQLConstant[] evaluatedArgs, MySQLExpression[] args) {
+				MySQLConstant arg = evaluatedArgs[0];
+				if (arg.isNull()) {
+					return MySQLConstant.createNullConstant();
+				} else {
+					long val = arg.castAs(CastType.SIGNED).getInt();
+					return MySQLConstant.createIntConstant(Long.bitCount(val));
+				}
+			}
+
 		},
 		COALESCE(2, "COALESCE") {
 
