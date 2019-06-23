@@ -10,6 +10,8 @@ import lama.mysql.ast.MySQLBinaryComparisonOperation;
 import lama.mysql.ast.MySQLBinaryComparisonOperation.BinaryComparisonOperator;
 import lama.mysql.ast.MySQLBinaryLogicalOperation;
 import lama.mysql.ast.MySQLBinaryLogicalOperation.MySQLBinaryLogicalOperator;
+import lama.mysql.ast.MySQLBinaryOperation;
+import lama.mysql.ast.MySQLBinaryOperation.MySQLBinaryOperator;
 import lama.mysql.ast.MySQLCastOperation;
 import lama.mysql.ast.MySQLColumnValue;
 import lama.mysql.ast.MySQLComputableFunction;
@@ -32,7 +34,7 @@ public class MySQLRandomExpressionGenerator {
 
 	private enum Actions {
 		COLUMN, LITERAL, UNARY_PREFIX_OPERATION, UNARY_POSTFIX, FUNCTION, BINARY_LOGICAL_OPERATOR,
-		BINARY_COMPARISON_OPERATION, CAST, IN_OPERATION;
+		BINARY_COMPARISON_OPERATION, CAST, IN_OPERATION, BINARY_OPERATION;
 	}
 
 	public static MySQLExpression gen(List<MySQLColumn> columns, MySQLRowValue rowVal, int depth, Randomly r) {
@@ -76,6 +78,8 @@ public class MySQLRandomExpressionGenerator {
 				rightList.add(gen(columns, rowVal, depth + 1, r));
 			}
 			return new MySQLInOperation(expr, rightList, Randomly.getBoolean());
+		case BINARY_OPERATION:
+			return new MySQLBinaryOperation(gen(columns, rowVal, depth + 1, r), gen(columns, rowVal, depth + 1, r), MySQLBinaryOperator.getRandom());
 		default:
 			throw new AssertionError();
 		}

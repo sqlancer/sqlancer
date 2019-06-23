@@ -7,6 +7,7 @@ import lama.Randomly;
 import lama.mysql.MySQLSchema.MySQLColumn;
 import lama.mysql.ast.MySQLBinaryComparisonOperation;
 import lama.mysql.ast.MySQLBinaryLogicalOperation;
+import lama.mysql.ast.MySQLBinaryOperation;
 import lama.mysql.ast.MySQLCastOperation;
 import lama.mysql.ast.MySQLColumnValue;
 import lama.mysql.ast.MySQLComputableFunction;
@@ -15,8 +16,8 @@ import lama.mysql.ast.MySQLExpression;
 import lama.mysql.ast.MySQLInOperation;
 import lama.mysql.ast.MySQLJoin;
 import lama.mysql.ast.MySQLSelect;
-import lama.mysql.ast.MySQLUnaryPrefixOperation;
 import lama.mysql.ast.MySQLUnaryPostfixOperator;
+import lama.mysql.ast.MySQLUnaryPrefixOperation;
 
 public class MySQLToStringVisitor extends MySQLVisitor {
 
@@ -156,7 +157,7 @@ public class MySQLToStringVisitor extends MySQLVisitor {
 			throw new AssertionError(op);
 		}
 	}
-	
+
 	@Override
 	public void visit(MySQLComputableFunction f) {
 		sb.append(f.getFunction().getName());
@@ -221,5 +222,16 @@ public class MySQLToStringVisitor extends MySQLVisitor {
 		}
 		sb.append(")");
 	}
-	
+
+	@Override
+	public void visit(MySQLBinaryOperation op) {
+		sb.append("(");
+		visit(op.getLeft());
+		sb.append(") ");
+		sb.append(op.getOp().getTextRepresentation());
+		sb.append(" (");
+		visit(op.getRight());
+		sb.append(")");
+	}
+
 }
