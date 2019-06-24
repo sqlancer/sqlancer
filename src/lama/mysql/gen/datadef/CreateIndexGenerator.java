@@ -120,6 +120,8 @@ public class CreateIndexGenerator {
 						// index NULL
 					} else if (e.getMessage().contains("Data truncation: Truncated incorrect ")) {
 
+					} else if (e.getMessage().contains("a disallowed function.") && string.contains("BENCHMARK")) {
+
 					}
 
 					else {
