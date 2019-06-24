@@ -82,6 +82,8 @@ public abstract class StateToReproduce {
 		public Map<MySQLColumn, MySQLConstant> randomRowValues;
 		
 		public MySQLExpression whereClause;
+
+		public String queryThatSelectsRow;
 		
 		public MySQLExpression getWhereClause() {
 			return whereClause;

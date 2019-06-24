@@ -408,7 +408,7 @@ public class Main {
 							}
 						}
 
-						try (Connection con = provider.createDatabase(databaseName + "_reduced", state)) {
+						try (Connection con = provider.createDatabase(databaseName + "reduced", state)) {
 							for (Query q : currentRoundReducedStatements) {
 								try {
 									q.execute(con);
@@ -427,14 +427,12 @@ public class Main {
 							} else {
 								try (Statement s = con.createStatement()) {
 									try (ResultSet result = s.executeQuery(state.queryString)) {
-										boolean isContainedIn = !result.isClosed();
+										boolean isContainedIn = !result.isClosed() && result.first();
 										if (isContainedIn) {
 											continue retry;
 										} else {
-											String checkRowIsInside = "SELECT " + state.queryTargetedColumnsString
-													+ " FROM " + state.queryTargetedTablesString + " INTERSECT SELECT "
-													+ state.values;
-											ResultSet result2 = s.executeQuery(checkRowIsInside);
+											Query q = provider.checkIfRowIsStillContained(state);
+											ResultSet result2 = s.executeQuery(q.getQueryString());
 											if (result2.isClosed()) {
 												continue retry;
 											}

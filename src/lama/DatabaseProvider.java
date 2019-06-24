@@ -18,4 +18,6 @@ public interface DatabaseProvider {
 	void printDatabaseSpecificState(FileWriter writer, StateToReproduce state);
 
 	StateToReproduce getStateToReproduce(String databaseName);
+
+	Query checkIfRowIsStillContained(StateToReproduce state);
 }

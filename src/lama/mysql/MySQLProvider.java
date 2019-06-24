@@ -344,4 +344,9 @@ public class MySQLProvider implements DatabaseProvider {
 		return new MySQLStateToReproduce(databaseName);
 	}
 
+	@Override
+	public Query checkIfRowIsStillContained(StateToReproduce state) {
+		return new QueryAdapter(((MySQLStateToReproduce) state).queryThatSelectsRow);
+	}
+
 }
