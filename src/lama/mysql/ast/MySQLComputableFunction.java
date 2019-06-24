@@ -1,5 +1,6 @@
 package lama.mysql.ast;
 
+import lama.IgnoreMeException;
 import lama.Randomly;
 import lama.mysql.MySQLSchema.MySQLDataType;
 import lama.mysql.ast.MySQLCastOperation.CastType;
@@ -165,6 +166,16 @@ public class MySQLComputableFunction extends MySQLExpression {
 		MySQLConstant[] constants = new MySQLConstant[args.length];
 		for (int i = 0; i < constants.length; i++) {
 			constants[i] = args[i].getExpectedValue();
+			/* workaround for https://bugs.mysql.com/bug.php?id=95938 */
+			if (constants[i].isString()) {
+				String text = constants[i].castAsString();
+				while ((text.startsWith(" ") || text.startsWith("\t")) && text.length() > 0) {
+					text = text.substring(1);
+				}
+				if (text.length() > 0 && (text.startsWith("\n") || text.startsWith("."))) {
+					throw new IgnoreMeException();
+				}
+			}
 		}
 		return func.apply(constants, args);
 	}
