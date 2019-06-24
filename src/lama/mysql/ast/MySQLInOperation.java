@@ -2,6 +2,8 @@ package lama.mysql.ast;
 
 import java.util.List;
 
+import lama.IgnoreMeException;
+
 /**
  * @see https://dev.mysql.com/doc/refman/8.0/en/comparison-operators.html#operator_in
  */
@@ -33,9 +35,19 @@ public class MySQLInOperation extends MySQLExpression {
 		if (leftVal.isNull()) {
 			return MySQLConstant.createNullConstant();
 		}
+		/* workaround for https://bugs.mysql.com/bug.php?id=95957 */
+		if (leftVal.isInt() && !leftVal.isSigned()) {
+			throw new IgnoreMeException();
+		}
+
 		boolean isNull = false;
 		for (MySQLExpression rightExpr : listElements) {
 			MySQLConstant rightVal = rightExpr.getExpectedValue();
+
+			/* workaround for https://bugs.mysql.com/bug.php?id=95957 */
+			if (rightVal.isInt() && !rightVal.isSigned()) {
+				throw new IgnoreMeException();
+			}
 			MySQLConstant convertedRightVal;
 			if (allAreConstValues) {
 				// If all values are constants, they are evaluated according to the type of expr
