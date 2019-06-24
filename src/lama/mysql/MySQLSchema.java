@@ -3,6 +3,7 @@ package lama.mysql;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,6 +21,8 @@ import lama.mysql.ast.MySQLConstant;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 
 public class MySQLSchema {
+
+	private static final int NR_SCHEMA_READ_TRIES = 10;
 
 	public static enum MySQLDataType {
 		INT, VARCHAR;
@@ -79,7 +82,7 @@ public class MySQLSchema {
 		public MySQLDataType getColumnType() {
 			return columnType;
 		}
-		
+
 		public int getPrecision() {
 			return precision;
 		}
@@ -198,7 +201,6 @@ public class MySQLSchema {
 
 	}
 
-
 	private static MySQLDataType getColumnType(String typeString) {
 		switch (typeString) {
 		case "tinyint":
@@ -213,7 +215,7 @@ public class MySQLSchema {
 			throw new AssertionError(typeString);
 		}
 	}
-	
+
 	public static class MySQLRowValue {
 
 		private final MySQLTables tables;
@@ -270,8 +272,8 @@ public class MySQLSchema {
 	public static class MySQLTable implements Comparable<MySQLTable> {
 
 		public static enum MySQLEngine {
-			INNO_DB("InnoDB"), MY_ISAM("MyISAM"), MEMORY("MEMORY"), HEAP("HEAP"), CSV("CSV"), MERGE("MERGE"), ARCHIVE("ARCHIVE"),
-			FEDERATED("FEDERATED");
+			INNO_DB("InnoDB"), MY_ISAM("MyISAM"), MEMORY("MEMORY"), HEAP("HEAP"), CSV("CSV"), MERGE("MERGE"),
+			ARCHIVE("ARCHIVE"), FEDERATED("FEDERATED");
 
 			private String s;
 
@@ -348,25 +350,34 @@ public class MySQLSchema {
 	}
 
 	static public MySQLSchema fromConnection(Connection con, String databaseName) throws SQLException {
-		List<MySQLTable> databaseTables = new ArrayList<>();
-		try (Statement s = con.createStatement()) {
-			try (ResultSet rs = s
-					.executeQuery("select TABLE_NAME, ENGINE from information_schema.TABLES where table_schema = '"
-							+ databaseName + "';")) {
-				while (rs.next()) {
-					String tableName = rs.getString("TABLE_NAME");
-					String tableEngineStr = rs.getString("ENGINE");
-					MySQLEngine engine = MySQLEngine.get(tableEngineStr);
-					List<MySQLColumn> databaseColumns = getTableColumns(con, tableName, databaseName);
-					MySQLTable t = new MySQLTable(tableName, databaseColumns, engine);
-					for (MySQLColumn c : databaseColumns) {
-						c.setTable(t);
+		Exception ex = null;
+		/* the loop is a workaround for https://bugs.mysql.com/bug.php?id=95929 */
+		for (int i = 0; i < NR_SCHEMA_READ_TRIES; i++) {
+			try {
+				List<MySQLTable> databaseTables = new ArrayList<>();
+				try (Statement s = con.createStatement()) {
+					try (ResultSet rs = s.executeQuery(
+							"select TABLE_NAME, ENGINE from information_schema.TABLES where table_schema = '"
+									+ databaseName + "';")) {
+						while (rs.next()) {
+							String tableName = rs.getString("TABLE_NAME");
+							String tableEngineStr = rs.getString("ENGINE");
+							MySQLEngine engine = MySQLEngine.get(tableEngineStr);
+							List<MySQLColumn> databaseColumns = getTableColumns(con, tableName, databaseName);
+							MySQLTable t = new MySQLTable(tableName, databaseColumns, engine);
+							for (MySQLColumn c : databaseColumns) {
+								c.setTable(t);
+							}
+							databaseTables.add(t);
+						}
 					}
-					databaseTables.add(t);
 				}
+				return new MySQLSchema(databaseTables);
+			} catch (SQLIntegrityConstraintViolationException e) {
+				ex = e;
 			}
 		}
-		return new MySQLSchema(databaseTables);
+		throw new AssertionError(ex);
 	}
 
 	private static List<MySQLColumn> getTableColumns(Connection con, String tableName, String databaseName)
