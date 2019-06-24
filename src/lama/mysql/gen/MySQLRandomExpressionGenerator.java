@@ -10,6 +10,8 @@ import lama.mysql.ast.MySQLBinaryComparisonOperation;
 import lama.mysql.ast.MySQLBinaryComparisonOperation.BinaryComparisonOperator;
 import lama.mysql.ast.MySQLBinaryLogicalOperation;
 import lama.mysql.ast.MySQLBinaryLogicalOperation.MySQLBinaryLogicalOperator;
+import lama.mysql.ast.MySQLBinaryOperation;
+import lama.mysql.ast.MySQLBinaryOperation.MySQLBinaryOperator;
 import lama.mysql.ast.MySQLCastOperation;
 import lama.mysql.ast.MySQLCastOperation.CastType;
 import lama.mysql.ast.MySQLColumnValue;

@@ -8,7 +8,7 @@ public class MySQLCastOperation extends MySQLExpression {
 	private final CastType type;
 
 	public enum CastType {
-		SIGNED;
+		SIGNED, UNSIGNED;
 
 		public static CastType getRandom() {
 			return Randomly.fromOptions(CastType.values());

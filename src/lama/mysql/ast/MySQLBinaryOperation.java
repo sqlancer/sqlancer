@@ -19,7 +19,8 @@ public class MySQLBinaryOperation extends MySQLExpression {
 				} else {
 					long leftVal = left.castAs(CastType.SIGNED).getInt();
 					long rightVal = right.castAs(CastType.SIGNED).getInt();
-					return MySQLConstant.createIntConstant(leftVal & rightVal);
+					long value = leftVal & rightVal;
+					return MySQLConstant.createUnsignedIntConstant(value);
 				}
 			}
 		};

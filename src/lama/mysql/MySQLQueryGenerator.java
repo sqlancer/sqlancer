@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 import lama.Main;
 import lama.Main.QueryManager;
 import lama.Main.StateLogger;
+import lama.MainOptions;
+import lama.QueryAdapter;
 import lama.Randomly;
 import lama.StateToReproduce;
 import lama.StateToReproduce.MySQLStateToReproduce;
@@ -46,12 +48,20 @@ public class MySQLQueryGenerator {
 		this.s = MySQLSchema.fromConnection(con, databaseName);
 	}
 
-	public void generateAndCheckQuery(MySQLStateToReproduce state, StateLogger logger) throws SQLException {
+	public void generateAndCheckQuery(MySQLStateToReproduce state, StateLogger logger, MainOptions options) throws SQLException {
 		String queryString = getQueryThatContainsAtLeastOneRow(state);
 
-		boolean isContainedIn = isContainedIn(queryString);
-		if (!isContainedIn) {
-			throw new Main.ReduceMeException();
+		try {
+			boolean isContainedIn = isContainedIn(queryString, options, logger);
+			if (!isContainedIn) {
+				throw new Main.ReduceMeException();
+			}
+		} catch (SQLException e) {
+			if (e.getMessage().contains("BIGINT value is out of range")) {
+				// IGNORE
+			} else {
+				throw e;
+			}
 		}
 	}
 
@@ -157,7 +167,7 @@ public class MySQLQueryGenerator {
 		}
 	}
 
-	private boolean isContainedIn(String queryString) throws SQLException {
+	private boolean isContainedIn(String queryString, MainOptions options, StateLogger logger) throws SQLException {
 		Statement createStatement;
 		createStatement = database.createStatement();
 
@@ -180,12 +190,13 @@ public class MySQLQueryGenerator {
 		}
 		String resultingQueryString = sb.toString();
 		state.queryString = resultingQueryString;
+		if (options.logEachSelect()) {
+			logger.writeCurrent(resultingQueryString);
+		}
 		try (ResultSet result = createStatement.executeQuery(resultingQueryString)) {
 			boolean isContainedIn = result.next();
 			createStatement.close();
 			return isContainedIn;
-		} catch (SQLException e) {
-			throw e;
 		}
 	}
 }
