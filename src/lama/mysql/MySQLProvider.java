@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import lama.DatabaseProvider;
+import lama.IgnoreMeException;
 import lama.Main.QueryManager;
 import lama.Main.StateLogger;
 import lama.MainOptions;
@@ -39,7 +40,7 @@ import lama.sqlite3.gen.SQLite3Common;
 
 public class MySQLProvider implements DatabaseProvider {
 
-	private static final int NR_QUERIES_PER_TABLE = 100;
+	private static final int NR_QUERIES_PER_TABLE = 1000;
 	private static final int MAX_INSERT_ROW_TRIES = 30;
 	private final Randomly r = new Randomly();
 	private QueryManager manager;
@@ -53,10 +54,12 @@ public class MySQLProvider implements DatabaseProvider {
 	@Override
 	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger, StateToReproduce state,
 			QueryManager manager, MainOptions options) throws SQLException {
-
 		this.databaseName = databaseName;
 		this.manager = manager;
 		MySQLSchema newSchema = MySQLSchema.fromConnection(con, databaseName);
+		if (options.logEachSelect()) {
+			logger.writeCurrent(state);
+		}
 
 		while (newSchema.getDatabaseTables().size() < Randomly.smallNumber() + 1) {
 			String tableName = SQLite3Common.createTableName(newSchema.getDatabaseTables().size());
@@ -85,24 +88,24 @@ public class MySQLProvider implements DatabaseProvider {
 				nrPerformed = MAX_INSERT_ROW_TRIES;
 				break;
 			case REPAIR:
-				nrPerformed = r.getInteger(0, 10);
+				nrPerformed = r.getInteger(0, 1);
 				break;
 			case SET_VARIABLE:
-				nrPerformed = 0; // r.getInteger(0, 50);
+				nrPerformed = r.getInteger(0, 5);
+				break;
+			case CREATE_INDEX:
+				nrPerformed = r.getInteger(0, 5);
+				break;
+			case FLUSH:
+				nrPerformed = Randomly.getBooleanWithSmallProbability() ? r.getInteger(0, 1) : 0;
+				break;
+			case OPTIMIZE:
+				// seems to yield low CPU utilization
+				nrPerformed = Randomly.getBooleanWithSmallProbability() ? r.getInteger(0, 1) : 0;
 				break;
 			case CHECKSUM:
 			case CHECK_TABLE:
 			case ANALYZE_TABLE:
-			case CREATE_INDEX:
-				nrPerformed = r.getInteger(0, 10);
-				break;
-			case FLUSH:
-				nrPerformed = r.getInteger(0, 1);
-				break;
-			case OPTIMIZE:
-				// seems to yield low CPU utilization
-				nrPerformed = r.getInteger(0, 1);
-				break;
 			case RESET:
 				// affects the global state, so do not execute
 				nrPerformed = 0;
@@ -141,71 +144,75 @@ public class MySQLProvider implements DatabaseProvider {
 			assert nrRemaining[nextAction.ordinal()] > 0;
 			nrRemaining[nextAction.ordinal()]--;
 			Query query;
-			switch (nextAction) {
-			case SHOW_TABLES:
-				query = new QueryAdapter("SHOW TABLES");
-				break;
-			case INSERT:
-				query = MySQLRowInserter.insertRow(newSchema.getRandomTable(), r);
-				break;
-			case SET_VARIABLE:
-				query = MySQLSetGenerator.set(r);
-				break;
-			case REPAIR:
-				query = MySQLRepair.repair(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
-				break;
-			case OPTIMIZE:
-				query = MySQLOptimize.optimize(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
-				break;
-			case CHECKSUM:
-				query = MySQLChecksum.checksum(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
-				break;
-			case CHECK_TABLE:
-				query = MySQLCheckTable.check(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
-				break;
-			case ANALYZE_TABLE:
-				query = MySQLAnalyzeTable.analyze(newSchema.getDatabaseTablesRandomSubsetNotEmpty(), r);
-				break;
-			case FLUSH:
-				query = MySQLFlush.create(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
-				break;
-			case RESET:
-				query = MySQLReset.create();
-				break;
-			case CREATE_INDEX:
-				query = createIndexGenerator.create();
-				break;
-			case ALTER_TABLE:
-				query = MySQLAlterTable.create(newSchema, r);
-				break;
-			case SELECT_INFO:
-				query = new QueryAdapter(
-						"select TABLE_NAME, ENGINE from information_schema.TABLES where table_schema = '" + databaseName
-								+ "'");
-				break;
-			case TRUNCATE_TABLE:
-				query = new QueryAdapter("TRUNCATE TABLE " + newSchema.getRandomTable().getName()) {
-					@Override
-					public void execute(Connection con) throws SQLException {
-						try {
-							super.execute(con);
-						} catch (SQLException e) {
-							if (e.getMessage().contains("doesn't have this option")) {
-								return;
-							} else {
-								throw e;
+			try {
+				switch (nextAction) {
+				case SHOW_TABLES:
+					query = new QueryAdapter("SHOW TABLES");
+					break;
+				case INSERT:
+					query = MySQLRowInserter.insertRow(newSchema.getRandomTable(), r);
+					break;
+				case SET_VARIABLE:
+					query = MySQLSetGenerator.set(r);
+					break;
+				case REPAIR:
+					query = MySQLRepair.repair(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
+					break;
+				case OPTIMIZE:
+					query = MySQLOptimize.optimize(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
+					break;
+				case CHECKSUM:
+					query = MySQLChecksum.checksum(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
+					break;
+				case CHECK_TABLE:
+					query = MySQLCheckTable.check(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
+					break;
+				case ANALYZE_TABLE:
+					query = MySQLAnalyzeTable.analyze(newSchema.getDatabaseTablesRandomSubsetNotEmpty(), r);
+					break;
+				case FLUSH:
+					query = MySQLFlush.create(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
+					break;
+				case RESET:
+					query = MySQLReset.create();
+					break;
+				case CREATE_INDEX:
+					query = createIndexGenerator.create();
+					break;
+				case ALTER_TABLE:
+					query = MySQLAlterTable.create(newSchema, r);
+					break;
+				case SELECT_INFO:
+					query = new QueryAdapter(
+							"select TABLE_NAME, ENGINE from information_schema.TABLES where table_schema = '"
+									+ databaseName + "'");
+					break;
+				case TRUNCATE_TABLE:
+					query = new QueryAdapter("TRUNCATE TABLE " + newSchema.getRandomTable().getName()) {
+						@Override
+						public void execute(Connection con) throws SQLException {
+							try {
+								super.execute(con);
+							} catch (SQLException e) {
+								if (e.getMessage().contains("doesn't have this option")) {
+									return;
+								} else {
+									throw e;
+								}
 							}
 						}
-					}
 
-				};
-				break;
-			case CREATE_TABLE:
-				String tableName = SQLite3Common.createTableName(newSchema.getDatabaseTables().size());
-				Query createTable = MySQLTableGenerator.generate(tableName, r, newSchema);
+					};
+					break;
+				case CREATE_TABLE:
+					String tableName = SQLite3Common.createTableName(newSchema.getDatabaseTables().size());
+					Query createTable = MySQLTableGenerator.generate(tableName, r, newSchema);
 
-			default:
-				throw new AssertionError(nextAction);
+				default:
+					throw new AssertionError(nextAction);
+				}
+			} catch (IgnoreMeException e) {
+				continue;
 			}
 			try {
 				if (options.logEachSelect()) {
@@ -235,7 +242,11 @@ public class MySQLProvider implements DatabaseProvider {
 
 		MySQLQueryGenerator queryGenerator = new MySQLQueryGenerator(manager, r, con, databaseName);
 		for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
-			queryGenerator.generateAndCheckQuery((MySQLStateToReproduce) state, logger);
+			try {
+				queryGenerator.generateAndCheckQuery((MySQLStateToReproduce) state, logger, options);
+			} catch (IgnoreMeException e) {
+
+			}
 			manager.incrementSelectQueryCount();
 		}
 
