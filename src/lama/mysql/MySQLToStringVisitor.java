@@ -15,6 +15,8 @@ import lama.mysql.ast.MySQLConstant;
 import lama.mysql.ast.MySQLExpression;
 import lama.mysql.ast.MySQLInOperation;
 import lama.mysql.ast.MySQLJoin;
+import lama.mysql.ast.MySQLOrderByTerm;
+import lama.mysql.ast.MySQLOrderByTerm.MySQLOrder;
 import lama.mysql.ast.MySQLSelect;
 import lama.mysql.ast.MySQLUnaryPostfixOperator;
 import lama.mysql.ast.MySQLUnaryPrefixOperation;
@@ -232,6 +234,13 @@ public class MySQLToStringVisitor extends MySQLVisitor {
 		sb.append(" (");
 		visit(op.getRight());
 		sb.append(")");
+	}
+
+	@Override
+	public void visit(MySQLOrderByTerm op) {
+		visit(op.getExpr());
+		sb.append(" ");
+		sb.append(op.getOrder() == MySQLOrder.ASC ? "ASC" : "DESC");
 	}
 
 }

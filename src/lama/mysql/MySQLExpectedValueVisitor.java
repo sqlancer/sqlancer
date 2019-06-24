@@ -11,6 +11,7 @@ import lama.mysql.ast.MySQLConstant;
 import lama.mysql.ast.MySQLExpression;
 import lama.mysql.ast.MySQLInOperation;
 import lama.mysql.ast.MySQLJoin;
+import lama.mysql.ast.MySQLOrderByTerm;
 import lama.mysql.ast.MySQLSelect;
 import lama.mysql.ast.MySQLUnaryPrefixOperation;
 import lama.mysql.ast.MySQLUnaryPostfixOperator;
@@ -117,6 +118,10 @@ public class MySQLExpectedValueVisitor extends MySQLVisitor {
 		print(op);
 		visit(op.getLeft());
 		visit(op.getRight());
+	}
+
+	@Override
+	public void visit(MySQLOrderByTerm op) {
 	}
 
 }

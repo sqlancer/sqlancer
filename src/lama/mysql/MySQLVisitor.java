@@ -9,9 +9,10 @@ import lama.mysql.ast.MySQLComputableFunction;
 import lama.mysql.ast.MySQLConstant;
 import lama.mysql.ast.MySQLExpression;
 import lama.mysql.ast.MySQLInOperation;
+import lama.mysql.ast.MySQLOrderByTerm;
 import lama.mysql.ast.MySQLSelect;
-import lama.mysql.ast.MySQLUnaryPrefixOperation;
 import lama.mysql.ast.MySQLUnaryPostfixOperator;
+import lama.mysql.ast.MySQLUnaryPrefixOperation;
 
 public abstract class MySQLVisitor {
 
@@ -36,6 +37,8 @@ public abstract class MySQLVisitor {
 	public abstract void visit(MySQLInOperation op);
 	
 	public abstract void visit(MySQLBinaryOperation op);
+	
+	public abstract void visit(MySQLOrderByTerm op);
 
 	public void visit(MySQLExpression expr) {
 		if (expr instanceof MySQLConstant) {
@@ -60,6 +63,8 @@ public abstract class MySQLVisitor {
 			visit((MySQLInOperation) expr);
 		} else if (expr instanceof MySQLBinaryOperation) {
 			visit((MySQLBinaryOperation) expr);
+		} else if (expr instanceof MySQLOrderByTerm) {
+			visit((MySQLOrderByTerm) expr);
 		} else {
 			throw new AssertionError(expr);
 		}

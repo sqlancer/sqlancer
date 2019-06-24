@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,7 +13,6 @@ import lama.Main;
 import lama.Main.QueryManager;
 import lama.Main.StateLogger;
 import lama.MainOptions;
-import lama.QueryAdapter;
 import lama.Randomly;
 import lama.StateToReproduce;
 import lama.StateToReproduce.MySQLStateToReproduce;
@@ -23,6 +23,8 @@ import lama.mysql.MySQLSchema.MySQLTables;
 import lama.mysql.ast.MySQLColumnValue;
 import lama.mysql.ast.MySQLConstant;
 import lama.mysql.ast.MySQLExpression;
+import lama.mysql.ast.MySQLOrderByTerm;
+import lama.mysql.ast.MySQLOrderByTerm.MySQLOrder;
 import lama.mysql.ast.MySQLSelect;
 import lama.mysql.ast.MySQLUnaryPostfixOperator;
 import lama.mysql.ast.MySQLUnaryPostfixOperator.UnaryPostfixOperator;
@@ -71,6 +73,7 @@ public class MySQLQueryGenerator {
 		List<MySQLTable> tables = randomFromTables.getTables();
 
 		state.queryTargetedTablesString = randomFromTables.tableNamesAsString();
+		
 		MySQLSelect selectStatement = new MySQLSelect();
 		selectStatement.setSelectType(Randomly.fromOptions(MySQLSelect.SelectType.values()));
 		state.whereClause = selectStatement;
@@ -121,8 +124,28 @@ public class MySQLQueryGenerator {
 																															// "HIGH_PRIORITY"
 		// TODO: Incorrect usage/placement of 'SQL_BUFFER_RESULT'
 		selectStatement.setModifiers(modifiers);
-//		List<MySQLExpression> orderBy = generateOrderBy(columns);
-//		selectStatement.setOrderByClause(orderBy);
+		List<MySQLExpression> orderBy = generateOrderBy(columns);
+		selectStatement.setOrderByClause(orderBy);
+		
+		StringBuilder sb2 = new StringBuilder();
+		sb2.append("SELECT * FROM ");
+		sb2.append(randomFromTables.tableNamesAsString());
+		sb2.append(" WHERE ");
+		int i = 0;
+		for (MySQLColumn c : fetchColumns) {
+			if (i++ != 0) {
+				sb2.append(" AND ");
+			}
+			sb2.append(c.getFullQualifiedName());
+			if (rw.getValues().get(c).isNull()) {
+				sb2.append(" IS NULL");
+			} else {
+				sb2.append(" = ");
+				sb2.append(rw.getValues().get(c).getTextRepresentation());
+			}
+		}
+		state.queryThatSelectsRow = sb2.toString();
+		
 		MySQLToStringVisitor visitor = new MySQLToStringVisitor();
 		visitor.visit(selectStatement);
 		String queryString = visitor.get();
@@ -136,6 +159,14 @@ public class MySQLQueryGenerator {
 		} else {
 			return Collections.emptyList();
 		}
+	}
+	
+	public List<MySQLExpression> generateOrderBy(List<MySQLColumn> columns) {
+		List<MySQLExpression> orderBys = new ArrayList<>();
+		for (int i = 0; i < Randomly.smallNumber(); i++) {
+			orderBys.add(new MySQLOrderByTerm(MySQLColumnValue.create(Randomly.fromList(columns), null), MySQLOrder.getRandomOrder()));
+		}
+		return orderBys; 
 	}
 
 	private MySQLConstant generateLimit() {
@@ -188,6 +219,7 @@ public class MySQLQueryGenerator {
 				sb.append(rw.getValues().get(c).getTextRepresentation());
 			}
 		}
+
 		String resultingQueryString = sb.toString();
 		state.queryString = resultingQueryString;
 		if (options.logEachSelect()) {
