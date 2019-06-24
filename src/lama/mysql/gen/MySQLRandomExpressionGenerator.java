@@ -10,13 +10,13 @@ import lama.mysql.ast.MySQLBinaryComparisonOperation;
 import lama.mysql.ast.MySQLBinaryComparisonOperation.BinaryComparisonOperator;
 import lama.mysql.ast.MySQLBinaryLogicalOperation;
 import lama.mysql.ast.MySQLBinaryLogicalOperation.MySQLBinaryLogicalOperator;
-import lama.mysql.ast.MySQLBinaryOperation;
-import lama.mysql.ast.MySQLBinaryOperation.MySQLBinaryOperator;
 import lama.mysql.ast.MySQLCastOperation;
+import lama.mysql.ast.MySQLCastOperation.CastType;
 import lama.mysql.ast.MySQLColumnValue;
 import lama.mysql.ast.MySQLComputableFunction;
 import lama.mysql.ast.MySQLComputableFunction.MySQLFunction;
 import lama.mysql.ast.MySQLConstant;
+import lama.mysql.ast.MySQLConstant.MySQLTextConstant;
 import lama.mysql.ast.MySQLExpression;
 import lama.mysql.ast.MySQLInOperation;
 import lama.mysql.ast.MySQLUnaryPostfixOperator;
@@ -29,7 +29,26 @@ public class MySQLRandomExpressionGenerator {
 
 	public static MySQLExpression generateRandomExpression(List<MySQLColumn> columns, MySQLRowValue rowVal,
 			Randomly r) {
-		return gen(columns, rowVal, 0, r);
+		
+		/* workaround for https://bugs.mysql.com/bug.php?id=95942 */
+		while (true) {
+			MySQLExpression gen = gen(columns, rowVal, 0, r);
+			MySQLExpression gen2 = gen;
+			while (gen2 instanceof MySQLUnaryPrefixOperation) {
+				gen2 = ((MySQLUnaryPrefixOperation) gen2).getExpression();
+			}
+			if (gen2 instanceof MySQLColumnValue) {
+				MySQLConstant expectedVal = gen2.getExpectedValue();
+				if (expectedVal instanceof MySQLTextConstant) {
+					if (expectedVal.asBooleanNotNull()) {
+						if (!expectedVal.castAs(CastType.SIGNED).asBooleanNotNull()) {
+							continue;
+						}
+					}
+				}
+			}
+			return gen;
+		}
 	}
 
 	private enum Actions {
