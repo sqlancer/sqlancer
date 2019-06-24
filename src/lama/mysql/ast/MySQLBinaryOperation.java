@@ -1,5 +1,6 @@
 package lama.mysql.ast;
 
+import lama.IgnoreMeException;
 import lama.Randomly;
 import lama.mysql.ast.MySQLCastOperation.CastType;
 
@@ -51,7 +52,31 @@ public class MySQLBinaryOperation extends MySQLExpression {
 
 	@Override
 	public MySQLConstant getExpectedValue() {
-		return op.apply(left.getExpectedValue(), right.getExpectedValue());
+		MySQLConstant leftExpected = left.getExpectedValue();
+		MySQLConstant rightExpected = right.getExpectedValue();
+
+		/* workaround for https://bugs.mysql.com/bug.php?id=95960 */
+		if (leftExpected.isString()) {
+			String text = leftExpected.castAsString();
+			while ((text.startsWith(" ") || text.startsWith("\t")) && text.length() > 0) {
+				text = text.substring(1);
+			}
+			if (text.length() > 0 && (text.startsWith("\n") || text.startsWith("."))) {
+				throw new IgnoreMeException();
+			}
+		}
+
+		if (rightExpected.isString()) {
+			String text = rightExpected.castAsString();
+			while ((text.startsWith(" ") || text.startsWith("\t")) && text.length() > 0) {
+				text = text.substring(1);
+			}
+			if (text.length() > 0 && (text.startsWith("\n") || text.startsWith("."))) {
+				throw new IgnoreMeException();
+			}
+		}
+
+		return op.apply(leftExpected, rightExpected);
 	}
 
 	public MySQLExpression getLeft() {

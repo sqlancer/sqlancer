@@ -2,6 +2,8 @@ package lama.mysql.ast;
 
 import lama.IgnoreMeException;
 import lama.Randomly;
+import lama.mysql.ast.MySQLCastOperation.CastType;
+import lama.mysql.ast.MySQLConstant.MySQLTextConstant;
 
 public class MySQLBinaryLogicalOperation extends MySQLExpression {
 
@@ -106,6 +108,20 @@ public class MySQLBinaryLogicalOperation extends MySQLExpression {
 	public MySQLConstant getExpectedValue() {
 		MySQLConstant leftExpected = left.getExpectedValue();
 		MySQLConstant rightExpected = right.getExpectedValue();
+
+		/**
+		 * workaround for https://bugs.mysql.com/bug.php?id=95958
+		 */
+		boolean leftIsSmallFloatingPointText = leftExpected.isString()
+				&& ((MySQLTextConstant) leftExpected).asBooleanNotNull()
+				&& leftExpected.castAs(CastType.SIGNED).getInt() == 0;
+		boolean rightIsSmallFloatingPointText = rightExpected.isString()
+				&& ((MySQLTextConstant) rightExpected).asBooleanNotNull()
+				&& rightExpected.castAs(CastType.SIGNED).getInt() == 0;
+		if (leftIsSmallFloatingPointText || rightIsSmallFloatingPointText) {
+			throw new IgnoreMeException();
+		}
+
 		return op.apply(leftExpected, rightExpected);
 	}
 
