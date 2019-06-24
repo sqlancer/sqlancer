@@ -60,7 +60,7 @@ public class Main {
 		private FileWriter reducedFileWriter;
 		public FileWriter currentFileWriter;
 		private static final List<String> initializedProvidersNames = new ArrayList<>();
-		private boolean logEachSelect;
+		private boolean logEachSelect = true;
 		private DatabaseProvider provider;
 
 		private final static class AlsoWriteToConsoleFileWriter extends FileWriter {
@@ -309,29 +309,30 @@ public class Main {
 
 		for (int i = 0; i < options.getTotalNumberTries(); i++) {
 			final String databaseName = "lama" + i;
-			final DatabaseProvider provider;
-			if (i % options.getNumberConcurrentThreads() >= options.getTotalNumberMysqlThreads()) {
-				provider = new SQLite3Provider();
-			} else {
-				provider = new MySQLProvider();
-			}
+			final int index = i;
 
 			executor.execute(new Runnable() {
 
 				StateToReproduce state;
 				StateLogger logger;
+				DatabaseProvider provider;
 
 				@Override
 				public void run() {
+					if (index % options.getNumberConcurrentThreads() >= options.getTotalNumberMysqlThreads()) {
+						provider = new SQLite3Provider();
+					} else {
+						provider = new MySQLProvider();
+					}
 					runThread(databaseName);
 				}
 
 				private void runThread(final String databaseName) {
 					Thread.currentThread().setName(databaseName);
 					while (true) {
-						try (Connection con = provider.createDatabase(databaseName)) {
-							state = provider.getStateToReproduce(databaseName);;
-							logger = new StateLogger(databaseName, provider, options);
+						state = provider.getStateToReproduce(databaseName);;
+						logger = new StateLogger(databaseName, provider, options);
+						try (Connection con = provider.createDatabase(databaseName, state)) {
 							QueryManager manager = new QueryManager(con, state);
 							java.sql.DatabaseMetaData meta = con.getMetaData();
 							state.databaseVersion = meta.getDatabaseProductVersion();
@@ -347,6 +348,8 @@ public class Main {
 							break;
 						} catch (Throwable reduce) {
 							reduce.printStackTrace();
+//							if (true)
+//								System.exit(-1);
 							state.errorKind = ErrorKind.EXCEPTION;
 							state.exception = reduce.getMessage();
 							logger.logException(reduce, state);
@@ -405,7 +408,7 @@ public class Main {
 							}
 						}
 
-						try (Connection con = provider.createDatabase(databaseName + "_reduced")) {
+						try (Connection con = provider.createDatabase(databaseName + "_reduced", state)) {
 							for (Query q : currentRoundReducedStatements) {
 								try {
 									q.execute(con);
