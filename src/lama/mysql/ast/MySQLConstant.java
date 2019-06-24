@@ -55,7 +55,7 @@ public abstract class MySQLConstant extends MySQLExpression {
 		}
 
 		@Override
-		protected MySQLConstant isEquals(MySQLConstant rightVal) {
+		public MySQLConstant isEquals(MySQLConstant rightVal) {
 			if (rightVal.isNull()) {
 				return MySQLConstant.createNullConstant();
 			} else if (rightVal.isInt()) {
@@ -183,10 +183,10 @@ public abstract class MySQLConstant extends MySQLExpression {
 		}
 
 		@Override
-		protected MySQLConstant isEquals(MySQLConstant rightVal) {
+		public MySQLConstant isEquals(MySQLConstant rightVal) {
 			if (rightVal.isInt()) {
-				long intVal = rightVal.getInt();
-				return MySQLConstant.createBoolean(value == intVal);
+				return MySQLConstant.createBoolean(new BigInteger(getStringRepr())
+						.compareTo(new BigInteger(((MySQLIntConstant) rightVal).getStringRepr())) == 0);
 			} else if (rightVal.isNull()) {
 				return MySQLConstant.createNullConstant();
 			} else if (rightVal.isString()) {
@@ -213,7 +213,11 @@ public abstract class MySQLConstant extends MySQLExpression {
 
 		@Override
 		public String castAsString() {
-			return String.valueOf(value);
+			if (isSigned) {
+				return String.valueOf(value);
+			} else {
+				return Long.toUnsignedString(value);
+			}
 		}
 
 		@Override
@@ -278,7 +282,7 @@ public abstract class MySQLConstant extends MySQLExpression {
 		}
 
 		@Override
-		protected MySQLConstant isEquals(MySQLConstant rightVal) {
+		public MySQLConstant isEquals(MySQLConstant rightVal) {
 			return MySQLNullConstant.createNullConstant();
 		}
 
@@ -366,7 +370,7 @@ public abstract class MySQLConstant extends MySQLExpression {
 		return getTextRepresentation();
 	}
 
-	protected abstract MySQLConstant isEquals(MySQLConstant rightVal);
+	public abstract MySQLConstant isEquals(MySQLConstant rightVal);
 
 	public MySQLConstant isEqualsNullSafe(MySQLConstant rightVal) {
 		if (isNull()) {
