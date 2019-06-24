@@ -62,6 +62,9 @@ public class MySQLComputableFunction extends MySQLExpression {
 				if (evaluatedArgs[0].castAs(CastType.SIGNED).getInt() < 0) {
 					return MySQLConstant.createNullConstant();
 				}
+				if (Math.abs(evaluatedArgs[0].castAs(CastType.SIGNED).getInt()) > 10) {
+					throw new IgnoreMeException();
+				}
 				return MySQLConstant.createIntConstant(0);
 			}
 
@@ -187,7 +190,11 @@ public class MySQLComputableFunction extends MySQLExpression {
 		MySQLDataType type = getMostGeneralType(typeExpressions);
 		switch (type) {
 		case INT:
-			return MySQLConstant.createIntConstant(cons.castAs(CastType.SIGNED).getInt());
+			if (cons.isInt()) {
+				return cons;
+			} else {
+				return MySQLConstant.createIntConstant(cons.castAs(CastType.SIGNED).getInt());
+			}
 		case VARCHAR:
 			return MySQLConstant.createStringConstant(cons.castAsString());
 		default:
