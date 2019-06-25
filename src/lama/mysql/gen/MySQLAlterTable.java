@@ -166,7 +166,7 @@ public class MySQLAlterTable {
 						// ignore
 					} else if (e.getMessage().contains("is not supported for this operation")) {
 						// ignore
-					} else if (e.getMessage().contains("Data truncation: Truncated incorrect")) {
+					} else if (e.getMessage().contains("Data truncation")) {
 						// ignore
 					} else {
 						throw e;

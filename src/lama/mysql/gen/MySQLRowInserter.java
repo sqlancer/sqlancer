@@ -117,7 +117,20 @@ public class MySQLRowInserter {
 
 			};
 		} else {
-			return new QueryAdapter(sb.toString());
+			return new QueryAdapter(sb.toString()) {
+				public void execute(java.sql.Connection con) throws SQLException {
+					
+					try {
+						super.execute(con);
+					} catch (SQLException e) {
+						if (e.getMessage().contains("Data truncation")) {
+							// IGNORE
+						}
+					}
+					
+				};
+				
+			};
 		}
 	}
 

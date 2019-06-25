@@ -122,9 +122,9 @@ public class CreateIndexGenerator {
 
 					} else if (e.getMessage().contains("a disallowed function.") && string.contains("BENCHMARK")) {
 
-					}
-
-					else {
+					} else if (e.getMessage().contains("Data truncation")) {
+						
+					} else {
 						throw e;
 					}
 				}
