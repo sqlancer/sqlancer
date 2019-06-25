@@ -272,9 +272,13 @@ public class MySQLTableGenerator {
 		sb.append(" ");
 		boolean isTextType = false;
 		if (Randomly.getBoolean()) {
-			sb.append(Randomly.fromOptions("TINYINT", "SMALLINT", "MEDIUMINT", "INT", "BIGINT"));
+			String fromOptions = Randomly.fromOptions("TINYINT", "SMALLINT", "MEDIUMINT", "INT", "BIGINT");
+			sb.append(fromOptions);
 			if (Randomly.getBoolean()) {
-				sb.append(" UNSIGNED");
+				/* workaround for https://bugs.mysql.com/bug.php?id=95954 */
+				if (!fromOptions.contentEquals("BIGINT")) {
+					sb.append(" UNSIGNED");
+				}
 			}
 		} else {
 			isTextType = true;
