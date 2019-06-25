@@ -50,7 +50,8 @@ public class MySQLQueryGenerator {
 		this.s = MySQLSchema.fromConnection(con, databaseName);
 	}
 
-	public void generateAndCheckQuery(MySQLStateToReproduce state, StateLogger logger, MainOptions options) throws SQLException {
+	public void generateAndCheckQuery(MySQLStateToReproduce state, StateLogger logger, MainOptions options)
+			throws SQLException {
 		String queryString = getQueryThatContainsAtLeastOneRow(state);
 
 		try {
@@ -73,7 +74,7 @@ public class MySQLQueryGenerator {
 		List<MySQLTable> tables = randomFromTables.getTables();
 
 		state.queryTargetedTablesString = randomFromTables.tableNamesAsString();
-		
+
 		MySQLSelect selectStatement = new MySQLSelect();
 		selectStatement.setSelectType(Randomly.fromOptions(MySQLSelect.SelectType.values()));
 		state.whereClause = selectStatement;
@@ -126,9 +127,9 @@ public class MySQLQueryGenerator {
 		selectStatement.setModifiers(modifiers);
 		List<MySQLExpression> orderBy = generateOrderBy(columns);
 		selectStatement.setOrderByClause(orderBy);
-		
+
 		StringBuilder sb2 = new StringBuilder();
-		sb2.append("SELECT * FROM ");
+		sb2.append("SELECT * FROM (SELECT * FROM ");
 		sb2.append(randomFromTables.tableNamesAsString());
 		sb2.append(" WHERE ");
 		int i = 0;
@@ -144,8 +145,9 @@ public class MySQLQueryGenerator {
 				sb2.append(rw.getValues().get(c).getTextRepresentation());
 			}
 		}
+		sb2.append(") as result;");
 		state.queryThatSelectsRow = sb2.toString();
-		
+
 		MySQLToStringVisitor visitor = new MySQLToStringVisitor();
 		visitor.visit(selectStatement);
 		String queryString = visitor.get();
@@ -160,13 +162,14 @@ public class MySQLQueryGenerator {
 			return Collections.emptyList();
 		}
 	}
-	
+
 	public List<MySQLExpression> generateOrderBy(List<MySQLColumn> columns) {
 		List<MySQLExpression> orderBys = new ArrayList<>();
 		for (int i = 0; i < Randomly.smallNumber(); i++) {
-			orderBys.add(new MySQLOrderByTerm(MySQLColumnValue.create(Randomly.fromList(columns), null), MySQLOrder.getRandomOrder()));
+			orderBys.add(new MySQLOrderByTerm(MySQLColumnValue.create(Randomly.fromList(columns), null),
+					MySQLOrder.getRandomOrder()));
 		}
-		return orderBys; 
+		return orderBys;
 	}
 
 	private MySQLConstant generateLimit() {
