@@ -49,7 +49,7 @@ public class MySQLInOperation extends MySQLExpression {
 				throw new IgnoreMeException();
 			}
 			MySQLConstant convertedRightVal;
-			if (allAreConstValues) {
+			if (allAreConstValues && false /* workaround for https://bugs.mysql.com/bug.php?id=95975 */) {
 				// If all values are constants, they are evaluated according to the type of expr
 				// and sorted.
 				convertedRightVal = MySQLComputableFunction.castToMostGeneralType(rightVal, leftVal);
