@@ -206,8 +206,8 @@ public class MySQLProvider implements DatabaseProvider {
 					break;
 				case CREATE_TABLE:
 					String tableName = SQLite3Common.createTableName(newSchema.getDatabaseTables().size());
-					Query createTable = MySQLTableGenerator.generate(tableName, r, newSchema);
-
+					query = MySQLTableGenerator.generate(tableName, r, newSchema);
+					break;
 				default:
 					throw new AssertionError(nextAction);
 				}
