@@ -133,7 +133,9 @@ public class MySQLTableGenerator {
 		return e.getMessage().contains("The storage engine for the table doesn't support")
 				|| e.getMessage().contains("doesn't have this option")
 				|| e.getMessage().contains("must include all columns")
-				|| e.getMessage().contains("not allowed type for this type of partitioning");
+				|| e.getMessage().contains("not allowed type for this type of partitioning")
+				|| e.getMessage().contains("doesn't support BLOB/TEXT columns")
+				|| e.getMessage().contains("A BLOB field is not allowed in partition function");
 	}
 
 	private enum PartitionOptions {
@@ -282,7 +284,7 @@ public class MySQLTableGenerator {
 			}
 		} else {
 			isTextType = true;
-			sb.append(Randomly.fromOptions("VARCHAR(5)"));
+			sb.append(Randomly.fromOptions("VARCHAR(5)", "TINYTEXT", "TEXT", "MEDIUMTEXT", "LONGTEXT"));
 		}
 		sb.append(" ");
 		// TODO: this was commented out since it makes the implementation of LIKE more

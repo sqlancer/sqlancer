@@ -210,6 +210,10 @@ public class MySQLSchema {
 		case "bigint":
 			return MySQLDataType.INT;
 		case "varchar":
+		case "tinytext":
+		case "mediumtext":
+		case "text":
+		case "longtext":
 			return MySQLDataType.VARCHAR;
 		default:
 			throw new AssertionError(typeString);
