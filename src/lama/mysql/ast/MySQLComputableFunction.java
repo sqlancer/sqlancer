@@ -1,5 +1,8 @@
 package lama.mysql.ast;
 
+import java.util.function.BinaryOperator;
+import java.util.stream.Stream;
+
 import lama.IgnoreMeException;
 import lama.Randomly;
 import lama.mysql.MySQLSchema.MySQLDataType;
@@ -126,14 +129,49 @@ public class MySQLComputableFunction extends MySQLExpression {
 				return castToMostGeneralType(result, origArgs);
 			}
 
+		},
+		LEAST(2, "LEAST", true) {
+
+			@Override
+			public MySQLConstant apply(MySQLConstant[] evaluatedArgs, MySQLExpression[] args) {
+				return aggregate(evaluatedArgs, (min, cur) -> cur.isLessThan(min).asBooleanNotNull() ? cur : min);
+			}
+
+		},
+		GREATEST(2, "GREATEST", true) {
+			@Override
+			public MySQLConstant apply(MySQLConstant[] evaluatedArgs, MySQLExpression[] args) {
+				return aggregate(evaluatedArgs, (max, cur) -> cur.isLessThan(max).asBooleanNotNull() ? max : cur);
+			}
 		};
+		private static MySQLConstant aggregate(MySQLConstant[] evaluatedArgs, BinaryOperator<MySQLConstant> op) {
+			boolean containsNull = Stream.of(evaluatedArgs).anyMatch(arg -> arg.isNull());
+			if (containsNull) {
+				return MySQLConstant.createNullConstant();
+			}
+			MySQLConstant least = evaluatedArgs[1];
+			for (MySQLConstant arg : evaluatedArgs) {
+				MySQLConstant left = castToMostGeneralType(least, evaluatedArgs);
+				MySQLConstant right = castToMostGeneralType(arg, evaluatedArgs);
+				least = op.apply(right, left);
+			}
+			return castToMostGeneralType(least, evaluatedArgs);
+		}
 
 		private String functionName;
 		final int nrArgs;
+		private final boolean variadic;
 
 		private MySQLFunction(int nrArgs, String functionName) {
 			this.nrArgs = nrArgs;
 			this.functionName = functionName;
+			this.variadic = false;
+		}
+
+		private MySQLFunction(int nrArgs, String functionName, boolean variadic) {
+			this.nrArgs = nrArgs;
+			this.functionName = functionName;
+			this.variadic = variadic;
 		}
 
 		/**
@@ -156,7 +194,7 @@ public class MySQLComputableFunction extends MySQLExpression {
 		}
 
 		public boolean isVariadic() {
-			return false;
+			return variadic;
 		}
 
 		public String getName() {
