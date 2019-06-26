@@ -24,6 +24,7 @@ import lama.StateToReproduce.MySQLStateToReproduce;
 import lama.mysql.MySQLSchema.MySQLColumn;
 import lama.mysql.MySQLSchema.MySQLTable;
 import lama.mysql.gen.MySQLAlterTable;
+import lama.mysql.gen.MySQLDeleteGenerator;
 import lama.mysql.gen.MySQLRowInserter;
 import lama.mysql.gen.MySQLSetGenerator;
 import lama.mysql.gen.MySQLTableGenerator;
@@ -48,7 +49,7 @@ public class MySQLProvider implements DatabaseProvider {
 
 	enum Action {
 		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR, OPTIMIZE, CHECKSUM, CHECK_TABLE, ANALYZE_TABLE, FLUSH, RESET,
-		CREATE_INDEX, ALTER_TABLE, TRUNCATE_TABLE, SELECT_INFO, CREATE_TABLE;
+		CREATE_INDEX, ALTER_TABLE, TRUNCATE_TABLE, SELECT_INFO, CREATE_TABLE, DELETE;
 	}
 
 	@Override
@@ -118,7 +119,11 @@ public class MySQLProvider implements DatabaseProvider {
 				break;
 			case SELECT_INFO:
 				nrPerformed = r.getInteger(0, 10);
+			case DELETE:
+				nrPerformed = r.getInteger(0, 10);
 				break;
+			default:
+				throw new AssertionError(action);
 			}
 			if (nrPerformed != 0) {
 				actions.add(action);
@@ -207,6 +212,9 @@ public class MySQLProvider implements DatabaseProvider {
 				case CREATE_TABLE:
 					String tableName = SQLite3Common.createTableName(newSchema.getDatabaseTables().size());
 					query = MySQLTableGenerator.generate(tableName, r, newSchema);
+					break;
+				case DELETE:
+					query = MySQLDeleteGenerator.delete(newSchema.getRandomTable(), r);
 					break;
 				default:
 					throw new AssertionError(nextAction);
