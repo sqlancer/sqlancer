@@ -8,13 +8,15 @@ import lama.mysql.ast.MySQLCastOperation;
 import lama.mysql.ast.MySQLColumnValue;
 import lama.mysql.ast.MySQLComputableFunction;
 import lama.mysql.ast.MySQLConstant;
+import lama.mysql.ast.MySQLExists;
 import lama.mysql.ast.MySQLExpression;
 import lama.mysql.ast.MySQLInOperation;
 import lama.mysql.ast.MySQLJoin;
 import lama.mysql.ast.MySQLOrderByTerm;
 import lama.mysql.ast.MySQLSelect;
-import lama.mysql.ast.MySQLUnaryPrefixOperation;
+import lama.mysql.ast.MySQLStringExpression;
 import lama.mysql.ast.MySQLUnaryPostfixOperator;
+import lama.mysql.ast.MySQLUnaryPrefixOperation;
 
 public class MySQLExpectedValueVisitor extends MySQLVisitor {
 
@@ -38,7 +40,7 @@ public class MySQLExpectedValueVisitor extends MySQLVisitor {
 		try {
 			super.visit(expr);
 		} catch (IgnoreMeException e) {
-			
+
 		}
 		nrTabs--;
 	}
@@ -122,6 +124,17 @@ public class MySQLExpectedValueVisitor extends MySQLVisitor {
 
 	@Override
 	public void visit(MySQLOrderByTerm op) {
+	}
+
+	@Override
+	public void visit(MySQLExists op) {
+		print(op);
+		visit(op.getExpr());
+	}
+
+	@Override
+	public void visit(MySQLStringExpression op) {
+		print(op);
 	}
 
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import lama.Randomly;
 import lama.mysql.MySQLSchema.MySQLColumn;
 import lama.mysql.MySQLSchema.MySQLRowValue;
+import lama.mysql.MySQLVisitor;
 import lama.mysql.ast.MySQLBinaryComparisonOperation;
 import lama.mysql.ast.MySQLBinaryComparisonOperation.BinaryComparisonOperator;
 import lama.mysql.ast.MySQLBinaryLogicalOperation;
@@ -19,8 +20,10 @@ import lama.mysql.ast.MySQLComputableFunction;
 import lama.mysql.ast.MySQLComputableFunction.MySQLFunction;
 import lama.mysql.ast.MySQLConstant;
 import lama.mysql.ast.MySQLConstant.MySQLTextConstant;
+import lama.mysql.ast.MySQLExists;
 import lama.mysql.ast.MySQLExpression;
 import lama.mysql.ast.MySQLInOperation;
+import lama.mysql.ast.MySQLStringExpression;
 import lama.mysql.ast.MySQLUnaryPostfixOperator;
 import lama.mysql.ast.MySQLUnaryPrefixOperation;
 import lama.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
@@ -31,7 +34,7 @@ public class MySQLRandomExpressionGenerator {
 
 	public static MySQLExpression generateRandomExpression(List<MySQLColumn> columns, MySQLRowValue rowVal,
 			Randomly r) {
-		
+
 		/* workaround for https://bugs.mysql.com/bug.php?id=95942 */
 		while (true) {
 			MySQLExpression gen = gen(columns, rowVal, 0, r);
@@ -55,7 +58,7 @@ public class MySQLRandomExpressionGenerator {
 
 	private enum Actions {
 		COLUMN, LITERAL, UNARY_PREFIX_OPERATION, UNARY_POSTFIX, FUNCTION, BINARY_LOGICAL_OPERATOR,
-		BINARY_COMPARISON_OPERATION, CAST, IN_OPERATION, BINARY_OPERATION;
+		BINARY_COMPARISON_OPERATION, CAST, IN_OPERATION, BINARY_OPERATION, EXISTS;
 	}
 
 	public static MySQLExpression gen(List<MySQLColumn> columns, MySQLRowValue rowVal, int depth, Randomly r) {
@@ -100,9 +103,20 @@ public class MySQLRandomExpressionGenerator {
 			}
 			return new MySQLInOperation(expr, rightList, Randomly.getBoolean());
 		case BINARY_OPERATION:
-			return new MySQLBinaryOperation(gen(columns, rowVal, depth + 1, r), gen(columns, rowVal, depth + 1, r), MySQLBinaryOperator.getRandom());
+			return new MySQLBinaryOperation(gen(columns, rowVal, depth + 1, r), gen(columns, rowVal, depth + 1, r),
+					MySQLBinaryOperator.getRandom());
+		case EXISTS:
+			return getExists(columns, rowVal, depth + 1, r);
 		default:
 			throw new AssertionError();
+		}
+	}
+
+	private static MySQLExpression getExists(List<MySQLColumn> columns, MySQLRowValue rowVal, int i, Randomly r) {
+		if (Randomly.getBoolean()) {
+			return new MySQLExists(new MySQLStringExpression("SELECT 1", MySQLConstant.createTrue()));
+		} else {
+			return new MySQLExists(new MySQLStringExpression("SELECT 1 wHERE FALSE", MySQLConstant.createFalse()));
 		}
 	}
 
@@ -148,6 +162,11 @@ public class MySQLRandomExpressionGenerator {
 			val = rowVal.getValues().get(c);
 		}
 		return MySQLColumnValue.create(c, val);
+	}
+
+	public static String generateRandomExpressionString(List<MySQLColumn> columns, Object object, Randomly r) {
+		MySQLExpression expr = generateRandomExpression(columns, null, r);
+		return MySQLVisitor.asString(expr);
 	}
 
 }

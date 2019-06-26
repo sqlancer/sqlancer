@@ -12,12 +12,14 @@ import lama.mysql.ast.MySQLCastOperation;
 import lama.mysql.ast.MySQLColumnValue;
 import lama.mysql.ast.MySQLComputableFunction;
 import lama.mysql.ast.MySQLConstant;
+import lama.mysql.ast.MySQLExists;
 import lama.mysql.ast.MySQLExpression;
 import lama.mysql.ast.MySQLInOperation;
 import lama.mysql.ast.MySQLJoin;
 import lama.mysql.ast.MySQLOrderByTerm;
 import lama.mysql.ast.MySQLOrderByTerm.MySQLOrder;
 import lama.mysql.ast.MySQLSelect;
+import lama.mysql.ast.MySQLStringExpression;
 import lama.mysql.ast.MySQLUnaryPostfixOperator;
 import lama.mysql.ast.MySQLUnaryPrefixOperation;
 
@@ -241,6 +243,18 @@ public class MySQLToStringVisitor extends MySQLVisitor {
 		visit(op.getExpr());
 		sb.append(" ");
 		sb.append(op.getOrder() == MySQLOrder.ASC ? "ASC" : "DESC");
+	}
+
+	@Override
+	public void visit(MySQLExists op) {
+		sb.append(" EXISTS (");
+		visit(op.getExpr());
+		sb.append(")");
+	}
+
+	@Override
+	public void visit(MySQLStringExpression op) {
+		sb.append(op.getStr());
 	}
 
 }
