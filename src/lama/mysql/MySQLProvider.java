@@ -25,6 +25,7 @@ import lama.mysql.MySQLSchema.MySQLColumn;
 import lama.mysql.MySQLSchema.MySQLTable;
 import lama.mysql.gen.MySQLAlterTable;
 import lama.mysql.gen.MySQLDeleteGenerator;
+import lama.mysql.gen.MySQLDropIndex;
 import lama.mysql.gen.MySQLRowInserter;
 import lama.mysql.gen.MySQLSetGenerator;
 import lama.mysql.gen.MySQLTableGenerator;
@@ -49,7 +50,7 @@ public class MySQLProvider implements DatabaseProvider {
 
 	enum Action {
 		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR, OPTIMIZE, CHECKSUM, CHECK_TABLE, ANALYZE_TABLE, FLUSH, RESET,
-		CREATE_INDEX, ALTER_TABLE, TRUNCATE_TABLE, SELECT_INFO, CREATE_TABLE, DELETE;
+		CREATE_INDEX, ALTER_TABLE, TRUNCATE_TABLE, SELECT_INFO, CREATE_TABLE, DELETE, DROP_INDEX;
 	}
 
 	@Override
@@ -79,6 +80,9 @@ public class MySQLProvider implements DatabaseProvider {
 			Action action = Action.values()[i];
 			int nrPerformed = 0;
 			switch (action) {
+			case DROP_INDEX:
+				nrPerformed = r.getInteger(0, 2);
+				break;
 			case SHOW_TABLES:
 				nrPerformed = r.getInteger(0, 1);
 				break;
@@ -216,10 +220,14 @@ public class MySQLProvider implements DatabaseProvider {
 				case DELETE:
 					query = MySQLDeleteGenerator.delete(newSchema.getRandomTable(), r);
 					break;
+				case DROP_INDEX:
+					query = MySQLDropIndex.generate(newSchema.getRandomTable());
+					break;
 				default:
 					throw new AssertionError(nextAction);
 				}
 			} catch (IgnoreMeException e) {
+				total--;
 				continue;
 			}
 			try {

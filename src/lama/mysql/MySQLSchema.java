@@ -297,10 +297,12 @@ public class MySQLSchema {
 
 		private final String tableName;
 		private final List<MySQLColumn> columns;
+		private final List<MySQLIndex> indexes;
 		private final MySQLEngine engine;
 
-		public MySQLTable(String tableName, List<MySQLColumn> columns, MySQLEngine engine) {
+		public MySQLTable(String tableName, List<MySQLColumn> columns, List<MySQLIndex> indexes, MySQLEngine engine) {
 			this.tableName = tableName;
+			this.indexes = indexes;
 			this.engine = engine;
 			this.columns = Collections.unmodifiableList(columns);
 		}
@@ -313,6 +315,10 @@ public class MySQLSchema {
 				sb.append("\t" + c + "\n");
 			}
 			return sb.toString();
+		}
+
+		public List<MySQLIndex> getIndexes() {
+			return indexes;
 		}
 
 		public String getName() {
@@ -335,6 +341,14 @@ public class MySQLSchema {
 			return Randomly.fromList(columns);
 		}
 
+		public boolean hasIndexes() {
+			return !indexes.isEmpty();
+		}
+
+		public MySQLIndex getRandomIndex() {
+			return Randomly.fromList(indexes);
+		}
+
 		@Override
 		public int compareTo(MySQLTable o) {
 			return o.getName().compareTo(tableName);
@@ -353,6 +367,28 @@ public class MySQLSchema {
 		}
 	}
 
+	public static final class MySQLIndex {
+
+		private final String indexName;
+
+		private MySQLIndex(String indexName) {
+			this.indexName = indexName;
+		}
+
+		public static MySQLIndex create(String indexName) {
+			return new MySQLIndex(indexName);
+		}
+
+		public String getIndexName() {
+			if (indexName.contentEquals("PRIMARY")) {
+				return "`PRIMARY`";
+			} else {
+				return indexName;
+			}
+		}
+
+	}
+
 	static public MySQLSchema fromConnection(Connection con, String databaseName) throws SQLException {
 		Exception ex = null;
 		/* the loop is a workaround for https://bugs.mysql.com/bug.php?id=95929 */
@@ -368,7 +404,8 @@ public class MySQLSchema {
 							String tableEngineStr = rs.getString("ENGINE");
 							MySQLEngine engine = MySQLEngine.get(tableEngineStr);
 							List<MySQLColumn> databaseColumns = getTableColumns(con, tableName, databaseName);
-							MySQLTable t = new MySQLTable(tableName, databaseColumns, engine);
+							List<MySQLIndex> indexes = getIndexes(con, tableName, databaseName);
+							MySQLTable t = new MySQLTable(tableName, databaseColumns, indexes, engine);
 							for (MySQLColumn c : databaseColumns) {
 								c.setTable(t);
 							}
@@ -382,6 +419,22 @@ public class MySQLSchema {
 			}
 		}
 		throw new AssertionError(ex);
+	}
+
+	private static List<MySQLIndex> getIndexes(Connection con, String tableName, String databaseName)
+			throws SQLException {
+		List<MySQLIndex> indexes = new ArrayList<>();
+		try (Statement s = con.createStatement()) {
+			try (ResultSet rs = s.executeQuery(String.format(
+					"SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = '%s' AND TABLE_NAME='%s';",
+					databaseName, tableName))) {
+				while (rs.next()) {
+					String indexName = rs.getString("INDEX_NAME");
+					indexes.add(MySQLIndex.create(indexName));
+				}
+			}
+		}
+		return indexes;
 	}
 
 	private static List<MySQLColumn> getTableColumns(Connection con, String tableName, String databaseName)
