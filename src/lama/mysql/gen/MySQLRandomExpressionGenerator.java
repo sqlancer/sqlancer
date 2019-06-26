@@ -7,6 +7,7 @@ import lama.Randomly;
 import lama.mysql.MySQLSchema.MySQLColumn;
 import lama.mysql.MySQLSchema.MySQLRowValue;
 import lama.mysql.MySQLVisitor;
+import lama.mysql.ast.MySQLBetweenOperation;
 import lama.mysql.ast.MySQLBinaryComparisonOperation;
 import lama.mysql.ast.MySQLBinaryComparisonOperation.BinaryComparisonOperator;
 import lama.mysql.ast.MySQLBinaryLogicalOperation;
@@ -30,7 +31,7 @@ import lama.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 
 public class MySQLRandomExpressionGenerator {
 
-	private final static int MAX_DEPTH = 1;
+	private final static int MAX_DEPTH = 2;
 
 	public static MySQLExpression generateRandomExpression(List<MySQLColumn> columns, MySQLRowValue rowVal,
 			Randomly r) {
@@ -58,11 +59,11 @@ public class MySQLRandomExpressionGenerator {
 
 	private enum Actions {
 		COLUMN, LITERAL, UNARY_PREFIX_OPERATION, UNARY_POSTFIX, FUNCTION, BINARY_LOGICAL_OPERATOR,
-		BINARY_COMPARISON_OPERATION, CAST, IN_OPERATION, BINARY_OPERATION, EXISTS;
+		BINARY_COMPARISON_OPERATION, CAST, IN_OPERATION, BINARY_OPERATION, EXISTS, BETWEEN_OPERATOR;
 	}
 
 	public static MySQLExpression gen(List<MySQLColumn> columns, MySQLRowValue rowVal, int depth, Randomly r) {
-		if (depth > MAX_DEPTH) {
+		if (depth >= MAX_DEPTH) {
 			if (Randomly.getBoolean() && !columns.isEmpty()) {
 				return generateColumn(columns, rowVal);
 			} else {
@@ -107,6 +108,8 @@ public class MySQLRandomExpressionGenerator {
 					MySQLBinaryOperator.getRandom());
 		case EXISTS:
 			return getExists(columns, rowVal, depth + 1, r);
+		case BETWEEN_OPERATOR:
+			return new MySQLBetweenOperation(gen(columns, rowVal, depth + 1, r), gen(columns, rowVal, depth + 1, r), gen(columns, rowVal, depth + 1, r));
 		default:
 			throw new AssertionError();
 		}
