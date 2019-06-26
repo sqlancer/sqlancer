@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import lama.MainOptions;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
@@ -13,12 +14,16 @@ public class MySQLSetGenerator {
 	private final Randomly r;
 	private final StringBuilder sb = new StringBuilder();
 
-	public MySQLSetGenerator(Randomly r) {
+	// currently, global options are only generated when a single thread is executed
+	private boolean isSingleThreaded;
+
+	public MySQLSetGenerator(Randomly r, MainOptions options) {
 		this.r = r;
+		this.isSingleThreaded = options.getTotalNumberMysqlThreads() == 1;
 	}
 
-	public static Query set(Randomly r) {
-		return new MySQLSetGenerator(r).get();
+	public static Query set(Randomly r, MainOptions options) {
+		return new MySQLSetGenerator(r, options).get();
 	}
 
 	private enum Scope {
@@ -157,9 +162,8 @@ public class MySQLSetGenerator {
 
 	private Query get() {
 		sb.append("SET ");
-		boolean singleThreaded = true;
 		Action a;
-		if (singleThreaded) {
+		if (isSingleThreaded) {
 			a = Randomly.fromOptions(Action.values());
 			Scope[] scopes = a.getScopes();
 			Scope randomScope = Randomly.fromOptions(scopes);
@@ -177,7 +181,7 @@ public class MySQLSetGenerator {
 		} else {
 			do {
 				a = Randomly.fromOptions(Action.values());
-			} while (a.canBeUsedInScope(Scope.SESSION));
+			} while (!a.canBeUsedInScope(Scope.SESSION));
 			sb.append("SESSION");
 		}
 		sb.append(" ");

@@ -153,7 +153,7 @@ public class MySQLProvider implements DatabaseProvider {
 					query = MySQLRowInserter.insertRow(newSchema.getRandomTable(), r);
 					break;
 				case SET_VARIABLE:
-					query = MySQLSetGenerator.set(r);
+					query = MySQLSetGenerator.set(r, options);
 					break;
 				case REPAIR:
 					query = MySQLRepair.repair(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
