@@ -1,6 +1,7 @@
 package lama.mysql;
 
 import lama.IgnoreMeException;
+import lama.mysql.ast.MySQLBetweenOperation;
 import lama.mysql.ast.MySQLBinaryComparisonOperation;
 import lama.mysql.ast.MySQLBinaryLogicalOperation;
 import lama.mysql.ast.MySQLBinaryOperation;
@@ -135,6 +136,14 @@ public class MySQLExpectedValueVisitor extends MySQLVisitor {
 	@Override
 	public void visit(MySQLStringExpression op) {
 		print(op);
+	}
+
+	@Override
+	public void visit(MySQLBetweenOperation op) {
+		print(op);
+		visit(op.getExpr());
+		visit(op.getLeft());
+		visit(op.getRight());
 	}
 
 }

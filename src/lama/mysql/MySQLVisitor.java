@@ -1,5 +1,6 @@
 package lama.mysql;
 
+import lama.mysql.ast.MySQLBetweenOperation;
 import lama.mysql.ast.MySQLBinaryComparisonOperation;
 import lama.mysql.ast.MySQLBinaryLogicalOperation;
 import lama.mysql.ast.MySQLBinaryOperation;
@@ -45,6 +46,8 @@ public abstract class MySQLVisitor {
 	public abstract void visit(MySQLExists op);
 
 	public abstract void visit(MySQLStringExpression op);
+	
+	public abstract void visit(MySQLBetweenOperation op);
 
 	public void visit(MySQLExpression expr) {
 		if (expr instanceof MySQLConstant) {
@@ -75,6 +78,8 @@ public abstract class MySQLVisitor {
 			visit((MySQLExists) expr);
 		} else if (expr instanceof MySQLStringExpression) {
 			visit((MySQLStringExpression) expr);
+		} else if (expr instanceof MySQLBetweenOperation) {
+			visit((MySQLBetweenOperation) expr);
 		} else {
 			throw new AssertionError(expr);
 		}
