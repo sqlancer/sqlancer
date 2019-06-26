@@ -1,5 +1,7 @@
 package lama.mysql.ast;
 
+import java.util.function.BinaryOperator;
+
 import lama.IgnoreMeException;
 import lama.Randomly;
 import lama.mysql.ast.MySQLCastOperation.CastType;
@@ -15,16 +17,34 @@ public class MySQLBinaryOperation extends MySQLExpression {
 		AND("&") {
 			@Override
 			public MySQLConstant apply(MySQLConstant left, MySQLConstant right) {
-				if (left.isNull() || right.isNull()) {
-					return MySQLConstant.createNullConstant();
-				} else {
-					long leftVal = left.castAs(CastType.SIGNED).getInt();
-					long rightVal = right.castAs(CastType.SIGNED).getInt();
-					long value = leftVal & rightVal;
-					return MySQLConstant.createUnsignedIntConstant(value);
-				}
+				return applyBitOperation(left, right, (l, r) -> l & r);
+			}
+
+		},
+		OR("|") {
+			@Override
+			public MySQLConstant apply(MySQLConstant left, MySQLConstant right) {
+				return applyBitOperation(left, right, (l, r) -> l | r);
+			}
+		},
+		XOR("^") {
+			@Override
+			public MySQLConstant apply(MySQLConstant left, MySQLConstant right) {
+				return applyBitOperation(left, right, (l, r) -> l ^ r);
 			}
 		};
+
+		private static MySQLConstant applyBitOperation(MySQLConstant left, MySQLConstant right,
+				BinaryOperator<Long> op) {
+			if (left.isNull() || right.isNull()) {
+				return MySQLConstant.createNullConstant();
+			} else {
+				long leftVal = left.castAs(CastType.SIGNED).getInt();
+				long rightVal = right.castAs(CastType.SIGNED).getInt();
+				long value = op.apply(leftVal, rightVal);
+				return MySQLConstant.createUnsignedIntConstant(value);
+			}
+		}
 
 		private String textRepresentation;
 
