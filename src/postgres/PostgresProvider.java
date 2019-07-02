@@ -28,6 +28,7 @@ import postgres.PostgresSchema.PostgresTable;
 import postgres.ast.PostgresExpression;
 import postgres.gen.PostgresAlterTableGenerator;
 import postgres.gen.PostgresAnalyzeGenerator;
+import postgres.gen.PostgresClusterGenerator;
 import postgres.gen.PostgresDeleteGenerator;
 import postgres.gen.PostgresDiscardGenerator;
 import postgres.gen.PostgresDropIndex;
@@ -48,7 +49,7 @@ public class PostgresProvider implements DatabaseProvider {
 	private QueryManager manager;
 	
 	private enum Action {
-		ANALYZE, ALTER_TABLE, COMMIT, DELETE, DISCARD, DROP_INDEX, INSERT, UPDATE, TRUNCATE, VACUUM, REINDEX, SET, CREATE_INDEX;
+		ANALYZE, ALTER_TABLE, CLUSTER, COMMIT, DELETE, DISCARD, DROP_INDEX, INSERT, UPDATE, TRUNCATE, VACUUM, REINDEX, SET, CREATE_INDEX;
 	}
 
 	@Override
@@ -78,12 +79,16 @@ public class PostgresProvider implements DatabaseProvider {
 			switch (action) {
 			case DISCARD:
 			case CREATE_INDEX:
+			case CLUSTER:
 				nrPerformed = r.getInteger(0, 5);
+				break;
+			case COMMIT:
+				nrPerformed = r.getInteger(0, 50);
 				break;
 			case DROP_INDEX:
 			case ALTER_TABLE:
-			case COMMIT:
-				nrPerformed = r.getInteger(0, 2);
+				nrPerformed = r.getInteger(0, 20);
+				break;
 			case REINDEX:
 			case TRUNCATE:
 			case DELETE:
@@ -127,11 +132,19 @@ public class PostgresProvider implements DatabaseProvider {
 				case ANALYZE:
 					query = PostgresAnalyzeGenerator.create(newSchema.getRandomTable());
 					break;
+				case CLUSTER:
+					query = PostgresClusterGenerator.create(newSchema);
 				case ALTER_TABLE:
 					query = PostgresAlterTableGenerator.create(newSchema.getRandomTable(), r);
 					break;
 				case COMMIT:
-					query = new QueryAdapter("COMMIT");
+					if (Randomly.getBoolean()) {
+						query = new QueryAdapter("COMMIT");
+					} else if (Randomly.getBoolean()) {
+						query = new QueryAdapter("BEGIN");
+					} else {
+						query = new QueryAdapter("ROLLBACK");
+					}
 					break;
 				case CREATE_INDEX:
 					query = PostgresIndexGenerator.generate(newSchema, r);
@@ -179,11 +192,18 @@ public class PostgresProvider implements DatabaseProvider {
 					newSchema = PostgresSchema.fromConnection(con, databaseName);
 				}
 			} catch (Throwable t) {
-				System.err.println(query.getQueryString());
-				throw t;
+				if (t.getMessage().contains("current transaction is aborted")) {
+					manager.execute(new QueryAdapter("ABORT"));
+				} else {
+					System.err.println(query.getQueryString());
+					throw t;
+				}
 			}
 			total--;
 		}
+		manager.execute(new QueryAdapter("COMMIT"));
+		newSchema = PostgresSchema.fromConnection(con, databaseName);
+		
 		for (PostgresTable t : newSchema.getDatabaseTables()) {
 			if (!ensureTableHasRows(con, t, r)) {
 				return;

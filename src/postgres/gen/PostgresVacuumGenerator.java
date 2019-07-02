@@ -58,6 +58,8 @@ public class PostgresVacuumGenerator {
 						 * https://www.postgresql.org/message-id/CA%2Bu7OA6pL%
 						 * 2B7Xm_NXHLenxffe3tCr3gTamVdr7zPjcWqW0RFM-A%40mail.gmail.com
 						 */
+					} else if (e.getMessage().contains("VACUUM cannot run inside a transaction block")) {
+						
 					} else {
 						throw e;
 					}
