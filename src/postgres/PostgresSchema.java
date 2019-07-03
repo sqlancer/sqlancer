@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import lama.Randomly;
 import lama.StateToReproduce.PostgresStateToReproduce;
 import lama.sqlite3.schema.SQLite3Schema.Column;
+import postgres.PostgresSchema.PostgresTable.TableType;
 import postgres.ast.PostgresConstant;
 
 public class PostgresSchema {
@@ -250,15 +251,21 @@ public class PostgresSchema {
 	}
 
 	public static class PostgresTable implements Comparable<PostgresTable> {
+		
+		public enum TableType {
+			STANDARD, TEMPORARY
+		}
 
 		private final String tableName;
 		private final List<PostgresColumn> columns;
 		private final List<PostgresIndex> indexes;
+		private final TableType tableType;
 
-		public PostgresTable(String tableName, List<PostgresColumn> columns, List<PostgresIndex> indexes) {
+		public PostgresTable(String tableName, List<PostgresColumn> columns, List<PostgresIndex> indexes, TableType tableType) {
 			this.tableName = tableName;
 			this.indexes = indexes;
 			this.columns = Collections.unmodifiableList(columns);
+			this.tableType = tableType;
 		}
 
 		@Override
@@ -311,6 +318,10 @@ public class PostgresSchema {
 		public List<PostgresColumn> getRandomNonEmptyColumnSubset() {
 			return Randomly.nonEmptySubset(getColumns());
 		}
+		
+		public TableType getTableType() {
+			return tableType;
+		}
 
 	}
 
@@ -342,12 +353,14 @@ public class PostgresSchema {
 			List<PostgresTable> databaseTables = new ArrayList<>();
 			try (Statement s = con.createStatement()) {
 				try (ResultSet rs = s.executeQuery(
-						"SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'")) {
+						"SELECT table_name, table_schema FROM information_schema.tables WHERE table_schema='public' OR table_schema LIKE 'pg_temp_%';")) {
 					while (rs.next()) {
 						String tableName = rs.getString("table_name");
+						String tableTypeStr = rs.getString("table_schema");
+						PostgresTable.TableType tableType = getTableType(tableTypeStr);
 						List<PostgresColumn> databaseColumns = getTableColumns(con, tableName, databaseName);
 						List<PostgresIndex> indexes = getIndexes(con, tableName, databaseName);
-						PostgresTable t = new PostgresTable(tableName, databaseColumns, indexes);
+						PostgresTable t = new PostgresTable(tableName, databaseColumns, indexes, tableType);
 						for (PostgresColumn c : databaseColumns) {
 							c.setTable(t);
 						}
@@ -360,6 +373,18 @@ public class PostgresSchema {
 			ex = e;
 		}
 		throw new AssertionError(ex);
+	}
+
+	private static PostgresTable.TableType getTableType(String tableTypeStr) throws AssertionError {
+		PostgresTable.TableType tableType;
+		if (tableTypeStr.contentEquals("public")) {
+			tableType = TableType.STANDARD;
+		} else if (tableTypeStr.startsWith("pg_temp")) {
+			tableType = TableType.TEMPORARY;
+		} else {
+			throw new AssertionError(tableTypeStr);
+		}
+		return tableType;
 	}
 
 	private static List<PostgresIndex> getIndexes(Connection con, String tableName, String databaseName)

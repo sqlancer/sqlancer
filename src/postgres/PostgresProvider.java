@@ -43,13 +43,14 @@ import postgres.gen.PostgresUpdateGenerator;
 import postgres.gen.PostgresVacuumGenerator;
 
 public class PostgresProvider implements DatabaseProvider {
-	
+
 	private static final int NR_QUERIES_PER_TABLE = 10000;
 	Randomly r = new Randomly();
 	private QueryManager manager;
-	
+
 	private enum Action {
-		ANALYZE, ALTER_TABLE, CLUSTER, COMMIT, DELETE, DISCARD, DROP_INDEX, INSERT, UPDATE, TRUNCATE, VACUUM, REINDEX, SET, CREATE_INDEX;
+		ANALYZE, ALTER_TABLE, CLUSTER, COMMIT, DELETE, DISCARD, DROP_INDEX, INSERT, UPDATE, TRUNCATE, VACUUM, REINDEX,
+		SET, CREATE_INDEX;
 	}
 
 	@Override
@@ -97,8 +98,10 @@ public class PostgresProvider implements DatabaseProvider {
 				nrPerformed = r.getInteger(0, 2);
 				break;
 			case UPDATE:
-			case INSERT:
 			case SET:
+				nrPerformed = 30;
+				break;
+			case INSERT:
 				nrPerformed = 30;
 				break;
 			default:
@@ -110,7 +113,7 @@ public class PostgresProvider implements DatabaseProvider {
 			nrRemaining[action.ordinal()] = nrPerformed;
 			total += nrPerformed;
 		}
-		
+
 		while (total != 0) {
 			Action nextAction = null;
 			int selection = r.getInteger(0, total);
@@ -150,7 +153,7 @@ public class PostgresProvider implements DatabaseProvider {
 					query = PostgresIndexGenerator.generate(newSchema, r);
 					break;
 				case DISCARD:
-					query = PostgresDiscardGenerator.create();
+					query = PostgresDiscardGenerator.create(newSchema);
 					break;
 				case DELETE:
 					query = PostgresDeleteGenerator.create(newSchema.getRandomTable(), r);
@@ -203,13 +206,13 @@ public class PostgresProvider implements DatabaseProvider {
 		}
 		manager.execute(new QueryAdapter("COMMIT"));
 		newSchema = PostgresSchema.fromConnection(con, databaseName);
-		
+
 		for (PostgresTable t : newSchema.getDatabaseTables()) {
 			if (!ensureTableHasRows(con, t, r)) {
 				return;
 			}
 		}
-		
+
 		newSchema = PostgresSchema.fromConnection(con, databaseName);
 
 		PostgresQueryGenerator queryGenerator = new PostgresQueryGenerator(manager, r, con, databaseName);
@@ -221,9 +224,9 @@ public class PostgresProvider implements DatabaseProvider {
 			}
 			manager.incrementSelectQueryCount();
 		}
-		
+
 	}
-	
+
 	private boolean ensureTableHasRows(Connection con, PostgresTable randomTable, Randomly r) throws SQLException {
 		int nrRows;
 		int counter = 5;
@@ -240,7 +243,7 @@ public class PostgresProvider implements DatabaseProvider {
 		} while (nrRows == 0 && counter-- != 0);
 		return nrRows != 0;
 	}
-	
+
 	public static int getNrRows(Connection con, PostgresTable table) throws SQLException {
 		try (Statement s = con.createStatement()) {
 			try (ResultSet query = s.executeQuery("SELECT COUNT(*) FROM " + table.getName())) {

@@ -36,7 +36,7 @@ public class PostgresTableGenerator {
 		this.tableName = tableName;
 		this.r = r;
 		this.newSchema = newSchema;
-		table = new PostgresTable(tableName, columnsToBeAdded, null);
+		table = new PostgresTable(tableName, columnsToBeAdded, null, null);
 		errors.add("invalid input syntax for");
 		errors.add("is not unique");
 	}
@@ -49,6 +49,9 @@ public class PostgresTableGenerator {
 		columnCanHavePrimaryKey = true;
 		sb.append("CREATE");
 		if (Randomly.getBoolean()) {
+			sb.append(" ");
+			sb.append(Randomly.fromOptions("TEMPORARY", "TEMP"));
+		} else if (Randomly.getBoolean()) {
 			sb.append(" UNLOGGED");
 		}
 		sb.append(" TABLE");

@@ -94,6 +94,7 @@ public class PostgresAlterTableGenerator {
 					sb.append("SET DEFAULT ");
 					sb.append(PostgresVisitor
 							.asString(PostgresExpressionGenerator.generateExpression(r, randomColumn.getColumnType())));
+					errors.add("is out of range");
 				}
 				break;
 			case ALTER_COLUMN_SET_STATISTICS:
