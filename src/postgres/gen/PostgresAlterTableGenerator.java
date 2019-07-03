@@ -12,6 +12,7 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import postgres.PostgresSchema.PostgresColumn;
+import postgres.PostgresSchema.PostgresDataType;
 import postgres.PostgresSchema.PostgresTable;
 import postgres.PostgresVisitor;
 
@@ -23,9 +24,19 @@ public class PostgresAlterTableGenerator {
 	private static PostgresColumn randomColumn;
 
 	private enum Action {
-		ALTER_TABLE_DROP_COLUMN, ALTER_COLUMN_SET_DROP_DEFAULT, ALTER_COLUMN_SET_STATISTICS,
-		ALTER_COLUMN_SET_ATTRIBUTE_OPTION, ALTER_COLUMN_RESET_ATTRIBUTE_OPTION, ALTER_COLUMN_SET_STORAGE, SET_WITHOUT_CLUSTER, SET_WITH_OIDS,
-		SET_WITHOUT_OIDS, NOT_OF
+		// TODO:     ADD [ COLUMN ] column data_type [ COLLATE collation ] [ column_constraint [ ... ] ]
+		ALTER_TABLE_DROP_COLUMN, //     DROP [ COLUMN ] [ IF EXISTS ] column [ RESTRICT | CASCADE ]
+		ALTER_COLUMN_TYPE, //     ALTER [ COLUMN ] column [ SET DATA ] TYPE data_type [ COLLATE collation ] [ USING expression ]
+		ALTER_COLUMN_SET_DROP_DEFAULT, // ALTER [ COLUMN ] column SET DEFAULT expression and ALTER [ COLUMN ] column DROP DEFAULT
+		ALTER_COLUMN_SET_DROP_NULL, // ALTER [ COLUMN ] column { SET | DROP } NOT NULL
+		ALTER_COLUMN_SET_STATISTICS, // ALTER [ COLUMN ] column SET STATISTICS integer
+		ALTER_COLUMN_SET_ATTRIBUTE_OPTION, // ALTER [ COLUMN ] column SET ( attribute_option = value [, ... ] )
+		ALTER_COLUMN_RESET_ATTRIBUTE_OPTION, // ALTER [ COLUMN ] column RESET ( attribute_option [, ... ] )
+		ALTER_COLUMN_SET_STORAGE, // ALTER [ COLUMN ] column SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
+		SET_WITHOUT_CLUSTER, //
+		SET_WITH_OIDS, //
+		SET_WITHOUT_OIDS, //
+		NOT_OF
 	}
 
 	public PostgresAlterTableGenerator(PostgresTable randomTable, Randomly r) {
@@ -86,6 +97,25 @@ public class PostgresAlterTableGenerator {
 				errors.add("cannot drop column referenced in partition key expression");
 				errors.add("cannot drop column named in partition key");
 				break;
+			case ALTER_COLUMN_TYPE:
+				alterColumn(randomTable, sb);
+				if (Randomly.getBoolean()) {
+					sb.append(" SET DATA");
+				}
+				sb.append(" TYPE ");
+				PostgresDataType randomType = PostgresDataType.getRandomType();
+				PostgresCommon.appendDataType(randomType, sb, false);
+				// TODO [ COLLATE collation ] [ USING expression ]
+				errors.add("cannot be cast automatically");
+				errors.add("is an identity column");
+				errors.add("identity column type must be smallint, integer, or bigint");
+				errors.add("out of range");
+				errors.add("cannot alter type of column named in partition key");
+				errors.add("cannot alter type of column referenced in partition key expression");
+				errors.add("argument of CHECK must be type boolean");
+				errors.add("operator does not exist");
+				changesSchema = true;
+				break;
 			case ALTER_COLUMN_SET_DROP_DEFAULT:
 				alterColumn(randomTable, sb);
 				if (Randomly.getBoolean()) {
@@ -95,6 +125,18 @@ public class PostgresAlterTableGenerator {
 					sb.append(PostgresVisitor
 							.asString(PostgresExpressionGenerator.generateExpression(r, randomColumn.getColumnType())));
 					errors.add("is out of range");
+				}
+				errors.add("is an identity column");
+				break;
+			case ALTER_COLUMN_SET_DROP_NULL:
+				alterColumn(randomTable, sb);
+				if (Randomly.getBoolean()) {
+					sb.append("SET NOT NULL");
+					errors.add("contains null values");
+				} else {
+					sb.append("DROP NOT NULL");
+					errors.add("is in a primary key");
+					errors.add("is an identity column");
 				}
 				break;
 			case ALTER_COLUMN_SET_STATISTICS:
@@ -136,12 +178,14 @@ public class PostgresAlterTableGenerator {
 				sb.append("SET STORAGE ");
 				sb.append(Randomly.fromOptions("PLAIN", "EXTERNAL", "EXTENDED", "MAIN"));
 				errors.add("can only have storage");
+				errors.add("is an identity column");
 				break;
 			case SET_WITHOUT_CLUSTER:
 				sb.append("SET WITHOUT CLUSTER");
 				errors.add("cannot mark index clustered in partitioned table");
 				break;
 			case SET_WITH_OIDS:
+				errors.add("is an identity column");
 				sb.append("SET WITH OIDS");
 				break;
 			case SET_WITHOUT_OIDS:

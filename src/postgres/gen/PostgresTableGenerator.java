@@ -45,6 +45,10 @@ public class PostgresTableGenerator {
 		return new PostgresTableGenerator(tableName, r, newSchema).generate();
 	}
 
+	private enum TableConstraints {
+		CHECK, UNIQUE, PRIMARY_KEY
+	}
+
 	private Query generate() {
 		columnCanHavePrimaryKey = true;
 		sb.append("CREATE");
@@ -66,30 +70,39 @@ public class PostgresTableGenerator {
 				sb.append(", ");
 			}
 			String name = SQLite3Common.createColumnName(i);
-			sb.append(name);
-			sb.append(" ");
-			PostgresDataType type = PostgresDataType.getRandomType();
-			boolean serial = false;
-			switch (type) {
-			case BOOLEAN:
-				sb.append("boolean");
-				break;
-			case INT:
-				serial = true;
-				sb.append(Randomly.fromOptions("smallint", "integer", "bigint", "serial", "bigserial"));
-				break;
-			case TEXT:
-				sb.append("TEXT");
-				break;
-			default:
-				throw new AssertionError(type);
+			createColumn(name);
+		}
+		if (Randomly.getBoolean()) {
+			List<TableConstraints> tableConstraints = Randomly.nonEmptySubset(TableConstraints.values());
+			if (columnHasPrimaryKey) {
+				tableConstraints.remove(TableConstraints.PRIMARY_KEY);
 			}
-			PostgresColumn c = new PostgresColumn(name, type);
-			c.setTable(table);
-			columnsToBeAdded.add(c);
-			sb.append(" ");
-			if (Randomly.getBoolean()) {
-				createColumnConstraint(type, serial);
+			for (TableConstraints t : tableConstraints) {
+				sb.append(", ");
+				// TODO add index parameters
+				switch (t) {
+				case CHECK:
+					sb.append("CHECK(");
+					sb.append(MySQLVisitor.getExpressionAsString(r, PostgresDataType.BOOLEAN, columnsToBeAdded));
+					sb.append(")");
+					break;
+				case UNIQUE:
+					sb.append("UNIQUE(");
+					sb.append(table.getRandomNonEmptyColumnSubset().stream().map(c -> c.getName())
+							.collect(Collectors.joining(", ")));
+					sb.append(")");
+					break;
+				case PRIMARY_KEY:
+					sb.append("PRIMARY KEY(");
+					sb.append(table.getRandomNonEmptyColumnSubset().stream().map(c -> c.getName())
+							.collect(Collectors.joining(", ")));
+					sb.append(")");
+					break;
+				default:
+					throw new AssertionError(t);
+				}
+			}
+			for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
 			}
 		}
 		sb.append(")");
@@ -125,7 +138,21 @@ public class PostgresTableGenerator {
 			}
 		};
 	}
-	
+
+	private void createColumn(String name) throws AssertionError {
+		sb.append(name);
+		sb.append(" ");
+		PostgresDataType type = PostgresDataType.getRandomType();
+		boolean serial = PostgresCommon.appendDataType(type, sb, true);
+		PostgresColumn c = new PostgresColumn(name, type);
+		c.setTable(table);
+		columnsToBeAdded.add(c);
+		sb.append(" ");
+		if (Randomly.getBoolean()) {
+			createColumnConstraint(type, serial);
+		}
+	}
+
 	private void generatePartitionBy() {
 		if (Randomly.getBoolean()) {
 			return;

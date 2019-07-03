@@ -44,7 +44,7 @@ import postgres.gen.PostgresVacuumGenerator;
 
 public class PostgresProvider implements DatabaseProvider {
 
-	private static final int NR_QUERIES_PER_TABLE = 10000;
+	private static final int NR_QUERIES_PER_TABLE = 100;
 	Randomly r = new Randomly();
 	private QueryManager manager;
 
@@ -95,11 +95,11 @@ public class PostgresProvider implements DatabaseProvider {
 			case DELETE:
 			case VACUUM:
 			case ANALYZE:
-				nrPerformed = r.getInteger(0, 2);
+				nrPerformed = r.getInteger(0, 5);
 				break;
 			case UPDATE:
 			case SET:
-				nrPerformed = 30;
+				nrPerformed = 50;
 				break;
 			case INSERT:
 				nrPerformed = 30;
@@ -142,11 +142,26 @@ public class PostgresProvider implements DatabaseProvider {
 					break;
 				case COMMIT:
 					if (Randomly.getBoolean()) {
-						query = new QueryAdapter("COMMIT");
+						query = new QueryAdapter("COMMIT") {
+							@Override
+							public boolean couldAffectSchema() {
+								return true;
+							}
+						};
 					} else if (Randomly.getBoolean()) {
-						query = new QueryAdapter("BEGIN");
+						query = new QueryAdapter("BEGIN") {
+							@Override
+							public boolean couldAffectSchema() {
+								return true;
+							}
+						};
 					} else {
-						query = new QueryAdapter("ROLLBACK");
+						query = new QueryAdapter("ROLLBACK") {
+							@Override
+							public boolean couldAffectSchema() {
+								return true;
+							}
+						};
 					}
 					break;
 				case CREATE_INDEX:
@@ -197,6 +212,7 @@ public class PostgresProvider implements DatabaseProvider {
 			} catch (Throwable t) {
 				if (t.getMessage().contains("current transaction is aborted")) {
 					manager.execute(new QueryAdapter("ABORT"));
+					newSchema = PostgresSchema.fromConnection(con, databaseName);
 				} else {
 					System.err.println(query.getQueryString());
 					throw t;

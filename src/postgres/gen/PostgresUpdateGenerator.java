@@ -26,7 +26,7 @@ public class PostgresUpdateGenerator {
 		sb.append(randomTable.getName());
 		sb.append(" SET ");
 		List<String> errors = new ArrayList(Arrays.asList("violates not-null constraint", "violates unique constraint",
-				"out of range", "cannot cast", "must be type boolean", "is not unique"));
+				"out of range", "cannot cast", "must be type boolean", "is not unique", "can only be updated to DEFAULT"));
 		List<PostgresColumn> columns = randomTable.getRandomNonEmptyColumnSubset();
 		for (int i = 0; i < columns.size(); i++) {
 			if (i != 0) {
@@ -51,6 +51,7 @@ public class PostgresUpdateGenerator {
 		}
 		errors.add("invalid input syntax for ");
 		errors.add("operator does not exist: text = boolean");
+		errors.add("violates check constraint");
 		if (!Randomly.getBooleanWithSmallProbability()) {
 			sb.append(" WHERE ");
 			PostgresExpression where = PostgresExpressionGenerator.generateExpression(r, randomTable.getColumns(),

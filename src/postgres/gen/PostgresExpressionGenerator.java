@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import lama.IgnoreMeException;
 import lama.Randomly;
 import lama.postgres.ast.PostgresComputableFunction;
 import lama.postgres.ast.PostgresComputableFunction.PostgresFunction;
@@ -26,7 +27,7 @@ import postgres.ast.PostgresPrefixOperation.PrefixOperator;
 
 public class PostgresExpressionGenerator {
 
-	private final int MAX_DEPTH = 2;
+	private final int MAX_DEPTH = 10;
 
 	private Randomly r;
 
@@ -73,6 +74,9 @@ public class PostgresExpressionGenerator {
 	private PostgresExpression generateFunction(int depth, PostgresDataType type) {
 		List<PostgresFunction> functions = Stream.of(PostgresComputableFunction.PostgresFunction.values())
 				.filter(f -> f.supportsReturnType(type)).collect(Collectors.toList());
+		if (functions.isEmpty()) {
+			throw new IgnoreMeException();
+		}
 		PostgresFunction randomFunction = Randomly.fromList(functions);
 		int nrArgs = randomFunction.getNrArgs();
 		if (randomFunction.isVariadic()) {
@@ -92,7 +96,11 @@ public class PostgresExpressionGenerator {
 	private PostgresExpression generateBooleanExpression(int depth) {
 		BooleanExpression option;
 		if (depth >= MAX_DEPTH) {
-			option = BooleanExpression.CONSTANT;
+			if (Randomly.getBooleanWithSmallProbability()) {
+				option = BooleanExpression.CONSTANT;
+			} else {
+				option = BooleanExpression.COLUMN;
+			}
 		} else {
 			option = Randomly.fromOptions(BooleanExpression.values());
 		}
@@ -164,7 +172,11 @@ public class PostgresExpressionGenerator {
 	private PostgresExpression generateTextExpression(int depth) {
 		TextExpression option;
 		if (depth >= MAX_DEPTH) {
-			option = Randomly.fromOptions(TextExpression.CONSTANT, TextExpression.COLUMN);
+			if (Randomly.getBooleanWithSmallProbability()) {
+				option = TextExpression.CONSTANT;
+			} else {
+				option = TextExpression.COLUMN;
+			}
 		} else {
 			option = Randomly.fromOptions(TextExpression.values());
 		}
@@ -193,7 +205,11 @@ public class PostgresExpressionGenerator {
 	private PostgresExpression generateIntExpression(int depth) {
 		IntExpression option;
 		if (depth >= MAX_DEPTH) {
-			option = Randomly.fromOptions(IntExpression.CONSTANT, IntExpression.COLUMN);
+			if (Randomly.getBooleanWithSmallProbability()) {
+				option = IntExpression.CONSTANT;
+			} else {
+				option = IntExpression.COLUMN;
+			}
 		} else {
 			option = Randomly.fromOptions(IntExpression.values());
 		}
