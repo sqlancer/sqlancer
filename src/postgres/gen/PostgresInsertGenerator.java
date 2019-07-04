@@ -59,17 +59,21 @@ public class PostgresInsertGenerator {
 
 					else if (e.getMessage().contains("identity column defined as GENERATED ALWAYS")) {
 
-					} else if (e.getMessage().contains("there is no unique or exclusion constraint matching the ON CONFLICT specification")) {
-						
+					} else if (e.getMessage().contains(
+							"there is no unique or exclusion constraint matching the ON CONFLICT specification")) {
+
 					} else if (e.getMessage().contains("out of range")) {
-						
+
 					} else if (e.getMessage().contains("violates check constraint")) {
-						
+
 					} else if (e.getMessage().contains("no partition of relation")) {
-						
+
 					} else if (e.getMessage().contains("invalid input syntax")) {
-						
-					} else {
+
+					} else if (e.getMessage().contains("division by zero")) {
+					}
+
+					else {
 						throw e;
 					}
 				}

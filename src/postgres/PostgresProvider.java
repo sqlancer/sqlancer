@@ -44,7 +44,7 @@ import postgres.gen.PostgresVacuumGenerator;
 
 public class PostgresProvider implements DatabaseProvider {
 
-	private static final int NR_QUERIES_PER_TABLE = 1000;
+	private static final int NR_QUERIES_PER_TABLE = 10900;
 	Randomly r = new Randomly();
 	private QueryManager manager;
 
@@ -81,7 +81,7 @@ public class PostgresProvider implements DatabaseProvider {
 			case DISCARD:
 			case CREATE_INDEX:
 			case CLUSTER:
-				nrPerformed = r.getInteger(0, 5);
+				nrPerformed = r.getInteger(0, 50);
 				break;
 			case COMMIT:
 				nrPerformed = r.getInteger(0, 50);
@@ -99,10 +99,10 @@ public class PostgresProvider implements DatabaseProvider {
 				break;
 			case UPDATE:
 			case SET:
-				nrPerformed = 20;
+				nrPerformed = 10;
 				break;
 			case INSERT:
-				nrPerformed = 30;
+				nrPerformed = 50;
 				break;
 			default:
 				throw new AssertionError(action);

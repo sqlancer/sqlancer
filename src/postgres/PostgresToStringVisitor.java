@@ -3,10 +3,12 @@ package postgres;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import lama.IgnoreMeException;
 import lama.Randomly;
 import lama.postgres.ast.PostgresComputableFunction;
 import postgres.PostgresSchema.PostgresColumn;
 import postgres.PostgresSchema.PostgresDataType;
+import postgres.ast.PostgresBetweenOperation;
 import postgres.ast.PostgresBinaryArithmeticOperation;
 import postgres.ast.PostgresBinaryComparisonOperation;
 import postgres.ast.PostgresBinaryLogicalOperation;
@@ -227,6 +229,23 @@ public class PostgresToStringVisitor extends PostgresVisitor {
 		sb.append(op.getOp().getTextRepresentation());
 		sb.append(" (");
 		visit(op.getRight());
+		sb.append(")");
+	}
+
+	@Override
+	public void visit(PostgresBetweenOperation op) {
+		sb.append("(");
+		visit(op.getExpr());
+		sb.append(") BETWEEN (");
+		visit(op.getLeft());
+		sb.append(") AND (");
+		visit(op.getRight());
+		if (op.getExpr().getExpressionType() == PostgresDataType.TEXT
+				&& op.getLeft().getExpressionType() == PostgresDataType.TEXT
+				&& op.getRight().getExpressionType() == PostgresDataType.TEXT) {
+			throw new IgnoreMeException(); // FIXME
+//			sb.append("COLLATE \"C\"");
+		}
 		sb.append(")");
 	}
 

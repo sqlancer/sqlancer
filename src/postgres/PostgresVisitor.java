@@ -1,6 +1,7 @@
 package postgres;
 
 import lama.postgres.ast.PostgresComputableFunction;
+import postgres.ast.PostgresBetweenOperation;
 import postgres.ast.PostgresBinaryArithmeticOperation;
 import postgres.ast.PostgresBinaryComparisonOperation;
 import postgres.ast.PostgresBinaryLogicalOperation;
@@ -40,6 +41,8 @@ public abstract class PostgresVisitor {
 
 	public abstract void visit(PostgresBinaryArithmeticOperation op);
 
+	public abstract void visit(PostgresBetweenOperation op);
+
 	public void visit(PostgresExpression expression) {
 		if (expression instanceof PostgresConstant) {
 			visit((PostgresConstant) expression);
@@ -65,6 +68,8 @@ public abstract class PostgresVisitor {
 			visit((PostgresLikeOperation) expression);
 		} else if (expression instanceof PostgresBinaryArithmeticOperation) {
 			visit((PostgresBinaryArithmeticOperation) expression);
+		} else if (expression instanceof PostgresBetweenOperation) {
+			visit((PostgresBetweenOperation) expression);
 		} else {
 			throw new AssertionError(expression);
 		}

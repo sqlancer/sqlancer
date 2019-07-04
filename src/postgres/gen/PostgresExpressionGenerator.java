@@ -12,6 +12,7 @@ import lama.postgres.ast.PostgresComputableFunction.PostgresFunction;
 import postgres.PostgresSchema.PostgresColumn;
 import postgres.PostgresSchema.PostgresDataType;
 import postgres.PostgresSchema.PostgresRowValue;
+import postgres.ast.PostgresBetweenOperation;
 import postgres.ast.PostgresBinaryArithmeticOperation;
 import postgres.ast.PostgresBinaryArithmeticOperation.PostgresBinaryOperator;
 import postgres.ast.PostgresBinaryComparisonOperation;
@@ -29,7 +30,7 @@ import postgres.ast.PostgresPrefixOperation.PrefixOperator;
 
 public class PostgresExpressionGenerator {
 
-	private final int MAX_DEPTH = 3;
+	private final int MAX_DEPTH = 30;
 
 	private Randomly r;
 
@@ -70,7 +71,7 @@ public class PostgresExpressionGenerator {
 	}
 
 	private enum BooleanExpression {
-		CONSTANT, POSTFIX_OPERATOR, COLUMN, NOT, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON, FUNCTION, CAST, LIKE;
+		CONSTANT, POSTFIX_OPERATOR, COLUMN, NOT, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON, FUNCTION, CAST, LIKE, BETWEEN;
 	}
 
 	private PostgresExpression generateFunction(int depth, PostgresDataType type) {
@@ -145,6 +146,9 @@ public class PostgresExpressionGenerator {
 		case LIKE:
 			return new PostgresLikeOperation(generateExpression(depth + 1, PostgresDataType.TEXT),
 					generateExpression(depth + 1, PostgresDataType.TEXT));
+		case BETWEEN:
+			PostgresDataType type = PostgresDataType.getRandomType();
+			return new PostgresBetweenOperation(generateExpression(depth + 1, type), generateExpression(depth + 1, type), generateExpression(depth + 1, type));
 		default:
 			throw new AssertionError();
 		}

@@ -2,6 +2,7 @@ package postgres;
 
 import lama.IgnoreMeException;
 import lama.postgres.ast.PostgresComputableFunction;
+import postgres.ast.PostgresBetweenOperation;
 import postgres.ast.PostgresBinaryArithmeticOperation;
 import postgres.ast.PostgresBinaryComparisonOperation;
 import postgres.ast.PostgresBinaryLogicalOperation;
@@ -116,6 +117,14 @@ public class PostgresExpectedValueVisitor extends PostgresVisitor {
 	@Override
 	public void visit(PostgresBinaryArithmeticOperation op) {
 		print(op);
+		visit(op.getLeft());
+		visit(op.getRight());
+	}
+
+	@Override
+	public void visit(PostgresBetweenOperation op) {
+		print(op);
+		visit(op.getExpr());
 		visit(op.getLeft());
 		visit(op.getRight());
 	}
