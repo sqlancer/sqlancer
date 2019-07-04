@@ -193,7 +193,12 @@ public class PostgresQueryGenerator {
 			createStatement.close();
 			return isContainedIn;
 		} catch (PSQLException e) {
-			if (e.getMessage().contains("out of range") || e.getMessage().contains("cannot cast") || e.getMessage().contains("invalid input syntax for ") || e.getMessage().contains("must be type") || e.getMessage().contains("operator does not exist") || e.getMessage().contains("Could not choose a best candidate function.")) {
+			if (e.getMessage().contains("out of range") || e.getMessage().contains("cannot cast")
+					|| e.getMessage().contains("invalid input syntax for ") || e.getMessage().contains("must be type")
+					|| e.getMessage().contains("operator does not exist")
+					|| e.getMessage().contains("Could not choose a best candidate function.")
+					|| e.getMessage().contains("division by zero")
+					|| e.getMessage().contains("zero raised to a negative power is undefined")) {
 				return true;
 			} else {
 				throw e;

@@ -392,7 +392,7 @@ public class PostgresSchema {
 		List<PostgresIndex> indexes = new ArrayList<>();
 		try (Statement s = con.createStatement()) {
 			try (ResultSet rs = s.executeQuery(
-					String.format("SELECT indexname FROM pg_indexes WHERE tablename='%s';", databaseName, tableName))) {
+					String.format("SELECT indexname FROM pg_indexes WHERE tablename='%s';", tableName))) {
 				while (rs.next()) {
 					String indexName = rs.getString("indexname");
 					indexes.add(PostgresIndex.create(indexName));

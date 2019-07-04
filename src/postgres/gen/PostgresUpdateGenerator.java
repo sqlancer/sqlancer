@@ -26,7 +26,7 @@ public class PostgresUpdateGenerator {
 		sb.append(randomTable.getName());
 		sb.append(" SET ");
 		List<String> errors = new ArrayList(Arrays.asList("violates not-null constraint", "violates unique constraint",
-				"out of range", "cannot cast", "must be type boolean", "is not unique", "can only be updated to DEFAULT"));
+				"out of range", "cannot cast", "must be type boolean", "is not unique", "can only be updated to DEFAULT", "division by zero", "You might need to add explicit type casts."));
 		List<PostgresColumn> columns = randomTable.getRandomNonEmptyColumnSubset();
 		for (int i = 0; i < columns.size(); i++) {
 			if (i != 0) {

@@ -7,6 +7,7 @@ import lama.Randomly;
 import lama.postgres.ast.PostgresComputableFunction;
 import postgres.PostgresSchema.PostgresColumn;
 import postgres.PostgresSchema.PostgresDataType;
+import postgres.ast.PostgresBinaryArithmeticOperation;
 import postgres.ast.PostgresBinaryComparisonOperation;
 import postgres.ast.PostgresBinaryLogicalOperation;
 import postgres.ast.PostgresCastOperation;
@@ -159,7 +160,8 @@ public class PostgresToStringVisitor extends PostgresVisitor {
 		sb.append(" (");
 		visit(op.getRight());
 		sb.append(")");
-		if (op.getLeft().getExpressionType() == PostgresDataType.TEXT && op.getRight().getExpressionType() == PostgresDataType.TEXT) {
+		if (op.getLeft().getExpressionType() == PostgresDataType.TEXT
+				&& op.getRight().getExpressionType() == PostgresDataType.TEXT) {
 			sb.append(" COLLATE \"C\"");
 		}
 	}
@@ -215,6 +217,17 @@ public class PostgresToStringVisitor extends PostgresVisitor {
 		visit(op.getLeft());
 		sb.append(" LIKE ");
 		visit(op.getRight());
+	}
+
+	@Override
+	public void visit(PostgresBinaryArithmeticOperation op) {
+		sb.append("(");
+		visit(op.getLeft());
+		sb.append(") ");
+		sb.append(op.getOp().getTextRepresentation());
+		sb.append(" (");
+		visit(op.getRight());
+		sb.append(")");
 	}
 
 }

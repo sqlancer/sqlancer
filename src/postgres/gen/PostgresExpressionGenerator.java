@@ -12,6 +12,8 @@ import lama.postgres.ast.PostgresComputableFunction.PostgresFunction;
 import postgres.PostgresSchema.PostgresColumn;
 import postgres.PostgresSchema.PostgresDataType;
 import postgres.PostgresSchema.PostgresRowValue;
+import postgres.ast.PostgresBinaryArithmeticOperation;
+import postgres.ast.PostgresBinaryArithmeticOperation.PostgresBinaryOperator;
 import postgres.ast.PostgresBinaryComparisonOperation;
 import postgres.ast.PostgresBinaryLogicalOperation;
 import postgres.ast.PostgresBinaryLogicalOperation.BinaryLogicalOperator;
@@ -27,7 +29,7 @@ import postgres.ast.PostgresPrefixOperation.PrefixOperator;
 
 public class PostgresExpressionGenerator {
 
-	private final int MAX_DEPTH = 10;
+	private final int MAX_DEPTH = 3;
 
 	private Randomly r;
 
@@ -199,7 +201,7 @@ public class PostgresExpressionGenerator {
 	}
 
 	private enum IntExpression {
-		CONSTANT, COLUMN, UNARY_OPERATION, FUNCTION, CAST
+		CONSTANT, COLUMN, UNARY_OPERATION, FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION
 	}
 
 	private PostgresExpression generateIntExpression(int depth) {
@@ -229,6 +231,9 @@ public class PostgresExpressionGenerator {
 					true ? PrefixOperator.UNARY_PLUS : PrefixOperator.UNARY_MINUS);
 		case FUNCTION:
 			return generateFunction(depth + 1, PostgresDataType.INT);
+		case BINARY_ARITHMETIC_EXPRESSION:
+			return new PostgresBinaryArithmeticOperation(generateIntExpression(depth + 1),
+					generateIntExpression(depth + 1), PostgresBinaryOperator.getRandom());
 		default:
 			throw new AssertionError();
 		}
@@ -268,9 +273,9 @@ public class PostgresExpressionGenerator {
 		if (Randomly.getBooleanWithSmallProbability()) {
 			return PostgresConstant.createNullConstant();
 		}
-		if (Randomly.getBooleanWithSmallProbability()) {
-			return PostgresConstant.createTextConstant(r.getString());
-		}
+//		if (Randomly.getBooleanWithSmallProbability()) {
+//			return PostgresConstant.createTextConstant(r.getString());
+//		}
 		switch (type) {
 		case INT:
 			if (Randomly.getBooleanWithSmallProbability()) {

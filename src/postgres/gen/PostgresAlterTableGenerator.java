@@ -24,7 +24,7 @@ public class PostgresAlterTableGenerator {
 	private static PostgresColumn randomColumn;
 
 	private enum Action {
-		// TODO: ADD [ COLUMN ] column data_type [ COLLATE collation ] [
+//		ALTER_TABLE_ADD_COLUMN, // [ COLUMN ] column data_type [ COLLATE collation ] [
 		// column_constraint [ ... ] ]
 		ALTER_TABLE_DROP_COLUMN, // DROP [ COLUMN ] [ IF EXISTS ] column [ RESTRICT | CASCADE ]
 		ALTER_COLUMN_TYPE, // ALTER [ COLUMN ] column [ SET DATA ] TYPE data_type [ COLLATE collation ] [
@@ -38,10 +38,19 @@ public class PostgresAlterTableGenerator {
 		ALTER_COLUMN_SET_STORAGE, // ALTER [ COLUMN ] column SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
 		ADD_TABLE_CONSTRAINT, // ADD table_constraint [ NOT VALID ]
 		ADD_TABLE_CONSTRAINT_USING_INDEX, // ADD table_constraint_using_index
+		VALIDATE_CONSTRAINT, // VALIDATE CONSTRAINT constraint_name
+		DISABLE_ROW_LEVEL_SECURITY, // DISABLE ROW LEVEL SECURITY
+		ENABLE_ROW_LEVEL_SECURITY, // ENABLE ROW LEVEL SECURITY
+		FORCE_ROW_LEVEL_SECURITY, // FORCE ROW LEVEL SECURITY
+		NO_FORCE_ROW_LEVEL_SECURITY, // NO FORCE ROW LEVEL SECURITY
+		CLUSTER_ON, // CLUSTER ON index_name
 		SET_WITHOUT_CLUSTER, //
 		SET_WITH_OIDS, //
 		SET_WITHOUT_OIDS, //
-		NOT_OF
+		SET_LOGGED_UNLOGGED, //
+		NOT_OF, //
+		OWNER_TO, //
+		REPLICA_IDENTITY
 	}
 
 	public PostgresAlterTableGenerator(PostgresTable randomTable, Randomly r) {
@@ -65,6 +74,9 @@ public class PostgresAlterTableGenerator {
 
 	public Query generate() {
 		List<String> errors = new ArrayList<>();
+		/* workaround for */
+		errors.add("could not open relation with OID");
+
 		errors.add("invalid input syntax for");
 		StringBuilder sb = new StringBuilder();
 		sb.append("ALTER TABLE ");
@@ -81,6 +93,7 @@ public class PostgresAlterTableGenerator {
 		}
 		if (randomTable.getIndexes().isEmpty()) {
 			action.remove(Action.ADD_TABLE_CONSTRAINT_USING_INDEX);
+			action.remove(Action.CLUSTER_ON);
 		}
 		if (action.isEmpty()) {
 			throw new IgnoreMeException();
@@ -136,6 +149,7 @@ public class PostgresAlterTableGenerator {
 					sb.append(PostgresVisitor
 							.asString(PostgresExpressionGenerator.generateExpression(r, randomColumn.getColumnType())));
 					errors.add("is out of range");
+					errors.add("but default expression is of type");
 				}
 				errors.add("is an identity column");
 				break;
@@ -201,6 +215,7 @@ public class PostgresAlterTableGenerator {
 				errors.add("unsupported PRIMARY KEY constraint with partition key definition");
 				errors.add("unsupported UNIQUE constraint with partition key definition");
 				errors.add("insufficient columns in UNIQUE constraint definition");
+				errors.add("which is part of the partition key");
 				if (Randomly.getBoolean()) {
 					sb.append(" NOT VALID");
 					errors.add("cannot be marked NOT VALID");
@@ -209,10 +224,42 @@ public class PostgresAlterTableGenerator {
 				}
 				break;
 			case ADD_TABLE_CONSTRAINT_USING_INDEX:
-				sb.append("CONSTRAINT ");
+				sb.append("ADD ");
+//				sb.append("CONSTRAINT 'asdf' ");
 				sb.append(Randomly.fromOptions("UNIQUE", "PRIMARY KEY"));
 				sb.append(" USING INDEX ");
 				sb.append(randomTable.getRandomIndex().getIndexName());
+				errors.add("is not a unique index");
+				errors.add("is already associated with a constraint");
+				errors.add("Cannot create a primary key or unique constraint using such an index");
+				errors.add("multiple primary keys for table");
+				errors.add("appears twice in unique constraint");
+				errors.add("appears twice in primary key constraint");
+				errors.add("contains null values");
+				errors.add("insufficient columns in PRIMARY KEY constraint definition");
+				errors.add("which is part of the partition key");
+				break;
+			case VALIDATE_CONSTRAINT:
+				sb.append("VALIDATE CONSTRAINT asdf");
+				errors.add("does not exist");
+				// FIXME select constraint
+				break;
+			case DISABLE_ROW_LEVEL_SECURITY:
+				sb.append("DISABLE ROW LEVEL SECURITY");
+				break;
+			case ENABLE_ROW_LEVEL_SECURITY:
+				sb.append("ENABLE ROW LEVEL SECURITY");
+				break;
+			case FORCE_ROW_LEVEL_SECURITY:
+				sb.append("FORCE ROW LEVEL SECURITY");
+				break;
+			case NO_FORCE_ROW_LEVEL_SECURITY:
+				sb.append("NO FORCE ROW LEVEL SECURITY");
+				break;
+			case CLUSTER_ON:
+				sb.append("CLUSTER ON ");
+				sb.append(randomTable.getRandomIndex().getIndexName());
+				errors.add("cannot cluster on partial index");
 				break;
 			case SET_WITHOUT_CLUSTER:
 				sb.append("SET WITHOUT CLUSTER");
@@ -225,9 +272,31 @@ public class PostgresAlterTableGenerator {
 			case SET_WITHOUT_OIDS:
 				sb.append("SET WITHOUT OIDS");
 				break;
+			case SET_LOGGED_UNLOGGED:
+				sb.append("SET ");
+				sb.append(Randomly.fromOptions("LOGGED", "UNLOGGED"));
+				errors.add("because it is temporary");
+				break;
 			case NOT_OF:
 				errors.add("is not a typed table");
 				sb.append("NOT OF");
+				break;
+			case OWNER_TO:
+				sb.append("OWNER TO ");
+				// TODO: new_owner
+				sb.append(Randomly.fromOptions("CURRENT_USER", "SESSION_USER"));
+				break;
+			case REPLICA_IDENTITY:
+				sb.append("REPLICA IDENTITY ");
+				if (Randomly.getBoolean() || randomTable.getIndexes().isEmpty()) {
+					sb.append(Randomly.fromOptions("DEFAULT", "FULL", "NOTHING"));
+				} else {
+					sb.append("USING INDEX " + randomTable.getRandomIndex().getIndexName());
+					errors.add("cannot be used as replica identity");
+					errors.add("cannot use non-unique index");
+					errors.add("cannot use expression index");
+					errors.add("cannot use partial index");
+				}
 				break;
 			default:
 				throw new AssertionError(a);

@@ -26,7 +26,7 @@ public class PostgresTableGenerator {
 	private boolean columnCanHavePrimaryKey;
 	private boolean columnHasPrimaryKey;
 	private final StringBuilder sb = new StringBuilder();
-	private boolean isTemporaryTable; // TODO
+	private boolean isTemporaryTable;
 	private PostgresSchema newSchema;
 	private final List<PostgresColumn> columnsToBeAdded = new ArrayList<>();
 	private final List<String> errors = new ArrayList<>();
@@ -39,6 +39,8 @@ public class PostgresTableGenerator {
 		table = new PostgresTable(tableName, columnsToBeAdded, null, null);
 		errors.add("invalid input syntax for");
 		errors.add("is not unique");
+		errors.add("integer out of range");
+		errors.add("division by zero");
 	}
 
 	public static Query generate(String tableName, Randomly r, PostgresSchema newSchema) {
@@ -50,6 +52,7 @@ public class PostgresTableGenerator {
 		sb.append("CREATE");
 		if (Randomly.getBoolean()) {
 			sb.append(" ");
+			isTemporaryTable = true;
 			sb.append(Randomly.fromOptions("TEMPORARY", "TEMP"));
 		} else if (Randomly.getBoolean()) {
 			sb.append(" UNLOGGED");
@@ -72,13 +75,14 @@ public class PostgresTableGenerator {
 			PostgresCommon.addTableConstraints(columnHasPrimaryKey, sb, table, r);
 		}
 		sb.append(")");
-		if (Randomly.getBoolean() && isTemporaryTable) {
-			sb.append(" ON COMMIT ");
-			sb.append(Randomly.fromOptions("PRESERVE ROWS", "DELETE ROWS", "DROP"));
-		}
 		generateInherits();
 		generatePartitionBy();
 		generateWith();
+		if (Randomly.getBoolean() && isTemporaryTable) {
+			sb.append(" ON COMMIT ");
+			sb.append(Randomly.fromOptions("PRESERVE ROWS", "DELETE ROWS", "DROP"));
+			sb.append(" ");
+		}
 		return new QueryAdapter(sb.toString()) {
 			@Override
 			public void execute(Connection con) throws SQLException {

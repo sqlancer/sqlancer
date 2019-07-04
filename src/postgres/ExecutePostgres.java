@@ -63,12 +63,14 @@ public class ExecutePostgres {
 									try {
 										st.execute(s);
 									} catch (Exception e) {
-										if (e.getMessage().contains("missing chunk")) {
+										if (e.getMessage().contains("invalid input syntax for type boolean") && s.contains("VACUUM")) {
 											throw new AssertionError(e);
 										} else if (e.getMessage().contains("relation mapping")) {
 											throw new AssertionError(e);
 										} else if (e.getMessage().contains("incorrect checksum")) {
 											throw new AssertionError(e);
+										} else if (e.getMessage().contains("unexpected null")) {
+											throw new AssertionError(e + s);
 										}
 									}
 								}

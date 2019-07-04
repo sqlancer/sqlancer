@@ -1,6 +1,7 @@
 package postgres;
 
 import lama.postgres.ast.PostgresComputableFunction;
+import postgres.ast.PostgresBinaryArithmeticOperation;
 import postgres.ast.PostgresBinaryComparisonOperation;
 import postgres.ast.PostgresBinaryLogicalOperation;
 import postgres.ast.PostgresCastOperation;
@@ -14,30 +15,31 @@ import postgres.ast.PostgresPrefixOperation;
 import postgres.ast.PostgresSelect;
 
 public abstract class PostgresVisitor {
-	
+
 	public abstract void visit(PostgresConstant constant);
-	
+
 	public abstract void visit(PostgresPostfixOperation op);
-	
+
 	public abstract void visit(PostgresColumnValue c);
-	
+
 	public abstract void visit(PostgresPrefixOperation op);
-	
+
 	public abstract void visit(PostgresBinaryLogicalOperation op);
-	
+
 	public abstract void visit(PostgresSelect op);
 
 	public abstract void visit(PostgresOrderByTerm op);
-	
+
 	public abstract void visit(PostgresBinaryComparisonOperation op);
-	
+
 	public abstract void visit(PostgresComputableFunction f);
-	
+
 	public abstract void visit(PostgresCastOperation cast);
 
 	public abstract void visit(PostgresLikeOperation op);
-	
-	
+
+	public abstract void visit(PostgresBinaryArithmeticOperation op);
+
 	public void visit(PostgresExpression expression) {
 		if (expression instanceof PostgresConstant) {
 			visit((PostgresConstant) expression);
@@ -61,6 +63,8 @@ public abstract class PostgresVisitor {
 			visit((PostgresCastOperation) expression);
 		} else if (expression instanceof PostgresLikeOperation) {
 			visit((PostgresLikeOperation) expression);
+		} else if (expression instanceof PostgresBinaryArithmeticOperation) {
+			visit((PostgresBinaryArithmeticOperation) expression);
 		} else {
 			throw new AssertionError(expression);
 		}

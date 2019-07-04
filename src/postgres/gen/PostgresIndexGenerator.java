@@ -101,15 +101,16 @@ public class PostgresIndexGenerator {
 					} else if (e.getMessage().contains("cannot cast")) {
 
 					} else if (e.getMessage().contains("unsupported UNIQUE constraint with partition key definition")) {
-						
+
 					} else if (e.getMessage().contains("insufficient columns in UNIQUE constraint definition")) {
 						// partition
 					} else if (e.getMessage().contains("invalid input syntax for ")) {
 						// cast
 					} else if (e.getMessage().contains("must be type ")) {
-					}
-
-					else {
+					} else if (e.getMessage().contains("integer out of range")) {
+					} else if (e.getMessage().contains("division by zero")) {
+					} else if (e.getMessage().contains("value out of range")) {
+					} else {
 						throw e;
 					}
 				}
