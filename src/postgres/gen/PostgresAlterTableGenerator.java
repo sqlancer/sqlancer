@@ -24,15 +24,20 @@ public class PostgresAlterTableGenerator {
 	private static PostgresColumn randomColumn;
 
 	private enum Action {
-		// TODO:     ADD [ COLUMN ] column data_type [ COLLATE collation ] [ column_constraint [ ... ] ]
-		ALTER_TABLE_DROP_COLUMN, //     DROP [ COLUMN ] [ IF EXISTS ] column [ RESTRICT | CASCADE ]
-		ALTER_COLUMN_TYPE, //     ALTER [ COLUMN ] column [ SET DATA ] TYPE data_type [ COLLATE collation ] [ USING expression ]
-		ALTER_COLUMN_SET_DROP_DEFAULT, // ALTER [ COLUMN ] column SET DEFAULT expression and ALTER [ COLUMN ] column DROP DEFAULT
+		// TODO: ADD [ COLUMN ] column data_type [ COLLATE collation ] [
+		// column_constraint [ ... ] ]
+		ALTER_TABLE_DROP_COLUMN, // DROP [ COLUMN ] [ IF EXISTS ] column [ RESTRICT | CASCADE ]
+		ALTER_COLUMN_TYPE, // ALTER [ COLUMN ] column [ SET DATA ] TYPE data_type [ COLLATE collation ] [
+							// USING expression ]
+		ALTER_COLUMN_SET_DROP_DEFAULT, // ALTER [ COLUMN ] column SET DEFAULT expression and ALTER [ COLUMN ] column
+										// DROP DEFAULT
 		ALTER_COLUMN_SET_DROP_NULL, // ALTER [ COLUMN ] column { SET | DROP } NOT NULL
 		ALTER_COLUMN_SET_STATISTICS, // ALTER [ COLUMN ] column SET STATISTICS integer
 		ALTER_COLUMN_SET_ATTRIBUTE_OPTION, // ALTER [ COLUMN ] column SET ( attribute_option = value [, ... ] )
 		ALTER_COLUMN_RESET_ATTRIBUTE_OPTION, // ALTER [ COLUMN ] column RESET ( attribute_option [, ... ] )
 		ALTER_COLUMN_SET_STORAGE, // ALTER [ COLUMN ] column SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
+		ADD_TABLE_CONSTRAINT, // ADD table_constraint [ NOT VALID ]
+		ADD_TABLE_CONSTRAINT_USING_INDEX, // ADD table_constraint_using_index
 		SET_WITHOUT_CLUSTER, //
 		SET_WITH_OIDS, //
 		SET_WITHOUT_OIDS, //
@@ -74,6 +79,9 @@ public class PostgresAlterTableGenerator {
 		if (randomTable.getColumns().size() == 1) {
 			action.remove(Action.ALTER_TABLE_DROP_COLUMN);
 		}
+		if (randomTable.getIndexes().isEmpty()) {
+			action.remove(Action.ADD_TABLE_CONSTRAINT_USING_INDEX);
+		}
 		if (action.isEmpty()) {
 			throw new IgnoreMeException();
 		}
@@ -114,6 +122,9 @@ public class PostgresAlterTableGenerator {
 				errors.add("cannot alter type of column referenced in partition key expression");
 				errors.add("argument of CHECK must be type boolean");
 				errors.add("operator does not exist");
+				errors.add("must be type");
+				errors.add("You might need to add explicit type casts");
+				errors.add("cannot cast type");
 				changesSchema = true;
 				break;
 			case ALTER_COLUMN_SET_DROP_DEFAULT:
@@ -179,6 +190,29 @@ public class PostgresAlterTableGenerator {
 				sb.append(Randomly.fromOptions("PLAIN", "EXTERNAL", "EXTENDED", "MAIN"));
 				errors.add("can only have storage");
 				errors.add("is an identity column");
+				break;
+			case ADD_TABLE_CONSTRAINT:
+				sb.append("ADD ");
+				PostgresCommon.addTableConstraint(sb, randomTable, r);
+				errors.add("multiple primary keys for table");
+				errors.add("could not create unique index");
+				errors.add("contains null values");
+				errors.add("cannot cast type");
+				errors.add("unsupported PRIMARY KEY constraint with partition key definition");
+				errors.add("unsupported UNIQUE constraint with partition key definition");
+				errors.add("insufficient columns in UNIQUE constraint definition");
+				if (Randomly.getBoolean()) {
+					sb.append(" NOT VALID");
+					errors.add("cannot be marked NOT VALID");
+				} else {
+					errors.add("is violated by some row");
+				}
+				break;
+			case ADD_TABLE_CONSTRAINT_USING_INDEX:
+				sb.append("CONSTRAINT ");
+				sb.append(Randomly.fromOptions("UNIQUE", "PRIMARY KEY"));
+				sb.append(" USING INDEX ");
+				sb.append(randomTable.getRandomIndex().getIndexName());
 				break;
 			case SET_WITHOUT_CLUSTER:
 				sb.append("SET WITHOUT CLUSTER");

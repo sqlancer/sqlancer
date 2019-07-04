@@ -45,10 +45,6 @@ public class PostgresTableGenerator {
 		return new PostgresTableGenerator(tableName, r, newSchema).generate();
 	}
 
-	private enum TableConstraints {
-		CHECK, UNIQUE, PRIMARY_KEY
-	}
-
 	private Query generate() {
 		columnCanHavePrimaryKey = true;
 		sb.append("CREATE");
@@ -73,37 +69,7 @@ public class PostgresTableGenerator {
 			createColumn(name);
 		}
 		if (Randomly.getBoolean()) {
-			List<TableConstraints> tableConstraints = Randomly.nonEmptySubset(TableConstraints.values());
-			if (columnHasPrimaryKey) {
-				tableConstraints.remove(TableConstraints.PRIMARY_KEY);
-			}
-			for (TableConstraints t : tableConstraints) {
-				sb.append(", ");
-				// TODO add index parameters
-				switch (t) {
-				case CHECK:
-					sb.append("CHECK(");
-					sb.append(MySQLVisitor.getExpressionAsString(r, PostgresDataType.BOOLEAN, columnsToBeAdded));
-					sb.append(")");
-					break;
-				case UNIQUE:
-					sb.append("UNIQUE(");
-					sb.append(table.getRandomNonEmptyColumnSubset().stream().map(c -> c.getName())
-							.collect(Collectors.joining(", ")));
-					sb.append(")");
-					break;
-				case PRIMARY_KEY:
-					sb.append("PRIMARY KEY(");
-					sb.append(table.getRandomNonEmptyColumnSubset().stream().map(c -> c.getName())
-							.collect(Collectors.joining(", ")));
-					sb.append(")");
-					break;
-				default:
-					throw new AssertionError(t);
-				}
-			}
-			for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
-			}
+			PostgresCommon.addTableConstraints(columnHasPrimaryKey, sb, table, r);
 		}
 		sb.append(")");
 		if (Randomly.getBoolean() && isTemporaryTable) {
@@ -200,7 +166,17 @@ public class PostgresTableGenerator {
 		PARALLEL_WORKERS("parallel_workers", (r) -> r.getInteger(0, 1024)),
 		AUTOVACUUM_ENABLED("autovacuum_enabled", (r) -> Randomly.fromOptions(0, 1)),
 		AUTOVACUUM_VACUUM_THRESHOLD("autovacuum_vacuum_threshold", (r) -> r.getInteger(0, 2147483647)),
-		OIDS("oids", (R) -> Randomly.fromOptions(0, 1));
+		OIDS("oids", (R) -> Randomly.fromOptions(0, 1)),
+		AUTOVACUUM_VACUUM_SCALE_FACTOR("autovacuum_vacuum_scale_factor",
+				(r) -> Randomly.fromOptions(0, 0.00001, 0.01, 0.1, 0.2, 0.5, 0.8, 0.9, 1)),
+		AUTOVACUUM_ANALYZE_THRESHOLD("autovacuum_analyze_threshold", (r) -> r.getLong(0, Integer.MAX_VALUE)),
+		AUTOVACUUM_ANALYZE_SCALE_FACTOR("autovacuum_analyze_scale_factor",
+				(r) -> Randomly.fromOptions(0, 0.00001, 0.01, 0.1, 0.2, 0.5, 0.8, 0.9, 1)),
+		AUTOVACUUM_VACUUM_COST_DELAY("autovacuum_vacuum_cost_delay", (r) -> r.getLong(0, 100)),
+		AUTOVACUUM_VACUUM_COST_LIMIT("autovacuum_vacuum_cost_limit", (r) -> r.getLong(1, 10000)),
+		AUTOVACUUM_FREEZE_MIN_AGE("autovacuum_freeze_min_age", (r) -> r.getLong(0, 1000000000)),
+		AUTOVACUUM_FREEZE_MAX_AGE("autovacuum_freeze_max_age", (r) -> r.getLong(100000, 2000000000)),
+		AUTOVACUUM_FREEZE_TABLE_AGE("autovacuum_freeze_table_age", (r) -> r.getLong(0, 2000000000));
 		// TODO
 
 		private String parameter;
@@ -271,6 +247,8 @@ public class PostgresTableGenerator {
 				sb.append(" (");
 				sb.append(MySQLVisitor.getExpressionAsString(r, type));
 				sb.append(")");
+				// CREATE TEMPORARY TABLE t1(c0 smallint DEFAULT ('566963878'));
+				errors.add("out of range");
 				break;
 			case CHECK:
 				sb.append("CHECK (");
