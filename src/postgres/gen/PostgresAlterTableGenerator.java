@@ -216,6 +216,7 @@ public class PostgresAlterTableGenerator {
 				errors.add("unsupported UNIQUE constraint with partition key definition");
 				errors.add("insufficient columns in UNIQUE constraint definition");
 				errors.add("which is part of the partition key");
+				errors.add("out of range");
 				if (Randomly.getBoolean()) {
 					sb.append(" NOT VALID");
 					errors.add("cannot be marked NOT VALID");
@@ -259,7 +260,7 @@ public class PostgresAlterTableGenerator {
 			case CLUSTER_ON:
 				sb.append("CLUSTER ON ");
 				sb.append(randomTable.getRandomIndex().getIndexName());
-				errors.add("cannot cluster on partial index");
+				errors.add("cannot cluster on");
 				break;
 			case SET_WITHOUT_CLUSTER:
 				sb.append("SET WITHOUT CLUSTER");

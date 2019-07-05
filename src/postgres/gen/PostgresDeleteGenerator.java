@@ -41,6 +41,8 @@ public class PostgresDeleteGenerator {
 						
 					} else if (e.getMessage().contains("invalid input syntax for")) {
 						
+					} else if (e.getMessage().contains("division by zero")) {
+						
 					} else {
 						throw e;
 					}

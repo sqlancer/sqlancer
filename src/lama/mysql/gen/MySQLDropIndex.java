@@ -50,6 +50,8 @@ public class MySQLDropIndex {
 
 					} else if (e.getMessage().contains("ALGORITHM=INPLACE is not supported")) {
 						// ignore
+					} else if (e.getMessage().contains("Data truncation")) {
+						// ignore
 					} else {
 						throw e;
 					}

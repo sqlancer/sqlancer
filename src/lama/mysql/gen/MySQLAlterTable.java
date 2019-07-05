@@ -168,6 +168,8 @@ public class MySQLAlterTable {
 						// ignore
 					} else if (e.getMessage().contains("Data truncation")) {
 						// ignore
+					} else if (e.getMessage().contains("Specified key was too long")) {
+						// ignore
 					} else {
 						throw e;
 					}

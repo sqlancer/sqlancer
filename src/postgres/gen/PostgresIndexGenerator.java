@@ -109,7 +109,7 @@ public class PostgresIndexGenerator {
 					} else if (e.getMessage().contains("must be type ")) {
 					} else if (e.getMessage().contains("integer out of range")) {
 					} else if (e.getMessage().contains("division by zero")) {
-					} else if (e.getMessage().contains("value out of range")) {
+					} else if (e.getMessage().contains("out of range")) {
 					} else {
 						throw e;
 					}
