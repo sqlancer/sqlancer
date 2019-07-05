@@ -236,15 +236,17 @@ public class PostgresToStringVisitor extends PostgresVisitor {
 	public void visit(PostgresBetweenOperation op) {
 		sb.append("(");
 		visit(op.getExpr());
+		if ((op.getExpr().getExpressionType() == PostgresDataType.TEXT
+				&& op.getLeft().getExpressionType() == PostgresDataType.TEXT)) {
+			sb.append(" COLLATE \"C\"");
+		}
 		sb.append(") BETWEEN (");
 		visit(op.getLeft());
 		sb.append(") AND (");
 		visit(op.getRight());
 		if (op.getExpr().getExpressionType() == PostgresDataType.TEXT
-				&& op.getLeft().getExpressionType() == PostgresDataType.TEXT
 				&& op.getRight().getExpressionType() == PostgresDataType.TEXT) {
-			throw new IgnoreMeException(); // FIXME
-//			sb.append("COLLATE \"C\"");
+			sb.append(" COLLATE \"C\"");
 		}
 		sb.append(")");
 	}
