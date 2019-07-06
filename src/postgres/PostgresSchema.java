@@ -319,6 +319,17 @@ public class PostgresSchema {
 			return Randomly.nonEmptySubset(getColumns());
 		}
 		
+
+		public List<PostgresColumn> getRandomNonEmptyColumnSubset(int size) {
+			while (true) {
+				// FIXME
+				List<PostgresColumn> cols = getRandomNonEmptyColumnSubset();
+				if (cols.size() == size) {
+					return cols;
+				}
+			}
+		}
+		
 		public TableType getTableType() {
 			return tableType;
 		}

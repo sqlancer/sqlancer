@@ -2,6 +2,7 @@ package postgres.gen;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.postgresql.util.PSQLException;
@@ -41,7 +42,7 @@ public class PostgresDropIndex {
 			sb.append(" ");
 			sb.append(Randomly.fromOptions("CASCADE", "RESTRICT"));
 		}
-		return new QueryAdapter(sb.toString()) {
+		return new QueryAdapter(sb.toString(), Arrays.asList("cannot drop desired object(s) because other objects depend on them")) {
 			@Override
 			public void execute(Connection con) throws SQLException {
 				try {

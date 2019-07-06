@@ -30,7 +30,7 @@ import postgres.ast.PostgresPrefixOperation.PrefixOperator;
 
 public class PostgresExpressionGenerator {
 
-	private final int MAX_DEPTH = 30;
+	private final int MAX_DEPTH = 5;
 
 	private Randomly r;
 

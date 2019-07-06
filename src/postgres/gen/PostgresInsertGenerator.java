@@ -1,5 +1,6 @@
 package postgres.gen;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,7 +47,7 @@ public class PostgresInsertGenerator {
 			}
 			sb.append(" DO NOTHING");
 		}
-		return new QueryAdapter(sb.toString()) {
+		return new QueryAdapter(sb.toString(), Arrays.asList("violates foreign key constraint")) {
 			public void execute(java.sql.Connection con) throws java.sql.SQLException {
 				try {
 					super.execute(con);
@@ -71,6 +72,8 @@ public class PostgresInsertGenerator {
 					} else if (e.getMessage().contains("invalid input syntax")) {
 
 					} else if (e.getMessage().contains("division by zero")) {
+					} else if (e.getMessage().contains("violates foreign key constraint")) {
+						
 					}
 
 					else {

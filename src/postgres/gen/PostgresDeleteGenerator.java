@@ -2,6 +2,7 @@ package postgres.gen;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 import org.postgresql.util.PSQLException;
 
@@ -29,7 +30,7 @@ public class PostgresDeleteGenerator {
 			sb.append(" RETURNING ");
 			sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(r, table.getColumns())));
 		}
-		return new QueryAdapter(sb.toString()) {
+		return new QueryAdapter(sb.toString(), Arrays.asList("violates foreign key constraint")) {
 			@Override
 			public void execute(Connection con) throws SQLException {
 				try {

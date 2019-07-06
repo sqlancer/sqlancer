@@ -72,7 +72,14 @@ public class PostgresTableGenerator {
 			createColumn(name);
 		}
 		if (Randomly.getBoolean()) {
-			PostgresCommon.addTableConstraints(columnHasPrimaryKey, sb, table, r);
+			errors.add("constraints on temporary tables may reference only temporary tables");
+			errors.add("constraints on unlogged tables may reference only permanent or unlogged tables");
+			errors.add("constraints on permanent tables may reference only permanent tables");
+			errors.add("cannot be implemented");
+			errors.add("there is no unique constraint matching given keys for referenced table");
+			errors.add("cannot reference partitioned table");
+			errors.add("unsupported ON COMMIT and foreign key combination");
+			PostgresCommon.addTableConstraints(columnHasPrimaryKey, sb, table, r, newSchema);
 		}
 		sb.append(")");
 		generateInherits();

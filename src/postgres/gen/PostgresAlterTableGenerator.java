@@ -14,6 +14,7 @@ import lama.Randomly;
 import postgres.PostgresSchema.PostgresColumn;
 import postgres.PostgresSchema.PostgresDataType;
 import postgres.PostgresSchema.PostgresTable;
+import postgres.PostgresSchema;
 import postgres.PostgresVisitor;
 
 public class PostgresAlterTableGenerator {
@@ -22,6 +23,7 @@ public class PostgresAlterTableGenerator {
 	private Randomly r;
 	private boolean changesSchema;
 	private static PostgresColumn randomColumn;
+	private PostgresSchema schema;
 
 	private enum Action {
 //		ALTER_TABLE_ADD_COLUMN, // [ COLUMN ] column data_type [ COLLATE collation ] [
@@ -53,13 +55,14 @@ public class PostgresAlterTableGenerator {
 		REPLICA_IDENTITY
 	}
 
-	public PostgresAlterTableGenerator(PostgresTable randomTable, Randomly r) {
+	public PostgresAlterTableGenerator(PostgresTable randomTable, Randomly r, PostgresSchema s) {
 		this.randomTable = randomTable;
 		this.r = r;
+		this.schema = s;
 	}
 
-	public static Query create(PostgresTable randomTable, Randomly r) {
-		return new PostgresAlterTableGenerator(randomTable, r).generate();
+	public static Query create(PostgresTable randomTable, Randomly r, PostgresSchema s) {
+		return new PostgresAlterTableGenerator(randomTable, r, s).generate();
 	}
 
 	private enum Attribute {
@@ -82,6 +85,7 @@ public class PostgresAlterTableGenerator {
 		sb.append("ALTER TABLE ");
 		if (Randomly.getBoolean()) {
 			sb.append(" ONLY");
+			errors.add("cannot use ONLY for foreign key on partitioned table");
 		}
 		sb.append(" ");
 		sb.append(randomTable.getName());
@@ -109,6 +113,7 @@ public class PostgresAlterTableGenerator {
 					sb.append(" IF EXISTS ");
 				}
 				sb.append(randomTable.getRandomColumn().getName());
+				errors.add("because other objects depend on it");
 				if (Randomly.getBoolean()) {
 					sb.append(" ");
 					sb.append(Randomly.fromOptions("RESTRICT", "CASCADE"));
@@ -138,6 +143,8 @@ public class PostgresAlterTableGenerator {
 				errors.add("must be type");
 				errors.add("You might need to add explicit type casts");
 				errors.add("cannot cast type");
+				errors.add("foreign key constrain");
+				errors.add("division by zero");
 				changesSchema = true;
 				break;
 			case ALTER_COLUMN_SET_DROP_DEFAULT:
@@ -207,7 +214,7 @@ public class PostgresAlterTableGenerator {
 				break;
 			case ADD_TABLE_CONSTRAINT:
 				sb.append("ADD ");
-				PostgresCommon.addTableConstraint(sb, randomTable, r);
+				PostgresCommon.addTableConstraint(sb, randomTable, r, schema);
 				errors.add("multiple primary keys for table");
 				errors.add("could not create unique index");
 				errors.add("contains null values");
@@ -217,9 +224,18 @@ public class PostgresAlterTableGenerator {
 				errors.add("insufficient columns in UNIQUE constraint definition");
 				errors.add("which is part of the partition key");
 				errors.add("out of range");
+				errors.add("there is no unique constraint matching given keys for referenced table");
+				errors.add("constraints on temporary tables may reference only temporary tables");
+				errors.add("constraints on unlogged tables may reference only permanent or unlogged tables");
+				errors.add("constraints on permanent tables may reference only permanent tables");
+				errors.add("cannot reference partitioned table");
+				errors.add("cannot be implemented");
+				errors.add("violates foreign key constraint");
+				errors.add("unsupported ON COMMIT and foreign key combination");
 				if (Randomly.getBoolean()) {
 					sb.append(" NOT VALID");
 					errors.add("cannot be marked NOT VALID");
+					errors.add("cannot add NOT VALID foreign key on partitioned table");
 				} else {
 					errors.add("is violated by some row");
 				}
@@ -277,6 +293,8 @@ public class PostgresAlterTableGenerator {
 				sb.append("SET ");
 				sb.append(Randomly.fromOptions("LOGGED", "UNLOGGED"));
 				errors.add("because it is temporary");
+				errors.add("to logged because it references unlogged table");
+				errors.add("to unlogged because it references logged table");
 				break;
 			case NOT_OF:
 				errors.add("is not a typed table");

@@ -1,5 +1,6 @@
 package postgres.gen;
 
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import lama.Query;
@@ -30,7 +31,7 @@ public class PostgresTruncateGenerator {
 			sb.append(" ");
 			sb.append(Randomly.fromOptions("CASCADE", "RESTRICT"));
 		}
-		return new QueryAdapter(sb.toString());
+		return new QueryAdapter(sb.toString(), Arrays.asList("cannot truncate a table referenced in a foreign key constraint"));
 	}
 
 }
