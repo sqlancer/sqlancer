@@ -3,17 +3,20 @@ package postgres.ast;
 
 import postgres.PostgresSchema.PostgresDataType;
 import postgres.ast.PostgresBinaryComparisonOperation.PostgresBinaryComparisonOperator;
+import postgres.ast.PostgresBinaryLogicalOperation.BinaryLogicalOperator;
 
 public class PostgresBetweenOperation extends PostgresExpression {
 
 	private final PostgresExpression expr;
 	private final PostgresExpression left;
 	private final PostgresExpression right;
+	private final boolean isSymmetric;
 
-	public PostgresBetweenOperation(PostgresExpression expr, PostgresExpression left, PostgresExpression right) {
+	public PostgresBetweenOperation(PostgresExpression expr, PostgresExpression left, PostgresExpression right, boolean symmetric) {
 		this.expr = expr;
 		this.left = left;
 		this.right = right;
+		isSymmetric = symmetric;
 	}
 
 	public PostgresExpression getExpr() {
@@ -27,6 +30,10 @@ public class PostgresBetweenOperation extends PostgresExpression {
 	public PostgresExpression getRight() {
 		return right;
 	}
+	
+	public boolean isSymmetric() {
+		return isSymmetric;
+	}
 
 	@Override
 	public PostgresConstant getExpectedValue() {
@@ -36,7 +43,18 @@ public class PostgresBetweenOperation extends PostgresExpression {
 				PostgresBinaryComparisonOperator.LESS_EQUALS);
 		PostgresBinaryLogicalOperation andOperation = new PostgresBinaryLogicalOperation(leftComparison,
 				rightComparison, PostgresBinaryLogicalOperation.BinaryLogicalOperator.AND);
-		return andOperation.getExpectedValue();
+		if (isSymmetric) {
+			PostgresBinaryComparisonOperation leftComparison2 = new PostgresBinaryComparisonOperation(right, expr,
+					PostgresBinaryComparisonOperator.LESS_EQUALS);
+			PostgresBinaryComparisonOperation rightComparison2 = new PostgresBinaryComparisonOperation(expr, left,
+					PostgresBinaryComparisonOperator.LESS_EQUALS);
+			PostgresBinaryLogicalOperation andOperation2 = new PostgresBinaryLogicalOperation(leftComparison2,
+					rightComparison2, PostgresBinaryLogicalOperation.BinaryLogicalOperator.AND);
+			PostgresBinaryLogicalOperation orOp = new PostgresBinaryLogicalOperation(andOperation, andOperation2, BinaryLogicalOperator.OR);
+			return orOp.getExpectedValue();
+		} else {
+			return andOperation.getExpectedValue();
+		}
 	}
 
 	@Override

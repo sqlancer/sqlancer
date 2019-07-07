@@ -148,7 +148,7 @@ public class PostgresExpressionGenerator {
 					generateExpression(depth + 1, PostgresDataType.TEXT));
 		case BETWEEN:
 			PostgresDataType type = PostgresDataType.getRandomType();
-			return new PostgresBetweenOperation(generateExpression(depth + 1, type), generateExpression(depth + 1, type), generateExpression(depth + 1, type));
+			return new PostgresBetweenOperation(generateExpression(depth + 1, type), generateExpression(depth + 1, type), generateExpression(depth + 1, type), Randomly.getBoolean());
 		default:
 			throw new AssertionError();
 		}

@@ -3,7 +3,6 @@ package postgres;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import lama.IgnoreMeException;
 import lama.Randomly;
 import lama.postgres.ast.PostgresComputableFunction;
 import postgres.PostgresSchema.PostgresColumn;
@@ -240,7 +239,11 @@ public class PostgresToStringVisitor extends PostgresVisitor {
 				&& op.getLeft().getExpressionType() == PostgresDataType.TEXT)) {
 			sb.append(" COLLATE \"C\"");
 		}
-		sb.append(") BETWEEN (");
+		sb.append(") BETWEEN ");
+		if (op.isSymmetric()) {
+			sb.append("SYMMETRIC ");
+		}
+		sb.append("(");
 		visit(op.getLeft());
 		sb.append(") AND (");
 		visit(op.getRight());
