@@ -34,6 +34,7 @@ import postgres.gen.PostgresDiscardGenerator;
 import postgres.gen.PostgresDropIndex;
 import postgres.gen.PostgresIndexGenerator;
 import postgres.gen.PostgresInsertGenerator;
+import postgres.gen.PostgresInsertStatisticsGenerator;
 import postgres.gen.PostgresQueryGenerator;
 import postgres.gen.PostgresReindexGenerator;
 import postgres.gen.PostgresSetGenerator;
@@ -49,7 +50,7 @@ public class PostgresProvider implements DatabaseProvider {
 	private QueryManager manager;
 
 	private enum Action {
-		ANALYZE, ALTER_TABLE, CLUSTER, COMMIT, DELETE, DISCARD, DROP_INDEX, INSERT, UPDATE, TRUNCATE, VACUUM, REINDEX,
+		ANALYZE, ALTER_TABLE, CLUSTER, COMMIT, CREATE_STATISTICS, DELETE, DISCARD, DROP_INDEX, INSERT, UPDATE, TRUNCATE, VACUUM, REINDEX,
 		SET, CREATE_INDEX;
 	}
 
@@ -90,6 +91,7 @@ public class PostgresProvider implements DatabaseProvider {
 			case ALTER_TABLE:
 				nrPerformed = r.getInteger(0, 5);
 				break;
+			case CREATE_STATISTICS:
 			case REINDEX:
 			case TRUNCATE:
 			case DELETE:
@@ -193,6 +195,9 @@ public class PostgresProvider implements DatabaseProvider {
 					break;
 				case INSERT:
 					query = PostgresInsertGenerator.insert(newSchema.getRandomTable(), r);
+					break;
+				case CREATE_STATISTICS:
+					query = PostgresInsertStatisticsGenerator.insert(newSchema, r);
 					break;
 				default:
 					throw new AssertionError(nextAction);
