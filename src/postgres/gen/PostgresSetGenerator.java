@@ -1,10 +1,13 @@
 package postgres.gen;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.function.Function;
 
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import postgres.PostgresProvider;
 
 public class PostgresSetGenerator {
 
@@ -122,7 +125,11 @@ public class PostgresSetGenerator {
 
 	public static Query create(Randomly r) {
 		StringBuilder sb = new StringBuilder();
-		ConfigurationOption option = Randomly.fromOptions(ConfigurationOption.values());
+		ArrayList<ConfigurationOption> options = new ArrayList<>(Arrays.asList(ConfigurationOption.values()));
+		if (PostgresProvider.IS_POSTGRES_TWELVE) {
+			options.remove(ConfigurationOption.DEFAULT_WITH_OIDS);
+		}
+		ConfigurationOption option = Randomly.fromList(options);
 		sb.append("SET ");
 		if (Randomly.getBoolean()) {
 			sb.append(Randomly.fromOptions("SESSION", "LOCAL"));

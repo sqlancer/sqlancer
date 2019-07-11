@@ -1,6 +1,6 @@
 package postgres.gen;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,6 +9,7 @@ import org.postgresql.util.PSQLException;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import postgres.PostgresProvider;
 import postgres.PostgresSchema.PostgresColumn;
 import postgres.PostgresSchema.PostgresTable;
 import postgres.PostgresVisitor;
@@ -17,6 +18,12 @@ import postgres.ast.PostgresConstant;
 public class PostgresInsertGenerator {
 
 	public static Query insert(PostgresTable table, Randomly r) {
+		List<String> errors = new ArrayList<>();
+		if (PostgresProvider.IS_POSTGRES_TWELVE) {
+			errors.add("cannot insert into column");
+		}
+		errors.add("violates foreign key constraint");
+		errors.add("value too long for type character varying");
 		StringBuilder sb = new StringBuilder();
 		sb.append("INSERT INTO ");
 		sb.append(table.getName());
@@ -47,7 +54,7 @@ public class PostgresInsertGenerator {
 			}
 			sb.append(" DO NOTHING");
 		}
-		return new QueryAdapter(sb.toString(), Arrays.asList("violates foreign key constraint")) {
+		return new QueryAdapter(sb.toString(), errors) {
 			public void execute(java.sql.Connection con) throws java.sql.SQLException {
 				try {
 					super.execute(con);
@@ -73,7 +80,7 @@ public class PostgresInsertGenerator {
 
 					} else if (e.getMessage().contains("division by zero")) {
 					} else if (e.getMessage().contains("violates foreign key constraint")) {
-						
+
 					}
 
 					else {

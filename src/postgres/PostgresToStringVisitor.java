@@ -13,6 +13,7 @@ import postgres.ast.PostgresBinaryComparisonOperation;
 import postgres.ast.PostgresBinaryLogicalOperation;
 import postgres.ast.PostgresCastOperation;
 import postgres.ast.PostgresColumnValue;
+import postgres.ast.PostgresConcatOperation;
 import postgres.ast.PostgresConstant;
 import postgres.ast.PostgresExpression;
 import postgres.ast.PostgresLikeOperation;
@@ -252,6 +253,13 @@ public class PostgresToStringVisitor extends PostgresVisitor {
 			sb.append(" COLLATE \"C\"");
 		}
 		sb.append(")");
+	}
+
+	@Override
+	public void visit(PostgresConcatOperation op) {
+		visit(op.getLeft());
+		sb.append(" || ");
+		visit(op.getRight());
 	}
 
 }

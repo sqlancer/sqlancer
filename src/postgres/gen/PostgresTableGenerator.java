@@ -3,6 +3,7 @@ package postgres.gen;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -12,6 +13,7 @@ import lama.QueryAdapter;
 import lama.Randomly;
 import lama.mysql.MySQLVisitor;
 import lama.sqlite3.gen.SQLite3Common;
+import postgres.PostgresProvider;
 import postgres.PostgresSchema;
 import postgres.PostgresSchema.PostgresColumn;
 import postgres.PostgresSchema.PostgresDataType;
@@ -202,7 +204,11 @@ public class PostgresTableGenerator {
 	private void generateWith() {
 		if (Randomly.getBoolean()) {
 			sb.append(" WITH (");
-			List<StorageParameters> subset = Randomly.nonEmptySubset(StorageParameters.values());
+			ArrayList<StorageParameters> values = new ArrayList<>(Arrays.asList(StorageParameters.values()));
+			if (PostgresProvider.IS_POSTGRES_TWELVE) {
+				values.remove(StorageParameters.OIDS);
+			}
+			List<StorageParameters> subset = Randomly.nonEmptySubset(values);
 			int i = 0;
 			for (StorageParameters parameter : subset) {
 				if (i++ != 0) {
@@ -271,8 +277,16 @@ public class PostgresTableGenerator {
 				break;
 			case GENERATED:
 				sb.append("GENERATED ");
-				sb.append(Randomly.fromOptions("ALWAYS", "BY DEFAULT"));
-				sb.append(" AS IDENTITY");
+				if (Randomly.getBoolean() && PostgresProvider.IS_POSTGRES_TWELVE) {
+					sb.append(" ALWAYS AS (");
+					sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(r, columnsToBeAdded, type)));
+					sb.append(") STORED");
+					errors.add("A generated column cannot reference another generated column.");
+					errors.add("cannot use generated column in partition key");
+				} else {
+					sb.append(Randomly.fromOptions("ALWAYS", "BY DEFAULT"));
+					sb.append(" AS IDENTITY");
+				}
 				break;
 			default:
 				throw new AssertionError(sb);

@@ -1,5 +1,6 @@
 package postgres.gen;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -10,11 +11,11 @@ import lama.QueryAdapter;
 import lama.Randomly;
 import lama.sqlite3.gen.SQLite3Common;
 import postgres.PostgresSchema;
-import postgres.PostgresVisitor;
 import postgres.PostgresSchema.PostgresColumn;
 import postgres.PostgresSchema.PostgresDataType;
 import postgres.PostgresSchema.PostgresIndex;
 import postgres.PostgresSchema.PostgresTable;
+import postgres.PostgresVisitor;
 import postgres.ast.PostgresExpression;
 
 public class PostgresIndexGenerator {
@@ -79,13 +80,17 @@ public class PostgresIndexGenerator {
 //			sb.append(" WITH ");
 //			
 //		}
+		List<String> errors = new ArrayList<>();
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
 			PostgresExpression expr = PostgresExpressionGenerator.generateExpression(r, randomTable.getColumns(),
 					PostgresDataType.BOOLEAN);
 			sb.append(PostgresVisitor.asString(expr));
 		}
-		return new QueryAdapter(sb.toString()) {
+		errors.add("You might need to add explicit type casts");
+		errors.add(" collations are not supported"); // TODO check
+		errors.add("because it has pending trigger events");
+		return new QueryAdapter(sb.toString(), errors) {
 			public void execute(java.sql.Connection con) throws java.sql.SQLException {
 				try {
 					super.execute(con);

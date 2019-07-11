@@ -198,7 +198,8 @@ public class PostgresQueryGenerator {
 					|| e.getMessage().contains("operator does not exist")
 					|| e.getMessage().contains("Could not choose a best candidate function.")
 					|| e.getMessage().contains("division by zero")
-					|| e.getMessage().contains("zero raised to a negative power is undefined")) {
+					|| e.getMessage().contains("zero raised to a negative power is undefined")
+					|| e.getMessage().contains("canceling statement due to statement timeout")) {
 				return true;
 			} else {
 				throw e;

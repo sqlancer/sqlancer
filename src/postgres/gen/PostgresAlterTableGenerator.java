@@ -11,10 +11,11 @@ import lama.IgnoreMeException;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import postgres.PostgresProvider;
+import postgres.PostgresSchema;
 import postgres.PostgresSchema.PostgresColumn;
 import postgres.PostgresSchema.PostgresDataType;
 import postgres.PostgresSchema.PostgresTable;
-import postgres.PostgresSchema;
 import postgres.PostgresVisitor;
 
 public class PostgresAlterTableGenerator {
@@ -79,8 +80,9 @@ public class PostgresAlterTableGenerator {
 		List<String> errors = new ArrayList<>();
 		/* workaround for */
 		errors.add("could not open relation with OID");
-
+		errors.add("cannot drop desired object(s) because other objects depend on them");
 		errors.add("invalid input syntax for");
+		errors.add("it has pending trigger events");
 		StringBuilder sb = new StringBuilder();
 		sb.append("ALTER TABLE ");
 		if (Randomly.getBoolean()) {
@@ -98,6 +100,9 @@ public class PostgresAlterTableGenerator {
 		if (randomTable.getIndexes().isEmpty()) {
 			action.remove(Action.ADD_TABLE_CONSTRAINT_USING_INDEX);
 			action.remove(Action.CLUSTER_ON);
+		}
+		if (PostgresProvider.IS_POSTGRES_TWELVE) {
+			action.remove(Action.SET_WITH_OIDS);
 		}
 		if (action.isEmpty()) {
 			throw new IgnoreMeException();
@@ -145,6 +150,10 @@ public class PostgresAlterTableGenerator {
 				errors.add("cannot cast type");
 				errors.add("foreign key constrain");
 				errors.add("division by zero");
+				errors.add("value too long for type character varying");
+				if (PostgresProvider.IS_POSTGRES_TWELVE) {
+					errors.add("cannot alter type of a column used by a generated column");
+				}
 				changesSchema = true;
 				break;
 			case ALTER_COLUMN_SET_DROP_DEFAULT:
@@ -277,6 +286,7 @@ public class PostgresAlterTableGenerator {
 				sb.append("CLUSTER ON ");
 				sb.append(randomTable.getRandomIndex().getIndexName());
 				errors.add("cannot cluster on");
+				errors.add("cannot mark index clustered in partitioned table");
 				break;
 			case SET_WITHOUT_CLUSTER:
 				sb.append("SET WITHOUT CLUSTER");

@@ -7,6 +7,7 @@ import postgres.ast.PostgresBinaryComparisonOperation;
 import postgres.ast.PostgresBinaryLogicalOperation;
 import postgres.ast.PostgresCastOperation;
 import postgres.ast.PostgresColumnValue;
+import postgres.ast.PostgresConcatOperation;
 import postgres.ast.PostgresConstant;
 import postgres.ast.PostgresExpression;
 import postgres.ast.PostgresLikeOperation;
@@ -42,6 +43,8 @@ public abstract class PostgresVisitor {
 	public abstract void visit(PostgresBinaryArithmeticOperation op);
 
 	public abstract void visit(PostgresBetweenOperation op);
+	
+	public abstract void visit(PostgresConcatOperation op);
 
 	public void visit(PostgresExpression expression) {
 		if (expression instanceof PostgresConstant) {
@@ -70,6 +73,8 @@ public abstract class PostgresVisitor {
 			visit((PostgresBinaryArithmeticOperation) expression);
 		} else if (expression instanceof PostgresBetweenOperation) {
 			visit((PostgresBetweenOperation) expression);
+		} else if (expression instanceof PostgresConcatOperation) {
+			visit((PostgresConcatOperation) expression);
 		} else {
 			throw new AssertionError(expression);
 		}

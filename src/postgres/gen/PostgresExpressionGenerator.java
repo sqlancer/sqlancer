@@ -20,6 +20,7 @@ import postgres.ast.PostgresBinaryLogicalOperation;
 import postgres.ast.PostgresBinaryLogicalOperation.BinaryLogicalOperator;
 import postgres.ast.PostgresCastOperation;
 import postgres.ast.PostgresColumnValue;
+import postgres.ast.PostgresConcatOperation;
 import postgres.ast.PostgresConstant;
 import postgres.ast.PostgresExpression;
 import postgres.ast.PostgresLikeOperation;
@@ -71,7 +72,8 @@ public class PostgresExpressionGenerator {
 	}
 
 	private enum BooleanExpression {
-		CONSTANT, POSTFIX_OPERATOR, COLUMN, NOT, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON, FUNCTION, CAST, LIKE, BETWEEN;
+		CONSTANT, POSTFIX_OPERATOR, COLUMN, NOT, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON, FUNCTION, CAST, LIKE,
+		BETWEEN;
 	}
 
 	private PostgresExpression generateFunction(int depth, PostgresDataType type) {
@@ -148,7 +150,8 @@ public class PostgresExpressionGenerator {
 					generateExpression(depth + 1, PostgresDataType.TEXT));
 		case BETWEEN:
 			PostgresDataType type = PostgresDataType.getRandomType();
-			return new PostgresBetweenOperation(generateExpression(depth + 1, type), generateExpression(depth + 1, type), generateExpression(depth + 1, type), Randomly.getBoolean());
+			return new PostgresBetweenOperation(generateExpression(depth + 1, type),
+					generateExpression(depth + 1, type), generateExpression(depth + 1, type), Randomly.getBoolean());
 		default:
 			throw new AssertionError();
 		}
@@ -172,7 +175,7 @@ public class PostgresExpressionGenerator {
 	}
 
 	private enum TextExpression {
-		CONSTANT, COLUMN, CAST, FUNCTION
+		CONSTANT, COLUMN, CAST, FUNCTION, CONCAT
 	}
 
 	private PostgresExpression generateTextExpression(int depth) {
@@ -199,8 +202,21 @@ public class PostgresExpressionGenerator {
 			return new PostgresCastOperation(generateExpression(depth + 1), PostgresDataType.TEXT);
 		case FUNCTION:
 			return generateFunction(depth + 1, PostgresDataType.TEXT);
+		case CONCAT:
+			return generateConcat(depth);
 		default:
 			throw new AssertionError();
+		}
+	}
+
+	private PostgresExpression generateConcat(int depth) {
+		while (true) {
+			PostgresExpression left = generateExpression(depth + 1);
+			PostgresExpression right = generateExpression(depth + 1);
+			if (left.getExpressionType() == PostgresDataType.TEXT
+					|| right.getExpressionType() == PostgresDataType.TEXT) {
+				return new PostgresConcatOperation(left, right);
+			}
 		}
 	}
 

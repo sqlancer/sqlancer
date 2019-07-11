@@ -1,6 +1,7 @@
 package postgres.gen;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import lama.IgnoreMeException;
@@ -32,7 +33,16 @@ public class PostgresCommon {
 			}
 			break;
 		case TEXT:
-			sb.append("TEXT");
+			if (Randomly.getBoolean()) {
+				sb.append("TEXT");
+			} else {
+				// TODO:  support CHAR (without VAR)
+				sb.append("VAR");
+				sb.append("CHAR");
+				sb.append("(");
+				sb.append(ThreadLocalRandom.current().nextInt(1, 500));
+				sb.append(")");
+			}
 			break;
 		default:
 			throw new AssertionError(type);

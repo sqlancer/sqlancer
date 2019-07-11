@@ -8,6 +8,7 @@ import postgres.ast.PostgresBinaryComparisonOperation;
 import postgres.ast.PostgresBinaryLogicalOperation;
 import postgres.ast.PostgresCastOperation;
 import postgres.ast.PostgresColumnValue;
+import postgres.ast.PostgresConcatOperation;
 import postgres.ast.PostgresConstant;
 import postgres.ast.PostgresExpression;
 import postgres.ast.PostgresLikeOperation;
@@ -125,6 +126,13 @@ public class PostgresExpectedValueVisitor extends PostgresVisitor {
 	public void visit(PostgresBetweenOperation op) {
 		print(op);
 		visit(op.getExpr());
+		visit(op.getLeft());
+		visit(op.getRight());
+	}
+
+	@Override
+	public void visit(PostgresConcatOperation op) {
+		print(op);
 		visit(op.getLeft());
 		visit(op.getRight());
 	}
