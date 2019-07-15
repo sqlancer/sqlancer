@@ -16,6 +16,7 @@ import postgres.ast.PostgresColumnValue;
 import postgres.ast.PostgresConcatOperation;
 import postgres.ast.PostgresConstant;
 import postgres.ast.PostgresExpression;
+import postgres.ast.PostgresInOperation;
 import postgres.ast.PostgresLikeOperation;
 import postgres.ast.PostgresOrderByTerm;
 import postgres.ast.PostgresPostfixOperation;
@@ -257,9 +258,29 @@ public class PostgresToStringVisitor extends PostgresVisitor {
 
 	@Override
 	public void visit(PostgresConcatOperation op) {
+		sb.append("((");
 		visit(op.getLeft());
-		sb.append(" || ");
+		sb.append(") || (");
 		visit(op.getRight());
+		sb.append("))");
+	}
+
+	@Override
+	public void visit(PostgresInOperation op) {
+		sb.append("(");
+		visit(op.getExpr());
+		sb.append(")");
+		if (!op.isTrue()) {
+			sb.append(" NOT");
+		}
+		sb.append(" IN (");
+		for (int i = 0; i < op.getListElements().size(); i++) {
+			if (i != 0) {
+				sb.append(", ");
+			}
+			visit(op.getListElements().get(i));
+		}
+		sb.append(")");
 	}
 
 }

@@ -11,6 +11,7 @@ import postgres.ast.PostgresColumnValue;
 import postgres.ast.PostgresConcatOperation;
 import postgres.ast.PostgresConstant;
 import postgres.ast.PostgresExpression;
+import postgres.ast.PostgresInOperation;
 import postgres.ast.PostgresLikeOperation;
 import postgres.ast.PostgresOrderByTerm;
 import postgres.ast.PostgresPostfixOperation;
@@ -135,6 +136,15 @@ public class PostgresExpectedValueVisitor extends PostgresVisitor {
 		print(op);
 		visit(op.getLeft());
 		visit(op.getRight());
+	}
+
+	@Override
+	public void visit(PostgresInOperation op) {
+		print(op);
+		visit(op.getExpr());
+		for (PostgresExpression right : op.getListElements()) {
+			visit(right);
+		}
 	}
 
 }

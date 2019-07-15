@@ -1,5 +1,6 @@
 package postgres.gen;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,6 +24,7 @@ import postgres.ast.PostgresColumnValue;
 import postgres.ast.PostgresConcatOperation;
 import postgres.ast.PostgresConstant;
 import postgres.ast.PostgresExpression;
+import postgres.ast.PostgresInOperation;
 import postgres.ast.PostgresLikeOperation;
 import postgres.ast.PostgresPostfixOperation;
 import postgres.ast.PostgresPostfixOperation.PostfixOperator;
@@ -31,7 +33,7 @@ import postgres.ast.PostgresPrefixOperation.PrefixOperator;
 
 public class PostgresExpressionGenerator {
 
-	private final int MAX_DEPTH = 5;
+	private final int MAX_DEPTH = 30;
 
 	private Randomly r;
 
@@ -73,7 +75,7 @@ public class PostgresExpressionGenerator {
 
 	private enum BooleanExpression {
 		CONSTANT, POSTFIX_OPERATOR, COLUMN, NOT, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON, FUNCTION, CAST, LIKE,
-		BETWEEN;
+		BETWEEN, IN_OPERATION;
 	}
 
 	private PostgresExpression generateFunction(int depth, PostgresDataType type) {
@@ -121,6 +123,8 @@ public class PostgresExpressionGenerator {
 					.create(generateExpression(depth + 1, Randomly.fromOptions(random.getInputDataTypes())), random);
 		case COLUMN:
 			return createColumnOfType(PostgresDataType.BOOLEAN);
+		case IN_OPERATION:
+			return inOperation(depth + 1);
 		case NOT:
 			return new PostgresPrefixOperation(generateBooleanExpression(depth + 1), PrefixOperator.NOT);
 		case BINARY_LOGICAL_OPERATOR:
@@ -155,6 +159,16 @@ public class PostgresExpressionGenerator {
 		default:
 			throw new AssertionError();
 		}
+	}
+
+	private PostgresExpression inOperation(int depth) {
+		PostgresDataType type = PostgresDataType.getRandomType();
+		PostgresExpression leftExpr = generateExpression(depth + 1, type);
+		List<PostgresExpression> rightExpr = new ArrayList<>();
+		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
+			rightExpr.add(generateExpression(depth + 1, type));
+		}
+		return new PostgresInOperation(leftExpr, rightExpr, Randomly.getBoolean());
 	}
 
 	public static PostgresExpression generateExpression(Randomly r, PostgresDataType type) {

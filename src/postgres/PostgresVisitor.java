@@ -10,6 +10,7 @@ import postgres.ast.PostgresColumnValue;
 import postgres.ast.PostgresConcatOperation;
 import postgres.ast.PostgresConstant;
 import postgres.ast.PostgresExpression;
+import postgres.ast.PostgresInOperation;
 import postgres.ast.PostgresLikeOperation;
 import postgres.ast.PostgresOrderByTerm;
 import postgres.ast.PostgresPostfixOperation;
@@ -45,6 +46,8 @@ public abstract class PostgresVisitor {
 	public abstract void visit(PostgresBetweenOperation op);
 	
 	public abstract void visit(PostgresConcatOperation op);
+	
+	public abstract void visit(PostgresInOperation op);
 
 	public void visit(PostgresExpression expression) {
 		if (expression instanceof PostgresConstant) {
@@ -75,6 +78,8 @@ public abstract class PostgresVisitor {
 			visit((PostgresBetweenOperation) expression);
 		} else if (expression instanceof PostgresConcatOperation) {
 			visit((PostgresConcatOperation) expression);
+		} else if (expression instanceof PostgresInOperation) {
+			visit((PostgresInOperation) expression);
 		} else {
 			throw new AssertionError(expression);
 		}
