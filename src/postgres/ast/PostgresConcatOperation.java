@@ -19,8 +19,11 @@ public class PostgresConcatOperation extends PostgresExpression {
 
 	@Override
 	public PostgresConstant getExpectedValue() {
-		String leftStr = left.getExpectedValue().cast(PostgresDataType.TEXT).getTextRepresentation();
-		String rightStr = right.getExpectedValue().cast(PostgresDataType.TEXT).getTextRepresentation();
+		if (left.getExpectedValue().isNull() || right.getExpectedValue().isNull()) {
+			return PostgresConstant.createNullConstant();
+		}
+		String leftStr = left.getExpectedValue().cast(PostgresDataType.TEXT).getUnquotedTextRepresentation();
+		String rightStr = right.getExpectedValue().cast(PostgresDataType.TEXT).getUnquotedTextRepresentation();
 		return PostgresConstant.createTextConstant(leftStr + rightStr);
 	}
 	
