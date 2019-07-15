@@ -25,7 +25,7 @@ public class PostgresUpdateGenerator {
 		sb.append("UPDATE ");
 		sb.append(randomTable.getName());
 		sb.append(" SET ");
-		List<String> errors = new ArrayList(Arrays.asList("reached maximum value of sequence", "violates foreign key constraint", "violates not-null constraint", "violates unique constraint",
+		List<String> errors = new ArrayList(Arrays.asList("conflicting key value violates exclusion constraint", "reached maximum value of sequence", "violates foreign key constraint", "violates not-null constraint", "violates unique constraint",
 				"out of range", "cannot cast", "must be type boolean", "is not unique", "can only be updated to DEFAULT", "division by zero", "You might need to add explicit type casts.", "value too long for type character varying"));
 		List<PostgresColumn> columns = randomTable.getRandomNonEmptyColumnSubset();
 		for (int i = 0; i < columns.size(); i++) {

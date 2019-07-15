@@ -6,6 +6,8 @@ import postgres.PostgresSchema.PostgresDataType;
 public abstract class PostgresConstant extends PostgresExpression {
 
 	public abstract String getTextRepresentation();
+	
+	public abstract String getUnquotedTextRepresentation();
 
 	public static class BooleanConstant extends PostgresConstant {
 
@@ -74,6 +76,11 @@ public abstract class PostgresConstant extends PostgresExpression {
 			}
 		}
 
+		@Override
+		public String getUnquotedTextRepresentation() {
+			return getTextRepresentation();
+		}
+
 	}
 
 	public static class PostgresNullConstant extends PostgresConstant {
@@ -106,6 +113,11 @@ public abstract class PostgresConstant extends PostgresExpression {
 		@Override
 		public PostgresConstant cast(PostgresDataType type) {
 			return PostgresConstant.createNullConstant();
+		}
+
+		@Override
+		public String getUnquotedTextRepresentation() {
+			return getTextRepresentation();
 		}
 
 	}
@@ -215,6 +227,11 @@ public abstract class PostgresConstant extends PostgresExpression {
 		public String asString() {
 			return value;
 		}
+
+		@Override
+		public String getUnquotedTextRepresentation() {
+			return value;
+		}
 		
 	}
 
@@ -291,6 +308,11 @@ public abstract class PostgresConstant extends PostgresExpression {
 			}
 		}
 
+		@Override
+		public String getUnquotedTextRepresentation() {
+			return getTextRepresentation();
+		}
+
 	}
 
 	public static PostgresConstant createNullConstant() {
@@ -354,7 +376,7 @@ public abstract class PostgresConstant extends PostgresExpression {
 	public String toString() {
 		return getTextRepresentation();
 	}
-
+	
 	public abstract PostgresConstant cast(PostgresDataType type);
 
 	public static PostgresConstant createTextConstant(String string) {

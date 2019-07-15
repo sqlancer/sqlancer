@@ -24,6 +24,7 @@ public class PostgresInsertGenerator {
 		}
 		errors.add("violates foreign key constraint");
 		errors.add("value too long for type character varying");
+		errors.add("conflicting key value violates exclusion constraint");
 		StringBuilder sb = new StringBuilder();
 		sb.append("INSERT INTO ");
 		sb.append(table.getName());

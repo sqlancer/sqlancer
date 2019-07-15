@@ -3,6 +3,7 @@ package postgres.gen;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.postgresql.util.PSQLException;
 
@@ -10,6 +11,7 @@ import lama.IgnoreMeException;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import postgres.PostgresProvider;
 import postgres.PostgresSchema;
 import postgres.PostgresSchema.PostgresIndex;
 
@@ -30,18 +32,27 @@ public class PostgresReindexGenerator {
 		switch (scope) {
 		case INDEX:
 			sb.append("INDEX ");
+			if (PostgresProvider.IS_POSTGRES_TWELVE && Randomly.getBoolean()) {
+				sb.append("CONCURRENTLY ");
+			}
 			List<PostgresIndex> indexes = newSchema.getRandomTable().getIndexes();
 			if (indexes.isEmpty()) {
 				throw new IgnoreMeException();
 			}
-			sb.append(indexes);
+			sb.append(indexes.stream().map(i -> i.getIndexName()).collect(Collectors.joining()));
 			break;
 		case TABLE:
 			sb.append("TABLE ");
+			if (PostgresProvider.IS_POSTGRES_TWELVE && Randomly.getBoolean()) {
+				sb.append("CONCURRENTLY ");
+			}
 			sb.append(newSchema.getRandomTable().getName());
 			break;
 		case DATABASE:
 			sb.append("DATABASE ");
+			if (PostgresProvider.IS_POSTGRES_TWELVE && Randomly.getBoolean()) {
+				sb.append("CONCURRENTLY ");
+			}
 			sb.append(newSchema.getDatabaseName());
 			break;
 		default:
