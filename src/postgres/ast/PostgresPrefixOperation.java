@@ -31,6 +31,7 @@ public class PostgresPrefixOperation extends PostgresExpression {
 
 			@Override
 			protected PostgresConstant getExpectedValue(PostgresConstant expectedValue) {
+				// TODO: actual converts to double precision
 				return expectedValue;
 			}
 

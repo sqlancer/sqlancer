@@ -151,6 +151,7 @@ public class PostgresAlterTableGenerator {
 				errors.add("foreign key constrain");
 				errors.add("division by zero");
 				errors.add("value too long for type character varying");
+				errors.add("cannot drop index");
 				if (PostgresProvider.IS_POSTGRES_TWELVE) {
 					errors.add("cannot alter type of a column used by a generated column");
 				}
@@ -167,6 +168,7 @@ public class PostgresAlterTableGenerator {
 					errors.add("is out of range");
 					errors.add("but default expression is of type");
 				}
+				errors.add("is a generated column");
 				errors.add("is an identity column");
 				break;
 			case ALTER_COLUMN_SET_DROP_NULL:
@@ -223,7 +225,7 @@ public class PostgresAlterTableGenerator {
 				break;
 			case ADD_TABLE_CONSTRAINT:
 				sb.append("ADD ");
-				PostgresCommon.addTableConstraint(sb, randomTable, r, schema);
+				PostgresCommon.addTableConstraint(sb, randomTable, r, schema, errors);
 				errors.add("multiple primary keys for table");
 				errors.add("could not create unique index");
 				errors.add("contains null values");
@@ -253,6 +255,7 @@ public class PostgresAlterTableGenerator {
 				sb.append("ADD ");
 //				sb.append("CONSTRAINT 'asdf' ");
 				sb.append(Randomly.fromOptions("UNIQUE", "PRIMARY KEY"));
+				errors.add("not valid");
 				sb.append(" USING INDEX ");
 				sb.append(randomTable.getRandomIndex().getIndexName());
 				errors.add("is not a unique index");
@@ -287,6 +290,7 @@ public class PostgresAlterTableGenerator {
 				sb.append(randomTable.getRandomIndex().getIndexName());
 				errors.add("cannot cluster on");
 				errors.add("cannot mark index clustered in partitioned table");
+				errors.add("not valid");
 				break;
 			case SET_WITHOUT_CLUSTER:
 				sb.append("SET WITHOUT CLUSTER");
@@ -325,6 +329,7 @@ public class PostgresAlterTableGenerator {
 					errors.add("cannot use non-unique index");
 					errors.add("cannot use expression index");
 					errors.add("cannot use partial index");
+					errors.add("cannot use invalid index");
 				}
 				break;
 			default:

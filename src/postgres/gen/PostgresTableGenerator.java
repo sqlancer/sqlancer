@@ -38,7 +38,7 @@ public class PostgresTableGenerator {
 		this.tableName = tableName;
 		this.r = r;
 		this.newSchema = newSchema;
-		table = new PostgresTable(tableName, columnsToBeAdded, null, null);
+		table = new PostgresTable(tableName, columnsToBeAdded, null, null, null);
 		errors.add("invalid input syntax for");
 		errors.add("is not unique");
 		errors.add("integer out of range");
@@ -81,12 +81,13 @@ public class PostgresTableGenerator {
 			errors.add("there is no unique constraint matching given keys for referenced table");
 			errors.add("cannot reference partitioned table");
 			errors.add("unsupported ON COMMIT and foreign key combination");
-			PostgresCommon.addTableConstraints(columnHasPrimaryKey, sb, table, r, newSchema);
+			errors.add("ERROR: invalid ON DELETE action for foreign key constraint containing generated column");
+			PostgresCommon.addTableConstraints(columnHasPrimaryKey, sb, table, r, newSchema, errors);
 		}
 		sb.append(")");
 		generateInherits();
 		generatePartitionBy();
-		generateWith();
+		PostgresCommon.generateWith(sb, r);
 		if (Randomly.getBoolean() && isTemporaryTable) {
 			sb.append(" ON COMMIT ");
 			sb.append(Randomly.fromOptions("PRESERVE ROWS", "DELETE ROWS", "DROP"));
@@ -173,55 +174,6 @@ public class PostgresTableGenerator {
 		}
 	}
 
-	private enum StorageParameters {
-		FILLFACTOR("fillfactor", (r) -> r.getInteger(10, 100)),
-		// toast_tuple_target
-		PARALLEL_WORKERS("parallel_workers", (r) -> r.getInteger(0, 1024)),
-		AUTOVACUUM_ENABLED("autovacuum_enabled", (r) -> Randomly.fromOptions(0, 1)),
-		AUTOVACUUM_VACUUM_THRESHOLD("autovacuum_vacuum_threshold", (r) -> r.getInteger(0, 2147483647)),
-		OIDS("oids", (R) -> Randomly.fromOptions(0, 1)),
-		AUTOVACUUM_VACUUM_SCALE_FACTOR("autovacuum_vacuum_scale_factor",
-				(r) -> Randomly.fromOptions(0, 0.00001, 0.01, 0.1, 0.2, 0.5, 0.8, 0.9, 1)),
-		AUTOVACUUM_ANALYZE_THRESHOLD("autovacuum_analyze_threshold", (r) -> r.getLong(0, Integer.MAX_VALUE)),
-		AUTOVACUUM_ANALYZE_SCALE_FACTOR("autovacuum_analyze_scale_factor",
-				(r) -> Randomly.fromOptions(0, 0.00001, 0.01, 0.1, 0.2, 0.5, 0.8, 0.9, 1)),
-		AUTOVACUUM_VACUUM_COST_DELAY("autovacuum_vacuum_cost_delay", (r) -> r.getLong(0, 100)),
-		AUTOVACUUM_VACUUM_COST_LIMIT("autovacuum_vacuum_cost_limit", (r) -> r.getLong(1, 10000)),
-		AUTOVACUUM_FREEZE_MIN_AGE("autovacuum_freeze_min_age", (r) -> r.getLong(0, 1000000000)),
-		AUTOVACUUM_FREEZE_MAX_AGE("autovacuum_freeze_max_age", (r) -> r.getLong(100000, 2000000000)),
-		AUTOVACUUM_FREEZE_TABLE_AGE("autovacuum_freeze_table_age", (r) -> r.getLong(0, 2000000000));
-		// TODO
-
-		private String parameter;
-		private Function<Randomly, Object> op;
-
-		private StorageParameters(String parameter, Function<Randomly, Object> op) {
-			this.parameter = parameter;
-			this.op = op;
-		}
-	}
-
-	private void generateWith() {
-		if (Randomly.getBoolean()) {
-			sb.append(" WITH (");
-			ArrayList<StorageParameters> values = new ArrayList<>(Arrays.asList(StorageParameters.values()));
-			if (PostgresProvider.IS_POSTGRES_TWELVE) {
-				values.remove(StorageParameters.OIDS);
-			}
-			List<StorageParameters> subset = Randomly.nonEmptySubset(values);
-			int i = 0;
-			for (StorageParameters parameter : subset) {
-				if (i++ != 0) {
-					sb.append(", ");
-				}
-				sb.append(parameter.parameter);
-				sb.append("=");
-				sb.append(parameter.op.apply(r));
-			}
-			sb.append(")");
-		}
-	}
-
 	private enum ColumnConstraint {
 		NULL_OR_NOT_NULL, UNIQUE, PRIMARY_KEY, DEFAULT, CHECK, GENERATED
 	};
@@ -266,6 +218,7 @@ public class PostgresTableGenerator {
 				sb.append(")");
 				// CREATE TEMPORARY TABLE t1(c0 smallint DEFAULT ('566963878'));
 				errors.add("out of range");
+				errors.add("is a generated column");
 				break;
 			case CHECK:
 				sb.append("CHECK (");
@@ -283,6 +236,7 @@ public class PostgresTableGenerator {
 					sb.append(") STORED");
 					errors.add("A generated column cannot reference another generated column.");
 					errors.add("cannot use generated column in partition key");
+					errors.add("generation expression is not immutable");
 				} else {
 					sb.append(Randomly.fromOptions("ALWAYS", "BY DEFAULT"));
 					sb.append(" AS IDENTITY");
