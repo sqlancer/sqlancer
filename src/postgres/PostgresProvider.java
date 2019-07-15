@@ -34,7 +34,7 @@ import postgres.gen.PostgresDiscardGenerator;
 import postgres.gen.PostgresDropIndex;
 import postgres.gen.PostgresIndexGenerator;
 import postgres.gen.PostgresInsertGenerator;
-import postgres.gen.PostgresInsertStatisticsGenerator;
+import postgres.gen.PostgresStatisticsGenerator;
 import postgres.gen.PostgresQueryGenerator;
 import postgres.gen.PostgresReindexGenerator;
 import postgres.gen.PostgresSetGenerator;
@@ -43,14 +43,18 @@ import postgres.gen.PostgresTruncateGenerator;
 import postgres.gen.PostgresUpdateGenerator;
 import postgres.gen.PostgresVacuumGenerator;
 
+// EXISTS
+// IN
 public class PostgresProvider implements DatabaseProvider {
+	
+	public static final boolean IS_POSTGRES_TWELVE = true;
 
-	private static final int NR_QUERIES_PER_TABLE = 10900;
+	private static final int NR_QUERIES_PER_TABLE = 100000;
 	Randomly r = new Randomly();
 	private QueryManager manager;
 
 	private enum Action {
-		ANALYZE, ALTER_TABLE, CLUSTER, COMMIT, CREATE_STATISTICS, DELETE, DISCARD, DROP_INDEX, INSERT, UPDATE, TRUNCATE, VACUUM, REINDEX,
+		ANALYZE, ALTER_TABLE, CLUSTER, COMMIT, CREATE_STATISTICS, DROP_STATISTICS, DELETE, DISCARD, DROP_INDEX, INSERT, UPDATE, TRUNCATE, VACUUM, REINDEX,
 		SET, CREATE_INDEX;
 	}
 
@@ -63,13 +67,17 @@ public class PostgresProvider implements DatabaseProvider {
 		this.manager = manager;
 		PostgresSchema newSchema = PostgresSchema.fromConnection(con, databaseName);
 		while (newSchema.getDatabaseTables().size() < Randomly.smallNumber() + 1) {
-			String tableName = SQLite3Common.createTableName(newSchema.getDatabaseTables().size());
-			Query createTable = PostgresTableGenerator.generate(tableName, r, newSchema);
-			if (options.logEachSelect()) {
-				logger.writeCurrent(createTable.getQueryString());
+			try {
+				String tableName = SQLite3Common.createTableName(newSchema.getDatabaseTables().size());
+				Query createTable = PostgresTableGenerator.generate(tableName, r, newSchema);
+				if (options.logEachSelect()) {
+					logger.writeCurrent(createTable.getQueryString());
+				}
+				manager.execute(createTable);
+				newSchema = PostgresSchema.fromConnection(con, databaseName);
+			} catch (IgnoreMeException e) {
+				
 			}
-			manager.execute(createTable);
-			newSchema = PostgresSchema.fromConnection(con, databaseName);
 		}
 
 		int[] nrRemaining = new int[Action.values().length];
@@ -79,32 +87,73 @@ public class PostgresProvider implements DatabaseProvider {
 			Action action = Action.values()[i];
 			int nrPerformed = 0;
 			switch (action) {
+//			case DISCARD:
+//			case CREATE_INDEX:
+//			case CLUSTER:
+//				nrPerformed = 0;
+//					break;
+//			case CREATE_STATISTICS:
+//			case DROP_STATISTICS:
+//
+//				nrPerformed = r.getInteger(0, 30000);
+//				break;
+//			case COMMIT:
+//			case ANALYZE:
+//
+//				nrPerformed = r.getInteger(0, 300);
+//				break;
+//			case TRUNCATE:
+//			case DROP_INDEX:
+//			case ALTER_TABLE:
+////				nrPerformed = r.getInteger(0, 10);
+//				nrPerformed = 0;
+//				break;
+//			case REINDEX:
+//				nrPerformed = 0;
+//				break;
+//			case DELETE:
+//			case VACUUM:
+//				nrPerformed = 0;//r.getInteger(0, 2);
+//				break;
+//			case UPDATE:
+//			case SET:
+//				nrPerformed = 500;
+//				break;
+//			case INSERT:
+//				nrPerformed = 300;
+//				break;
+//			default:
+//				throw new AssertionError(action);
+//			}
 			case DISCARD:
 			case CREATE_INDEX:
 			case CLUSTER:
-				nrPerformed = r.getInteger(0, 50);
+				nrPerformed = r.getInteger(0, 100);
+					break;
+			case CREATE_STATISTICS:
+			case DROP_STATISTICS:
+				nrPerformed = r.getInteger(0, 30);
 				break;
 			case COMMIT:
-				nrPerformed = r.getInteger(0, 50);
+				nrPerformed = r.getInteger(0, 30);
 				break;
+			case TRUNCATE:
 			case DROP_INDEX:
 			case ALTER_TABLE:
-				nrPerformed = r.getInteger(0, 5);
-				break;
-			case CREATE_STATISTICS:
 			case REINDEX:
-			case TRUNCATE:
+				nrPerformed = r.getInteger(0, 10);
+				break;
 			case DELETE:
-			case VACUUM:
 			case ANALYZE:
-				nrPerformed = r.getInteger(0, 2);
+			case VACUUM:
+				nrPerformed = r.getInteger(0, 5);
 				break;
 			case UPDATE:
 			case SET:
-				nrPerformed = 10;
+				nrPerformed = 500;
 				break;
 			case INSERT:
-				nrPerformed = 50;
+				nrPerformed = 300;
 				break;
 			default:
 				throw new AssertionError(action);
@@ -115,7 +164,6 @@ public class PostgresProvider implements DatabaseProvider {
 			nrRemaining[action.ordinal()] = nrPerformed;
 			total += nrPerformed;
 		}
-
 		while (total != 0) {
 			Action nextAction = null;
 			int selection = r.getInteger(0, total);
@@ -140,7 +188,7 @@ public class PostgresProvider implements DatabaseProvider {
 				case CLUSTER:
 					query = PostgresClusterGenerator.create(newSchema);
 				case ALTER_TABLE:
-					query = PostgresAlterTableGenerator.create(newSchema.getRandomTable(), r);
+					query = PostgresAlterTableGenerator.create(newSchema.getRandomTable(), r, newSchema);
 					break;
 				case COMMIT:
 					if (Randomly.getBoolean()) {
@@ -151,12 +199,8 @@ public class PostgresProvider implements DatabaseProvider {
 							}
 						};
 					} else if (Randomly.getBoolean()) {
-						query = new QueryAdapter("BEGIN") {
-							@Override
-							public boolean couldAffectSchema() {
-								return true;
-							}
-						};
+						query = ExecuteTransaction.executeBegin();
+					
 					} else {
 						query = new QueryAdapter("ROLLBACK") {
 							@Override
@@ -197,7 +241,10 @@ public class PostgresProvider implements DatabaseProvider {
 					query = PostgresInsertGenerator.insert(newSchema.getRandomTable(), r);
 					break;
 				case CREATE_STATISTICS:
-					query = PostgresInsertStatisticsGenerator.insert(newSchema, r);
+					query = PostgresStatisticsGenerator.insert(newSchema, r);
+					break;
+				case DROP_STATISTICS:
+					query = PostgresStatisticsGenerator.remove(newSchema);
 					break;
 				default:
 					throw new AssertionError(nextAction);
@@ -235,6 +282,7 @@ public class PostgresProvider implements DatabaseProvider {
 		}
 
 		newSchema = PostgresSchema.fromConnection(con, databaseName);
+		manager.execute(new QueryAdapter("SET LOCAL statement_timeout = 10000;\n"));
 
 		PostgresQueryGenerator queryGenerator = new PostgresQueryGenerator(manager, r, con, databaseName);
 		for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
@@ -276,6 +324,7 @@ public class PostgresProvider implements DatabaseProvider {
 
 	@Override
 	public Connection createDatabase(String databaseName, StateToReproduce state) throws SQLException {
+		state.statements.add(new QueryAdapter("\\c test;"));
 		state.statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName));
 		state.statements.add(new QueryAdapter("CREATE DATABASE " + databaseName));
 		state.statements.add(new QueryAdapter("\\c " + databaseName));

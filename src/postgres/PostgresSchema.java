@@ -191,6 +191,8 @@ public class PostgresSchema {
 		case "boolean":
 			return PostgresDataType.BOOLEAN;
 		case "text":
+		case "character":
+		case "character varying":
 			return PostgresDataType.TEXT;
 		default:
 			throw new AssertionError(typeString);
@@ -251,7 +253,7 @@ public class PostgresSchema {
 	}
 
 	public static class PostgresTable implements Comparable<PostgresTable> {
-		
+
 		public enum TableType {
 			STANDARD, TEMPORARY
 		}
@@ -260,10 +262,13 @@ public class PostgresSchema {
 		private final List<PostgresColumn> columns;
 		private final List<PostgresIndex> indexes;
 		private final TableType tableType;
+		private List<PostgresStatisticsObject> statistics;
 
-		public PostgresTable(String tableName, List<PostgresColumn> columns, List<PostgresIndex> indexes, TableType tableType) {
+		public PostgresTable(String tableName, List<PostgresColumn> columns, List<PostgresIndex> indexes,
+				TableType tableType, List<PostgresStatisticsObject> statistics) {
 			this.tableName = tableName;
 			this.indexes = indexes;
+			this.statistics = statistics;
 			this.columns = Collections.unmodifiableList(columns);
 			this.tableType = tableType;
 		}
@@ -319,6 +324,9 @@ public class PostgresSchema {
 			return Randomly.nonEmptySubset(getColumns());
 		}
 		
+		public List<PostgresStatisticsObject> getStatistics() {
+			return statistics;
+		}
 
 		public List<PostgresColumn> getRandomNonEmptyColumnSubset(int size) {
 			while (true) {
@@ -329,11 +337,23 @@ public class PostgresSchema {
 				}
 			}
 		}
-		
+
 		public TableType getTableType() {
 			return tableType;
 		}
 
+	}
+
+	public static final class PostgresStatisticsObject {
+		private final String name;
+
+		public PostgresStatisticsObject(String name) {
+			this.name = name;
+		}
+
+		public String getName() {
+			return name;
+		}
 	}
 
 	public static final class PostgresIndex {
@@ -371,7 +391,8 @@ public class PostgresSchema {
 						PostgresTable.TableType tableType = getTableType(tableTypeStr);
 						List<PostgresColumn> databaseColumns = getTableColumns(con, tableName, databaseName);
 						List<PostgresIndex> indexes = getIndexes(con, tableName, databaseName);
-						PostgresTable t = new PostgresTable(tableName, databaseColumns, indexes, tableType);
+						List<PostgresStatisticsObject> statistics = getStatistics(con);
+						PostgresTable t = new PostgresTable(tableName, databaseColumns, indexes, tableType, statistics);
 						for (PostgresColumn c : databaseColumns) {
 							c.setTable(t);
 						}
@@ -384,6 +405,18 @@ public class PostgresSchema {
 			ex = e;
 		}
 		throw new AssertionError(ex);
+	}
+
+	private static List<PostgresStatisticsObject> getStatistics(Connection con) throws SQLException {
+		List<PostgresStatisticsObject> statistics = new ArrayList<>();
+		try (Statement s = con.createStatement()) {
+			try (ResultSet rs = s.executeQuery("SELECT stxname FROM pg_statistic_ext;")) {
+				while (rs.next()) {
+					statistics.add(new PostgresStatisticsObject(rs.getString("stxname")));
+				}
+			}
+		}
+		return statistics;
 	}
 
 	private static PostgresTable.TableType getTableType(String tableTypeStr) throws AssertionError {
@@ -402,8 +435,8 @@ public class PostgresSchema {
 			throws SQLException {
 		List<PostgresIndex> indexes = new ArrayList<>();
 		try (Statement s = con.createStatement()) {
-			try (ResultSet rs = s.executeQuery(
-					String.format("SELECT indexname FROM pg_indexes WHERE tablename='%s';", tableName))) {
+			try (ResultSet rs = s
+					.executeQuery(String.format("SELECT indexname FROM pg_indexes WHERE tablename='%s';", tableName))) {
 				while (rs.next()) {
 					String indexName = rs.getString("indexname");
 					indexes.add(PostgresIndex.create(indexName));
