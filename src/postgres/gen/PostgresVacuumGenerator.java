@@ -2,11 +2,14 @@ package postgres.gen;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import postgres.PostgresProvider;
 import postgres.PostgresSchema.PostgresTable;
 
 public class PostgresVacuumGenerator {
@@ -18,11 +21,22 @@ public class PostgresVacuumGenerator {
 			// ...] ) ] [ table_name [ (column_name [, ...] ) ] ]
 			sb.append("(");
 			for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
-				String option = Randomly.fromOptions("FULL", "FREEZE", "VERBOSE", "ANALYZE", "DISABLE_PAGE_SKIPPING");
+				ArrayList<String> opts = new ArrayList<String>(
+						Arrays.asList("FULL", "FREEZE", "ANALYZE", "VERBOSE", "DISABLE_PAGE_SKIPPING"));
+				if (PostgresProvider.IS_POSTGRES_TWELVE) {
+					opts.add("SKIP_LOCKED");
+					opts.add("INDEX_CLEANUP");
+					opts.add("TRUNCATE");
+				}
+				String option = Randomly.fromList(opts);
 				if (i != 0) {
 					sb.append(", ");
 				}
 				sb.append(option);
+				if (PostgresProvider.IS_POSTGRES_TWELVE && Randomly.getBoolean()) {
+					sb.append(" ");
+					sb.append(Randomly.fromOptions(1, 0));
+				}
 			}
 			sb.append(")");
 			if (Randomly.getBoolean()) {
@@ -59,7 +73,7 @@ public class PostgresVacuumGenerator {
 						 * 2B7Xm_NXHLenxffe3tCr3gTamVdr7zPjcWqW0RFM-A%40mail.gmail.com
 						 */
 					} else if (e.getMessage().contains("VACUUM cannot run inside a transaction block")) {
-						
+
 					} else {
 						throw e;
 					}
