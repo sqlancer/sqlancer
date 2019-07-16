@@ -1,8 +1,8 @@
 package lama;
 
 public class LikeImplementationHelper {
-	
-	public static boolean match(String str, String regex, int regexPosition, int strPosition) {
+
+	public static boolean match(String str, String regex, int regexPosition, int strPosition, boolean caseSensitive) {
 		if (strPosition == str.length() && regexPosition == regex.length()) {
 			return true;
 		}
@@ -12,7 +12,7 @@ public class LikeImplementationHelper {
 		char cur = regex.charAt(regexPosition);
 		if (strPosition >= str.length()) {
 			if (cur == '%') {
-				return match(str, regex, regexPosition + 1, strPosition);
+				return match(str, regex, regexPosition + 1, strPosition, caseSensitive);
 			} else {
 				return false;
 			}
@@ -20,17 +20,23 @@ public class LikeImplementationHelper {
 		switch (cur) {
 		case '%':
 			// match
-			boolean foundMatch = match(str, regex, regexPosition, strPosition + 1);
+			boolean foundMatch = match(str, regex, regexPosition, strPosition + 1, caseSensitive);
 			if (!foundMatch) {
-				return match(str, regex, regexPosition + 1, strPosition);
+				return match(str, regex, regexPosition + 1, strPosition, caseSensitive);
 			} else {
 				return true;
 			}
 		case '_':
-			return match(str, regex, regexPosition + 1, strPosition + 1);
+			return match(str, regex, regexPosition + 1, strPosition + 1, caseSensitive);
 		default:
-			if (toUpper(cur) == toUpper(str.charAt(strPosition))) {
-				return match(str, regex, regexPosition + 1, strPosition + 1);
+			boolean charMatches;
+			if (!caseSensitive) {
+				charMatches = toUpper(cur) == toUpper(str.charAt(strPosition));
+			} else {
+				charMatches = cur == str.charAt(strPosition);
+			}
+			if (charMatches) {
+				return match(str, regex, regexPosition + 1, strPosition + 1, caseSensitive);
 			} else {
 				return false;
 			}

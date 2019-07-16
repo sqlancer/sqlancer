@@ -25,8 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.beust.jcommander.JCommander;
 
 import lama.StateToReproduce.ErrorKind;
-import lama.mysql.MySQLProvider;
-import lama.sqlite3.SQLite3Provider;
+import lama.postgres.PostgresProvider;
 
 // TODO:
 // group by
@@ -319,11 +318,12 @@ public class Main {
 
 				@Override
 				public void run() {
-					if (index % options.getNumberConcurrentThreads() >= options.getTotalNumberMysqlThreads()) {
-						provider = new SQLite3Provider();
-					} else {
-						provider = new MySQLProvider();
-					}
+//					if (index % options.getNumberConcurrentThreads() >= options.getTotalNumberMysqlThreads()) {
+//						provider = new SQLite3Provider();
+//					} else {
+//						provider = new MySQLProvider();
+//					}
+					provider = new PostgresProvider();
 					runThread(databaseName);
 				}
 
@@ -379,7 +379,7 @@ public class Main {
 					if (state.getErrorKind() == ErrorKind.EXCEPTION) {
 						reducedStatements.remove(statementThatCausedException);
 					}
-					retry: for (int i = 0; i < 1000; i++) {
+					retry: for (int i = 0; i < 100; i++) {
 						List<Query> currentRoundReducedStatements = new ArrayList<>(reducedStatements);
 						if (currentRoundReducedStatements.isEmpty()) {
 							break;

@@ -10,7 +10,7 @@ public final class Randomly {
 	// CACHING
 
 	private static boolean USE_CACHING = true;
-	private static final int CACHE_SIZE = 100;
+	private static final int CACHE_SIZE = 20;
 
 	private final List<Long> cachedLongs = new ArrayList<>();
 	private final List<String> cachedStrings = new ArrayList<>();
@@ -259,7 +259,7 @@ public final class Randomly {
 		}
 
 		String alphabet = new String(
-				"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#<>/.öä~-+' []^*?%_\t\n");
+				"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#<>/.~-+' []^*?%_\t\n");
 		int n = alphabet.length();
 
 		StringBuilder sb = new StringBuilder();

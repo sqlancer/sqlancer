@@ -7,6 +7,9 @@ import java.util.Map;
 import lama.mysql.MySQLSchema.MySQLColumn;
 import lama.mysql.ast.MySQLConstant;
 import lama.mysql.ast.MySQLExpression;
+import lama.postgres.PostgresSchema.PostgresColumn;
+import lama.postgres.ast.PostgresConstant;
+import lama.postgres.ast.PostgresExpression;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.schema.SQLite3Schema.Column;
@@ -106,6 +109,27 @@ public abstract class StateToReproduce {
 		public SQLite3Expression whereClause;
 		
 		public SQLite3Expression getWhereClause() {
+			return whereClause;
+		}
+
+	}
+	
+	public static class PostgresStateToReproduce extends StateToReproduce {
+		public PostgresStateToReproduce(String databaseName) {
+			super(databaseName);
+		}
+
+		public Map<PostgresColumn, PostgresConstant> getRandomRowValues() {
+			return randomRowValues;
+		}
+		
+		public Map<PostgresColumn, PostgresConstant> randomRowValues;
+		
+		public PostgresExpression whereClause;
+
+		public String queryThatSelectsRow;
+		
+		public PostgresExpression getWhereClause() {
 			return whereClause;
 		}
 
