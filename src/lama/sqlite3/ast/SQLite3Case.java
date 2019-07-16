@@ -42,7 +42,7 @@ public abstract class SQLite3Case extends SQLite3Expression {
 		return elseExpr;
 	}
 	
-	protected CollateSequence getCasePairAndElseCollate() {
+	protected CollateSequence getExplicitCasePairAndElseCollate() {
 		for (CasePair c : pairs) {
 			if (c.getCond().getExplicitCollateSequence() != null) {
 				return c.getCond().getExplicitCollateSequence();
@@ -65,7 +65,7 @@ public abstract class SQLite3Case extends SQLite3Expression {
 
 		@Override
 		public CollateSequence getExplicitCollateSequence() {
-			return getCasePairAndElseCollate();
+			return getExplicitCasePairAndElseCollate();
 		}
 
 		@Override
@@ -103,7 +103,7 @@ public abstract class SQLite3Case extends SQLite3Expression {
 			if (baseExpr.getExplicitCollateSequence() != null) {
 				return baseExpr.getExplicitCollateSequence();
 			} else {
-				return getCasePairAndElseCollate();
+				return getExplicitCasePairAndElseCollate();
 			}
 		}
 

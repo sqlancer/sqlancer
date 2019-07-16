@@ -1,5 +1,6 @@
 package lama.sqlite3.ast;
 
+import lama.IgnoreMeException;
 import lama.Randomly;
 import lama.sqlite3.ast.SQLite3Constant.SQLite3TextConstant;
 import lama.sqlite3.gen.SQLite3Cast;
@@ -23,6 +24,10 @@ public class SQLite3Function extends SQLite3Expression {
 			@Override
 			public SQLite3Constant apply(SQLite3Constant... args) {
 				SQLite3Constant castValue;
+				if (args[0].getDataType() == SQLite3DataType.BINARY) {
+					throw new IgnoreMeException(); // TODO
+													// implement
+				}
 				if (args[0].getDataType() == SQLite3DataType.INT) {
 					castValue = SQLite3Cast.castToInt(args[0]);
 				} else {
@@ -60,9 +65,22 @@ public class SQLite3Function extends SQLite3Expression {
 
 		},
 
+		HEX(1, "HEX") {
+			@Override
+			public SQLite3Constant apply(SQLite3Constant... args) {
+				return null;
+//				SQLite3Constant binaryValue = SQLite3Cast.castToBlob(args[0]);
+//				return SQLite3Constant.createTextConstant(binaryValue.getStringRepresentation());
+			}
+		},
+
 		LOWER(1, "LOWER") {
 			@Override
 			public SQLite3Constant apply(SQLite3Constant... args) {
+				args[0] = SQLite3Cast.castToText(args[0]);
+				if (args[0] == null) {
+					return null;
+				}
 				if (args[0].getDataType() == SQLite3DataType.TEXT) {
 					StringBuilder text = new StringBuilder(args[0].asString());
 					for (int i = 0; i < text.length(); i++) {
@@ -73,7 +91,7 @@ public class SQLite3Function extends SQLite3Expression {
 					}
 					return SQLite3Constant.createTextConstant(text.toString());
 				} else {
-					return SQLite3Cast.castToText(args[0]);
+					return SQLite3Constant.createNullConstant();
 				}
 			}
 		},
@@ -82,12 +100,14 @@ public class SQLite3Function extends SQLite3Expression {
 			public SQLite3Constant apply(SQLite3Constant... args) {
 				return args[0];
 			}
+
 		},
 		LIKELIHOOD(2, "LIKELIHOOD") {
 			@Override
 			public SQLite3Constant apply(SQLite3Constant... args) {
 				return args[0];
 			}
+
 		},
 		IFNULL(2, "IFNULL") {
 			@Override
@@ -105,15 +125,17 @@ public class SQLite3Function extends SQLite3Expression {
 
 			@Override
 			public SQLite3Constant apply(SQLite3Constant... args) {
+				args[0] = SQLite3Cast.castToText(args[0]);
+				if (args[0] == null) {
+					return null;
+				}
 				if (args[0].getDataType() == SQLite3DataType.TEXT) {
 					String string = SQLite3TextConstant.toUpper(args[0].asString());
 					return SQLite3Constant.createTextConstant(string);
 				} else {
-					return SQLite3Cast.castToText(args[0]);
+					return SQLite3Constant.createNullConstant();
 				}
 			}
-
-		
 
 		},
 		NULLIF(2, "NULLIF") {
@@ -162,7 +184,7 @@ public class SQLite3Function extends SQLite3Expression {
 					return str;
 				}
 			}
-			
+
 		},
 		TRIM_TWO_ARGS(2, "TRIM") {
 

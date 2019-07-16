@@ -7,6 +7,8 @@ import lama.LikeImplementationHelper;
 import lama.Randomly;
 import lama.sqlite3.SQLite3CollateHelper;
 import lama.sqlite3.ast.SQLite3Constant.SQLite3IntConstant;
+import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation.BinaryComparisonOperator;
+import lama.sqlite3.ast.SQLite3Expression.BinaryOperation.BinaryOperator;
 import lama.sqlite3.ast.UnaryOperation.UnaryOperator;
 import lama.sqlite3.gen.SQLite3Cast;
 import lama.sqlite3.schema.SQLite3DataType;
@@ -15,20 +17,20 @@ import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 
 public abstract class SQLite3Expression {
-	
+
 	public static class SQLite3Distinct extends SQLite3Expression {
 
 		private final SQLite3Expression expr;
-		
+
 		public SQLite3Distinct(SQLite3Expression expr) {
 			this.expr = expr;
 		}
-		
+
 		@Override
 		public CollateSequence getExplicitCollateSequence() {
 			return expr.getExplicitCollateSequence();
 		}
-		
+
 		@Override
 		public SQLite3Constant getExpectedValue() {
 			return expr.getExpectedValue();
@@ -37,7 +39,7 @@ public abstract class SQLite3Expression {
 		public SQLite3Expression getExpression() {
 			return expr;
 		}
-		
+
 	}
 
 	public SQLite3Constant getExpectedValue() {
@@ -302,6 +304,20 @@ public abstract class SQLite3Expression {
 				return left.getExplicitCollateSequence();
 			} else {
 				return right.getExplicitCollateSequence();
+			}
+		}
+
+		@Override
+		public SQLite3Constant getExpectedValue() {
+			BinaryComparisonOperation leftOp = new BinaryComparisonOperation(expr, left,
+					BinaryComparisonOperator.GREATER_EQUALS);
+			BinaryComparisonOperation rightOp = new BinaryComparisonOperation(expr, right,
+					BinaryComparisonOperator.SMALLER_EQUALS);
+			BinaryOperation and = new BinaryOperation(leftOp, rightOp, BinaryOperator.AND);
+			if (negated) {
+				return new UnaryOperation(UnaryOperator.NOT, and).getExpectedValue();
+			} else {
+				return and.getExpectedValue();
 			}
 		}
 
@@ -773,7 +789,7 @@ public abstract class SQLite3Expression {
 					if (leftStr == null || rightStr == null) {
 						return null;
 					}
-					boolean val = LikeImplementationHelper.match(leftStr.asString(), rightStr.asString(), 0, 0);
+					boolean val = LikeImplementationHelper.match(leftStr.asString(), rightStr.asString(), 0, 0, false);
 					return SQLite3Constant.createBoolean(val);
 				}
 
@@ -992,6 +1008,9 @@ public abstract class SQLite3Expression {
 					if (left.getExpectedValue() == null || right.getExpectedValue() == null) {
 						return null;
 					}
+					if (left.getDataType() == SQLite3DataType.REAL || right.getDataType() == SQLite3DataType.REAL) {
+						// ignore for now
+					}
 					if (left.getExpectedValue().isNull() || right.getExpectedValue().isNull()) {
 						return SQLite3Constant.createNullConstant();
 					}
@@ -1003,8 +1022,164 @@ public abstract class SQLite3Expression {
 					return SQLite3Constant.createTextConstant(leftText.asString() + rightText.asString());
 				}
 			},
-			MULTIPLY("*"), DIVIDE("/"), // division by zero results in zero
-			REMAINDER("%"), PLUS("+") {
+			MULTIPLY("*") {
+				@Override
+				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
+					SQLite3Constant result = compute(left, right);
+					if (result.getDataType() == SQLite3DataType.REAL) {
+						double val = result.asDouble();
+						if (Double.isNaN(val)) {
+							return SQLite3Constant.createNullConstant();
+						}
+					}
+					return result;
+				}
+
+				private SQLite3Constant compute(SQLite3Constant left, SQLite3Constant right) {
+					SQLite3Constant leftNumeric = SQLite3Cast.castToNumericFromNumOperand(left);
+					SQLite3Constant rightNumeric = SQLite3Cast.castToNumericFromNumOperand(right);
+					if (leftNumeric.isNull() || rightNumeric.isNull()) {
+						return SQLite3Constant.createNullConstant();
+					}
+					if (leftNumeric.getDataType() == SQLite3DataType.INT) {
+						long leftInt = leftNumeric.asInt();
+						if (rightNumeric.getDataType() == SQLite3DataType.INT) {
+							long rightInt = rightNumeric.asInt();
+							try {
+								long intResult = Math.multiplyExact(leftInt, rightInt);
+								return SQLite3Constant.createIntConstant(intResult);
+							} catch (ArithmeticException e) {
+								double realResult = (double) leftInt * (double) rightInt;
+								return SQLite3Constant.createRealConstant(realResult);
+							}
+						} else {
+							assert rightNumeric.getDataType() == SQLite3DataType.REAL;
+							double rightDouble = rightNumeric.asDouble();
+							return SQLite3Constant.createRealConstant(leftInt * rightDouble);
+						}
+					} else {
+						assert leftNumeric.getDataType() == SQLite3DataType.REAL;
+						double leftReal = leftNumeric.asDouble();
+						if (rightNumeric.getDataType() == SQLite3DataType.INT) {
+							long rightInt = rightNumeric.asInt();
+							return SQLite3Constant.createRealConstant(leftReal * rightInt);
+						} else {
+							assert rightNumeric.getDataType() == SQLite3DataType.REAL;
+							double rightReal = rightNumeric.asDouble();
+							return SQLite3Constant.createRealConstant(leftReal * rightReal);
+						}
+					}
+				}
+
+			},
+			DIVIDE("/") {
+
+				@Override
+				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
+					SQLite3Constant leftNumeric = SQLite3Cast.castToNumericFromNumOperand(left);
+					SQLite3Constant rightNumeric = SQLite3Cast.castToNumericFromNumOperand(right);
+					if (leftNumeric.isNull() || rightNumeric.isNull()) {
+						return SQLite3Constant.createNullConstant();
+					}
+					if (leftNumeric.getDataType() == SQLite3DataType.INT) {
+						long leftInt = leftNumeric.asInt();
+						if (rightNumeric.getDataType() == SQLite3DataType.INT) {
+							long rightInt = rightNumeric.asInt();
+							if (rightInt == 0) {
+								return SQLite3Constant.createNullConstant();
+							} else if (leftInt == Long.MIN_VALUE && rightInt == -1) {
+								return SQLite3Constant.createRealConstant(9.22337203685478e+18);
+							} else {
+								return SQLite3Constant.createIntConstant(leftInt / rightInt);
+							}
+						} else {
+							assert rightNumeric.getDataType() == SQLite3DataType.REAL;
+							double rightDouble = rightNumeric.asDouble();
+							if (rightDouble == 0) {
+								return SQLite3Constant.createNullConstant();
+							} else {
+								return SQLite3Constant.createRealConstant(leftInt / rightDouble);
+							}
+						}
+					} else {
+						assert leftNumeric.getDataType() == SQLite3DataType.REAL;
+						double leftReal = leftNumeric.asDouble();
+						if (rightNumeric.getDataType() == SQLite3DataType.INT) {
+							long rightInt = rightNumeric.asInt();
+							if (rightInt == 0) {
+								return SQLite3Constant.createNullConstant();
+							} else {
+								return SQLite3Constant.createRealConstant(leftReal / rightInt);
+							}
+						} else {
+							assert rightNumeric.getDataType() == SQLite3DataType.REAL;
+							double rightReal = rightNumeric.asDouble();
+							if (rightReal == 0) {
+								return SQLite3Constant.createNullConstant();
+							} else {
+								return SQLite3Constant.createRealConstant(leftReal / rightReal);
+							}
+						}
+					}
+				}
+
+			}, // division by zero results in zero
+			REMAINDER("%") {
+				@Override
+				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
+					if (true) {
+						return null;
+					}
+					SQLite3Constant leftNumeric = SQLite3Cast.castToNumericFromNumOperand(left);
+					SQLite3Constant rightNumeric = SQLite3Cast.castToNumericFromNumOperand(right);
+					if (leftNumeric.isNull() || rightNumeric.isNull()) {
+						return SQLite3Constant.createNullConstant();
+					}
+					if (leftNumeric.getDataType() == SQLite3DataType.INT) {
+						long leftInt = leftNumeric.asInt();
+						if (rightNumeric.getDataType() == SQLite3DataType.INT) {
+							long rightInt = rightNumeric.asInt();
+							if (rightInt == 0) {
+								return SQLite3Constant.createNullConstant();
+							} else {
+								return SQLite3Constant.createIntConstant(leftInt % rightInt);
+							}
+						} else {
+							assert rightNumeric.getDataType() == SQLite3DataType.REAL;
+							double rightDouble = rightNumeric.asDouble();
+							if ((long) rightDouble == 0) {
+								return SQLite3Constant.createNullConstant();
+							} 				
+							else {
+								return SQLite3Constant.createRealConstant(leftInt % (long) rightDouble);
+							}
+						}
+					} else {
+						assert leftNumeric.getDataType() == SQLite3DataType.REAL;
+						double leftReal = leftNumeric.asDouble();
+						if (rightNumeric.getDataType() == SQLite3DataType.INT) {
+							long rightInt = rightNumeric.asInt();
+							if (rightInt == 0) {
+								return SQLite3Constant.createNullConstant();
+							} else {
+								return SQLite3Constant.createRealConstant((long) leftReal % rightInt);
+							}
+						} else {
+							assert rightNumeric.getDataType() == SQLite3DataType.REAL;
+							double rightReal = rightNumeric.asDouble();
+							if ((long) rightReal == 0) {
+								return SQLite3Constant.createNullConstant();
+							} else {
+								return SQLite3Constant.createRealConstant((long) leftReal % (long) rightReal);
+							}
+						}
+					}
+				}
+
+			},
+
+			PLUS("+") {
+
 				@Override
 				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
 					SQLite3Constant leftNumeric = SQLite3Cast.castToNumericFromNumOperand(left);
@@ -1043,7 +1218,9 @@ public abstract class SQLite3Expression {
 				}
 
 			},
+
 			MINUS("-") {
+
 				@Override
 				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
 					SQLite3Constant leftNumeric = SQLite3Cast.castToNumericFromNumOperand(left);
@@ -1080,6 +1257,7 @@ public abstract class SQLite3Expression {
 						}
 					}
 				}
+
 			},
 			SHIFT_LEFT("<<") {
 
@@ -1124,6 +1302,7 @@ public abstract class SQLite3Expression {
 
 			},
 			ARITHMETIC_AND("&") {
+
 				@Override
 				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
 					return applyIntOperation(left, right, (a, b) -> a & b);
@@ -1131,6 +1310,7 @@ public abstract class SQLite3Expression {
 
 			},
 			ARITHMETIC_OR("|") {
+
 				@Override
 				SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
 					return applyIntOperation(left, right, (a, b) -> a | b);
@@ -1161,6 +1341,7 @@ public abstract class SQLite3Expression {
 
 			},
 			OR("OR") {
+
 				@Override
 				public SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
 					if (left.getExpectedValue() == null || right.getExpectedValue() == null) {
@@ -1357,8 +1538,8 @@ public abstract class SQLite3Expression {
 	}
 
 	static class ConstantTuple {
-		private SQLite3Constant left;
-		private SQLite3Constant right;
+		SQLite3Constant left;
+		SQLite3Constant right;
 
 		public ConstantTuple(SQLite3Constant left, SQLite3Constant right) {
 			this.left = left;

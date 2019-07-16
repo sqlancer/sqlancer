@@ -17,7 +17,8 @@ public class SQLite3Cast {
 	private static final double MIN_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED = -Math.pow(2, 51 - 1);
 
 	public static Optional<Boolean> isTrue(SQLite3Constant value) {
-		SQLite3Constant numericValue;		if (value.getDataType() == SQLite3DataType.NULL) {
+		SQLite3Constant numericValue;
+		if (value.getDataType() == SQLite3DataType.NULL) {
 			return Optional.empty();
 		}
 		if (value.getDataType() == SQLite3DataType.TEXT || value.getDataType() == SQLite3DataType.BINARY) {
@@ -95,23 +96,24 @@ public class SQLite3Cast {
 			return numericValue;
 		}
 	}
-	
+
 	public static SQLite3Constant castToNumericNoNumAsRealZero(SQLite3Constant value) {
-		return convertInternal(value, true, true);
+		return convertInternal(value, false, true, true);
 	}
-	
+
 	public static SQLite3Constant castToNumericFromNumOperand(SQLite3Constant value) {
-		return convertInternal(value, false, false);
+		return convertInternal(value, false, false, false);
 	}
 
 	/**
 	 * Applies numeric affinity to a value.
 	 */
 	public static SQLite3Constant castToNumeric(SQLite3Constant value) {
-		return convertInternal(value, true, false);
+		return convertInternal(value, true, false, false);
 	}
 
-	private static SQLite3Constant convertInternal(SQLite3Constant value, boolean convertRealToInt, boolean noNumIsRealZero) throws AssertionError {
+	private static SQLite3Constant convertInternal(SQLite3Constant value, boolean convertRealToInt,
+			boolean noNumIsRealZero, boolean convertIntToReal) throws AssertionError {
 		if (value.getDataType() == SQLite3DataType.BINARY) {
 			String text = new String(value.asBinary());
 			value = SQLite3Constant.createTextConstant(text);
@@ -147,7 +149,7 @@ public class SQLite3Cast {
 					boolean doubleShouldBeConvertedToInt = isFloatingPointNumber && first.compareTo(second) == 0
 							&& isWithinConvertibleRange;
 					boolean isInteger = !isFloatingPointNumber && first.compareTo(second) == 0;
-					if (doubleShouldBeConvertedToInt || isInteger) {
+					if (doubleShouldBeConvertedToInt || (isInteger && !convertIntToReal)) {
 						// see https://www.sqlite.org/src/tktview/afdc5a29dc
 						return SQLite3Constant.createIntConstant(first.longValue());
 					} else {
@@ -215,6 +217,16 @@ public class SQLite3Cast {
 		return false;
 	}
 
+	static Connection castDatabase;
+
+	static {
+		try {
+			castDatabase = new SQLite3Provider().createDatabase("test", null);
+		} catch (SQLException e) {
+			throw new AssertionError(e);
+		}
+	}
+
 	public static SQLite3Constant castToText(SQLite3Constant cons) {
 		if (cons.getDataType() == SQLite3DataType.TEXT) {
 			return cons;
@@ -222,9 +234,38 @@ public class SQLite3Cast {
 		if (cons.getDataType() == SQLite3DataType.NULL) {
 			return cons;
 		}
-//		if (cons.getDataType() == SQLite3DataType.REAL) {
-//			return SQLite3Constant.createTextConstant(String.valueOf(cons.asDouble()));
-//		}
+		if (cons.getDataType() == SQLite3DataType.REAL) {
+			if (cons.asDouble() == Double.POSITIVE_INFINITY) {
+				return SQLite3Constant.createTextConstant("Inf");
+			} else if (cons.asDouble() == Double.NEGATIVE_INFINITY) {
+				return SQLite3Constant.createTextConstant("-Inf");
+			}
+			return castRealToText(cons);
+//			if (true) {
+//				throw new IgnoreMeException();
+//			}
+//			NumberFormat fmt = NumberFormat.getInstance();
+//			fmt.setGroupingUsed(false);
+//			fmt.setMaximumIntegerDigits(10);
+//			fmt.setMinimumFractionDigits(1);
+//			fmt.setRoundingMode(RoundingMode.UNNECESSARY);
+//			int digits;
+//			if (cons.asDouble() < 0) {
+//				digits = 15;
+//			} else {
+//				digits = 15;
+//			}
+//			fmt.setMaximumFractionDigits(digits);
+//			try {
+//				String s = fmt.format(cons.asDouble());
+//				if (s.contentEquals("")) {
+//					throw new IgnoreMeException();
+//				}
+//				return SQLite3Constant.createTextConstant(s);
+//			} catch (Exception e) {
+//				throw new IgnoreMeException();
+//			}
+		}
 		if (cons.getDataType() == SQLite3DataType.INT) {
 			return SQLite3Constant.createTextConstant(String.valueOf(cons.asInt()));
 		}
@@ -237,6 +278,15 @@ public class SQLite3Cast {
 //		}
 		return null;
 //		throw new AssertionError();
+	}
+
+	private synchronized static SQLite3Constant castRealToText(SQLite3Constant cons) throws AssertionError {
+		try (Statement s = castDatabase.createStatement()) {
+			String castResult = s.executeQuery("SELECT CAST(" + cons.asDouble() + " AS TEXT)").getString(1);
+			return SQLite3Constant.createTextConstant(castResult);
+		} catch (Exception e) {
+			throw new AssertionError(e);
+		}
 	}
 
 	public static SQLite3Constant asBoolean(SQLite3Constant val) {
