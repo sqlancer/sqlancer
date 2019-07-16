@@ -1,4 +1,4 @@
-package postgres;
+package lama.postgres;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

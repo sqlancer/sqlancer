@@ -1,4 +1,4 @@
-package postgres;
+package lama.postgres;
 
 import java.io.File;
 import java.io.FilenameFilter;

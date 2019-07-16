@@ -1,4 +1,4 @@
-package postgres;
+package lama.postgres;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -47,9 +47,9 @@ public class ExecutePostgres {
 				@Override
 				public void run() {
 					try {
-						Connection con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/test",
-								"lama", "password");
 						while (true) {
+							Connection con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/test",
+									"lama", "password");
 							for (String s : fileContent.split("\n")) {
 								Matcher matcher = p.matcher(s);
 								if (matcher.matches()) {
@@ -57,24 +57,44 @@ public class ExecutePostgres {
 									con.close();
 									con = DriverManager.getConnection(
 											"jdbc:postgresql://localhost:5432/" + databaseName, "lama", "password");
-								}
-								try (Statement st = con.createStatement()) {
-									Thread.sleep(ThreadLocalRandom.current().nextInt(0, 100));
-									try {
-										st.execute(s);
-									} catch (Exception e) {
-										if (e.getMessage().contains("invalid input syntax for type boolean") && s.contains("VACUUM")) {
-											throw new AssertionError(e);
-										} else if (e.getMessage().contains("relation mapping")) {
-											throw new AssertionError(e);
-										} else if (e.getMessage().contains("incorrect checksum")) {
-											throw new AssertionError(e);
-										} else if (e.getMessage().contains("unexpected null")) {
-											throw new AssertionError(e + s);
+								} else {
+									try (Statement st = con.createStatement()) {
+//										Thread.sleep(ThreadLocalRandom.current().nextInt(0, 100));
+										try {
+											st.execute(s);
+										} catch (Exception e) {
+											if (e.getMessage().contains("invalid input syntax for type boolean")
+													&& s.contains("VACUUM")) {
+												throw new AssertionError(e);
+											} 
+											
+//											else if (e.getMessage().contains("deadlock") && !s.contains("VACUUM")) {
+//												throw new AssertionError(s, e);
+//											} 
+											
+											else if (e.getMessage().contains("relation mapping")) {
+												throw new AssertionError(s, e);
+											} else if (e.getMessage().contains("incorrect checksum")) {
+												throw new AssertionError(s, e);
+											} else if (e.getMessage().contains("unexpected null")) {
+												throw new AssertionError(s + fileContent, e);
+											} else if (e.getMessage().contains("integer out of range")
+													&& s.contains("VACUUM")) {
+												throw new AssertionError(s, e);
+											} else if (e.getMessage().contains("missing chunk")) {
+												throw new AssertionError(s, e);
+											} else if (e.getMessage().toLowerCase().contains("recovery")) {
+												throw new AssertionError(s, e);
+											} else if (e.getMessage().contains("LLVM")) {
+												throw new AssertionError(s, e);
+											} else if (e.getMessage().contains("concurrent")) {
+												throw new AssertionError(s, e);
+											}
 										}
 									}
 								}
 							}
+							con.close();
 						}
 					} catch (Exception e) {
 						e.printStackTrace();

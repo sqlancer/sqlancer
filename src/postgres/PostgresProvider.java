@@ -145,15 +145,17 @@ public class PostgresProvider implements DatabaseProvider {
 				break;
 			case DELETE:
 			case ANALYZE:
-			case VACUUM:
 				nrPerformed = r.getInteger(0, 5);
+				break;
+			case VACUUM:
+				nrPerformed = 0;
 				break;
 			case UPDATE:
 			case SET:
-				nrPerformed = 500;
+				nrPerformed = 10;
 				break;
 			case INSERT:
-				nrPerformed = 300;
+				nrPerformed = r.getInteger(10, 1000);
 				break;
 			default:
 				throw new AssertionError(action);
