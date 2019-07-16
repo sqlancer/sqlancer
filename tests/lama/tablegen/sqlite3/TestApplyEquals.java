@@ -56,7 +56,7 @@ public class TestApplyEquals {
 	public void testInfNegativeInf() {
 		assertEquals(0, positiveInf.applyEquals(negativeInf).asInt());
 	}
-
+	
 	@Test // + t1.c0 = t1.c0
 	public void testApplyColumnEqualsInf() {
 		BinaryComparisonOperation isExpr = new BinaryComparisonOperation(new UnaryOperation(UnaryOperator.PLUS, column), column, BinaryComparisonOperator.IS);

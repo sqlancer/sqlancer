@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
+import lama.sqlite3.ast.SQLite3Constant.SQLite3TextConstant;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
@@ -107,6 +108,13 @@ public class TestInOperator {
 	public void testCollate5() {
 		var inOp = new InOperation(textA, Arrays.asList(columnNoCaseAffinity));
 		assertEquals(0, inOp.getExpectedValue().asInt());
+	}
+	
+	@Test
+	// SELECT CAST('4.0' AS TEXT) IN (CAST('4.0' AS REAL)); -- 1
+	public void testAffinity() {
+		var inOp = new InOperation(new Cast(new TypeLiteral(Type.TEXT), SQLite3Constant.createTextConstant("-1600763882.0")), Arrays.asList(new Cast(new TypeLiteral(Type.REAL), SQLite3Constant.createTextConstant("-1600763882.0"))));
+		assertEquals(1, inOp.getExpectedValue().asInt());
 	}
 
 }

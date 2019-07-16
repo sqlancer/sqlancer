@@ -17,5 +17,7 @@ public class MySQLTestNot {
 		assertEquals(0, not.getExpectedValue().getInt());
 	}
 	
+	// TODO -.4K2 should evaluate to true
+	
 	
 }

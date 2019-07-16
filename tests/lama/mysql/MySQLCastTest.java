@@ -21,4 +21,10 @@ public class MySQLCastTest {
 		assertEquals(60, cast.getExpectedValue().getInt());
 	}
 	
+	@Test
+	public void testCastNewline() {
+		var cast = new MySQLCastOperation(MySQLConstant.createStringConstant("\n60y"), MySQLCastOperation.CastType.SIGNED);
+		assertEquals(0, cast.getExpectedValue().getInt());
+	}
+	
 }

@@ -1,5 +1,6 @@
 package lama.tablegen.sqlite3;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,7 @@ import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import lama.sqlite3.ast.UnaryOperation;
 import lama.sqlite3.ast.UnaryOperation.UnaryOperator;
+import lama.sqlite3.gen.SQLite3Cast;
 import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
@@ -64,6 +66,12 @@ public class TestOperatorCornerCases {
 		SQLite3Expression textWithAffinityVal = new Cast(new TypeLiteral(TypeLiteral.Type.TEXT), SQLite3Constant.createTextConstant("5"));
 		BinaryComparisonOperation op = new SQLite3Expression.BinaryComparisonOperation(intVal, textWithAffinityVal, BinaryComparisonOperator.EQUALS);
 		assertEquals(1, op.getExpectedValue().asInt());
+	}
+	
+	// cast to binary
+	@Test
+	public void testCastToBinary() {
+		assertFalse(SQLite3Cast.isTrue(SQLite3Constant.createTextConstant("-1448905502E-665NlCR*Vx[]!Njxkw")).get());
 	}
 	
 }
