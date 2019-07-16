@@ -1,4 +1,4 @@
-package postgres;
+package postgres.gen;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +7,7 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 
-public class ExecuteTransaction {
+public class PostgresTransactionGenerator {
 
 	public static Query executeBegin() {
 		List<String> errors = new ArrayList<>();

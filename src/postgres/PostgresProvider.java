@@ -26,6 +26,7 @@ import lama.sqlite3.gen.SQLite3Common;
 import postgres.PostgresSchema.PostgresColumn;
 import postgres.PostgresSchema.PostgresTable;
 import postgres.ast.PostgresExpression;
+import postgres.gen.PostgresTransactionGenerator;
 import postgres.gen.PostgresAlterTableGenerator;
 import postgres.gen.PostgresAnalyzeGenerator;
 import postgres.gen.PostgresClusterGenerator;
@@ -201,7 +202,7 @@ public class PostgresProvider implements DatabaseProvider {
 							}
 						};
 					} else if (Randomly.getBoolean()) {
-						query = ExecuteTransaction.executeBegin();
+						query = PostgresTransactionGenerator.executeBegin();
 					
 					} else {
 						query = new QueryAdapter("ROLLBACK") {
