@@ -28,6 +28,7 @@ import lama.mysql.ast.MySQLStringExpression;
 import lama.mysql.ast.MySQLUnaryPostfixOperator;
 import lama.mysql.ast.MySQLUnaryPrefixOperation;
 import lama.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
+import lama.postgres.PostgresSchema.PostgresColumn;
 
 public class MySQLRandomExpressionGenerator {
 
@@ -59,7 +60,7 @@ public class MySQLRandomExpressionGenerator {
 
 	private enum Actions {
 		COLUMN, LITERAL, UNARY_PREFIX_OPERATION, UNARY_POSTFIX, FUNCTION, BINARY_LOGICAL_OPERATOR,
-		BINARY_COMPARISON_OPERATION, CAST, IN_OPERATION, BINARY_OPERATION, EXISTS, BETWEEN_OPERATOR;
+		BINARY_COMPARISON_OPERATION, CAST, IN_OPERATION, /* BINARY_OPERATION, */ EXISTS, BETWEEN_OPERATOR;
 	}
 
 	public static MySQLExpression gen(List<MySQLColumn> columns, MySQLRowValue rowVal, int depth, Randomly r) {
@@ -103,9 +104,10 @@ public class MySQLRandomExpressionGenerator {
 				rightList.add(gen(columns, rowVal, depth + 1, r));
 			}
 			return new MySQLInOperation(expr, rightList, Randomly.getBoolean());
-		case BINARY_OPERATION:
-			return new MySQLBinaryOperation(gen(columns, rowVal, depth + 1, r), gen(columns, rowVal, depth + 1, r),
-					MySQLBinaryOperator.getRandom());
+/* commented out as a workaround for https://bugs.mysql.com/bug.php?id=95983 */
+//		case BINARY_OPERATION:
+//			return new MySQLBinaryOperation(gen(columns, rowVal, depth + 1, r), gen(columns, rowVal, depth + 1, r),
+//					MySQLBinaryOperator.getRandom());
 		case EXISTS:
 			return getExists(columns, rowVal, depth + 1, r);
 		case BETWEEN_OPERATOR:
@@ -171,5 +173,6 @@ public class MySQLRandomExpressionGenerator {
 		MySQLExpression expr = generateRandomExpression(columns, null, r);
 		return MySQLVisitor.asString(expr);
 	}
+
 
 }

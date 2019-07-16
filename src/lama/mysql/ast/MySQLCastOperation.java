@@ -11,7 +11,8 @@ public class MySQLCastOperation extends MySQLExpression {
 		SIGNED, UNSIGNED;
 
 		public static CastType getRandom() {
-			return Randomly.fromOptions(CastType.values());
+			return SIGNED;
+//			return Randomly.fromOptions(CastType.values());
 		}
 
 	}

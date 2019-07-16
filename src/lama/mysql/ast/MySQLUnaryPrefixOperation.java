@@ -29,6 +29,10 @@ public class MySQLUnaryPrefixOperation extends MySQLExpression {
 					// TODO: implement floating points
 					throw new IgnoreMeException();
 				} else if (expr.isInt()) {
+					if (!expr.isSigned()) {
+						// TODO 
+						throw new IgnoreMeException();
+					}
 					return MySQLConstant.createIntConstant(-expr.getInt());
 				} else {
 					throw new AssertionError(expr);

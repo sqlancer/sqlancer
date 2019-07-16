@@ -1,5 +1,8 @@
 package lama.mysql;
 
+import java.util.List;
+
+import lama.Randomly;
 import lama.mysql.ast.MySQLBetweenOperation;
 import lama.mysql.ast.MySQLBinaryComparisonOperation;
 import lama.mysql.ast.MySQLBinaryLogicalOperation;
@@ -16,6 +19,11 @@ import lama.mysql.ast.MySQLSelect;
 import lama.mysql.ast.MySQLStringExpression;
 import lama.mysql.ast.MySQLUnaryPostfixOperator;
 import lama.mysql.ast.MySQLUnaryPrefixOperation;
+import lama.postgres.PostgresToStringVisitor;
+import lama.postgres.PostgresSchema.PostgresColumn;
+import lama.postgres.PostgresSchema.PostgresDataType;
+import lama.postgres.ast.PostgresExpression;
+import lama.postgres.gen.PostgresExpressionGenerator;
 
 public abstract class MySQLVisitor {
 
@@ -94,6 +102,20 @@ public abstract class MySQLVisitor {
 	public static String asExpectedValues(MySQLExpression expr) {
 		MySQLExpectedValueVisitor visitor = new MySQLExpectedValueVisitor();
 		visitor.visit(expr);
+		return visitor.get();
+	}
+
+	public static String getExpressionAsString(Randomly r, PostgresDataType type) {
+		PostgresExpression expression = PostgresExpressionGenerator.generateExpression(r, type);
+		PostgresToStringVisitor visitor = new PostgresToStringVisitor();
+		visitor.visit(expression);
+		return visitor.get();
+	}
+	
+	public static String getExpressionAsString(Randomly r, PostgresDataType type, List<PostgresColumn> columns) {
+		PostgresExpression expression = PostgresExpressionGenerator.generateExpression(r, columns, type);
+		PostgresToStringVisitor visitor = new PostgresToStringVisitor();
+		visitor.visit(expression);
 		return visitor.get();
 	}
 

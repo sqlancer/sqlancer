@@ -6,6 +6,7 @@ import lama.IgnoreMeException;
 import lama.Randomly;
 import lama.mysql.MySQLSchema.MySQLDataType;
 import lama.mysql.ast.MySQLCastOperation.CastType;
+import lama.mysql.ast.MySQLConstant.MySQLTextConstant;
 
 public abstract class MySQLConstant extends MySQLExpression {
 
@@ -25,6 +26,16 @@ public abstract class MySQLConstant extends MySQLExpression {
 		public MySQLTextConstant(String value) {
 			this.value = value;
 			singleQuotes = Randomly.getBoolean();
+
+		}
+
+		private void checkIfSmallFloatingPointText() {
+			boolean isSmallFloatingPointText = isString()
+					&& asBooleanNotNull()
+					&& castAs(CastType.SIGNED).getInt() == 0;
+				if (isSmallFloatingPointText) {
+					throw new IgnoreMeException();
+				}
 		}
 
 		@Override
@@ -59,6 +70,7 @@ public abstract class MySQLConstant extends MySQLExpression {
 			if (rightVal.isNull()) {
 				return MySQLConstant.createNullConstant();
 			} else if (rightVal.isInt()) {
+				checkIfSmallFloatingPointText();
 				if (asBooleanNotNull()) {
 					// TODO support SELECT .123 = '.123'; by converting to floating point
 					throw new IgnoreMeException();
@@ -122,6 +134,7 @@ public abstract class MySQLConstant extends MySQLExpression {
 					// TODO uspport floating point
 					throw new IgnoreMeException();
 				}
+				checkIfSmallFloatingPointText();
 				return castAs(rightVal.isSigned() ? CastType.SIGNED : CastType.UNSIGNED).isLessThan(rightVal);
 			} else if (rightVal.isString()) {
 				// unexpected result for '-' < "!";

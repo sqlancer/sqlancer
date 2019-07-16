@@ -49,7 +49,7 @@ public class CreateIndexGenerator {
 		MySQLTable table = schema.getRandomTable();
 		sb.append(table.getName());
 		sb.append("(");
-		if (table.getEngine() == MySQLEngine.INNO_DB) {
+		if (table.getEngine() == MySQLEngine.INNO_DB && Randomly.getBoolean()) {
 			for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
 				if (i != 0) {
 					sb.append(", ");
@@ -124,7 +124,18 @@ public class CreateIndexGenerator {
 
 					} else if (e.getMessage().contains("Data truncation")) {
 						
-					} else {
+					} else if (e.getMessage().contains("Cannot create a functional index on an expression that returns a BLOB or TEXT.")) {
+						
+					} else if (e.getMessage().contains("used in key specification without a key length")) {
+						
+					} else if (e.getMessage().contains("can't be used in key specification with the used table type")) {
+						
+					} else if (e.getMessage().contains("Specified key was too long")) {
+
+					} else if (e.getMessage().contains("out of range")) {
+						
+					}
+					else {
 						throw e;
 					}
 				}

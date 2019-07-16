@@ -129,7 +129,7 @@ public class MySQLQueryGenerator {
 		selectStatement.setOrderByClause(orderBy);
 
 		StringBuilder sb2 = new StringBuilder();
-		sb2.append("SELECT * FROM (SELECT * FROM ");
+		sb2.append("SELECT * FROM (SELECT 1 FROM ");
 		sb2.append(randomFromTables.tableNamesAsString());
 		sb2.append(" WHERE ");
 		int i = 0;

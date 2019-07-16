@@ -108,13 +108,14 @@ public class MySQLProvider implements DatabaseProvider {
 				// seems to yield low CPU utilization
 				nrPerformed = Randomly.getBooleanWithSmallProbability() ? r.getInteger(0, 1) : 0;
 				break;
+			case RESET:
+				// affects the global state, so do not execute
+				nrPerformed = options.getTotalNumberMysqlThreads() == 1 ? r.getInteger(0, 1) : 0;
+				break;
 			case CHECKSUM:
 			case CHECK_TABLE:
 			case ANALYZE_TABLE:
-			case RESET:
-				// affects the global state, so do not execute
-				nrPerformed = 0;
-				break;
+				nrPerformed = r.getInteger(0, 2);
 			case ALTER_TABLE:
 				nrPerformed = r.getInteger(0, 5);
 				break;
@@ -250,9 +251,6 @@ public class MySQLProvider implements DatabaseProvider {
 				return;
 			}
 		}
-		QueryAdapter query = new QueryAdapter(
-				"select TABLE_NAME, ENGINE from information_schema.TABLES where table_schema = '" + databaseName + "'");
-		manager.execute(query);
 
 		newSchema = MySQLSchema.fromConnection(con, databaseName);
 

@@ -91,11 +91,15 @@ public class MySQLRowInserter {
 					sb.append("DEFAULT");
 				} else if (Randomly.getBooleanWithSmallProbability()) {
 					sb.append("NULL");
-				} else {
+				} else if (c.getColumnType() == MySQLDataType.INT) {
 					// try to insert valid value;
-					assert c.getColumnType() == MySQLDataType.INT;
-					sb.append(r.getLong((long) -Math.pow(2, c.getPrecision()) - 1,
-							(long) Math.pow(2, c.getPrecision() - 1) - 1));
+					long left = (long) -Math.pow(2, c.getPrecision()) - 1;
+					long right = (long) Math.pow(2, c.getPrecision() - 1) - 1;
+					sb.append(r.getLong(left, right));
+				} else {
+					sb.append('"');
+					sb.append(r.getString());
+					sb.append('"');
 				}
 
 			}
