@@ -13,10 +13,10 @@ import lama.QueryAdapter;
 import lama.Randomly;
 import lama.postgres.PostgresProvider;
 import lama.postgres.PostgresSchema;
-import lama.postgres.PostgresVisitor;
 import lama.postgres.PostgresSchema.PostgresColumn;
 import lama.postgres.PostgresSchema.PostgresDataType;
 import lama.postgres.PostgresSchema.PostgresTable;
+import lama.postgres.PostgresVisitor;
 
 public class PostgresAlterTableGenerator {
 
@@ -93,7 +93,13 @@ public class PostgresAlterTableGenerator {
 		sb.append(randomTable.getName());
 		sb.append(" ");
 		int i = 0;
-		List<Action> action = Randomly.nonEmptySubset(Action.values());
+		List<Action> action;
+		if (Randomly.getBoolean()) {
+			action = Randomly.nonEmptySubset(Action.values());
+		} else {
+			// make it more likely that the ALTER TABLE succeeds
+			action = Randomly.subset(Randomly.smallNumber(), Action.values());
+		}
 		if (randomTable.getColumns().size() == 1) {
 			action.remove(Action.ALTER_TABLE_DROP_COLUMN);
 		}
@@ -143,6 +149,7 @@ public class PostgresAlterTableGenerator {
 				errors.add("out of range");
 				errors.add("cannot alter type of column named in partition key");
 				errors.add("cannot alter type of column referenced in partition key expression");
+				errors.add("because it is part of the partition key of relation");
 				errors.add("argument of CHECK must be type boolean");
 				errors.add("operator does not exist");
 				errors.add("must be type");

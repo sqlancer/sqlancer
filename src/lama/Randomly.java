@@ -112,6 +112,14 @@ public final class Randomly {
 		int nr = ThreadLocalRandom.current().nextInt(columns.size() + 1);
 		return extractNrRandomColumns(columns, nr);
 	}
+	
+	public static <T> List<T> subset(int nr, @SuppressWarnings("unchecked") T... values) {
+		List<T> list = new ArrayList<>();
+		for (T val : values) {
+			list.add(val);
+		}
+		return extractNrRandomColumns(list, nr);
+	}
 
 	public static <T> List<T> subset(@SuppressWarnings("unchecked") T... values) {
 		List<T> list = new ArrayList<>();
