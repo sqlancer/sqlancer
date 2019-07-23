@@ -3,9 +3,7 @@ package lama.postgres.gen;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import lama.Query;
@@ -14,10 +12,10 @@ import lama.Randomly;
 import lama.mysql.MySQLVisitor;
 import lama.postgres.PostgresProvider;
 import lama.postgres.PostgresSchema;
-import lama.postgres.PostgresVisitor;
 import lama.postgres.PostgresSchema.PostgresColumn;
 import lama.postgres.PostgresSchema.PostgresDataType;
 import lama.postgres.PostgresSchema.PostgresTable;
+import lama.postgres.PostgresVisitor;
 import lama.postgres.ast.PostgresExpression;
 import lama.sqlite3.gen.SQLite3Common;
 
@@ -87,7 +85,7 @@ public class PostgresTableGenerator {
 		sb.append(")");
 		generateInherits();
 		generatePartitionBy();
-		PostgresCommon.generateWith(sb, r);
+		PostgresCommon.generateWith(sb, r, errors);
 		if (Randomly.getBoolean() && isTemporaryTable) {
 			sb.append(" ON COMMIT ");
 			sb.append(Randomly.fromOptions("PRESERVE ROWS", "DELETE ROWS", "DROP"));
@@ -162,15 +160,14 @@ public class PostgresTableGenerator {
 	}
 
 	private void generateInherits() {
-		if (true) {
-			return;
-		}
 		if (Randomly.getBoolean() && !newSchema.getDatabaseTables().isEmpty()) {
 			sb.append(" INHERITS(");
 			sb.append(newSchema.getDatabaseTablesRandomSubsetNotEmpty().stream().map(t -> t.getName())
 					.collect(Collectors.joining(", ")));
 			sb.append(")");
 			errors.add("has a type conflict");
+			errors.add("cannot create partitioned table as inheritance child");
+			errors.add("cannot inherit from temporary relation");
 		}
 	}
 
