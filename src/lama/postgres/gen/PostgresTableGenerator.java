@@ -168,6 +168,8 @@ public class PostgresTableGenerator {
 			errors.add("has a type conflict");
 			errors.add("cannot create partitioned table as inheritance child");
 			errors.add("cannot inherit from temporary relation");
+			errors.add("cannot inherit from partitioned table");
+			errors.add("has a collation conflict");
 		}
 	}
 

@@ -199,7 +199,9 @@ public class PostgresQueryGenerator {
 					|| e.getMessage().contains("Could not choose a best candidate function.")
 					|| e.getMessage().contains("division by zero")
 					|| e.getMessage().contains("zero raised to a negative power is undefined")
-					|| e.getMessage().contains("canceling statement due to statement timeout")) {
+					|| e.getMessage().contains("canceling statement due to statement timeout")
+					|| e.getMessage().contains("operator is not unique")
+					|| e.getMessage().contains("could not determine which collation to use for string comparison")) {
 				return true;
 			} else {
 				throw e;

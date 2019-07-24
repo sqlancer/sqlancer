@@ -131,8 +131,8 @@ public class PostgresAlterTableGenerator {
 				}
 				changesSchema = true;
 				errors.add("does not exist");
-				errors.add("cannot drop column referenced in partition key expression");
-				errors.add("cannot drop column named in partition key");
+				errors.add("cannot drop column");
+				errors.add("cannot drop inherited column");
 				break;
 			case ALTER_COLUMN_TYPE:
 				alterColumn(randomTable, sb);
@@ -159,6 +159,8 @@ public class PostgresAlterTableGenerator {
 				errors.add("division by zero");
 				errors.add("value too long for type character varying");
 				errors.add("cannot drop index");
+				errors.add("cannot alter inherited column");
+				errors.add("must be changed in child tables too");
 				if (PostgresProvider.IS_POSTGRES_TWELVE) {
 					errors.add("cannot alter type of a column used by a generated column");
 				}

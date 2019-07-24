@@ -12,10 +12,10 @@ import lama.Randomly;
 import lama.mysql.MySQLVisitor;
 import lama.postgres.PostgresProvider;
 import lama.postgres.PostgresSchema;
-import lama.postgres.PostgresVisitor;
 import lama.postgres.PostgresSchema.PostgresColumn;
 import lama.postgres.PostgresSchema.PostgresDataType;
 import lama.postgres.PostgresSchema.PostgresTable;
+import lama.postgres.PostgresVisitor;
 
 public class PostgresCommon {
 
@@ -47,6 +47,12 @@ public class PostgresCommon {
 				sb.append("(");
 				sb.append(ThreadLocalRandom.current().nextInt(1, 500));
 				sb.append(")");
+			}
+			if (Randomly.getBoolean()) {
+				sb.append(" COLLATE ");
+				sb.append('"');
+				sb.append(Randomly.fromOptions("POSIX", "C"));
+				sb.append('"');
 			}
 			break;
 		default:
@@ -87,16 +93,15 @@ public class PostgresCommon {
 		}
 	}
 	
-	public static void generateWith(StringBuilder sb, Randomly r) {
-		if (true) {
-			return; // FIXME;
-		}
+	public static void generateWith(StringBuilder sb, Randomly r, List<String> errors) {
 		if (Randomly.getBoolean()) {
 			sb.append(" WITH (");
 			ArrayList<StorageParameters> values = new ArrayList<>(Arrays.asList(StorageParameters.values()));
 			if (PostgresProvider.IS_POSTGRES_TWELVE) {
 				values.remove(StorageParameters.OIDS);
 			}
+			errors.add("unrecognized parameter");
+			errors.add("ALTER TABLE / ADD CONSTRAINT USING INDEX is not supported on partitioned tables");
 			List<StorageParameters> subset = Randomly.nonEmptySubset(values);
 			int i = 0;
 			for (StorageParameters parameter : subset) {
@@ -141,18 +146,19 @@ public class PostgresCommon {
 			sb.append("CHECK(");
 			sb.append(MySQLVisitor.getExpressionAsString(r, PostgresDataType.BOOLEAN, table.getColumns()));
 			sb.append(")");
+			errors.add("constraint must be added to child tables too");
 			break;
 		case UNIQUE:
 			sb.append("UNIQUE(");
 			sb.append(randomNonEmptyColumnSubset.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
 			sb.append(")");
-			appendIndexParameters(sb, r);
+			appendIndexParameters(sb, r, errors);
 			break;
 		case PRIMARY_KEY:
 			sb.append("PRIMARY KEY(");
 			sb.append(randomNonEmptyColumnSubset.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
 			sb.append(")");
-			appendIndexParameters(sb, r);
+			appendIndexParameters(sb, r, errors);
 			break;
 		case FOREIGN_KEY:
 			sb.append("FOREIGN KEY (");
@@ -173,10 +179,12 @@ public class PostgresCommon {
 			}
 			if (Randomly.getBoolean()) {
 				sb.append(" ON DELETE ");
+				errors.add("ERROR: invalid ON DELETE action for foreign key constraint containing generated column");
 				deleteOrUpdateAction(sb);
 			}
 			if (Randomly.getBoolean()) {
 				sb.append(" ON UPDATE ");
+				errors.add("invalid ON UPDATE action for foreign key constraint containing generated column");
 				deleteOrUpdateAction(sb);
 			}
 			if (Randomly.getBoolean()) {
@@ -205,7 +213,7 @@ public class PostgresCommon {
 				appendOperator(sb);
 			}
 			sb.append(")");
-			appendIndexParameters(sb, r);
+			appendIndexParameters(sb, r, errors);
 			errors.add("is not valid");
 			errors.add("no operator matches");
 			errors.add("operator does not exist");
@@ -226,9 +234,9 @@ public class PostgresCommon {
 		}
 	}
 
-	private static void appendIndexParameters(StringBuilder sb, Randomly r) {
+	private static void appendIndexParameters(StringBuilder sb, Randomly r, List<String> errors) {
 		if (Randomly.getBoolean()) {
-			generateWith(sb, r);
+			generateWith(sb, r, errors);
 		}
 		// TODO: [ USING INDEX TABLESPACE tablespace ]
 	}

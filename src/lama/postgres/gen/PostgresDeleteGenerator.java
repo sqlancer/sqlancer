@@ -30,7 +30,7 @@ public class PostgresDeleteGenerator {
 			sb.append(" RETURNING ");
 			sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(r, table.getColumns())));
 		}
-		return new QueryAdapter(sb.toString(), Arrays.asList("violates foreign key constraint")) {
+		return new QueryAdapter(sb.toString(), Arrays.asList("violates foreign key constraint", "could not determine which collation to use for string comparison")) {
 			@Override
 			public void execute(Connection con) throws SQLException {
 				try {

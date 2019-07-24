@@ -10,15 +10,19 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.postgres.PostgresSchema;
-import lama.postgres.PostgresVisitor;
 import lama.postgres.PostgresSchema.PostgresColumn;
 import lama.postgres.PostgresSchema.PostgresDataType;
 import lama.postgres.PostgresSchema.PostgresIndex;
 import lama.postgres.PostgresSchema.PostgresTable;
+import lama.postgres.PostgresVisitor;
 import lama.postgres.ast.PostgresExpression;
 import lama.sqlite3.gen.SQLite3Common;
 
 public class PostgresIndexGenerator {
+
+	public static enum IndexType {
+		BTREE, HASH, GIST, GIN
+	}
 
 	public static Query generate(PostgresSchema s, Randomly r) {
 		StringBuilder sb = new StringBuilder();
@@ -40,37 +44,45 @@ public class PostgresIndexGenerator {
 		sb.append(indexName);
 		sb.append(" ON ");
 		sb.append(randomTable.getName());
+		IndexType method;
 		if (Randomly.getBoolean()) {
 			sb.append(" USING ");
-			sb.append(Randomly.fromOptions("btree", "hash", "gist", "gin"));
+			method = Randomly.fromOptions(IndexType.values());
+			sb.append(method);
+		} else {
+			method = IndexType.BTREE;
 		}
 
 		sb.append("(");
-		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
-			if (i != 0) {
-				sb.append(", ");
-			}
-			if (Randomly.getBoolean()) {
-				sb.append(randomTable.getRandomColumn().getName());
-			} else {
-				sb.append("(");
-				PostgresExpression expression = PostgresExpressionGenerator.generateExpression(r,
-						randomTable.getColumns());
-				sb.append(PostgresVisitor.asString(expression));
-				sb.append(")");
-			}
-			if (Randomly.getBoolean()) {
-				sb.append(" ");
-				sb.append(Randomly.fromOptions("ASC", "DESC"));
-			}
-			if (Randomly.getBoolean()) {
-				sb.append(" NULLS ");
-				sb.append(Randomly.fromOptions("FIRST", "LAST"));
+		if (method == IndexType.HASH) {
+			sb.append(randomTable.getRandomColumn().getName());
+		} else {
+			for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
+				if (i != 0) {
+					sb.append(", ");
+				}
+				if (Randomly.getBoolean()) {
+					sb.append(randomTable.getRandomColumn().getName());
+				} else {
+					sb.append("(");
+					PostgresExpression expression = PostgresExpressionGenerator.generateExpression(r,
+							randomTable.getColumns());
+					sb.append(PostgresVisitor.asString(expression));
+					sb.append(")");
+				}
+				if (Randomly.getBoolean()) {
+					sb.append(" ");
+					sb.append(Randomly.fromOptions("ASC", "DESC"));
+				}
+				if (Randomly.getBoolean()) {
+					sb.append(" NULLS ");
+					sb.append(Randomly.fromOptions("FIRST", "LAST"));
+				}
 			}
 		}
 
 		sb.append(")");
-		if (Randomly.getBoolean()) {
+		if (Randomly.getBoolean() && method != IndexType.HASH) {
 			sb.append(" INCLUDE(");
 			List<PostgresColumn> columns = randomTable.getRandomNonEmptyColumnSubset();
 			sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
@@ -90,6 +102,7 @@ public class PostgresIndexGenerator {
 		errors.add("You might need to add explicit type casts");
 		errors.add(" collations are not supported"); // TODO check
 		errors.add("because it has pending trigger events");
+		errors.add("could not determine which collation to use for index expression");
 		return new QueryAdapter(sb.toString(), errors) {
 			public void execute(java.sql.Connection con) throws java.sql.SQLException {
 				try {
