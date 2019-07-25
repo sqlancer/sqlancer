@@ -33,6 +33,7 @@ import lama.postgres.gen.PostgresDiscardGenerator;
 import lama.postgres.gen.PostgresDropIndex;
 import lama.postgres.gen.PostgresIndexGenerator;
 import lama.postgres.gen.PostgresInsertGenerator;
+import lama.postgres.gen.PostgresNotifyGenerator;
 import lama.postgres.gen.PostgresQueryGenerator;
 import lama.postgres.gen.PostgresReindexGenerator;
 import lama.postgres.gen.PostgresSetGenerator;
@@ -57,7 +58,7 @@ public class PostgresProvider implements DatabaseProvider {
 
 	private enum Action {
 		ANALYZE, ALTER_TABLE, CLUSTER, COMMIT, CREATE_STATISTICS, DROP_STATISTICS, DELETE, DISCARD, DROP_INDEX, INSERT,
-		UPDATE, TRUNCATE, VACUUM, REINDEX, SET, CREATE_INDEX, SET_CONSTRAINTS, RESET_ROLE, COMMENT_ON;
+		UPDATE, TRUNCATE, VACUUM, REINDEX, SET, CREATE_INDEX, SET_CONSTRAINTS, RESET_ROLE, COMMENT_ON, RESET, NOTIFY, LISTEN, UNLISTEN;
 	}
 
 	@Override
@@ -145,6 +146,7 @@ public class PostgresProvider implements DatabaseProvider {
 				nrPerformed = r.getInteger(0, 10);
 				break;
 			case REINDEX:
+			case RESET:
 				nrPerformed = r.getInteger(0, 5);
 				break;
 			case DELETE:
@@ -157,6 +159,9 @@ public class PostgresProvider implements DatabaseProvider {
 			case VACUUM:
 			case SET_CONSTRAINTS:
 			case COMMENT_ON:
+			case NOTIFY:
+			case LISTEN:
+			case UNLISTEN:
 				nrPerformed = r.getInteger(0, 4);
 				break;
 			case UPDATE:
@@ -229,6 +234,20 @@ public class PostgresProvider implements DatabaseProvider {
 							}
 						};
 					}
+					break;
+				case NOTIFY:
+					query = PostgresNotifyGenerator.createNotify(r);
+					break;
+				case LISTEN:
+					query = PostgresNotifyGenerator.createListen();
+					break;
+				case UNLISTEN:
+					query = PostgresNotifyGenerator.createUnlisten();
+					break;
+				case RESET:
+					// https://www.postgresql.org/docs/devel/sql-reset.html
+					// TODO: also configuration parameter
+					query = new QueryAdapter("RESET ALL");
 					break;
 				case COMMENT_ON:
 					query = PostgresCommentGenerator.generate(newSchema, r);
