@@ -27,6 +27,7 @@ import lama.postgres.ast.PostgresExpression;
 import lama.postgres.gen.PostgresAlterTableGenerator;
 import lama.postgres.gen.PostgresAnalyzeGenerator;
 import lama.postgres.gen.PostgresClusterGenerator;
+import lama.postgres.gen.PostgresCommentGenerator;
 import lama.postgres.gen.PostgresDeleteGenerator;
 import lama.postgres.gen.PostgresDiscardGenerator;
 import lama.postgres.gen.PostgresDropIndex;
@@ -47,7 +48,7 @@ import lama.sqlite3.gen.SQLite3Common;
 // EXISTS
 // IN
 public class PostgresProvider implements DatabaseProvider {
-	
+
 	public static final boolean IS_POSTGRES_TWELVE = true;
 
 	private static final int NR_QUERIES_PER_TABLE = 100000;
@@ -55,8 +56,8 @@ public class PostgresProvider implements DatabaseProvider {
 	private QueryManager manager;
 
 	private enum Action {
-		ANALYZE, ALTER_TABLE, CLUSTER, COMMIT, CREATE_STATISTICS, DROP_STATISTICS, DELETE, DISCARD, DROP_INDEX, INSERT, UPDATE, TRUNCATE, VACUUM, REINDEX,
-		SET, CREATE_INDEX;
+		ANALYZE, ALTER_TABLE, CLUSTER, COMMIT, CREATE_STATISTICS, DROP_STATISTICS, DELETE, DISCARD, DROP_INDEX, INSERT,
+		UPDATE, TRUNCATE, VACUUM, REINDEX, SET, CREATE_INDEX, SET_CONSTRAINTS, RESET_ROLE, COMMENT_ON;
 	}
 
 	@Override
@@ -77,7 +78,7 @@ public class PostgresProvider implements DatabaseProvider {
 				manager.execute(createTable);
 				newSchema = PostgresSchema.fromConnection(con, databaseName);
 			} catch (IgnoreMeException e) {
-				
+
 			}
 		}
 
@@ -129,11 +130,11 @@ public class PostgresProvider implements DatabaseProvider {
 			case DISCARD:
 			case CREATE_INDEX:
 			case CLUSTER:
-				nrPerformed = r.getInteger(0, 100);
-					break;
+				nrPerformed = r.getInteger(0, 50);
+				break;
 			case CREATE_STATISTICS:
 			case DROP_STATISTICS:
-				nrPerformed = r.getInteger(0, 30);
+				nrPerformed = r.getInteger(0, 50);
 				break;
 			case COMMIT:
 				nrPerformed = r.getInteger(0, 30);
@@ -141,19 +142,26 @@ public class PostgresProvider implements DatabaseProvider {
 			case TRUNCATE:
 			case DROP_INDEX:
 			case ALTER_TABLE:
-			case REINDEX:
 				nrPerformed = r.getInteger(0, 10);
 				break;
-			case DELETE:
-			case ANALYZE:
+			case REINDEX:
 				nrPerformed = r.getInteger(0, 5);
 				break;
+			case DELETE:
+			case RESET_ROLE:
+				nrPerformed = r.getInteger(0, 5);
+				break;
+			case ANALYZE:
+				nrPerformed = r.getInteger(0, 10);
+				break;
 			case VACUUM:
-				nrPerformed = 0;
+			case SET_CONSTRAINTS:
+			case COMMENT_ON:
+				nrPerformed = r.getInteger(0, 4);
 				break;
 			case UPDATE:
 			case SET:
-				nrPerformed = 10;
+				nrPerformed = r.getInteger(0, 50);
 				break;
 			case INSERT:
 				nrPerformed = r.getInteger(10, 1000);
@@ -193,6 +201,15 @@ public class PostgresProvider implements DatabaseProvider {
 				case ALTER_TABLE:
 					query = PostgresAlterTableGenerator.create(newSchema.getRandomTable(), r, newSchema);
 					break;
+				case SET_CONSTRAINTS:
+					StringBuilder sb = new StringBuilder();
+					sb.append("SET CONSTRAINTS ALL ");
+					sb.append(Randomly.fromOptions("DEFERRED", "IMMEDIATE"));
+					query = new QueryAdapter(sb.toString());
+					break;
+				case RESET_ROLE:
+					query = new QueryAdapter("RESET ROLE");
+					break;
 				case COMMIT:
 					if (Randomly.getBoolean()) {
 						query = new QueryAdapter("COMMIT") {
@@ -203,7 +220,7 @@ public class PostgresProvider implements DatabaseProvider {
 						};
 					} else if (Randomly.getBoolean()) {
 						query = PostgresTransactionGenerator.executeBegin();
-					
+
 					} else {
 						query = new QueryAdapter("ROLLBACK") {
 							@Override
@@ -212,6 +229,9 @@ public class PostgresProvider implements DatabaseProvider {
 							}
 						};
 					}
+					break;
+				case COMMENT_ON:
+					query = PostgresCommentGenerator.generate(newSchema, r);
 					break;
 				case CREATE_INDEX:
 					query = PostgresIndexGenerator.generate(newSchema, r);
