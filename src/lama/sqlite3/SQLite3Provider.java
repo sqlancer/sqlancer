@@ -26,6 +26,7 @@ import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.gen.SQLite3DeleteGenerator;
 import lama.sqlite3.gen.SQLite3DropIndexGenerator;
 import lama.sqlite3.gen.SQLite3DropTableGenerator;
+import lama.sqlite3.gen.SQLite3ExplainGenerator;
 import lama.sqlite3.gen.SQLite3IndexGenerator;
 import lama.sqlite3.gen.SQLite3PragmaGenerator;
 import lama.sqlite3.gen.SQLite3ReindexGenerator;
@@ -40,15 +41,127 @@ import lama.sqlite3.schema.SQLite3Schema.Table;
 
 public class SQLite3Provider implements DatabaseProvider {
 
-	private enum Action {
-		PRAGMA, INDEX, INSERT, VACUUM, REINDEX, ANALYZE, DELETE, TRANSACTION_START, ALTER, DROP_INDEX, UPDATE,
-		ROLLBACK_TRANSACTION, COMMIT, DROP_TABLE;
+	public static enum Action {
+		PRAGMA {
+			@Override
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) throws SQLException {
+				return SQLite3PragmaGenerator.insertPragma(con, state, r);
+			}
+		},
+		INDEX {
+
+			@Override
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) throws SQLException {
+				return SQLite3IndexGenerator.insertIndex(con, state, r);
+			}
+		},
+		INSERT {
+
+			@Override
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) throws SQLException {
+				Table randomTable = Randomly.fromList(newSchema.getDatabaseTables());
+				return SQLite3RowGenerator.insertRow(randomTable, con, state, r);
+			}
+
+		},
+		VACUUM {
+
+			@Override
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
+				return SQLite3VacuumGenerator.executeVacuum();
+			}
+			
+		}, REINDEX {
+
+			@Override
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
+				return SQLite3ReindexGenerator.executeReindex(con, state, newSchema);
+			}
+
+		},
+		ANALYZE {
+
+			@Override
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
+				return SQLite3AnalyzeGenerator.generateAnalyze(newSchema);
+
+			}
+		},
+		DELETE {
+
+			@Override
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
+				return SQLite3DeleteGenerator.deleteContent(Randomly.fromList(newSchema.getDatabaseTables()), con,
+						state, r);
+			}
+		},
+		TRANSACTION_START {
+
+			@Override
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
+				return SQLite3TransactionGenerator.generateBeginTransaction(con, state);
+			}
+
+		},
+		ALTER {
+
+			@Override
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) throws SQLException {
+				return SQLite3AlterTable.alterTable(newSchema, con, state, r);
+			}
+
+		},
+		DROP_INDEX {
+
+			@Override
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) throws SQLException {
+				return SQLite3DropIndexGenerator.dropIndex(con, state, newSchema, r);
+			}
+		},
+		UPDATE {
+
+			@Override
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
+				return SQLite3UpdateGenerator.updateRow(newSchema.getRandomTable(), con, state, r);
+			}
+		},
+		ROLLBACK_TRANSACTION() {
+			@Override
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
+				return SQLite3TransactionGenerator.generateRollbackTransaction(con, state);
+			}
+		},
+		COMMIT {
+
+			@Override
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
+				return SQLite3TransactionGenerator.generateCommit(con, state);
+			}
+
+		},
+		DROP_TABLE {
+
+			@Override
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
+				return SQLite3DropTableGenerator.dropTable(newSchema);
+			}
+
+		},
+		EXPLAIN {
+
+			@Override
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) throws SQLException {
+				return SQLite3ExplainGenerator.explain(newSchema, con, (SQLite3StateToReproduce) state, r);
+			}
+		};
+
+		public abstract Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) throws SQLException;
 	}
 
-	public static final int NR_INSERT_ROW_TRIES = 10;
+	public static final int NR_INSERT_ROW_TRIES = 30;
 	private static final int NR_QUERIES_PER_TABLE = 10000;
 	private static final int MAX_INSERT_ROW_TRIES = 10;
-	public static final int EXPRESSION_MAX_DEPTH = 8;
+	public static final int EXPRESSION_MAX_DEPTH = 2;
 	private SQLite3StateToReproduce state;
 	private String databaseName;
 
@@ -86,6 +199,7 @@ public class SQLite3Provider implements DatabaseProvider {
 				nrPerformed = NR_INSERT_ROW_TRIES;
 				break;
 			case DROP_TABLE:
+			case EXPLAIN:
 				nrPerformed = r.getInteger(0, 2);
 				break;
 			case COMMIT:
@@ -125,55 +239,7 @@ public class SQLite3Provider implements DatabaseProvider {
 			assert nextAction != null;
 			assert nrRemaining[nextAction.ordinal()] > 0;
 			nrRemaining[nextAction.ordinal()]--;
-			Query query;
-			switch (nextAction) {
-			case ALTER:
-				query = SQLite3AlterTable.alterTable(newSchema, con, state, r);
-				break;
-			case ROLLBACK_TRANSACTION:
-				query = SQLite3TransactionGenerator.generateRollbackTransaction(con, state);
-				break;
-			case UPDATE:
-				query = SQLite3UpdateGenerator.updateRow(newSchema.getRandomTable(), con, state, r);
-				break;
-			case TRANSACTION_START:
-				query = SQLite3TransactionGenerator.generateBeginTransaction(con, state);
-				break;
-			case INDEX:
-				query = SQLite3IndexGenerator.insertIndex(con, state, r);
-				break;
-			case DROP_INDEX:
-				query = SQLite3DropIndexGenerator.dropIndex(con, state, newSchema, r);
-				break;
-			case DELETE:
-				query = SQLite3DeleteGenerator.deleteContent(Randomly.fromList(newSchema.getDatabaseTables()), con,
-						state, r);
-				break;
-			case INSERT:
-				Table randomTable = Randomly.fromList(newSchema.getDatabaseTables());
-				query = SQLite3RowGenerator.insertRow(randomTable, con, state, r);
-				break;
-			case PRAGMA:
-				query = SQLite3PragmaGenerator.insertPragma(con, state, r);
-				break;
-			case REINDEX:
-				query = SQLite3ReindexGenerator.executeReindex(con, state);
-				break;
-			case COMMIT:
-				query = SQLite3TransactionGenerator.generateCommit(con, state);
-				break;
-			case VACUUM:
-				query = SQLite3VacuumGenerator.executeVacuum(con, state);
-				break;
-			case ANALYZE:
-				query = SQLite3AnalyzeGenerator.generateAnalyze();
-				break;
-			case DROP_TABLE:
-				query = SQLite3DropTableGenerator.dropTable(newSchema);
-				break;
-			default:
-				throw new AssertionError(nextAction);
-			}
+			Query query = nextAction.getQuery(newSchema, con, state, r);
 			try {
 				manager.execute(query);
 				if (query.couldAffectSchema()) {
@@ -198,7 +264,7 @@ public class SQLite3Provider implements DatabaseProvider {
 			}
 		}
 		if (Randomly.getBoolean()) {
-			SQLite3ReindexGenerator.executeReindex(con, state);
+			SQLite3ReindexGenerator.executeReindex(con, state, newSchema);
 		}
 		newSchema = SQLite3Schema.fromConnection(con);
 
@@ -252,7 +318,7 @@ public class SQLite3Provider implements DatabaseProvider {
 	}
 
 	@Override
-	public Connection createDatabase(String databaseName,  StateToReproduce state) throws SQLException {
+	public Connection createDatabase(String databaseName, StateToReproduce state) throws SQLException {
 		return DatabaseFacade.createDatabase(databaseName);
 	}
 
@@ -287,7 +353,8 @@ public class SQLite3Provider implements DatabaseProvider {
 				}
 			}
 			sb.append("-- expected values: \n");
-			String asExpectedValues = "-- " + SQLite3Visitor.asExpectedValues(specificState.getWhereClause()).replace("\n", "\n-- ");
+			String asExpectedValues = "-- "
+					+ SQLite3Visitor.asExpectedValues(specificState.getWhereClause()).replace("\n", "\n-- ");
 			sb.append(asExpectedValues);
 		}
 		try {
@@ -302,13 +369,12 @@ public class SQLite3Provider implements DatabaseProvider {
 	public StateToReproduce getStateToReproduce(String databaseName) {
 		return new SQLite3StateToReproduce(databaseName);
 	}
-	
+
 	@Override
 	public Query checkIfRowIsStillContained(StateToReproduce state) {
-		String checkRowIsInside = "SELECT " + state.queryTargetedColumnsString
-				+ " FROM " + state.queryTargetedTablesString + " INTERSECT SELECT "
-				+ state.values;
+		String checkRowIsInside = "SELECT " + state.queryTargetedColumnsString + " FROM "
+				+ state.queryTargetedTablesString + " INTERSECT SELECT " + state.values;
 		return new QueryAdapter(checkRowIsInside);
 	}
-	
+
 }

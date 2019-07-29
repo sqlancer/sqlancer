@@ -7,7 +7,6 @@ import org.sqlite.SQLiteException;
 
 import lama.Query;
 import lama.QueryAdapter;
-import lama.StateToReproduce;
 
 /**
  * @see https://www.sqlite.org/lang_vacuum.html
@@ -15,7 +14,7 @@ import lama.StateToReproduce;
 public class SQLite3VacuumGenerator {
 
 	// only works for the main schema
-	public static Query executeVacuum(Connection con, StateToReproduce state) {
+	public static Query executeVacuum() {
 		return new QueryAdapter("VACUUM;") {
 			@Override
 			public void execute(Connection con) throws SQLException {
