@@ -48,5 +48,10 @@ public class QueryAdapter extends Query {
 	public boolean couldAffectSchema() {
 		return false;
 	}
+
+	@Override
+	public List<String> getExpectedErrors() {
+		return expectedErrors;
+	}
 	
 }
