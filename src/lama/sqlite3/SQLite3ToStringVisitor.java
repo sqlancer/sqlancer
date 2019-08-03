@@ -4,6 +4,7 @@ import java.util.List;
 
 import lama.IgnoreMeException;
 import lama.Randomly;
+import lama.sqlite3.ast.SQLite3Aggregate;
 import lama.sqlite3.ast.SQLite3Case.CasePair;
 import lama.sqlite3.ast.SQLite3Case.SQLite3CaseWithBaseExpression;
 import lama.sqlite3.ast.SQLite3Case.SQLite3CaseWithoutBaseExpression;
@@ -28,7 +29,6 @@ import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import lama.sqlite3.ast.SQLite3Function;
 import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.UnaryOperation;
-import lama.sqlite3.schema.SQLite3Schema.Column;
 
 public class SQLite3ToStringVisitor extends SQLite3Visitor {
 
@@ -128,10 +128,8 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 				if (i != 0) {
 					sb.append(", ");
 				}
-				Column column = s.getFetchColumns().get(i);
-				sb.append(column.getTable().getName());
-				sb.append('.');
-				sb.append(column.getName());
+				SQLite3Expression column = s.getFetchColumns().get(i);
+				visit(column);
 			}
 		}
 		sb.append(" FROM ");
@@ -326,6 +324,14 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 		sb.append(")");
 	}
 
+	@Override
+	public void visit(SQLite3Aggregate aggr) {
+		sb.append(aggr.getFunc());
+		sb.append("(");
+		visit(aggr.getExpr());
+		sb.append(")");
+	}
+	
 	public String get() {
 		return sb.toString();
 	}

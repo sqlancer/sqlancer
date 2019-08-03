@@ -2,6 +2,7 @@ package lama.sqlite3.gen;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import lama.Query;
@@ -29,34 +30,19 @@ public class SQLite3RowGenerator {
 	}
 
 	public static Query insertRow(Table table, Connection con, StateToReproduce state, Randomly r) throws SQLException {
+		final List<String> errors = new ArrayList<>();
 		SQLite3RowGenerator generator = new SQLite3RowGenerator(r, con, state);
 		String query = generator.insertRow(table);
-		return new QueryAdapter(query) {
-			public void execute(Connection con) throws SQLException {
-				try {
-					super.execute(con);
-				} catch (SQLException e) {
-					if (generator.mightFail && e.getMessage().startsWith("[SQLITE_CONSTRAINT]")) {
-						return;
-					} else if (e.getMessage().startsWith("[SQLITE_FULL]")) {
-						return;
-					} else if (e.getMessage()
-							.startsWith("[SQLITE_ERROR] SQL error or missing database (integer overflow)")) {
-						return;
-					} else if (e.getMessage()
-							.startsWith("[SQLITE_ERROR] SQL error or missing database (foreign key mismatch")) {
-						return;
-					} else if (e.getMessage().startsWith(
-							"[SQLITE_CONSTRAINT]  Abort due to constraint violation (FOREIGN KEY constraint failed)")) {
-						return;
-					} else if (e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (no such table:")) {
-						return; // TODO: also check if the table is really missing (caused by a DROP TABLE)
-					}
-					else {
-						throw e;
-					}
-				}
-			};
+		if (generator.mightFail) {
+			errors.add("[SQLITE_CONSTRAINT]");
+		}
+		errors.add("[SQLITE_FULL]");
+		errors.add("[SQLITE_ERROR] SQL error or missing database (integer overflow)");
+		errors.add("[SQLITE_ERROR] SQL error or missing database (foreign key mismatch");
+		errors.add("[SQLITE_CONSTRAINT]  Abort due to constraint violation (FOREIGN KEY constraint failed)");
+		// // TODO: also check if the table is really missing (caused by a DROP TABLE)
+		errors.add("[SQLITE_ERROR] SQL error or missing database (no such table:");
+		return new QueryAdapter(query, errors) {
 			
 			@Override
 			public boolean couldAffectSchema() {

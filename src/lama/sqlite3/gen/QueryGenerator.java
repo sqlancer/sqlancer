@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,11 +14,15 @@ import java.util.stream.Stream;
 import lama.Main;
 import lama.Main.StateLogger;
 import lama.MainOptions;
+import lama.Query;
+import lama.QueryAdapter;
 import lama.Randomly;
 import lama.StateToReproduce;
 import lama.StateToReproduce.SQLite3StateToReproduce;
 import lama.sqlite3.SQLite3Provider;
 import lama.sqlite3.SQLite3ToStringVisitor;
+import lama.sqlite3.ast.SQLite3Aggregate;
+import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
@@ -62,19 +67,20 @@ public class QueryGenerator {
 		s = SQLite3Schema.fromConnection(database);
 	}
 
-	public void generateAndCheckQuery(SQLite3StateToReproduce state, StateLogger logger, MainOptions options) throws SQLException {
-		String queryString = getQueryThatContainsAtLeastOneRow(state);
+	public void generateAndCheckQuery(SQLite3StateToReproduce state, StateLogger logger, MainOptions options)
+			throws SQLException {
+		Query query = getQueryThatContainsAtLeastOneRow(state);
 		if (options.logEachSelect()) {
-			logger.writeCurrent(queryString);
+			logger.writeCurrent(query.getQueryString());
 		}
 
-		boolean isContainedIn = isContainedIn(queryString);
+		boolean isContainedIn = isContainedIn(query);
 		if (!isContainedIn) {
 			throw new Main.ReduceMeException();
 		}
 	}
 
-	public String getQueryThatContainsAtLeastOneRow(SQLite3StateToReproduce state) throws SQLException {
+	public Query getQueryThatContainsAtLeastOneRow(SQLite3StateToReproduce state) throws SQLException {
 		this.state = state;
 		Tables randomFromTables = s.getRandomTableNonEmptyTables();
 		List<Table> tables = randomFromTables.getTables();
@@ -115,7 +121,22 @@ public class QueryGenerator {
 		List<Column> columnsWithoutRowid = columns.stream().filter(c -> !c.getName().matches("rowid"))
 				.collect(Collectors.toList());
 		fetchColumns = Randomly.nonEmptySubset(columnsWithoutRowid);
-		selectStatement.selectFetchColumns(fetchColumns);
+		List<SQLite3Expression> colExpressions = new ArrayList<>();
+		List<Table> allTables = new ArrayList<>();
+		allTables.addAll(tables);
+		allTables.addAll(joinStatements.stream().map(join -> join.getTable()).collect(Collectors.toList()));
+		boolean allTablesContainOneRow = allTables.stream().allMatch(t -> t.getNrRows() == 1);
+		for (Column c : fetchColumns) {
+			SQLite3Expression colName = new ColumnName(c, rw.getValues().get(c));
+			if (allTablesContainOneRow && Randomly.getBoolean()) {
+				SQLite3AggregateFunction aggFunc = SQLite3AggregateFunction.getRandom(c.getColumnType());
+				if (aggFunc != null) {
+					colName = new SQLite3Aggregate(colName, aggFunc);
+				}
+			}
+			colExpressions.add(colName);
+		}
+		selectStatement.selectFetchColumns(colExpressions);
 		state.queryTargetedColumnsString = fetchColumns.stream().map(c -> c.getFullQualifiedName())
 				.collect(Collectors.joining(", "));
 		SQLite3Expression whereClause = generateWhereClauseThatContainsRowValue(columns, rw);
@@ -134,7 +155,10 @@ public class QueryGenerator {
 		SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
 		visitor.visit(selectStatement);
 		String queryString = visitor.get();
-		return queryString;
+		return new QueryAdapter(queryString, Arrays.asList(
+				"[SQLITE_ERROR] SQL error or missing database (second argument to likelihood() must be a constant between 0.0 and 1.0)",
+				"[SQLITE_ERROR] SQL error or missing database (integer overflow)",
+				"[SQLITE_ERROR] SQL error or missing database (parser stack overflow)", "ORDER BY term out of range"));
 	}
 
 	private SQLite3Expression generateOffset() {
@@ -146,7 +170,14 @@ public class QueryGenerator {
 		}
 	}
 
-	private boolean isContainedIn(String queryString) throws SQLException {
+	public static boolean shouldIgnoreException(SQLException e) {
+		return e.getMessage().contentEquals("[SQLITE_ERROR] SQL error or missing database (integer overflow)")
+				|| e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)")
+				|| e.getMessage().startsWith(
+						"[SQLITE_ERROR] SQL error or missing database (second argument to likelihood() must be a constant between 0.0 and 1.0)");
+	}
+
+	private boolean isContainedIn(Query query) throws SQLException {
 		Statement createStatement;
 		createStatement = database.createStatement();
 
@@ -156,34 +187,30 @@ public class QueryGenerator {
 		sb.append(columnNames);
 		state.values = columnNames;
 		sb.append(" INTERSECT SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
-		sb.append(queryString);
+		sb.append(query.getQueryString());
 		sb.append(")");
 		String resultingQueryString = sb.toString();
 		state.queryString = resultingQueryString;
-		try (ResultSet result = createStatement.executeQuery(resultingQueryString)) {
+		Query finalQuery = new QueryAdapter(resultingQueryString, query.getExpectedErrors());
+		try (ResultSet result = createStatement.executeQuery(finalQuery.getQueryString())) {
 			boolean isContainedIn = !result.isClosed();
 			createStatement.close();
 			return isContainedIn;
 		} catch (SQLException e) {
-			if (shouldIgnoreException(e)) {
-				return true;
-			} else {
-				throw e;
+			for (String exp : finalQuery.getExpectedErrors()) {
+				if (e.getMessage().contains(exp)) {
+					return true;
+				}
 			}
+			throw e;
 		}
-	}
-
-	public static boolean shouldIgnoreException(SQLException e) {
-		return e.getMessage().contentEquals("[SQLITE_ERROR] SQL error or missing database (integer overflow)")
-				|| e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)")
-				|| e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (second argument to likelihood() must be a constant between 0.0 and 1.0)");
 	}
 
 	public List<SQLite3Expression> generateOrderBy(List<Column> columns) {
 		List<SQLite3Expression> orderBys = new ArrayList<>();
 		for (int i = 0; i < Randomly.smallNumber(); i++) {
 			SQLite3Expression expr;
-			expr = SQLite3Constant.createTextConstant(r.getString());
+			expr = new SQLite3ExpressionGenerator().getRandomExpression(columns, false, r);
 			Ordering order = Randomly.fromOptions(Ordering.ASC, Ordering.DESC);
 			orderBys.add(new OrderingTerm(expr, order));
 			// TODO RANDOM()
@@ -251,9 +278,11 @@ public class QueryGenerator {
 				SQLite3Expression expr = new SQLite3ExpressionGenerator(rw).getRandomExpression(columns, false, r);
 				if (expr.getExpectedValue() != null) {
 					if (shouldBeTrue) {
-						return new BinaryComparisonOperation(expr.getExpectedValue(), expr, BinaryComparisonOperator.IS);
+						return new BinaryComparisonOperation(expr.getExpectedValue(), expr,
+								BinaryComparisonOperator.IS);
 					} else {
-						return new BinaryComparisonOperation(expr.getExpectedValue(), expr, BinaryComparisonOperator.IS_NOT);
+						return new BinaryComparisonOperation(expr.getExpectedValue(), expr,
+								BinaryComparisonOperator.IS_NOT);
 
 					}
 //					if (isTrue(expr.getExpectedValue())) {
@@ -356,7 +385,8 @@ public class QueryGenerator {
 			case POSTFIX_COLUMN:
 				Column c = Randomly.fromList(columns);
 				sampledConstant = rw.getValues().get(c);
-				return generateSampleBasedColumnPostfix(sampledConstant, new ColumnName(c, sampledConstant), shouldBeTrue);
+				return generateSampleBasedColumnPostfix(sampledConstant, new ColumnName(c, sampledConstant),
+						shouldBeTrue);
 			case LITERAL:
 				return getStandaloneLiteral(shouldBeTrue);
 			case UNARY_FUNCTION:
@@ -422,12 +452,13 @@ public class QueryGenerator {
 						if (Randomly.getBoolean()) {
 							// generate random expressions and add either the column or value
 							for (int i = 0; i < Randomly.smallNumber(); i++) {
-								expressions.add(
-										new SQLite3ExpressionGenerator(rw).getRandomExpression(columns, depth + 1, false, r));
+								expressions.add(new SQLite3ExpressionGenerator(rw).getRandomExpression(columns,
+										depth + 1, false, r));
 							}
 							int randomPosition = r.getInteger(0, expressions.size());
 							if (Randomly.getBoolean()) {
-								expressions.add(randomPosition, new SQLite3Expression.ColumnName(c, rw.getValues().get(c)));
+								expressions.add(randomPosition,
+										new SQLite3Expression.ColumnName(c, rw.getValues().get(c)));
 							} else {
 								expressions.add(randomPosition, rw.getValues().get(c));
 							}
@@ -442,7 +473,8 @@ public class QueryGenerator {
 						}
 					}
 				}
-				return new SQLite3Expression.InOperation(new SQLite3Expression.ColumnName(c, rw.getValues().get(c)), expressions);
+				return new SQLite3Expression.InOperation(new SQLite3Expression.ColumnName(c, rw.getValues().get(c)),
+						expressions);
 			default:
 				throw new AssertionError();
 			}
@@ -493,8 +525,6 @@ public class QueryGenerator {
 		return new SQLite3Expression.Function(functionName);
 	}
 
-	
-	
 	// e.g., WHERE c0 or
 	private SQLite3Expression createStandaloneColumn(List<Column> columns, RowValue rw, boolean shouldBeTrue) {
 		Column c = Randomly.fromList(columns);
@@ -547,7 +577,8 @@ public class QueryGenerator {
 			String strValue;
 			if (shouldBeTrue) {
 				do {
-					// The loop is a workaround since currently, strings such as 1448905502E-665NlCR*Vx[]!Njxkw can be generated which are false
+					// The loop is a workaround since currently, strings such as
+					// 1448905502E-665NlCR*Vx[]!Njxkw can be generated which are false
 					strValue = r.getNonZeroString();
 				} while (!SQLite3Cast.isTrue(SQLite3Constant.createTextConstant(strValue)).get());
 			} else {
@@ -613,8 +644,9 @@ public class QueryGenerator {
 	}
 
 	private SQLite3Expression generateOpaquePredicate(boolean shouldBeTrue) {
-		BinaryComparisonOperator operator = Randomly.fromOptions(BinaryComparisonOperator.EQUALS, BinaryComparisonOperator.GREATER_EQUALS,
-				BinaryComparisonOperator.IS, BinaryComparisonOperator.SMALLER_EQUALS);
+		BinaryComparisonOperator operator = Randomly.fromOptions(BinaryComparisonOperator.EQUALS,
+				BinaryComparisonOperator.GREATER_EQUALS, BinaryComparisonOperator.IS,
+				BinaryComparisonOperator.SMALLER_EQUALS);
 		SQLite3Expression term;
 		// generate opaque predicate
 		SQLite3Expression con;
@@ -674,8 +706,9 @@ public class QueryGenerator {
 	private SQLite3Expression createAlwaysTrueTwoColumnExpression(Column left, Column right, RowValue rw,
 			boolean shouldBeTrue) {
 		BinaryComparisonOperator binaryOperator = Randomly.fromOptions(BinaryComparisonOperator.GREATER_EQUALS,
-				BinaryComparisonOperator.SMALLER_EQUALS, BinaryComparisonOperator.IS, BinaryComparisonOperator.NOT_EQUALS, BinaryComparisonOperator.GREATER,
-				BinaryComparisonOperator.SMALLER, BinaryComparisonOperator.EQUALS);
+				BinaryComparisonOperator.SMALLER_EQUALS, BinaryComparisonOperator.IS,
+				BinaryComparisonOperator.NOT_EQUALS, BinaryComparisonOperator.GREATER, BinaryComparisonOperator.SMALLER,
+				BinaryComparisonOperator.EQUALS);
 		SQLite3Expression leftColumn = new ColumnName(left, rw.getValues().get(left));
 		SQLite3Expression rightColumn = new ColumnName(right, rw.getValues().get(right));
 
@@ -714,9 +747,10 @@ public class QueryGenerator {
 		SQLite3DataType valueType = sampledConstant.getDataType();
 
 		do {
-			binaryOperator = Randomly.fromOptions(BinaryComparisonOperator.GREATER_EQUALS, BinaryComparisonOperator.SMALLER_EQUALS,
-					BinaryComparisonOperator.IS, BinaryComparisonOperator.NOT_EQUALS, BinaryComparisonOperator.GREATER, BinaryComparisonOperator.SMALLER,
-					BinaryComparisonOperator.LIKE, BinaryComparisonOperator.EQUALS);
+			binaryOperator = Randomly.fromOptions(BinaryComparisonOperator.GREATER_EQUALS,
+					BinaryComparisonOperator.SMALLER_EQUALS, BinaryComparisonOperator.IS,
+					BinaryComparisonOperator.NOT_EQUALS, BinaryComparisonOperator.GREATER,
+					BinaryComparisonOperator.SMALLER, BinaryComparisonOperator.LIKE, BinaryComparisonOperator.EQUALS);
 			retry = false;
 			switch (binaryOperator) {
 			case EQUALS:
@@ -1220,8 +1254,8 @@ public class QueryGenerator {
 			this.name = name;
 		}
 
-		public abstract boolean worksWhenApplied(BinaryComparisonOperator operator,
-				SQLite3DataType leftType, SQLite3DataType rightType);
+		public abstract boolean worksWhenApplied(BinaryComparisonOperator operator, SQLite3DataType leftType,
+				SQLite3DataType rightType);
 
 		public static List<BinaryFunction> getPossibleBinaryFunctionsForOperator(BinaryComparisonOperator operator,
 				SQLite3DataType leftDataType, SQLite3DataType rightDataType) {
@@ -1232,8 +1266,8 @@ public class QueryGenerator {
 
 	}
 
-	private String getRandomFunction(BinaryComparisonOperator operator, boolean shouldBeTrue, SQLite3DataType leftDataType,
-			SQLite3DataType rightDataType) {
+	private String getRandomFunction(BinaryComparisonOperator operator, boolean shouldBeTrue,
+			SQLite3DataType leftDataType, SQLite3DataType rightDataType) {
 		if (leftDataType == SQLite3DataType.BINARY || rightDataType == SQLite3DataType.BINARY) {
 			return null;
 		}
@@ -1248,7 +1282,6 @@ public class QueryGenerator {
 		}
 		return null;
 	}
-	
 
 	public static String getRandomUnaryFunction() {
 		return Randomly.fromOptions("ABS", "CHAR", "HEX", "LENGTH", "LIKELY", "LOWER", "LTRIM", "QUOTE", "ROUND",

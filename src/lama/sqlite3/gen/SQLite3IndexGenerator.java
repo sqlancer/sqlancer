@@ -2,9 +2,8 @@ package lama.sqlite3.gen;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
-
-import org.sqlite.SQLiteException;
 
 import lama.Query;
 import lama.QueryAdapter;
@@ -28,46 +27,31 @@ public class SQLite3IndexGenerator {
 	private final Query query;
 	boolean isUnique;
 	private final Randomly r;
+	private final List<String> errors = new ArrayList<>();
 
 	public SQLite3IndexGenerator(Connection con, StateToReproduce state, Randomly r) throws SQLException {
 		this.r = r;
 		SQLite3Schema s = SQLite3Schema.fromConnection(con);
 		Table t = s.getRandomTable();
 		String q = createIndex(t, t.getColumns());
-		query = new QueryAdapter(q) {
-			@Override
-			public void execute(Connection con) throws SQLException {
-				try {
-					super.execute(con);
-				} catch (SQLiteException e) {
-					if (isUnique && e.getMessage().startsWith(
-							"[SQLITE_CONSTRAINT]  Abort due to constraint violation (UNIQUE constraint failed")) {
-						return;
-					} else if (e.getMessage()
-							.startsWith("[SQLITE_ERROR] SQL error or missing database (integer overflow)")) {
-						return;
-					} else if (e.getMessage()
-							.startsWith("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)")) {
-						return;
-					} else if (e.getMessage()
-							.startsWith("[SQLITE_ERROR] SQL error or missing database (no such column:")) {
-						/**
-						 * Strings in single quotes are sometimes interpreted as column names. Since we
-						 * found an issue with double quotes, they can no longer be used (see
-						 * https://sqlite.org/src/info/9b78184b). Single quotes are interpreted as
-						 * column names in certain contexts (see
-						 * https://www.mail-archive.com/sqlite-users@mailinglists.sqlite.org/msg115014.html).
-						 */
-						return;
-					} else if (e.getMessage().startsWith(
-							"[SQLITE_ERROR] SQL error or missing database (second argument to likelihood() must be a constant between 0.0 and 1.0)")) {
-						return;
-					} else {
-						throw e;
-					}
-				}
-			}
-		};
+		if (isUnique) {
+			errors.add("[SQLITE_CONSTRAINT]  Abort due to constraint violation (UNIQUE constraint failed");
+		}
+		errors.add("[SQLITE_ERROR] SQL error or missing database (integer overflow)");
+		errors.add("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)");
+
+		/**
+		 * Strings in single quotes are sometimes interpreted as column names. Since we
+		 * found an issue with double quotes, they can no longer be used (see
+		 * https://sqlite.org/src/info/9b78184b). Single quotes are interpreted as
+		 * column names in certain contexts (see
+		 * https://www.mail-archive.com/sqlite-users@mailinglists.sqlite.org/msg115014.html).
+		 */
+		errors.add("[SQLITE_ERROR] SQL error or missing database (no such column:");
+		errors.add(
+				"[SQLITE_ERROR] SQL error or missing database (second argument to likelihood() must be a constant between 0.0 and 1.0)");
+
+		query = new QueryAdapter(q, errors);
 	}
 
 	private String createIndex(Table t, List<Column> columns) {

@@ -10,14 +10,7 @@ import lama.sqlite3.schema.SQLite3Schema.Table;
 
 public class SQLite3Helper {
 
-	public static int getNrRows(Connection con, Table table) throws SQLException {
-		try (Statement s = con.createStatement()) {
-			try (ResultSet query = s.executeQuery("SELECT COUNT(*) FROM " + table.getName())) {
-				query.next();
-				return query.getInt(1);
-			}
-		}
-	}
+	
 
 	public static void dropTable(Connection con, Table table) throws SQLException {
 		try (Statement s = con.createStatement()) {

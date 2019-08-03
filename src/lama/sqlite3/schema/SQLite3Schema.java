@@ -16,6 +16,7 @@ import lama.Randomly;
 import lama.StateToReproduce.SQLite3StateToReproduce;
 import lama.sqlite3.SQLite3ToStringVisitor;
 import lama.sqlite3.ast.SQLite3Constant;
+import lama.sqlite3.schema.SQLite3Schema.Table;
 import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
 import lama.sqlite3.schema.SQLite3Schema.Table.TableKind;
 
@@ -221,12 +222,14 @@ public class SQLite3Schema {
 		private final TableKind tableType;
 		private Column rowid;
 		private boolean withoutRowid;
+		private int nrRows;
 
-		public Table(String tableName, List<Column> columns, TableKind tableType, boolean withoutRowid) {
+		public Table(String tableName, List<Column> columns, TableKind tableType, boolean withoutRowid, int nrRows) {
 			this.tableName = tableName;
 			this.tableType = tableType;
 			this.withoutRowid = withoutRowid;
 			this.columns = Collections.unmodifiableList(columns);
+			this.nrRows = nrRows;
 		}
 
 		public boolean hasWithoutRowid() {
@@ -286,6 +289,10 @@ public class SQLite3Schema {
 
 		public boolean isSystemTable() {
 			return getName().startsWith("sqlit");
+		}
+		
+		public int getNrRows() {
+			return nrRows;
 		}
 
 	}
@@ -354,6 +361,15 @@ public class SQLite3Schema {
 		}
 		return sb.toString();
 	}
+	
+	public static int getNrRows(Connection con, String table) throws SQLException {
+		try (Statement s = con.createStatement()) {
+			try (ResultSet query = s.executeQuery("SELECT COUNT(*) FROM " + table)) {
+				query.next();
+				return query.getInt(1);
+			}
+		}
+	}
 
 	static public SQLite3Schema fromConnection(Connection con) throws SQLException {
 		List<Table> databaseTables = new ArrayList<>();
@@ -371,7 +387,7 @@ public class SQLite3Schema {
 					List<Column> databaseColumns = getTableColumns(con, tableName, string);
 					boolean withoutRowid = string.contains("without rowid");
 					Table t = new Table(tableName, databaseColumns,
-							tableType.contentEquals("temp_table") ? TableKind.TEMP : TableKind.MAIN, withoutRowid);
+							tableType.contentEquals("temp_table") ? TableKind.TEMP : TableKind.MAIN, withoutRowid, getNrRows(con, tableName));
 					try (Statement s3 = con.createStatement()) {
 						try (ResultSet rs3 = s3.executeQuery("SELECT typeof(rowid) FROM " + tableName)) {
 							if (rs3.next()) {

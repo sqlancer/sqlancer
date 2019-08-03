@@ -16,7 +16,7 @@ public class SQLite3SelectStatement extends SQLite3Expression {
 	private SQLite3Expression limitClause;
 	private List<SQLite3Expression> orderByClause = Collections.emptyList();
 	private SQLite3Expression offsetClause;
-	private List<Column> fetchColumns = Collections.emptyList();
+	private List<SQLite3Expression> fetchColumns = Collections.emptyList();
 	private List<Join> joinStatements = Collections.emptyList();
 
 	public enum SelectType {
@@ -87,11 +87,11 @@ public class SQLite3SelectStatement extends SQLite3Expression {
 		return offsetClause;
 	}
 
-	public void selectFetchColumns(List<Column> fetchColumns) {
+	public void selectFetchColumns(List<SQLite3Expression> fetchColumns) {
 		this.fetchColumns = fetchColumns;
 	}
 
-	public List<Column> getFetchColumns() {
+	public List<SQLite3Expression> getFetchColumns() {
 		return fetchColumns;
 	}
 

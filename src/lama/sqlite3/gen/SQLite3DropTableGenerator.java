@@ -1,7 +1,6 @@
 package lama.sqlite3.gen;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.util.Arrays;
 
 import lama.Query;
 import lama.QueryAdapter;
@@ -15,19 +14,7 @@ public class SQLite3DropTableGenerator {
 			Table tableToDrop = newSchema.getRandomTable();
 			String query = "DROP TABLE " + tableToDrop.getName();
 
-			return new QueryAdapter(query) {
-
-				@Override
-				public void execute(Connection con) throws SQLException {
-					try {
-						super.execute(con);
-					} catch (SQLException e) {
-						if (e.getMessage()
-								.startsWith("[SQLITE_ERROR] SQL error or missing database (foreign key mismatch")) {
-							return;
-						}
-					}
-				}
+			return new QueryAdapter(query, Arrays.asList("[SQLITE_ERROR] SQL error or missing database (foreign key mismatch", "Abort due to constraint violation (FOREIGN KEY constraint failed)")) {
 
 				@Override
 				public boolean couldAffectSchema() {

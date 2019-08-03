@@ -1,5 +1,6 @@
 package lama.sqlite3;
 
+import lama.sqlite3.ast.SQLite3Aggregate;
 import lama.sqlite3.ast.SQLite3Case.SQLite3CaseWithBaseExpression;
 import lama.sqlite3.ast.SQLite3Case.SQLite3CaseWithoutBaseExpression;
 import lama.sqlite3.ast.SQLite3Constant;
@@ -89,6 +90,7 @@ public abstract class SQLite3Visitor {
 	
 	public abstract void visit(SQLite3CaseWithBaseExpression casExpr);
 
+	public abstract void visit(SQLite3Aggregate aggr);
 
 	public void visit(SQLite3Expression expr) {
 		if (expr instanceof BinaryOperation) {
@@ -133,6 +135,8 @@ public abstract class SQLite3Visitor {
 			visit((SQLite3CaseWithoutBaseExpression) expr);
 		} else if (expr instanceof SQLite3CaseWithBaseExpression) {
 			visit((SQLite3CaseWithBaseExpression) expr);
+		} else if (expr instanceof SQLite3Aggregate) {
+			visit((SQLite3Aggregate) expr);
 		} else {
 			throw new AssertionError(expr);
 		}

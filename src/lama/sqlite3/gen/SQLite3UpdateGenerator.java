@@ -2,6 +2,7 @@ package lama.sqlite3.gen;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import lama.Query;
@@ -26,35 +27,18 @@ public class SQLite3UpdateGenerator {
 
 	public static Query updateRow(Table table, Connection con, StateToReproduce state, Randomly r) {
 		SQLite3UpdateGenerator generator = new SQLite3UpdateGenerator(r);
-		return new QueryAdapter(generator.update(table, con, state)) {
-			public void execute(Connection con) throws SQLException {
-				try {
-					super.execute(con);
-				} catch (SQLException e) {
-					if (generator.mightFail && e.getMessage().startsWith("[SQLITE_CONSTRAINT]")) {
-						return;
-					} else if (e.getMessage()
-							.startsWith("[SQLITE_ERROR] SQL error or missing database (integer overflow)")) {
-						return;
-					} else if (e.getMessage()
-							.startsWith("[SQLITE_ERROR] SQL error or missing database (foreign key mismatch")) {
-						return;
-					} else if (e.getMessage().startsWith("[SQLITE_CONSTRAINT]  Abort due to constraint violation")) {
-						return;
-					} else if (e.getMessage()
-							.startsWith("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)")) {
-						return;
-					} else if (e.getMessage().startsWith(
-							"[SQLITE_ERROR] SQL error or missing database (second argument to likelihood() must be a constant between 0.0 and 1.0)")) {
-						return;
-					} else if (e.getMessage()
-							.startsWith("[SQLITE_ERROR] SQL error or missing database (no such table:")) {
-						return; // TODO: also check if the table is really missing (caused by a DROP TABLE)
-					} else {
-						throw e;
-					}
-				}
-			};
+		List<String> errors = new ArrayList<>();
+		if (generator.mightFail) {
+			errors.add("[SQLITE_CONSTRAINT]");
+		}
+		errors.add("[SQLITE_ERROR] SQL error or missing database (integer overflow)");
+		errors.add("[SQLITE_ERROR] SQL error or missing database (foreign key mismatch");
+		errors.add("[SQLITE_CONSTRAINT]  Abort due to constraint violation");
+		errors.add("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)");
+		errors.add(
+				"[SQLITE_ERROR] SQL error or missing database (second argument to likelihood() must be a constant between 0.0 and 1.0)");
+		errors.add("[SQLITE_ERROR] SQL error or missing database (no such table:");
+		return new QueryAdapter(generator.update(table, con, state), errors) {
 
 			@Override
 			public boolean couldAffectSchema() {

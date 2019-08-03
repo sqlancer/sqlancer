@@ -3,6 +3,7 @@ package lama.sqlite3.gen;
 import java.util.ArrayList;
 import java.util.List;
 
+import lama.IgnoreMeException;
 import lama.Randomly;
 import lama.sqlite3.SQLite3Provider;
 import lama.sqlite3.ast.SQLite3Case.CasePair;
@@ -75,8 +76,8 @@ public class SQLite3ExpressionGenerator {
 
 	enum ExpressionType {
 		COLUMN_NAME, LITERAL_VALUE, UNARY_OPERATOR, POSTFIX_UNARY_OPERATOR, BINARY_OPERATOR, BETWEEN_OPERATOR,
-		UNARY_FUNCTION, CAST_EXPRESSION, BINARY_COMPARISON_OPERATOR, KNOWN_RESULT_FUNCTION, IN_OPERATOR, COLLATE,
-		CASE_OPERATOR
+		UNARY_FUNCTION, CAST_EXPRESSION, BINARY_COMPARISON_OPERATOR, KNOWN_RESULT_FUNCTION, IN_OPERATOR, COLLATE
+		//, CASE_OPERATOR
 	}
 
 	public SQLite3Expression getRandomExpression(List<Column> columns, boolean deterministicOnly, Randomly r) {
@@ -124,8 +125,8 @@ public class SQLite3ExpressionGenerator {
 		case COLLATE:
 			return new CollateOperation(getRandomExpression(columns, depth + 1, deterministicOnly, r),
 					CollateSequence.random());
-		case CASE_OPERATOR:
-			return getCaseOperator(columns, depth + 1, deterministicOnly, r);
+//		case CASE_OPERATOR:
+//			return getCaseOperator(columns, depth + 1, deterministicOnly, r);
 		default:
 			throw new AssertionError(randomExpressionType);
 		}
@@ -194,6 +195,9 @@ public class SQLite3ExpressionGenerator {
 		SQLite3Expression leftExpression = getRandomExpression(columns, depth + 1, deterministicOnly, r);
 		// TODO: operators
 		BinaryOperator operator = BinaryOperator.getRandomOperator();
+		while (operator == BinaryOperator.DIVIDE) {
+			operator = BinaryOperator.getRandomOperator();
+		}
 		SQLite3Expression rightExpression = getRandomExpression(columns, depth + 1, deterministicOnly, r);
 		return new SQLite3Expression.BinaryOperation(leftExpression, rightExpression, operator);
 	}

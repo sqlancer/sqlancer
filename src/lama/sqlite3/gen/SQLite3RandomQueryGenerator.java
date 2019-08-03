@@ -5,7 +5,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import lama.Randomly;
+import lama.sqlite3.ast.SQLite3Aggregate;
+import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import lama.sqlite3.ast.SQLite3Expression;
+import lama.sqlite3.ast.SQLite3Expression.ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.Join.JoinType;
 import lama.sqlite3.ast.SQLite3SelectStatement;
@@ -50,7 +53,15 @@ public class SQLite3RandomQueryGenerator {
 		List<Column> columnsWithoutRowid = columns.stream().filter(c -> !c.getName().matches("rowid"))
 				.collect(Collectors.toList());
 		List<Column> fetchColumns = Randomly.nonEmptySubset(columnsWithoutRowid);
-		selectStatement.selectFetchColumns(fetchColumns);
+		List<SQLite3Expression> colExpressions = new ArrayList<>();
+		for (Column c : fetchColumns) {
+			SQLite3Expression colName = new ColumnName(c, null);
+			if (Randomly.getBoolean()) {
+				colName = new SQLite3Aggregate(colName, SQLite3AggregateFunction.getRandom());
+			}
+			colExpressions.add(colName);
+		}
+		selectStatement.selectFetchColumns(colExpressions);
 		SQLite3Expression whereClause = new SQLite3ExpressionGenerator().getRandomExpression(columns, false, r);
 		selectStatement.setWhereClause(whereClause);
 		return selectStatement;

@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import lama.Query;
@@ -29,20 +30,7 @@ public class SQLite3DropIndexGenerator {
 		try (Statement stm = con.createStatement()) {
 			SQLite3DropIndexGenerator gen = new SQLite3DropIndexGenerator(r);
 			String query = gen.dropIndex(con, s);
-			return new QueryAdapter(query) {
-				public void execute(Connection con) throws SQLException {
-					try {
-						super.execute(con);
-					} catch (SQLException e) {
-						if (e.getMessage().startsWith(
-								"[SQLITE_ERROR] SQL error or missing database (index associated with UNIQUE or PRIMARY KEY constraint cannot be dropped)")) {
-							return;
-						} else {
-							throw new AssertionError(e);
-						}
-					}
-				};
-			};
+			return new QueryAdapter(query, Arrays.asList("[SQLITE_ERROR] SQL error or missing database (index associated with UNIQUE or PRIMARY KEY constraint cannot be dropped)"));
 		}
 	}
 

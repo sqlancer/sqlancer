@@ -39,6 +39,12 @@ public abstract class SQLite3Expression {
 		public SQLite3Expression getExpression() {
 			return expr;
 		}
+		
+		@Override
+		public CollateSequence getImplicitCollateSequence() {
+			// https://www.sqlite.org/src/tktview/18ab5da2c05ad57d7f9d79c41d3138b141378543
+			return expr.getImplicitCollateSequence();
+		}
 
 	}
 

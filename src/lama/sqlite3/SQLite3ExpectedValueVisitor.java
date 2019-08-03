@@ -1,5 +1,6 @@
 package lama.sqlite3;
 
+import lama.sqlite3.ast.SQLite3Aggregate;
 import lama.sqlite3.ast.SQLite3Case.CasePair;
 import lama.sqlite3.ast.SQLite3Case.SQLite3CaseWithBaseExpression;
 import lama.sqlite3.ast.SQLite3Case.SQLite3CaseWithoutBaseExpression;
@@ -90,6 +91,14 @@ public class SQLite3ExpectedValueVisitor extends SQLite3Visitor {
 
 	@Override
 	public void visit(SQLite3SelectStatement s) {
+		for (SQLite3Expression expr : s.getFetchColumns()) {
+			if (expr instanceof SQLite3Aggregate) {
+				visit(expr);
+			}
+		}
+		for (SQLite3Expression expr : s.getJoinClauses()) {
+			visit(expr);
+		}
 		visit(s.getWhereClause());
 	}
 
@@ -139,7 +148,9 @@ public class SQLite3ExpectedValueVisitor extends SQLite3Visitor {
 	@Override
 	public void visit(Subquery query) {
 		print(query);
-		visit(query.getExpectedValue());
+		if (query.getExpectedValue() != null) {
+			visit(query.getExpectedValue());
+		}
 	}
 
 	@Override
@@ -207,6 +218,12 @@ public class SQLite3ExpectedValueVisitor extends SQLite3Visitor {
 			print(caseExpr.getElseExpr());
 			visit(caseExpr.getElseExpr());
 		}
+	}
+
+	@Override
+	public void visit(SQLite3Aggregate aggr) {
+		print(aggr);
+		visit(aggr.getExpectedValue());
 	}
 
 }

@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import lama.DatabaseFacade;
 import lama.DatabaseProvider;
+import lama.IgnoreMeException;
 import lama.Main.QueryManager;
 import lama.Main.StateLogger;
 import lama.MainOptions;
@@ -151,14 +152,24 @@ public class SQLite3Provider implements DatabaseProvider {
 
 			@Override
 			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) throws SQLException {
-				return SQLite3ExplainGenerator.explain(newSchema, con, (SQLite3StateToReproduce) state, r);
+				return SQLite3ExplainGenerator.explain(con, (SQLite3StateToReproduce) state, r);
 			}
-		};
+		},
+		TARGETED_SELECT {
+
+			@Override
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
+					throws SQLException {
+				return new QueryGenerator(con, r).getQueryThatContainsAtLeastOneRow((SQLite3StateToReproduce) state);
+			}
+			
+		}
+		;
 
 		public abstract Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) throws SQLException;
 	}
 
-	public static final int NR_INSERT_ROW_TRIES = 30;
+	public static final int NR_INSERT_ROW_TRIES = 50;
 	private static final int NR_QUERIES_PER_TABLE = 10000;
 	private static final int MAX_INSERT_ROW_TRIES = 10;
 	public static final int EXPRESSION_MAX_DEPTH = 2;
@@ -193,14 +204,17 @@ public class SQLite3Provider implements DatabaseProvider {
 			int nrPerformed = 0;
 			switch (action) {
 			case ALTER:
+			case DROP_TABLE:
 				nrPerformed = r.getInteger(0, 5);
 				break;
 			case INSERT:
 				nrPerformed = NR_INSERT_ROW_TRIES;
 				break;
-			case DROP_TABLE:
 			case EXPLAIN:
-				nrPerformed = r.getInteger(0, 2);
+				nrPerformed = r.getInteger(0, 200);
+				break;
+			case TARGETED_SELECT:
+				nrPerformed = 0;
 				break;
 			case COMMIT:
 			case TRANSACTION_START:
@@ -245,6 +259,8 @@ public class SQLite3Provider implements DatabaseProvider {
 				if (query.couldAffectSchema()) {
 					newSchema = SQLite3Schema.fromConnection(con);
 				}
+			} catch (IgnoreMeException e) {
+				
 			} catch (Throwable t) {
 				System.err.println(query.getQueryString());
 				throw t;
@@ -273,7 +289,11 @@ public class SQLite3Provider implements DatabaseProvider {
 			logger.writeCurrent(state);
 		}
 		for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
-			queryGenerator.generateAndCheckQuery(this.state, logger, options);
+			try {
+				queryGenerator.generateAndCheckQuery(this.state, logger, options);
+			} catch (IgnoreMeException e) {
+				
+			}
 			manager.incrementSelectQueryCount();
 		}
 		try {
@@ -312,7 +332,7 @@ public class SQLite3Provider implements DatabaseProvider {
 					throw new AssertionError(e);
 				}
 			}
-			nrRows = SQLite3Helper.getNrRows(con, randomTable);
+			nrRows = randomTable.getNrRows();
 		} while (nrRows == 0 && counter-- != 0);
 		return nrRows != 0;
 	}

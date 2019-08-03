@@ -13,7 +13,6 @@ public class SQLite3Function extends SQLite3Expression {
 	private final SQLite3Expression[] args;
 
 	public SQLite3Function(ComputableFunction func, SQLite3Expression... args) {
-		assert args.length == func.getNrArgs();
 		this.func = func;
 		this.args = args;
 	}

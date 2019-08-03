@@ -2,6 +2,7 @@ package lama.sqlite3.gen;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 import lama.Query;
 import lama.QueryAdapter;
@@ -20,32 +21,12 @@ public class SQLite3DeleteGenerator {
 
 	public static Query deleteContent(Table tableName, Connection con, StateToReproduce state, Randomly r) {
 		String query = new SQLite3DeleteGenerator(r).getDeleteQuery(tableName);
-		return new QueryAdapter(query) {
-			@Override
-			public void execute(Connection con) throws SQLException {
-				try {
-					super.execute(con);
-				} catch (Throwable e) {
-					if (e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (integer overflow)")) {
-						return;
-					} else if (e.getMessage()
-							.startsWith("[SQLITE_ERROR] SQL error or missing database (foreign key mismatch")) {
-						return;
-					} else if (e.getMessage().startsWith("[SQLITE_CONSTRAINT]  Abort due to constraint violation ")) {
-						return;
-					} else if (e.getMessage()
-							.startsWith("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)")) {
-						return;
-					} else if (e.getMessage().startsWith(
-							"[SQLITE_ERROR] SQL error or missing database (second argument to likelihood() must be a constant between 0.0 and 1.0)")) {
-						return;
-					} else if (e.getMessage()
-							.startsWith("[SQLITE_ERROR] SQL error or missing database (no such table:")) {
-						return; // TODO: also check if the table is really missing (caused by a DROP TABLE)
-					}
-					throw e;
-				}
-			}
+		return new QueryAdapter(query, Arrays.asList("[SQLITE_ERROR] SQL error or missing database (integer overflow)",
+				"[SQLITE_ERROR] SQL error or missing database (foreign key mismatch",
+				"[SQLITE_CONSTRAINT]  Abort due to constraint violation ",
+				"[SQLITE_ERROR] SQL error or missing database (parser stack overflow)",
+				"[SQLITE_ERROR] SQL error or missing database (second argument to likelihood() must be a constant between 0.0 and 1.0)",
+				"[SQLITE_ERROR] SQL error or missing database (no such table:")) {
 		};
 
 	}
