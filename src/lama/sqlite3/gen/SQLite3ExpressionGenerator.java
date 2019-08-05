@@ -3,7 +3,6 @@ package lama.sqlite3.gen;
 import java.util.ArrayList;
 import java.util.List;
 
-import lama.IgnoreMeException;
 import lama.Randomly;
 import lama.sqlite3.SQLite3Provider;
 import lama.sqlite3.ast.SQLite3Case.CasePair;

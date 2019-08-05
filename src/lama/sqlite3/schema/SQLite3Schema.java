@@ -12,11 +12,11 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import lama.IgnoreMeException;
 import lama.Randomly;
 import lama.StateToReproduce.SQLite3StateToReproduce;
 import lama.sqlite3.SQLite3ToStringVisitor;
 import lama.sqlite3.ast.SQLite3Constant;
-import lama.sqlite3.schema.SQLite3Schema.Table;
 import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
 import lama.sqlite3.schema.SQLite3Schema.Table.TableKind;
 
@@ -163,7 +163,12 @@ public class SQLite3Schema {
 					tableNamesAsString());
 			Map<Column, SQLite3Constant> values = new HashMap<>();
 			try (Statement s = con.createStatement()) {
-				ResultSet randomRowValues = s.executeQuery(randomRow);
+				ResultSet randomRowValues;
+				try {
+					randomRowValues = s.executeQuery(randomRow);
+				} catch (SQLException e) {
+					throw new IgnoreMeException();
+				}
 				if (!randomRowValues.next()) {
 					throw new AssertionError("could not find random row! " + randomRow + "\n" + state);
 				}
@@ -223,11 +228,13 @@ public class SQLite3Schema {
 		private Column rowid;
 		private boolean withoutRowid;
 		private int nrRows;
+		private boolean isView;
 
-		public Table(String tableName, List<Column> columns, TableKind tableType, boolean withoutRowid, int nrRows) {
+		public Table(String tableName, List<Column> columns, TableKind tableType, boolean withoutRowid, int nrRows, boolean isView) {
 			this.tableName = tableName;
 			this.tableType = tableType;
 			this.withoutRowid = withoutRowid;
+			this.isView = isView;
 			this.columns = Collections.unmodifiableList(columns);
 			this.nrRows = nrRows;
 		}
@@ -293,6 +300,10 @@ public class SQLite3Schema {
 		
 		public int getNrRows() {
 			return nrRows;
+		}
+
+		public boolean isView() {
+			return isView;
 		}
 
 	}
@@ -367,6 +378,12 @@ public class SQLite3Schema {
 			try (ResultSet query = s.executeQuery("SELECT COUNT(*) FROM " + table)) {
 				query.next();
 				return query.getInt(1);
+			} catch (SQLException e) {
+				if (e.getMessage().contains("ORDER BY term out of range") || e.getMessage().contains("no such table") || e.getMessage().contains("second argument to likelihood() must be a constant between 0.0 and 1.0")) {
+					throw new IgnoreMeException();
+				} else {
+					throw e;
+				}
 			}
 		}
 	}
@@ -384,17 +401,29 @@ public class SQLite3Schema {
 						continue;
 					}
 					String string = rs.getString("sql").toLowerCase();
-					List<Column> databaseColumns = getTableColumns(con, tableName, string);
 					boolean withoutRowid = string.contains("without rowid");
+					boolean isView = tableType.contentEquals("view");
+					List<Column> databaseColumns;
+					try {
+						databaseColumns = getTableColumns(con, tableName, string, isView);
+					} catch (IgnoreMeException e) {
+						continue;
+					}
+					int nrRows;
+					try {
+						nrRows = getNrRows(con, tableName);
+					} catch (IgnoreMeException e) {
+						nrRows = 0;
+					}
 					Table t = new Table(tableName, databaseColumns,
-							tableType.contentEquals("temp_table") ? TableKind.TEMP : TableKind.MAIN, withoutRowid, getNrRows(con, tableName));
+							tableType.contentEquals("temp_table") ? TableKind.TEMP : TableKind.MAIN, withoutRowid, nrRows, isView);
 					try (Statement s3 = con.createStatement()) {
 						try (ResultSet rs3 = s3.executeQuery("SELECT typeof(rowid) FROM " + tableName)) {
-							if (rs3.next()) {
+							if (rs3.next() && !isView /* TODO: can we still do something with it? */) {
 								String dataType = rs3.getString(1);
 								SQLite3DataType columnType = getColumnType(dataType);
 								String rowId = Randomly.fromOptions("rowid", "_rowid_", "oid");
-								Column rowid = new Column(rowId, columnType, true, true, null);
+								Column rowid = new Column(rowId, columnType, dataType.contains("INTEGER"), true, null);
 								t.addRowid(rowid);
 								rowid.setTable(t);
 							}
@@ -412,10 +441,11 @@ public class SQLite3Schema {
 		return new SQLite3Schema(databaseTables);
 	}
 
-	private static List<Column> getTableColumns(Connection con, String tableName, String sql) throws SQLException {
+	private static List<Column> getTableColumns(Connection con, String tableName, String sql, boolean isView) throws SQLException {
 		List<Column> databaseColumns = new ArrayList<>();
 		try (Statement s2 = con.createStatement()) {
-			try (ResultSet columnRs = s2.executeQuery(String.format("PRAGMA table_info(%s)", tableName))) {
+			String tableInfoStr = String.format("PRAGMA table_info(%s)", tableName);
+			try (ResultSet columnRs = s2.executeQuery(tableInfoStr)) {
 				String[] columnCreates = sql.split(",");
 				int columnCreateIndex = 0;
 				while (columnRs.next()) {
@@ -423,7 +453,6 @@ public class SQLite3Schema {
 					String columnTypeString = columnRs.getString("type");
 					boolean isPrimaryKey = columnRs.getBoolean("pk");
 					SQLite3DataType columnType = getColumnType(columnTypeString);
-					
 					sql = columnCreates[columnCreateIndex++];
 					CollateSequence collate;
 					if (sql.contains("collate binary")) {
@@ -438,6 +467,9 @@ public class SQLite3Schema {
 					databaseColumns.add(new Column(columnName, columnType, columnTypeString.contentEquals("INTEGER"),
 							isPrimaryKey, collate));
 				}
+			} catch (SQLException e) {
+				throw new IgnoreMeException(); // TODO
+				//throw new AssertionError(tableInfoStr);
 			}
 		}
 		assert !databaseColumns.isEmpty() : tableName;
@@ -491,4 +523,15 @@ public class SQLite3Schema {
 		return new Tables(Randomly.nonEmptySubset(databaseTables));
 	}
 
+	public Table getRandomTableNoView() {
+		return Randomly.fromList(getDatabaseTablesWithoutViews());
+	}
+
+	public List<Table> getDatabaseTablesWithoutViews() {
+		return databaseTables.stream().filter(t -> !t.isView).collect(Collectors.toList());
+	}
+	public List<Table> getViews() {
+		return databaseTables.stream().filter(t -> t.isView).collect(Collectors.toList());
+	}
+	
 }

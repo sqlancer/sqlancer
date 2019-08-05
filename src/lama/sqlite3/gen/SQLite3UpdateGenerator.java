@@ -38,6 +38,9 @@ public class SQLite3UpdateGenerator {
 		errors.add(
 				"[SQLITE_ERROR] SQL error or missing database (second argument to likelihood() must be a constant between 0.0 and 1.0)");
 		errors.add("[SQLITE_ERROR] SQL error or missing database (no such table:");
+		// for views
+		errors.add("ORDER BY term out of range");
+		errors.add("second argument to likelihood() must be a constant between 0.0 and 1.0");
 		return new QueryAdapter(generator.update(table, con, state), errors) {
 
 			@Override

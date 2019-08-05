@@ -5,7 +5,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,6 +20,7 @@ import lama.StateToReproduce;
 import lama.StateToReproduce.SQLite3StateToReproduce;
 import lama.sqlite3.SQLite3Provider;
 import lama.sqlite3.SQLite3ToStringVisitor;
+import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Aggregate;
 import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import lama.sqlite3.ast.SQLite3Constant;
@@ -60,6 +60,8 @@ public class QueryGenerator {
 	private StateToReproduce state;
 	private RowValue rw;
 	private List<Column> fetchColumns;
+	private final List<String> errors = new ArrayList<>();
+	private List<SQLite3Expression> colExpressions;
 
 	public QueryGenerator(Connection con, Randomly r) throws SQLException {
 		this.database = con;
@@ -81,6 +83,22 @@ public class QueryGenerator {
 	}
 
 	public Query getQueryThatContainsAtLeastOneRow(SQLite3StateToReproduce state) throws SQLException {
+		SQLite3SelectStatement selectStatement = getQuery(state);
+		SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
+		visitor.visit(selectStatement);
+		String queryString = visitor.get();
+		addExpectedErrors(errors);
+		return new QueryAdapter(queryString, errors);
+	}
+
+	public static void addExpectedErrors(List<String> errors) {
+		errors.add(
+				"[SQLITE_ERROR] SQL error or missing database (second argument to likelihood() must be a constant between 0.0 and 1.0)");
+		errors.add("[SQLITE_ERROR] SQL error or missing database (integer overflow)");
+		errors.add("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)");
+	}
+
+	SQLite3SelectStatement getQuery(SQLite3StateToReproduce state) throws SQLException {
 		this.state = state;
 		Tables randomFromTables = s.getRandomTableNonEmptyTables();
 		List<Table> tables = randomFromTables.getTables();
@@ -102,12 +120,9 @@ public class QueryGenerator {
 			Table table = Randomly.fromList(tables);
 			tables.remove(table);
 			JoinType options;
-			if (tables.size() == 2) {
-				// allow outer with arbitrary column order (see error: ON clause references
-				// tables to its right)
-				options = Randomly.fromOptions(JoinType.INNER, JoinType.CROSS, JoinType.OUTER);
-			} else {
-				options = Randomly.fromOptions(JoinType.INNER, JoinType.CROSS);
+			options = Randomly.fromOptions(JoinType.INNER, JoinType.CROSS, JoinType.OUTER);
+			if (options == JoinType.OUTER && tables.size() > 2) {
+				errors.add("ON clause references tables to its right");
 			}
 			Join j = new SQLite3Expression.Join(table, joinClause, options);
 			joinStatements.add(j);
@@ -121,7 +136,7 @@ public class QueryGenerator {
 		List<Column> columnsWithoutRowid = columns.stream().filter(c -> !c.getName().matches("rowid"))
 				.collect(Collectors.toList());
 		fetchColumns = Randomly.nonEmptySubset(columnsWithoutRowid);
-		List<SQLite3Expression> colExpressions = new ArrayList<>();
+		colExpressions = new ArrayList<>();
 		List<Table> allTables = new ArrayList<>();
 		allTables.addAll(tables);
 		allTables.addAll(joinStatements.stream().map(join -> join.getTable()).collect(Collectors.toList()));
@@ -152,13 +167,7 @@ public class QueryGenerator {
 		}
 		List<SQLite3Expression> orderBy = generateOrderBy(columns);
 		selectStatement.setOrderByClause(orderBy);
-		SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
-		visitor.visit(selectStatement);
-		String queryString = visitor.get();
-		return new QueryAdapter(queryString, Arrays.asList(
-				"[SQLITE_ERROR] SQL error or missing database (second argument to likelihood() must be a constant between 0.0 and 1.0)",
-				"[SQLITE_ERROR] SQL error or missing database (integer overflow)",
-				"[SQLITE_ERROR] SQL error or missing database (parser stack overflow)", "ORDER BY term out of range"));
+		return selectStatement;
 	}
 
 	private SQLite3Expression generateOffset() {
@@ -183,9 +192,10 @@ public class QueryGenerator {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT ");
-		String columnNames = rw.getRowValuesAsString(fetchColumns);
-		sb.append(columnNames);
-		state.values = columnNames;
+		addExpectedValues(sb);
+		StringBuilder sb2 = new StringBuilder();
+		addExpectedValues(sb2);
+		state.values = sb2.toString();
 		sb.append(" INTERSECT SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
 		sb.append(query.getQueryString());
 		sb.append(")");
@@ -206,6 +216,15 @@ public class QueryGenerator {
 		}
 	}
 
+	private void addExpectedValues(StringBuilder sb) {
+		for (int i = 0; i < colExpressions.size(); i++) {
+			if (i != 0) {
+				sb.append(", ");
+			}
+			sb.append(SQLite3Visitor.asString(colExpressions.get(i).getExpectedValue()));
+		}
+	}
+
 	public List<SQLite3Expression> generateOrderBy(List<Column> columns) {
 		List<SQLite3Expression> orderBys = new ArrayList<>();
 		for (int i = 0; i < Randomly.smallNumber(); i++) {
@@ -216,6 +235,7 @@ public class QueryGenerator {
 			// TODO RANDOM()
 		}
 		// TODO collate
+		errors.add("ORDER BY term out of range");
 		return orderBys;
 	}
 
@@ -253,27 +273,27 @@ public class QueryGenerator {
 		if (depth >= SQLite3Provider.EXPRESSION_MAX_DEPTH) {
 			return getStandaloneLiteral(shouldBeTrue);
 		}
-		if (Randomly.getBoolean()) {
-			int nr = 5;
-			SQLite3Expression exp = null;
-			for (int i = 0; i < nr; i++) {
-				SQLite3Expression comp = createSampleBasedTwoColumnComparison(columns, rw, shouldBeTrue);
-				if (exp == null) {
-					exp = comp;
-				} else {
-					exp = new BinaryOperation(exp, comp,
-							Randomly.getBoolean() ? BinaryOperator.OR : BinaryOperator.AND);
-				}
-			}
-		}
-		if (Randomly.getBoolean() && shouldBeTrue) {
-			return generateExpression(columns, rw);
-		}
+//		if (Randomly.getBoolean()) {
+//			int nr = 5;
+//			SQLite3Expression exp = null;
+//			for (int i = 0; i < nr; i++) {
+//				SQLite3Expression comp = createSampleBasedTwoColumnComparison(columns, rw, shouldBeTrue);
+//				if (exp == null) {
+//					exp = comp;
+//				} else {
+//					exp = new BinaryOperation(exp, comp,
+//							Randomly.getBoolean() ? BinaryOperator.OR : BinaryOperator.AND);
+//				}
+//			}
+//		}
+//		if (Randomly.getBoolean() && shouldBeTrue) {
+//			return generateExpression(columns, rw);
+//		}
 		boolean retry;
 		do {
 			retry = false;
 			SQLite3Constant sampledConstant;
-			switch (Randomly.fromOptions(NewExpressionType.values())) {
+			switch (NewExpressionType.KNOWN_EXPRESSION) {
 			case KNOWN_EXPRESSION:
 				SQLite3Expression expr = new SQLite3ExpressionGenerator(rw).getRandomExpression(columns, false, r);
 				if (expr.getExpectedValue() != null) {

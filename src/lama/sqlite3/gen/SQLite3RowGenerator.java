@@ -42,6 +42,7 @@ public class SQLite3RowGenerator {
 		errors.add("[SQLITE_CONSTRAINT]  Abort due to constraint violation (FOREIGN KEY constraint failed)");
 		// // TODO: also check if the table is really missing (caused by a DROP TABLE)
 		errors.add("[SQLITE_ERROR] SQL error or missing database (no such table:");
+		errors.add("second argument to likelihood() must be a constant between 0.0 and 1.0");
 		return new QueryAdapter(query, errors) {
 			
 			@Override

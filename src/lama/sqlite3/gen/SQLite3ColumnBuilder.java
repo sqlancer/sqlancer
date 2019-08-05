@@ -97,7 +97,7 @@ public class SQLite3ColumnBuilder {
 		if (allowDefaultValue && Randomly.getBoolean()) {
 			sb.append(" DEFAULT " + SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(false, r)));
 		}
-		if (Randomly.getBoolean()) {
+		if (Randomly.getBoolean() && false /* FIXME: for view testing temporarily disabled */) {
 			String randomCollate = SQLite3Common.getRandomCollate();
 			sb.append(randomCollate);
 		}

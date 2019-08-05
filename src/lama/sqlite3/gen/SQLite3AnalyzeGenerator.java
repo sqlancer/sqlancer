@@ -1,5 +1,7 @@
 package lama.sqlite3.gen;
 
+import java.util.Arrays;
+
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
@@ -14,7 +16,7 @@ public class SQLite3AnalyzeGenerator {
 			sb.append(newSchema.getRandomTable().getName());
 			// TODO index
 		}
-		return new QueryAdapter(sb.toString());
+		return new QueryAdapter(sb.toString(), Arrays.asList("no such table"));
 	}
 
 }

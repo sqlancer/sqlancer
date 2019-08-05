@@ -143,6 +143,9 @@ public abstract class SQLite3Visitor {
 	}
 
 	public static String asString(SQLite3Expression expr) {
+		if (expr == null) {
+			throw new AssertionError();
+		}
 		SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
 		visitor.visit(expr);
 		return visitor.get();

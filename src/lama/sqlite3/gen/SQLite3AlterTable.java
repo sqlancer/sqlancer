@@ -2,6 +2,9 @@ package lama.sqlite3.gen;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.sqlite.SQLiteException;
 
@@ -26,12 +29,14 @@ public class SQLite3AlterTable {
 	}
 
 	public static Query alterTable(SQLite3Schema s, Connection con, StateToReproduce state, Randomly r) throws SQLException {
+		List<String> errors = new ArrayList<>();
+		errors.add("error in view");
 		SQLite3AlterTable alterTable = new SQLite3AlterTable(r);
 		Option option = Randomly.fromOptions(Option.values());
 		switch (option) {
 		case RENAME_TABLE:
 			alterTable.renameTable(s);
-			return new QueryAdapter(alterTable.sb.toString()) {
+			return new QueryAdapter(alterTable.sb.toString(), errors) {
 				@Override
 				public boolean couldAffectSchema() {
 					return true;
@@ -39,7 +44,7 @@ public class SQLite3AlterTable {
 			};
 		case RENAME_COLUMN:
 			alterTable.renameColumn(s);
-			return new QueryAdapter(alterTable.sb.toString()) {
+			return new QueryAdapter(alterTable.sb.toString(), errors) {
 				@Override
 				public boolean couldAffectSchema() {
 					return true;
@@ -47,7 +52,7 @@ public class SQLite3AlterTable {
 			};
 		case ADD_COLUMN:
 			alterTable.addColumn(s);
-			return new QueryAdapter(alterTable.sb.toString()) {
+			return new QueryAdapter(alterTable.sb.toString(), errors) {
 				@Override
 				public void execute(Connection con) throws SQLException {
 					try {
@@ -74,7 +79,7 @@ public class SQLite3AlterTable {
 	}
 
 	private void renameColumn(SQLite3Schema s) {
-		Table t = s.getRandomTable();
+		Table t = s.getRandomTableNoView();
 		Column c = t.getRandomColumn();
 		sb.append("ALTER TABLE ");
 		sb.append(t.getName());
@@ -90,7 +95,7 @@ public class SQLite3AlterTable {
 	}
 	
 	private void addColumn(SQLite3Schema s) {
-		Table t = s.getRandomTable();
+		Table t = s.getRandomTableNoView();
 		sb.append("ALTER TABLE ");
 		sb.append(t.getName());
 		sb.append(" ADD COLUMN ");
@@ -109,7 +114,7 @@ public class SQLite3AlterTable {
 	private final StringBuilder sb = new StringBuilder();
 
 	private void renameTable(SQLite3Schema s) {
-		Table t = s.getRandomTable();
+		Table t = s.getRandomTableNoView();
 		sb.append("ALTER TABLE ");
 		sb.append(t.getName());
 		sb.append(" RENAME TO ");

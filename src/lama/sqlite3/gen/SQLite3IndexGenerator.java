@@ -32,7 +32,7 @@ public class SQLite3IndexGenerator {
 	public SQLite3IndexGenerator(Connection con, StateToReproduce state, Randomly r) throws SQLException {
 		this.r = r;
 		SQLite3Schema s = SQLite3Schema.fromConnection(con);
-		Table t = s.getRandomTable();
+		Table t = s.getRandomTableNoView();
 		String q = createIndex(t, t.getColumns());
 		if (isUnique) {
 			errors.add("[SQLITE_CONSTRAINT]  Abort due to constraint violation (UNIQUE constraint failed");
@@ -50,7 +50,6 @@ public class SQLite3IndexGenerator {
 		errors.add("[SQLITE_ERROR] SQL error or missing database (no such column:");
 		errors.add(
 				"[SQLITE_ERROR] SQL error or missing database (second argument to likelihood() must be a constant between 0.0 and 1.0)");
-
 		query = new QueryAdapter(q, errors);
 	}
 

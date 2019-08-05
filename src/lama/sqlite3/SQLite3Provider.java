@@ -36,6 +36,7 @@ import lama.sqlite3.gen.SQLite3TableGenerator;
 import lama.sqlite3.gen.SQLite3TransactionGenerator;
 import lama.sqlite3.gen.SQLite3UpdateGenerator;
 import lama.sqlite3.gen.SQLite3VacuumGenerator;
+import lama.sqlite3.gen.SQLite3ViewGenerator;
 import lama.sqlite3.schema.SQLite3Schema;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
@@ -45,22 +46,25 @@ public class SQLite3Provider implements DatabaseProvider {
 	public static enum Action {
 		PRAGMA {
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) throws SQLException {
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
+					throws SQLException {
 				return SQLite3PragmaGenerator.insertPragma(con, state, r);
 			}
 		},
 		INDEX {
 
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) throws SQLException {
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
+					throws SQLException {
 				return SQLite3IndexGenerator.insertIndex(con, state, r);
 			}
 		},
 		INSERT {
 
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) throws SQLException {
-				Table randomTable = Randomly.fromList(newSchema.getDatabaseTables());
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
+					throws SQLException {
+				Table randomTable = Randomly.fromList(newSchema.getDatabaseTablesWithoutViews());
 				return SQLite3RowGenerator.insertRow(randomTable, con, state, r);
 			}
 
@@ -71,8 +75,9 @@ public class SQLite3Provider implements DatabaseProvider {
 			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
 				return SQLite3VacuumGenerator.executeVacuum();
 			}
-			
-		}, REINDEX {
+
+		},
+		REINDEX {
 
 			@Override
 			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
@@ -92,8 +97,8 @@ public class SQLite3Provider implements DatabaseProvider {
 
 			@Override
 			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
-				return SQLite3DeleteGenerator.deleteContent(Randomly.fromList(newSchema.getDatabaseTables()), con,
-						state, r);
+				return SQLite3DeleteGenerator
+						.deleteContent(Randomly.fromList(newSchema.getDatabaseTablesWithoutViews()), con, state, r);
 			}
 		},
 		TRANSACTION_START {
@@ -107,7 +112,8 @@ public class SQLite3Provider implements DatabaseProvider {
 		ALTER {
 
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) throws SQLException {
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
+					throws SQLException {
 				return SQLite3AlterTable.alterTable(newSchema, con, state, r);
 			}
 
@@ -115,7 +121,8 @@ public class SQLite3Provider implements DatabaseProvider {
 		DROP_INDEX {
 
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) throws SQLException {
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
+					throws SQLException {
 				return SQLite3DropIndexGenerator.dropIndex(con, state, newSchema, r);
 			}
 		},
@@ -123,7 +130,7 @@ public class SQLite3Provider implements DatabaseProvider {
 
 			@Override
 			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
-				return SQLite3UpdateGenerator.updateRow(newSchema.getRandomTable(), con, state, r);
+				return SQLite3UpdateGenerator.updateRow(newSchema.getRandomTableNoView(), con, state, r);
 			}
 		},
 		ROLLBACK_TRANSACTION() {
@@ -151,7 +158,8 @@ public class SQLite3Provider implements DatabaseProvider {
 		EXPLAIN {
 
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) throws SQLException {
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
+					throws SQLException {
 				return SQLite3ExplainGenerator.explain(con, (SQLite3StateToReproduce) state, r);
 			}
 		},
@@ -162,11 +170,18 @@ public class SQLite3Provider implements DatabaseProvider {
 					throws SQLException {
 				return new QueryGenerator(con, r).getQueryThatContainsAtLeastOneRow((SQLite3StateToReproduce) state);
 			}
-			
-		}
-		;
 
-		public abstract Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) throws SQLException;
+		},
+		CREATE_VIEW {
+			@Override
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
+					throws SQLException {
+				return SQLite3ViewGenerator.generate(con, r, (SQLite3StateToReproduce) state);
+			}
+		};
+
+		public abstract Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
+				throws SQLException;
 	}
 
 	public static final int NR_INSERT_ROW_TRIES = 50;
@@ -216,6 +231,9 @@ public class SQLite3Provider implements DatabaseProvider {
 			case TARGETED_SELECT:
 				nrPerformed = 0;
 				break;
+			case CREATE_VIEW:
+				nrPerformed = 1;
+				break;
 			case COMMIT:
 			case TRANSACTION_START:
 			case INDEX:
@@ -260,7 +278,7 @@ public class SQLite3Provider implements DatabaseProvider {
 					newSchema = SQLite3Schema.fromConnection(con);
 				}
 			} catch (IgnoreMeException e) {
-				
+
 			} catch (Throwable t) {
 				System.err.println(query.getQueryString());
 				throw t;
@@ -274,9 +292,15 @@ public class SQLite3Provider implements DatabaseProvider {
 		manager.execute(query);
 		newSchema = SQLite3Schema.fromConnection(con);
 
-		for (Table t : newSchema.getDatabaseTables()) {
+		for (Table t : newSchema.getDatabaseTablesWithoutViews()) {
 			if (!ensureTableHasRows(con, t, r)) {
 				return;
+			}
+		}
+
+		for (Table t : newSchema.getViews()) {
+			if (t.getNrRows() == 0) {
+				throw new IgnoreMeException();
 			}
 		}
 		if (Randomly.getBoolean()) {
@@ -292,7 +316,7 @@ public class SQLite3Provider implements DatabaseProvider {
 			try {
 				queryGenerator.generateAndCheckQuery(this.state, logger, options);
 			} catch (IgnoreMeException e) {
-				
+
 			}
 			manager.incrementSelectQueryCount();
 		}
