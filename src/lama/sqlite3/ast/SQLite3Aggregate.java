@@ -25,16 +25,16 @@ public class SQLite3Aggregate extends SQLite3Expression {
 			}
 			
 		},
-		GROUP_CONCAT() {
-			@Override
-			public SQLite3Constant apply(SQLite3Constant exprVal) {
-				SQLite3Constant castToText = SQLite3Cast.castToText(exprVal);
-				if (castToText == null) {
-					throw new IgnoreMeException();
-				}
-				return castToText;
-			}
-		}
+//		GROUP_CONCAT() {
+//			@Override
+//			public SQLite3Constant apply(SQLite3Constant exprVal) {
+//				SQLite3Constant castToText = SQLite3Cast.castToText(exprVal);
+//				if (castToText == null) {
+//					throw new IgnoreMeException();
+//				}
+//				return castToText;
+//			}
+//		}
 //		, COUNT() {
 //			@Override
 //			public SQLite3Constant apply(SQLite3Constant exprVal) {

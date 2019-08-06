@@ -20,7 +20,6 @@ import lama.sqlite3.ast.SQLite3Expression.Exist;
 import lama.sqlite3.ast.SQLite3Expression.Function;
 import lama.sqlite3.ast.SQLite3Expression.InOperation;
 import lama.sqlite3.ast.SQLite3Expression.Join;
-import lama.sqlite3.ast.SQLite3Expression.LogicalOperation;
 import lama.sqlite3.ast.SQLite3Expression.OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
@@ -58,18 +57,6 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 		visit(op.getRight());
 		sb.append(")");
 		sb.append(")");
-	}
-
-	public void visit(LogicalOperation op) {
-		visit(op.getLeft());
-		switch (op.getOperator()) {
-		case AND:
-			sb.append(" AND ");
-			break;
-		case OR:
-			sb.append(" OR ");
-		}
-		visit(op.getRight());
 	}
 
 	public void visit(BetweenOperation op) {

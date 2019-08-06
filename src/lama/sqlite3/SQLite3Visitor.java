@@ -15,7 +15,6 @@ import lama.sqlite3.ast.SQLite3Expression.Exist;
 import lama.sqlite3.ast.SQLite3Expression.Function;
 import lama.sqlite3.ast.SQLite3Expression.InOperation;
 import lama.sqlite3.ast.SQLite3Expression.Join;
-import lama.sqlite3.ast.SQLite3Expression.LogicalOperation;
 import lama.sqlite3.ast.SQLite3Expression.OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
@@ -49,8 +48,6 @@ public abstract class SQLite3Visitor {
 	public abstract void visit(BinaryComparisonOperation op);
 
 	public abstract void visit(BinaryOperation op);
-
-	public abstract void visit(LogicalOperation op);
 
 	public abstract void visit(BetweenOperation op);
 
@@ -95,8 +92,6 @@ public abstract class SQLite3Visitor {
 	public void visit(SQLite3Expression expr) {
 		if (expr instanceof BinaryOperation) {
 			visit((BinaryOperation) expr);
-		} else if (expr instanceof LogicalOperation) {
-			visit((LogicalOperation) expr);
 		} else if (expr instanceof ColumnName) {
 			visit((ColumnName) expr);
 		} else if (expr instanceof SQLite3Constant) {

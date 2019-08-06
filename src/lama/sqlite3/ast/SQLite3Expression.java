@@ -935,29 +935,6 @@ public abstract class SQLite3Expression {
 				return Randomly.fromOptions(textRepresentation);
 			}
 
-			public BinaryComparisonOperator reverse() {
-				switch (this) {
-				case IS:
-					return IS_NOT;
-				case IS_NOT:
-					return IS;
-				case EQUALS:
-					return NOT_EQUALS;
-				case NOT_EQUALS:
-					return EQUALS;
-				case GREATER:
-					return SMALLER_EQUALS;
-				case GREATER_EQUALS:
-					return SMALLER;
-				case SMALLER_EQUALS:
-					return GREATER;
-				case SMALLER:
-					return GREATER_EQUALS;
-				default:
-					throw new AssertionError(this);
-				}
-			}
-
 			public SQLite3Constant applyOperand(SQLite3Constant left, TypeAffinity leftAffinity, SQLite3Constant right,
 					TypeAffinity rightAffinity, SQLite3Expression origLeft, SQLite3Expression origRight,
 					boolean applyAffinity) {
@@ -1450,44 +1427,6 @@ public abstract class SQLite3Expression {
 
 	}
 
-	public static class LogicalOperation extends SQLite3Expression {
-
-		private final SQLite3Expression left;
-		private final SQLite3Expression right;
-		private final LogicalOperator operator;
-
-		public LogicalOperation(SQLite3Expression left, SQLite3Expression right, LogicalOperator operator) {
-			this.left = left;
-			this.right = right;
-			this.operator = operator;
-		}
-
-		public SQLite3Expression getLeft() {
-			return left;
-		}
-
-		public SQLite3Expression getRight() {
-			return right;
-		}
-
-		public LogicalOperator getOperator() {
-			return operator;
-		}
-
-		@Override
-		public CollateSequence getExplicitCollateSequence() {
-			if (left.getExplicitCollateSequence() != null) {
-				return left.getExplicitCollateSequence();
-			} else {
-				return right.getExplicitCollateSequence();
-			}
-		}
-
-		public enum LogicalOperator {
-			AND, OR
-		}
-
-	}
 
 	public static class ColumnName extends SQLite3Expression {
 

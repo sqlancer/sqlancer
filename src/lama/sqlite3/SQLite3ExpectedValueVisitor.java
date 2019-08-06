@@ -16,7 +16,6 @@ import lama.sqlite3.ast.SQLite3Expression.Exist;
 import lama.sqlite3.ast.SQLite3Expression.Function;
 import lama.sqlite3.ast.SQLite3Expression.InOperation;
 import lama.sqlite3.ast.SQLite3Expression.Join;
-import lama.sqlite3.ast.SQLite3Expression.LogicalOperation;
 import lama.sqlite3.ast.SQLite3Expression.OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
@@ -51,13 +50,6 @@ public class SQLite3ExpectedValueVisitor extends SQLite3Visitor {
 
 	@Override
 	public void visit(BinaryOperation op) {
-		print(op);
-		visit(op.getLeft());
-		visit(op.getRight());
-	}
-
-	@Override
-	public void visit(LogicalOperation op) {
 		print(op);
 		visit(op.getLeft());
 		visit(op.getRight());

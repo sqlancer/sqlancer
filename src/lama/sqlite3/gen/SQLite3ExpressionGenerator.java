@@ -98,7 +98,7 @@ public class SQLite3ExpressionGenerator {
 		Column c;
 		switch (randomExpressionType) {
 		case UNARY_FUNCTION:
-			String name = QueryGenerator.getRandomUnaryFunction();
+			String name = getRandomUnaryFunction();
 			return new SQLite3Expression.Function(name, getRandomExpression(columns, depth + 1, deterministicOnly, r));
 		case LITERAL_VALUE:
 			return getRandomLiteralValue(deterministicOnly, r);
@@ -129,6 +129,12 @@ public class SQLite3ExpressionGenerator {
 		default:
 			throw new AssertionError(randomExpressionType);
 		}
+	}
+	
+
+	public static String getRandomUnaryFunction() {
+		return Randomly.fromOptions("ABS", "CHAR", "HEX", "LENGTH", "LIKELY", "LOWER", "LTRIM", "QUOTE", "ROUND",
+				"RTRIM", "TRIM", "TYPEOF", "UNLIKELY", "UPPER"); // "ZEROBLOB" "UNICODE",
 	}
 
 	private SQLite3Expression getCaseOperator(List<Column> columns, int depth, boolean deterministicOnly, Randomly r) {
