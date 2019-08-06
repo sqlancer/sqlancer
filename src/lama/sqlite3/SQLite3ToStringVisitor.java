@@ -28,6 +28,7 @@ import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import lama.sqlite3.ast.SQLite3Function;
 import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.UnaryOperation;
+import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 
 public class SQLite3ToStringVisitor extends SQLite3Visitor {
 
@@ -176,13 +177,13 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 //				if ((c.asInt() == 0 || c.asInt() == 1) && Randomly.getBoolean()) {
 //					sb.append(c.asInt() == 1 ? "TRUE" : "FALSE");
 //				} else {
-					// - 0X8000000000000000 results in an error message otherwise
-					if (Randomly.getBoolean() || c.asInt() == Long.MIN_VALUE) {
-						sb.append(c.asInt());
-					} else {
-						long intVal = c.asInt();
-						asHexString(intVal);
-					}
+				// - 0X8000000000000000 results in an error message otherwise
+				if (Randomly.getBoolean() || c.asInt() == Long.MIN_VALUE) {
+					sb.append(c.asInt());
+				} else {
+					long intVal = c.asInt();
+					asHexString(intVal);
+				}
 //				}
 				break;
 			case REAL:
@@ -313,12 +314,16 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 
 	@Override
 	public void visit(SQLite3Aggregate aggr) {
-		sb.append(aggr.getFunc());
-		sb.append("(");
-		visit(aggr.getExpr());
-		sb.append(")");
+		if (aggr.getFunc() == SQLite3AggregateFunction.COUNT_ALL) {
+			sb.append("COUNT(*)");
+		} else {
+			sb.append(aggr.getFunc());
+			sb.append("(");
+			visit(aggr.getExpr());
+			sb.append(")");
+		}
 	}
-	
+
 	public String get() {
 		return sb.toString();
 	}
