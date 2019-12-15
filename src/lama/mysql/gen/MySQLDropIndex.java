@@ -1,7 +1,6 @@
 package lama.mysql.gen;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.util.Arrays;
 
 import lama.IgnoreMeException;
 import lama.Query;
@@ -40,25 +39,8 @@ public class MySQLDropIndex {
 			sb.append(" LOCK=");
 			sb.append(Randomly.fromOptions("DEFAULT", "NONE", "SHARED", "EXCLUSIVE"));
 		}
-		return new QueryAdapter(sb.toString()) {
-			@Override
-			public void execute(Connection con) throws SQLException {
-				try {
-					super.execute(con);
-				} catch (SQLException e) {
-					if (e.getMessage().contains("LOCK=NONE is not supported")) {
-
-					} else if (e.getMessage().contains("ALGORITHM=INPLACE is not supported")) {
-						// ignore
-					} else if (e.getMessage().contains("Data truncation")) {
-						// ignore
-					} else {
-						throw e;
-					}
-				}
-			}
-
-		};
+		return new QueryAdapter(sb.toString(),
+				Arrays.asList("LOCK=NONE is not supported", "ALGORITHM=INPLACE is not supported", "Data truncation"));
 	}
 
 }

@@ -1,6 +1,5 @@
 package lama.mysql.gen;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -163,48 +162,13 @@ public class MySQLAlterTable {
 			sb.append(table.getRandomNonEmptyColumnSubset().stream().map(c -> c.getName())
 					.collect(Collectors.joining(", ")));
 		}
-		// TODO Auto-generated method stub
-		return new QueryAdapter(sb.toString()) {
-			public void execute(java.sql.Connection con) throws java.sql.SQLException {
-				try {
-					super.execute(con);
-				} catch (SQLException e) {
-					if (errorIsExpected(e.getMessage())) {
-						// ignore
-					} else if (e.getMessage().contains("does not support the create option")) {
-						// ignore
-					} else if (e.getMessage().contains("doesn't have this option")) {
-						// ignore
-					} else if (e.getMessage().contains("is not supported for this operation")) {
-						// ignore
-					} else if (e.getMessage().contains("Data truncation")) {
-						// ignore
-					} else if (e.getMessage().contains("Specified key was too long")) {
-						// ignore
-					} else {
-						throw e;
-					}
-				}
-
-			};
-
-			private boolean errorIsExpected(String errorMessage) {
-				for (Action a : selectedActions) {
-					for (String error : a.potentialErrors) {
-						if (errorMessage.contains(error)) {
-							return true;
-						}
-					}
-				}
-				return false;
+		List<String> errors = new ArrayList<>(Arrays.asList("does not support the create option", "doesn't have this option", "is not supported for this operation", "Data truncation", "Specified key was too long"));
+		for (Action a : selectedActions) {
+			for (String error : a.potentialErrors) {
+				errors.add(error);
 			}
-
-			@Override
-			public boolean couldAffectSchema() {
-				return couldAffectSchema;
-			}
-
-		};
+		}
+		return new QueryAdapter(sb.toString(), errors, couldAffectSchema);
 	}
 
 }

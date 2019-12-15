@@ -16,12 +16,14 @@ public class QueryResultCheckAdapter extends QueryAdapter {
 	}
 	
 	@Override
-	public void execute(Connection con) throws SQLException {
+	public boolean execute(Connection con) throws SQLException {
 		try (Statement s = con.createStatement()) {
 			ResultSet rs = s.executeQuery(getQueryString());
 			rsChecker.accept(rs);
+			return true;
 		} catch (Exception e) {
 			checkException(e);
+			return false;
 		}
 	}
 

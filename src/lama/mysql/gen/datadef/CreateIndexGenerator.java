@@ -91,9 +91,10 @@ public class CreateIndexGenerator {
 		sb = new StringBuilder();
 		return new QueryAdapter(string) {
 			@Override
-			public void execute(Connection con) throws SQLException {
+			public boolean execute(Connection con) throws SQLException {
 				try {
 					super.execute(con);
+					return true;
 				} catch (java.sql.SQLIntegrityConstraintViolationException e) {
 					// IGNORE;
 				} catch (SQLException e) {
@@ -142,6 +143,7 @@ public class CreateIndexGenerator {
 						throw e;
 					}
 				}
+				return false;
 			}
 
 		};

@@ -1,6 +1,7 @@
 package lama.mysql.gen;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -108,33 +109,9 @@ public class MySQLRowInserter {
 		if (canFail)
 
 		{
-			return new QueryAdapter(sb.toString()) {
-				public void execute(java.sql.Connection con) throws SQLException {
-
-					try {
-						super.execute(con);
-					} catch (SQLException e) {
-						// IGNORE
-					}
-
-				};
-
-			};
+			return new QueryAdapter(sb.toString()); // TODO: specify errors
 		} else {
-			return new QueryAdapter(sb.toString()) {
-				public void execute(java.sql.Connection con) throws SQLException {
-					
-					try {
-						super.execute(con);
-					} catch (SQLException e) {
-						if (e.getMessage().contains("Data truncation")) {
-							// IGNORE
-						}
-					}
-					
-				};
-				
-			};
+			return new QueryAdapter(sb.toString(), Arrays.asList("Data truncation"));
 		}
 	}
 

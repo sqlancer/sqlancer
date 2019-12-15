@@ -16,6 +16,12 @@ public abstract class Query {
 	public abstract boolean couldAffectSchema();
 	
 
+	/**
+	 * 
+	 * @param con
+	 * @return true if the query was successful, false otherwise
+	 * @throws SQLException
+	 */
 	public abstract boolean execute(Connection con) throws SQLException;
 
 	public abstract List<String> getExpectedErrors();

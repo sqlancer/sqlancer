@@ -398,5 +398,8 @@ public final class Randomly {
 	public Randomly(Supplier<String> provider) {
 		this.provider = provider;
 	}
+	
+	public Randomly() {
+	}
 
 }

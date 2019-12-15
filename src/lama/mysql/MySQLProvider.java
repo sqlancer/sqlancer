@@ -200,12 +200,13 @@ public class MySQLProvider implements DatabaseProvider {
 				case TRUNCATE_TABLE:
 					query = new QueryAdapter("TRUNCATE TABLE " + newSchema.getRandomTable().getName()) {
 						@Override
-						public void execute(Connection con) throws SQLException {
+						public boolean execute(Connection con) throws SQLException {
 							try {
 								super.execute(con);
+								return true;
 							} catch (SQLException e) {
 								if (e.getMessage().contains("doesn't have this option")) {
-									return;
+									return false;
 								} else {
 									throw e;
 								}

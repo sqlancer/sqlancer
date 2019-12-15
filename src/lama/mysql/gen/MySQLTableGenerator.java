@@ -1,6 +1,5 @@
 package lama.mysql.gen;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +38,8 @@ public class MySQLTableGenerator {
 	}
 
 	private Query create() {
+		List<String> errors = new ArrayList<>();
+
 		sb.append("CREATE");
 		if (Randomly.getBoolean()) {
 //			sb.append(" TEMPORARY"); // FIXME support temporary tables in the schema
@@ -66,7 +67,7 @@ public class MySQLTableGenerator {
 			appendPartitionOptions();
 			if ((tableHasNullableColumn || setPrimaryKey) && (engine == MySQLEngine.CSV)) {
 				return new QueryAdapter(sb.toString()) {
-					public void execute(java.sql.Connection con) throws java.sql.SQLException {
+					public boolean execute(java.sql.Connection con) throws java.sql.SQLException {
 
 						try {
 							super.execute(con);
@@ -83,50 +84,30 @@ public class MySQLTableGenerator {
 								throw e;
 							}
 						}
+						return false;
 
 					};
 				};
 			} else if ((tableHasNullableColumn || keysSpecified > 1) && engine == MySQLEngine.ARCHIVE) {
-				return new QueryAdapter(sb.toString()) {
-					@Override
-					public void execute(Connection con) throws SQLException {
-						try {
-							super.execute(con);
-//						throw new AssertionError("expected error");
-						} catch (SQLException e) {
-							if (e.getMessage().startsWith("Too many keys specified; max 1 keys allowed")) {
-								// ignore
-							} else if (e.getMessage().startsWith("Table handler doesn't support NULL in given index")) {
-								// ignore
-							} else if (e.getMessage()
-									.startsWith("Got error -1 - 'Unknown error -1' from storage engine")) {
-								// TODO seems to be caused by primary key, see
-							} else if (shouldIgnoreCommon(e)) {
-								// ignore
-							} else {
-								throw e;
-							}
-						}
-					}
-				};
+				errors.add("Too many keys specified; max 1 keys allowed");
+				errors.add("Table handler doesn't support NULL in given index");
+				errors.add("Got error -1 - 'Unknown error -1' from storage engine");
+				addCommonErrors(errors);
+				return new QueryAdapter(sb.toString(), errors);
 			}
-			return new QueryAdapter(sb.toString()) {
-				@Override
-				public void execute(Connection con) throws SQLException {
-					try {
-						super.execute(con);
-					} catch (Exception e) {
-						if (shouldIgnoreCommon(e)) {
-							// ignore
-						} else {
-							throw e;
-						}
-					}
-				}
-
-			};
+			addCommonErrors(errors);
+			return new QueryAdapter(sb.toString(), errors);
 		}
 
+	}
+	
+	private void addCommonErrors(List<String> list) {
+		list.add("The storage engine for the table doesn't support");
+		list.add("doesn't have this option");
+		list.add("must include all columns");
+		list.add("not allowed type for this type of partitioning");
+		list.add("doesn't support BLOB/TEXT columns");
+		list.add("A BLOB field is not allowed in partition function");
 	}
 
 	private boolean shouldIgnoreCommon(Exception e) {

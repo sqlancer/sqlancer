@@ -1,7 +1,6 @@
 package lama.mysql.gen;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.util.Arrays;
 
 import lama.Query;
 import lama.QueryAdapter;
@@ -47,20 +46,7 @@ public class MySQLDeleteGenerator {
 		}
 
 		// TODO: support ORDER BY
-		return new QueryAdapter(sb.toString()) {
-			@Override
-			public void execute(Connection con) throws SQLException {
-				try {
-					super.execute(con);
-				} catch (SQLException e) {
-					if (e.getMessage().contains("doesn't have this option")) {
-						// archive engine
-					} else if (e.getMessage().contains("Truncated incorrect DOUBLE value")) {
-						/* ignore as a workaround for https://bugs.mysql.com/bug.php?id=95997 */
-					}
-				}
-			}
-		};
+		return new QueryAdapter(sb.toString(), Arrays.asList("doesn't have this option", "Truncated incorrect DOUBLE value" /* ignore as a workaround for https://bugs.mysql.com/bug.php?id=95997 */));
 	}
 
 }
