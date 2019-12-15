@@ -185,7 +185,7 @@ public final class Randomly {
 		return subset(list);
 	}
 
-	private static <T> List<T> extractNrRandomColumns(List<T> columns, int nr) {
+	public static <T> List<T> extractNrRandomColumns(List<T> columns, int nr) {
 		assert nr >= 0;
 		List<T> selectedColumns = new ArrayList<>();
 		List<T> remainingColumns = new ArrayList<>(columns);

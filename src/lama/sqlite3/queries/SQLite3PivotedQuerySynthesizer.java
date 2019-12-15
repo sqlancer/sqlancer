@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import lama.IgnoreMeException;
 import lama.Main;
 import lama.Main.StateLogger;
 import lama.MainOptions;
@@ -100,6 +101,9 @@ public class SQLite3PivotedQuerySynthesizer {
 
 	public SQLite3SelectStatement getQuery(SQLite3StateToReproduce state) throws SQLException {
 		this.state = state;
+		if (s.getDatabaseTables().size() == 0) {
+			throw new IgnoreMeException();
+		}
 		Tables randomFromTables = s.getRandomTableNonEmptyTables();
 		List<Table> tables = randomFromTables.getTables();
 

@@ -356,6 +356,10 @@ public class SQLite3Provider implements DatabaseProvider {
 	}
 
 	private final SQLite3GlobalState globalState = new SQLite3GlobalState();
+	
+	private enum TableType {
+		NORMAL, FTS, RTREE
+	}
 
 	@Override
 	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger, StateToReproduce state,
@@ -371,31 +375,21 @@ public class SQLite3Provider implements DatabaseProvider {
 
 		addSensiblePragmaDefaults(con);
 		int nrTablesToCreate = 1 + Randomly.smallNumber();
-		for (int i = 0; i < 1; i++) {
-			newSchema = SQLite3Schema.fromConnection(con);
-			globalState.setSchema(newSchema);
-//			assert newSchema.getDatabaseTables().size() == i : newSchema + " " + i;
-			String tableName = SQLite3Common.createTableName(i);
-			Query tableQuery = SQLite3TableGenerator.createTableStatement(tableName, state, newSchema, r);
-			manager.execute(tableQuery);
-			if (true) {
-				String ftsTableName = "v" + SQLite3Common.createTableName(i);
-				Query tableQuery2 = SQLite3CreateVirtualFTSTableGenerator.createTableStatement(ftsTableName, r);
-				manager.execute(tableQuery2);
-			}
-			if (true) {
-				String rTreeTableName = "rt" + i;
-				Query tableQuery3 = SQLite3CreateVirtualRtreeTabelGenerator.createTableStatement(rTreeTableName, r);
-				manager.execute(tableQuery3);
-			}
-
-		}
+		int i = 0;
 		newSchema = SQLite3Schema.fromConnection(con);
+		do {
+			globalState.setSchema(newSchema);
+			Query tableQuery = getTableQuery(state, r, newSchema, i);
+			manager.execute(tableQuery);
+			i++;
+			newSchema = SQLite3Schema.fromConnection(con);
+		} while (newSchema.getDatabaseTables().size() != nrTablesToCreate);
+		assert newSchema.getTables().getTables().size() == nrTablesToCreate;
 
 		int[] nrRemaining = new int[Action.values().length];
 		List<Action> actions = new ArrayList<>();
 		int total = 0;
-		for (int i = 0; i < Action.values().length; i++) {
+		for (i = 0; i < Action.values().length; i++) {
 			Action action = Action.values()[i];
 			int nrPerformed = 0;
 			switch (action) {
@@ -458,7 +452,7 @@ public class SQLite3Provider implements DatabaseProvider {
 			Action nextAction = null;
 			int selection = r.getInteger(0, total);
 			int previousRange = 0;
-			for (int i = 0; i < nrRemaining.length; i++) {
+			for (i = 0; i < nrRemaining.length; i++) {
 				if (previousRange <= selection && selection < previousRange + nrRemaining[i]) {
 					nextAction = Action.values()[i];
 					break;
@@ -518,7 +512,7 @@ public class SQLite3Provider implements DatabaseProvider {
 		if (options.logEachSelect()) {
 			logger.writeCurrent(state);
 		}
-		for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
+		for (i = 0; i < NR_QUERIES_PER_TABLE; i++) {
 
 			try {
 //				if (Randomly.getBoolean()) {
@@ -541,6 +535,28 @@ public class SQLite3Provider implements DatabaseProvider {
 			e.printStackTrace();
 		}
 		System.gc();
+	}
+
+	private Query getTableQuery(StateToReproduce state, Randomly r, SQLite3Schema newSchema, int i)
+			throws AssertionError {
+		Query tableQuery;
+		switch (Randomly.fromOptions(TableType.values())) {
+		case NORMAL:
+			String tableName = SQLite3Common.createTableName(i);
+			tableQuery = SQLite3TableGenerator.createTableStatement(tableName, state, newSchema, r);
+			break;
+		case FTS:
+			String ftsTableName = "v" + SQLite3Common.createTableName(i);
+			tableQuery = SQLite3CreateVirtualFTSTableGenerator.createTableStatement(ftsTableName, r);
+			break;
+		case RTREE:
+			String rTreeTableName = "rt" + i;
+			tableQuery = SQLite3CreateVirtualRtreeTabelGenerator.createTableStatement(rTreeTableName, r);
+			break;
+		default:
+			throw new AssertionError();
+		}
+		return tableQuery;
 	}
 
 	// PRAGMAS to achieve good performance

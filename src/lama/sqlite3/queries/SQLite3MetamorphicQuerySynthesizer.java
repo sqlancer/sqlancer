@@ -79,9 +79,9 @@ public class SQLite3MetamorphicQuerySynthesizer {
 		List<Column> columns = randomTable.getColumns();
 		SQLite3Expression randomWhereCondition = getRandomWhereCondition(columns);
 		List<SQLite3Expression> groupBys = Collections.emptyList(); // getRandomExpressions(columns);
-		List<Table> tables = randomTable.getTables();
+		List<Table> tables = randomTable.getTables();// Randomly.extractNrRandomColumns(randomTable.getTables(), Math.min(Randomly.smallNumber() + 1, randomTable.getTables().size() - 1));
 		List<Join> joinStatements = new ArrayList<>();
-		if (Randomly.getBoolean()) {
+		if (Randomly.getBoolean() && tables.size() > 1) {
 			int nrJoinClauses = (int) Randomly.getNotCachedInteger(0, tables.size());
 			for (int i = 1; i < nrJoinClauses; i++) {
 				SQLite3Expression joinClause = getRandomWhereCondition(columns);
