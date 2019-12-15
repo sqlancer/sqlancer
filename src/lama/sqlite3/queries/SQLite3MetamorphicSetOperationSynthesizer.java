@@ -21,8 +21,8 @@ import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Join;
-import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
-import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation.PostfixUnaryOperator;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
 import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.SQLite3SelectStatement.SelectType;
 import lama.sqlite3.ast.SQLite3UnaryOperation;
@@ -216,7 +216,7 @@ public class SQLite3MetamorphicSetOperationSynthesizer {
 		} else if (m == Mode.FALSE) {
 			select.setWhereClause(new SQLite3UnaryOperation(UnaryOperator.NOT, condition));
 		} else if (m == Mode.ISNULL) {
-			select.setWhereClause(new PostfixUnaryOperation(PostfixUnaryOperator.ISNULL, condition));
+			select.setWhereClause(new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.ISNULL, condition));
 		}
 		int totalCount = 0;
 

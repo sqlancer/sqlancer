@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import lama.Randomly;
-import lama.sqlite3.SQLite3ToStringVisitor;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 
@@ -53,7 +52,7 @@ public class SQLite3ColumnBuilder {
 				switch (c) {
 				case GENERATED_AS:
 					sb.append(" GENERATED ALWAYS AS (");
-					sb.append(SQLite3ToStringVisitor.asString(new SQLite3ExpressionGenerator(r).deterministicOnly().setColumns(columns.stream().filter(p -> !p.getName().contentEquals(columnName)).collect(Collectors.toList())).getRandomExpression()));
+					sb.append(SQLite3Visitor.asString(new SQLite3ExpressionGenerator(r).deterministicOnly().setColumns(columns.stream().filter(p -> !p.getName().contentEquals(columnName)).collect(Collectors.toList())).getRandomExpression()));
 					sb.append(")");
 					break;
 				case PRIMARY_KEY:

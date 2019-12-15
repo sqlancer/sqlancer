@@ -8,7 +8,6 @@ import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
-import lama.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
@@ -17,10 +16,11 @@ import lama.sqlite3.ast.SQLite3Expression.Function;
 import lama.sqlite3.ast.SQLite3Expression.InOperation;
 import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.MatchOperation;
-import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
+import lama.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Subquery;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import lama.sqlite3.ast.SQLite3Function;
@@ -29,7 +29,7 @@ import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.SQLite3UnaryOperation;
 import lama.sqlite3.ast.SQLite3WindowFunction;
 
-public class SQLite3ExpectedValueVisitor extends SQLite3Visitor {
+public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
 
 	private final StringBuilder sb = new StringBuilder();
 	private int nrTabs = 0;
@@ -50,7 +50,7 @@ public class SQLite3ExpectedValueVisitor extends SQLite3Visitor {
 	@Override
 	public void visit(SQLite3Expression expr) {
 		nrTabs++;
-		super.visit(expr);
+		SQLite3Visitor.super.visit(expr);
 		nrTabs--;
 	}
 
@@ -114,7 +114,7 @@ public class SQLite3ExpectedValueVisitor extends SQLite3Visitor {
 	}
 
 	@Override
-	public void visit(PostfixUnaryOperation exp) {
+	public void visit(SQLite3PostfixUnaryOperation exp) {
 		print(exp);
 		visit(exp.getExpression());
 	}

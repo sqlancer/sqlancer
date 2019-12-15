@@ -29,8 +29,8 @@ import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.Join.JoinType;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm.Ordering;
-import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
-import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation.PostfixUnaryOperator;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import lama.sqlite3.ast.SQLite3SelectStatement;
@@ -309,7 +309,7 @@ public class SQLite3PivotedQuerySynthesizer {
 			SQLite3Expression expr = new SQLite3ExpressionGenerator(r).setRowValue(rw).setState(state).setColumns(columns).setRowValue(rw).getRandomExpression();
 			if (expr.getExpectedValue() != null) {
 				if (expr.getExpectedValue().isNull()) {
-					return new PostfixUnaryOperation(PostfixUnaryOperator.ISNULL, expr);
+					return new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.ISNULL, expr);
 				}
 				if (SQLite3Cast.isTrue(expr.getExpectedValue()).get()) {
 					return expr;

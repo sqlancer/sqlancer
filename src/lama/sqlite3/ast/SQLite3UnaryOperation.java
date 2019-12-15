@@ -6,8 +6,9 @@ import lama.Randomly;
 import lama.sqlite3.SQLite3CollateHelper;
 import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
+import lama.visitor.UnaryOperation;
 
-public class SQLite3UnaryOperation extends SQLite3Expression {
+public class SQLite3UnaryOperation extends SQLite3Expression implements UnaryOperation<SQLite3Expression> {
 
 	// For the purposes of the previous sentence, a column name preceded by one or
 	// more unary "+" operators is still considered a column name.
@@ -140,6 +141,16 @@ public class SQLite3UnaryOperation extends SQLite3Expression {
 	@Override
 	public CollateSequence getExplicitCollateSequence() {
 		return expression.getExplicitCollateSequence();
+	}
+
+	@Override
+	public String getOperatorRepresentation() {
+		return operation.getTextRepresentation();
+	}
+
+	@Override
+	public OperatorKind getOperatorKind() {
+		return OperatorKind.PREFIX;
 	}
 
 }

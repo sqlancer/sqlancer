@@ -285,7 +285,7 @@ public class SQLite3Provider implements DatabaseProvider {
 	public static final int NR_INSERT_ROW_TRIES = 30;
 	private static final int NR_QUERIES_PER_TABLE = 10000;
 	private static final int MAX_INSERT_ROW_TRIES = 0;
-	public static final int EXPRESSION_MAX_DEPTH = 3;
+	public static final int EXPRESSION_MAX_DEPTH = 1;
 	public static final boolean ALLOW_FLOATING_POINT_FP = true;
 	public static final boolean MUST_KNOW_RESULT = false;
 

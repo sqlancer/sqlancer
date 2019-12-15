@@ -27,7 +27,7 @@ import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Exist;
 import lama.sqlite3.ast.SQLite3Expression.MatchOperation;
-import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation.PostfixUnaryOperator;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm.Ordering;
@@ -539,7 +539,7 @@ public class SQLite3ExpressionGenerator {
 	private SQLite3Expression getRandomPostfixUnaryOperator(int depth) {
 		SQLite3Expression subExpression = getRandomExpression(depth + 1);
 		PostfixUnaryOperator operator = PostfixUnaryOperator.getRandomOperator();
-		return new SQLite3Expression.PostfixUnaryOperation(operator, subExpression);
+		return new SQLite3Expression.SQLite3PostfixUnaryOperation(operator, subExpression);
 	}
 
 	// complete

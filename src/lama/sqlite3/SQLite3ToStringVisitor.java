@@ -2,7 +2,6 @@ package lama.sqlite3;
 
 import java.util.List;
 
-import lama.IgnoreMeException;
 import lama.Randomly;
 import lama.sqlite3.ast.SQLite3Aggregate;
 import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
@@ -12,8 +11,6 @@ import lama.sqlite3.ast.SQLite3Case.SQLite3CaseWithoutBaseExpression;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
-import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
-import lama.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
@@ -22,23 +19,25 @@ import lama.sqlite3.ast.SQLite3Expression.Function;
 import lama.sqlite3.ast.SQLite3Expression.InOperation;
 import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.MatchOperation;
-import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
-import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import lama.sqlite3.ast.SQLite3Expression.Subquery;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import lama.sqlite3.ast.SQLite3Function;
 import lama.sqlite3.ast.SQLite3RowValue;
 import lama.sqlite3.ast.SQLite3SelectStatement;
-import lama.sqlite3.ast.SQLite3UnaryOperation;
 import lama.sqlite3.ast.SQLite3WindowFunction;
-import lama.sqlite3.gen.SQLite3Common;
+import lama.visitor.ToStringVisitor;
 
-public class SQLite3ToStringVisitor extends SQLite3Visitor {
+public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> implements SQLite3Visitor {
 
-	StringBuffer sb = new StringBuffer();
+	public boolean fullyQualifiedNames = true;
 
+	@Override
+	public void visitSpecific(SQLite3Expression expr) {
+		SQLite3Visitor.super.visit(expr);
+	}
+	
 	protected void asHexString(long intVal) {
 		String hexVal = Long.toHexString(intVal);
 		String prefix;
@@ -49,20 +48,6 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 		}
 		sb.append(prefix);
 		sb.append(hexVal);
-	}
-
-	public void visit(Sqlite3BinaryOperation op) {
-		sb.append("(");
-		sb.append("(");
-		visit(op.getLeft());
-		sb.append(")");
-		sb.append(" ");
-		sb.append(op.getOperator().getTextRepresentation());
-		sb.append(" ");
-		sb.append("(");
-		visit(op.getRight());
-		sb.append(")");
-		sb.append(")");
 	}
 
 	public void visit(BetweenOperation op) {
@@ -216,8 +201,8 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 				} else if (Double.NEGATIVE_INFINITY == asDouble) {
 					sb.append("-1e500");
 				} else if (Double.isNaN(asDouble)) {
-					throw new IgnoreMeException();
-//					sb.append("1e500 / 1e500");
+//					throw new IgnoreMeException();
+					sb.append("1e500 / 1e500");
 				} else {
 					sb.append(asDouble);
 				}
@@ -236,7 +221,7 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 				} else {
 					arr = c.asString().getBytes();
 				}
-				sb.append(byteArrayToHex(arr));
+				sb.append(SQLite3Visitor.byteArrayToHex(arr));
 				sb.append("'");
 				break;
 			default:
@@ -274,22 +259,6 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 		// TODO make order optional?
 		sb.append(" ");
 		sb.append(term.getOrdering().toString());
-	}
-
-	public void visit(SQLite3UnaryOperation exp) {
-		sb.append("(");
-		sb.append(exp.getOperation().getTextRepresentation());
-		sb.append(" ");
-		visit(exp.getExpression());
-		sb.append(")");
-	}
-
-	public void visit(PostfixUnaryOperation exp) {
-		sb.append("(");
-		visit(exp.getExpression());
-		sb.append(" ");
-		sb.append(exp.getOperation().getTextRepresentation());
-		sb.append(")");
 	}
 
 	public void visit(CollateOperation op) {
@@ -352,21 +321,6 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 	}
 
 	@Override
-	public void visit(BinaryComparisonOperation op) {
-		sb.append("(");
-		sb.append("(");
-		visit(op.getLeft());
-		sb.append(")");
-		sb.append(" ");
-		sb.append(op.getOperator().getTextRepresentation());
-		sb.append(" ");
-		sb.append("(");
-		visit(op.getRight());
-		sb.append(")");
-		sb.append(")");
-	}
-
-	@Override
 	public void visit(SQLite3Function func) {
 		sb.append(func.getFunc());
 		sb.append("(");
@@ -417,15 +371,6 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 			visit(casExpr.getElseExpr());
 		}
 		sb.append(" END");
-	}
-
-	@Override
-	public void visit(SQLite3PostfixText op) {
-		if (op.getExpr() != null) {
-			visit(op.getExpr());
-			sb.append(" ");
-		}
-		sb.append(op.getText());
 	}
 
 	@Override

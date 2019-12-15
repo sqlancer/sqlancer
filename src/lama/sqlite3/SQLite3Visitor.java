@@ -7,7 +7,6 @@ import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
-import lama.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
@@ -16,10 +15,11 @@ import lama.sqlite3.ast.SQLite3Expression.Function;
 import lama.sqlite3.ast.SQLite3Expression.InOperation;
 import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.MatchOperation;
-import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
+import lama.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Subquery;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import lama.sqlite3.ast.SQLite3Function;
@@ -28,9 +28,8 @@ import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.SQLite3UnaryOperation;
 import lama.sqlite3.ast.SQLite3WindowFunction;
 
-public abstract class SQLite3Visitor {
+public interface SQLite3Visitor {
 
-	public boolean fullyQualifiedNames = true;
 
 	public static byte[] hexStringToByteArray(String s) {
 		byte[] b = new byte[s.length() / 2];
@@ -49,11 +48,29 @@ public abstract class SQLite3Visitor {
 		return sb.toString();
 	}
 
-	public abstract void visit(SQLite3PostfixText op);
 	
-	public abstract void visit(BinaryComparisonOperation op);
+	
+	// TODO remove these default methods
+	
+	public default void visit(BinaryComparisonOperation op) {
+		
+	}
 
-	public abstract void visit(Sqlite3BinaryOperation op);
+	public default void visit(Sqlite3BinaryOperation op) {
+		
+	}
+	
+	public default void visit(SQLite3UnaryOperation exp) {
+		
+	}
+
+	public default void visit(SQLite3PostfixText op) {
+		
+	}
+	
+	public default void visit(SQLite3PostfixUnaryOperation exp) {
+		
+	}
 
 	public abstract void visit(BetweenOperation op);
 
@@ -67,9 +84,7 @@ public abstract class SQLite3Visitor {
 
 	public abstract void visit(SQLite3OrderingTerm term);
 
-	public abstract void visit(SQLite3UnaryOperation exp);
 
-	public abstract void visit(PostfixUnaryOperation exp);
 
 	public abstract void visit(CollateOperation op);
 
@@ -101,7 +116,7 @@ public abstract class SQLite3Visitor {
 	
 	public abstract void visit(SQLite3RowValue rw);
 
-	public void visit(SQLite3Expression expr) {
+	public default void visit(SQLite3Expression expr) {
 		if (expr instanceof Sqlite3BinaryOperation) {
 			visit((Sqlite3BinaryOperation) expr);
 		} else if (expr instanceof ColumnName) {
@@ -110,8 +125,8 @@ public abstract class SQLite3Visitor {
 			visit((SQLite3Constant) expr);
 		} else if (expr instanceof SQLite3UnaryOperation) {
 			visit((SQLite3UnaryOperation) expr);
-		} else if (expr instanceof PostfixUnaryOperation) {
-			visit((PostfixUnaryOperation) expr);
+		} else if (expr instanceof SQLite3PostfixUnaryOperation) {
+			visit((SQLite3PostfixUnaryOperation) expr);
 		} else if (expr instanceof Function) {
 			visit((Function) expr);
 		} else if (expr instanceof BetweenOperation) {

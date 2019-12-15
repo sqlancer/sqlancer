@@ -21,8 +21,8 @@ import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.Join.JoinType;
-import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
-import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation.PostfixUnaryOperator;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.SQLite3SelectStatement.SelectType;
@@ -132,7 +132,7 @@ public class SQLite3MetamorphicQuerySynthesizer {
 			List<SQLite3Expression> groupBys, List<Join> joinStatements) throws SQLException {
 		SQLite3SelectStatement select = new SQLite3SelectStatement();
 		select.setGroupByClause(groupBys);
-		PostfixUnaryOperation isTrue = new PostfixUnaryOperation(PostfixUnaryOperator.IS_TRUE, randomWhereCondition);
+		SQLite3PostfixUnaryOperation isTrue = new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.IS_TRUE, randomWhereCondition);
 		SQLite3PostfixText asText = new SQLite3PostfixText(isTrue, " as count", null);
 		select.setFetchColumns(Arrays.asList(asText));
 		select.setFromTables(list);

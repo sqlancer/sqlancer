@@ -16,6 +16,8 @@ import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
 import lama.sqlite3.schema.SQLite3Schema.Table;
+import lama.visitor.BinaryOperation;
+import lama.visitor.UnaryOperation;
 
 public abstract class SQLite3Expression {
 
@@ -435,7 +437,7 @@ public abstract class SQLite3Expression {
 
 	}
 
-	public static class PostfixUnaryOperation extends SQLite3Expression {
+	public static class SQLite3PostfixUnaryOperation extends SQLite3Expression implements UnaryOperation<SQLite3Expression> {
 
 		public enum PostfixUnaryOperator {
 			ISNULL("ISNULL") {
@@ -520,7 +522,7 @@ public abstract class SQLite3Expression {
 		private final PostfixUnaryOperator operation;
 		private final SQLite3Expression expression;
 
-		public PostfixUnaryOperation(PostfixUnaryOperator operation, SQLite3Expression expression) {
+		public SQLite3PostfixUnaryOperation(PostfixUnaryOperator operation, SQLite3Expression expression) {
 			this.operation = operation;
 			this.expression = expression;
 		}
@@ -544,6 +546,17 @@ public abstract class SQLite3Expression {
 		@Override
 		public CollateSequence getExplicitCollateSequence() {
 			return expression.getExplicitCollateSequence();
+		}
+
+
+		@Override
+		public String getOperatorRepresentation() {
+			return operation.getTextRepresentation();
+		}
+
+		@Override
+		public OperatorKind getOperatorKind() {
+			return OperatorKind.POSTFIX;
 		}
 
 	}
@@ -643,7 +656,7 @@ public abstract class SQLite3Expression {
 		
 	}
 	
-	public static class BinaryComparisonOperation extends SQLite3Expression {
+	public static class BinaryComparisonOperation extends SQLite3Expression implements BinaryOperation<SQLite3Expression> {
 
 		private final BinaryComparisonOperator operation;
 		private final SQLite3Expression left;
@@ -1018,9 +1031,14 @@ public abstract class SQLite3Expression {
 			}
 		}
 
+		@Override
+		public String getOperatorRepresentation() {
+			return operation.getTextRepresentation();
+		}
+
 	}
 
-	public static class Sqlite3BinaryOperation extends SQLite3Expression {
+	public static class Sqlite3BinaryOperation extends SQLite3Expression implements BinaryOperation<SQLite3Expression> {
 
 		public enum BinaryOperator {
 			CONCATENATE("||") {
@@ -1471,6 +1489,11 @@ public abstract class SQLite3Expression {
 //			}
 		}
 
+		@Override
+		public String getOperatorRepresentation() {
+			return Randomly.fromOptions(operation.textRepresentation);
+		}
+
 	}
 
 
@@ -1562,7 +1585,7 @@ public abstract class SQLite3Expression {
 		return new ConstantTuple(left, right);
 	}
 	
-	public static class SQLite3PostfixText extends SQLite3Expression {
+	public static class SQLite3PostfixText extends SQLite3Expression implements UnaryOperation<SQLite3Expression> {
 		
 		private final SQLite3Expression expr;
 		private final String text;
@@ -1578,10 +1601,6 @@ public abstract class SQLite3Expression {
 			this(null, text, expectedValue);
 		}
 
-		public SQLite3Expression getExpr() {
-			return expr;
-		}
-		
 		public String getText() {
 			return text;
 		}
@@ -1598,6 +1617,26 @@ public abstract class SQLite3Expression {
 		@Override
 		public SQLite3Constant getExpectedValue() {
 			return expectedValue;
+		}
+
+		@Override
+		public SQLite3Expression getExpression() {
+			return expr;
+		}
+
+		@Override
+		public String getOperatorRepresentation() {
+			return getText();
+		}
+
+		@Override
+		public OperatorKind getOperatorKind() {
+			return OperatorKind.POSTFIX;
+		}
+		
+		@Override
+		public boolean omitBracketsWhenPrinting() {
+			return true;
 		}
 	}
 

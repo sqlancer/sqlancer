@@ -10,8 +10,8 @@ import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Cast;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
-import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
-import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation.PostfixUnaryOperator;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
 import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema;
 import lama.sqlite3.schema.SQLite3Schema.Column;
@@ -48,12 +48,12 @@ public class SQLite3Common {
 		}
 		Optional<Boolean> val = SQLite3Cast.isTrue(expectedValue);
 		if (!val.isPresent()) {
-			return new PostfixUnaryOperation(PostfixUnaryOperator.ISNULL, randomExpression);
+			return new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.ISNULL, randomExpression);
 		}
 		if (val.get()) {
 			return randomExpression;
 		} else {
-			return new PostfixUnaryOperation(PostfixUnaryOperator.IS_FALSE, randomExpression);
+			return new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.IS_FALSE, randomExpression);
 		}
 		
 	}
