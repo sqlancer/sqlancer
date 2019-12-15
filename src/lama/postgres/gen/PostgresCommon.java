@@ -21,8 +21,102 @@ public class PostgresCommon {
 
 	private PostgresCommon() {
 	}
+	
+	public static void addCommonFetchErrors(List<String> errors) {
+		errors.add("FULL JOIN is only supported with merge-joinable or hash-joinable join conditions");
+		errors.add("but it cannot be referenced from this part of the query");
+		errors.add("missing FROM-clause entry for table");
+	}
+	
+	public static void addCommonTableErrors(List<String> errors) {
+		errors.add("is not commutative"); // exclude
+		errors.add("operator requires run-time type coercion"); // exclude
+	}
+	
 
-	public static boolean appendDataType(PostgresDataType type, StringBuilder sb, boolean allowSerial)
+	public static void addCommonExpressionErrors(List<String> errors) {
+		errors.add("You might need to add explicit type casts");
+		errors.add("invalid regular expression");
+		errors.add("could not determine which collation to use");
+		errors.add("invalid regular expression");
+		errors.add("operator does not exist");
+		errors.add("quantifier operand invalid");
+		errors.add("collation mismatch");
+		errors.add("collations are not supported");
+		errors.add("operator is not unique");
+		errors.add("is not a valid binary digit");
+		errors.add("invalid hexadecimal digit");
+		errors.add("invalid hexadecimal data: odd number of digits");
+		errors.add("zero raised to a negative power is undefined");
+		errors.add("cannot convert infinity to numeric");
+		errors.add("division by zero");
+		errors.add("invalid input syntax for type money");
+		errors.add("invalid input syntax for type");
+		errors.add("cannot cast type");
+		errors.add("value overflows numeric format");
+		errors.add("LIKE pattern must not end with escape character");
+		errors.add("is of type boolean but expression is of type text");
+		errors.add("a negative number raised to a non-integer power yields a complex result");
+		errors.add("could not determine polymorphic type because input has type unknown");
+		addToCharFunctionErrors(errors);
+		addBitStringOperationErrors(errors);
+		addFunctionErrors(errors);
+		addCommonRangeExpressionErrors(errors);
+		addCommonRegexExpressionErrors(errors);
+	}
+
+	private static void addToCharFunctionErrors(List<String> errors) {
+		errors.add("multiple decimal points");
+		errors.add("and decimal point together");
+		errors.add("multiple decimal points");
+		errors.add("cannot use \"S\" twice");
+		errors.add("must be ahead of \"PR\"");
+		errors.add("cannot use \"S\" and \"PL\"/\"MI\"/\"SG\"/\"PR\" together");
+		errors.add("cannot use \"S\" and \"SG\" together");
+		errors.add("cannot use \"S\" and \"MI\" together");
+		errors.add("cannot use \"S\" and \"PL\" together");
+		errors.add("cannot use \"PR\" and \"S\"/\"PL\"/\"MI\"/\"SG\" together");
+		errors.add("is not a number");
+	}
+
+	private static void addBitStringOperationErrors(List<String> errors) {
+		errors.add("cannot XOR bit strings of different sizes");
+		errors.add("cannot AND bit strings of different sizes");
+		errors.add("cannot OR bit strings of different sizes");
+		errors.add("must be type boolean, not type text");
+	}
+
+	private static void addFunctionErrors(List<String> errors) {
+		errors.add("out of valid range"); // get_bit/get_byte
+		errors.add("cannot take logarithm of a negative number");
+		errors.add("cannot take logarithm of zero");
+		errors.add("requested character too large for encoding"); // chr
+		errors.add("null character not permitted"); // chr
+		errors.add("requested character not valid for encoding"); // chr
+		errors.add("requested length too large"); // repeat
+		errors.add("invalid memory alloc request size"); // repeat
+		errors.add("encoding conversion from UTF8 to ASCII not supported"); // to_ascii
+		errors.add("negative substring length not allowed"); //substr
+		errors.add("invalid mask length"); // set_masklen
+	}
+	
+	private static void addCommonRegexExpressionErrors(List<String> errors) {
+		errors.add("is not a valid hexadecimal digit");
+	}
+
+	public static void addCommonRangeExpressionErrors(List<String> errors) {
+		errors.add("range lower bound must be less than or equal to range upper bound");
+		errors.add("result of range difference would not be contiguous");
+		errors.add("out of range");
+		errors.add("malformed range literal");
+	}
+	
+	public static void addCommonInsertUpdateErrors(List<String> errors) {
+		errors.add("value too long for type character");
+		errors.add("not found in view targetlist");
+	}
+	
+	public static boolean appendDataType(PostgresDataType type, StringBuilder sb, boolean allowSerial, boolean generateOnlyKnown, List<String> opClasses)
 			throws AssertionError {
 		boolean serial = false;
 		switch (type) {
@@ -40,20 +134,51 @@ public class PostgresCommon {
 		case TEXT:
 			if (Randomly.getBoolean()) {
 				sb.append("TEXT");
-			} else {
+			} else if (Randomly.getBoolean()) {
 				// TODO: support CHAR (without VAR)
-				sb.append("VAR");
+				if (PostgresProvider.GENERATE_ONLY_KNOWN || Randomly.getBoolean()) {
+					sb.append("VAR");
+				}
 				sb.append("CHAR");
 				sb.append("(");
 				sb.append(ThreadLocalRandom.current().nextInt(1, 500));
 				sb.append(")");
+			} else {
+				sb.append("name");
 			}
 			if (Randomly.getBoolean()) {
 				sb.append(" COLLATE ");
 				sb.append('"');
-				sb.append(Randomly.fromOptions("POSIX", "C"));
+				sb.append(Randomly.fromList(opClasses));
 				sb.append('"');
 			}
+			break;
+		case DECIMAL:
+			sb.append("DECIMAL");
+			break;
+		case FLOAT:
+			sb.append("REAL");
+			break;
+		case REAL:
+			sb.append("FLOAT");
+			break;
+		case RANGE:
+			sb.append(Randomly.fromOptions("int4range", "int4range")); // , "int8range", "numrange"
+			break;
+		case MONEY:
+			sb.append("money");
+			break;
+		case BIT:
+			sb.append("BIT");
+//			if (Randomly.getBoolean()) {
+				sb.append(" VARYING");
+//			}
+			sb.append("(");
+			sb.append(Randomly.getNotCachedInteger(1, 500));
+			sb.append(")");
+			break;
+		case INET:
+			sb.append("inet");
 			break;
 		default:
 			throw new AssertionError(type);
@@ -117,7 +242,7 @@ public class PostgresCommon {
 	}
 
 	public static void addTableConstraints(boolean excludePrimaryKey, StringBuilder sb, PostgresTable table, Randomly r,
-			PostgresSchema schema, List<String> errors) throws AssertionError {
+			PostgresSchema schema, List<String> errors, List<String> opClasses, List<String> operators) throws AssertionError {
 		// TODO constraint name
 		List<TableConstraints> tableConstraints = Randomly.nonEmptySubset(TableConstraints.values());
 		if (excludePrimaryKey) {
@@ -129,24 +254,26 @@ public class PostgresCommon {
 		for (TableConstraints t : tableConstraints) {
 			sb.append(", ");
 			// TODO add index parameters
-			addTableConstraint(sb, table, r, t, schema, errors);
+			addTableConstraint(sb, table, r, t, schema, errors, opClasses, operators);
 		}
 	}
 
-	public static void addTableConstraint(StringBuilder sb, PostgresTable table, Randomly r, PostgresSchema schema, List<String> errors) {
-		addTableConstraint(sb, table, r, Randomly.fromOptions(TableConstraints.values()), schema, errors);
+	public static void addTableConstraint(StringBuilder sb, PostgresTable table, Randomly r, PostgresSchema schema, List<String> errors, List<String> opClasses, List<String> operators) {
+		addTableConstraint(sb, table, r, Randomly.fromOptions(TableConstraints.values()), schema, errors, opClasses, operators);
 	}
 
 	private static void addTableConstraint(StringBuilder sb, PostgresTable table, Randomly r, TableConstraints t,
-			PostgresSchema schema,  List<String> errors) throws AssertionError {
+			PostgresSchema schema,  List<String> errors, List<String> opClasses, List<String> operators) throws AssertionError {
 		List<PostgresColumn> randomNonEmptyColumnSubset = table.getRandomNonEmptyColumnSubset();
 		List<PostgresColumn> otherColumns;
+		PostgresCommon.addCommonExpressionErrors(errors);
 		switch (t) {
 		case CHECK:
 			sb.append("CHECK(");
 			sb.append(MySQLVisitor.getExpressionAsString(r, PostgresDataType.BOOLEAN, table.getColumns()));
 			sb.append(")");
 			errors.add("constraint must be added to child tables too");
+			errors.add("missing FROM-clause entry for table");
 			break;
 		case UNIQUE:
 			sb.append("UNIQUE(");
@@ -164,7 +291,7 @@ public class PostgresCommon {
 			sb.append("FOREIGN KEY (");
 			sb.append(randomNonEmptyColumnSubset.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
 			sb.append(") REFERENCES ");
-			PostgresTable randomOtherTable = schema.getRandomTable();
+			PostgresTable randomOtherTable = schema.getRandomTable(tab -> !tab.isView());
 			sb.append(randomOtherTable.getName());
 			if (randomOtherTable.getColumns().size() < randomNonEmptyColumnSubset.size()) {
 				throw new IgnoreMeException();
@@ -208,9 +335,9 @@ public class PostgresCommon {
 				if (i != 0) {
 					sb.append(", ");
 				}
-				appendExcludeElement(sb, r, table.getColumns());
+				appendExcludeElement(sb, r, table.getColumns(), opClasses);
 				sb.append(" WITH ");
-				appendOperator(sb);
+				appendOperator(sb, operators);
 			}
 			sb.append(")");
 			appendIndexParameters(sb, r, errors);
@@ -241,12 +368,12 @@ public class PostgresCommon {
 		// TODO: [ USING INDEX TABLESPACE tablespace ]
 	}
 
-	private static void appendOperator(StringBuilder sb) {
-		// TODO operators
-		sb.append(Randomly.fromOptions("&&", "+", "=", "!="));
+	private static void appendOperator(StringBuilder sb, List<String> operators) {
+		sb.append(Randomly.fromList(operators));
 	}
 
-	private static void appendExcludeElement(StringBuilder sb, Randomly r, List<PostgresColumn> columns) {
+	// complete
+	private static void appendExcludeElement(StringBuilder sb, Randomly r, List<PostgresColumn> columns, List<String> opClasses) {
 		if (Randomly.getBoolean()) {
 			// append column name
 			sb.append(Randomly.fromList(columns).getName());
@@ -256,7 +383,10 @@ public class PostgresCommon {
 			sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(r, columns)));
 			sb.append(")");
 		}
-		// TODO [opclass]
+		if (Randomly.getBoolean()) {
+			sb.append(" ");
+			sb.append(Randomly.fromList(opClasses));
+		}
 		if (Randomly.getBoolean()) {
 			sb.append(" ");
 			sb.append(Randomly.fromOptions("ASC", "DESC"));

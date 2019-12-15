@@ -3,7 +3,7 @@ package lama.postgres.ast;
 import lama.Randomly;
 import lama.postgres.PostgresSchema.PostgresDataType;
 
-public class PostgresBinaryComparisonOperation extends PostgresExpression {
+public class PostgresBinaryComparisonOperation extends PostgresBinaryOperation {
 	
 	public enum PostgresBinaryComparisonOperator {
 		EQUALS("=") {
@@ -140,6 +140,11 @@ public class PostgresBinaryComparisonOperation extends PostgresExpression {
 	@Override
 	public PostgresDataType getExpressionType() {
 		return PostgresDataType.BOOLEAN;
+	}
+
+	@Override
+	public String getOperatorTextRepresentation() {
+		return op.getTextRepresentation();
 	}
 
 

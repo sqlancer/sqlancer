@@ -5,6 +5,7 @@ import java.util.List;
 import lama.IgnoreMeException;
 import lama.Randomly;
 import lama.sqlite3.ast.SQLite3Aggregate;
+import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import lama.sqlite3.ast.SQLite3Case.CasePair;
 import lama.sqlite3.ast.SQLite3Case.SQLite3CaseWithBaseExpression;
 import lama.sqlite3.ast.SQLite3Case.SQLite3CaseWithoutBaseExpression;
@@ -12,7 +13,7 @@ import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
-import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
+import lama.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
@@ -20,15 +21,19 @@ import lama.sqlite3.ast.SQLite3Expression.Exist;
 import lama.sqlite3.ast.SQLite3Expression.Function;
 import lama.sqlite3.ast.SQLite3Expression.InOperation;
 import lama.sqlite3.ast.SQLite3Expression.Join;
-import lama.sqlite3.ast.SQLite3Expression.OrderingTerm;
+import lama.sqlite3.ast.SQLite3Expression.MatchOperation;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import lama.sqlite3.ast.SQLite3Expression.Subquery;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import lama.sqlite3.ast.SQLite3Function;
+import lama.sqlite3.ast.SQLite3RowValue;
 import lama.sqlite3.ast.SQLite3SelectStatement;
-import lama.sqlite3.ast.UnaryOperation;
-import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
+import lama.sqlite3.ast.SQLite3UnaryOperation;
+import lama.sqlite3.ast.SQLite3WindowFunction;
+import lama.sqlite3.gen.SQLite3Common;
 
 public class SQLite3ToStringVisitor extends SQLite3Visitor {
 
@@ -46,7 +51,7 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 		sb.append(hexVal);
 	}
 
-	public void visit(BinaryOperation op) {
+	public void visit(Sqlite3BinaryOperation op) {
 		sb.append("(");
 		sb.append("(");
 		visit(op.getLeft());
@@ -81,8 +86,10 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 
 	public void visit(ColumnName c) {
 		if (fullyQualifiedNames) {
-			sb.append(c.getColumn().getTable().getName());
-			sb.append('.');
+			if (c.getColumn().getTable() != null) {
+				sb.append(c.getColumn().getTable().getName());
+				sb.append('.');
+			}
 		}
 		sb.append(c.getColumn().getName());
 	}
@@ -98,8 +105,12 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 		}
 		sb.append(")");
 	}
+	
 
-	public void visit(SQLite3SelectStatement s) {
+	public void visit(SQLite3SelectStatement s, boolean inner) {
+		if (inner) {
+			sb.append("(");
+		}
 		sb.append("SELECT ");
 		switch (s.getFromOptions()) {
 		case DISTINCT:
@@ -126,6 +137,11 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 				sb.append(", ");
 			}
 			sb.append(s.getFromList().get(i).getName());
+			// FIXME metamorphic
+//			if (Randomly.getBoolean()) {
+//				sb.append(" ");
+//				sb.append(SQLite3Common.getIndexedClause());
+//			}
 		}
 		for (Join j : s.getJoinClauses()) {
 			visit(j);
@@ -136,7 +152,7 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 			sb.append(" WHERE ");
 			visit(whereClause);
 		}
-		if (s.getGroupByClause() != null && s.getGroupByClause().size() > 0) {
+		if (s.getGroupByClause().size() > 0) {
 			sb.append(" ");
 			sb.append("GROUP BY ");
 			List<SQLite3Expression> groupBys = s.getGroupByClause();
@@ -146,6 +162,10 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 				}
 				visit(groupBys.get(i));
 			}
+		}
+		if (s.getHavingClause() != null) {
+			sb.append(" HAVING ");
+			visit(s.getHavingClause());
 		}
 		if (!s.getOrderByClause().isEmpty()) {
 			sb.append(" ORDER BY ");
@@ -165,6 +185,9 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 		if (s.getOffsetClause() != null) {
 			sb.append(" OFFSET ");
 			visit(s.getOffsetClause());
+		}
+		if (inner) {
+			sb.append(")");
 		}
 	}
 
@@ -246,14 +269,14 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 		visit(join.getOnClause());
 	}
 
-	public void visit(OrderingTerm term) {
+	public void visit(SQLite3OrderingTerm term) {
 		visit(term.getExpression());
 		// TODO make order optional?
 		sb.append(" ");
 		sb.append(term.getOrdering().toString());
 	}
 
-	public void visit(UnaryOperation exp) {
+	public void visit(SQLite3UnaryOperation exp) {
 		sb.append("(");
 		sb.append(exp.getOperation().getTextRepresentation());
 		sb.append(" ");
@@ -394,5 +417,46 @@ public class SQLite3ToStringVisitor extends SQLite3Visitor {
 			visit(casExpr.getElseExpr());
 		}
 		sb.append(" END");
+	}
+
+	@Override
+	public void visit(SQLite3PostfixText op) {
+		if (op.getExpr() != null) {
+			visit(op.getExpr());
+			sb.append(" ");
+		}
+		sb.append(op.getText());
+	}
+
+	@Override
+	public void visit(SQLite3WindowFunction func) {
+		sb.append(func.getFunc());
+		sb.append("(");
+		for (int i = 0; i < func.getArgs().length; i++) {
+			if (i != 0) {
+				sb.append(", ");
+			}
+			visit(func.getArgs()[i]);
+		}
+		sb.append(")");
+	}
+
+	@Override
+	public void visit(MatchOperation match) {
+		visit(match.getLeft());
+		sb.append(" MATCH ");
+		visit(match.getRight());		
+	}
+
+	@Override
+	public void visit(SQLite3RowValue rw) {
+		sb.append("(");
+		for (int i = 0; i < rw.getExpressions().size(); i++) {
+			if (i != 0) {
+				sb.append(", ");
+			}
+			visit(rw.getExpressions().get(i));
+		}
+		sb.append(")");
 	}
 }

@@ -44,6 +44,9 @@ public class PostgresCommentGenerator {
 			break;
 		case TABLE:
 			sb.append("TABLE ");
+			if (randomTable.isView()) {
+				throw new IgnoreMeException();
+			}
 			sb.append(randomTable.getName());
 			break;
 		default:

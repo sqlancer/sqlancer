@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import lama.IgnoreMeException;
 import lama.Randomly;
 import lama.StateToReproduce.PostgresStateToReproduce;
 import lama.postgres.PostgresSchema.PostgresTable.TableType;
@@ -22,10 +24,17 @@ import lama.sqlite3.schema.SQLite3Schema.Column;
 public class PostgresSchema {
 
 	public static enum PostgresDataType {
-		INT, BOOLEAN, TEXT;
+		INT, BOOLEAN, TEXT, DECIMAL, FLOAT, REAL, RANGE, MONEY, BIT, INET;
 
 		public static PostgresDataType getRandomType() {
-			return Randomly.fromOptions(values());
+			List<PostgresDataType> dataTypes = Arrays.asList(values());
+			if (PostgresProvider.GENERATE_ONLY_KNOWN) {
+				dataTypes.remove(PostgresDataType.DECIMAL);
+				dataTypes.remove(PostgresDataType.FLOAT);
+				dataTypes.remove(PostgresDataType.REAL);
+				dataTypes.remove(PostgresDataType.INET);
+			}
+			return Randomly.fromList(dataTypes);
 		}
 	}
 
@@ -74,7 +83,11 @@ public class PostgresSchema {
 		}
 
 		public String getFullQualifiedName() {
-			return table.getName() + "." + getName();
+			if (table == null) {
+				return getName();
+			} else {
+				return table.getName() + "." + getName();
+			}
 		}
 
 		public PostgresDataType getColumnType() {
@@ -193,7 +206,23 @@ public class PostgresSchema {
 		case "text":
 		case "character":
 		case "character varying":
+		case "name":
 			return PostgresDataType.TEXT;
+		case "numeric":
+			return PostgresDataType.DECIMAL;
+		case "double precision":
+			return PostgresDataType.FLOAT;
+		case "real":
+			return PostgresDataType.REAL;
+		case "int4range":
+			return PostgresDataType.RANGE;
+		case "money":
+			return PostgresDataType.MONEY;
+		case "bit":
+		case "bit varying":
+			return PostgresDataType.BIT;
+		case "inet":
+			return PostgresDataType.INET;
 		default:
 			throw new AssertionError(typeString);
 		}
@@ -263,12 +292,16 @@ public class PostgresSchema {
 		private final List<PostgresIndex> indexes;
 		private final TableType tableType;
 		private List<PostgresStatisticsObject> statistics;
+		private final boolean isView;
+		private boolean isInsertable;
 
 		public PostgresTable(String tableName, List<PostgresColumn> columns, List<PostgresIndex> indexes,
-				TableType tableType, List<PostgresStatisticsObject> statistics) {
+				TableType tableType, List<PostgresStatisticsObject> statistics, boolean isView, boolean isInsertable) {
 			this.tableName = tableName;
 			this.indexes = indexes;
 			this.statistics = statistics;
+			this.isView = isView;
+			this.isInsertable = isInsertable;
 			this.columns = Collections.unmodifiableList(columns);
 			this.tableType = tableType;
 		}
@@ -341,6 +374,14 @@ public class PostgresSchema {
 		public TableType getTableType() {
 			return tableType;
 		}
+		
+		public boolean isView() {
+			return isView;
+		}
+		
+		public boolean isInsertable() {
+			return isInsertable;
+		}
 
 	}
 
@@ -384,15 +425,20 @@ public class PostgresSchema {
 			List<PostgresTable> databaseTables = new ArrayList<>();
 			try (Statement s = con.createStatement()) {
 				try (ResultSet rs = s.executeQuery(
-						"SELECT table_name, table_schema FROM information_schema.tables WHERE table_schema='public' OR table_schema LIKE 'pg_temp_%';")) {
+						"SELECT table_name, table_schema, table_type, is_insertable_into FROM information_schema.tables WHERE table_schema='public' OR table_schema LIKE 'pg_temp_%';")) {
 					while (rs.next()) {
 						String tableName = rs.getString("table_name");
-						String tableTypeStr = rs.getString("table_schema");
-						PostgresTable.TableType tableType = getTableType(tableTypeStr);
+						String tableTypeSchema = rs.getString("table_schema");
+						String tableTypeStr = rs.getString("table_type");
+						boolean isInsertable = rs.getBoolean("is_insertable_into");
+						// TODO: also check insertable
+						// TODO: insert into view?
+						boolean isView = tableName.startsWith("v");  //tableTypeStr.contains("VIEW") || tableTypeStr.contains("LOCAL TEMPORARY") && !isInsertable;
+						PostgresTable.TableType tableType = getTableType(tableTypeSchema);
 						List<PostgresColumn> databaseColumns = getTableColumns(con, tableName, databaseName);
 						List<PostgresIndex> indexes = getIndexes(con, tableName, databaseName);
 						List<PostgresStatisticsObject> statistics = getStatistics(con);
-						PostgresTable t = new PostgresTable(tableName, databaseColumns, indexes, tableType, statistics);
+						PostgresTable t = new PostgresTable(tableName, databaseColumns, indexes, tableType, statistics, isView, isInsertable);
 						for (PostgresColumn c : databaseColumns) {
 							c.setTable(t);
 						}
@@ -439,6 +485,10 @@ public class PostgresSchema {
 					.executeQuery(String.format("SELECT indexname FROM pg_indexes WHERE tablename='%s';", tableName))) {
 				while (rs.next()) {
 					String indexName = rs.getString("indexname");
+					if (indexName.length() != 2) {
+						// FIXME: implement cleanly
+						continue; // skip internal indexes
+					}
 					indexes.add(PostgresIndex.create(indexName));
 				}
 			}
@@ -499,6 +549,14 @@ public class PostgresSchema {
 
 	public String getDatabaseName() {
 		return databaseName;
+	}
+
+	public PostgresTable getRandomTable(Function<PostgresTable, Boolean> f) {
+		List<PostgresTable> relevantTables = databaseTables.stream().filter(t -> f.apply(t)).collect(Collectors.toList());
+		if (relevantTables.isEmpty()) {
+			throw new IgnoreMeException();
+		}
+		return Randomly.fromList(relevantTables);
 	}
 
 }

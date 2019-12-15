@@ -3,7 +3,6 @@ package lama.sqlite3.ast;
 import java.util.Collections;
 import java.util.List;
 
-import lama.sqlite3.schema.SQLite3Schema.Column;
 import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 
@@ -18,6 +17,7 @@ public class SQLite3SelectStatement extends SQLite3Expression {
 	private SQLite3Expression offsetClause;
 	private List<SQLite3Expression> fetchColumns = Collections.emptyList();
 	private List<Join> joinStatements = Collections.emptyList();
+	private SQLite3Expression havingClause;
 
 	public enum SelectType {
 		DISTINCT, ALL;
@@ -87,7 +87,7 @@ public class SQLite3SelectStatement extends SQLite3Expression {
 		return offsetClause;
 	}
 
-	public void selectFetchColumns(List<SQLite3Expression> fetchColumns) {
+	public void setFetchColumns(List<SQLite3Expression> fetchColumns) {
 		this.fetchColumns = fetchColumns;
 	}
 
@@ -107,6 +107,15 @@ public class SQLite3SelectStatement extends SQLite3Expression {
 	public CollateSequence getExplicitCollateSequence() {
 		// TODO implement?
 		return null;
+	}
+
+	public void setHavingClause(SQLite3Expression havingClause) {
+		this.havingClause = havingClause;
+	}
+	
+	public SQLite3Expression getHavingClause() {
+		assert orderByClause != null;
+		return havingClause;
 	}
 
 }

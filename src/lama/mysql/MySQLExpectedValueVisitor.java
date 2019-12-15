@@ -92,7 +92,9 @@ public class MySQLExpectedValueVisitor extends MySQLVisitor {
 		for (MySQLJoin j : select.getJoinClauses()) {
 			visit(j);
 		}
-		visit(select.getWhereClause());
+		if (select.getWhereClause() != null) {
+			visit(select.getWhereClause());
+		}
 	}
 
 	@Override

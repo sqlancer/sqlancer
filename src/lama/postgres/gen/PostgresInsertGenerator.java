@@ -4,16 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.postgresql.util.PSQLException;
-
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.postgres.PostgresProvider;
-import lama.postgres.PostgresVisitor;
 import lama.postgres.PostgresSchema.PostgresColumn;
 import lama.postgres.PostgresSchema.PostgresTable;
-import lama.postgres.ast.PostgresConstant;
+import lama.postgres.PostgresVisitor;
+import lama.postgres.ast.PostgresExpression;
 
 public class PostgresInsertGenerator {
 
@@ -22,9 +20,19 @@ public class PostgresInsertGenerator {
 		if (PostgresProvider.IS_POSTGRES_TWELVE) {
 			errors.add("cannot insert into column");
 		}
+		PostgresCommon.addCommonExpressionErrors(errors);
+		PostgresCommon.addCommonInsertUpdateErrors(errors);
+		PostgresCommon.addCommonExpressionErrors(errors);
+		errors.add("multiple assignments to same column");
 		errors.add("violates foreign key constraint");
 		errors.add("value too long for type character varying");
 		errors.add("conflicting key value violates exclusion constraint");
+		errors.add("violates not-null constraint");
+		errors.add("current transaction is aborted");
+		errors.add("bit string too long");
+		errors.add("new row violates check option for view");
+		errors.add("reached maximum value of sequence");
+		errors.add("but expression is of type");
 		StringBuilder sb = new StringBuilder();
 		sb.append("INSERT INTO ");
 		sb.append(table.getName());
@@ -39,12 +47,34 @@ public class PostgresInsertGenerator {
 			sb.append(" VALUE");
 		}
 		sb.append(" VALUES");
-		int n = Randomly.smallNumber() + 1;
-		for (int i = 0; i < n; i++) {
-			if (i != 0) {
-				sb.append(", ");
+
+		if (Randomly.getBooleanWithSmallProbability()) {
+			// bulk insert
+			StringBuilder sbRowValue = new StringBuilder();
+			sbRowValue.append("(");
+			for (int i = 0; i < columns.size(); i++) {
+				if (i != 0) {
+					sbRowValue.append(", ");
+				}
+				sbRowValue.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateConstant(r, columns.get(i).getColumnType())));
 			}
-			insertRow(r, sb, columns, n == 1);
+			sbRowValue.append(")");
+			
+			int n = (int) Randomly.getNotCachedInteger(100, 1000);
+			for (int i = 0; i < n; i++) {
+				if (i != 0) {
+					sb.append(", ");
+				}
+				sb.append(sbRowValue);
+			}
+		} else {
+			int n = Randomly.smallNumber() + 1;
+			for (int i = 0; i < n; i++) {
+				if (i != 0) {
+					sb.append(", ");
+				}
+				insertRow(r, sb, columns, n == 1);
+			}
 		}
 		if (Randomly.getBoolean()) {
 			sb.append(" ON CONFLICT ");
@@ -52,45 +82,20 @@ public class PostgresInsertGenerator {
 				sb.append("(");
 				sb.append(table.getRandomColumn().getName());
 				sb.append(")");
+				errors.add("there is no unique or exclusion constraint matching the ON CONFLICT specification");
 			}
 			sb.append(" DO NOTHING");
 		}
-		return new QueryAdapter(sb.toString(), errors) {
-			public void execute(java.sql.Connection con) throws java.sql.SQLException {
-				try {
-					super.execute(con);
-				} catch (PSQLException e) {
-					if (e.getMessage().contains("violates not-null constraint")) {
-						// ignore
-					} else if (e.getMessage().contains("duplicate key value violates unique constraint")) {
-
-					}
-
-					else if (e.getMessage().contains("identity column defined as GENERATED ALWAYS")) {
-
-					} else if (e.getMessage().contains(
-							"there is no unique or exclusion constraint matching the ON CONFLICT specification")) {
-
-					} else if (e.getMessage().contains("out of range")) {
-
-					} else if (e.getMessage().contains("violates check constraint")) {
-
-					} else if (e.getMessage().contains("no partition of relation")) {
-
-					} else if (e.getMessage().contains("invalid input syntax")) {
-
-					} else if (e.getMessage().contains("division by zero")) {
-					} else if (e.getMessage().contains("violates foreign key constraint")) {
-
-					}
-
-					else {
-						throw e;
-					}
-				}
-
-			};
-		};
+		errors.add("duplicate key value violates unique constraint");
+		errors.add("identity column defined as GENERATED ALWAYS");
+		errors.add("out of range");
+		errors.add("violates check constraint");
+		errors.add("no partition of relation");
+		errors.add("invalid input syntax");
+		errors.add("division by zero");
+		errors.add("violates foreign key constraint");
+		errors.add("data type unknown");
+		return new QueryAdapter(sb.toString(), errors);
 	}
 
 	private static void insertRow(Randomly r, StringBuilder sb, List<PostgresColumn> columns, boolean canBeDefault) {
@@ -100,11 +105,13 @@ public class PostgresInsertGenerator {
 				sb.append(", ");
 			}
 			if (!Randomly.getBooleanWithSmallProbability() || !canBeDefault) {
-				PostgresConstant generateConstant;
-				do {
+				PostgresExpression generateConstant;
+				if (Randomly.getBoolean()) {
 					generateConstant = PostgresExpressionGenerator.generateConstant(r, columns.get(i).getColumnType());
-					// make it more unlikely that NULL is inserted
-				} while (generateConstant.isNull() || Randomly.getBooleanWithSmallProbability());
+				} else {
+					generateConstant = new PostgresExpressionGenerator(r)
+							.generateExpression(columns.get(i).getColumnType());
+				}
 				sb.append(PostgresVisitor.asString(generateConstant));
 			} else {
 				sb.append("DEFAULT");

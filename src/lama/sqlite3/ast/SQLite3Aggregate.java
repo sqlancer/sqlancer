@@ -1,8 +1,12 @@
 package lama.sqlite3.ast;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import lama.IgnoreMeException;
 import lama.Randomly;
-import lama.sqlite3.gen.SQLite3Cast;
+import lama.sqlite3.SQLite3Provider;
 import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
 
@@ -84,6 +88,12 @@ public class SQLite3Aggregate extends SQLite3Expression {
 		public abstract SQLite3Constant apply(SQLite3Constant exprVal);
 
 		public static SQLite3AggregateFunction getRandom() {
+			List<SQLite3AggregateFunction> functions = new ArrayList<>(Arrays.asList(values()));
+			if (SQLite3Provider.MUST_KNOW_RESULT) {
+				functions.remove(SQLite3AggregateFunction.SUM);
+				functions.remove(SQLite3AggregateFunction.TOTAL);
+				functions.remove(SQLite3AggregateFunction.GROUP_CONCAT);
+			}
 			return Randomly.fromOptions(values());
 		}
 

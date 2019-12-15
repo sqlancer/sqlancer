@@ -1,5 +1,7 @@
 package lama.postgres.ast;
 
+import java.math.BigDecimal;
+
 import lama.IgnoreMeException;
 import lama.postgres.PostgresSchema.PostgresDataType;
 
@@ -381,6 +383,221 @@ public abstract class PostgresConstant extends PostgresExpression {
 
 	public static PostgresConstant createTextConstant(String string) {
 		return new StringConstant(string);
+	}
+
+	public abstract static class PostgresConstantBase extends PostgresConstant {
+		
+		@Override
+		public String getUnquotedTextRepresentation() {
+			throw new AssertionError();
+		}
+
+		@Override
+		public PostgresConstant isEquals(PostgresConstant rightVal) {
+			throw new AssertionError();
+		}
+
+		@Override
+		protected PostgresConstant isLessThan(PostgresConstant rightVal) {
+			throw new AssertionError();
+
+		}
+
+		@Override
+		public PostgresConstant cast(PostgresDataType type) {
+			throw new AssertionError();
+
+		}
+	}
+	
+	public static class DecimalConstant extends PostgresConstantBase {
+		
+		private final BigDecimal val;
+		
+		public DecimalConstant(BigDecimal val) {
+			this.val = val;
+		}
+
+		@Override
+		public String getTextRepresentation() {
+			return String.valueOf(val);
+		}
+
+
+		@Override
+		public PostgresDataType getExpressionType() {
+			return PostgresDataType.DECIMAL;
+		}
+		
+	}
+	
+	public static class InetConstant extends PostgresConstantBase {
+		
+		private final String val;
+		
+		public InetConstant(String val) {
+			this.val = "'" + val + "'";
+		}
+
+		@Override
+		public String getTextRepresentation() {
+			return String.valueOf(val);
+		}
+
+
+		@Override
+		public PostgresDataType getExpressionType() {
+			return PostgresDataType.INET;
+		}
+		
+	}
+	
+	
+	public static class FloatConstant extends PostgresConstantBase {
+		
+		private final float val;
+		
+		public FloatConstant(float val) {
+			this.val = val;
+		}
+
+		@Override
+		public String getTextRepresentation() {
+			if (Double.isFinite(val)) {
+				return String.valueOf(val);
+			} else {
+				return "'" + String.valueOf(val) + "'";
+			}
+		}
+
+
+		@Override
+		public PostgresDataType getExpressionType() {
+			return PostgresDataType.FLOAT;
+		}
+		
+	}
+	
+	public static class DoubleConstant extends PostgresConstantBase {
+		
+		private final double val;
+		
+		public DoubleConstant(double val) {
+			this.val = val;
+		}
+
+		@Override
+		public String getTextRepresentation() {
+			if (Double.isFinite(val)) {
+				return String.valueOf(val);
+			} else {
+				return "'" + String.valueOf(val) + "'";
+			}
+		}
+
+
+		@Override
+		public PostgresDataType getExpressionType() {
+			return PostgresDataType.FLOAT;
+		}
+		
+	}
+	
+	public static class BitConstant extends PostgresConstantBase {
+		
+		private final long val;
+		
+		public BitConstant(long val) {
+			this.val = val;
+		}
+
+		@Override
+		public String getTextRepresentation() {
+			return String.format("B'%s'", Long.toBinaryString(val));
+		}
+
+
+		@Override
+		public PostgresDataType getExpressionType() {
+			return PostgresDataType.BIT;
+		}
+		
+	}
+	
+	public static class RangeConstant extends PostgresConstantBase {
+		
+		private long left;
+		private boolean leftIsInclusive;
+		private long right;
+		private boolean rightIsInclusive;
+
+
+		public RangeConstant(long left, boolean leftIsInclusive, long right, boolean rightIsInclusive) {
+			this.left = left;
+			this.leftIsInclusive = leftIsInclusive;
+			this.right = right;
+			this.rightIsInclusive = rightIsInclusive;
+		}
+
+
+		@Override
+		public String getTextRepresentation() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("'");
+			if (leftIsInclusive) {
+				sb.append("[");
+			} else {
+				sb.append("(");
+			}
+			sb.append(left);
+			sb.append(",");
+			sb.append(right);
+			if (rightIsInclusive) {
+				sb.append("]");
+			} else {
+				sb.append(")");
+			}
+			sb.append("'");
+			sb.append("::int4range");
+			return sb.toString();
+		}
+
+
+		@Override
+		public PostgresDataType getExpressionType() {
+			return PostgresDataType.RANGE;
+		}
+		
+	}
+
+
+	public static PostgresConstant createDecimalConstant(BigDecimal bigDecimal) {
+		return new DecimalConstant(bigDecimal);
+	}
+
+	public static PostgresConstant createFloatConstant(float val) {
+		return new FloatConstant(val);
+	}
+
+	public static PostgresConstant createDoubleConstant(double val) {
+		return new DoubleConstant(val);
+	}
+
+	public static PostgresConstant createRange(long left, boolean leftIsInclusive, long right, boolean rightIsInclusive) {
+		if (left > right) {
+			long temp = right;
+			right = left;
+			left = temp;
+		}
+		return new RangeConstant(left, leftIsInclusive, right, rightIsInclusive);
+	}
+
+	public static PostgresExpression createBitConstant(long integer) {
+		return new BitConstant(integer);
+	}
+
+	public static PostgresExpression createInetConstant(String val) {
+		return new InetConstant(val);
 	}
 
 }

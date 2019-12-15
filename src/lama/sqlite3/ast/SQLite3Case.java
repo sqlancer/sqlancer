@@ -2,7 +2,6 @@ package lama.sqlite3.ast;
 
 import java.util.Optional;
 
-import lama.sqlite3.gen.SQLite3Cast;
 import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
 
 public abstract class SQLite3Case extends SQLite3Expression {

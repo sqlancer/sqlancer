@@ -1,6 +1,7 @@
 package lama;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -13,14 +14,19 @@ public abstract class Query {
 	 * @return
 	 */
 	public abstract boolean couldAffectSchema();
+	
 
-	public abstract void execute(Connection con) throws SQLException;
+	public abstract boolean execute(Connection con) throws SQLException;
 
 	public abstract List<String> getExpectedErrors();
 	
 	@Override
 	public String toString() {
 		return getQueryString();
+	}
+
+	public ResultSet executeAndGet(Connection con) throws SQLException {
+		throw new AssertionError();
 	}
 
 }

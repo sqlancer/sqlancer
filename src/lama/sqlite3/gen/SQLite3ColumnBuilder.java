@@ -1,9 +1,12 @@
 package lama.sqlite3.gen;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import lama.Randomly;
+import lama.sqlite3.SQLite3ToStringVisitor;
 import lama.sqlite3.SQLite3Visitor;
+import lama.sqlite3.schema.SQLite3Schema.Column;
 
 public class SQLite3ColumnBuilder {
 
@@ -19,7 +22,7 @@ public class SQLite3ColumnBuilder {
 	private boolean allowNotNull = true;
 
 	private enum Constraints {
-		NOT_NULL, PRIMARY_KEY, UNIQUE, CHECK
+		NOT_NULL, PRIMARY_KEY, UNIQUE, CHECK, GENERATED_AS
 	}
 
 	public boolean isContainsAutoIncrement() {
@@ -34,7 +37,7 @@ public class SQLite3ColumnBuilder {
 		return containsPrimaryKey;
 	}
 
-	String createColumn(String columnName, Randomly r) {
+	public String createColumn(String columnName, Randomly r, List<Column> columns) {
 		sb.append(columnName);
 		sb.append(" ");
 		String dataType = Randomly.fromOptions("INT", "TEXT", "BLOB", "REAL", "INTEGER");
@@ -42,8 +45,17 @@ public class SQLite3ColumnBuilder {
 
 		if (Randomly.getBoolean()) {
 			List<Constraints> constraints = Randomly.subset(Constraints.values());
+			if (constraints.contains(Constraints.GENERATED_AS)) {
+				allowDefaultValue = false;
+				allowPrimaryKey = false;
+			}
 			for (Constraints c : constraints) {
 				switch (c) {
+				case GENERATED_AS:
+					sb.append(" GENERATED ALWAYS AS (");
+					sb.append(SQLite3ToStringVisitor.asString(new SQLite3ExpressionGenerator(r).deterministicOnly().setColumns(columns.stream().filter(p -> !p.getName().contentEquals(columnName)).collect(Collectors.toList())).getRandomExpression()));
+					sb.append(")");
+					break;
 				case PRIMARY_KEY:
 					// only one primary key is allow if not specified as table constraint
 					if (allowPrimaryKey) {
@@ -86,7 +98,7 @@ public class SQLite3ColumnBuilder {
 					break;
 				case CHECK:
 					if (allowCheck) {
-						sb.append(SQLite3Common.getCheckConstraint(r));
+						sb.append(SQLite3Common.getCheckConstraint(r, columns));
 					}
 					break;
 				default:
@@ -94,10 +106,10 @@ public class SQLite3ColumnBuilder {
 				}
 			}
 		}
-		if (allowDefaultValue && Randomly.getBoolean()) {
-			sb.append(" DEFAULT " + SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(false, r)));
+		if (allowDefaultValue && Randomly.getBooleanWithSmallProbability()) {
+			sb.append(" DEFAULT " + SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(r)));
 		}
-		if (Randomly.getBoolean() && false /* FIXME: for view testing temporarily disabled */) {
+		if (Randomly.getBooleanWithSmallProbability()) {
 			String randomCollate = SQLite3Common.getRandomCollate();
 			sb.append(randomCollate);
 		}

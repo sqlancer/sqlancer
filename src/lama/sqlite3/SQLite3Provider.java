@@ -3,7 +3,9 @@ package lama.sqlite3;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,26 +22,32 @@ import lama.QueryAdapter;
 import lama.Randomly;
 import lama.StateToReproduce;
 import lama.StateToReproduce.SQLite3StateToReproduce;
-import lama.sqlite3.gen.QueryGenerator;
-import lama.sqlite3.gen.SQLite3AlterTable;
+import lama.sqlite3.dml.SQLite3DeleteGenerator;
+import lama.sqlite3.dml.SQLite3InsertGenerator;
+import lama.sqlite3.dml.SQLite3UpdateGenerator;
 import lama.sqlite3.gen.SQLite3AnalyzeGenerator;
 import lama.sqlite3.gen.SQLite3Common;
-import lama.sqlite3.gen.SQLite3DeleteGenerator;
-import lama.sqlite3.gen.SQLite3DropIndexGenerator;
-import lama.sqlite3.gen.SQLite3DropTableGenerator;
+import lama.sqlite3.gen.SQLite3CreateVirtualRtreeTabelGenerator;
 import lama.sqlite3.gen.SQLite3ExplainGenerator;
-import lama.sqlite3.gen.SQLite3IndexGenerator;
 import lama.sqlite3.gen.SQLite3PragmaGenerator;
 import lama.sqlite3.gen.SQLite3ReindexGenerator;
-import lama.sqlite3.gen.SQLite3RowGenerator;
-import lama.sqlite3.gen.SQLite3TableGenerator;
 import lama.sqlite3.gen.SQLite3TransactionGenerator;
-import lama.sqlite3.gen.SQLite3UpdateGenerator;
 import lama.sqlite3.gen.SQLite3VacuumGenerator;
-import lama.sqlite3.gen.SQLite3ViewGenerator;
+import lama.sqlite3.gen.SQLite3VirtualFTSTableCommandGenerator;
+import lama.sqlite3.gen.ddl.SQLite3AlterTable;
+import lama.sqlite3.gen.ddl.SQLite3CreateTriggerGenerator;
+import lama.sqlite3.gen.ddl.SQLite3CreateVirtualFTSTableGenerator;
+import lama.sqlite3.gen.ddl.SQLite3DropIndexGenerator;
+import lama.sqlite3.gen.ddl.SQLite3DropTableGenerator;
+import lama.sqlite3.gen.ddl.SQLite3IndexGenerator;
+import lama.sqlite3.gen.ddl.SQLite3TableGenerator;
+import lama.sqlite3.gen.ddl.SQLite3ViewGenerator;
+import lama.sqlite3.queries.SQLite3MetamorphicQuerySynthesizer;
+import lama.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
 import lama.sqlite3.schema.SQLite3Schema;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
+import lama.sqlite3.schema.SQLite3Schema.Table.TableKind;
 
 public class SQLite3Provider implements DatabaseProvider {
 
@@ -56,7 +64,7 @@ public class SQLite3Provider implements DatabaseProvider {
 			@Override
 			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
 					throws SQLException {
-				return SQLite3IndexGenerator.insertIndex(con, state, r);
+				return SQLite3IndexGenerator.insertIndex(newSchema, state, r);
 			}
 		},
 		INSERT {
@@ -64,8 +72,8 @@ public class SQLite3Provider implements DatabaseProvider {
 			@Override
 			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
 					throws SQLException {
-				Table randomTable = Randomly.fromList(newSchema.getDatabaseTablesWithoutViews());
-				return SQLite3RowGenerator.insertRow(randomTable, con, state, r);
+				Table randomTable = newSchema.getRandomTableOrBailout(t -> !t.isView());
+				return SQLite3InsertGenerator.insertRow(randomTable, con, r);
 			}
 
 		},
@@ -98,7 +106,7 @@ public class SQLite3Provider implements DatabaseProvider {
 			@Override
 			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
 				return SQLite3DeleteGenerator
-						.deleteContent(Randomly.fromList(newSchema.getDatabaseTablesWithoutViews()), con, state, r);
+						.deleteContent(newSchema.getRandomTableNoViewOrBailout(), con, r);
 			}
 		},
 		TRANSACTION_START {
@@ -130,7 +138,7 @@ public class SQLite3Provider implements DatabaseProvider {
 
 			@Override
 			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
-				return SQLite3UpdateGenerator.updateRow(newSchema.getRandomTableNoView(), con, state, r);
+				return SQLite3UpdateGenerator.updateRow(newSchema.getRandomTableNoViewOrBailout(), r);
 			}
 		},
 		ROLLBACK_TRANSACTION() {
@@ -155,6 +163,15 @@ public class SQLite3Provider implements DatabaseProvider {
 			}
 
 		},
+		DROP_VIEW {
+
+			@Override
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
+					throws SQLException {
+				return SQLite3ViewGenerator.dropView(SQLite3Schema.fromConnection(con));
+			}
+
+		},
 		EXPLAIN {
 
 			@Override
@@ -163,52 +180,180 @@ public class SQLite3Provider implements DatabaseProvider {
 				return SQLite3ExplainGenerator.explain(con, (SQLite3StateToReproduce) state, r);
 			}
 		},
-		TARGETED_SELECT {
-
+		CHECK_RTREE_TABLE {
 			@Override
 			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
 					throws SQLException {
-				return new QueryGenerator(con, r).getQueryThatContainsAtLeastOneRow((SQLite3StateToReproduce) state);
+				Table table = newSchema.getRandomTableOrBailout(t -> t.getName().startsWith("r"));
+				return new QueryAdapter(String.format("SELECT rtreecheck('%s');", table.getName()));
 			}
-
+		},
+//		TARGETED_SELECT {
+//
+//			@Override
+//			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
+//					throws SQLException {
+//				return new SQLite3PivotedQuerySynthesizer(con, r).getQueryThatContainsAtLeastOneRow((SQLite3StateToReproduce) state);
+//			}
+//
+//		},
+		VIRTUAL_TABLE_ACTION {
+			@Override
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
+					throws SQLException {
+				return new SQLite3VirtualFTSTableCommandGenerator(newSchema, r).generate();
+			}
 		},
 		CREATE_VIEW {
 			@Override
 			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
 					throws SQLException {
-				return SQLite3ViewGenerator.generate(con, r, (SQLite3StateToReproduce) state);
+				return SQLite3ViewGenerator.generate(newSchema, con, r, (SQLite3StateToReproduce) state);
+			}
+		},
+		CREATE_TRIGGER {
+			@Override
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
+					throws SQLException {
+				return SQLite3CreateTriggerGenerator.create(newSchema, r, con);
+			}
+		},
+		MANIPULATE_STAT_TABLE {
+			@Override
+			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
+					throws SQLException {
+				List<Column> columns = new ArrayList<>();
+				Table t = new Table("sqlite_stat1", columns, TableKind.MAIN, false, 1, false, false);
+				if (Randomly.getBoolean()) {
+					return SQLite3DeleteGenerator.deleteContent(t, con, r);
+				} else {
+					StringBuilder sb = new StringBuilder();
+					sb.append("INSERT OR IGNORE INTO sqlite_stat1");
+					String indexName;
+					try (Statement stat = con.createStatement()) {
+						try (ResultSet rs = stat.executeQuery(
+								"SELECT name FROM sqlite_master WHERE type='index' ORDER BY RANDOM() LIMIT 1;")) {
+							if (rs.isClosed()) {
+								throw new IgnoreMeException();
+							}
+							indexName = rs.getString("name");
+						};
+					}
+					sb.append(" VALUES");
+					sb.append("('");
+					sb.append(newSchema.getRandomTable().getName());
+					sb.append("', ");
+					sb.append("'");
+					if (Randomly.getBoolean()) {
+						sb.append(indexName);
+					} else {
+						sb.append(newSchema.getRandomTable().getName());
+					}
+					sb.append("'");
+					sb.append(", '");
+					for (int i = 0; i < Randomly.smallNumber(); i++) {
+						if (i != 0) {
+							sb.append(" ");
+						}
+						if (Randomly.getBoolean()) {
+							sb.append(r.getInteger());
+						} else {
+							sb.append(Randomly.smallNumber());
+						}
+					}
+					if (Randomly.getBoolean()) {
+						sb.append(" sz=");
+						sb.append(r.getInteger());
+					}
+					if (Randomly.getBoolean()) {
+						sb.append(" unordered");
+					}
+					if (Randomly.getBoolean()) {
+						sb.append(" noskipscan");
+					}
+					sb.append("')");
+					return new QueryAdapter(sb.toString(), Arrays.asList("no such table"));
+				}
 			}
 		};
+
 
 		public abstract Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
 				throws SQLException;
 	}
 
-	public static final int NR_INSERT_ROW_TRIES = 50;
+	public static final int NR_INSERT_ROW_TRIES = 30;
 	private static final int NR_QUERIES_PER_TABLE = 10000;
-	private static final int MAX_INSERT_ROW_TRIES = 10;
-	public static final int EXPRESSION_MAX_DEPTH = 1;
+	private static final int MAX_INSERT_ROW_TRIES = 0;
+	public static final int EXPRESSION_MAX_DEPTH = 3;
+	public static final boolean ALLOW_FLOATING_POINT_FP = true;
+	public static final boolean MUST_KNOW_RESULT = false;
+
 	private SQLite3StateToReproduce state;
 	private String databaseName;
+	
+	public static class SQLite3SpecialStringGenerator {
+		
+		private enum Options {
+			TIME_DATE_REGEX, NOW, DATE_TIME, TIME_MODIFIER
+		}
+		
+		public static String generate() {
+			StringBuilder sb = new StringBuilder();
+			switch (Randomly.fromOptions(Options.values())) {
+			case TIME_DATE_REGEX: // https://www.sqlite.org/lang_datefunc.html
+				return Randomly.fromOptions("%d", "%f", "%H", "%j", "%J", "%m", "%M", "%s", "%S", "%w", "%W", "%Y", "%%");
+			case NOW:
+				return "now";
+			case DATE_TIME:
+				long notCachedInteger = Randomly.getNotCachedInteger(1, 10);
+				for (int i = 0; i < notCachedInteger; i++) {
+					if (Randomly.getBoolean()) {
+						sb.append(Randomly.getNonCachedInteger());
+					} else {
+						sb.append(Randomly.getNotCachedInteger(0, 2000));
+					}
+					sb.append(Randomly.fromOptions(":", "-", " ", "T"));
+				}
+				return sb.toString();
+			case TIME_MODIFIER:
+				sb.append(Randomly.fromOptions("days", "hours", "minutes", "seconds", "months", "years", "start of month", "start of year", "start of day", "weekday", "unixepoch", "utc"));
+				return sb.toString();
+			default:
+				throw new AssertionError();
+			}
+			
+		}
+	}
 
 	@Override
 	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger, StateToReproduce state,
 			QueryManager manager, MainOptions options) throws SQLException {
 		this.databaseName = databaseName;
-		Randomly r = new Randomly();
+		Randomly r = new Randomly(SQLite3SpecialStringGenerator::generate);
 		SQLite3Schema newSchema = null;
 		this.state = (SQLite3StateToReproduce) state;
 
 		addSensiblePragmaDefaults(con);
 		int nrTablesToCreate = 1 + Randomly.smallNumber();
-		for (int i = 0; i < nrTablesToCreate; i++) {
+		for (int i = 0; i < 1; i++) {
 			newSchema = SQLite3Schema.fromConnection(con);
-			assert newSchema.getDatabaseTables().size() == i : newSchema + " " + i;
+//			assert newSchema.getDatabaseTables().size() == i : newSchema + " " + i;
 			String tableName = SQLite3Common.createTableName(i);
 			Query tableQuery = SQLite3TableGenerator.createTableStatement(tableName, state, newSchema, r);
 			manager.execute(tableQuery);
+			if (true) {
+				String ftsTableName = "v" + SQLite3Common.createTableName(i);
+				Query tableQuery2 = SQLite3CreateVirtualFTSTableGenerator.createTableStatement(ftsTableName, r);
+				manager.execute(tableQuery2);
+			}
+			if (true) {
+				String rTreeTableName = "rt" + i;
+				Query tableQuery3 = SQLite3CreateVirtualRtreeTabelGenerator.createTableStatement(rTreeTableName, r);
+				manager.execute(tableQuery3);
+			}
+			
 		}
-
 		newSchema = SQLite3Schema.fromConnection(con);
 
 		int[] nrRemaining = new int[Action.values().length];
@@ -218,35 +363,52 @@ public class SQLite3Provider implements DatabaseProvider {
 			Action action = Action.values()[i];
 			int nrPerformed = 0;
 			switch (action) {
-			case ALTER:
-			case DROP_TABLE:
-				nrPerformed = r.getInteger(0, 5);
+			case DROP_VIEW:
+				nrPerformed = r.getInteger(0, 0);
 				break;
-			case INSERT:
-				nrPerformed = NR_INSERT_ROW_TRIES;
-				break;
-			case EXPLAIN:
-				nrPerformed = r.getInteger(0, 200);
-				break;
-			case TARGETED_SELECT:
-				nrPerformed = 0;
+			case CREATE_TRIGGER:
+				nrPerformed = r.getInteger(0, 2);
 				break;
 			case CREATE_VIEW:
-				nrPerformed = 1;
+				nrPerformed = r.getInteger(0, 2);
+				break;
+			case ALTER:
+			case EXPLAIN:
+				nrPerformed = 0;
+				break;
+			case DROP_TABLE:
+			case DELETE:
+			case DROP_INDEX:
+			case VACUUM:
+			case CHECK_RTREE_TABLE:
+				nrPerformed = r.getInteger(0, 3);
+				break;
+			case INSERT:
+				nrPerformed = r.getInteger(1, NR_INSERT_ROW_TRIES);
+				break;
+			case MANIPULATE_STAT_TABLE:
+				nrPerformed = r.getInteger(0, 5);
+				break;
+//			case TARGETED_SELECT:
+//				nrPerformed = 0; // r.getInteger(0, 100);
+//				break;
+			case INDEX:
+				nrPerformed = r.getInteger(0, 20);
+				break;
+			case VIRTUAL_TABLE_ACTION:
+			case UPDATE:
+				nrPerformed = r.getInteger(0, 30);
+				break;
+			case PRAGMA:
+				nrPerformed = r.getInteger(0, 100);
 				break;
 			case COMMIT:
 			case TRANSACTION_START:
-			case INDEX:
 			case REINDEX:
-			case VACUUM:
-			case UPDATE:
 			case ANALYZE:
-			case PRAGMA:
-			case DROP_INDEX:
-			case DELETE:
 			case ROLLBACK_TRANSACTION:
 			default:
-				nrPerformed = r.getInteger(1, 30);
+				nrPerformed = r.getInteger(1, 10);
 				break;
 			}
 			if (nrPerformed != 0) {
@@ -273,16 +435,24 @@ public class SQLite3Provider implements DatabaseProvider {
 			nrRemaining[nextAction.ordinal()]--;
 			Query query = nextAction.getQuery(newSchema, con, state, r);
 			try {
+				if (options.logEachSelect()) {
+					try {
+						logger.getCurrentFileWriter().close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					logger.currentFileWriter = null;
+					logger.writeCurrent(state);
+					logger.writeCurrent(query.getQueryString());
+				}
 				manager.execute(query);
 				if (query.couldAffectSchema()) {
 					newSchema = SQLite3Schema.fromConnection(con);
 				}
 			} catch (IgnoreMeException e) {
 
-			} catch (Throwable t) {
-				System.err.println(query.getQueryString());
-				throw t;
-			}
+			} 
 			total--;
 		}
 		Query query = SQLite3TransactionGenerator.generateCommit(con, state);
@@ -292,33 +462,36 @@ public class SQLite3Provider implements DatabaseProvider {
 		manager.execute(query);
 		newSchema = SQLite3Schema.fromConnection(con);
 
-		for (Table t : newSchema.getDatabaseTablesWithoutViews()) {
-			if (!ensureTableHasRows(con, t, r)) {
-				return;
-			}
-		}
-
-		for (Table t : newSchema.getViews()) {
-			if (t.getNrRows() == 0) {
-				throw new IgnoreMeException();
-			}
-		}
 		if (Randomly.getBoolean()) {
-			SQLite3ReindexGenerator.executeReindex(con, state, newSchema);
+			query = new QueryAdapter("PRAGMA integrity_check;");
+			manager.execute(query);
 		}
+//		for (Table t : newSchema.getDatabaseTables()) {
+//			if (t.getNrRows() == 0) {
+//				throw new IgnoreMeException();
+//			}
+//		}
+
 		newSchema = SQLite3Schema.fromConnection(con);
 
-		QueryGenerator queryGenerator = new QueryGenerator(con, r);
+//		SQLite3PivotedQuerySynthesizer queryGenerator = new SQLite3PivotedQuerySynthesizer(con, r);
+		SQLite3MetamorphicQuerySynthesizer or = new SQLite3MetamorphicQuerySynthesizer(newSchema, r, con,
+				(SQLite3StateToReproduce) state, logger, options);
 		if (options.logEachSelect()) {
 			logger.writeCurrent(state);
 		}
 		for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
+
 			try {
-				queryGenerator.generateAndCheckQuery(this.state, logger, options);
+//				if (Randomly.getBoolean()) {
+				or.generateAndCheck();
+				manager.incrementSelectQueryCount();
+//				} else {
+//					queryGenerator.generateAndCheckQuery(this.state, logger, options);
+//				}
 			} catch (IgnoreMeException e) {
 
 			}
-			manager.incrementSelectQueryCount();
 		}
 		try {
 			if (options.logEachSelect()) {
@@ -329,12 +502,25 @@ public class SQLite3Provider implements DatabaseProvider {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		System.gc();
 	}
 
+	// PRAGMAS to achieve good performance
+	private final static List<String> DEFAULT_PRAGMAS = Arrays.asList("PRAGMA cache_size = 50000;",
+			"PRAGMA temp_store=MEMORY;", "PRAGMA synchronous=off;");
+
 	private void addSensiblePragmaDefaults(Connection con) throws SQLException {
-		List<String> defaultSettings = Arrays.asList("PRAGMA cache_size = 10000;", "PRAGMA temp_store=MEMORY;",
-				"PRAGMA synchronous=off;");
-		for (String s : defaultSettings) {
+		List<String> pragmasToExecute = new ArrayList<>();
+		if (!Randomly.getBooleanWithSmallProbability()) {
+			pragmasToExecute.addAll(DEFAULT_PRAGMAS);
+		}
+		if (Randomly.getBoolean() && !MUST_KNOW_RESULT) {
+			pragmasToExecute.add("PRAGMA case_sensitive_like=ON;");
+		}
+		if (Randomly.getBoolean()) {
+			pragmasToExecute.add(String.format("PRAGMA encoding = '%s';", Randomly.fromOptions("UTF-8", "UTF-16", "UTF-16le", "UTF-16be")));
+		}
+		for (String s : pragmasToExecute) {
 			Query q = new QueryAdapter(s);
 			state.statements.add(q);
 			q.execute(con);
@@ -347,12 +533,12 @@ public class SQLite3Provider implements DatabaseProvider {
 		int counter = MAX_INSERT_ROW_TRIES;
 		do {
 			try {
-				Query q = SQLite3RowGenerator.insertRow(randomTable, con, state, r);
+				Query q = SQLite3InsertGenerator.insertRow(randomTable, con, r);
 				state.statements.add(q);
 				q.execute(con);
 
 			} catch (SQLException e) {
-				if (!QueryGenerator.shouldIgnoreException(e)) {
+				if (!SQLite3PivotedQuerySynthesizer.shouldIgnoreException(e)) {
 					throw new AssertionError(e);
 				}
 			}

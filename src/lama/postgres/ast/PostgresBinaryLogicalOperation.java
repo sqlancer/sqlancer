@@ -3,7 +3,7 @@ package lama.postgres.ast;
 import lama.Randomly;
 import lama.postgres.PostgresSchema.PostgresDataType;
 
-public class PostgresBinaryLogicalOperation extends PostgresExpression {
+public class PostgresBinaryLogicalOperation extends PostgresBinaryOperation {
 
 	private final PostgresExpression left;
 	private final PostgresExpression right;
@@ -87,6 +87,11 @@ public class PostgresBinaryLogicalOperation extends PostgresExpression {
 	@Override
 	public PostgresConstant getExpectedValue() {
 		return op.apply(left.getExpectedValue(), right.getExpectedValue());
+	}
+
+	@Override
+	public String getOperatorTextRepresentation() {
+		return op.toString();
 	}
 
 }

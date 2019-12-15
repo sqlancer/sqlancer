@@ -8,6 +8,7 @@ import lama.Main.QueryManager;
 import lama.Main.StateLogger;
 
 public interface DatabaseProvider {
+	
 
 	void generateAndTestDatabase(final String databaseName, Connection con, StateLogger logger, StateToReproduce state, QueryManager manager, MainOptions options) throws SQLException;
 

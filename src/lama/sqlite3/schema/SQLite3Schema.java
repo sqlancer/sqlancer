@@ -5,16 +5,20 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import lama.IgnoreMeException;
+import lama.QueryAdapter;
 import lama.Randomly;
 import lama.StateToReproduce.SQLite3StateToReproduce;
+import lama.sqlite3.SQLite3Errors;
 import lama.sqlite3.SQLite3ToStringVisitor;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
@@ -23,6 +27,27 @@ import lama.sqlite3.schema.SQLite3Schema.Table.TableKind;
 public class SQLite3Schema {
 
 	private final List<Table> databaseTables;
+	private final List<String> indexNames;
+
+	public List<String> getIndexNames() {
+		return indexNames;
+	}
+
+	public String getRandomIndexOrBailout() {
+		if (indexNames.size() == 0) {
+			throw new IgnoreMeException();
+		} else {
+			return Randomly.fromList(indexNames);
+		}
+	}
+
+	public Table getRandomTableOrBailout() {
+		if (databaseTables.isEmpty()) {
+			throw new IgnoreMeException();
+		} else {
+			return Randomly.fromList(getDatabaseTables());
+		}
+	}
 
 	public static class Column implements Comparable<Column> {
 
@@ -32,7 +57,7 @@ public class SQLite3Schema {
 		private final boolean isInteger; // "INTEGER" type, not "INT"
 		private Table table;
 		private final CollateSequence collate;
-		
+
 		public enum CollateSequence {
 			NOCASE, RTRIM, BINARY;
 
@@ -41,7 +66,8 @@ public class SQLite3Schema {
 			}
 		}
 
-		public Column(String name, SQLite3DataType columnType, boolean isInteger, boolean isPrimaryKey, CollateSequence collate) {
+		public Column(String name, SQLite3DataType columnType, boolean isInteger, boolean isPrimaryKey,
+				CollateSequence collate) {
 			this.name = name;
 			this.columnType = columnType;
 			this.isInteger = isInteger;
@@ -229,12 +255,15 @@ public class SQLite3Schema {
 		private boolean withoutRowid;
 		private int nrRows;
 		private boolean isView;
+		private boolean isVirtual;
 
-		public Table(String tableName, List<Column> columns, TableKind tableType, boolean withoutRowid, int nrRows, boolean isView) {
+		public Table(String tableName, List<Column> columns, TableKind tableType, boolean withoutRowid, int nrRows,
+				boolean isView, boolean isVirtual) {
 			this.tableName = tableName;
 			this.tableType = tableType;
 			this.withoutRowid = withoutRowid;
 			this.isView = isView;
+			this.isVirtual = isVirtual;
 			this.columns = Collections.unmodifiableList(columns);
 			this.nrRows = nrRows;
 		}
@@ -290,6 +319,10 @@ public class SQLite3Schema {
 			return tableType;
 		}
 
+		public boolean isVirtual() {
+			return isVirtual;
+		}
+
 		public List<Column> getRandomNonEmptyColumnSubset() {
 			return Randomly.nonEmptySubset(getColumns());
 		}
@@ -297,13 +330,17 @@ public class SQLite3Schema {
 		public boolean isSystemTable() {
 			return getName().startsWith("sqlit");
 		}
-		
+
 		public int getNrRows() {
 			return nrRows;
 		}
 
 		public boolean isView() {
 			return isView;
+		}
+
+		public boolean isTemp() {
+			return tableType == TableKind.TEMP;
 		}
 
 	}
@@ -360,7 +397,8 @@ public class SQLite3Schema {
 
 	}
 
-	public SQLite3Schema(List<Table> databaseTables) {
+	public SQLite3Schema(List<Table> databaseTables, List<String> indexNames) {
+		this.indexNames = indexNames;
 		this.databaseTables = Collections.unmodifiableList(databaseTables);
 	}
 
@@ -372,40 +410,52 @@ public class SQLite3Schema {
 		}
 		return sb.toString();
 	}
-	
+
 	public static int getNrRows(Connection con, String table) throws SQLException {
-		try (Statement s = con.createStatement()) {
-			try (ResultSet query = s.executeQuery("SELECT COUNT(*) FROM " + table)) {
-				query.next();
-				return query.getInt(1);
-			} catch (SQLException e) {
-				if (e.getMessage().contains("ORDER BY term out of range") || e.getMessage().contains("no such table") || e.getMessage().contains("second argument to likelihood() must be a constant between 0.0 and 1.0")) {
-					throw new IgnoreMeException();
-				} else {
-					throw e;
-				}
+		String string = "SELECT COUNT(*) FROM " + table;
+		List<String> errors = new ArrayList<>();
+		errors.add("ORDER BY term out of range");
+		errors.addAll(Arrays.asList("second argument to nth_value must be a positive integer",
+				"ON clause references tables to its right", "no such table", "no query solution", "no such index",
+				"GROUP BY term", "is circularly defined", "misuse of aggregate", "no such column", "misuse of window function"));
+		SQLite3Errors.addExpectedExpressionErrors(errors);
+		QueryAdapter q = new QueryAdapter(string, errors);
+		try (ResultSet query = q.executeAndGet(con)) {
+			if (query == null) {
+				throw new IgnoreMeException();
 			}
+			query.next();
+			int int1 = query.getInt(1);
+			query.getStatement().close();
+			return int1;
 		}
 	}
 
 	static public SQLite3Schema fromConnection(Connection con) throws SQLException {
 		List<Table> databaseTables = new ArrayList<>();
+		List<String> indexNames = new ArrayList<>();
+
 		try (Statement s = con.createStatement()) {
 			try (ResultSet rs = s.executeQuery("SELECT name, type as category, sql FROM sqlite_master UNION "
-					+ "SELECT name, 'temp_table' as category, sql FROM sqlite_temp_master WHERE type='table';")) {
+					+ "SELECT name, 'temp_table' as category, sql FROM sqlite_temp_master WHERE type='table' UNION SELECT name, 'view' as category, sql FROM sqlite_temp_master WHERE type='view';")) {
 				while (rs.next()) {
 					String tableName = rs.getString("name");
 					String tableType = rs.getString("category");
 					if ((tableName.startsWith("sqlite_") /* && !tableName.startsWith("sqlite_stat") */)
-							|| tableType.equals("index")) {
+							|| tableType.equals("index") || tableType.equals("trigger") || tableName.endsWith("_idx")
+							|| tableName.endsWith("_docsize") || tableName.endsWith("_content")
+							|| tableName.endsWith("_data") || tableName.endsWith("_config")
+							|| tableName.endsWith("_segdir") || tableName.endsWith("_stat")
+							|| tableName.endsWith("_segments") || tableName.contains("_")) {
 						continue;
 					}
-					String string = rs.getString("sql").toLowerCase();
-					boolean withoutRowid = string.contains("without rowid");
+					String sqlString = rs.getString("sql").toLowerCase();
+					boolean withoutRowid = sqlString.contains("without rowid");
 					boolean isView = tableType.contentEquals("view");
+					boolean isVirtual = sqlString.contains("virtual");
 					List<Column> databaseColumns;
 					try {
-						databaseColumns = getTableColumns(con, tableName, string, isView);
+						databaseColumns = getTableColumns(con, tableName, sqlString, isView);
 					} catch (IgnoreMeException e) {
 						continue;
 					}
@@ -416,7 +466,8 @@ public class SQLite3Schema {
 						nrRows = 0;
 					}
 					Table t = new Table(tableName, databaseColumns,
-							tableType.contentEquals("temp_table") ? TableKind.TEMP : TableKind.MAIN, withoutRowid, nrRows, isView);
+							tableType.contentEquals("temp_table") ? TableKind.TEMP : TableKind.MAIN, withoutRowid,
+							nrRows, isView, isVirtual);
 					try (Statement s3 = con.createStatement()) {
 						try (ResultSet rs3 = s3.executeQuery("SELECT typeof(rowid) FROM " + tableName)) {
 							if (rs3.next() && !isView /* TODO: can we still do something with it? */) {
@@ -437,11 +488,23 @@ public class SQLite3Schema {
 					databaseTables.add(t);
 				}
 			}
+			try (ResultSet rs = s.executeQuery(
+					"SELECT name FROM SQLite_master WHERE type = 'index' UNION SELECT name FROM sqlite_temp_master WHERE type='index'")) {
+				while (rs.next()) {
+					String name = rs.getString(1);
+					if (name.contains("_autoindex")) {
+						continue;
+					}
+					indexNames.add(name);
+				}
+			}
 		}
-		return new SQLite3Schema(databaseTables);
+
+		return new SQLite3Schema(databaseTables, indexNames);
 	}
 
-	private static List<Column> getTableColumns(Connection con, String tableName, String sql, boolean isView) throws SQLException {
+	private static List<Column> getTableColumns(Connection con, String tableName, String sql, boolean isView)
+			throws SQLException {
 		List<Column> databaseColumns = new ArrayList<>();
 		try (Statement s2 = con.createStatement()) {
 			String tableInfoStr = String.format("PRAGMA table_info(%s)", tableName);
@@ -455,22 +518,30 @@ public class SQLite3Schema {
 					SQLite3DataType columnType = getColumnType(columnTypeString);
 					sql = columnCreates[columnCreateIndex++];
 					CollateSequence collate;
-					if (sql.contains("collate binary")) {
+					if (isView) {
 						collate = CollateSequence.BINARY;
-					} else if (sql.contains("collate rtrim")) {
-						collate = CollateSequence.RTRIM;
-					} else if (sql.contains("collate nocase")) {
-						collate = CollateSequence.NOCASE;
 					} else {
-						collate = CollateSequence.BINARY;
+						if (sql.contains("collate binary")) {
+							collate = CollateSequence.BINARY;
+						} else if (sql.contains("collate rtrim")) {
+							collate = CollateSequence.RTRIM;
+						} else if (sql.contains("collate nocase")) {
+							collate = CollateSequence.NOCASE;
+						} else {
+							collate = CollateSequence.BINARY;
+						}
 					}
 					databaseColumns.add(new Column(columnName, columnType, columnTypeString.contentEquals("INTEGER"),
 							isPrimaryKey, collate));
 				}
-			} catch (SQLException e) {
+			} catch (SQLException | ArrayIndexOutOfBoundsException e) {
 				throw new IgnoreMeException(); // TODO
-				//throw new AssertionError(tableInfoStr);
+				// throw new AssertionError(tableInfoStr);
 			}
+		}
+		if (databaseColumns.isEmpty()) {
+			// only generated columns
+			throw new IgnoreMeException();
 		}
 		assert !databaseColumns.isEmpty() : tableName;
 		return databaseColumns;
@@ -496,6 +567,7 @@ public class SQLite3Schema {
 			columnType = SQLite3DataType.BINARY;
 			break;
 		case "REAL":
+		case "NUM":
 			columnType = SQLite3DataType.REAL;
 			break;
 		case "NULL":
@@ -511,6 +583,27 @@ public class SQLite3Schema {
 		return Randomly.fromList(getDatabaseTables());
 	}
 
+	public Table getRandomTable(Predicate<Table> predicate) {
+		return Randomly.fromList(databaseTables.stream().filter(predicate).collect(Collectors.toList()));
+	}
+
+	public List<Table> getTables(Predicate<Table> predicate) {
+		return databaseTables.stream().filter(predicate).collect(Collectors.toList());
+	}
+
+	public Table getRandomTableOrBailout(Predicate<Table> predicate) {
+		List<Table> tables = databaseTables.stream().filter(predicate).collect(Collectors.toList());
+		if (tables.isEmpty()) {
+			throw new IgnoreMeException();
+		} else {
+			return Randomly.fromList(tables);
+		}
+	}
+
+	public Table getRandomVirtualTable() {
+		return getRandomTable(p -> p.isVirtual);
+	}
+
 	public List<Table> getDatabaseTables() {
 		return databaseTables;
 	}
@@ -523,15 +616,36 @@ public class SQLite3Schema {
 		return new Tables(Randomly.nonEmptySubset(databaseTables));
 	}
 
-	public Table getRandomTableNoView() {
-		return Randomly.fromList(getDatabaseTablesWithoutViews());
+	public Table getRandomTableNoViewOrBailout() {
+		List<Table> databaseTablesWithoutViews = getDatabaseTablesWithoutViews();
+		if (databaseTablesWithoutViews.isEmpty()) {
+			throw new IgnoreMeException();
+		}
+		return Randomly.fromList(databaseTablesWithoutViews);
+	}
+
+	public Table getRandomTableNoViewNoVirtualTable() {
+		return Randomly.fromList(getDatabaseTablesWithoutViewsWithoutVirtualTables());
 	}
 
 	public List<Table> getDatabaseTablesWithoutViews() {
 		return databaseTables.stream().filter(t -> !t.isView).collect(Collectors.toList());
 	}
+
 	public List<Table> getViews() {
 		return databaseTables.stream().filter(t -> t.isView).collect(Collectors.toList());
 	}
-	
+
+	public Table getRandomViewOrBailout() {
+		if (getViews().isEmpty()) {
+			throw new IgnoreMeException();
+		} else {
+			return Randomly.fromList(getViews());
+		}
+	}
+
+	public List<Table> getDatabaseTablesWithoutViewsWithoutVirtualTables() {
+		return databaseTables.stream().filter(t -> !t.isView && !t.isVirtual).collect(Collectors.toList());
+	}
+
 }

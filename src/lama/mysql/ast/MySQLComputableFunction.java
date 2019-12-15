@@ -14,7 +14,6 @@ public class MySQLComputableFunction extends MySQLExpression {
 	private final MySQLExpression[] args;
 
 	public MySQLComputableFunction(MySQLFunction func, MySQLExpression... args) {
-		assert args.length == func.getNrArgs();
 		this.func = func;
 		this.args = args;
 	}
@@ -28,16 +27,16 @@ public class MySQLComputableFunction extends MySQLExpression {
 	}
 
 	public enum MySQLFunction {
-		ABS(1, "ABS") {
-			@Override
-			public MySQLConstant apply(MySQLConstant[] args, MySQLExpression[] origArgs) {
-				if (args[0].isNull()) {
-					return MySQLConstant.createNullConstant();
-				}
-				MySQLConstant intVal = args[0].castAs(CastType.SIGNED);
-				return MySQLConstant.createIntConstant(Math.abs(intVal.getInt()));
-			}
-		},
+//		ABS(1, "ABS") {
+//			@Override
+//			public MySQLConstant apply(MySQLConstant[] args, MySQLExpression[] origArgs) {
+//				if (args[0].isNull()) {
+//					return MySQLConstant.createNullConstant();
+//				}
+//				MySQLConstant intVal = args[0].castAs(CastType.SIGNED);
+//				return MySQLConstant.createIntConstant(Math.abs(intVal.getInt()));
+//			}
+//		},
 		/**
 		 * @see https://dev.mysql.com/doc/refman/8.0/en/bit-functions.html#function_bit-count
 		 */
@@ -207,16 +206,6 @@ public class MySQLComputableFunction extends MySQLExpression {
 		MySQLConstant[] constants = new MySQLConstant[args.length];
 		for (int i = 0; i < constants.length; i++) {
 			constants[i] = args[i].getExpectedValue();
-			/* workaround for https://bugs.mysql.com/bug.php?id=95938 */
-			if (constants[i].isString()) {
-				String text = constants[i].castAsString();
-				while ((text.startsWith(" ") || text.startsWith("\t")) && text.length() > 0) {
-					text = text.substring(1);
-				}
-				if (text.length() > 0 && (text.startsWith("\n") || text.startsWith("."))) {
-					throw new IgnoreMeException();
-				}
-			}
 		}
 		return func.apply(constants, args);
 	}

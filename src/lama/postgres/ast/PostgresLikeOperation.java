@@ -3,7 +3,7 @@ package lama.postgres.ast;
 import lama.LikeImplementationHelper;
 import lama.postgres.PostgresSchema.PostgresDataType;
 
-public class PostgresLikeOperation extends PostgresExpression {
+public class PostgresLikeOperation extends PostgresBinaryOperation {
 	
 	private final PostgresExpression left;
 	private final PostgresExpression right;
@@ -36,6 +36,11 @@ public class PostgresLikeOperation extends PostgresExpression {
 	
 	public PostgresExpression getRight() {
 		return right;
+	}
+
+	@Override
+	public String getOperatorTextRepresentation() {
+		return "LIKE";
 	}
 
 }

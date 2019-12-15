@@ -1,5 +1,6 @@
 package lama.postgres.gen;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,7 +22,7 @@ public class PostgresStatisticsGenerator {
 		if (Randomly.getBoolean()) {
 			sb.append(" IF NOT EXISTS");
 		}
-		PostgresTable randomTable = newSchema.getRandomTable();
+		PostgresTable randomTable = newSchema.getRandomTable(t -> !t.isView()); // TODO materialized view
 		if (randomTable.getColumns().size() < 2) {
 			throw new IgnoreMeException();
 		}
@@ -44,12 +45,7 @@ public class PostgresStatisticsGenerator {
 		sb.append(randomColumns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
 		sb.append(" FROM ");
 		sb.append(randomTable.getName());
-		return new QueryAdapter(sb.toString()) {
-			@Override
-			public boolean couldAffectSchema() {
-				return true;
-			}
-		};
+		return new QueryAdapter(sb.toString(), Arrays.asList("cannot have more than 8 columns in statistics"), true);
 	}
 	
 	public static Query remove(PostgresSchema s) {
@@ -60,12 +56,7 @@ public class PostgresStatisticsGenerator {
 			throw new IgnoreMeException();
 		}
 		sb.append(Randomly.fromList(statistics).getName());
-		return new QueryAdapter(sb.toString()) {
-			@Override
-			public boolean couldAffectSchema() {
-				return true;
-			}
-		};
+		return new QueryAdapter(sb.toString(), true);
 	}
 
 	private static String getNewStatisticsName(PostgresTable randomTable) {

@@ -32,30 +32,12 @@ import lama.postgres.PostgresSchema.PostgresColumn;
 
 public class MySQLRandomExpressionGenerator {
 
-	private final static int MAX_DEPTH = 2;
+	private final static int MAX_DEPTH = 3;
 
 	public static MySQLExpression generateRandomExpression(List<MySQLColumn> columns, MySQLRowValue rowVal,
 			Randomly r) {
-
-		/* workaround for https://bugs.mysql.com/bug.php?id=95942 */
-		while (true) {
-			MySQLExpression gen = gen(columns, rowVal, 0, r);
-			MySQLExpression gen2 = gen;
-			while (gen2 instanceof MySQLUnaryPrefixOperation) {
-				gen2 = ((MySQLUnaryPrefixOperation) gen2).getExpression();
-			}
-			if (gen2 instanceof MySQLColumnValue) {
-				MySQLConstant expectedVal = gen2.getExpectedValue();
-				if (expectedVal instanceof MySQLTextConstant) {
-					if (expectedVal.asBooleanNotNull()) {
-						if (!expectedVal.castAs(CastType.SIGNED).asBooleanNotNull()) {
-							continue;
-						}
-					}
-				}
-			}
-			return gen;
-		}
+		MySQLExpression gen = gen(columns, rowVal, 0, r);
+		return gen;
 	}
 
 	private enum Actions {
@@ -104,14 +86,15 @@ public class MySQLRandomExpressionGenerator {
 				rightList.add(gen(columns, rowVal, depth + 1, r));
 			}
 			return new MySQLInOperation(expr, rightList, Randomly.getBoolean());
-/* commented out as a workaround for https://bugs.mysql.com/bug.php?id=95983 */
+		/* commented out as a workaround for https://bugs.mysql.com/bug.php?id=95983 */
 //		case BINARY_OPERATION:
 //			return new MySQLBinaryOperation(gen(columns, rowVal, depth + 1, r), gen(columns, rowVal, depth + 1, r),
 //					MySQLBinaryOperator.getRandom());
 		case EXISTS:
 			return getExists(columns, rowVal, depth + 1, r);
 		case BETWEEN_OPERATOR:
-			return new MySQLBetweenOperation(gen(columns, rowVal, depth + 1, r), gen(columns, rowVal, depth + 1, r), gen(columns, rowVal, depth + 1, r));
+			return new MySQLBetweenOperation(gen(columns, rowVal, depth + 1, r), gen(columns, rowVal, depth + 1, r),
+					gen(columns, rowVal, depth + 1, r));
 		default:
 			throw new AssertionError();
 		}
@@ -133,10 +116,7 @@ public class MySQLRandomExpressionGenerator {
 		}
 		MySQLExpression[] args = new MySQLExpression[nrArgs];
 		for (int i = 0; i < args.length; i++) {
-			do {
-				args[i] = gen(columns, rowVal, depth + 1, r);
-				/* workaround for https://bugs.mysql.com/bug.php?id=95926 */
-			} while (args[i] instanceof MySQLConstant);
+			args[i] = gen(columns, rowVal, depth + 1, r);
 		}
 		return new MySQLComputableFunction(func, args);
 	}
@@ -173,6 +153,5 @@ public class MySQLRandomExpressionGenerator {
 		MySQLExpression expr = generateRandomExpression(columns, null, r);
 		return MySQLVisitor.asString(expr);
 	}
-
 
 }

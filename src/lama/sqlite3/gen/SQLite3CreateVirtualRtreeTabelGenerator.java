@@ -1,0 +1,49 @@
+package lama.sqlite3.gen;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import lama.Query;
+import lama.QueryAdapter;
+import lama.Randomly;
+import lama.sqlite3.schema.SQLite3Schema.Column;
+
+public class SQLite3CreateVirtualRtreeTabelGenerator {
+	
+
+	public static Query createTableStatement(String rTreeTableName, Randomly r) {
+		List<String> errors = new ArrayList<>();
+		List<Column> columns = new ArrayList<>();
+		StringBuilder sb = new StringBuilder("CREATE VIRTUAL TABLE ");
+		sb.append(rTreeTableName);
+		sb.append(" USING ");
+		sb.append(Randomly.fromOptions("rtree_i32", "rtree"));
+		sb.append("(");
+		int size = 3 + Randomly.smallNumber();
+		for (int i = 0; i < size; i++) {
+			if (i != 0) {
+				sb.append(", ");
+			}
+			Column c = SQLite3Common.createColumn(i);
+			columns.add(c);
+			sb.append(c.getName());
+		}
+		for (int i = 0; i < Randomly.smallNumber(); i++) {
+			sb.append(", ");
+			sb.append("+");
+			String columnName = SQLite3Common.createColumnName(size + i);
+			SQLite3ColumnBuilder columnBuilder = new SQLite3ColumnBuilder()
+					.allowPrimaryKey(false).allowNotNull(false).allowUnique(false).allowCheck(false);
+			String c = columnBuilder.createColumn(columnName, r, columns);
+			sb.append(c);
+			sb.append(" ");
+		}
+		errors.add("virtual tables cannot use computed columns");
+		sb.append(")");
+		
+		errors.add("Wrong number of columns for an rtree table");
+		errors.add("Too many columns for an rtree table");
+		return new QueryAdapter(sb.toString(), errors);
+	}
+
+}

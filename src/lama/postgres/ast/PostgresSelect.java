@@ -3,47 +3,77 @@ package lama.postgres.ast;
 import java.util.Collections;
 import java.util.List;
 
-import lama.postgres.PostgresSchema.PostgresColumn;
+import lama.Randomly;
 import lama.postgres.PostgresSchema.PostgresDataType;
 import lama.postgres.PostgresSchema.PostgresTable;
 
 public class PostgresSelect extends PostgresExpression {
+	
+	public static class PostgresFromTable {
+		private PostgresTable t;
+		private boolean only;
 
-	private SelectType fromOptions;
-	private List<PostgresTable> fromList = Collections.emptyList();
+		public PostgresFromTable(PostgresTable t, boolean only) {
+			this.t = t;
+			this.only = only;
+		}
+		
+		public PostgresTable getTable() {
+			return t;
+		}
+		
+		public boolean isOnly() {
+			return only;
+		}
+	}
+
+	private SelectType selectOption;
+	private List<PostgresFromTable> fromList = Collections.emptyList();
 	private PostgresExpression whereClause;
 	private List<PostgresExpression> groupByClause = Collections.emptyList();
 	private PostgresExpression limitClause;
 	private List<PostgresExpression> orderByClause = Collections.emptyList();
 	private PostgresExpression offsetClause;
-	private List<PostgresColumn> fetchColumns = Collections.emptyList();
-	private List<String> modifiers = Collections.emptyList();
+	private List<PostgresExpression> fetchColumns = Collections.emptyList();
+	private List<PostgresJoin> joinClauses = Collections.emptyList();
+	private PostgresExpression distinctOnClause;
 
 	public enum SelectType {
 		DISTINCT, ALL;
+
+		public static SelectType getRandom() {
+			return Randomly.fromOptions(values());
+		}
 	}
 
 	public void setSelectType(SelectType fromOptions) {
-		this.setFromOptions(fromOptions);
+		this.setSelectOption(fromOptions);
+	}
+	
+	public void setDistinctOnClause(PostgresExpression distinctOnClause) {
+		if (selectOption != SelectType.DISTINCT) {
+			throw new IllegalArgumentException();
+		}
+		this.distinctOnClause = distinctOnClause;
 	}
 
-	public void setFromTables(List<PostgresTable> fromTables) {
+	public void setFromTables(List<PostgresFromTable> fromTables) {
 		this.setFromList(fromTables);
 	}
 
-	public SelectType getFromOptions() {
-		return fromOptions;
+	public SelectType getSelectOption() {
+		return selectOption;
 	}
 
-	public void setFromOptions(SelectType fromOptions) {
-		this.fromOptions = fromOptions;
+	public void setSelectOption(SelectType fromOptions) {
+		this.selectOption = fromOptions;
 	}
 
-	public List<PostgresTable> getFromList() {
+	public List<PostgresFromTable> getFromList() {
 		return fromList;
 	}
 
-	public void setFromList(List<PostgresTable> fromList) {
+	public void setFromList(List<PostgresFromTable> fromList) {
 		this.fromList = fromList;
 	}
 
@@ -87,20 +117,12 @@ public class PostgresSelect extends PostgresExpression {
 		return offsetClause;
 	}
 
-	public void selectFetchColumns(List<PostgresColumn> fetchColumns) {
+	public void setFetchColumns(List<PostgresExpression> fetchColumns) {
 		this.fetchColumns = fetchColumns;
 	}
 
-	public List<PostgresColumn> getFetchColumns() {
+	public List<PostgresExpression> getFetchColumns() {
 		return fetchColumns;
-	}
-
-	public void setModifiers(List<String> modifiers) {
-		this.modifiers = modifiers;
-	}
-
-	public List<String> getModifiers() {
-		return modifiers;
 	}
 
 	@Override
@@ -112,5 +134,19 @@ public class PostgresSelect extends PostgresExpression {
 	public PostgresDataType getExpressionType() {
 		return null;
 	}
+
+	public void setJoinClauses(List<PostgresJoin> joinStatements) {
+		this.joinClauses = joinStatements;
+		
+	}
+
+	public List<PostgresJoin> getJoinClauses() {
+		return joinClauses;
+	}
+	
+	public PostgresExpression getDistinctOnClause() {
+		return distinctOnClause;
+	}
+	
 	
 }

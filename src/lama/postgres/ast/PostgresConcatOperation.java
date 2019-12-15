@@ -2,7 +2,7 @@ package lama.postgres.ast;
 
 import lama.postgres.PostgresSchema.PostgresDataType;
 
-public class PostgresConcatOperation extends PostgresExpression {
+public class PostgresConcatOperation extends PostgresBinaryOperation {
 
 	private final PostgresExpression left;
 	private final PostgresExpression right;
@@ -33,6 +33,11 @@ public class PostgresConcatOperation extends PostgresExpression {
 	
 	public PostgresExpression getRight() {
 		return right;
+	}
+
+	@Override
+	public String getOperatorTextRepresentation() {
+		return "||";
 	}
 	
 	

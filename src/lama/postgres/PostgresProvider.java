@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,8 +35,9 @@ import lama.postgres.gen.PostgresDropIndex;
 import lama.postgres.gen.PostgresIndexGenerator;
 import lama.postgres.gen.PostgresInsertGenerator;
 import lama.postgres.gen.PostgresNotifyGenerator;
-import lama.postgres.gen.PostgresQueryGenerator;
+import lama.postgres.gen.PostgresQueryCatalogGenerator;
 import lama.postgres.gen.PostgresReindexGenerator;
+import lama.postgres.gen.PostgresSequenceGenerator;
 import lama.postgres.gen.PostgresSetGenerator;
 import lama.postgres.gen.PostgresStatisticsGenerator;
 import lama.postgres.gen.PostgresTableGenerator;
@@ -43,8 +45,9 @@ import lama.postgres.gen.PostgresTransactionGenerator;
 import lama.postgres.gen.PostgresTruncateGenerator;
 import lama.postgres.gen.PostgresUpdateGenerator;
 import lama.postgres.gen.PostgresVacuumGenerator;
-import lama.sqlite3.gen.QueryGenerator;
+import lama.postgres.gen.PostgresViewGenerator;
 import lama.sqlite3.gen.SQLite3Common;
+import lama.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
 
 // EXISTS
 // IN
@@ -53,12 +56,17 @@ public class PostgresProvider implements DatabaseProvider {
 	public static final boolean IS_POSTGRES_TWELVE = true;
 
 	private static final int NR_QUERIES_PER_TABLE = 100000;
+	public static final boolean GENERATE_ONLY_KNOWN = false;
+
 	Randomly r = new Randomly();
 	private QueryManager manager;
 
+	private List<String> collationNames;
+
 	private enum Action {
 		ANALYZE, ALTER_TABLE, CLUSTER, COMMIT, CREATE_STATISTICS, DROP_STATISTICS, DELETE, DISCARD, DROP_INDEX, INSERT,
-		UPDATE, TRUNCATE, VACUUM, REINDEX, SET, CREATE_INDEX, SET_CONSTRAINTS, RESET_ROLE, COMMENT_ON, RESET, NOTIFY, LISTEN, UNLISTEN;
+		UPDATE, TRUNCATE, VACUUM, REINDEX, SET, CREATE_INDEX, SET_CONSTRAINTS, RESET_ROLE, COMMENT_ON, RESET, NOTIFY,
+		LISTEN, UNLISTEN, CREATE_SEQUENCE, CREATE_VIEW, QUERY_CATALOG;
 	}
 
 	@Override
@@ -68,11 +76,14 @@ public class PostgresProvider implements DatabaseProvider {
 			logger.writeCurrent(state);
 		}
 		this.manager = manager;
+		List<String> opClasses = getOpclasses(con);
+		List<String> operators = getOperators(con);
+		PostgresGlobalState globalState = new PostgresGlobalState(opClasses, operators, collationNames);
 		PostgresSchema newSchema = PostgresSchema.fromConnection(con, databaseName);
-		while (newSchema.getDatabaseTables().size() < Randomly.smallNumber() + 1) {
+		while (newSchema.getDatabaseTables().size() < 2) {
 			try {
 				String tableName = SQLite3Common.createTableName(newSchema.getDatabaseTables().size());
-				Query createTable = PostgresTableGenerator.generate(tableName, r, newSchema);
+				Query createTable = PostgresTableGenerator.generate(tableName, r, newSchema, GENERATE_ONLY_KNOWN, globalState);
 				if (options.logEachSelect()) {
 					logger.writeCurrent(createTable.getQueryString());
 				}
@@ -90,60 +101,22 @@ public class PostgresProvider implements DatabaseProvider {
 			Action action = Action.values()[i];
 			int nrPerformed = 0;
 			switch (action) {
-//			case DISCARD:
-//			case CREATE_INDEX:
-//			case CLUSTER:
-//				nrPerformed = 0;
-//					break;
-//			case CREATE_STATISTICS:
-//			case DROP_STATISTICS:
-//
-//				nrPerformed = r.getInteger(0, 30000);
-//				break;
-//			case COMMIT:
-//			case ANALYZE:
-//
-//				nrPerformed = r.getInteger(0, 300);
-//				break;
-//			case TRUNCATE:
-//			case DROP_INDEX:
-//			case ALTER_TABLE:
-////				nrPerformed = r.getInteger(0, 10);
-//				nrPerformed = 0;
-//				break;
-//			case REINDEX:
-//				nrPerformed = 0;
-//				break;
-//			case DELETE:
-//			case VACUUM:
-//				nrPerformed = 0;//r.getInteger(0, 2);
-//				break;
-//			case UPDATE:
-//			case SET:
-//				nrPerformed = 500;
-//				break;
-//			case INSERT:
-//				nrPerformed = 300;
-//				break;
-//			default:
-//				throw new AssertionError(action);
-//			}
-			case DISCARD:
 			case CREATE_INDEX:
-			case CLUSTER:
-				nrPerformed = r.getInteger(0, 50);
+				nrPerformed = r.getInteger(0, 10);
 				break;
 			case CREATE_STATISTICS:
-			case DROP_STATISTICS:
-				nrPerformed = r.getInteger(0, 50);
+				nrPerformed = r.getInteger(0, 5);
+				break;
+			case DISCARD:
+			case CLUSTER:
+			case DROP_INDEX:
+				nrPerformed = r.getInteger(0, 5);
 				break;
 			case COMMIT:
-				nrPerformed = r.getInteger(0, 30);
+				nrPerformed = r.getInteger(0, 0);
 				break;
-			case TRUNCATE:
-			case DROP_INDEX:
 			case ALTER_TABLE:
-				nrPerformed = r.getInteger(0, 10);
+				nrPerformed = r.getInteger(0, 5);
 				break;
 			case REINDEX:
 			case RESET:
@@ -151,6 +124,8 @@ public class PostgresProvider implements DatabaseProvider {
 				break;
 			case DELETE:
 			case RESET_ROLE:
+			case SET:
+			case QUERY_CATALOG:
 				nrPerformed = r.getInteger(0, 5);
 				break;
 			case ANALYZE:
@@ -162,14 +137,19 @@ public class PostgresProvider implements DatabaseProvider {
 			case NOTIFY:
 			case LISTEN:
 			case UNLISTEN:
-				nrPerformed = r.getInteger(0, 4);
+			case CREATE_SEQUENCE:
+			case DROP_STATISTICS:
+			case TRUNCATE:
+				nrPerformed = r.getInteger(0, 2);
+				break;
+			case CREATE_VIEW:
+				nrPerformed = r.getInteger(0, 2);
 				break;
 			case UPDATE:
-			case SET:
-				nrPerformed = r.getInteger(0, 50);
+				nrPerformed = r.getInteger(0, 10);
 				break;
 			case INSERT:
-				nrPerformed = r.getInteger(10, 1000);
+				nrPerformed = r.getInteger(0, 30);
 				break;
 			default:
 				throw new AssertionError(action);
@@ -196,120 +176,133 @@ public class PostgresProvider implements DatabaseProvider {
 			assert nrRemaining[nextAction.ordinal()] > 0;
 			nrRemaining[nextAction.ordinal()]--;
 			Query query;
-			try {
-				switch (nextAction) {
-				case ANALYZE:
-					query = PostgresAnalyzeGenerator.create(newSchema.getRandomTable());
-					break;
-				case CLUSTER:
-					query = PostgresClusterGenerator.create(newSchema);
-				case ALTER_TABLE:
-					query = PostgresAlterTableGenerator.create(newSchema.getRandomTable(), r, newSchema);
-					break;
-				case SET_CONSTRAINTS:
-					StringBuilder sb = new StringBuilder();
-					sb.append("SET CONSTRAINTS ALL ");
-					sb.append(Randomly.fromOptions("DEFERRED", "IMMEDIATE"));
-					query = new QueryAdapter(sb.toString());
-					break;
-				case RESET_ROLE:
-					query = new QueryAdapter("RESET ROLE");
-					break;
-				case COMMIT:
-					if (Randomly.getBoolean()) {
-						query = new QueryAdapter("COMMIT") {
-							@Override
-							public boolean couldAffectSchema() {
-								return true;
-							}
-						};
-					} else if (Randomly.getBoolean()) {
-						query = PostgresTransactionGenerator.executeBegin();
+			boolean successful = false;
+			int tries = 0;
+			while (!successful && tries++ <= 100) {
+				try {
+					switch (nextAction) {
+					case ANALYZE:
+						query = PostgresAnalyzeGenerator.create(newSchema.getRandomTable());
+						break;
+					case CLUSTER:
+						query = PostgresClusterGenerator.create(newSchema);
+					case ALTER_TABLE:
+						query = PostgresAlterTableGenerator.create(newSchema.getRandomTable(t -> !t.isView()), r,
+								newSchema, GENERATE_ONLY_KNOWN, opClasses, operators);
+						break;
+					case SET_CONSTRAINTS:
+						StringBuilder sb = new StringBuilder();
+						sb.append("SET CONSTRAINTS ALL ");
+						sb.append(Randomly.fromOptions("DEFERRED", "IMMEDIATE"));
+						query = new QueryAdapter(sb.toString());
+						break;
+					case RESET_ROLE:
+						query = new QueryAdapter("RESET ROLE");
+						break;
+					case QUERY_CATALOG:
+						query = PostgresQueryCatalogGenerator.query();
+						break;
+					case COMMIT:
+						if (Randomly.getBoolean()) {
+							query = new QueryAdapter("COMMIT") {
+								@Override
+								public boolean couldAffectSchema() {
+									return true;
+								}
+							};
+						} else if (Randomly.getBoolean()) {
+							query = PostgresTransactionGenerator.executeBegin();
 
-					} else {
-						query = new QueryAdapter("ROLLBACK") {
-							@Override
-							public boolean couldAffectSchema() {
-								return true;
-							}
-						};
+						} else {
+							query = new QueryAdapter("ROLLBACK") {
+								@Override
+								public boolean couldAffectSchema() {
+									return true;
+								}
+							};
+						}
+						break;
+					case NOTIFY:
+						query = PostgresNotifyGenerator.createNotify(r);
+						break;
+					case LISTEN:
+						query = PostgresNotifyGenerator.createListen();
+						break;
+					case UNLISTEN:
+						query = PostgresNotifyGenerator.createUnlisten();
+						break;
+					case RESET:
+						// https://www.postgresql.org/docs/devel/sql-reset.html
+						// TODO: also configuration parameter
+						query = new QueryAdapter("RESET ALL");
+						break;
+					case COMMENT_ON:
+						query = PostgresCommentGenerator.generate(newSchema, r);
+						break;
+					case CREATE_INDEX:
+						query = PostgresIndexGenerator.generate(newSchema, r, globalState);
+						break;
+					case DISCARD:
+						query = PostgresDiscardGenerator.create(newSchema);
+						break;
+					case CREATE_VIEW:
+						query = PostgresViewGenerator.create(newSchema, r);
+						break;
+					case DELETE:
+						query = PostgresDeleteGenerator.create(newSchema.getRandomTable(t -> !t.isView()), r);
+						break;
+					case DROP_INDEX:
+						query = PostgresDropIndex.create(newSchema.getRandomTable().getIndexes());
+						break;
+					case UPDATE:
+						query = PostgresUpdateGenerator.create(newSchema.getRandomTable(t -> t.isInsertable()), r);
+						break;
+					case VACUUM:
+						query = PostgresVacuumGenerator.create(newSchema.getRandomTable());
+						break;
+					case REINDEX:
+						query = PostgresReindexGenerator.create(newSchema);
+						break;
+					case TRUNCATE:
+						query = PostgresTruncateGenerator.create(newSchema);
+						break;
+					case SET:
+						query = PostgresSetGenerator.create(r);
+						break;
+					case INSERT:
+						query = PostgresInsertGenerator.insert(newSchema.getRandomTable(t -> t.isInsertable()), r);
+						break;
+					case CREATE_STATISTICS:
+						query = PostgresStatisticsGenerator.insert(newSchema, r);
+						break;
+					case DROP_STATISTICS:
+						query = PostgresStatisticsGenerator.remove(newSchema);
+						break;
+					case CREATE_SEQUENCE:
+						query = PostgresSequenceGenerator.createSequence(r, newSchema);
+						break;
+					default:
+						throw new AssertionError(nextAction);
 					}
-					break;
-				case NOTIFY:
-					query = PostgresNotifyGenerator.createNotify(r);
-					break;
-				case LISTEN:
-					query = PostgresNotifyGenerator.createListen();
-					break;
-				case UNLISTEN:
-					query = PostgresNotifyGenerator.createUnlisten();
-					break;
-				case RESET:
-					// https://www.postgresql.org/docs/devel/sql-reset.html
-					// TODO: also configuration parameter
-					query = new QueryAdapter("RESET ALL");
-					break;
-				case COMMENT_ON:
-					query = PostgresCommentGenerator.generate(newSchema, r);
-					break;
-				case CREATE_INDEX:
-					query = PostgresIndexGenerator.generate(newSchema, r);
-					break;
-				case DISCARD:
-					query = PostgresDiscardGenerator.create(newSchema);
-					break;
-				case DELETE:
-					query = PostgresDeleteGenerator.create(newSchema.getRandomTable(), r);
-					break;
-				case DROP_INDEX:
-					query = PostgresDropIndex.create(newSchema.getRandomTable().getIndexes());
-					break;
-				case UPDATE:
-					query = PostgresUpdateGenerator.create(newSchema.getRandomTable(), r);
-					break;
-				case VACUUM:
-					query = PostgresVacuumGenerator.create(newSchema.getRandomTable());
-					break;
-				case REINDEX:
-					query = PostgresReindexGenerator.create(newSchema);
-					break;
-				case TRUNCATE:
-					query = PostgresTruncateGenerator.create(newSchema);
-					break;
-				case SET:
-					query = PostgresSetGenerator.create(r);
-					break;
-				case INSERT:
-					query = PostgresInsertGenerator.insert(newSchema.getRandomTable(), r);
-					break;
-				case CREATE_STATISTICS:
-					query = PostgresStatisticsGenerator.insert(newSchema, r);
-					break;
-				case DROP_STATISTICS:
-					query = PostgresStatisticsGenerator.remove(newSchema);
-					break;
-				default:
-					throw new AssertionError(nextAction);
+				} catch (IgnoreMeException e) {
+					continue;
 				}
-			} catch (IgnoreMeException e) {
-				total--;
-				continue;
-			}
-			try {
-				if (options.logEachSelect()) {
-					logger.writeCurrent(query.getQueryString());
-				}
-				manager.execute(query);
-				if (query.couldAffectSchema()) {
-					newSchema = PostgresSchema.fromConnection(con, databaseName);
-				}
-			} catch (Throwable t) {
-				if (t.getMessage().contains("current transaction is aborted")) {
-					manager.execute(new QueryAdapter("ABORT"));
-					newSchema = PostgresSchema.fromConnection(con, databaseName);
-				} else {
-					System.err.println(query.getQueryString());
-					throw t;
+				try {
+					if (options.logEachSelect()) {
+						logger.writeCurrent(query.getQueryString());
+					}
+					successful = manager.execute(query);
+					if (query.couldAffectSchema()) {
+						newSchema = PostgresSchema.fromConnection(con, databaseName);
+					}
+				} catch (Throwable t) {
+					if (t.getMessage().contains("current transaction is aborted")) {
+						manager.execute(new QueryAdapter("ABORT"));
+						newSchema = PostgresSchema.fromConnection(con, databaseName);
+					} else {
+						System.err.println(query.getQueryString());
+						throw t;
+					}
 				}
 			}
 			total--;
@@ -318,24 +311,75 @@ public class PostgresProvider implements DatabaseProvider {
 		newSchema = PostgresSchema.fromConnection(con, databaseName);
 
 		for (PostgresTable t : newSchema.getDatabaseTables()) {
-			if (!ensureTableHasRows(con, t, r)) {
-				return;
-			}
+			
+//			if (!t.isView() && !ensureTableHasRows(con, t, r)) {
+//				return;
+//			}
+//			if (!t.isView() ) {
+//				QueryAdapter q = new QueryAdapter(String.format("SELECT pg_prewarm('%s')", t.getName()));
+//				q.execute(con);
+//			}
 		}
 
 		newSchema = PostgresSchema.fromConnection(con, databaseName);
-		manager.execute(new QueryAdapter("SET LOCAL statement_timeout = 10000;\n"));
+		manager.execute(new QueryAdapter("SET SESSION statement_timeout = 5000;\n"));
 
-		PostgresQueryGenerator queryGenerator = new PostgresQueryGenerator(manager, r, con, databaseName);
+		PostgresMetamorphicOracleGenerator or = new PostgresMetamorphicOracleGenerator(newSchema, r, con,
+				(PostgresStateToReproduce) state, logger, options, manager, globalState);
 		for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
 			try {
-				queryGenerator.generateAndCheckQuery((PostgresStateToReproduce) state, logger, options);
+				or.generateAndCheck();
 			} catch (IgnoreMeException e) {
-
+				continue;
 			}
 			manager.incrementSelectQueryCount();
 		}
+//		PostgresQueryGenerator queryGenerator = new PostgresQueryGenerator(manager, r, con, databaseName);
+//		for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
+//			try {
+//				queryGenerator.generateAndCheckQuery((PostgresStateToReproduce) state, logger, options);
+//			} catch (IgnoreMeException e) {
+//
+//			}
+//			manager.incrementSelectQueryCount();
+//		}
 
+	}
+
+	private List<String> getCollnames(Connection con) throws SQLException {
+		List<String> opClasses = new ArrayList<>();
+		try (Statement s = con.createStatement()) {
+			try (ResultSet rs = s.executeQuery("SELECT collname FROM pg_collation WHERE collname LIKE '%utf8' or collname = 'C';")) {
+				while (rs.next()) {
+					opClasses.add(rs.getString(1));
+				}
+			}
+		}
+		return opClasses;
+	}
+
+	private List<String> getOpclasses(Connection con) throws SQLException {
+		List<String> opClasses = new ArrayList<>();
+		try (Statement s = con.createStatement()) {
+			try (ResultSet rs = s.executeQuery("select opcname FROM pg_opclass;")) {
+				while (rs.next()) {
+					opClasses.add(rs.getString(1));
+				}
+			}
+		}
+		return opClasses;
+	}
+
+	private List<String> getOperators(Connection con) throws SQLException {
+		List<String> opClasses = new ArrayList<>();
+		try (Statement s = con.createStatement()) {
+			try (ResultSet rs = s.executeQuery("SELECT oprname FROM pg_operator;")) {
+				while (rs.next()) {
+					opClasses.add(rs.getString(1));
+				}
+			}
+		}
+		return opClasses;
 	}
 
 	private boolean ensureTableHasRows(Connection con, PostgresTable randomTable, Randomly r) throws SQLException {
@@ -346,7 +390,7 @@ public class PostgresProvider implements DatabaseProvider {
 				Query q = PostgresInsertGenerator.insert(randomTable, r);
 				manager.execute(q);
 			} catch (SQLException e) {
-				if (!QueryGenerator.shouldIgnoreException(e)) {
+				if (!SQLite3PivotedQuerySynthesizer.shouldIgnoreException(e)) {
 					throw new AssertionError(e);
 				}
 			}
@@ -366,22 +410,49 @@ public class PostgresProvider implements DatabaseProvider {
 
 	@Override
 	public Connection createDatabase(String databaseName, StateToReproduce state) throws SQLException {
-		state.statements.add(new QueryAdapter("\\c test;"));
-		state.statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName));
-		state.statements.add(new QueryAdapter("CREATE DATABASE " + databaseName));
-		state.statements.add(new QueryAdapter("\\c " + databaseName));
 		String url = "jdbc:postgresql://localhost:5432/test";
 		Connection con = DriverManager.getConnection(url, "lama", "password");
+		collationNames = getCollnames(con);
+		state.statements.add(new QueryAdapter("\\c test;"));
+		state.statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName));
+		String createDatabaseCommand = getCreateDatabaseCommand(databaseName);
+		state.statements.add(new QueryAdapter(createDatabaseCommand));
+		state.statements.add(new QueryAdapter("\\c " + databaseName));
 		try (Statement s = con.createStatement()) {
 			s.execute("DROP DATABASE IF EXISTS " + databaseName);
 		}
 		try (Statement s = con.createStatement()) {
-			s.execute("CREATE DATABASE " + databaseName);
+			s.execute(createDatabaseCommand);
 		}
 		con.close();
 		con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + databaseName, "lama", "password");
-
+		List<String> statements = Arrays.asList("CREATE EXTENSION IF NOT EXISTS btree_gin;", "CREATE EXTENSION IF NOT EXISTS btree_gist;", "CREATE EXTENSION IF NOT EXISTS pg_prewarm;", "SET max_parallel_workers_per_gather=16");
+		for (String s : statements) {
+			QueryAdapter query = new QueryAdapter(s);
+			state.statements.add(query);
+			query.execute(con);
+		}
+//		new QueryAdapter("set jit_above_cost = 0; set jit_inline_above_cost = 0; set jit_optimize_above_cost = 0;").execute(con);
 		return con;
+	}
+
+	private String getCreateDatabaseCommand(String databaseName) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("CREATE DATABASE " + databaseName + " ");
+		if (Randomly.getBoolean()) {
+			if (Randomly.getBoolean()) {
+				sb.append("WITH ENCODING '");
+				sb.append(Randomly.fromOptions("utf8"));
+				sb.append("' ");
+			}
+			for (String lc : Arrays.asList("LC_COLLATE", "LC_CTYPE")) {
+				if (Randomly.getBoolean()) {
+					sb.append(String.format(" %s = '%s'", lc, Randomly.fromList(collationNames)));
+				}
+			}
+			sb.append(" TEMPLATE template0");
+		}
+		return sb.toString();
 	}
 
 	@Override

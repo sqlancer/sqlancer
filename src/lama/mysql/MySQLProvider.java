@@ -37,12 +37,12 @@ import lama.mysql.gen.tblmaintenance.MySQLCheckTable;
 import lama.mysql.gen.tblmaintenance.MySQLChecksum;
 import lama.mysql.gen.tblmaintenance.MySQLOptimize;
 import lama.mysql.gen.tblmaintenance.MySQLRepair;
-import lama.sqlite3.gen.QueryGenerator;
 import lama.sqlite3.gen.SQLite3Common;
+import lama.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
 
 public class MySQLProvider implements DatabaseProvider {
 
-	private static final int NR_QUERIES_PER_TABLE = 1000;
+	private static final int NR_QUERIES_PER_TABLE = 10000;
 	private static final int MAX_INSERT_ROW_TRIES = 30;
 	private final Randomly r = new Randomly();
 	private QueryManager manager;
@@ -274,7 +274,7 @@ public class MySQLProvider implements DatabaseProvider {
 				Query q = MySQLRowInserter.insertRow(randomTable, r);
 				manager.execute(q);
 			} catch (SQLException e) {
-				if (!QueryGenerator.shouldIgnoreException(e)) {
+				if (!SQLite3PivotedQuerySynthesizer.shouldIgnoreException(e)) {
 					throw new AssertionError(e);
 				}
 			}

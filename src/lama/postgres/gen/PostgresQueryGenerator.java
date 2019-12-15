@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,16 +17,15 @@ import lama.MainOptions;
 import lama.Randomly;
 import lama.StateToReproduce.PostgresStateToReproduce;
 import lama.postgres.PostgresSchema;
-import lama.postgres.PostgresToStringVisitor;
 import lama.postgres.PostgresSchema.PostgresColumn;
 import lama.postgres.PostgresSchema.PostgresRowValue;
 import lama.postgres.PostgresSchema.PostgresTables;
+import lama.postgres.PostgresToStringVisitor;
 import lama.postgres.ast.PostgresColumnValue;
 import lama.postgres.ast.PostgresConstant;
 import lama.postgres.ast.PostgresExpression;
-import lama.postgres.ast.PostgresOrderByTerm;
 import lama.postgres.ast.PostgresSelect;
-import lama.postgres.ast.PostgresOrderByTerm.PostgresOrder;
+import lama.postgres.ast.PostgresSelect.PostgresFromTable;
 
 public class PostgresQueryGenerator {
 
@@ -73,8 +71,8 @@ public class PostgresQueryGenerator {
 		rw = randomFromTables.getRandomRowValue(database, state);
 
 		fetchColumns = columns;
-		selectStatement.setFromList(randomFromTables.getTables());
-		selectStatement.selectFetchColumns(fetchColumns);
+		selectStatement.setFromList(randomFromTables.getTables().stream().map(t -> new PostgresFromTable(t, false)).collect(Collectors.toList()));
+		selectStatement.setFetchColumns(fetchColumns.stream().map(c -> new PostgresColumnValue(c, rw.getValues().get(c))).collect(Collectors.toList()));
 		state.queryTargetedColumnsString = fetchColumns.stream().map(c -> c.getFullQualifiedName())
 				.collect(Collectors.joining(", "));
 		PostgresExpression whereClause = generateWhereClauseThatContainsRowValue(columns, rw);
@@ -88,11 +86,7 @@ public class PostgresQueryGenerator {
 			PostgresExpression offsetClause = generateOffset();
 			selectStatement.setOffsetClause(offsetClause);
 		}
-		List<String> modifiers = Collections.emptyList(); // "SQL_BUFFER_RESULT",
-															// "SQL_CALC_FOUND_ROWS",
-															// "HIGH_PRIORITY"
-		selectStatement.setModifiers(modifiers);
-		List<PostgresExpression> orderBy = generateOrderBy(columns);
+		List<PostgresExpression> orderBy = new PostgresExpressionGenerator(r).setColumns(columns).generateOrderBy();
 		selectStatement.setOrderByClause(orderBy);
 
 		StringBuilder sb2 = new StringBuilder();
@@ -128,15 +122,6 @@ public class PostgresQueryGenerator {
 		} else {
 			return Collections.emptyList();
 		}
-	}
-
-	public List<PostgresExpression> generateOrderBy(List<PostgresColumn> columns) {
-		List<PostgresExpression> orderBys = new ArrayList<>();
-		for (int i = 0; i < Randomly.smallNumber(); i++) {
-			orderBys.add(new PostgresOrderByTerm(PostgresColumnValue.create(Randomly.fromList(columns), null),
-					PostgresOrder.getRandomOrder()));
-		}
-		return orderBys;
 	}
 
 	private PostgresConstant generateLimit() {

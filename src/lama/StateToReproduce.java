@@ -13,6 +13,10 @@ import lama.postgres.ast.PostgresExpression;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.tdengine.TDEngineSchema.TDEngineColumn;
+import lama.tdengine.expr.TDEngineConstant;
+import lama.tdengine.expr.TDEngineExpression;
+import lama.tdengine.expr.TDEngineSelectStatement;
 
 public abstract class StateToReproduce {
 
@@ -93,6 +97,34 @@ public abstract class StateToReproduce {
 		}
 		
 		
+	}
+	
+	public static class MariaDBStateToReproduce extends StateToReproduce {
+
+		public MariaDBStateToReproduce(String databaseName) {
+			super(databaseName);
+		}
+
+		
+	}
+	
+	public static class TDEngineStateToReproduce extends StateToReproduce {
+		public TDEngineStateToReproduce(String databaseName) {
+			super(databaseName);
+		}
+
+		public Map<TDEngineColumn, TDEngineConstant> getRandomRowValues() {
+			return randomRowValues;
+		}
+		
+		public Map<TDEngineColumn, TDEngineConstant> randomRowValues;
+		
+		public TDEngineSelectStatement whereClause;
+		
+		public TDEngineExpression getWhereClause() {
+			return whereClause;
+		}
+
 	}
 	
 	public static class SQLite3StateToReproduce extends StateToReproduce {

@@ -8,7 +8,7 @@ import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
-import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
+import lama.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
@@ -16,14 +16,18 @@ import lama.sqlite3.ast.SQLite3Expression.Exist;
 import lama.sqlite3.ast.SQLite3Expression.Function;
 import lama.sqlite3.ast.SQLite3Expression.InOperation;
 import lama.sqlite3.ast.SQLite3Expression.Join;
-import lama.sqlite3.ast.SQLite3Expression.OrderingTerm;
+import lama.sqlite3.ast.SQLite3Expression.MatchOperation;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import lama.sqlite3.ast.SQLite3Expression.Subquery;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import lama.sqlite3.ast.SQLite3Function;
+import lama.sqlite3.ast.SQLite3RowValue;
 import lama.sqlite3.ast.SQLite3SelectStatement;
-import lama.sqlite3.ast.UnaryOperation;
+import lama.sqlite3.ast.SQLite3UnaryOperation;
+import lama.sqlite3.ast.SQLite3WindowFunction;
 
 public class SQLite3ExpectedValueVisitor extends SQLite3Visitor {
 
@@ -38,6 +42,8 @@ public class SQLite3ExpectedValueVisitor extends SQLite3Visitor {
 		}
 		sb.append(v.get());
 		sb.append(" -- " + expr.getExpectedValue());
+		sb.append(" explicit collate: " + expr.getExplicitCollateSequence());
+		sb.append(" implicit collate: " + expr.getImplicitCollateSequence());
 		sb.append("\n");
 	}
 
@@ -49,7 +55,7 @@ public class SQLite3ExpectedValueVisitor extends SQLite3Visitor {
 	}
 
 	@Override
-	public void visit(BinaryOperation op) {
+	public void visit(Sqlite3BinaryOperation op) {
 		print(op);
 		visit(op.getLeft());
 		visit(op.getRight());
@@ -58,9 +64,7 @@ public class SQLite3ExpectedValueVisitor extends SQLite3Visitor {
 	@Override
 	public void visit(BetweenOperation op) {
 		print(op);
-		visit(op.getExpression());
-		visit(op.getLeft());
-		visit(op.getRight());
+		visit(op.getTopNode());
 	}
 
 	@Override
@@ -82,7 +86,7 @@ public class SQLite3ExpectedValueVisitor extends SQLite3Visitor {
 	}
 
 	@Override
-	public void visit(SQLite3SelectStatement s) {
+	public void visit(SQLite3SelectStatement s, boolean inner) {
 		for (SQLite3Expression expr : s.getFetchColumns()) {
 			if (expr instanceof SQLite3Aggregate) {
 				visit(expr);
@@ -92,16 +96,19 @@ public class SQLite3ExpectedValueVisitor extends SQLite3Visitor {
 			visit(expr);
 		}
 		visit(s.getWhereClause());
+		if (s.getHavingClause() != null) {
+			visit(s.getHavingClause());
+		}
 	}
 
 	@Override
-	public void visit(OrderingTerm term) {
+	public void visit(SQLite3OrderingTerm term) {
 		print(term);
 		visit(term.getExpression());
 	}
 
 	@Override
-	public void visit(UnaryOperation exp) {
+	public void visit(SQLite3UnaryOperation exp) {
 		print(exp);
 		visit(exp.getExpression());
 	}
@@ -216,6 +223,37 @@ public class SQLite3ExpectedValueVisitor extends SQLite3Visitor {
 	public void visit(SQLite3Aggregate aggr) {
 		print(aggr);
 		visit(aggr.getExpectedValue());
+	}
+
+	@Override
+	public void visit(SQLite3PostfixText op) {
+		print(op);
+		if (op.getExpr() != null) {
+			visit(op.getExpr());
+		}
+	}
+
+	@Override
+	public void visit(SQLite3WindowFunction func) {
+		print(func);
+		for (SQLite3Expression expr : func.getArgs()) {
+			visit(expr);
+		}
+	}
+
+	@Override
+	public void visit(MatchOperation match) {
+		print(match);
+		visit(match.getLeft());
+		visit(match.getRight());
+	}
+
+	@Override
+	public void visit(SQLite3RowValue rw) {
+		print(rw);
+		for (SQLite3Expression expr : rw.getExpressions()) {
+			visit(expr);
+		}
 	}
 
 }

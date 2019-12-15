@@ -45,7 +45,7 @@ public abstract class MySQLConstant extends MySQLExpression {
 				try {
 					String substring = value.substring(0, i);
 					Double val = Double.valueOf(substring);
-					return val != 0;
+					return val != 0 && !Double.isNaN(val);
 				} catch (NumberFormatException e) {
 					// ignore
 				}
@@ -97,7 +97,11 @@ public abstract class MySQLConstant extends MySQLExpression {
 		public MySQLConstant castAs(CastType type) {
 			if (type == CastType.SIGNED || type == CastType.UNSIGNED) {
 				String value = this.value;
-				while (value.startsWith(" ") || value.startsWith("\t")) {
+				while (value.startsWith(" ") || value.startsWith("\t") || value.startsWith("\n")) {
+					if (value.startsWith("\n")) {
+						/* workaround for https://bugs.mysql.com/bug.php?id=96294 */
+						throw new IgnoreMeException();
+					}
 					value = value.substring(1);
 				}
 				for (int i = value.length(); i >= 0; i--) {

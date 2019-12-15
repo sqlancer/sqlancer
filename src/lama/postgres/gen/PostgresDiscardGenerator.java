@@ -1,9 +1,6 @@
 package lama.postgres.gen;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
-import org.postgresql.util.PSQLException;
+import java.util.Arrays;
 
 import lama.Query;
 import lama.QueryAdapter;
@@ -25,19 +22,7 @@ public class PostgresDiscardGenerator {
 			what = Randomly.fromOptions("PLANS", "SEQUENCES");
 		}
 		sb.append(what);
-		return new QueryAdapter(sb.toString()) {
-			@Override
-			public void execute(Connection con) throws SQLException {
-				try {
-					super.execute(con);
-				} catch (PSQLException e) {
-					if (e.getMessage().contains("cannot run inside a transaction block")) {
-
-					} else {
-						throw e;
-					}
-				}
-			}
+		return new QueryAdapter(sb.toString(), Arrays.asList("cannot run inside a transaction block")) {
 
 			@Override
 			public boolean couldAffectSchema() {

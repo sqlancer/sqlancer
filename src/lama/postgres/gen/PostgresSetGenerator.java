@@ -90,9 +90,9 @@ public class PostgresSetGenerator {
 		MIN_PARALLEL_TABLE_SCAN_SIZE("min_parallel_table_scan_size", (r) -> r.getInteger(0, 715827882)),
 		MIN_PARALLEL_INDEX_SCAN_SIZE("min_parallel_index_scan_size", (r) -> r.getInteger(0, 715827882)),
 		EFFECTIVE_CACHE_SIZE("effective_cache_size", (r) -> r.getInteger(1, 2147483647)),
-		JIT_ABOVE_COST("jit_above_cost", (r) -> r.getLong(-1, Long.MAX_VALUE)),
-		JIT_INLINE_ABOVE_COST("jit_inline_above_cost", (r) -> r.getLong(-1, Long.MAX_VALUE)),
-		JIT_OPTIMIZE_ABOVE_COST("jit_optimize_above_cost", (r) -> r.getLong(-1, Long.MAX_VALUE)),
+		JIT_ABOVE_COST("jit_above_cost", (r) -> Randomly.fromOptions(0, r.getLong(-1, Long.MAX_VALUE))),
+		JIT_INLINE_ABOVE_COST("jit_inline_above_cost", (r) -> Randomly.fromOptions(0, r.getLong(-1, Long.MAX_VALUE))),
+		JIT_OPTIMIZE_ABOVE_COST("jit_optimize_above_cost", (r) -> Randomly.fromOptions(0, r.getLong(-1, Long.MAX_VALUE))),
 		// 19.7.3. Genetic Query Optimizer
 		// https://www.postgresql.org/docs/current/runtime-config-query.html#RUNTIME-CONFIG-QUERY-GEQO
 		GEQO("geqo", (r) -> Randomly.fromOptions(1, 0)),

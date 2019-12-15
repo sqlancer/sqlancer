@@ -4,11 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.postgresql.util.PSQLException;
-
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.postgres.PostgresGlobalState;
 import lama.postgres.PostgresSchema;
 import lama.postgres.PostgresSchema.PostgresColumn;
 import lama.postgres.PostgresSchema.PostgresDataType;
@@ -24,7 +23,8 @@ public class PostgresIndexGenerator {
 		BTREE, HASH, GIST, GIN
 	}
 
-	public static Query generate(PostgresSchema s, Randomly r) {
+	public static Query generate(PostgresSchema s, Randomly r, PostgresGlobalState globalState) {
+		List<String> errors = new ArrayList<>();
 		StringBuilder sb = new StringBuilder();
 		sb.append("CREATE");
 		if (Randomly.getBoolean()) {
@@ -39,10 +39,13 @@ public class PostgresIndexGenerator {
 //		if (Randomly.getBoolean()) {
 //			sb.append("CONCURRENTLY ");
 //		}
-		PostgresTable randomTable = s.getRandomTable();
+		PostgresTable randomTable = s.getRandomTable(t -> !t.isView()); // TODO: materialized views
 		String indexName = getNewIndexName(randomTable);
 		sb.append(indexName);
 		sb.append(" ON ");
+		if (Randomly.getBoolean()){
+			sb.append("ONLY ");
+		}
 		sb.append(randomTable.getName());
 		IndexType method;
 		if (Randomly.getBoolean()) {
@@ -70,6 +73,18 @@ public class PostgresIndexGenerator {
 					sb.append(PostgresVisitor.asString(expression));
 					sb.append(")");
 				}
+
+//				if (Randomly.getBoolean()) {
+//					sb.append(" ");
+//					sb.append("COLLATE ");
+//					sb.append(Randomly.fromOptions("C", "POSIX"));
+//				}
+				if (Randomly.getBoolean()) {
+					sb.append(" ");
+					sb.append(globalState.getRandomOpclass());
+					errors.add("does not accept");
+					errors.add("does not exist for access method");
+				}
 				if (Randomly.getBoolean()) {
 					sb.append(" ");
 					sb.append(Randomly.fromOptions("ASC", "DESC"));
@@ -92,49 +107,37 @@ public class PostgresIndexGenerator {
 //			sb.append(" WITH ");
 //			
 //		}
-		List<String> errors = new ArrayList<>();
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
-			PostgresExpression expr = PostgresExpressionGenerator.generateExpression(r, randomTable.getColumns(),
-					PostgresDataType.BOOLEAN);
+			PostgresExpression expr = new PostgresExpressionGenerator(r).setColumns(randomTable.getColumns()).setGlobalState(globalState).generateExpression(PostgresDataType.BOOLEAN);
 			sb.append(PostgresVisitor.asString(expr));
 		}
+		errors.add("already contains data"); // CONCURRENT INDEX failed
 		errors.add("You might need to add explicit type casts");
 		errors.add(" collations are not supported"); // TODO check
 		errors.add("because it has pending trigger events");
 		errors.add("could not determine which collation to use for index expression");
-		return new QueryAdapter(sb.toString(), errors) {
-			public void execute(java.sql.Connection con) throws java.sql.SQLException {
-				try {
-					super.execute(con);
-				} catch (PSQLException e) {
-					if (e.getMessage().contains("already exists")) {
-						return;
-					} else if (e.getMessage().contains("could not create unique index")) {
-
-					} else if (e.getMessage().contains("has no default operator class")) {
-
-					} else if (e.getMessage().contains("does not support")) {
-
-					} else if (e.getMessage().contains("cannot cast")) {
-
-					} else if (e.getMessage().contains("unsupported UNIQUE constraint with partition key definition")) {
-
-					} else if (e.getMessage().contains("insufficient columns in UNIQUE constraint definition")) {
-						// partition
-					} else if (e.getMessage().contains("invalid input syntax for ")) {
-						// cast
-					} else if (e.getMessage().contains("must be type ")) {
-					} else if (e.getMessage().contains("integer out of range")) {
-					} else if (e.getMessage().contains("division by zero")) {
-					} else if (e.getMessage().contains("out of range")) {
-					} else {
-						throw e;
-					}
-				}
-
-			};
-		};
+		errors.add("could not determine which collation to use for string comparison");
+		errors.add("is duplicated");
+		errors.add("access method \"gin\" does not support unique indexes");
+		errors.add("access method \"hash\" does not support unique indexes");
+		errors.add("already exists");
+		errors.add("could not create unique index");
+		errors.add("has no default operator class");
+		errors.add("does not support");
+		errors.add("cannot cast");
+		errors.add("unsupported UNIQUE constraint with partition key definition");
+		errors.add("insufficient columns in UNIQUE constraint definition");
+		errors.add("invalid input syntax for");
+		errors.add("must be type ");
+		errors.add("integer out of range");
+		errors.add("division by zero");
+		errors.add("out of range");
+		errors.add("functions in index predicate must be marked IMMUTABLE");
+		errors.add("functions in index expression must be marked IMMUTABLE");
+		errors.add("result of range difference would not be contiguous");
+		PostgresCommon.addCommonExpressionErrors(errors);
+		return new QueryAdapter(sb.toString(), errors);
 	}
 
 	private static String getNewIndexName(PostgresTable randomTable) {

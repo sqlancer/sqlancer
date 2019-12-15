@@ -1,22 +1,23 @@
 package lama.postgres;
 
 import lama.IgnoreMeException;
+import lama.postgres.ast.PostgresAggregate;
 import lama.postgres.ast.PostgresBetweenOperation;
-import lama.postgres.ast.PostgresBinaryArithmeticOperation;
-import lama.postgres.ast.PostgresBinaryComparisonOperation;
-import lama.postgres.ast.PostgresBinaryLogicalOperation;
+import lama.postgres.ast.PostgresBinaryOperation;
 import lama.postgres.ast.PostgresCastOperation;
+import lama.postgres.ast.PostgresCollate;
 import lama.postgres.ast.PostgresColumnValue;
-import lama.postgres.ast.PostgresComputableFunction;
-import lama.postgres.ast.PostgresConcatOperation;
 import lama.postgres.ast.PostgresConstant;
 import lama.postgres.ast.PostgresExpression;
+import lama.postgres.ast.PostgresFunction;
 import lama.postgres.ast.PostgresInOperation;
-import lama.postgres.ast.PostgresLikeOperation;
 import lama.postgres.ast.PostgresOrderByTerm;
+import lama.postgres.ast.PostgresPOSIXRegularExpression;
 import lama.postgres.ast.PostgresPostfixOperation;
+import lama.postgres.ast.PostgresPostfixText;
 import lama.postgres.ast.PostgresPrefixOperation;
 import lama.postgres.ast.PostgresSelect;
+import lama.postgres.ast.PostgresSimilarTo;
 
 public class PostgresExpectedValueVisitor extends PostgresVisitor {
 
@@ -72,13 +73,6 @@ public class PostgresExpectedValueVisitor extends PostgresVisitor {
 	}
 
 	@Override
-	public void visit(PostgresBinaryLogicalOperation op) {
-		print(op);
-		visit(op.getLeft());
-		visit(op.getRight());
-	}
-
-	@Override
 	public void visit(PostgresSelect op) {
 		visit(op.getWhereClause());
 	}
@@ -89,14 +83,7 @@ public class PostgresExpectedValueVisitor extends PostgresVisitor {
 	}
 
 	@Override
-	public void visit(PostgresBinaryComparisonOperation op) {
-		print(op);
-		visit(op.getLeft());
-		visit(op.getRight());
-	}
-
-	@Override
-	public void visit(PostgresComputableFunction f) {
+	public void visit(PostgresFunction f) {
 		print(f);
 		for (int i = 0; i < f.getArguments().length; i++) {
 			visit(f.getArguments()[i]);
@@ -110,14 +97,7 @@ public class PostgresExpectedValueVisitor extends PostgresVisitor {
 	}
 
 	@Override
-	public void visit(PostgresLikeOperation op) {
-		print(op);
-		visit(op.getLeft());
-		visit(op.getRight());
-	}
-
-	@Override
-	public void visit(PostgresBinaryArithmeticOperation op) {
+	public void visit(PostgresBinaryOperation op) {
 		print(op);
 		visit(op.getLeft());
 		visit(op.getRight());
@@ -131,12 +111,6 @@ public class PostgresExpectedValueVisitor extends PostgresVisitor {
 		visit(op.getRight());
 	}
 
-	@Override
-	public void visit(PostgresConcatOperation op) {
-		print(op);
-		visit(op.getLeft());
-		visit(op.getRight());
-	}
 
 	@Override
 	public void visit(PostgresInOperation op) {
@@ -145,6 +119,41 @@ public class PostgresExpectedValueVisitor extends PostgresVisitor {
 		for (PostgresExpression right : op.getListElements()) {
 			visit(right);
 		}
+	}
+
+	@Override
+	public void visit(PostgresPostfixText op) {
+		print(op);
+		visit(op.getExpr());
+	}
+
+	@Override
+	public void visit(PostgresAggregate op) {
+		print(op);
+		visit(op.getExpr());
+	}
+
+	@Override
+	public void visit(PostgresSimilarTo op) {
+		print(op);
+		visit(op.getString());
+		visit(op.getSimilarTo());
+		if (op.getEscapeCharacter() != null) {
+			visit(op.getEscapeCharacter());
+		}
+	}
+	
+	@Override
+	public void visit(PostgresPOSIXRegularExpression op) {
+		print(op);
+		visit(op.getString());
+		visit(op.getRegex());
+	}
+
+	@Override
+	public void visit(PostgresCollate op) {
+		print(op);
+		visit(op.getExpr());
 	}
 
 }

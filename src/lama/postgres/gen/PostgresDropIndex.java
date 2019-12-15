@@ -1,11 +1,7 @@
 package lama.postgres.gen;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
-
-import org.postgresql.util.PSQLException;
 
 import lama.Query;
 import lama.QueryAdapter;
@@ -42,29 +38,7 @@ public class PostgresDropIndex {
 			sb.append(" ");
 			sb.append(Randomly.fromOptions("CASCADE", "RESTRICT"));
 		}
-		return new QueryAdapter(sb.toString(), Arrays.asList("cannot drop desired object(s) because other objects depend on them")) {
-			@Override
-			public void execute(Connection con) throws SQLException {
-				try {
-					super.execute(con);
-				} catch (PSQLException e) {
-					if (e.getMessage().contains("cannot drop index")) {
-
-					} else if (e.getMessage().contains("does not exist")) {
-
-					}
-
-					else {
-						throw e;
-					}
-				}
-			}
-			
-			@Override
-			public boolean couldAffectSchema() {
-				return true;
-			}
-		};
+		return new QueryAdapter(sb.toString(), Arrays.asList("cannot drop desired object(s) because other objects depend on them", "cannot drop index", "does not exist"), true);
 	}
 
 }

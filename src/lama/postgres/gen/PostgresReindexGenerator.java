@@ -1,11 +1,9 @@
 package lama.postgres.gen;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.postgresql.util.PSQLException;
 
 import lama.IgnoreMeException;
 import lama.Query;
@@ -22,6 +20,8 @@ public class PostgresReindexGenerator {
 	}
 
 	public static Query create(PostgresSchema newSchema) {
+		List<String> errors = new ArrayList<>();
+		errors.add("could not create unique index"); // CONCURRENT INDEX
 		StringBuilder sb = new StringBuilder();
 		sb.append("REINDEX");
 //		if (Randomly.getBoolean()) {
@@ -46,7 +46,7 @@ public class PostgresReindexGenerator {
 			if (PostgresProvider.IS_POSTGRES_TWELVE && Randomly.getBoolean()) {
 				sb.append("CONCURRENTLY ");
 			}
-			sb.append(newSchema.getRandomTable().getName());
+			sb.append(newSchema.getRandomTable(t -> !t.isView()).getName());
 			break;
 		case DATABASE:
 			sb.append("DATABASE ");
@@ -58,20 +58,10 @@ public class PostgresReindexGenerator {
 		default:
 			throw new AssertionError(scope);
 		}
-		return new QueryAdapter(sb.toString()) {
-			@Override
-			public void execute(Connection con) throws SQLException {
-				try {
-					super.execute(con);
-				} catch (PSQLException e) {
-//					if (e.getMessage().contains("is duplicated")) {
-//						// can happen with CREATE INDEX CONCURRENTLY
-//					} else {
-//						throw e;
-//					}
-				}
-			}
-		};
+		errors.add("already contains data"); // FIXME bug report
+		errors.add("does not exist"); // internal index
+		errors.add("REINDEX is not yet implemented for partitioned indexes");
+		return new QueryAdapter(sb.toString(), errors);
 	}
 
 }

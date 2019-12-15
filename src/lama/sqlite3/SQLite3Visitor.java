@@ -7,7 +7,7 @@ import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
-import lama.sqlite3.ast.SQLite3Expression.BinaryOperation;
+import lama.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
@@ -15,14 +15,18 @@ import lama.sqlite3.ast.SQLite3Expression.Exist;
 import lama.sqlite3.ast.SQLite3Expression.Function;
 import lama.sqlite3.ast.SQLite3Expression.InOperation;
 import lama.sqlite3.ast.SQLite3Expression.Join;
-import lama.sqlite3.ast.SQLite3Expression.OrderingTerm;
+import lama.sqlite3.ast.SQLite3Expression.MatchOperation;
 import lama.sqlite3.ast.SQLite3Expression.PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import lama.sqlite3.ast.SQLite3Expression.Subquery;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import lama.sqlite3.ast.SQLite3Function;
+import lama.sqlite3.ast.SQLite3RowValue;
 import lama.sqlite3.ast.SQLite3SelectStatement;
-import lama.sqlite3.ast.UnaryOperation;
+import lama.sqlite3.ast.SQLite3UnaryOperation;
+import lama.sqlite3.ast.SQLite3WindowFunction;
 
 public abstract class SQLite3Visitor {
 
@@ -45,9 +49,11 @@ public abstract class SQLite3Visitor {
 		return sb.toString();
 	}
 
+	public abstract void visit(SQLite3PostfixText op);
+	
 	public abstract void visit(BinaryComparisonOperation op);
 
-	public abstract void visit(BinaryOperation op);
+	public abstract void visit(Sqlite3BinaryOperation op);
 
 	public abstract void visit(BetweenOperation op);
 
@@ -57,11 +63,11 @@ public abstract class SQLite3Visitor {
 
 	public abstract void visit(Function f);
 
-	public abstract void visit(SQLite3SelectStatement s);
+	public abstract void visit(SQLite3SelectStatement s, boolean inner);
 
-	public abstract void visit(OrderingTerm term);
+	public abstract void visit(SQLite3OrderingTerm term);
 
-	public abstract void visit(UnaryOperation exp);
+	public abstract void visit(SQLite3UnaryOperation exp);
 
 	public abstract void visit(PostfixUnaryOperation exp);
 
@@ -78,6 +84,8 @@ public abstract class SQLite3Visitor {
 	public abstract void visit(Exist exist);
 
 	public abstract void visit(Join join);
+	
+	public abstract void visit(MatchOperation match);
 
 	public abstract void visit(SQLite3Function func);
 
@@ -88,16 +96,20 @@ public abstract class SQLite3Visitor {
 	public abstract void visit(SQLite3CaseWithBaseExpression casExpr);
 
 	public abstract void visit(SQLite3Aggregate aggr);
+	
+	public abstract void visit(SQLite3WindowFunction func);
+	
+	public abstract void visit(SQLite3RowValue rw);
 
 	public void visit(SQLite3Expression expr) {
-		if (expr instanceof BinaryOperation) {
-			visit((BinaryOperation) expr);
+		if (expr instanceof Sqlite3BinaryOperation) {
+			visit((Sqlite3BinaryOperation) expr);
 		} else if (expr instanceof ColumnName) {
 			visit((ColumnName) expr);
 		} else if (expr instanceof SQLite3Constant) {
 			visit((SQLite3Constant) expr);
-		} else if (expr instanceof UnaryOperation) {
-			visit((UnaryOperation) expr);
+		} else if (expr instanceof SQLite3UnaryOperation) {
+			visit((SQLite3UnaryOperation) expr);
 		} else if (expr instanceof PostfixUnaryOperation) {
 			visit((PostfixUnaryOperation) expr);
 		} else if (expr instanceof Function) {
@@ -106,8 +118,8 @@ public abstract class SQLite3Visitor {
 			visit((BetweenOperation) expr);
 		} else if (expr instanceof CollateOperation) {
 			visit((CollateOperation) expr);
-		} else if (expr instanceof OrderingTerm) {
-			visit((OrderingTerm) expr);
+		} else if (expr instanceof SQLite3OrderingTerm) {
+			visit((SQLite3OrderingTerm) expr);
 		} else if (expr instanceof SQLite3Expression.InOperation) {
 			visit((InOperation) expr);
 		} else if (expr instanceof Cast) {
@@ -117,7 +129,7 @@ public abstract class SQLite3Visitor {
 		} else if (expr instanceof Join) {
 			visit((Join) expr);
 		} else if (expr instanceof SQLite3SelectStatement) {
-			visit((SQLite3SelectStatement) expr);
+			visit((SQLite3SelectStatement) expr, true);
 		} else if (expr instanceof Exist) {
 			visit((Exist) expr);
 		} else if (expr instanceof BinaryComparisonOperation) {
@@ -132,6 +144,14 @@ public abstract class SQLite3Visitor {
 			visit((SQLite3CaseWithBaseExpression) expr);
 		} else if (expr instanceof SQLite3Aggregate) {
 			visit((SQLite3Aggregate) expr);
+		} else if (expr instanceof SQLite3PostfixText) {
+			visit((SQLite3PostfixText) expr);
+		} else if (expr instanceof SQLite3WindowFunction) {
+			visit((SQLite3WindowFunction) expr);
+		} else if (expr instanceof MatchOperation) {
+			visit((MatchOperation) expr);
+		} else if (expr instanceof SQLite3RowValue) {
+			visit((SQLite3RowValue) expr);
 		} else {
 			throw new AssertionError(expr);
 		}
@@ -142,9 +162,14 @@ public abstract class SQLite3Visitor {
 			throw new AssertionError();
 		}
 		SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
-		visitor.visit(expr);
+		if (expr instanceof SQLite3SelectStatement) {
+			visitor.visit((SQLite3SelectStatement) expr, false);
+		} else {
+			visitor.visit(expr);
+		}
 		return visitor.get();
 	}
+	
 
 	public static String asExpectedValues(SQLite3Expression expr) {
 		SQLite3ExpectedValueVisitor visitor = new SQLite3ExpectedValueVisitor();

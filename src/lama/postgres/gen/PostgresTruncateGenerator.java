@@ -31,7 +31,7 @@ public class PostgresTruncateGenerator {
 			sb.append(" ");
 			sb.append(Randomly.fromOptions("CASCADE", "RESTRICT"));
 		}
-		return new QueryAdapter(sb.toString(), Arrays.asList("cannot truncate a table referenced in a foreign key constraint"));
+		return new QueryAdapter(sb.toString(), Arrays.asList("cannot truncate a table referenced in a foreign key constraint", "is not a table"));
 	}
 
 }

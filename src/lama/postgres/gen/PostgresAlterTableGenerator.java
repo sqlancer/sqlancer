@@ -1,11 +1,7 @@
 package lama.postgres.gen;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.postgresql.util.PSQLException;
 
 import lama.IgnoreMeException;
 import lama.Query;
@@ -25,6 +21,9 @@ public class PostgresAlterTableGenerator {
 	private boolean changesSchema;
 	private static PostgresColumn randomColumn;
 	private PostgresSchema schema;
+	private boolean generateOnlyKnown;
+	private List<String> opClasses;
+	private List<String> operators;
 
 	private enum Action {
 //		ALTER_TABLE_ADD_COLUMN, // [ COLUMN ] column data_type [ COLLATE collation ] [
@@ -56,14 +55,17 @@ public class PostgresAlterTableGenerator {
 		REPLICA_IDENTITY
 	}
 
-	public PostgresAlterTableGenerator(PostgresTable randomTable, Randomly r, PostgresSchema s) {
+	public PostgresAlterTableGenerator(PostgresTable randomTable, Randomly r, PostgresSchema s, boolean generateOnlyKnown, List<String> opClasses, List<String> operators) {
 		this.randomTable = randomTable;
 		this.r = r;
 		this.schema = s;
+		this.generateOnlyKnown = generateOnlyKnown;
+		this.opClasses = opClasses;
+		this.operators = operators;
 	}
 
-	public static Query create(PostgresTable randomTable, Randomly r, PostgresSchema s) {
-		return new PostgresAlterTableGenerator(randomTable, r, s).generate();
+	public static Query create(PostgresTable randomTable, Randomly r, PostgresSchema s, boolean generateOnlyKnown, List<String> opClasses, List<String> operators) {
+		return new PostgresAlterTableGenerator(randomTable, r, s, generateOnlyKnown, opClasses, operators).generate();
 	}
 
 	private enum Attribute {
@@ -78,11 +80,21 @@ public class PostgresAlterTableGenerator {
 
 	public Query generate() {
 		List<String> errors = new ArrayList<>();
-		/* workaround for */
-		errors.add("could not open relation with OID");
+		PostgresCommon.addCommonExpressionErrors(errors);
+		PostgresCommon.addCommonInsertUpdateErrors(errors);
+		PostgresCommon.addCommonTableErrors(errors);
 		errors.add("cannot drop desired object(s) because other objects depend on them");
 		errors.add("invalid input syntax for");
 		errors.add("it has pending trigger events");
+		errors.add("could not open relation");
+		errors.add("functions in index expression must be marked IMMUTABLE");
+		errors.add("functions in index predicate must be marked IMMUTABLE");
+		errors.add("has no default operator class for access method");
+		errors.add("does not accept data type");
+		errors.add("does not exist for access method");
+		errors.add("could not find cast from");
+		errors.add("does not exist"); // TODO: investigate
+		errors.add("constraints on permanent tables may reference only permanent tables");
 		StringBuilder sb = new StringBuilder();
 		sb.append("ALTER TABLE ");
 		if (Randomly.getBoolean()) {
@@ -141,8 +153,11 @@ public class PostgresAlterTableGenerator {
 				}
 				sb.append(" TYPE ");
 				PostgresDataType randomType = PostgresDataType.getRandomType();
-				PostgresCommon.appendDataType(randomType, sb, false);
+				PostgresCommon.appendDataType(randomType, sb, false, generateOnlyKnown, opClasses);
 				// TODO [ COLLATE collation ] [ USING expression ]
+				errors.add("cannot alter type of a column used by a view or rule");
+				errors.add("cannot convert infinity to numeric");
+				errors.add("is duplicated");
 				errors.add("cannot be cast automatically");
 				errors.add("is an identity column");
 				errors.add("identity column type must be smallint, integer, or bigint");
@@ -161,6 +176,8 @@ public class PostgresAlterTableGenerator {
 				errors.add("cannot drop index");
 				errors.add("cannot alter inherited column");
 				errors.add("must be changed in child tables too");
+				errors.add("could not determine which collation to use for index expression");
+				errors.add("bit string too long for type bit varying");
 				if (PostgresProvider.IS_POSTGRES_TWELVE) {
 					errors.add("cannot alter type of a column used by a generated column");
 				}
@@ -176,6 +193,7 @@ public class PostgresAlterTableGenerator {
 							.asString(PostgresExpressionGenerator.generateExpression(r, randomColumn.getColumnType())));
 					errors.add("is out of range");
 					errors.add("but default expression is of type");
+					errors.add("cannot cast");
 				}
 				errors.add("is a generated column");
 				errors.add("is an identity column");
@@ -234,7 +252,7 @@ public class PostgresAlterTableGenerator {
 				break;
 			case ADD_TABLE_CONSTRAINT:
 				sb.append("ADD ");
-				PostgresCommon.addTableConstraint(sb, randomTable, r, schema, errors);
+				PostgresCommon.addTableConstraint(sb, randomTable, r, schema, errors, opClasses, operators);
 				errors.add("multiple primary keys for table");
 				errors.add("could not create unique index");
 				errors.add("contains null values");
@@ -252,6 +270,7 @@ public class PostgresAlterTableGenerator {
 				errors.add("cannot be implemented");
 				errors.add("violates foreign key constraint");
 				errors.add("unsupported ON COMMIT and foreign key combination");
+				errors.add("USING INDEX is not supported on partitioned tables");
 				if (Randomly.getBoolean()) {
 					sb.append(" NOT VALID");
 					errors.add("cannot be marked NOT VALID");
@@ -346,30 +365,7 @@ public class PostgresAlterTableGenerator {
 			}
 		}
 
-		return new QueryAdapter(sb.toString()) {
-
-			@Override
-			public void execute(Connection con) throws SQLException {
-				try {
-					super.execute(con);
-				} catch (PSQLException e) {
-					boolean found = false;
-					for (String error : errors) {
-						if (e.getMessage().contains(error)) {
-							found = true;
-						}
-					}
-					if (!found) {
-						throw e;
-					}
-				}
-			}
-
-			@Override
-			public boolean couldAffectSchema() {
-				return changesSchema;
-			}
-		};
+		return new QueryAdapter(sb.toString(), errors, true);
 	}
 
 	private static void alterColumn(PostgresTable randomTable, StringBuilder sb) {

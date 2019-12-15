@@ -1,9 +1,8 @@
 package lama.postgres.gen;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import lama.Query;
@@ -55,31 +54,14 @@ public class PostgresVacuumGenerator {
 				}
 			}
 		}
-		return new QueryAdapter(sb.toString()) {
-			@Override
-			public void execute(Connection con) throws SQLException {
-				try {
-					super.execute(con);
-				} catch (SQLException e) {
-					if (e.getMessage().contains("VACUUM option DISABLE_PAGE_SKIPPING cannot be used with FULL")) {
-
-					} else if (e.getMessage()
-							.contains("ERROR: ANALYZE option must be specified when a column list is provided")) {
-
-					} else if (e.getMessage().contains("deadlock")) {
-						/*
-						 * "FULL" commented out due to
-						 * https://www.postgresql.org/message-id/CA%2Bu7OA6pL%
-						 * 2B7Xm_NXHLenxffe3tCr3gTamVdr7zPjcWqW0RFM-A%40mail.gmail.com
-						 */
-					} else if (e.getMessage().contains("VACUUM cannot run inside a transaction block")) {
-
-					} else {
-						throw e;
-					}
-				}
-			}
-		};
+		List<String> errors = new ArrayList<>();
+		errors.add("VACUUM cannot run inside a transaction block");
+		errors.add("deadlock");  /* "FULL" commented out due to
+		 * https://www.postgresql.org/message-id/CA%2Bu7OA6pL%
+		 * 2B7Xm_NXHLenxffe3tCr3gTamVdr7zPjcWqW0RFM-A%40mail.gmail.com*/
+		errors.add("ERROR: ANALYZE option must be specified when a column list is provided");
+		errors.add("VACUUM option DISABLE_PAGE_SKIPPING cannot be used with FULL");
+		return new QueryAdapter(sb.toString(), errors);
 	}
 
 	private static void addTableAndColumns(PostgresTable table, StringBuilder sb) {

@@ -27,10 +27,10 @@ public class SQLite3ExplainGenerator {
 			if (action == Action.EXPLAIN) {
 				continue;
 			}
-			if (action == Action.TARGETED_SELECT
-					&& newSchema.getDatabaseTables().stream().anyMatch(t -> t.getNrRows() == 0)) {
-				continue;
-			}
+//			if (action == Action.TARGETED_SELECT
+//					&& newSchema.getDatabaseTables().stream().anyMatch(t -> t.getNrRows() == 0)) {
+//				continue;
+//			}
 			break;
 		} while (true);
 		Query query = action.getQuery(newSchema, con, state, r);

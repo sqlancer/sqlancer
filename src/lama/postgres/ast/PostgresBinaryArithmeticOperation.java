@@ -5,7 +5,7 @@ import java.util.function.BinaryOperator;
 import lama.Randomly;
 import lama.postgres.PostgresSchema.PostgresDataType;
 
-public class PostgresBinaryArithmeticOperation extends PostgresExpression {
+public class PostgresBinaryArithmeticOperation extends PostgresBinaryOperation {
 
 	private final PostgresExpression left;
 	private final PostgresExpression right;
@@ -48,13 +48,14 @@ public class PostgresBinaryArithmeticOperation extends PostgresExpression {
 
 			}
 		},
-//		EXPONENTIATION("^") {
-//			@Override
-//			public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
+		// TODO no implementation
+		EXPONENTIATION("^") {
+			@Override
+			public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
 //				return applyBitOperation(left, right, (l, r) -> (long) Math.pow(l, r));
-//
-//			}
-//		}
+				throw new AssertionError();
+			}
+		}
 
 		;
 
@@ -102,14 +103,17 @@ public class PostgresBinaryArithmeticOperation extends PostgresExpression {
 		return op.apply(leftExpected, rightExpected);
 	}
 
-	public PostgresExpression getLeft() {
-		return left;
-	}
 
 	public PostgresBinaryOperator getOp() {
 		return op;
 	}
 
+	@Override
+	public PostgresExpression getLeft() {
+		return left;
+	}
+
+	@Override
 	public PostgresExpression getRight() {
 		return right;
 	}
@@ -117,6 +121,11 @@ public class PostgresBinaryArithmeticOperation extends PostgresExpression {
 	@Override
 	public PostgresDataType getExpressionType() {
 		return PostgresDataType.INT;
+	}
+
+	@Override
+	public String getOperatorTextRepresentation() {
+		return op.getTextRepresentation();
 	}
 
 }

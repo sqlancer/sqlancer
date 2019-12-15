@@ -6,7 +6,6 @@ import java.util.regex.Pattern;
 
 import lama.Randomly;
 import lama.sqlite3.SQLite3Visitor;
-import lama.sqlite3.gen.SQLite3Cast;
 import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
 
@@ -564,11 +563,8 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		return new SQLite3NullConstant();
 	}
 
-	public static SQLite3Constant getRandomBinaryConstant() {
-		int size = Randomly.smallNumber();
-		byte[] arr = new byte[size];
-		Randomly.getBytes(arr);
-		return new SQLite3BinaryConstant(arr);
+	public static SQLite3Constant getRandomBinaryConstant(Randomly r) {
+		return new SQLite3BinaryConstant(r.getBytes());
 	}
 
 	@Override
@@ -610,6 +606,10 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 
 	public SQLite3Constant applyEquals(SQLite3Constant right) {
 		return applyEquals(right, null);
+	}
+
+	public boolean isReal() {
+		return getDataType() == SQLite3DataType.REAL;
 	}
 
 }

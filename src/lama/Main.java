@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.beust.jcommander.JCommander;
 
 import lama.StateToReproduce.ErrorKind;
-import lama.postgres.PostgresProvider;
+import lama.sqlite3.SQLite3Provider;
 
 // TODO:
 // group by
@@ -248,7 +248,6 @@ public class Main {
 
 	}
 
-
 	static int threadsShutdown;
 
 	public static class QueryManager {
@@ -265,17 +264,25 @@ public class Main {
 
 		}
 
-		public void execute(Query q) throws SQLException {
+		public boolean execute(Query q) throws SQLException {
 			state.statements.add(q);
-			q.execute(con);
+			return q.execute(con);
 		}
 
 		public void incrementSelectQueryCount() {
 			Main.nrQueries.addAndGet(1);
 		}
+
+	}
+
+	public static void printArray(Object[] arr) {
+		for (Object o : arr) {
+			System.out.println(o);
+		}
 	}
 
 	public static void main(String[] args) {
+
 		MainOptions options = new MainOptions();
 		JCommander.newBuilder().addObject(options).build().parse(args);
 
@@ -304,7 +311,7 @@ public class Main {
 			}
 		}, 5, 5, TimeUnit.SECONDS);
 
-		ExecutorService executor = Executors.newFixedThreadPool(options.getNumberConcurrentThreads());
+		ExecutorService executor = Executors.newFixedThreadPool(16);
 
 		for (int i = 0; i < options.getTotalNumberTries(); i++) {
 			final String databaseName = "lama" + i;
@@ -323,27 +330,32 @@ public class Main {
 //					} else {
 //						provider = new MySQLProvider();
 //					}
-					provider = new PostgresProvider();
+					provider = new SQLite3Provider();
 					runThread(databaseName);
 				}
 
 				private void runThread(final String databaseName) {
 					Thread.currentThread().setName(databaseName);
 					while (true) {
-						state = provider.getStateToReproduce(databaseName);;
+						state = provider.getStateToReproduce(databaseName);
+						;
 						logger = new StateLogger(databaseName, provider, options);
 						try (Connection con = provider.createDatabase(databaseName, state)) {
 							QueryManager manager = new QueryManager(con, state);
 							java.sql.DatabaseMetaData meta = con.getMetaData();
 							state.databaseVersion = meta.getDatabaseProductVersion();
 							provider.generateAndTestDatabase(databaseName, con, logger, state, manager, options);
-							con.close();
+//							try {
+//								con.close();
+//							} catch (Exception e) {
+//								
+//							}
 						} catch (IgnoreMeException e) {
 							continue;
 						} catch (ReduceMeException reduce) {
 							state.errorKind = ErrorKind.ROW_NOT_FOUND;
 							logger.logRowNotFound(state);
-							tryToReduceBug(databaseName, state);
+//							tryToReduceBug(databaseName, state);
 							threadsShutdown++;
 							break;
 						} catch (Throwable reduce) {
@@ -352,8 +364,9 @@ public class Main {
 //								System.exit(-1);
 							state.errorKind = ErrorKind.EXCEPTION;
 							state.exception = reduce.getMessage();
+							logger.logFileWriter = null;
 							logger.logException(reduce, state);
-							tryToReduceBug(databaseName, state);
+//							tryToReduceBug(databaseName, state);
 							threadsShutdown++;
 							break;
 						} finally {
@@ -379,7 +392,7 @@ public class Main {
 					if (state.getErrorKind() == ErrorKind.EXCEPTION) {
 						reducedStatements.remove(statementThatCausedException);
 					}
-					retry: for (int i = 0; i < 100; i++) {
+					retry: for (int i = 0; i < 1000; i++) {
 						List<Query> currentRoundReducedStatements = new ArrayList<>(reducedStatements);
 						if (currentRoundReducedStatements.isEmpty()) {
 							break;

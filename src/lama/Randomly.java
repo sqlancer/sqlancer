@@ -1,20 +1,41 @@
 package lama;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Supplier;
 
 public final class Randomly {
 
 	// CACHING
 
+//	private class Cache<T> {
+//		private final List<T> cachedValues = new ArrayList<>();
+//		
+//		void addToCache(T val) {
+//			if (USE_CACHING && cachedValues.size() < CACHE_SIZE && !cachedValues.contains(val)) {
+//				cachedValues.add(val);
+//			}	
+//		}
+//	}
+//	
+//	private final Cache<Long> longCache = new Cache<Long>();
+//	private final Cache<String> stringCache = new Cache<String>();
+//	private final Cache<Double> doubleCache = new Cache<Double>();
+//	private final Cache<Byte[]> bytesCache = new Cache<Byte[]>();
+
 	private static boolean USE_CACHING = true;
-	private static final int CACHE_SIZE = 20;
+	private static final int CACHE_SIZE = 100;
 
 	private final List<Long> cachedLongs = new ArrayList<>();
 	private final List<String> cachedStrings = new ArrayList<>();
 	private final List<Double> cachedDoubles = new ArrayList<>();
+	private final List<byte[]> cachedBytes = new ArrayList<>();
+	String alphabet = new String(
+			"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzöß!#<>/.,~-+'*()[]{} ^*?%_\t\n\r|&\\");
+	private Supplier<String> provider;
 
 	private void addToCache(long val) {
 		if (USE_CACHING && cachedLongs.size() < CACHE_SIZE && !cachedLongs.contains(val)) {
@@ -31,6 +52,26 @@ public final class Randomly {
 	private void addToCache(String val) {
 		if (USE_CACHING && cachedStrings.size() < CACHE_SIZE && !cachedStrings.contains(val)) {
 			cachedStrings.add(val);
+		}
+	}
+
+	private void addToCache(byte[] val) {
+		if (USE_CACHING && cachedBytes.size() < CACHE_SIZE && !cachedBytes.contains(val)) {
+			cachedBytes.add(val);
+		}
+	}
+
+	private byte[] getFromBytesCache() {
+		if (!USE_CACHING || cachedBytes.isEmpty()) {
+			return null;
+		} else {
+			byte[] bytes = Randomly.fromList(cachedBytes);
+			if (Randomly.getBoolean()) {
+				for (int i = 0; i < Randomly.smallNumber(); i++) {
+					bytes[getInteger(0, bytes.length)] = (byte) ThreadLocalRandom.current().nextInt();
+				}
+			}
+			return bytes;
 		}
 	}
 
@@ -63,6 +104,8 @@ public final class Randomly {
 			return String.valueOf(Randomly.fromList(cachedLongs));
 		} else if (Randomly.getBoolean() && !cachedDoubles.isEmpty()) {
 			return String.valueOf(Randomly.fromList(cachedDoubles));
+		} else if (Randomly.getBoolean() && !cachedBytes.isEmpty()) {
+			return new String(Randomly.fromList(cachedBytes));
 		} else if (!cachedStrings.isEmpty()) {
 			String randomString = Randomly.fromList(cachedStrings);
 			if (Randomly.getBoolean()) {
@@ -70,8 +113,16 @@ public final class Randomly {
 			} else {
 				if (Randomly.getBoolean()) {
 					return randomString.toLowerCase();
-				} else {
+				} else if (Randomly.getBoolean()) {
 					return randomString.toUpperCase();
+				} else {
+					char[] chars = randomString.toCharArray();
+					if (chars.length != 0) {
+						for (int i = 0; i < Randomly.smallNumber(); i++) {
+							chars[getInteger(0, chars.length)] = alphabet.charAt(getInteger(0, alphabet.length()));
+						}
+					}
+					return new String(chars);
 				}
 			}
 		} else {
@@ -80,13 +131,10 @@ public final class Randomly {
 	}
 
 	private static boolean cacheProbability() {
-		return USE_CACHING && ThreadLocalRandom.current().nextInt(5) == 1;
+		return USE_CACHING && ThreadLocalRandom.current().nextInt(3) == 1;
 	}
 
 	// CACHING END
-
-	public Randomly() {
-	}
 
 	public static <T> T fromList(List<T> list) {
 		return list.get(ThreadLocalRandom.current().nextInt(list.size()));
@@ -108,11 +156,19 @@ public final class Randomly {
 		return extractNrRandomColumns(columns, nr);
 	}
 
+	public static <T> List<T> nonEmptySubsetPotentialDuplicates(List<T> columns) {
+		List<T> arr = new ArrayList<>();
+		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
+			arr.add(Randomly.fromList(columns));
+		}
+		return arr;
+	}
+
 	public static <T> List<T> subset(List<T> columns) {
 		int nr = ThreadLocalRandom.current().nextInt(columns.size() + 1);
 		return extractNrRandomColumns(columns, nr);
 	}
-	
+
 	public static <T> List<T> subset(int nr, @SuppressWarnings("unchecked") T... values) {
 		List<T> list = new ArrayList<>();
 		for (T val : values) {
@@ -139,104 +195,14 @@ public final class Randomly {
 		return selectedColumns;
 	}
 
-	public long greaterOrEqualInt(long intValue) {
-		return greaterOrEqual(intValue);
-	}
-
-	private long greaterOrEqual(long intValue) {
-		if (intValue == Long.MAX_VALUE) {
-			return Long.MAX_VALUE;
-		}
-		if (cacheProbability()) {
-			Long l = getFromLongCache();
-			if (l != null && l >= intValue) {
-				return l;
-			}
-		}
-		long result = ThreadLocalRandom.current().nextLong(intValue, Long.MAX_VALUE);
-		addToCache(result);
-		assert result >= intValue && result <= Long.MAX_VALUE : intValue + " " + result;
-		return result;
-	}
-
-	public long greaterInt(long intValue) {
-		if (intValue == Long.MAX_VALUE) {
-			throw new IllegalArgumentException();
-		}
-		return greaterOrEqual(intValue + 1);
-	}
-
-	public long smallerOrEqualInt(long intValue) {
-		long smallerOrEqualInt = smallerOrEqual(intValue);
-		assert smallerOrEqualInt <= intValue;
-		return smallerOrEqualInt;
-	}
-
-	private long smallerOrEqual(long intValue) {
-		if (intValue == Long.MIN_VALUE) {
-			return Long.MIN_VALUE;
-		}
-		if (cacheProbability()) {
-			Long l = getFromLongCache();
-			if (l != null && l <= intValue) {
-				return l;
-			}
-		}
-		long lessOrEqual = ThreadLocalRandom.current().nextLong(Long.MIN_VALUE, intValue);
-		addToCache(lessOrEqual);
-		return lessOrEqual;
-	}
-
-	public long smallerInt(long intValue) {
-		if (intValue == Long.MIN_VALUE) {
-			throw new IllegalArgumentException();
-		}
-		long smallerInt = smallerOrEqual(intValue - 1);
-		assert smallerInt < intValue;
-		return smallerInt;
-	}
-
-	public double smallerDouble(double value) {
-		if (value == Double.NEGATIVE_INFINITY) {
-			throw new IllegalArgumentException();
-		} else if (value == -Double.MAX_VALUE) {
-			return Double.NEGATIVE_INFINITY;
-		} else {
-			if (cacheProbability()) {
-				Double d = getFromDoubleCache();
-				if (d != null && d < value) {
-					return d;
-				}
-			}
-			double d = ThreadLocalRandom.current().nextDouble(-Double.MAX_VALUE, value);
-			addToCache(d);
-			return d;
-		}
-	}
-
 	public static int smallNumber() {
 		// no need to cache for small numbers
-		return ThreadLocalRandom.current().nextInt(5);
+		int val = (int) (Math.abs(ThreadLocalRandom.current().nextGaussian()) * 2);
+		return val;
 	}
 
 	public static boolean getBoolean() {
 		return ThreadLocalRandom.current().nextBoolean();
-	}
-
-	public long notEqualInt(long intValue) {
-		int randomInt;
-		do {
-			if (cacheProbability()) {
-				Long l = getFromLongCache();
-				if (l != null && intValue != l) {
-					return l;
-				}
-			}
-			randomInt = ThreadLocalRandom.current().nextInt();
-		} while (randomInt == intValue);
-		assert intValue != randomInt;
-		addToCache(randomInt);
-		return randomInt;
 	}
 
 	public long getInteger() {
@@ -266,8 +232,6 @@ public final class Randomly {
 			}
 		}
 
-		String alphabet = new String(
-				"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#<>/.~-+' []^*?%_\t\n");
 		int n = alphabet.length();
 
 		StringBuilder sb = new StringBuilder();
@@ -276,20 +240,47 @@ public final class Randomly {
 		if (Randomly.getBoolean()) {
 			chars = Randomly.smallNumber();
 		} else {
-			chars = getInteger(0, 100);
+			chars = getInteger(0, 30);
 		}
 		for (int i = 0; i < chars; i++) {
 			sb.append(alphabet.charAt(ThreadLocalRandom.current().nextInt(n)));
 		}
+		while (Randomly.getBooleanWithSmallProbability()) {
+			String[][] pairs = { { "{", "}" }, { "[", "]" }, { "(", ")" } };
+			int idx = (int) Randomly.getNotCachedInteger(0, pairs.length);
+			int left = (int) Randomly.getNotCachedInteger(0, sb.length() + 1);
+			sb.insert(left, pairs[idx][0]);
+			int right = (int) Randomly.getNotCachedInteger(left + 1, sb.length() + 1);
+			sb.insert(right, pairs[idx][1]);
+		}
+		if (provider != null) {
+			while (Randomly.getBooleanWithSmallProbability()) {
+				if (sb.length() == 0) {
+					sb.append(provider.get());
+				} else {
+					sb.insert((int) Randomly.getNotCachedInteger(0, sb.length()), provider.get());
+				}
+			}
+		}
 
 		String s = sb.toString();
+
 		addToCache(s);
 		return s;
 	}
 
-	public static void getBytes(byte[] bytes) {
-		// TODO bias for bytes
-		ThreadLocalRandom.current().nextBytes(bytes);
+	public byte[] getBytes() {
+		if (cacheProbability()) {
+			byte[] val = getFromBytesCache();
+			if (val != null) {
+				addToCache(val);
+				return val;
+			}
+		}
+		int size = Randomly.smallNumber();
+		byte[] arr = new byte[size];
+		ThreadLocalRandom.current().nextBytes(arr);
+		return arr;
 	}
 
 	public long getNonZeroInteger() {
@@ -307,26 +298,6 @@ public final class Randomly {
 			value = getInteger();
 		} while (value == 0);
 		assert value != 0;
-		addToCache(value);
-		return value;
-	}
-
-	public double getNonZeroReal() {
-		double value;
-		if (smallBiasProbability()) {
-			return Randomly.fromOptions(1.0, -1.0);
-		}
-		if (cacheProbability()) {
-			Double d = getFromDoubleCache();
-			if (d != null && d != 0) {
-				return d;
-			}
-		}
-
-		do {
-			value = getDouble();
-		} while (value == 0.0);
-		assert value != 0.0;
 		addToCache(value);
 		return value;
 	}
@@ -349,40 +320,13 @@ public final class Randomly {
 		return value;
 	}
 
-	public static String greaterOrEqualString(String value) {
-		return value; // TODO
-	}
-
-	public double greaterOrEqualDouble(double asDouble) {
-		if (asDouble == Double.POSITIVE_INFINITY) {
-			return asDouble;
-		} else if (asDouble == Double.MAX_VALUE) {
-			return Randomly.fromOptions(Double.POSITIVE_INFINITY, Double.MAX_VALUE);
-		} else if (cacheProbability()) {
-			Double d = getFromDoubleCache();
-			if (d != null && d >= asDouble) {
-				return d;
+	public double getFiniteDouble() {
+		while (true) {
+			double val = getDouble();
+			if (Double.isFinite(val)) {
+				return val;
 			}
 		}
-		double val = ThreadLocalRandom.current().nextDouble(asDouble, Double.MAX_VALUE);
-		addToCache(val);
-		return val;
-	}
-
-	public double smallerOrEqualDouble(double value) {
-		if (value == Double.NEGATIVE_INFINITY) {
-			return value;
-		} else if (value == -Double.MAX_VALUE) {
-			return Randomly.fromOptions(-Double.MAX_VALUE, Double.NEGATIVE_INFINITY);
-		} else if (cacheProbability()) {
-			Double d = getFromDoubleCache();
-			if (d != null && d <= value) {
-				return d;
-			}
-		}
-		double rand = ThreadLocalRandom.current().nextDouble(-Double.MAX_VALUE, value);
-		addToCache(rand);
-		return rand;
 	}
 
 	public double getDouble() {
@@ -395,11 +339,13 @@ public final class Randomly {
 				return d;
 			}
 		}
-		return ThreadLocalRandom.current().nextDouble();
+		double value = ThreadLocalRandom.current().nextDouble();
+		addToCache(value);
+		return value;
 	}
 
 	private static boolean smallBiasProbability() {
-		return ThreadLocalRandom.current().nextInt(1000) == 1;
+		return ThreadLocalRandom.current().nextInt(100) == 1;
 	}
 
 	public static boolean getBooleanWithSmallProbability() {
@@ -420,25 +366,37 @@ public final class Randomly {
 		return ThreadLocalRandom.current().nextLong(left, right);
 	}
 
-	public String getNonZeroString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(getNonZeroInteger());
-		sb.append(getString());
-		return sb.toString();
+	public BigDecimal getRandomBigDecimal() {
+		return new BigDecimal(ThreadLocalRandom.current().nextDouble());
 	}
 
-	public double greaterDouble(double value) {
-		if (value == Double.POSITIVE_INFINITY) {
-			throw new IllegalArgumentException();
-		} else if (value == Double.MAX_VALUE) {
-			return Double.POSITIVE_INFINITY;
-		} else if (cacheProbability()) {
-			Double d = getFromDoubleCache();
-			if (d != null && d > value) {
-				return d;
+	public long getPositiveIntegerNotNull() {
+		while (true) {
+			long val = getPositiveInteger();
+			if (val != 0) {
+				return val;
 			}
 		}
-		return ThreadLocalRandom.current().nextDouble(value + 1, Double.MAX_VALUE);
+	}
+
+	public static long getNonCachedInteger() {
+		return ThreadLocalRandom.current().nextLong();
+	}
+
+	public static long getPositiveNonCachedInteger() {
+		return ThreadLocalRandom.current().nextLong(1, Long.MAX_VALUE);
+	}
+
+	public static long getPositiveOrZeroNonCachedInteger() {
+		return ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE);
+	}
+
+	public static long getNotCachedInteger(int lower, int upper) {
+		return ThreadLocalRandom.current().nextLong(lower, upper);
+	}
+
+	public Randomly(Supplier<String> provider) {
+		this.provider = provider;
 	}
 
 }

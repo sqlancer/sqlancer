@@ -1,7 +1,5 @@
 package lama.postgres.gen;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -9,7 +7,7 @@ import java.util.stream.Collectors;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.mysql.MySQLVisitor;
+import lama.postgres.PostgresGlobalState;
 import lama.postgres.PostgresProvider;
 import lama.postgres.PostgresSchema;
 import lama.postgres.PostgresSchema.PostgresColumn;
@@ -31,20 +29,35 @@ public class PostgresTableGenerator {
 	private final List<PostgresColumn> columnsToBeAdded = new ArrayList<>();
 	private final List<String> errors = new ArrayList<>();
 	private final PostgresTable table;
+	private boolean generateOnlyKnown;
+	private PostgresGlobalState globalState;
 
-	public PostgresTableGenerator(String tableName, Randomly r, PostgresSchema newSchema) {
+	public PostgresTableGenerator(String tableName, Randomly r, PostgresSchema newSchema, boolean generateOnlyKnown, PostgresGlobalState globalState) {
 		this.tableName = tableName;
 		this.r = r;
 		this.newSchema = newSchema;
-		table = new PostgresTable(tableName, columnsToBeAdded, null, null, null);
+		this.generateOnlyKnown = generateOnlyKnown;
+		this.globalState = globalState;
+		table = new PostgresTable(tableName, columnsToBeAdded, null, null, null, false, false);
 		errors.add("invalid input syntax for");
 		errors.add("is not unique");
 		errors.add("integer out of range");
 		errors.add("division by zero");
+		errors.add("cannot create partitioned table as inheritance child");
+		errors.add("cannot cast");
+		errors.add("ERROR: functions in index expression must be marked IMMUTABLE");
+		errors.add("functions in partition key expression must be marked IMMUTABLE");
+		errors.add("functions in index predicate must be marked IMMUTABLE");
+		errors.add("has no default operator class for access method");
+		errors.add("does not exist for access method");
+		errors.add("does not accept data type");
+		errors.add("but default expression is of type text");
+		PostgresCommon.addCommonExpressionErrors(errors);
+		PostgresCommon.addCommonTableErrors(errors);
 	}
 
-	public static Query generate(String tableName, Randomly r, PostgresSchema newSchema) {
-		return new PostgresTableGenerator(tableName, r, newSchema).generate();
+	public static Query generate(String tableName, Randomly r, PostgresSchema newSchema, boolean generateOnlyKnown, PostgresGlobalState globalState) {
+		return new PostgresTableGenerator(tableName, r, newSchema, generateOnlyKnown, globalState).generate();
 	}
 
 	private Query generate() {
@@ -63,8 +76,17 @@ public class PostgresTableGenerator {
 		}
 		sb.append(" ");
 		sb.append(tableName);
+		if (Randomly.getBoolean() && !newSchema.getDatabaseTables().isEmpty()) {
+			createLike();
+		} else {
+			createStandard();
+		}
+		return new QueryAdapter(sb.toString(), errors, true);
+	}
+
+	private void createStandard() throws AssertionError {
 		sb.append("(");
-		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
+		for (int i = 0; i < Randomly.smallNumber() + 3; i++) {
 			if (i != 0) {
 				sb.append(", ");
 			}
@@ -80,7 +102,8 @@ public class PostgresTableGenerator {
 			errors.add("cannot reference partitioned table");
 			errors.add("unsupported ON COMMIT and foreign key combination");
 			errors.add("ERROR: invalid ON DELETE action for foreign key constraint containing generated column");
-			PostgresCommon.addTableConstraints(columnHasPrimaryKey, sb, table, r, newSchema, errors);
+			errors.add("exclusion constraints are not supported on partitioned tables");
+			PostgresCommon.addTableConstraints(columnHasPrimaryKey, sb, table, r, newSchema, errors, globalState.getOpClasses(), globalState.getOperators());
 		}
 		sb.append(")");
 		generateInherits();
@@ -91,37 +114,30 @@ public class PostgresTableGenerator {
 			sb.append(Randomly.fromOptions("PRESERVE ROWS", "DELETE ROWS", "DROP"));
 			sb.append(" ");
 		}
-		return new QueryAdapter(sb.toString()) {
-			@Override
-			public void execute(Connection con) throws SQLException {
-				try {
-					super.execute(con);
-				} catch (SQLException e) {
-					if (e.getMessage().contains("not type text")) {
+	}
 
-					} else if (e.getMessage().contains("cannot cast")) {
-
-					} else {
-						boolean found = false;
-						for (String s : errors) {
-							if (e.getMessage().contains(s)) {
-								found = true;
-							}
-						}
-						if (!found) {
-							throw new AssertionError(e);
-						}
-					}
-				}
+	private void createLike() {
+		sb.append("(");
+		sb.append("LIKE ");
+		sb.append(newSchema.getRandomTable().getName());
+		if (Randomly.getBoolean()) {
+			for (int i = 0; i < Randomly.smallNumber(); i++) {
+				String option = Randomly.fromOptions("DEFAULTS", "CONSTRAINTS", "INDEXES", "STORAGE", "COMMENTS",
+						"GENERATED", "IDENTITY", "STATISTICS", "STORAGE", "ALL");
+				sb.append(" ");
+				sb.append(Randomly.fromOptions("INCLUDING", "EXCLUDING"));
+				sb.append(" ");
+				sb.append(option);
 			}
-		};
+		}
+		sb.append(")");
 	}
 
 	private void createColumn(String name) throws AssertionError {
 		sb.append(name);
 		sb.append(" ");
 		PostgresDataType type = PostgresDataType.getRandomType();
-		boolean serial = PostgresCommon.appendDataType(type, sb, true);
+		boolean serial = PostgresCommon.appendDataType(type, sb, true, generateOnlyKnown, globalState.getCollates());
 		PostgresColumn c = new PostgresColumn(name, type);
 		c.setTable(table);
 		columnsToBeAdded.add(c);
@@ -140,13 +156,16 @@ public class PostgresTableGenerator {
 		String partitionOption = Randomly.fromOptions("RANGE", "LIST", "HASH");
 		sb.append(partitionOption);
 		sb.append("(");
+		errors.add("unrecognized parameter");
 		errors.add("cannot use constant expression");
 		errors.add("cannot add NO INHERIT constraint to partitioned table");
 		errors.add("unrecognized parameter");
 		errors.add("unsupported PRIMARY KEY constraint with partition key definition");
 		errors.add("which is part of the partition key.");
 		errors.add("unsupported UNIQUE constraint with partition key definition");
+		errors.add("does not accept data type");
 		int n = partitionOption.contentEquals("LIST") ? 1 : Randomly.smallNumber() + 1;
+		PostgresCommon.addCommonExpressionErrors(errors);
 		for (int i = 0; i < n; i++) {
 			if (i != 0) {
 				sb.append(", ");
@@ -155,6 +174,10 @@ public class PostgresTableGenerator {
 			PostgresExpression expr = PostgresExpressionGenerator.generateExpression(r, columnsToBeAdded);
 			sb.append(PostgresVisitor.asString(expr));
 			sb.append(")");
+			if (Randomly.getBoolean()) {
+				sb.append(globalState.getRandomOpclass());
+				errors.add("does not exist for access method");
+			}
 		}
 		sb.append(")");
 	}
@@ -166,6 +189,7 @@ public class PostgresTableGenerator {
 					.collect(Collectors.joining(", ")));
 			sb.append(")");
 			errors.add("has a type conflict");
+			errors.add("has a generation conflict");
 			errors.add("cannot create partitioned table as inheritance child");
 			errors.add("cannot inherit from temporary relation");
 			errors.add("cannot inherit from partitioned table");
@@ -179,6 +203,10 @@ public class PostgresTableGenerator {
 
 	private void createColumnConstraint(PostgresDataType type, boolean serial) {
 		List<ColumnConstraint> constraintSubset = Randomly.nonEmptySubset(ColumnConstraint.values());
+		if (Randomly.getBoolean()) {
+			// make checks constraints less likely
+			constraintSubset.remove(ColumnConstraint.CHECK);
+		}
 		if (!columnCanHavePrimaryKey || columnHasPrimaryKey) {
 			constraintSubset.remove(ColumnConstraint.PRIMARY_KEY);
 		}
@@ -213,7 +241,7 @@ public class PostgresTableGenerator {
 			case DEFAULT:
 				sb.append("DEFAULT");
 				sb.append(" (");
-				sb.append(MySQLVisitor.getExpressionAsString(r, type));
+				sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(r, type)));
 				sb.append(")");
 				// CREATE TEMPORARY TABLE t1(c0 smallint DEFAULT ('566963878'));
 				errors.add("out of range");
@@ -221,21 +249,25 @@ public class PostgresTableGenerator {
 				break;
 			case CHECK:
 				sb.append("CHECK (");
-				sb.append(MySQLVisitor.getExpressionAsString(r, PostgresDataType.BOOLEAN));
+				sb.append(PostgresVisitor.asString(
+						PostgresExpressionGenerator.generateExpression(r, columnsToBeAdded, PostgresDataType.BOOLEAN)));
 				sb.append(")");
 				if (Randomly.getBoolean()) {
 					sb.append(" NO INHERIT");
 				}
+				errors.add("out of range");
 				break;
 			case GENERATED:
 				sb.append("GENERATED ");
 				if (Randomly.getBoolean() && PostgresProvider.IS_POSTGRES_TWELVE) {
 					sb.append(" ALWAYS AS (");
-					sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(r, columnsToBeAdded, type)));
+					sb.append(PostgresVisitor
+							.asString(PostgresExpressionGenerator.generateExpression(r, columnsToBeAdded, type)));
 					sb.append(") STORED");
 					errors.add("A generated column cannot reference another generated column.");
 					errors.add("cannot use generated column in partition key");
 					errors.add("generation expression is not immutable");
+					errors.add("cannot use column reference in DEFAULT expression");
 				} else {
 					sb.append(Randomly.fromOptions("ALWAYS", "BY DEFAULT"));
 					sb.append(" AS IDENTITY");

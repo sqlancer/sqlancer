@@ -87,7 +87,7 @@ public class MySQLBinaryComparisonOperation extends MySQLExpression {
 				}
 				String leftStr = leftVal.castAsString();
 				String rightStr = rightVal.castAsString();
-				boolean matches = LikeImplementationHelper.match(leftStr, rightStr, 0, 0, true);
+				boolean matches = LikeImplementationHelper.match(leftStr, rightStr, 0, 0, false);
 				return MySQLConstant.createBoolean(matches);
 			}
 

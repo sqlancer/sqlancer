@@ -55,10 +55,6 @@ public class MySQLBinaryLogicalOperation extends MySQLExpression {
 				if (left.isNull() || right.isNull()) {
 					return MySQLConstant.createNullConstant();
 				}
-				/* workaround for https://bugs.mysql.com/bug.php?id=95927 */
-				if (left.isString() || right.isString()) {
-					throw new IgnoreMeException();
-				}
 				boolean xorVal = left.asBooleanNotNull() ^ right.asBooleanNotNull();
 				return MySQLConstant.createBoolean(xorVal);
 			}
@@ -108,19 +104,6 @@ public class MySQLBinaryLogicalOperation extends MySQLExpression {
 	public MySQLConstant getExpectedValue() {
 		MySQLConstant leftExpected = left.getExpectedValue();
 		MySQLConstant rightExpected = right.getExpectedValue();
-
-		/**
-		 * workaround for https://bugs.mysql.com/bug.php?id=95958
-		 */
-		boolean leftIsSmallFloatingPointText = leftExpected.isString()
-				&& ((MySQLTextConstant) leftExpected).asBooleanNotNull()
-				&& leftExpected.castAs(CastType.SIGNED).getInt() == 0;
-		boolean rightIsSmallFloatingPointText = rightExpected.isString()
-				&& ((MySQLTextConstant) rightExpected).asBooleanNotNull()
-				&& rightExpected.castAs(CastType.SIGNED).getInt() == 0;
-		if (leftIsSmallFloatingPointText || rightIsSmallFloatingPointText) {
-			throw new IgnoreMeException();
-		}
 
 		return op.apply(leftExpected, rightExpected);
 	}
