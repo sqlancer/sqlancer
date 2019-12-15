@@ -83,15 +83,15 @@ public abstract class SQLite3Expression {
 		return null;
 	}
 
-	public static class Exist extends SQLite3Expression {
+	public static class SQLite3Exist extends SQLite3Expression {
 
 		private final SQLite3Expression select;
 
-		public Exist(SQLite3Expression select) {
+		public SQLite3Exist(SQLite3Expression select) {
 			this.select = select;
 		}
 
-		public SQLite3Expression getSelect() {
+		public SQLite3Expression getExpression() {
 			return select;
 		}
 
@@ -99,7 +99,7 @@ public abstract class SQLite3Expression {
 		public CollateSequence getExplicitCollateSequence() {
 			return null;
 		}
-
+		
 	}
 
 	public static class Join extends SQLite3Expression {
@@ -1583,6 +1583,32 @@ public abstract class SQLite3Expression {
 			left = left.applyTextAffinity();
 		}
 		return new ConstantTuple(left, right);
+	}
+	
+	public static class SQLite3Text extends SQLite3Expression {
+		
+		private final String text;
+		private final SQLite3Constant expectedValue;
+
+		public SQLite3Text(String text, SQLite3Constant expectedValue) {
+			this.text = text;
+			this.expectedValue = expectedValue;
+		}
+		
+		public String getText() {
+			return text;
+		}
+
+		@Override
+		public CollateSequence getExplicitCollateSequence() {
+			return null;
+		}
+		
+		@Override
+		public SQLite3Constant getExpectedValue() {
+			return expectedValue;
+		}
+		
 	}
 	
 	public static class SQLite3PostfixText extends SQLite3Expression implements UnaryOperation<SQLite3Expression> {

@@ -10,15 +10,16 @@ import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
-import lama.sqlite3.ast.SQLite3Expression.Exist;
 import lama.sqlite3.ast.SQLite3Expression.Function;
 import lama.sqlite3.ast.SQLite3Expression.InOperation;
 import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.MatchOperation;
-import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3Exist;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3Text;
 import lama.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Subquery;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
@@ -96,13 +97,15 @@ public interface SQLite3Visitor {
 
 	public abstract void visit(Subquery query);
 
-	public abstract void visit(Exist exist);
+	public abstract void visit(SQLite3Exist exist);
 
 	public abstract void visit(Join join);
 	
 	public abstract void visit(MatchOperation match);
 
 	public abstract void visit(SQLite3Function func);
+	
+	public abstract void visit(SQLite3Text func);
 
 	public abstract void visit(SQLite3Distinct distinct);
 
@@ -144,9 +147,9 @@ public interface SQLite3Visitor {
 		} else if (expr instanceof Join) {
 			visit((Join) expr);
 		} else if (expr instanceof SQLite3SelectStatement) {
-			visit((SQLite3SelectStatement) expr, true);
-		} else if (expr instanceof Exist) {
-			visit((Exist) expr);
+			visit((SQLite3SelectStatement) expr, false);
+		} else if (expr instanceof SQLite3Exist) {
+			visit((SQLite3Exist) expr);
 		} else if (expr instanceof BinaryComparisonOperation) {
 			visit((BinaryComparisonOperation) expr);
 		} else if (expr instanceof SQLite3Function) {
@@ -167,6 +170,8 @@ public interface SQLite3Visitor {
 			visit((MatchOperation) expr);
 		} else if (expr instanceof SQLite3RowValue) {
 			visit((SQLite3RowValue) expr);
+		} else if (expr instanceof SQLite3Text) {
+			visit((SQLite3Text) expr);
 		} else {
 			throw new AssertionError(expr);
 		}

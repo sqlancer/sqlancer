@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
-import lama.IgnoreMeException;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;

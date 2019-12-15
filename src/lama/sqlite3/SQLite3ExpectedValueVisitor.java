@@ -11,15 +11,16 @@ import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
-import lama.sqlite3.ast.SQLite3Expression.Exist;
 import lama.sqlite3.ast.SQLite3Expression.Function;
 import lama.sqlite3.ast.SQLite3Expression.InOperation;
 import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.MatchOperation;
-import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3Exist;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3Text;
 import lama.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Subquery;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
@@ -153,9 +154,9 @@ public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
 	}
 
 	@Override
-	public void visit(Exist exist) {
+	public void visit(SQLite3Exist exist) {
 		print(exist);
-		visit(exist.getSelect());
+		visit(exist.getExpression());
 	}
 
 	@Override
@@ -228,8 +229,8 @@ public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
 	@Override
 	public void visit(SQLite3PostfixText op) {
 		print(op);
-		if (op.getExpr() != null) {
-			visit(op.getExpr());
+		if (op.getExpression() != null) {
+			visit(op.getExpression());
 		}
 	}
 
@@ -254,6 +255,11 @@ public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
 		for (SQLite3Expression expr : rw.getExpressions()) {
 			visit(expr);
 		}
+	}
+
+	@Override
+	public void visit(SQLite3Text func) {
+		print(func);
 	}
 
 }

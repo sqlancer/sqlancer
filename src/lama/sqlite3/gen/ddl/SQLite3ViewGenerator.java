@@ -10,6 +10,7 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.StateToReproduce.SQLite3StateToReproduce;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.gen.SQLite3Common;
@@ -28,7 +29,7 @@ public class SQLite3ViewGenerator {
 		return new QueryAdapter(sb.toString(), true);
 	}
 
-	public static Query generate(SQLite3Schema s, Connection con, Randomly r, SQLite3StateToReproduce state)
+	public static Query generate(SQLite3Schema s, Connection con, Randomly r, SQLite3StateToReproduce state, SQLite3GlobalState globalState)
 			throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		sb.append("CREATE");
@@ -42,7 +43,7 @@ public class SQLite3ViewGenerator {
 		}
 		sb.append(SQLite3Common.getFreeViewName(s));
 		if (Randomly.getBoolean()) {
-			SQLite3PivotedQuerySynthesizer queryGen = new SQLite3PivotedQuerySynthesizer(con, r);
+			SQLite3PivotedQuerySynthesizer queryGen = new SQLite3PivotedQuerySynthesizer(con, r, globalState);
 			try {
 				SQLite3SelectStatement q = queryGen.getQuery(state);
 //			for (SQLite3Expression expr : q.getFetchColumns()) {
@@ -62,7 +63,6 @@ public class SQLite3ViewGenerator {
 		} else {
 			int size = 1 + Randomly.smallNumber();
 			columnNamesAs(sb, size);
-			new SQLite3RandomQuerySynthesizer();
 			SQLite3SelectStatement randomQuery = SQLite3RandomQuerySynthesizer.generate(s, r, size);
 			sb.append(SQLite3Visitor.asString(randomQuery));
 			List<String> errors = new ArrayList<>();

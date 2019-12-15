@@ -54,33 +54,30 @@ public class SQLite3Provider implements DatabaseProvider {
 	public static enum Action {
 		PRAGMA {
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
-					throws SQLException {
-				return SQLite3PragmaGenerator.insertPragma(con, state, r);
+			public Query getQuery(SQLite3GlobalState g) throws SQLException {
+				return SQLite3PragmaGenerator.insertPragma(g.getConnection(), g.getState(), g.getRandomly());
 			}
 		},
 		INDEX {
 
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
-					throws SQLException {
-				return SQLite3IndexGenerator.insertIndex(newSchema, state, r);
+			public Query getQuery(SQLite3GlobalState g) throws SQLException {
+				return SQLite3IndexGenerator.insertIndex(g.getSchema(), g.getState(), g.getRandomly());
 			}
 		},
 		INSERT {
 
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
-					throws SQLException {
-				Table randomTable = newSchema.getRandomTableOrBailout(t -> !t.isView());
-				return SQLite3InsertGenerator.insertRow(randomTable, con, r);
+			public Query getQuery(SQLite3GlobalState g) throws SQLException {
+				Table randomTable = g.getSchema().getRandomTableOrBailout(t -> !t.isView());
+				return SQLite3InsertGenerator.insertRow(randomTable, g.getConnection(), g.getRandomly());
 			}
 
 		},
 		VACUUM {
 
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
+			public Query getQuery(SQLite3GlobalState g) {
 				return SQLite3VacuumGenerator.executeVacuum();
 			}
 
@@ -88,103 +85,97 @@ public class SQLite3Provider implements DatabaseProvider {
 		REINDEX {
 
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
-				return SQLite3ReindexGenerator.executeReindex(con, state, newSchema);
+			public Query getQuery(SQLite3GlobalState g) {
+				return SQLite3ReindexGenerator.executeReindex(g.getConnection(), g.getState(), g.getSchema());
 			}
 
 		},
 		ANALYZE {
 
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
-				return SQLite3AnalyzeGenerator.generateAnalyze(newSchema);
+			public Query getQuery(SQLite3GlobalState g) {
+				return SQLite3AnalyzeGenerator.generateAnalyze(g.getSchema());
 
 			}
 		},
 		DELETE {
 
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
-				return SQLite3DeleteGenerator
-						.deleteContent(newSchema.getRandomTableNoViewOrBailout(), con, r);
+			public Query getQuery(SQLite3GlobalState g) {
+				return SQLite3DeleteGenerator.deleteContent(g.getSchema().getRandomTableNoViewOrBailout(), g.getConnection(), g.getRandomly());
 			}
 		},
 		TRANSACTION_START {
 
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
-				return SQLite3TransactionGenerator.generateBeginTransaction(con, state);
+			public Query getQuery(SQLite3GlobalState g) {
+				return SQLite3TransactionGenerator.generateBeginTransaction(g.getConnection(), g.getState());
 			}
 
 		},
 		ALTER {
 
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
-					throws SQLException {
-				return SQLite3AlterTable.alterTable(newSchema, con, state, r);
+			public Query getQuery(SQLite3GlobalState g) throws SQLException {
+				return SQLite3AlterTable.alterTable(g.getSchema(), g.getConnection(), g.getState(), g.getRandomly());
 			}
 
 		},
 		DROP_INDEX {
 
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
-					throws SQLException {
-				return SQLite3DropIndexGenerator.dropIndex(con, state, newSchema, r);
+			public Query getQuery(SQLite3GlobalState g) throws SQLException {
+				return SQLite3DropIndexGenerator.dropIndex(g.getConnection(), g.getState(), g.getSchema(), g.getRandomly());
 			}
 		},
 		UPDATE {
 
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
-				return SQLite3UpdateGenerator.updateRow(newSchema.getRandomTableNoViewOrBailout(), r);
+			public Query getQuery(SQLite3GlobalState g) {
+				return SQLite3UpdateGenerator.updateRow(g.getSchema().getRandomTableNoViewOrBailout(), g.getRandomly());
 			}
 		},
 		ROLLBACK_TRANSACTION() {
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
-				return SQLite3TransactionGenerator.generateRollbackTransaction(con, state);
+			public Query getQuery(SQLite3GlobalState g) {
+				return SQLite3TransactionGenerator.generateRollbackTransaction(g.getConnection(), g.getState());
 			}
 		},
 		COMMIT {
 
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
-				return SQLite3TransactionGenerator.generateCommit(con, state);
+			public Query getQuery(SQLite3GlobalState g) {
+				return SQLite3TransactionGenerator.generateCommit(g.getConnection(), g.getState());
 			}
 
 		},
 		DROP_TABLE {
 
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r) {
-				return SQLite3DropTableGenerator.dropTable(newSchema);
+			public Query getQuery(SQLite3GlobalState g) {
+				return SQLite3DropTableGenerator.dropTable(g.getSchema());
 			}
 
 		},
 		DROP_VIEW {
 
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
-					throws SQLException {
-				return SQLite3ViewGenerator.dropView(SQLite3Schema.fromConnection(con));
+			public Query getQuery(SQLite3GlobalState g) throws SQLException {
+				return SQLite3ViewGenerator.dropView(SQLite3Schema.fromConnection(g.getConnection()));
 			}
 
 		},
 		EXPLAIN {
 
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
-					throws SQLException {
-				return SQLite3ExplainGenerator.explain(con, (SQLite3StateToReproduce) state, r);
+			public Query getQuery(SQLite3GlobalState g) throws SQLException {
+				return SQLite3ExplainGenerator.explain(g.getConnection(), g.getState(), g.getRandomly());
 			}
 		},
 		CHECK_RTREE_TABLE {
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
-					throws SQLException {
-				Table table = newSchema.getRandomTableOrBailout(t -> t.getName().startsWith("r"));
+			public Query getQuery(SQLite3GlobalState g) throws SQLException {
+				Table table = g.getSchema().getRandomTableOrBailout(t -> t.getName().startsWith("r"));
 				return new QueryAdapter(String.format("SELECT rtreecheck('%s');", table.getName()));
 			}
 		},
@@ -199,55 +190,52 @@ public class SQLite3Provider implements DatabaseProvider {
 //		},
 		VIRTUAL_TABLE_ACTION {
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
-					throws SQLException {
-				return new SQLite3VirtualFTSTableCommandGenerator(newSchema, r).generate();
+			public Query getQuery(SQLite3GlobalState g) throws SQLException {
+				return new SQLite3VirtualFTSTableCommandGenerator(g.getSchema(), g.getRandomly()).generate();
 			}
 		},
 		CREATE_VIEW {
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
-					throws SQLException {
-				return SQLite3ViewGenerator.generate(newSchema, con, r, (SQLite3StateToReproduce) state);
+			public Query getQuery(SQLite3GlobalState g) throws SQLException {
+				return SQLite3ViewGenerator.generate(g.getSchema(), g.getConnection(), g.getRandomly(), g.getState(), g);
 			}
 		},
 		CREATE_TRIGGER {
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
-					throws SQLException {
-				return SQLite3CreateTriggerGenerator.create(newSchema, r, con);
+			public Query getQuery(SQLite3GlobalState g) throws SQLException {
+				return SQLite3CreateTriggerGenerator.create(g.getSchema(), g.getRandomly(), g.getConnection());
 			}
 		},
 		MANIPULATE_STAT_TABLE {
 			@Override
-			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
-					throws SQLException {
+			public Query getQuery(SQLite3GlobalState g) throws SQLException {
 				List<Column> columns = new ArrayList<>();
 				Table t = new Table("sqlite_stat1", columns, TableKind.MAIN, false, 1, false, false);
 				if (Randomly.getBoolean()) {
-					return SQLite3DeleteGenerator.deleteContent(t, con, r);
+					return SQLite3DeleteGenerator.deleteContent(t, g.getConnection(), g.getRandomly());
 				} else {
 					StringBuilder sb = new StringBuilder();
 					sb.append("INSERT OR IGNORE INTO sqlite_stat1");
 					String indexName;
-					try (Statement stat = con.createStatement()) {
+					try (Statement stat = g.getConnection().createStatement()) {
 						try (ResultSet rs = stat.executeQuery(
 								"SELECT name FROM sqlite_master WHERE type='index' ORDER BY RANDOM() LIMIT 1;")) {
 							if (rs.isClosed()) {
 								throw new IgnoreMeException();
 							}
 							indexName = rs.getString("name");
-						};
+						}
+						;
 					}
 					sb.append(" VALUES");
 					sb.append("('");
-					sb.append(newSchema.getRandomTable().getName());
+					sb.append(g.getSchema().getRandomTable().getName());
 					sb.append("', ");
 					sb.append("'");
 					if (Randomly.getBoolean()) {
 						sb.append(indexName);
 					} else {
-						sb.append(newSchema.getRandomTable().getName());
+						sb.append(g.getSchema().getRandomTable().getName());
 					}
 					sb.append("'");
 					sb.append(", '");
@@ -256,14 +244,14 @@ public class SQLite3Provider implements DatabaseProvider {
 							sb.append(" ");
 						}
 						if (Randomly.getBoolean()) {
-							sb.append(r.getInteger());
+							sb.append(g.getRandomly().getInteger());
 						} else {
 							sb.append(Randomly.smallNumber());
 						}
 					}
 					if (Randomly.getBoolean()) {
 						sb.append(" sz=");
-						sb.append(r.getInteger());
+						sb.append(g.getRandomly().getInteger());
 					}
 					if (Randomly.getBoolean()) {
 						sb.append(" unordered");
@@ -277,32 +265,72 @@ public class SQLite3Provider implements DatabaseProvider {
 			}
 		};
 
-
-		public abstract Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
-				throws SQLException;
+		public abstract Query getQuery(SQLite3GlobalState state) throws SQLException;
 	}
 
 	public static final int NR_INSERT_ROW_TRIES = 30;
 	private static final int NR_QUERIES_PER_TABLE = 10000;
 	private static final int MAX_INSERT_ROW_TRIES = 0;
-	public static final int EXPRESSION_MAX_DEPTH = 1;
+	public static final int EXPRESSION_MAX_DEPTH = 4;
 	public static final boolean ALLOW_FLOATING_POINT_FP = true;
 	public static final boolean MUST_KNOW_RESULT = false;
 
 	private SQLite3StateToReproduce state;
 	private String databaseName;
-	
+
+	public static class SQLite3GlobalState {
+
+		private Connection con;
+		private SQLite3Schema schema;
+		private SQLite3StateToReproduce state;
+		private Randomly r;
+
+		public Connection getConnection() {
+			return con;
+		}
+
+		public SQLite3Schema getSchema() {
+			return schema;
+		}
+
+		public void setConnection(Connection con) {
+			this.con = con;
+		}
+
+		public void setSchema(SQLite3Schema schema) {
+			this.schema = schema;
+		}
+
+		public void setState(SQLite3StateToReproduce state) {
+			this.state = state;
+		}
+
+		public SQLite3StateToReproduce getState() {
+			return state;
+		}
+
+		public Randomly getRandomly() {
+			return r;
+		}
+
+		public void setRandomly(Randomly r) {
+			this.r = r;
+		}
+
+	}
+
 	public static class SQLite3SpecialStringGenerator {
-		
+
 		private enum Options {
 			TIME_DATE_REGEX, NOW, DATE_TIME, TIME_MODIFIER
 		}
-		
+
 		public static String generate() {
 			StringBuilder sb = new StringBuilder();
 			switch (Randomly.fromOptions(Options.values())) {
 			case TIME_DATE_REGEX: // https://www.sqlite.org/lang_datefunc.html
-				return Randomly.fromOptions("%d", "%f", "%H", "%j", "%J", "%m", "%M", "%s", "%S", "%w", "%W", "%Y", "%%");
+				return Randomly.fromOptions("%d", "%f", "%H", "%j", "%J", "%m", "%M", "%s", "%S", "%w", "%W", "%Y",
+						"%%");
 			case NOW:
 				return "now";
 			case DATE_TIME:
@@ -317,27 +345,35 @@ public class SQLite3Provider implements DatabaseProvider {
 				}
 				return sb.toString();
 			case TIME_MODIFIER:
-				sb.append(Randomly.fromOptions("days", "hours", "minutes", "seconds", "months", "years", "start of month", "start of year", "start of day", "weekday", "unixepoch", "utc"));
+				sb.append(Randomly.fromOptions("days", "hours", "minutes", "seconds", "months", "years",
+						"start of month", "start of year", "start of day", "weekday", "unixepoch", "utc"));
 				return sb.toString();
 			default:
 				throw new AssertionError();
 			}
-			
+
 		}
 	}
+
+	private final SQLite3GlobalState globalState = new SQLite3GlobalState();
 
 	@Override
 	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger, StateToReproduce state,
 			QueryManager manager, MainOptions options) throws SQLException {
+
 		this.databaseName = databaseName;
 		Randomly r = new Randomly(SQLite3SpecialStringGenerator::generate);
+		globalState.setRandomly(r);
 		SQLite3Schema newSchema = null;
 		this.state = (SQLite3StateToReproduce) state;
+		globalState.setConnection(con);
+		globalState.setState((SQLite3StateToReproduce) state);
 
 		addSensiblePragmaDefaults(con);
 		int nrTablesToCreate = 1 + Randomly.smallNumber();
 		for (int i = 0; i < 1; i++) {
 			newSchema = SQLite3Schema.fromConnection(con);
+			globalState.setSchema(newSchema);
 //			assert newSchema.getDatabaseTables().size() == i : newSchema + " " + i;
 			String tableName = SQLite3Common.createTableName(i);
 			Query tableQuery = SQLite3TableGenerator.createTableStatement(tableName, state, newSchema, r);
@@ -352,7 +388,7 @@ public class SQLite3Provider implements DatabaseProvider {
 				Query tableQuery3 = SQLite3CreateVirtualRtreeTabelGenerator.createTableStatement(rTreeTableName, r);
 				manager.execute(tableQuery3);
 			}
-			
+
 		}
 		newSchema = SQLite3Schema.fromConnection(con);
 
@@ -433,7 +469,8 @@ public class SQLite3Provider implements DatabaseProvider {
 			assert nextAction != null;
 			assert nrRemaining[nextAction.ordinal()] > 0;
 			nrRemaining[nextAction.ordinal()]--;
-			Query query = nextAction.getQuery(newSchema, con, state, r);
+			globalState.setSchema(newSchema);
+			Query query = nextAction.getQuery(globalState);
 			try {
 				if (options.logEachSelect()) {
 					try {
@@ -449,10 +486,11 @@ public class SQLite3Provider implements DatabaseProvider {
 				manager.execute(query);
 				if (query.couldAffectSchema()) {
 					newSchema = SQLite3Schema.fromConnection(con);
+					globalState.setSchema(newSchema);
 				}
 			} catch (IgnoreMeException e) {
 
-			} 
+			}
 			total--;
 		}
 		Query query = SQLite3TransactionGenerator.generateCommit(con, state);
@@ -476,7 +514,7 @@ public class SQLite3Provider implements DatabaseProvider {
 
 //		SQLite3PivotedQuerySynthesizer queryGenerator = new SQLite3PivotedQuerySynthesizer(con, r);
 		SQLite3MetamorphicQuerySynthesizer or = new SQLite3MetamorphicQuerySynthesizer(newSchema, r, con,
-				(SQLite3StateToReproduce) state, logger, options);
+				(SQLite3StateToReproduce) state, logger, options, globalState);
 		if (options.logEachSelect()) {
 			logger.writeCurrent(state);
 		}
@@ -518,7 +556,8 @@ public class SQLite3Provider implements DatabaseProvider {
 			pragmasToExecute.add("PRAGMA case_sensitive_like=ON;");
 		}
 		if (Randomly.getBoolean()) {
-			pragmasToExecute.add(String.format("PRAGMA encoding = '%s';", Randomly.fromOptions("UTF-8", "UTF-16", "UTF-16le", "UTF-16be")));
+			pragmasToExecute.add(String.format("PRAGMA encoding = '%s';",
+					Randomly.fromOptions("UTF-8", "UTF-16", "UTF-16le", "UTF-16be")));
 		}
 		for (String s : pragmasToExecute) {
 			Query q = new QueryAdapter(s);

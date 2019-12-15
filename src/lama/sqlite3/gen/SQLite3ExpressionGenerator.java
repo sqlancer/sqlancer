@@ -1,7 +1,6 @@
 package lama.sqlite3.gen;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -12,6 +11,7 @@ import java.util.stream.Stream;
 import lama.Randomly;
 import lama.StateToReproduce.SQLite3StateToReproduce;
 import lama.sqlite3.SQLite3Provider;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.ast.SQLite3Aggregate;
 import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import lama.sqlite3.ast.SQLite3Case.CasePair;
@@ -25,13 +25,14 @@ import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation.BinaryComparisonOperator;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
-import lama.sqlite3.ast.SQLite3Expression.Exist;
 import lama.sqlite3.ast.SQLite3Expression.MatchOperation;
-import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3Exist;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm.Ordering;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3Text;
 import lama.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation.BinaryOperator;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import lama.sqlite3.ast.SQLite3Function;
@@ -39,7 +40,7 @@ import lama.sqlite3.ast.SQLite3Function.ComputableFunction;
 import lama.sqlite3.ast.SQLite3RowValue;
 import lama.sqlite3.ast.SQLite3UnaryOperation;
 import lama.sqlite3.ast.SQLite3UnaryOperation.UnaryOperator;
-import lama.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
+import lama.sqlite3.queries.SQLite3RandomQuerySynthesizer;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
 import lama.sqlite3.schema.SQLite3Schema.RowValue;
@@ -49,6 +50,7 @@ public class SQLite3ExpressionGenerator {
 	private RowValue rw;
 	private Connection con;
 	private SQLite3StateToReproduce state;
+	private SQLite3GlobalState globalState;
 	private boolean tryToGenerateKnownResult;
 	private List<Column> columns = Collections.emptyList();
 	private Randomly r;
@@ -95,11 +97,13 @@ public class SQLite3ExpressionGenerator {
 		return this;
 	}
 
-	public SQLite3ExpressionGenerator setCon(Connection con) {
-		this.con = con;
+	public SQLite3ExpressionGenerator setGlobalState(SQLite3GlobalState globalState) {
+		this.globalState = globalState;
+		this.con = globalState.getConnection();
 		return this;
 	}
-
+	
+	
 	public SQLite3ExpressionGenerator setState(SQLite3StateToReproduce state) {
 		this.state = state;
 		return this;
@@ -153,7 +157,7 @@ public class SQLite3ExpressionGenerator {
 	enum ExpressionType {
 		/* RANDOM_QUERY, */ COLUMN_NAME, LITERAL_VALUE, UNARY_OPERATOR, POSTFIX_UNARY_OPERATOR, BINARY_OPERATOR,
 		BETWEEN_OPERATOR, CAST_EXPRESSION, BINARY_COMPARISON_OPERATOR, FUNCTION, IN_OPERATOR, COLLATE,
-		/* EXISTS, */ CASE_OPERATOR, MATCH, AGGREGATE_FUNCTION, ROW_VALUE_COMPARISON
+		EXISTS, CASE_OPERATOR, MATCH, AGGREGATE_FUNCTION, ROW_VALUE_COMPARISON
 	}
 	
 	public SQLite3Expression getRandomExpression() {
@@ -222,8 +226,8 @@ public class SQLite3ExpressionGenerator {
 			return getInOperator(depth + 1);
 		case COLLATE:
 			return new CollateOperation(getRandomExpression(depth + 1), CollateSequence.random());
-//		case EXISTS:
-//			return getExists();
+		case EXISTS:
+			return getExists();
 		case CASE_OPERATOR:
 			return getCaseOperator(depth + 1);
 		case MATCH:
@@ -281,25 +285,19 @@ public class SQLite3ExpressionGenerator {
 		return new MatchOperation(left, right);
 	}
 
-	private SQLite3Expression getExists() throws AssertionError {
+	private SQLite3Expression getExists() {
 		SQLite3Expression val;
-		if ((Randomly.getBoolean() || con == null || state == null)) {
+		if (tryToGenerateKnownResult || (Randomly.getBoolean() || con == null || state == null || globalState == null)) {
 			if (Randomly.getBoolean()) {
-				val = new SQLite3PostfixText("SELECT 1", SQLite3Constant.createIntConstant(1));
+				val = new SQLite3Text("SELECT 1", SQLite3Constant.createIntConstant(1));
 			} else {
-				val = new SQLite3PostfixText("SELECT 0", SQLite3Constant.createIntConstant(0));
+				val = new SQLite3Text("SELECT 0 WHERE 0", SQLite3Constant.createIntConstant(0));
 			}
 			// fixme
 		} else {
-			try {
-				val = new SQLite3PostfixText(new SQLite3PivotedQuerySynthesizer(con, r)
-						.getQueryThatContainsAtLeastOneRow(state).getQueryString(),
-						SQLite3Constant.createIntConstant(1));
-			} catch (SQLException e) {
-				throw new AssertionError(e);
-			}
+			val = SQLite3RandomQuerySynthesizer.generate(globalState.getSchema(), r, Randomly.smallNumber() + 1);
 		}
-		return new Exist(val);
+		return new SQLite3Exist(val);
 	}
 
 	private SQLite3Expression getRandomColumn() {

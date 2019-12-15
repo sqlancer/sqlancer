@@ -8,12 +8,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import lama.IgnoreMeException;
 import lama.Main.StateLogger;
 import lama.MainOptions;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.StateToReproduce.SQLite3StateToReproduce;
 import lama.sqlite3.SQLite3Errors;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Aggregate;
 import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
@@ -21,9 +23,9 @@ import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.Join.JoinType;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
-import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.SQLite3SelectStatement.SelectType;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
@@ -49,20 +51,23 @@ public class SQLite3MetamorphicQuerySynthesizer {
 	private final List<String> errors = new ArrayList<>();
 	private StateLogger logger;
 	private MainOptions options;
+	private SQLite3GlobalState globalState;
 
 	public SQLite3MetamorphicQuerySynthesizer(SQLite3Schema s, Randomly r, Connection con,
-			SQLite3StateToReproduce state, StateLogger logger, MainOptions options) {
+			SQLite3StateToReproduce state, StateLogger logger, MainOptions options, SQLite3GlobalState globalState) {
 		this.s = s;
 		this.r = r;
 		this.con = con;
 		this.state = state;
 		this.logger = logger;
 		this.options = options;
+		this.globalState = globalState;
 		SQLite3Errors.addExpectedExpressionErrors(errors);
 		SQLite3Errors.addMatchQueryErrors(errors);
 
 		// aggregate
 		errors.add("misuse of aggregate");
+		errors.add("misuse of window function");
 		errors.add("second argument to nth_value must be a positive integer");
 		errors.add("no such table");
 //		errors.add("no such index"); // INDEXED BY 
@@ -93,6 +98,9 @@ public class SQLite3MetamorphicQuerySynthesizer {
 
 		}
 		int firstCount = getFirstQueryCount(con, tables, randomWhereCondition, groupBys, joinStatements);
+		if (firstQueryString.contains("EXISTS")) {
+			throw new IgnoreMeException();
+		}
 		int secondCount = getSecondQuery(tables, randomWhereCondition, groupBys, joinStatements);
 //		if (firstCount != NOT_FOUND && secondCount != NOT_FOUND) {
 //			if (firstQueryString.contains("MATCH")) {
@@ -116,7 +124,7 @@ public class SQLite3MetamorphicQuerySynthesizer {
 //	}
 
 	private SQLite3Expression getRandomWhereCondition(List<Column> columns) {
-		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(r).setColumns(columns).setCon(con)
+		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(r).setColumns(columns).setGlobalState(globalState)
 				.setState(state);
 		// FIXME: enable match clause for multiple tables
 //		if (randomTable.isVirtual()) {

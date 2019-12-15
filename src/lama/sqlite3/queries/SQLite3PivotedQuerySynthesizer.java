@@ -17,26 +17,27 @@ import lama.QueryAdapter;
 import lama.Randomly;
 import lama.StateToReproduce.SQLite3StateToReproduce;
 import lama.sqlite3.SQLite3Provider;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.SQLite3ToStringVisitor;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Aggregate;
-import lama.sqlite3.ast.SQLite3Cast;
 import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
+import lama.sqlite3.ast.SQLite3Cast;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.Join.JoinType;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm.Ordering;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
-import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
-import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import lama.sqlite3.ast.SQLite3SelectStatement;
-import lama.sqlite3.ast.SQLite3WindowFunction;
 import lama.sqlite3.ast.SQLite3UnaryOperation;
 import lama.sqlite3.ast.SQLite3UnaryOperation.UnaryOperator;
+import lama.sqlite3.ast.SQLite3WindowFunction;
 import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
 import lama.sqlite3.schema.SQLite3Schema;
@@ -55,10 +56,12 @@ public class SQLite3PivotedQuerySynthesizer {
 	private List<Column> fetchColumns;
 	private final List<String> errors = new ArrayList<>();
 	private List<SQLite3Expression> colExpressions;
+	private SQLite3GlobalState globalState;
 
-	public SQLite3PivotedQuerySynthesizer(Connection con, Randomly r) throws SQLException {
+	public SQLite3PivotedQuerySynthesizer(Connection con, Randomly r, SQLite3GlobalState globalState) throws SQLException {
 		this.database = con;
 		this.r = r;
+		this.globalState = globalState;
 		s = SQLite3Schema.fromConnection(database);
 	}
 
@@ -255,7 +258,7 @@ public class SQLite3PivotedQuerySynthesizer {
 		List<SQLite3Expression> orderBys = new ArrayList<>();
 		for (int i = 0; i < Randomly.smallNumber(); i++) {
 			SQLite3Expression expr;
-			expr = new SQLite3ExpressionGenerator(r).setCon(database).setState(state).setColumns(columns).getRandomExpression();
+			expr = new SQLite3ExpressionGenerator(r).setGlobalState(globalState).setState(state).setColumns(columns).getRandomExpression();
 			Ordering order = Randomly.fromOptions(Ordering.ASC, Ordering.DESC);
 			orderBys.add(new SQLite3OrderingTerm(expr, order));
 			// TODO RANDOM()
@@ -278,7 +281,7 @@ public class SQLite3PivotedQuerySynthesizer {
 		if (allTablesContainOneRow && Randomly.getBoolean()) {
 			List<SQLite3Expression> collect = new ArrayList<>();
 			for (int i = 0; i < Randomly.smallNumber(); i++) {
-				collect.add(new SQLite3ExpressionGenerator(r).setCon(database).setState((SQLite3StateToReproduce) state).setColumns(columns).setRowValue(rw).getRandomExpression());
+				collect.add(new SQLite3ExpressionGenerator(r).setGlobalState(globalState).setState((SQLite3StateToReproduce) state).setColumns(columns).setRowValue(rw).getRandomExpression());
 			}
 			return collect;
 		}
@@ -287,7 +290,7 @@ public class SQLite3PivotedQuerySynthesizer {
 			List<SQLite3Expression> collect = columns.stream().map(c -> new ColumnName(c, rw.getValues().get(c))).collect(Collectors.toList());
 			if (Randomly.getBoolean()) {
 				for (int i = 0; i < Randomly.smallNumber(); i++) {
-					collect.add(new SQLite3ExpressionGenerator(r).setCon(database).setState((SQLite3StateToReproduce) state).setColumns(columns).setRowValue(rw).getRandomExpression());
+					collect.add(new SQLite3ExpressionGenerator(r).setGlobalState(globalState).setState((SQLite3StateToReproduce) state).setColumns(columns).setRowValue(rw).getRandomExpression());
 				}
 			}
 			return collect;

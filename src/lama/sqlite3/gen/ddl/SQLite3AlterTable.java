@@ -9,7 +9,6 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.StateToReproduce;
-import lama.sqlite3.SQLite3Errors;
 import lama.sqlite3.gen.SQLite3ColumnBuilder;
 import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.schema.SQLite3Schema;

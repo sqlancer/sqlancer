@@ -14,13 +14,14 @@ import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
-import lama.sqlite3.ast.SQLite3Expression.Exist;
 import lama.sqlite3.ast.SQLite3Expression.Function;
 import lama.sqlite3.ast.SQLite3Expression.InOperation;
 import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.MatchOperation;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3Exist;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3Text;
 import lama.sqlite3.ast.SQLite3Expression.Subquery;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import lama.sqlite3.ast.SQLite3Function;
@@ -298,9 +299,9 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		sb.append(query.getQuery());
 	}
 
-	public void visit(Exist exist) {
+	public void visit(SQLite3Exist exist) {
 		sb.append(" EXISTS (");
-		visit(exist.getSelect());
+		visit(exist.getExpression());
 		sb.append(")");
 	}
 
@@ -403,5 +404,10 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 			visit(rw.getExpressions().get(i));
 		}
 		sb.append(")");
+	}
+
+	@Override
+	public void visit(SQLite3Text func) {
+		sb.append(func.getText());
 	}
 }

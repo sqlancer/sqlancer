@@ -38,6 +38,7 @@ public abstract class ToStringVisitor<T> extends NodeVisitor<T> {
 	
 	@SuppressWarnings("unchecked")
 	public void visit(T expr) {
+		assert expr != null;
 		if (expr instanceof BinaryOperation<?>) {
 			visit((BinaryOperation<T>) expr);
 		} else if (expr instanceof UnaryOperation<?>) {
