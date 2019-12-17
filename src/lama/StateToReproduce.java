@@ -20,12 +20,6 @@ import lama.tdengine.expr.TDEngineSelectStatement;
 
 public abstract class StateToReproduce {
 
-	public enum ErrorKind {
-		EXCEPTION, ROW_NOT_FOUND
-	}
-
-	ErrorKind errorKind;
-
 	public final List<Query> statements = new ArrayList<>();
 	public String queryString;
 
@@ -47,7 +41,6 @@ public abstract class StateToReproduce {
 	}
 
 	public String getException() {
-		assert this.errorKind == ErrorKind.EXCEPTION;
 		return exception;
 	}
 
@@ -67,14 +60,6 @@ public abstract class StateToReproduce {
 		return queryString;
 	}
 
-	public ErrorKind getErrorKind() {
-		return errorKind;
-	}
-
-	public void setErrorKind(ErrorKind errorKind) {
-		this.errorKind = errorKind;
-	}
-	
 	public static class MySQLStateToReproduce extends StateToReproduce {
 
 		public MySQLStateToReproduce(String databaseName) {

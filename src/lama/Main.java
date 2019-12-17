@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.beust.jcommander.JCommander;
 
-import lama.StateToReproduce.ErrorKind;
 import lama.sqlite3.SQLite3Provider;
 
 public class Main {
@@ -339,7 +338,6 @@ public class Main {
 						} catch (IgnoreMeException e) {
 							continue;
 						} catch (ReduceMeException reduce) {
-							state.errorKind = ErrorKind.ROW_NOT_FOUND;
 							logger.logRowNotFound(state);
 							threadsShutdown++;
 							break;
@@ -347,7 +345,6 @@ public class Main {
 							reduce.printStackTrace();
 //							if (true)
 //								System.exit(-1);
-							state.errorKind = ErrorKind.EXCEPTION;
 							state.exception = reduce.getMessage();
 							logger.logFileWriter = null;
 							logger.logException(reduce, state);
