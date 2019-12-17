@@ -374,7 +374,13 @@ public class SQLite3Provider implements DatabaseProvider {
 		globalState.setState((SQLite3StateToReproduce) state);
 
 		addSensiblePragmaDefaults(con);
-		int nrTablesToCreate = 1 + Randomly.smallNumber();
+		int nrTablesToCreate = 1;
+		if (Randomly.getBoolean()) {
+			nrTablesToCreate++;
+		}
+		while (Randomly.getBooleanWithSmallProbability()) {
+			nrTablesToCreate++;
+		}
 		int i = 0;
 		newSchema = SQLite3Schema.fromConnection(con);
 		do {
