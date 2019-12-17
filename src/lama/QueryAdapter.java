@@ -44,9 +44,6 @@ public class QueryAdapter extends Query {
 			s.execute(query);
 			return true;
 		} catch (Exception e) {
-			if (e.getMessage().contains("generated column loop")) {
-				throw new IgnoreMeException();
-			}
 			checkException(e);
 			return false;
 		}

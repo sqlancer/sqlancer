@@ -385,6 +385,14 @@ public class SQLite3Provider implements DatabaseProvider {
 			newSchema = SQLite3Schema.fromConnection(con);
 		} while (newSchema.getDatabaseTables().size() != nrTablesToCreate);
 		assert newSchema.getTables().getTables().size() == nrTablesToCreate;
+		for (Table table : newSchema.getDatabaseTables()) {
+			Query q = new QueryAdapter("SELECT * FROM " + table.getName(),
+					Arrays.asList("generated column loop", "integer overflow"));
+			if (!q.execute(con)) {
+				throw new IgnoreMeException();
+			}
+
+		}
 
 		int[] nrRemaining = new int[Action.values().length];
 		List<Action> actions = new ArrayList<>();
