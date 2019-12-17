@@ -311,42 +311,7 @@ public class SQLite3Provider implements DatabaseProvider {
 
 	}
 
-	public static class SQLite3SpecialStringGenerator {
-
-		private enum Options {
-			TIME_DATE_REGEX, NOW, DATE_TIME, TIME_MODIFIER
-		}
-
-		public static String generate() {
-			StringBuilder sb = new StringBuilder();
-			switch (Randomly.fromOptions(Options.values())) {
-			case TIME_DATE_REGEX: // https://www.sqlite.org/lang_datefunc.html
-				return Randomly.fromOptions("%d", "%f", "%H", "%j", "%J", "%m", "%M", "%s", "%S", "%w", "%W", "%Y",
-						"%%");
-			case NOW:
-				return "now";
-			case DATE_TIME:
-				long notCachedInteger = Randomly.getNotCachedInteger(1, 10);
-				for (int i = 0; i < notCachedInteger; i++) {
-					if (Randomly.getBoolean()) {
-						sb.append(Randomly.getNonCachedInteger());
-					} else {
-						sb.append(Randomly.getNotCachedInteger(0, 2000));
-					}
-					sb.append(Randomly.fromOptions(":", "-", " ", "T"));
-				}
-				return sb.toString();
-			case TIME_MODIFIER:
-				sb.append(Randomly.fromOptions("days", "hours", "minutes", "seconds", "months", "years",
-						"start of month", "start of year", "start of day", "weekday", "unixepoch", "utc"));
-				return sb.toString();
-			default:
-				throw new AssertionError();
-			}
-
-		}
-	}
-
+	
 	private final SQLite3GlobalState globalState = new SQLite3GlobalState();
 
 	private enum TableType {
@@ -383,14 +348,7 @@ public class SQLite3Provider implements DatabaseProvider {
 			newSchema = SQLite3Schema.fromConnection(con);
 		} while (newSchema.getDatabaseTables().size() != nrTablesToCreate);
 		assert newSchema.getTables().getTables().size() == nrTablesToCreate;
-		for (Table table : newSchema.getDatabaseTables()) {
-			Query q = new QueryAdapter("SELECT * FROM " + table.getName(),
-					Arrays.asList("generated column loop", "integer overflow"));
-			if (!q.execute(con)) {
-				throw new IgnoreMeException();
-			}
-
-		}
+		checkTablesForGeneratedColumnLoops(con, newSchema);
 
 		int[] nrRemaining = new int[Action.values().length];
 		List<Action> actions = new ArrayList<>();
@@ -524,6 +482,16 @@ public class SQLite3Provider implements DatabaseProvider {
 			e.printStackTrace();
 		}
 		System.gc();
+	}
+
+	private void checkTablesForGeneratedColumnLoops(Connection con, SQLite3Schema newSchema) throws SQLException {
+		for (Table table : newSchema.getDatabaseTables()) {
+			Query q = new QueryAdapter("SELECT * FROM " + table.getName(),
+					Arrays.asList("generated column loop", "integer overflow"));
+			if (!q.execute(con)) {
+				throw new IgnoreMeException();
+			}
+		}
 	}
 
 	private Query getTableQuery(StateToReproduce state, Randomly r, SQLite3Schema newSchema, int i)
