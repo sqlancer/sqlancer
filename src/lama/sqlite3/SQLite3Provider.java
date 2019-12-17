@@ -456,6 +456,10 @@ public class SQLite3Provider implements DatabaseProvider {
 			total += nrPerformed;
 		}
 
+		if (options.logEachSelect()) {
+			logger.writeCurrent(state);
+		}
+
 		while (total != 0) {
 			Action nextAction = null;
 			int selection = r.getInteger(0, total);
@@ -475,14 +479,6 @@ public class SQLite3Provider implements DatabaseProvider {
 			Query query = nextAction.getQuery(globalState);
 			try {
 				if (options.logEachSelect()) {
-					try {
-						logger.getCurrentFileWriter().close();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					logger.currentFileWriter = null;
-					logger.writeCurrent(state);
 					logger.writeCurrent(query.getQueryString());
 				}
 				manager.execute(query);
@@ -517,9 +513,6 @@ public class SQLite3Provider implements DatabaseProvider {
 //		SQLite3PivotedQuerySynthesizer queryGenerator = new SQLite3PivotedQuerySynthesizer(con, r);
 		SQLite3MetamorphicQuerySynthesizer or = new SQLite3MetamorphicQuerySynthesizer(newSchema, r, con,
 				(SQLite3StateToReproduce) state, logger, options, globalState);
-		if (options.logEachSelect()) {
-			logger.writeCurrent(state);
-		}
 		for (i = 0; i < NR_QUERIES_PER_TABLE; i++) {
 
 			try {
