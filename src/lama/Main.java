@@ -8,9 +8,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,18 +25,6 @@ import com.beust.jcommander.JCommander;
 import lama.StateToReproduce.ErrorKind;
 import lama.sqlite3.SQLite3Provider;
 
-// TODO:
-// group by
-// case
-// between
-// select so that no record should be returned
-// insert with arbitrary expressions
-// views
-// alter table
-// triggers
-// MIN/MAX
-// as
-// NaN values
 public class Main {
 
 	public static final File LOG_DIRECTORY = new File("logs");
@@ -355,7 +341,6 @@ public class Main {
 						} catch (ReduceMeException reduce) {
 							state.errorKind = ErrorKind.ROW_NOT_FOUND;
 							logger.logRowNotFound(state);
-//							tryToReduceBug(databaseName, state);
 							threadsShutdown++;
 							break;
 						} catch (Throwable reduce) {
@@ -366,7 +351,6 @@ public class Main {
 							state.exception = reduce.getMessage();
 							logger.logFileWriter = null;
 							logger.logException(reduce, state);
-//							tryToReduceBug(databaseName, state);
 							threadsShutdown++;
 							break;
 						} finally {
@@ -378,97 +362,10 @@ public class Main {
 									logger.currentFileWriter = null;
 								}
 							} catch (IOException e) {
-								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 						}
 					}
-				}
-
-				private void tryToReduceBug(final String databaseName, StateToReproduce state) {
-					List<Query> reducedStatements = new ArrayList<>(state.statements);
-					Query statementThatCausedException = state.statements.get(state.statements.size() - 1);
-					int initialStatementNr = state.statements.size();
-					if (state.getErrorKind() == ErrorKind.EXCEPTION) {
-						reducedStatements.remove(statementThatCausedException);
-					}
-					retry: for (int i = 0; i < 1000; i++) {
-						List<Query> currentRoundReducedStatements = new ArrayList<>(reducedStatements);
-						if (currentRoundReducedStatements.isEmpty()) {
-							break;
-						}
-						int nrToRemove;
-						if (i == 0) {
-							// first try to remove all statements that usually do not cause problems
-							for (Query q : new ArrayList<>(currentRoundReducedStatements)) {
-								String string = q.getQueryString();
-								if (string.startsWith("PRAGMA") || string.startsWith("ANALYZE")
-										|| string.startsWith("COMMIT") || string.startsWith("REINDEX")) {
-									currentRoundReducedStatements.remove(q);
-								}
-							}
-						} else {
-							if (i >= 300) {
-								nrToRemove = 1;
-							} else if (i >= 100) {
-								nrToRemove = currentRoundReducedStatements.size() / 20;
-							} else {
-								nrToRemove = currentRoundReducedStatements.size() / 10;
-							}
-							for (int j = 0; j < nrToRemove; j++) {
-								Query q = Randomly.fromList(currentRoundReducedStatements);
-								currentRoundReducedStatements.remove(q);
-							}
-						}
-
-						try (Connection con = provider.createDatabase(databaseName + "reduced", state)) {
-							for (Query q : currentRoundReducedStatements) {
-								try {
-									q.execute(con);
-								} catch (Throwable t) {
-									continue retry; // unsuccessful;
-								}
-							}
-							if (state.getErrorKind() == ErrorKind.EXCEPTION) {
-								try {
-									statementThatCausedException.execute(con);
-								} catch (Throwable t) {
-									if (!t.getMessage().equals(state.getException())) {
-										continue retry; // unsuccessful
-									}
-								}
-							} else {
-								try (Statement s = con.createStatement()) {
-									try (ResultSet result = s.executeQuery(state.queryString)) {
-										boolean isContainedIn = !result.isClosed() && result.first();
-										if (isContainedIn) {
-											continue retry;
-										} else {
-											Query q = provider.checkIfRowIsStillContained(state);
-											ResultSet result2 = s.executeQuery(q.getQueryString());
-											if (result2.isClosed()) {
-												continue retry;
-											}
-											result.close();
-										}
-									}
-								} catch (Throwable t) {
-									continue retry;
-								}
-							}
-							reducedStatements = currentRoundReducedStatements;
-							state.statements.clear();
-							state.statements.addAll(reducedStatements);
-							if (state.getErrorKind() == ErrorKind.EXCEPTION) {
-								state.statements.add(statementThatCausedException);
-							}
-							logger.logReduced(state, i, initialStatementNr, state.statements.size());
-						} catch (SQLException e) {
-							throw new AssertionError(e);
-						}
-					}
-
-					return;
 				}
 			});
 		}
