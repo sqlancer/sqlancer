@@ -39,6 +39,13 @@ public class SQLite3AlterTable {
 		errors.add("error in view");
 		errors.add("no such column"); // trigger
 		errors.add("error in trigger"); // trigger
+		
+		errors.add("operator prohibited in generated columns");
+		errors.add("subqueries prohibited in generated columns");
+		errors.add("duplicate column name");
+		errors.add("non-deterministic functions prohibited in generated columns");
+		errors.add("non-deterministic functions prohibited in CHECK constraints");
+		errors.add("second argument to likelihood");
 		Option option = Randomly.fromOptions(Option.values());
 		Table t = s.getRandomTableOrBailout(tab -> !tab.isView() && !tab.isVirtual());
 		sb.append("ALTER TABLE ");

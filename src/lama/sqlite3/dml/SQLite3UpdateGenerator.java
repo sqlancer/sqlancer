@@ -97,6 +97,11 @@ public class SQLite3UpdateGenerator {
 		errors.add("(too many levels of trigger recursion");
 		errors.add("String or BLOB exceeds size limit");
 		errors.add("cannot UPDATE generated column");
+		errors.add("unknown function: json_type");
+
+		// TODO not update generated columns?
+		errors.add("cannot INSERT into generated column");
+		SQLite3Errors.addInsertNowErrors(errors);
 		SQLite3Errors.addExpectedExpressionErrors(errors);
 		SQLite3Errors.addDeleteErrors(errors);
 		return new QueryAdapter(sb.toString(), errors, true /* column could have an ON UPDATE clause */);

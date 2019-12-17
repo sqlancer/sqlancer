@@ -287,7 +287,7 @@ public class SQLite3ExpressionGenerator {
 
 	private SQLite3Expression getExists() {
 		SQLite3Expression val;
-		if (tryToGenerateKnownResult || (Randomly.getBoolean() || con == null || state == null || globalState == null)) {
+		if (true || tryToGenerateKnownResult || (Randomly.getBoolean() || con == null || state == null || globalState == null)) {
 			if (Randomly.getBoolean()) {
 				val = new SQLite3Text("SELECT 1", SQLite3Constant.createIntConstant(1));
 			} else {

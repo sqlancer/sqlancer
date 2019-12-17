@@ -30,7 +30,7 @@ public class SQLite3DeleteGenerator {
 				"[SQLITE_CONSTRAINT]  Abort due to constraint violation ",
 				"[SQLITE_ERROR] SQL error or missing database (parser stack overflow)",
 				"[SQLITE_ERROR] SQL error or missing database (no such table:", "no such column",
-				"too many levels of trigger recursion", "cannot UPDATE generated column"));
+				"too many levels of trigger recursion", "cannot UPDATE generated column", "cannot INSERT into generated column"));
 		SQLite3Errors.addDeleteErrors(errors);
 		return new QueryAdapter(sb.toString(), errors, true);
 

@@ -41,5 +41,14 @@ public class SQLite3Errors {
 		errors.add("non-deterministic functions prohibited in CHECK constraints");
 		errors.addAll(Arrays.asList("subqueries prohibited in CHECK constraints", "generated columns cannot be part of the PRIMARY KEY", "must have at least one non-generated column"));
 	}
+
+
+	public static void addInsertNowErrors(List<String> errors) {
+		errors.add("non-deterministic use of strftime()");
+		errors.add("non-deterministic use of time()");
+		errors.add("non-deterministic use of datetime()");
+		errors.add("non-deterministic use of julianday()");
+		errors.add("non-deterministic use of date()");
+	}
 	
 }

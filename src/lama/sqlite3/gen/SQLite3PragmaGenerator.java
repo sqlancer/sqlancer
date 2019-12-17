@@ -34,7 +34,7 @@ public class SQLite3PragmaGenerator {
 		CACHE_SIZE, //
 		CACHE_SPILL_ENABLED, //
 		CACHE_SPILL_SIZE,
-		/* CASE_SENSITIVE_LIKE */ CELL_SIZE_CHECK, CHECKPOINT_FULLSYNC, DEFAULT_CACHE_SIZE, DEFER_FOREIGN_KEY, ENCODING,
+		/* CASE_SENSITIVE_LIKE */ CELL_SIZE_CHECK, CHECKPOINT_FULLSYNC, DEFAULT_CACHE_SIZE, DEFER_FOREIGN_KEY, /*ENCODING,*/
 		FOREIGN_KEYS, IGNORE_CHECK_CONSTRAINTS, INCREMENTAL_VACUUM, INTEGRITY_CHECK, JOURNAL_MODE, JOURNAL_SIZE_LIMIT,
 		/* LEGACY_ALTER_TABLE */ OPTIMIZE, LEGACY_FORMAT, LOCKING_MODE, MMAP_SIZE, RECURSIVE_TRIGGERS,
 		REVERSE_UNORDERED_SELECTS, SECURE_DELETE, SHRINK_MEMORY, SOFT_HEAP_LIMIT, //
@@ -43,7 +43,7 @@ public class SQLite3PragmaGenerator {
 		THREADS, //
 		WAL_AUTOCHECKPOINT, //
 		WAL_CHECKPOINT, //
-		WRITEABLE_SCHEMA
+//		WRITEABLE_SCHEMA
 	}
 
 	private final StringBuilder sb = new StringBuilder();
@@ -118,15 +118,15 @@ public class SQLite3PragmaGenerator {
 			break;
 		// TODO: [SQLITE_ERROR] SQL error or missing database (attached databases must
 		// use the same text encoding as main database)
-		case ENCODING:
-			sb.append("PRAGMA main.encoding = \"");
-			String encoding = Randomly.fromOptions("UTF-8", "UTF-16", "UTF-16be", "UTF-16le");
-			sb.append(encoding);
-			sb.append("\";\n");
-			sb.append("PRAGMA temp.encoding = \"");
-			sb.append(encoding);
-			sb.append("\";");
-			break;
+//		case ENCODING:
+//			sb.append("PRAGMA main.encoding = \"");
+//			String encoding = Randomly.fromOptions("UTF-8", "UTF-16", "UTF-16be", "UTF-16le");
+//			sb.append(encoding);
+//			sb.append("\";\n");
+//			sb.append("PRAGMA temp.encoding = \"");
+//			sb.append(encoding);
+//			sb.append("\"");
+//			break;
 		case FOREIGN_KEYS:
 			createPragma("foreign_keys", () -> getRandomTextBoolean());
 			break;
@@ -214,9 +214,9 @@ public class SQLite3PragmaGenerator {
 			sb.append(")");
 			errors.add("database table is locked");
 			break;
-		case WRITEABLE_SCHEMA:
-			createPragma("writable_schema", () -> Randomly.getBoolean());
-			break;
+//		case WRITEABLE_SCHEMA:
+//			createPragma("writable_schema", () -> Randomly.getBoolean());
+//			break;
 		default:
 			throw new AssertionError();
 		}

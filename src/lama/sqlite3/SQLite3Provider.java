@@ -102,7 +102,8 @@ public class SQLite3Provider implements DatabaseProvider {
 
 			@Override
 			public Query getQuery(SQLite3GlobalState g) {
-				return SQLite3DeleteGenerator.deleteContent(g.getSchema().getRandomTableNoViewOrBailout(), g.getConnection(), g.getRandomly());
+				return SQLite3DeleteGenerator.deleteContent(g.getSchema().getRandomTableNoViewOrBailout(),
+						g.getConnection(), g.getRandomly());
 			}
 		},
 		TRANSACTION_START {
@@ -125,7 +126,8 @@ public class SQLite3Provider implements DatabaseProvider {
 
 			@Override
 			public Query getQuery(SQLite3GlobalState g) throws SQLException {
-				return SQLite3DropIndexGenerator.dropIndex(g.getConnection(), g.getState(), g.getSchema(), g.getRandomly());
+				return SQLite3DropIndexGenerator.dropIndex(g.getConnection(), g.getState(), g.getSchema(),
+						g.getRandomly());
 			}
 		},
 		UPDATE {
@@ -169,7 +171,7 @@ public class SQLite3Provider implements DatabaseProvider {
 
 			@Override
 			public Query getQuery(SQLite3GlobalState g) throws SQLException {
-				return SQLite3ExplainGenerator.explain(g.getConnection(), g.getState(), g.getRandomly());
+				return SQLite3ExplainGenerator.explain(g);
 			}
 		},
 		CHECK_RTREE_TABLE {
@@ -197,7 +199,8 @@ public class SQLite3Provider implements DatabaseProvider {
 		CREATE_VIEW {
 			@Override
 			public Query getQuery(SQLite3GlobalState g) throws SQLException {
-				return SQLite3ViewGenerator.generate(g.getSchema(), g.getConnection(), g.getRandomly(), g.getState(), g);
+				return SQLite3ViewGenerator.generate(g.getSchema(), g.getConnection(), g.getRandomly(), g.getState(),
+						g);
 			}
 		},
 		CREATE_TRIGGER {
@@ -269,9 +272,9 @@ public class SQLite3Provider implements DatabaseProvider {
 	}
 
 	public static final int NR_INSERT_ROW_TRIES = 30;
-	private static final int NR_QUERIES_PER_TABLE = 10000;
+	private static final int NR_QUERIES_PER_TABLE = 100000;
 	private static final int MAX_INSERT_ROW_TRIES = 0;
-	public static final int EXPRESSION_MAX_DEPTH = 4;
+	public static final int EXPRESSION_MAX_DEPTH = 3;
 	public static final boolean ALLOW_FLOATING_POINT_FP = true;
 	public static final boolean MUST_KNOW_RESULT = false;
 
@@ -356,7 +359,7 @@ public class SQLite3Provider implements DatabaseProvider {
 	}
 
 	private final SQLite3GlobalState globalState = new SQLite3GlobalState();
-	
+
 	private enum TableType {
 		NORMAL, FTS, RTREE
 	}
@@ -408,27 +411,25 @@ public class SQLite3Provider implements DatabaseProvider {
 			int nrPerformed = 0;
 			switch (action) {
 			case DROP_VIEW:
+			case CREATE_VIEW:
 				nrPerformed = r.getInteger(0, 0);
 				break;
 			case CREATE_TRIGGER:
-				nrPerformed = r.getInteger(0, 2);
-				break;
-			case CREATE_VIEW:
+			case DELETE:
+			case DROP_INDEX:
 				nrPerformed = r.getInteger(0, 2);
 				break;
 			case ALTER:
 			case EXPLAIN:
-				nrPerformed = 0;
-				break;
 			case DROP_TABLE:
-			case DELETE:
-			case DROP_INDEX:
+				nrPerformed = r.getInteger(0, 0);
+				break;
 			case VACUUM:
 			case CHECK_RTREE_TABLE:
 				nrPerformed = r.getInteger(0, 3);
 				break;
 			case INSERT:
-				nrPerformed = r.getInteger(1, NR_INSERT_ROW_TRIES);
+				nrPerformed = r.getInteger(0, NR_INSERT_ROW_TRIES);
 				break;
 			case MANIPULATE_STAT_TABLE:
 				nrPerformed = r.getInteger(0, 5);
