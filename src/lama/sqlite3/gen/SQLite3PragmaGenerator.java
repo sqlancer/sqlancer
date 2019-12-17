@@ -1,6 +1,5 @@
 package lama.sqlite3.gen;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +7,7 @@ import java.util.function.Supplier;
 
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.StateToReproduce;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
 public class SQLite3PragmaGenerator {
 
@@ -66,7 +65,8 @@ public class SQLite3PragmaGenerator {
 		}
 	}
 
-	public QueryAdapter insert(Connection con, StateToReproduce state, Randomly r) {
+	public QueryAdapter insert(SQLite3GlobalState globalState) {
+		Randomly r = globalState.getRandomly();
 		Pragma p = Randomly.fromOptions(Pragma.values());
 		switch (p) {
 		case APPLICATION_ID:
@@ -226,8 +226,8 @@ public class SQLite3PragmaGenerator {
 		return new QueryAdapter(pragmaString, errors);
 	}
 
-	public static QueryAdapter insertPragma(Connection con, StateToReproduce state, Randomly r) throws SQLException {
-		return new SQLite3PragmaGenerator().insert(con, state, r);
+	public static QueryAdapter insertPragma(SQLite3GlobalState globalState) throws SQLException {
+		return new SQLite3PragmaGenerator().insert(globalState);
 	}
 
 	private static String getRandomTextBoolean() {

@@ -295,7 +295,7 @@ public class SQLite3ExpressionGenerator {
 			}
 			// fixme
 		} else {
-			val = SQLite3RandomQuerySynthesizer.generate(globalState.getSchema(), r, Randomly.smallNumber() + 1);
+			val = SQLite3RandomQuerySynthesizer.generate(globalState, Randomly.smallNumber() + 1);
 		}
 		return new SQLite3Exist(val);
 	}

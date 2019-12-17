@@ -10,6 +10,7 @@ import lama.IgnoreMeException;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.dml.SQLite3DeleteGenerator;
 import lama.sqlite3.dml.SQLite3InsertGenerator;
@@ -28,7 +29,10 @@ public class SQLite3CreateTriggerGenerator {
 		INSERT, DELETE, UPDATE, RAISE
 	}
 
-	public static Query create(SQLite3Schema s, Randomly r, Connection con) throws SQLException {
+	public static Query create(SQLite3GlobalState globalState) throws SQLException {
+		SQLite3Schema s = globalState.getSchema();
+		Randomly r = globalState.getRandomly();
+		Connection con = globalState.getConnection();
 		StringBuilder sb = new StringBuilder();
 		Table table = s.getRandomTableOrBailout(t -> !t.isVirtual());
 		sb.append("CREATE");
@@ -80,7 +84,7 @@ public class SQLite3CreateTriggerGenerator {
 				sb.append(SQLite3DeleteGenerator.deleteContent(randomActionTable, con, r));
 				break;
 			case INSERT:
-				sb.append(getQueryString(s, r, con));
+				sb.append(getQueryString(s, globalState));
 				break;
 			case UPDATE:
 				sb.append(SQLite3UpdateGenerator.updateRow(randomActionTable, r));
@@ -115,10 +119,10 @@ public class SQLite3CreateTriggerGenerator {
 		}
 	}
 
-	private static String getQueryString(SQLite3Schema s, Randomly r, Connection con) throws SQLException {
+	private static String getQueryString(SQLite3Schema s, SQLite3GlobalState globalState) throws SQLException {
 		String q;
 		do {
-			q = SQLite3InsertGenerator.insertRow(getTableNotEqualsTo(s, s.getRandomTableNoViewOrBailout()), con, r)
+			q = SQLite3InsertGenerator.insertRow(getTableNotEqualsTo(s, s.getRandomTableNoViewOrBailout()), globalState)
 					.getQueryString();
 		} while (q.contains("DEFAULT VALUES"));
 		return q;

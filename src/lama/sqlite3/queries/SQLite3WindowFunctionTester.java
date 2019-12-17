@@ -15,6 +15,7 @@ import lama.QueryAdapter;
 import lama.Randomly;
 import lama.StateToReproduce.SQLite3StateToReproduce;
 import lama.sqlite3.SQLite3Errors;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import lama.sqlite3.ast.SQLite3Expression;
@@ -38,15 +39,16 @@ public class SQLite3WindowFunctionTester {
 	private SQLite3Schema s;
 	private Randomly r;
 	private Connection con;
-	private SQLite3StateToReproduce state;
 	private final List<String> queries = new ArrayList<>();
 	private final List<String> errors = new ArrayList<>();
+	private SQLite3GlobalState globalState;
 
-	public SQLite3WindowFunctionTester(SQLite3Schema s, Randomly r, Connection con, SQLite3StateToReproduce state, StateLogger logger, MainOptions options) {
+	public SQLite3WindowFunctionTester(SQLite3Schema s, Randomly r, Connection con, SQLite3StateToReproduce state,
+			StateLogger logger, MainOptions options, SQLite3GlobalState globalState) {
 		this.s = s;
 		this.r = r;
 		this.con = con;
-		this.state = state;
+		this.globalState = globalState;
 		SQLite3Errors.addExpectedExpressionErrors(errors);
 		SQLite3Errors.addMatchQueryErrors(errors);
 
@@ -162,8 +164,7 @@ public class SQLite3WindowFunctionTester {
 	}
 
 	private SQLite3Expression getRandomWhereCondition(List<Column> columns) {
-		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(r).setColumns(columns).setCon(con)
-				.setState(state);
+		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(r).setColumns(columns).setGlobalState(globalState);
 		// FIXME: enable match clause for multiple tables
 //		if (randomTable.isVirtual()) {
 //			gen.allowMatchClause();

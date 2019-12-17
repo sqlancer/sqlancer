@@ -14,8 +14,10 @@ import lama.QueryAdapter;
 import lama.Randomly;
 import lama.StateToReproduce.SQLite3StateToReproduce;
 import lama.sqlite3.SQLite3Errors;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Aggregate;
+import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Join;
@@ -25,7 +27,6 @@ import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUn
 import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.SQLite3SelectStatement.SelectType;
 import lama.sqlite3.ast.SQLite3UnaryOperation;
-import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import lama.sqlite3.ast.SQLite3UnaryOperation.UnaryOperator;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
 import lama.sqlite3.schema.SQLite3DataType;
@@ -47,13 +48,15 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 	private SQLite3StateToReproduce state;
 	private final List<String> queries = new ArrayList<>();
 	private final List<String> errors = new ArrayList<>();
+	private final SQLite3GlobalState globalState;
 
 	public SQLite3MetamorphicTrueValueSynthesizer(SQLite3Schema s, Randomly r, Connection con,
-			SQLite3StateToReproduce state) {
+			SQLite3StateToReproduce state, SQLite3GlobalState globalState) {
 		this.s = s;
 		this.r = r;
 		this.con = con;
 		this.state = state;
+		this.globalState = globalState;
 		SQLite3Errors.addExpectedExpressionErrors(errors);
 		SQLite3Errors.addMatchQueryErrors(errors);
 
@@ -183,8 +186,7 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 	}
 
 	private SQLite3Expression getRandomWhereCondition(List<Column> columns) {
-		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(r).setColumns(columns).setCon(con)
-				.setState(state);
+		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(r).setColumns(columns).setGlobalState(globalState);
 		// FIXME: enable match clause for multiple tables
 //		if (randomTable.isVirtual()) {
 //			gen.allowMatchClause();

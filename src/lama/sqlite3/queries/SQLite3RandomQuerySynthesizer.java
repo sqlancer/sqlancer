@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lama.Randomly;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
@@ -19,8 +20,9 @@ import lama.sqlite3.schema.SQLite3Schema.Tables;
 
 public class SQLite3RandomQuerySynthesizer {
 
-	public static SQLite3SelectStatement generate(SQLite3Schema s, Randomly r, int size) {
-
+	public static SQLite3SelectStatement generate(SQLite3GlobalState globalState, int size) {
+		Randomly r = globalState.getRandomly();
+		SQLite3Schema s = globalState.getSchema();
 		Tables targetTables = s.getRandomTableNonEmptyTables();
 		List<SQLite3Expression> expressions = new ArrayList<>();
 		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(r).setColumns(s.getTables().getColumns());

@@ -7,35 +7,32 @@ import java.util.List;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.StateToReproduce;
 import lama.sqlite3.SQLite3Errors;
 import lama.sqlite3.SQLite3Provider;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.SQLite3ToStringVisitor;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
-import lama.sqlite3.schema.SQLite3Schema;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 
 // see https://www.sqlite.org/lang_createindex.html
 public class SQLite3IndexGenerator {
 
-	public static Query insertIndex(SQLite3Schema s, StateToReproduce state, Randomly r) throws SQLException {
-		return new SQLite3IndexGenerator(s, state, r).create();
+	public static Query insertIndex(SQLite3GlobalState globalState) throws SQLException {
+		return new SQLite3IndexGenerator(globalState).create();
 	}
 
-	private final Randomly r;
 	private final List<String> errors = new ArrayList<>();
-	private final SQLite3Schema s;
+	private final SQLite3GlobalState globalState;
 
-	public SQLite3IndexGenerator(SQLite3Schema s, StateToReproduce state, Randomly r) throws SQLException {
-		this.r = r;
-		this.s = s;
+	public SQLite3IndexGenerator(SQLite3GlobalState globalState) throws SQLException {
+		this.globalState = globalState;
 	}
 
 	private Query create() throws SQLException {
-		Table t = s.getRandomTableOrBailout(tab -> !tab.isView() && !tab.isVirtual());
+		Table t = globalState.getSchema().getRandomTableOrBailout(tab -> !tab.isView() && !tab.isVirtual());
 		String q = createIndex(t, t.getColumns());
 		errors.add("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)");
 		errors.add("subqueries prohibited in index expressions");
@@ -70,7 +67,7 @@ public class SQLite3IndexGenerator {
 		if (Randomly.getBoolean()) {
 			sb.append(" IF NOT EXISTS");
 		}
-		sb.append(" " + SQLite3Common.getFreeIndexName(s));
+		sb.append(" " + SQLite3Common.getFreeIndexName(globalState.getSchema()));
 		sb.append(" ON");
 		sb.append(" " + t.getName());
 		sb.append("(");
@@ -78,7 +75,7 @@ public class SQLite3IndexGenerator {
 			if (i != 0) {
 				sb.append(",");
 			}
-			SQLite3Expression expr = new SQLite3ExpressionGenerator(r).expectedErrors(errors).setColumns(columns).deterministicOnly().getRandomExpression();
+			SQLite3Expression expr = new SQLite3ExpressionGenerator(globalState.getRandomly()).expectedErrors(errors).setColumns(columns).deterministicOnly().getRandomExpression();
 			SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
 			visitor.fullyQualifiedNames = false;
 			visitor.visit(expr);
@@ -91,7 +88,7 @@ public class SQLite3IndexGenerator {
 		sb.append(")");
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
-			SQLite3Expression expr = new SQLite3ExpressionGenerator(r).setColumns(columns).deterministicOnly().getRandomExpression();
+			SQLite3Expression expr = new SQLite3ExpressionGenerator(globalState.getRandomly()).setColumns(columns).deterministicOnly().getRandomExpression();
 			SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
 			visitor.fullyQualifiedNames = false;
 			visitor.visit(expr);

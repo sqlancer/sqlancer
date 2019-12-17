@@ -54,14 +54,14 @@ public class SQLite3Provider implements DatabaseProvider {
 		PRAGMA {
 			@Override
 			public Query getQuery(SQLite3GlobalState g) throws SQLException {
-				return SQLite3PragmaGenerator.insertPragma(g.getConnection(), g.getState(), g.getRandomly());
+				return SQLite3PragmaGenerator.insertPragma(g);
 			}
 		},
 		INDEX {
 
 			@Override
 			public Query getQuery(SQLite3GlobalState g) throws SQLException {
-				return SQLite3IndexGenerator.insertIndex(g.getSchema(), g.getState(), g.getRandomly());
+				return SQLite3IndexGenerator.insertIndex(g);
 			}
 		},
 		INSERT {
@@ -69,7 +69,7 @@ public class SQLite3Provider implements DatabaseProvider {
 			@Override
 			public Query getQuery(SQLite3GlobalState g) throws SQLException {
 				Table randomTable = g.getSchema().getRandomTableOrBailout(t -> !t.isView());
-				return SQLite3InsertGenerator.insertRow(randomTable, g.getConnection(), g.getRandomly());
+				return SQLite3InsertGenerator.insertRow(randomTable, g);
 			}
 
 		},
@@ -189,14 +189,13 @@ public class SQLite3Provider implements DatabaseProvider {
 		CREATE_VIEW {
 			@Override
 			public Query getQuery(SQLite3GlobalState g) throws SQLException {
-				return SQLite3ViewGenerator.generate(g.getSchema(), g.getConnection(), g.getRandomly(), g.getState(),
-						g);
+				return SQLite3ViewGenerator.generate(g);
 			}
 		},
 		CREATE_TRIGGER {
 			@Override
 			public Query getQuery(SQLite3GlobalState g) throws SQLException {
-				return SQLite3CreateTriggerGenerator.create(g.getSchema(), g.getRandomly(), g.getConnection());
+				return SQLite3CreateTriggerGenerator.create(g);
 			}
 		},
 		MANIPULATE_STAT_TABLE {

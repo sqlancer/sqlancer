@@ -10,6 +10,7 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.sqlite3.SQLite3Errors;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.SQLite3ToStringVisitor;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Constant;
@@ -28,8 +29,8 @@ public class SQLite3InsertGenerator {
 		errors = new ArrayList<>();
 	}
 
-	public static Query insertRow(Table table, Connection con, Randomly r) throws SQLException {
-		SQLite3InsertGenerator generator = new SQLite3InsertGenerator(r, con);
+	public static Query insertRow(Table table, SQLite3GlobalState globalState) throws SQLException {
+		SQLite3InsertGenerator generator = new SQLite3InsertGenerator(globalState.getRandomly(), globalState.getConnection());
 		String query = generator.insertRow(table);
 		return new QueryAdapter(query, generator.errors, true);
 	}
