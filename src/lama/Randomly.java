@@ -33,7 +33,7 @@ public final class Randomly {
 	private final List<String> cachedStrings = new ArrayList<>();
 	private final List<Double> cachedDoubles = new ArrayList<>();
 	private final List<byte[]> cachedBytes = new ArrayList<>();
-	String alphabet = new String(
+	private final static String ALPHABET = new String(
 			"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzöß!#<>/.,~-+'*()[]{} ^*?%_\t\n\r|&\\");
 	private Supplier<String> provider;
 
@@ -119,7 +119,7 @@ public final class Randomly {
 					char[] chars = randomString.toCharArray();
 					if (chars.length != 0) {
 						for (int i = 0; i < Randomly.smallNumber(); i++) {
-							chars[getInteger(0, chars.length)] = alphabet.charAt(getInteger(0, alphabet.length()));
+							chars[getInteger(0, chars.length)] = ALPHABET.charAt(getInteger(0, ALPHABET.length()));
 						}
 					}
 					return new String(chars);
@@ -232,7 +232,7 @@ public final class Randomly {
 			}
 		}
 
-		int n = alphabet.length();
+		int n = ALPHABET.length();
 
 		StringBuilder sb = new StringBuilder();
 
@@ -243,7 +243,14 @@ public final class Randomly {
 			chars = getInteger(0, 30);
 		}
 		for (int i = 0; i < chars; i++) {
-			sb.append(alphabet.charAt(ThreadLocalRandom.current().nextInt(n)));
+			if (Randomly.getBoolean()) {
+				char val = (char) getInteger();
+				if (val != 0) {
+					sb.append(val); 
+				}
+			} else {
+				sb.append(ALPHABET.charAt(ThreadLocalRandom.current().nextInt(n)));
+			}
 		}
 		while (Randomly.getBooleanWithSmallProbability()) {
 			String[][] pairs = { { "{", "}" }, { "[", "]" }, { "(", ")" } };
