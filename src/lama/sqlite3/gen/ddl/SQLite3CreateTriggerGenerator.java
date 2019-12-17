@@ -24,7 +24,7 @@ public class SQLite3CreateTriggerGenerator {
 	private enum OnAction {
 		INSERT, DELETE, UPDATE
 	}
-	
+
 	private enum TriggerAction {
 		INSERT, DELETE, UPDATE, RAISE
 	}
@@ -81,13 +81,13 @@ public class SQLite3CreateTriggerGenerator {
 		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
 			switch (Randomly.fromOptions(TriggerAction.values())) {
 			case DELETE:
-				sb.append(SQLite3DeleteGenerator.deleteContent(randomActionTable, con, r));
+				sb.append(SQLite3DeleteGenerator.deleteContent(globalState, randomActionTable));
 				break;
 			case INSERT:
 				sb.append(getQueryString(s, globalState));
 				break;
 			case UPDATE:
-				sb.append(SQLite3UpdateGenerator.updateRow(randomActionTable, r));
+				sb.append(SQLite3UpdateGenerator.updateRow(globalState, randomActionTable));
 				break;
 			case RAISE:
 				sb.append("SELECT RAISE(");
@@ -122,7 +122,7 @@ public class SQLite3CreateTriggerGenerator {
 	private static String getQueryString(SQLite3Schema s, SQLite3GlobalState globalState) throws SQLException {
 		String q;
 		do {
-			q = SQLite3InsertGenerator.insertRow(getTableNotEqualsTo(s, s.getRandomTableNoViewOrBailout()), globalState)
+			q = SQLite3InsertGenerator.insertRow(globalState, getTableNotEqualsTo(s, s.getRandomTableNoViewOrBailout()))
 					.getQueryString();
 		} while (q.contains("DEFAULT VALUES"));
 		return q;

@@ -1,13 +1,12 @@
 package lama.sqlite3.gen;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.StateToReproduce;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.schema.SQLite3Schema;
 
 /**
@@ -19,7 +18,8 @@ public class SQLite3ReindexGenerator {
 		TABLE, INDEX, COLLATION_NAME
 	}
 
-	public static Query executeReindex(Connection con, StateToReproduce state, SQLite3Schema s) {
+	public static Query executeReindex(SQLite3GlobalState globalState) {
+		SQLite3Schema s = globalState.getSchema();
 		StringBuilder sb = new StringBuilder("REINDEX");
 		List<String> errors = new ArrayList<>();
 		Target t = Randomly.fromOptions(Target.values());

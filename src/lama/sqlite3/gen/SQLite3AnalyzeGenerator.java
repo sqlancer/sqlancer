@@ -3,7 +3,7 @@ package lama.sqlite3.gen;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.sqlite3.schema.SQLite3Schema;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
 public class SQLite3AnalyzeGenerator {
 	
@@ -11,13 +11,13 @@ public class SQLite3AnalyzeGenerator {
 		SCHEMA, TABLE, INDEX, SQL_MASTER
 	}
 
-	public static Query generateAnalyze(SQLite3Schema newSchema) {
+	public static Query generateAnalyze(SQLite3GlobalState globalState) {
 		StringBuilder sb = new StringBuilder("ANALYZE");
 		if (Randomly.getBoolean()) {
 			sb.append(" ");
 			switch (Randomly.fromOptions(AnalyzeTarget.values())) {
 			case INDEX:
-				sb.append(newSchema.getRandomIndexOrBailout());
+				sb.append(globalState.getSchema().getRandomIndexOrBailout());
 				break;
 			case SCHEMA:
 				sb.append(Randomly.fromOptions("main", "temp"));
@@ -26,7 +26,7 @@ public class SQLite3AnalyzeGenerator {
 				sb.append("sqlite_master");
 				break;
 			case TABLE:
-				sb.append(newSchema.getRandomTableOrBailout().getName());
+				sb.append(globalState.getSchema().getRandomTableOrBailout().getName());
 				break;
 			default:
 				throw new AssertionError();

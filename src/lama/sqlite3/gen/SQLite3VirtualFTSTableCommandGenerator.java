@@ -7,6 +7,7 @@ import lama.IgnoreMeException;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.schema.SQLite3Schema;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 
@@ -17,8 +18,8 @@ public class SQLite3VirtualFTSTableCommandGenerator {
 	private Randomly r;
 	private final List<String> errors = new ArrayList<>();
 	
-	public static Query create(SQLite3Schema s, Randomly r) {
-		return new SQLite3VirtualFTSTableCommandGenerator(s, r).generate();
+	public static Query create(SQLite3GlobalState globalState) {
+		return new SQLite3VirtualFTSTableCommandGenerator(globalState.getSchema(), globalState.getRandomly()).generate();
 	}
 	
 	public SQLite3VirtualFTSTableCommandGenerator(SQLite3Schema s, Randomly r) {
@@ -30,7 +31,7 @@ public class SQLite3VirtualFTSTableCommandGenerator {
 		AUTOMERGE, CRISISMERGE, INTEGRITYCHECK, MERGE, OPTIMIZE, REBUILD, USER_MERGE, PGSZ
 	}
 	
-	public Query generate() {
+	private Query generate() {
 		errors.add("has no column named rank");
 		Table vTable = s.getRandomTableOrBailout(t -> t.isVirtual() && t.getName().startsWith("vt"));
 		Action a = Randomly.fromOptions(Action.values());

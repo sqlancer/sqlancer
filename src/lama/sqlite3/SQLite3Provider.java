@@ -68,8 +68,7 @@ public class SQLite3Provider implements DatabaseProvider {
 
 			@Override
 			public Query getQuery(SQLite3GlobalState g) throws SQLException {
-				Table randomTable = g.getSchema().getRandomTableOrBailout(t -> !t.isView());
-				return SQLite3InsertGenerator.insertRow(randomTable, g);
+				return SQLite3InsertGenerator.insertRow(g);
 			}
 
 		},
@@ -85,7 +84,7 @@ public class SQLite3Provider implements DatabaseProvider {
 
 			@Override
 			public Query getQuery(SQLite3GlobalState g) {
-				return SQLite3ReindexGenerator.executeReindex(g.getConnection(), g.getState(), g.getSchema());
+				return SQLite3ReindexGenerator.executeReindex(g);
 			}
 
 		},
@@ -93,7 +92,7 @@ public class SQLite3Provider implements DatabaseProvider {
 
 			@Override
 			public Query getQuery(SQLite3GlobalState g) {
-				return SQLite3AnalyzeGenerator.generateAnalyze(g.getSchema());
+				return SQLite3AnalyzeGenerator.generateAnalyze(g);
 
 			}
 		},
@@ -101,15 +100,14 @@ public class SQLite3Provider implements DatabaseProvider {
 
 			@Override
 			public Query getQuery(SQLite3GlobalState g) {
-				return SQLite3DeleteGenerator.deleteContent(g.getSchema().getRandomTableNoViewOrBailout(),
-						g.getConnection(), g.getRandomly());
+				return SQLite3DeleteGenerator.deleteContent(g);
 			}
 		},
 		TRANSACTION_START {
 
 			@Override
 			public Query getQuery(SQLite3GlobalState g) {
-				return SQLite3TransactionGenerator.generateBeginTransaction(g.getConnection(), g.getState());
+				return SQLite3TransactionGenerator.generateBeginTransaction(g);
 			}
 
 		},
@@ -117,7 +115,7 @@ public class SQLite3Provider implements DatabaseProvider {
 
 			@Override
 			public Query getQuery(SQLite3GlobalState g) throws SQLException {
-				return SQLite3AlterTable.alterTable(g.getSchema(), g.getConnection(), g.getState(), g.getRandomly());
+				return SQLite3AlterTable.alterTable(g);
 			}
 
 		},
@@ -125,28 +123,27 @@ public class SQLite3Provider implements DatabaseProvider {
 
 			@Override
 			public Query getQuery(SQLite3GlobalState g) throws SQLException {
-				return SQLite3DropIndexGenerator.dropIndex(g.getConnection(), g.getState(), g.getSchema(),
-						g.getRandomly());
+				return SQLite3DropIndexGenerator.dropIndex(g);
 			}
 		},
 		UPDATE {
 
 			@Override
 			public Query getQuery(SQLite3GlobalState g) {
-				return SQLite3UpdateGenerator.updateRow(g.getSchema().getRandomTableNoViewOrBailout(), g.getRandomly());
+				return SQLite3UpdateGenerator.updateRow(g);
 			}
 		},
 		ROLLBACK_TRANSACTION() {
 			@Override
 			public Query getQuery(SQLite3GlobalState g) {
-				return SQLite3TransactionGenerator.generateRollbackTransaction(g.getConnection(), g.getState());
+				return SQLite3TransactionGenerator.generateRollbackTransaction(g);
 			}
 		},
 		COMMIT {
 
 			@Override
 			public Query getQuery(SQLite3GlobalState g) {
-				return SQLite3TransactionGenerator.generateCommit(g.getConnection(), g.getState());
+				return SQLite3TransactionGenerator.generateCommit(g);
 			}
 
 		},
@@ -154,15 +151,15 @@ public class SQLite3Provider implements DatabaseProvider {
 
 			@Override
 			public Query getQuery(SQLite3GlobalState g) {
-				return SQLite3DropTableGenerator.dropTable(g.getSchema());
+				return SQLite3DropTableGenerator.dropTable(g);
 			}
 
 		},
 		DROP_VIEW {
 
 			@Override
-			public Query getQuery(SQLite3GlobalState g) throws SQLException {
-				return SQLite3ViewGenerator.dropView(SQLite3Schema.fromConnection(g.getConnection()));
+			public Query getQuery(SQLite3GlobalState g) {
+				return SQLite3ViewGenerator.dropView(g);
 			}
 
 		},
@@ -183,7 +180,7 @@ public class SQLite3Provider implements DatabaseProvider {
 		VIRTUAL_TABLE_ACTION {
 			@Override
 			public Query getQuery(SQLite3GlobalState g) throws SQLException {
-				return new SQLite3VirtualFTSTableCommandGenerator(g.getSchema(), g.getRandomly()).generate();
+				return SQLite3VirtualFTSTableCommandGenerator.create(g);
 			}
 		},
 		CREATE_VIEW {
@@ -204,7 +201,7 @@ public class SQLite3Provider implements DatabaseProvider {
 				List<Column> columns = new ArrayList<>();
 				Table t = new Table("sqlite_stat1", columns, TableKind.MAIN, false, 1, false, false);
 				if (Randomly.getBoolean()) {
-					return SQLite3DeleteGenerator.deleteContent(t, g.getConnection(), g.getRandomly());
+					return SQLite3DeleteGenerator.deleteContent(g, t);
 				} else {
 					StringBuilder sb = new StringBuilder();
 					sb.append("INSERT OR IGNORE INTO sqlite_stat1");
@@ -261,7 +258,7 @@ public class SQLite3Provider implements DatabaseProvider {
 	}
 
 	public static final int NR_INSERT_ROW_TRIES = 30;
-	private static final int NR_QUERIES_PER_TABLE = 100000;
+	private static final int NR_QUERIES_PER_TABLE = 1000;
 	public static final int EXPRESSION_MAX_DEPTH = 3;
 	public static final boolean ALLOW_FLOATING_POINT_FP = true;
 	public static final boolean MUST_KNOW_RESULT = false;
@@ -356,12 +353,12 @@ public class SQLite3Provider implements DatabaseProvider {
 			Action action = Action.values()[i];
 			int nrPerformed = 0;
 			switch (action) {
-			case DROP_VIEW:
 			case CREATE_VIEW:
-				nrPerformed = r.getInteger(0, 0);
+				nrPerformed = r.getInteger(0, 2);
 				break;
 			case CREATE_TRIGGER:
 			case DELETE:
+			case DROP_VIEW:
 			case DROP_INDEX:
 				nrPerformed = r.getInteger(0, 2);
 				break;
@@ -441,10 +438,10 @@ public class SQLite3Provider implements DatabaseProvider {
 			}
 			total--;
 		}
-		Query query = SQLite3TransactionGenerator.generateCommit(con, state);
+		Query query = SQLite3TransactionGenerator.generateCommit(globalState);
 		manager.execute(query);
 		// also do an abort for DEFERRABLE INITIALLY DEFERRED
-		query = SQLite3TransactionGenerator.generateRollbackTransaction(con, state);
+		query = SQLite3TransactionGenerator.generateRollbackTransaction(globalState);
 		manager.execute(query);
 		newSchema = SQLite3Schema.fromConnection(con);
 

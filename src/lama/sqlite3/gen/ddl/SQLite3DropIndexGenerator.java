@@ -1,20 +1,17 @@
 package lama.sqlite3.gen.ddl;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Arrays;
 
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.StateToReproduce;
-import lama.sqlite3.schema.SQLite3Schema;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
 // see https://www.sqlite.org/lang_dropindex.html
 public class SQLite3DropIndexGenerator {
 
-	public static Query dropIndex(Connection con, StateToReproduce state, SQLite3Schema s, Randomly r) throws SQLException {
-		String indexName = s.getRandomIndexOrBailout();
+	public static Query dropIndex(SQLite3GlobalState globalState) {
+		String indexName = globalState.getSchema().getRandomIndexOrBailout();
 		StringBuilder sb = new StringBuilder();
 		sb.append("DROP INDEX ");
 		if (Randomly.getBoolean()) {

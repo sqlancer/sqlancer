@@ -18,12 +18,10 @@ import lama.sqlite3.schema.SQLite3Schema;
 
 public class SQLite3ViewGenerator {
 
-	public static Query dropView(SQLite3Schema s) {
+	public static Query dropView(SQLite3GlobalState globalState) {
+		SQLite3Schema s = globalState.getSchema();
 		StringBuilder sb = new StringBuilder("DROP VIEW ");
-		if (s.getViews().size() == 0) {
-			throw new IgnoreMeException();
-		}
-		sb.append(Randomly.fromList(s.getViews()).getName());
+		sb.append(s.getRandomViewOrBailout().getName());
 		return new QueryAdapter(sb.toString(), true);
 	}
 
@@ -35,10 +33,12 @@ public class SQLite3ViewGenerator {
 			sb.append(Randomly.fromOptions("TEMP", "TEMPORARY"));
 		}
 		sb.append(" VIEW ");
-		if (Randomly.getBoolean()) {
+		if (Randomly.getBoolean() || true) {
 			sb.append(" IF NOT EXISTS ");
 		}
 		sb.append(SQLite3Common.getFreeViewName(globalState.getSchema()));
+		List<String> errors = new ArrayList<>();
+		errors.add("is circularly defined");
 		if (Randomly.getBoolean()) {
 			SQLite3PivotedQuerySynthesizer queryGen = new SQLite3PivotedQuerySynthesizer(globalState.getConnection(), globalState.getRandomly(), globalState);
 			try {
@@ -51,7 +51,6 @@ public class SQLite3ViewGenerator {
 				int size = q.getFetchColumns().size();
 				columnNamesAs(sb, size);
 				sb.append(SQLite3Visitor.asString(q));
-				List<String> errors = new ArrayList<>();
 				SQLite3PivotedQuerySynthesizer.addExpectedErrors(errors);
 				return new QueryAdapter(sb.toString(), errors, true);
 			} catch (AssertionError e) {
@@ -62,7 +61,6 @@ public class SQLite3ViewGenerator {
 			columnNamesAs(sb, size);
 			SQLite3SelectStatement randomQuery = SQLite3RandomQuerySynthesizer.generate(globalState, size);
 			sb.append(SQLite3Visitor.asString(randomQuery));
-			List<String> errors = new ArrayList<>();
 			SQLite3PivotedQuerySynthesizer.addExpectedErrors(errors);
 			return new QueryAdapter(sb.toString(), errors, true);
 		}

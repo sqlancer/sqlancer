@@ -1,6 +1,5 @@
 package lama.sqlite3.gen.ddl;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +7,7 @@ import java.util.List;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.StateToReproduce;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.gen.SQLite3ColumnBuilder;
 import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.schema.SQLite3Schema;
@@ -17,9 +16,9 @@ import lama.sqlite3.schema.SQLite3Schema.Table;
 
 public class SQLite3AlterTable {
 
-	public static Query alterTable(SQLite3Schema s, Connection con, StateToReproduce state, Randomly r) throws SQLException {
-		SQLite3AlterTable alterTable = new SQLite3AlterTable(r);
-		return alterTable.getQuery(s, alterTable);
+	public static Query alterTable(SQLite3GlobalState globalState) throws SQLException {
+		SQLite3AlterTable alterTable = new SQLite3AlterTable(globalState.getRandomly());
+		return alterTable.getQuery(globalState.getSchema(), alterTable);
 	}
 
 	private final StringBuilder sb = new StringBuilder();

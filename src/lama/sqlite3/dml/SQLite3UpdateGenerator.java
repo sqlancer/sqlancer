@@ -8,6 +8,7 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.sqlite3.SQLite3Errors;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
@@ -24,8 +25,13 @@ public class SQLite3UpdateGenerator {
 		this.r = r;
 	}
 
-	public static Query updateRow(Table table, Randomly r) {
-		SQLite3UpdateGenerator generator = new SQLite3UpdateGenerator(r);
+	public static Query updateRow(SQLite3GlobalState globalState) {
+		Table randomTableNoViewOrBailout = globalState.getSchema().getRandomTableNoViewOrBailout();
+		return updateRow(globalState, randomTableNoViewOrBailout);
+	}
+
+	public static Query updateRow(SQLite3GlobalState globalState, Table table) {
+		SQLite3UpdateGenerator generator = new SQLite3UpdateGenerator(globalState.getRandomly());
 		return generator.update(table);
 	}
 

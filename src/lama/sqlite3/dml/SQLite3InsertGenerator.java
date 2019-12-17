@@ -29,9 +29,14 @@ public class SQLite3InsertGenerator {
 		errors = new ArrayList<>();
 	}
 
-	public static Query insertRow(Table table, SQLite3GlobalState globalState) throws SQLException {
+	public static Query insertRow(SQLite3GlobalState globalState) throws SQLException {
+		Table randomTable = globalState.getSchema().getRandomTableOrBailout(t -> !t.isView());
+		return insertRow(globalState, randomTable);
+	}
+
+	public static Query insertRow(SQLite3GlobalState globalState, Table randomTable) {
 		SQLite3InsertGenerator generator = new SQLite3InsertGenerator(globalState.getRandomly(), globalState.getConnection());
-		String query = generator.insertRow(table);
+		String query = generator.insertRow(randomTable);
 		return new QueryAdapter(query, generator.errors, true);
 	}
 

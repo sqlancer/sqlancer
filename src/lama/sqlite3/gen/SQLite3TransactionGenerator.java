@@ -1,16 +1,15 @@
 package lama.sqlite3.gen;
 
-import java.sql.Connection;
 import java.util.Arrays;
 
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.StateToReproduce;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
 public class SQLite3TransactionGenerator {
 
-	public static Query generateCommit(Connection con, StateToReproduce state) {
+	public static Query generateCommit(SQLite3GlobalState globalState) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(Randomly.fromOptions("COMMIT", "END"));
 		if (Randomly.getBoolean()) {
@@ -19,7 +18,7 @@ public class SQLite3TransactionGenerator {
 		return new QueryAdapter(sb.toString(), Arrays.asList("no transaction is active", "FOREIGN KEY constraint failed"), true);
 	}
 
-	public static Query generateBeginTransaction(Connection con, StateToReproduce state) {
+	public static Query generateBeginTransaction(SQLite3GlobalState globalState) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("BEGIN ");
 		if (Randomly.getBoolean()) {
@@ -29,7 +28,7 @@ public class SQLite3TransactionGenerator {
 		return new QueryAdapter(sb.toString(), Arrays.asList("cannot start a transaction within a transaction"));
 	}
 
-	public static Query generateRollbackTransaction(Connection con, StateToReproduce state) {
+	public static Query generateRollbackTransaction(SQLite3GlobalState globalState) {
 		// TODO: could be extended by savepoint
 		return new QueryAdapter("ROLLBACK TRANSACTION;", Arrays.asList("no transaction is active"), true);
 	}

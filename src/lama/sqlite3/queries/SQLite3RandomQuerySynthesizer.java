@@ -6,6 +6,8 @@ import java.util.List;
 import lama.Randomly;
 import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.SQLite3Visitor;
+import lama.sqlite3.ast.SQLite3Aggregate;
+import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
@@ -34,7 +36,12 @@ public class SQLite3RandomQuerySynthesizer {
 		select.setSelectType(Randomly.fromOptions(SelectType.values()));
 		for (int i = 0; i < size; i++) {
 			if (Randomly.getBoolean()) {
-					SQLite3WindowFunction windowFunction = SQLite3WindowFunction.getRandom(targetTables.getColumns(), r);
+					SQLite3Expression windowFunction;
+					if (Randomly.getBoolean()) {
+						windowFunction = SQLite3WindowFunction.getRandom(targetTables.getColumns(), r);
+					} else {
+						windowFunction = new SQLite3Aggregate(gen.getRandomExpression(), SQLite3AggregateFunction.getRandom());
+					}
 					SQLite3Expression windowExpr = generateWindowFunction(targetTables.getColumns(), windowFunction, false /* TODO check */, r);
 					expressions.add(windowExpr);
 			} else {
@@ -71,7 +78,7 @@ public class SQLite3RandomQuerySynthesizer {
 		return select;
 	}
 	
-	private static SQLite3Expression generateWindowFunction(List<Column> columns, SQLite3Expression colName,
+	private static SQLite3Expression generateWindowFunction(List<Column> columns, SQLite3Expression windowFunction,
 			boolean allowFilter, Randomly r) {
 		StringBuilder sb = new StringBuilder();
 		if (Randomly.getBoolean() && allowFilter) {
@@ -109,8 +116,8 @@ public class SQLite3RandomQuerySynthesizer {
 			}
 		}
 		sb.append(")");
-		colName = new SQLite3PostfixText(colName, sb.toString(), colName.getExpectedValue());
-		return colName;
+		windowFunction = new SQLite3PostfixText(windowFunction, sb.toString(), null);
+		return windowFunction;
 	}
 	
 	//
