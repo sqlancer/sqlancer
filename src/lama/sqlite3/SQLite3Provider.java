@@ -43,7 +43,6 @@ import lama.sqlite3.gen.ddl.SQLite3IndexGenerator;
 import lama.sqlite3.gen.ddl.SQLite3TableGenerator;
 import lama.sqlite3.gen.ddl.SQLite3ViewGenerator;
 import lama.sqlite3.queries.SQLite3MetamorphicQuerySynthesizer;
-import lama.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
 import lama.sqlite3.schema.SQLite3Schema;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
@@ -181,15 +180,6 @@ public class SQLite3Provider implements DatabaseProvider {
 				return new QueryAdapter(String.format("SELECT rtreecheck('%s');", table.getName()));
 			}
 		},
-//		TARGETED_SELECT {
-//
-//			@Override
-//			public Query getQuery(SQLite3Schema newSchema, Connection con, StateToReproduce state, Randomly r)
-//					throws SQLException {
-//				return new SQLite3PivotedQuerySynthesizer(con, r).getQueryThatContainsAtLeastOneRow((SQLite3StateToReproduce) state);
-//			}
-//
-//		},
 		VIRTUAL_TABLE_ACTION {
 			@Override
 			public Query getQuery(SQLite3GlobalState g) throws SQLException {
@@ -273,7 +263,6 @@ public class SQLite3Provider implements DatabaseProvider {
 
 	public static final int NR_INSERT_ROW_TRIES = 30;
 	private static final int NR_QUERIES_PER_TABLE = 100000;
-	private static final int MAX_INSERT_ROW_TRIES = 0;
 	public static final int EXPRESSION_MAX_DEPTH = 3;
 	public static final boolean ALLOW_FLOATING_POINT_FP = true;
 	public static final boolean MUST_KNOW_RESULT = false;
@@ -434,9 +423,6 @@ public class SQLite3Provider implements DatabaseProvider {
 			case MANIPULATE_STAT_TABLE:
 				nrPerformed = r.getInteger(0, 5);
 				break;
-//			case TARGETED_SELECT:
-//				nrPerformed = 0; // r.getInteger(0, 100);
-//				break;
 			case INDEX:
 				nrPerformed = r.getInteger(0, 20);
 				break;
@@ -509,11 +495,6 @@ public class SQLite3Provider implements DatabaseProvider {
 			query = new QueryAdapter("PRAGMA integrity_check;");
 			manager.execute(query);
 		}
-//		for (Table t : newSchema.getDatabaseTables()) {
-//			if (t.getNrRows() == 0) {
-//				throw new IgnoreMeException();
-//			}
-//		}
 
 		newSchema = SQLite3Schema.fromConnection(con);
 
@@ -590,25 +571,6 @@ public class SQLite3Provider implements DatabaseProvider {
 		}
 	}
 
-	private boolean ensureTableHasRows(Connection con, Table randomTable, Randomly r)
-			throws AssertionError, SQLException {
-		int nrRows;
-		int counter = MAX_INSERT_ROW_TRIES;
-		do {
-			try {
-				Query q = SQLite3InsertGenerator.insertRow(randomTable, con, r);
-				state.statements.add(q);
-				q.execute(con);
-
-			} catch (SQLException e) {
-				if (!SQLite3PivotedQuerySynthesizer.shouldIgnoreException(e)) {
-					throw new AssertionError(e);
-				}
-			}
-			nrRows = randomTable.getNrRows();
-		} while (nrRows == 0 && counter-- != 0);
-		return nrRows != 0;
-	}
 
 	@Override
 	public Connection createDatabase(String databaseName, StateToReproduce state) throws SQLException {
