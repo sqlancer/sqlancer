@@ -57,6 +57,7 @@ public class SQLite3Schema {
 		private final boolean isInteger; // "INTEGER" type, not "INT"
 		private Table table;
 		private final CollateSequence collate;
+		private boolean generated;
 
 		public enum CollateSequence {
 			NOCASE, RTRIM, BINARY;
@@ -73,7 +74,14 @@ public class SQLite3Schema {
 			this.isInteger = isInteger;
 			this.isPrimaryKey = isPrimaryKey;
 			this.collate = collate;
+			this.generated = false;
 			assert !isInteger || columnType == SQLite3DataType.INT;
+		}
+
+		public Column(String rowId, SQLite3DataType columnType2, boolean contains, boolean b, CollateSequence collate,
+				boolean generated) {
+			this(rowId, columnType2, b, generated, collate);
+			this.generated = generated;
 		}
 
 		@Override
@@ -473,8 +481,9 @@ public class SQLite3Schema {
 							if (rs3.next() && !isView /* TODO: can we still do something with it? */) {
 								String dataType = rs3.getString(1);
 								SQLite3DataType columnType = getColumnType(dataType);
+								boolean generated = dataType.toUpperCase().contains("GENERATED AS");
 								String rowId = Randomly.fromOptions("rowid", "_rowid_", "oid");
-								Column rowid = new Column(rowId, columnType, dataType.contains("INTEGER"), true, null);
+								Column rowid = new Column(rowId, columnType, dataType.contains("INTEGER"), true, null, generated);
 								t.addRowid(rowid);
 								rowid.setTable(t);
 							}
@@ -507,12 +516,15 @@ public class SQLite3Schema {
 			throws SQLException {
 		List<Column> databaseColumns = new ArrayList<>();
 		try (Statement s2 = con.createStatement()) {
-			String tableInfoStr = String.format("PRAGMA table_info(%s)", tableName);
+			String tableInfoStr = String.format("PRAGMA table_xinfo(%s)", tableName);
 			try (ResultSet columnRs = s2.executeQuery(tableInfoStr)) {
 				String[] columnCreates = sql.split(",");
 				int columnCreateIndex = 0;
 				while (columnRs.next()) {
 					String columnName = columnRs.getString("name");
+					if (columnName.contentEquals("docid") || columnName.contentEquals("rank") || columnName.contentEquals(tableName)) {
+						continue; // internal column names of FTS tables
+					}
 					String columnTypeString = columnRs.getString("type");
 					boolean isPrimaryKey = columnRs.getBoolean("pk");
 					SQLite3DataType columnType = getColumnType(columnTypeString);
@@ -548,7 +560,7 @@ public class SQLite3Schema {
 	}
 
 	private static SQLite3DataType getColumnType(String columnTypeString) {
-		columnTypeString = columnTypeString.toUpperCase();
+		columnTypeString = columnTypeString.toUpperCase().replace(" GENERATED ALWAYS", "");
 		SQLite3DataType columnType;
 		switch (columnTypeString) {
 		case "TEXT":
