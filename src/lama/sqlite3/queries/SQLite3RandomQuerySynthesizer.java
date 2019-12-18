@@ -27,8 +27,8 @@ public class SQLite3RandomQuerySynthesizer {
 		SQLite3Schema s = globalState.getSchema();
 		Tables targetTables = s.getRandomTableNonEmptyTables();
 		List<SQLite3Expression> expressions = new ArrayList<>();
-		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(r).setColumns(s.getTables().getColumns());
-		SQLite3ExpressionGenerator aggregateGen = new SQLite3ExpressionGenerator(r).setColumns(s.getTables().getColumns()).allowAggregateFunctions();
+		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(globalState).setColumns(s.getTables().getColumns());
+		SQLite3ExpressionGenerator aggregateGen = new SQLite3ExpressionGenerator(globalState).setColumns(s.getTables().getColumns()).allowAggregateFunctions();
 
 		// SELECT
 		SQLite3SelectStatement select = new SQLite3SelectStatement();
@@ -38,11 +38,11 @@ public class SQLite3RandomQuerySynthesizer {
 			if (Randomly.getBoolean()) {
 					SQLite3Expression windowFunction;
 					if (Randomly.getBoolean()) {
-						windowFunction = SQLite3WindowFunction.getRandom(targetTables.getColumns(), r);
+						windowFunction = SQLite3WindowFunction.getRandom(targetTables.getColumns(), globalState);
 					} else {
 						windowFunction = new SQLite3Aggregate(gen.getRandomExpression(), SQLite3AggregateFunction.getRandom());
 					}
-					SQLite3Expression windowExpr = generateWindowFunction(targetTables.getColumns(), windowFunction, false /* TODO check */, r);
+					SQLite3Expression windowExpr = generateWindowFunction(targetTables.getColumns(), windowFunction, false /* TODO check */, r, globalState);
 					expressions.add(windowExpr);
 			} else {
 				expressions.add(aggregateGen.getRandomExpression());
@@ -65,7 +65,7 @@ public class SQLite3RandomQuerySynthesizer {
 		}
 		if (Randomly.getBoolean()) {
 			// ORDER BY
-			select.setOrderByClause(SQLite3Common.getOrderBy(s.getTables().getColumns(), r));
+			select.setOrderByClause(SQLite3Common.getOrderBy(s.getTables().getColumns(), globalState));
 		}
 		if (Randomly.getBoolean()) {
 			// LIMIT
@@ -79,18 +79,18 @@ public class SQLite3RandomQuerySynthesizer {
 	}
 	
 	private static SQLite3Expression generateWindowFunction(List<Column> columns, SQLite3Expression windowFunction,
-			boolean allowFilter, Randomly r) {
+			boolean allowFilter, Randomly r, SQLite3GlobalState globalState) {
 		StringBuilder sb = new StringBuilder();
 		if (Randomly.getBoolean() && allowFilter) {
-			appendFilter(columns, sb, r);
+			appendFilter(columns, sb, globalState);
 		}
 		sb.append(" OVER ");
 		sb.append("(");
 		if (Randomly.getBoolean()) {
-			appendPartitionBy(columns, sb, r);
+			appendPartitionBy(columns, sb, globalState);
 		}
 		if (Randomly.getBoolean()) {
-			sb.append(SQLite3Common.getOrderByAsString(columns, r));
+			sb.append(SQLite3Common.getOrderByAsString(columns, globalState));
 		}
 		if (Randomly.getBoolean()) {
 			sb.append(" ");
@@ -123,13 +123,13 @@ public class SQLite3RandomQuerySynthesizer {
 	//
 
 
-	private static void appendFilter(List<Column> columns, StringBuilder sb, Randomly r) {
+	private static void appendFilter(List<Column> columns, StringBuilder sb, SQLite3GlobalState globalState) {
 		sb.append(" FILTER (WHERE ");
-		sb.append(SQLite3Visitor.asString(new SQLite3ExpressionGenerator(r).setColumns(columns).getRandomExpression()));
+		sb.append(SQLite3Visitor.asString(new SQLite3ExpressionGenerator(globalState).setColumns(columns).getRandomExpression()));
 		sb.append(")");
 	}
 
-	private static void appendPartitionBy(List<Column> columns, StringBuilder sb, Randomly r) {
+	private static void appendPartitionBy(List<Column> columns, StringBuilder sb, SQLite3GlobalState globalState) {
 		sb.append(" PARTITION BY ");
 		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
 			if (i != 0) {
@@ -137,7 +137,7 @@ public class SQLite3RandomQuerySynthesizer {
 			}
 			String orderingTerm;
 			do {
-				orderingTerm = SQLite3Common.getOrderingTerm(columns, r);
+				orderingTerm = SQLite3Common.getOrderingTerm(columns, globalState);
 			} while (orderingTerm.contains("ASC") || orderingTerm.contains("DESC"));
 			// TODO investigate
 			sb.append(orderingTerm);

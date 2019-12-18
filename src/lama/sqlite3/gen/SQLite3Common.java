@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import lama.IgnoreMeException;
 import lama.Randomly;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Cast;
 import lama.sqlite3.ast.SQLite3Constant;
@@ -34,14 +35,16 @@ public class SQLite3Common {
 	public static String createIndexName(int nr) {
 		return String.format("i%d", nr);
 	}
-	
-	public static String getCheckConstraint(Randomly r, List<Column> columns) {
-		SQLite3Expression expression = new SQLite3ExpressionGenerator(r).setColumns(columns).getRandomExpression();
-		return(" CHECK ( " + SQLite3Visitor.asString(expression) + ")");
+
+	public static String getCheckConstraint(SQLite3GlobalState globalState, List<Column> columns) {
+		SQLite3Expression expression = new SQLite3ExpressionGenerator(globalState).setColumns(columns)
+				.getRandomExpression();
+		return (" CHECK ( " + SQLite3Visitor.asString(expression) + ")");
 	}
-	
-	public static SQLite3Expression getTrueExpression(List<Column> columns, Randomly r) {
-		SQLite3Expression randomExpression = new SQLite3ExpressionGenerator(r).setColumns(columns).getRandomExpression();
+
+	public static SQLite3Expression getTrueExpression(List<Column> columns, SQLite3GlobalState globalState) {
+		SQLite3Expression randomExpression = new SQLite3ExpressionGenerator(globalState).setColumns(columns)
+				.getRandomExpression();
 		SQLite3Constant expectedValue = randomExpression.getExpectedValue();
 		if (expectedValue == null) {
 			throw new IgnoreMeException();
@@ -55,12 +58,14 @@ public class SQLite3Common {
 		} else {
 			return new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.IS_FALSE, randomExpression);
 		}
-		
+
 	}
-	
-	// TODO: refactor others to use this method https://www.sqlite.org/syntax/ordering-term.html
-	public static String getOrderingTerm(List<Column> columns, Randomly r) {
-		SQLite3Expression randExpr = new SQLite3ExpressionGenerator(r).setColumns(columns).getRandomExpression();
+
+	// TODO: refactor others to use this method
+	// https://www.sqlite.org/syntax/ordering-term.html
+	public static String getOrderingTerm(List<Column> columns, SQLite3GlobalState globalState) {
+		SQLite3Expression randExpr = new SQLite3ExpressionGenerator(globalState).setColumns(columns)
+				.getRandomExpression();
 		StringBuilder sb = new StringBuilder(SQLite3Visitor.asString(randExpr));
 		sb.append(" ");
 		if (Randomly.getBoolean()) {
@@ -75,7 +80,7 @@ public class SQLite3Common {
 		}
 		return sb.toString();
 	}
-	
+
 	public static String getIndexedClause() {
 		StringBuilder sb = new StringBuilder();
 		if (Randomly.getBoolean()) {
@@ -95,7 +100,7 @@ public class SQLite3Common {
 		} while (s.getDatabaseTables().stream().anyMatch(tab -> tab.getName().contentEquals(name[0])));
 		return name[0];
 	}
-	
+
 	public static String getFreeViewName(SQLite3Schema s) {
 		int nr = 0;
 		String[] name = new String[1];
@@ -104,7 +109,7 @@ public class SQLite3Common {
 		} while (s.getDatabaseTables().stream().anyMatch(tab -> tab.getName().contentEquals(name[0])));
 		return name[0];
 	}
-	
+
 	public static String getFreeIndexName(SQLite3Schema s) {
 		List<String> indexNames = s.getIndexNames();
 		String candidateName;
@@ -113,7 +118,7 @@ public class SQLite3Common {
 		} while (indexNames.contains(candidateName));
 		return candidateName;
 	}
-	
+
 	public static String getFreeColumnName(Table t) {
 		List<Column> indexNames = t.getColumns();
 		final String[] candidateName = new String[1];
@@ -122,36 +127,32 @@ public class SQLite3Common {
 		} while (indexNames.stream().anyMatch(c -> c.getName().contentEquals(candidateName[0])));
 		return candidateName[0];
 	}
-	
-	public static String getOrderByAsString(List<Column> columns, Randomly r) {
+
+	public static String getOrderByAsString(List<Column> columns, SQLite3GlobalState globalState) {
 		StringBuilder sb = new StringBuilder();
-		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(r).setColumns(columns);
+		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns);
 		sb.append(" ORDER BY ");
 		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
 			if (i != 0) {
 				sb.append(", ");
 			}
-			sb.append(SQLite3Visitor.asString(gen.generateOrderingTerm(r)));
+			sb.append(SQLite3Visitor.asString(gen.generateOrderingTerm(globalState.getRandomly())));
 		}
 		return sb.toString();
 	}
-	
-	public static List<SQLite3Expression> getOrderBy(List<Column> columns, Randomly r) {
-		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(r).setColumns(columns);
+
+	public static List<SQLite3Expression> getOrderBy(List<Column> columns, SQLite3GlobalState globalState) {
+		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns);
 		List<SQLite3Expression> list = new ArrayList<>();
 		for (int i = 0; i < 1 + Randomly.smallNumber(); i++) {
-			list.add(gen.generateOrderingTerm(r));
+			list.add(gen.generateOrderingTerm(globalState.getRandomly()));
 		}
 		return list;
-		
+
 	}
 
 	public static Column createColumn(int i) {
 		return new Column(createColumnName(i), SQLite3DataType.NONE, false, false, null);
 	}
-
-	
-	
-	
 
 }

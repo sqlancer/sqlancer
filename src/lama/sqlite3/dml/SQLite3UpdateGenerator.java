@@ -20,8 +20,10 @@ public class SQLite3UpdateGenerator {
 	private final StringBuilder sb = new StringBuilder();
 	private final Randomly r;
 	private final List<String> errors = new ArrayList<>();
+	private SQLite3GlobalState globalState;
 
-	public SQLite3UpdateGenerator(Randomly r) {
+	public SQLite3UpdateGenerator(SQLite3GlobalState globalState, Randomly r) {
+		this.globalState = globalState;
 		this.r = r;
 	}
 
@@ -31,7 +33,7 @@ public class SQLite3UpdateGenerator {
 	}
 
 	public static Query updateRow(SQLite3GlobalState globalState, Table table) {
-		SQLite3UpdateGenerator generator = new SQLite3UpdateGenerator(globalState.getRandomly());
+		SQLite3UpdateGenerator generator = new SQLite3UpdateGenerator(globalState, globalState.getRandomly());
 		return generator.update(table);
 	}
 
@@ -79,7 +81,7 @@ public class SQLite3UpdateGenerator {
 
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
-			String whereClause = SQLite3Visitor.asString(new SQLite3ExpressionGenerator(r).expectedErrors(errors)
+			String whereClause = SQLite3Visitor.asString(new SQLite3ExpressionGenerator(globalState).expectedErrors(errors)
 					.setColumns(table.getColumns()).getRandomExpression());
 			sb.append(whereClause);
 		}
@@ -118,7 +120,7 @@ public class SQLite3UpdateGenerator {
 		if (columnsToUpdate.get(i).isIntegerPrimaryKey()) {
 			sb.append(SQLite3Visitor.asString(SQLite3Constant.createIntConstant(r.getInteger())));
 		} else {
-			sb.append(SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(r)));
+			sb.append(SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(globalState)));
 		}
 	}
 

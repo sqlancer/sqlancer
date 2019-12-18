@@ -23,8 +23,10 @@ public class SQLite3InsertGenerator {
 
 	private final Randomly r;
 	private final List<String> errors;
+	private final SQLite3GlobalState globalState;
 
-	public SQLite3InsertGenerator(Randomly r, Connection con) {
+	public SQLite3InsertGenerator(SQLite3GlobalState globalState, Randomly r, Connection con) {
+		this.globalState = globalState;
 		this.r = r;
 		errors = new ArrayList<>();
 	}
@@ -35,7 +37,7 @@ public class SQLite3InsertGenerator {
 	}
 
 	public static Query insertRow(SQLite3GlobalState globalState, Table randomTable) {
-		SQLite3InsertGenerator generator = new SQLite3InsertGenerator(globalState.getRandomly(), globalState.getConnection());
+		SQLite3InsertGenerator generator = new SQLite3InsertGenerator(globalState, globalState.getRandomly(), globalState.getConnection());
 		String query = generator.insertRow(randomTable);
 		return new QueryAdapter(query, generator.errors, true);
 	}
@@ -112,7 +114,7 @@ public class SQLite3InsertGenerator {
 					sb.append(columns.get(i).getName());
 					sb.append("=");
 					if (Randomly.getBoolean()) {
-						sb.append(SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(r)));
+						sb.append(SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(globalState)));
 					} else {
 						if (Randomly.getBoolean()) {
 							sb.append("excluded.");
@@ -126,7 +128,7 @@ public class SQLite3InsertGenerator {
 				if (Randomly.getBoolean()) {
 					sb.append(" WHERE ");
 					sb.append(SQLite3Visitor.asString(
-							new SQLite3ExpressionGenerator(r).expectedErrors(errors).setColumns(table.getColumns()).getRandomExpression()));
+							new SQLite3ExpressionGenerator(globalState).expectedErrors(errors).setColumns(table.getColumns()).getRandomExpression()));
 				}
 			}
 		}
@@ -154,9 +156,9 @@ public class SQLite3InsertGenerator {
 				literal = SQLite3Constant.createIntConstant(r.getInteger());
 			} else {
 				if (Randomly.getBooleanWithSmallProbability()) {
-					literal = new SQLite3ExpressionGenerator(r).expectedErrors(errors).getRandomExpression();
+					literal = new SQLite3ExpressionGenerator(globalState).expectedErrors(errors).getRandomExpression();
 				} else {
-					literal = SQLite3ExpressionGenerator.getRandomLiteralValue(r);
+					literal = SQLite3ExpressionGenerator.getRandomLiteralValue(globalState);
 				}
 			}
 			SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();

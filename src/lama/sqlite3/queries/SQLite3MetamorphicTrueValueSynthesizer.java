@@ -186,7 +186,7 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 	}
 
 	private SQLite3Expression getRandomWhereCondition(List<Column> columns) {
-		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(r).setColumns(columns).setGlobalState(globalState);
+		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns);
 		// FIXME: enable match clause for multiple tables
 //		if (randomTable.isVirtual()) {
 //			gen.allowMatchClause();

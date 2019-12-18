@@ -1,6 +1,5 @@
 package lama.sqlite3.gen.ddl;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,8 +30,6 @@ public class SQLite3CreateTriggerGenerator {
 
 	public static Query create(SQLite3GlobalState globalState) throws SQLException {
 		SQLite3Schema s = globalState.getSchema();
-		Randomly r = globalState.getRandomly();
-		Connection con = globalState.getConnection();
 		StringBuilder sb = new StringBuilder();
 		Table table = s.getRandomTableOrBailout(t -> !t.isVirtual());
 		sb.append("CREATE");
@@ -74,7 +71,7 @@ public class SQLite3CreateTriggerGenerator {
 			sb.append("ON ");
 			break;
 		}
-		appendTableNameAndWhen(r, sb, table);
+		appendTableNameAndWhen(globalState, sb, table);
 
 		Table randomActionTable = s.getRandomTableNoViewOrBailout();
 		sb.append(" BEGIN ");
@@ -107,7 +104,7 @@ public class SQLite3CreateTriggerGenerator {
 		return new QueryAdapter(sb.toString(), Arrays.asList("parser stack overflow"));
 	}
 
-	private static void appendTableNameAndWhen(Randomly r, StringBuilder sb, Table table) {
+	private static void appendTableNameAndWhen(SQLite3GlobalState globalState, StringBuilder sb, Table table) {
 		sb.append(table.getName());
 		if (Randomly.getBoolean()) {
 			sb.append(" FOR EACH ROW ");
@@ -115,7 +112,7 @@ public class SQLite3CreateTriggerGenerator {
 		if (Randomly.getBoolean()) {
 			sb.append(" WHEN ");
 			sb.append(SQLite3Visitor
-					.asString(new SQLite3ExpressionGenerator(r).setColumns(table.getColumns()).getRandomExpression()));
+					.asString(new SQLite3ExpressionGenerator(globalState).setColumns(table.getColumns()).getRandomExpression()));
 		}
 	}
 

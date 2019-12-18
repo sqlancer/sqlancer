@@ -48,12 +48,12 @@ import lama.sqlite3.schema.SQLite3Schema.RowValue;
 public class SQLite3ExpressionGenerator {
 
 	private RowValue rw;
-	private Connection con;
-	private SQLite3StateToReproduce state;
-	private SQLite3GlobalState globalState;
+	private final Connection con;
+	private final SQLite3StateToReproduce state;
+	private final SQLite3GlobalState globalState;
 	private boolean tryToGenerateKnownResult;
 	private List<Column> columns = Collections.emptyList();
-	private Randomly r;
+	private final Randomly r;
 	private boolean deterministicOnly;
 	private boolean allowMatchClause;
 	private List<String> expectedErrors = new ArrayList<>();
@@ -63,8 +63,11 @@ public class SQLite3ExpressionGenerator {
 		INTEGER, NUMERIC, STRING, BLOB_LITERAL, NULL
 	}
 
-	public SQLite3ExpressionGenerator(Randomly r) {
-		this.r = r;
+	public SQLite3ExpressionGenerator(SQLite3GlobalState globalState) {
+		this.globalState = globalState;
+		this.r = globalState.getRandomly();
+		this.state = globalState.getState();
+		this.con = globalState.getConnection();
 	}
 
 	public SQLite3ExpressionGenerator deterministicOnly() {
@@ -97,25 +100,14 @@ public class SQLite3ExpressionGenerator {
 		return this;
 	}
 
-	public SQLite3ExpressionGenerator setGlobalState(SQLite3GlobalState globalState) {
-		this.globalState = globalState;
-		this.con = globalState.getConnection();
-		return this;
-	}
-	
-	
-	public SQLite3ExpressionGenerator setState(SQLite3StateToReproduce state) {
-		this.state = state;
-		return this;
-	}
 
 	public SQLite3ExpressionGenerator tryToGenerateKnownResult() {
 		this.tryToGenerateKnownResult = true;
 		return this;
 	}
 
-	public static SQLite3Expression getRandomLiteralValue(Randomly r) {
-		return new SQLite3ExpressionGenerator(r).getRandomLiteralValueInternal(r);
+	public static SQLite3Expression getRandomLiteralValue(SQLite3GlobalState globalState) {
+		return new SQLite3ExpressionGenerator(globalState).getRandomLiteralValueInternal(globalState.getRandomly());
 	}
 
 	public SQLite3Expression generateOrderingTerm(Randomly r) {
@@ -183,7 +175,7 @@ public class SQLite3ExpressionGenerator {
 	public SQLite3Expression getRandomExpression(int depth) {
 		if (depth >= SQLite3Provider.EXPRESSION_MAX_DEPTH) {
 			if (Randomly.getBoolean() || columns.isEmpty()) {
-				return getRandomLiteralValue(r);
+				return getRandomLiteralValue(globalState);
 			} else {
 				return getRandomColumn();
 			}
@@ -205,7 +197,7 @@ public class SQLite3ExpressionGenerator {
 		ExpressionType randomExpressionType = Randomly.fromList(list);
 		switch (randomExpressionType) {
 		case LITERAL_VALUE:
-			return getRandomLiteralValue(r);
+			return getRandomLiteralValue(globalState);
 		case COLUMN_NAME:
 			return getRandomColumn();
 		case UNARY_OPERATOR:

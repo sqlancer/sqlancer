@@ -4,6 +4,7 @@ import java.util.List;
 
 import lama.IgnoreMeException;
 import lama.Randomly;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
@@ -14,11 +15,11 @@ public class SQLite3WindowFunction extends SQLite3Expression {
 	private WindowFunction func;
 	private SQLite3Expression[] args;
 	
-	public static SQLite3WindowFunction getRandom(List<Column> columns, Randomly r) {
+	public static SQLite3WindowFunction getRandom(List<Column> columns, SQLite3GlobalState globalState) {
 		WindowFunction func = Randomly.fromOptions(WindowFunction.values());
 		SQLite3Expression[] args = new SQLite3Expression[func.nrArgs];
 		for (int i = 0; i < args.length; i++) {
-			args[i] = new SQLite3ExpressionGenerator(r).setColumns(columns).getRandomExpression();
+			args[i] = new SQLite3ExpressionGenerator(globalState).setColumns(columns).getRandomExpression();
 		}
 		return new SQLite3WindowFunction(func, args);
 	}

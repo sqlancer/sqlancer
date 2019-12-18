@@ -148,7 +148,7 @@ public class SQLite3Provider implements DatabaseProvider {
 	}
 
 	public static final int NR_INSERT_ROW_TRIES = 30;
-	private static final int NR_QUERIES_PER_TABLE = 1000;
+	private static final int NR_QUERIES_PER_TABLE = 100000;
 	public static final int EXPRESSION_MAX_DEPTH = 3;
 	public static final boolean ALLOW_FLOATING_POINT_FP = true;
 	public static final boolean MUST_KNOW_RESULT = false;
@@ -225,12 +225,13 @@ public class SQLite3Provider implements DatabaseProvider {
 		}
 		int i = 0;
 		newSchema = SQLite3Schema.fromConnection(con);
+		globalState.setSchema(newSchema);
 		do {
-			globalState.setSchema(newSchema);
 			Query tableQuery = getTableQuery(state, r, newSchema, i);
 			manager.execute(tableQuery);
 			i++;
 			newSchema = SQLite3Schema.fromConnection(con);
+			globalState.setSchema(newSchema);
 		} while (newSchema.getDatabaseTables().size() != nrTablesToCreate);
 		assert newSchema.getTables().getTables().size() == nrTablesToCreate;
 		checkTablesForGeneratedColumnLoops(con, newSchema);
@@ -311,7 +312,6 @@ public class SQLite3Provider implements DatabaseProvider {
 			assert nextAction != null;
 			assert nrRemaining[nextAction.ordinal()] > 0;
 			nrRemaining[nextAction.ordinal()]--;
-			globalState.setSchema(newSchema);
 			Query query = nextAction.getQuery(globalState);
 			try {
 				if (options.logEachSelect()) {
@@ -385,7 +385,7 @@ public class SQLite3Provider implements DatabaseProvider {
 		switch (Randomly.fromOptions(TableType.values())) {
 		case NORMAL:
 			String tableName = SQLite3Common.createTableName(i);
-			tableQuery = SQLite3TableGenerator.createTableStatement(tableName, state, newSchema, r);
+			tableQuery = SQLite3TableGenerator.createTableStatement(tableName, globalState);
 			break;
 		case FTS:
 			String ftsTableName = "v" + SQLite3Common.createTableName(i);
@@ -393,7 +393,7 @@ public class SQLite3Provider implements DatabaseProvider {
 			break;
 		case RTREE:
 			String rTreeTableName = "rt" + i;
-			tableQuery = SQLite3CreateVirtualRtreeTabelGenerator.createTableStatement(rTreeTableName, r);
+			tableQuery = SQLite3CreateVirtualRtreeTabelGenerator.createTableStatement(rTreeTableName, globalState);
 			break;
 		default:
 			throw new AssertionError();

@@ -72,7 +72,7 @@ public class SQLite3WindowFunctionTester {
 		select.setGroupByClause(groupBys);
 		ColumnName rowid = new ColumnName(
 				new Column(tables.get(0).getName() + ".rowid", SQLite3DataType.INT, false, false, null), null);
-		SQLite3WindowFunction windowFunction = SQLite3AggregateFunction.getRandom(randomTable.getColumns(), r);
+		SQLite3WindowFunction windowFunction = SQLite3AggregateFunction.getRandom(randomTable.getColumns(), globalState);
 
 		SQLite3Expression windowFunc = generateWindowFunction(columns, windowFunction, false, r);
 		select.setFetchColumns(Arrays.asList(rowid, windowFunc));
@@ -95,18 +95,18 @@ public class SQLite3WindowFunctionTester {
 	}
 
 	private static SQLite3Expression generateWindowFunction(List<Column> columns, SQLite3Expression colName,
-			boolean allowFilter, Randomly r) {
+			boolean allowFilter, SQLite3GlobalState globalState) {
 		StringBuilder sb = new StringBuilder();
 		if (Randomly.getBoolean() && allowFilter) {
-			appendFilter(columns, sb, r);
+			appendFilter(columns, sb, globalState);
 		}
 		sb.append(" OVER ");
 		sb.append("(");
 		if (Randomly.getBoolean()) {
-			appendPartitionBy(columns, sb, r);
+			appendPartitionBy(columns, sb, globalState);
 		}
 		if (Randomly.getBoolean()) {
-			sb.append(SQLite3Common.getOrderByAsString(columns, r));
+			sb.append(SQLite3Common.getOrderByAsString(columns, globalState));
 		}
 		if (Randomly.getBoolean()) {
 			sb.append(" ");
@@ -138,13 +138,13 @@ public class SQLite3WindowFunctionTester {
 
 	//
 
-	private static void appendFilter(List<Column> columns, StringBuilder sb, Randomly r) {
+	private static void appendFilter(List<Column> columns, StringBuilder sb, SQLite3GlobalState globalState) {
 		sb.append(" FILTER (WHERE ");
-		sb.append(SQLite3Visitor.asString(new SQLite3ExpressionGenerator(r).setColumns(columns).getRandomExpression()));
+		sb.append(SQLite3Visitor.asString(new SQLite3ExpressionGenerator(globalState).setColumns(columns).getRandomExpression()));
 		sb.append(")");
 	}
 
-	private static void appendPartitionBy(List<Column> columns, StringBuilder sb, Randomly r) {
+	private static void appendPartitionBy(List<Column> columns, StringBuilder sb, SQLite3GlobalState globalState) {
 		sb.append(" PARTITION BY ");
 		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
 			if (i != 0) {
@@ -152,7 +152,7 @@ public class SQLite3WindowFunctionTester {
 			}
 			String orderingTerm;
 			do {
-				orderingTerm = SQLite3Common.getOrderingTerm(columns, r);
+				orderingTerm = SQLite3Common.getOrderingTerm(columns, globalState);
 			} while (orderingTerm.contains("ASC") || orderingTerm.contains("DESC"));
 			// TODO investigate
 			sb.append(orderingTerm);
@@ -164,7 +164,7 @@ public class SQLite3WindowFunctionTester {
 	}
 
 	private SQLite3Expression getRandomWhereCondition(List<Column> columns) {
-		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(r).setColumns(columns).setGlobalState(globalState);
+		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns).setGlobalState(globalState);
 		// FIXME: enable match clause for multiple tables
 //		if (randomTable.isVirtual()) {
 //			gen.allowMatchClause();

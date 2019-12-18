@@ -6,12 +6,13 @@ import java.util.List;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 
 public class SQLite3CreateVirtualRtreeTabelGenerator {
 	
 
-	public static Query createTableStatement(String rTreeTableName, Randomly r) {
+	public static Query createTableStatement(String rTreeTableName, SQLite3GlobalState globalState) {
 		List<String> errors = new ArrayList<>();
 		List<Column> columns = new ArrayList<>();
 		StringBuilder sb = new StringBuilder("CREATE VIRTUAL TABLE ");
@@ -34,7 +35,7 @@ public class SQLite3CreateVirtualRtreeTabelGenerator {
 			String columnName = SQLite3Common.createColumnName(size + i);
 			SQLite3ColumnBuilder columnBuilder = new SQLite3ColumnBuilder()
 					.allowPrimaryKey(false).allowNotNull(false).allowUnique(false).allowCheck(false);
-			String c = columnBuilder.createColumn(columnName, r, columns);
+			String c = columnBuilder.createColumn(columnName, globalState, columns);
 			sb.append(c);
 			sb.append(" ");
 		}

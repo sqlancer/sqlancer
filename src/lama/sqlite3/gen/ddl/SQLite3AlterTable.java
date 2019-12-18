@@ -17,28 +17,27 @@ import lama.sqlite3.schema.SQLite3Schema.Table;
 public class SQLite3AlterTable {
 
 	public static Query alterTable(SQLite3GlobalState globalState) throws SQLException {
-		SQLite3AlterTable alterTable = new SQLite3AlterTable(globalState.getRandomly());
+		SQLite3AlterTable alterTable = new SQLite3AlterTable(globalState);
 		return alterTable.getQuery(globalState.getSchema(), alterTable);
 	}
 
 	private final StringBuilder sb = new StringBuilder();
-	private final Randomly r;
+	private final SQLite3GlobalState globalState;
 
 	private enum Option {
 		RENAME_TABLE, RENAME_COLUMN, ADD_COLUMN
 	}
 
-	public SQLite3AlterTable(Randomly r) {
-		this.r = r;
+	public SQLite3AlterTable(SQLite3GlobalState globalState) {
+		this.globalState = globalState;
 	}
-
 
 	private Query getQuery(SQLite3Schema s, SQLite3AlterTable alterTable) throws AssertionError {
 		List<String> errors = new ArrayList<>();
 		errors.add("error in view");
 		errors.add("no such column"); // trigger
 		errors.add("error in trigger"); // trigger
-		
+
 		errors.add("operator prohibited in generated columns");
 		errors.add("subqueries prohibited in generated columns");
 		errors.add("duplicate column name");
@@ -65,10 +64,14 @@ public class SQLite3AlterTable {
 			sb.append(" ADD COLUMN ");
 			String name = SQLite3Common.getFreeColumnName(t);
 			// The column may not have a PRIMARY KEY or UNIQUE constraint.
-			// The column may not have a default value of CURRENT_TIME, CURRENT_DATE, CURRENT_TIMESTAMP, or an expression in parentheses.
-			// If a NOT NULL constraint is specified, then the column must have a default value other than NULL.
-			// If foreign key constraints are enabled and a column with a REFERENCES clause is added, the column must have a default value of NULL.
-			sb.append(new SQLite3ColumnBuilder().allowPrimaryKey(false).allowUnique(false).allowNotNull(false).allowDefaultValue(false).createColumn(name, r, t.getColumns()));
+			// The column may not have a default value of CURRENT_TIME, CURRENT_DATE,
+			// CURRENT_TIMESTAMP, or an expression in parentheses.
+			// If a NOT NULL constraint is specified, then the column must have a default
+			// value other than NULL.
+			// If foreign key constraints are enabled and a column with a REFERENCES clause
+			// is added, the column must have a default value of NULL.
+			sb.append(new SQLite3ColumnBuilder().allowPrimaryKey(false).allowUnique(false).allowNotNull(false)
+					.allowDefaultValue(false).createColumn(name, globalState, t.getColumns()));
 			errors.add("subqueries prohibited in CHECK constraints");
 			errors.add("Cannot add a NOT NULL column with default value NULL");
 			break;

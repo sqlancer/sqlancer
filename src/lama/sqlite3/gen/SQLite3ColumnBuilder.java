@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import lama.Randomly;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 
@@ -36,7 +37,7 @@ public class SQLite3ColumnBuilder {
 		return containsPrimaryKey;
 	}
 
-	public String createColumn(String columnName, Randomly r, List<Column> columns) {
+	public String createColumn(String columnName, SQLite3GlobalState globalState, List<Column> columns) {
 		sb.append(columnName);
 		sb.append(" ");
 		String dataType = Randomly.fromOptions("INT", "TEXT", "BLOB", "REAL", "INTEGER");
@@ -52,7 +53,7 @@ public class SQLite3ColumnBuilder {
 				switch (c) {
 				case GENERATED_AS:
 					sb.append(" GENERATED ALWAYS AS (");
-					sb.append(SQLite3Visitor.asString(new SQLite3ExpressionGenerator(r).deterministicOnly().setColumns(columns.stream().filter(p -> !p.getName().contentEquals(columnName)).collect(Collectors.toList())).getRandomExpression()));
+					sb.append(SQLite3Visitor.asString(new SQLite3ExpressionGenerator(globalState).deterministicOnly().setColumns(columns.stream().filter(p -> !p.getName().contentEquals(columnName)).collect(Collectors.toList())).getRandomExpression()));
 					sb.append(")");
 					break;
 				case PRIMARY_KEY:
@@ -97,7 +98,7 @@ public class SQLite3ColumnBuilder {
 					break;
 				case CHECK:
 					if (allowCheck) {
-						sb.append(SQLite3Common.getCheckConstraint(r, columns));
+						sb.append(SQLite3Common.getCheckConstraint(globalState, columns));
 					}
 					break;
 				default:
@@ -106,7 +107,7 @@ public class SQLite3ColumnBuilder {
 			}
 		}
 		if (allowDefaultValue && Randomly.getBooleanWithSmallProbability()) {
-			sb.append(" DEFAULT " + SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(r)));
+			sb.append(" DEFAULT " + SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(globalState)));
 		}
 		if (Randomly.getBooleanWithSmallProbability()) {
 			String randomCollate = SQLite3Common.getRandomCollate();

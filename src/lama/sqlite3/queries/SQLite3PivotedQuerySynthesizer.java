@@ -162,7 +162,7 @@ public class SQLite3PivotedQuerySynthesizer {
 			if (Randomly.getBoolean()) {
 				SQLite3Expression randomExpression;
 				do {
-					randomExpression = new SQLite3ExpressionGenerator(r).setColumns(columns).getRandomExpression();
+					randomExpression = new SQLite3ExpressionGenerator(globalState).setColumns(columns).getRandomExpression();
 				} while (randomExpression.getExpectedValue() == null);
 				colExpressions.add(randomExpression);
 			} else {
@@ -170,7 +170,7 @@ public class SQLite3PivotedQuerySynthesizer {
 			}
 		}
 		if (Randomly.getBoolean() && allTablesContainOneRow) {
-			SQLite3WindowFunction windowFunction = SQLite3WindowFunction.getRandom(columnsWithoutRowid, r);
+			SQLite3WindowFunction windowFunction = SQLite3WindowFunction.getRandom(columnsWithoutRowid, globalState);
 			SQLite3Expression windowExpr = generateWindowFunction(columnsWithoutRowid, windowFunction, false);
 			colExpressions.add(windowExpr);
 		}
@@ -191,7 +191,7 @@ public class SQLite3PivotedQuerySynthesizer {
 		List<SQLite3Expression> orderBy = generateOrderBy(columns);
 		selectStatement.setOrderByClause(orderBy);
 		if (groupByClause.size() != 0 && Randomly.getBoolean()) {
-			SQLite3Expression randomExpression = SQLite3Common.getTrueExpression(columns, r);
+			SQLite3Expression randomExpression = SQLite3Common.getTrueExpression(columns, globalState);
 			if (Randomly.getBoolean()) {
 				SQLite3AggregateFunction aggFunc = SQLite3AggregateFunction.getRandom();
 				randomExpression = new SQLite3Aggregate(randomExpression, aggFunc);
@@ -262,7 +262,7 @@ public class SQLite3PivotedQuerySynthesizer {
 		List<SQLite3Expression> orderBys = new ArrayList<>();
 		for (int i = 0; i < Randomly.smallNumber(); i++) {
 			SQLite3Expression expr;
-			expr = new SQLite3ExpressionGenerator(r).setGlobalState(globalState).setState(state).setColumns(columns).getRandomExpression();
+			expr = new SQLite3ExpressionGenerator(globalState).setColumns(columns).getRandomExpression();
 			Ordering order = Randomly.fromOptions(Ordering.ASC, Ordering.DESC);
 			orderBys.add(new SQLite3OrderingTerm(expr, order));
 			// TODO RANDOM()
@@ -285,7 +285,7 @@ public class SQLite3PivotedQuerySynthesizer {
 		if (allTablesContainOneRow && Randomly.getBoolean()) {
 			List<SQLite3Expression> collect = new ArrayList<>();
 			for (int i = 0; i < Randomly.smallNumber(); i++) {
-				collect.add(new SQLite3ExpressionGenerator(r).setGlobalState(globalState).setState((SQLite3StateToReproduce) state).setColumns(columns).setRowValue(rw).getRandomExpression());
+				collect.add(new SQLite3ExpressionGenerator(globalState).setColumns(columns).setRowValue(rw).getRandomExpression());
 			}
 			return collect;
 		}
@@ -294,7 +294,7 @@ public class SQLite3PivotedQuerySynthesizer {
 			List<SQLite3Expression> collect = columns.stream().map(c -> new ColumnName(c, rw.getValues().get(c))).collect(Collectors.toList());
 			if (Randomly.getBoolean()) {
 				for (int i = 0; i < Randomly.smallNumber(); i++) {
-					collect.add(new SQLite3ExpressionGenerator(r).setGlobalState(globalState).setState((SQLite3StateToReproduce) state).setColumns(columns).setRowValue(rw).getRandomExpression());
+					collect.add(new SQLite3ExpressionGenerator(globalState).setColumns(columns).setRowValue(rw).getRandomExpression());
 				}
 			}
 			return collect;
@@ -313,7 +313,7 @@ public class SQLite3PivotedQuerySynthesizer {
 	private SQLite3Expression generateNewExpression(List<Column> columns, RowValue rw, boolean shouldBeTrue,
 			int depth) {
 		do {
-			SQLite3Expression expr = new SQLite3ExpressionGenerator(r).setRowValue(rw).setState(state).setColumns(columns).setRowValue(rw).getRandomExpression();
+			SQLite3Expression expr = new SQLite3ExpressionGenerator(globalState).setRowValue(rw).setColumns(columns).getRandomExpression();
 			if (expr.getExpectedValue() != null) {
 				if (expr.getExpectedValue().isNull()) {
 					return new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.ISNULL, expr);
@@ -340,7 +340,7 @@ public class SQLite3PivotedQuerySynthesizer {
 			appendPartitionBy(columns, sb);
 		}
 		if (Randomly.getBoolean()) {
-			sb.append(SQLite3Common.getOrderByAsString(columns, r));
+			sb.append(SQLite3Common.getOrderByAsString(columns, globalState));
 		}
 		if (Randomly.getBoolean()) {
 			sb.append(" ");
@@ -385,7 +385,7 @@ public class SQLite3PivotedQuerySynthesizer {
 			}
 			String orderingTerm;
 			do {
-				orderingTerm = SQLite3Common.getOrderingTerm(columns, r);
+				orderingTerm = SQLite3Common.getOrderingTerm(columns, globalState);
 			} while (orderingTerm.contains("ASC") || orderingTerm.contains("DESC"));
 			// TODO investigate
 			sb.append(orderingTerm);

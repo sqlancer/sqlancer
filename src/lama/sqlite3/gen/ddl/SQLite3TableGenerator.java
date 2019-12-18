@@ -8,8 +8,8 @@ import java.util.stream.Collectors;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.StateToReproduce;
 import lama.sqlite3.SQLite3Errors;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.gen.SQLite3ColumnBuilder;
 import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.schema.SQLite3Schema;
@@ -35,17 +35,17 @@ public class SQLite3TableGenerator {
 	private final List<String> columnNames = new ArrayList<>();
 	private final List<Column> columns = new ArrayList<>();
 	private final SQLite3Schema existingSchema;
+	private final SQLite3GlobalState globalState;
 	private boolean tempTable;
-	private Randomly r;
 
-	public SQLite3TableGenerator(String tableName, SQLite3Schema existingSchema, Randomly r) {
+	public SQLite3TableGenerator(String tableName, SQLite3GlobalState globalState) {
 		this.tableName = tableName;
-		this.existingSchema = existingSchema;
-		this.r = r;
+		this.globalState = globalState;
+		this.existingSchema = globalState.getSchema();
 	}
 
-	public static Query createTableStatement(String tableName, StateToReproduce state, SQLite3Schema existingSchema, Randomly r) {
-		SQLite3TableGenerator sqLite3TableGenerator = new SQLite3TableGenerator(tableName, existingSchema, r);
+	public static Query createTableStatement(String tableName, SQLite3GlobalState globalState) {
+		SQLite3TableGenerator sqLite3TableGenerator = new SQLite3TableGenerator(tableName, globalState);
 		sqLite3TableGenerator.start();
 		List<String> errors = new ArrayList<>();
 		errors.add("no such function");
@@ -84,7 +84,7 @@ public class SQLite3TableGenerator {
 			String columnName = SQLite3Common.createColumnName(columnId);
 			SQLite3ColumnBuilder columnBuilder = new SQLite3ColumnBuilder()
 					.allowPrimaryKey(allowPrimaryKeyInColumn && !containsPrimaryKey);
-			sb.append(columnBuilder.createColumn(columnName, r, columns));
+			sb.append(columnBuilder.createColumn(columnName, globalState, columns));
 			sb.append(" ");
 			if (columnBuilder.isContainsAutoIncrement()) {
 				this.containsAutoIncrement = true;
@@ -111,7 +111,7 @@ public class SQLite3TableGenerator {
 		}
 
 		if (Randomly.getBoolean()) {
-			sb.append(SQLite3Common.getCheckConstraint(r, columns));
+			sb.append(SQLite3Common.getCheckConstraint(globalState, columns));
 		}
 
 		sb.append(")");
