@@ -83,7 +83,8 @@ public class PostgresProvider implements DatabaseProvider {
 		while (newSchema.getDatabaseTables().size() < 2) {
 			try {
 				String tableName = SQLite3Common.createTableName(newSchema.getDatabaseTables().size());
-				Query createTable = PostgresTableGenerator.generate(tableName, r, newSchema, GENERATE_ONLY_KNOWN, globalState);
+				Query createTable = PostgresTableGenerator.generate(tableName, r, newSchema, GENERATE_ONLY_KNOWN,
+						globalState);
 				if (options.logEachSelect()) {
 					logger.writeCurrent(createTable.getQueryString());
 				}
@@ -311,7 +312,7 @@ public class PostgresProvider implements DatabaseProvider {
 		newSchema = PostgresSchema.fromConnection(con, databaseName);
 
 		for (PostgresTable t : newSchema.getDatabaseTables()) {
-			
+
 //			if (!t.isView() && !ensureTableHasRows(con, t, r)) {
 //				return;
 //			}
@@ -349,7 +350,8 @@ public class PostgresProvider implements DatabaseProvider {
 	private List<String> getCollnames(Connection con) throws SQLException {
 		List<String> opClasses = new ArrayList<>();
 		try (Statement s = con.createStatement()) {
-			try (ResultSet rs = s.executeQuery("SELECT collname FROM pg_collation WHERE collname LIKE '%utf8' or collname = 'C';")) {
+			try (ResultSet rs = s
+					.executeQuery("SELECT collname FROM pg_collation WHERE collname LIKE '%utf8' or collname = 'C';")) {
 				while (rs.next()) {
 					opClasses.add(rs.getString(1));
 				}
@@ -426,7 +428,9 @@ public class PostgresProvider implements DatabaseProvider {
 		}
 		con.close();
 		con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + databaseName, "lama", "password");
-		List<String> statements = Arrays.asList("CREATE EXTENSION IF NOT EXISTS btree_gin;", "CREATE EXTENSION IF NOT EXISTS btree_gist;", "CREATE EXTENSION IF NOT EXISTS pg_prewarm;", "SET max_parallel_workers_per_gather=16");
+		List<String> statements = Arrays.asList("CREATE EXTENSION IF NOT EXISTS btree_gin;",
+				"CREATE EXTENSION IF NOT EXISTS btree_gist;", "CREATE EXTENSION IF NOT EXISTS pg_prewarm;",
+				"SET max_parallel_workers_per_gather=16");
 		for (String s : statements) {
 			QueryAdapter query = new QueryAdapter(s);
 			state.statements.add(query);
@@ -498,11 +502,6 @@ public class PostgresProvider implements DatabaseProvider {
 	@Override
 	public StateToReproduce getStateToReproduce(String databaseName) {
 		return new PostgresStateToReproduce(databaseName);
-	}
-
-	@Override
-	public Query checkIfRowIsStillContained(StateToReproduce state) {
-		return new QueryAdapter(((PostgresStateToReproduce) state).queryThatSelectsRow);
 	}
 
 }

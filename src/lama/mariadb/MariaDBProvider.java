@@ -333,9 +333,4 @@ public class MariaDBProvider implements DatabaseProvider {
 		return new MariaDBStateToReproduce(databaseName);
 	}
 
-	@Override
-	public Query checkIfRowIsStillContained(StateToReproduce state) {
-		throw new AssertionError();
-	}
-
 }

@@ -316,11 +316,4 @@ public class TDEngineProvider implements DatabaseProvider {
 		return new TDEngineStateToReproduce(databaseName);
 	}
 
-	@Override
-	public Query checkIfRowIsStillContained(StateToReproduce state) {
-		String checkRowIsInside = "SELECT " + state.queryTargetedColumnsString + " FROM "
-				+ state.queryTargetedTablesString + " INTERSECT SELECT " + state.values;
-		return new QueryAdapter(checkRowIsInside);
-	}
-
 }

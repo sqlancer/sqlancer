@@ -477,11 +477,4 @@ public class SQLite3Provider implements DatabaseProvider {
 		return new SQLite3StateToReproduce(databaseName);
 	}
 
-	@Override
-	public Query checkIfRowIsStillContained(StateToReproduce state) {
-		String checkRowIsInside = "SELECT " + state.queryTargetedColumnsString + " FROM "
-				+ state.queryTargetedTablesString + " INTERSECT SELECT " + state.values;
-		return new QueryAdapter(checkRowIsInside);
-	}
-
 }
