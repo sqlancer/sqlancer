@@ -128,7 +128,7 @@ public class SQLite3InsertGenerator {
 				if (Randomly.getBoolean()) {
 					sb.append(" WHERE ");
 					sb.append(SQLite3Visitor.asString(
-							new SQLite3ExpressionGenerator(globalState).expectedErrors(errors).setColumns(table.getColumns()).getRandomExpression()));
+							new SQLite3ExpressionGenerator(globalState).setColumns(table.getColumns()).getRandomExpression()));
 				}
 			}
 		}
@@ -156,7 +156,7 @@ public class SQLite3InsertGenerator {
 				literal = SQLite3Constant.createIntConstant(r.getInteger());
 			} else {
 				if (Randomly.getBooleanWithSmallProbability()) {
-					literal = new SQLite3ExpressionGenerator(globalState).expectedErrors(errors).getRandomExpression();
+					literal = new SQLite3ExpressionGenerator(globalState).getRandomExpression();
 				} else {
 					literal = SQLite3ExpressionGenerator.getRandomLiteralValue(globalState);
 				}

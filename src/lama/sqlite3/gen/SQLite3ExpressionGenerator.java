@@ -56,7 +56,6 @@ public class SQLite3ExpressionGenerator {
 	private final Randomly r;
 	private boolean deterministicOnly;
 	private boolean allowMatchClause;
-	private List<String> expectedErrors = new ArrayList<>();
 	private boolean allowAggregateFunctions;
 
 	private enum LiteralValueType {
@@ -85,11 +84,6 @@ public class SQLite3ExpressionGenerator {
 		return this;
 	}
 
-	public SQLite3ExpressionGenerator expectedErrors(List<String> errors) {
-		expectedErrors = errors;
-		return this;
-	}
-
 	public SQLite3ExpressionGenerator setRowValue(RowValue rw) {
 		this.rw = rw;
 		return this;
@@ -99,7 +93,6 @@ public class SQLite3ExpressionGenerator {
 		this.allowMatchClause = true;
 		return this;
 	}
-
 
 	public SQLite3ExpressionGenerator tryToGenerateKnownResult() {
 		this.tryToGenerateKnownResult = true;
@@ -148,10 +141,10 @@ public class SQLite3ExpressionGenerator {
 
 	enum ExpressionType {
 		/* RANDOM_QUERY, */ COLUMN_NAME, LITERAL_VALUE, UNARY_OPERATOR, POSTFIX_UNARY_OPERATOR, BINARY_OPERATOR,
-		BETWEEN_OPERATOR, CAST_EXPRESSION, BINARY_COMPARISON_OPERATOR, FUNCTION, IN_OPERATOR, COLLATE,
-		EXISTS, CASE_OPERATOR, MATCH, AGGREGATE_FUNCTION, ROW_VALUE_COMPARISON
+		BETWEEN_OPERATOR, CAST_EXPRESSION, BINARY_COMPARISON_OPERATOR, FUNCTION, IN_OPERATOR, COLLATE, EXISTS,
+		CASE_OPERATOR, MATCH, AGGREGATE_FUNCTION, ROW_VALUE_COMPARISON
 	}
-	
+
 	public SQLite3Expression getRandomExpression() {
 		return getRandomExpression(0);
 	}
@@ -242,7 +235,7 @@ public class SQLite3ExpressionGenerator {
 	}
 
 	private enum RowValueComparison {
-		STANDARD_COMPARISON, BETWEEN /*, IN*/
+		STANDARD_COMPARISON, BETWEEN /* , IN */
 	}
 
 	private SQLite3Expression getRowValueComparison(int depth) {
@@ -255,7 +248,8 @@ public class SQLite3ExpressionGenerator {
 			return new BinaryComparisonOperation(new SQLite3RowValue(left), new SQLite3RowValue(right),
 					BinaryComparisonOperator.getRandomRowValueOperator());
 		case BETWEEN:
-			return new BetweenOperation(getRandomRowValue(depth + 1, size), Randomly.getBoolean(), new SQLite3RowValue(left), new SQLite3RowValue(right));
+			return new BetweenOperation(getRandomRowValue(depth + 1, size), Randomly.getBoolean(),
+					new SQLite3RowValue(left), new SQLite3RowValue(right));
 		// TODO: IN operator (right hand side must be a query)
 		default:
 			throw new AssertionError(randomOption);
@@ -279,7 +273,8 @@ public class SQLite3ExpressionGenerator {
 
 	private SQLite3Expression getExists() {
 		SQLite3Expression val;
-		if (true || tryToGenerateKnownResult || (Randomly.getBoolean() || con == null || state == null || globalState == null)) {
+		if (true || tryToGenerateKnownResult
+				|| (Randomly.getBoolean() || con == null || state == null || globalState == null)) {
 			if (Randomly.getBoolean()) {
 				val = new SQLite3Text("SELECT 1", SQLite3Constant.createIntConstant(1));
 			} else {
@@ -324,8 +319,7 @@ public class SQLite3ExpressionGenerator {
 		LIKELIHOOD("LIKELIHOOD", 2), //
 		LIKELY("LIKELY", 1), //
 		LOAD_EXTENSION("load_extension", 1), //
-		LOAD_EXTENSION2("load_extension", 2, Attribute.NONDETERMINISTIC),
-		LOWER("LOWER", 1), //
+		LOAD_EXTENSION2("load_extension", 2, Attribute.NONDETERMINISTIC), LOWER("LOWER", 1), //
 		LTRIM1("LTRIM", 1), //
 		LTRIM2("LTRIM", 2), //
 		MAX("MAX", 2, Attribute.VARIADIC), //
@@ -351,34 +345,26 @@ public class SQLite3ExpressionGenerator {
 		DATE("DATE", 3, Attribute.VARIADIC), //
 		TIME("TIME", 3, Attribute.VARIADIC), //
 		DATETIME("DATETIME", 3, Attribute.VARIADIC), //
-		JULIANDAY("JULIANDAY", 3, Attribute.VARIADIC),
-		STRFTIME("STRFTIME", 3, Attribute.VARIADIC),
+		JULIANDAY("JULIANDAY", 3, Attribute.VARIADIC), STRFTIME("STRFTIME", 3, Attribute.VARIADIC),
 		// json functions
 		JSON("json", 1), //
 		JSON_ARRAY("json_array", 2, Attribute.VARIADIC), // no such function: json_array for blob
-																			// values
+															// values
 		JSON_ARRAY_LENGTH("json_array_length", 1), //
 		JSON_TYPE("json_type", 1), //
-		JSON_VALID("json_valid", 1),
-		JSON_QUOTE("json_quote", 1);
+		JSON_VALID("json_valid", 1), JSON_QUOTE("json_quote", 1);
 
 		private int minNrArgs;
 		private boolean variadic;
 		private boolean deterministic;
-		private final List<String> errors;
 		private String name;
 
 		private AnyFunction(String name, int minNrArgs, Attribute... attributes) {
-			this(name, minNrArgs, new ArrayList<>(), attributes);
-		}
-
-		private AnyFunction(String name, int minNrArgs, List<String> expectedErrors, Attribute... attributes) {
 			this.name = name;
 			List<Attribute> attrs = Arrays.asList(attributes);
 			this.minNrArgs = minNrArgs;
 			this.variadic = attrs.contains(Attribute.VARIADIC);
 			this.deterministic = !attrs.contains(Attribute.NONDETERMINISTIC);
-			this.errors = expectedErrors;
 		}
 
 		public boolean isVariadic() {
@@ -422,7 +408,6 @@ public class SQLite3ExpressionGenerator {
 			} else {
 				randomFunction = AnyFunction.getRandom();
 			}
-			expectedErrors.addAll(randomFunction.errors);
 			int nrArgs = randomFunction.getMinNrArgs();
 			if (randomFunction.isVariadic()) {
 				nrArgs += Randomly.smallNumber();

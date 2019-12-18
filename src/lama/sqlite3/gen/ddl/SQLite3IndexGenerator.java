@@ -75,7 +75,7 @@ public class SQLite3IndexGenerator {
 			if (i != 0) {
 				sb.append(",");
 			}
-			SQLite3Expression expr = new SQLite3ExpressionGenerator(globalState).expectedErrors(errors).setColumns(columns).deterministicOnly().getRandomExpression();
+			SQLite3Expression expr = new SQLite3ExpressionGenerator(globalState).setColumns(columns).deterministicOnly().getRandomExpression();
 			SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
 			visitor.fullyQualifiedNames = false;
 			visitor.visit(expr);

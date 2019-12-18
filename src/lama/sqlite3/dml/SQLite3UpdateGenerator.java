@@ -49,7 +49,9 @@ public class SQLite3UpdateGenerator {
 			}
 			errors.add("[SQLITE_CONSTRAINT]");
 		}
-		// TODO Beginning in SQLite version 3.15.0 (2016-10-14), an assignment in the SET clause can be a parenthesized list of column names on the left and a row value of the same size on the right.
+		// TODO Beginning in SQLite version 3.15.0 (2016-10-14), an assignment in the
+		// SET clause can be a parenthesized list of column names on the left and a row
+		// value of the same size on the right.
 
 		sb.append(table.getName());
 		sb.append(" SET ");
@@ -81,8 +83,8 @@ public class SQLite3UpdateGenerator {
 
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
-			String whereClause = SQLite3Visitor.asString(new SQLite3ExpressionGenerator(globalState).expectedErrors(errors)
-					.setColumns(table.getColumns()).getRandomExpression());
+			String whereClause = SQLite3Visitor.asString(
+					new SQLite3ExpressionGenerator(globalState).setColumns(table.getColumns()).getRandomExpression());
 			sb.append(whereClause);
 		}
 
