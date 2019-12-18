@@ -53,6 +53,7 @@ public class SQLite3TableGenerator {
 		errors.add("second argument to likelihood() must be a constant between 0.0 and 1.0");
 		errors.add("non-deterministic functions prohibited in generated columns");
 		errors.add("subqueries prohibited in generated columns");
+		errors.add("parser stack overflow");
 		return new QueryAdapter(sqLite3TableGenerator.sb.toString(), errors);
 	}
 

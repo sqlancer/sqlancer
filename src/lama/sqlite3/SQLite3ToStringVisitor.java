@@ -38,7 +38,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 	public void visitSpecific(SQLite3Expression expr) {
 		SQLite3Visitor.super.visit(expr);
 	}
-	
+
 	protected void asHexString(long intVal) {
 		String hexVal = Long.toHexString(intVal);
 		String prefix;
@@ -91,7 +91,6 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		}
 		sb.append(")");
 	}
-	
 
 	public void visit(SQLite3SelectStatement s, boolean inner) {
 		if (inner) {
@@ -285,11 +284,15 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		visit(op.getLeft());
 		sb.append(" IN ");
 		sb.append("(");
-		for (int i = 0; i < op.getRight().size(); i++) {
-			if (i != 0) {
-				sb.append(", ");
+		if (op.getRightExpressionList() != null) {
+			for (int i = 0; i < op.getRightExpressionList().size(); i++) {
+				if (i != 0) {
+					sb.append(", ");
+				}
+				visit(op.getRightExpressionList().get(i));
 			}
-			visit(op.getRight().get(i));
+		} else {
+			visit(op.getRightSelect());
 		}
 		sb.append(")");
 		sb.append(")");
@@ -391,7 +394,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 	public void visit(MatchOperation match) {
 		visit(match.getLeft());
 		sb.append(" MATCH ");
-		visit(match.getRight());		
+		visit(match.getRight());
 	}
 
 	@Override

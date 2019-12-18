@@ -229,22 +229,33 @@ public class SQLite3ExpressionGenerator {
 	}
 
 	private enum RowValueComparison {
-		STANDARD_COMPARISON, BETWEEN /* , IN */
+		STANDARD_COMPARISON, BETWEEN, IN
 	}
 
+	/**
+	 * https://www.sqlite.org/rowvalue.html
+	 */
 	private SQLite3Expression getRowValueComparison(int depth) {
 		int size = Randomly.smallNumber() + 1;
-		RowValueComparison randomOption = Randomly.fromOptions(RowValueComparison.values());
 		List<SQLite3Expression> left = getRandomExpressions(size, depth + 1);
 		List<SQLite3Expression> right = getRandomExpressions(size, depth + 1);
+		RowValueComparison randomOption;
+		if (Randomly.getBooleanWithSmallProbability()) {
+			// for the right hand side a random query is required, which is expensive
+			randomOption = RowValueComparison.IN;
+		} else {
+			randomOption = Randomly.fromOptions(RowValueComparison.STANDARD_COMPARISON, RowValueComparison.BETWEEN);
+		}
 		switch (randomOption) {
+		// TODO case
 		case STANDARD_COMPARISON:
 			return new BinaryComparisonOperation(new SQLite3RowValue(left), new SQLite3RowValue(right),
 					BinaryComparisonOperator.getRandomRowValueOperator());
 		case BETWEEN:
 			return new BetweenOperation(getRandomRowValue(depth + 1, size), Randomly.getBoolean(),
 					new SQLite3RowValue(left), new SQLite3RowValue(right));
-		// TODO: IN operator (right hand side must be a query)
+		case IN:
+			return new SQLite3Expression.InOperation(new SQLite3RowValue(left), SQLite3RandomQuerySynthesizer.generate(globalState, size));
 		default:
 			throw new AssertionError(randomOption);
 		}

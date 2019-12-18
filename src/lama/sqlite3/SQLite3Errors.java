@@ -23,6 +23,11 @@ public class SQLite3Errors {
 		errors.add("not authorized"); // load_extension
 		errors.add("aggregate functions are not allowed in the GROUP BY clause");
 		errors.add("parser stack overflow");
+		
+		// nested query
+		errors.add("misuse of aggregate");
+		errors.add("second argument to nth_value must be a positive integer");
+		errors.add("parser stack overflow");
 	}
 	
 	public static void addMatchQueryErrors(List<String> errors) {

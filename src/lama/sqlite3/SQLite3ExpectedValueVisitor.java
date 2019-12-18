@@ -140,8 +140,12 @@ public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
 	public void visit(InOperation op) {
 		print(op);
 		visit(op.getLeft());
-		for (SQLite3Expression expr : op.getRight()) {
-			visit(expr);
+		if (op.getRightExpressionList() != null) {
+			for (SQLite3Expression expr : op.getRightExpressionList()) {
+				visit(expr);
+			}
+		} else {
+			visit(op.getRightSelect());
 		}
 	}
 

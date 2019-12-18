@@ -564,21 +564,31 @@ public abstract class SQLite3Expression {
 	public static class InOperation extends SQLite3Expression {
 
 		private final SQLite3Expression left;
-		private final List<SQLite3Expression> right;
+		private List<SQLite3Expression> rightExpressionList;
+		private SQLite3SelectStatement rightSelect;
 
 		public InOperation(SQLite3Expression left, List<SQLite3Expression> right) {
 			this.left = left;
-			this.right = right;
+			this.rightExpressionList = right;
+		}
+		
+		public InOperation(SQLite3Expression left, SQLite3SelectStatement select) {
+			this.left = left;
+			this.rightSelect = select;
 		}
 
 		public SQLite3Expression getLeft() {
 			return left;
 		}
 
-		public List<SQLite3Expression> getRight() {
-			return right;
+		public List<SQLite3Expression> getRightExpressionList() {
+			return rightExpressionList;
 		}
 
+		public SQLite3SelectStatement getRightSelect() {
+			return rightSelect;
+		}
+		
 		@Override
 		// The collating sequence used for expressions of the form "x IN (y, z, ...)" is
 		// the collating sequence of x.
@@ -592,16 +602,17 @@ public abstract class SQLite3Expression {
 
 		@Override
 		public SQLite3Constant getExpectedValue() {
+			// TODO query as right hand side is not implemented
 			if (left.getExpectedValue() == null) {
 				return null;
 			}
-			if (right.isEmpty()) {
+			if (rightExpressionList.isEmpty()) {
 				return SQLite3Constant.createFalse();
 			} else if (left.getExpectedValue().isNull()) {
 				return SQLite3Constant.createNullConstant();
 			} else {
 				boolean containsNull = false;
-				for (SQLite3Expression expr : getRight()) {
+				for (SQLite3Expression expr : getRightExpressionList()) {
 					if (expr.getExpectedValue() == null) {
 						return null; // TODO: we can still compute something if the value is already contained
 					}
