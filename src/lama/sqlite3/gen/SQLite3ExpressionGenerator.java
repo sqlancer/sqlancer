@@ -1,6 +1,5 @@
 package lama.sqlite3.gen;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -9,7 +8,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import lama.Randomly;
-import lama.StateToReproduce.SQLite3StateToReproduce;
 import lama.sqlite3.SQLite3Provider;
 import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.ast.SQLite3Aggregate;
@@ -48,8 +46,6 @@ import lama.sqlite3.schema.SQLite3Schema.RowValue;
 public class SQLite3ExpressionGenerator {
 
 	private RowValue rw;
-	private final Connection con;
-	private final SQLite3StateToReproduce state;
 	private final SQLite3GlobalState globalState;
 	private boolean tryToGenerateKnownResult;
 	private List<Column> columns = Collections.emptyList();
@@ -65,8 +61,6 @@ public class SQLite3ExpressionGenerator {
 	public SQLite3ExpressionGenerator(SQLite3GlobalState globalState) {
 		this.globalState = globalState;
 		this.r = globalState.getRandomly();
-		this.state = globalState.getState();
-		this.con = globalState.getConnection();
 	}
 
 	public SQLite3ExpressionGenerator deterministicOnly() {
@@ -273,15 +267,15 @@ public class SQLite3ExpressionGenerator {
 
 	private SQLite3Expression getExists() {
 		SQLite3Expression val;
-		if (true || tryToGenerateKnownResult
-				|| (Randomly.getBoolean() || con == null || state == null || globalState == null)) {
+		if (tryToGenerateKnownResult
+				|| (!Randomly.getBooleanWithSmallProbability() || globalState.getConnection() == null || globalState.getState() == null || globalState == null)) {
 			if (Randomly.getBoolean()) {
 				val = new SQLite3Text("SELECT 1", SQLite3Constant.createIntConstant(1));
 			} else {
 				val = new SQLite3Text("SELECT 0 WHERE 0", SQLite3Constant.createIntConstant(0));
 			}
-			// fixme
 		} else {
+			// generating a random query is costly, so do it infrequently
 			val = SQLite3RandomQuerySynthesizer.generate(globalState, Randomly.smallNumber() + 1);
 		}
 		return new SQLite3Exist(val);

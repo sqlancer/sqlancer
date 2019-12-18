@@ -625,6 +625,9 @@ public class SQLite3Schema {
 	}
 
 	public Tables getRandomTableNonEmptyTables() {
+		if (databaseTables.isEmpty()) {
+			throw new IgnoreMeException();
+		}
 		return new Tables(Randomly.nonEmptySubset(databaseTables));
 	}
 
