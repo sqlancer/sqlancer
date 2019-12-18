@@ -50,154 +50,37 @@ import lama.sqlite3.schema.SQLite3Schema.Table.TableKind;
 
 public class SQLite3Provider implements DatabaseProvider {
 
+	@FunctionalInterface
+	public interface SQLQueryProvider {
+
+		Query getQuery(SQLite3GlobalState globalState) throws SQLException;
+	}
+
 	public static enum Action {
-		PRAGMA {
-			@Override
-			public Query getQuery(SQLite3GlobalState g) throws SQLException {
-				return SQLite3PragmaGenerator.insertPragma(g);
-			}
-		},
-		INDEX {
-
-			@Override
-			public Query getQuery(SQLite3GlobalState g) throws SQLException {
-				return SQLite3IndexGenerator.insertIndex(g);
-			}
-		},
-		INSERT {
-
-			@Override
-			public Query getQuery(SQLite3GlobalState g) throws SQLException {
-				return SQLite3InsertGenerator.insertRow(g);
-			}
-
-		},
-		VACUUM {
-
-			@Override
-			public Query getQuery(SQLite3GlobalState g) {
-				return SQLite3VacuumGenerator.executeVacuum();
-			}
-
-		},
-		REINDEX {
-
-			@Override
-			public Query getQuery(SQLite3GlobalState g) {
-				return SQLite3ReindexGenerator.executeReindex(g);
-			}
-
-		},
-		ANALYZE {
-
-			@Override
-			public Query getQuery(SQLite3GlobalState g) {
-				return SQLite3AnalyzeGenerator.generateAnalyze(g);
-
-			}
-		},
-		DELETE {
-
-			@Override
-			public Query getQuery(SQLite3GlobalState g) {
-				return SQLite3DeleteGenerator.deleteContent(g);
-			}
-		},
-		TRANSACTION_START {
-
-			@Override
-			public Query getQuery(SQLite3GlobalState g) {
-				return SQLite3TransactionGenerator.generateBeginTransaction(g);
-			}
-
-		},
-		ALTER {
-
-			@Override
-			public Query getQuery(SQLite3GlobalState g) throws SQLException {
-				return SQLite3AlterTable.alterTable(g);
-			}
-
-		},
-		DROP_INDEX {
-
-			@Override
-			public Query getQuery(SQLite3GlobalState g) throws SQLException {
-				return SQLite3DropIndexGenerator.dropIndex(g);
-			}
-		},
-		UPDATE {
-
-			@Override
-			public Query getQuery(SQLite3GlobalState g) {
-				return SQLite3UpdateGenerator.updateRow(g);
-			}
-		},
-		ROLLBACK_TRANSACTION() {
-			@Override
-			public Query getQuery(SQLite3GlobalState g) {
-				return SQLite3TransactionGenerator.generateRollbackTransaction(g);
-			}
-		},
-		COMMIT {
-
-			@Override
-			public Query getQuery(SQLite3GlobalState g) {
-				return SQLite3TransactionGenerator.generateCommit(g);
-			}
-
-		},
-		DROP_TABLE {
-
-			@Override
-			public Query getQuery(SQLite3GlobalState g) {
-				return SQLite3DropTableGenerator.dropTable(g);
-			}
-
-		},
-		DROP_VIEW {
-
-			@Override
-			public Query getQuery(SQLite3GlobalState g) {
-				return SQLite3ViewGenerator.dropView(g);
-			}
-
-		},
-		EXPLAIN {
-
-			@Override
-			public Query getQuery(SQLite3GlobalState g) throws SQLException {
-				return SQLite3ExplainGenerator.explain(g);
-			}
-		},
-		CHECK_RTREE_TABLE {
-			@Override
-			public Query getQuery(SQLite3GlobalState g) throws SQLException {
-				Table table = g.getSchema().getRandomTableOrBailout(t -> t.getName().startsWith("r"));
-				return new QueryAdapter(String.format("SELECT rtreecheck('%s');", table.getName()));
-			}
-		},
-		VIRTUAL_TABLE_ACTION {
-			@Override
-			public Query getQuery(SQLite3GlobalState g) throws SQLException {
-				return SQLite3VirtualFTSTableCommandGenerator.create(g);
-			}
-		},
-		CREATE_VIEW {
-			@Override
-			public Query getQuery(SQLite3GlobalState g) throws SQLException {
-				return SQLite3ViewGenerator.generate(g);
-			}
-		},
-		CREATE_TRIGGER {
-			@Override
-			public Query getQuery(SQLite3GlobalState g) throws SQLException {
-				return SQLite3CreateTriggerGenerator.create(g);
-			}
-		},
-		MANIPULATE_STAT_TABLE {
-			@Override
-			public Query getQuery(SQLite3GlobalState g) throws SQLException {
+		PRAGMA(SQLite3PragmaGenerator::insertPragma), //
+		INDEX(SQLite3IndexGenerator::insertIndex), //
+		INSERT(SQLite3InsertGenerator::insertRow), //
+		VACUUM(SQLite3VacuumGenerator::executeVacuum), //
+		REINDEX(SQLite3ReindexGenerator::executeReindex), //
+		ANALYZE(SQLite3AnalyzeGenerator::generateAnalyze), //
+		DELETE(SQLite3DeleteGenerator::deleteContent), //
+		TRANSACTION_START(SQLite3TransactionGenerator::generateBeginTransaction), //
+		ALTER(SQLite3AlterTable::alterTable), //
+		DROP_INDEX(SQLite3DropIndexGenerator::dropIndex), //
+		UPDATE(SQLite3UpdateGenerator::updateRow), //
+		ROLLBACK_TRANSACTION(SQLite3TransactionGenerator::generateRollbackTransaction), //
+		COMMIT(SQLite3TransactionGenerator::generateCommit), //
+		DROP_TABLE(SQLite3DropTableGenerator::dropTable), //
+		DROP_VIEW(SQLite3ViewGenerator::dropView), //
+		EXPLAIN(SQLite3ExplainGenerator::explain), //
+		CHECK_RTREE_TABLE((g) -> {
+			Table table = g.getSchema().getRandomTableOrBailout(t -> t.getName().startsWith("r"));
+			return new QueryAdapter(String.format("SELECT rtreecheck('%s');", table.getName()));
+		}), //
+		VIRTUAL_TABLE_ACTION(SQLite3VirtualFTSTableCommandGenerator::create), //
+		CREATE_VIEW(SQLite3ViewGenerator::generate), //
+		CREATE_TRIGGER(SQLite3CreateTriggerGenerator::create), //
+		MANIPULATE_STAT_TABLE((g) -> {
 				List<Column> columns = new ArrayList<>();
 				Table t = new Table("sqlite_stat1", columns, TableKind.MAIN, false, 1, false, false);
 				if (Randomly.getBoolean()) {
@@ -251,10 +134,17 @@ public class SQLite3Provider implements DatabaseProvider {
 					sb.append("')");
 					return new QueryAdapter(sb.toString(), Arrays.asList("no such table"));
 				}
-			}
-		};
+		});
 
-		public abstract Query getQuery(SQLite3GlobalState state) throws SQLException;
+		private final SQLQueryProvider queryProvider;
+
+		private Action(SQLQueryProvider queryProvider) {
+			this.queryProvider = queryProvider;
+		}
+
+		public Query getQuery(SQLite3GlobalState state) throws SQLException {
+			return queryProvider.getQuery(state);
+		}
 	}
 
 	public static final int NR_INSERT_ROW_TRIES = 30;
@@ -307,7 +197,6 @@ public class SQLite3Provider implements DatabaseProvider {
 
 	}
 
-	
 	private final SQLite3GlobalState globalState = new SQLite3GlobalState();
 
 	private enum TableType {
@@ -534,7 +423,6 @@ public class SQLite3Provider implements DatabaseProvider {
 			q.execute(con);
 		}
 	}
-
 
 	@Override
 	public Connection createDatabase(String databaseName, StateToReproduce state) throws SQLException {
