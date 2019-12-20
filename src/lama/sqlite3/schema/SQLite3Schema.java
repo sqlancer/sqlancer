@@ -522,7 +522,7 @@ public class SQLite3Schema {
 				int columnCreateIndex = 0;
 				while (columnRs.next()) {
 					String columnName = columnRs.getString("name");
-					if (columnName.contentEquals("docid") || columnName.contentEquals("rank") || columnName.contentEquals(tableName)) {
+					if (columnName.contentEquals("docid") || columnName.contentEquals("rank") || columnName.contentEquals(tableName) || columnName.contentEquals("__langid")) {
 						continue; // internal column names of FTS tables
 					}
 					String columnTypeString = columnRs.getString("type");

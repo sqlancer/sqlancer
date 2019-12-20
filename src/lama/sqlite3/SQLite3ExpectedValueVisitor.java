@@ -29,6 +29,9 @@ import lama.sqlite3.ast.SQLite3RowValue;
 import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.SQLite3UnaryOperation;
 import lama.sqlite3.ast.SQLite3WindowFunction;
+import lama.sqlite3.ast.SQLite3WindowFunctionExpression;
+import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecBetween;
+import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecTerm;
 
 public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
 
@@ -264,6 +267,22 @@ public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
 	@Override
 	public void visit(SQLite3Text func) {
 		print(func);
+	}
+
+	@Override
+	public void visit(SQLite3WindowFunctionExpression windowFunction) {
+		
+	}
+
+	@Override
+	public void visit(SQLite3WindowFunctionFrameSpecTerm term) {
+		
+	}
+
+	@Override
+	public void visit(SQLite3WindowFunctionFrameSpecBetween between) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

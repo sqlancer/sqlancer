@@ -5,8 +5,6 @@ import java.util.List;
 
 import lama.Randomly;
 import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
-import lama.sqlite3.ast.SQLite3Aggregate;
-import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3SelectStatement;
@@ -46,8 +44,8 @@ public class SQLite3RandomQuerySynthesizer {
 				if (!normalAggregateFunction) {
 					baseWindowFunction = SQLite3WindowFunction.getRandom(targetTables.getColumns(), globalState);
 				} else {
-					baseWindowFunction = new SQLite3Aggregate(gen.getRandomExpression(),
-							SQLite3AggregateFunction.getRandom());
+					baseWindowFunction = gen.getAggregateFunction(true);
+					assert baseWindowFunction != null;
 				}
 				SQLite3WindowFunctionExpression windowFunction = new SQLite3WindowFunctionExpression(
 						baseWindowFunction);

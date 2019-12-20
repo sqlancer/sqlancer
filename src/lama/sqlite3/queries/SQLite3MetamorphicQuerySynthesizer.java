@@ -172,7 +172,7 @@ public class SQLite3MetamorphicQuerySynthesizer {
 		// SELECT COUNT(t1.c3) FROM t1 WHERE (- (t1.c2));
 		// SELECT SUM(count) FROM (SELECT ((- (t1.c2)) IS TRUE) as count FROM t1);;
 		SQLite3Aggregate aggr = new SQLite3Aggregate(
-				new ColumnName(new Column("*", SQLite3DataType.INT, false, false, null), null),
+				Arrays.asList(new ColumnName(new Column("*", SQLite3DataType.INT, false, false, null), null)),
 				SQLite3AggregateFunction.COUNT);
 		select.setFetchColumns(Arrays.asList(aggr));
 		select.setFromTables(list);

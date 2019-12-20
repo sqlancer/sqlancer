@@ -212,7 +212,7 @@ public class SQLite3ExpressionGenerator {
 		case MATCH:
 			return getMatchClause(depth);
 		case AGGREGATE_FUNCTION:
-			return new SQLite3Aggregate(getRandomExpression(depth + 1), SQLite3AggregateFunction.getRandom());
+			return getAggregateFunction(depth);
 		case ROW_VALUE_COMPARISON:
 			return getRowValueComparison(depth + 1);
 //		case RANDOM_QUERY:
@@ -226,6 +226,34 @@ public class SQLite3ExpressionGenerator {
 		default:
 			throw new AssertionError(randomExpressionType);
 		}
+	}
+
+	public SQLite3Expression getAggregateFunction(boolean asWindowFunction) {
+		SQLite3AggregateFunction random = SQLite3AggregateFunction.getRandom();
+		if (asWindowFunction) {
+			while (/*random == SQLite3AggregateFunction.ZIPFILE || */random == SQLite3AggregateFunction.MAX
+					|| random == SQLite3AggregateFunction.MIN) {
+				// ZIPFILE() may not be used as a window function
+				random = SQLite3AggregateFunction.getRandom();
+			}
+		}
+		return getAggregate(0, random);
+	}
+
+	private SQLite3Expression getAggregateFunction(int depth) {
+		SQLite3AggregateFunction random = SQLite3AggregateFunction.getRandom();
+		return getAggregate(depth, random);
+	}
+
+	private SQLite3Expression getAggregate(int depth, SQLite3AggregateFunction random) {
+		int nrArgs;
+//		if (random == SQLite3AggregateFunction.ZIPFILE) {
+//			nrArgs = Randomly.fromOptions(2, 4);
+//		} else {
+//			nrArgs = 1;
+//		}
+		nrArgs = 1;
+		return new SQLite3Aggregate(getRandomExpressions(nrArgs, depth + 1), random);
 	}
 
 	private enum RowValueComparison {
@@ -255,7 +283,8 @@ public class SQLite3ExpressionGenerator {
 			return new BetweenOperation(getRandomRowValue(depth + 1, size), Randomly.getBoolean(),
 					new SQLite3RowValue(left), new SQLite3RowValue(right));
 		case IN:
-			return new SQLite3Expression.InOperation(new SQLite3RowValue(left), SQLite3RandomQuerySynthesizer.generate(globalState, size));
+			return new SQLite3Expression.InOperation(new SQLite3RowValue(left),
+					SQLite3RandomQuerySynthesizer.generate(globalState, size));
 		default:
 			throw new AssertionError(randomOption);
 		}
@@ -278,8 +307,8 @@ public class SQLite3ExpressionGenerator {
 
 	private SQLite3Expression getExists() {
 		SQLite3Expression val;
-		if (tryToGenerateKnownResult
-				|| (!Randomly.getBooleanWithSmallProbability() || globalState.getConnection() == null || globalState.getState() == null || globalState == null)) {
+		if (tryToGenerateKnownResult || (!Randomly.getBooleanWithSmallProbability()
+				|| globalState.getConnection() == null || globalState.getState() == null || globalState == null)) {
 			if (Randomly.getBoolean()) {
 				val = new SQLite3Text("SELECT 1", SQLite3Constant.createIntConstant(1));
 			} else {

@@ -16,7 +16,7 @@ import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
 public class SQLite3Aggregate extends SQLite3Expression {
 
 	private SQLite3AggregateFunction func;
-	private SQLite3Expression expr;
+	private List<SQLite3Expression> expr;
 
 	public enum SQLite3AggregateFunction {
 		AVG() {
@@ -48,7 +48,7 @@ public class SQLite3Aggregate extends SQLite3Expression {
 			@Override
 			public SQLite3Constant apply(SQLite3Constant exprVal) {
 				SQLite3Constant castToText = SQLite3Cast.castToText(exprVal);
-				if (castToText == null) {
+				if (castToText == null && SQLite3Provider.MUST_KNOW_RESULT) {
 					throw new IgnoreMeException();
 				}
 				return castToText;
@@ -73,6 +73,18 @@ public class SQLite3Aggregate extends SQLite3Expression {
 			}
 
 		},
+		// zipfile needs to be loaded as an extension
+//		ZIPFILE() {
+//
+//			@Override
+//			public SQLite3Constant apply(SQLite3Constant exprVal) {
+//				if (SQLite3Provider.MUST_KNOW_RESULT) {
+//					throw new AssertionError();
+//				}
+//				return null;
+//			}
+//			
+//		},
 		TOTAL() {
 			@Override
 			public SQLite3Constant apply(SQLite3Constant exprVal) {
@@ -103,7 +115,7 @@ public class SQLite3Aggregate extends SQLite3Expression {
 
 	}
 
-	public SQLite3Aggregate(SQLite3Expression expr, SQLite3AggregateFunction func) {
+	public SQLite3Aggregate(List<SQLite3Expression> expr, SQLite3AggregateFunction func) {
 		this.expr = expr;
 		this.func = func;
 	}
@@ -112,18 +124,21 @@ public class SQLite3Aggregate extends SQLite3Expression {
 		return func;
 	}
 
-	public SQLite3Expression getExpr() {
+	public List<SQLite3Expression> getExpr() {
 		return expr;
 	}
 
 	@Override
 	public CollateSequence getExplicitCollateSequence() {
-		return expr.getExplicitCollateSequence();
+		return null;
+//		return expr.getExplicitCollateSequence();
 	}
 
 	@Override
 	public SQLite3Constant getExpectedValue() {
-		return func.apply(expr.getExpectedValue());
+		assert !SQLite3Provider.MUST_KNOW_RESULT;
+		return null;
+//		return func.apply(expr.getExpectedValue());
 	}
 
 }

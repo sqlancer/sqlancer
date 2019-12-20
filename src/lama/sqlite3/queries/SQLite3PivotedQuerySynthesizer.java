@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -153,7 +154,7 @@ public class SQLite3PivotedQuerySynthesizer {
 					colName = new SQLite3Distinct(colName);
 				}
 				SQLite3AggregateFunction aggFunc = SQLite3AggregateFunction.getRandom(c.getColumnType());
-				colName = new SQLite3Aggregate(colName, aggFunc);
+				colName = new SQLite3Aggregate(Arrays.asList(colName), aggFunc);
 				if (Randomly.getBoolean() && !generateDistinct) {
 					colName = generateWindowFunction(columns, colName, true);
 				}
@@ -194,7 +195,7 @@ public class SQLite3PivotedQuerySynthesizer {
 			SQLite3Expression randomExpression = SQLite3Common.getTrueExpression(columns, globalState);
 			if (Randomly.getBoolean()) {
 				SQLite3AggregateFunction aggFunc = SQLite3AggregateFunction.getRandom();
-				randomExpression = new SQLite3Aggregate(randomExpression, aggFunc);
+				randomExpression = new SQLite3Aggregate(Arrays.asList(randomExpression), aggFunc);
 			}
 			selectStatement.setHavingClause(randomExpression);
 		}
