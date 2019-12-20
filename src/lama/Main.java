@@ -296,7 +296,7 @@ public class Main {
 			}
 		}, 5, 5, TimeUnit.SECONDS);
 
-		ExecutorService executor = Executors.newFixedThreadPool(16);
+		ExecutorService executor = Executors.newFixedThreadPool(options.getNumberConcurrentThreads());
 
 		for (int i = 0; i < options.getTotalNumberTries(); i++) {
 			final String databaseName = "lama" + i;
