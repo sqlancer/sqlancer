@@ -3,7 +3,6 @@ package lama.postgres;
 import lama.postgres.ast.PostgresAggregate;
 import lama.postgres.ast.PostgresBetweenOperation;
 import lama.postgres.ast.PostgresBinaryOperation;
-import lama.postgres.ast.PostgresBinaryRangeOperation;
 import lama.postgres.ast.PostgresCastOperation;
 import lama.postgres.ast.PostgresCollate;
 import lama.postgres.ast.PostgresColumnValue;

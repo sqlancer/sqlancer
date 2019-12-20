@@ -47,7 +47,6 @@ import lama.postgres.gen.PostgresUpdateGenerator;
 import lama.postgres.gen.PostgresVacuumGenerator;
 import lama.postgres.gen.PostgresViewGenerator;
 import lama.sqlite3.gen.SQLite3Common;
-import lama.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
 
 // EXISTS
 // IN
@@ -58,8 +57,6 @@ public class PostgresProvider implements DatabaseProvider {
 	private static final int NR_QUERIES_PER_TABLE = 100000;
 	public static final boolean GENERATE_ONLY_KNOWN = false;
 
-	Randomly r = new Randomly();
-	private QueryManager manager;
 
 	private List<String> collationNames;
 
@@ -72,10 +69,10 @@ public class PostgresProvider implements DatabaseProvider {
 	@Override
 	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger, StateToReproduce state,
 			QueryManager manager, MainOptions options) throws SQLException {
+		Randomly r = new Randomly();
 		if (options.logEachSelect()) {
 			logger.writeCurrent(state);
 		}
-		this.manager = manager;
 		List<String> opClasses = getOpclasses(con);
 		List<String> operators = getOperators(con);
 		PostgresGlobalState globalState = new PostgresGlobalState(opClasses, operators, collationNames);
@@ -311,17 +308,6 @@ public class PostgresProvider implements DatabaseProvider {
 		manager.execute(new QueryAdapter("COMMIT"));
 		newSchema = PostgresSchema.fromConnection(con, databaseName);
 
-		for (PostgresTable t : newSchema.getDatabaseTables()) {
-
-//			if (!t.isView() && !ensureTableHasRows(con, t, r)) {
-//				return;
-//			}
-//			if (!t.isView() ) {
-//				QueryAdapter q = new QueryAdapter(String.format("SELECT pg_prewarm('%s')", t.getName()));
-//				q.execute(con);
-//			}
-		}
-
 		newSchema = PostgresSchema.fromConnection(con, databaseName);
 		manager.execute(new QueryAdapter("SET SESSION statement_timeout = 5000;\n"));
 
@@ -335,15 +321,6 @@ public class PostgresProvider implements DatabaseProvider {
 			}
 			manager.incrementSelectQueryCount();
 		}
-//		PostgresQueryGenerator queryGenerator = new PostgresQueryGenerator(manager, r, con, databaseName);
-//		for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
-//			try {
-//				queryGenerator.generateAndCheckQuery((PostgresStateToReproduce) state, logger, options);
-//			} catch (IgnoreMeException e) {
-//
-//			}
-//			manager.incrementSelectQueryCount();
-//		}
 
 	}
 
@@ -382,23 +359,6 @@ public class PostgresProvider implements DatabaseProvider {
 			}
 		}
 		return opClasses;
-	}
-
-	private boolean ensureTableHasRows(Connection con, PostgresTable randomTable, Randomly r) throws SQLException {
-		int nrRows;
-		int counter = 5;
-		do {
-			try {
-				Query q = PostgresInsertGenerator.insert(randomTable, r);
-				manager.execute(q);
-			} catch (SQLException e) {
-				if (!SQLite3PivotedQuerySynthesizer.shouldIgnoreException(e)) {
-					throw new AssertionError(e);
-				}
-			}
-			nrRows = getNrRows(con, randomTable);
-		} while (nrRows == 0 && counter-- != 0);
-		return nrRows != 0;
 	}
 
 	public static int getNrRows(Connection con, PostgresTable table) throws SQLException {

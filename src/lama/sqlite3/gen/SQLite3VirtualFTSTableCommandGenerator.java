@@ -14,8 +14,8 @@ import lama.sqlite3.schema.SQLite3Schema.Table;
 public class SQLite3VirtualFTSTableCommandGenerator {
 	
 	private final StringBuilder sb = new StringBuilder();
-	private SQLite3Schema s;
-	private Randomly r;
+	private final SQLite3Schema s;
+	private final Randomly r;
 	private final List<String> errors = new ArrayList<>();
 	
 	public static Query create(SQLite3GlobalState globalState) {

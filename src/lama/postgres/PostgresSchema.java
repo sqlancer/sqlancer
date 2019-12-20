@@ -429,7 +429,6 @@ public class PostgresSchema {
 					while (rs.next()) {
 						String tableName = rs.getString("table_name");
 						String tableTypeSchema = rs.getString("table_schema");
-						String tableTypeStr = rs.getString("table_type");
 						boolean isInsertable = rs.getBoolean("is_insertable_into");
 						// TODO: also check insertable
 						// TODO: insert into view?

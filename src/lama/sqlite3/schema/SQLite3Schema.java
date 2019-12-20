@@ -154,6 +154,10 @@ public class SQLite3Schema {
 		public CollateSequence getCollateSequence() {
 			return collate;
 		}
+		
+		public boolean isGenerated() {
+			return generated;
+		}
 
 	}
 

@@ -224,16 +224,7 @@ public class PostgresExpressionGenerator {
 
 	private PostgresExpression generateComparison(int depth, PostgresDataType dataType) {
 		PostgresExpression leftExpr = generateExpression(depth + 1, dataType);
-		PostgresExpression rightExpr;
-//			if (Randomly.getBoolean()) {
-//				if (Randomly.getBoolean()) {
-//					rightExpr = leftExpr.getExpectedValue();
-//				} else {
-//					rightExpr = leftExpr;
-//				}
-//			} else {
-		rightExpr = generateExpression(depth + 1, dataType);
-//			}
+		PostgresExpression rightExpr = generateExpression(depth + 1, dataType);
 		return getComparison(leftExpr, rightExpr);
 	}
 

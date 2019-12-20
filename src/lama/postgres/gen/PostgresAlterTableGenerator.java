@@ -18,7 +18,6 @@ public class PostgresAlterTableGenerator {
 
 	private PostgresTable randomTable;
 	private Randomly r;
-	private boolean changesSchema;
 	private static PostgresColumn randomColumn;
 	private PostgresSchema schema;
 	private boolean generateOnlyKnown;
@@ -141,7 +140,6 @@ public class PostgresAlterTableGenerator {
 					sb.append(" ");
 					sb.append(Randomly.fromOptions("RESTRICT", "CASCADE"));
 				}
-				changesSchema = true;
 				errors.add("does not exist");
 				errors.add("cannot drop column");
 				errors.add("cannot drop inherited column");
@@ -181,7 +179,6 @@ public class PostgresAlterTableGenerator {
 				if (PostgresProvider.IS_POSTGRES_TWELVE) {
 					errors.add("cannot alter type of a column used by a generated column");
 				}
-				changesSchema = true;
 				break;
 			case ALTER_COLUMN_SET_DROP_DEFAULT:
 				alterColumn(randomTable, sb);
