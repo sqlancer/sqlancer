@@ -28,6 +28,9 @@ import lama.sqlite3.ast.SQLite3Function;
 import lama.sqlite3.ast.SQLite3RowValue;
 import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.SQLite3WindowFunction;
+import lama.sqlite3.ast.SQLite3WindowFunctionExpression;
+import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecBetween;
+import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecTerm;
 import lama.visitor.ToStringVisitor;
 
 public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> implements SQLite3Visitor {
@@ -413,4 +416,62 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 	public void visit(SQLite3Text func) {
 		sb.append(func.getText());
 	}
+
+	@Override
+	public void visit(SQLite3WindowFunctionExpression windowFunction) {
+		visit(windowFunction.getBaseWindowFunction());
+		if (windowFunction.getFilterClause() != null) {
+			sb.append(" FILTER(WHERE ");
+			visit(windowFunction.getFilterClause());
+			sb.append(")");
+		}
+		sb.append(" OVER (");
+		if (!windowFunction.getPartitionBy().isEmpty()) {
+			sb.append(" PARTITION BY ");
+			visit(windowFunction.getPartitionBy());
+		}
+		if (!windowFunction.getOrderBy().isEmpty()) {
+			sb.append(" ORDER BY ");
+			visit(windowFunction.getOrderBy());
+		}
+		if (windowFunction.getFrameSpec() != null) {
+			sb.append(" ");
+			sb.append(windowFunction.getFrameSpecKind());
+			sb.append(" ");
+			visit(windowFunction.getFrameSpec());
+			if (windowFunction.getExclude() != null) {
+				sb.append(" ");
+				sb.append(windowFunction.getExclude().getString());
+			}
+		}
+		sb.append(")");
+	}
+
+	private void visit(List<SQLite3Expression> expressions) {
+		for (int i = 0; i < expressions.size(); i++) {
+			if (i != 0) {
+				sb.append(", ");
+			}
+			visit(expressions.get(i));
+		}
+	}
+
+	@Override
+	public void visit(SQLite3WindowFunctionFrameSpecTerm term) {
+		if (term.getExpression() != null) {
+			visit(term.getExpression());
+		}
+		sb.append(" ");
+		sb.append(term.getKind().getString());
+	}
+
+	@Override
+	public void visit(SQLite3WindowFunctionFrameSpecBetween between) {
+		sb.append("BETWEEN ");
+		visit(between.getLeft());
+		sb.append(" AND ");
+		visit(between.getRight());
+	}
+	
+	
 }

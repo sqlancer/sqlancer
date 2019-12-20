@@ -23,11 +23,14 @@ import lama.sqlite3.ast.SQLite3Expression.SQLite3Text;
 import lama.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Subquery;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
+import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecBetween;
+import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecTerm;
 import lama.sqlite3.ast.SQLite3Function;
 import lama.sqlite3.ast.SQLite3RowValue;
 import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.SQLite3UnaryOperation;
 import lama.sqlite3.ast.SQLite3WindowFunction;
+import lama.sqlite3.ast.SQLite3WindowFunctionExpression;
 
 public interface SQLite3Visitor {
 
@@ -86,7 +89,6 @@ public interface SQLite3Visitor {
 	public abstract void visit(SQLite3OrderingTerm term);
 
 
-
 	public abstract void visit(CollateOperation op);
 
 	public abstract void visit(Cast cast);
@@ -118,7 +120,13 @@ public interface SQLite3Visitor {
 	public abstract void visit(SQLite3WindowFunction func);
 	
 	public abstract void visit(SQLite3RowValue rw);
-
+	
+	public abstract void visit(SQLite3WindowFunctionExpression windowFunction);
+	
+	public abstract void visit(SQLite3WindowFunctionFrameSpecTerm term);
+	
+	public abstract void visit(SQLite3WindowFunctionFrameSpecBetween between);
+	
 	public default void visit(SQLite3Expression expr) {
 		if (expr instanceof Sqlite3BinaryOperation) {
 			visit((Sqlite3BinaryOperation) expr);
@@ -172,6 +180,12 @@ public interface SQLite3Visitor {
 			visit((SQLite3RowValue) expr);
 		} else if (expr instanceof SQLite3Text) {
 			visit((SQLite3Text) expr);
+		} else if (expr instanceof SQLite3WindowFunctionExpression) {
+			visit((SQLite3WindowFunctionExpression) expr);
+		} else if (expr instanceof SQLite3WindowFunctionFrameSpecTerm) {
+			visit((SQLite3WindowFunctionFrameSpecTerm) expr);
+		} else if (expr instanceof SQLite3WindowFunctionFrameSpecBetween) {
+			visit((SQLite3WindowFunctionFrameSpecBetween) expr);
 		} else {
 			throw new AssertionError(expr);
 		}

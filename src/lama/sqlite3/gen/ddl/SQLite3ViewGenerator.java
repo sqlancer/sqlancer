@@ -39,6 +39,7 @@ public class SQLite3ViewGenerator {
 		sb.append(SQLite3Common.getFreeViewName(globalState.getSchema()));
 		List<String> errors = new ArrayList<>();
 		errors.add("is circularly defined");
+		errors.add("unsupported frame specification");
 		if (Randomly.getBoolean()) {
 			SQLite3PivotedQuerySynthesizer queryGen = new SQLite3PivotedQuerySynthesizer(globalState.getConnection(), globalState.getRandomly(), globalState);
 			try {

@@ -4,6 +4,7 @@ import java.util.List;
 
 import lama.IgnoreMeException;
 import lama.Randomly;
+import lama.sqlite3.SQLite3Provider;
 import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
 import lama.sqlite3.schema.SQLite3Schema.Column;
@@ -57,6 +58,9 @@ public class SQLite3WindowFunction extends SQLite3Expression {
 				return SQLite3Constant.createRealConstant(1.0);
 			}
 		},
+		NTILE(1),//
+		LAG(3), //
+		LEAD(3), //
 		FIRST_VALUE(1) {
 			
 			@Override
@@ -95,7 +99,12 @@ public class SQLite3WindowFunction extends SQLite3Expression {
 		}
 		
 		
-		public abstract SQLite3Constant apply(SQLite3Constant... args);
+		public SQLite3Constant apply(SQLite3Constant... args) {
+			if (SQLite3Provider.MUST_KNOW_RESULT) {
+				throw new AssertionError();
+			}
+			return null;
+		}
 		
 		public int getNrArgs() {
 			return nrArgs;
@@ -122,6 +131,9 @@ public class SQLite3WindowFunction extends SQLite3Expression {
 	
 	@Override
 	public SQLite3Constant getExpectedValue() {
+		if (!SQLite3Provider.MUST_KNOW_RESULT) {
+			return null;
+		}
 		SQLite3Constant[] evaluatedConst = new SQLite3Constant[args.length];
 		for (int i = 0; i < evaluatedConst.length; i++) {
 			evaluatedConst[i] = args[i].getExpectedValue();

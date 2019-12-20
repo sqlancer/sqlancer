@@ -28,6 +28,15 @@ public class SQLite3Errors {
 		errors.add("misuse of aggregate");
 		errors.add("second argument to nth_value must be a positive integer");
 		errors.add("parser stack overflow");
+		
+		// window functions
+		errors.add("RANGE with offset PRECEDING/FOLLOWING requires one ORDER BY expression");
+		errors.add("frame starting offset must be a non-negative integer");
+		errors.add("frame starting offset must be a non-negative number");
+		errors.add("unsupported frame specification");
+		errors.add("frame ending offset must be a non-negative integer");
+		errors.add("frame ending offset must be a non-negative number");
+		errors.add("argument of ntile must be a positive integer");
 	}
 	
 	public static void addMatchQueryErrors(List<String> errors) {
@@ -43,6 +52,7 @@ public class SQLite3Errors {
 	
 
 	public static void addTableManipulationErrors(List<String> errors) {
+		errors.add("unsupported frame specification");
 		errors.add("non-deterministic functions prohibited in CHECK constraints");
 		errors.addAll(Arrays.asList("subqueries prohibited in CHECK constraints", "generated columns cannot be part of the PRIMARY KEY", "must have at least one non-generated column"));
 	}

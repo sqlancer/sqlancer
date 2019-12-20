@@ -64,7 +64,6 @@ public class SQLite3MetamorphicQuerySynthesizer {
 		this.globalState = globalState;
 		SQLite3Errors.addExpectedExpressionErrors(errors);
 		SQLite3Errors.addMatchQueryErrors(errors);
-
 		// aggregate
 		errors.add("misuse of aggregate");
 		errors.add("misuse of window function");

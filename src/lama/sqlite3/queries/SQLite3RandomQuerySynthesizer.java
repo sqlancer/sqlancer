@@ -5,19 +5,22 @@ import java.util.List;
 
 import lama.Randomly;
 import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
-import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Aggregate;
 import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
-import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.SQLite3SelectStatement.SelectType;
 import lama.sqlite3.ast.SQLite3WindowFunction;
+import lama.sqlite3.ast.SQLite3WindowFunctionExpression;
+import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3FrameSpecExclude;
+import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3FrameSpecKind;
+import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecBetween;
+import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecTerm;
+import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecTerm.SQLite3WindowFunctionFrameSpecTermKind;
 import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
 import lama.sqlite3.schema.SQLite3Schema;
-import lama.sqlite3.schema.SQLite3Schema.Column;
 import lama.sqlite3.schema.SQLite3Schema.Tables;
 
 public class SQLite3RandomQuerySynthesizer {
@@ -27,8 +30,10 @@ public class SQLite3RandomQuerySynthesizer {
 		SQLite3Schema s = globalState.getSchema();
 		Tables targetTables = s.getRandomTableNonEmptyTables();
 		List<SQLite3Expression> expressions = new ArrayList<>();
-		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(globalState).setColumns(s.getTables().getColumns());
-		SQLite3ExpressionGenerator aggregateGen = new SQLite3ExpressionGenerator(globalState).setColumns(s.getTables().getColumns()).allowAggregateFunctions();
+		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(globalState)
+				.setColumns(s.getTables().getColumns());
+		SQLite3ExpressionGenerator aggregateGen = new SQLite3ExpressionGenerator(globalState)
+				.setColumns(s.getTables().getColumns()).allowAggregateFunctions();
 
 		// SELECT
 		SQLite3SelectStatement select = new SQLite3SelectStatement();
@@ -36,14 +41,46 @@ public class SQLite3RandomQuerySynthesizer {
 		select.setSelectType(Randomly.fromOptions(SelectType.values()));
 		for (int i = 0; i < size; i++) {
 			if (Randomly.getBoolean()) {
-					SQLite3Expression windowFunction;
+				SQLite3Expression baseWindowFunction;
+				boolean normalAggregateFunction = Randomly.getBoolean();
+				if (!normalAggregateFunction) {
+					baseWindowFunction = SQLite3WindowFunction.getRandom(targetTables.getColumns(), globalState);
+				} else {
+					baseWindowFunction = new SQLite3Aggregate(gen.getRandomExpression(),
+							SQLite3AggregateFunction.getRandom());
+				}
+				SQLite3WindowFunctionExpression windowFunction = new SQLite3WindowFunctionExpression(
+						baseWindowFunction);
+				if (Randomly.getBoolean() && normalAggregateFunction) {
+					windowFunction.setFilterClause(gen.getRandomExpression());
+				}
+				if (Randomly.getBoolean()) {
+					windowFunction.setOrderBy(gen.getRandomExpressions(Randomly.smallNumber() + 1));
+				}
+				if (Randomly.getBoolean()) {
+					windowFunction.setPartitionBy(gen.getRandomExpressions(Randomly.smallNumber()));
+				}
+				if (Randomly.getBoolean()) {
+					windowFunction.setFrameSpecKind(SQLite3FrameSpecKind.getRandom());
+					SQLite3Expression windowFunctionTerm;
 					if (Randomly.getBoolean()) {
-						windowFunction = SQLite3WindowFunction.getRandom(targetTables.getColumns(), globalState);
+						windowFunctionTerm = new SQLite3WindowFunctionFrameSpecTerm(
+								Randomly.fromOptions(SQLite3WindowFunctionFrameSpecTermKind.UNBOUNDED_PRECEDING,
+										SQLite3WindowFunctionFrameSpecTermKind.CURRENT_ROW));
+					} else if (Randomly.getBoolean()) {
+						windowFunctionTerm = new SQLite3WindowFunctionFrameSpecTerm(gen.getRandomExpression(),
+								SQLite3WindowFunctionFrameSpecTermKind.EXPR_PRECEDING);
 					} else {
-						windowFunction = new SQLite3Aggregate(gen.getRandomExpression(), SQLite3AggregateFunction.getRandom());
+						SQLite3WindowFunctionFrameSpecTerm left = getTerm(true, gen);
+						SQLite3WindowFunctionFrameSpecTerm right = getTerm(false, gen);
+						windowFunctionTerm = new SQLite3WindowFunctionFrameSpecBetween(left, right);
 					}
-					SQLite3Expression windowExpr = generateWindowFunction(targetTables.getColumns(), windowFunction, false /* TODO check */, r, globalState);
-					expressions.add(windowExpr);
+					windowFunction.setFrameSpec(windowFunctionTerm);
+					if (Randomly.getBoolean()) {
+						windowFunction.setExclude(SQLite3FrameSpecExclude.getRandom());
+					}
+				}
+				expressions.add(windowFunction);
 			} else {
 				expressions.add(aggregateGen.getRandomExpression());
 			}
@@ -77,75 +114,23 @@ public class SQLite3RandomQuerySynthesizer {
 		}
 		return select;
 	}
-	
-	private static SQLite3Expression generateWindowFunction(List<Column> columns, SQLite3Expression windowFunction,
-			boolean allowFilter, Randomly r, SQLite3GlobalState globalState) {
-		StringBuilder sb = new StringBuilder();
-		if (Randomly.getBoolean() && allowFilter) {
-			appendFilter(columns, sb, globalState);
-		}
-		sb.append(" OVER ");
-		sb.append("(");
+
+	private static SQLite3WindowFunctionFrameSpecTerm getTerm(boolean isLeftTerm, SQLite3ExpressionGenerator gen) {
 		if (Randomly.getBoolean()) {
-			appendPartitionBy(columns, sb, globalState);
-		}
-		if (Randomly.getBoolean()) {
-			sb.append(SQLite3Common.getOrderByAsString(columns, globalState));
-		}
-		if (Randomly.getBoolean()) {
-			sb.append(" ");
-			sb.append(Randomly.fromOptions("RANGE", "ROWS", "GROUPS"));
-			sb.append(" ");
-			switch (Randomly.fromOptions(FrameSpec.values())) {
-			case BETWEEN:
-				sb.append("BETWEEN");
-				sb.append(" UNBOUNDED PRECEDING AND CURRENT ROW");
-				break;
-			case UNBOUNDED_PRECEDING:
-				sb.append("UNBOUNDED PRECEDING");
-				break;
-			case CURRENT_ROW:
-				sb.append("CURRENT ROW");
-				break;
-			}
-//			sb.append(" BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING");
-			if (Randomly.getBoolean()) {
-				sb.append(" EXCLUDE ");
-				// "CURRENT ROW", "GROUP"
-				sb.append(Randomly.fromOptions("NO OTHERS", "TIES"));
+			SQLite3Expression expr = gen.getRandomExpression();
+			SQLite3WindowFunctionFrameSpecTermKind kind = Randomly.fromOptions(
+					SQLite3WindowFunctionFrameSpecTermKind.EXPR_FOLLOWING,
+					SQLite3WindowFunctionFrameSpecTermKind.EXPR_PRECEDING);
+			return new SQLite3WindowFunctionFrameSpecTerm(expr, kind);
+		} else if (Randomly.getBoolean()) {
+			return new SQLite3WindowFunctionFrameSpecTerm(SQLite3WindowFunctionFrameSpecTermKind.CURRENT_ROW);
+		} else {
+			if (isLeftTerm) {
+				return new SQLite3WindowFunctionFrameSpecTerm(SQLite3WindowFunctionFrameSpecTermKind.UNBOUNDED_PRECEDING);
+			} else {
+				return new SQLite3WindowFunctionFrameSpecTerm(SQLite3WindowFunctionFrameSpecTermKind.UNBOUNDED_FOLLOWING);
 			}
 		}
-		sb.append(")");
-		windowFunction = new SQLite3PostfixText(windowFunction, sb.toString(), null);
-		return windowFunction;
-	}
-	
-	//
-
-
-	private static void appendFilter(List<Column> columns, StringBuilder sb, SQLite3GlobalState globalState) {
-		sb.append(" FILTER (WHERE ");
-		sb.append(SQLite3Visitor.asString(new SQLite3ExpressionGenerator(globalState).setColumns(columns).getRandomExpression()));
-		sb.append(")");
-	}
-
-	private static void appendPartitionBy(List<Column> columns, StringBuilder sb, SQLite3GlobalState globalState) {
-		sb.append(" PARTITION BY ");
-		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
-			if (i != 0) {
-				sb.append(", ");
-			}
-			String orderingTerm;
-			do {
-				orderingTerm = SQLite3Common.getOrderingTerm(columns, globalState);
-			} while (orderingTerm.contains("ASC") || orderingTerm.contains("DESC"));
-			// TODO investigate
-			sb.append(orderingTerm);
-		}
-	}
-
-	private enum FrameSpec {
-		BETWEEN, UNBOUNDED_PRECEDING, CURRENT_ROW
 	}
 
 
