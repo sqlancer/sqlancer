@@ -10,6 +10,9 @@ public class MainOptions {
 
 	@Parameter(names = { "--num_tries" }, description = "Specifies after how many found errors to stop testing")
 	private int totalNumberTries = 100;
+	
+	@Parameter(names = { "--max_expression_depth" }, description = "Specifies the maximum depth of randomly-generated expressions")
+	private int maxExpressionDepth = 3;
 
 	@Parameter(names = "--log-each-select", description = "Logs every statement issued")
 	private boolean logEachSelect = true;
@@ -17,6 +20,10 @@ public class MainOptions {
 	@Parameter(names = "--sqliteOptions")
 	private String sqliteOptions;
 
+	public int getMaxExpressionDepth() {
+		return maxExpressionDepth;
+	}
+	
 	public int getTotalNumberTries() {
 		return totalNumberTries;
 	}

@@ -110,7 +110,7 @@ public class MySQLProvider implements DatabaseProvider {
 				break;
 			case RESET:
 				// affects the global state, so do not execute
-				nrPerformed = options.getTotalNumberMysqlThreads() == 1 ? r.getInteger(0, 1) : 0;
+				nrPerformed = options.getNumberConcurrentThreads() == 1 ? r.getInteger(0, 1) : 0;
 				break;
 			case CHECKSUM:
 			case CHECK_TABLE:

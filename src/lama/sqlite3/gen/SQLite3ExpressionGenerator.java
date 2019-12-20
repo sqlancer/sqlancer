@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import lama.Randomly;
-import lama.sqlite3.SQLite3Provider;
 import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.ast.SQLite3Aggregate;
 import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
@@ -160,7 +159,7 @@ public class SQLite3ExpressionGenerator {
 	}
 
 	public SQLite3Expression getRandomExpression(int depth) {
-		if (depth >= SQLite3Provider.EXPRESSION_MAX_DEPTH) {
+		if (depth >= globalState.getMainOptions().getMaxExpressionDepth()) {
 			if (Randomly.getBoolean() || columns.isEmpty()) {
 				return getRandomLiteralValue(globalState);
 			} else {

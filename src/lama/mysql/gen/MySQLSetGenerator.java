@@ -19,7 +19,7 @@ public class MySQLSetGenerator {
 
 	public MySQLSetGenerator(Randomly r, MainOptions options) {
 		this.r = r;
-		this.isSingleThreaded = options.getTotalNumberMysqlThreads() == 1;
+		this.isSingleThreaded = options.getNumberConcurrentThreads() == 1;
 	}
 
 	public static Query set(Randomly r, MainOptions options) {

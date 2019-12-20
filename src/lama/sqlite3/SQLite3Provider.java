@@ -149,7 +149,6 @@ public class SQLite3Provider implements DatabaseProvider {
 
 	public static final int NR_INSERT_ROW_TRIES = 30;
 	private static final int NR_QUERIES_PER_TABLE = 100000;
-	public static final int EXPRESSION_MAX_DEPTH = 3;
 	public static boolean ALLOW_FLOATING_POINT_FP = true;
 	public static final boolean MUST_KNOW_RESULT = false;
 
@@ -162,6 +161,7 @@ public class SQLite3Provider implements DatabaseProvider {
 		private SQLite3Schema schema;
 		private SQLite3StateToReproduce state;
 		private Randomly r;
+		private MainOptions mainOptions;
 
 		public Connection getConnection() {
 			return con;
@@ -193,6 +193,14 @@ public class SQLite3Provider implements DatabaseProvider {
 
 		public void setRandomly(Randomly r) {
 			this.r = r;
+		}
+		
+		public void setMainOptions(MainOptions mainOptions) {
+			this.mainOptions = mainOptions;
+		}
+		
+		public MainOptions getMainOptions() {
+			return mainOptions;
 		}
 
 	}
