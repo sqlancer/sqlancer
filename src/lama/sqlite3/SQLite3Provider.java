@@ -148,7 +148,6 @@ public class SQLite3Provider implements DatabaseProvider {
 	}
 
 	public static final int NR_INSERT_ROW_TRIES = 30;
-	private static final int NR_QUERIES_PER_TABLE = 100000;
 	public static boolean ALLOW_FLOATING_POINT_FP = true;
 	public static final boolean MUST_KNOW_RESULT = false;
 
@@ -214,9 +213,9 @@ public class SQLite3Provider implements DatabaseProvider {
 	@Override
 	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger, StateToReproduce state,
 			QueryManager manager, MainOptions options) throws SQLException {
-
 		this.databaseName = databaseName;
 		Randomly r = new Randomly(SQLite3SpecialStringGenerator::generate);
+		globalState.setMainOptions(options);
 		globalState.setRandomly(r);
 		SQLite3Schema newSchema = null;
 		this.state = (SQLite3StateToReproduce) state;
@@ -263,7 +262,7 @@ public class SQLite3Provider implements DatabaseProvider {
 			case ALTER:
 			case EXPLAIN:
 			case DROP_TABLE:
-				nrPerformed = r.getInteger(0, 0);
+				nrPerformed = r.getInteger(0, 2);
 				break;
 			case VACUUM:
 			case CHECK_RTREE_TABLE:
@@ -342,17 +341,10 @@ public class SQLite3Provider implements DatabaseProvider {
 		manager.execute(query);
 		newSchema = SQLite3Schema.fromConnection(con);
 
-		if (Randomly.getBoolean()) {
-			query = new QueryAdapter("PRAGMA integrity_check;");
-			manager.execute(query);
-		}
-
-		newSchema = SQLite3Schema.fromConnection(con);
-
 //		SQLite3PivotedQuerySynthesizer queryGenerator = new SQLite3PivotedQuerySynthesizer(con, r);
 		SQLite3MetamorphicQuerySynthesizer or = new SQLite3MetamorphicQuerySynthesizer(newSchema, r, con,
 				(SQLite3StateToReproduce) state, logger, options, globalState);
-		for (i = 0; i < NR_QUERIES_PER_TABLE; i++) {
+		for (i = 0; i < options.getNrQueries(); i++) {
 
 			try {
 //				if (Randomly.getBoolean()) {
