@@ -158,7 +158,7 @@ public class SQLite3CreateVirtualFTSTableGenerator {
 
 	private void getString() {
 		sb.append("'");
-		sb.append(r.getString().replace("'", "''"));
+		sb.append(r.getString().replace("'", "''").replace("\"", "\\\""));
 		sb.append("'");
 	}
 
