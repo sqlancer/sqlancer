@@ -16,7 +16,6 @@ public class SQLite3Errors {
 	public static void addExpectedExpressionErrors(List<String> errors) {
 		errors.add("FTS expression tree is too large");
 		errors.add("[SQLITE_ERROR] SQL error or missing database (integer overflow)");
-		errors.add("no such function: json");
 		errors.add("second argument to likelihood() must be a constant between 0.0 and 1.0");
 		errors.add("ORDER BY term out of range");
 		errors.add("GROUP BY term out of range");
@@ -37,6 +36,9 @@ public class SQLite3Errors {
 		errors.add("frame ending offset must be a non-negative integer");
 		errors.add("frame ending offset must be a non-negative number");
 		errors.add("argument of ntile must be a positive integer");
+		
+		errors.add("malformed JSON");
+		errors.add("JSON cannot hold BLOB values");
 	}
 	
 	public static void addMatchQueryErrors(List<String> errors) {

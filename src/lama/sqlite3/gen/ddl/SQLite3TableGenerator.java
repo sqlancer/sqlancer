@@ -48,12 +48,13 @@ public class SQLite3TableGenerator {
 		SQLite3TableGenerator sqLite3TableGenerator = new SQLite3TableGenerator(tableName, globalState);
 		sqLite3TableGenerator.start();
 		List<String> errors = new ArrayList<>();
-		errors.add("no such function");
 		SQLite3Errors.addTableManipulationErrors(errors);
 		errors.add("second argument to likelihood() must be a constant between 0.0 and 1.0");
 		errors.add("non-deterministic functions prohibited in generated columns");
 		errors.add("subqueries prohibited in generated columns");
 		errors.add("parser stack overflow");
+		errors.add("malformed JSON");
+		errors.add("JSON cannot hold BLOB values");
 		return new QueryAdapter(sqLite3TableGenerator.sb.toString(), errors);
 	}
 

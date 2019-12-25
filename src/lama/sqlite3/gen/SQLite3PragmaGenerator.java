@@ -141,6 +141,8 @@ public class SQLite3PragmaGenerator {
 			}
 			break;
 		case INTEGRITY_CHECK:
+			errors.add("malformed JSON");
+			errors.add("JSON cannot hold BLOB values");
 			if (Randomly.getBoolean()) {
 				createPragma("integrity_check", () -> null);
 			} else {

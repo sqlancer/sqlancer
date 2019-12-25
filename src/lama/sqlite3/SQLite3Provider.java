@@ -380,7 +380,7 @@ public class SQLite3Provider implements DatabaseProvider {
 	private void checkTablesForGeneratedColumnLoops(Connection con, SQLite3Schema newSchema) throws SQLException {
 		for (Table table : newSchema.getDatabaseTables()) {
 			Query q = new QueryAdapter("SELECT * FROM " + table.getName(),
-					Arrays.asList("generated column loop", "integer overflow"));
+					Arrays.asList("generated column loop", "integer overflow", "malformed JSON", "JSON cannot hold BLOB values"));
 			if (!q.execute(con)) {
 				throw new IgnoreMeException();
 			}
