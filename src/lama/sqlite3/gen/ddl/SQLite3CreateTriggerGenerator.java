@@ -101,7 +101,7 @@ public class SQLite3CreateTriggerGenerator {
 		}
 		sb.append("END");
 
-		return new QueryAdapter(sb.toString(), Arrays.asList("parser stack overflow"));
+		return new QueryAdapter(sb.toString(), Arrays.asList("parser stack overflow", "unsupported frame specification"));
 	}
 
 	private static void appendTableNameAndWhen(SQLite3GlobalState globalState, StringBuilder sb, Table table) {

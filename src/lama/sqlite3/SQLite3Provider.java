@@ -147,7 +147,6 @@ public class SQLite3Provider implements DatabaseProvider {
 		}
 	}
 
-	public static final int NR_INSERT_ROW_TRIES = 30;
 	public static boolean ALLOW_FLOATING_POINT_FP = true;
 	public static final boolean MUST_KNOW_RESULT = false;
 
@@ -269,7 +268,7 @@ public class SQLite3Provider implements DatabaseProvider {
 				nrPerformed = r.getInteger(0, 3);
 				break;
 			case INSERT:
-				nrPerformed = r.getInteger(0, NR_INSERT_ROW_TRIES);
+				nrPerformed = r.getInteger(0, options.getMaxNumberInserts());
 				break;
 			case MANIPULATE_STAT_TABLE:
 				nrPerformed = r.getInteger(0, 5);
