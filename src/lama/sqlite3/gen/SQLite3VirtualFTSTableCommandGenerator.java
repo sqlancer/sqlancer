@@ -3,7 +3,6 @@ package lama.sqlite3.gen;
 import java.util.ArrayList;
 import java.util.List;
 
-import lama.IgnoreMeException;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
@@ -61,9 +60,6 @@ public class SQLite3VirtualFTSTableCommandGenerator {
 			}
 			break;
 		case INTEGRITYCHECK:
-			if (true) {
-				throw new IgnoreMeException();
-			}
 			sb.append(String.format("INSERT INTO %s(%s) VALUES('integrity-check');", vTable.getName(), vTable.getName()));
 			break;
 		case MERGE:
