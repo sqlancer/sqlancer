@@ -1,5 +1,6 @@
 package lama;
 
+import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.Parameter;
 
 public class MainOptions {
@@ -27,6 +28,9 @@ public class MainOptions {
 
 	@Parameter(names = "--sqliteOptions")
 	private String sqliteOptions;
+
+	@Parameter(names = "--dbms", converter = DBMSConverter.class, required = true)
+	private DBMS dbms;
 
 	public int getMaxExpressionDepth() {
 		return maxExpressionDepth;
@@ -58,6 +62,21 @@ public class MainOptions {
 
 	public int getMaxNumberInserts() {
 		return maxNumberInserts;
+	}
+
+	public static enum DBMS {
+		MariaDB, SQLite3, MySQL, PostgreSQL, TDEngine
+	}
+
+	public class DBMSConverter implements IStringConverter<DBMS> {
+		@Override
+		public DBMS convert(String value) {
+			return DBMS.valueOf(value);
+		}
+	}
+
+	public DBMS getDbms() {
+		return dbms;
 	}
 
 }

@@ -22,7 +22,11 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.beust.jcommander.JCommander;
 
+import lama.mariadb.MariaDBProvider;
+import lama.mysql.MySQLProvider;
+import lama.postgres.PostgresProvider;
 import lama.sqlite3.SQLite3Provider;
+import lama.tdengine.TDEngineProvider;
 
 public class Main {
 
@@ -300,7 +304,6 @@ public class Main {
 
 		for (int i = 0; i < options.getTotalNumberTries(); i++) {
 			final String databaseName = "lama" + i;
-			final int index = i;
 
 			executor.execute(new Runnable() {
 
@@ -310,12 +313,23 @@ public class Main {
 
 				@Override
 				public void run() {
-//					if (index % options.getNumberConcurrentThreads() >= options.getTotalNumberMysqlThreads()) {
-//						provider = new SQLite3Provider();
-//					} else {
-//						provider = new MySQLProvider();
-//					}
-					provider = new SQLite3Provider();
+					switch (options.getDbms()) {
+					case MariaDB:
+						provider = new MariaDBProvider();
+						break;
+					case MySQL:
+						provider = new MySQLProvider();
+						break;
+					case PostgreSQL:
+						provider = new PostgresProvider();
+						break;
+					case SQLite3:
+						provider = new SQLite3Provider();
+						break;
+					case TDEngine:
+						provider = new TDEngineProvider();
+						break;
+					}
 					runThread(databaseName);
 				}
 
