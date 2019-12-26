@@ -55,7 +55,7 @@ public class PostgresProvider implements DatabaseProvider {
 	public static final boolean IS_POSTGRES_TWELVE = true;
 
 	private static final int NR_QUERIES_PER_TABLE = 100000;
-	public static final boolean GENERATE_ONLY_KNOWN = false;
+	public static boolean GENERATE_ONLY_KNOWN = false;
 
 
 	private List<String> collationNames;

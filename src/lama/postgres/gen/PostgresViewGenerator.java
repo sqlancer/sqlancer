@@ -53,15 +53,15 @@ public class PostgresViewGenerator {
 			sb.append(SQLite3Common.createColumnName(i));
 		}
 		sb.append(")");
-		if (Randomly.getBoolean() && false) {
-			sb.append(" WITH(");
-			if (Randomly.getBoolean()) {
-				sb.append(String.format("security_barrier(%s)", Randomly.getBoolean()));
-			} else {
-				sb.append(String.format("check_option(%s)", Randomly.fromOptions("local1", "cascaded")));
-			}
-			sb.append(")");
-		}
+//		if (Randomly.getBoolean() && false) {
+//			sb.append(" WITH(");
+//			if (Randomly.getBoolean()) {
+//				sb.append(String.format("security_barrier(%s)", Randomly.getBoolean()));
+//			} else {
+//				sb.append(String.format("check_option(%s)", Randomly.fromOptions("local1", "cascaded")));
+//			}
+//			sb.append(")");
+//		}
 		sb.append(" AS (");
 		PostgresSelect select = PostgresRandomQueryGenerator.createRandomQuery(nrColumns, newSchema, r);
 		sb.append(PostgresVisitor.asString(select));

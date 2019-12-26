@@ -148,7 +148,7 @@ public class SQLite3Provider implements DatabaseProvider {
 	}
 
 	public static boolean ALLOW_FLOATING_POINT_FP = true;
-	public static final boolean MUST_KNOW_RESULT = false;
+	public static boolean MUST_KNOW_RESULT = false;
 
 	private SQLite3StateToReproduce state;
 	private String databaseName;

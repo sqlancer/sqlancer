@@ -6,7 +6,6 @@ import lama.IgnoreMeException;
 import lama.Randomly;
 import lama.mysql.MySQLSchema.MySQLDataType;
 import lama.mysql.ast.MySQLCastOperation.CastType;
-import lama.mysql.ast.MySQLConstant.MySQLTextConstant;
 
 public abstract class MySQLConstant extends MySQLExpression {
 

@@ -3,7 +3,6 @@ package lama.mysql.ast;
 import java.util.function.BinaryOperator;
 import java.util.stream.Stream;
 
-import lama.IgnoreMeException;
 import lama.Randomly;
 import lama.mysql.MySQLSchema.MySQLDataType;
 import lama.mysql.ast.MySQLCastOperation.CastType;

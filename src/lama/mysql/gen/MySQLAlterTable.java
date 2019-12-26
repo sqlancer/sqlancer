@@ -14,14 +14,12 @@ import lama.mysql.MySQLSchema.MySQLTable;
 public class MySQLAlterTable {
 
 	private final MySQLSchema schema;
-	private final Randomly r;
 	private final StringBuilder sb = new StringBuilder();
 	boolean couldAffectSchema;
 	private List<Action> selectedActions;
 
 	public MySQLAlterTable(MySQLSchema newSchema, Randomly r) {
 		this.schema = newSchema;
-		this.r = r;
 	}
 
 	public static Query create(MySQLSchema newSchema, Randomly r) {

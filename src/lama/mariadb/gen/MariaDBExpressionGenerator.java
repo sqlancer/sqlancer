@@ -27,8 +27,6 @@ public class MariaDBExpressionGenerator {
 
 	private final Randomly r;
 	private List<MariaDBColumn> columns = new ArrayList<>();
-	private Connection con;
-	private MariaDBStateToReproduce state;
 
 	public MariaDBExpressionGenerator(Randomly r) {
 		this.r = r;
@@ -69,12 +67,10 @@ public class MariaDBExpressionGenerator {
 	}
 
 	public MariaDBExpressionGenerator setCon(Connection con) {
-		this.con = con;
 		return this;
 	}
 
 	public MariaDBExpressionGenerator setState(MariaDBStateToReproduce state) {
-		this.state = state;
 		return this;
 	}
 	

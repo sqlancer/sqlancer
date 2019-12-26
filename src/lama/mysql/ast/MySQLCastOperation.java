@@ -1,7 +1,5 @@
 package lama.mysql.ast;
 
-import lama.Randomly;
-
 public class MySQLCastOperation extends MySQLExpression {
 
 	private final MySQLExpression expr;

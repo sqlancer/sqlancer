@@ -1,9 +1,6 @@
 package lama.mysql.ast;
 
-import lama.IgnoreMeException;
 import lama.Randomly;
-import lama.mysql.ast.MySQLCastOperation.CastType;
-import lama.mysql.ast.MySQLConstant.MySQLTextConstant;
 
 public class MySQLBinaryLogicalOperation extends MySQLExpression {
 

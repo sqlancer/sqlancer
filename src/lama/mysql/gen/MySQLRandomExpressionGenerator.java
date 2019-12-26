@@ -12,15 +12,11 @@ import lama.mysql.ast.MySQLBinaryComparisonOperation;
 import lama.mysql.ast.MySQLBinaryComparisonOperation.BinaryComparisonOperator;
 import lama.mysql.ast.MySQLBinaryLogicalOperation;
 import lama.mysql.ast.MySQLBinaryLogicalOperation.MySQLBinaryLogicalOperator;
-import lama.mysql.ast.MySQLBinaryOperation;
-import lama.mysql.ast.MySQLBinaryOperation.MySQLBinaryOperator;
 import lama.mysql.ast.MySQLCastOperation;
-import lama.mysql.ast.MySQLCastOperation.CastType;
 import lama.mysql.ast.MySQLColumnValue;
 import lama.mysql.ast.MySQLComputableFunction;
 import lama.mysql.ast.MySQLComputableFunction.MySQLFunction;
 import lama.mysql.ast.MySQLConstant;
-import lama.mysql.ast.MySQLConstant.MySQLTextConstant;
 import lama.mysql.ast.MySQLExists;
 import lama.mysql.ast.MySQLExpression;
 import lama.mysql.ast.MySQLInOperation;
@@ -28,7 +24,6 @@ import lama.mysql.ast.MySQLStringExpression;
 import lama.mysql.ast.MySQLUnaryPostfixOperator;
 import lama.mysql.ast.MySQLUnaryPrefixOperation;
 import lama.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
-import lama.postgres.PostgresSchema.PostgresColumn;
 
 public class MySQLRandomExpressionGenerator {
 
