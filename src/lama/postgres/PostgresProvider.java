@@ -95,17 +95,17 @@ public class PostgresProvider implements DatabaseProvider {
 			logger.writeCurrent(state);
 		}
 		globalState = new PostgresGlobalState(con);
-		PostgresSchema newSchema = PostgresSchema.fromConnection(con, databaseName);
-		while (newSchema.getDatabaseTables().size() < 2) {
+		globalState.setSchema(PostgresSchema.fromConnection(con, databaseName));
+		while (globalState.getSchema().getDatabaseTables().size() < 2) {
 			try {
-				String tableName = SQLite3Common.createTableName(newSchema.getDatabaseTables().size());
-				Query createTable = PostgresTableGenerator.generate(tableName, r, newSchema, GENERATE_ONLY_KNOWN,
+				String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
+				Query createTable = PostgresTableGenerator.generate(tableName, r, globalState.getSchema(), GENERATE_ONLY_KNOWN,
 						globalState);
 				if (options.logEachSelect()) {
 					logger.writeCurrent(createTable.getQueryString());
 				}
 				manager.execute(createTable);
-				newSchema = PostgresSchema.fromConnection(con, databaseName);
+				globalState.setSchema(PostgresSchema.fromConnection(con, databaseName));
 			} catch (IgnoreMeException e) {
 
 			}
@@ -199,13 +199,13 @@ public class PostgresProvider implements DatabaseProvider {
 				try {
 					switch (nextAction) {
 					case ANALYZE:
-						query = PostgresAnalyzeGenerator.create(newSchema.getRandomTable());
+						query = PostgresAnalyzeGenerator.create(globalState.getSchema().getRandomTable());
 						break;
 					case CLUSTER:
-						query = PostgresClusterGenerator.create(newSchema);
+						query = PostgresClusterGenerator.create(globalState.getSchema());
 					case ALTER_TABLE:
-						query = PostgresAlterTableGenerator.create(newSchema.getRandomTable(t -> !t.isView()), r,
-								newSchema, GENERATE_ONLY_KNOWN, globalState.getOpClasses(), globalState.getOperators());
+						query = PostgresAlterTableGenerator.create(globalState.getSchema().getRandomTable(t -> !t.isView()), r,
+								globalState.getSchema(), GENERATE_ONLY_KNOWN, globalState.getOpClasses(), globalState.getOperators());
 						break;
 					case SET_CONSTRAINTS:
 						StringBuilder sb = new StringBuilder();
@@ -254,49 +254,49 @@ public class PostgresProvider implements DatabaseProvider {
 						query = new QueryAdapter("RESET ALL");
 						break;
 					case COMMENT_ON:
-						query = PostgresCommentGenerator.generate(newSchema, r);
+						query = PostgresCommentGenerator.generate(globalState.getSchema(), r);
 						break;
 					case CREATE_INDEX:
-						query = PostgresIndexGenerator.generate(newSchema, r, globalState);
+						query = PostgresIndexGenerator.generate(globalState.getSchema(), r, globalState);
 						break;
 					case DISCARD:
-						query = PostgresDiscardGenerator.create(newSchema);
+						query = PostgresDiscardGenerator.create(globalState.getSchema());
 						break;
 					case CREATE_VIEW:
-						query = PostgresViewGenerator.create(newSchema, r);
+						query = PostgresViewGenerator.create(globalState.getSchema(), r);
 						break;
 					case DELETE:
-						query = PostgresDeleteGenerator.create(newSchema.getRandomTable(t -> !t.isView()), r);
+						query = PostgresDeleteGenerator.create(globalState.getSchema().getRandomTable(t -> !t.isView()), r);
 						break;
 					case DROP_INDEX:
-						query = PostgresDropIndex.create(newSchema.getRandomTable().getIndexes());
+						query = PostgresDropIndex.create(globalState.getSchema().getRandomTable().getIndexes());
 						break;
 					case UPDATE:
-						query = PostgresUpdateGenerator.create(newSchema.getRandomTable(t -> t.isInsertable()), r);
+						query = PostgresUpdateGenerator.create(globalState.getSchema().getRandomTable(t -> t.isInsertable()), r);
 						break;
 					case VACUUM:
-						query = PostgresVacuumGenerator.create(newSchema.getRandomTable());
+						query = PostgresVacuumGenerator.create(globalState.getSchema().getRandomTable());
 						break;
 					case REINDEX:
-						query = PostgresReindexGenerator.create(newSchema);
+						query = PostgresReindexGenerator.create(globalState.getSchema());
 						break;
 					case TRUNCATE:
-						query = PostgresTruncateGenerator.create(newSchema);
+						query = PostgresTruncateGenerator.create(globalState.getSchema());
 						break;
 					case SET:
 						query = PostgresSetGenerator.create(r);
 						break;
 					case INSERT:
-						query = PostgresInsertGenerator.insert(newSchema.getRandomTable(t -> t.isInsertable()), r);
+						query = PostgresInsertGenerator.insert(globalState.getSchema().getRandomTable(t -> t.isInsertable()), r);
 						break;
 					case CREATE_STATISTICS:
-						query = PostgresStatisticsGenerator.insert(newSchema, r);
+						query = PostgresStatisticsGenerator.insert(globalState.getSchema(), r);
 						break;
 					case DROP_STATISTICS:
-						query = PostgresStatisticsGenerator.remove(newSchema);
+						query = PostgresStatisticsGenerator.remove(globalState.getSchema());
 						break;
 					case CREATE_SEQUENCE:
-						query = PostgresSequenceGenerator.createSequence(r, newSchema);
+						query = PostgresSequenceGenerator.createSequence(r, globalState.getSchema());
 						break;
 					default:
 						throw new AssertionError(nextAction);
@@ -310,12 +310,12 @@ public class PostgresProvider implements DatabaseProvider {
 					}
 					successful = manager.execute(query);
 					if (query.couldAffectSchema()) {
-						newSchema = PostgresSchema.fromConnection(con, databaseName);
+						globalState.setSchema(PostgresSchema.fromConnection(con, databaseName));
 					}
 				} catch (Throwable t) {
 					if (t.getMessage().contains("current transaction is aborted")) {
 						manager.execute(new QueryAdapter("ABORT"));
-						newSchema = PostgresSchema.fromConnection(con, databaseName);
+						globalState.setSchema(PostgresSchema.fromConnection(con, databaseName));
 					} else {
 						System.err.println(query.getQueryString());
 						throw t;
@@ -325,12 +325,11 @@ public class PostgresProvider implements DatabaseProvider {
 			total--;
 		}
 		manager.execute(new QueryAdapter("COMMIT"));
-		newSchema = PostgresSchema.fromConnection(con, databaseName);
+		globalState.setSchema(PostgresSchema.fromConnection(con, databaseName));
 
-		newSchema = PostgresSchema.fromConnection(con, databaseName);
 		manager.execute(new QueryAdapter("SET SESSION statement_timeout = 5000;\n"));
 
-		PostgresMetamorphicOracleGenerator or = new PostgresMetamorphicOracleGenerator(newSchema, r, con,
+		PostgresMetamorphicOracleGenerator or = new PostgresMetamorphicOracleGenerator(globalState.getSchema(), r, con,
 				(PostgresStateToReproduce) state, logger, options, manager, globalState);
 		for (int i = 0; i < options.getNrQueries(); i++) {
 			try {

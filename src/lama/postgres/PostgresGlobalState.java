@@ -15,6 +15,7 @@ public class PostgresGlobalState {
 	private final List<String> collates;
 	private final List<String> opClasses;
 	private final Connection con;
+	private PostgresSchema schema;
 	
 	public PostgresGlobalState(Connection con) {
 		this.con = con;
@@ -25,6 +26,14 @@ public class PostgresGlobalState {
 		} catch (SQLException e) {
 			throw new AssertionError(e);
 		}
+	}
+	
+	public void setSchema(PostgresSchema schema) {
+		this.schema = schema;
+	}
+	
+	public PostgresSchema getSchema() {
+		return schema;
 	}
 	
 	public Connection getCon() {
