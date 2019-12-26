@@ -88,47 +88,6 @@ public class MariaDBProvider implements DatabaseProvider {
 			case INSERT:
 				nrPerformed = r.getInteger(0, options.getMaxNumberInserts());
 				break;
-//			case SHOW_TABLES:
-//				nrPerformed = r.getInteger(0, 1);
-//				break;
-//			case CREATE_TABLE:
-//				nrPerformed = r.getInteger(0, 1);
-//				break;
-//			case REPAIR:
-//				nrPerformed = r.getInteger(0, 1);
-//				break;
-//			case SET_VARIABLE:
-//				nrPerformed = r.getInteger(0, 5);
-//				break;
-//			case CREATE_INDEX:
-//				nrPerformed = r.getInteger(0, 5);
-//				break;
-//			case FLUSH:
-//				nrPerformed = Randomly.getBooleanWithSmallProbability() ? r.getInteger(0, 1) : 0;
-//				break;
-//			case OPTIMIZE:
-//				// seems to yield low CPU utilization
-//				nrPerformed = Randomly.getBooleanWithSmallProbability() ? r.getInteger(0, 1) : 0;
-//				break;
-//			case RESET:
-//				// affects the global state, so do not execute
-//				nrPerformed = options.getTotalNumberMariaDBThreads() == 1 ? r.getInteger(0, 1) : 0;
-//				break;
-//			case CHECKSUM:
-//			case CHECK_TABLE:
-//			case ANALYZE_TABLE:
-//				nrPerformed = r.getInteger(0, 2);
-//			case ALTER_TABLE:
-//				nrPerformed = r.getInteger(0, 5);
-//				break;
-//			case TRUNCATE_TABLE:
-//				nrPerformed = r.getInteger(0, 2);
-//				break;
-//			case SELECT_INFO:
-//				nrPerformed = r.getInteger(0, 10);
-//			case DELETE:
-//				nrPerformed = r.getInteger(0, 10);
-//				break;
 			default:
 				throw new AssertionError(action);
 			}
@@ -138,8 +97,6 @@ public class MariaDBProvider implements DatabaseProvider {
 			nrRemaining[action.ordinal()] = nrPerformed;
 			total += nrPerformed;
 		}
-//		CreateIndexGenerator createIndexGenerator = new CreateIndexGenerator(newSchema, r);
-//
 		while (total != 0) {
 			Action nextAction = null;
 			int selection = r.getInteger(0, total);

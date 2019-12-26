@@ -56,8 +56,7 @@ public class PostgresProvider implements DatabaseProvider {
 
 	public static boolean GENERATE_ONLY_KNOWN = false;
 
-
-	private List<String> collationNames;
+	private PostgresGlobalState globalState;
 
 	private enum Action {
 		ANALYZE, ALTER_TABLE, CLUSTER, COMMIT, CREATE_STATISTICS, DROP_STATISTICS, DELETE, DISCARD, DROP_INDEX, INSERT,
@@ -72,9 +71,7 @@ public class PostgresProvider implements DatabaseProvider {
 		if (options.logEachSelect()) {
 			logger.writeCurrent(state);
 		}
-		List<String> opClasses = getOpclasses(con);
-		List<String> operators = getOperators(con);
-		PostgresGlobalState globalState = new PostgresGlobalState(opClasses, operators, collationNames);
+		globalState = new PostgresGlobalState(con);
 		PostgresSchema newSchema = PostgresSchema.fromConnection(con, databaseName);
 		while (newSchema.getDatabaseTables().size() < 2) {
 			try {
@@ -185,7 +182,7 @@ public class PostgresProvider implements DatabaseProvider {
 						query = PostgresClusterGenerator.create(newSchema);
 					case ALTER_TABLE:
 						query = PostgresAlterTableGenerator.create(newSchema.getRandomTable(t -> !t.isView()), r,
-								newSchema, GENERATE_ONLY_KNOWN, opClasses, operators);
+								newSchema, GENERATE_ONLY_KNOWN, globalState.getOpClasses(), globalState.getOperators());
 						break;
 					case SET_CONSTRAINTS:
 						StringBuilder sb = new StringBuilder();
@@ -322,44 +319,9 @@ public class PostgresProvider implements DatabaseProvider {
 		}
 
 	}
+	
 
-	private List<String> getCollnames(Connection con) throws SQLException {
-		List<String> opClasses = new ArrayList<>();
-		try (Statement s = con.createStatement()) {
-			try (ResultSet rs = s
-					.executeQuery("SELECT collname FROM pg_collation WHERE collname LIKE '%utf8' or collname = 'C';")) {
-				while (rs.next()) {
-					opClasses.add(rs.getString(1));
-				}
-			}
-		}
-		return opClasses;
-	}
-
-	private List<String> getOpclasses(Connection con) throws SQLException {
-		List<String> opClasses = new ArrayList<>();
-		try (Statement s = con.createStatement()) {
-			try (ResultSet rs = s.executeQuery("select opcname FROM pg_opclass;")) {
-				while (rs.next()) {
-					opClasses.add(rs.getString(1));
-				}
-			}
-		}
-		return opClasses;
-	}
-
-	private List<String> getOperators(Connection con) throws SQLException {
-		List<String> opClasses = new ArrayList<>();
-		try (Statement s = con.createStatement()) {
-			try (ResultSet rs = s.executeQuery("SELECT oprname FROM pg_operator;")) {
-				while (rs.next()) {
-					opClasses.add(rs.getString(1));
-				}
-			}
-		}
-		return opClasses;
-	}
-
+	
 	public static int getNrRows(Connection con, PostgresTable table) throws SQLException {
 		try (Statement s = con.createStatement()) {
 			try (ResultSet query = s.executeQuery("SELECT COUNT(*) FROM " + table.getName())) {
@@ -373,10 +335,9 @@ public class PostgresProvider implements DatabaseProvider {
 	public Connection createDatabase(String databaseName, StateToReproduce state) throws SQLException {
 		String url = "jdbc:postgresql://localhost:5432/test";
 		Connection con = DriverManager.getConnection(url, "lama", "password");
-		collationNames = getCollnames(con);
 		state.statements.add(new QueryAdapter("\\c test;"));
 		state.statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName));
-		String createDatabaseCommand = getCreateDatabaseCommand(databaseName);
+		String createDatabaseCommand = getCreateDatabaseCommand(databaseName, con);
 		state.statements.add(new QueryAdapter(createDatabaseCommand));
 		state.statements.add(new QueryAdapter("\\c " + databaseName));
 		try (Statement s = con.createStatement()) {
@@ -399,7 +360,7 @@ public class PostgresProvider implements DatabaseProvider {
 		return con;
 	}
 
-	private String getCreateDatabaseCommand(String databaseName) {
+	private String getCreateDatabaseCommand(String databaseName, Connection con) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("CREATE DATABASE " + databaseName + " ");
 		if (Randomly.getBoolean()) {
@@ -410,7 +371,7 @@ public class PostgresProvider implements DatabaseProvider {
 			}
 			for (String lc : Arrays.asList("LC_COLLATE", "LC_CTYPE")) {
 				if (Randomly.getBoolean()) {
-					sb.append(String.format(" %s = '%s'", lc, Randomly.fromList(collationNames)));
+					sb.append(String.format(" %s = '%s'", lc, Randomly.fromList(new PostgresGlobalState(con).getCollates())));
 				}
 			}
 			sb.append(" TEMPLATE template0");
