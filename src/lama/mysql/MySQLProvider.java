@@ -42,8 +42,6 @@ import lama.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
 
 public class MySQLProvider implements DatabaseProvider {
 
-	private static final int NR_QUERIES_PER_TABLE = 10000;
-	private static final int MAX_INSERT_ROW_TRIES = 30;
 	private final Randomly r = new Randomly();
 	private QueryManager manager;
 	private String databaseName;
@@ -90,7 +88,7 @@ public class MySQLProvider implements DatabaseProvider {
 				nrPerformed = r.getInteger(0, 1);
 				break;
 			case INSERT:
-				nrPerformed = MAX_INSERT_ROW_TRIES;
+				nrPerformed = r.getInteger(0, options.getMaxNumberInserts());
 				break;
 			case REPAIR:
 				nrPerformed = r.getInteger(0, 1);
@@ -256,7 +254,7 @@ public class MySQLProvider implements DatabaseProvider {
 		newSchema = MySQLSchema.fromConnection(con, databaseName);
 
 		MySQLQueryGenerator queryGenerator = new MySQLQueryGenerator(manager, r, con, databaseName);
-		for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
+		for (int i = 0; i < options.getNrQueries(); i++) {
 			try {
 				queryGenerator.generateAndCheckQuery((MySQLStateToReproduce) state, logger, options);
 			} catch (IgnoreMeException e) {
@@ -269,7 +267,7 @@ public class MySQLProvider implements DatabaseProvider {
 
 	private boolean ensureTableHasRows(Connection con, MySQLTable randomTable, Randomly r) throws SQLException {
 		int nrRows;
-		int counter = MAX_INSERT_ROW_TRIES;
+		int counter = 1;
 		do {
 			try {
 				Query q = MySQLRowInserter.insertRow(randomTable, r);

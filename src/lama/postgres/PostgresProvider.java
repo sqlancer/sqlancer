@@ -54,7 +54,6 @@ public class PostgresProvider implements DatabaseProvider {
 
 	public static final boolean IS_POSTGRES_TWELVE = true;
 
-	private static final int NR_QUERIES_PER_TABLE = 100000;
 	public static boolean GENERATE_ONLY_KNOWN = false;
 
 
@@ -313,7 +312,7 @@ public class PostgresProvider implements DatabaseProvider {
 
 		PostgresMetamorphicOracleGenerator or = new PostgresMetamorphicOracleGenerator(newSchema, r, con,
 				(PostgresStateToReproduce) state, logger, options, manager, globalState);
-		for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
+		for (int i = 0; i < options.getNrQueries(); i++) {
 			try {
 				or.generateAndCheck();
 			} catch (IgnoreMeException e) {

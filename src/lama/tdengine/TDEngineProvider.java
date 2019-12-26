@@ -68,8 +68,6 @@ public class TDEngineProvider implements DatabaseProvider {
 		public abstract Query getQuery(TDEngineSchema newSchema, Connection con, Randomly r) throws SQLException;
 	}
 
-	public static final int NR_INSERT_ROW_TRIES = 10000;
-	private static final int NR_QUERIES_PER_TABLE = 50000;
 	public static final int EXPRESSION_MAX_DEPTH = 0;
 	private TDEngineStateToReproduce state;
 	private String databaseName;
@@ -102,7 +100,7 @@ public class TDEngineProvider implements DatabaseProvider {
 			int nrPerformed = 0;
 			switch (action) {
 			case INSERT:
-				nrPerformed = r.getInteger(0, 1000);
+				nrPerformed = r.getInteger(0, options.getMaxNumberInserts());
 				break;
 			case DROP_TABLE:
 				nrPerformed = r.getInteger(0, 3);
@@ -150,7 +148,7 @@ public class TDEngineProvider implements DatabaseProvider {
 		if (options.logEachSelect()) {
 			logger.writeCurrent(state);
 		}
-		for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
+		for (int i = 0; i < options.getNrQueries(); i++) {
 			queryGenerator.generateAndCheckQuery(this.state, logger, options);
 			manager.incrementSelectQueryCount();
 			if (options.logEachSelect()) {

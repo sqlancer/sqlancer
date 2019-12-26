@@ -29,8 +29,6 @@ import lama.sqlite3.gen.SQLite3Common;
 
 public class MariaDBProvider implements DatabaseProvider {
 
-	private static final int NR_QUERIES_PER_TABLE = 10000;
-	private static final int MAX_INSERT_ROW_TRIES = 30;
 	public static final int MAX_EXPRESSION_DEPTH = 3;
 	private final Randomly r = new Randomly();
 	private String databaseName;
@@ -88,7 +86,7 @@ public class MariaDBProvider implements DatabaseProvider {
 				nrPerformed = 20;
 				break;
 			case INSERT:
-				nrPerformed = r.getInteger(0, MAX_INSERT_ROW_TRIES);
+				nrPerformed = r.getInteger(0, options.getMaxNumberInserts());
 				break;
 //			case SHOW_TABLES:
 //				nrPerformed = r.getInteger(0, 1);
@@ -283,7 +281,7 @@ public class MariaDBProvider implements DatabaseProvider {
 		newSchema = MariaDBSchema.fromConnection(con, databaseName);
 //
 		MariaDBMetamorphicQuerySynthesizer queryGenerator = new MariaDBMetamorphicQuerySynthesizer(newSchema, r, con, (MariaDBStateToReproduce) state);
-		for (int i = 0; i < NR_QUERIES_PER_TABLE; i++) {
+		for (int i = 0; i < options.getNrQueries(); i++) {
 			try {
 				queryGenerator.generateAndCheck();
 			} catch (IgnoreMeException e) {

@@ -52,6 +52,7 @@ public class PostgresTableGenerator {
 		errors.add("does not exist for access method");
 		errors.add("does not accept data type");
 		errors.add("but default expression is of type text");
+		errors.add("has pseudo-type unknown");
 		PostgresCommon.addCommonExpressionErrors(errors);
 		PostgresCommon.addCommonTableErrors(errors);
 	}
