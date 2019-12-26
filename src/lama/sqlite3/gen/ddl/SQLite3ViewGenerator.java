@@ -43,7 +43,7 @@ public class SQLite3ViewGenerator {
 		if (Randomly.getBoolean()) {
 			SQLite3PivotedQuerySynthesizer queryGen = new SQLite3PivotedQuerySynthesizer(globalState.getConnection(), globalState.getRandomly(), globalState);
 			try {
-				SQLite3SelectStatement q = queryGen.getQuery(globalState.getState());
+				SQLite3SelectStatement q = queryGen.getQuery(globalState);
 //			for (SQLite3Expression expr : q.getFetchColumns()) {
 //				if (expr.getAffinity() != null || expr.getImplicitCollateSequence() != null || expr.getExplicitCollateSequence() != null) {
 //					throw new IgnoreMeException();

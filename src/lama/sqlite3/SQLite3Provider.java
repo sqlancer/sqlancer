@@ -365,7 +365,7 @@ public class SQLite3Provider implements DatabaseProvider {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.gc();
+//		System.gc();
 	}
 
 	private void checkTablesForGeneratedColumnLoops(Connection con, SQLite3Schema newSchema) throws SQLException {

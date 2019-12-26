@@ -11,8 +11,8 @@ public class MainOptions {
 	@Parameter(names = { "--num_tries" }, description = "Specifies after how many found errors to stop testing")
 	private int totalNumberTries = 100;
 
-	@Parameter(names = { "--num_inserts" }, description = "Specifies how many INSERT statements should be issued")
-	private int maxNumberInserts = 100;
+	@Parameter(names = { "--max_num_inserts" }, description = "Specifies how many INSERT statements should be issued")
+	private int maxNumberInserts = 30;
 
 	@Parameter(names = {
 			"--max_expression_depth" }, description = "Specifies the maximum depth of randomly-generated expressions")

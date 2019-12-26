@@ -18,7 +18,6 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.StateToReproduce.SQLite3StateToReproduce;
-import lama.sqlite3.SQLite3Provider;
 import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.SQLite3ToStringVisitor;
 import lama.sqlite3.SQLite3Visitor;
@@ -59,6 +58,7 @@ public class SQLite3PivotedQuerySynthesizer {
 	private final List<String> errors = new ArrayList<>();
 	private List<SQLite3Expression> colExpressions;
 	private SQLite3GlobalState globalState;
+	private MainOptions options;
 
 	public SQLite3PivotedQuerySynthesizer(Connection con, Randomly r, SQLite3GlobalState globalState) throws SQLException {
 		this.database = con;
@@ -67,8 +67,9 @@ public class SQLite3PivotedQuerySynthesizer {
 		s = SQLite3Schema.fromConnection(database);
 	}
 
-	public void generateAndCheckQuery(SQLite3StateToReproduce state, StateLogger logger, MainOptions options)
+	public void generateAndCheckQuery(SQLite3GlobalState state, StateLogger logger, MainOptions options)
 			throws SQLException {
+		this.options = options;
 		Query query = getQueryThatContainsAtLeastOneRow(state);
 		if (options.logEachSelect()) {
 			logger.writeCurrent(query.getQueryString());
@@ -79,7 +80,7 @@ public class SQLite3PivotedQuerySynthesizer {
 		}
 	}
 
-	public Query getQueryThatContainsAtLeastOneRow(SQLite3StateToReproduce state) throws SQLException {
+	public Query getQueryThatContainsAtLeastOneRow(SQLite3GlobalState state) throws SQLException {
 		SQLite3SelectStatement selectStatement = getQuery(state);
 		SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
 		visitor.visit(selectStatement);
@@ -100,15 +101,15 @@ public class SQLite3PivotedQuerySynthesizer {
 		errors.add("GROUP BY term out of range");
 	}
 
-	public SQLite3SelectStatement getQuery(SQLite3StateToReproduce state) throws SQLException {
-		this.state = state;
+	public SQLite3SelectStatement getQuery(SQLite3GlobalState globalState) throws SQLException {
+		this.state = globalState.getState();
 		if (s.getDatabaseTables().size() == 0) {
 			throw new IgnoreMeException();
 		}
 		Tables randomFromTables = s.getRandomTableNonEmptyTables();
 		List<Table> tables = randomFromTables.getTables();
 
-		state.queryTargetedTablesString = randomFromTables.tableNamesAsString();
+		globalState.getState().queryTargetedTablesString = randomFromTables.tableNamesAsString();
 		SQLite3SelectStatement selectStatement = new SQLite3SelectStatement();
 		selectStatement.setSelectType(Randomly.fromOptions(SQLite3SelectStatement.SelectType.values()));
 		List<Column> columns = randomFromTables.getColumns();
@@ -117,7 +118,7 @@ public class SQLite3PivotedQuerySynthesizer {
 				columns.add(t.getRowid());
 			}
 		}
-		rw = randomFromTables.getRandomRowValue(database, state);
+		rw = randomFromTables.getRandomRowValue(database, globalState.getState());
 
 		List<Join> joinStatements = new ArrayList<>();
 		for (int i = 1; i < tables.size(); i++) {
@@ -176,14 +177,14 @@ public class SQLite3PivotedQuerySynthesizer {
 			colExpressions.add(windowExpr);
 		}
 		selectStatement.setFetchColumns(colExpressions);
-		state.queryTargetedColumnsString = fetchColumns.stream().map(c -> c.getFullQualifiedName())
+		globalState.getState().queryTargetedColumnsString = fetchColumns.stream().map(c -> c.getFullQualifiedName())
 				.collect(Collectors.joining(", "));
 		SQLite3Expression whereClause = generateWhereClauseThatContainsRowValue(columns, rw);
 		selectStatement.setWhereClause(whereClause);
-		state.whereClause = selectStatement;
+		globalState.getState().whereClause = selectStatement;
 		List<SQLite3Expression> groupByClause = generateGroupByClause(columns, rw, allTablesContainOneRow);
 		selectStatement.setGroupByClause(groupByClause);
-		SQLite3Expression limitClause = generateLimit((long) (Math.pow(SQLite3Provider.NR_INSERT_ROW_TRIES, joinStatements.size() + randomFromTables.getTables().size())));
+		SQLite3Expression limitClause = generateLimit((long) (Math.pow(globalState.getMainOptions().getMaxNumberInserts(), joinStatements.size() + randomFromTables.getTables().size())));
 		selectStatement.setLimitClause(limitClause);
 		if (limitClause != null) {
 			SQLite3Expression offsetClause = generateOffset();

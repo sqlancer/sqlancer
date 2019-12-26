@@ -56,8 +56,8 @@ public class SQLite3InsertGenerator {
 		errors.add("Data type mismatch (datatype mismatch)"); // trigger
 		errors.add("too many levels of trigger recursion");
 		errors.add("String or BLOB exceeds size limit");
-		errors.add("unknown function: json");
-		
+
+		errors.add("A table in the database is locked");
 		errors.add("cannot INSERT into generated column"); // TODO: filter out generated columns
 		SQLite3Errors.addInsertNowErrors(errors);
 		SQLite3Errors.addExpectedExpressionErrors(errors);
