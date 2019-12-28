@@ -253,8 +253,10 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		}
 		sb.append(" JOIN ");
 		sb.append(join.getTable().getName());
-		sb.append(" ON ");
-		visit(join.getOnClause());
+		if (join.getOnClause() != null) {
+			sb.append(" ON ");
+			visit(join.getOnClause());
+		}
 	}
 
 	public void visit(SQLite3OrderingTerm term) {

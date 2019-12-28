@@ -117,6 +117,15 @@ public abstract class SQLite3Expression {
 			this.onClause = onClause;
 			this.type = type;
 		}
+		
+		public Join(Table table, JoinType type) {
+			this.table = table;
+			if (type != JoinType.NATURAL) {
+				throw new AssertionError();
+			}
+			this.onClause = null;
+			this.type = type;
+		}
 
 		public Table getTable() {
 			return table;
