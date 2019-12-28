@@ -81,11 +81,11 @@ public class SQLite3Common {
 		return sb.toString();
 	}
 
-	public static String getIndexedClause() {
+	public static String getIndexedClause(String indexName) {
 		StringBuilder sb = new StringBuilder();
 		if (Randomly.getBoolean()) {
 			sb.append("INDEXED BY ");
-			sb.append(SQLite3Common.createIndexName(Randomly.smallNumber()));
+			sb.append(indexName);
 		} else {
 			sb.append("NOT INDEXED");
 		}

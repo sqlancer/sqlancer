@@ -31,6 +31,7 @@ import lama.sqlite3.ast.SQLite3WindowFunction;
 import lama.sqlite3.ast.SQLite3WindowFunctionExpression;
 import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecBetween;
 import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecTerm;
+import lama.sqlite3.gen.SQLite3Common;
 import lama.visitor.ToStringVisitor;
 
 public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> implements SQLite3Visitor {
@@ -126,10 +127,10 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 			}
 			sb.append(s.getFromList().get(i).getName());
 			// FIXME metamorphic
-//			if (Randomly.getBoolean()) {
-//				sb.append(" ");
-//				sb.append(SQLite3Common.getIndexedClause());
-//			}
+			if (Randomly.getBoolean()) {
+				sb.append(" ");
+				sb.append(SQLite3Common.getIndexedClause("i0"));
+			}
 		}
 		for (Join j : s.getJoinClauses()) {
 			visit(j);

@@ -68,8 +68,9 @@ public class SQLite3MetamorphicQuerySynthesizer {
 		errors.add("second argument to nth_value must be a positive integer");
 		errors.add("no such table");
 		errors.add("ON clause references tables to its right");
-//		errors.add("no such index"); // INDEXED BY 
-//		errors.add("no query solution"); // INDEXED BY
+		// FIXME implement indexed by properly
+		errors.add("no such index"); // INDEXED BY 
+		errors.add("no query solution"); // INDEXED BY
 	}
 
 	public void generateAndCheck() throws SQLException {
