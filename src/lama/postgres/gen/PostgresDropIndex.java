@@ -6,12 +6,14 @@ import java.util.List;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.postgres.PostgresGlobalState;
 import lama.postgres.PostgresSchema.PostgresIndex;
 import lama.sqlite3.gen.SQLite3Common;
 
 public class PostgresDropIndex {
 
-	public static Query create(List<PostgresIndex> indexes) {
+	public static Query create(PostgresGlobalState globalState) {
+		List<PostgresIndex> indexes = globalState.getSchema().getRandomTable().getIndexes();
 		StringBuilder sb = new StringBuilder();
 		sb.append("DROP INDEX ");
 		if (Randomly.getBoolean() || indexes.isEmpty()) {

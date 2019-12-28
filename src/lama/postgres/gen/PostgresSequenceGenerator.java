@@ -6,11 +6,11 @@ import java.util.List;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.postgres.PostgresSchema;
+import lama.postgres.PostgresGlobalState;
 
 public class PostgresSequenceGenerator {
 
-	public static Query createSequence(Randomly r, PostgresSchema s) {
+	public static Query createSequence(PostgresGlobalState globalState) {
 		List<String> errors = new ArrayList<>();
 		StringBuilder sb = new StringBuilder("CREATE");
 		if (Randomly.getBoolean()) {
@@ -32,14 +32,14 @@ public class PostgresSequenceGenerator {
 				sb.append(" BY");
 			}
 			sb.append(" ");
-			sb.append(r.getInteger());
+			sb.append(globalState.getRandomly().getInteger());
 			errors.add("INCREMENT must not be zero");
 		}
 		if (Randomly.getBoolean()) {
 			if (Randomly.getBoolean()) {
 				sb.append(" MINVALUE");
 				sb.append(" ");
-				sb.append(r.getInteger());
+				sb.append(globalState.getRandomly().getInteger());
 			} else {
 				sb.append(" NO MINVALUE");
 			}
@@ -49,7 +49,7 @@ public class PostgresSequenceGenerator {
 			if (Randomly.getBoolean()) {
 				sb.append(" MAXVALUE");
 				sb.append(" ");
-				sb.append(r.getInteger());
+				sb.append(globalState.getRandomly().getInteger());
 			} else {
 				sb.append(" NO MAXVALUE");
 			}
@@ -61,13 +61,13 @@ public class PostgresSequenceGenerator {
 				sb.append(" WITH");
 			}
 			sb.append(" ");
-			sb.append(r.getInteger());
+			sb.append(globalState.getRandomly().getInteger());
 			errors.add("cannot be less than MINVALUE");
 			errors.add("cannot be greater than MAXVALUE");
 		}
 		if (Randomly.getBoolean()) {
 			sb.append(" CACHE ");
-			sb.append(r.getPositiveIntegerNotNull());
+			sb.append(globalState.getRandomly().getPositiveIntegerNotNull());
 		}
 		errors.add("is out of range");
 		if (Randomly.getBoolean()) {

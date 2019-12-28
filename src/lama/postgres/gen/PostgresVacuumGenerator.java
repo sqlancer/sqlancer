@@ -8,12 +8,14 @@ import java.util.stream.Collectors;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.postgres.PostgresGlobalState;
 import lama.postgres.PostgresProvider;
 import lama.postgres.PostgresSchema.PostgresTable;
 
 public class PostgresVacuumGenerator {
 
-	public static Query create(PostgresTable table) {
+	public static Query create(PostgresGlobalState globalState) {
+		PostgresTable table = globalState.getSchema().getRandomTable();
 		StringBuilder sb = new StringBuilder("VACUUM ");
 		if (Randomly.getBoolean()) {
 			// VACUUM [ ( { FULL | FREEZE | VERBOSE | ANALYZE | DISABLE_PAGE_SKIPPING } [,

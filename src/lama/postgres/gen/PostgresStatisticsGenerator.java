@@ -8,21 +8,21 @@ import lama.IgnoreMeException;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.postgres.PostgresGlobalState;
 import lama.postgres.PostgresProvider;
-import lama.postgres.PostgresSchema;
 import lama.postgres.PostgresSchema.PostgresColumn;
 import lama.postgres.PostgresSchema.PostgresStatisticsObject;
 import lama.postgres.PostgresSchema.PostgresTable;
 
 public class PostgresStatisticsGenerator {
 
-	public static Query insert(PostgresSchema newSchema, Randomly r) {
+	public static Query insert(PostgresGlobalState globalState) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("CREATE STATISTICS ");
 		if (Randomly.getBoolean()) {
 			sb.append(" IF NOT EXISTS");
 		}
-		PostgresTable randomTable = newSchema.getRandomTable(t -> !t.isView()); // TODO materialized view
+		PostgresTable randomTable = globalState.getSchema().getRandomTable(t -> !t.isView()); // TODO materialized view
 		if (randomTable.getColumns().size() < 2) {
 			throw new IgnoreMeException();
 		}
@@ -40,7 +40,7 @@ public class PostgresStatisticsGenerator {
 			sb.append(")");
 		}
 		
-		List<PostgresColumn> randomColumns = randomTable.getRandomNonEmptyColumnSubset(r.getInteger(2, randomTable.getColumns().size()));
+		List<PostgresColumn> randomColumns = randomTable.getRandomNonEmptyColumnSubset(globalState.getRandomly().getInteger(2, randomTable.getColumns().size()));
 		sb.append(" ON ");
 		sb.append(randomColumns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
 		sb.append(" FROM ");
@@ -48,9 +48,9 @@ public class PostgresStatisticsGenerator {
 		return new QueryAdapter(sb.toString(), Arrays.asList("cannot have more than 8 columns in statistics"), true);
 	}
 	
-	public static Query remove(PostgresSchema s) {
+	public static Query remove(PostgresGlobalState globalState) {
 		StringBuilder sb = new StringBuilder("DROP STATISTICS ");
-		PostgresTable randomTable = s.getRandomTable();
+		PostgresTable randomTable = globalState.getSchema().getRandomTable();
 		List<PostgresStatisticsObject> statistics = randomTable.getStatistics();
 		if (statistics.isEmpty()) {
 			throw new IgnoreMeException();

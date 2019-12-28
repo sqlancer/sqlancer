@@ -14,15 +14,17 @@ public class PostgresGlobalState {
 	private final List<String> operators;
 	private final List<String> collates;
 	private final List<String> opClasses;
+	private final Randomly r;
 	private final Connection con;
 	private PostgresSchema schema;
 	
-	public PostgresGlobalState(Connection con) {
+	public PostgresGlobalState(Connection con, Randomly r) {
 		this.con = con;
 		try {
 			this.opClasses = getOpclasses(con);
 			this.operators = getOperators(con);
 			this.collates = getCollnames(con);
+			this.r = r;
 		} catch (SQLException e) {
 			throw new AssertionError(e);
 		}
@@ -34,6 +36,10 @@ public class PostgresGlobalState {
 	
 	public PostgresSchema getSchema() {
 		return schema;
+	}
+	
+	public Randomly getRandomly() {
+		return r;
 	}
 	
 	public Connection getCon() {

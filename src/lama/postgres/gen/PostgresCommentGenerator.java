@@ -4,7 +4,7 @@ import lama.IgnoreMeException;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.postgres.PostgresSchema;
+import lama.postgres.PostgresGlobalState;
 import lama.postgres.PostgresSchema.PostgresTable;
 
 /**
@@ -16,11 +16,11 @@ public class PostgresCommentGenerator {
 		INDEX, COLUMN, STATISTICS, TABLE
 	}
 
-	public static Query generate(PostgresSchema newSchema, Randomly r) {
+	public static Query generate(PostgresGlobalState globalState) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("COMMENT ON ");
 		Action type = Randomly.fromOptions(Action.values());
-		PostgresTable randomTable = newSchema.getRandomTable();
+		PostgresTable randomTable = globalState.getSchema().getRandomTable();
 		switch (type) {
 		case INDEX:
 			sb.append("INDEX ");
@@ -57,7 +57,7 @@ public class PostgresCommentGenerator {
 			sb.append("NULL");
 		} else {
 			sb.append("'");
-			sb.append(r.getString().replace("'", "''"));
+			sb.append(globalState.getRandomly().getString().replace("'", "''"));
 			sb.append("'");
 		}
 		return new QueryAdapter(sb.toString());

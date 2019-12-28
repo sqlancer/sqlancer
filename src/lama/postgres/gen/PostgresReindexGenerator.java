@@ -8,8 +8,8 @@ import lama.IgnoreMeException;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.postgres.PostgresGlobalState;
 import lama.postgres.PostgresProvider;
-import lama.postgres.PostgresSchema;
 import lama.postgres.PostgresSchema.PostgresIndex;
 
 public class PostgresReindexGenerator {
@@ -18,7 +18,7 @@ public class PostgresReindexGenerator {
 		INDEX, TABLE, DATABASE;
 	}
 
-	public static Query create(PostgresSchema newSchema) {
+	public static Query create(PostgresGlobalState globalState) {
 		List<String> errors = new ArrayList<>();
 		errors.add("could not create unique index"); // CONCURRENT INDEX
 		StringBuilder sb = new StringBuilder();
@@ -34,7 +34,7 @@ public class PostgresReindexGenerator {
 			if (PostgresProvider.IS_POSTGRES_TWELVE && Randomly.getBoolean()) {
 				sb.append("CONCURRENTLY ");
 			}
-			List<PostgresIndex> indexes = newSchema.getRandomTable().getIndexes();
+			List<PostgresIndex> indexes = globalState.getSchema().getRandomTable().getIndexes();
 			if (indexes.isEmpty()) {
 				throw new IgnoreMeException();
 			}
@@ -45,14 +45,14 @@ public class PostgresReindexGenerator {
 			if (PostgresProvider.IS_POSTGRES_TWELVE && Randomly.getBoolean()) {
 				sb.append("CONCURRENTLY ");
 			}
-			sb.append(newSchema.getRandomTable(t -> !t.isView()).getName());
+			sb.append(globalState.getSchema().getRandomTable(t -> !t.isView()).getName());
 			break;
 		case DATABASE:
 			sb.append("DATABASE ");
 			if (PostgresProvider.IS_POSTGRES_TWELVE && Randomly.getBoolean()) {
 				sb.append("CONCURRENTLY ");
 			}
-			sb.append(newSchema.getDatabaseName());
+			sb.append(globalState.getSchema().getDatabaseName());
 			break;
 		default:
 			throw new AssertionError(scope);

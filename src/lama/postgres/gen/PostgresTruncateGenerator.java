@@ -6,11 +6,11 @@ import java.util.stream.Collectors;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.postgres.PostgresSchema;
+import lama.postgres.PostgresGlobalState;
 
 public class PostgresTruncateGenerator {
 
-	public static Query create(PostgresSchema newSchema) {
+	public static Query create(PostgresGlobalState globalState) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("TRUNCATE");
 		if (Randomly.getBoolean()) {
@@ -21,7 +21,7 @@ public class PostgresTruncateGenerator {
 //			sb.append(" ONLY");
 //		}
 		sb.append(" ");
-		sb.append(newSchema.getDatabaseTablesRandomSubsetNotEmpty().stream().map(t -> t.getName())
+		sb.append(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty().stream().map(t -> t.getName())
 				.collect(Collectors.joining(", ")));
 		if (Randomly.getBoolean()) {
 			sb.append(" ");

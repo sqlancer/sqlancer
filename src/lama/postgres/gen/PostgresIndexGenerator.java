@@ -8,7 +8,6 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.postgres.PostgresGlobalState;
-import lama.postgres.PostgresSchema;
 import lama.postgres.PostgresSchema.PostgresColumn;
 import lama.postgres.PostgresSchema.PostgresDataType;
 import lama.postgres.PostgresSchema.PostgresIndex;
@@ -23,7 +22,7 @@ public class PostgresIndexGenerator {
 		BTREE, HASH, GIST, GIN
 	}
 
-	public static Query generate(PostgresSchema s, Randomly r, PostgresGlobalState globalState) {
+	public static Query generate(PostgresGlobalState globalState) {
 		List<String> errors = new ArrayList<>();
 		StringBuilder sb = new StringBuilder();
 		sb.append("CREATE");
@@ -39,7 +38,7 @@ public class PostgresIndexGenerator {
 //		if (Randomly.getBoolean()) {
 //			sb.append("CONCURRENTLY ");
 //		}
-		PostgresTable randomTable = s.getRandomTable(t -> !t.isView()); // TODO: materialized views
+		PostgresTable randomTable = globalState.getSchema().getRandomTable(t -> !t.isView()); // TODO: materialized views
 		String indexName = getNewIndexName(randomTable);
 		sb.append(indexName);
 		sb.append(" ON ");
@@ -68,7 +67,7 @@ public class PostgresIndexGenerator {
 					sb.append(randomTable.getRandomColumn().getName());
 				} else {
 					sb.append("(");
-					PostgresExpression expression = PostgresExpressionGenerator.generateExpression(r,
+					PostgresExpression expression = PostgresExpressionGenerator.generateExpression(globalState.getRandomly(),
 							randomTable.getColumns());
 					sb.append(PostgresVisitor.asString(expression));
 					sb.append(")");
@@ -109,7 +108,7 @@ public class PostgresIndexGenerator {
 //		}
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
-			PostgresExpression expr = new PostgresExpressionGenerator(r).setColumns(randomTable.getColumns()).setGlobalState(globalState).generateExpression(PostgresDataType.BOOLEAN);
+			PostgresExpression expr = new PostgresExpressionGenerator(globalState.getRandomly()).setColumns(randomTable.getColumns()).setGlobalState(globalState).generateExpression(PostgresDataType.BOOLEAN);
 			sb.append(PostgresVisitor.asString(expr));
 		}
 		errors.add("already contains data"); // CONCURRENT INDEX failed

@@ -3,6 +3,7 @@ package lama.postgres.gen;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.postgres.PostgresGlobalState;
 
 public class PostgresNotifyGenerator {
 
@@ -10,14 +11,14 @@ public class PostgresNotifyGenerator {
 		return Randomly.fromOptions("asdf", "test");
 	}
 
-	public static Query createNotify(Randomly r) {
+	public static Query createNotify(PostgresGlobalState globalState) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("NOTIFY ");
 		sb.append(getChannel());
 		if (Randomly.getBoolean()) {
 			sb.append(", ");
 			sb.append("'");
-			sb.append(r.getString().replace("'", "''"));
+			sb.append(globalState.getRandomly().getString().replace("'", "''"));
 			sb.append("'");
 		}
 		return new QueryAdapter(sb.toString());

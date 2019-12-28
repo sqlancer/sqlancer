@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.postgres.PostgresGlobalState;
 import lama.postgres.PostgresProvider;
 import lama.postgres.PostgresSchema.PostgresColumn;
 import lama.postgres.PostgresSchema.PostgresTable;
@@ -15,7 +16,8 @@ import lama.postgres.ast.PostgresExpression;
 
 public class PostgresInsertGenerator {
 
-	public static Query insert(PostgresTable table, Randomly r) {
+	public static Query insert(PostgresGlobalState globalState) {
+		PostgresTable table = globalState.getSchema().getRandomTable(t -> t.isInsertable());
 		List<String> errors = new ArrayList<>();
 		if (PostgresProvider.IS_POSTGRES_TWELVE) {
 			errors.add("cannot insert into column");
@@ -56,7 +58,7 @@ public class PostgresInsertGenerator {
 				if (i != 0) {
 					sbRowValue.append(", ");
 				}
-				sbRowValue.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateConstant(r, columns.get(i).getColumnType())));
+				sbRowValue.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateConstant(globalState.getRandomly(), columns.get(i).getColumnType())));
 			}
 			sbRowValue.append(")");
 			
@@ -73,7 +75,7 @@ public class PostgresInsertGenerator {
 				if (i != 0) {
 					sb.append(", ");
 				}
-				insertRow(r, sb, columns, n == 1);
+				insertRow(globalState.getRandomly(), sb, columns, n == 1);
 			}
 		}
 		if (Randomly.getBoolean()) {

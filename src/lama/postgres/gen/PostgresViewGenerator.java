@@ -6,14 +6,14 @@ import java.util.List;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.postgres.PostgresSchema;
+import lama.postgres.PostgresGlobalState;
 import lama.postgres.PostgresVisitor;
 import lama.postgres.ast.PostgresSelect;
 import lama.sqlite3.gen.SQLite3Common;
 
 public class PostgresViewGenerator {
 
-	public static Query create(PostgresSchema newSchema, Randomly r) {
+	public static Query create(PostgresGlobalState globalState) {
 		List<String> errors = new ArrayList<>();
 		StringBuilder sb = new StringBuilder("CREATE");
 		boolean materialized;
@@ -39,7 +39,8 @@ public class PostgresViewGenerator {
 		String[] name = new String[1];
 		while (true) {
 			name[0] = "v" + i++;
-			if (newSchema.getDatabaseTables().stream().noneMatch(tab -> tab.getName().contentEquals(name[0]))) {
+			if (globalState.getSchema().getDatabaseTables().stream()
+					.noneMatch(tab -> tab.getName().contentEquals(name[0]))) {
 				break;
 			}
 		}
@@ -63,7 +64,8 @@ public class PostgresViewGenerator {
 //			sb.append(")");
 //		}
 		sb.append(" AS (");
-		PostgresSelect select = PostgresRandomQueryGenerator.createRandomQuery(nrColumns, newSchema, r);
+		PostgresSelect select = PostgresRandomQueryGenerator.createRandomQuery(nrColumns, globalState.getSchema(),
+				globalState.getRandomly());
 		sb.append(PostgresVisitor.asString(select));
 		sb.append(")");
 		if (Randomly.getBoolean() && !materialized && !recursive) {
@@ -72,7 +74,7 @@ public class PostgresViewGenerator {
 			sb.append(" CHECK OPTION");
 			errors.add("WITH CHECK OPTION is supported only on automatically updatable views");
 		}
-		
+
 		errors.add("already exists");
 		errors.add("cannot drop columns from view");
 		errors.add("non-integer constant in GROUP BY"); // TODO

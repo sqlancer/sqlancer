@@ -86,15 +86,16 @@ public class PostgresProvider implements DatabaseProvider {
 		CREATE_VIEW, //
 		QUERY_CATALOG;
 	}
+	
+	private final Randomly r = new Randomly();
 
 	@Override
 	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger, StateToReproduce state,
 			QueryManager manager, MainOptions options) throws SQLException {
-		Randomly r = new Randomly();
 		if (options.logEachSelect()) {
 			logger.writeCurrent(state);
 		}
-		globalState = new PostgresGlobalState(con);
+		globalState = new PostgresGlobalState(con, r);
 		globalState.setSchema(PostgresSchema.fromConnection(con, databaseName));
 		while (globalState.getSchema().getDatabaseTables().size() < 2) {
 			try {
@@ -199,10 +200,10 @@ public class PostgresProvider implements DatabaseProvider {
 				try {
 					switch (nextAction) {
 					case ANALYZE:
-						query = PostgresAnalyzeGenerator.create(globalState.getSchema().getRandomTable());
+						query = PostgresAnalyzeGenerator.create(globalState);
 						break;
 					case CLUSTER:
-						query = PostgresClusterGenerator.create(globalState.getSchema());
+						query = PostgresClusterGenerator.create(globalState);
 					case ALTER_TABLE:
 						query = PostgresAlterTableGenerator.create(globalState.getSchema().getRandomTable(t -> !t.isView()), r,
 								globalState.getSchema(), GENERATE_ONLY_KNOWN, globalState.getOpClasses(), globalState.getOperators());
@@ -240,7 +241,7 @@ public class PostgresProvider implements DatabaseProvider {
 						}
 						break;
 					case NOTIFY:
-						query = PostgresNotifyGenerator.createNotify(r);
+						query = PostgresNotifyGenerator.createNotify(globalState);
 						break;
 					case LISTEN:
 						query = PostgresNotifyGenerator.createListen();
@@ -254,49 +255,49 @@ public class PostgresProvider implements DatabaseProvider {
 						query = new QueryAdapter("RESET ALL");
 						break;
 					case COMMENT_ON:
-						query = PostgresCommentGenerator.generate(globalState.getSchema(), r);
+						query = PostgresCommentGenerator.generate(globalState);
 						break;
 					case CREATE_INDEX:
-						query = PostgresIndexGenerator.generate(globalState.getSchema(), r, globalState);
+						query = PostgresIndexGenerator.generate(globalState);
 						break;
 					case DISCARD:
-						query = PostgresDiscardGenerator.create(globalState.getSchema());
+						query = PostgresDiscardGenerator.create(globalState);
 						break;
 					case CREATE_VIEW:
-						query = PostgresViewGenerator.create(globalState.getSchema(), r);
+						query = PostgresViewGenerator.create(globalState);
 						break;
 					case DELETE:
-						query = PostgresDeleteGenerator.create(globalState.getSchema().getRandomTable(t -> !t.isView()), r);
+						query = PostgresDeleteGenerator.create(globalState);
 						break;
 					case DROP_INDEX:
-						query = PostgresDropIndex.create(globalState.getSchema().getRandomTable().getIndexes());
+						query = PostgresDropIndex.create(globalState);
 						break;
 					case UPDATE:
-						query = PostgresUpdateGenerator.create(globalState.getSchema().getRandomTable(t -> t.isInsertable()), r);
+						query = PostgresUpdateGenerator.create(globalState);
 						break;
 					case VACUUM:
-						query = PostgresVacuumGenerator.create(globalState.getSchema().getRandomTable());
+						query = PostgresVacuumGenerator.create(globalState);
 						break;
 					case REINDEX:
-						query = PostgresReindexGenerator.create(globalState.getSchema());
+						query = PostgresReindexGenerator.create(globalState);
 						break;
 					case TRUNCATE:
-						query = PostgresTruncateGenerator.create(globalState.getSchema());
+						query = PostgresTruncateGenerator.create(globalState);
 						break;
 					case SET:
-						query = PostgresSetGenerator.create(r);
+						query = PostgresSetGenerator.create(globalState);
 						break;
 					case INSERT:
-						query = PostgresInsertGenerator.insert(globalState.getSchema().getRandomTable(t -> t.isInsertable()), r);
+						query = PostgresInsertGenerator.insert(globalState);
 						break;
 					case CREATE_STATISTICS:
-						query = PostgresStatisticsGenerator.insert(globalState.getSchema(), r);
+						query = PostgresStatisticsGenerator.insert(globalState);
 						break;
 					case DROP_STATISTICS:
-						query = PostgresStatisticsGenerator.remove(globalState.getSchema());
+						query = PostgresStatisticsGenerator.remove(globalState);
 						break;
 					case CREATE_SEQUENCE:
-						query = PostgresSequenceGenerator.createSequence(r, globalState.getSchema());
+						query = PostgresSequenceGenerator.createSequence(globalState);
 						break;
 					default:
 						throw new AssertionError(nextAction);
@@ -393,7 +394,7 @@ public class PostgresProvider implements DatabaseProvider {
 			}
 			for (String lc : Arrays.asList("LC_COLLATE", "LC_CTYPE")) {
 				if (Randomly.getBoolean()) {
-					sb.append(String.format(" %s = '%s'", lc, Randomly.fromList(new PostgresGlobalState(con).getCollates())));
+					sb.append(String.format(" %s = '%s'", lc, Randomly.fromList(new PostgresGlobalState(con, r).getCollates())));
 				}
 			}
 			sb.append(" TEMPLATE template0");

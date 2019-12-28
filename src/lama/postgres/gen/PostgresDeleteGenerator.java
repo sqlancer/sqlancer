@@ -6,13 +6,15 @@ import java.util.List;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.postgres.PostgresGlobalState;
 import lama.postgres.PostgresSchema.PostgresDataType;
 import lama.postgres.PostgresSchema.PostgresTable;
 import lama.postgres.PostgresVisitor;
 
 public class PostgresDeleteGenerator {
 
-	public static Query create(PostgresTable table, Randomly r) {
+	public static Query create(PostgresGlobalState globalState) {
+		PostgresTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
 		List<String> errors = new ArrayList<>();
 		errors.add("violates foreign key constraint");
 		errors.add("violates not-null constraint");
@@ -26,11 +28,11 @@ public class PostgresDeleteGenerator {
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
 			sb.append(PostgresVisitor.asString(
-					PostgresExpressionGenerator.generateExpression(r, table.getColumns(), PostgresDataType.BOOLEAN)));
+					PostgresExpressionGenerator.generateExpression(globalState.getRandomly(), table.getColumns(), PostgresDataType.BOOLEAN)));
 		}
 		if (Randomly.getBoolean()) {
 			sb.append(" RETURNING ");
-			sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(r, table.getColumns())));
+			sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(globalState.getRandomly(), table.getColumns())));
 		}
 		PostgresCommon.addCommonExpressionErrors(errors);
 		errors.add("out of range");

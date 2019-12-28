@@ -7,6 +7,7 @@ import java.util.function.Function;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.postgres.PostgresGlobalState;
 import lama.postgres.PostgresProvider;
 
 public class PostgresSetGenerator {
@@ -123,7 +124,7 @@ public class PostgresSetGenerator {
 		}
 	}
 
-	public static Query create(Randomly r) {
+	public static Query create(PostgresGlobalState globalState) {
 		StringBuilder sb = new StringBuilder();
 		ArrayList<ConfigurationOption> options = new ArrayList<>(Arrays.asList(ConfigurationOption.values()));
 		if (PostgresProvider.IS_POSTGRES_TWELVE) {
@@ -140,7 +141,7 @@ public class PostgresSetGenerator {
 		if (Randomly.getBoolean()) {
 			sb.append("DEFAULT");
 		} else {
-			sb.append(option.op.apply(r));
+			sb.append(option.op.apply(globalState.getRandomly()));
 		}
 		return new QueryAdapter(sb.toString());
 	}

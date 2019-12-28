@@ -5,16 +5,16 @@ import java.util.Arrays;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.postgres.PostgresSchema;
+import lama.postgres.PostgresGlobalState;
 import lama.postgres.PostgresSchema.PostgresTable.TableType;
 
 public class PostgresDiscardGenerator {
 
-	public static Query create(PostgresSchema s) {
+	public static Query create(PostgresGlobalState globalState) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("DISCARD ");
 		// prevent that DISCARD discards all tables (if they are TEMP tables)
-		boolean hasNonTempTables = s.getDatabaseTables().stream().anyMatch(t -> t.getTableType() == TableType.STANDARD);
+		boolean hasNonTempTables = globalState.getSchema().getDatabaseTables().stream().anyMatch(t -> t.getTableType() == TableType.STANDARD);
 		String what;
 		if (hasNonTempTables) {
 			what = Randomly.fromOptions("ALL", "PLANS", "SEQUENCES", "TEMPORARY", "TEMP");

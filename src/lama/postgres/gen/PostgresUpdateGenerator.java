@@ -7,6 +7,7 @@ import java.util.List;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.postgres.PostgresGlobalState;
 import lama.postgres.PostgresSchema.PostgresColumn;
 import lama.postgres.PostgresSchema.PostgresDataType;
 import lama.postgres.PostgresSchema.PostgresTable;
@@ -15,7 +16,8 @@ import lama.postgres.ast.PostgresExpression;
 
 public class PostgresUpdateGenerator {
 
-	public static Query create(PostgresTable randomTable, Randomly r) {
+	public static Query create(PostgresGlobalState globalState) {
+		PostgresTable randomTable = globalState.getSchema().getRandomTable(t -> t.isInsertable());
 		StringBuilder sb = new StringBuilder();
 		sb.append("UPDATE ");
 		sb.append(randomTable.getName());
@@ -34,13 +36,13 @@ public class PostgresUpdateGenerator {
 			sb.append(column.getName());
 			sb.append(" = ");
 			if (!Randomly.getBoolean()) {
-				PostgresExpression constant = PostgresExpressionGenerator.generateConstant(r, column.getColumnType());
+				PostgresExpression constant = PostgresExpressionGenerator.generateConstant(globalState.getRandomly(), column.getColumnType());
 				sb.append(PostgresVisitor.asString(constant));
 			} else if (Randomly.getBoolean()) {
 				sb.append("DEFAULT");
 			} else {
 				sb.append("(");
-				PostgresExpression expr = PostgresExpressionGenerator.generateExpression(r, randomTable.getColumns(),
+				PostgresExpression expr = PostgresExpressionGenerator.generateExpression(globalState.getRandomly(), randomTable.getColumns(),
 						column.getColumnType());
 				// caused by casts
 				sb.append(PostgresVisitor.asString(expr));
@@ -55,7 +57,7 @@ public class PostgresUpdateGenerator {
 		PostgresCommon.addCommonExpressionErrors(errors);
 		if (!Randomly.getBooleanWithSmallProbability()) {
 			sb.append(" WHERE ");
-			PostgresExpression where = PostgresExpressionGenerator.generateExpression(r, randomTable.getColumns(),
+			PostgresExpression where = PostgresExpressionGenerator.generateExpression(globalState.getRandomly(), randomTable.getColumns(),
 					PostgresDataType.BOOLEAN);
 			sb.append(PostgresVisitor.asString(where));
 		}

@@ -6,12 +6,14 @@ import java.util.stream.Collectors;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
+import lama.postgres.PostgresGlobalState;
 import lama.postgres.PostgresProvider;
 import lama.postgres.PostgresSchema.PostgresTable;
 
 public class PostgresAnalyzeGenerator {
 
-	public static Query create(PostgresTable randomTable) {
+	public static Query create(PostgresGlobalState globalState) {
+		PostgresTable table = globalState.getSchema().getRandomTable();
 		StringBuilder sb = new StringBuilder("ANALYZE");
 		if (Randomly.getBoolean()) {
 			sb.append("(");
@@ -24,10 +26,10 @@ public class PostgresAnalyzeGenerator {
 		}
 		if (Randomly.getBoolean()) {
 			sb.append(" ");
-			sb.append(randomTable.getName());
+			sb.append(table.getName());
 			if (Randomly.getBoolean()) {
 				sb.append("(");
-				sb.append(randomTable.getRandomNonEmptyColumnSubset().stream().map(c -> c.getName())
+				sb.append(table.getRandomNonEmptyColumnSubset().stream().map(c -> c.getName())
 						.collect(Collectors.joining(", ")));
 				sb.append(")");
 			}
