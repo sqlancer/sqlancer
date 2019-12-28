@@ -74,6 +74,7 @@ public class SQLite3AlterTable {
 					.allowDefaultValue(false).createColumn(name, globalState, t.getColumns()));
 			errors.add("subqueries prohibited in CHECK constraints");
 			errors.add("Cannot add a NOT NULL column with default value NULL");
+			errors.add("unsupported frame specification");
 			break;
 		default:
 			throw new AssertionError();
