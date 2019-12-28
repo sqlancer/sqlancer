@@ -3,9 +3,10 @@ package lama.sqlite3.queries;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import lama.IgnoreMeException;
 import lama.Main.StateLogger;
@@ -46,7 +47,7 @@ public class SQLite3MetamorphicQuerySynthesizer {
 	private SQLite3StateToReproduce state;
 	private String firstQueryString;
 	private String secondQueryString;
-	private final List<String> errors = new ArrayList<>();
+	private final Set<String> errors = new HashSet<>();
 	private StateLogger logger;
 	private MainOptions options;
 	private SQLite3GlobalState globalState;
@@ -126,7 +127,6 @@ public class SQLite3MetamorphicQuerySynthesizer {
 				rs.getStatement().close();
 			}
 		}
-
 		return secondCount;
 	}
 

@@ -1,6 +1,7 @@
 package lama.sqlite3;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 public class SQLite3Errors {
@@ -13,7 +14,7 @@ public class SQLite3Errors {
 	}
 	
 	
-	public static void addExpectedExpressionErrors(List<String> errors) {
+	public static void addExpectedExpressionErrors(Collection<String> errors) {
 		errors.add("FTS expression tree is too large");
 		errors.add("[SQLITE_ERROR] SQL error or missing database (integer overflow)");
 		errors.add("second argument to likelihood() must be a constant between 0.0 and 1.0");
@@ -39,9 +40,13 @@ public class SQLite3Errors {
 		
 		errors.add("malformed JSON");
 		errors.add("JSON cannot hold BLOB values");
+		
+		// fts5 functions
+		errors.add("unable to use function highlight in the requested context");
+		errors.add("no such cursor");
 	}
 	
-	public static void addMatchQueryErrors(List<String> errors) {
+	public static void addMatchQueryErrors(Collection<String> errors) {
 		errors.add("unable to use function MATCH in the requested context");
 		errors.add("malformed MATCH expression");
 		errors.add("fts5: syntax error near");

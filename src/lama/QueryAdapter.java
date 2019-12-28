@@ -5,12 +5,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class QueryAdapter extends Query {
 	
 	private final String query;
-	private final List<String> expectedErrors;
+	private final Collection<String> expectedErrors;
 	private final boolean couldAffectSchema;
 	
 	public QueryAdapter(String query) {
@@ -21,7 +22,7 @@ public class QueryAdapter extends Query {
 		this(query, new ArrayList<>(), couldAffectSchema);
 	}
 	
-	public QueryAdapter(String query, List<String> expectedErrors) {
+	public QueryAdapter(String query, Collection<String> expectedErrors) {
 		this.query = query;
 		this.expectedErrors = expectedErrors;
 		this.couldAffectSchema = false;
@@ -88,7 +89,7 @@ public class QueryAdapter extends Query {
 	}
 
 	@Override
-	public List<String> getExpectedErrors() {
+	public Collection<String> getExpectedErrors() {
 		return expectedErrors;
 	}
 	
