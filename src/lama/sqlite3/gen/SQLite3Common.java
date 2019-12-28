@@ -136,7 +136,7 @@ public class SQLite3Common {
 			if (i != 0) {
 				sb.append(", ");
 			}
-			sb.append(SQLite3Visitor.asString(gen.generateOrderingTerm(globalState.getRandomly())));
+			sb.append(SQLite3Visitor.asString(gen.generateOrderingTerm()));
 		}
 		return sb.toString();
 	}
@@ -145,7 +145,7 @@ public class SQLite3Common {
 		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns);
 		List<SQLite3Expression> list = new ArrayList<>();
 		for (int i = 0; i < 1 + Randomly.smallNumber(); i++) {
-			list.add(gen.generateOrderingTerm(globalState.getRandomly()));
+			list.add(gen.generateOrderingTerm());
 		}
 		return list;
 

@@ -76,6 +76,7 @@ public class SQLite3MetamorphicQuerySynthesizer {
 	public void generateAndCheck() throws SQLException {
 		Tables randomTable = s.getRandomTableNonEmptyTables();
 		List<Column> columns = randomTable.getColumns();
+		gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns);
 		SQLite3Expression randomWhereCondition = getRandomWhereCondition(columns);
 		List<SQLite3Expression> groupBys = Collections.emptyList(); // getRandomExpressions(columns);
 		List<Table> tables = randomTable.getTables();// Randomly.extractNrRandomColumns(randomTable.getTables(), Math.min(Randomly.smallNumber() + 1, randomTable.getTables().size() - 1));
@@ -123,7 +124,6 @@ public class SQLite3MetamorphicQuerySynthesizer {
 //	}
 
 	private SQLite3Expression getRandomWhereCondition(List<Column> columns) {
-		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns);
 		// FIXME: enable match clause for multiple tables
 //		if (randomTable.isVirtual()) {
 			if (Randomly.getBoolean()) {
@@ -137,7 +137,8 @@ public class SQLite3MetamorphicQuerySynthesizer {
 	private int getSecondQuery(List<Table> list, SQLite3Expression randomWhereCondition,
 			List<SQLite3Expression> groupBys, List<Join> joinStatements) throws SQLException {
 		SQLite3SelectStatement select = new SQLite3SelectStatement();
-		select.setGroupByClause(groupBys);
+		setRandomOrderBy(select);
+//		select.setGroupByClause(groupBys);
 		SQLite3PostfixUnaryOperation isTrue = new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.IS_TRUE, randomWhereCondition);
 		SQLite3PostfixText asText = new SQLite3PostfixText(isTrue, " as count", null);
 		select.setFetchColumns(Arrays.asList(asText));
@@ -154,7 +155,7 @@ public class SQLite3MetamorphicQuerySynthesizer {
 			if (rs == null) {
 				return NOT_FOUND;
 			} else {
-				while (rs.next()) {
+				if (rs.next()) {
 					secondCount = rs.getInt(1);
 				}
 				rs.getStatement().close();
@@ -168,6 +169,7 @@ public class SQLite3MetamorphicQuerySynthesizer {
 			List<SQLite3Expression> groupBys, List<Join> joinStatements) throws SQLException {
 		SQLite3SelectStatement select = new SQLite3SelectStatement();
 		select.setGroupByClause(groupBys);
+		setRandomOrderBy(select);
 		// TODO: randomly select column and then = TRUE instead of IS TRUE
 		// SELECT COUNT(t1.c3) FROM t1 WHERE (- (t1.c2));
 		// SELECT SUM(count) FROM (SELECT ((- (t1.c2)) IS TRUE) as count FROM t1);;
@@ -198,6 +200,13 @@ public class SQLite3MetamorphicQuerySynthesizer {
 		return firstCount;
 	}
 
+	private void setRandomOrderBy(SQLite3SelectStatement select) {
+		if (Randomly.getBoolean()) {
+			select.setOrderByClause(gen.generateOrderingTerms());
+		}
+	}
+
 	private final static int NOT_FOUND = -1;
+	private SQLite3ExpressionGenerator gen;
 
 }

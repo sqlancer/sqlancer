@@ -16,13 +16,14 @@ import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3FrameSpecKind;
 import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecBetween;
 import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecTerm;
 import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecTerm.SQLite3WindowFunctionFrameSpecTermKind;
-import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
 import lama.sqlite3.schema.SQLite3Schema;
 import lama.sqlite3.schema.SQLite3Schema.Tables;
 
 public class SQLite3RandomQuerySynthesizer {
 
+	// TODO join clauses
+	// TODO union, intersect
 	public static SQLite3SelectStatement generate(SQLite3GlobalState globalState, int size) {
 		Randomly r = globalState.getRandomly();
 		SQLite3Schema s = globalState.getSchema();
@@ -53,7 +54,7 @@ public class SQLite3RandomQuerySynthesizer {
 					windowFunction.setFilterClause(gen.getRandomExpression());
 				}
 				if (Randomly.getBoolean()) {
-					windowFunction.setOrderBy(gen.getRandomExpressions(Randomly.smallNumber() + 1));
+					windowFunction.setOrderBy(gen.generateOrderingTerms());
 				}
 				if (Randomly.getBoolean()) {
 					windowFunction.setPartitionBy(gen.getRandomExpressions(Randomly.smallNumber()));
@@ -100,7 +101,7 @@ public class SQLite3RandomQuerySynthesizer {
 		}
 		if (Randomly.getBoolean()) {
 			// ORDER BY
-			select.setOrderByClause(SQLite3Common.getOrderBy(s.getTables().getColumns(), globalState));
+			select.setOrderByClause(gen.generateOrderingTerms());
 		}
 		if (Randomly.getBoolean()) {
 			// LIMIT

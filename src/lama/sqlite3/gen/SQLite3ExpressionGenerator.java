@@ -95,8 +95,16 @@ public class SQLite3ExpressionGenerator {
 	public static SQLite3Expression getRandomLiteralValue(SQLite3GlobalState globalState) {
 		return new SQLite3ExpressionGenerator(globalState).getRandomLiteralValueInternal(globalState.getRandomly());
 	}
+	
+	public List<SQLite3Expression> generateOrderingTerms() {
+		List<SQLite3Expression> expressions = new ArrayList<>();
+		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
+			expressions.add(generateOrderingTerm());
+		}
+		return expressions;
+	}
 
-	public SQLite3Expression generateOrderingTerm(Randomly r) {
+	public SQLite3Expression generateOrderingTerm() {
 		SQLite3Expression expr = getRandomExpression();
 		// COLLATE is potentially already generated
 		if (Randomly.getBoolean()) {
