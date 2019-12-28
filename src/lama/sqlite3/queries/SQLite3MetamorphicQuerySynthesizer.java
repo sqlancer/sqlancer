@@ -21,7 +21,6 @@ import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Join;
-import lama.sqlite3.ast.SQLite3Expression.Join.JoinType;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
@@ -67,37 +66,19 @@ public class SQLite3MetamorphicQuerySynthesizer {
 		errors.add("misuse of window function");
 		errors.add("second argument to nth_value must be a positive integer");
 		errors.add("no such table");
+		errors.add("ON clause references tables to its right");
 //		errors.add("no such index"); // INDEXED BY 
 //		errors.add("no query solution"); // INDEXED BY
 	}
 
 	public void generateAndCheck() throws SQLException {
-		Tables randomTable = s.getRandomTableNonEmptyTables();
-		List<Column> columns = randomTable.getColumns();
+		Tables randomTables = s.getRandomTableNonEmptyTables();
+		List<Column> columns = randomTables.getColumns();
 		gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns);
 		SQLite3Expression randomWhereCondition = getRandomWhereCondition(columns);
 		List<SQLite3Expression> groupBys = gen.getRandomExpressions(Randomly.smallNumber());
-		List<Table> tables = randomTable.getTables();
-		List<Join> joinStatements = new ArrayList<>();
-		if (Randomly.getBoolean() && tables.size() > 1) {
-			int nrJoinClauses = (int) Randomly.getNotCachedInteger(0, tables.size());
-			for (int i = 1; i < nrJoinClauses; i++) {
-				SQLite3Expression joinClause = getRandomWhereCondition(columns);
-				Table table = Randomly.fromList(tables);
-				tables.remove(table);
-				JoinType options;
-				options = Randomly.fromOptions(JoinType.INNER, JoinType.CROSS, JoinType.OUTER, JoinType.NATURAL);
-				if (options == JoinType.OUTER && tables.size() > 2) {
-					errors.add("ON clause references tables to its right");
-				}
-				if (options == JoinType.NATURAL) {
-					joinClause = null;
-				}
-				Join j = new SQLite3Expression.Join(table, joinClause, options);
-				joinStatements.add(j);
-			}
-
-		}
+		List<Table> tables = randomTables.getTables();
+		List<Join> joinStatements = gen.getRandomJoinClauses(columns, randomTables);
 		int firstCount = getFirstQueryCount(con, tables, randomWhereCondition, groupBys, joinStatements);
 		if (firstQueryString.contains("EXISTS")) {
 			throw new IgnoreMeException();

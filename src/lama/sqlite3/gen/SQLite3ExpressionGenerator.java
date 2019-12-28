@@ -22,6 +22,8 @@ import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation.BinaryComparisonOperator;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
 import lama.sqlite3.ast.SQLite3Expression.ColumnName;
+import lama.sqlite3.ast.SQLite3Expression.Join;
+import lama.sqlite3.ast.SQLite3Expression.Join.JoinType;
 import lama.sqlite3.ast.SQLite3Expression.MatchOperation;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Exist;
@@ -41,6 +43,8 @@ import lama.sqlite3.queries.SQLite3RandomQuerySynthesizer;
 import lama.sqlite3.schema.SQLite3Schema.Column;
 import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
 import lama.sqlite3.schema.SQLite3Schema.RowValue;
+import lama.sqlite3.schema.SQLite3Schema.Table;
+import lama.sqlite3.schema.SQLite3Schema.Tables;
 
 public class SQLite3ExpressionGenerator {
 
@@ -103,6 +107,30 @@ public class SQLite3ExpressionGenerator {
 		}
 		return expressions;
 	}
+	
+	public List<Join> getRandomJoinClauses(List<Column> columns, Tables tab) {
+		List<Table> tables = tab.getTables();
+		List<Join> joinStatements = new ArrayList<>();
+		if (Randomly.getBoolean() && tables.size() > 1) {
+			int nrJoinClauses = (int) Randomly.getNotCachedInteger(0, tables.size());
+			for (int i = 1; i < nrJoinClauses; i++) {
+				SQLite3Expression joinClause = getRandomExpression();
+				Table table = Randomly.fromList(tables);
+				tables.remove(table);
+				JoinType options;
+				options = Randomly.fromOptions(JoinType.INNER, JoinType.CROSS, JoinType.OUTER, JoinType.NATURAL);
+				if (options == JoinType.NATURAL) {
+					// NATURAL joins do not have an ON clause
+					joinClause = null;
+				}
+				Join j = new SQLite3Expression.Join(table, joinClause, options);
+				joinStatements.add(j);
+			}
+
+		}
+		return joinStatements;
+	}
+
 
 	public SQLite3Expression generateOrderingTerm() {
 		SQLite3Expression expr = getRandomExpression();
@@ -389,11 +417,16 @@ public class SQLite3ExpressionGenerator {
 		JULIANDAY("JULIANDAY", 3, Attribute.VARIADIC), STRFTIME("STRFTIME", 3, Attribute.VARIADIC),
 		// json functions
 		JSON("json", 1), //
-		JSON_ARRAY("json_array", 2, Attribute.VARIADIC), // no such function: json_array for blob
-															// values
+		JSON_ARRAY("json_array", 2, Attribute.VARIADIC),
 		JSON_ARRAY_LENGTH("json_array_length", 1), //
 		JSON_TYPE("json_type", 1), //
-		JSON_VALID("json_valid", 1), JSON_QUOTE("json_quote", 1);
+		JSON_VALID("json_valid", 1), //
+		JSON_QUOTE("json_quote", 1),
+		
+		// FTS
+		HIGHLIGHT("highlight", 4);
+		
+		;
 
 		private int minNrArgs;
 		private boolean variadic;
@@ -564,5 +597,6 @@ public class SQLite3ExpressionGenerator {
 		UnaryOperator unaryOperation = Randomly.fromOptions(UnaryOperator.values());
 		return new SQLite3UnaryOperation(unaryOperation, subExpression);
 	}
+
 
 }
