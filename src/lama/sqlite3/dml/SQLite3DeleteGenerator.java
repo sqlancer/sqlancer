@@ -36,7 +36,7 @@ public class SQLite3DeleteGenerator {
 				"[SQLITE_ERROR] SQL error or missing database (parser stack overflow)",
 				"[SQLITE_ERROR] SQL error or missing database (no such table:", "no such column",
 				"too many levels of trigger recursion", "cannot UPDATE generated column",
-				"cannot INSERT into generated column"));
+				"cannot INSERT into generated column", "A table in the database is locked"));
 		SQLite3Errors.addDeleteErrors(errors);
 		return new QueryAdapter(sb.toString(), errors, true);
 	}

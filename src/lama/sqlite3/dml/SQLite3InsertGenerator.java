@@ -59,6 +59,7 @@ public class SQLite3InsertGenerator {
 
 		errors.add("A table in the database is locked");
 		errors.add("cannot INSERT into generated column"); // TODO: filter out generated columns
+		errors.add("A table in the database is locked");
 		SQLite3Errors.addInsertNowErrors(errors);
 		SQLite3Errors.addExpectedExpressionErrors(errors);
 		StringBuilder sb = new StringBuilder();

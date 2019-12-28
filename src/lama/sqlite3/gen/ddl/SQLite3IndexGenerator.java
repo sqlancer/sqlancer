@@ -39,6 +39,7 @@ public class SQLite3IndexGenerator {
 		errors.add("subqueries prohibited in partial index WHERE clauses");
 		errors.add("non-deterministic use of time() in an index");
 		errors.add("non-deterministic use of strftime() in an index");
+		errors.add("non-deterministic use of julianday() in an index");
 		SQLite3Errors.addExpectedExpressionErrors(errors);
 		if (!SQLite3Provider.MUST_KNOW_RESULT) {
 			// can only happen when PRAGMA case_sensitive_like=ON;
