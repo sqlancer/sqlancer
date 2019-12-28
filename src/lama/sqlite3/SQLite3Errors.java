@@ -44,6 +44,10 @@ public class SQLite3Errors {
 		// fts5 functions
 		errors.add("unable to use function highlight in the requested context");
 		errors.add("no such cursor");
+		
+		// INDEXED BY
+		errors.add("no query solution");
+		errors.add("no such index");
 	}
 	
 	public static void addMatchQueryErrors(Collection<String> errors) {

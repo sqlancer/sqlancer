@@ -19,18 +19,19 @@ import lama.sqlite3.ast.SQLite3Expression.SQLite3Exist;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3TableReference;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Text;
 import lama.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Subquery;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
-import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecBetween;
-import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecTerm;
 import lama.sqlite3.ast.SQLite3Function;
 import lama.sqlite3.ast.SQLite3RowValue;
 import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.SQLite3UnaryOperation;
 import lama.sqlite3.ast.SQLite3WindowFunction;
 import lama.sqlite3.ast.SQLite3WindowFunctionExpression;
+import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecBetween;
+import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecTerm;
 
 public interface SQLite3Visitor {
 
@@ -87,6 +88,8 @@ public interface SQLite3Visitor {
 	public abstract void visit(SQLite3SelectStatement s, boolean inner);
 
 	public abstract void visit(SQLite3OrderingTerm term);
+	
+	public abstract void visit (SQLite3TableReference tableReference);
 
 
 	public abstract void visit(CollateOperation op);
@@ -186,6 +189,8 @@ public interface SQLite3Visitor {
 			visit((SQLite3WindowFunctionFrameSpecTerm) expr);
 		} else if (expr instanceof SQLite3WindowFunctionFrameSpecBetween) {
 			visit((SQLite3WindowFunctionFrameSpecBetween) expr);
+		} else if (expr instanceof SQLite3TableReference) {
+			visit((SQLite3TableReference) expr);
 		} else {
 			throw new AssertionError(expr);
 		}

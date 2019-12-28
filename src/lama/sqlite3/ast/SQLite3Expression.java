@@ -20,6 +20,36 @@ import lama.visitor.BinaryOperation;
 import lama.visitor.UnaryOperation;
 
 public abstract class SQLite3Expression {
+	
+	public static class SQLite3TableReference extends SQLite3Expression {
+
+		private final String indexedBy;
+		private final Table table;
+		
+		public SQLite3TableReference(String indexedBy, Table table) {
+			this.indexedBy = indexedBy;
+			this.table = table;
+		}
+		
+		public SQLite3TableReference(Table table) {
+			this.indexedBy = null;
+			this.table = table;
+		}
+		
+		@Override
+		public CollateSequence getExplicitCollateSequence() {
+			return null;
+		}
+		
+		public Table getTable() {
+			return table;
+		}
+		
+		public String getIndexedBy() {
+			return indexedBy;
+		}
+		
+	}
 
 	public static class SQLite3Distinct extends SQLite3Expression {
 

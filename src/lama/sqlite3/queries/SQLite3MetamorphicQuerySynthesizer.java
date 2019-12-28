@@ -27,6 +27,7 @@ import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
 import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.SQLite3SelectStatement.SelectType;
+import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
 import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema;
@@ -68,8 +69,7 @@ public class SQLite3MetamorphicQuerySynthesizer {
 		errors.add("second argument to nth_value must be a positive integer");
 		errors.add("no such table");
 		errors.add("ON clause references tables to its right");
-		// FIXME implement indexed by properly
-		errors.add("no such index"); // INDEXED BY 
+		// FIXME implement
 		errors.add("no query solution"); // INDEXED BY
 	}
 
@@ -80,12 +80,13 @@ public class SQLite3MetamorphicQuerySynthesizer {
 		SQLite3Expression randomWhereCondition = getRandomWhereCondition(columns);
 		List<SQLite3Expression> groupBys = gen.getRandomExpressions(Randomly.smallNumber());
 		List<Table> tables = randomTables.getTables();
-		List<Join> joinStatements = gen.getRandomJoinClauses(columns, randomTables);
-		int firstCount = getFirstQueryCount(con, tables, randomWhereCondition, groupBys, joinStatements);
+		List<Join> joinStatements = gen.getRandomJoinClauses(tables);
+		List<SQLite3Expression> tableRefs = SQLite3Common.getTableRefs(tables, s);
+		int firstCount = getFirstQueryCount(con, tableRefs, randomWhereCondition, groupBys, joinStatements);
 		if (firstQueryString.contains("EXISTS")) {
 			throw new IgnoreMeException();
 		}
-		int secondCount = getSecondQuery(tables, randomWhereCondition, groupBys, joinStatements);
+		int secondCount = getSecondQuery(tableRefs, randomWhereCondition, groupBys, joinStatements);
 		if (firstCount != secondCount && firstCount != NOT_FOUND && secondCount != NOT_FOUND) {
 			state.queryString = firstQueryString + ";\n" + secondQueryString + ";";
 			throw new AssertionError(firstCount + " " + secondCount);
@@ -101,7 +102,7 @@ public class SQLite3MetamorphicQuerySynthesizer {
 		return gen.getRandomExpression();
 	}
 
-	private int getSecondQuery(List<Table> list, SQLite3Expression randomWhereCondition,
+	private int getSecondQuery(List<SQLite3Expression> fromList, SQLite3Expression randomWhereCondition,
 			List<SQLite3Expression> groupBys, List<Join> joinStatements) throws SQLException {
 		SQLite3SelectStatement select = new SQLite3SelectStatement();
 		setRandomOrderBy(select);
@@ -109,7 +110,7 @@ public class SQLite3MetamorphicQuerySynthesizer {
 				randomWhereCondition);
 		SQLite3PostfixText asText = new SQLite3PostfixText(isTrue, " as count", null);
 		select.setFetchColumns(Arrays.asList(asText));
-		select.setFromTables(list);
+		select.setFromTables(fromList);
 		select.setSelectType(SelectType.ALL);
 		select.setJoinClauses(joinStatements);
 		int secondCount = 0;
@@ -131,7 +132,7 @@ public class SQLite3MetamorphicQuerySynthesizer {
 		return secondCount;
 	}
 
-	private int getFirstQueryCount(Connection con, List<Table> list, SQLite3Expression randomWhereCondition,
+	private int getFirstQueryCount(Connection con, List<SQLite3Expression> fromList, SQLite3Expression randomWhereCondition,
 			List<SQLite3Expression> groupBys, List<Join> joinStatements) throws SQLException {
 		SQLite3SelectStatement select = new SQLite3SelectStatement();
 		select.setGroupByClause(groupBys);
@@ -143,7 +144,7 @@ public class SQLite3MetamorphicQuerySynthesizer {
 				Arrays.asList(new ColumnName(new Column("*", SQLite3DataType.INT, false, false, null), null)),
 				SQLite3AggregateFunction.COUNT);
 		select.setFetchColumns(Arrays.asList(aggr));
-		select.setFromTables(list);
+		select.setFromTables(fromList);
 		select.setWhereClause(randomWhereCondition);
 		select.setSelectType(SelectType.ALL);
 		select.setJoinClauses(joinStatements);

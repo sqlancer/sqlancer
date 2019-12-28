@@ -21,6 +21,7 @@ import lama.sqlite3.ast.SQLite3Expression.MatchOperation;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Exist;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3TableReference;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Text;
 import lama.sqlite3.ast.SQLite3Expression.Subquery;
 import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
@@ -31,7 +32,6 @@ import lama.sqlite3.ast.SQLite3WindowFunction;
 import lama.sqlite3.ast.SQLite3WindowFunctionExpression;
 import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecBetween;
 import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecTerm;
-import lama.sqlite3.gen.SQLite3Common;
 import lama.visitor.ToStringVisitor;
 
 public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> implements SQLite3Visitor {
@@ -125,11 +125,13 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 			if (i != 0) {
 				sb.append(", ");
 			}
-			sb.append(s.getFromList().get(i).getName());
-			// FIXME metamorphic
-			if (Randomly.getBoolean()) {
-				sb.append(" ");
-				sb.append(SQLite3Common.getIndexedClause("i0"));
+			if (s.getFromList().get(i) instanceof SQLite3SelectStatement) {
+				sb.append("(");
+				// TODO: fix this workaround
+				visit(s.getFromList().get(i));
+				sb.append(")");
+			} else {
+				visit(s.getFromList().get(i));
 			}
 		}
 		for (Join j : s.getJoinClauses()) {
@@ -474,6 +476,19 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		visit(between.getLeft());
 		sb.append(" AND ");
 		visit(between.getRight());
+	}
+
+	@Override
+	public void visit(SQLite3TableReference tableReference) {
+		sb.append(tableReference.getTable().getName());
+		if (tableReference.getIndexedBy() == null) {
+			if (Randomly.getBoolean()) {
+				sb.append(" NOT INDEXED");
+			}
+		} else {
+			sb.append(" INDEXED BY ");
+			sb.append(tableReference.getIndexedBy());
+		}
 	}
 	
 	

@@ -44,7 +44,6 @@ import lama.sqlite3.schema.SQLite3Schema.Column;
 import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
 import lama.sqlite3.schema.SQLite3Schema.RowValue;
 import lama.sqlite3.schema.SQLite3Schema.Table;
-import lama.sqlite3.schema.SQLite3Schema.Tables;
 
 public class SQLite3ExpressionGenerator {
 
@@ -108,8 +107,7 @@ public class SQLite3ExpressionGenerator {
 		return expressions;
 	}
 	
-	public List<Join> getRandomJoinClauses(List<Column> columns, Tables tab) {
-		List<Table> tables = tab.getTables();
+	public List<Join> getRandomJoinClauses(List<Table> tables) {
 		List<Join> joinStatements = new ArrayList<>();
 		if (Randomly.getBoolean() && tables.size() > 1) {
 			int nrJoinClauses = (int) Randomly.getNotCachedInteger(0, tables.size());
@@ -358,9 +356,10 @@ public class SQLite3ExpressionGenerator {
 
 	private SQLite3Expression getRandomColumn() {
 		Column c = Randomly.fromList(columns);
-		return new ColumnName(c, rw == null ? null : rw.getValues().get(c));
+		ColumnName columnName = new ColumnName(c, rw == null ? null : rw.getValues().get(c));
+		return columnName;
 	}
-
+	
 	enum Attribute {
 		VARIADIC, NONDETERMINISTIC
 	};
@@ -421,7 +420,7 @@ public class SQLite3ExpressionGenerator {
 		JSON_ARRAY_LENGTH("json_array_length", 1), //
 		JSON_TYPE("json_type", 1), //
 		JSON_VALID("json_valid", 1), //
-		JSON_QUOTE("json_quote", 1),
+		JSON_QUOTE("json_quote", 1), //
 		
 		// FTS
 		HIGHLIGHT("highlight", 4);

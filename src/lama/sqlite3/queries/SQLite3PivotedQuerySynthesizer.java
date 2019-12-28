@@ -134,7 +134,7 @@ public class SQLite3PivotedQuerySynthesizer {
 			joinStatements.add(j);
 		}
 		selectStatement.setJoinClauses(joinStatements);
-		selectStatement.setFromTables(tables);
+		selectStatement.setFromTables(SQLite3Common.getTableRefs(tables, s));
 
 		// TODO: also implement a wild-card check (*)
 		// filter out row ids from the select because the hinder the reduction process

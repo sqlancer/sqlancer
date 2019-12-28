@@ -20,6 +20,7 @@ import lama.sqlite3.ast.SQLite3Expression.SQLite3Exist;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3TableReference;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Text;
 import lama.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.Subquery;
@@ -281,7 +282,11 @@ public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
 
 	@Override
 	public void visit(SQLite3WindowFunctionFrameSpecBetween between) {
-		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visit(SQLite3TableReference tableReference) {
 		
 	}
 

@@ -16,8 +16,10 @@ import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3FrameSpecKind;
 import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecBetween;
 import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecTerm;
 import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecTerm.SQLite3WindowFunctionFrameSpecTermKind;
+import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
 import lama.sqlite3.schema.SQLite3Schema;
+import lama.sqlite3.schema.SQLite3Schema.Table;
 import lama.sqlite3.schema.SQLite3Schema.Tables;
 
 public class SQLite3RandomQuerySynthesizer {
@@ -85,13 +87,18 @@ public class SQLite3RandomQuerySynthesizer {
 			}
 		}
 		select.setFetchColumns(expressions);
-		// FROM ...
-		select.setFromList(targetTables.getTables());
-		
+		List<Table> tables = targetTables.getTables();
 		if (Randomly.getBoolean()) {
-			// JOIN ...
-			select.setJoinClauses(gen.getRandomJoinClauses(targetTables.getColumns(), targetTables));
+			// JOIN ... (might remove tables)
+			select.setJoinClauses(gen.getRandomJoinClauses(tables));
 		}
+		// FROM ...
+		select.setFromList(SQLite3Common.getTableRefs(tables, s));
+		// TODO: no values are referenced from this sub query yet
+		if (Randomly.getBooleanWithSmallProbability()) {
+			select.getFromList().add(SQLite3RandomQuerySynthesizer.generate(globalState, Randomly.smallNumber() + 1));
+		}
+		
 		// WHERE
 		if (Randomly.getBoolean()) {
 			select.setWhereClause(gen.getRandomExpression());

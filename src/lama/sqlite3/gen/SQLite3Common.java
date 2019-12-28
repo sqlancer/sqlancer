@@ -13,6 +13,7 @@ import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3TableReference;
 import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema;
 import lama.sqlite3.schema.SQLite3Schema.Column;
@@ -153,6 +154,20 @@ public class SQLite3Common {
 
 	public static Column createColumn(int i) {
 		return new Column(createColumnName(i), SQLite3DataType.NONE, false, false, null);
+	}
+
+	public static List<SQLite3Expression> getTableRefs(List<Table> tables, SQLite3Schema s) {
+		List<SQLite3Expression> tableRefs = new ArrayList<>();
+		for (Table t : tables) {
+			SQLite3TableReference tableRef;
+			if (Randomly.getBoolean() && !s.getIndexNames().isEmpty()) {
+				tableRef = new SQLite3TableReference(s.getRandomIndexOrBailout(), t);
+			} else {
+				tableRef = new SQLite3TableReference(t);
+			}
+			tableRefs.add(tableRef);
+		}
+		return tableRefs;
 	}
 
 }

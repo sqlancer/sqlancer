@@ -9,7 +9,7 @@ import lama.sqlite3.schema.SQLite3Schema.Table;
 public class SQLite3SelectStatement extends SQLite3Expression {
 
 	private SelectType fromOptions;
-	private List<Table> fromList = Collections.emptyList();
+	private List<SQLite3Expression> fromList = Collections.emptyList();
 	private SQLite3Expression whereClause;
 	private List<SQLite3Expression> groupByClause = Collections.emptyList();
 	private SQLite3Expression limitClause;
@@ -27,7 +27,7 @@ public class SQLite3SelectStatement extends SQLite3Expression {
 		this.setFromOptions(fromOptions);
 	}
 
-	public void setFromTables(List<Table> fromTables) {
+	public void setFromTables(List<SQLite3Expression> fromTables) {
 		this.setFromList(fromTables);
 	}
 
@@ -39,11 +39,11 @@ public class SQLite3SelectStatement extends SQLite3Expression {
 		this.fromOptions = fromOptions;
 	}
 
-	public List<Table> getFromList() {
+	public List<SQLite3Expression> getFromList() {
 		return fromList;
 	}
 
-	public void setFromList(List<Table> fromList) {
+	public void setFromList(List<SQLite3Expression> fromList) {
 		this.fromList = fromList;
 	}
 
