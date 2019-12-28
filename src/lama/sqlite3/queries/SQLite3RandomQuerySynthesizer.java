@@ -38,7 +38,7 @@ public class SQLite3RandomQuerySynthesizer {
 		// DISTINCT or ALL
 		select.setSelectType(Randomly.fromOptions(SelectType.values()));
 		for (int i = 0; i < size; i++) {
-			if (Randomly.getBoolean()) {
+			if (Randomly.getBooleanWithSmallProbability()) {
 				SQLite3Expression baseWindowFunction;
 				boolean normalAggregateFunction = Randomly.getBoolean();
 				if (!normalAggregateFunction) {
