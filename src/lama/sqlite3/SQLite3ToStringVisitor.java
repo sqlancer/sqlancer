@@ -1,5 +1,6 @@
 package lama.sqlite3;
 
+import java.util.Arrays;
 import java.util.List;
 
 import lama.Randomly;
@@ -87,12 +88,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 	public void visit(Function f) {
 		sb.append(f.getName());
 		sb.append("(");
-		for (int i = 0; i < f.getArguments().length; i++) {
-			if (i != 0) {
-				sb.append(", ");
-			}
-			visit(f.getArguments()[i]);
-		}
+		visit(f.getArguments());
 		sb.append(")");
 	}
 
@@ -112,13 +108,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		if (s.getFetchColumns() == null) {
 			sb.append("*");
 		} else {
-			for (int i = 0; i < s.getFetchColumns().size(); i++) {
-				if (i != 0) {
-					sb.append(", ");
-				}
-				SQLite3Expression column = s.getFetchColumns().get(i);
-				visit(column);
-			}
+			visit(s.getFetchColumns());
 		}
 		sb.append(" FROM ");
 		for (int i = 0; i < s.getFromList().size(); i++) {
@@ -146,13 +136,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		if (s.getGroupByClause().size() > 0) {
 			sb.append(" ");
 			sb.append("GROUP BY ");
-			List<SQLite3Expression> groupBys = s.getGroupByClause();
-			for (int i = 0; i < groupBys.size(); i++) {
-				if (i != 0) {
-					sb.append(", ");
-				}
-				visit(groupBys.get(i));
-			}
+			visit(s.getGroupByClause());
 		}
 		if (s.getHavingClause() != null) {
 			sb.append(" HAVING ");
@@ -160,13 +144,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		}
 		if (!s.getOrderByClause().isEmpty()) {
 			sb.append(" ORDER BY ");
-			List<SQLite3Expression> orderBys = s.getOrderByClause();
-			for (int i = 0; i < orderBys.size(); i++) {
-				if (i != 0) {
-					sb.append(", ");
-				}
-				visit(s.getOrderByClause().get(i));
-			}
+			visit(s.getOrderByClause());
 		}
 		if (s.getLimitClause() != null) {
 			sb.append(" LIMIT ");
@@ -293,12 +271,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		sb.append(" IN ");
 		sb.append("(");
 		if (op.getRightExpressionList() != null) {
-			for (int i = 0; i < op.getRightExpressionList().size(); i++) {
-				if (i != 0) {
-					sb.append(", ");
-				}
-				visit(op.getRightExpressionList().get(i));
-			}
+			visit(op.getRightExpressionList());
 		} else {
 			visit(op.getRightSelect());
 		}
@@ -336,12 +309,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 	public void visit(SQLite3Function func) {
 		sb.append(func.getFunc());
 		sb.append("(");
-		for (int i = 0; i < func.getArgs().length; i++) {
-			if (i != 0) {
-				sb.append(", ");
-			}
-			visit(func.getArgs()[i]);
-		}
+		visit(func.getArgs());
 		sb.append(")");
 	}
 
@@ -389,12 +357,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 	public void visit(SQLite3WindowFunction func) {
 		sb.append(func.getFunc());
 		sb.append("(");
-		for (int i = 0; i < func.getArgs().length; i++) {
-			if (i != 0) {
-				sb.append(", ");
-			}
-			visit(func.getArgs()[i]);
-		}
+		visit(func.getArgs());
 		sb.append(")");
 	}
 
@@ -408,12 +371,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 	@Override
 	public void visit(SQLite3RowValue rw) {
 		sb.append("(");
-		for (int i = 0; i < rw.getExpressions().size(); i++) {
-			if (i != 0) {
-				sb.append(", ");
-			}
-			visit(rw.getExpressions().get(i));
-		}
+		visit(rw.getExpressions());
 		sb.append(")");
 	}
 
@@ -452,15 +410,6 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		sb.append(")");
 	}
 
-	private void visit(List<SQLite3Expression> expressions) {
-		for (int i = 0; i < expressions.size(); i++) {
-			if (i != 0) {
-				sb.append(", ");
-			}
-			visit(expressions.get(i));
-		}
-	}
-
 	@Override
 	public void visit(SQLite3WindowFunctionFrameSpecTerm term) {
 		if (term.getExpression() != null) {
@@ -490,6 +439,18 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 			sb.append(tableReference.getIndexedBy());
 		}
 	}
+
+	private void visit(List<SQLite3Expression> expressions) {
+		for (int i = 0; i < expressions.size(); i++) {
+			if (i != 0) {
+				sb.append(", ");
+			}
+			visit(expressions.get(i));
+		}
+	}
 	
-	
+	private void visit(SQLite3Expression[] expressions) {
+		visit(Arrays.asList(expressions));
+	}
+
 }
