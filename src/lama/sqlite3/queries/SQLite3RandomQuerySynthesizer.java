@@ -87,6 +87,11 @@ public class SQLite3RandomQuerySynthesizer {
 		select.setFetchColumns(expressions);
 		// FROM ...
 		select.setFromList(targetTables.getTables());
+		
+		if (Randomly.getBoolean()) {
+			// JOIN ...
+			select.setJoinClauses(gen.getRandomJoinClauses(targetTables.getColumns(), targetTables));
+		}
 		// WHERE
 		if (Randomly.getBoolean()) {
 			select.setWhereClause(gen.getRandomExpression());
