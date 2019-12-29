@@ -9,7 +9,6 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.postgres.PostgresGlobalState;
-import lama.postgres.PostgresProvider;
 import lama.postgres.PostgresSchema.PostgresIndex;
 
 public class PostgresReindexGenerator {
@@ -31,7 +30,7 @@ public class PostgresReindexGenerator {
 		switch (scope) {
 		case INDEX:
 			sb.append("INDEX ");
-			if (PostgresProvider.IS_POSTGRES_TWELVE && Randomly.getBoolean()) {
+			if (Randomly.getBoolean()) {
 				sb.append("CONCURRENTLY ");
 			}
 			List<PostgresIndex> indexes = globalState.getSchema().getRandomTable().getIndexes();
@@ -42,14 +41,14 @@ public class PostgresReindexGenerator {
 			break;
 		case TABLE:
 			sb.append("TABLE ");
-			if (PostgresProvider.IS_POSTGRES_TWELVE && Randomly.getBoolean()) {
+			if (Randomly.getBoolean()) {
 				sb.append("CONCURRENTLY ");
 			}
 			sb.append(globalState.getSchema().getRandomTable(t -> !t.isView()).getName());
 			break;
 		case DATABASE:
 			sb.append("DATABASE ");
-			if (PostgresProvider.IS_POSTGRES_TWELVE && Randomly.getBoolean()) {
+			if (Randomly.getBoolean()) {
 				sb.append("CONCURRENTLY ");
 			}
 			sb.append(globalState.getSchema().getDatabaseName());

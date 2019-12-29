@@ -9,7 +9,6 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.postgres.PostgresGlobalState;
-import lama.postgres.PostgresProvider;
 import lama.postgres.PostgresSchema.PostgresColumn;
 import lama.postgres.PostgresSchema.PostgresStatisticsObject;
 import lama.postgres.PostgresSchema.PostgresTable;
@@ -31,23 +30,20 @@ public class PostgresStatisticsGenerator {
 		if (Randomly.getBoolean()) {
 			sb.append(" (");
 			List<String> statsSubset;
-			if (PostgresProvider.IS_POSTGRES_TWELVE) {
-				statsSubset = Randomly.nonEmptySubset("ndistinct", "dependencies", "mcv");
-			} else {
-				statsSubset = Randomly.nonEmptySubset("ndistinct", "dependencies");
-			}
+			statsSubset = Randomly.nonEmptySubset("ndistinct", "dependencies", "mcv");
 			sb.append(statsSubset.stream().collect(Collectors.joining(", ")));
 			sb.append(")");
 		}
-		
-		List<PostgresColumn> randomColumns = randomTable.getRandomNonEmptyColumnSubset(globalState.getRandomly().getInteger(2, randomTable.getColumns().size()));
+
+		List<PostgresColumn> randomColumns = randomTable.getRandomNonEmptyColumnSubset(
+				globalState.getRandomly().getInteger(2, randomTable.getColumns().size()));
 		sb.append(" ON ");
 		sb.append(randomColumns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
 		sb.append(" FROM ");
 		sb.append(randomTable.getName());
 		return new QueryAdapter(sb.toString(), Arrays.asList("cannot have more than 8 columns in statistics"), true);
 	}
-	
+
 	public static Query remove(PostgresGlobalState globalState) {
 		StringBuilder sb = new StringBuilder("DROP STATISTICS ");
 		PostgresTable randomTable = globalState.getSchema().getRandomTable();

@@ -8,7 +8,6 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.postgres.PostgresGlobalState;
-import lama.postgres.PostgresProvider;
 import lama.postgres.PostgresSchema;
 import lama.postgres.PostgresSchema.PostgresColumn;
 import lama.postgres.PostgresSchema.PostgresDataType;
@@ -260,7 +259,7 @@ public class PostgresTableGenerator {
 				break;
 			case GENERATED:
 				sb.append("GENERATED ");
-				if (Randomly.getBoolean() && PostgresProvider.IS_POSTGRES_TWELVE) {
+				if (Randomly.getBoolean()) {
 					sb.append(" ALWAYS AS (");
 					sb.append(PostgresVisitor
 							.asString(PostgresExpressionGenerator.generateExpression(r, columnsToBeAdded, type)));

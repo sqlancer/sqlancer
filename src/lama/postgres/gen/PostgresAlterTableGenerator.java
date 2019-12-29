@@ -7,7 +7,6 @@ import lama.IgnoreMeException;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
-import lama.postgres.PostgresProvider;
 import lama.postgres.PostgresSchema;
 import lama.postgres.PostgresSchema.PostgresColumn;
 import lama.postgres.PostgresSchema.PostgresDataType;
@@ -54,7 +53,8 @@ public class PostgresAlterTableGenerator {
 		REPLICA_IDENTITY
 	}
 
-	public PostgresAlterTableGenerator(PostgresTable randomTable, Randomly r, PostgresSchema s, boolean generateOnlyKnown, List<String> opClasses, List<String> operators) {
+	public PostgresAlterTableGenerator(PostgresTable randomTable, Randomly r, PostgresSchema s,
+			boolean generateOnlyKnown, List<String> opClasses, List<String> operators) {
 		this.randomTable = randomTable;
 		this.r = r;
 		this.schema = s;
@@ -63,7 +63,8 @@ public class PostgresAlterTableGenerator {
 		this.operators = operators;
 	}
 
-	public static Query create(PostgresTable randomTable, Randomly r, PostgresSchema s, boolean generateOnlyKnown, List<String> opClasses, List<String> operators) {
+	public static Query create(PostgresTable randomTable, Randomly r, PostgresSchema s, boolean generateOnlyKnown,
+			List<String> opClasses, List<String> operators) {
 		return new PostgresAlterTableGenerator(randomTable, r, s, generateOnlyKnown, opClasses, operators).generate();
 	}
 
@@ -118,9 +119,7 @@ public class PostgresAlterTableGenerator {
 			action.remove(Action.ADD_TABLE_CONSTRAINT_USING_INDEX);
 			action.remove(Action.CLUSTER_ON);
 		}
-		if (PostgresProvider.IS_POSTGRES_TWELVE) {
-			action.remove(Action.SET_WITH_OIDS);
-		}
+		action.remove(Action.SET_WITH_OIDS);
 		if (action.isEmpty()) {
 			throw new IgnoreMeException();
 		}
@@ -176,9 +175,7 @@ public class PostgresAlterTableGenerator {
 				errors.add("must be changed in child tables too");
 				errors.add("could not determine which collation to use for index expression");
 				errors.add("bit string too long for type bit varying");
-				if (PostgresProvider.IS_POSTGRES_TWELVE) {
-					errors.add("cannot alter type of a column used by a generated column");
-				}
+				errors.add("cannot alter type of a column used by a generated column");
 				break;
 			case ALTER_COLUMN_SET_DROP_DEFAULT:
 				alterColumn(randomTable, sb);

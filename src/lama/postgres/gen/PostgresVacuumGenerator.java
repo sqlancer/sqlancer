@@ -9,7 +9,6 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.postgres.PostgresGlobalState;
-import lama.postgres.PostgresProvider;
 import lama.postgres.PostgresSchema.PostgresTable;
 
 public class PostgresVacuumGenerator {
@@ -22,19 +21,14 @@ public class PostgresVacuumGenerator {
 			// ...] ) ] [ table_name [ (column_name [, ...] ) ] ]
 			sb.append("(");
 			for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
-				ArrayList<String> opts = new ArrayList<String>(
-						Arrays.asList("FULL", "FREEZE", "ANALYZE", "VERBOSE", "DISABLE_PAGE_SKIPPING"));
-				if (PostgresProvider.IS_POSTGRES_TWELVE) {
-					opts.add("SKIP_LOCKED");
-					opts.add("INDEX_CLEANUP");
-					opts.add("TRUNCATE");
-				}
+				ArrayList<String> opts = new ArrayList<String>(Arrays.asList("FULL", "FREEZE", "ANALYZE", "VERBOSE",
+						"DISABLE_PAGE_SKIPPING", "SKIP_LOCKED", "INDEX_CLEANUP", "TRUNCATE"));
 				String option = Randomly.fromList(opts);
 				if (i != 0) {
 					sb.append(", ");
 				}
 				sb.append(option);
-				if (PostgresProvider.IS_POSTGRES_TWELVE && Randomly.getBoolean()) {
+				if (Randomly.getBoolean()) {
 					sb.append(" ");
 					sb.append(Randomly.fromOptions(1, 0));
 				}
@@ -58,9 +52,11 @@ public class PostgresVacuumGenerator {
 		}
 		List<String> errors = new ArrayList<>();
 		errors.add("VACUUM cannot run inside a transaction block");
-		errors.add("deadlock");  /* "FULL" commented out due to
-		 * https://www.postgresql.org/message-id/CA%2Bu7OA6pL%
-		 * 2B7Xm_NXHLenxffe3tCr3gTamVdr7zPjcWqW0RFM-A%40mail.gmail.com*/
+		errors.add("deadlock"); /*
+								 * "FULL" commented out due to
+								 * https://www.postgresql.org/message-id/CA%2Bu7OA6pL%
+								 * 2B7Xm_NXHLenxffe3tCr3gTamVdr7zPjcWqW0RFM-A%40mail.gmail.com
+								 */
 		errors.add("ERROR: ANALYZE option must be specified when a column list is provided");
 		errors.add("VACUUM option DISABLE_PAGE_SKIPPING cannot be used with FULL");
 		return new QueryAdapter(sb.toString(), errors);

@@ -7,7 +7,6 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.postgres.PostgresGlobalState;
-import lama.postgres.PostgresProvider;
 import lama.postgres.PostgresSchema.PostgresTable;
 
 public class PostgresAnalyzeGenerator {
@@ -17,7 +16,7 @@ public class PostgresAnalyzeGenerator {
 		StringBuilder sb = new StringBuilder("ANALYZE");
 		if (Randomly.getBoolean()) {
 			sb.append("(");
-			if (Randomly.getBoolean() || !PostgresProvider.IS_POSTGRES_TWELVE) {
+			if (Randomly.getBoolean()) {
 				sb.append(" VERBOSE");
 			} else {
 				sb.append(" SKIP_LOCKED");

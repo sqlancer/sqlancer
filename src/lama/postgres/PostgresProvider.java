@@ -52,8 +52,6 @@ import lama.sqlite3.gen.SQLite3Common;
 // IN
 public class PostgresProvider implements DatabaseProvider {
 
-	public static final boolean IS_POSTGRES_TWELVE = true;
-
 	public static boolean GENERATE_ONLY_KNOWN = false;
 
 	private PostgresGlobalState globalState;

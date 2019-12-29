@@ -21,18 +21,17 @@ public class PostgresCommon {
 
 	private PostgresCommon() {
 	}
-	
+
 	public static void addCommonFetchErrors(List<String> errors) {
 		errors.add("FULL JOIN is only supported with merge-joinable or hash-joinable join conditions");
 		errors.add("but it cannot be referenced from this part of the query");
 		errors.add("missing FROM-clause entry for table");
 	}
-	
+
 	public static void addCommonTableErrors(List<String> errors) {
 		errors.add("is not commutative"); // exclude
 		errors.add("operator requires run-time type coercion"); // exclude
 	}
-	
 
 	public static void addCommonExpressionErrors(List<String> errors) {
 		errors.add("You might need to add explicit type casts");
@@ -96,10 +95,10 @@ public class PostgresCommon {
 		errors.add("requested length too large"); // repeat
 		errors.add("invalid memory alloc request size"); // repeat
 		errors.add("encoding conversion from UTF8 to ASCII not supported"); // to_ascii
-		errors.add("negative substring length not allowed"); //substr
+		errors.add("negative substring length not allowed"); // substr
 		errors.add("invalid mask length"); // set_masklen
 	}
-	
+
 	private static void addCommonRegexExpressionErrors(List<String> errors) {
 		errors.add("is not a valid hexadecimal digit");
 	}
@@ -110,14 +109,14 @@ public class PostgresCommon {
 		errors.add("out of range");
 		errors.add("malformed range literal");
 	}
-	
+
 	public static void addCommonInsertUpdateErrors(List<String> errors) {
 		errors.add("value too long for type character");
 		errors.add("not found in view targetlist");
 	}
-	
-	public static boolean appendDataType(PostgresDataType type, StringBuilder sb, boolean allowSerial, boolean generateOnlyKnown, List<String> opClasses)
-			throws AssertionError {
+
+	public static boolean appendDataType(PostgresDataType type, StringBuilder sb, boolean allowSerial,
+			boolean generateOnlyKnown, List<String> opClasses) throws AssertionError {
 		boolean serial = false;
 		switch (type) {
 		case BOOLEAN:
@@ -171,7 +170,7 @@ public class PostgresCommon {
 		case BIT:
 			sb.append("BIT");
 //			if (Randomly.getBoolean()) {
-				sb.append(" VARYING");
+			sb.append(" VARYING");
 //			}
 			sb.append("(");
 			sb.append(Randomly.getNotCachedInteger(1, 500));
@@ -189,7 +188,7 @@ public class PostgresCommon {
 	public enum TableConstraints {
 		CHECK, UNIQUE, PRIMARY_KEY, FOREIGN_KEY, EXCLUDE
 	}
-	
+
 	private enum StorageParameters {
 		FILLFACTOR("fillfactor", (r) -> r.getInteger(10, 100)),
 		// toast_tuple_target
@@ -217,14 +216,12 @@ public class PostgresCommon {
 			this.op = op;
 		}
 	}
-	
+
 	public static void generateWith(StringBuilder sb, Randomly r, List<String> errors) {
 		if (Randomly.getBoolean()) {
 			sb.append(" WITH (");
 			ArrayList<StorageParameters> values = new ArrayList<>(Arrays.asList(StorageParameters.values()));
-			if (PostgresProvider.IS_POSTGRES_TWELVE) {
-				values.remove(StorageParameters.OIDS);
-			}
+			values.remove(StorageParameters.OIDS);
 			errors.add("unrecognized parameter");
 			errors.add("ALTER TABLE / ADD CONSTRAINT USING INDEX is not supported on partitioned tables");
 			List<StorageParameters> subset = Randomly.nonEmptySubset(values);
@@ -242,7 +239,8 @@ public class PostgresCommon {
 	}
 
 	public static void addTableConstraints(boolean excludePrimaryKey, StringBuilder sb, PostgresTable table, Randomly r,
-			PostgresSchema schema, List<String> errors, List<String> opClasses, List<String> operators) throws AssertionError {
+			PostgresSchema schema, List<String> errors, List<String> opClasses, List<String> operators)
+			throws AssertionError {
 		// TODO constraint name
 		List<TableConstraints> tableConstraints = Randomly.nonEmptySubset(TableConstraints.values());
 		if (excludePrimaryKey) {
@@ -258,12 +256,15 @@ public class PostgresCommon {
 		}
 	}
 
-	public static void addTableConstraint(StringBuilder sb, PostgresTable table, Randomly r, PostgresSchema schema, List<String> errors, List<String> opClasses, List<String> operators) {
-		addTableConstraint(sb, table, r, Randomly.fromOptions(TableConstraints.values()), schema, errors, opClasses, operators);
+	public static void addTableConstraint(StringBuilder sb, PostgresTable table, Randomly r, PostgresSchema schema,
+			List<String> errors, List<String> opClasses, List<String> operators) {
+		addTableConstraint(sb, table, r, Randomly.fromOptions(TableConstraints.values()), schema, errors, opClasses,
+				operators);
 	}
 
 	private static void addTableConstraint(StringBuilder sb, PostgresTable table, Randomly r, TableConstraints t,
-			PostgresSchema schema,  List<String> errors, List<String> opClasses, List<String> operators) throws AssertionError {
+			PostgresSchema schema, List<String> errors, List<String> opClasses, List<String> operators)
+			throws AssertionError {
 		List<PostgresColumn> randomNonEmptyColumnSubset = table.getRandomNonEmptyColumnSubset();
 		List<PostgresColumn> otherColumns;
 		PostgresCommon.addCommonExpressionErrors(errors);
@@ -352,7 +353,8 @@ public class PostgresCommon {
 			if (Randomly.getBoolean()) {
 				sb.append(" WHERE ");
 				sb.append("(");
-				sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(r, table.getColumns(), PostgresDataType.BOOLEAN)));
+				sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(r, table.getColumns(),
+						PostgresDataType.BOOLEAN)));
 				sb.append(")");
 			}
 			break;
@@ -373,7 +375,8 @@ public class PostgresCommon {
 	}
 
 	// complete
-	private static void appendExcludeElement(StringBuilder sb, Randomly r, List<PostgresColumn> columns, List<String> opClasses) {
+	private static void appendExcludeElement(StringBuilder sb, Randomly r, List<PostgresColumn> columns,
+			List<String> opClasses) {
 		if (Randomly.getBoolean()) {
 			// append column name
 			sb.append(Randomly.fromList(columns).getName());

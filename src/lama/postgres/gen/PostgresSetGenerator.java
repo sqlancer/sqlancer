@@ -8,7 +8,6 @@ import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.postgres.PostgresGlobalState;
-import lama.postgres.PostgresProvider;
 
 public class PostgresSetGenerator {
 
@@ -93,7 +92,8 @@ public class PostgresSetGenerator {
 		EFFECTIVE_CACHE_SIZE("effective_cache_size", (r) -> r.getInteger(1, 2147483647)),
 		JIT_ABOVE_COST("jit_above_cost", (r) -> Randomly.fromOptions(0, r.getLong(-1, Long.MAX_VALUE))),
 		JIT_INLINE_ABOVE_COST("jit_inline_above_cost", (r) -> Randomly.fromOptions(0, r.getLong(-1, Long.MAX_VALUE))),
-		JIT_OPTIMIZE_ABOVE_COST("jit_optimize_above_cost", (r) -> Randomly.fromOptions(0, r.getLong(-1, Long.MAX_VALUE))),
+		JIT_OPTIMIZE_ABOVE_COST("jit_optimize_above_cost",
+				(r) -> Randomly.fromOptions(0, r.getLong(-1, Long.MAX_VALUE))),
 		// 19.7.3. Genetic Query Optimizer
 		// https://www.postgresql.org/docs/current/runtime-config-query.html#RUNTIME-CONFIG-QUERY-GEQO
 		GEQO("geqo", (r) -> Randomly.fromOptions(1, 0)),
@@ -127,9 +127,7 @@ public class PostgresSetGenerator {
 	public static Query create(PostgresGlobalState globalState) {
 		StringBuilder sb = new StringBuilder();
 		ArrayList<ConfigurationOption> options = new ArrayList<>(Arrays.asList(ConfigurationOption.values()));
-		if (PostgresProvider.IS_POSTGRES_TWELVE) {
-			options.remove(ConfigurationOption.DEFAULT_WITH_OIDS);
-		}
+		options.remove(ConfigurationOption.DEFAULT_WITH_OIDS);
 		ConfigurationOption option = Randomly.fromList(options);
 		sb.append("SET ");
 		if (Randomly.getBoolean()) {
