@@ -150,7 +150,6 @@ public class Main {
 				currentFileWriter.flush();
 
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -355,11 +354,6 @@ public class Main {
 							java.sql.DatabaseMetaData meta = con.getMetaData();
 							state.databaseVersion = meta.getDatabaseProductVersion();
 							provider.generateAndTestDatabase(databaseName, con, logger, state, manager, options);
-//							try {
-//								con.close();
-//							} catch (Exception e) {
-//								
-//							}
 						} catch (IgnoreMeException e) {
 							continue;
 						} catch (ReduceMeException reduce) {
@@ -368,8 +362,6 @@ public class Main {
 							break;
 						} catch (Throwable reduce) {
 							reduce.printStackTrace();
-//							if (true)
-//								System.exit(-1);
 							state.exception = reduce.getMessage();
 							logger.logFileWriter = null;
 							logger.logException(reduce, state);
