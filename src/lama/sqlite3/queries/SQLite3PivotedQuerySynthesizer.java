@@ -58,7 +58,6 @@ public class SQLite3PivotedQuerySynthesizer {
 	private final List<String> errors = new ArrayList<>();
 	private List<SQLite3Expression> colExpressions;
 	private SQLite3GlobalState globalState;
-	private MainOptions options;
 
 	public SQLite3PivotedQuerySynthesizer(Connection con, Randomly r, SQLite3GlobalState globalState) throws SQLException {
 		this.database = con;
@@ -69,7 +68,6 @@ public class SQLite3PivotedQuerySynthesizer {
 
 	public void generateAndCheckQuery(SQLite3GlobalState state, StateLogger logger, MainOptions options)
 			throws SQLException {
-		this.options = options;
 		Query query = getQueryThatContainsAtLeastOneRow(state);
 		if (options.logEachSelect()) {
 			logger.writeCurrent(query.getQueryString());

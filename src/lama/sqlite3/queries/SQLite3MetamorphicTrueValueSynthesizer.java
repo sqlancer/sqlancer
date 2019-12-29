@@ -28,6 +28,7 @@ import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.SQLite3SelectStatement.SelectType;
 import lama.sqlite3.ast.SQLite3UnaryOperation;
 import lama.sqlite3.ast.SQLite3UnaryOperation.UnaryOperator;
+import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
 import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema;
@@ -43,9 +44,7 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 	// (SELECT c0 is NOT 0 FROM t0));
 
 	private SQLite3Schema s;
-	private Randomly r;
 	private Connection con;
-	private SQLite3StateToReproduce state;
 	private final List<String> queries = new ArrayList<>();
 	private final List<String> errors = new ArrayList<>();
 	private final SQLite3GlobalState globalState;
@@ -53,9 +52,7 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 	public SQLite3MetamorphicTrueValueSynthesizer(SQLite3Schema s, Randomly r, Connection con,
 			SQLite3StateToReproduce state, SQLite3GlobalState globalState) {
 		this.s = s;
-		this.r = r;
 		this.con = con;
-		this.state = state;
 		this.globalState = globalState;
 		SQLite3Errors.addExpectedExpressionErrors(errors);
 		SQLite3Errors.addMatchQueryErrors(errors);
@@ -110,10 +107,10 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 		SQLite3SelectStatement select = new SQLite3SelectStatement();
 		select.setGroupByClause(groupBys);
 		SQLite3Aggregate count = new SQLite3Aggregate(
-				new ColumnName(new Column("*", SQLite3DataType.INT, false, false, null), null),
+				Arrays.asList(new ColumnName(new Column("*", SQLite3DataType.INT, false, false, null), null)),
 				SQLite3AggregateFunction.COUNT);
 		select.setFetchColumns(Arrays.asList(count));
-		select.setFromTables(list);
+		select.setFromTables(SQLite3Common.getTableRefs(list, s));
 		select.setSelectType(SelectType.ALL);
 		select.setJoinClauses(joinStatements);
 		int totalCount = 0;
@@ -143,10 +140,10 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 		SQLite3SelectStatement select = new SQLite3SelectStatement();
 		select.setGroupByClause(groupBys);
 		SQLite3Aggregate aggr = new SQLite3Aggregate(
-				new ColumnName(new Column("*", SQLite3DataType.INT, false, false, null), null),
+				Arrays.asList(new ColumnName(new Column("*", SQLite3DataType.INT, false, false, null), null)),
 				SQLite3AggregateFunction.COUNT);
 		select.setFetchColumns(Arrays.asList(aggr));
-		select.setFromTables(list);
+		select.setFromTables(SQLite3Common.getTableRefs(list, s));
 		select.setSelectType(SelectType.ALL);
 		select.setJoinClauses(joinStatements);
 		if (m == Mode.TRUE) {
@@ -174,16 +171,6 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 		return totalCount;
 	}
 
-
-	private List<SQLite3Expression> getRandomExpressions(List<Column> columns, Table randomTable) {
-		List<SQLite3Expression> randomExpressions = columns.stream().map(c -> new ColumnName(c, null)).collect(Collectors.toList());
-		if (Randomly.getBoolean()) {
-			for (int i = 0; i < Randomly.smallNumber(); i++) {
-				randomExpressions.add(getRandomWhereCondition(columns));
-			}
-		}
-		return randomExpressions;
-	}
 
 	private SQLite3Expression getRandomWhereCondition(List<Column> columns) {
 		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns);

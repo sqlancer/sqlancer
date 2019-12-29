@@ -76,7 +76,7 @@ public class SQLite3WindowFunctionTester {
 
 		SQLite3Expression windowFunc = generateWindowFunction(columns, windowFunction, false, r);
 		select.setFetchColumns(Arrays.asList(rowid, windowFunc));
-		select.setFromTables(tables);
+		select.setFromTables(SQLite3Common.getTableRefs(tables, s));
 		select.setSelectType(SelectType.ALL);
 		select.setJoinClauses(joinStatements);
 		String totalString = SQLite3Visitor.asString(select);
@@ -164,7 +164,7 @@ public class SQLite3WindowFunctionTester {
 	}
 
 	private SQLite3Expression getRandomWhereCondition(List<Column> columns) {
-		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns).setGlobalState(globalState);
+		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns);
 		// FIXME: enable match clause for multiple tables
 //		if (randomTable.isVirtual()) {
 //			gen.allowMatchClause();
