@@ -42,7 +42,7 @@ public class SQLite3PragmaGenerator {
 		THREADS, //
 		WAL_AUTOCHECKPOINT, //
 		WAL_CHECKPOINT, //
-		WRITEABLE_SCHEMA
+//		WRITEABLE_SCHEMA
 	}
 
 	private final StringBuilder sb = new StringBuilder();
@@ -216,9 +216,10 @@ public class SQLite3PragmaGenerator {
 			sb.append(")");
 			errors.add("database table is locked");
 			break;
-		case WRITEABLE_SCHEMA:
-			createPragma("writable_schema", () -> Randomly.getBoolean());
-			break;
+// writeable schema can cause ALTER TABLE commands to result in a malformed schema
+//		case WRITEABLE_SCHEMA:
+//			createPragma("writable_schema", () -> Randomly.getBoolean());
+//			break;
 		default:
 			throw new AssertionError();
 		}
