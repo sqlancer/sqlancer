@@ -71,6 +71,8 @@ public class SQLite3MetamorphicQuerySynthesizer {
 		errors.add("ON clause references tables to its right");
 		// FIXME implement
 		errors.add("no query solution"); // INDEXED BY
+		errors.add("unable to use function MATCH in the requested context");
+		
 	}
 
 	public void generateAndCheck() throws SQLException {
@@ -158,8 +160,13 @@ public class SQLite3MetamorphicQuerySynthesizer {
 			if (rs == null) {
 				firstCount = NOT_FOUND;
 			} else {
-				while (rs.next()) {
-					firstCount += rs.getInt(1);
+				try {
+					while (rs.next()) {
+						firstCount += rs.getInt(1);
+					}
+				} catch (Exception e) {
+					q.checkException(e);
+					firstCount = NOT_FOUND;
 				}
 				rs.getStatement().close();
 			}
