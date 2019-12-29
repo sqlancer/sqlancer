@@ -1,4 +1,4 @@
-package lama.sqlite3.dml;
+package lama.sqlite3.gen.dml;
 
 import java.util.ArrayList;
 import java.util.Arrays;
