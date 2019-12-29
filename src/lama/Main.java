@@ -32,6 +32,7 @@ public class Main {
 
 	public static final File LOG_DIRECTORY = new File("logs");
 	public static volatile AtomicLong nrQueries = new AtomicLong();
+	public static volatile AtomicLong nrDatabases = new AtomicLong();
 
 	public static class ReduceMeException extends RuntimeException {
 
@@ -262,6 +263,10 @@ public class Main {
 			Main.nrQueries.addAndGet(1);
 		}
 
+		public void incrementCreateDatabase() {
+			Main.nrDatabases.addAndGet(1);
+		}
+
 	}
 
 	public static void printArray(Object[] arr) {
@@ -280,6 +285,7 @@ public class Main {
 
 			private long timeMillis = System.currentTimeMillis();
 			private long lastNrQueries = 0;
+			private long lastNrDbs;
 
 			{
 				timeMillis = System.currentTimeMillis();
@@ -291,12 +297,17 @@ public class Main {
 				long currentNrQueries = nrQueries.get();
 				long nrCurrentQueries = currentNrQueries - lastNrQueries;
 				double throughput = nrCurrentQueries / (elapsedTimeMillis / 1000d);
+				long currentNrDbs = nrDatabases.get();
+				long nrCurrentDbs = currentNrDbs - lastNrDbs;
+				double throughputDbs = nrCurrentDbs / (elapsedTimeMillis / 1000d);
 				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 				Date date = new Date();
-				System.out.println(String.format("[%s] Executed %d queries (%d queries/s). Threads shut down: %d.",
-						dateFormat.format(date), currentNrQueries, (int) throughput, threadsShutdown));
+				System.out.println(String.format(
+						"[%s] Executed %d queries (%d queries/s; %.2f/s dbs). Threads shut down: %d.",
+						dateFormat.format(date), currentNrQueries, (int) throughput, throughputDbs, threadsShutdown));
 				timeMillis = System.currentTimeMillis();
 				lastNrQueries = currentNrQueries;
+				lastNrDbs = currentNrDbs;
 			}
 		}, 5, 5, TimeUnit.SECONDS);
 
