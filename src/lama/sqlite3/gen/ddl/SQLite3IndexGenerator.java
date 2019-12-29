@@ -1,8 +1,9 @@
 package lama.sqlite3.gen.ddl;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import lama.Query;
 import lama.QueryAdapter;
@@ -24,7 +25,7 @@ public class SQLite3IndexGenerator {
 		return new SQLite3IndexGenerator(globalState).create();
 	}
 
-	private final List<String> errors = new ArrayList<>();
+	private final Set<String> errors = new HashSet<>();
 	private final SQLite3GlobalState globalState;
 
 	public SQLite3IndexGenerator(SQLite3GlobalState globalState) throws SQLException {

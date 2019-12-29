@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 public class QueryAdapter extends Query {
 	
@@ -28,7 +27,7 @@ public class QueryAdapter extends Query {
 		this.couldAffectSchema = false;
 	}
 	
-	public QueryAdapter(String query, List<String> expectedErrors, boolean couldAffectSchema) {
+	public QueryAdapter(String query, Collection<String> expectedErrors, boolean couldAffectSchema) {
 		this.query = query;
 		this.expectedErrors = expectedErrors;
 		this.couldAffectSchema = couldAffectSchema;
@@ -50,7 +49,7 @@ public class QueryAdapter extends Query {
 		}
 	}
 
-	protected void checkException(Exception e) throws AssertionError {
+	public void checkException(Exception e) throws AssertionError {
 		boolean isExcluded = false;
 		for (String expectedError : expectedErrors) {
 			if (e.getMessage().contains(expectedError)) {
