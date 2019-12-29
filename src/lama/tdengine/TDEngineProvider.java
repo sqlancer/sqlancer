@@ -144,7 +144,7 @@ public class TDEngineProvider implements DatabaseProvider {
 			}
 			total--;
 		}
-		TDEngineQueryGenerator queryGenerator = new TDEngineQueryGenerator(con, r, newSchema);
+		TDEngineQueryGenerator queryGenerator = new TDEngineQueryGenerator(con, r, newSchema, options);
 		if (options.logEachSelect()) {
 			logger.writeCurrent(state);
 		}

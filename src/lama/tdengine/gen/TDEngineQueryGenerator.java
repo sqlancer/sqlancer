@@ -18,7 +18,6 @@ import lama.QueryAdapter;
 import lama.Randomly;
 import lama.StateToReproduce.TDEngineStateToReproduce;
 import lama.sqlite3.ast.SQLite3Expression.Join;
-import lama.tdengine.TDEngineProvider;
 import lama.tdengine.TDEngineSchema;
 import lama.tdengine.TDEngineSchema.TDEngineColumn;
 import lama.tdengine.TDEngineSchema.TDEngineRowValue;
@@ -41,11 +40,13 @@ public class TDEngineQueryGenerator {
 	private List<TDEngineColumn> fetchTDEngineColumns;
 	private final List<String> errors = new ArrayList<>();
 	private List<TDEngineExpression> colExpressions;
+	private MainOptions options;
 
-	public TDEngineQueryGenerator(Connection con, Randomly r, TDEngineSchema s) throws SQLException {
+	public TDEngineQueryGenerator(Connection con, Randomly r, TDEngineSchema s, MainOptions options) throws SQLException {
 		this.database = con;
 		this.r = r;
 		this.s = s;
+		this.options = options;
 	}
 
 	public void generateAndCheckQuery(TDEngineStateToReproduce state, StateLogger logger, MainOptions options)
@@ -96,7 +97,7 @@ public class TDEngineQueryGenerator {
 		selectStatement.setWhereClause(whereClause);
 		state.whereClause = selectStatement;
 		if (Randomly.getBoolean()) {
-			TDEngineExpression limitClause = generateLimit((long) (Math.pow(TDEngineProvider.NR_INSERT_ROW_TRIES,
+			TDEngineExpression limitClause = generateLimit((long) (Math.pow(options.getMaxNumberInserts(),
 					joinStatements.size() + randomFromTables.getTables().size())));
 			selectStatement.setLimitClause(limitClause);
 			if (Randomly.getBoolean()) {
