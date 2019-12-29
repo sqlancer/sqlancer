@@ -176,7 +176,7 @@ public class PostgresToStringVisitor extends PostgresVisitor {
 		visit(op.getExpr());
 		sb.append(" ");
 		sb.append(op.getOrder());
-		if (op.getForClause() != null && false) {
+		if (op.getForClause() != null) {
 			sb.append(" FOR ");
 			sb.append(op.getForClause());
 		}
