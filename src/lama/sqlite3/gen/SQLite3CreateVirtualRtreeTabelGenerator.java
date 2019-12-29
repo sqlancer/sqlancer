@@ -1,7 +1,9 @@
 package lama.sqlite3.gen;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import lama.Query;
 import lama.QueryAdapter;
@@ -13,7 +15,7 @@ public class SQLite3CreateVirtualRtreeTabelGenerator {
 	
 
 	public static Query createTableStatement(String rTreeTableName, SQLite3GlobalState globalState) {
-		List<String> errors = new ArrayList<>();
+		Set<String> errors = new HashSet<>();
 		List<Column> columns = new ArrayList<>();
 		StringBuilder sb = new StringBuilder("CREATE VIRTUAL TABLE ");
 		sb.append(rTreeTableName);

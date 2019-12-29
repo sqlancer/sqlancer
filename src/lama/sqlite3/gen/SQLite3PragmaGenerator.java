@@ -1,8 +1,8 @@
 package lama.sqlite3.gen;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import lama.QueryAdapter;
@@ -46,7 +46,7 @@ public class SQLite3PragmaGenerator {
 	}
 
 	private final StringBuilder sb = new StringBuilder();
-	private final List<String> errors = new ArrayList<>();
+	private final Set<String> errors = new HashSet<>();
 
 	public void createPragma(String pragmaName, Supplier<Object> supplier) {
 		boolean setSchema = Randomly.getBoolean();

@@ -1,7 +1,7 @@
 package lama.sqlite3.gen;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import lama.Query;
 import lama.QueryAdapter;
@@ -15,7 +15,7 @@ public class SQLite3VirtualFTSTableCommandGenerator {
 	private final StringBuilder sb = new StringBuilder();
 	private final SQLite3Schema s;
 	private final Randomly r;
-	private final List<String> errors = new ArrayList<>();
+	private final Set<String> errors = new HashSet<>();
 	
 	public static Query create(SQLite3GlobalState globalState) {
 		return new SQLite3VirtualFTSTableCommandGenerator(globalState.getSchema(), globalState.getRandomly()).generate();

@@ -20,7 +20,7 @@ import lama.sqlite3.schema.SQLite3Schema.Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 
 public class SQLite3Common {
-
+	
 	public static String getRandomCollate() {
 		return Randomly.fromOptions(" COLLATE BINARY", " COLLATE RTRIM", " COLLATE NOCASE");
 	}

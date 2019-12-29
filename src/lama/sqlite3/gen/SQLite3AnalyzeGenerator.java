@@ -7,12 +7,12 @@ import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
 public class SQLite3AnalyzeGenerator {
 	
-	enum AnalyzeTarget {
+	private enum AnalyzeTarget {
 		SCHEMA, TABLE, INDEX, SQL_MASTER
 	}
 
 	public static Query generateAnalyze(SQLite3GlobalState globalState) {
-		StringBuilder sb = new StringBuilder("ANALYZE");
+		final StringBuilder sb = new StringBuilder("ANALYZE");
 		if (Randomly.getBoolean()) {
 			sb.append(" ");
 			switch (Randomly.fromOptions(AnalyzeTarget.values())) {
