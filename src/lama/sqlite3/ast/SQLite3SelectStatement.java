@@ -3,7 +3,7 @@ package lama.sqlite3.ast;
 import java.util.Collections;
 import java.util.List;
 
-import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column.CollateSequence;
 
 public class SQLite3SelectStatement extends SQLite3Expression {
 

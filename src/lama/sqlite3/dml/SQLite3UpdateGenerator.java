@@ -12,7 +12,7 @@ import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
-import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 
 public class SQLite3UpdateGenerator {
@@ -55,7 +55,7 @@ public class SQLite3UpdateGenerator {
 
 		sb.append(table.getName());
 		sb.append(" SET ");
-		List<Column> columnsToUpdate = Randomly.nonEmptySubsetPotentialDuplicates(table.getColumns());
+		List<SQLite3Column> columnsToUpdate = Randomly.nonEmptySubsetPotentialDuplicates(table.getColumns());
 		if (Randomly.getBoolean()) {
 			sb.append("(");
 			sb.append(columnsToUpdate.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
@@ -119,7 +119,7 @@ public class SQLite3UpdateGenerator {
 
 	}
 
-	private void getToUpdateValue(List<Column> columnsToUpdate, int i) {
+	private void getToUpdateValue(List<SQLite3Column> columnsToUpdate, int i) {
 		if (columnsToUpdate.get(i).isIntegerPrimaryKey()) {
 			sb.append(SQLite3Visitor.asString(SQLite3Constant.createIntConstant(r.getInteger())));
 		} else {

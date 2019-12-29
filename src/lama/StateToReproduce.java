@@ -12,7 +12,7 @@ import lama.postgres.ast.PostgresConstant;
 import lama.postgres.ast.PostgresExpression;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
-import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import lama.tdengine.TDEngineSchema.TDEngineColumn;
 import lama.tdengine.expr.TDEngineConstant;
 import lama.tdengine.expr.TDEngineExpression;
@@ -117,11 +117,11 @@ public abstract class StateToReproduce {
 			super(databaseName);
 		}
 
-		public Map<Column, SQLite3Constant> getRandomRowValues() {
+		public Map<SQLite3Column, SQLite3Constant> getRandomRowValues() {
 			return randomRowValues;
 		}
 		
-		public Map<Column, SQLite3Constant> randomRowValues;
+		public Map<SQLite3Column, SQLite3Constant> randomRowValues;
 		
 		public SQLite3Expression whereClause;
 		

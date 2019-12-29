@@ -13,7 +13,7 @@ import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.gen.SQLite3ColumnBuilder;
 import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.schema.SQLite3Schema;
-import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 import lama.sqlite3.schema.SQLite3Schema.Table.TableKind;
 
@@ -33,7 +33,7 @@ public class SQLite3TableGenerator {
 	private boolean containsPrimaryKey;
 	private boolean containsAutoIncrement;
 	private final List<String> columnNames = new ArrayList<>();
-	private final List<Column> columns = new ArrayList<>();
+	private final List<SQLite3Column> columns = new ArrayList<>();
 	private final SQLite3Schema existingSchema;
 	private final SQLite3GlobalState globalState;
 	private boolean tempTable;
@@ -77,7 +77,7 @@ public class SQLite3TableGenerator {
 		boolean allowPrimaryKeyInColumn = Randomly.getBoolean();
 		int nrColumns = 3 + Randomly.smallNumber();
 		for (int i = 0; i < nrColumns; i++) {
-			columns.add(new Column(SQLite3Common.createColumnName(i), null, false, false, null));
+			columns.add(SQLite3Column.createDummy(SQLite3Common.createColumnName(i)));
 		}
 		for (int i = 0; i < nrColumns; i++) {
 			if (i != 0) {

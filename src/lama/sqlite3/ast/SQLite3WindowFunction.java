@@ -7,8 +7,8 @@ import lama.Randomly;
 import lama.sqlite3.SQLite3Provider;
 import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
-import lama.sqlite3.schema.SQLite3Schema.Column;
-import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column.CollateSequence;
 
 public class SQLite3WindowFunction extends SQLite3Expression {
 
@@ -16,7 +16,7 @@ public class SQLite3WindowFunction extends SQLite3Expression {
 	private WindowFunction func;
 	private SQLite3Expression[] args;
 	
-	public static SQLite3WindowFunction getRandom(List<Column> columns, SQLite3GlobalState globalState) {
+	public static SQLite3WindowFunction getRandom(List<SQLite3Column> columns, SQLite3GlobalState globalState) {
 		WindowFunction func = Randomly.fromOptions(WindowFunction.values());
 		SQLite3Expression[] args = new SQLite3Expression[func.nrArgs];
 		for (int i = 0; i < args.length; i++) {

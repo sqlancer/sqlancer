@@ -5,7 +5,7 @@ import java.util.Optional;
 import lama.Randomly;
 import lama.sqlite3.SQLite3CollateHelper;
 import lama.sqlite3.schema.SQLite3DataType;
-import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column.CollateSequence;
 import lama.visitor.UnaryOperation;
 
 public class SQLite3UnaryOperation extends SQLite3Expression implements UnaryOperation<SQLite3Expression> {

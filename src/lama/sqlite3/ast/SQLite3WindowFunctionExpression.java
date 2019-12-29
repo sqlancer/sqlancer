@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lama.Randomly;
-import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column.CollateSequence;
 
 public class SQLite3WindowFunctionExpression extends SQLite3Expression {
 

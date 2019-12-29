@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import lama.IgnoreMeException;
 import lama.Randomly;
 import lama.StateToReproduce.TDEngineStateToReproduce;
-import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import lama.tdengine.expr.TDEngineConstant;
 
 public class TDEngineSchema {
@@ -54,7 +54,7 @@ public class TDEngineSchema {
 
 		@Override
 		public boolean equals(Object obj) {
-			if (!(obj instanceof Column)) {
+			if (!(obj instanceof SQLite3Column)) {
 				return false;
 			} else {
 				TDEngineColumn c = (TDEngineColumn) obj;

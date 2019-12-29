@@ -13,8 +13,8 @@ import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation.BinaryCompar
 import lama.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation.BinaryOperator;
 import lama.sqlite3.ast.SQLite3UnaryOperation.UnaryOperator;
 import lama.sqlite3.schema.SQLite3DataType;
-import lama.sqlite3.schema.SQLite3Schema.Column;
-import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column.CollateSequence;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 import lama.visitor.BinaryOperation;
 import lama.visitor.UnaryOperation;
@@ -1547,17 +1547,17 @@ public abstract class SQLite3Expression {
 	}
 
 
-	public static class ColumnName extends SQLite3Expression {
+	public static class SQLite3ColumnName extends SQLite3Expression {
 
-		private final Column column;
+		private final SQLite3Column column;
 		private final SQLite3Constant value;
 
-		public ColumnName(Column name, SQLite3Constant value) {
+		public SQLite3ColumnName(SQLite3Column name, SQLite3Constant value) {
 			this.column = name;
 			this.value = value;
 		}
 
-		public Column getColumn() {
+		public SQLite3Column getColumn() {
 			return column;
 		}
 
@@ -1597,6 +1597,10 @@ public abstract class SQLite3Expression {
 		@Override
 		public CollateSequence getImplicitCollateSequence() {
 			return column.getCollateSequence();
+		}
+
+		public static SQLite3ColumnName createDummy(String string) {
+			return new SQLite3ColumnName(SQLite3Column.createDummy(string), null);
 		}
 
 	}

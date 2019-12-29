@@ -16,7 +16,7 @@ import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUn
 import lama.sqlite3.ast.SQLite3Expression.SQLite3TableReference;
 import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema;
-import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 
 public class SQLite3Common {
@@ -37,13 +37,13 @@ public class SQLite3Common {
 		return String.format("i%d", nr);
 	}
 
-	public static String getCheckConstraint(SQLite3GlobalState globalState, List<Column> columns) {
+	public static String getCheckConstraint(SQLite3GlobalState globalState, List<SQLite3Column> columns) {
 		SQLite3Expression expression = new SQLite3ExpressionGenerator(globalState).setColumns(columns)
 				.getRandomExpression();
 		return (" CHECK ( " + SQLite3Visitor.asString(expression) + ")");
 	}
 
-	public static SQLite3Expression getTrueExpression(List<Column> columns, SQLite3GlobalState globalState) {
+	public static SQLite3Expression getTrueExpression(List<SQLite3Column> columns, SQLite3GlobalState globalState) {
 		SQLite3Expression randomExpression = new SQLite3ExpressionGenerator(globalState).setColumns(columns)
 				.getRandomExpression();
 		SQLite3Constant expectedValue = randomExpression.getExpectedValue();
@@ -64,7 +64,7 @@ public class SQLite3Common {
 
 	// TODO: refactor others to use this method
 	// https://www.sqlite.org/syntax/ordering-term.html
-	public static String getOrderingTerm(List<Column> columns, SQLite3GlobalState globalState) {
+	public static String getOrderingTerm(List<SQLite3Column> columns, SQLite3GlobalState globalState) {
 		SQLite3Expression randExpr = new SQLite3ExpressionGenerator(globalState).setColumns(columns)
 				.getRandomExpression();
 		StringBuilder sb = new StringBuilder(SQLite3Visitor.asString(randExpr));
@@ -121,7 +121,7 @@ public class SQLite3Common {
 	}
 
 	public static String getFreeColumnName(Table t) {
-		List<Column> indexNames = t.getColumns();
+		List<SQLite3Column> indexNames = t.getColumns();
 		final String[] candidateName = new String[1];
 		do {
 			candidateName[0] = SQLite3Common.createColumnName((int) Randomly.getNotCachedInteger(0, 100));
@@ -129,7 +129,7 @@ public class SQLite3Common {
 		return candidateName[0];
 	}
 
-	public static String getOrderByAsString(List<Column> columns, SQLite3GlobalState globalState) {
+	public static String getOrderByAsString(List<SQLite3Column> columns, SQLite3GlobalState globalState) {
 		StringBuilder sb = new StringBuilder();
 		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns);
 		sb.append(" ORDER BY ");
@@ -142,7 +142,7 @@ public class SQLite3Common {
 		return sb.toString();
 	}
 
-	public static List<SQLite3Expression> getOrderBy(List<Column> columns, SQLite3GlobalState globalState) {
+	public static List<SQLite3Expression> getOrderBy(List<SQLite3Column> columns, SQLite3GlobalState globalState) {
 		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns);
 		List<SQLite3Expression> list = new ArrayList<>();
 		for (int i = 0; i < 1 + Randomly.smallNumber(); i++) {
@@ -152,8 +152,8 @@ public class SQLite3Common {
 
 	}
 
-	public static Column createColumn(int i) {
-		return new Column(createColumnName(i), SQLite3DataType.NONE, false, false, null);
+	public static SQLite3Column createColumn(int i) {
+		return new SQLite3Column(createColumnName(i), SQLite3DataType.NONE, false, false, null);
 	}
 
 	public static List<SQLite3Expression> getTableRefs(List<Table> tables, SQLite3Schema s) {

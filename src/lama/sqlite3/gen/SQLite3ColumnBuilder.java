@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import lama.Randomly;
 import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.SQLite3Visitor;
-import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 
 public class SQLite3ColumnBuilder {
 
@@ -37,7 +37,7 @@ public class SQLite3ColumnBuilder {
 		return containsPrimaryKey;
 	}
 
-	public String createColumn(String columnName, SQLite3GlobalState globalState, List<Column> columns) {
+	public String createColumn(String columnName, SQLite3GlobalState globalState, List<SQLite3Column> columns) {
 		sb.append(columnName);
 		sb.append(" ");
 		String dataType = Randomly.fromOptions("INT", "TEXT", "BLOB", "REAL", "INTEGER");

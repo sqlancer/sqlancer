@@ -16,7 +16,7 @@ import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
-import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 
 public class SQLite3InsertGenerator {
@@ -76,7 +76,7 @@ public class SQLite3InsertGenerator {
 			defaultValues = true;
 			sb.append(" DEFAULT VALUES");
 		} else {
-			List<Column> columns = table.getRandomNonEmptyColumnSubset();
+			List<SQLite3Column> columns = table.getRandomNonEmptyColumnSubset();
 			if (columns.size() != table.getColumns().size() || Randomly.getBoolean()) {
 				sb.append("(");
 				appendColumnNames(columns, sb);
@@ -107,7 +107,7 @@ public class SQLite3InsertGenerator {
 				sb.append("NOTHING");
 			} else {
 				sb.append("UPDATE SET ");
-				List<Column> columns = table.getRandomNonEmptyColumnSubset();
+				List<SQLite3Column> columns = table.getRandomNonEmptyColumnSubset();
 				for (int i = 0; i < columns.size(); i++) {
 					if (i != 0) {
 						sb.append(", ");
@@ -136,7 +136,7 @@ public class SQLite3InsertGenerator {
 		return sb.toString();
 	}
 
-	private void appendNrValues(StringBuilder sb, List<Column> columns, int nrValues) {
+	private void appendNrValues(StringBuilder sb, List<SQLite3Column> columns, int nrValues) {
 		for (int i = 0; i < nrValues; i++) {
 			if (i != 0) {
 				sb.append(", ");
@@ -147,7 +147,7 @@ public class SQLite3InsertGenerator {
 		}
 	}
 
-	private void appendValue(StringBuilder sb, List<Column> columns) {
+	private void appendValue(StringBuilder sb, List<SQLite3Column> columns) {
 		for (int i = 0; i < columns.size(); i++) {
 			if (i != 0) {
 				sb.append(", ");
@@ -168,7 +168,7 @@ public class SQLite3InsertGenerator {
 		}
 	}
 
-	private static List<Column> appendColumnNames(List<Column> columns, StringBuilder sb) {
+	private static List<SQLite3Column> appendColumnNames(List<SQLite3Column> columns, StringBuilder sb) {
 		for (int i = 0; i < columns.size(); i++) {
 			if (i != 0) {
 				sb.append(", ");

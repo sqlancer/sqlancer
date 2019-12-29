@@ -21,7 +21,7 @@ import lama.StateToReproduce.SQLite3StateToReproduce;
 import lama.sqlite3.SQLite3Errors;
 import lama.sqlite3.SQLite3ToStringVisitor;
 import lama.sqlite3.ast.SQLite3Constant;
-import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column.CollateSequence;
 import lama.sqlite3.schema.SQLite3Schema.Table.TableKind;
 
 public class SQLite3Schema {
@@ -49,7 +49,7 @@ public class SQLite3Schema {
 		}
 	}
 
-	public static class Column implements Comparable<Column> {
+	public static class SQLite3Column implements Comparable<SQLite3Column> {
 
 		private final String name;
 		private final SQLite3DataType columnType;
@@ -67,7 +67,7 @@ public class SQLite3Schema {
 			}
 		}
 
-		public Column(String name, SQLite3DataType columnType, boolean isInteger, boolean isPrimaryKey,
+		public SQLite3Column(String name, SQLite3DataType columnType, boolean isInteger, boolean isPrimaryKey,
 				CollateSequence collate) {
 			this.name = name;
 			this.columnType = columnType;
@@ -78,7 +78,7 @@ public class SQLite3Schema {
 			assert !isInteger || columnType == SQLite3DataType.INT;
 		}
 
-		public Column(String rowId, SQLite3DataType columnType2, boolean contains, boolean b, CollateSequence collate,
+		public SQLite3Column(String rowId, SQLite3DataType columnType2, boolean contains, boolean b, CollateSequence collate,
 				boolean generated) {
 			this(rowId, columnType2, b, generated, collate);
 			this.generated = generated;
@@ -96,10 +96,10 @@ public class SQLite3Schema {
 
 		@Override
 		public boolean equals(Object obj) {
-			if (!(obj instanceof Column)) {
+			if (!(obj instanceof SQLite3Column)) {
 				return false;
 			} else {
-				Column c = (Column) obj;
+				SQLite3Column c = (SQLite3Column) obj;
 				return table.getName().contentEquals(getName()) && name.equals(c.name);
 			}
 		}
@@ -143,7 +143,7 @@ public class SQLite3Schema {
 		}
 
 		@Override
-		public int compareTo(Column o) {
+		public int compareTo(SQLite3Column o) {
 			if (o.getTable().equals(this.getTable())) {
 				return name.compareTo(o.getName());
 			} else {
@@ -159,11 +159,15 @@ public class SQLite3Schema {
 			return generated;
 		}
 
+		public static SQLite3Column createDummy(String name) {
+			return new SQLite3Column(name, SQLite3DataType.INT, false, false, null);
+		}
+
 	}
 
 	public static class Tables {
 		private final List<Table> tables;
-		private final List<Column> columns;
+		private final List<SQLite3Column> columns;
 
 		public Tables(List<Table> tables) {
 			this.tables = tables;
@@ -181,7 +185,7 @@ public class SQLite3Schema {
 			return tables;
 		}
 
-		public List<Column> getColumns() {
+		public List<SQLite3Column> getColumns() {
 			return columns;
 		}
 
@@ -190,7 +194,7 @@ public class SQLite3Schema {
 					.collect(Collectors.joining(", "));
 		}
 
-		public String columnNamesAsString(Function<Column, String> function) {
+		public String columnNamesAsString(Function<SQLite3Column, String> function) {
 			return getColumns().stream().map(function).collect(Collectors.joining(", "));
 		}
 
@@ -199,7 +203,7 @@ public class SQLite3Schema {
 					c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
 					columnNamesAsString(c -> "typeof(" + c.getTable().getName() + "." + c.getName() + ")"),
 					tableNamesAsString());
-			Map<Column, SQLite3Constant> values = new HashMap<>();
+			Map<SQLite3Column, SQLite3Constant> values = new HashMap<>();
 			try (Statement s = con.createStatement()) {
 				ResultSet randomRowValues;
 				try {
@@ -211,7 +215,7 @@ public class SQLite3Schema {
 					throw new AssertionError("could not find random row! " + randomRow + "\n" + state);
 				}
 				for (int i = 0; i < getColumns().size(); i++) {
-					Column column = getColumns().get(i);
+					SQLite3Column column = getColumns().get(i);
 					Object value;
 					int columnIndex = randomRowValues.findColumn(column.getTable().getName() + column.getName());
 					assert columnIndex == i + 1;
@@ -261,15 +265,15 @@ public class SQLite3Schema {
 		}
 
 		private final String tableName;
-		private final List<Column> columns;
+		private final List<SQLite3Column> columns;
 		private final TableKind tableType;
-		private Column rowid;
+		private SQLite3Column rowid;
 		private boolean withoutRowid;
 		private int nrRows;
 		private boolean isView;
 		private boolean isVirtual;
 
-		public Table(String tableName, List<Column> columns, TableKind tableType, boolean withoutRowid, int nrRows,
+		public Table(String tableName, List<SQLite3Column> columns, TableKind tableType, boolean withoutRowid, int nrRows,
 				boolean isView, boolean isVirtual) {
 			this.tableName = tableName;
 			this.tableType = tableType;
@@ -288,7 +292,7 @@ public class SQLite3Schema {
 		public String toString() {
 			StringBuffer sb = new StringBuffer();
 			sb.append(tableName + "\n");
-			for (Column c : columns) {
+			for (SQLite3Column c : columns) {
 				sb.append("\t" + c + "\n");
 			}
 			return sb.toString();
@@ -298,7 +302,7 @@ public class SQLite3Schema {
 			return tableName;
 		}
 
-		public List<Column> getColumns() {
+		public List<SQLite3Column> getColumns() {
 			return columns;
 		}
 
@@ -306,11 +310,11 @@ public class SQLite3Schema {
 			return columns.stream().map(c -> c.getName()).collect(Collectors.joining(", "));
 		}
 
-		public String getColumnsAsString(Function<Column, String> function) {
+		public String getColumnsAsString(Function<SQLite3Column, String> function) {
 			return columns.stream().map(function).collect(Collectors.joining(", "));
 		}
 
-		public Column getRandomColumn() {
+		public SQLite3Column getRandomColumn() {
 			return Randomly.fromList(columns);
 		}
 
@@ -319,11 +323,11 @@ public class SQLite3Schema {
 			return o.getName().compareTo(tableName);
 		}
 
-		public void addRowid(Column rowid) {
+		public void addRowid(SQLite3Column rowid) {
 			this.rowid = rowid;
 		}
 
-		public Column getRowid() {
+		public SQLite3Column getRowid() {
 			return rowid;
 		}
 
@@ -335,7 +339,7 @@ public class SQLite3Schema {
 			return isVirtual;
 		}
 
-		public List<Column> getRandomNonEmptyColumnSubset() {
+		public List<SQLite3Column> getRandomNonEmptyColumnSubset() {
 			return Randomly.nonEmptySubset(getColumns());
 		}
 
@@ -359,9 +363,9 @@ public class SQLite3Schema {
 
 	public static class RowValue {
 		private final Tables tables;
-		private final Map<Column, SQLite3Constant> values;
+		private final Map<SQLite3Column, SQLite3Constant> values;
 
-		RowValue(Tables tables, Map<Column, SQLite3Constant> values) {
+		RowValue(Tables tables, Map<SQLite3Column, SQLite3Constant> values) {
 			this.tables = tables;
 			this.values = values;
 		}
@@ -370,7 +374,7 @@ public class SQLite3Schema {
 			return tables;
 		}
 
-		public Map<Column, SQLite3Constant> getValues() {
+		public Map<SQLite3Column, SQLite3Constant> getValues() {
 			return values;
 		}
 
@@ -378,7 +382,7 @@ public class SQLite3Schema {
 		public String toString() {
 			StringBuffer sb = new StringBuffer();
 			int i = 0;
-			for (Column c : tables.getColumns()) {
+			for (SQLite3Column c : tables.getColumns()) {
 				if (i++ != 0) {
 					sb.append(", ");
 				}
@@ -388,13 +392,13 @@ public class SQLite3Schema {
 		}
 
 		public String getRowValuesAsString() {
-			List<Column> columnsToCheck = tables.getColumns();
+			List<SQLite3Column> columnsToCheck = tables.getColumns();
 			return getRowValuesAsString(columnsToCheck);
 		}
 
-		public String getRowValuesAsString(List<Column> columnsToCheck) {
+		public String getRowValuesAsString(List<SQLite3Column> columnsToCheck) {
 			StringBuilder sb = new StringBuilder();
-			Map<Column, SQLite3Constant> expectedValues = getValues();
+			Map<SQLite3Column, SQLite3Constant> expectedValues = getValues();
 			for (int i = 0; i < columnsToCheck.size(); i++) {
 				if (i != 0) {
 					sb.append(", ");
@@ -465,7 +469,7 @@ public class SQLite3Schema {
 					boolean withoutRowid = sqlString.contains("without rowid");
 					boolean isView = tableType.contentEquals("view");
 					boolean isVirtual = sqlString.contains("virtual");
-					List<Column> databaseColumns;
+					List<SQLite3Column> databaseColumns;
 					try {
 						databaseColumns = getTableColumns(con, tableName, sqlString, isView);
 					} catch (IgnoreMeException e) {
@@ -487,7 +491,7 @@ public class SQLite3Schema {
 								SQLite3DataType columnType = getColumnType(dataType);
 								boolean generated = dataType.toUpperCase().contains("GENERATED AS");
 								String rowId = Randomly.fromOptions("rowid", "_rowid_", "oid");
-								Column rowid = new Column(rowId, columnType, dataType.contains("INTEGER"), true, null, generated);
+								SQLite3Column rowid = new SQLite3Column(rowId, columnType, dataType.contains("INTEGER"), true, null, generated);
 								t.addRowid(rowid);
 								rowid.setTable(t);
 							}
@@ -495,7 +499,7 @@ public class SQLite3Schema {
 					} catch (SQLException e) {
 						// ignore
 					}
-					for (Column c : databaseColumns) {
+					for (SQLite3Column c : databaseColumns) {
 						c.setTable(t);
 					}
 					databaseTables.add(t);
@@ -516,9 +520,9 @@ public class SQLite3Schema {
 		return new SQLite3Schema(databaseTables, indexNames);
 	}
 
-	private static List<Column> getTableColumns(Connection con, String tableName, String sql, boolean isView)
+	private static List<SQLite3Column> getTableColumns(Connection con, String tableName, String sql, boolean isView)
 			throws SQLException {
-		List<Column> databaseColumns = new ArrayList<>();
+		List<SQLite3Column> databaseColumns = new ArrayList<>();
 		try (Statement s2 = con.createStatement()) {
 			String tableInfoStr = String.format("PRAGMA table_xinfo(%s)", tableName);
 			try (ResultSet columnRs = s2.executeQuery(tableInfoStr)) {
@@ -547,7 +551,7 @@ public class SQLite3Schema {
 							collate = CollateSequence.BINARY;
 						}
 					}
-					databaseColumns.add(new Column(columnName, columnType, columnTypeString.contentEquals("INTEGER"),
+					databaseColumns.add(new SQLite3Column(columnName, columnType, columnTypeString.contentEquals("INTEGER"),
 							isPrimaryKey, collate));
 				}
 			} catch (SQLException | ArrayIndexOutOfBoundsException e) {

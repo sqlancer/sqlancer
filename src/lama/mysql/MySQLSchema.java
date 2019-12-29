@@ -18,7 +18,7 @@ import lama.Randomly;
 import lama.StateToReproduce.MySQLStateToReproduce;
 import lama.mysql.MySQLSchema.MySQLTable.MySQLEngine;
 import lama.mysql.ast.MySQLConstant;
-import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 
 public class MySQLSchema {
 
@@ -63,7 +63,7 @@ public class MySQLSchema {
 
 		@Override
 		public boolean equals(Object obj) {
-			if (!(obj instanceof Column)) {
+			if (!(obj instanceof SQLite3Column)) {
 				return false;
 			} else {
 				MySQLColumn c = (MySQLColumn) obj;

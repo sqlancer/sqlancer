@@ -26,7 +26,7 @@ import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import lama.sqlite3.ast.SQLite3Cast;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
-import lama.sqlite3.ast.SQLite3Expression.ColumnName;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.Join.JoinType;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
@@ -42,7 +42,7 @@ import lama.sqlite3.ast.SQLite3WindowFunction;
 import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
 import lama.sqlite3.schema.SQLite3Schema;
-import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import lama.sqlite3.schema.SQLite3Schema.RowValue;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 import lama.sqlite3.schema.SQLite3Schema.Tables;
@@ -54,7 +54,7 @@ public class SQLite3PivotedQuerySynthesizer {
 	private final Randomly r;
 	private SQLite3StateToReproduce state;
 	private RowValue rw;
-	private List<Column> fetchColumns;
+	private List<SQLite3Column> fetchColumns;
 	private final List<String> errors = new ArrayList<>();
 	private List<SQLite3Expression> colExpressions;
 	private SQLite3GlobalState globalState;
@@ -110,7 +110,7 @@ public class SQLite3PivotedQuerySynthesizer {
 		globalState.getState().queryTargetedTablesString = randomFromTables.tableNamesAsString();
 		SQLite3SelectStatement selectStatement = new SQLite3SelectStatement();
 		selectStatement.setSelectType(Randomly.fromOptions(SQLite3SelectStatement.SelectType.values()));
-		List<Column> columns = randomFromTables.getColumns();
+		List<SQLite3Column> columns = randomFromTables.getColumns();
 		for (Table t : tables) {
 			if (t.getRowid() != null) {
 				columns.add(t.getRowid());
@@ -137,7 +137,7 @@ public class SQLite3PivotedQuerySynthesizer {
 		// TODO: also implement a wild-card check (*)
 		// filter out row ids from the select because the hinder the reduction process
 		// once a bug is found
-		List<Column> columnsWithoutRowid = columns.stream().filter(c -> !c.getName().matches("rowid"))
+		List<SQLite3Column> columnsWithoutRowid = columns.stream().filter(c -> !c.getName().matches("rowid"))
 				.collect(Collectors.toList());
 		fetchColumns = Randomly.nonEmptySubset(columnsWithoutRowid);
 		colExpressions = new ArrayList<>();
@@ -145,8 +145,8 @@ public class SQLite3PivotedQuerySynthesizer {
 		allTables.addAll(tables);
 		allTables.addAll(joinStatements.stream().map(join -> join.getTable()).collect(Collectors.toList()));
 		boolean allTablesContainOneRow = allTables.stream().allMatch(t -> t.getNrRows() == 1);
-		for (Column c : fetchColumns) {
-			SQLite3Expression colName = new ColumnName(c, rw.getValues().get(c));
+		for (SQLite3Column c : fetchColumns) {
+			SQLite3Expression colName = new SQLite3ColumnName(c, rw.getValues().get(c));
 			if (allTablesContainOneRow && Randomly.getBoolean()) {
 				boolean generateDistinct = Randomly.getBoolean();
 				if (generateDistinct) {
@@ -258,7 +258,7 @@ public class SQLite3PivotedQuerySynthesizer {
 		}
 	}
 
-	public List<SQLite3Expression> generateOrderBy(List<Column> columns) {
+	public List<SQLite3Expression> generateOrderBy(List<SQLite3Column> columns) {
 		List<SQLite3Expression> orderBys = new ArrayList<>();
 		for (int i = 0; i < Randomly.smallNumber(); i++) {
 			SQLite3Expression expr;
@@ -280,7 +280,7 @@ public class SQLite3PivotedQuerySynthesizer {
 		}
 	}
 
-	private List<SQLite3Expression> generateGroupByClause(List<Column> columns, RowValue rw, boolean allTablesContainOneRow) {
+	private List<SQLite3Expression> generateGroupByClause(List<SQLite3Column> columns, RowValue rw, boolean allTablesContainOneRow) {
 		errors.add("GROUP BY term out of range");
 		if (allTablesContainOneRow && Randomly.getBoolean()) {
 			List<SQLite3Expression> collect = new ArrayList<>();
@@ -291,7 +291,7 @@ public class SQLite3PivotedQuerySynthesizer {
 		}
 		if (Randomly.getBoolean()) {
 			// ensure that we GROUP BY all columns
-			List<SQLite3Expression> collect = columns.stream().map(c -> new ColumnName(c, rw.getValues().get(c))).collect(Collectors.toList());
+			List<SQLite3Expression> collect = columns.stream().map(c -> new SQLite3ColumnName(c, rw.getValues().get(c))).collect(Collectors.toList());
 			if (Randomly.getBoolean()) {
 				for (int i = 0; i < Randomly.smallNumber(); i++) {
 					collect.add(new SQLite3ExpressionGenerator(globalState).setColumns(columns).setRowValue(rw).getRandomExpression());
@@ -303,14 +303,14 @@ public class SQLite3PivotedQuerySynthesizer {
 		}
 	}
 
-	private SQLite3Expression generateWhereClauseThatContainsRowValue(List<Column> columns, RowValue rw) {
+	private SQLite3Expression generateWhereClauseThatContainsRowValue(List<SQLite3Column> columns, RowValue rw) {
 
 		SQLite3Expression whereClause = generateNewExpression(columns, rw, true, 0);
 
 		return whereClause;
 	}
 
-	private SQLite3Expression generateNewExpression(List<Column> columns, RowValue rw, boolean shouldBeTrue,
+	private SQLite3Expression generateNewExpression(List<SQLite3Column> columns, RowValue rw, boolean shouldBeTrue,
 			int depth) {
 		do {
 			SQLite3Expression expr = new SQLite3ExpressionGenerator(globalState).setRowValue(rw).setColumns(columns).getRandomExpression();
@@ -328,7 +328,7 @@ public class SQLite3PivotedQuerySynthesizer {
 	}
 
 	//
-	private SQLite3Expression generateWindowFunction(List<Column> columns, SQLite3Expression colName,
+	private SQLite3Expression generateWindowFunction(List<SQLite3Column> columns, SQLite3Expression colName,
 			boolean allowFilter) {
 		StringBuilder sb = new StringBuilder();
 		if (Randomly.getBoolean() && allowFilter) {
@@ -371,13 +371,13 @@ public class SQLite3PivotedQuerySynthesizer {
 		return colName;
 	}
 
-	private void appendFilter(List<Column> columns, StringBuilder sb) {
+	private void appendFilter(List<SQLite3Column> columns, StringBuilder sb) {
 		sb.append(" FILTER (WHERE ");
 		sb.append(SQLite3Visitor.asString(generateWhereClauseThatContainsRowValue(columns, rw)));
 		sb.append(")");
 	}
 
-	private void appendPartitionBy(List<Column> columns, StringBuilder sb) {
+	private void appendPartitionBy(List<SQLite3Column> columns, StringBuilder sb) {
 		sb.append(" PARTITION BY ");
 		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
 			if (i != 0) {

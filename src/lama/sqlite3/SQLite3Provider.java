@@ -44,7 +44,7 @@ import lama.sqlite3.gen.ddl.SQLite3TableGenerator;
 import lama.sqlite3.gen.ddl.SQLite3ViewGenerator;
 import lama.sqlite3.queries.SQLite3MetamorphicQuerySynthesizer;
 import lama.sqlite3.schema.SQLite3Schema;
-import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 import lama.sqlite3.schema.SQLite3Schema.Table.TableKind;
 
@@ -81,7 +81,7 @@ public class SQLite3Provider implements DatabaseProvider {
 		CREATE_VIEW(SQLite3ViewGenerator::generate), //
 		CREATE_TRIGGER(SQLite3CreateTriggerGenerator::create), //
 		MANIPULATE_STAT_TABLE((g) -> {
-				List<Column> columns = new ArrayList<>();
+				List<SQLite3Column> columns = new ArrayList<>();
 				Table t = new Table("sqlite_stat1", columns, TableKind.MAIN, false, 1, false, false);
 				if (Randomly.getBoolean()) {
 					return SQLite3DeleteGenerator.deleteContent(g, t);
@@ -339,7 +339,7 @@ public class SQLite3Provider implements DatabaseProvider {
 		query = SQLite3TransactionGenerator.generateRollbackTransaction(globalState);
 		manager.execute(query);
 		newSchema = SQLite3Schema.fromConnection(con);
-
+		manager.incrementCreateDatabase();
 //		SQLite3PivotedQuerySynthesizer queryGenerator = new SQLite3PivotedQuerySynthesizer(con, r);
 		SQLite3MetamorphicQuerySynthesizer or = new SQLite3MetamorphicQuerySynthesizer(newSchema, r, con,
 				(SQLite3StateToReproduce) state, logger, options, globalState);
@@ -443,14 +443,14 @@ public class SQLite3Provider implements DatabaseProvider {
 		StringBuilder sb = new StringBuilder();
 		SQLite3StateToReproduce specificState = (SQLite3StateToReproduce) state;
 		if (specificState.getRandomRowValues() != null) {
-			List<Column> columnList = specificState.getRandomRowValues().keySet().stream().collect(Collectors.toList());
+			List<SQLite3Column> columnList = specificState.getRandomRowValues().keySet().stream().collect(Collectors.toList());
 			List<Table> tableList = columnList.stream().map(c -> c.getTable()).distinct().sorted()
 					.collect(Collectors.toList());
 			for (Table t : tableList) {
 				sb.append("-- " + t.getName() + "\n");
-				List<Column> columnsForTable = columnList.stream().filter(c -> c.getTable().equals(t))
+				List<SQLite3Column> columnsForTable = columnList.stream().filter(c -> c.getTable().equals(t))
 						.collect(Collectors.toList());
-				for (Column c : columnsForTable) {
+				for (SQLite3Column c : columnsForTable) {
 					sb.append("--\t");
 					sb.append(c);
 					sb.append("=");

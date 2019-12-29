@@ -11,7 +11,7 @@ import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.gen.SQLite3ColumnBuilder;
 import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.schema.SQLite3Schema;
-import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 
 public class SQLite3AlterTable {
@@ -55,7 +55,7 @@ public class SQLite3AlterTable {
 			sb.append(SQLite3Common.getFreeTableName(s));
 			break;
 		case RENAME_COLUMN:
-			Column c = t.getRandomColumn();
+			SQLite3Column c = t.getRandomColumn();
 			sb.append(" RENAME COLUMN ");
 			sb.append(c.getName());
 			sb.append(" TO ");

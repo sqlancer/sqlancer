@@ -19,7 +19,7 @@ import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Aggregate;
 import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import lama.sqlite3.ast.SQLite3Expression;
-import lama.sqlite3.ast.SQLite3Expression.ColumnName;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.Join.JoinType;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
@@ -32,7 +32,7 @@ import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
 import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema;
-import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 import lama.sqlite3.schema.SQLite3Schema.Tables;
 
@@ -68,7 +68,7 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 	public void generateAndCheck() throws SQLException {
 		queries.clear();
 		Tables randomTable = s.getRandomTableNonEmptyTables();
-		List<Column> columns = randomTable.getColumns();
+		List<SQLite3Column> columns = randomTable.getColumns();
 		SQLite3Expression randomWhereCondition = getRandomWhereCondition(columns);
 		List<SQLite3Expression> groupBys = Collections.emptyList(); //getRandomExpressions(columns);
 		List<Table> tables = randomTable.getTables();
@@ -107,7 +107,7 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 		SQLite3SelectStatement select = new SQLite3SelectStatement();
 		select.setGroupByClause(groupBys);
 		SQLite3Aggregate count = new SQLite3Aggregate(
-				Arrays.asList(new ColumnName(new Column("*", SQLite3DataType.INT, false, false, null), null)),
+				Arrays.asList(SQLite3ColumnName.createDummy("*")),
 				SQLite3AggregateFunction.COUNT);
 		select.setFetchColumns(Arrays.asList(count));
 		select.setFromTables(SQLite3Common.getTableRefs(list, s));
@@ -140,7 +140,7 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 		SQLite3SelectStatement select = new SQLite3SelectStatement();
 		select.setGroupByClause(groupBys);
 		SQLite3Aggregate aggr = new SQLite3Aggregate(
-				Arrays.asList(new ColumnName(new Column("*", SQLite3DataType.INT, false, false, null), null)),
+				Arrays.asList(SQLite3ColumnName.createDummy("*")),
 				SQLite3AggregateFunction.COUNT);
 		select.setFetchColumns(Arrays.asList(aggr));
 		select.setFromTables(SQLite3Common.getTableRefs(list, s));
@@ -172,7 +172,7 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 	}
 
 
-	private SQLite3Expression getRandomWhereCondition(List<Column> columns) {
+	private SQLite3Expression getRandomWhereCondition(List<SQLite3Column> columns) {
 		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns);
 		// FIXME: enable match clause for multiple tables
 //		if (randomTable.isVirtual()) {

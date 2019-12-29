@@ -20,7 +20,7 @@ import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Aggregate;
 import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import lama.sqlite3.ast.SQLite3Expression;
-import lama.sqlite3.ast.SQLite3Expression.ColumnName;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
@@ -31,7 +31,7 @@ import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
 import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema;
-import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 import lama.sqlite3.schema.SQLite3Schema.Tables;
 
@@ -72,12 +72,12 @@ public class SQLite3MetamorphicQuerySynthesizer {
 		// FIXME implement
 		errors.add("no query solution"); // INDEXED BY
 		errors.add("unable to use function MATCH in the requested context");
-		
+
 	}
 
 	public void generateAndCheck() throws SQLException {
 		Tables randomTables = s.getRandomTableNonEmptyTables();
-		List<Column> columns = randomTables.getColumns();
+		List<SQLite3Column> columns = randomTables.getColumns();
 		gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns);
 		SQLite3Expression randomWhereCondition = getRandomWhereCondition(columns);
 		List<SQLite3Expression> groupBys = gen.getRandomExpressions(Randomly.smallNumber());
@@ -95,8 +95,7 @@ public class SQLite3MetamorphicQuerySynthesizer {
 		}
 	}
 
-
-	private SQLite3Expression getRandomWhereCondition(List<Column> columns) {
+	private SQLite3Expression getRandomWhereCondition(List<SQLite3Column> columns) {
 		if (Randomly.getBoolean()) {
 			errors.add("SQL logic error");
 			gen.allowMatchClause();
@@ -134,16 +133,16 @@ public class SQLite3MetamorphicQuerySynthesizer {
 		return secondCount;
 	}
 
-	private int getFirstQueryCount(Connection con, List<SQLite3Expression> fromList, SQLite3Expression randomWhereCondition,
-			List<SQLite3Expression> groupBys, List<Join> joinStatements) throws SQLException {
+	private int getFirstQueryCount(Connection con, List<SQLite3Expression> fromList,
+			SQLite3Expression randomWhereCondition, List<SQLite3Expression> groupBys, List<Join> joinStatements)
+			throws SQLException {
 		SQLite3SelectStatement select = new SQLite3SelectStatement();
 		select.setGroupByClause(groupBys);
 		setRandomOrderBy(select);
 		// TODO: randomly select column and then = TRUE instead of IS TRUE
 		// SELECT COUNT(t1.c3) FROM t1 WHERE (- (t1.c2));
 		// SELECT SUM(count) FROM (SELECT ((- (t1.c2)) IS TRUE) as count FROM t1);;
-		SQLite3Aggregate aggr = new SQLite3Aggregate(
-				Arrays.asList(new ColumnName(new Column("*", SQLite3DataType.INT, false, false, null), null)),
+		SQLite3Aggregate aggr = new SQLite3Aggregate(Arrays.asList(SQLite3ColumnName.createDummy("*")),
 				SQLite3AggregateFunction.COUNT);
 		select.setFetchColumns(Arrays.asList(aggr));
 		select.setFromTables(fromList);

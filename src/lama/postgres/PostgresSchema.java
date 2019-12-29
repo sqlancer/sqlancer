@@ -19,7 +19,7 @@ import lama.Randomly;
 import lama.StateToReproduce.PostgresStateToReproduce;
 import lama.postgres.PostgresSchema.PostgresTable.TableType;
 import lama.postgres.ast.PostgresConstant;
-import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 
 public class PostgresSchema {
 
@@ -70,7 +70,7 @@ public class PostgresSchema {
 
 		@Override
 		public boolean equals(Object obj) {
-			if (!(obj instanceof Column)) {
+			if (!(obj instanceof SQLite3Column)) {
 				return false;
 			} else {
 				PostgresColumn c = (PostgresColumn) obj;

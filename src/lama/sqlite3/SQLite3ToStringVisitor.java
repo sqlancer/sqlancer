@@ -14,7 +14,7 @@ import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
-import lama.sqlite3.ast.SQLite3Expression.ColumnName;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Function;
 import lama.sqlite3.ast.SQLite3Expression.InOperation;
 import lama.sqlite3.ast.SQLite3Expression.Join;
@@ -75,7 +75,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		sb.append(")");
 	}
 
-	public void visit(ColumnName c) {
+	public void visit(SQLite3ColumnName c) {
 		if (fullyQualifiedNames) {
 			if (c.getColumn().getTable() != null) {
 				sb.append(c.getColumn().getTable().getName());

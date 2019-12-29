@@ -19,7 +19,7 @@ import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import lama.sqlite3.ast.SQLite3Expression;
-import lama.sqlite3.ast.SQLite3Expression.ColumnName;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import lama.sqlite3.ast.SQLite3SelectStatement;
@@ -27,9 +27,8 @@ import lama.sqlite3.ast.SQLite3SelectStatement.SelectType;
 import lama.sqlite3.ast.SQLite3WindowFunction;
 import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
-import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema;
-import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 import lama.sqlite3.schema.SQLite3Schema.Tables;
 
@@ -63,15 +62,14 @@ public class SQLite3WindowFunctionTester {
 	public void generateAndCheck() throws SQLException {
 		queries.clear();
 		Tables randomTable = s.getRandomTableNonEmptyTables();
-		List<Column> columns = randomTable.getColumns();
+		List<SQLite3Column> columns = randomTable.getColumns();
 		SQLite3Expression randomWhereCondition = getRandomWhereCondition(columns);
 		List<SQLite3Expression> groupBys = Collections.emptyList(); // getRandomExpressions(columns);
 		List<Table> tables = randomTable.getTables();
 		List<Join> joinStatements = new ArrayList<>();
 		SQLite3SelectStatement select = new SQLite3SelectStatement();
 		select.setGroupByClause(groupBys);
-		ColumnName rowid = new ColumnName(
-				new Column(tables.get(0).getName() + ".rowid", SQLite3DataType.INT, false, false, null), null);
+		SQLite3ColumnName rowid = SQLite3ColumnName.createDummy(tables.get(0).getName() + ".rowid");
 		SQLite3WindowFunction windowFunction = SQLite3AggregateFunction.getRandom(randomTable.getColumns(), globalState);
 
 		SQLite3Expression windowFunc = generateWindowFunction(columns, windowFunction, false, r);
@@ -94,7 +92,7 @@ public class SQLite3WindowFunctionTester {
 		}
 	}
 
-	private static SQLite3Expression generateWindowFunction(List<Column> columns, SQLite3Expression colName,
+	private static SQLite3Expression generateWindowFunction(List<SQLite3Column> columns, SQLite3Expression colName,
 			boolean allowFilter, SQLite3GlobalState globalState) {
 		StringBuilder sb = new StringBuilder();
 		if (Randomly.getBoolean() && allowFilter) {
@@ -138,13 +136,13 @@ public class SQLite3WindowFunctionTester {
 
 	//
 
-	private static void appendFilter(List<Column> columns, StringBuilder sb, SQLite3GlobalState globalState) {
+	private static void appendFilter(List<SQLite3Column> columns, StringBuilder sb, SQLite3GlobalState globalState) {
 		sb.append(" FILTER (WHERE ");
 		sb.append(SQLite3Visitor.asString(new SQLite3ExpressionGenerator(globalState).setColumns(columns).getRandomExpression()));
 		sb.append(")");
 	}
 
-	private static void appendPartitionBy(List<Column> columns, StringBuilder sb, SQLite3GlobalState globalState) {
+	private static void appendPartitionBy(List<SQLite3Column> columns, StringBuilder sb, SQLite3GlobalState globalState) {
 		sb.append(" PARTITION BY ");
 		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
 			if (i != 0) {
@@ -163,7 +161,7 @@ public class SQLite3WindowFunctionTester {
 		BETWEEN, UNBOUNDED_PRECEDING, CURRENT_ROW
 	}
 
-	private SQLite3Expression getRandomWhereCondition(List<Column> columns) {
+	private SQLite3Expression getRandomWhereCondition(List<SQLite3Column> columns) {
 		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns);
 		// FIXME: enable match clause for multiple tables
 //		if (randomTable.isVirtual()) {

@@ -21,7 +21,7 @@ import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation.BinaryComparisonOperator;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
-import lama.sqlite3.ast.SQLite3Expression.ColumnName;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.Join.JoinType;
 import lama.sqlite3.ast.SQLite3Expression.MatchOperation;
@@ -40,8 +40,8 @@ import lama.sqlite3.ast.SQLite3RowValue;
 import lama.sqlite3.ast.SQLite3UnaryOperation;
 import lama.sqlite3.ast.SQLite3UnaryOperation.UnaryOperator;
 import lama.sqlite3.queries.SQLite3RandomQuerySynthesizer;
-import lama.sqlite3.schema.SQLite3Schema.Column;
-import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column.CollateSequence;
 import lama.sqlite3.schema.SQLite3Schema.RowValue;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 
@@ -50,7 +50,7 @@ public class SQLite3ExpressionGenerator {
 	private RowValue rw;
 	private final SQLite3GlobalState globalState;
 	private boolean tryToGenerateKnownResult;
-	private List<Column> columns = Collections.emptyList();
+	private List<SQLite3Column> columns = Collections.emptyList();
 	private final Randomly r;
 	private boolean deterministicOnly;
 	private boolean allowMatchClause;
@@ -75,7 +75,7 @@ public class SQLite3ExpressionGenerator {
 		return this;
 	}
 
-	public SQLite3ExpressionGenerator setColumns(List<Column> columns) {
+	public SQLite3ExpressionGenerator setColumns(List<SQLite3Column> columns) {
 		this.columns = columns;
 		return this;
 	}
@@ -355,8 +355,8 @@ public class SQLite3ExpressionGenerator {
 	}
 
 	private SQLite3Expression getRandomColumn() {
-		Column c = Randomly.fromList(columns);
-		ColumnName columnName = new ColumnName(c, rw == null ? null : rw.getValues().get(c));
+		SQLite3Column c = Randomly.fromList(columns);
+		SQLite3ColumnName columnName = new SQLite3ColumnName(c, rw == null ? null : rw.getValues().get(c));
 		return columnName;
 	}
 	

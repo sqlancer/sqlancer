@@ -9,7 +9,7 @@ import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
-import lama.sqlite3.ast.SQLite3Expression.ColumnName;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Function;
 import lama.sqlite3.ast.SQLite3Expression.InOperation;
 import lama.sqlite3.ast.SQLite3Expression.Join;
@@ -79,7 +79,7 @@ public interface SQLite3Visitor {
 
 	public abstract void visit(BetweenOperation op);
 
-	public abstract void visit(ColumnName c);
+	public abstract void visit(SQLite3ColumnName c);
 
 	public abstract void visit(SQLite3Constant c);
 
@@ -133,8 +133,8 @@ public interface SQLite3Visitor {
 	public default void visit(SQLite3Expression expr) {
 		if (expr instanceof Sqlite3BinaryOperation) {
 			visit((Sqlite3BinaryOperation) expr);
-		} else if (expr instanceof ColumnName) {
-			visit((ColumnName) expr);
+		} else if (expr instanceof SQLite3ColumnName) {
+			visit((SQLite3ColumnName) expr);
 		} else if (expr instanceof SQLite3Constant) {
 			visit((SQLite3Constant) expr);
 		} else if (expr instanceof SQLite3UnaryOperation) {

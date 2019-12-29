@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 import lama.Randomly;
 import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.schema.SQLite3DataType;
-import lama.sqlite3.schema.SQLite3Schema.Column.CollateSequence;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column.CollateSequence;
 
 public abstract class SQLite3Constant extends SQLite3Expression {
 

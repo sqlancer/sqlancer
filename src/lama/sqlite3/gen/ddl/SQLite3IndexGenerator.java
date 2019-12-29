@@ -15,7 +15,7 @@ import lama.sqlite3.SQLite3ToStringVisitor;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
-import lama.sqlite3.schema.SQLite3Schema.Column;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 
 // see https://www.sqlite.org/lang_createindex.html
@@ -60,7 +60,7 @@ public class SQLite3IndexGenerator {
 		return new QueryAdapter(q, errors, true);
 	}
 
-	private String createIndex(Table t, List<Column> columns) {
+	private String createIndex(Table t, List<SQLite3Column> columns) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("CREATE");
 		if (Randomly.getBoolean()) {
