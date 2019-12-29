@@ -327,7 +327,7 @@ public class PostgresProvider implements DatabaseProvider {
 		globalState.setSchema(PostgresSchema.fromConnection(con, databaseName));
 
 		manager.execute(new QueryAdapter("SET SESSION statement_timeout = 5000;\n"));
-
+		manager.incrementCreateDatabase();
 		PostgresMetamorphicOracleGenerator or = new PostgresMetamorphicOracleGenerator(globalState.getSchema(), r, con,
 				(PostgresStateToReproduce) state, logger, options, manager, globalState);
 		for (int i = 0; i < options.getNrQueries(); i++) {
