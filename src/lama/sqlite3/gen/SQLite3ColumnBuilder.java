@@ -45,6 +45,9 @@ public class SQLite3ColumnBuilder {
 
 		if (Randomly.getBoolean()) {
 			List<Constraints> constraints = Randomly.subset(Constraints.values());
+			if (!Randomly.getBooleanWithSmallProbability()) {
+				constraints.remove(Constraints.GENERATED_AS);
+			}
 			if (constraints.contains(Constraints.GENERATED_AS)) {
 				allowDefaultValue = false;
 				allowPrimaryKey = false;
