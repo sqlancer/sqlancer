@@ -55,34 +55,75 @@ public class PostgresProvider implements DatabaseProvider {
 	public static boolean GENERATE_ONLY_KNOWN = false;
 
 	private PostgresGlobalState globalState;
+	
+	@FunctionalInterface
+	public interface PostgresQueryProvider {
 
+		Query getQuery(PostgresGlobalState globalState) throws SQLException;
+	}
+	
 	private enum Action {
-		ANALYZE, //
-		ALTER_TABLE, //
-		CLUSTER, //
-		COMMIT, //
-		CREATE_STATISTICS, //
-		DROP_STATISTICS, //
-		DELETE, //
-		DISCARD, //
-		DROP_INDEX, //
-		INSERT, //
-		UPDATE, //
-		TRUNCATE, //
-		VACUUM, //
-		REINDEX, //
-		SET, //
-		CREATE_INDEX, //
-		SET_CONSTRAINTS, //
-		RESET_ROLE, //
-		COMMENT_ON, //
-		RESET, //
-		NOTIFY, //
-		LISTEN, //
-		UNLISTEN, //
-		CREATE_SEQUENCE, //
-		CREATE_VIEW, //
-		QUERY_CATALOG;
+		ANALYZE(PostgresAnalyzeGenerator::create), //
+		ALTER_TABLE(g -> PostgresAlterTableGenerator.create(g.getSchema().getRandomTable(t -> !t.isView()), g.getRandomly(),
+			g.getSchema(), GENERATE_ONLY_KNOWN, g.getOpClasses(), g.getOperators())), //
+		CLUSTER(PostgresClusterGenerator::create), //
+		COMMIT(g -> {
+			Query query;
+			if (Randomly.getBoolean()) {
+				query = new QueryAdapter("COMMIT") {
+					@Override
+					public boolean couldAffectSchema() {
+						return true;
+					}
+				};
+			} else if (Randomly.getBoolean()) {
+				query = PostgresTransactionGenerator.executeBegin();
+			} else {
+				query = new QueryAdapter("ROLLBACK") {
+					@Override
+					public boolean couldAffectSchema() {
+						return true;
+					}
+				};
+			}
+			return query;
+		}), //
+		CREATE_STATISTICS(PostgresStatisticsGenerator::insert), //
+		DROP_STATISTICS(PostgresStatisticsGenerator::remove), //
+		DELETE(PostgresDeleteGenerator::create), //
+		DISCARD(PostgresDiscardGenerator::create), //
+		DROP_INDEX(PostgresDropIndex::create), //
+		INSERT(PostgresInsertGenerator::insert), //
+		UPDATE(PostgresUpdateGenerator::create), //
+		TRUNCATE(PostgresTruncateGenerator::create), //
+		VACUUM(PostgresVacuumGenerator::create), //
+		REINDEX( PostgresReindexGenerator::create), //
+		SET(PostgresSetGenerator::create), //
+		CREATE_INDEX(PostgresIndexGenerator::generate), //
+		SET_CONSTRAINTS((g) -> {
+			StringBuilder sb = new StringBuilder();
+		sb.append("SET CONSTRAINTS ALL ");
+		sb.append(Randomly.fromOptions("DEFERRED", "IMMEDIATE"));
+		return new QueryAdapter(sb.toString());}), //
+		RESET_ROLE((g) -> new QueryAdapter("RESET ROLE")), //
+		COMMENT_ON(PostgresCommentGenerator::generate), //
+		RESET((g) -> new QueryAdapter("RESET ALL") 	/* https://www.postgresql.org/docs/devel/sql-reset.html TODO: also configuration parameter */), //
+		NOTIFY(PostgresNotifyGenerator::createNotify), //
+		LISTEN((g) -> PostgresNotifyGenerator.createListen()), //
+		UNLISTEN((g) -> PostgresNotifyGenerator.createUnlisten()), //
+		CREATE_SEQUENCE(PostgresSequenceGenerator::createSequence), //
+		CREATE_VIEW(PostgresViewGenerator::create), //
+		QUERY_CATALOG((g) -> PostgresQueryCatalogGenerator.query());
+		
+		private final PostgresQueryProvider queryProvider;
+
+		private Action(PostgresQueryProvider queryProvider) {
+			this.queryProvider = queryProvider;
+		}
+
+		public Query getQuery(PostgresGlobalState state) throws SQLException {
+			return queryProvider.getQuery(state);
+		}
 	}
 	
 	private final Randomly r = new Randomly();
@@ -124,11 +165,11 @@ public class PostgresProvider implements DatabaseProvider {
 				nrPerformed = r.getInteger(0, 5);
 				break;
 			case DISCARD:
-			case CLUSTER:
 			case DROP_INDEX:
 				nrPerformed = r.getInteger(0, 5);
 				break;
 			case COMMIT:
+			case CLUSTER: // FIXME cluster broke during refactoring
 				nrPerformed = r.getInteger(0, 0);
 				break;
 			case ALTER_TABLE:
@@ -195,111 +236,9 @@ public class PostgresProvider implements DatabaseProvider {
 			boolean successful = false;
 			int tries = 0;
 			while (!successful && tries++ <= 100) {
+				
 				try {
-					switch (nextAction) {
-					case ANALYZE:
-						query = PostgresAnalyzeGenerator.create(globalState);
-						break;
-					case CLUSTER:
-						query = PostgresClusterGenerator.create(globalState);
-					case ALTER_TABLE:
-						query = PostgresAlterTableGenerator.create(globalState.getSchema().getRandomTable(t -> !t.isView()), r,
-								globalState.getSchema(), GENERATE_ONLY_KNOWN, globalState.getOpClasses(), globalState.getOperators());
-						break;
-					case SET_CONSTRAINTS:
-						StringBuilder sb = new StringBuilder();
-						sb.append("SET CONSTRAINTS ALL ");
-						sb.append(Randomly.fromOptions("DEFERRED", "IMMEDIATE"));
-						query = new QueryAdapter(sb.toString());
-						break;
-					case RESET_ROLE:
-						query = new QueryAdapter("RESET ROLE");
-						break;
-					case QUERY_CATALOG:
-						query = PostgresQueryCatalogGenerator.query();
-						break;
-					case COMMIT:
-						if (Randomly.getBoolean()) {
-							query = new QueryAdapter("COMMIT") {
-								@Override
-								public boolean couldAffectSchema() {
-									return true;
-								}
-							};
-						} else if (Randomly.getBoolean()) {
-							query = PostgresTransactionGenerator.executeBegin();
-
-						} else {
-							query = new QueryAdapter("ROLLBACK") {
-								@Override
-								public boolean couldAffectSchema() {
-									return true;
-								}
-							};
-						}
-						break;
-					case NOTIFY:
-						query = PostgresNotifyGenerator.createNotify(globalState);
-						break;
-					case LISTEN:
-						query = PostgresNotifyGenerator.createListen();
-						break;
-					case UNLISTEN:
-						query = PostgresNotifyGenerator.createUnlisten();
-						break;
-					case RESET:
-						// https://www.postgresql.org/docs/devel/sql-reset.html
-						// TODO: also configuration parameter
-						query = new QueryAdapter("RESET ALL");
-						break;
-					case COMMENT_ON:
-						query = PostgresCommentGenerator.generate(globalState);
-						break;
-					case CREATE_INDEX:
-						query = PostgresIndexGenerator.generate(globalState);
-						break;
-					case DISCARD:
-						query = PostgresDiscardGenerator.create(globalState);
-						break;
-					case CREATE_VIEW:
-						query = PostgresViewGenerator.create(globalState);
-						break;
-					case DELETE:
-						query = PostgresDeleteGenerator.create(globalState);
-						break;
-					case DROP_INDEX:
-						query = PostgresDropIndex.create(globalState);
-						break;
-					case UPDATE:
-						query = PostgresUpdateGenerator.create(globalState);
-						break;
-					case VACUUM:
-						query = PostgresVacuumGenerator.create(globalState);
-						break;
-					case REINDEX:
-						query = PostgresReindexGenerator.create(globalState);
-						break;
-					case TRUNCATE:
-						query = PostgresTruncateGenerator.create(globalState);
-						break;
-					case SET:
-						query = PostgresSetGenerator.create(globalState);
-						break;
-					case INSERT:
-						query = PostgresInsertGenerator.insert(globalState);
-						break;
-					case CREATE_STATISTICS:
-						query = PostgresStatisticsGenerator.insert(globalState);
-						break;
-					case DROP_STATISTICS:
-						query = PostgresStatisticsGenerator.remove(globalState);
-						break;
-					case CREATE_SEQUENCE:
-						query = PostgresSequenceGenerator.createSequence(globalState);
-						break;
-					default:
-						throw new AssertionError(nextAction);
-					}
+					query = nextAction.getQuery(globalState);
 				} catch (IgnoreMeException e) {
 					continue;
 				}
