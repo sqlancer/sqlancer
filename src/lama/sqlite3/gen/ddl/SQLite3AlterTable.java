@@ -44,6 +44,7 @@ public class SQLite3AlterTable {
 		errors.add("non-deterministic functions prohibited in generated columns");
 		errors.add("non-deterministic functions prohibited in CHECK constraints");
 		errors.add("second argument to likelihood");
+		errors.add("subqueries prohibited in CHECK constraints");
 		Option option = Randomly.fromOptions(Option.values());
 		Table t = s.getRandomTableOrBailout(tab -> !tab.isView() && !tab.isVirtual());
 		sb.append("ALTER TABLE ");
