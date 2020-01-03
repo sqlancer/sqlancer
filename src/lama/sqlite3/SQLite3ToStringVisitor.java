@@ -14,11 +14,11 @@ import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
-import lama.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Function;
 import lama.sqlite3.ast.SQLite3Expression.InOperation;
 import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.MatchOperation;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Exist;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
@@ -29,6 +29,7 @@ import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import lama.sqlite3.ast.SQLite3Function;
 import lama.sqlite3.ast.SQLite3RowValue;
 import lama.sqlite3.ast.SQLite3SelectStatement;
+import lama.sqlite3.ast.SQLite3SetClause;
 import lama.sqlite3.ast.SQLite3WindowFunction;
 import lama.sqlite3.ast.SQLite3WindowFunctionExpression;
 import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecBetween;
@@ -451,6 +452,15 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 	
 	private void visit(SQLite3Expression[] expressions) {
 		visit(Arrays.asList(expressions));
+	}
+
+	@Override
+	public void visit(SQLite3SetClause set) {
+		visit(set.getLeft());
+		sb.append(" ");
+		sb.append(set.getType().getTextRepresentation());
+		sb.append(" ");
+		visit(set.getRight());
 	}
 
 }

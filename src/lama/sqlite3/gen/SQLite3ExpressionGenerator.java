@@ -21,10 +21,10 @@ import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation.BinaryComparisonOperator;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
-import lama.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.Join.JoinType;
 import lama.sqlite3.ast.SQLite3Expression.MatchOperation;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Exist;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
@@ -40,9 +40,9 @@ import lama.sqlite3.ast.SQLite3RowValue;
 import lama.sqlite3.ast.SQLite3UnaryOperation;
 import lama.sqlite3.ast.SQLite3UnaryOperation.UnaryOperator;
 import lama.sqlite3.queries.SQLite3RandomQuerySynthesizer;
+import lama.sqlite3.schema.SQLite3Schema.RowValue;
 import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import lama.sqlite3.schema.SQLite3Schema.SQLite3Column.CollateSequence;
-import lama.sqlite3.schema.SQLite3Schema.RowValue;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 
 public class SQLite3ExpressionGenerator {
@@ -301,12 +301,12 @@ public class SQLite3ExpressionGenerator {
 		List<SQLite3Expression> left = getRandomExpressions(size, depth + 1);
 		List<SQLite3Expression> right = getRandomExpressions(size, depth + 1);
 		RowValueComparison randomOption;
-		if (Randomly.getBooleanWithSmallProbability()) {
-			// for the right hand side a random query is required, which is expensive
-			randomOption = RowValueComparison.IN;
-		} else {
+//		if (Randomly.getBooleanWithSmallProbability()) {
+//			// for the right hand side a random query is required, which is expensive
+//			randomOption = RowValueComparison.IN;
+//		} else {
 			randomOption = Randomly.fromOptions(RowValueComparison.STANDARD_COMPARISON, RowValueComparison.BETWEEN);
-		}
+//		}
 		switch (randomOption) {
 		// TODO case
 		case STANDARD_COMPARISON:
@@ -315,9 +315,9 @@ public class SQLite3ExpressionGenerator {
 		case BETWEEN:
 			return new BetweenOperation(getRandomRowValue(depth + 1, size), Randomly.getBoolean(),
 					new SQLite3RowValue(left), new SQLite3RowValue(right));
-		case IN:
-			return new SQLite3Expression.InOperation(new SQLite3RowValue(left),
-					SQLite3RandomQuerySynthesizer.generate(globalState, size));
+//		case IN:
+//			return new SQLite3Expression.InOperation(new SQLite3RowValue(left),
+//					SQLite3RandomQuerySynthesizer.generate(globalState, size));
 		default:
 			throw new AssertionError(randomOption);
 		}

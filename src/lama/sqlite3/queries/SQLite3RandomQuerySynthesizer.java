@@ -9,6 +9,8 @@ import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.SQLite3SelectStatement.SelectType;
+import lama.sqlite3.ast.SQLite3SetClause;
+import lama.sqlite3.ast.SQLite3SetClause.SQLite3ClauseType;
 import lama.sqlite3.ast.SQLite3WindowFunction;
 import lama.sqlite3.ast.SQLite3WindowFunctionExpression;
 import lama.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3FrameSpecExclude;
@@ -26,7 +28,7 @@ public class SQLite3RandomQuerySynthesizer {
 
 	// TODO join clauses
 	// TODO union, intersect
-	public static SQLite3SelectStatement generate(SQLite3GlobalState globalState, int size) {
+	public static SQLite3Expression generate(SQLite3GlobalState globalState, int size) {
 		Randomly r = globalState.getRandomly();
 		SQLite3Schema s = globalState.getSchema();
 		Tables targetTables = s.getRandomTableNonEmptyTables();
@@ -95,15 +97,16 @@ public class SQLite3RandomQuerySynthesizer {
 		// FROM ...
 		select.setFromList(SQLite3Common.getTableRefs(tables, s));
 		// TODO: no values are referenced from this sub query yet
-		if (Randomly.getBooleanWithSmallProbability()) {
-			select.getFromList().add(SQLite3RandomQuerySynthesizer.generate(globalState, Randomly.smallNumber() + 1));
-		}
+//		if (Randomly.getBooleanWithSmallProbability()) {
+//			select.getFromList().add(SQLite3RandomQuerySynthesizer.generate(globalState, Randomly.smallNumber() + 1));
+//		}
 		
 		// WHERE
 		if (Randomly.getBoolean()) {
 			select.setWhereClause(gen.getRandomExpression());
 		}
-		if (Randomly.getBoolean()) {
+		boolean groupBy = Randomly.getBoolean();
+		if (groupBy) {
 			// GROUP BY
 			select.setGroupByClause(gen.getRandomExpressions(Randomly.smallNumber() + 1));
 			if (Randomly.getBoolean()) {
@@ -111,7 +114,8 @@ public class SQLite3RandomQuerySynthesizer {
 				select.setHavingClause(aggregateGen.getRandomExpression());
 			}
 		}
-		if (Randomly.getBoolean()) {
+		boolean orderBy = Randomly.getBoolean();
+		if (orderBy) {
 			// ORDER BY
 			select.setOrderByClause(gen.generateOrderingTerms());
 		}
@@ -122,6 +126,9 @@ public class SQLite3RandomQuerySynthesizer {
 				// OFFSET
 				select.setOffsetClause(SQLite3Constant.createIntConstant(r.getInteger()));
 			}
+		}
+		if (!orderBy && !groupBy && Randomly.getBoolean()) {
+			return new SQLite3SetClause(select, generate(globalState, size), SQLite3ClauseType.getRandom());
 		}
 		return select;
 	}

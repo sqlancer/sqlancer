@@ -9,11 +9,11 @@ import lama.sqlite3.ast.SQLite3Expression.BetweenOperation;
 import lama.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
 import lama.sqlite3.ast.SQLite3Expression.Cast;
 import lama.sqlite3.ast.SQLite3Expression.CollateOperation;
-import lama.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Function;
 import lama.sqlite3.ast.SQLite3Expression.InOperation;
 import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.MatchOperation;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Exist;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
@@ -27,6 +27,7 @@ import lama.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import lama.sqlite3.ast.SQLite3Function;
 import lama.sqlite3.ast.SQLite3RowValue;
 import lama.sqlite3.ast.SQLite3SelectStatement;
+import lama.sqlite3.ast.SQLite3SetClause;
 import lama.sqlite3.ast.SQLite3UnaryOperation;
 import lama.sqlite3.ast.SQLite3WindowFunction;
 import lama.sqlite3.ast.SQLite3WindowFunctionExpression;
@@ -91,7 +92,8 @@ public interface SQLite3Visitor {
 	
 	public abstract void visit (SQLite3TableReference tableReference);
 
-
+	public abstract void visit(SQLite3SetClause set);
+	
 	public abstract void visit(CollateOperation op);
 
 	public abstract void visit(Cast cast);
@@ -191,6 +193,8 @@ public interface SQLite3Visitor {
 			visit((SQLite3WindowFunctionFrameSpecBetween) expr);
 		} else if (expr instanceof SQLite3TableReference) {
 			visit((SQLite3TableReference) expr);
+		} else if (expr instanceof SQLite3SetClause) {
+			visit((SQLite3SetClause) expr);
 		} else {
 			throw new AssertionError(expr);
 		}

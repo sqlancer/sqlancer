@@ -20,8 +20,8 @@ import lama.sqlite3.SQLite3Visitor;
 import lama.sqlite3.ast.SQLite3Aggregate;
 import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import lama.sqlite3.ast.SQLite3Expression;
-import lama.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Join;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
@@ -29,7 +29,6 @@ import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.SQLite3SelectStatement.SelectType;
 import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
-import lama.sqlite3.schema.SQLite3DataType;
 import lama.sqlite3.schema.SQLite3Schema;
 import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
@@ -129,6 +128,8 @@ public class SQLite3MetamorphicQuerySynthesizer {
 				}
 				rs.getStatement().close();
 			}
+		} catch (Exception e) {
+			throw new AssertionError(secondQueryString, e);
 		}
 		return secondCount;
 	}
@@ -137,7 +138,8 @@ public class SQLite3MetamorphicQuerySynthesizer {
 			SQLite3Expression randomWhereCondition, List<SQLite3Expression> groupBys, List<Join> joinStatements)
 			throws SQLException {
 		SQLite3SelectStatement select = new SQLite3SelectStatement();
-		select.setGroupByClause(groupBys);
+		// TODO: readd group by (removed due to INTERSECT/UNION)
+//		select.setGroupByClause(groupBys);
 		setRandomOrderBy(select);
 		// TODO: randomly select column and then = TRUE instead of IS TRUE
 		// SELECT COUNT(t1.c3) FROM t1 WHERE (- (t1.c2));
