@@ -22,9 +22,6 @@ import lama.QueryAdapter;
 import lama.Randomly;
 import lama.StateToReproduce;
 import lama.StateToReproduce.SQLite3StateToReproduce;
-import lama.sqlite3.dml.SQLite3DeleteGenerator;
-import lama.sqlite3.dml.SQLite3InsertGenerator;
-import lama.sqlite3.dml.SQLite3UpdateGenerator;
 import lama.sqlite3.gen.SQLite3AnalyzeGenerator;
 import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.gen.SQLite3CreateVirtualRtreeTabelGenerator;
@@ -42,6 +39,9 @@ import lama.sqlite3.gen.ddl.SQLite3DropTableGenerator;
 import lama.sqlite3.gen.ddl.SQLite3IndexGenerator;
 import lama.sqlite3.gen.ddl.SQLite3TableGenerator;
 import lama.sqlite3.gen.ddl.SQLite3ViewGenerator;
+import lama.sqlite3.gen.dml.SQLite3DeleteGenerator;
+import lama.sqlite3.gen.dml.SQLite3InsertGenerator;
+import lama.sqlite3.gen.dml.SQLite3UpdateGenerator;
 import lama.sqlite3.queries.SQLite3MetamorphicQuerySynthesizer;
 import lama.sqlite3.schema.SQLite3Schema;
 import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
@@ -216,7 +216,6 @@ public class SQLite3Provider implements DatabaseProvider {
 		Randomly r = new Randomly(SQLite3SpecialStringGenerator::generate);
 		globalState.setMainOptions(options);
 		globalState.setRandomly(r);
-		SQLite3Schema newSchema = null;
 		this.state = (SQLite3StateToReproduce) state;
 		globalState.setConnection(con);
 		globalState.setState((SQLite3StateToReproduce) state);
@@ -230,18 +229,24 @@ public class SQLite3Provider implements DatabaseProvider {
 			nrTablesToCreate++;
 		}
 		int i = 0;
-		newSchema = SQLite3Schema.fromConnection(con);
-		globalState.setSchema(newSchema);
-		do {
-			Query tableQuery = getTableQuery(state, r, newSchema, i);
-			manager.execute(tableQuery);
-			i++;
-			newSchema = SQLite3Schema.fromConnection(con);
-			globalState.setSchema(newSchema);
-		} while (newSchema.getDatabaseTables().size() != nrTablesToCreate);
-		assert newSchema.getTables().getTables().size() == nrTablesToCreate;
-		checkTablesForGeneratedColumnLoops(con, newSchema);
 
+		globalState.setSchema(SQLite3Schema.fromConnection(con));
+		do {
+			boolean success;
+			do {
+				Query tableQuery = getTableQuery(state, r, globalState.getSchema(), i);
+				success = manager.execute(tableQuery);
+			} while (!success);
+			i++;
+			globalState.setSchema(SQLite3Schema.fromConnection(con));
+		} while (globalState.getSchema().getDatabaseTables().size() != nrTablesToCreate);
+		assert globalState.getSchema().getTables().getTables().size() == nrTablesToCreate;
+		checkTablesForGeneratedColumnLoops(con, globalState.getSchema());
+		if (Randomly.getBoolean()) {
+			QueryAdapter tableQuery = new QueryAdapter("CREATE VIRTUAL TABLE IF NOT EXISTS stat USING dbstat(main)");
+			manager.execute(tableQuery);
+			globalState.setSchema(SQLite3Schema.fromConnection(con));
+		}
 		int[] nrRemaining = new int[Action.values().length];
 		List<Action> actions = new ArrayList<>();
 		int total = 0;
@@ -325,8 +330,10 @@ public class SQLite3Provider implements DatabaseProvider {
 				}
 				manager.execute(query);
 				if (query.couldAffectSchema()) {
-					newSchema = SQLite3Schema.fromConnection(con);
-					globalState.setSchema(newSchema);
+					globalState.setSchema(SQLite3Schema.fromConnection(con));
+					if (SQLite3Schema.fromConnection(con).getDatabaseTables().isEmpty()) {
+						throw new IgnoreMeException();
+					}
 				}
 			} catch (IgnoreMeException e) {
 

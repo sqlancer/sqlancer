@@ -476,8 +476,9 @@ public class SQLite3Schema {
 					boolean withoutRowid = sqlString.contains("without rowid");
 					boolean isView = tableType.contentEquals("view");
 					boolean isVirtual = sqlString.contains("virtual");
-					boolean isReadOnly = sqlString.contains("using dbstat");
-					List<SQLite3Column> databaseColumns = getTableColumns(con, tableName, sqlString, isView);
+					boolean isDbStatsTable = sqlString.contains("using dbstat");
+					boolean isReadOnly = isDbStatsTable;
+					List<SQLite3Column> databaseColumns = getTableColumns(con, tableName, sqlString, isView, isDbStatsTable);
 					int nrRows;
 					try {
 						// FIXME
@@ -525,7 +526,7 @@ public class SQLite3Schema {
 		return new SQLite3Schema(databaseTables, indexNames);
 	}
 
-	private static List<SQLite3Column> getTableColumns(Connection con, String tableName, String sql, boolean isView)
+	private static List<SQLite3Column> getTableColumns(Connection con, String tableName, String sql, boolean isView, boolean isDbStatsTable)
 			throws SQLException {
 		List<SQLite3Column> databaseColumns = new ArrayList<>();
 		try (Statement s2 = con.createStatement()) {
@@ -539,11 +540,15 @@ public class SQLite3Schema {
 							|| columnName.contentEquals(tableName) || columnName.contentEquals("__langid")) {
 						continue; // internal column names of FTS tables
 					}
+					if (isDbStatsTable && columnName.contentEquals("aggregate")) {
+						// see https://www.sqlite.org/src/tktview?name=a3713a5fca
+						continue;
+					}
 					String columnTypeString = columnRs.getString("type");
 					boolean isPrimaryKey = columnRs.getBoolean("pk");
 					SQLite3DataType columnType = getColumnType(columnTypeString);
 					CollateSequence collate;
-					if (!sql.contains("using dbstat")) {
+					if (!isDbStatsTable) {
 						String columnSql = columnCreates[columnCreateIndex++];
 						collate = getCollate(columnSql, isView);
 					} else {
