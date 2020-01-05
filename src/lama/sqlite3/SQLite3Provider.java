@@ -82,7 +82,7 @@ public class SQLite3Provider implements DatabaseProvider {
 		CREATE_TRIGGER(SQLite3CreateTriggerGenerator::create), //
 		MANIPULATE_STAT_TABLE((g) -> {
 				List<SQLite3Column> columns = new ArrayList<>();
-				Table t = new Table("sqlite_stat1", columns, TableKind.MAIN, false, 1, false, false);
+				Table t = new Table("sqlite_stat1", columns, TableKind.MAIN, false, 1, false, false, false);
 				if (Randomly.getBoolean()) {
 					return SQLite3DeleteGenerator.deleteContent(g, t);
 				} else {

@@ -78,8 +78,8 @@ public class SQLite3Schema {
 			assert !isInteger || columnType == SQLite3DataType.INT;
 		}
 
-		public SQLite3Column(String rowId, SQLite3DataType columnType2, boolean contains, boolean b, CollateSequence collate,
-				boolean generated) {
+		public SQLite3Column(String rowId, SQLite3DataType columnType2, boolean contains, boolean b,
+				CollateSequence collate, boolean generated) {
 			this(rowId, columnType2, b, generated, collate);
 			this.generated = generated;
 		}
@@ -154,7 +154,7 @@ public class SQLite3Schema {
 		public CollateSequence getCollateSequence() {
 			return collate;
 		}
-		
+
 		public boolean isGenerated() {
 			return generated;
 		}
@@ -272,14 +272,16 @@ public class SQLite3Schema {
 		private int nrRows;
 		private boolean isView;
 		private boolean isVirtual;
+		private boolean isReadOnly;
 
-		public Table(String tableName, List<SQLite3Column> columns, TableKind tableType, boolean withoutRowid, int nrRows,
-				boolean isView, boolean isVirtual) {
+		public Table(String tableName, List<SQLite3Column> columns, TableKind tableType, boolean withoutRowid,
+				int nrRows, boolean isView, boolean isVirtual, boolean isReadOnly) {
 			this.tableName = tableName;
 			this.tableType = tableType;
 			this.withoutRowid = withoutRowid;
 			this.isView = isView;
 			this.isVirtual = isVirtual;
+			this.isReadOnly = isReadOnly;
 			this.columns = Collections.unmodifiableList(columns);
 			this.nrRows = nrRows;
 		}
@@ -359,6 +361,10 @@ public class SQLite3Schema {
 			return tableType == TableKind.TEMP;
 		}
 
+		public boolean isReadOnly() {
+			return isReadOnly;
+		}
+
 	}
 
 	public static class RowValue {
@@ -433,7 +439,8 @@ public class SQLite3Schema {
 		errors.add("ORDER BY term out of range");
 		errors.addAll(Arrays.asList("second argument to nth_value must be a positive integer",
 				"ON clause references tables to its right", "no such table", "no query solution", "no such index",
-				"GROUP BY term", "is circularly defined", "misuse of aggregate", "no such column", "misuse of window function"));
+				"GROUP BY term", "is circularly defined", "misuse of aggregate", "no such column",
+				"misuse of window function"));
 		SQLite3Errors.addExpectedExpressionErrors(errors);
 		QueryAdapter q = new QueryAdapter(string, errors);
 		try (ResultSet query = q.executeAndGet(con)) {
@@ -469,21 +476,18 @@ public class SQLite3Schema {
 					boolean withoutRowid = sqlString.contains("without rowid");
 					boolean isView = tableType.contentEquals("view");
 					boolean isVirtual = sqlString.contains("virtual");
-					List<SQLite3Column> databaseColumns;
-					try {
-						databaseColumns = getTableColumns(con, tableName, sqlString, isView);
-					} catch (IgnoreMeException e) {
-						continue;
-					}
+					boolean isReadOnly = sqlString.contains("using dbstat");
+					List<SQLite3Column> databaseColumns = getTableColumns(con, tableName, sqlString, isView);
 					int nrRows;
 					try {
-						nrRows = getNrRows(con, tableName);
+						// FIXME
+						nrRows = 0; // getNrRows(con, tableName);
 					} catch (IgnoreMeException e) {
 						nrRows = 0;
 					}
 					Table t = new Table(tableName, databaseColumns,
 							tableType.contentEquals("temp_table") ? TableKind.TEMP : TableKind.MAIN, withoutRowid,
-							nrRows, isView, isVirtual);
+							nrRows, isView, isVirtual, isReadOnly);
 					try (Statement s3 = con.createStatement()) {
 						try (ResultSet rs3 = s3.executeQuery("SELECT typeof(rowid) FROM " + tableName)) {
 							if (rs3.next() && !isView /* TODO: can we still do something with it? */) {
@@ -491,7 +495,8 @@ public class SQLite3Schema {
 								SQLite3DataType columnType = getColumnType(dataType);
 								boolean generated = dataType.toUpperCase().contains("GENERATED AS");
 								String rowId = Randomly.fromOptions("rowid", "_rowid_", "oid");
-								SQLite3Column rowid = new SQLite3Column(rowId, columnType, dataType.contains("INTEGER"), true, null, generated);
+								SQLite3Column rowid = new SQLite3Column(rowId, columnType, dataType.contains("INTEGER"),
+										true, null, generated);
 								t.addRowid(rowid);
 								rowid.setTable(t);
 							}
@@ -530,34 +535,26 @@ public class SQLite3Schema {
 				int columnCreateIndex = 0;
 				while (columnRs.next()) {
 					String columnName = columnRs.getString("name");
-					if (columnName.contentEquals("docid") || columnName.contentEquals("rank") || columnName.contentEquals(tableName) || columnName.contentEquals("__langid")) {
+					if (columnName.contentEquals("docid") || columnName.contentEquals("rank")
+							|| columnName.contentEquals(tableName) || columnName.contentEquals("__langid")) {
 						continue; // internal column names of FTS tables
 					}
 					String columnTypeString = columnRs.getString("type");
 					boolean isPrimaryKey = columnRs.getBoolean("pk");
 					SQLite3DataType columnType = getColumnType(columnTypeString);
-					sql = columnCreates[columnCreateIndex++];
 					CollateSequence collate;
-					if (isView) {
-						collate = CollateSequence.BINARY;
+					if (!sql.contains("using dbstat")) {
+						String columnSql = columnCreates[columnCreateIndex++];
+						collate = getCollate(columnSql, isView);
 					} else {
-						if (sql.contains("collate binary")) {
-							collate = CollateSequence.BINARY;
-						} else if (sql.contains("collate rtrim")) {
-							collate = CollateSequence.RTRIM;
-						} else if (sql.contains("collate nocase")) {
-							collate = CollateSequence.NOCASE;
-						} else {
-							collate = CollateSequence.BINARY;
-						}
+						collate = CollateSequence.BINARY;
 					}
-					databaseColumns.add(new SQLite3Column(columnName, columnType, columnTypeString.contentEquals("INTEGER"),
-							isPrimaryKey, collate));
+					databaseColumns.add(new SQLite3Column(columnName, columnType,
+							columnTypeString.contentEquals("INTEGER"), isPrimaryKey, collate));
 				}
-			} catch (SQLException | ArrayIndexOutOfBoundsException e) {
-				throw new IgnoreMeException(); // TODO
-				// throw new AssertionError(tableInfoStr);
 			}
+		} catch (Exception e) {
+			// TODO
 		}
 		if (databaseColumns.isEmpty()) {
 			// only generated columns
@@ -565,6 +562,24 @@ public class SQLite3Schema {
 		}
 		assert !databaseColumns.isEmpty() : tableName;
 		return databaseColumns;
+	}
+
+	private static CollateSequence getCollate(String sql, boolean isView) {
+		CollateSequence collate;
+		if (isView) {
+			collate = CollateSequence.BINARY;
+		} else {
+			if (sql.contains("collate binary")) {
+				collate = CollateSequence.BINARY;
+			} else if (sql.contains("collate rtrim")) {
+				collate = CollateSequence.RTRIM;
+			} else if (sql.contains("collate nocase")) {
+				collate = CollateSequence.NOCASE;
+			} else {
+				collate = CollateSequence.BINARY;
+			}
+		}
+		return collate;
 	}
 
 	private static SQLite3DataType getColumnType(String columnTypeString) {
@@ -578,6 +593,7 @@ public class SQLite3Schema {
 			columnType = SQLite3DataType.INT;
 			break;
 		case "INT":
+		case "BOOLEAN":
 			columnType = SQLite3DataType.INT;
 			break;
 		case "":
