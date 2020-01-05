@@ -28,7 +28,7 @@ public class SQLite3UpdateGenerator {
 	}
 
 	public static Query updateRow(SQLite3GlobalState globalState) {
-		Table randomTableNoViewOrBailout = globalState.getSchema().getRandomTableNoViewOrBailout();
+		Table randomTableNoViewOrBailout = globalState.getSchema().getRandomTable(t -> !t.isView() && !t.isReadOnly());
 		return updateRow(globalState, randomTableNoViewOrBailout);
 	}
 

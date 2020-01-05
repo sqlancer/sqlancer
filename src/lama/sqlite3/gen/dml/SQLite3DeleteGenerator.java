@@ -16,7 +16,7 @@ import lama.sqlite3.schema.SQLite3Schema.Table;
 public class SQLite3DeleteGenerator {
 
 	public static Query deleteContent(SQLite3GlobalState globalState) {
-		Table tableName = globalState.getSchema().getRandomTableNoViewOrBailout();
+		Table tableName = globalState.getSchema().getRandomTable(t -> !t.isView() && !t.isReadOnly());
 		return deleteContent(globalState, tableName);
 	}
 

@@ -32,7 +32,7 @@ public class SQLite3InsertGenerator {
 	}
 
 	public static Query insertRow(SQLite3GlobalState globalState) throws SQLException {
-		Table randomTable = globalState.getSchema().getRandomTableOrBailout(t -> !t.isView());
+		Table randomTable = globalState.getSchema().getRandomTableOrBailout(t -> !t.isView() && !t.isReadOnly());
 		return insertRow(globalState, randomTable);
 	}
 
