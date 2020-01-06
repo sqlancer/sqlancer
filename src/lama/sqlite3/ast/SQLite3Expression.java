@@ -604,14 +604,14 @@ public abstract class SQLite3Expression {
 
 		private final SQLite3Expression left;
 		private List<SQLite3Expression> rightExpressionList;
-		private SQLite3SelectStatement rightSelect;
+		private SQLite3Expression rightSelect;
 
 		public InOperation(SQLite3Expression left, List<SQLite3Expression> right) {
 			this.left = left;
 			this.rightExpressionList = right;
 		}
 		
-		public InOperation(SQLite3Expression left, SQLite3SelectStatement select) {
+		public InOperation(SQLite3Expression left, SQLite3Expression select) {
 			this.left = left;
 			this.rightSelect = select;
 		}
@@ -624,7 +624,7 @@ public abstract class SQLite3Expression {
 			return rightExpressionList;
 		}
 
-		public SQLite3SelectStatement getRightSelect() {
+		public SQLite3Expression getRightSelect() {
 			return rightSelect;
 		}
 		
@@ -693,7 +693,7 @@ public abstract class SQLite3Expression {
 		
 		@Override
 		public CollateSequence getExplicitCollateSequence() {
-			throw new AssertionError();
+			return null;
 		}
 		
 		public SQLite3Expression getLeft() {
@@ -1714,7 +1714,6 @@ public abstract class SQLite3Expression {
 			return OperatorKind.POSTFIX;
 		}
 		
-		@Override
 		public boolean omitBracketsWhenPrinting() {
 			return true;
 		}
