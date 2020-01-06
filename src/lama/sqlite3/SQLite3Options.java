@@ -17,7 +17,7 @@ public class SQLite3Options {
 	public SQLite3Oracle oracle = SQLite3Oracle.METAMORPHIC;
 
 	public static enum SQLite3Oracle {
-		PQS, METAMORPHIC
+		PQS, METAMORPHIC, FUZZER
 	}
 
 	public class SQLite3OracleConverter implements IStringConverter<SQLite3Oracle> {

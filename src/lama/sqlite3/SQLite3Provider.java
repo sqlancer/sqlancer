@@ -45,6 +45,7 @@ import lama.sqlite3.gen.ddl.SQLite3ViewGenerator;
 import lama.sqlite3.gen.dml.SQLite3DeleteGenerator;
 import lama.sqlite3.gen.dml.SQLite3InsertGenerator;
 import lama.sqlite3.gen.dml.SQLite3UpdateGenerator;
+import lama.sqlite3.queries.SQLite3Fuzzer;
 import lama.sqlite3.queries.SQLite3MetamorphicQuerySynthesizer;
 import lama.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
 import lama.sqlite3.schema.SQLite3Schema;
@@ -165,6 +166,8 @@ public class SQLite3Provider implements DatabaseProvider {
 		private Randomly r;
 		private MainOptions mainOptions;
 		private SQLite3Options sqliteOptions;
+		private StateLogger logger;
+		private QueryManager manager;
 
 		public Connection getConnection() {
 			return con;
@@ -214,6 +217,22 @@ public class SQLite3Provider implements DatabaseProvider {
 			return sqliteOptions;
 		}
 
+		public void setLogger(StateLogger logger) {
+			this.logger = logger;
+		}
+
+		public StateLogger getLogger() {
+			return logger;
+		}
+
+		public void setManager(QueryManager manager) {
+			this.manager = manager;
+		}
+
+		public QueryManager getManager() {
+			return manager;
+		}
+
 	}
 
 	private final SQLite3GlobalState globalState = new SQLite3GlobalState();
@@ -233,6 +252,8 @@ public class SQLite3Provider implements DatabaseProvider {
 		globalState.setMainOptions(options);
 		globalState.setSqliteOptions(sqliteOptions);
 		globalState.setRandomly(r);
+		globalState.setLogger(logger);
+		globalState.setManager(manager);
 		this.state = (SQLite3StateToReproduce) state;
 		globalState.setConnection(con);
 		globalState.setState((SQLite3StateToReproduce) state);
@@ -367,6 +388,7 @@ public class SQLite3Provider implements DatabaseProvider {
 		SQLite3PivotedQuerySynthesizer queryGenerator = new SQLite3PivotedQuerySynthesizer(con, r, globalState);
 		SQLite3MetamorphicQuerySynthesizer or = new SQLite3MetamorphicQuerySynthesizer(globalState.getSchema(), r, con,
 				(SQLite3StateToReproduce) state, logger, options, globalState);
+		SQLite3Fuzzer fuzzer = new SQLite3Fuzzer();
 
 		SQLite3Oracle oracle = globalState.getSqliteOptions().oracle;
 		for (i = 0; i < options.getNrQueries(); i++) {
@@ -377,6 +399,9 @@ public class SQLite3Provider implements DatabaseProvider {
 					break;
 				case PQS:
 					queryGenerator.generateAndCheckQuery(globalState, logger, options);
+					break;
+				case FUZZER:
+					fuzzer.fuzz(globalState);
 					break;
 				default:
 					throw new AssertionError(oracle);
