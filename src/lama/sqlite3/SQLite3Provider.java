@@ -81,59 +81,59 @@ public class SQLite3Provider implements DatabaseProvider {
 		CREATE_VIEW(SQLite3ViewGenerator::generate), //
 		CREATE_TRIGGER(SQLite3CreateTriggerGenerator::create), //
 		MANIPULATE_STAT_TABLE((g) -> {
-				List<SQLite3Column> columns = new ArrayList<>();
-				Table t = new Table("sqlite_stat1", columns, TableKind.MAIN, false, 1, false, false, false);
-				if (Randomly.getBoolean()) {
-					return SQLite3DeleteGenerator.deleteContent(g, t);
-				} else {
-					StringBuilder sb = new StringBuilder();
-					sb.append("INSERT OR IGNORE INTO sqlite_stat1");
-					String indexName;
-					try (Statement stat = g.getConnection().createStatement()) {
-						try (ResultSet rs = stat.executeQuery(
-								"SELECT name FROM sqlite_master WHERE type='index' ORDER BY RANDOM() LIMIT 1;")) {
-							if (rs.isClosed()) {
-								throw new IgnoreMeException();
-							}
-							indexName = rs.getString("name");
+			List<SQLite3Column> columns = new ArrayList<>();
+			Table t = new Table("sqlite_stat1", columns, TableKind.MAIN, false, 1, false, false, false);
+			if (Randomly.getBoolean()) {
+				return SQLite3DeleteGenerator.deleteContent(g, t);
+			} else {
+				StringBuilder sb = new StringBuilder();
+				sb.append("INSERT OR IGNORE INTO sqlite_stat1");
+				String indexName;
+				try (Statement stat = g.getConnection().createStatement()) {
+					try (ResultSet rs = stat.executeQuery(
+							"SELECT name FROM sqlite_master WHERE type='index' ORDER BY RANDOM() LIMIT 1;")) {
+						if (rs.isClosed()) {
+							throw new IgnoreMeException();
 						}
-						;
+						indexName = rs.getString("name");
 					}
-					sb.append(" VALUES");
-					sb.append("('");
-					sb.append(g.getSchema().getRandomTable().getName());
-					sb.append("', ");
-					sb.append("'");
-					if (Randomly.getBoolean()) {
-						sb.append(indexName);
-					} else {
-						sb.append(g.getSchema().getRandomTable().getName());
-					}
-					sb.append("'");
-					sb.append(", '");
-					for (int i = 0; i < Randomly.smallNumber(); i++) {
-						if (i != 0) {
-							sb.append(" ");
-						}
-						if (Randomly.getBoolean()) {
-							sb.append(g.getRandomly().getInteger());
-						} else {
-							sb.append(Randomly.smallNumber());
-						}
-					}
-					if (Randomly.getBoolean()) {
-						sb.append(" sz=");
-						sb.append(g.getRandomly().getInteger());
-					}
-					if (Randomly.getBoolean()) {
-						sb.append(" unordered");
-					}
-					if (Randomly.getBoolean()) {
-						sb.append(" noskipscan");
-					}
-					sb.append("')");
-					return new QueryAdapter(sb.toString(), Arrays.asList("no such table"));
+					;
 				}
+				sb.append(" VALUES");
+				sb.append("('");
+				sb.append(g.getSchema().getRandomTable().getName());
+				sb.append("', ");
+				sb.append("'");
+				if (Randomly.getBoolean()) {
+					sb.append(indexName);
+				} else {
+					sb.append(g.getSchema().getRandomTable().getName());
+				}
+				sb.append("'");
+				sb.append(", '");
+				for (int i = 0; i < Randomly.smallNumber(); i++) {
+					if (i != 0) {
+						sb.append(" ");
+					}
+					if (Randomly.getBoolean()) {
+						sb.append(g.getRandomly().getInteger());
+					} else {
+						sb.append(Randomly.smallNumber());
+					}
+				}
+				if (Randomly.getBoolean()) {
+					sb.append(" sz=");
+					sb.append(g.getRandomly().getInteger());
+				}
+				if (Randomly.getBoolean()) {
+					sb.append(" unordered");
+				}
+				if (Randomly.getBoolean()) {
+					sb.append(" noskipscan");
+				}
+				sb.append("')");
+				return new QueryAdapter(sb.toString(), Arrays.asList("no such table"));
+			}
 		});
 
 		private final SQLQueryProvider queryProvider;
