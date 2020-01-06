@@ -37,7 +37,8 @@ public class SQLite3InsertGenerator {
 	}
 
 	public static Query insertRow(SQLite3GlobalState globalState, Table randomTable) {
-		SQLite3InsertGenerator generator = new SQLite3InsertGenerator(globalState, globalState.getRandomly(), globalState.getConnection());
+		SQLite3InsertGenerator generator = new SQLite3InsertGenerator(globalState, globalState.getRandomly(),
+				globalState.getConnection());
 		String query = generator.insertRow(randomTable);
 		return new QueryAdapter(query, generator.errors, true);
 	}
@@ -59,7 +60,8 @@ public class SQLite3InsertGenerator {
 
 		errors.add("A table in the database is locked");
 		errors.add("cannot INSERT into generated column"); // TODO: filter out generated columns
-		errors.add("A table in the database is locked");
+
+		errors.add("load_extension() prohibited in triggers and views");
 		SQLite3Errors.addInsertNowErrors(errors);
 		SQLite3Errors.addExpectedExpressionErrors(errors);
 		StringBuilder sb = new StringBuilder();
@@ -115,7 +117,8 @@ public class SQLite3InsertGenerator {
 					sb.append(columns.get(i).getName());
 					sb.append("=");
 					if (Randomly.getBoolean()) {
-						sb.append(SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(globalState)));
+						sb.append(
+								SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(globalState)));
 					} else {
 						if (Randomly.getBoolean()) {
 							sb.append("excluded.");
@@ -128,8 +131,8 @@ public class SQLite3InsertGenerator {
 				errors.add("Data type mismatch (datatype mismatch)");
 				if (Randomly.getBoolean()) {
 					sb.append(" WHERE ");
-					sb.append(SQLite3Visitor.asString(
-							new SQLite3ExpressionGenerator(globalState).setColumns(table.getColumns()).getRandomExpression()));
+					sb.append(SQLite3Visitor.asString(new SQLite3ExpressionGenerator(globalState)
+							.setColumns(table.getColumns()).getRandomExpression()));
 				}
 			}
 		}

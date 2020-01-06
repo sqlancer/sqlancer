@@ -11,10 +11,10 @@ import lama.QueryAdapter;
 import lama.Randomly;
 import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.SQLite3Visitor;
-import lama.sqlite3.dml.SQLite3DeleteGenerator;
-import lama.sqlite3.dml.SQLite3InsertGenerator;
-import lama.sqlite3.dml.SQLite3UpdateGenerator;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
+import lama.sqlite3.gen.dml.SQLite3DeleteGenerator;
+import lama.sqlite3.gen.dml.SQLite3InsertGenerator;
+import lama.sqlite3.gen.dml.SQLite3UpdateGenerator;
 import lama.sqlite3.schema.SQLite3Schema;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 

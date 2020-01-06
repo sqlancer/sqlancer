@@ -45,8 +45,10 @@ public class SQLite3AlterTable {
 		errors.add("non-deterministic functions prohibited in CHECK constraints");
 		errors.add("second argument to likelihood");
 		errors.add("subqueries prohibited in CHECK constraints");
+		errors.add("subqueries prohibited in index expressions");
+		errors.add("parser stack overflow");
 		Option option = Randomly.fromOptions(Option.values());
-		Table t = s.getRandomTableOrBailout(tab -> !tab.isView() && !tab.isVirtual());
+		Table t = s.getRandomTableOrBailout(tab -> !tab.isView() && !tab.isVirtual() && !tab.isReadOnly());
 		sb.append("ALTER TABLE ");
 		sb.append(t.getName());
 		switch (option) {
