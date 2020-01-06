@@ -33,6 +33,8 @@ public class Main {
 	public static final File LOG_DIRECTORY = new File("logs");
 	public static volatile AtomicLong nrQueries = new AtomicLong();
 	public static volatile AtomicLong nrDatabases = new AtomicLong();
+	public static volatile AtomicLong nrSuccessfulActions = new AtomicLong();
+	public static volatile AtomicLong nrUnsuccessfulActions = new AtomicLong();
 
 	public static class ReduceMeException extends RuntimeException {
 
@@ -255,7 +257,9 @@ public class Main {
 
 		public boolean execute(Query q) throws SQLException {
 			state.statements.add(q);
-			return q.execute(con);
+			boolean success = q.execute(con);
+			Main.nrSuccessfulActions.addAndGet(1);
+			return success;
 		}
 
 		public void incrementSelectQueryCount() {
@@ -299,11 +303,12 @@ public class Main {
 				long currentNrDbs = nrDatabases.get();
 				long nrCurrentDbs = currentNrDbs - lastNrDbs;
 				double throughputDbs = nrCurrentDbs / (elapsedTimeMillis / 1000d);
+				long successfulStatementsRatio = (long) (100.0 * nrSuccessfulActions.get() / (nrSuccessfulActions.get() + nrUnsuccessfulActions.get()));
 				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 				Date date = new Date();
 				System.out.println(String.format(
-						"[%s] Executed %d queries (%d queries/s; %.2f/s dbs). Threads shut down: %d.",
-						dateFormat.format(date), currentNrQueries, (int) throughput, throughputDbs, threadsShutdown));
+						"[%s] Executed %d queries (%d queries/s; %.2f/s dbs, successful statements: %2d%%). Threads shut down: %d.",
+						dateFormat.format(date), currentNrQueries, (int) throughput, throughputDbs, successfulStatementsRatio, threadsShutdown));
 				timeMillis = System.currentTimeMillis();
 				lastNrQueries = currentNrQueries;
 				lastNrDbs = currentNrDbs;

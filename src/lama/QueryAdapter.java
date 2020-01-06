@@ -42,8 +42,10 @@ public class QueryAdapter extends Query {
 	public boolean execute(Connection con) throws SQLException {
 		try (Statement s = con.createStatement()) {
 			s.execute(query);
+			Main.nrSuccessfulActions.addAndGet(1);
 			return true;
 		} catch (Exception e) {
+			Main.nrUnsuccessfulActions.addAndGet(1);
 			checkException(e);
 			return false;
 		}
@@ -66,9 +68,12 @@ public class QueryAdapter extends Query {
 	public ResultSet executeAndGet(Connection con) throws SQLException {
 		Statement s = con.createStatement();
 		try {
-			return s.executeQuery(query);
+			ResultSet result = s.executeQuery(query);
+			Main.nrSuccessfulActions.addAndGet(1);
+			return result;
 		} catch (Exception e) {
 			boolean isExcluded = false;
+			Main.nrUnsuccessfulActions.addAndGet(1);
 			for (String expectedError : expectedErrors) {
 				if (e.getMessage().contains(expectedError)) {
 					isExcluded = true;
