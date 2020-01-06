@@ -160,7 +160,7 @@ public class SQLite3Common {
 		List<SQLite3Expression> tableRefs = new ArrayList<>();
 		for (Table t : tables) {
 			SQLite3TableReference tableRef;
-			if (Randomly.getBoolean() && !s.getIndexNames().isEmpty()) {
+			if (Randomly.getBooleanWithSmallProbability() && !s.getIndexNames().isEmpty()) {
 				tableRef = new SQLite3TableReference(s.getRandomIndexOrBailout(), t);
 			} else {
 				tableRef = new SQLite3TableReference(t);
