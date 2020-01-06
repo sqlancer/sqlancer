@@ -55,6 +55,7 @@ public class SQLite3ExpressionGenerator {
 	private boolean deterministicOnly;
 	private boolean allowMatchClause;
 	private boolean allowAggregateFunctions;
+	private boolean allowSubqueries;
 
 	private enum LiteralValueType {
 		INTEGER, NUMERIC, STRING, BLOB_LITERAL, NULL
@@ -90,6 +91,12 @@ public class SQLite3ExpressionGenerator {
 		return this;
 	}
 
+	public SQLite3ExpressionGenerator allowSubqueries() {
+		this.allowSubqueries = true;
+		;
+		return this;
+	}
+
 	public SQLite3ExpressionGenerator tryToGenerateKnownResult() {
 		this.tryToGenerateKnownResult = true;
 		return this;
@@ -98,7 +105,7 @@ public class SQLite3ExpressionGenerator {
 	public static SQLite3Expression getRandomLiteralValue(SQLite3GlobalState globalState) {
 		return new SQLite3ExpressionGenerator(globalState).getRandomLiteralValueInternal(globalState.getRandomly());
 	}
-	
+
 	public List<SQLite3Expression> generateOrderingTerms() {
 		List<SQLite3Expression> expressions = new ArrayList<>();
 		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
@@ -106,7 +113,7 @@ public class SQLite3ExpressionGenerator {
 		}
 		return expressions;
 	}
-	
+
 	public List<Join> getRandomJoinClauses(List<Table> tables) {
 		List<Join> joinStatements = new ArrayList<>();
 		if (Randomly.getBoolean() && tables.size() > 1) {
@@ -128,7 +135,6 @@ public class SQLite3ExpressionGenerator {
 		}
 		return joinStatements;
 	}
-
 
 	public SQLite3Expression generateOrderingTerm() {
 		SQLite3Expression expr = getRandomExpression();
@@ -167,7 +173,7 @@ public class SQLite3ExpressionGenerator {
 	}
 
 	enum ExpressionType {
-		/* RANDOM_QUERY, */ COLUMN_NAME, LITERAL_VALUE, UNARY_OPERATOR, POSTFIX_UNARY_OPERATOR, BINARY_OPERATOR,
+		RANDOM_QUERY, COLUMN_NAME, LITERAL_VALUE, UNARY_OPERATOR, POSTFIX_UNARY_OPERATOR, BINARY_OPERATOR,
 		BETWEEN_OPERATOR, CAST_EXPRESSION, BINARY_COMPARISON_OPERATOR, FUNCTION, IN_OPERATOR, COLLATE, EXISTS,
 		CASE_OPERATOR, MATCH, AGGREGATE_FUNCTION, ROW_VALUE_COMPARISON
 	}
@@ -211,9 +217,9 @@ public class SQLite3ExpressionGenerator {
 		if (!allowAggregateFunctions) {
 			list.remove(ExpressionType.AGGREGATE_FUNCTION);
 		}
-//		if (con == null) {
-//			list.remove(ExpressionType.RANDOM_QUERY);
-//		}
+		if (!allowSubqueries) {
+			list.remove(ExpressionType.RANDOM_QUERY);
+		}
 		ExpressionType randomExpressionType = Randomly.fromList(list);
 		switch (randomExpressionType) {
 		case LITERAL_VALUE:
@@ -248,14 +254,10 @@ public class SQLite3ExpressionGenerator {
 			return getAggregateFunction(depth);
 		case ROW_VALUE_COMPARISON:
 			return getRowValueComparison(depth + 1);
-//		case RANDOM_QUERY:
-//			// TODO: pass schema from the outside
-//			// TODO: depth
-//			try {
-//				return SQLite3RandomQuerySynthesizer.generate(SQLite3Schema.fromConnection(con), r, 1);
-//			} catch (SQLException e) {
-//				throw new AssertionError(e);
-//			}
+		case RANDOM_QUERY:
+			// TODO: pass schema from the outside
+			// TODO: depth
+			return SQLite3RandomQuerySynthesizer.generate(globalState, 1);
 		default:
 			throw new AssertionError(randomExpressionType);
 		}
@@ -264,7 +266,7 @@ public class SQLite3ExpressionGenerator {
 	public SQLite3Expression getAggregateFunction(boolean asWindowFunction) {
 		SQLite3AggregateFunction random = SQLite3AggregateFunction.getRandom();
 		if (asWindowFunction) {
-			while (/*random == SQLite3AggregateFunction.ZIPFILE || */random == SQLite3AggregateFunction.MAX
+			while (/* random == SQLite3AggregateFunction.ZIPFILE || */random == SQLite3AggregateFunction.MAX
 					|| random == SQLite3AggregateFunction.MIN) {
 				// ZIPFILE() may not be used as a window function
 				random = SQLite3AggregateFunction.getRandom();
@@ -305,7 +307,7 @@ public class SQLite3ExpressionGenerator {
 //			// for the right hand side a random query is required, which is expensive
 //			randomOption = RowValueComparison.IN;
 //		} else {
-			randomOption = Randomly.fromOptions(RowValueComparison.STANDARD_COMPARISON, RowValueComparison.BETWEEN);
+		randomOption = Randomly.fromOptions(RowValueComparison.STANDARD_COMPARISON, RowValueComparison.BETWEEN);
 //		}
 		switch (randomOption) {
 		// TODO case
@@ -359,7 +361,7 @@ public class SQLite3ExpressionGenerator {
 		SQLite3ColumnName columnName = new SQLite3ColumnName(c, rw == null ? null : rw.getValues().get(c));
 		return columnName;
 	}
-	
+
 	enum Attribute {
 		VARIADIC, NONDETERMINISTIC
 	};
