@@ -9,9 +9,16 @@ import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.SQLite3Visitor;
 
 // tries to trigger a crash
-public class SQLite3Fuzzer {
+public class SQLite3Fuzzer implements SQLite3TestGenerator {
 
-	public void fuzz(SQLite3GlobalState globalState) throws SQLException {
+	private final SQLite3GlobalState globalState;
+
+	public SQLite3Fuzzer(SQLite3GlobalState globalState) {
+		this.globalState = globalState;
+	}
+
+	@Override
+	public void check() throws SQLException {
 		String s = SQLite3Visitor
 				.asString(SQLite3RandomQuerySynthesizer.generate(globalState, Randomly.smallNumber() + 1));
 		MainOptions options = globalState.getMainOptions();

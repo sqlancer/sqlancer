@@ -24,7 +24,6 @@ import lama.QueryAdapter;
 import lama.Randomly;
 import lama.StateToReproduce;
 import lama.StateToReproduce.SQLite3StateToReproduce;
-import lama.sqlite3.SQLite3Options.SQLite3Oracle;
 import lama.sqlite3.gen.SQLite3AnalyzeGenerator;
 import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.gen.SQLite3CreateVirtualRtreeTabelGenerator;
@@ -45,9 +44,7 @@ import lama.sqlite3.gen.ddl.SQLite3ViewGenerator;
 import lama.sqlite3.gen.dml.SQLite3DeleteGenerator;
 import lama.sqlite3.gen.dml.SQLite3InsertGenerator;
 import lama.sqlite3.gen.dml.SQLite3UpdateGenerator;
-import lama.sqlite3.queries.SQLite3Fuzzer;
-import lama.sqlite3.queries.SQLite3MetamorphicQuerySynthesizer;
-import lama.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
+import lama.sqlite3.queries.SQLite3TestGenerator;
 import lama.sqlite3.schema.SQLite3Schema;
 import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
@@ -385,33 +382,14 @@ public class SQLite3Provider implements DatabaseProvider {
 		manager.execute(query);
 		globalState.setSchema(SQLite3Schema.fromConnection(con));
 		manager.incrementCreateDatabase();
-		SQLite3PivotedQuerySynthesizer queryGenerator = new SQLite3PivotedQuerySynthesizer(con, r, globalState);
-		SQLite3MetamorphicQuerySynthesizer or = new SQLite3MetamorphicQuerySynthesizer(globalState.getSchema(), r, con,
-				(SQLite3StateToReproduce) state, logger, options, globalState);
-		SQLite3Fuzzer fuzzer = new SQLite3Fuzzer();
-
-		SQLite3Oracle oracle = globalState.getSqliteOptions().oracle;
+		SQLite3TestGenerator oracle = globalState.getSqliteOptions().oracle.create(globalState);
 		for (i = 0; i < options.getNrQueries(); i++) {
 			try {
-				switch (oracle) {
-				case METAMORPHIC:
-					or.generateAndCheck();
-					break;
-				case PQS:
-					queryGenerator.generateAndCheckQuery(globalState, logger, options);
-					break;
-				case FUZZER:
-					fuzzer.fuzz(globalState);
-					break;
-				default:
-					throw new AssertionError(oracle);
-
-				}
+				oracle.check();
 				manager.incrementSelectQueryCount();
 			} catch (IgnoreMeException e) {
 
 			}
-
 		}
 		try {
 			if (options.logEachSelect()) {

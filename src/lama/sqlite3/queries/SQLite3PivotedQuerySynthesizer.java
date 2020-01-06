@@ -12,8 +12,6 @@ import java.util.stream.Collectors;
 
 import lama.IgnoreMeException;
 import lama.Main;
-import lama.Main.StateLogger;
-import lama.MainOptions;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
@@ -26,9 +24,9 @@ import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import lama.sqlite3.ast.SQLite3Cast;
 import lama.sqlite3.ast.SQLite3Constant;
 import lama.sqlite3.ast.SQLite3Expression;
-import lama.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.Join;
 import lama.sqlite3.ast.SQLite3Expression.Join.JoinType;
+import lama.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm.Ordering;
@@ -42,12 +40,12 @@ import lama.sqlite3.ast.SQLite3WindowFunction;
 import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.gen.SQLite3ExpressionGenerator;
 import lama.sqlite3.schema.SQLite3Schema;
-import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import lama.sqlite3.schema.SQLite3Schema.RowValue;
+import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 import lama.sqlite3.schema.SQLite3Schema.Tables;
 
-public class SQLite3PivotedQuerySynthesizer {
+public class SQLite3PivotedQuerySynthesizer implements SQLite3TestGenerator {
 
 	private final Connection database;
 	private final SQLite3Schema s;
@@ -59,18 +57,17 @@ public class SQLite3PivotedQuerySynthesizer {
 	private List<SQLite3Expression> colExpressions;
 	private SQLite3GlobalState globalState;
 
-	public SQLite3PivotedQuerySynthesizer(Connection con, Randomly r, SQLite3GlobalState globalState) throws SQLException {
-		this.database = con;
-		this.r = r;
+	public SQLite3PivotedQuerySynthesizer(SQLite3GlobalState globalState) throws SQLException {
+		this.database = globalState.getConnection();
+		this.r = globalState.getRandomly();
 		this.globalState = globalState;
 		s = SQLite3Schema.fromConnection(database);
 	}
 
-	public void generateAndCheckQuery(SQLite3GlobalState state, StateLogger logger, MainOptions options)
-			throws SQLException {
-		Query query = getQueryThatContainsAtLeastOneRow(state);
-		if (options.logEachSelect()) {
-			logger.writeCurrent(query.getQueryString());
+	public void check() throws SQLException {
+		Query query = getQueryThatContainsAtLeastOneRow(globalState);
+		if (globalState.getMainOptions().logEachSelect()) {
+			globalState.getLogger().writeCurrent(query.getQueryString());
 		}
 		boolean isContainedIn = isContainedIn(query);
 		if (!isContainedIn) {

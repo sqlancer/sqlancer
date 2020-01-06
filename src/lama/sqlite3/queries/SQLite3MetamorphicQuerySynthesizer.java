@@ -34,7 +34,7 @@ import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
 import lama.sqlite3.schema.SQLite3Schema.Tables;
 
-public class SQLite3MetamorphicQuerySynthesizer {
+public class SQLite3MetamorphicQuerySynthesizer implements SQLite3TestGenerator {
 
 	// SELECT COUNT(*) FROM t0 WHERE <cond>;
 	// SELECT SUM(count) FROM (SELECT <cond> IS TRUE as count FROM t0);
@@ -52,13 +52,12 @@ public class SQLite3MetamorphicQuerySynthesizer {
 	private MainOptions options;
 	private SQLite3GlobalState globalState;
 
-	public SQLite3MetamorphicQuerySynthesizer(SQLite3Schema s, Randomly r, Connection con,
-			SQLite3StateToReproduce state, StateLogger logger, MainOptions options, SQLite3GlobalState globalState) {
-		this.s = s;
-		this.con = con;
-		this.state = state;
-		this.logger = logger;
-		this.options = options;
+	public SQLite3MetamorphicQuerySynthesizer(SQLite3GlobalState globalState) {
+		this.s = globalState.getSchema();
+		this.con = globalState.getConnection();
+		this.state = globalState.getState();
+		this.logger = globalState.getLogger();
+		this.options = globalState.getMainOptions();
 		this.globalState = globalState;
 		SQLite3Errors.addExpectedExpressionErrors(errors);
 		SQLite3Errors.addMatchQueryErrors(errors);
@@ -74,7 +73,8 @@ public class SQLite3MetamorphicQuerySynthesizer {
 
 	}
 
-	public void generateAndCheck() throws SQLException {
+	@Override
+	public void check() throws SQLException {
 		Tables randomTables = s.getRandomTableNonEmptyTables();
 		List<SQLite3Column> columns = randomTables.getColumns();
 		gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns);

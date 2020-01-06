@@ -1,9 +1,16 @@
 package lama.sqlite3;
 
+import java.sql.SQLException;
+
 import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.Parameter;
 
 import lama.MainOptions.DBMSConverter;
+import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
+import lama.sqlite3.queries.SQLite3Fuzzer;
+import lama.sqlite3.queries.SQLite3MetamorphicQuerySynthesizer;
+import lama.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
+import lama.sqlite3.queries.SQLite3TestGenerator;
 
 public class SQLite3Options {
 
@@ -17,7 +24,27 @@ public class SQLite3Options {
 	public SQLite3Oracle oracle = SQLite3Oracle.METAMORPHIC;
 
 	public static enum SQLite3Oracle {
-		PQS, METAMORPHIC, FUZZER
+		PQS() {
+			@Override
+			public SQLite3TestGenerator create(SQLite3GlobalState globalState) throws SQLException {
+				return new SQLite3PivotedQuerySynthesizer(globalState);
+			}
+		},
+		METAMORPHIC() {
+			@Override
+			public SQLite3TestGenerator create(SQLite3GlobalState globalState) throws SQLException {
+				return new SQLite3MetamorphicQuerySynthesizer(globalState);
+			}
+		},
+		FUZZER() {
+			@Override
+			public SQLite3TestGenerator create(SQLite3GlobalState globalState) throws SQLException {
+				return new SQLite3Fuzzer(globalState);
+			}
+		};
+
+		public abstract SQLite3TestGenerator create(SQLite3GlobalState globalState) throws SQLException;
+
 	}
 
 	public class SQLite3OracleConverter implements IStringConverter<SQLite3Oracle> {
