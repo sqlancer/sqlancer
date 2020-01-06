@@ -11,6 +11,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.beust.jcommander.JCommander;
+
 import lama.DatabaseFacade;
 import lama.DatabaseProvider;
 import lama.IgnoreMeException;
@@ -160,6 +162,7 @@ public class SQLite3Provider implements DatabaseProvider {
 		private SQLite3StateToReproduce state;
 		private Randomly r;
 		private MainOptions mainOptions;
+		private SQLite3Options sqliteOptions;
 
 		public Connection getConnection() {
 			return con;
@@ -192,15 +195,23 @@ public class SQLite3Provider implements DatabaseProvider {
 		public void setRandomly(Randomly r) {
 			this.r = r;
 		}
-		
+
 		public void setMainOptions(MainOptions mainOptions) {
 			this.mainOptions = mainOptions;
 		}
-		
+
 		public MainOptions getMainOptions() {
 			return mainOptions;
 		}
 
+		public void setSqliteOptions(SQLite3Options sqliteOptions) {
+			this.sqliteOptions = sqliteOptions;
+		}
+
+		public SQLite3Options getSqliteOptions() {
+			return sqliteOptions;
+		}
+		
 	}
 
 	private final SQLite3GlobalState globalState = new SQLite3GlobalState();
@@ -212,9 +223,13 @@ public class SQLite3Provider implements DatabaseProvider {
 	@Override
 	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger, StateToReproduce state,
 			QueryManager manager, MainOptions options) throws SQLException {
+		SQLite3Options sqliteOptions = new SQLite3Options();
+		JCommander.newBuilder().addObject(sqliteOptions).build().parse(options.getDbmsOptions().split(" "));
+
 		this.databaseName = databaseName;
 		Randomly r = new Randomly(SQLite3SpecialStringGenerator::generate);
 		globalState.setMainOptions(options);
+		globalState.setSqliteOptions(sqliteOptions);
 		globalState.setRandomly(r);
 		this.state = (SQLite3StateToReproduce) state;
 		globalState.setConnection(con);
@@ -388,7 +403,14 @@ public class SQLite3Provider implements DatabaseProvider {
 	private Query getTableQuery(StateToReproduce state, Randomly r, SQLite3Schema newSchema, int i)
 			throws AssertionError {
 		Query tableQuery;
-		switch (Randomly.fromOptions(TableType.values())) {
+		List<TableType> options = new ArrayList<>(Arrays.asList(TableType.values()));
+		if (!globalState.getSqliteOptions().testFts) {
+			options.remove(TableType.FTS);
+		}
+		if (!globalState.getSqliteOptions().testRtree) {
+			options.remove(TableType.RTREE);
+		}
+		switch (Randomly.fromList(options)) {
 		case NORMAL:
 			String tableName = SQLite3Common.createTableName(i);
 			tableQuery = SQLite3TableGenerator.createTableStatement(tableName, globalState);
@@ -450,7 +472,8 @@ public class SQLite3Provider implements DatabaseProvider {
 		StringBuilder sb = new StringBuilder();
 		SQLite3StateToReproduce specificState = (SQLite3StateToReproduce) state;
 		if (specificState.getRandomRowValues() != null) {
-			List<SQLite3Column> columnList = specificState.getRandomRowValues().keySet().stream().collect(Collectors.toList());
+			List<SQLite3Column> columnList = specificState.getRandomRowValues().keySet().stream()
+					.collect(Collectors.toList());
 			List<Table> tableList = columnList.stream().map(c -> c.getTable()).distinct().sorted()
 					.collect(Collectors.toList());
 			for (Table t : tableList) {

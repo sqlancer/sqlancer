@@ -26,12 +26,12 @@ public class MainOptions {
 	@Parameter(names = "--log-each-select", description = "Logs every statement issued", arity = 1)
 	private boolean logEachSelect = true;
 
-	@Parameter(names = "--sqliteOptions")
-	private String sqliteOptions;
+	@Parameter(names = "--dbms-specific-options")
+	private String dbmsSpecificOptions = "";
 
 	@Parameter(names = "--dbms", converter = DBMSConverter.class, required = true)
 	private DBMS dbms;
-
+	
 	public int getMaxExpressionDepth() {
 		return maxExpressionDepth;
 	}
@@ -52,8 +52,8 @@ public class MainOptions {
 		return logEachSelect;
 	}
 
-	public String getSQLite3Options() {
-		return sqliteOptions;
+	public String getDbmsOptions() {
+		return dbmsSpecificOptions;
 	}
 
 	public int getNrQueries() {
