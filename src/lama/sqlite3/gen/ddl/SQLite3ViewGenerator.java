@@ -10,6 +10,7 @@ import lama.QueryAdapter;
 import lama.Randomly;
 import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.SQLite3Visitor;
+import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
@@ -41,7 +42,7 @@ public class SQLite3ViewGenerator {
 		errors.add("is circularly defined");
 		errors.add("unsupported frame specification");
 		if (Randomly.getBoolean()) {
-			SQLite3PivotedQuerySynthesizer queryGen = new SQLite3PivotedQuerySynthesizer(globalState.getConnection(), globalState.getRandomly(), globalState);
+			SQLite3PivotedQuerySynthesizer queryGen = new SQLite3PivotedQuerySynthesizer(globalState);
 			try {
 				SQLite3SelectStatement q = queryGen.getQuery(globalState);
 //			for (SQLite3Expression expr : q.getFetchColumns()) {
@@ -60,7 +61,7 @@ public class SQLite3ViewGenerator {
 		} else {
 			int size = 1 + Randomly.smallNumber();
 			columnNamesAs(sb, size);
-			SQLite3SelectStatement randomQuery = SQLite3RandomQuerySynthesizer.generate(globalState, size);
+			SQLite3Expression randomQuery = SQLite3RandomQuerySynthesizer.generate(globalState, size);
 			sb.append(SQLite3Visitor.asString(randomQuery));
 			SQLite3PivotedQuerySynthesizer.addExpectedErrors(errors);
 			return new QueryAdapter(sb.toString(), errors, true);
