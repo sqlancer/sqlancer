@@ -24,6 +24,7 @@ import lama.QueryAdapter;
 import lama.Randomly;
 import lama.StateToReproduce;
 import lama.StateToReproduce.SQLite3StateToReproduce;
+import lama.sqlite3.SQLite3Options.SQLite3Oracle;
 import lama.sqlite3.gen.SQLite3AnalyzeGenerator;
 import lama.sqlite3.gen.SQLite3Common;
 import lama.sqlite3.gen.SQLite3CreateVirtualRtreeTabelGenerator;
@@ -45,6 +46,7 @@ import lama.sqlite3.gen.dml.SQLite3DeleteGenerator;
 import lama.sqlite3.gen.dml.SQLite3InsertGenerator;
 import lama.sqlite3.gen.dml.SQLite3UpdateGenerator;
 import lama.sqlite3.queries.SQLite3MetamorphicQuerySynthesizer;
+import lama.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
 import lama.sqlite3.schema.SQLite3Schema;
 import lama.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import lama.sqlite3.schema.SQLite3Schema.Table;
@@ -211,7 +213,7 @@ public class SQLite3Provider implements DatabaseProvider {
 		public SQLite3Options getSqliteOptions() {
 			return sqliteOptions;
 		}
-		
+
 	}
 
 	private final SQLite3GlobalState globalState = new SQLite3GlobalState();
@@ -360,23 +362,31 @@ public class SQLite3Provider implements DatabaseProvider {
 		// also do an abort for DEFERRABLE INITIALLY DEFERRED
 		query = SQLite3TransactionGenerator.generateRollbackTransaction(globalState);
 		manager.execute(query);
-		newSchema = SQLite3Schema.fromConnection(con);
+		globalState.setSchema(SQLite3Schema.fromConnection(con));
 		manager.incrementCreateDatabase();
-//		SQLite3PivotedQuerySynthesizer queryGenerator = new SQLite3PivotedQuerySynthesizer(con, r);
-		SQLite3MetamorphicQuerySynthesizer or = new SQLite3MetamorphicQuerySynthesizer(newSchema, r, con,
+		SQLite3PivotedQuerySynthesizer queryGenerator = new SQLite3PivotedQuerySynthesizer(con, r, globalState);
+		SQLite3MetamorphicQuerySynthesizer or = new SQLite3MetamorphicQuerySynthesizer(globalState.getSchema(), r, con,
 				(SQLite3StateToReproduce) state, logger, options, globalState);
-		for (i = 0; i < options.getNrQueries(); i++) {
 
+		SQLite3Oracle oracle = globalState.getSqliteOptions().oracle;
+		for (i = 0; i < options.getNrQueries(); i++) {
 			try {
-//				if (Randomly.getBoolean()) {
-				or.generateAndCheck();
+				switch (oracle) {
+				case METAMORPHIC:
+					or.generateAndCheck();
+					break;
+				case PQS:
+					queryGenerator.generateAndCheckQuery(globalState, logger, options);
+					break;
+				default:
+					throw new AssertionError(oracle);
+
+				}
 				manager.incrementSelectQueryCount();
-//				} else {
-//					queryGenerator.generateAndCheckQuery(this.state, logger, options);
-//				}
 			} catch (IgnoreMeException e) {
 
 			}
+
 		}
 		try {
 			if (options.logEachSelect()) {
