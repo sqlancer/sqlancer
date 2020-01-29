@@ -1,11 +1,15 @@
 package lama.cockroachdb;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
 import lama.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import lama.cockroachdb.CockroachDBSchema.CockroachDBDataType;
 import lama.cockroachdb.CockroachDBSchema.CockroachDBTables;
+import lama.cockroachdb.ast.CockroachDBExpression;
 import lama.cockroachdb.ast.CockroachDBSelect;
 
 public class CockroachDBRandomQuerySynthesizer {
@@ -28,6 +32,17 @@ public class CockroachDBRandomQuerySynthesizer {
 			} else {
 				select.setOrderByTerms(gen.getOrderingTerms());
 			}
+		}
+		if (Randomly.getBoolean() || !select.getOrderByTerms().isEmpty()) {
+			// <select column > must appear in the GROUP BY clause or be used in an aggregate function
+			List<CockroachDBExpression> groupBys = new ArrayList<>(select.getColumns());
+			// must appear in the GROUP BY clause or be used in an aggregate function
+			groupBys.addAll(select.getOrderByTerms());
+			while (Randomly.getBooleanWithRatherLowProbability()) {
+				groupBys.add(gen.generateExpression(CockroachDBDataType.getRandom().get()));
+			}
+			select.setGroupByClause(groupBys);
+			
 		}
 		if (Randomly.getBoolean()) { // TODO expression
 			select.setLimitTerm(gen.generateConstant(CockroachDBDataType.INT.get()));

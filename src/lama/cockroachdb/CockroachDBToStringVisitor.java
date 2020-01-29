@@ -96,6 +96,10 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
 			sb.append(" WHERE ");
 			visit(select.getWhereCondition());
 		}
+		if (select.getGroupByExpression() != null) {
+			sb.append(" GROUP BY ");
+			visitList(select.getGroupByExpression());
+		}
 		if (select.getHavingClause() != null) {
 			sb.append(" HAVING ");
 			visit(select.getHavingClause());

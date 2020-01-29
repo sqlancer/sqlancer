@@ -15,6 +15,7 @@ public class CockroachDBSelect extends CockroachDBExpression {
 	private CockroachDBExpression limit;
 	private CockroachDBExpression offset;
 	private CockroachDBExpression havingClause;
+	private List<CockroachDBExpression> groupByExpression;
 	
 	public void setColumns(List<CockroachDBExpression> columns) {
 		this.columns = columns;
@@ -79,6 +80,14 @@ public class CockroachDBSelect extends CockroachDBExpression {
 	
 	public CockroachDBExpression getHavingClause() {
 		return havingClause;
+	}
+
+	public void setGroupByClause(List<CockroachDBExpression> groupByExpression) {
+		this.groupByExpression = groupByExpression;
+	}
+
+	public List<CockroachDBExpression> getGroupByExpression() {
+		return groupByExpression;
 	}
 	
 }

@@ -78,6 +78,11 @@ public class CockroachDBErrors {
 		errors.add("ambiguous call");
 		
 		addFunctionErrors(errors);
+		addGroupByErrors(errors);
+	}
+
+	private static void addGroupByErrors(Set<String> errors) {
+		errors.add("non-integer constant in GROUP BY");
 	}
 
 	private static void addFunctionErrors(Set<String> errors) {
