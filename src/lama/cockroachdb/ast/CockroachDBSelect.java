@@ -14,6 +14,7 @@ public class CockroachDBSelect extends CockroachDBExpression {
 	private boolean isDistinct;
 	private CockroachDBExpression limit;
 	private CockroachDBExpression offset;
+	private CockroachDBExpression havingClause;
 	
 	public void setColumns(List<CockroachDBExpression> columns) {
 		this.columns = columns;
@@ -70,6 +71,14 @@ public class CockroachDBSelect extends CockroachDBExpression {
 	
 	public CockroachDBExpression getOffset() {
 		return offset;
+	}
+	
+	public void setHavingClause(CockroachDBExpression havingClause) {
+		this.havingClause = havingClause;
+	}
+	
+	public CockroachDBExpression getHavingClause() {
+		return havingClause;
 	}
 	
 }

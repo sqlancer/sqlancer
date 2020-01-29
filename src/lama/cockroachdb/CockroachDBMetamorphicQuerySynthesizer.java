@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import lama.IgnoreMeException;
 import lama.Query;
 import lama.QueryAdapter;
+import lama.Randomly;
 import lama.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import lama.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import lama.cockroachdb.CockroachDBSchema.CockroachDBDataType;
@@ -37,11 +38,15 @@ public class CockroachDBMetamorphicQuerySynthesizer {
 		CockroachDBTables tables = globalState.getSchema().getRandomTableNonEmptyTables();
 		gen = new CockroachDBExpressionGenerator(globalState).setColumns(tables.getColumns());
 		CockroachDBExpression whereCondition = gen.generateExpression(CockroachDBDataType.BOOL.get());
-		int optimizableCount = getOptimizableResult(globalState.getConnection(), whereCondition, tables, errors);
+		CockroachDBExpression havingCondition = null;
+		if (Randomly.getBoolean()) {
+			havingCondition = gen.generateExpression(CockroachDBDataType.BOOL.get());
+		}
+		int optimizableCount = getOptimizableResult(globalState.getConnection(), whereCondition, havingCondition, tables, errors);
 		if (optimizableCount == -1) {
 			throw new IgnoreMeException();
 		}
-		int nonOptimizableCount = getNonOptimizedResult(globalState.getConnection(), whereCondition, tables, errors);
+		int nonOptimizableCount = getNonOptimizedResult(globalState.getConnection(), whereCondition, havingCondition, tables, errors);
 		if (nonOptimizableCount == -1) {
 			throw new IgnoreMeException();
 		}
@@ -51,14 +56,16 @@ public class CockroachDBMetamorphicQuerySynthesizer {
 		}
 	}
 
-	private int getOptimizableResult(Connection con, CockroachDBExpression whereCondition, CockroachDBTables tables,
+	private int getOptimizableResult(Connection con, CockroachDBExpression whereCondition, CockroachDBExpression havingCondition, CockroachDBTables tables,
 			Set<String> errors) throws SQLException {
 		CockroachDBSelect select = new CockroachDBSelect();
 		CockroachDBColumn c = new CockroachDBColumn("*", null, false, false);
 		select.setColumns(Arrays.asList(new CockroachDBColumnReference(c)));
 		select.setFromTables(tables.getTables());
 		select.setWhereCondition(whereCondition);
-//		select.setOrderByTerms(gen.getOrderingTerms());
+		if (Randomly.getBooleanWithRatherLowProbability()) {
+			select.setOrderByTerms(gen.getOrderingTerms());
+		}
 		String s = CockroachDBVisitor.asString(select);
 		if (globalState.getOptions().logEachSelect()) {
 			globalState.getLogger().writeCurrent(s);
@@ -81,7 +88,7 @@ public class CockroachDBMetamorphicQuerySynthesizer {
 		return count;
 	}
 
-	private int getNonOptimizedResult(Connection con, CockroachDBExpression whereCondition, CockroachDBTables tables,
+	private int getNonOptimizedResult(Connection con, CockroachDBExpression whereCondition, CockroachDBExpression havingCondition, CockroachDBTables tables,
 			Set<String> errors) throws SQLException {
 //		CockroachDBSelect select = new CockroachDBSelect();
 //		select.setColumns(Arrays.asList(new CockroachDBAggregate(CockroachDBAggregateFunction.SUM, null)));

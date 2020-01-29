@@ -58,7 +58,11 @@ public class CockroachDBExpressionGenerator {
 
 	public List<CockroachDBExpression> getOrderingTerms() {
 		List<CockroachDBExpression> orderingTerms = new ArrayList<>();
-		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
+		int nr = 1;
+		while (Randomly.getBooleanWithSmallProbability()) {
+			nr++;
+		}
+		for (int i = 0; i < nr; i++) {
 			CockroachDBExpression expr = generateExpression(getRandomType());
 			if (Randomly.getBoolean()) {
 				expr = new CockroachDBOrderingTerm(expr, Randomly.getBoolean());

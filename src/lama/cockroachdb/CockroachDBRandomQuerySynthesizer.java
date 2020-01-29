@@ -20,8 +20,14 @@ public class CockroachDBRandomQuerySynthesizer {
 		if (Randomly.getBoolean()) {
 			select.setWhereCondition(gen.generateExpression(CockroachDBDataType.BOOL.get()));
 		}
-		if (Randomly.getBooleanWithRatherLowProbability()) {
-			select.setOrderByTerms(gen.getOrderingTerms());
+		if (Randomly.getBoolean()) {
+			if (select.isDistinct()) {
+				// for SELECT DISTINCT, ORDER BY expressions must appear in select list
+				// TODO: this error seems to only occur for column names, not constants
+				select.setOrderByTerms(Randomly.nonEmptySubset(select.getColumns()));
+			} else {
+				select.setOrderByTerms(gen.getOrderingTerms());
+			}
 		}
 		if (Randomly.getBoolean()) { // TODO expression
 			select.setLimitTerm(gen.generateConstant(CockroachDBDataType.INT.get()));
@@ -29,6 +35,9 @@ public class CockroachDBRandomQuerySynthesizer {
 		if (Randomly.getBoolean()) { // TODO expression
 			/* https://github.com/cockroachdb/cockroach/issues/44203 */
 			select.setOffset(gen.generateConstant(CockroachDBDataType.INT.get()));
+		}
+		if (Randomly.getBoolean() && false) {
+			select.setHavingClause(gen.generateExpression(CockroachDBDataType.BOOL.get()));
 		}
 		return new QueryAdapter(CockroachDBVisitor.asString(select));
 

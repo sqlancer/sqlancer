@@ -96,8 +96,11 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
 			sb.append(" WHERE ");
 			visit(select.getWhereCondition());
 		}
-		if (!select.getOrderByTerms().isEmpty() && false /* TODO 
---Caused by: org.postgresql.util.PSQLException: ERROR: for SELECT DISTINCT, ORDER BY expressions must appear in select list */) {
+		if (select.getHavingClause() != null) {
+			sb.append(" HAVING ");
+			visit(select.getHavingClause());
+		}
+		if (!select.getOrderByTerms().isEmpty()) {
 			sb.append(" ORDER BY ");
 			visitList(select.getOrderByTerms());
 		}
