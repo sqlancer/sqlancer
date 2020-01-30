@@ -19,7 +19,7 @@ public class CockroachDBSchema {
 	public static enum CockroachDBDataType {
 		
 		
-		INT, BOOL, STRING, FLOAT, BYTES, BIT, VARBIT, SERIAL;
+		INT, BOOL, STRING, FLOAT, BYTES, BIT, VARBIT, SERIAL, INTERVAL;
 		
 		private CockroachDBDataType() {
 			isPrimitive = true;
@@ -291,6 +291,8 @@ public class CockroachDBSchema {
 			return new CockroachDBCompositeDataType(CockroachDBDataType.FLOAT);
 		case "BYTES":
 			return new CockroachDBCompositeDataType(CockroachDBDataType.BYTES);
+		case "INTERVAL":
+			return new CockroachDBCompositeDataType(CockroachDBDataType.INTERVAL);
 		case "DECIMAL": // TODO
 			throw new IgnoreMeException();
 		default:

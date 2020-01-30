@@ -77,8 +77,26 @@ public class CockroachDBErrors {
 		
 		errors.add("ambiguous call");
 		
+		
+		addIntervalTypeErrors(errors);
 		addFunctionErrors(errors);
 		addGroupByErrors(errors);
+		addJoinTypes(errors);
+	}
+
+	private static void addIntervalTypeErrors(Set<String> errors) {
+		errors.add("overflow during Encode");
+		errors.add("as type interval");
+	}
+
+	private static void addJoinTypes(Set<String> errors) {
+		errors.add("JOIN/USING types");
+		if (true) {
+			// https://github.com/cockroachdb/cockroach/issues/44547
+			errors.add("unexpected error from the vectorized runtime: interface conversion: coldata.column is []int32, not []int64");
+			errors.add("unexpected error from the vectorized runtime: interface conversion: coldata.column is []int64, not []int32");
+			errors.add("coldata.column is []int16, not []int64");
+		}
 	}
 
 	private static void addGroupByErrors(Set<String> errors) {

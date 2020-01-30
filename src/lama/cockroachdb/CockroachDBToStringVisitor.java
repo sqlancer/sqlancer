@@ -1,6 +1,5 @@
 package lama.cockroachdb;
 
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -12,21 +11,23 @@ import lama.cockroachdb.ast.CockroachDBConstant;
 import lama.cockroachdb.ast.CockroachDBExpression;
 import lama.cockroachdb.ast.CockroachDBFunctionCall;
 import lama.cockroachdb.ast.CockroachDBInOperation;
+import lama.cockroachdb.ast.CockroachDBJoin;
 import lama.cockroachdb.ast.CockroachDBSelect;
+import lama.cockroachdb.ast.CockroachDBTableReference;
 import lama.visitor.ToStringVisitor;
 
 public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpression> implements CockroachDBVisitor {
-	
+
 	@Override
 	public void visitSpecific(CockroachDBExpression expr) {
 		CockroachDBVisitor.super.visit(expr);
 	}
-	
+
 	@Override
 	public void visit(CockroachDBConstant c) {
 		sb.append(c.toString());
 	}
-	
+
 	public String getString() {
 		return sb.toString();
 	}
@@ -39,7 +40,6 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
 			sb.append(c.getColumn().getFullQualifiedName());
 		}
 	}
-
 
 	@Override
 	public void visit(CockroachDBFunctionCall call) {
@@ -91,7 +91,13 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
 		}
 		visitList(select.getColumns());
 		sb.append(" FROM ");
-		sb.append(select.getFromTables().stream().map(t -> t.getName()).collect(Collectors.joining(", ")));
+		if (!select.getFromTables().isEmpty()) {
+			visitList(select.getFromTables());
+		}
+		if (!select.getFromTables().isEmpty() && !select.getJoinList().isEmpty()) {
+			sb.append(", ");
+		}
+		visitList(select.getJoinList().stream().map(j -> (CockroachDBExpression) j).collect(Collectors.toList()));
 		if (select.getWhereCondition() != null) {
 			sb.append(" WHERE ");
 			visit(select.getWhereCondition());
@@ -136,5 +142,53 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
 			sb.append(" ");
 		}
 		sb.append("END");
+	}
+
+	@Override
+	public void visit(CockroachDBJoin join) {
+		visit(join.getLeftTable());
+		switch (join.getJoinType()) {
+		case INNER:
+			sb.append(" JOIN ");
+			visit(join.getRightTable());
+			sb.append(" ON ");
+			visit(join.getOnCondition());
+			break;
+		case NATURAL:
+			sb.append(" NATURAL JOIN ");
+			visit(join.getRightTable());
+			break;
+		case CROSS:
+			sb.append(" CROSS JOIN ");
+			visit(join.getRightTable());
+			break;
+		case OUTER:
+			sb.append(" ");
+			switch (join.getOuterType()) {
+			case FULL:
+				sb.append("FULL");
+				break;
+			case LEFT:
+				sb.append("LEFT");
+				break;
+			case RIGHT:
+				sb.append("RIGHT");
+				break;
+			default:
+				throw new AssertionError();
+			}
+			sb.append(" OUTER JOIN ");
+			visit(join.getRightTable());
+			sb.append(" ON ");
+			visit(join.getOnCondition());
+			break;
+		default:
+			throw new AssertionError();
+		}
+	}
+
+	@Override
+	public void visit(CockroachDBTableReference tableRef) {
+		sb.append(tableRef.getTable().getName());
 	}
 }

@@ -111,6 +111,32 @@ public class CockroachDBConstant extends CockroachDBExpression {
 		
 	}
 	
+	public static class CockroachDBIntervalConstant extends CockroachDBConstant {
+		
+		private long year;
+		private long month;
+		private long day;
+		private long hour;
+		private long minute;
+		private long second;
+
+		public CockroachDBIntervalConstant(long year, long month, long day,
+				long hour, long minute, long second) {
+					this.year = year;
+					this.month = month;
+					this.day = day;
+					this.hour = hour;
+					this.minute = minute;
+					this.second = second;
+		}
+		
+		@Override
+		public String toString() {
+			return String.valueOf(String.format("(INTERVAL '%d year %d months %d days %d hours %d minutes %d seconds')", year, month, day, hour, minute, second));
+		}
+		
+	}
+	
 	public static CockroachDBTextConstant createStringConstant(String text) {
 		return new CockroachDBTextConstant(text);
 	}
@@ -133,6 +159,11 @@ public class CockroachDBConstant extends CockroachDBExpression {
 
 	public static CockroachDBExpression createBitConstant(long integer) {
 		return new CockroachDBBitConstant(integer);
+	}
+
+	public static CockroachDBExpression createIntervalConstant(long year, long month, long day,
+			long hour, long minute, long second) {
+		return new CockroachDBIntervalConstant(year, month, day, hour, minute, second);
 	}
 
 }

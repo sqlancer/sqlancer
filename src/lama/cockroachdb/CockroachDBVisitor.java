@@ -7,7 +7,9 @@ import lama.cockroachdb.ast.CockroachDBConstant;
 import lama.cockroachdb.ast.CockroachDBExpression;
 import lama.cockroachdb.ast.CockroachDBFunctionCall;
 import lama.cockroachdb.ast.CockroachDBInOperation;
+import lama.cockroachdb.ast.CockroachDBJoin;
 import lama.cockroachdb.ast.CockroachDBSelect;
+import lama.cockroachdb.ast.CockroachDBTableReference;
 
 public interface CockroachDBVisitor {
 	
@@ -25,6 +27,10 @@ public interface CockroachDBVisitor {
 	
 	public void visit(CockroachDBCaseOperation cases);
 	
+	public void visit(CockroachDBJoin join);
+	
+	public void visit(CockroachDBTableReference tableRef);
+	
 	public default void visit(CockroachDBExpression expr) {
 		if (expr instanceof CockroachDBConstant) {
 			visit((CockroachDBConstant) expr);
@@ -40,6 +46,10 @@ public interface CockroachDBVisitor {
 			visit((CockroachDBSelect) expr);
 		} else if (expr instanceof CockroachDBCaseOperation) {
 			visit((CockroachDBCaseOperation) expr);
+		} else if (expr instanceof CockroachDBJoin) {
+			visit((CockroachDBJoin) expr);
+		} else if (expr instanceof CockroachDBTableReference) {
+			visit((CockroachDBTableReference) expr);
 		}
 		
 		else {

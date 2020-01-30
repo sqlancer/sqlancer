@@ -2,6 +2,7 @@ package lama.cockroachdb;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import lama.Query;
 import lama.QueryAdapter;
@@ -11,6 +12,7 @@ import lama.cockroachdb.CockroachDBSchema.CockroachDBDataType;
 import lama.cockroachdb.CockroachDBSchema.CockroachDBTables;
 import lama.cockroachdb.ast.CockroachDBExpression;
 import lama.cockroachdb.ast.CockroachDBSelect;
+import lama.cockroachdb.ast.CockroachDBTableReference;
 
 public class CockroachDBRandomQuerySynthesizer {
 	
@@ -20,7 +22,11 @@ public class CockroachDBRandomQuerySynthesizer {
 		CockroachDBSelect select = new CockroachDBSelect();
 		select.setDistinct(Randomly.getBoolean());
 		select.setColumns(gen.generateExpressions(nrColumns));
-		select.setFromTables(tables.getTables());
+		List<CockroachDBTableReference> tableList = tables.getTables().stream().map(t -> new CockroachDBTableReference(t)).collect(Collectors.toList());
+		if (Randomly.getBoolean()) {
+			select.setJoinList(CockroachDBMetamorphicQuerySynthesizer.getJoins(tableList, globalState));
+		}
+		select.setFromTables(tableList.stream().map(t -> (CockroachDBExpression) t).collect(Collectors.toList()));
 		if (Randomly.getBoolean()) {
 			select.setWhereCondition(gen.generateExpression(CockroachDBDataType.BOOL.get()));
 		}
@@ -44,6 +50,7 @@ public class CockroachDBRandomQuerySynthesizer {
 			select.setGroupByClause(groupBys);
 			
 		}
+
 		if (Randomly.getBoolean()) { // TODO expression
 			select.setLimitTerm(gen.generateConstant(CockroachDBDataType.INT.get()));
 		}

@@ -1,14 +1,13 @@
 package lama.cockroachdb.ast;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-
-import lama.cockroachdb.CockroachDBSchema.CockroachDBTable;
 
 public class CockroachDBSelect extends CockroachDBExpression {
 	
 	private List<CockroachDBExpression> columns = new ArrayList<>();
-	private List<CockroachDBTable> fromTables;
+	private List<CockroachDBExpression> fromTables;
 	private CockroachDBExpression whereCondition;
 	private List<CockroachDBExpression> orderByTerms = new ArrayList<>();
 	private boolean isDistinct;
@@ -16,12 +15,14 @@ public class CockroachDBSelect extends CockroachDBExpression {
 	private CockroachDBExpression offset;
 	private CockroachDBExpression havingClause;
 	private List<CockroachDBExpression> groupByExpression;
+	private List<CockroachDBJoin> joinList = Collections.emptyList();
+
 	
 	public void setColumns(List<CockroachDBExpression> columns) {
 		this.columns = columns;
 	}
 	
-	public void setFromTables(List<CockroachDBTable> fromTables) {
+	public void setFromTables(List<CockroachDBExpression> fromTables) {
 		this.fromTables = fromTables;
 	}
 	
@@ -29,7 +30,7 @@ public class CockroachDBSelect extends CockroachDBExpression {
 		return columns;
 	}
 	
-	public List<CockroachDBTable> getFromTables() {
+	public List<CockroachDBExpression> getFromTables() {
 		return fromTables;
 	}
 
@@ -88,6 +89,14 @@ public class CockroachDBSelect extends CockroachDBExpression {
 
 	public List<CockroachDBExpression> getGroupByExpression() {
 		return groupByExpression;
+	}
+
+	public List<CockroachDBJoin> getJoinList() {
+		return joinList;
+	}
+	
+	public void setJoinList(List<CockroachDBJoin> joinList) {
+		this.joinList = joinList;
 	}
 	
 }

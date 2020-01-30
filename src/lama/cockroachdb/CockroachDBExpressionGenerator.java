@@ -77,7 +77,7 @@ public class CockroachDBExpressionGenerator {
 //			type = CockroachDBDataType.INT;
 //		}
 		if (depth >= globalState.getOptions().getMaxExpressionDepth()
-				|| Randomly.getBooleanWithRatherLowProbability()) {
+				|| Randomly.getBoolean()) {
 			return generateLeafNode(type);
 		} else {
 			if (Randomly.getBoolean()) {
@@ -129,6 +129,7 @@ public class CockroachDBExpressionGenerator {
 			case FLOAT:
 			case VARBIT:
 			case BIT:
+			case INTERVAL:
 				return generateLeafNode(type); // TODO
 			default:
 				throw new AssertionError(type);
@@ -265,6 +266,8 @@ public class CockroachDBExpressionGenerator {
 		case BIT:
 		case VARBIT:
 			return CockroachDBConstant.createBitConstant(globalState.getRandomly().getInteger());
+		case INTERVAL:
+			return CockroachDBConstant.createIntervalConstant(globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger());
 		default:
 			throw new AssertionError(type);
 		}
