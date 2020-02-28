@@ -21,10 +21,12 @@ import lama.sqlite3.ast.SQLite3Aggregate;
 import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.Join;
+import lama.sqlite3.ast.SQLite3Expression.Join.JoinType;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
+import lama.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.SQLite3SelectStatement.SelectType;
 import lama.sqlite3.gen.SQLite3Common;
@@ -70,7 +72,6 @@ public class SQLite3MetamorphicQuerySynthesizer implements SQLite3TestGenerator 
 		// FIXME implement
 		errors.add("no query solution"); // INDEXED BY
 		errors.add("unable to use function MATCH in the requested context");
-
 	}
 
 	@Override
@@ -87,11 +88,42 @@ public class SQLite3MetamorphicQuerySynthesizer implements SQLite3TestGenerator 
 		if (firstQueryString.contains("EXISTS")) {
 			throw new IgnoreMeException();
 		}
+		if (Randomly.getBoolean()) {
+			randomWhereCondition = mergeJoinExpressions(randomWhereCondition, joinStatements);
+			for (Join j : joinStatements) {
+//				if (j.getType() != JoinType.OUTER) {
+					tables.add(j.getTable());
+//				}
+				if (j.getTable().getNrRows() == 0 && j.getType() == JoinType.INNER) {
+					throw new IgnoreMeException();
+				}
+			}
+			tableRefs = SQLite3Common.getTableRefs(tables, s);
+			joinStatements.clear();
+		}
 		int secondCount = getSecondQuery(tableRefs, randomWhereCondition, groupBys, joinStatements);
 		if (firstCount != secondCount && firstCount != NOT_FOUND && secondCount != NOT_FOUND) {
 			state.queryString = firstQueryString + ";\n" + secondQueryString + ";";
 			throw new AssertionError(firstCount + " " + secondCount);
 		}
+	}
+
+	private SQLite3Expression mergeJoinExpressions(SQLite3Expression randomWhereCondition, List<Join> joinStatements) {
+		for (Join j : joinStatements) {
+			switch (j.getType()) {
+			case CROSS:
+			case INNER:
+				randomWhereCondition = new Sqlite3BinaryOperation(j.getOnClause(), randomWhereCondition, Sqlite3BinaryOperation.BinaryOperator.AND);
+				break;
+			case OUTER:
+				throw new IgnoreMeException();
+//				randomWhereCondition = new Sqlite3BinaryOperation(j.getOnClause(), randomWhereCondition, Sqlite3BinaryOperation.BinaryOperator.OR);
+//				break;
+			default:
+				throw new IgnoreMeException();
+			}
+		}
+		return randomWhereCondition;
 	}
 
 	private SQLite3Expression getRandomWhereCondition(List<SQLite3Column> columns) {
