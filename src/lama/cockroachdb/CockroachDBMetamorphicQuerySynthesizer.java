@@ -37,6 +37,8 @@ public class CockroachDBMetamorphicQuerySynthesizer {
 		this.globalState = globalState;
 		CockroachDBErrors.addExpressionErrors(errors);
 		CockroachDBErrors.addTransactionErrors(errors);
+		errors.add("unable to vectorize execution plan"); // SET vectorize=experimental_always;
+		errors.add(" mismatched physical types at index"); // SET vectorize=experimental_always;
 	}
 
 	public void check() throws SQLException {
@@ -94,12 +96,12 @@ public class CockroachDBMetamorphicQuerySynthesizer {
 	private int getOptimizableResult(Connection con, CockroachDBExpression whereCondition, CockroachDBExpression havingCondition, List<CockroachDBTableReference> tableList,
 			Set<String> errors, List<CockroachDBJoin> joinExpressions) throws SQLException {
 		CockroachDBSelect select = new CockroachDBSelect();
-		CockroachDBColumn c = new CockroachDBColumn("*", null, false, false);
+		CockroachDBColumn c = new CockroachDBColumn("COUNT(*)", null, false, false);
 		select.setColumns(Arrays.asList(new CockroachDBColumnReference(c)));
 		select.setFromTables(tableList.stream().map(t -> (CockroachDBExpression) t).collect(Collectors.toList()));
 		select.setWhereCondition(whereCondition);
 		select.setJoinList(joinExpressions);
-		if (Randomly.getBooleanWithRatherLowProbability()) {
+		if (Randomly.getBooleanWithRatherLowProbability() && false) {
 			select.setOrderByTerms(gen.getOrderingTerms());
 		}
 		String s = CockroachDBVisitor.asString(select);
@@ -113,8 +115,8 @@ public class CockroachDBMetamorphicQuerySynthesizer {
 			if (rs == null) {
 				return -1;
 			}
-			while (rs.next()) {
-				count++;
+			if (rs.next()) {
+				count = rs.getInt(1);
 			}
 //			rs.next();
 //			count = rs.getInt(1);
@@ -151,6 +153,8 @@ public class CockroachDBMetamorphicQuerySynthesizer {
 			}
 			rs.next();
 			count = rs.getInt(1);
+		} catch (Exception e) {
+			throw new AssertionError(s, e);
 		}
 		return count;
 	}

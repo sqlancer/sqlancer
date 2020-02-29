@@ -8,7 +8,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import lama.DatabaseProvider;
 import lama.IgnoreMeException;
@@ -45,8 +48,23 @@ public class CockroachDBProvider implements DatabaseProvider {
 			String s = Randomly.fromOptions("BEGIN", "ROLLBACK", "COMMIT");
 			return new QueryAdapter(s, Arrays.asList("there is no transaction in progress", "there is already a transaction in progress", "current transaction is aborted"));
 		}),
-		// https://github.com/cockroachdb/cockroach/issues/44142
-		SCRUB((g) -> new QueryAdapter("EXPERIMENTAL SCRUB table " + g.getSchema().getRandomTable(t -> !t.isView()).getName(), Arrays.asList("scrub-index: unsupported comparison operator")));
+		EXPLAIN((g) -> {
+			new CockroachDBRandomQuerySynthesizer();
+			StringBuilder sb = new StringBuilder("EXPLAIN ");
+			Set<String> errors = new HashSet<>();
+			if (Randomly.getBoolean()) {
+				sb.append("(");
+				sb.append(Randomly.nonEmptySubset("VERBOSE", "TYPES", "OPT", "DISTSQL", "VEC").stream().collect(Collectors.joining(", ")));
+				sb.append(") ");
+				errors.add("cannot set EXPLAIN mode more than once");
+				errors.add("unable to vectorize execution plan");
+				errors.add("unsupported type");
+			}
+			sb.append(CockroachDBRandomQuerySynthesizer.generate(g, Randomly.smallNumber() + 1));
+			CockroachDBErrors.addExpressionErrors(errors);
+			return new QueryAdapter(sb.toString(), errors);
+		}),
+		SCRUB((g) -> new QueryAdapter("EXPERIMENTAL SCRUB table " + g.getSchema().getRandomTable(t -> !t.isView()).getName(), Arrays.asList()));
 
 		private final CockroachDBQueryProvider queryProvider;
 
@@ -133,10 +151,12 @@ public class CockroachDBProvider implements DatabaseProvider {
 		manager.execute(new QueryAdapter("SET CLUSTER SETTING diagnostics.reporting.enabled	 = false;"));
 		manager.execute(
 				new QueryAdapter("SET CLUSTER SETTING diagnostics.reporting.send_crash_reports		 = false;"));
-
+		manager.execute(new QueryAdapter("SET CLUSTER SETTING sql.stats.automatic_collection.min_stale_rows = 1"));
+		manager.execute(new QueryAdapter("SET CLUSTER SETTING sql.stats.automatic_collection.fraction_stale_rows = 0.00001"));
+	
 		
 		
-		for (int i = 0; i < Randomly.fromOptions(1, 2); i++) {
+		for (int i = 0; i < Randomly.fromOptions(1, 2, 3); i++) {
 			boolean success = false;
 			do {
 				try {
@@ -156,6 +176,7 @@ public class CockroachDBProvider implements DatabaseProvider {
 			} while (!success);
 			globalState.setSchema(CockroachDBSchema.fromConnection(con, databaseName));
 		}
+		logger.writeCurrent(state);
 
 		int[] nrRemaining = new int[Action.values().length];
 		List<Action> actions = new ArrayList<>();
@@ -168,20 +189,25 @@ public class CockroachDBProvider implements DatabaseProvider {
 			case UPDATE:
 				nrPerformed = r.getInteger(0, options.getMaxNumberInserts());
 				break;
+			case EXPLAIN:
+				nrPerformed = r.getInteger(0, 10000);
+				break;
 			case SHOW:
 			case COMMENT_ON:
 			case TRUNCATE:
 			case DELETE:
-			case CREATE_INDEX:
 			case CREATE_STATISTICS:
 				nrPerformed = r.getInteger(0, 2);
 				break;
 			case CREATE_VIEW:
-				nrPerformed = 1;
+				nrPerformed = r.getInteger(0, 2);
 				break;
 			case SET_SESSION:
 			case SET_CLUSTER_SETTING:
 				nrPerformed = r.getInteger(0, 3);
+				break;
+			case CREATE_INDEX:
+				nrPerformed = r.getInteger(0, 10);
 				break;
 			case SCRUB:
 				nrPerformed = 1;
@@ -233,7 +259,9 @@ public class CockroachDBProvider implements DatabaseProvider {
 			total--;
 		}
 		manager.incrementCreateDatabase();
-
+		if (Randomly.getBoolean()) {
+			manager.execute(new QueryAdapter("SET vectorize=experimental_always;"));
+		}
 		CockroachDBMetamorphicQuerySynthesizer syn = new CockroachDBMetamorphicQuerySynthesizer(globalState);
 		for (int i = 0; i < options.getNrQueries(); i++) {
 			try {

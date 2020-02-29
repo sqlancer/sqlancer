@@ -1,6 +1,8 @@
 package lama.cockroachdb;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,8 +11,12 @@ import lama.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import lama.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import lama.cockroachdb.CockroachDBSchema.CockroachDBCompositeDataType;
 import lama.cockroachdb.CockroachDBSchema.CockroachDBDataType;
+import lama.cockroachdb.ast.CockroachDBAggregate;
+import lama.cockroachdb.ast.CockroachDBAggregate.CockroachDBAggregateFunction;
 import lama.cockroachdb.ast.CockroachDBBetweenOperation;
 import lama.cockroachdb.ast.CockroachDBBetweenOperation.CockroachDBBetweenOperatorType;
+import lama.cockroachdb.ast.CockroachDBBinaryArithmeticOperation;
+import lama.cockroachdb.ast.CockroachDBBinaryArithmeticOperation.CockroachDBBinaryArithmeticOperator;
 import lama.cockroachdb.ast.CockroachDBBinaryComparisonOperator;
 import lama.cockroachdb.ast.CockroachDBBinaryComparisonOperator.CockroachDBComparisonOperator;
 import lama.cockroachdb.ast.CockroachDBBinaryLogicalOperation;
@@ -19,9 +25,13 @@ import lama.cockroachdb.ast.CockroachDBCaseOperation;
 import lama.cockroachdb.ast.CockroachDBCast;
 import lama.cockroachdb.ast.CockroachDBCollate;
 import lama.cockroachdb.ast.CockroachDBColumnReference;
+import lama.cockroachdb.ast.CockroachDBConcatOperation;
 import lama.cockroachdb.ast.CockroachDBConstant;
 import lama.cockroachdb.ast.CockroachDBExpression;
 import lama.cockroachdb.ast.CockroachDBInOperation;
+import lama.cockroachdb.ast.CockroachDBMultiValuedComparison;
+import lama.cockroachdb.ast.CockroachDBMultiValuedComparison.MultiValuedComparisonOperator;
+import lama.cockroachdb.ast.CockroachDBMultiValuedComparison.MultiValuedComparisonType;
 import lama.cockroachdb.ast.CockroachDBNotOperation;
 import lama.cockroachdb.ast.CockroachDBOrderingTerm;
 import lama.cockroachdb.ast.CockroachDBRegexOperation;
@@ -46,6 +56,27 @@ public class CockroachDBExpressionGenerator {
 
 	public CockroachDBExpression generateExpression(CockroachDBCompositeDataType dataType) {
 		return generateExpression(dataType, 0);
+	}
+	
+	public CockroachDBExpression generateAggregate() {
+		CockroachDBAggregateFunction aggr = CockroachDBAggregateFunction.getRandom();
+		switch (aggr) {
+		case SUM:
+		case AVG:
+		case SQRDIFF:
+		case STDDEV:
+		case SUM_INT:
+		case VARIANCE:
+		case XOR_AGG:
+			return new CockroachDBAggregate(aggr, Arrays.asList(generateExpression(CockroachDBDataType.INT.get())));
+		case MIN:
+		case MAX:
+			return new CockroachDBAggregate(aggr, Arrays.asList(generateExpression(getRandomType())));
+		case COUNT_ROWS:
+			return new CockroachDBAggregate(aggr, Collections.emptyList());
+		default:
+			throw new AssertionError();
+		}
 	}
 
 	public List<CockroachDBExpression> generateExpressions(int nr) {
@@ -114,7 +145,7 @@ public class CockroachDBExpressionGenerator {
 				return generateBooleanExpression(depth);
 			case INT:
 			case SERIAL:
-				return generateLeafNode(type);
+				return new CockroachDBBinaryArithmeticOperation(generateExpression(CockroachDBDataType.INT.get(), depth + 1), generateExpression(CockroachDBDataType.INT.get(), depth + 1), CockroachDBBinaryArithmeticOperator.getRandom());
  // new CockroachDBUnaryArithmeticOperation(generateExpression(type, depth
 												// + 1),
 			// CockroachDBUnaryAritmeticOperator.getRandom()); /* wait for
@@ -130,6 +161,12 @@ public class CockroachDBExpressionGenerator {
 			case VARBIT:
 			case BIT:
 			case INTERVAL:
+			case TIMESTAMP:
+			case DECIMAL:
+			case TIMESTAMPTZ:
+			case JSONB:
+			case TIME:
+			case TIMETZ:
 				return generateLeafNode(type); // TODO
 			default:
 				throw new AssertionError(type);
@@ -145,21 +182,22 @@ public class CockroachDBExpressionGenerator {
 		}
 	}
 
-	private enum StringExpression {
-		REGEX
-	}
-
 	private enum BooleanExpression {
-		NOT, COMPARISON, AND_OR_CHAIN, REGEX, IS_NULL, IS_NAN, IN, BETWEEN
+		NOT, COMPARISON, AND_OR_CHAIN, REGEX, IS_NULL, IS_NAN, IN, BETWEEN, MULTI_VALUED_COMPARISON
 	}
 
+	private enum StringExpression {
+		CONCAT
+	}
+	
 	private CockroachDBExpression generateStringExpression(int depth) {
 		StringExpression exprType = Randomly.fromOptions(StringExpression.values());
-		return generateConstant(CockroachDBDataType.STRING.get());
-//		switch (exprType) {
-//		default:
-//			throw new AssertionError(exprType);
-//		}
+		switch (exprType) {
+		case CONCAT:
+			return new CockroachDBConcatOperation(generateExpression(CockroachDBDataType.STRING.get(), depth + 1), generateExpression(CockroachDBDataType.STRING.get(), depth + 1));
+		default:
+			throw new AssertionError(exprType);
+		}
 	}
 
 	private CockroachDBExpression generateBooleanExpression(int depth) {
@@ -191,6 +229,14 @@ public class CockroachDBExpressionGenerator {
 			CockroachDBExpression left = generateExpression(type, depth + 1);
 			CockroachDBExpression right = generateExpression(type, depth + 1);
 			return new CockroachDBBetweenOperation(expr, left, right, CockroachDBBetweenOperatorType.getRandom());
+		case MULTI_VALUED_COMPARISON: // TODO other operators
+			type = getRandomType();
+			left = generateExpression(type, depth + 1);
+			List<CockroachDBExpression> rightList;
+			do {
+				rightList = generateExpressions(type, depth + 1);
+			} while (rightList.size() <= 1);
+			return new CockroachDBMultiValuedComparison(left, rightList, MultiValuedComparisonType.getRandom(), MultiValuedComparisonOperator.getRandomGenericComparisonOperator());
 		default:
 			throw new AssertionError(exprType);
 		}
@@ -211,7 +257,7 @@ public class CockroachDBExpressionGenerator {
 	}
 
 	private CockroachDBCompositeDataType getRandomType() {
-		if (columns.isEmpty() || Randomly.getBooleanWithSmallProbability()) {
+		if (columns.isEmpty() || Randomly.getBoolean()) {
 			return CockroachDBCompositeDataType.getRandom();
 		} else {
 			return Randomly.fromList(columns).getColumnType();
@@ -268,6 +314,15 @@ public class CockroachDBExpressionGenerator {
 			return CockroachDBConstant.createBitConstant(globalState.getRandomly().getInteger());
 		case INTERVAL:
 			return CockroachDBConstant.createIntervalConstant(globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger());
+		case TIMESTAMP:
+			return CockroachDBConstant.createTimestampConstant(globalState.getRandomly().getInteger());
+		case TIME:
+			return CockroachDBConstant.createTimeConstant(globalState.getRandomly().getInteger());
+		case DECIMAL:
+		case TIMESTAMPTZ:
+		case JSONB:
+		case TIMETZ:
+			return CockroachDBConstant.createNullConstant(); // TODO
 		default:
 			throw new AssertionError(type);
 		}
@@ -280,6 +335,10 @@ public class CockroachDBExpressionGenerator {
 			strConst = new CockroachDBCollate(strConst, CockroachDBCommon.getRandomCollate());
 		}
 		return strConst;
+	}
+
+	public CockroachDBGlobalState getGlobalState() {
+		return globalState;
 	}
 
 }

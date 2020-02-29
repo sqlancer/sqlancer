@@ -11,7 +11,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import lama.IgnoreMeException;
 import lama.Randomly;
 
 public class CockroachDBSchema {
@@ -19,7 +18,7 @@ public class CockroachDBSchema {
 	public static enum CockroachDBDataType {
 		
 		
-		INT, BOOL, STRING, FLOAT, BYTES, BIT, VARBIT, SERIAL, INTERVAL;
+		INT, BOOL, STRING, FLOAT, BYTES, BIT, VARBIT, SERIAL, INTERVAL, TIMESTAMP, TIMESTAMPTZ, DECIMAL, JSONB, TIME, TIMETZ;
 		
 		private CockroachDBDataType() {
 			isPrimitive = true;
@@ -293,8 +292,19 @@ public class CockroachDBSchema {
 			return new CockroachDBCompositeDataType(CockroachDBDataType.BYTES);
 		case "INTERVAL":
 			return new CockroachDBCompositeDataType(CockroachDBDataType.INTERVAL);
-		case "DECIMAL": // TODO
-			throw new IgnoreMeException();
+		case "DECIMAL":
+			return new CockroachDBCompositeDataType(CockroachDBDataType.DECIMAL);
+		case "TIMESTAMP":
+			return new CockroachDBCompositeDataType(CockroachDBDataType.TIMESTAMP);
+		case "TIMESTAMPTZ":
+			return new CockroachDBCompositeDataType(CockroachDBDataType.TIMESTAMPTZ);
+		case "JSONB":
+			return new CockroachDBCompositeDataType(CockroachDBDataType.JSONB);
+		case "TIME":
+			return new CockroachDBCompositeDataType(CockroachDBDataType.TIME);
+		case "TIMETZ":
+			return new CockroachDBCompositeDataType(CockroachDBDataType.TIMETZ);
+
 		default:
 			throw new AssertionError(typeString);
 		}

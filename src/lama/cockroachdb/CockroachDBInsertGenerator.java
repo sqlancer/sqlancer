@@ -30,11 +30,11 @@ public class CockroachDBInsertGenerator {
 		errors.add("multi-part foreign key");
 		StringBuilder sb = new StringBuilder();
 		CockroachDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-		if (Randomly.getBoolean() || true) {
+		if (Randomly.getBoolean()) {
 			sb.append("INSERT INTO ");
 		} else {
-			// https://github.com/cockroachdb/cockroach/issues/44466
 			sb.append("UPSERT INTO ");
+			errors.add("UPSERT or INSERT...ON CONFLICT command cannot affect row a second time");
 		}
 		sb.append(table.getName());
 		sb.append(" ");
@@ -61,6 +61,15 @@ public class CockroachDBInsertGenerator {
 				}
 				sb.append(")");
 			}
+		}
+		if (Randomly.getBoolean() && false) {
+			sb.append(" ON CONFLICT (");
+			sb.append(table.getRandomNonEmptyColumnSubset().stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
+			sb.append(")");
+			// WHERE clause not yet implemented, see https://github.com/cockroachdb/cockroach/issues/32557
+			sb.append(" DO ");
+			sb.append(" NOTHING ");
+			errors.add("there is no unique or exclusion constraint matching the ON CONFLICT specification");
 		}
 		CockroachDBErrors.addTransactionErrors(errors);
 		return new QueryAdapter(sb.toString(), errors);

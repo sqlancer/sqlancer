@@ -5,6 +5,7 @@ import java.util.Set;
 public class CockroachDBErrors {
 	
 	public static void addExpressionErrors(Set<String> errors) {
+		
 		errors.add("cannot cast negative integer to bit varying with unbounded width");
 		
 		errors.add("negative value for LIMIT");
@@ -77,11 +78,81 @@ public class CockroachDBErrors {
 		
 		errors.add("ambiguous call");
 		
+		errors.add(" could not produce a query plan conforming to the");
+		errors.add("LOOKUP can only be used with INNER or LEFT joins"); // TODO
 		
+		errors.add("ambiguous binary operator: <unknown> || <unknown>");
+		errors.add(" ERROR: unsupported binary operator: <string> || <string> (desired <bytes>)");
+		errors.add("unsupported binary operator: <unknown> || <string> (desired <bytes>)");
+		errors.add("incompatible value type: unsupported binary operator: <string> || <unknown> (desired <bytes>)");
+		errors.add("unsupported binary operator: <string> || <unknown> (desired <bytes>)");
+		errors.add("unsupported binary operator: <string> || <string> (desired <bytes>)");
+		errors.add("parsing as type timestamp: empty or blank input");
+		errors.add("parsing as type timestamp: field");
+		errors.add("as type time");
+		errors.add("as TimeTZ");
+		errors.add("as type decimal");
 		addIntervalTypeErrors(errors);
 		addFunctionErrors(errors);
 		addGroupByErrors(errors);
 		addJoinTypes(errors);
+		errors.add("as int4, found type: decimal");
+		errors.add("to be of type int2, found type decimal");
+		errors.add("to be of type int, found type decimal"); // arithmetic overflows
+		errors.add("unknown signature: left(string, decimal)");
+		errors.add("unknown signature: left(bytes, decimal) (desired <bytes>)");
+		errors.add("numeric constant out of int64 range");
+		errors.add("unknown signature: overlay(string, string, decimal)");
+		errors.add("unknown signature: substring(string, int, decimal)");
+		errors.add("unsupported binary operator: <unknown> + <decimal> (desired <int>)");
+		errors.add("unsupported comparison operator");
+		errors.add("unknown signature: chr(decimal) (desired <string>)");
+		errors.add("unknown signature: to_english(decimal) (desired <string>)");
+		errors.add("unknown signature: to_hex(decimal) (desired <string>)");
+		errors.add("incompatible value type: expected rowid to be of type decimal, found type int");
+		errors.add("unknown signature: to_english(decimal)");
+		errors.add("unknown signature: chr(decimal)");
+		errors.add(" unknown signature: left(string, int2) (desired <bytes>)");
+		errors.add("unknown signature: split_part(string, string, decimal) (desired <string>)");
+		errors.add(" unknown signature: substring(string, ");
+		errors.add("division by zero");
+		errors.add("as int, found type: decimal");
+		errors.add("value type decimal doesn't match type int2 ");
+		errors.add("has type decimal");
+		errors.add("to be of type decimal, found type int");
+		errors.add("value type decimal doesn't match type int");
+		errors.add("unknown signature: substring(string, decimal, int)");
+		errors.add("unsupported binary operator: <int> / <int> (desired <int4>)");
+		errors.add("(desired <int>)");
+		errors.add("(desired <int2>)");
+		errors.add("(desired <int4>)");
+		errors.add("found type: decimal");
+		errors.add("(desired <decimal>)");
+		errors.add("unknown signature: to_hex(decimal)");
+		errors.add("unknown signature: split_part(string, string, decimal)");
+		errors.add("unknown signature: left(bytes, decimal)");
+		errors.add("division undefined");
+		errors.add("decimal out of range");
+		errors.add("unknown signature: xor_agg(decimal)");
+		errors.add("unknown signature: sum_int(decimal)");
+		
+		errors.add("exists but is not a directory"); // TODO
+		
+		errors.add("could not parse JSON: trailing characters after JSON document");
+		errors.add("could not parse JSON: unable to decode JSON: invalid character");
+		errors.add("could not parse JSON: unable to decode JSON: EOF");
+		errors.add("could not parse JSON: unable to decode JSON: unexpected EOF");
+		errors.add("can't order by column type jsonb");
+		
+		if (true) {
+			errors.add("aggregate functions are not allowed in GROUP BY");
+			errors.add(" must appear in the GROUP BY clause or be used in an aggregate function"); // TODO: better control what is generated in a view
+		}
+		
+		if (true) {
+			// TODO https://github.com/cockroachdb/cockroach/issues/44757
+			errors.add("no builtin aggregate");
+		}
 	}
 
 	private static void addIntervalTypeErrors(Set<String> errors) {
@@ -91,12 +162,6 @@ public class CockroachDBErrors {
 
 	private static void addJoinTypes(Set<String> errors) {
 		errors.add("JOIN/USING types");
-		if (true) {
-			// https://github.com/cockroachdb/cockroach/issues/44547
-			errors.add("unexpected error from the vectorized runtime: interface conversion: coldata.column is []int32, not []int64");
-			errors.add("unexpected error from the vectorized runtime: interface conversion: coldata.column is []int64, not []int32");
-			errors.add("coldata.column is []int16, not []int64");
-		}
 	}
 
 	private static void addGroupByErrors(Set<String> errors) {
@@ -113,6 +178,13 @@ public class CockroachDBErrors {
 		errors.add("lpad(): requested length too large"); // lpad
 		errors.add("input value must be >= 0"); // chr
 		errors.add("input value must be <= 1114111 (maximum Unicode code point)"); // chr
+		errors.add("to_ip(): invalid IP format"); // to_ip
+		errors.add("invalid IP format"); // to_ip
+		errors.add("incorrect UUID length"); // to_uuid
+		errors.add("incorrect UUID format"); // to_uuid
+		errors.add("substring(): negative substring length"); // substring
+		errors.add("negative substring length"); // substring
+		errors.add("must be greater than zero"); // split_part
 	}
 
 	public static void addTransactionErrors(Set<String> errors) {

@@ -21,6 +21,11 @@ public class CockroachDBUpdateGenerator {
 		CockroachDBExpressionGenerator gen = new CockroachDBExpressionGenerator(globalState).setColumns(columns);
 		StringBuilder sb = new StringBuilder("UPDATE ");
 		sb.append(table.getName());
+		if (Randomly.getBoolean()) {
+			sb.append("@{FORCE_INDEX=");
+			sb.append(Randomly.fromList(table.getIndexes()).getIndexName());
+			sb.append("}");
+		}
 		sb.append(" SET ");
 		int i = 0;
 		for (CockroachDBColumn c : columns) {
@@ -41,6 +46,7 @@ public class CockroachDBUpdateGenerator {
 		errors.add("UPDATE without WHERE clause (sql_safe_updates = true)");
 		errors.add("numeric constant out of int64 range");
 		errors.add("failed to satisfy CHECK constraint");
+		errors.add("cannot write directly to computed column");
 		CockroachDBErrors.addExpressionErrors(errors);
 		CockroachDBErrors.addTransactionErrors(errors);
 		return new QueryAdapter(sb.toString(), errors);

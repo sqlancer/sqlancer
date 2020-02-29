@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import lama.Randomly;
+import lama.cockroachdb.ast.CockroachDBAggregate;
 import lama.cockroachdb.ast.CockroachDBBetweenOperation;
 import lama.cockroachdb.ast.CockroachDBCaseOperation;
 import lama.cockroachdb.ast.CockroachDBColumnReference;
@@ -12,6 +13,7 @@ import lama.cockroachdb.ast.CockroachDBExpression;
 import lama.cockroachdb.ast.CockroachDBFunctionCall;
 import lama.cockroachdb.ast.CockroachDBInOperation;
 import lama.cockroachdb.ast.CockroachDBJoin;
+import lama.cockroachdb.ast.CockroachDBMultiValuedComparison;
 import lama.cockroachdb.ast.CockroachDBSelect;
 import lama.cockroachdb.ast.CockroachDBTableReference;
 import lama.visitor.ToStringVisitor;
@@ -102,7 +104,7 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
 			sb.append(" WHERE ");
 			visit(select.getWhereCondition());
 		}
-		if (select.getGroupByExpression() != null) {
+		if (select.getGroupByExpression() != null && !select.getGroupByExpression().isEmpty()) {
 			sb.append(" GROUP BY ");
 			visitList(select.getGroupByExpression());
 		}
@@ -149,17 +151,23 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
 		visit(join.getLeftTable());
 		switch (join.getJoinType()) {
 		case INNER:
-			sb.append(" JOIN ");
+			sb.append(" INNER ");
+			potentiallyAddHint();
+			sb.append("JOIN ");
 			visit(join.getRightTable());
 			sb.append(" ON ");
 			visit(join.getOnCondition());
 			break;
 		case NATURAL:
-			sb.append(" NATURAL JOIN ");
+			sb.append(" NATURAL ");
+//			potentiallyAddHint();
+			sb.append("JOIN ");
 			visit(join.getRightTable());
 			break;
 		case CROSS:
-			sb.append(" CROSS JOIN ");
+			sb.append(" CROSS ");
+			potentiallyAddHint();
+			sb.append("JOIN ");
 			visit(join.getRightTable());
 			break;
 		case OUTER:
@@ -177,7 +185,9 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
 			default:
 				throw new AssertionError();
 			}
-			sb.append(" OUTER JOIN ");
+			sb.append(" OUTER ");
+			potentiallyAddHint();
+			sb.append("JOIN ");
 			visit(join.getRightTable());
 			sb.append(" ON ");
 			visit(join.getOnCondition());
@@ -187,8 +197,37 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
 		}
 	}
 
+	private void potentiallyAddHint() {
+		if (Randomly.getBoolean()) {
+			sb.append(Randomly.fromOptions("HASH", "MERGE", "LOOKUP"));
+			sb.append(" ");
+		}
+	}
+
 	@Override
 	public void visit(CockroachDBTableReference tableRef) {
 		sb.append(tableRef.getTable().getName());
+	}
+
+	@Override
+	public void visit(CockroachDBAggregate aggr) {
+		sb.append(aggr.getFunc().name());
+		sb.append("(");
+		visitList(aggr.getExpr());
+		sb.append(")");
+	}
+
+	@Override
+	public void visit(CockroachDBMultiValuedComparison comp) {
+		sb.append("(");
+		visit(comp.getLeft());
+		sb.append(" ");
+		sb.append(comp.getOp().getStringRepr());
+		sb.append(" ");
+		sb.append(comp.getType());
+		sb.append(" (");
+		visitList(comp.getRight());
+		sb.append(")");
+		sb.append(")");
 	}
 }

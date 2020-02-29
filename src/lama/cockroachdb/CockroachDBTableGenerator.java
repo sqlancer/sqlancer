@@ -37,11 +37,18 @@ public class CockroachDBTableGenerator {
 		Set<String> errors = new HashSet<>();
 
 		String tableName = Randomly.fromOptions("t0", "t1", "t2");
-		sb.append("CREATE TABLE IF NOT EXISTS ");
+		sb.append("CREATE ");
+		if (Randomly.getBoolean() && false) {
+			sb.append("TEMP ");
+		}
+		sb.append("TABLE IF NOT EXISTS ");
 		sb.append(tableName);
 		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
 			String columnName = "c" + i;
 			CockroachDBCompositeDataType columnType = CockroachDBCompositeDataType.getRandom();
+			while (columnType.getPrimitiveDataType() == CockroachDBDataType.JSONB) {
+				columnType = CockroachDBCompositeDataType.getRandom(); // TODO
+			}
 			columns.add(new CockroachDBColumn(columnName, columnType, false, false));
 
 		}
@@ -58,27 +65,30 @@ public class CockroachDBTableGenerator {
 			if (cockroachDBColumn.getColumnType().isString() && Randomly.getBoolean()) {
 				sb.append(" COLLATE " + CockroachDBCommon.getRandomCollate());
 			}
-			if (Randomly.getBoolean() && false /* wait for https://github.com/cockroachdb/cockroach/issues/44132 */) {
+			boolean generatedColumn = Randomly.getBooleanWithRatherLowProbability() && cockroachDBColumn.getColumnType().getPrimitiveDataType() != CockroachDBDataType.SERIAL;
+			if (generatedColumn) {
 				sb.append(" AS (");
 				sb.append(CockroachDBVisitor.asString(gen.generateExpression(cockroachDBColumn.getColumnType())));
 				sb.append(") STORED");
 				errors.add("computed columns cannot reference other computed columns");
+				errors.add("has type unknown");
 			}
-			if (Randomly.getBoolean()) {
+			if (Randomly.getBooleanWithRatherLowProbability()) {
 				sb.append(" UNIQUE ");
 			}
-			if (Randomly.getBoolean()) {
+			if (Randomly.getBooleanWithRatherLowProbability()) {
 				sb.append(" NOT NULL ");
 			}
-			if (singleColumnPrimaryKey && Randomly.getBoolean()) {
+			if (singleColumnPrimaryKey && Randomly.getBooleanWithRatherLowProbability()) {
 				sb.append(" PRIMARY KEY");
 				singleColumnPrimaryKey = false;
 			}
-			if (cockroachDBColumn.getColumnType().getPrimitiveDataType() != CockroachDBDataType.SERIAL && Randomly.getBoolean()) {
+			if (!generatedColumn && cockroachDBColumn.getColumnType().getPrimitiveDataType() != CockroachDBDataType.SERIAL && Randomly.getBoolean()) {
 				sb.append(" DEFAULT (");
 				sb.append(CockroachDBVisitor.asString(new CockroachDBExpressionGenerator(globalState)
 						.generateExpression(cockroachDBColumn.getColumnType())));
 				sb.append(")");
+				errors.add("has type unknown"); // NULLIF
 			}
 			if (Randomly.getBooleanWithRatherLowProbability() && !globalState.getSchema().getDatabaseTables().isEmpty()) {
 				// TODO: also allow referencing itself
@@ -109,14 +119,15 @@ public class CockroachDBTableGenerator {
 				}
 				errors.add("there is no unique constraint matching given keys for referenced table");
 			}
-			if (Randomly.getBooleanWithRatherLowProbability() && false /* https://github.com/cockroachdb/cockroach/issues/44154  */) {
+			if (Randomly.getBooleanWithRatherLowProbability()) {
+				errors.add("has type unknown");
 				sb.append(" CHECK (");
 				sb.append(CockroachDBVisitor.asString(gen.generateExpression(CockroachDBDataType.BOOL.get())));
 				sb.append(")");
 			}
 		}
 		if (compoundPrimaryKey) {
-			sb.append(", CONSTRAINT \"primary KEY\" PRIMARY KEY (");
+			sb.append(", CONSTRAINT \"primary\" PRIMARY KEY (");
 			List<CockroachDBColumn> primaryKeyColumns = Randomly.nonEmptySubset(columns);
 			for (int i = 0; i < primaryKeyColumns.size(); i++) {
 				if (i != 0) {

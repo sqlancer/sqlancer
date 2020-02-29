@@ -1,5 +1,8 @@
 package lama.cockroachdb.ast;
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+
 public class CockroachDBConstant extends CockroachDBExpression {
 
 	public static class CockroachDBNullConstant extends CockroachDBConstant {
@@ -137,6 +140,24 @@ public class CockroachDBConstant extends CockroachDBExpression {
 		
 	}
 	
+	public static class CockroachDBTimeRelatedConstant extends CockroachDBConstant {
+		
+		private final String textRepr;
+
+		public CockroachDBTimeRelatedConstant(long val, String format) {
+			Timestamp timestamp = new Timestamp(val);
+			SimpleDateFormat dateFormat = new SimpleDateFormat(format);
+			textRepr = dateFormat.format(timestamp);
+
+		}
+		
+		@Override
+		public String toString() {
+			return String.format("TIMESTAMP '%s'", textRepr);
+		}
+		
+	}
+	
 	public static CockroachDBTextConstant createStringConstant(String text) {
 		return new CockroachDBTextConstant(text);
 	}
@@ -160,6 +181,15 @@ public class CockroachDBConstant extends CockroachDBExpression {
 	public static CockroachDBExpression createBitConstant(long integer) {
 		return new CockroachDBBitConstant(integer);
 	}
+	
+	public static CockroachDBExpression createTimestampConstant(long integer) {
+		return new CockroachDBTimeRelatedConstant(integer, "yyyy-MM-dd");
+	}
+	
+	public static CockroachDBExpression createTimeConstant(long integer) {
+		return new CockroachDBTimeRelatedConstant(integer, "HH:mm:ss");
+	}
+
 
 	public static CockroachDBExpression createIntervalConstant(long year, long month, long day,
 			long hour, long minute, long second) {
