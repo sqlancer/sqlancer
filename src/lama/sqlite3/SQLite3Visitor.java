@@ -160,7 +160,7 @@ public interface SQLite3Visitor {
 		} else if (expr instanceof Join) {
 			visit((Join) expr);
 		} else if (expr instanceof SQLite3SelectStatement) {
-			visit((SQLite3SelectStatement) expr, false);
+			visit((SQLite3SelectStatement) expr, true);
 		} else if (expr instanceof SQLite3Exist) {
 			visit((SQLite3Exist) expr);
 		} else if (expr instanceof BinaryComparisonOperation) {

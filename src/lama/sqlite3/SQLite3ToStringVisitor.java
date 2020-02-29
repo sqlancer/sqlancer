@@ -131,8 +131,9 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 
 		if (s.getWhereClause() != null) {
 			SQLite3Expression whereClause = s.getWhereClause();
-			sb.append(" WHERE ");
+			sb.append(" WHERE (");
 			visit(whereClause);
+			sb.append(")");
 		}
 		if (s.getGroupByClause().size() > 0) {
 			sb.append(" ");
@@ -285,9 +286,15 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 	}
 
 	public void visit(SQLite3Exist exist) {
-		sb.append(" EXISTS (");
+		sb.append(" EXISTS ");
+		if (exist.getExpression() instanceof SQLite3SetClause) {
+			sb.append("(");
+		}
 		visit(exist.getExpression());
-		sb.append(")");
+		if (exist.getExpression() instanceof SQLite3SetClause) {
+			sb.append(")");
+		}
+		sb.append("");
 	}
 
 	@Override
@@ -432,7 +439,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 	public void visit(SQLite3TableReference tableReference) {
 		sb.append(tableReference.getTable().getName());
 		if (tableReference.getIndexedBy() == null) {
-			if (Randomly.getBoolean()) {
+			if (Randomly.getBooleanWithSmallProbability()) {
 				sb.append(" NOT INDEXED");
 			}
 		} else {
@@ -456,11 +463,12 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 
 	@Override
 	public void visit(SQLite3SetClause set) {
-		visit(set.getLeft());
+		// do not print parentheses
+		sb.append(SQLite3Visitor.asString(set.getLeft()));
 		sb.append(" ");
 		sb.append(set.getType().getTextRepresentation());
 		sb.append(" ");
-		visit(set.getRight());
+		sb.append(SQLite3Visitor.asString(set.getRight()));
 	}
 
 }

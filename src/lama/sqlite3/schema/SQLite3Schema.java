@@ -460,29 +460,39 @@ public class SQLite3Schema {
 
 		try (Statement s = con.createStatement()) {
 			try (ResultSet rs = s.executeQuery("SELECT name, type as category, sql FROM sqlite_master UNION "
-					+ "SELECT name, 'temp_table' as category, sql FROM sqlite_temp_master WHERE type='table' UNION SELECT name, 'view' as category, sql FROM sqlite_temp_master WHERE type='view';")) {
+					+ "SELECT name, 'temp_table' as category, sql FROM sqlite_temp_master WHERE type='table' UNION SELECT name, 'view' as category, sql FROM sqlite_temp_master WHERE type='view' GROUP BY name;")) {
 				while (rs.next()) {
 					String tableName = rs.getString("name");
 					String tableType = rs.getString("category");
+					boolean isReadOnly;
+					if (databaseTables.stream().anyMatch(t -> t.getName().contentEquals(tableName))) {
+						continue;
+					}
+					String sqlString = rs.getString("sql") == null ? "" : rs.getString("sql").toLowerCase();
 					if ((tableName.startsWith("sqlite_") /* && !tableName.startsWith("sqlite_stat") */)
 							|| tableType.equals("index") || tableType.equals("trigger") || tableName.endsWith("_idx")
 							|| tableName.endsWith("_docsize") || tableName.endsWith("_content")
 							|| tableName.endsWith("_data") || tableName.endsWith("_config")
 							|| tableName.endsWith("_segdir") || tableName.endsWith("_stat")
 							|| tableName.endsWith("_segments") || tableName.contains("_")) {
-						continue;
+						isReadOnly = true;
+						continue; //  TODO
+					} else if (sqlString.contains("using dbstat")) {
+						isReadOnly = true;
+					} else if (sqlString.contains("content=''")) {
+						isReadOnly = true;
+					} else {
+						isReadOnly = false;
 					}
-					String sqlString = rs.getString("sql").toLowerCase();
 					boolean withoutRowid = sqlString.contains("without rowid");
 					boolean isView = tableType.contentEquals("view");
 					boolean isVirtual = sqlString.contains("virtual");
 					boolean isDbStatsTable = sqlString.contains("using dbstat");
-					boolean isReadOnly = isDbStatsTable;
 					List<SQLite3Column> databaseColumns = getTableColumns(con, tableName, sqlString, isView, isDbStatsTable);
 					int nrRows;
 					try {
 						// FIXME
-						nrRows = 0; // getNrRows(con, tableName);
+						nrRows =  getNrRows(con, tableName);
 					} catch (IgnoreMeException e) {
 						nrRows = 0;
 					}
@@ -502,14 +512,14 @@ public class SQLite3Schema {
 								rowid.setTable(t);
 							}
 						}
-					} catch (SQLException e) {
-						// ignore
-					}
+					} 
 					for (SQLite3Column c : databaseColumns) {
 						c.setTable(t);
 					}
 					databaseTables.add(t);
 				}
+			} catch (SQLException e) {
+				// ignore
 			}
 			try (ResultSet rs = s.executeQuery(
 					"SELECT name FROM SQLite_master WHERE type = 'index' UNION SELECT name FROM sqlite_temp_master WHERE type='index'")) {
@@ -559,7 +569,6 @@ public class SQLite3Schema {
 				}
 			}
 		} catch (Exception e) {
-			// TODO
 		}
 		if (databaseColumns.isEmpty()) {
 			// only generated columns
@@ -625,7 +634,11 @@ public class SQLite3Schema {
 	}
 
 	public Table getRandomTable(Predicate<Table> predicate) {
-		return Randomly.fromList(databaseTables.stream().filter(predicate).collect(Collectors.toList()));
+		List<Table> collect = databaseTables.stream().filter(predicate).collect(Collectors.toList());
+		if (collect.isEmpty()) {
+			throw new IgnoreMeException();
+		}
+		return Randomly.fromList(collect);
 	}
 
 	public List<Table> getTables(Predicate<Table> predicate) {

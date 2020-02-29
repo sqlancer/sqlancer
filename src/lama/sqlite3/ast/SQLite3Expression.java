@@ -139,7 +139,7 @@ public abstract class SQLite3Expression {
 		}
 
 		private final Table table;
-		private final SQLite3Expression onClause;
+		private SQLite3Expression onClause;
 		private final JoinType type;
 
 		public Join(Table table, SQLite3Expression onClause, JoinType type) {
@@ -174,6 +174,10 @@ public abstract class SQLite3Expression {
 			return null;
 		}
 
+		public void setOnClause(SQLite3Expression onClause) {
+			this.onClause = onClause;
+		}
+		
 	}
 
 	public static class Subquery extends SQLite3Expression {

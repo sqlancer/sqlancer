@@ -29,16 +29,11 @@ public class SQLite3CreateVirtualFTSTableGenerator {
 		TOKENIZE, // 4.3. Tokenizers
 		COLUMNSIZE, // 4.5. The Columnsize Option
 		DETAIL, // 4.6. The Detail Option
-//		CONTENTLESS, // 
+		CONTENTLESS, //
 	};
-	
+
 	private enum Fts4Options {
-		MATCHINFO,
-		TOKENIZE,
-		PREFIX,
-		ORDER,
-		LANGUAGEID,
-		COMPRESS
+		MATCHINFO, TOKENIZE, PREFIX, ORDER, LANGUAGEID, COMPRESS, NOT_INDEXED
 	}
 
 	public Query create() {
@@ -86,6 +81,10 @@ public class SQLite3CreateVirtualFTSTableGenerator {
 					break;
 				case LANGUAGEID:
 					sb.append("languageid=\"lid\"");
+					break;
+				case NOT_INDEXED:
+					// TODO also create for other columns
+					sb.append("notindexed=c0");
 					break;
 				default:
 					throw new AssertionError();
@@ -146,9 +145,10 @@ public class SQLite3CreateVirtualFTSTableGenerator {
 					sb.append("\"");
 					possibleActions.remove(Fts5Options.TOKENIZE); // no duplicates allowed
 					break;
-//					case CONTENTLESS:
-//						sb.append("content=''");
-//						break;
+				case CONTENTLESS:
+					sb.append("content=''");
+					possibleActions.remove(Fts5Options.CONTENTLESS);
+					break;
 				default:
 					throw new AssertionError(option);
 				}

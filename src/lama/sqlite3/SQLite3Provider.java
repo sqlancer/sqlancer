@@ -77,7 +77,8 @@ public class SQLite3Provider implements DatabaseProvider {
 		EXPLAIN(SQLite3ExplainGenerator::explain), //
 		CHECK_RTREE_TABLE((g) -> {
 			Table table = g.getSchema().getRandomTableOrBailout(t -> t.getName().startsWith("r"));
-			return new QueryAdapter(String.format("SELECT rtreecheck('%s');", table.getName()));
+			String format = String.format("SELECT rtreecheck('%s');", table.getName());
+			return new QueryAdapter(format);
 		}), //
 		VIRTUAL_TABLE_ACTION(SQLite3VirtualFTSTableCommandGenerator::create), //
 		CREATE_VIEW(SQLite3ViewGenerator::generate), //
@@ -254,7 +255,6 @@ public class SQLite3Provider implements DatabaseProvider {
 		this.state = (SQLite3StateToReproduce) state;
 		globalState.setConnection(con);
 		globalState.setState((SQLite3StateToReproduce) state);
-
 		addSensiblePragmaDefaults(con);
 		int nrTablesToCreate = 1;
 		if (Randomly.getBoolean()) {
@@ -267,17 +267,13 @@ public class SQLite3Provider implements DatabaseProvider {
 
 		globalState.setSchema(SQLite3Schema.fromConnection(con));
 		do {
-			boolean success;
-			do {
-				Query tableQuery = getTableQuery(state, r, globalState.getSchema(), i);
-				success = manager.execute(tableQuery);
-			} while (!success);
-			i++;
+			Query tableQuery = getTableQuery(state, r, globalState.getSchema(), i++);
+			manager.execute(tableQuery);
 			globalState.setSchema(SQLite3Schema.fromConnection(con));
 		} while (globalState.getSchema().getDatabaseTables().size() != nrTablesToCreate);
 		assert globalState.getSchema().getTables().getTables().size() == nrTablesToCreate;
 		checkTablesForGeneratedColumnLoops(con, globalState.getSchema());
-		if (Randomly.getBoolean()) {
+		if (Randomly.getBooleanWithSmallProbability()) {
 			QueryAdapter tableQuery = new QueryAdapter("CREATE VIRTUAL TABLE IF NOT EXISTS stat USING dbstat(main)");
 			manager.execute(tableQuery);
 			globalState.setSchema(SQLite3Schema.fromConnection(con));
@@ -292,16 +288,18 @@ public class SQLite3Provider implements DatabaseProvider {
 			case CREATE_VIEW:
 				nrPerformed = r.getInteger(0, 2);
 				break;
-			case CREATE_TRIGGER:
 			case DELETE:
 			case DROP_VIEW:
 			case DROP_INDEX:
-				nrPerformed = r.getInteger(0, 2);
+				nrPerformed = r.getInteger(0, 0);
 				break;
 			case ALTER:
-			case EXPLAIN:
-			case DROP_TABLE:
 				nrPerformed = r.getInteger(0, 2);
+				break;
+			case EXPLAIN:
+			case CREATE_TRIGGER:
+			case DROP_TABLE:
+				nrPerformed = r.getInteger(0, 0);
 				break;
 			case VACUUM:
 			case CHECK_RTREE_TABLE:
@@ -323,11 +321,11 @@ public class SQLite3Provider implements DatabaseProvider {
 			case PRAGMA:
 				nrPerformed = r.getInteger(0, 100);
 				break;
-			case COMMIT:
 			case TRANSACTION_START:
 			case REINDEX:
 			case ANALYZE:
 			case ROLLBACK_TRANSACTION:
+			case COMMIT:
 			default:
 				nrPerformed = r.getInteger(1, 10);
 				break;
@@ -358,20 +356,21 @@ public class SQLite3Provider implements DatabaseProvider {
 			assert nextAction != null;
 			assert nrRemaining[nextAction.ordinal()] > 0;
 			nrRemaining[nextAction.ordinal()]--;
-			Query query = nextAction.getQuery(globalState);
+			Query query = null;
 			try {
+				 query = nextAction.getQuery(globalState);
 				if (options.logEachSelect()) {
 					logger.writeCurrent(query.getQueryString());
 				}
 				manager.execute(query);
-				if (query.couldAffectSchema()) {
-					globalState.setSchema(SQLite3Schema.fromConnection(con));
-					if (SQLite3Schema.fromConnection(con).getDatabaseTables().isEmpty()) {
-						throw new IgnoreMeException();
-					}
-				}
 			} catch (IgnoreMeException e) {
-
+				
+			}
+			if (query != null && query.couldAffectSchema()) {
+				globalState.setSchema(SQLite3Schema.fromConnection(con));
+				if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+					throw new IgnoreMeException();
+				}
 			}
 			total--;
 		}
@@ -406,7 +405,9 @@ public class SQLite3Provider implements DatabaseProvider {
 	private void checkTablesForGeneratedColumnLoops(Connection con, SQLite3Schema newSchema) throws SQLException {
 		for (Table table : newSchema.getDatabaseTables()) {
 			Query q = new QueryAdapter("SELECT * FROM " + table.getName(),
-					Arrays.asList("generated column loop", "integer overflow", "malformed JSON", "JSON cannot hold BLOB values"));
+					Arrays.asList("needs an odd number of arguments", " requires an even number of arguments",
+							"generated column loop", "integer overflow", "malformed JSON",
+							"JSON cannot hold BLOB values", "JSON path error", "labels must be TEXT"));
 			if (!q.execute(con)) {
 				throw new IgnoreMeException();
 			}

@@ -109,8 +109,10 @@ public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
 
 	@Override
 	public void visit(SQLite3OrderingTerm term) {
+		sb.append("(");
 		print(term);
 		visit(term.getExpression());
+		sb.append(")");
 	}
 
 	@Override

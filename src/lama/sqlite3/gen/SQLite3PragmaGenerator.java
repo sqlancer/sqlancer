@@ -38,11 +38,25 @@ public class SQLite3PragmaGenerator {
 		/* LEGACY_ALTER_TABLE */ OPTIMIZE, LEGACY_FORMAT, LOCKING_MODE, MMAP_SIZE, RECURSIVE_TRIGGERS,
 		REVERSE_UNORDERED_SELECTS, SECURE_DELETE, SHRINK_MEMORY, SOFT_HEAP_LIMIT, //
 		STATS, // 
+		SHORT_COLUMN_NAMES,
 		/* TEMP_STORE, */ //
 		THREADS, //
 		WAL_AUTOCHECKPOINT, //
-		WAL_CHECKPOINT, //
+		WAL_CHECKPOINT; //
 //		WRITEABLE_SCHEMA
+		
+		
+//		VDBE_ADDOPTRACE(PragmaAttribute.DEBUG); // produces too much textual output directly on the console
+//		VDBE_LISTING(PragmaAttribute.DEBUG); // produces too much textual output directly on the console
+		
+		Pragma(PragmaAttribute... attrs) {
+		}
+		
+
+		private enum PragmaAttribute {
+			DEBUG /* only available in debug mode */
+		}
+	
 	}
 
 	private final StringBuilder sb = new StringBuilder();
@@ -143,6 +157,11 @@ public class SQLite3PragmaGenerator {
 		case INTEGRITY_CHECK:
 			errors.add("malformed JSON");
 			errors.add("JSON cannot hold BLOB values");
+			errors.add("json_object() labels must be TEXT");
+			errors.add("requires an even number of arguments");
+			errors.add("needs an odd number of arguments");
+			errors.add("overflow");
+			errors.add("JSON path error");
 			if (Randomly.getBoolean()) {
 				createPragma("integrity_check", () -> null);
 			} else {
@@ -186,6 +205,9 @@ public class SQLite3PragmaGenerator {
 		case SECURE_DELETE:
 			createPragma("secure_delete", () -> Randomly.fromOptions("true", "false", "FAST"));
 			break;
+		case SHORT_COLUMN_NAMES:
+			createPragma("short_column_names", () -> getRandomTextBoolean());
+			break;
 		case SHRINK_MEMORY:
 			createPragma("shrink_memory", () -> null);
 			break;
@@ -220,8 +242,14 @@ public class SQLite3PragmaGenerator {
 //		case WRITEABLE_SCHEMA:
 //			createPragma("writable_schema", () -> Randomly.getBoolean());
 //			break;
+//		case VDBE_ADDOPTRACE:
+//			createPragma("vdbe_addoptrace", () -> getRandomTextBoolean());
+//			break;
+//		case VDBE_LISTING:
+//			createPragma("vdbe_listing", () -> getRandomTextBoolean());
+//			break;			
 		default:
-			throw new AssertionError();
+			throw new AssertionError(p);
 		}
 		sb.append(";");
 		String pragmaString = sb.toString();

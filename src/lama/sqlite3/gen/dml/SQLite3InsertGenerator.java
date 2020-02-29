@@ -74,7 +74,7 @@ public class SQLite3InsertGenerator {
 		}
 		boolean defaultValues = false;
 		sb.append("INTO " + table.getName());
-		if (Randomly.getBooleanWithSmallProbability()) {
+		if (Randomly.getBooleanWithSmallProbability() && false) {
 			defaultValues = true;
 			sb.append(" DEFAULT VALUES");
 		} else {
@@ -156,8 +156,8 @@ public class SQLite3InsertGenerator {
 				sb.append(", ");
 			}
 			SQLite3Expression literal;
-			if (columns.get(i).isIntegerPrimaryKey()) {
-				literal = SQLite3Constant.createIntConstant(r.getInteger());
+			if (columns.get(i).isIntegerPrimaryKey() || true) {
+				literal = SQLite3Constant.createIntConstant(r.getInteger(0, 1000));
 			} else {
 				if (Randomly.getBooleanWithSmallProbability()) {
 					literal = new SQLite3ExpressionGenerator(globalState).getRandomExpression();

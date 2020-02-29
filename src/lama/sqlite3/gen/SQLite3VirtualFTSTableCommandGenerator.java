@@ -3,6 +3,7 @@ package lama.sqlite3.gen;
 import java.util.HashSet;
 import java.util.Set;
 
+import lama.IgnoreMeException;
 import lama.Query;
 import lama.QueryAdapter;
 import lama.Randomly;
@@ -27,7 +28,7 @@ public class SQLite3VirtualFTSTableCommandGenerator {
 	}
 	
 	private enum Action {
-		AUTOMERGE, CRISISMERGE, INTEGRITYCHECK, MERGE, OPTIMIZE, REBUILD, USER_MERGE, PGSZ
+		AUTOMERGE, CRISISMERGE, INTEGRITYCHECK, MERGE, OPTIMIZE, REBUILD, USER_MERGE, PGSZ, DELETE_ALL, RANK;
 	}
 	
 	private Query generate() {
@@ -75,10 +76,19 @@ public class SQLite3VirtualFTSTableCommandGenerator {
 			sb.append(String.format("INSERT INTO %s(%s) VALUES('optimize');", vTable.getName(), vTable.getName()));
 			break;
 		case REBUILD:
+			errors.add("'rebuild' may not be used with a contentless fts5 table");
 			sb.append(String.format("INSERT INTO %s(%s) VALUES('rebuild');", vTable.getName(), vTable.getName()));
 			break;
 		case PGSZ:
 			sb.append(String.format("INSERT INTO %s(%s, rank) VALUES('pgsz', '%d');", vTable.getName(), vTable.getName(), r.getLong(32, 65536)));
+			break;
+		case DELETE_ALL:
+			if (true) throw new IgnoreMeException();
+			errors.add("'delete-all' may only be used with a contentless or external content fts5 table");
+			sb.append(String.format("INSERT INTO %s(%s) VALUES('delete-all');", vTable.getName(), vTable.getName()));
+			break;
+		case RANK:
+			sb.append(String.format("INSERT INTO %s(%s, rank) VALUES('rank', 'bm25(10.0, 5.0)');", vTable.getName(), vTable.getName()));
 			break;
 		}
 		return new QueryAdapter(sb.toString(), errors);

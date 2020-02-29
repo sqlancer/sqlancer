@@ -3,6 +3,7 @@ package lama.sqlite3.queries;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -17,16 +18,12 @@ import lama.StateToReproduce.SQLite3StateToReproduce;
 import lama.sqlite3.SQLite3Errors;
 import lama.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import lama.sqlite3.SQLite3Visitor;
-import lama.sqlite3.ast.SQLite3Aggregate;
-import lama.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import lama.sqlite3.ast.SQLite3Expression;
 import lama.sqlite3.ast.SQLite3Expression.Join;
-import lama.sqlite3.ast.SQLite3Expression.Join.JoinType;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
 import lama.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
-import lama.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import lama.sqlite3.ast.SQLite3SelectStatement;
 import lama.sqlite3.ast.SQLite3SelectStatement.SelectType;
 import lama.sqlite3.gen.SQLite3Common;
@@ -53,6 +50,9 @@ public class SQLite3MetamorphicQuerySynthesizer implements SQLite3TestGenerator 
 	private StateLogger logger;
 	private MainOptions options;
 	private SQLite3GlobalState globalState;
+	private SQLite3Column randomColumnToCheck;
+	Set<String> firstValues = new HashSet<>();
+	Set<String> secondValues = new HashSet<>();
 
 	public SQLite3MetamorphicQuerySynthesizer(SQLite3GlobalState globalState) {
 		this.s = globalState.getSchema();
@@ -76,6 +76,8 @@ public class SQLite3MetamorphicQuerySynthesizer implements SQLite3TestGenerator 
 
 	@Override
 	public void check() throws SQLException {
+		firstValues.clear();
+		secondValues.clear();
 		Tables randomTables = s.getRandomTableNonEmptyTables();
 		List<SQLite3Column> columns = randomTables.getColumns();
 		gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns);
@@ -84,48 +86,22 @@ public class SQLite3MetamorphicQuerySynthesizer implements SQLite3TestGenerator 
 		List<Table> tables = randomTables.getTables();
 		List<Join> joinStatements = gen.getRandomJoinClauses(tables);
 		List<SQLite3Expression> tableRefs = SQLite3Common.getTableRefs(tables, s);
+		randomColumnToCheck = Randomly.fromList(randomTables.getColumns());
 		int firstCount = getFirstQueryCount(con, tableRefs, randomWhereCondition, groupBys, joinStatements);
 		if (firstQueryString.contains("EXISTS")) {
 			throw new IgnoreMeException();
-		}
-		if (Randomly.getBoolean()) {
-			randomWhereCondition = mergeJoinExpressions(randomWhereCondition, joinStatements);
-			for (Join j : joinStatements) {
-//				if (j.getType() != JoinType.OUTER) {
-					tables.add(j.getTable());
-//				}
-				if (j.getTable().getNrRows() == 0 && j.getType() == JoinType.INNER) {
-					throw new IgnoreMeException();
-				}
-			}
-			tableRefs = SQLite3Common.getTableRefs(tables, s);
-			joinStatements.clear();
 		}
 		int secondCount = getSecondQuery(tableRefs, randomWhereCondition, groupBys, joinStatements);
 		if (firstCount != secondCount && firstCount != NOT_FOUND && secondCount != NOT_FOUND) {
 			state.queryString = firstQueryString + ";\n" + secondQueryString + ";";
 			throw new AssertionError(firstCount + " " + secondCount);
 		}
-	}
-
-	private SQLite3Expression mergeJoinExpressions(SQLite3Expression randomWhereCondition, List<Join> joinStatements) {
-		for (Join j : joinStatements) {
-			switch (j.getType()) {
-			case CROSS:
-			case INNER:
-				randomWhereCondition = new Sqlite3BinaryOperation(j.getOnClause(), randomWhereCondition, Sqlite3BinaryOperation.BinaryOperator.AND);
-				break;
-			case OUTER:
-				throw new IgnoreMeException();
-//				randomWhereCondition = new Sqlite3BinaryOperation(j.getOnClause(), randomWhereCondition, Sqlite3BinaryOperation.BinaryOperator.OR);
-//				break;
-			default:
-				throw new IgnoreMeException();
-			}
+		if (firstCount != NOT_FOUND && secondCount != NOT_FOUND && (!firstValues.containsAll(secondValues) || !secondValues.containsAll(firstValues))) {
+			state.queryString = firstQueryString + ";\n" + secondQueryString + ";";
+			throw new AssertionError(firstCount + " " + secondCount + "\n" + firstValues + "\n" + secondValues);
 		}
-		return randomWhereCondition;
 	}
-
+		
 	private SQLite3Expression getRandomWhereCondition(List<SQLite3Column> columns) {
 		if (Randomly.getBoolean()) {
 			errors.add("SQL logic error");
@@ -141,12 +117,12 @@ public class SQLite3MetamorphicQuerySynthesizer implements SQLite3TestGenerator 
 		SQLite3PostfixUnaryOperation isTrue = new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.IS_TRUE,
 				randomWhereCondition);
 		SQLite3PostfixText asText = new SQLite3PostfixText(isTrue, " as count", null);
-		select.setFetchColumns(Arrays.asList(asText));
+		select.setFetchColumns(Arrays.asList(asText, new SQLite3ColumnName(randomColumnToCheck, null)));
 		select.setFromTables(fromList);
 		select.setSelectType(SelectType.ALL);
 		select.setJoinClauses(joinStatements);
 		int secondCount = 0;
-		secondQueryString = "SELECT SUM(count) FROM (" + SQLite3Visitor.asString(select) + ")";
+		secondQueryString = SQLite3Visitor.asString(select);
 		if (options.logEachSelect()) {
 			logger.writeCurrent(secondQueryString);
 		}
@@ -155,12 +131,28 @@ public class SQLite3MetamorphicQuerySynthesizer implements SQLite3TestGenerator 
 			if (rs == null) {
 				return NOT_FOUND;
 			} else {
-				if (rs.next()) {
-					secondCount = rs.getInt(1);
+				try {
+					while (rs.next()) {
+						int val = rs.getInt(1);
+						if (val == 1) {
+							secondCount++;
+							String string = rs.getString(2);
+							if (string == null) {
+								secondValues.add("null");
+							} else {
+								secondValues.add(string);
+							}
+						}
+					}
+				} catch (SQLException e) {
+					throw new IgnoreMeException();
 				}
 				rs.getStatement().close();
 			}
 		} catch (Exception e) {
+			if (e instanceof IgnoreMeException) {
+				throw e;
+			}
 			throw new AssertionError(secondQueryString, e);
 		}
 		return secondCount;
@@ -176,8 +168,7 @@ public class SQLite3MetamorphicQuerySynthesizer implements SQLite3TestGenerator 
 		// TODO: randomly select column and then = TRUE instead of IS TRUE
 		// SELECT COUNT(t1.c3) FROM t1 WHERE (- (t1.c2));
 		// SELECT SUM(count) FROM (SELECT ((- (t1.c2)) IS TRUE) as count FROM t1);;
-		SQLite3Aggregate aggr = new SQLite3Aggregate(Arrays.asList(SQLite3ColumnName.createDummy("*")),
-				SQLite3AggregateFunction.COUNT);
+		SQLite3ColumnName aggr = new SQLite3ColumnName(randomColumnToCheck, null);
 		select.setFetchColumns(Arrays.asList(aggr));
 		select.setFromTables(fromList);
 		select.setWhereClause(randomWhereCondition);
@@ -195,7 +186,8 @@ public class SQLite3MetamorphicQuerySynthesizer implements SQLite3TestGenerator 
 			} else {
 				try {
 					while (rs.next()) {
-						firstCount += rs.getInt(1);
+						firstCount += 1;
+						firstValues.add(String.valueOf(rs.getString(1)));
 					}
 				} catch (Exception e) {
 					q.checkException(e);
