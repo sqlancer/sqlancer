@@ -41,9 +41,7 @@ public class CockroachDBTableGenerator {
 
 		String tableName = Randomly.fromOptions("t0", "t1", "t2");
 		sb.append("CREATE ");
-		if (Randomly.getBoolean() && false) {
-			sb.append("TEMP ");
-		}
+		// TODO: temp table support
 		sb.append("TABLE IF NOT EXISTS ");
 		sb.append(tableName);
 		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {

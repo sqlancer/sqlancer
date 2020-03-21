@@ -171,7 +171,6 @@ public class CockroachDBProvider implements DatabaseProvider {
 				new QueryAdapter("SET CLUSTER SETTING diagnostics.reporting.send_crash_reports		 = false;"));
 		manager.execute(new QueryAdapter("SET CLUSTER SETTING sql.stats.automatic_collection.min_stale_rows = 1"));
 		manager.execute(new QueryAdapter("SET CLUSTER SETTING sql.stats.automatic_collection.fraction_stale_rows = 0.00001"));
-	
 		
 		
 		for (int i = 0; i < Randomly.fromOptions(1, 2, 3); i++) {
