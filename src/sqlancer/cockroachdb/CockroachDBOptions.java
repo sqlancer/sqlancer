@@ -12,7 +12,7 @@ import sqlancer.cockroachdb.test.CockroachDBMetamorphicQuerySynthesizer;
 import sqlancer.cockroachdb.test.CockroachDBNoTableTester;
 
 public class CockroachDBOptions {
-
+	
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)
 	public CockroachDBOracle oracle = CockroachDBOracle.NOREC;
 
@@ -29,14 +29,15 @@ public class CockroachDBOptions {
 			public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
 				return new CockroachDBMetamorphicAggregateTester(globalState);
 			}
-
+			
 		},
 		NOTABLE() {
 			@Override
 			public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
 				return new CockroachDBNoTableTester(globalState);
 			}
-		};
+		}
+		;
 
 		public abstract TestOracle create(CockroachDBGlobalState globalState) throws SQLException;
 
