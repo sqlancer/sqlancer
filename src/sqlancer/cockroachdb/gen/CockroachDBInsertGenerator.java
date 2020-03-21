@@ -32,7 +32,8 @@ public class CockroachDBInsertGenerator {
 		errors.add("multi-part foreign key");
 		StringBuilder sb = new StringBuilder();
 		CockroachDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-		if (Randomly.getBoolean()) {
+		boolean isUpsert = Randomly.getBoolean();
+		if (!isUpsert) {
 			sb.append("INSERT INTO ");
 		} else {
 			sb.append("UPSERT INTO ");
@@ -64,13 +65,29 @@ public class CockroachDBInsertGenerator {
 				sb.append(")");
 			}
 		}
-		if (Randomly.getBoolean() && false) {
+		if (Randomly.getBoolean() && !isUpsert) {
 			sb.append(" ON CONFLICT (");
 			sb.append(table.getRandomNonEmptyColumnSubset().stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
 			sb.append(")");
 			// WHERE clause not yet implemented, see https://github.com/cockroachdb/cockroach/issues/32557
 			sb.append(" DO ");
-			sb.append(" NOTHING ");
+			if (Randomly.getBoolean()) {
+				sb.append(" NOTHING ");
+			} else {
+				// TODO: also support excluded. (see https://www.cockroachlabs.com/docs/stable/insert.html)
+				sb.append(" UPDATE SET ");
+				List<CockroachDBColumn> columns = table.getRandomNonEmptyColumnSubset();
+				int i = 0;
+				for (CockroachDBColumn c : columns) {
+					if (i++ != 0) {
+						sb.append(", ");
+					}
+					sb.append(c.getName());
+					sb.append(" = ");
+					sb.append(CockroachDBVisitor.asString(gen.generateConstant(c.getColumnType())));
+				}
+				errors.add("UPSERT or INSERT...ON CONFLICT command cannot affect row a second time");
+			}
 			errors.add("there is no unique or exclusion constraint matching the ON CONFLICT specification");
 		}
 		CockroachDBErrors.addTransactionErrors(errors);
