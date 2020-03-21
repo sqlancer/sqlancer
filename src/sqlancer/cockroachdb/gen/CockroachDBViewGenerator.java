@@ -12,11 +12,8 @@ import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 public class CockroachDBViewGenerator {
 
 	public static Query generate(CockroachDBGlobalState globalState) {
-		int nrColumns = 1;
+		int nrColumns = Randomly.smallNumber() + 1;
 		StringBuilder sb = new StringBuilder("CREATE ");
-		if (Randomly.getBoolean() && false) {
-			sb.append("TEMP ");
-		}
 		sb.append("VIEW " + Randomly.fromOptions("v0", "v1", "v1"));
 		sb.append("(");
 		for (int i = 0; i < nrColumns; i++) {
