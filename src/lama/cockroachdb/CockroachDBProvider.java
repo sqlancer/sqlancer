@@ -59,6 +59,10 @@ public class CockroachDBProvider implements DatabaseProvider {
 				errors.add("cannot set EXPLAIN mode more than once");
 				errors.add("unable to vectorize execution plan");
 				errors.add("unsupported type");
+				// https://github.com/cockroachdb/cockroach/issues/46122
+				errors.add("zero length schema unsupported");
+				// https://github.com/cockroachdb/cockroach/issues/46123
+				errors.add("input to aggregatorBase is not an execinfra.OpNode");
 			}
 			sb.append(CockroachDBRandomQuerySynthesizer.generate(g, Randomly.smallNumber() + 1));
 			CockroachDBErrors.addExpressionErrors(errors);
@@ -186,11 +190,13 @@ public class CockroachDBProvider implements DatabaseProvider {
 			int nrPerformed = 0;
 			switch (action) {
 			case INSERT:
-			case UPDATE:
 				nrPerformed = r.getInteger(0, options.getMaxNumberInserts());
 				break;
+			case UPDATE:
+				nrPerformed = r.getInteger(0, 3);
+				break;
 			case EXPLAIN:
-				nrPerformed = r.getInteger(0, 10000);
+				nrPerformed = r.getInteger(0, 10);
 				break;
 			case SHOW:
 			case COMMENT_ON:
@@ -260,9 +266,9 @@ public class CockroachDBProvider implements DatabaseProvider {
 		}
 		manager.incrementCreateDatabase();
 		if (Randomly.getBoolean()) {
-			manager.execute(new QueryAdapter("SET vectorize=experimental_always;"));
+			manager.execute(new QueryAdapter("SET vectorize=on;"));
 		}
-		CockroachDBMetamorphicQuerySynthesizer syn = new CockroachDBMetamorphicQuerySynthesizer(globalState);
+		CockroachDBMetamorphicAggregateTester syn = new CockroachDBMetamorphicAggregateTester(globalState);
 		for (int i = 0; i < options.getNrQueries(); i++) {
 			try {
 				syn.check();

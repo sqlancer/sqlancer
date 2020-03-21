@@ -7,7 +7,7 @@ import lama.sqlite3.schema.SQLite3Schema.SQLite3Column.CollateSequence;
 
 public class SQLite3SelectStatement extends SQLite3Expression {
 
-	private SelectType fromOptions;
+	private SelectType fromOptions = SelectType.ALL;
 	private List<SQLite3Expression> fromList = Collections.emptyList();
 	private SQLite3Expression whereClause;
 	private List<SQLite3Expression> groupByClause = Collections.emptyList();

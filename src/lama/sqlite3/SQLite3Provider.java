@@ -286,7 +286,7 @@ public class SQLite3Provider implements DatabaseProvider {
 			int nrPerformed = 0;
 			switch (action) {
 			case CREATE_VIEW:
-				nrPerformed = r.getInteger(0, 2);
+				nrPerformed = r.getInteger(0, 3);
 				break;
 			case DELETE:
 			case DROP_VIEW:
@@ -294,7 +294,7 @@ public class SQLite3Provider implements DatabaseProvider {
 				nrPerformed = r.getInteger(0, 0);
 				break;
 			case ALTER:
-				nrPerformed = r.getInteger(0, 2);
+				nrPerformed = r.getInteger(0, 0);
 				break;
 			case EXPLAIN:
 			case CREATE_TRIGGER:
@@ -319,7 +319,7 @@ public class SQLite3Provider implements DatabaseProvider {
 				nrPerformed = r.getInteger(0, 30);
 				break;
 			case PRAGMA:
-				nrPerformed = r.getInteger(0, 100);
+				nrPerformed = r.getInteger(0, 20);
 				break;
 			case TRANSACTION_START:
 			case REINDEX:
@@ -382,6 +382,14 @@ public class SQLite3Provider implements DatabaseProvider {
 		globalState.setSchema(SQLite3Schema.fromConnection(con));
 		manager.incrementCreateDatabase();
 		SQLite3TestGenerator oracle = globalState.getSqliteOptions().oracle.create(globalState);
+		if (oracle.onlyWorksForNonEmptyTables()) {
+			for (Table table : globalState.getSchema().getDatabaseTables()) {
+				int nrRows = SQLite3Schema.getNrRows(con, table.getName());
+				if (nrRows == 0) {
+					throw new IgnoreMeException();
+				}
+			}
+		}
 		for (i = 0; i < options.getNrQueries(); i++) {
 			try {
 				oracle.check();

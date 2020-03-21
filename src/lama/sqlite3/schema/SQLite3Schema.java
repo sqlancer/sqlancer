@@ -164,6 +164,39 @@ public class SQLite3Schema {
 		}
 
 	}
+	
+	public static SQLite3Constant getConstant(ResultSet randomRowValues, int columnIndex, SQLite3DataType valueType)
+			throws SQLException, AssertionError {
+		Object value;
+		SQLite3Constant constant;
+		if (randomRowValues.getString(columnIndex) == null) {
+			value = null;
+			constant = SQLite3Constant.createNullConstant();
+		} else {
+			switch (valueType) {
+			case INT:
+				value = randomRowValues.getLong(columnIndex);
+				constant = SQLite3Constant.createIntConstant((long) value);
+				break;
+			case REAL:
+				value = randomRowValues.getDouble(columnIndex);
+				constant = SQLite3Constant.createRealConstant((double) value);
+				break;
+			case TEXT:
+			case NONE:
+				value = randomRowValues.getString(columnIndex);
+				constant = SQLite3Constant.createTextConstant((String) value);
+				break;
+			case BINARY:
+				value = randomRowValues.getBytes(columnIndex);
+				constant = SQLite3Constant.createBinaryConstant((byte[]) value);
+				break;
+			default:
+				throw new AssertionError(valueType);
+			}
+		}
+		return constant;
+	}
 
 	public static class Tables {
 		private final List<Table> tables;
@@ -216,38 +249,11 @@ public class SQLite3Schema {
 				}
 				for (int i = 0; i < getColumns().size(); i++) {
 					SQLite3Column column = getColumns().get(i);
-					Object value;
 					int columnIndex = randomRowValues.findColumn(column.getTable().getName() + column.getName());
 					assert columnIndex == i + 1;
 					String typeString = randomRowValues.getString(columnIndex + getColumns().size());
 					SQLite3DataType valueType = getColumnType(typeString);
-					SQLite3Constant constant;
-					if (randomRowValues.getString(columnIndex) == null) {
-						value = null;
-						constant = SQLite3Constant.createNullConstant();
-					} else {
-						switch (valueType) {
-						case INT:
-							value = randomRowValues.getLong(columnIndex);
-							constant = SQLite3Constant.createIntConstant((long) value);
-							break;
-						case REAL:
-							value = randomRowValues.getDouble(columnIndex);
-							constant = SQLite3Constant.createRealConstant((double) value);
-							break;
-						case TEXT:
-						case NONE:
-							value = randomRowValues.getString(columnIndex);
-							constant = SQLite3Constant.createTextConstant((String) value);
-							break;
-						case BINARY:
-							value = randomRowValues.getBytes(columnIndex);
-							constant = SQLite3Constant.createBinaryConstant((byte[]) value);
-							break;
-						default:
-							throw new AssertionError(valueType);
-						}
-					}
+					SQLite3Constant constant = getConstant(randomRowValues, columnIndex, valueType);
 					values.put(column, constant);
 				}
 				assert (!randomRowValues.next());
@@ -256,6 +262,7 @@ public class SQLite3Schema {
 			}
 
 		}
+
 	}
 
 	public static class Table implements Comparable<Table> {
@@ -596,7 +603,7 @@ public class SQLite3Schema {
 		return collate;
 	}
 
-	private static SQLite3DataType getColumnType(String columnTypeString) {
+	public static SQLite3DataType getColumnType(String columnTypeString) {
 		columnTypeString = columnTypeString.toUpperCase().replace(" GENERATED ALWAYS", "");
 		SQLite3DataType columnType;
 		switch (columnTypeString) {

@@ -22,8 +22,6 @@ import lama.postgres.PostgresSchema.PostgresColumn;
 import lama.postgres.PostgresSchema.PostgresDataType;
 import lama.postgres.PostgresSchema.PostgresTable;
 import lama.postgres.PostgresSchema.PostgresTables;
-import lama.postgres.ast.PostgresAggregate;
-import lama.postgres.ast.PostgresAggregate.PostgresAggregateFunction;
 import lama.postgres.ast.PostgresCastOperation;
 import lama.postgres.ast.PostgresColumnValue;
 import lama.postgres.ast.PostgresExpression;
@@ -138,7 +136,7 @@ public class PostgresMetamorphicOracleGenerator {
 		if (rs == null) {
 			return -1;
 		}
-		while (rs.next()) {
+		if (rs.next()) {
 			secondCount += rs.getLong(1);
 		}
 		rs.close();
@@ -150,10 +148,11 @@ public class PostgresMetamorphicOracleGenerator {
 			List<PostgresJoin> joinStatements) throws SQLException {
 		PostgresSelect select = new PostgresSelect();
 //		select.setGroupByClause(groupBys);
-		PostgresAggregate aggr = new PostgresAggregate(
-				new PostgresColumnValue(new PostgresColumn("*", PostgresDataType.INT), null),
-				PostgresAggregateFunction.COUNT);
-		select.setFetchColumns(Arrays.asList(aggr));
+//		PostgresAggregate aggr = new PostgresAggregate(
+				PostgresColumnValue allColumns = new PostgresColumnValue(Randomly.fromList(columns), null);
+//				PostgresAggregateFunction.COUNT);
+//		select.setFetchColumns(Arrays.asList(aggr));
+				select.setFetchColumns(Arrays.asList(allColumns));
 		select.setFromTables(randomTables);
 		select.setWhereClause(randomWhereCondition);
 		if (Randomly.getBooleanWithSmallProbability()) {
@@ -168,8 +167,8 @@ public class PostgresMetamorphicOracleGenerator {
 				logger.writeCurrent(firstQueryString);
 			}
 			try (ResultSet rs = stat.executeQuery(firstQueryString)) {
-				if (rs.next()) {
-					firstCount += rs.getLong(1);
+				while (rs.next()) {
+					firstCount++;
 				}
 			}
 		} catch (SQLException e) {

@@ -49,15 +49,15 @@ public class CockroachDBJoin extends CockroachDBExpression {
 		return onCondition;
 	}
 	
-	public static CockroachDBJoin createNaturalJoin(CockroachDBTableReference left, CockroachDBTableReference right) {
+	public static CockroachDBJoin createNaturalJoin(CockroachDBExpression left, CockroachDBExpression right) {
 		return new CockroachDBJoin(left, right, JoinType.NATURAL, null);
 	}
 	
-	public static CockroachDBJoin createCrossJoin(CockroachDBTableReference left, CockroachDBTableReference right) {
+	public static CockroachDBJoin createCrossJoin(CockroachDBExpression left, CockroachDBExpression right) {
 		return new CockroachDBJoin(left, right, JoinType.CROSS, null);
 	}
 
-	public static CockroachDBJoin createOuterJoin(CockroachDBTableReference left, CockroachDBTableReference right, OuterType type, CockroachDBExpression onClause) {
+	public static CockroachDBJoin createOuterJoin(CockroachDBExpression left, CockroachDBExpression right, OuterType type, CockroachDBExpression onClause) {
 		CockroachDBJoin join = new CockroachDBJoin(left, right, JoinType.OUTER, onClause);
 		join.setOuterType(type);
 		return join;

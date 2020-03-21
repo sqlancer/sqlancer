@@ -605,7 +605,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 	public abstract SQLite3Constant castToBoolean();
 
 	public SQLite3Constant applyEquals(SQLite3Constant right) {
-		return applyEquals(right, null);
+		return applyEquals(right, CollateSequence.BINARY);
 	}
 
 	public boolean isReal() {

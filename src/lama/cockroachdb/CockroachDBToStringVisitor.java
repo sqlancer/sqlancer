@@ -94,7 +94,7 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
 		visitList(select.getColumns());
 		sb.append(" FROM ");
 		if (!select.getFromTables().isEmpty()) {
-			visitList(select.getFromTables());
+			visitList(select.getFromTables().stream().map(t -> (CockroachDBExpression) t).collect(Collectors.toList()));
 		}
 		if (!select.getFromTables().isEmpty() && !select.getJoinList().isEmpty()) {
 			sb.append(", ");

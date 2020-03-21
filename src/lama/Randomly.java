@@ -243,7 +243,7 @@ public final class Randomly {
 			chars = getInteger(0, 30);
 		}
 		for (int i = 0; i < chars; i++) {
-			if (Randomly.getBoolean()) {
+			if (Randomly.getBooleanWithRatherLowProbability()) {
 				char val = (char) getInteger();
 				if (val != 0) {
 					sb.append(val); 
@@ -355,6 +355,10 @@ public final class Randomly {
 		return ThreadLocalRandom.current().nextInt(100) == 1;
 	}
 
+	public static boolean getBooleanWithRatherLowProbability() {
+		return ThreadLocalRandom.current().nextInt(10) == 1;
+	}
+	
 	public static boolean getBooleanWithSmallProbability() {
 		return smallBiasProbability();
 	}
@@ -407,6 +411,19 @@ public final class Randomly {
 	}
 	
 	public Randomly() {
+	}
+
+	public static double getUncachedDouble() {
+		return ThreadLocalRandom.current().nextDouble();
+	}
+
+	public String getChar() {
+		while (true) {
+			String s = getString();
+			if (!s.isEmpty()) {
+				return s.substring(0, 1);
+			}
+		}
 	}
 
 }

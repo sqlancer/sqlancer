@@ -7,7 +7,7 @@ import java.util.List;
 public class CockroachDBSelect extends CockroachDBExpression {
 	
 	private List<CockroachDBExpression> columns = new ArrayList<>();
-	private List<CockroachDBExpression> fromTables;
+	private List<CockroachDBTableReference> fromTables;
 	private CockroachDBExpression whereCondition;
 	private List<CockroachDBExpression> orderByTerms = new ArrayList<>();
 	private boolean isDistinct;
@@ -22,7 +22,7 @@ public class CockroachDBSelect extends CockroachDBExpression {
 		this.columns = columns;
 	}
 	
-	public void setFromTables(List<CockroachDBExpression> fromTables) {
+	public void setFromTables(List<CockroachDBTableReference> fromTables) {
 		this.fromTables = fromTables;
 	}
 	
@@ -30,7 +30,7 @@ public class CockroachDBSelect extends CockroachDBExpression {
 		return columns;
 	}
 	
-	public List<CockroachDBExpression> getFromTables() {
+	public List<CockroachDBTableReference> getFromTables() {
 		return fromTables;
 	}
 

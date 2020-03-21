@@ -155,13 +155,13 @@ public class SQLite3PragmaGenerator {
 			}
 			break;
 		case INTEGRITY_CHECK:
-			errors.add("malformed JSON");
-			errors.add("JSON cannot hold BLOB values");
-			errors.add("json_object() labels must be TEXT");
-			errors.add("requires an even number of arguments");
-			errors.add("needs an odd number of arguments");
-			errors.add("overflow");
-			errors.add("JSON path error");
+//			errors.add("malformed JSON");
+//			errors.add("JSON cannot hold BLOB values");
+//			errors.add("json_object() labels must be TEXT");
+//			errors.add("requires an even number of arguments");
+//			errors.add("needs an odd number of arguments");
+//			errors.add("overflow");
+//			errors.add("JSON path error");
 			if (Randomly.getBoolean()) {
 				createPragma("integrity_check", () -> null);
 			} else {

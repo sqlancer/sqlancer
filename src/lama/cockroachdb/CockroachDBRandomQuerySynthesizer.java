@@ -17,6 +17,13 @@ import lama.cockroachdb.ast.CockroachDBTableReference;
 public class CockroachDBRandomQuerySynthesizer {
 	
 	public static Query generate(CockroachDBGlobalState globalState, int nrColumns) {
+		CockroachDBSelect select = generateSelect(globalState, nrColumns);
+		return new QueryAdapter(CockroachDBVisitor.asString(select));
+
+	}
+
+	public static CockroachDBSelect generateSelect(CockroachDBGlobalState globalState, int nrColumns)
+			throws AssertionError {
 		CockroachDBTables tables = globalState.getSchema().getRandomTableNonEmptyTables();
 		CockroachDBExpressionGenerator gen = new CockroachDBExpressionGenerator(globalState).setColumns(tables.getColumns());
 		CockroachDBSelect select = new CockroachDBSelect();
@@ -35,10 +42,11 @@ public class CockroachDBRandomQuerySynthesizer {
 		}
 		select.setColumns(columns);
 		List<CockroachDBTableReference> tableList = tables.getTables().stream().map(t -> new CockroachDBTableReference(t)).collect(Collectors.toList());
+		List<CockroachDBTableReference> updatedTableList = CockroachDBCommon.getTableReferences(tableList);
 		if (Randomly.getBoolean()) {
-			select.setJoinList(CockroachDBMetamorphicQuerySynthesizer.getJoins(tableList, globalState));
+			select.setJoinList(CockroachDBMetamorphicQuerySynthesizer.getJoins(updatedTableList, globalState));
 		}
-		select.setFromTables(tableList.stream().map(t -> (CockroachDBExpression) t).collect(Collectors.toList()));
+		select.setFromTables(updatedTableList);
 		if (Randomly.getBoolean()) {
 			select.setWhereCondition(gen.generateExpression(CockroachDBDataType.BOOL.get()));
 		}
@@ -75,8 +83,7 @@ public class CockroachDBRandomQuerySynthesizer {
 		if (Randomly.getBoolean() && false) {
 			select.setHavingClause(gen.generateExpression(CockroachDBDataType.BOOL.get()));
 		}
-		return new QueryAdapter(CockroachDBVisitor.asString(select));
-
+		return select;
 	}
 
 }

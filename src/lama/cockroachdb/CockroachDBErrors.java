@@ -135,6 +135,9 @@ public class CockroachDBErrors {
 		errors.add("decimal out of range");
 		errors.add("unknown signature: xor_agg(decimal)");
 		errors.add("unknown signature: sum_int(decimal)");
+		errors.add("unknown signature: bit_and(decimal)");
+		errors.add("unknown signature: bit_or(decimal)");
+
 		
 		errors.add("exists but is not a directory"); // TODO
 		
@@ -153,6 +156,15 @@ public class CockroachDBErrors {
 			// TODO https://github.com/cockroachdb/cockroach/issues/44757
 			errors.add("no builtin aggregate");
 		}
+		
+		errors.add("unable to vectorize execution plan"); // SET vectorize=experimental_always;
+		errors.add(" mismatched physical types at index"); // SET vectorize=experimental_always;
+		errors.add("unsupported type time");
+		errors.add("unsupported type varbit");
+		errors.add("unsupported type bit");
+		
+		errors.add("unknown signature: xor_agg(string)");
+		errors.add("arguments to xor must all be the same length");
 	}
 
 	private static void addIntervalTypeErrors(Set<String> errors) {

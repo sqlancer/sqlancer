@@ -93,6 +93,16 @@ public abstract class StateToReproduce {
 		
 	}
 	
+	public static class CockroachDBStateToReproduce extends StateToReproduce {
+
+		public CockroachDBStateToReproduce(String databaseName) {
+			super(databaseName);
+		}
+
+		
+	}
+	
+	
 	public static class TDEngineStateToReproduce extends StateToReproduce {
 		public TDEngineStateToReproduce(String databaseName) {
 			super(databaseName);

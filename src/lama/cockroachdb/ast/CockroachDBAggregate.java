@@ -10,9 +10,17 @@ public class CockroachDBAggregate extends CockroachDBExpression {
 	private List<CockroachDBExpression> expr;
 
 	public enum CockroachDBAggregateFunction {
-		SUM, SUM_INT, AVG, MIN, MAX, COUNT_ROWS, SQRDIFF, STDDEV, VARIANCE, XOR_AGG;
+		SUM, SUM_INT, AVG, MIN, MAX, COUNT_ROWS, COUNT, SQRDIFF, STDDEV, VARIANCE, XOR_AGG, //
+		BIT_AND, BIT_OR, //
+		BOOL_AND, BOOL_OR //
+		;
 		public static CockroachDBAggregateFunction getRandom() {
 			return Randomly.fromOptions(values());
+		}
+
+		public static CockroachDBAggregateFunction getRandomMetamorphicOracle() {
+			// not: VARIANCE, STDDEV, SQRDIFF
+			return Randomly.fromOptions(SUM, SUM_INT, MIN, MAX, XOR_AGG, BIT_AND, BIT_OR, BOOL_AND, BOOL_OR, COUNT, AVG, COUNT_ROWS);
 		}
 	}
 

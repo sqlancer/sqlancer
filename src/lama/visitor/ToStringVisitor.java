@@ -24,7 +24,13 @@ public abstract class ToStringVisitor<T> extends NodeVisitor<T> {
 			sb.append(op.getOperatorRepresentation());
 			sb.append(' ');
 		}
+		if (!op.omitBracketsWhenPrinting()) {
+			sb.append('(');
+		}
 		visit(op.getExpression());
+		if (!op.omitBracketsWhenPrinting()) {
+			sb.append(')');
+		}
 		if (op.getOperatorKind() == OperatorKind.POSTFIX) {
 			sb.append(' ');
 			sb.append(op.getOperatorRepresentation());

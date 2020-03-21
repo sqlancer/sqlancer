@@ -60,23 +60,42 @@ public class CockroachDBExpressionGenerator {
 	
 	public CockroachDBExpression generateAggregate() {
 		CockroachDBAggregateFunction aggr = CockroachDBAggregateFunction.getRandom();
+		return generateWindowFunction(aggr);
+	}
+
+	CockroachDBAggregate generateWindowFunction(CockroachDBAggregateFunction aggr) throws AssertionError {
+		CockroachDBCompositeDataType type;
 		switch (aggr) {
-		case SUM:
-		case AVG:
 		case SQRDIFF:
 		case STDDEV:
 		case SUM_INT:
 		case VARIANCE:
+		case BIT_AND:
+		case BIT_OR:
+			type = CockroachDBDataType.INT.get();
+			break;
 		case XOR_AGG:
-			return new CockroachDBAggregate(aggr, Arrays.asList(generateExpression(CockroachDBDataType.INT.get())));
+			type = Randomly.fromOptions(CockroachDBDataType.INT, CockroachDBDataType.BYTES).get();
+			break;
+		case BOOL_AND:
+		case BOOL_OR:
+			type = CockroachDBDataType.BOOL.get();
+			break;
 		case MIN:
 		case MAX:
-			return new CockroachDBAggregate(aggr, Arrays.asList(generateExpression(getRandomType())));
+		case COUNT:
+			type = getRandomType();
+			break;
 		case COUNT_ROWS:
 			return new CockroachDBAggregate(aggr, Collections.emptyList());
+		case SUM:
+		case AVG:
+			type = Randomly.fromOptions(CockroachDBDataType.INT, CockroachDBDataType.FLOAT, CockroachDBDataType.DECIMAL).get();
+			break;
 		default:
 			throw new AssertionError();
 		}
+		return new CockroachDBAggregate(aggr, Arrays.asList(generateExpression(type)));
 	}
 
 	public List<CockroachDBExpression> generateExpressions(int nr) {
@@ -340,5 +359,6 @@ public class CockroachDBExpressionGenerator {
 	public CockroachDBGlobalState getGlobalState() {
 		return globalState;
 	}
+
 
 }

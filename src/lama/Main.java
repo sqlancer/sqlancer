@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.beust.jcommander.JCommander;
 
+import lama.cockroachdb.CockroachDBProvider;
 import lama.mariadb.MariaDBProvider;
 import lama.mysql.MySQLProvider;
 import lama.postgres.PostgresProvider;
@@ -180,13 +181,19 @@ public class Main {
 
 		public void logException(Throwable reduce, StateToReproduce state) {
 			String stackTrace = getStackTrace(reduce);
+			FileWriter logFileWriter2 = getLogFileWriter();
 			try {
-				FileWriter logFileWriter2 = getLogFileWriter();
 				logFileWriter2.write(stackTrace);
 				printState(logFileWriter2, state);
-				logFileWriter2.flush();
 			} catch (IOException e) {
 				throw new AssertionError(e);
+			} finally {
+				try {
+					logFileWriter2.flush();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 
@@ -343,6 +350,9 @@ public class Main {
 						break;
 					case TDEngine:
 						provider = new TDEngineProvider();
+						break;
+					case CockroachDB:
+						provider = new CockroachDBProvider();
 						break;
 					}
 					runThread(databaseName);

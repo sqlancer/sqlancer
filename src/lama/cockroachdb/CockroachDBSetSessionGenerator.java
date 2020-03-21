@@ -24,8 +24,8 @@ public class CockroachDBSetSessionGenerator {
 //		EXPERIMENTAL_FORCE_SPLIT_AT(CockroachDBSetSessionGenerator::onOff),
 		EXPERIMENTAL_SERIAL_NORMALIZATION((g) -> Randomly.fromOptions("'rowid'", "'virtual_sequence'")),
 //		EXPERIMENTAL_REORDER_JOINS_LIMIT((g) -> Randomly.getNonCachedInteger()),
-		VECTORIZE((g) -> Randomly.fromOptions("auto", "experimental_on", "off")),  /* see https://github.com/cockroachdb/cockroach/issues/44133, https://github.com/cockroachdb/cockroach/issues/44207 */
-		EXTRA_FLOAT_DIGITS((g) -> g.getRandomly().getInteger(-15, 3)),
+		VECTORIZE((g) -> Randomly.fromOptions("auto", "on", "off")),  /* see https://github.com/cockroachdb/cockroach/issues/44133, https://github.com/cockroachdb/cockroach/issues/44207 */
+//		EXTRA_FLOAT_DIGITS((g) -> g.getRandomly().getInteger(-15, 3)),
 		REORDER_JOINS_LIMIT((g) -> g.getRandomly().getInteger(0, Integer.MAX_VALUE)),
 		SQL_SAFE_UPDATES(CockroachDBSetSessionGenerator::onOff),
 //		TRACING(CockroachDBSetSessionGenerator::onOff)

@@ -39,11 +39,13 @@ public class CockroachDBMetamorphicQuerySynthesizer {
 		CockroachDBErrors.addTransactionErrors(errors);
 		errors.add("unable to vectorize execution plan"); // SET vectorize=experimental_always;
 		errors.add(" mismatched physical types at index"); // SET vectorize=experimental_always;
+		
 	}
 
 	public void check() throws SQLException {
 		CockroachDBTables tables = globalState.getSchema().getRandomTableNonEmptyTables();
-		List<CockroachDBTableReference> tableList = tables.getTables().stream().map(t -> new CockroachDBTableReference(t)).collect(Collectors.toList());
+		List<CockroachDBTableReference> tableL = tables.getTables().stream().map(t -> new CockroachDBTableReference(t)).collect(Collectors.toList());
+		List<CockroachDBTableReference> tableList = CockroachDBCommon.getTableReferences(tableL);
 		gen = new CockroachDBExpressionGenerator(globalState).setColumns(tables.getColumns());
 		List<CockroachDBJoin> joinExpressions = getJoins(tableList, globalState);
 		CockroachDBExpression whereCondition = gen.generateExpression(CockroachDBDataType.BOOL.get());
@@ -98,7 +100,7 @@ public class CockroachDBMetamorphicQuerySynthesizer {
 		CockroachDBSelect select = new CockroachDBSelect();
 		CockroachDBColumn c = new CockroachDBColumn("COUNT(*)", null, false, false);
 		select.setColumns(Arrays.asList(new CockroachDBColumnReference(c)));
-		select.setFromTables(tableList.stream().map(t -> (CockroachDBExpression) t).collect(Collectors.toList()));
+		select.setFromTables(tableList);
 		select.setWhereCondition(whereCondition);
 		select.setJoinList(joinExpressions);
 		if (Randomly.getBooleanWithRatherLowProbability() && false) {

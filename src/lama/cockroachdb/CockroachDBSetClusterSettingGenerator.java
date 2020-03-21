@@ -19,7 +19,7 @@ public class CockroachDBSetClusterSettingGenerator {
 				(g) -> Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)),
 		RANGE_DESCRIPTOR_CACHE_SIZE("kv.range_descriptor_cache.size", (g) -> Randomly.getNonCachedInteger()),
 		SQL_DEFAULTS_VECTORIZE_ROW_COUNT_THRESHOLD("sql.defaults.vectorize_row_count_threshold", (g) -> Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)),
-		SQL_DEFAULTS_EXPERIMENTAL_OPTIMIZER_FOREIGN_KEYS_ENABLED("sql.defaults.experimental_optimizer_foreign_keys.enabled", CockroachDBSetSessionGenerator::onOff),
+//		SQL_DEFAULTS_EXPERIMENTAL_OPTIMIZER_FOREIGN_KEYS_ENABLED("sql.defaults.experimental_optimizer_foreign_keys.enabled", CockroachDBSetSessionGenerator::onOff),
 		MERGE_JOINS_ENABLED("sql.distsql.merge_joins.enabled", CockroachDBSetSessionGenerator::onOff),
 		PARALLEL_SCANS_ENABLED("sql.parallel_scans.enabled", CockroachDBSetSessionGenerator::onOff),
 		SQL_QUERY_CACHE_ENABLED("sql.query_cache.enabled", CockroachDBSetSessionGenerator::onOff),

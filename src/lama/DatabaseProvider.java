@@ -20,4 +20,22 @@ public interface DatabaseProvider {
 
 	StateToReproduce getStateToReproduce(String databaseName);
 
+	public static boolean isEqualDouble(String first, String second) {
+		try {
+			double val = Double.parseDouble(first);
+			double secVal = Double.parseDouble(second);
+			return equals(val, secVal);
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	public static boolean equals(double a, double b) {
+		if (a == b)
+			return true;
+		// If the difference is less than epsilon, treat as equal.
+		return Math.abs(a - b) < 0.0001 * Math.max(Math.abs(a), Math.abs(b));
+	}
+
+	
 }
