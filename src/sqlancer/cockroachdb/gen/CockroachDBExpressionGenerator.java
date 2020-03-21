@@ -65,7 +65,7 @@ public class CockroachDBExpressionGenerator {
 		return generateWindowFunction(aggr);
 	}
 
-	CockroachDBAggregate generateWindowFunction(CockroachDBAggregateFunction aggr) throws AssertionError {
+	public CockroachDBAggregate generateWindowFunction(CockroachDBAggregateFunction aggr) throws AssertionError {
 		CockroachDBCompositeDataType type;
 		switch (aggr) {
 		case SQRDIFF:
