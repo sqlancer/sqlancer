@@ -54,21 +54,19 @@ public class CockroachDBProvider implements DatabaseProvider {
 		CREATE_INDEX(CockroachDBIndexGenerator::create), //
 		UPDATE(CockroachDBUpdateGenerator::gen), //
 		CREATE_VIEW(CockroachDBViewGenerator::generate), //
-		SET_CLUSTER_SETTING(CockroachDBSetClusterSettingGenerator::create),
-		DELETE(CockroachDBDeleteGenerator::delete),
-		COMMENT_ON(RockroachDBCommentOnGenerator::comment),
-		SHOW(CockroachDBShowGenerator::show),
-		TRANSACTION((g) -> {
+		SET_CLUSTER_SETTING(CockroachDBSetClusterSettingGenerator::create), DELETE(CockroachDBDeleteGenerator::delete),
+		COMMENT_ON(RockroachDBCommentOnGenerator::comment), SHOW(CockroachDBShowGenerator::show), TRANSACTION((g) -> {
 			String s = Randomly.fromOptions("BEGIN", "ROLLBACK", "COMMIT");
-			return new QueryAdapter(s, Arrays.asList("there is no transaction in progress", "there is already a transaction in progress", "current transaction is aborted"));
-		}),
-		EXPLAIN((g) -> {
+			return new QueryAdapter(s, Arrays.asList("there is no transaction in progress",
+					"there is already a transaction in progress", "current transaction is aborted"));
+		}), EXPLAIN((g) -> {
 			new CockroachDBRandomQuerySynthesizer();
 			StringBuilder sb = new StringBuilder("EXPLAIN ");
 			Set<String> errors = new HashSet<>();
 			if (Randomly.getBoolean()) {
 				sb.append("(");
-				sb.append(Randomly.nonEmptySubset("VERBOSE", "TYPES", "OPT", "DISTSQL", "VEC").stream().collect(Collectors.joining(", ")));
+				sb.append(Randomly.nonEmptySubset("VERBOSE", "TYPES", "OPT", "DISTSQL", "VEC").stream()
+						.collect(Collectors.joining(", ")));
 				sb.append(") ");
 				errors.add("cannot set EXPLAIN mode more than once");
 				errors.add("unable to vectorize execution plan");
@@ -82,7 +80,9 @@ public class CockroachDBProvider implements DatabaseProvider {
 			CockroachDBErrors.addExpressionErrors(errors);
 			return new QueryAdapter(sb.toString(), errors);
 		}),
-		SCRUB((g) -> new QueryAdapter("EXPERIMENTAL SCRUB table " + g.getSchema().getRandomTable(t -> !t.isView()).getName(), Arrays.asList()));
+		SCRUB((g) -> new QueryAdapter(
+				"EXPERIMENTAL SCRUB table " + g.getSchema().getRandomTable(t -> !t.isView()).getName(),
+				Arrays.asList()));
 
 		private final CockroachDBQueryProvider queryProvider;
 
@@ -169,10 +169,7 @@ public class CockroachDBProvider implements DatabaseProvider {
 		manager.execute(new QueryAdapter("SET CLUSTER SETTING diagnostics.reporting.enabled	 = false;"));
 		manager.execute(
 				new QueryAdapter("SET CLUSTER SETTING diagnostics.reporting.send_crash_reports		 = false;"));
-		manager.execute(new QueryAdapter("SET CLUSTER SETTING sql.stats.automatic_collection.min_stale_rows = 1"));
-		manager.execute(new QueryAdapter("SET CLUSTER SETTING sql.stats.automatic_collection.fraction_stale_rows = 0.00001"));
-		
-		
+
 		for (int i = 0; i < Randomly.fromOptions(1, 2, 3); i++) {
 			boolean success = false;
 			do {
