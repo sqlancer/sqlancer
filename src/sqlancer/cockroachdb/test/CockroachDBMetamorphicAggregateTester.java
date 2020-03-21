@@ -15,6 +15,7 @@ import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBCommon;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
@@ -35,7 +36,7 @@ import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation;
 import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnaryPostfixOperator;
 import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 
-public class CockroachDBMetamorphicAggregateTester {
+public class CockroachDBMetamorphicAggregateTester implements TestOracle {
 
 	private CockroachDBGlobalState state;
 	private final Set<String> errors = new HashSet<>();

@@ -10,13 +10,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce.SQLite3StateToReproduce;
+import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3ToStringVisitor;
 import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.ast.SQLite3Aggregate;

@@ -154,6 +154,7 @@ public enum CockroachDBFunction {
 
 	private CockroachDBFunction(CockroachDBDataType returnType) {
 		this.returnType = returnType;
+		this.argumentTypes = new CockroachDBDataType[0];
 		this.functionName = toString();
 	}
 

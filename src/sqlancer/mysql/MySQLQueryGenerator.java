@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Main;
+import sqlancer.Main.QueryManager;
+import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
-import sqlancer.Main.QueryManager;
-import sqlancer.Main.StateLogger;
 import sqlancer.StateToReproduce.MySQLStateToReproduce;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLRowValue;

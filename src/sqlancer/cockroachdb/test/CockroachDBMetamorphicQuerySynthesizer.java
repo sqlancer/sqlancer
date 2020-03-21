@@ -14,6 +14,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBCommon;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
@@ -29,7 +30,7 @@ import sqlancer.cockroachdb.ast.CockroachDBSelect;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 
-public class CockroachDBMetamorphicQuerySynthesizer {
+public class CockroachDBMetamorphicQuerySynthesizer implements TestOracle {
 
 	private final CockroachDBGlobalState globalState;
 	private final Set<String> errors = new HashSet<>();
@@ -46,6 +47,7 @@ public class CockroachDBMetamorphicQuerySynthesizer {
 		
 	}
 
+	@Override
 	public void check() throws SQLException {
 		CockroachDBTables tables = globalState.getSchema().getRandomTableNonEmptyTables();
 		List<CockroachDBTableReference> tableL = tables.getTables().stream().map(t -> new CockroachDBTableReference(t)).collect(Collectors.toList());

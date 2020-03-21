@@ -2,10 +2,10 @@ package sqlancer.sqlite3.queries;
 
 import java.sql.SQLException;
 
-import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.MainOptions;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
 
 // tries to trigger a crash

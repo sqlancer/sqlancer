@@ -19,9 +19,9 @@ import sqlancer.mysql.ast.MySQLSelect;
 import sqlancer.mysql.ast.MySQLStringExpression;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperator;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
-import sqlancer.postgres.PostgresToStringVisitor;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
+import sqlancer.postgres.PostgresToStringVisitor;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 

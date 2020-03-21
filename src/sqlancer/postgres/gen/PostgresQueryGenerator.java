@@ -11,10 +11,10 @@ import java.util.stream.Collectors;
 import org.postgresql.util.PSQLException;
 
 import sqlancer.Main;
-import sqlancer.MainOptions;
-import sqlancer.Randomly;
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
+import sqlancer.MainOptions;
+import sqlancer.Randomly;
 import sqlancer.StateToReproduce.PostgresStateToReproduce;
 import sqlancer.postgres.PostgresSchema;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;

@@ -11,12 +11,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
+import sqlancer.Main.QueryManager;
+import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
-import sqlancer.Main.QueryManager;
-import sqlancer.Main.StateLogger;
 import sqlancer.StateToReproduce.PostgresStateToReproduce;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;

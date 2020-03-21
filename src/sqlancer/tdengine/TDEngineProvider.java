@@ -13,13 +13,13 @@ import java.util.stream.Collectors;
 
 import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
+import sqlancer.Main.QueryManager;
+import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
-import sqlancer.Main.QueryManager;
-import sqlancer.Main.StateLogger;
 import sqlancer.StateToReproduce.TDEngineStateToReproduce;
 import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.tdengine.TDEngineSchema.TDEngineColumn;

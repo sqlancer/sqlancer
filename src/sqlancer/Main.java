@@ -325,7 +325,7 @@ public class Main {
 		ExecutorService executor = Executors.newFixedThreadPool(options.getNumberConcurrentThreads());
 
 		for (int i = 0; i < options.getTotalNumberTries(); i++) {
-			final String databaseName = "lama" + i;
+			final String databaseName = "database" + i;
 
 			executor.execute(new Runnable() {
 

@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.beust.jcommander.JCommander;
+
 import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
@@ -23,6 +25,7 @@ import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.CockroachDBStateToReproduce;
+import sqlancer.TestOracle;
 import sqlancer.cockroachdb.gen.CockroachDBCreateStatisticsGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBDeleteGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBIndexGenerator;
@@ -103,6 +106,7 @@ public class CockroachDBProvider implements DatabaseProvider {
 		private MainOptions options;
 		private StateLogger logger;
 		private StateToReproduce state;
+		private CockroachDBOptions cockroachdbOptions;
 
 		public void setConnection(Connection con) {
 			this.con = con;
@@ -152,6 +156,14 @@ public class CockroachDBProvider implements DatabaseProvider {
 			return state;
 		}
 
+		public void setCockroachDBOptions(CockroachDBOptions cockroachdbOptions) {
+			this.cockroachdbOptions = cockroachdbOptions;
+		}
+
+		public CockroachDBOptions getCockroachdbOptions() {
+			return cockroachdbOptions;
+		}
+		
 	}
 
 	@Override
@@ -165,6 +177,10 @@ public class CockroachDBProvider implements DatabaseProvider {
 		globalState.setMainOptions(options);
 		globalState.setStateLogger(logger);
 		globalState.setState(state);
+		CockroachDBOptions cockroachdbOptions = new CockroachDBOptions();
+		JCommander.newBuilder().addObject(cockroachdbOptions).build().parse(options.getDbmsOptions().split(" "));
+		globalState.setCockroachDBOptions(cockroachdbOptions);
+		
 		manager.execute(new QueryAdapter("SET CLUSTER SETTING debug.panic_on_failed_assertions = true;"));
 		manager.execute(new QueryAdapter("SET CLUSTER SETTING diagnostics.reporting.enabled	 = false;"));
 		manager.execute(
@@ -278,10 +294,10 @@ public class CockroachDBProvider implements DatabaseProvider {
 		if (Randomly.getBoolean()) {
 			manager.execute(new QueryAdapter("SET vectorize=on;"));
 		}
-		CockroachDBMetamorphicAggregateTester syn = new CockroachDBMetamorphicAggregateTester(globalState);
+		TestOracle oracle = globalState.getCockroachdbOptions().oracle.create(globalState);
 		for (int i = 0; i < options.getNrQueries(); i++) {
 			try {
-				syn.check();
+				oracle.check();
 				manager.incrementSelectQueryCount();
 			} catch (IgnoreMeException e) {
 

@@ -10,13 +10,13 @@ import java.util.List;
 
 import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
+import sqlancer.Main.QueryManager;
+import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
-import sqlancer.Main.QueryManager;
-import sqlancer.Main.StateLogger;
 import sqlancer.StateToReproduce.MariaDBStateToReproduce;
 import sqlancer.mariadb.gen.MariaDBIndexGenerator;
 import sqlancer.mariadb.gen.MariaDBInsertGenerator;

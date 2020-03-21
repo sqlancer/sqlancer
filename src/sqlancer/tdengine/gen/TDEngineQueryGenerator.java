@@ -11,11 +11,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import sqlancer.Main;
+import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
-import sqlancer.Main.StateLogger;
 import sqlancer.StateToReproduce.TDEngineStateToReproduce;
 import sqlancer.sqlite3.ast.SQLite3Expression.Join;
 import sqlancer.tdengine.TDEngineSchema;

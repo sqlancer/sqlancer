@@ -3,9 +3,9 @@ package sqlancer.mysql.gen;
 import java.util.ArrayList;
 import java.util.List;
 
+import sqlancer.Randomly;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLRowValue;
-import sqlancer.Randomly;
 import sqlancer.mysql.MySQLVisitor;
 import sqlancer.mysql.ast.MySQLBetweenOperation;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;

@@ -11,6 +11,7 @@ import java.util.Set;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.QueryAdapter;
+import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
@@ -20,9 +21,9 @@ import sqlancer.cockroachdb.ast.CockroachDBSelect;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 import sqlancer.cockroachdb.gen.CockroachDBRandomQuerySynthesizer;
 
-public class CockroachDBNoTableTester {
+public class CockroachDBNoTableTester implements TestOracle {
 
-	private CockroachDBGlobalState state;
+	private final CockroachDBGlobalState state;
 	private final Set<String> errors = new HashSet<>();
 
 	public CockroachDBNoTableTester(CockroachDBGlobalState state) {
@@ -41,6 +42,7 @@ public class CockroachDBNoTableTester {
 		errors.add("invalid batch limit");
 	}
 
+	@Override
 	public void check() throws SQLException {
 		CockroachDBSelect select = CockroachDBRandomQuerySynthesizer.generateSelect(state, 1);
 		QueryAdapter query = new QueryAdapter(CockroachDBVisitor.asString(select), errors);

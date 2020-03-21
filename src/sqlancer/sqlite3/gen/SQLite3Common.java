@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.ast.SQLite3Cast;
 import sqlancer.sqlite3.ast.SQLite3Constant;

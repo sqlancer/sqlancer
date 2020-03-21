@@ -3,17 +3,16 @@ package sqlancer.sqlite3.queries;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import sqlancer.IgnoreMeException;
+import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
-import sqlancer.Main.StateLogger;
 import sqlancer.StateToReproduce.SQLite3StateToReproduce;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
