@@ -1,4 +1,4 @@
-package sqlancer.cockroachdb;
+package sqlancer.cockroachdb.test;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -11,11 +11,14 @@ import java.util.Set;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.QueryAdapter;
+import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
+import sqlancer.cockroachdb.CockroachDBVisitor;
 import sqlancer.cockroachdb.ast.CockroachDBSelect;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
+import sqlancer.cockroachdb.gen.CockroachDBRandomQuerySynthesizer;
 
 public class CockroachDBNoTableTester {
 

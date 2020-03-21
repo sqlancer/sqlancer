@@ -1,4 +1,4 @@
-package sqlancer.cockroachdb;
+package sqlancer.cockroachdb.gen;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -10,11 +10,14 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.cockroachdb.CockroachDBCommon;
+import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBCompositeDataType;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBDataType;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
+import sqlancer.cockroachdb.CockroachDBVisitor;
 
 public class CockroachDBTableGenerator {
 

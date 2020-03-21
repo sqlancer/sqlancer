@@ -1,4 +1,4 @@
-package sqlancer.cockroachdb;
+package sqlancer.cockroachdb.gen;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.cockroachdb.CockroachDBCommon;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBCompositeDataType;
@@ -28,6 +29,7 @@ import sqlancer.cockroachdb.ast.CockroachDBColumnReference;
 import sqlancer.cockroachdb.ast.CockroachDBConcatOperation;
 import sqlancer.cockroachdb.ast.CockroachDBConstant;
 import sqlancer.cockroachdb.ast.CockroachDBExpression;
+import sqlancer.cockroachdb.ast.CockroachDBFunction;
 import sqlancer.cockroachdb.ast.CockroachDBInOperation;
 import sqlancer.cockroachdb.ast.CockroachDBMultiValuedComparison;
 import sqlancer.cockroachdb.ast.CockroachDBMultiValuedComparison.MultiValuedComparisonOperator;
@@ -122,7 +124,7 @@ public class CockroachDBExpressionGenerator {
 		return orderingTerms;
 	}
 
-	CockroachDBExpression generateExpression(CockroachDBCompositeDataType type, int depth) {
+	public CockroachDBExpression generateExpression(CockroachDBCompositeDataType type, int depth) {
 //		if (type == CockroachDBDataType.FLOAT && Randomly.getBooleanWithRatherLowProbability()) {
 //			type = CockroachDBDataType.INT;
 //		}

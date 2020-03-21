@@ -2,8 +2,6 @@ package sqlancer.cockroachdb.ast;
 
 import java.util.List;
 
-import sqlancer.cockroachdb.CockroachDBFunction;
-
 public class CockroachDBFunctionCall extends CockroachDBExpression {
 
 	private final CockroachDBFunction function;

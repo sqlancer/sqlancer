@@ -1,4 +1,4 @@
-package sqlancer.cockroachdb;
+package sqlancer.cockroachdb.gen;
 
 import java.util.HashSet;
 import java.util.Set;

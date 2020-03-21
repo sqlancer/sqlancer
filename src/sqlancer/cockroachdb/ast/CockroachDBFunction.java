@@ -1,4 +1,4 @@
-package sqlancer.cockroachdb;
+package sqlancer.cockroachdb.ast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,9 +8,7 @@ import java.util.stream.Stream;
 import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBCompositeDataType;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBDataType;
-import sqlancer.cockroachdb.ast.CockroachDBConstant;
-import sqlancer.cockroachdb.ast.CockroachDBExpression;
-import sqlancer.cockroachdb.ast.CockroachDBFunctionCall;
+import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 
 public enum CockroachDBFunction {
 

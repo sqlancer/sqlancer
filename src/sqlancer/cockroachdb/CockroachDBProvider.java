@@ -15,14 +15,28 @@ import java.util.stream.Collectors;
 
 import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
+import sqlancer.Main.QueryManager;
+import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
-import sqlancer.Main.QueryManager;
-import sqlancer.Main.StateLogger;
 import sqlancer.StateToReproduce.CockroachDBStateToReproduce;
+import sqlancer.cockroachdb.gen.CockroachDBCreateStatisticsGenerator;
+import sqlancer.cockroachdb.gen.CockroachDBDeleteGenerator;
+import sqlancer.cockroachdb.gen.CockroachDBIndexGenerator;
+import sqlancer.cockroachdb.gen.CockroachDBInsertGenerator;
+import sqlancer.cockroachdb.gen.CockroachDBRandomQuerySynthesizer;
+import sqlancer.cockroachdb.gen.CockroachDBSetClusterSettingGenerator;
+import sqlancer.cockroachdb.gen.CockroachDBSetSessionGenerator;
+import sqlancer.cockroachdb.gen.CockroachDBShowGenerator;
+import sqlancer.cockroachdb.gen.CockroachDBTableGenerator;
+import sqlancer.cockroachdb.gen.CockroachDBTruncateGenerator;
+import sqlancer.cockroachdb.gen.CockroachDBUpdateGenerator;
+import sqlancer.cockroachdb.gen.CockroachDBViewGenerator;
+import sqlancer.cockroachdb.gen.RockroachDBCommentOnGenerator;
+import sqlancer.cockroachdb.test.CockroachDBMetamorphicAggregateTester;
 
 public class CockroachDBProvider implements DatabaseProvider {
 
