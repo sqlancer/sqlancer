@@ -8,7 +8,7 @@ import sqlancer.MainOptions.DBMSConverter;
 import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.test.CockroachDBMetamorphicAggregateTester;
-import sqlancer.cockroachdb.test.CockroachDBMetamorphicQuerySynthesizer;
+import sqlancer.cockroachdb.test.CockroachDBNoRECTester;
 import sqlancer.cockroachdb.test.CockroachDBNoTableTester;
 
 public class CockroachDBOptions {
@@ -20,7 +20,7 @@ public class CockroachDBOptions {
 		NOREC() {
 			@Override
 			public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
-				return new CockroachDBMetamorphicQuerySynthesizer(globalState);
+				return new CockroachDBNoRECTester(globalState);
 			}
 		},
 		AGGREGATE() {

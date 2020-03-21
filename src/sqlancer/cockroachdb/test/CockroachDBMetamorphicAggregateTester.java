@@ -72,7 +72,7 @@ public class CockroachDBMetamorphicAggregateTester implements TestOracle {
 				.map(t -> new CockroachDBTableReference(t)).collect(Collectors.toList());
 		List<CockroachDBTableReference> from = CockroachDBCommon.getTableReferences(tableList);
 		if (Randomly.getBooleanWithRatherLowProbability()) {
-			select.setJoinList(CockroachDBMetamorphicQuerySynthesizer.getJoins(from, state));
+			select.setJoinList(CockroachDBNoRECTester.getJoins(from, state));
 		}
 		select.setFromTables(from);
 		if (Randomly.getBooleanWithRatherLowProbability()) {

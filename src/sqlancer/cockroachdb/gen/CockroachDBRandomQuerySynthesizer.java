@@ -15,7 +15,7 @@ import sqlancer.cockroachdb.CockroachDBVisitor;
 import sqlancer.cockroachdb.ast.CockroachDBExpression;
 import sqlancer.cockroachdb.ast.CockroachDBSelect;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
-import sqlancer.cockroachdb.test.CockroachDBMetamorphicQuerySynthesizer;
+import sqlancer.cockroachdb.test.CockroachDBNoRECTester;
 
 public class CockroachDBRandomQuerySynthesizer {
 	
@@ -47,7 +47,7 @@ public class CockroachDBRandomQuerySynthesizer {
 		List<CockroachDBTableReference> tableList = tables.getTables().stream().map(t -> new CockroachDBTableReference(t)).collect(Collectors.toList());
 		List<CockroachDBTableReference> updatedTableList = CockroachDBCommon.getTableReferences(tableList);
 		if (Randomly.getBoolean()) {
-			select.setJoinList(CockroachDBMetamorphicQuerySynthesizer.getJoins(updatedTableList, globalState));
+			select.setJoinList(CockroachDBNoRECTester.getJoins(updatedTableList, globalState));
 		}
 		select.setFromTables(updatedTableList);
 		if (Randomly.getBoolean()) {

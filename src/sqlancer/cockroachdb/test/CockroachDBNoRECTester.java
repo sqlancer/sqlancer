@@ -30,7 +30,7 @@ import sqlancer.cockroachdb.ast.CockroachDBSelect;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 
-public class CockroachDBMetamorphicQuerySynthesizer implements TestOracle {
+public class CockroachDBNoRECTester implements TestOracle {
 
 	private final CockroachDBGlobalState globalState;
 	private final Set<String> errors = new HashSet<>();
@@ -38,7 +38,7 @@ public class CockroachDBMetamorphicQuerySynthesizer implements TestOracle {
 	private String unoptimizedQuery;
 	private CockroachDBExpressionGenerator gen;
 
-	public CockroachDBMetamorphicQuerySynthesizer(CockroachDBGlobalState globalState) {
+	public CockroachDBNoRECTester(CockroachDBGlobalState globalState) {
 		this.globalState = globalState;
 		CockroachDBErrors.addExpressionErrors(errors);
 		CockroachDBErrors.addTransactionErrors(errors);
