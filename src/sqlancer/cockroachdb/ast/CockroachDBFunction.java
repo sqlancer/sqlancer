@@ -144,7 +144,6 @@ public enum CockroachDBFunction {
 
 	private CockroachDBDataType returnType;
 	private CockroachDBDataType[] argumentTypes;
-	private boolean isVariadic;
 	private String functionName;
 
 	private CockroachDBFunction(CockroachDBDataType returnType, CockroachDBDataType... argumentTypes) {
@@ -153,9 +152,8 @@ public enum CockroachDBFunction {
 		this.functionName = toString();
 	}
 
-	private CockroachDBFunction(CockroachDBDataType returnType, boolean isVariadic) {
+	private CockroachDBFunction(CockroachDBDataType returnType) {
 		this.returnType = returnType;
-		this.isVariadic = isVariadic;
 		this.functionName = toString();
 	}
 
