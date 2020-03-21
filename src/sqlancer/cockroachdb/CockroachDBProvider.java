@@ -39,7 +39,6 @@ import sqlancer.cockroachdb.gen.CockroachDBTruncateGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBUpdateGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBViewGenerator;
 import sqlancer.cockroachdb.gen.RockroachDBCommentOnGenerator;
-import sqlancer.cockroachdb.test.CockroachDBMetamorphicAggregateTester;
 
 public class CockroachDBProvider implements DatabaseProvider {
 
@@ -74,10 +73,7 @@ public class CockroachDBProvider implements DatabaseProvider {
 				errors.add("cannot set EXPLAIN mode more than once");
 				errors.add("unable to vectorize execution plan");
 				errors.add("unsupported type");
-				// https://github.com/cockroachdb/cockroach/issues/46122
-				errors.add("zero length schema unsupported");
-				// https://github.com/cockroachdb/cockroach/issues/46123
-				errors.add("input to aggregatorBase is not an execinfra.OpNode");
+				errors.add("vectorize is set to 'off'");
 			}
 			sb.append(CockroachDBRandomQuerySynthesizer.generate(g, Randomly.smallNumber() + 1));
 			CockroachDBErrors.addExpressionErrors(errors);

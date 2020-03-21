@@ -146,17 +146,7 @@ public class CockroachDBTableGenerator {
 			sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
 			sb.append(")");
 		}
-		sb.append(")");
-		if (Randomly.getBooleanWithRatherLowProbability() && !globalState.getSchema().getDatabaseTables().isEmpty()) {
-			CockroachDBTable parentTable = globalState.getSchema().getRandomTable();
-			List<CockroachDBColumn> parentColumns = parentTable.getRandomNonEmptyColumnSubset();
-			sb.append(" INTERLEAVE IN PARENT ");
-			sb.append(parentTable.getName());
-			sb.append("(");
-			sb.append(parentColumns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
-			sb.append(")");
-		}
-		if (false && Randomly.getBoolean() && !globalState.getSchema().getDatabaseTables().isEmpty()) {
+		if (Randomly.getBoolean() && !globalState.getSchema().getDatabaseTables().isEmpty()) {
 			sb.append(", ");
 			// TODO: also allow referencing itself
 			List<CockroachDBColumn> subset = Randomly.nonEmptySubset(columns);
@@ -172,6 +162,18 @@ public class CockroachDBTableGenerator {
 				}
 				sb.append(otherTable.getRandomColumn().getName());
 			}
+			sb.append(")");
+			// TODO: ensure that the column types match
+			errors.add("does not match foreign key");
+		}
+		sb.append(")");
+		if (Randomly.getBooleanWithRatherLowProbability() && !globalState.getSchema().getDatabaseTables().isEmpty()) {
+			CockroachDBTable parentTable = globalState.getSchema().getRandomTable();
+			List<CockroachDBColumn> parentColumns = parentTable.getRandomNonEmptyColumnSubset();
+			sb.append(" INTERLEAVE IN PARENT ");
+			sb.append(parentTable.getName());
+			sb.append("(");
+			sb.append(parentColumns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
 			sb.append(")");
 		}
 
