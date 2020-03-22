@@ -270,11 +270,15 @@ public class CockroachDBProvider implements DatabaseProvider {
 			nrRemaining[nextAction.ordinal()]--;
 			Query query = null;
 			try {
-				query = nextAction.getQuery(globalState);
-				if (options.logEachSelect()) {
-					logger.writeCurrent(query.getQueryString());
-				}
-				manager.execute(query);
+				boolean success;
+				int nrTries = 0;
+				do {
+					query = nextAction.getQuery(globalState);
+					if (options.logEachSelect()) {
+						logger.writeCurrent(query.getQueryString());
+					}
+					success = manager.execute(query);
+				} while (!success && nrTries++ < 1000);
 			} catch (IgnoreMeException e) {
 
 			}
