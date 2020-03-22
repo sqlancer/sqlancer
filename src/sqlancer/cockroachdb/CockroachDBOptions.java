@@ -7,9 +7,10 @@ import com.beust.jcommander.Parameter;
 import sqlancer.MainOptions.DBMSConverter;
 import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
-import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningAggregateTester;
 import sqlancer.cockroachdb.test.CockroachDBNoRECTester;
 import sqlancer.cockroachdb.test.CockroachDBNoTableTester;
+import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningAggregateTester;
+import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningHavingTester;
 
 public class CockroachDBOptions {
 	
@@ -35,6 +36,12 @@ public class CockroachDBOptions {
 			@Override
 			public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
 				return new CockroachDBNoTableTester(globalState);
+			}
+		},
+		HAVING() {
+			@Override
+			public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
+				return new CockroachDBQueryPartitioningHavingTester(globalState);
 			}
 		}
 		;
