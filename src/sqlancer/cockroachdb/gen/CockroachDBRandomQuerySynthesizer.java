@@ -18,17 +18,17 @@ import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 import sqlancer.cockroachdb.test.CockroachDBNoRECTester;
 
 public class CockroachDBRandomQuerySynthesizer {
-	
+
 	public static Query generate(CockroachDBGlobalState globalState, int nrColumns) {
 		CockroachDBSelect select = generateSelect(globalState, nrColumns);
 		return new QueryAdapter(CockroachDBVisitor.asString(select));
 
 	}
 
-	public static CockroachDBSelect generateSelect(CockroachDBGlobalState globalState, int nrColumns)
-			throws AssertionError {
+	public static CockroachDBSelect generateSelect(CockroachDBGlobalState globalState, int nrColumns) {
 		CockroachDBTables tables = globalState.getSchema().getRandomTableNonEmptyTables();
-		CockroachDBExpressionGenerator gen = new CockroachDBExpressionGenerator(globalState).setColumns(tables.getColumns());
+		CockroachDBExpressionGenerator gen = new CockroachDBExpressionGenerator(globalState)
+				.setColumns(tables.getColumns());
 		CockroachDBSelect select = new CockroachDBSelect();
 		select.setDistinct(Randomly.getBoolean());
 		boolean allowAggregates = Randomly.getBooleanWithSmallProbability();
@@ -44,7 +44,8 @@ public class CockroachDBRandomQuerySynthesizer {
 			}
 		}
 		select.setColumns(columns);
-		List<CockroachDBTableReference> tableList = tables.getTables().stream().map(t -> new CockroachDBTableReference(t)).collect(Collectors.toList());
+		List<CockroachDBTableReference> tableList = tables.getTables().stream()
+				.map(t -> new CockroachDBTableReference(t)).collect(Collectors.toList());
 		List<CockroachDBTableReference> updatedTableList = CockroachDBCommon.getTableReferences(tableList);
 		if (Randomly.getBoolean()) {
 			select.setJoinList(CockroachDBNoRECTester.getJoins(updatedTableList, globalState));
@@ -54,36 +55,19 @@ public class CockroachDBRandomQuerySynthesizer {
 			select.setWhereCondition(gen.generateExpression(CockroachDBDataType.BOOL.get()));
 		}
 		if (Randomly.getBoolean()) {
-			if (select.isDistinct()) {
-				// for SELECT DISTINCT, ORDER BY expressions must appear in select list
-				// TODO: this error seems to only occur for column names, not constants
-				if (!columnsWithoutAggregates.isEmpty()) {
-					select.setOrderByTerms(Randomly.nonEmptySubset(columnsWithoutAggregates));
-				}
-			} else {
-				select.setOrderByTerms(gen.getOrderingTerms());
-			}
+			select.setOrderByTerms(gen.getOrderingTerms());
 		}
-		if (Randomly.getBoolean() || !select.getOrderByTerms().isEmpty()) {
-			// <select column > must appear in the GROUP BY clause or be used in an aggregate function
-			List<CockroachDBExpression> groupBys = new ArrayList<>(columnsWithoutAggregates);
-			// must appear in the GROUP BY clause or be used in an aggregate function
-			groupBys.addAll(select.getOrderByTerms());
-			while (Randomly.getBooleanWithRatherLowProbability()) {
-				groupBys.add(gen.generateExpression(CockroachDBDataType.getRandom().get()));
-			}
-			select.setGroupByClause(groupBys);
-			
+		if (Randomly.getBoolean()) {
+			select.setGroupByClause(gen.generateExpressions(Randomly.smallNumber() + 1));
 		}
 
 		if (Randomly.getBoolean()) { // TODO expression
 			select.setLimitTerm(gen.generateConstant(CockroachDBDataType.INT.get()));
 		}
-		if (Randomly.getBoolean()) { // TODO expression
-			/* https://github.com/cockroachdb/cockroach/issues/44203 */
-			select.setOffset(gen.generateConstant(CockroachDBDataType.INT.get()));
+		if (Randomly.getBoolean()) {
+			select.setOffset(gen.generateExpression(CockroachDBDataType.INT.get()));
 		}
-		if (Randomly.getBoolean() && false) {
+		if (Randomly.getBoolean()) {
 			select.setHavingClause(gen.generateExpression(CockroachDBDataType.BOOL.get()));
 		}
 		return select;
