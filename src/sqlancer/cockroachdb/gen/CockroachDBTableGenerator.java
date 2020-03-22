@@ -165,6 +165,8 @@ public class CockroachDBTableGenerator {
 			sb.append(")");
 			// TODO: ensure that the column types match
 			errors.add("does not match foreign key");
+			errors.add("computed column");
+			errors.add("there is no unique constraint matching given keys for referenced table");
 		}
 		sb.append(")");
 		if (Randomly.getBooleanWithRatherLowProbability() && !globalState.getSchema().getDatabaseTables().isEmpty()) {

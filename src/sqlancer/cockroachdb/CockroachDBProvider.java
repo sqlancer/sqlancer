@@ -81,7 +81,8 @@ public class CockroachDBProvider implements DatabaseProvider {
 		}),
 		SCRUB((g) -> new QueryAdapter(
 				"EXPERIMENTAL SCRUB table " + g.getSchema().getRandomTable(t -> !t.isView()).getName(),
-				Arrays.asList()));
+				// https://github.com/cockroachdb/cockroach/issues/46401
+				Arrays.asList("scrub-fk: column \"t.rowid\" does not exist")));
 
 		private final CockroachDBQueryProvider queryProvider;
 
@@ -159,7 +160,7 @@ public class CockroachDBProvider implements DatabaseProvider {
 		public CockroachDBOptions getCockroachdbOptions() {
 			return cockroachdbOptions;
 		}
-		
+
 	}
 
 	@Override
@@ -176,7 +177,7 @@ public class CockroachDBProvider implements DatabaseProvider {
 		CockroachDBOptions cockroachdbOptions = new CockroachDBOptions();
 		JCommander.newBuilder().addObject(cockroachdbOptions).build().parse(options.getDbmsOptions().split(" "));
 		globalState.setCockroachDBOptions(cockroachdbOptions);
-		
+
 		manager.execute(new QueryAdapter("SET CLUSTER SETTING debug.panic_on_failed_assertions = true;"));
 		manager.execute(new QueryAdapter("SET CLUSTER SETTING diagnostics.reporting.enabled	 = false;"));
 		manager.execute(
