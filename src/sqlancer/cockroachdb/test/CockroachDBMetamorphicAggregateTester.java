@@ -38,18 +38,17 @@ import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 
 public class CockroachDBMetamorphicAggregateTester implements TestOracle {
 
-	private CockroachDBGlobalState state;
+	private final CockroachDBGlobalState state;
 	private final Set<String> errors = new HashSet<>();
 	private CockroachDBExpressionGenerator gen;
+	private String firstResult;
+	private String secondResult;
+	private String originalQuery;
+	private String metamorphicQuery;
 
 	public CockroachDBMetamorphicAggregateTester(CockroachDBGlobalState state) {
 		this.state = state;
 		CockroachDBErrors.addExpressionErrors(errors);
-		// https://github.com/cockroachdb/cockroach/issues/46122
-		errors.add("zero length schema unsupported");
-		// https://github.com/cockroachdb/cockroach/issues/46123
-		errors.add("input to aggregatorBase is not an execinfra.OpNode");
-
 		errors.add("interface conversion: coldata.column");
 		errors.add("float out of range");
 	}
@@ -78,46 +77,17 @@ public class CockroachDBMetamorphicAggregateTester implements TestOracle {
 		if (Randomly.getBooleanWithRatherLowProbability()) {
 			select.setOrderByTerms(gen.getOrderingTerms());
 		}
-		String originalQuery = CockroachDBVisitor.asString(select);
+		originalQuery = CockroachDBVisitor.asString(select);
+		updateStateString();
+		firstResult = getAggregateResult(originalQuery);
+		updateStateString();
+		metamorphicQuery = createMetamorphicUnionQuery(select, aggregate, from);
+		updateStateString();
+		secondResult = getAggregateResult(metamorphicQuery);
+		updateStateString();
 
-		CockroachDBExpression whereClause = gen.generateExpression(CockroachDBDataType.BOOL.get());
-		CockroachDBNotOperation negatedClause = new CockroachDBNotOperation(whereClause);
-		CockroachDBUnaryPostfixOperation notNullClause = new CockroachDBUnaryPostfixOperation(whereClause,
-				CockroachDBUnaryPostfixOperator.IS_NULL);
-		List<CockroachDBExpression> mappedAggregate = mapped(aggregate);
-		CockroachDBSelect leftSelect = getSelect(mappedAggregate, from, whereClause, select.getJoinList());
-		CockroachDBSelect middleSelect = getSelect(mappedAggregate, from, negatedClause, select.getJoinList());
-		CockroachDBSelect rightSelect = getSelect(mappedAggregate, from, notNullClause, select.getJoinList());
-		String metamorphicText = "SELECT " + getOuterAggregateFunction(aggregate).toString() + " FROM (";
-		metamorphicText += CockroachDBVisitor.asString(leftSelect) + " UNION ALL "
-				+ CockroachDBVisitor.asString(middleSelect) + " UNION ALL " + CockroachDBVisitor.asString(rightSelect);
-		metamorphicText += ")";
-		String firstResult;
-		String secondResult;
-		QueryAdapter q = new QueryAdapter(originalQuery, errors);
-		state.getState().queryString = "--" + originalQuery + ";\n--" + metamorphicText + "\n-- ";
-		try (ResultSet result = q.executeAndGet(state.getConnection())) {
-			if (result == null) {
-				throw new IgnoreMeException();
-			}
-			if (!result.next()) {
-				throw new IgnoreMeException();
-			}
-			firstResult = result.getString(1);
-		}
-
-		QueryAdapter q2 = new QueryAdapter(metamorphicText, errors);
-		try (ResultSet result = q2.executeAndGet(state.getConnection())) {
-			if (result == null) {
-				throw new IgnoreMeException();
-			}
-			result.next();
-			secondResult = result.getString(1);
-		} catch (PSQLException e) {
-			throw new AssertionError(metamorphicText, e);
-		}
-		state.getState().queryString = "--" + originalQuery + ";\n--" + metamorphicText + "\n-- " + firstResult + "\n-- "
-				+ secondResult;
+		state.getState().queryString = "--" + originalQuery + ";\n--" + metamorphicQuery + "\n-- " + firstResult
+				+ "\n-- " + secondResult;
 		if (firstResult == null && secondResult != null
 				|| firstResult != null && (!firstResult.contentEquals(secondResult)
 						&& !DatabaseProvider.isEqualDouble(firstResult, secondResult))) {
@@ -127,6 +97,42 @@ public class CockroachDBMetamorphicAggregateTester implements TestOracle {
 			throw new AssertionError();
 		}
 
+	}
+
+	private String createMetamorphicUnionQuery(CockroachDBSelect select, CockroachDBAggregate aggregate,
+			List<CockroachDBTableReference> from) {
+		String metamorphicQuery;
+		CockroachDBExpression whereClause = gen.generateExpression(CockroachDBDataType.BOOL.get());
+		CockroachDBNotOperation negatedClause = new CockroachDBNotOperation(whereClause);
+		CockroachDBUnaryPostfixOperation notNullClause = new CockroachDBUnaryPostfixOperation(whereClause,
+				CockroachDBUnaryPostfixOperator.IS_NULL);
+		List<CockroachDBExpression> mappedAggregate = mapped(aggregate);
+		CockroachDBSelect leftSelect = getSelect(mappedAggregate, from, whereClause, select.getJoinList());
+		CockroachDBSelect middleSelect = getSelect(mappedAggregate, from, negatedClause, select.getJoinList());
+		CockroachDBSelect rightSelect = getSelect(mappedAggregate, from, notNullClause, select.getJoinList());
+		metamorphicQuery = "SELECT " + getOuterAggregateFunction(aggregate).toString() + " FROM (";
+		metamorphicQuery += CockroachDBVisitor.asString(leftSelect) + " UNION ALL "
+				+ CockroachDBVisitor.asString(middleSelect) + " UNION ALL " + CockroachDBVisitor.asString(rightSelect);
+		metamorphicQuery += ")";
+		return metamorphicQuery;
+	}
+
+	private String getAggregateResult(String queryString) throws SQLException {
+		String resultString;
+		QueryAdapter q = new QueryAdapter(queryString, errors);
+		try (ResultSet result = q.executeAndGet(state.getConnection())) {
+			if (result == null) {
+				throw new IgnoreMeException();
+			}
+			if (!result.next()) {
+				resultString = null;
+			} else {
+				resultString = result.getString(1);
+			}
+		} catch (PSQLException e) {
+			throw new AssertionError(queryString, e);
+		}
+		return resultString;
 	}
 
 	private List<CockroachDBExpression> mapped(CockroachDBAggregate aggregate) {
@@ -146,7 +152,9 @@ public class CockroachDBMetamorphicAggregateTester implements TestOracle {
 		case AVG:
 //			List<CockroachDBExpression> arg = Arrays.asList(new CockroachDBCast(aggregate.getExpr().get(0), CockroachDBDataType.DECIMAL.get()));
 			CockroachDBAggregate sum = new CockroachDBAggregate(CockroachDBAggregateFunction.SUM, aggregate.getExpr());
-			CockroachDBCast count = new CockroachDBCast(new CockroachDBAggregate(CockroachDBAggregateFunction.COUNT, aggregate.getExpr()), CockroachDBDataType.DECIMAL.get());
+			CockroachDBCast count = new CockroachDBCast(
+					new CockroachDBAggregate(CockroachDBAggregateFunction.COUNT, aggregate.getExpr()),
+					CockroachDBDataType.DECIMAL.get());
 //			CockroachDBBinaryArithmeticOperation avg = new CockroachDBBinaryArithmeticOperation(sum, count, CockroachDBBinaryArithmeticOperator.DIV);
 			return aliasArgs(Arrays.asList(sum, count));
 		default:
@@ -186,6 +194,28 @@ public class CockroachDBMetamorphicAggregateTester implements TestOracle {
 			leftSelect.setGroupByClause(gen.generateExpressions(Randomly.smallNumber() + 1));
 		}
 		return leftSelect;
+	}
+	
+	private void updateStateString() {
+		StringBuilder sb = new StringBuilder();
+		if (originalQuery != null) {
+			sb.append(originalQuery);
+			sb.append(";");
+			if (firstResult != null) {
+				sb.append("-- ");
+				sb.append(firstResult);
+			}
+			sb.append("\n");
+		}
+		if (metamorphicQuery != null) {
+			sb.append(metamorphicQuery);
+			sb.append(";");
+			if (secondResult != null) {
+				sb.append("-- ");
+				sb.append(secondResult);
+			}
+			sb.append("\n");
+		}
 	}
 
 }
