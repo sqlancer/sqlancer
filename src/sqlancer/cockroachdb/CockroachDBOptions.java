@@ -7,7 +7,7 @@ import com.beust.jcommander.Parameter;
 import sqlancer.MainOptions.DBMSConverter;
 import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
-import sqlancer.cockroachdb.test.CockroachDBMetamorphicAggregateTester;
+import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningAggregateTester;
 import sqlancer.cockroachdb.test.CockroachDBNoRECTester;
 import sqlancer.cockroachdb.test.CockroachDBNoTableTester;
 
@@ -27,7 +27,7 @@ public class CockroachDBOptions {
 
 			@Override
 			public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
-				return new CockroachDBMetamorphicAggregateTester(globalState);
+				return new CockroachDBQueryPartitioningAggregateTester(globalState);
 			}
 			
 		},

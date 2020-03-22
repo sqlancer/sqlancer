@@ -36,7 +36,7 @@ import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation;
 import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnaryPostfixOperator;
 import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 
-public class CockroachDBMetamorphicAggregateTester implements TestOracle {
+public class CockroachDBQueryPartitioningAggregateTester implements TestOracle {
 
 	private final CockroachDBGlobalState state;
 	private final Set<String> errors = new HashSet<>();
@@ -46,7 +46,7 @@ public class CockroachDBMetamorphicAggregateTester implements TestOracle {
 	private String originalQuery;
 	private String metamorphicQuery;
 
-	public CockroachDBMetamorphicAggregateTester(CockroachDBGlobalState state) {
+	public CockroachDBQueryPartitioningAggregateTester(CockroachDBGlobalState state) {
 		this.state = state;
 		CockroachDBErrors.addExpressionErrors(errors);
 		errors.add("interface conversion: coldata.column");
