@@ -1,8 +1,6 @@
 package sqlancer.cockroachdb.gen;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -62,48 +60,12 @@ public class CockroachDBExpressionGenerator {
 	}
 	
 	public CockroachDBExpression generateAggregate() {
-		CockroachDBAggregateFunction aggr = CockroachDBAggregateFunction.getRandom();
-		return generateWindowFunction(aggr);
+		return getAggregate(CockroachDBDataType.getRandom().get());
 	}
 	
 	public CockroachDBExpression generateHavingClause() {
 		allowAggregates = true;
 		return generateExpression(CockroachDBDataType.BOOL.get());
-	}
-
-	public CockroachDBAggregate generateWindowFunction(CockroachDBAggregateFunction aggr) throws AssertionError {
-		CockroachDBCompositeDataType type;
-		switch (aggr) {
-		case SQRDIFF:
-		case STDDEV:
-		case SUM_INT:
-		case VARIANCE:
-		case BIT_AND:
-		case BIT_OR:
-			type = CockroachDBDataType.INT.get();
-			break;
-		case XOR_AGG:
-			type = Randomly.fromOptions(CockroachDBDataType.INT, CockroachDBDataType.BYTES).get();
-			break;
-		case BOOL_AND:
-		case BOOL_OR:
-			type = CockroachDBDataType.BOOL.get();
-			break;
-		case MIN:
-		case MAX:
-		case COUNT:
-			type = getRandomType();
-			break;
-		case COUNT_ROWS:
-			return new CockroachDBAggregate(aggr, Collections.emptyList());
-		case SUM:
-		case AVG:
-			type = Randomly.fromOptions(CockroachDBDataType.INT, CockroachDBDataType.FLOAT, CockroachDBDataType.DECIMAL).get();
-			break;
-		default:
-			throw new AssertionError();
-		}
-		return new CockroachDBAggregate(aggr, Arrays.asList(generateExpression(type)));
 	}
 
 	public List<CockroachDBExpression> generateExpressions(int nr) {
@@ -135,14 +97,7 @@ public class CockroachDBExpressionGenerator {
 //			type = CockroachDBDataType.INT;
 //		}
 		if (allowAggregates && Randomly.getBoolean()) {
-			CockroachDBAggregateFunction agg = Randomly.fromList(CockroachDBAggregate.CockroachDBAggregateFunction.getAggregates(type.getPrimitiveDataType()));
-			List<CockroachDBDataType> types = agg.getTypes(type.getPrimitiveDataType());
-			List<CockroachDBExpression> args = new ArrayList<>();
-			allowAggregates = false; // aggregate function calls cannot be nested
-			for (CockroachDBDataType argType : types) {
-				args.add(generateExpression(argType.get()));
-			}
-			return new CockroachDBAggregate(agg, args);
+			return getAggregate(type);
 		}
 		if (depth >= globalState.getOptions().getMaxExpressionDepth()
 				|| Randomly.getBoolean()) {
@@ -209,6 +164,22 @@ public class CockroachDBExpressionGenerator {
 				throw new AssertionError(type);
 			}
 		}
+	}
+
+	private CockroachDBExpression getAggregate(CockroachDBCompositeDataType type) {
+		CockroachDBAggregateFunction agg = Randomly.fromList(CockroachDBAggregate.CockroachDBAggregateFunction.getAggregates(type.getPrimitiveDataType()));
+		return generateArgsForAggregate(type, agg);
+	}
+
+	public CockroachDBAggregate generateArgsForAggregate(CockroachDBCompositeDataType type,
+			CockroachDBAggregateFunction agg) {
+		List<CockroachDBDataType> types = agg.getTypes(type.getPrimitiveDataType());
+		List<CockroachDBExpression> args = new ArrayList<>();
+		allowAggregates = false; // 
+		for (CockroachDBDataType argType : types) {
+			args.add(generateExpression(argType.get()));
+		}
+		return new CockroachDBAggregate(agg, args);
 	}
 
 	private CockroachDBExpression generateLeafNode(CockroachDBCompositeDataType type) {

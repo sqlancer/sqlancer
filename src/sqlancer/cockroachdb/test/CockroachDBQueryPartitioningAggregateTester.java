@@ -60,7 +60,7 @@ public class CockroachDBQueryPartitioningAggregateTester implements TestOracle {
 		CockroachDBSelect select = new CockroachDBSelect();
 		CockroachDBAggregateFunction windowFunction = Randomly
 				.fromOptions(CockroachDBAggregate.CockroachDBAggregateFunction.getRandomMetamorphicOracle());
-		CockroachDBAggregate aggregate = gen.generateWindowFunction(windowFunction);
+		CockroachDBAggregate aggregate = gen.generateArgsForAggregate(windowFunction.getRandomReturnType().get(), windowFunction);
 		List<CockroachDBExpression> fetchColumns = new ArrayList<>();
 		fetchColumns.add(aggregate);
 		while (Randomly.getBooleanWithRatherLowProbability()) {

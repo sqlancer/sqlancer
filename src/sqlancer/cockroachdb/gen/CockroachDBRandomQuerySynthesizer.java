@@ -68,7 +68,7 @@ public class CockroachDBRandomQuerySynthesizer {
 			select.setOffset(gen.generateConstant(CockroachDBDataType.INT.get()));
 		}
 		if (Randomly.getBoolean()) {
-			select.setHavingClause(gen.generateExpression(CockroachDBDataType.BOOL.get()));
+			select.setHavingClause(gen.generateHavingClause());
 		}
 		return select;
 	}

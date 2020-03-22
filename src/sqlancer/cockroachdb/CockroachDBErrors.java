@@ -164,6 +164,8 @@ public class CockroachDBErrors {
 		errors.add("unsupported type bit");
 		
 		errors.add("unknown signature: xor_agg(string)");
+		errors.add("unknown signature: string_agg(string, bytes)");
+		errors.add("unknown signature: string_agg(bytes, string)");
 		errors.add("arguments to xor must all be the same length");
 		errors.add("unknown signature: acos(decimal)");
 		
