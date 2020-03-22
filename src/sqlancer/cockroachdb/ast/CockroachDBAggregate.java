@@ -1,8 +1,12 @@
 package sqlancer.cockroachdb.ast;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBDataType;
 
 public class CockroachDBAggregate extends CockroachDBExpression {
 
@@ -10,10 +14,62 @@ public class CockroachDBAggregate extends CockroachDBExpression {
 	private List<CockroachDBExpression> expr;
 
 	public enum CockroachDBAggregateFunction {
-		SUM, SUM_INT, AVG, MIN, MAX, COUNT_ROWS, COUNT, SQRDIFF, STDDEV, VARIANCE, XOR_AGG, //
-		BIT_AND, BIT_OR, //
-		BOOL_AND, BOOL_OR //
-		;
+		SUM(CockroachDBDataType.INT, CockroachDBDataType.FLOAT, CockroachDBDataType.DECIMAL), //
+		SUM_INT(CockroachDBDataType.INT), //
+		AVG(CockroachDBDataType.INT, CockroachDBDataType.FLOAT, CockroachDBDataType.DECIMAL), //
+		MIN() {
+			@Override
+			public boolean supportsReturnType(CockroachDBDataType returnType) {
+				return true;
+			}
+		}, //
+		MAX() {
+			@Override
+			public boolean supportsReturnType(CockroachDBDataType returnType) {
+				return true;
+			}
+		}, //
+		COUNT_ROWS(CockroachDBDataType.INT) {
+			@Override
+			public List<CockroachDBDataType> getTypes(CockroachDBDataType returnType) {
+				return Collections.emptyList();
+			}
+		}, //
+		COUNT(CockroachDBDataType.INT) {
+			
+			@Override
+			public List<CockroachDBDataType> getTypes(CockroachDBDataType returnType) {
+				return Arrays.asList(CockroachDBDataType.getRandom());
+			}
+		}, //
+		SQRDIFF(CockroachDBDataType.INT, CockroachDBDataType.FLOAT, CockroachDBDataType.DECIMAL), //
+		STDDEV(CockroachDBDataType.INT, CockroachDBDataType.FLOAT, CockroachDBDataType.DECIMAL), //
+		VARIANCE(CockroachDBDataType.INT, CockroachDBDataType.FLOAT, CockroachDBDataType.DECIMAL), //
+		XOR_AGG(CockroachDBDataType.BYTES, CockroachDBDataType.INT), //
+		BIT_AND(CockroachDBDataType.INT), //
+		BIT_OR(CockroachDBDataType.INT), //
+		BOOL_AND(CockroachDBDataType.BOOL), //
+		BOOL_OR(CockroachDBDataType.BOOL);
+		
+		private CockroachDBDataType supportedReturnTypes[];
+		
+		public List<CockroachDBDataType> getTypes(CockroachDBDataType returnType) {
+			return Arrays.asList(returnType);
+		}
+		
+		public boolean supportsReturnType(CockroachDBDataType returnType) {
+			return Arrays.asList(supportedReturnTypes).stream().anyMatch(t -> t == returnType);
+		}
+		
+		public static List<CockroachDBAggregateFunction> getAggregates(CockroachDBDataType type) {
+			return Arrays.asList(values()).stream().filter(p -> p.supportsReturnType(type)).collect(Collectors.toList());
+		}
+
+		//
+		CockroachDBAggregateFunction(CockroachDBDataType... supportedReturnTypes) {
+			this.supportedReturnTypes = supportedReturnTypes;
+		}
+		
 		public static CockroachDBAggregateFunction getRandom() {
 			return Randomly.fromOptions(values());
 		}

@@ -19,7 +19,6 @@ import sqlancer.cockroachdb.CockroachDBCommon;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema;
-import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBDataType;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTables;
 import sqlancer.cockroachdb.CockroachDBVisitor;
 import sqlancer.cockroachdb.ast.CockroachDBColumnReference;
@@ -62,7 +61,7 @@ public class CockroachDBQueryPartitioningHavingTester implements TestOracle {
 		
 		List<String> resultSet = getResultSet(originalQueryString);
 		
-		CockroachDBExpression predicate = gen.generateExpression(CockroachDBDataType.BOOL.get());
+		CockroachDBExpression predicate = gen.generateHavingClause();
 		String predicateString = CockroachDBVisitor.asString(predicate);
 		String firstQueryString = String.format("%s HAVING (%s)", originalQueryString, predicateString);
 		String secondQueryString = String.format("%s HAVING (NOT %s)", originalQueryString, predicateString);

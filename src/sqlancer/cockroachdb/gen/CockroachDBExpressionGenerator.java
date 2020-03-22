@@ -46,6 +46,7 @@ public class CockroachDBExpressionGenerator {
 
 	private final CockroachDBGlobalState globalState;
 	private List<CockroachDBColumn> columns = new ArrayList<>();
+	private boolean allowAggregates;
 
 	public CockroachDBExpressionGenerator(CockroachDBGlobalState globalState) {
 		this.globalState = globalState;
@@ -63,6 +64,11 @@ public class CockroachDBExpressionGenerator {
 	public CockroachDBExpression generateAggregate() {
 		CockroachDBAggregateFunction aggr = CockroachDBAggregateFunction.getRandom();
 		return generateWindowFunction(aggr);
+	}
+	
+	public CockroachDBExpression generateHavingClause() {
+		allowAggregates = true;
+		return generateExpression(CockroachDBDataType.BOOL.get());
 	}
 
 	public CockroachDBAggregate generateWindowFunction(CockroachDBAggregateFunction aggr) throws AssertionError {
@@ -128,6 +134,16 @@ public class CockroachDBExpressionGenerator {
 //		if (type == CockroachDBDataType.FLOAT && Randomly.getBooleanWithRatherLowProbability()) {
 //			type = CockroachDBDataType.INT;
 //		}
+		if (allowAggregates && Randomly.getBoolean()) {
+			CockroachDBAggregateFunction agg = Randomly.fromList(CockroachDBAggregate.CockroachDBAggregateFunction.getAggregates(type.getPrimitiveDataType()));
+			List<CockroachDBDataType> types = agg.getTypes(type.getPrimitiveDataType());
+			List<CockroachDBExpression> args = new ArrayList<>();
+			allowAggregates = false; // aggregate function calls cannot be nested
+			for (CockroachDBDataType argType : types) {
+				args.add(generateExpression(argType.get()));
+			}
+			return new CockroachDBAggregate(agg, args);
+		}
 		if (depth >= globalState.getOptions().getMaxExpressionDepth()
 				|| Randomly.getBoolean()) {
 			return generateLeafNode(type);

@@ -165,6 +165,7 @@ public class CockroachDBErrors {
 		
 		errors.add("unknown signature: xor_agg(string)");
 		errors.add("arguments to xor must all be the same length");
+		errors.add("unknown signature: acos(decimal)");
 		
 		
 		errors.add("internal error: cannot convert int to type bool"); // FIXME https://github.com/cockroachdb/cockroach/issues/46397
