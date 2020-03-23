@@ -24,6 +24,7 @@ import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.SQLite3StateToReproduce;
+import sqlancer.TestOracle;
 import sqlancer.sqlite3.gen.SQLite3AnalyzeGenerator;
 import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.gen.SQLite3CreateVirtualRtreeTabelGenerator;
@@ -44,7 +45,6 @@ import sqlancer.sqlite3.gen.ddl.SQLite3ViewGenerator;
 import sqlancer.sqlite3.gen.dml.SQLite3DeleteGenerator;
 import sqlancer.sqlite3.gen.dml.SQLite3InsertGenerator;
 import sqlancer.sqlite3.gen.dml.SQLite3UpdateGenerator;
-import sqlancer.sqlite3.queries.SQLite3TestGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.Table;
@@ -381,7 +381,7 @@ public class SQLite3Provider implements DatabaseProvider {
 		manager.execute(query);
 		globalState.setSchema(SQLite3Schema.fromConnection(con));
 		manager.incrementCreateDatabase();
-		SQLite3TestGenerator oracle = globalState.getSqliteOptions().oracle.create(globalState);
+		TestOracle oracle = globalState.getSqliteOptions().oracle.create(globalState);
 		if (oracle.onlyWorksForNonEmptyTables()) {
 			for (Table table : globalState.getSchema().getDatabaseTables()) {
 				int nrRows = SQLite3Schema.getNrRows(con, table.getName());

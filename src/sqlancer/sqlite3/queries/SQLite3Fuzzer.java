@@ -5,11 +5,12 @@ import java.sql.SQLException;
 import sqlancer.MainOptions;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.TestOracle;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
 
 // tries to trigger a crash
-public class SQLite3Fuzzer implements SQLite3TestGenerator {
+public class SQLite3Fuzzer implements TestOracle {
 
 	private final SQLite3GlobalState globalState;
 

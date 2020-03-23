@@ -10,6 +10,7 @@ import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.TestOracle;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
@@ -27,7 +28,7 @@ import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.Tables;
 
-public class SQLite3MetamorphicAggregateTester implements SQLite3TestGenerator {
+public class SQLite3MetamorphicAggregateTester implements TestOracle {
 
 	private SQLite3GlobalState state;
 	private final List<String> errors = new ArrayList<>();

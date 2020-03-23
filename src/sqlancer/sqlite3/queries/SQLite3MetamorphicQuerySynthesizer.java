@@ -14,6 +14,7 @@ import sqlancer.MainOptions;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce.SQLite3StateToReproduce;
+import sqlancer.TestOracle;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
@@ -32,7 +33,7 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.Table;
 import sqlancer.sqlite3.schema.SQLite3Schema.Tables;
 
-public class SQLite3MetamorphicQuerySynthesizer implements SQLite3TestGenerator {
+public class SQLite3MetamorphicQuerySynthesizer implements TestOracle {
 
 	// SELECT COUNT(*) FROM t0 WHERE <cond>;
 	// SELECT SUM(count) FROM (SELECT <cond> IS TRUE as count FROM t0);
