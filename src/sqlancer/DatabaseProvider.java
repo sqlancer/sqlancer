@@ -2,7 +2,13 @@ package sqlancer;
 
 import java.io.FileWriter;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import org.postgresql.util.PSQLException;
 
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
@@ -37,5 +43,23 @@ public interface DatabaseProvider {
 		return Math.abs(a - b) < 0.0001 * Math.max(Math.abs(a), Math.abs(b));
 	}
 
+
+	public static List<String> getResultSetFirstColumnAsString(String queryString, Set<String> errors, Connection con) throws SQLException {
+		QueryAdapter q = new QueryAdapter(queryString, errors);
+		List<String> resultSet = new ArrayList<>();
+		try (ResultSet result = q.executeAndGet(con)) {
+			if (result == null) {
+				throw new IgnoreMeException();
+			}
+			while (result.next()) {
+				resultSet.add(result.getString(1));
+			}
+		} catch (PSQLException e) {
+			throw new AssertionError(queryString, e);
+		}
+		return resultSet;
+	}
+
+	
 	
 }
