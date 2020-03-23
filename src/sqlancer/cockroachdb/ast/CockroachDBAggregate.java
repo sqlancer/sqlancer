@@ -14,11 +14,9 @@ public class CockroachDBAggregate extends CockroachDBExpression {
 	private List<CockroachDBExpression> expr;
 
 	public enum CockroachDBAggregateFunction {
-		SUM(CockroachDBDataType.INT, CockroachDBDataType.FLOAT, CockroachDBDataType.DECIMAL,
-				CockroachDBDataType.INTERVAL), //
+		SUM(CockroachDBDataType.INT, CockroachDBDataType.FLOAT, CockroachDBDataType.DECIMAL), //
 		SUM_INT(CockroachDBDataType.INT), //
-		AVG(CockroachDBDataType.INT, CockroachDBDataType.FLOAT, CockroachDBDataType.DECIMAL,
-				CockroachDBDataType.INTERVAL), //
+		AVG(CockroachDBDataType.INT, CockroachDBDataType.FLOAT, CockroachDBDataType.DECIMAL), //
 		MIN() {
 			@Override
 			public boolean supportsReturnType(CockroachDBDataType returnType) {
