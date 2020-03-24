@@ -29,10 +29,6 @@ public class CockroachDBNoTableTester implements TestOracle {
 	public CockroachDBNoTableTester(CockroachDBGlobalState state) {
 		this.state = state;
 		CockroachDBErrors.addExpressionErrors(errors);
-		// https://github.com/cockroachdb/cockroach/issues/46122
-		errors.add("zero length schema unsupported");
-		// https://github.com/cockroachdb/cockroach/issues/46123
-		errors.add("input to aggregatorBase is not an execinfra.OpNode");
 
 		errors.add("interface conversion: coldata.column");
 

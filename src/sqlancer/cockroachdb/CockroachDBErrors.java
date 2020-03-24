@@ -170,8 +170,6 @@ public class CockroachDBErrors {
 		errors.add("unknown signature: acos(decimal)");
 		
 		
-		errors.add("internal error: cannot convert int to type bool"); // FIXME https://github.com/cockroachdb/cockroach/issues/46397
-		
 		
 		errors.add("argument of OFFSET must be type int, not type decimal");
 		errors.add("ERROR: for SELECT DISTINCT, ORDER BY expressions must appear in select list");

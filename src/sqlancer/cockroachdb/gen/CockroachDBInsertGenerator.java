@@ -73,9 +73,6 @@ public class CockroachDBInsertGenerator {
 			sb.append(" DO ");
 			if (Randomly.getBoolean()) {
 				sb.append(" NOTHING ");
-				
-				// TODO https://github.com/cockroachdb/cockroach/issues/46395
-				errors.add("UPSERT or INSERT...ON CONFLICT command cannot affect row a second time");
 			} else {
 				// TODO: also support excluded. (see https://www.cockroachlabs.com/docs/stable/insert.html)
 				sb.append(" UPDATE SET ");

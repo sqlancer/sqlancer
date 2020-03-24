@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.postgresql.util.PSQLException;
-
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
 
@@ -54,7 +52,15 @@ public interface DatabaseProvider {
 			while (result.next()) {
 				resultSet.add(result.getString(1));
 			}
-		} catch (PSQLException e) {
+		} catch (Exception e) {
+			if (e instanceof IgnoreMeException) {
+				throw e;
+			}
+			for (String error : errors) {
+				if (e.getMessage().contains(error)) {
+					throw new IgnoreMeException();
+				}
+			}
 			throw new AssertionError(queryString, e);
 		}
 		return resultSet;

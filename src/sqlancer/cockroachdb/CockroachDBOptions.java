@@ -11,6 +11,7 @@ import sqlancer.cockroachdb.test.CockroachDBNoRECTester;
 import sqlancer.cockroachdb.test.CockroachDBNoTableTester;
 import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningAggregateTester;
 import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningHavingTester;
+import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningWhereTester;
 
 public class CockroachDBOptions {
 	
@@ -42,6 +43,12 @@ public class CockroachDBOptions {
 			@Override
 			public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
 				return new CockroachDBQueryPartitioningHavingTester(globalState);
+			}
+		},
+		WHERE() {
+			@Override
+			public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
+				return new CockroachDBQueryPartitioningWhereTester(globalState);
 			}
 		}
 		;

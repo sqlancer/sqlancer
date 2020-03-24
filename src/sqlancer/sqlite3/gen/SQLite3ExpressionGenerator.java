@@ -57,6 +57,7 @@ public class SQLite3ExpressionGenerator {
 	private boolean allowMatchClause;
 	private boolean allowAggregateFunctions;
 	private boolean allowSubqueries;
+	private boolean allowAggreates;
 
 	private enum LiteralValueType {
 		INTEGER, NUMERIC, STRING, BLOB_LITERAL, NULL
@@ -208,6 +209,9 @@ public class SQLite3ExpressionGenerator {
 	}
 
 	public SQLite3Expression getRandomExpression(int depth) {
+		if (allowAggreates && Randomly.getBoolean()) {
+			return getAggregateFunction(depth + 1);
+		}
 		if (depth >= globalState.getMainOptions().getMaxExpressionDepth()) {
 			if (Randomly.getBooleanWithRatherLowProbability() || columns.isEmpty()) {
 				return getRandomLiteralValue(globalState);
@@ -631,6 +635,11 @@ public class SQLite3ExpressionGenerator {
 		SQLite3Expression subExpression = getRandomExpression(depth + 1);
 		UnaryOperator unaryOperation = Randomly.fromOptions(UnaryOperator.values());
 		return new SQLite3UnaryOperation(unaryOperation, subExpression);
+	}
+
+	public SQLite3Expression getHavingClause() {
+		allowAggreates = true;
+		return getRandomExpression();
 	}
 
 }

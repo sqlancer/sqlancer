@@ -14,6 +14,7 @@ import sqlancer.cockroachdb.CockroachDBCommon;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema;
+import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBDataType;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTables;
 import sqlancer.cockroachdb.CockroachDBVisitor;
 import sqlancer.cockroachdb.ast.CockroachDBColumnReference;
@@ -25,12 +26,12 @@ import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation;
 import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnaryPostfixOperator;
 import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 
-public class CockroachDBQueryPartitioningHavingTester implements TestOracle {
+public class CockroachDBQueryPartitioningWhereTester implements TestOracle {
 	
 	private final CockroachDBGlobalState state;
 	private final Set<String> errors = new HashSet<>();
 
-	public CockroachDBQueryPartitioningHavingTester(CockroachDBGlobalState state) {
+	public CockroachDBQueryPartitioningWhereTester(CockroachDBGlobalState state) {
 		this.state = state;
 		CockroachDBErrors.addExpressionErrors(errors);
 		errors.add("GROUP BY term out of range");
@@ -51,18 +52,17 @@ public class CockroachDBQueryPartitioningHavingTester implements TestOracle {
 		}
 		select.setFromTables(from);
 		// TODO order by?
-		select.setGroupByClause(gen.generateExpressions(Randomly.smallNumber() + 1));
-		select.setHavingClause(null);
+		select.setWhereCondition(null);
 		String originalQueryString = CockroachDBVisitor.asString(select);
 		
 		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors, state.getConnection());
 		
-		CockroachDBExpression predicate = gen.generateHavingClause();
-		select.setHavingClause(predicate);
+		CockroachDBExpression predicate = gen.generateExpression(CockroachDBDataType.BOOL.get());
+		select.setWhereCondition(predicate);
 		String firstQueryString = CockroachDBVisitor.asString(select);
-		select.setHavingClause(new CockroachDBNotOperation(predicate));
+		select.setWhereCondition(new CockroachDBNotOperation(predicate));
 		String secondQueryString = CockroachDBVisitor.asString(select);
-		select.setHavingClause(new CockroachDBUnaryPostfixOperation(predicate, CockroachDBUnaryPostfixOperator.IS_NULL));
+		select.setWhereCondition(new CockroachDBUnaryPostfixOperation(predicate, CockroachDBUnaryPostfixOperator.IS_NULL));
 		String thirdQueryString = CockroachDBVisitor.asString(select);
 		String combinedString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL " + thirdQueryString;
 		List<String> secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors, state.getConnection());

@@ -103,7 +103,7 @@ public class CockroachDBExpressionGenerator {
 				|| Randomly.getBoolean()) {
 			return generateLeafNode(type);
 		} else {
-			if (Randomly.getBoolean()) {
+			if (Randomly.getBooleanWithRatherLowProbability()) {
 				List<CockroachDBFunction> applicableFunctions = CockroachDBFunction.getFunctionsCompatibleWith(type);
 				if (!applicableFunctions.isEmpty()) {
 					CockroachDBFunction function = Randomly.fromList(applicableFunctions);
