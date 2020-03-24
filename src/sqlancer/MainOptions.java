@@ -65,7 +65,7 @@ public class MainOptions {
 	}
 
 	public static enum DBMS {
-		MariaDB, SQLite3, MySQL, PostgreSQL, TDEngine, CockroachDB
+		MariaDB, SQLite3, MySQL, PostgreSQL, TDEngine, CockroachDB, TiDB
 	}
 
 	public class DBMSConverter implements IStringConverter<DBMS> {

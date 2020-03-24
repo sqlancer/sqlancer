@@ -28,6 +28,7 @@ import sqlancer.mysql.MySQLProvider;
 import sqlancer.postgres.PostgresProvider;
 import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.tdengine.TDEngineProvider;
+import sqlancer.tidb.TiDBProvider;
 
 public class Main {
 
@@ -354,6 +355,9 @@ public class Main {
 					case CockroachDB:
 						provider = new CockroachDBProvider();
 						break;
+					case TiDB:
+						provider = new TiDBProvider();
+						break;
 					}
 					runThread(databaseName);
 				}
@@ -362,7 +366,6 @@ public class Main {
 					Thread.currentThread().setName(databaseName);
 					while (true) {
 						state = provider.getStateToReproduce(databaseName);
-						;
 						logger = new StateLogger(databaseName, provider, options);
 						try (Connection con = provider.createDatabase(databaseName, state)) {
 							QueryManager manager = new QueryManager(con, state);
