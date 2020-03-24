@@ -11,10 +11,11 @@ import sqlancer.cockroachdb.test.CockroachDBNoRECTester;
 import sqlancer.cockroachdb.test.CockroachDBNoTableTester;
 import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningAggregateTester;
 import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningHavingTester;
+import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningTester;
 import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningWhereTester;
 
 public class CockroachDBOptions {
-	
+
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)
 	public CockroachDBOracle oracle = CockroachDBOracle.NOREC;
 
@@ -31,7 +32,7 @@ public class CockroachDBOptions {
 			public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
 				return new CockroachDBQueryPartitioningAggregateTester(globalState);
 			}
-			
+
 		},
 		NOTABLE() {
 			@Override
@@ -50,8 +51,13 @@ public class CockroachDBOptions {
 			public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
 				return new CockroachDBQueryPartitioningWhereTester(globalState);
 			}
-		}
-		;
+		},
+		QUERY_PARTITIONING {
+			@Override
+			public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
+				return new CockroachDBQueryPartitioningTester(globalState);
+			}
+		};
 
 		public abstract TestOracle create(CockroachDBGlobalState globalState) throws SQLException;
 

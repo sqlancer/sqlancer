@@ -1,5 +1,6 @@
 package sqlancer.cockroachdb.test;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -14,6 +15,7 @@ import sqlancer.cockroachdb.CockroachDBCommon;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema;
+import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBDataType;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTables;
 import sqlancer.cockroachdb.CockroachDBVisitor;
 import sqlancer.cockroachdb.ast.CockroachDBColumnReference;
@@ -51,10 +53,21 @@ public class CockroachDBQueryPartitioningHavingTester implements TestOracle {
 		}
 		select.setFromTables(from);
 		// TODO order by?
+		if (Randomly.getBoolean()) {
+			select.setWhereCondition(gen.generateExpression(CockroachDBDataType.BOOL.get()));
+		}
 		select.setGroupByClause(gen.generateExpressions(Randomly.smallNumber() + 1));
 		select.setHavingClause(null);
 		String originalQueryString = CockroachDBVisitor.asString(select);
-		
+		if (state.getOptions().logEachSelect()) {
+			state.getLogger().writeCurrent(originalQueryString);
+			try {
+				state.getLogger().getCurrentFileWriter().flush();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors, state.getConnection());
 		
 		CockroachDBExpression predicate = gen.generateHavingClause();
@@ -65,11 +78,16 @@ public class CockroachDBQueryPartitioningHavingTester implements TestOracle {
 		select.setHavingClause(new CockroachDBUnaryPostfixOperation(predicate, CockroachDBUnaryPostfixOperator.IS_NULL));
 		String thirdQueryString = CockroachDBVisitor.asString(select);
 		String combinedString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL " + thirdQueryString;
-		List<String> secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors, state.getConnection());
 		if (state.getOptions().logEachSelect()) {
-			state.getLogger().writeCurrent(originalQueryString);
 			state.getLogger().writeCurrent(combinedString);
+			try {
+				state.getLogger().getCurrentFileWriter().flush();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
+		List<String> secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors, state.getConnection());
 		if (resultSet.size() != secondResultSet.size()) {
 			throw new AssertionError(originalQueryString + ";\n" + combinedString + ";");
 		}
