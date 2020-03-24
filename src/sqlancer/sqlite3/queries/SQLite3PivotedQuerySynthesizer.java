@@ -67,7 +67,7 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 
 	public void check() throws SQLException {
 		Query query = getQueryThatContainsAtLeastOneRow(globalState);
-		if (globalState.getMainOptions().logEachSelect()) {
+		if (globalState.getOptions().logEachSelect()) {
 			globalState.getLogger().writeCurrent(query.getQueryString());
 		}
 		boolean isContainedIn = isContainedIn(query);
@@ -180,7 +180,7 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 		globalState.getState().whereClause = selectStatement;
 		List<SQLite3Expression> groupByClause = generateGroupByClause(columns, rw, allTablesContainOneRow);
 		selectStatement.setGroupByClause(groupByClause);
-		SQLite3Expression limitClause = generateLimit((long) (Math.pow(globalState.getMainOptions().getMaxNumberInserts(), joinStatements.size() + randomFromTables.getTables().size())));
+		SQLite3Expression limitClause = generateLimit((long) (Math.pow(globalState.getOptions().getMaxNumberInserts(), joinStatements.size() + randomFromTables.getTables().size())));
 		selectStatement.setLimitClause(limitClause);
 		if (limitClause != null) {
 			SQLite3Expression offsetClause = generateOffset();

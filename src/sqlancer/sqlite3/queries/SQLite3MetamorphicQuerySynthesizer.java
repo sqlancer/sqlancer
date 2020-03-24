@@ -59,7 +59,7 @@ public class SQLite3MetamorphicQuerySynthesizer implements TestOracle {
 		this.con = globalState.getConnection();
 		this.state = globalState.getState();
 		this.logger = globalState.getLogger();
-		this.options = globalState.getMainOptions();
+		this.options = globalState.getOptions();
 		this.globalState = globalState;
 		SQLite3Errors.addExpectedExpressionErrors(errors);
 		SQLite3Errors.addMatchQueryErrors(errors);

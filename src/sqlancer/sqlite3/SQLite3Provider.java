@@ -15,6 +15,7 @@ import com.beust.jcommander.JCommander;
 
 import sqlancer.DatabaseFacade;
 import sqlancer.DatabaseProvider;
+import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
@@ -156,28 +157,17 @@ public class SQLite3Provider implements DatabaseProvider {
 	private SQLite3StateToReproduce state;
 	private String databaseName;
 
-	public static class SQLite3GlobalState {
+	public static class SQLite3GlobalState extends GlobalState {
 
-		private Connection con;
 		private SQLite3Schema schema;
 		private SQLite3StateToReproduce state;
-		private Randomly r;
-		private MainOptions mainOptions;
 		private SQLite3Options sqliteOptions;
-		private StateLogger logger;
-		private QueryManager manager;
 
-		public Connection getConnection() {
-			return con;
-		}
 
 		public SQLite3Schema getSchema() {
 			return schema;
 		}
 
-		public void setConnection(Connection con) {
-			this.con = con;
-		}
 
 		public void setSchema(SQLite3Schema schema) {
 			this.schema = schema;
@@ -191,21 +181,6 @@ public class SQLite3Provider implements DatabaseProvider {
 			return state;
 		}
 
-		public Randomly getRandomly() {
-			return r;
-		}
-
-		public void setRandomly(Randomly r) {
-			this.r = r;
-		}
-
-		public void setMainOptions(MainOptions mainOptions) {
-			this.mainOptions = mainOptions;
-		}
-
-		public MainOptions getMainOptions() {
-			return mainOptions;
-		}
 
 		public void setSqliteOptions(SQLite3Options sqliteOptions) {
 			this.sqliteOptions = sqliteOptions;
@@ -213,22 +188,6 @@ public class SQLite3Provider implements DatabaseProvider {
 
 		public SQLite3Options getSqliteOptions() {
 			return sqliteOptions;
-		}
-
-		public void setLogger(StateLogger logger) {
-			this.logger = logger;
-		}
-
-		public StateLogger getLogger() {
-			return logger;
-		}
-
-		public void setManager(QueryManager manager) {
-			this.manager = manager;
-		}
-
-		public QueryManager getManager() {
-			return manager;
 		}
 
 	}
@@ -250,7 +209,7 @@ public class SQLite3Provider implements DatabaseProvider {
 		globalState.setMainOptions(options);
 		globalState.setSqliteOptions(sqliteOptions);
 		globalState.setRandomly(r);
-		globalState.setLogger(logger);
+		globalState.setStateLogger(logger);
 		globalState.setManager(manager);
 		this.state = (SQLite3StateToReproduce) state;
 		globalState.setConnection(con);

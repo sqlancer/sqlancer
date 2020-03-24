@@ -75,7 +75,7 @@ public class SQLite3QueryPartitioningHavingTester implements TestOracle {
 			throw new IgnoreMeException();
 		}
 		List<String> secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors, state.getConnection());
-		if (state.getMainOptions().logEachSelect()) {
+		if (state.getOptions().logEachSelect()) {
 			state.getLogger().writeCurrent(originalQueryString);
 			state.getLogger().writeCurrent(combinedString);
 		}

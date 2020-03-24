@@ -2,6 +2,7 @@ package sqlancer;
 
 import java.sql.Connection;
 
+import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
 
 public class GlobalState {
@@ -11,6 +12,7 @@ public class GlobalState {
 	private MainOptions options;
 	private StateLogger logger;
 	private StateToReproduce state;
+	private QueryManager manager;
 
 	public void setConnection(Connection con) {
 		this.con = con;
@@ -50,6 +52,14 @@ public class GlobalState {
 
 	public StateToReproduce getState() {
 		return state;
+	}
+
+	public QueryManager getManager() {
+		return manager;
+	}
+
+	public void setManager(QueryManager manager) {
+		this.manager = manager;
 	}
 
 }

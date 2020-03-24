@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import com.beust.jcommander.JCommander;
 
 import sqlancer.DatabaseProvider;
+import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
@@ -95,23 +96,10 @@ public class CockroachDBProvider implements DatabaseProvider {
 		}
 	}
 
-	public static class CockroachDBGlobalState {
+	public static class CockroachDBGlobalState extends GlobalState {
 
-		private Connection con;
 		private CockroachDBSchema schema;
-		private Randomly r;
-		private MainOptions options;
-		private StateLogger logger;
-		private StateToReproduce state;
 		private CockroachDBOptions cockroachdbOptions;
-
-		public void setConnection(Connection con) {
-			this.con = con;
-		}
-
-		public Connection getConnection() {
-			return con;
-		}
 
 		public void setSchema(CockroachDBSchema schema) {
 			this.schema = schema;
@@ -119,38 +107,6 @@ public class CockroachDBProvider implements DatabaseProvider {
 
 		public CockroachDBSchema getSchema() {
 			return schema;
-		}
-
-		public void setRandomly(Randomly r) {
-			this.r = r;
-		}
-
-		public Randomly getRandomly() {
-			return r;
-		}
-
-		public MainOptions getOptions() {
-			return options;
-		}
-
-		public void setMainOptions(MainOptions options) {
-			this.options = options;
-		}
-
-		public void setStateLogger(StateLogger logger) {
-			this.logger = logger;
-		}
-
-		public StateLogger getLogger() {
-			return logger;
-		}
-
-		public void setState(StateToReproduce state) {
-			this.state = state;
-		}
-
-		public StateToReproduce getState() {
-			return state;
 		}
 
 		public void setCockroachDBOptions(CockroachDBOptions cockroachdbOptions) {

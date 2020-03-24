@@ -212,7 +212,7 @@ public class SQLite3ExpressionGenerator {
 		if (allowAggreates && Randomly.getBoolean()) {
 			return getAggregateFunction(depth + 1);
 		}
-		if (depth >= globalState.getMainOptions().getMaxExpressionDepth()) {
+		if (depth >= globalState.getOptions().getMaxExpressionDepth()) {
 			if (Randomly.getBooleanWithRatherLowProbability() || columns.isEmpty()) {
 				return getRandomLiteralValue(globalState);
 			} else {

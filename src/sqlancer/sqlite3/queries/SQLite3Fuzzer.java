@@ -22,7 +22,7 @@ public class SQLite3Fuzzer implements TestOracle {
 	public void check() throws SQLException {
 		String s = SQLite3Visitor
 				.asString(SQLite3RandomQuerySynthesizer.generate(globalState, Randomly.smallNumber() + 1));
-		MainOptions options = globalState.getMainOptions();
+		MainOptions options = globalState.getOptions();
 		try {
 			if (options.logEachSelect()) {
 				globalState.getLogger().writeCurrent(s);
