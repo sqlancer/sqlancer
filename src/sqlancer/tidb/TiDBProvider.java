@@ -7,11 +7,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import sqlancer.DatabaseProvider;
+import sqlancer.GlobalState;
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
+import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.MySQLStateToReproduce;
 
@@ -70,72 +72,10 @@ public class TiDBProvider implements DatabaseProvider {
 //		}
 	}
 
-	public static class TiDBGlobalState {
-//
-//		private Connection con;
-//		private TiDBSchema schema;
-//		private Randomly r;
-//		private MainOptions options;
-//		private StateLogger logger;
-//		private StateToReproduce state;
-//		private TiDBOptions TiDBOptions;
-//
-//		public void setConnection(Connection con) {
-//			this.con = con;
-//		}
-//
-//		public Connection getConnection() {
-//			return con;
-//		}
-//
-//		public void setSchema(TiDBSchema schema) {
-//			this.schema = schema;
-//		}
-//
-//		public TiDBSchema getSchema() {
-//			return schema;
-//		}
-//
-//		public void setRandomly(Randomly r) {
-//			this.r = r;
-//		}
-//
-//		public Randomly getRandomly() {
-//			return r;
-//		}
-//
-//		public MainOptions getOptions() {
-//			return options;
-//		}
-//
-//		public void setMainOptions(MainOptions options) {
-//			this.options = options;
-//		}
-//
-//		public void setStateLogger(StateLogger logger) {
-//			this.logger = logger;
-//		}
-//
-//		public StateLogger getLogger() {
-//			return logger;
-//		}
-//
-//		public void setState(StateToReproduce state) {
-//			this.state = state;
-//		}
-//
-//		public StateToReproduce getState() {
-//			return state;
-//		}
-//
-//		public void setTiDBOptions(TiDBOptions TiDBOptions) {
-//			this.TiDBOptions = TiDBOptions;
-//		}
-//
-//		public TiDBOptions getTiDBOptions() {
-//			return TiDBOptions;
-//		}
-//
+
+
+	public static class TiDBGlobalState extends GlobalState {
+
 	}
 
 	@Override
