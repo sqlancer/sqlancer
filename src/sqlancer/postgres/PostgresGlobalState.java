@@ -7,24 +7,21 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import sqlancer.GlobalState;
 import sqlancer.Randomly;
 
-public class PostgresGlobalState {
+public class PostgresGlobalState extends GlobalState {
 	
 	private final List<String> operators;
 	private final List<String> collates;
 	private final List<String> opClasses;
-	private final Randomly r;
-	private final Connection con;
 	private PostgresSchema schema;
 	
-	public PostgresGlobalState(Connection con, Randomly r) {
-		this.con = con;
+	public PostgresGlobalState() {
 		try {
-			this.opClasses = getOpclasses(con);
-			this.operators = getOperators(con);
-			this.collates = getCollnames(con);
-			this.r = r;
+			this.opClasses = getOpclasses(getConnection());
+			this.operators = getOperators(getConnection());
+			this.collates = getCollnames(getConnection());
 		} catch (SQLException e) {
 			throw new AssertionError(e);
 		}
@@ -36,14 +33,6 @@ public class PostgresGlobalState {
 	
 	public PostgresSchema getSchema() {
 		return schema;
-	}
-	
-	public Randomly getRandomly() {
-		return r;
-	}
-	
-	public Connection getCon() {
-		return con;
 	}
 	
 	private List<String> getCollnames(Connection con) throws SQLException {

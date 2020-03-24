@@ -134,7 +134,9 @@ public class PostgresProvider implements DatabaseProvider {
 		if (options.logEachSelect()) {
 			logger.writeCurrent(state);
 		}
-		globalState = new PostgresGlobalState(con, r);
+		globalState = new PostgresGlobalState();
+		globalState.setConnection(con);
+		globalState.setRandomly(r);
 		globalState.setSchema(PostgresSchema.fromConnection(con, databaseName));
 		while (globalState.getSchema().getDatabaseTables().size() < 2) {
 			try {
@@ -331,7 +333,10 @@ public class PostgresProvider implements DatabaseProvider {
 			}
 			for (String lc : Arrays.asList("LC_COLLATE", "LC_CTYPE")) {
 				if (Randomly.getBoolean()) {
-					sb.append(String.format(" %s = '%s'", lc, Randomly.fromList(new PostgresGlobalState(con, r).getCollates())));
+					globalState = new PostgresGlobalState();
+					globalState.setConnection(con);
+					globalState.setRandomly(r);
+					sb.append(String.format(" %s = '%s'", lc, Randomly.fromList(globalState.getCollates())));
 				}
 			}
 			sb.append(" TEMPLATE template0");
