@@ -5,18 +5,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
+import sqlancer.schema.AbstractSchema;
 import sqlancer.schema.AbstractTable;
 import sqlancer.schema.AbstractTableColumn;
+import sqlancer.schema.AbstractTables;
 import sqlancer.schema.TableIndex;
 
-public class CockroachDBSchema {
+public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
 
 	public static enum CockroachDBDataType {
 
@@ -173,40 +172,23 @@ public class CockroachDBSchema {
 
 	}
 
-	public static class CockroachDBTables {
-
-		private final List<CockroachDBTable> tables;
-		private final List<CockroachDBColumn> columns;
+	public static class CockroachDBTables extends AbstractTables<CockroachDBTable, CockroachDBColumn> {
 
 		public CockroachDBTables(List<CockroachDBTable> tables) {
-			this.tables = tables;
-			columns = new ArrayList<>();
-			for (CockroachDBTable t : tables) {
-				columns.addAll(t.getColumns());
-			}
+			super(tables);
 		}
 
-		public String tableNamesAsString() {
-			return tables.stream().map(t -> t.getName()).collect(Collectors.joining(", "));
-		}
-
-		public List<CockroachDBTable> getTables() {
-			return tables;
-		}
-
-		public List<CockroachDBColumn> getColumns() {
-			return columns;
-		}
-
-		public String columnNamesAsString() {
-			return getColumns().stream().map(t -> t.getTable().getName() + "." + t.getName())
-					.collect(Collectors.joining(", "));
-		}
-
-		public String columnNamesAsString(Function<CockroachDBColumn, String> function) {
-			return getColumns().stream().map(function).collect(Collectors.joining(", "));
-		}
 	}
+
+	public CockroachDBSchema(List<CockroachDBTable> databaseTables) {
+		super(databaseTables);
+	}
+	
+
+	public CockroachDBTables getRandomTableNonEmptyTables() {
+		return new CockroachDBTables(Randomly.nonEmptySubset(getDatabaseTables()));
+	}
+
 
 	private static CockroachDBCompositeDataType getColumnType(String typeString) {
 		if (typeString.startsWith("STRING COLLATE")) {
@@ -295,7 +277,6 @@ public class CockroachDBSchema {
 			ResultSet tableRs = s.executeQuery("SHOW TABLES");
 			while (tableRs.next()) {
 				String tableName = tableRs.getString(1);
-
 				tableNames.add(tableName);
 			}
 		}
@@ -335,39 +316,7 @@ public class CockroachDBSchema {
 		return columns;
 	}
 
-	private final List<CockroachDBTable> databaseTables;
 
-	public CockroachDBSchema(List<CockroachDBTable> databaseTables) {
-		this.databaseTables = Collections.unmodifiableList(databaseTables);
-	}
-
-	@Override
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		for (CockroachDBTable t : getDatabaseTables()) {
-			sb.append(t + "\n");
-		}
-		return sb.toString();
-	}
-
-	public CockroachDBTable getRandomTable() {
-		return Randomly.fromList(getDatabaseTables());
-	}
-
-	public CockroachDBTable getRandomTable(Predicate<CockroachDBTable> predicate) {
-		return Randomly.fromList(getDatabaseTables().stream().filter(predicate).collect(Collectors.toList()));
-	}
-
-	public CockroachDBTables getRandomTableNonEmptyTables() {
-		return new CockroachDBTables(Randomly.nonEmptySubset(databaseTables));
-	}
-
-	public List<CockroachDBTable> getDatabaseTables() {
-		return databaseTables;
-	}
-
-	public List<CockroachDBTable> getDatabaseTablesRandomSubsetNotEmpty() {
-		return Randomly.nonEmptySubset(databaseTables);
-	}
-
+	
+	
 }
