@@ -57,7 +57,7 @@ public class SQLite3MetamorphicQuerySynthesizer implements TestOracle {
 	public SQLite3MetamorphicQuerySynthesizer(SQLite3GlobalState globalState) {
 		this.s = globalState.getSchema();
 		this.con = globalState.getConnection();
-		this.state = globalState.getState();
+		this.state = (SQLite3StateToReproduce) globalState.getState();
 		this.logger = globalState.getLogger();
 		this.options = globalState.getOptions();
 		this.globalState = globalState;

@@ -18,7 +18,6 @@ import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.MySQLStateToReproduce;
 import sqlancer.StatementExecutor;
-import sqlancer.mysql.MySQLSchema;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 
 public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
@@ -32,7 +31,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 	public static enum Action implements AbstractAction<TiDBGlobalState> {
 		INSERT((g) -> new QueryAdapter("INSERT INTO t0 VALUES (" + Randomly.getNonCachedInteger() + ")",
 				Arrays.asList("Out of range value for column"))), //
-		ANALYZE_TABLE((g) -> new QueryAdapter("ANALYZE TABLE t0"));
+		ANALYZE_TABLE((g) -> new QueryAdapter("ANALYZE TABLE " + g.getSchema().getRandomTable().getName()));
 
 		private final TiDBQueryProvider queryProvider;
 
@@ -47,13 +46,13 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 
 	public static class TiDBGlobalState extends GlobalState {
 
-		private MySQLSchema schema;
+		private TiDBSchema schema;
 
-		public void setSchema(MySQLSchema schema) {
+		public void setSchema(TiDBSchema schema) {
 			this.schema = schema;
 		}
 
-		public MySQLSchema getSchema() {
+		public TiDBSchema getSchema() {
 			return schema;
 		}
 
@@ -82,7 +81,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 		QueryManager manager = globalState.getManager();
 		Connection con = globalState.getConnection();
 		String databaseName = globalState.getDatabaseName();
-		globalState.setSchema(MySQLSchema.fromConnection(con, databaseName));
+		globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
 //		TiDBOptions TiDBOptions = new TiDBOptions();
 //		JCommander.newBuilder().addObject(TiDBOptions).build().parse(options.getDbmsOptions().split(" "));
 //		globalState.setTiDBOptions(TiDBOptions);
@@ -90,11 +89,12 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 
 		Query qt = new QueryAdapter("CREATE TABLE t0(c0 INT UNIQUE)");
 		manager.execute(qt);
+		globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
 
 		StatementExecutor<TiDBGlobalState, Action> se = new StatementExecutor<TiDBGlobalState, Action>(globalState,
 				databaseName, Action.values(), TiDBProvider::mapActions, (q) -> {
 					if (q.couldAffectSchema()) {
-						globalState.setSchema(MySQLSchema.fromConnection(con, databaseName));
+						globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
 					}
 					if (globalState.getSchema().getDatabaseTables().isEmpty()) {
 						throw new IgnoreMeException();
