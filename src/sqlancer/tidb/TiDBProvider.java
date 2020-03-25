@@ -19,6 +19,7 @@ import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.MySQLStateToReproduce;
 import sqlancer.StatementExecutor;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
+import sqlancer.tidb.gen.TiDBIndexGenerator;
 
 public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 
@@ -31,7 +32,9 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 	public static enum Action implements AbstractAction<TiDBGlobalState> {
 		INSERT((g) -> new QueryAdapter("INSERT INTO t0 VALUES (" + Randomly.getNonCachedInteger() + ")",
 				Arrays.asList("Out of range value for column"))), //
-		ANALYZE_TABLE((g) -> new QueryAdapter("ANALYZE TABLE " + g.getSchema().getRandomTable().getName()));
+		ANALYZE_TABLE((g) -> new QueryAdapter("ANALYZE TABLE " + g.getSchema().getRandomTable().getName())),
+		TRUNCATE((g) -> new QueryAdapter("TRUNCATE " + g.getSchema().getRandomTable().getName())),
+		CREATE_INDEX(TiDBIndexGenerator::getQuery);
 
 		private final TiDBQueryProvider queryProvider;
 
@@ -62,9 +65,12 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 		Randomly r = globalState.getRandomly();
 		switch (a) {
 		case ANALYZE_TABLE:
+		case CREATE_INDEX:
 			return r.getInteger(0, 5);
 		case INSERT:
 			return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
+		case TRUNCATE:
+			return r.getInteger(0, 2);
 		default:
 			throw new AssertionError(a);
 		}
@@ -128,7 +134,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 		String url = "jdbc:mysql://127.0.0.1:4000/";
 		Connection con = DriverManager.getConnection(url, "root", "");
 		state.statements.add(new QueryAdapter("USE test"));
-		state.statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName + " CASCADE"));
+		state.statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName));
 		String createDatabaseCommand = "CREATE DATABASE " + databaseName;
 		state.statements.add(new QueryAdapter(createDatabaseCommand));
 		state.statements.add(new QueryAdapter("USE " + databaseName));

@@ -395,7 +395,11 @@ public class Main {
 							if (e.getCause() instanceof IgnoreMeException) {
 								continue;
 							} else {
-								throw new AssertionError(e);
+								e.getCause().printStackTrace();
+								stateToRepro.exception = e.getCause().getMessage();
+								logger.logFileWriter = null;
+								logger.logException(e.getCause(), stateToRepro);
+								threadsShutdown++;
 							}
 						} catch (ReduceMeException reduce) {
 							logger.logRowNotFound(stateToRepro);

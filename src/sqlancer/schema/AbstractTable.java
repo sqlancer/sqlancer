@@ -75,5 +75,5 @@ public class AbstractTable<COL extends AbstractTableColumn<?, ?>,  I extends Tab
 	public boolean isView() {
 		return isView;
 	}
-
+	
 }
