@@ -1,17 +1,18 @@
 package sqlancer.tidb;
 
 import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
 
 import sqlancer.AbstractAction;
 import sqlancer.DatabaseProvider;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
+import sqlancer.Main.StateLogger;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -20,6 +21,8 @@ import sqlancer.StateToReproduce.MySQLStateToReproduce;
 import sqlancer.StatementExecutor;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.gen.TiDBIndexGenerator;
+import sqlancer.tidb.gen.TiDBInsertGenerator;
+import sqlancer.tidb.gen.TiDBTableGenerator;
 
 public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 
@@ -30,8 +33,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 	}
 
 	public static enum Action implements AbstractAction<TiDBGlobalState> {
-		INSERT((g) -> new QueryAdapter("INSERT INTO t0 VALUES (" + Randomly.getNonCachedInteger() + ")",
-				Arrays.asList("Out of range value for column"))), //
+		INSERT(TiDBInsertGenerator::getQuery), //
 		ANALYZE_TABLE((g) -> new QueryAdapter("ANALYZE TABLE " + g.getSchema().getRandomTable().getName())),
 		TRUNCATE((g) -> new QueryAdapter("TRUNCATE " + g.getSchema().getRandomTable().getName())),
 		CREATE_INDEX(TiDBIndexGenerator::getQuery);
@@ -76,7 +78,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 		}
 
 	}
-	
+
 	@Override
 	public TiDBGlobalState generateGlobalState() {
 		return new TiDBGlobalState();
@@ -88,13 +90,26 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 		Connection con = globalState.getConnection();
 		String databaseName = globalState.getDatabaseName();
 		globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
+		StateLogger logger = globalState.getLogger();
+		StateToReproduce state = globalState.getState();
 //		TiDBOptions TiDBOptions = new TiDBOptions();
 //		JCommander.newBuilder().addObject(TiDBOptions).build().parse(options.getDbmsOptions().split(" "));
 //		globalState.setTiDBOptions(TiDBOptions);
 //
 
-		Query qt = new QueryAdapter("CREATE TABLE t0(c0 INT UNIQUE)");
-		manager.execute(qt);
+		for (int i = 0; i < Randomly.fromOptions(1, 2, 3); i++) {
+			Query qt = new TiDBTableGenerator().getQuery(globalState);
+			manager.execute(qt);
+			logger.writeCurrent(state);
+			globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
+			try {
+				logger.getCurrentFileWriter().close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			logger.currentFileWriter = null;
+		}
 		globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
 
 		StatementExecutor<TiDBGlobalState, Action> se = new StatementExecutor<TiDBGlobalState, Action>(globalState,

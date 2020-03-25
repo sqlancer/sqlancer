@@ -1,7 +1,9 @@
 package sqlancer.tidb.gen;
 
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
@@ -13,11 +15,14 @@ import sqlancer.tidb.TiDBSchema.TiDBTable;
 public class TiDBIndexGenerator {
 
 	public static Query getQuery(TiDBGlobalState globalState) throws SQLException {
+		Set<String> errors = new HashSet<>();
+		
 		TiDBTable randomTable = globalState.getSchema().getRandomTable();
 		String indexName = globalState.getSchema().getFreeIndexName();
 		StringBuilder sb = new StringBuilder("CREATE ");
 		if (Randomly.getBooleanWithRatherLowProbability()) {
 			sb.append("UNIQUE ");
+			errors.add("Duplicate for key");
 		}
 		sb.append("INDEX ");
 		sb.append(indexName);
@@ -41,7 +46,7 @@ public class TiDBIndexGenerator {
 			sb.append(" KEY_BLOCK_SIZE ");
 			sb.append(Randomly.getPositiveOrZeroNonCachedInteger());
 		}
-		return new QueryAdapter(sb.toString(), true);
+		return new QueryAdapter(sb.toString(), errors, true);
 	}
 
 }

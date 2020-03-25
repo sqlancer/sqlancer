@@ -57,5 +57,19 @@ public class AbstractSchema<A extends AbstractTable<?, ?>> {
 		} while (true);
 	}
 
+	public String getFreeTableName() {
+		int i = 0;
+		if (Randomly.getBooleanWithRatherLowProbability()) {
+			i = (int) Randomly.getNotCachedInteger(0, 100);
+		}
+		do {
+			String tableName = String.format("t%d", i++);
+			if (databaseTables.stream().noneMatch(t -> t.getName().contentEquals(tableName))) {
+				return tableName;
+			}
+		} while (true);
+
+	}
+	
 	
 }
