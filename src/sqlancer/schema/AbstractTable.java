@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 
-public class AbstractTable<COL extends AbstractTableColumn<?, ?>,  I extends TableIndex> implements Comparable<AbstractTable<COL, I>> {
+public class AbstractTable<COL extends AbstractTableColumn<?, ?>,  I extends TableIndex> implements Comparable<AbstractTable<?, ?>> {
 	
 	private final String name;
 	private final List<COL> columns;
@@ -26,7 +26,7 @@ public class AbstractTable<COL extends AbstractTableColumn<?, ?>,  I extends Tab
 	}
 	
 	@Override
-	public int compareTo(AbstractTable<COL, I> o) {
+	public int compareTo(AbstractTable<?, ?> o) {
 		return o.getName().compareTo(getName());
 	}
 	
