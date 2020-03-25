@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.DatabaseProvider;
+import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
@@ -27,7 +28,7 @@ import sqlancer.mariadb.gen.MariaDBTruncateGenerator;
 import sqlancer.mariadb.gen.MariaDBUpdateGenerator;
 import sqlancer.sqlite3.gen.SQLite3Common;
 
-public class MariaDBProvider implements DatabaseProvider {
+public class MariaDBProvider implements DatabaseProvider<GlobalState> {
 
 	public static final int MAX_EXPRESSION_DEPTH = 3;
 	private final Randomly r = new Randomly();
@@ -286,6 +287,11 @@ public class MariaDBProvider implements DatabaseProvider {
 	@Override
 	public StateToReproduce getStateToReproduce(String databaseName) {
 		return new MariaDBStateToReproduce(databaseName);
+	}
+
+	@Override
+	public GlobalState generateGlobalState() {
+		return new GlobalState();
 	}
 
 }

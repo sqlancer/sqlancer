@@ -27,6 +27,7 @@ import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.CockroachDBStateToReproduce;
 import sqlancer.TestOracle;
+import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.gen.CockroachDBCreateStatisticsGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBDeleteGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBIndexGenerator;
@@ -41,7 +42,7 @@ import sqlancer.cockroachdb.gen.CockroachDBUpdateGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBViewGenerator;
 import sqlancer.cockroachdb.gen.RockroachDBCommentOnGenerator;
 
-public class CockroachDBProvider implements DatabaseProvider {
+public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalState> {
 
 	@FunctionalInterface
 	public interface CockroachDBQueryProvider {
@@ -306,5 +307,10 @@ public class CockroachDBProvider implements DatabaseProvider {
 	@Override
 	public StateToReproduce getStateToReproduce(String databaseName) {
 		return new CockroachDBStateToReproduce(databaseName);
+	}
+
+	@Override
+	public CockroachDBGlobalState generateGlobalState() {
+		return new CockroachDBGlobalState();
 	}
 }

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.DatabaseProvider;
+import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
@@ -40,7 +41,7 @@ import sqlancer.mysql.gen.tblmaintenance.MySQLRepair;
 import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
 
-public class MySQLProvider implements DatabaseProvider {
+public class MySQLProvider implements DatabaseProvider<GlobalState> {
 
 	private final Randomly r = new Randomly();
 	private QueryManager manager;
@@ -355,6 +356,11 @@ public class MySQLProvider implements DatabaseProvider {
 	@Override
 	public StateToReproduce getStateToReproduce(String databaseName) {
 		return new MySQLStateToReproduce(databaseName);
+	}
+
+	@Override
+	public GlobalState generateGlobalState() {
+		return new GlobalState();
 	}
 
 }

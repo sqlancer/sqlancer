@@ -26,6 +26,7 @@ import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.SQLite3StateToReproduce;
 import sqlancer.TestOracle;
+import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.gen.SQLite3AnalyzeGenerator;
 import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.gen.SQLite3CreateVirtualRtreeTabelGenerator;
@@ -51,7 +52,7 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.Table;
 import sqlancer.sqlite3.schema.SQLite3Schema.Table.TableKind;
 
-public class SQLite3Provider implements DatabaseProvider {
+public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState> {
 
 	@FunctionalInterface
 	public interface SQLQueryProvider {
@@ -485,6 +486,11 @@ public class SQLite3Provider implements DatabaseProvider {
 	@Override
 	public StateToReproduce getStateToReproduce(String databaseName) {
 		return new SQLite3StateToReproduce(databaseName);
+	}
+
+	@Override
+	public SQLite3GlobalState generateGlobalState() {
+		return new SQLite3GlobalState();
 	}
 
 }

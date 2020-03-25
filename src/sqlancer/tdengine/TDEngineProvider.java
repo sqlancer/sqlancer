@@ -12,6 +12,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import sqlancer.DatabaseProvider;
+import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
@@ -30,7 +31,7 @@ import sqlancer.tdengine.gen.TDEngineQueryGenerator;
 import sqlancer.tdengine.gen.TDEngineRowGenerator;
 import sqlancer.tdengine.gen.TDEngineTableGenerator;
 
-public class TDEngineProvider implements DatabaseProvider {
+public class TDEngineProvider implements DatabaseProvider<GlobalState> {
 
 	public static enum Action {
 
@@ -312,6 +313,11 @@ public class TDEngineProvider implements DatabaseProvider {
 	@Override
 	public StateToReproduce getStateToReproduce(String databaseName) {
 		return new TDEngineStateToReproduce(databaseName);
+	}
+
+	@Override
+	public GlobalState generateGlobalState() {
+		return new GlobalState();
 	}
 
 }

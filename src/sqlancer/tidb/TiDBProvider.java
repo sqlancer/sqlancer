@@ -21,8 +21,9 @@ import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.MySQLStateToReproduce;
 import sqlancer.StatementExecutor;
 import sqlancer.mysql.MySQLSchema;
+import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 
-public class TiDBProvider implements DatabaseProvider {
+public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 
 	@FunctionalInterface
 	public interface TiDBQueryProvider {
@@ -71,6 +72,11 @@ public class TiDBProvider implements DatabaseProvider {
 			throw new AssertionError(a);
 		}
 
+	}
+	
+	@Override
+	public TiDBGlobalState generateGlobalState() {
+		return new TiDBGlobalState();
 	}
 
 	@Override
@@ -160,4 +166,5 @@ public class TiDBProvider implements DatabaseProvider {
 	public StateToReproduce getStateToReproduce(String databaseName) {
 		return new MySQLStateToReproduce(databaseName);
 	}
+
 }

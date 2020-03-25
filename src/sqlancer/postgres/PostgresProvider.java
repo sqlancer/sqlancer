@@ -50,7 +50,7 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 
 // EXISTS
 // IN
-public class PostgresProvider implements DatabaseProvider {
+public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 
 	public static boolean GENERATE_ONLY_KNOWN = false;
 
@@ -387,6 +387,13 @@ public class PostgresProvider implements DatabaseProvider {
 	@Override
 	public StateToReproduce getStateToReproduce(String databaseName) {
 		return new PostgresStateToReproduce(databaseName);
+	}
+
+
+
+	@Override
+	public PostgresGlobalState generateGlobalState() {
+		return new PostgresGlobalState();
 	}
 
 }
