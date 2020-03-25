@@ -60,7 +60,7 @@ public class CockroachDBInsertGenerator {
 					if (i++ != 0) {
 						sb.append(", ");
 					}
-					sb.append(CockroachDBVisitor.asString(gen.generateConstant(c.getColumnType())));
+					sb.append(CockroachDBVisitor.asString(gen.generateConstant(c.getType())));
 				}
 				sb.append(")");
 			}
@@ -84,7 +84,7 @@ public class CockroachDBInsertGenerator {
 					}
 					sb.append(c.getName());
 					sb.append(" = ");
-					sb.append(CockroachDBVisitor.asString(gen.generateConstant(c.getColumnType())));
+					sb.append(CockroachDBVisitor.asString(gen.generateConstant(c.getType())));
 				}
 				errors.add("UPSERT or INSERT...ON CONFLICT command cannot affect row a second time");
 			}

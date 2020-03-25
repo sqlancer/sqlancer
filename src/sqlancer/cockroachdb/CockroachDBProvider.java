@@ -121,16 +121,15 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 	}
 
 	@Override
-	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger, StateToReproduce state,
-			QueryManager manager, MainOptions options) throws SQLException {
+	public void generateAndTestDatabase(CockroachDBGlobalState globalState) throws SQLException {
 		Randomly r = new Randomly();
-		CockroachDBGlobalState globalState = new CockroachDBGlobalState();
-		globalState.setConnection(con);
+		Connection con = globalState.getConnection();
+		String databaseName = globalState.getDatabaseName();
+		QueryManager manager = globalState.getManager();
+		StateLogger logger = globalState.getLogger();
+		StateToReproduce state = globalState.getState();
+		MainOptions options = globalState.getOptions();
 		globalState.setSchema(CockroachDBSchema.fromConnection(con, databaseName));
-		globalState.setRandomly(r);
-		globalState.setMainOptions(options);
-		globalState.setStateLogger(logger);
-		globalState.setState(state);
 		CockroachDBOptions cockroachdbOptions = new CockroachDBOptions();
 		JCommander.newBuilder().addObject(cockroachdbOptions).build().parse(options.getDbmsOptions().split(" "));
 		globalState.setCockroachDBOptions(cockroachdbOptions);

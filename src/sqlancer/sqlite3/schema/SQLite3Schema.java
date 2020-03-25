@@ -578,7 +578,7 @@ public class SQLite3Schema {
 		} catch (Exception e) {
 		}
 		if (databaseColumns.isEmpty()) {
-			// only generated columns
+//			 only generated columns
 			throw new IgnoreMeException();
 		}
 		assert !databaseColumns.isEmpty() : tableName;

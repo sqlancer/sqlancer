@@ -36,7 +36,7 @@ public class CockroachDBUpdateGenerator {
 			}
 			sb.append(c.getName());
 			sb.append("=");
-			sb.append(CockroachDBVisitor.asString(gen.generateExpression(c.getColumnType())));
+			sb.append(CockroachDBVisitor.asString(gen.generateExpression(c.getType())));
 		}
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");

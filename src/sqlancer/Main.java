@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -252,19 +254,19 @@ public class Main {
 	public static class QueryManager {
 
 		private final Connection con;
-		private final StateToReproduce state;
+		private final StateToReproduce stateToRepro;
 
 		QueryManager(Connection con, StateToReproduce state) {
 			if (con == null || state == null) {
 				throw new IllegalArgumentException();
 			}
 			this.con = con;
-			this.state = state;
+			this.stateToRepro = state;
 
 		}
 
 		public boolean execute(Query q) throws SQLException {
-			state.statements.add(q);
+			stateToRepro.statements.add(q);
 			boolean success = q.execute(con);
 			Main.nrSuccessfulActions.addAndGet(1);
 			return success;
@@ -311,12 +313,14 @@ public class Main {
 				long currentNrDbs = nrDatabases.get();
 				long nrCurrentDbs = currentNrDbs - lastNrDbs;
 				double throughputDbs = nrCurrentDbs / (elapsedTimeMillis / 1000d);
-				long successfulStatementsRatio = (long) (100.0 * nrSuccessfulActions.get() / (nrSuccessfulActions.get() + nrUnsuccessfulActions.get()));
+				long successfulStatementsRatio = (long) (100.0 * nrSuccessfulActions.get()
+						/ (nrSuccessfulActions.get() + nrUnsuccessfulActions.get()));
 				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 				Date date = new Date();
 				System.out.println(String.format(
 						"[%s] Executed %d queries (%d queries/s; %.2f/s dbs, successful statements: %2d%%). Threads shut down: %d.",
-						dateFormat.format(date), currentNrQueries, (int) throughput, throughputDbs, successfulStatementsRatio, threadsShutdown));
+						dateFormat.format(date), currentNrQueries, (int) throughput, throughputDbs,
+						successfulStatementsRatio, threadsShutdown));
 				timeMillis = System.currentTimeMillis();
 				lastNrQueries = currentNrQueries;
 				lastNrDbs = currentNrDbs;
@@ -330,9 +334,9 @@ public class Main {
 
 			executor.execute(new Runnable() {
 
-				StateToReproduce state;
+				StateToReproduce stateToRepro;
 				StateLogger logger;
-				DatabaseProvider provider;
+				DatabaseProvider<?> provider;
 
 				@Override
 				public void run() {
@@ -365,24 +369,43 @@ public class Main {
 				private void runThread(final String databaseName) {
 					Thread.currentThread().setName(databaseName);
 					while (true) {
-						state = provider.getStateToReproduce(databaseName);
+						stateToRepro = provider.getStateToReproduce(databaseName);
 						logger = new StateLogger(databaseName, provider, options);
-						try (Connection con = provider.createDatabase(databaseName, state)) {
-							QueryManager manager = new QueryManager(con, state);
+						try (Connection con = provider.createDatabase(databaseName, stateToRepro)) {
+							QueryManager manager = new QueryManager(con, stateToRepro);
 							java.sql.DatabaseMetaData meta = con.getMetaData();
-							state.databaseVersion = meta.getDatabaseProductVersion();
-							provider.generateAndTestDatabase(databaseName, con, logger, state, manager, options);
+							stateToRepro.databaseVersion = meta.getDatabaseProductVersion();
+							GlobalState state = (GlobalState) provider.generateGlobalState();
+							state.setState(stateToRepro);
+							Randomly r = new Randomly();
+							state.setDatabaseName(databaseName);
+							state.setConnection(con);
+							state.setRandomly(r);
+							state.setMainOptions(options);
+							state.setStateLogger(logger);
+							state.setManager(manager);
+							Method method = provider.getClass().getMethod("generateAndTestDatabase", state.getClass());
+							method.setAccessible(true);
+							method.invoke(provider, state);
+//							provider.generateAndTestDatabase(state);
+//							provider.generateAndTestDatabase(databaseName, con, logger, state, manager, options);
 						} catch (IgnoreMeException e) {
 							continue;
+						} catch (InvocationTargetException e) {
+							if (e.getCause() instanceof IgnoreMeException) {
+								continue;
+							} else {
+								throw new AssertionError(e);
+							}
 						} catch (ReduceMeException reduce) {
-							logger.logRowNotFound(state);
+							logger.logRowNotFound(stateToRepro);
 							threadsShutdown++;
 							break;
 						} catch (Throwable reduce) {
 							reduce.printStackTrace();
-							state.exception = reduce.getMessage();
+							stateToRepro.exception = reduce.getMessage();
 							logger.logFileWriter = null;
-							logger.logException(reduce, state);
+							logger.logException(reduce, stateToRepro);
 							threadsShutdown++;
 							break;
 						} finally {

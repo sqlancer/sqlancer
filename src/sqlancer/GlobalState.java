@@ -13,6 +13,7 @@ public class GlobalState {
 	private StateLogger logger;
 	private StateToReproduce state;
 	private QueryManager manager;
+	private String databaseName;
 
 	public void setConnection(Connection con) {
 		this.con = con;
@@ -60,6 +61,14 @@ public class GlobalState {
 
 	public void setManager(QueryManager manager) {
 		this.manager = manager;
+	}
+	
+	public String getDatabaseName() {
+		return databaseName;
+	}
+	
+	public void setDatabaseName(String databaseName) {
+		this.databaseName = databaseName;
 	}
 
 }

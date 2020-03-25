@@ -12,8 +12,6 @@ import sqlancer.DatabaseProvider;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
-import sqlancer.Main.StateLogger;
-import sqlancer.MainOptions;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -80,17 +78,11 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 	}
 
 	@Override
-	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger, StateToReproduce state,
-			QueryManager manager, MainOptions options) throws SQLException {
-		Randomly r = new Randomly();
-		TiDBGlobalState globalState = new TiDBGlobalState();
-		globalState.setConnection(con);
+	public void generateAndTestDatabase(TiDBGlobalState globalState) throws SQLException {
+		QueryManager manager = globalState.getManager();
+		Connection con = globalState.getConnection();
+		String databaseName = globalState.getDatabaseName();
 		globalState.setSchema(MySQLSchema.fromConnection(con, databaseName));
-		globalState.setRandomly(r);
-		globalState.setMainOptions(options);
-		globalState.setStateLogger(logger);
-		globalState.setManager(manager);
-		globalState.setState(state);
 //		TiDBOptions TiDBOptions = new TiDBOptions();
 //		JCommander.newBuilder().addObject(TiDBOptions).build().parse(options.getDbmsOptions().split(" "));
 //		globalState.setTiDBOptions(TiDBOptions);

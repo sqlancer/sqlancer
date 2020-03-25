@@ -19,6 +19,7 @@ import sqlancer.Randomly;
 import sqlancer.StateToReproduce.PostgresStateToReproduce;
 import sqlancer.postgres.PostgresSchema.PostgresTable.TableType;
 import sqlancer.postgres.ast.PostgresConstant;
+import sqlancer.schema.TableIndex;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 
 public class PostgresSchema {
@@ -397,23 +398,22 @@ public class PostgresSchema {
 		}
 	}
 
-	public static final class PostgresIndex {
-
-		private final String indexName;
+	public static final class PostgresIndex extends TableIndex {
 
 		private PostgresIndex(String indexName) {
-			this.indexName = indexName;
+			super(indexName);
 		}
 
 		public static PostgresIndex create(String indexName) {
 			return new PostgresIndex(indexName);
 		}
 
+		@Override
 		public String getIndexName() {
-			if (indexName.contentEquals("PRIMARY")) {
+			if (getIndexName().contentEquals("PRIMARY")) {
 				return "`PRIMARY`";
 			} else {
-				return indexName;
+				return getIndexName();
 			}
 		}
 

@@ -74,9 +74,12 @@ public class TDEngineProvider implements DatabaseProvider<GlobalState> {
 	private String databaseName;
 
 	@Override
-	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger, StateToReproduce state,
-			QueryManager manager, MainOptions options) throws SQLException {
-		this.databaseName = databaseName;
+	public void generateAndTestDatabase(GlobalState globalState) throws SQLException {
+		this.databaseName = globalState.getDatabaseName();
+		Connection con = globalState.getConnection();
+		QueryManager manager = globalState.getManager();
+		MainOptions options = globalState.getOptions();
+		StateLogger logger = globalState.getLogger();
 		Randomly r = new Randomly();
 		TDEngineSchema newSchema = null;
 		this.state = (TDEngineStateToReproduce) state;

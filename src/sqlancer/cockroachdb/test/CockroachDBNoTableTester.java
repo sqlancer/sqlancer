@@ -111,7 +111,7 @@ public class CockroachDBNoTableTester implements TestOracle {
 						if (rs.getString(i) == null) {
 							sb.append("NULL");
 						} else {
-							switch (c.getColumnType().getPrimitiveDataType()) {
+							switch (c.getType().getPrimitiveDataType()) {
 							case INT:
 								sb.append(rs.getLong(i));
 								break;

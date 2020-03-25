@@ -268,7 +268,7 @@ public class CockroachDBExpressionGenerator {
 		if (columns.isEmpty() || Randomly.getBoolean()) {
 			return CockroachDBCompositeDataType.getRandom();
 		} else {
-			return Randomly.fromList(columns).getColumnType();
+			return Randomly.fromList(columns).getType();
 		}
 	}
 
@@ -288,14 +288,14 @@ public class CockroachDBExpressionGenerator {
 	}
 
 	private boolean canGenerateConstantOfType(CockroachDBCompositeDataType type) {
-		return columns.stream().anyMatch(c -> c.getColumnType() == type);
+		return columns.stream().anyMatch(c -> c.getType() == type);
 	}
 
 	private CockroachDBExpression getRandomColumn(CockroachDBCompositeDataType type) {
 		CockroachDBColumn column = Randomly
-				.fromList(columns.stream().filter(c -> c.getColumnType() == type).collect(Collectors.toList()));
+				.fromList(columns.stream().filter(c -> c.getType() == type).collect(Collectors.toList()));
 		CockroachDBExpression columnReference = new CockroachDBColumnReference(column);
-		if (column.getColumnType().isString() && Randomly.getBooleanWithRatherLowProbability()) {
+		if (column.getType().isString() && Randomly.getBooleanWithRatherLowProbability()) {
 			columnReference = new CockroachDBCollate(columnReference, CockroachDBCommon.getRandomCollate());
 		}
 		return columnReference;

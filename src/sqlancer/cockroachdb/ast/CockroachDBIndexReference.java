@@ -1,15 +1,15 @@
 package sqlancer.cockroachdb.ast;
 
 import sqlancer.Randomly;
-import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBIndex;
+import sqlancer.schema.TableIndex;
 import sqlancer.visitor.UnaryOperation;
 
 public class CockroachDBIndexReference extends CockroachDBTableReference implements UnaryOperation<CockroachDBExpression> {
 	
 	private CockroachDBTableReference tableReference;
-	private CockroachDBIndex index;
+	private TableIndex index;
 
-	public CockroachDBIndexReference(CockroachDBTableReference tableReference, CockroachDBIndex index) {
+	public CockroachDBIndexReference(CockroachDBTableReference tableReference, TableIndex index) {
 		super(tableReference.getTable());
 		this.tableReference = tableReference;
 		this.index = index;

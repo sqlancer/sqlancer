@@ -11,8 +11,8 @@ import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
-import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBIndex;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
+import sqlancer.schema.TableIndex;
 
 public class RockroachDBCommentOnGenerator {
 	
@@ -28,11 +28,11 @@ public class RockroachDBCommentOnGenerator {
 			sb.append("TABLE " + randomTable.getName());
 			break;
 		case INDEX:
-			List<CockroachDBIndex> indexes = randomTable.getIndexes();
+			List<TableIndex> indexes = randomTable.getIndexes();
 			if (indexes.isEmpty()) {
 				throw new IgnoreMeException();
 			}
-			CockroachDBIndex index = Randomly.fromList(indexes);
+			TableIndex index = Randomly.fromList(indexes);
 			if (index.getIndexName().contains("primary")) {
 				throw new IgnoreMeException();
 			}

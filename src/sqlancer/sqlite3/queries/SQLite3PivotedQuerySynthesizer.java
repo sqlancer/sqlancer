@@ -98,7 +98,7 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 	}
 
 	public SQLite3SelectStatement getQuery(SQLite3GlobalState globalState) throws SQLException {
-		this.state = globalState.getState();
+		this.state = (SQLite3StateToReproduce) globalState.getState();
 		if (s.getDatabaseTables().size() == 0) {
 			throw new IgnoreMeException();
 		}
@@ -114,7 +114,7 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 				columns.add(t.getRowid());
 			}
 		}
-		rw = randomFromTables.getRandomRowValue(database, globalState.getState());
+		rw = randomFromTables.getRandomRowValue(database, (SQLite3StateToReproduce) globalState.getState());
 
 		List<Join> joinStatements = new ArrayList<>();
 		for (int i = 1; i < tables.size(); i++) {
@@ -160,7 +160,8 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 			if (Randomly.getBoolean()) {
 				SQLite3Expression randomExpression;
 				do {
-					randomExpression = new SQLite3ExpressionGenerator(globalState).setColumns(columns).getRandomExpression();
+					randomExpression = new SQLite3ExpressionGenerator(globalState).setColumns(columns)
+							.getRandomExpression();
 				} while (randomExpression.getExpectedValue() == null);
 				colExpressions.add(randomExpression);
 			} else {
@@ -177,10 +178,11 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 				.collect(Collectors.joining(", "));
 		SQLite3Expression whereClause = generateWhereClauseThatContainsRowValue(columns, rw);
 		selectStatement.setWhereClause(whereClause);
-		globalState.getState().whereClause = selectStatement;
+		((SQLite3StateToReproduce) globalState.getState()).whereClause = selectStatement;
 		List<SQLite3Expression> groupByClause = generateGroupByClause(columns, rw, allTablesContainOneRow);
 		selectStatement.setGroupByClause(groupByClause);
-		SQLite3Expression limitClause = generateLimit((long) (Math.pow(globalState.getOptions().getMaxNumberInserts(), joinStatements.size() + randomFromTables.getTables().size())));
+		SQLite3Expression limitClause = generateLimit((long) (Math.pow(globalState.getOptions().getMaxNumberInserts(),
+				joinStatements.size() + randomFromTables.getTables().size())));
 		selectStatement.setLimitClause(limitClause);
 		if (limitClause != null) {
 			SQLite3Expression offsetClause = generateOffset();
@@ -278,21 +280,25 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 		}
 	}
 
-	private List<SQLite3Expression> generateGroupByClause(List<SQLite3Column> columns, RowValue rw, boolean allTablesContainOneRow) {
+	private List<SQLite3Expression> generateGroupByClause(List<SQLite3Column> columns, RowValue rw,
+			boolean allTablesContainOneRow) {
 		errors.add("GROUP BY term out of range");
 		if (allTablesContainOneRow && Randomly.getBoolean()) {
 			List<SQLite3Expression> collect = new ArrayList<>();
 			for (int i = 0; i < Randomly.smallNumber(); i++) {
-				collect.add(new SQLite3ExpressionGenerator(globalState).setColumns(columns).setRowValue(rw).getRandomExpression());
+				collect.add(new SQLite3ExpressionGenerator(globalState).setColumns(columns).setRowValue(rw)
+						.getRandomExpression());
 			}
 			return collect;
 		}
 		if (Randomly.getBoolean()) {
 			// ensure that we GROUP BY all columns
-			List<SQLite3Expression> collect = columns.stream().map(c -> new SQLite3ColumnName(c, rw.getValues().get(c))).collect(Collectors.toList());
+			List<SQLite3Expression> collect = columns.stream().map(c -> new SQLite3ColumnName(c, rw.getValues().get(c)))
+					.collect(Collectors.toList());
 			if (Randomly.getBoolean()) {
 				for (int i = 0; i < Randomly.smallNumber(); i++) {
-					collect.add(new SQLite3ExpressionGenerator(globalState).setColumns(columns).setRowValue(rw).getRandomExpression());
+					collect.add(new SQLite3ExpressionGenerator(globalState).setColumns(columns).setRowValue(rw)
+							.getRandomExpression());
 				}
 			}
 			return collect;
@@ -311,7 +317,8 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 	private SQLite3Expression generateNewExpression(List<SQLite3Column> columns, RowValue rw, boolean shouldBeTrue,
 			int depth) {
 		do {
-			SQLite3Expression expr = new SQLite3ExpressionGenerator(globalState).setRowValue(rw).setColumns(columns).getRandomExpression();
+			SQLite3Expression expr = new SQLite3ExpressionGenerator(globalState).setRowValue(rw).setColumns(columns)
+					.getRandomExpression();
 			if (expr.getExpectedValue() != null) {
 				if (expr.getExpectedValue().isNull()) {
 					return new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.ISNULL, expr);

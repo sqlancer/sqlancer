@@ -161,7 +161,6 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState> {
 	public static class SQLite3GlobalState extends GlobalState {
 
 		private SQLite3Schema schema;
-		private SQLite3StateToReproduce state;
 		private SQLite3Options sqliteOptions;
 
 
@@ -174,15 +173,6 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState> {
 			this.schema = schema;
 		}
 
-		public void setState(SQLite3StateToReproduce state) {
-			this.state = state;
-		}
-
-		public SQLite3StateToReproduce getState() {
-			return state;
-		}
-
-
 		public void setSqliteOptions(SQLite3Options sqliteOptions) {
 			this.sqliteOptions = sqliteOptions;
 		}
@@ -193,27 +183,26 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState> {
 
 	}
 
-	private final SQLite3GlobalState globalState = new SQLite3GlobalState();
+	private SQLite3GlobalState globalState;
 
 	private enum TableType {
 		NORMAL, FTS, RTREE
 	}
 
 	@Override
-	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger, StateToReproduce state,
-			QueryManager manager, MainOptions options) throws SQLException {
+	public void generateAndTestDatabase(SQLite3GlobalState globalState) throws SQLException {
+		this.globalState = globalState;
 		SQLite3Options sqliteOptions = new SQLite3Options();
-		JCommander.newBuilder().addObject(sqliteOptions).build().parse(options.getDbmsOptions().split(" "));
-
-		this.databaseName = databaseName;
+		JCommander.newBuilder().addObject(sqliteOptions).build().parse(globalState.getOptions().getDbmsOptions().split(" "));
+		Connection con = globalState.getConnection();
+		QueryManager manager = globalState.getManager();
+		MainOptions options = globalState.getOptions();
+		this.databaseName = globalState.getDatabaseName();
 		Randomly r = new Randomly(SQLite3SpecialStringGenerator::generate);
-		globalState.setMainOptions(options);
 		globalState.setSqliteOptions(sqliteOptions);
 		globalState.setRandomly(r);
-		globalState.setStateLogger(logger);
-		globalState.setManager(manager);
-		this.state = (SQLite3StateToReproduce) state;
-		globalState.setConnection(con);
+		StateLogger logger = globalState.getLogger();
+		this.state = (SQLite3StateToReproduce) globalState.getState();
 		globalState.setState((SQLite3StateToReproduce) state);
 		addSensiblePragmaDefaults(con);
 		int nrTablesToCreate = 1;

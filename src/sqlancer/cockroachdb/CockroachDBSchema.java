@@ -12,14 +12,17 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.schema.AbstractTable;
+import sqlancer.schema.AbstractTableColumn;
+import sqlancer.schema.TableIndex;
 
 public class CockroachDBSchema {
 
 	public static enum CockroachDBDataType {
-		
-		
-		INT, BOOL, STRING, FLOAT, BYTES, BIT, VARBIT, SERIAL, INTERVAL, TIMESTAMP, TIMESTAMPTZ, DECIMAL, JSONB, TIME, TIMETZ;
-		
+
+		INT, BOOL, STRING, FLOAT, BYTES, BIT, VARBIT, SERIAL, INTERVAL, TIMESTAMP, TIMESTAMPTZ, DECIMAL, JSONB, TIME,
+		TIMETZ;
+
 		private CockroachDBDataType() {
 			isPrimitive = true;
 		}
@@ -27,7 +30,7 @@ public class CockroachDBSchema {
 		private CockroachDBDataType(boolean isPrimitive) {
 			this.isPrimitive = isPrimitive;
 		}
-		
+
 		private final boolean isPrimitive;
 
 		public static CockroachDBDataType getRandom() {
@@ -37,33 +40,32 @@ public class CockroachDBSchema {
 		public CockroachDBCompositeDataType get() {
 			return CockroachDBCompositeDataType.getRandomForType(this);
 		}
-		
+
 		public boolean isPrimitive() {
 			return isPrimitive;
 		}
 	}
-	
+
 	public static class CockroachDBCompositeDataType {
-		
+
 		private final CockroachDBDataType dataType;
 
 		private final int size;
-		
+
 		public CockroachDBCompositeDataType(CockroachDBDataType dataType) {
 			this.dataType = dataType;
 			this.size = -1;
 		}
-		
+
 		public CockroachDBCompositeDataType(CockroachDBDataType dataType, int size) {
 			this.dataType = dataType;
 			this.size = size;
 		}
-		
-		
+
 		public CockroachDBDataType getPrimitiveDataType() {
 			return dataType;
 		}
-		
+
 		public int getSize() {
 			if (size == -1) {
 				throw new AssertionError(this);
@@ -74,15 +76,15 @@ public class CockroachDBSchema {
 		public boolean isString() {
 			return dataType == CockroachDBDataType.STRING;
 		}
-		
+
 		public static CockroachDBCompositeDataType getInt(int size) {
 			return new CockroachDBCompositeDataType(CockroachDBDataType.INT, size);
 		}
-		
+
 		public static CockroachDBCompositeDataType getBit(int size) {
 			return new CockroachDBCompositeDataType(CockroachDBDataType.BIT, size);
 		}
-		
+
 		@Override
 		public String toString() {
 			switch (dataType) {
@@ -121,8 +123,8 @@ public class CockroachDBSchema {
 				} else {
 					return String.format("VARBIT(%d)", size);
 				}
-				default:
-					return dataType.toString();
+			default:
+				return dataType.toString();
 			}
 		}
 
@@ -146,76 +148,23 @@ public class CockroachDBSchema {
 		public static CockroachDBCompositeDataType getVarBit(int maxSize) {
 			return new CockroachDBCompositeDataType(CockroachDBDataType.VARBIT, maxSize);
 		}
-		
+
 	}
 
-	public static class CockroachDBColumn implements Comparable<CockroachDBColumn> {
+	public static class CockroachDBColumn extends AbstractTableColumn<CockroachDBTable, CockroachDBCompositeDataType> {
 
-		private final String name;
-		private final CockroachDBCompositeDataType columnType;
 		private final boolean isPrimaryKey;
-		private CockroachDBTable table;
 		private boolean isNullable;
 
 		public CockroachDBColumn(String name, CockroachDBCompositeDataType columnType, boolean isPrimaryKey,
 				boolean isNullable) {
-			this.name = name;
-			this.columnType = columnType;
+			super(name, null, columnType);
 			this.isPrimaryKey = isPrimaryKey;
 			this.isNullable = isNullable;
 		}
 
-		@Override
-		public String toString() {
-			return String.format("%s.%s: %s", table.getName(), name, columnType);
-		}
-
-		@Override
-		public int hashCode() {
-			return name.hashCode() + 11 * columnType.hashCode();
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (!(obj instanceof CockroachDBColumn)) {
-				return false;
-			} else {
-				CockroachDBColumn c = (CockroachDBColumn) obj;
-				return table.getName().contentEquals(getName()) && name.equals(c.name);
-			}
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public String getFullQualifiedName() {
-			return table.getName() + "." + getName();
-		}
-
-		public CockroachDBCompositeDataType getColumnType() {
-			return columnType;
-		}
-
 		public boolean isPrimaryKey() {
 			return isPrimaryKey;
-		}
-
-		public void setTable(CockroachDBTable t) {
-			this.table = t;
-		}
-
-		public CockroachDBTable getTable() {
-			return table;
-		}
-
-		@Override
-		public int compareTo(CockroachDBColumn o) {
-			if (o.getTable().equals(this.getTable())) {
-				return name.compareTo(o.getName());
-			} else {
-				return o.getTable().compareTo(table);
-			}
 		}
 
 		public boolean isNullable() {
@@ -310,94 +259,15 @@ public class CockroachDBSchema {
 		}
 	}
 
-	public static class CockroachDBTable implements Comparable<CockroachDBTable> {
+	public static class CockroachDBTable extends AbstractTable<CockroachDBColumn, TableIndex> {
 
-		private final String tableName;
-		private final List<CockroachDBColumn> columns;
-		private final List<CockroachDBIndex> indexes;
-		private final boolean isView;
-
-		public CockroachDBTable(String tableName, List<CockroachDBColumn> columns, List<CockroachDBIndex> indexes, boolean isView) {
-			this.tableName = tableName;
-			this.indexes = indexes;
-			this.isView = isView;
-			this.columns = Collections.unmodifiableList(columns);
-		}
-
-		@Override
-		public String toString() {
-			StringBuffer sb = new StringBuffer();
-			sb.append(tableName + "\n");
-			for (CockroachDBColumn c : columns) {
-				sb.append("\t" + c + "\n");
-			}
-			return sb.toString();
-		}
-
-		public List<CockroachDBIndex> getIndexes() {
-			return indexes;
-		}
-
-		public String getName() {
-			return tableName;
-		}
-
-		public List<CockroachDBColumn> getColumns() {
-			return columns;
-		}
-
-		public String getColumnsAsString() {
-			return columns.stream().map(c -> c.getName()).collect(Collectors.joining(", "));
-		}
-
-		public String getColumnsAsString(Function<CockroachDBColumn, String> function) {
-			return columns.stream().map(function).collect(Collectors.joining(", "));
-		}
-
-		public CockroachDBColumn getRandomColumn() {
-			return Randomly.fromList(columns);
-		}
-
-		public boolean hasIndexes() {
-			return !indexes.isEmpty();
-		}
-
-		public CockroachDBIndex getRandomIndex() {
-			return Randomly.fromList(indexes);
-		}
-
-		@Override
-		public int compareTo(CockroachDBTable o) {
-			return o.getName().compareTo(tableName);
-		}
-
-		public List<CockroachDBColumn> getRandomNonEmptyColumnSubset() {
-			return Randomly.nonEmptySubset(getColumns());
+		public CockroachDBTable(String tableName, List<CockroachDBColumn> columns, List<TableIndex> indexes,
+				boolean isView) {
+			super(tableName, columns, indexes, isView);
 		}
 
 		public boolean hasPrimaryKey() {
-			return columns.stream().anyMatch(c -> c.isPrimaryKey());
-		}
-		
-		public boolean isView() {
-			return isView;
-		}
-	}
-
-	public static final class CockroachDBIndex {
-
-		private final String indexName;
-
-		private CockroachDBIndex(String indexName) {
-			this.indexName = indexName;
-		}
-
-		public static CockroachDBIndex create(String indexName) {
-			return new CockroachDBIndex(indexName);
-		}
-
-		public String getIndexName() {
-			return indexName;
+			return getColumns().stream().anyMatch(c -> c.isPrimaryKey());
 		}
 
 	}
@@ -407,7 +277,7 @@ public class CockroachDBSchema {
 		List<String> tableNames = getTableNames(con);
 		for (String tableName : tableNames) {
 			List<CockroachDBColumn> databaseColumns = getTableColumns(con, tableName);
-			List<CockroachDBIndex> indexes = getIndexes(con, tableName, databaseName);
+			List<TableIndex> indexes = getIndexes(con, tableName, databaseName);
 			boolean isView = tableName.startsWith("v");
 			CockroachDBTable t = new CockroachDBTable(tableName, databaseColumns, indexes, isView);
 			for (CockroachDBColumn c : databaseColumns) {
@@ -425,21 +295,21 @@ public class CockroachDBSchema {
 			ResultSet tableRs = s.executeQuery("SHOW TABLES");
 			while (tableRs.next()) {
 				String tableName = tableRs.getString(1);
-		
+
 				tableNames.add(tableName);
 			}
 		}
 		return tableNames;
 	}
 
-	private static List<CockroachDBIndex> getIndexes(Connection con, String tableName, String databaseName)
+	private static List<TableIndex> getIndexes(Connection con, String tableName, String databaseName)
 			throws SQLException {
-		List<CockroachDBIndex> indexes = new ArrayList<>();
+		List<TableIndex> indexes = new ArrayList<>();
 		try (Statement s = con.createStatement()) {
 			try (ResultSet rs = s.executeQuery(String.format("SHOW INDEX FROM %s", tableName))) {
 				while (rs.next()) {
 					String indexName = rs.getString("index_name");
-					indexes.add(CockroachDBIndex.create(indexName));
+					indexes.add(TableIndex.create(indexName));
 				}
 			}
 		}
@@ -483,7 +353,7 @@ public class CockroachDBSchema {
 	public CockroachDBTable getRandomTable() {
 		return Randomly.fromList(getDatabaseTables());
 	}
-	
+
 	public CockroachDBTable getRandomTable(Predicate<CockroachDBTable> predicate) {
 		return Randomly.fromList(getDatabaseTables().stream().filter(predicate).collect(Collectors.toList()));
 	}

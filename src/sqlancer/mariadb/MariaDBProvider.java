@@ -48,9 +48,13 @@ public class MariaDBProvider implements DatabaseProvider<GlobalState> {
 	}
 
 	@Override
-	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger, StateToReproduce state,
-			QueryManager manager, MainOptions options) throws SQLException {
-		this.databaseName = databaseName;
+	public void generateAndTestDatabase(GlobalState globalState) throws SQLException {
+		this.databaseName = globalState.getDatabaseName();
+		MainOptions options = globalState.getOptions();
+		Connection con = globalState.getConnection();
+		StateLogger logger = globalState.getLogger();
+		StateToReproduce state = globalState.getState();
+		QueryManager manager = globalState.getManager();
 		MariaDBSchema newSchema = MariaDBSchema.fromConnection(con, databaseName);
 		if (options.logEachSelect()) {
 			logger.writeCurrent(state);

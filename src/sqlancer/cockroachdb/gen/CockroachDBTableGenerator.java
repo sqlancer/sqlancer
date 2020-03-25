@@ -62,14 +62,14 @@ public class CockroachDBTableGenerator {
 			CockroachDBColumn cockroachDBColumn = columns.get(i);
 			sb.append(cockroachDBColumn.getName());
 			sb.append(" ");
-			sb.append(cockroachDBColumn.getColumnType());
-			if (cockroachDBColumn.getColumnType().isString() && Randomly.getBoolean()) {
+			sb.append(cockroachDBColumn.getType());
+			if (cockroachDBColumn.getType().isString() && Randomly.getBoolean()) {
 				sb.append(" COLLATE " + CockroachDBCommon.getRandomCollate());
 			}
-			boolean generatedColumn = Randomly.getBooleanWithRatherLowProbability() && cockroachDBColumn.getColumnType().getPrimitiveDataType() != CockroachDBDataType.SERIAL;
+			boolean generatedColumn = Randomly.getBooleanWithRatherLowProbability() && cockroachDBColumn.getType().getPrimitiveDataType() != CockroachDBDataType.SERIAL;
 			if (generatedColumn) {
 				sb.append(" AS (");
-				sb.append(CockroachDBVisitor.asString(gen.generateExpression(cockroachDBColumn.getColumnType())));
+				sb.append(CockroachDBVisitor.asString(gen.generateExpression(cockroachDBColumn.getType())));
 				sb.append(") STORED");
 				errors.add("computed columns cannot reference other computed columns");
 				errors.add("has type unknown");
@@ -84,10 +84,10 @@ public class CockroachDBTableGenerator {
 				sb.append(" PRIMARY KEY");
 				singleColumnPrimaryKey = false;
 			}
-			if (!generatedColumn && cockroachDBColumn.getColumnType().getPrimitiveDataType() != CockroachDBDataType.SERIAL && Randomly.getBoolean()) {
+			if (!generatedColumn && cockroachDBColumn.getType().getPrimitiveDataType() != CockroachDBDataType.SERIAL && Randomly.getBoolean()) {
 				sb.append(" DEFAULT (");
 				sb.append(CockroachDBVisitor.asString(new CockroachDBExpressionGenerator(globalState)
-						.generateExpression(cockroachDBColumn.getColumnType())));
+						.generateExpression(cockroachDBColumn.getType())));
 				sb.append(")");
 				errors.add("has type unknown"); // NULLIF
 			}
@@ -95,7 +95,7 @@ public class CockroachDBTableGenerator {
 				// TODO: also allow referencing itself
 				sb.append(" REFERENCES ");
 				CockroachDBTable otherTable = globalState.getSchema().getRandomTable();
-				List<CockroachDBColumn> applicableColumns = otherTable.getColumns().stream().filter(c -> c.getColumnType() == cockroachDBColumn.getColumnType()).collect(Collectors.toList());
+				List<CockroachDBColumn> applicableColumns = otherTable.getColumns().stream().filter(c -> c.getType() == cockroachDBColumn.getType()).collect(Collectors.toList());
 				if (applicableColumns.isEmpty()) {
 					throw new IgnoreMeException();
 				}

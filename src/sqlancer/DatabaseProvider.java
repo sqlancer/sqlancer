@@ -8,14 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import sqlancer.Main.QueryManager;
-import sqlancer.Main.StateLogger;
-
-public interface DatabaseProvider<G> {
-
-	void generateAndTestDatabase(final String databaseName, Connection con, StateLogger logger, StateToReproduce state,
-			QueryManager manager, MainOptions options) throws SQLException;
+public interface DatabaseProvider<G extends GlobalState> {
 	
+	void generateAndTestDatabase(G globalState) throws SQLException;
+
 	G generateGlobalState();
 
 	Connection createDatabase(String databaseName, StateToReproduce state) throws SQLException;
@@ -67,7 +63,5 @@ public interface DatabaseProvider<G> {
 		}
 		return resultSet;
 	}
-
-	
 	
 }

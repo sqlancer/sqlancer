@@ -53,10 +53,13 @@ public class MySQLProvider implements DatabaseProvider<GlobalState> {
 	}
 
 	@Override
-	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger, StateToReproduce state,
-			QueryManager manager, MainOptions options) throws SQLException {
-		this.databaseName = databaseName;
-		this.manager = manager;
+	public void generateAndTestDatabase(GlobalState globalState) throws SQLException {
+		this.databaseName = globalState.getDatabaseName();
+		this.manager = globalState.getManager();
+		Connection con = globalState.getConnection();
+		MainOptions options = globalState.getOptions();
+		StateLogger logger = globalState.getLogger();
+		StateToReproduce state = globalState.getState();
 		MySQLSchema newSchema = MySQLSchema.fromConnection(con, databaseName);
 		if (options.logEachSelect()) {
 			logger.writeCurrent(state);

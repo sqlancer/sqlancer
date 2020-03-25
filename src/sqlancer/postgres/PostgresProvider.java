@@ -129,14 +129,16 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 	private final Randomly r = new Randomly();
 
 	@Override
-	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger, StateToReproduce state,
-			QueryManager manager, MainOptions options) throws SQLException {
+	public void generateAndTestDatabase(PostgresGlobalState globalState) throws SQLException {
+		MainOptions options = globalState.getOptions();
+		StateLogger logger = globalState.getLogger();
+		StateToReproduce state = globalState.getState();
+		String databaseName = globalState.getDatabaseName();
+		Connection con = globalState.getConnection();
+		QueryManager manager = globalState.getManager();
 		if (options.logEachSelect()) {
 			logger.writeCurrent(state);
 		}
-		globalState = new PostgresGlobalState();
-		globalState.setConnection(con);
-		globalState.setRandomly(r);
 		globalState.setSchema(PostgresSchema.fromConnection(con, databaseName));
 		while (globalState.getSchema().getDatabaseTables().size() < 2) {
 			try {
