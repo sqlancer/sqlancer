@@ -6,6 +6,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.DatabaseProvider;
@@ -29,9 +30,9 @@ public class TiDBProvider implements DatabaseProvider {
 		Query getQuery(TiDBGlobalState globalState) throws SQLException;
 	}
 
-	public static enum Action {
-		INSERT((g) -> new QueryAdapter("INSERT INTO t0 VALUES (" + Randomly.getNonCachedInteger() + ")")), //
-		ANALYZE_TABLE((g) -> new QueryAdapter("ANALYZE TABLE " + g.getSchema().getRandomTable().getName()));
+	public static enum Action implements AbstractAction<TiDBGlobalState> {
+		INSERT((g) -> new QueryAdapter("INSERT INTO t0 VALUES (" + Randomly.getNonCachedInteger() + ")", Arrays.asList("Out of range value for column"))), //
+		ANALYZE_TABLE((g) -> new QueryAdapter("ANALYZE TABLE t0"));
 
 		private final TiDBQueryProvider queryProvider;
 
@@ -57,6 +58,10 @@ public class TiDBProvider implements DatabaseProvider {
 		}
 
 	}
+	
+	public  interface AbstractAction<G> {
+		public Query getQuery(G globalState) throws SQLException;
+	}
 
 	@FunctionalInterface
 	public interface AfterQueryAction {
@@ -64,19 +69,19 @@ public class TiDBProvider implements DatabaseProvider {
 	}
 
 	@FunctionalInterface
-	public interface ActionMapper<T> {
-		public int map(T globalState, Action a);
+	public interface ActionMapper<T, A> {
+		public int map(T globalState, A action);
 	}
 
-	public class TiDBStatementExecutor {
+	public class StatementExecutor<G extends GlobalState, A extends AbstractAction<G>> {
 
-		private final TiDBGlobalState globalState;
-		private final Action[] actions;
-		private final ActionMapper<TiDBGlobalState> mapping;
+		private final G globalState;
+		private final A[] actions;
+		private final ActionMapper<G, A> mapping;
 		private final AfterQueryAction queryConsumer;
 
-		TiDBStatementExecutor(TiDBGlobalState globalState, String databaseName, Action[] actions,
-				ActionMapper<TiDBGlobalState> mapping, AfterQueryAction queryConsumer) {
+		StatementExecutor(G globalState, String databaseName, A[] actions,
+				ActionMapper<G, A> mapping, AfterQueryAction queryConsumer) {
 			this.globalState = globalState;
 			this.actions = actions;
 			this.mapping = mapping;
@@ -85,33 +90,34 @@ public class TiDBProvider implements DatabaseProvider {
 
 		public void executeStatements() throws SQLException {
 			Randomly r = globalState.getRandomly();
-			int[] nrRemaining = new int[Action.values().length];
-			List<Action> availableActions = new ArrayList<>();
+			int[] nrRemaining = new int[actions.length];
+			List<A> availableActions = new ArrayList<>();
 			int total = 0;
 			for (int i = 0; i < actions.length; i++) {
-				Action action = Action.values()[i];
+				A action = actions[i];
 				int nrPerformed = mapping.map(globalState, action);
 				if (nrPerformed != 0) {
 					availableActions.add(action);
 				}
-				nrRemaining[action.ordinal()] = nrPerformed;
+				nrRemaining[i] = nrPerformed;
 				total += nrPerformed;
 			}
 			while (total != 0) {
-				Action nextAction = null;
+				A nextAction = null;
 				int selection = r.getInteger(0, total);
 				int previousRange = 0;
-				for (int i = 0; i < nrRemaining.length; i++) {
+				int i;
+				for (i = 0; i < nrRemaining.length; i++) {
 					if (previousRange <= selection && selection < previousRange + nrRemaining[i]) {
-						nextAction = Action.values()[i];
+						nextAction = actions[i];
 						break;
 					} else {
 						previousRange += nrRemaining[i];
 					}
 				}
 				assert nextAction != null;
-				assert nrRemaining[nextAction.ordinal()] > 0;
-				nrRemaining[nextAction.ordinal()]--;
+				assert nrRemaining[i] > 0;
+				nrRemaining[i]--;
 				Query query = null;
 				try {
 					boolean success;
@@ -128,9 +134,6 @@ public class TiDBProvider implements DatabaseProvider {
 				}
 				if (query != null && query.couldAffectSchema()) {
 					queryConsumer.notify(query);
-					if (globalState.getSchema().getDatabaseTables().isEmpty()) {
-						throw new IgnoreMeException();
-					}
 				}
 				total--;
 			}
@@ -170,10 +173,14 @@ public class TiDBProvider implements DatabaseProvider {
 		Query qt = new QueryAdapter("CREATE TABLE t0(c0 INT UNIQUE)");
 		manager.execute(qt);
 
-		TiDBStatementExecutor se = new TiDBStatementExecutor(globalState, databaseName, Action.values(),
+		StatementExecutor<TiDBGlobalState, Action> se = new StatementExecutor<TiDBGlobalState, Action>(globalState, databaseName, Action.values(),
 				TiDBProvider::mapActions, (q) -> {
-					if (q.couldAffectSchema())
+					if (q.couldAffectSchema()) {
 						globalState.setSchema(MySQLSchema.fromConnection(con, databaseName));
+					}
+					if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+						throw new IgnoreMeException();
+					}
 				});
 		se.executeStatements();
 		manager.incrementCreateDatabase();
