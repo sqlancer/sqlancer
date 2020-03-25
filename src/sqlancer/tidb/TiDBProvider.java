@@ -16,6 +16,8 @@ import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.MySQLStateToReproduce;
+import sqlancer.mysql.MySQLSchema;
+import sqlancer.mysql.gen.MySQLTableGenerator;
 
 public class TiDBProvider implements DatabaseProvider {
 
@@ -76,49 +78,36 @@ public class TiDBProvider implements DatabaseProvider {
 
 	public static class TiDBGlobalState extends GlobalState {
 
+		private MySQLSchema schema;
+
+		public void setSchema(MySQLSchema schema) {
+			this.schema = schema;
+		}
+		
+		public MySQLSchema getSchema() {
+			return schema;
+		}
+
 	}
 
 	@Override
 	public void generateAndTestDatabase(String databaseName, Connection con, StateLogger logger, StateToReproduce state,
 			QueryManager manager, MainOptions options) throws SQLException {
-//		Randomly r = new Randomly();
-//		TiDBGlobalState globalState = new TiDBGlobalState();
-//		globalState.setConnection(con);
-//		globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
-//		globalState.setRandomly(r);
-//		globalState.setMainOptions(options);
-//		globalState.setStateLogger(logger);
-//		globalState.setState(state);
+		Randomly r = new Randomly();
+		TiDBGlobalState globalState = new TiDBGlobalState();
+		globalState.setConnection(con);
+		globalState.setSchema(MySQLSchema.fromConnection(con, databaseName));
+		globalState.setRandomly(r);
+		globalState.setMainOptions(options);
+		globalState.setStateLogger(logger);
+		globalState.setState(state);
 //		TiDBOptions TiDBOptions = new TiDBOptions();
 //		JCommander.newBuilder().addObject(TiDBOptions).build().parse(options.getDbmsOptions().split(" "));
 //		globalState.setTiDBOptions(TiDBOptions);
 //
-//		manager.execute(new QueryAdapter("SET CLUSTER SETTING debug.panic_on_failed_assertions = true;"));
-//		manager.execute(new QueryAdapter("SET CLUSTER SETTING diagnostics.reporting.enabled	 = false;"));
-//		manager.execute(
-//				new QueryAdapter("SET CLUSTER SETTING diagnostics.reporting.send_crash_reports		 = false;"));
-//
-//		for (int i = 0; i < Randomly.fromOptions(1, 2, 3); i++) {
-//			boolean success = false;
-//			do {
-//				try {
-//					Query q = TiDBTableGenerator.generate(globalState);
-//					success = manager.execute(q);
-//					logger.writeCurrent(state);
-//					try {
-//						logger.getCurrentFileWriter().close();
-//					} catch (IOException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-//					logger.currentFileWriter = null;
-//				} catch (IgnoreMeException e) {
-//
-//				}
-//			} while (!success);
-//			globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
-//		}
-//		logger.writeCurrent(state);
+		
+		Query q = new QueryAdapter("CREATE TABLE t0(c0 INT UNIQUE)");
+		manager.execute(q);
 //
 //		int[] nrRemaining = new int[Action.values().length];
 //		List<Action> actions = new ArrayList<>();
