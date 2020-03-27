@@ -1,21 +1,15 @@
 package sqlancer.cockroachdb.ast;
 
+import sqlancer.ast.UnaryNode;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBCompositeDataType;
-import sqlancer.visitor.UnaryOperation;
 
-public class CockroachDBTypeAnnotation implements UnaryOperation<CockroachDBExpression>, CockroachDBExpression {
-	
-	private final CockroachDBExpression expr;
+public class CockroachDBTypeAnnotation extends UnaryNode<CockroachDBExpression> implements CockroachDBExpression {
+
 	private final CockroachDBCompositeDataType type;
 
 	public CockroachDBTypeAnnotation(CockroachDBExpression expr, CockroachDBCompositeDataType type) {
-		this.expr = expr;
+		super(expr);
 		this.type = type;
-	}
-
-	@Override
-	public CockroachDBExpression getExpression() {
-		return expr;
 	}
 
 	@Override

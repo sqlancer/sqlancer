@@ -1,15 +1,14 @@
 package sqlancer.cockroachdb.ast;
 
 import sqlancer.Randomly;
-import sqlancer.visitor.UnaryOperation;
+import sqlancer.ast.BinaryOperatorNode.Operator;
+import sqlancer.ast.UnaryOperatorNode;
+import sqlancer.cockroachdb.ast.CockroachDBUnaryArithmeticOperation.CockroachDBUnaryAritmeticOperator;
 
-public class CockroachDBUnaryArithmeticOperation
-		implements UnaryOperation<CockroachDBExpression>, CockroachDBExpression {
+public class CockroachDBUnaryArithmeticOperation extends
+		UnaryOperatorNode<CockroachDBExpression, CockroachDBUnaryAritmeticOperator> implements CockroachDBExpression {
 
-	private final CockroachDBExpression expr;
-	private final CockroachDBUnaryAritmeticOperator op;
-
-	public enum CockroachDBUnaryAritmeticOperator {
+	public enum CockroachDBUnaryAritmeticOperator implements Operator {
 		PLUS("+"), MINUS("-"), NEGATION("~");
 
 		private String textRepr;
@@ -22,21 +21,15 @@ public class CockroachDBUnaryArithmeticOperation
 			return Randomly.fromOptions(values());
 		}
 
+		@Override
+		public String getTextRepresentation() {
+			return textRepr;
+		}
+
 	}
 
 	public CockroachDBUnaryArithmeticOperation(CockroachDBExpression expr, CockroachDBUnaryAritmeticOperator op) {
-		this.expr = expr;
-		this.op = op;
-	}
-
-	@Override
-	public CockroachDBExpression getExpression() {
-		return expr;
-	}
-
-	@Override
-	public String getOperatorRepresentation() {
-		return op.textRepr;
+		super(expr, op);
 	}
 
 	@Override

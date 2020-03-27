@@ -1,13 +1,16 @@
 package sqlancer.cockroachdb.ast;
 
 import sqlancer.Randomly;
-import sqlancer.ast.BinaryNode;
+import sqlancer.ast.BinaryOperatorNode;
+import sqlancer.ast.BinaryOperatorNode.Operator;
+import sqlancer.cockroachdb.ast.CockroachDBBinaryLogicalOperation.CockroachDBBinaryLogicalOperator;
 
-public class CockroachDBBinaryLogicalOperation extends BinaryNode<CockroachDBExpression> implements CockroachDBExpression  {
-	
-	public enum CockroachDBBinaryLogicalOperator {
+public class CockroachDBBinaryLogicalOperation extends
+		BinaryOperatorNode<CockroachDBExpression, CockroachDBBinaryLogicalOperator> implements CockroachDBExpression {
+
+	public enum CockroachDBBinaryLogicalOperator implements Operator {
 		AND("AND"), OR("OR");
-		
+
 		private String textRepr;
 
 		private CockroachDBBinaryLogicalOperator(String textRepr) {
@@ -17,19 +20,17 @@ public class CockroachDBBinaryLogicalOperation extends BinaryNode<CockroachDBExp
 		public static CockroachDBBinaryLogicalOperator getRandom() {
 			return Randomly.fromOptions(CockroachDBBinaryLogicalOperator.values());
 		}
-		
-	}
-	
-	private final CockroachDBBinaryLogicalOperator op;
 
-	public CockroachDBBinaryLogicalOperation(CockroachDBExpression left, CockroachDBExpression right, CockroachDBBinaryLogicalOperator op) {
-		super(left, right);
-		this.op = op;
+		@Override
+		public String getTextRepresentation() {
+			return textRepr;
+		}
+
 	}
 
-	@Override
-	public String getOperatorRepresentation() {
-		return op.textRepr;
+	public CockroachDBBinaryLogicalOperation(CockroachDBExpression left, CockroachDBExpression right,
+			CockroachDBBinaryLogicalOperator op) {
+		super(left, right, op);
 	}
 
 }

@@ -1,18 +1,11 @@
 package sqlancer.cockroachdb.ast;
 
-import sqlancer.visitor.UnaryOperation;
+import sqlancer.ast.UnaryNode;
 
-public class CockroachDBNotOperation implements UnaryOperation<CockroachDBExpression>, CockroachDBExpression {
-	
-	private CockroachDBExpression expr;
+public class CockroachDBNotOperation extends UnaryNode<CockroachDBExpression> implements CockroachDBExpression {
 
 	public CockroachDBNotOperation(CockroachDBExpression expr) {
-		this.expr = expr;
-	}
-
-	@Override
-	public CockroachDBExpression getExpression() {
-		return expr;
+		super(expr);
 	}
 
 	@Override

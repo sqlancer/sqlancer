@@ -1,24 +1,18 @@
 package sqlancer.cockroachdb.ast;
 
-import sqlancer.visitor.UnaryOperation;
+import sqlancer.ast.UnaryNode;
 
-public class CockroachDBCollate implements UnaryOperation<CockroachDBExpression>, CockroachDBExpression {
+public class CockroachDBCollate extends UnaryNode<CockroachDBExpression> implements CockroachDBExpression {
 
-	private final CockroachDBExpression expr;
 	private final String collate;
 
 	public CockroachDBCollate(CockroachDBExpression expr, String collate) {
-		this.expr = expr;
+		super(expr);
 		this.collate = collate;
 	}
 	
 	public String getCollate() {
 		return collate;
-	}
-
-	@Override
-	public CockroachDBExpression getExpression() {
-		return expr;
 	}
 
 	@Override

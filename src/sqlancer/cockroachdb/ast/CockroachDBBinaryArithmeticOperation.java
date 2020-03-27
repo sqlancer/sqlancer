@@ -1,47 +1,37 @@
 package sqlancer.cockroachdb.ast;
 
 import sqlancer.Randomly;
-import sqlancer.visitor.BinaryOperation;
+import sqlancer.ast.BinaryOperatorNode;
+import sqlancer.ast.BinaryOperatorNode.Operator;
+import sqlancer.cockroachdb.ast.CockroachDBBinaryArithmeticOperation.CockroachDBBinaryArithmeticOperator;
 
-public class CockroachDBBinaryArithmeticOperation implements BinaryOperation<CockroachDBExpression>, CockroachDBExpression {
+public class CockroachDBBinaryArithmeticOperation
+		extends BinaryOperatorNode<CockroachDBExpression, CockroachDBBinaryArithmeticOperator>
+		implements CockroachDBExpression {
 
-	private final CockroachDBExpression left;
-	private final CockroachDBExpression right;
-	private final CockroachDBBinaryArithmeticOperator op;
-
-	public static enum CockroachDBBinaryArithmeticOperator {
+	public static enum CockroachDBBinaryArithmeticOperator implements Operator {
 		ADD("+"), MULT("*"), MINUS("-"), DIV("/");
-		
+
 		String textRepresentation;
-		
+
 		CockroachDBBinaryArithmeticOperator(String textRepresentation) {
 			this.textRepresentation = textRepresentation;
 		}
-		
+
 		public static CockroachDBBinaryArithmeticOperator getRandom() {
 			return Randomly.fromOptions(values());
 		}
-	}
-	
-	public CockroachDBBinaryArithmeticOperation(CockroachDBExpression left, CockroachDBExpression right, CockroachDBBinaryArithmeticOperator op) {
-		this.left = left;
-		this.right = right;
-		this.op = op;
-	}
-	
-	@Override
-	public CockroachDBExpression getLeft() {
-		return left;
+
+		@Override
+		public String getTextRepresentation() {
+			return textRepresentation;
+		}
+
 	}
 
-	@Override
-	public CockroachDBExpression getRight() {
-		return right;
-	}
-
-	@Override
-	public String getOperatorRepresentation() {
-		return op.textRepresentation;
+	public CockroachDBBinaryArithmeticOperation(CockroachDBExpression left, CockroachDBExpression right,
+			CockroachDBBinaryArithmeticOperator op) {
+		super(left, right, op);
 	}
 
 }
