@@ -3,7 +3,7 @@ package sqlancer.tidb.ast;
 import sqlancer.Randomly;
 import sqlancer.visitor.UnaryOperation;
 
-public class TiDBUnaryPostfixOperation  extends TiDBExpression implements UnaryOperation<TiDBExpression>  {
+public class TiDBUnaryPostfixOperation implements TiDBExpression, UnaryOperation<TiDBExpression>  {
 
 	private final TiDBExpression expr;
 	private final TiDBUnaryPostfixOperator op;

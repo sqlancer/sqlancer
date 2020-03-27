@@ -1,11 +1,9 @@
 package sqlancer.tidb.ast;
 
 import sqlancer.Randomly;
-import sqlancer.visitor.BinaryOperation;
+import sqlancer.ast.BinaryNode;
 
-public class TiDBBinaryComparisonOperation extends TiDBExpression
-implements BinaryOperation<TiDBExpression> {
-
+public class TiDBBinaryComparisonOperation extends BinaryNode<TiDBExpression>  implements TiDBExpression {
 
 	public enum TiDBComparisonOperator {
 		EQUALS("="), //
@@ -28,25 +26,12 @@ implements BinaryOperation<TiDBExpression> {
 
 	}
 
-	private final TiDBExpression left;
-	private final TiDBExpression right;
 	private final TiDBComparisonOperator op;
 
 	public TiDBBinaryComparisonOperation(TiDBExpression left, TiDBExpression right,
 			TiDBComparisonOperator op) {
-		this.left = left;
-		this.right = right;
+		super(left, right);
 		this.op = op;
-	}
-
-	@Override
-	public TiDBExpression getLeft() {
-		return left;
-	}
-
-	@Override
-	public TiDBExpression getRight() {
-		return right;
 	}
 
 	@Override

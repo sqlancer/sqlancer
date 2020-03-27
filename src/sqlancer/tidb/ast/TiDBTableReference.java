@@ -2,7 +2,7 @@ package sqlancer.tidb.ast;
 
 import sqlancer.tidb.TiDBSchema.TiDBTable;
 
-public class TiDBTableReference extends TiDBExpression {
+public class TiDBTableReference implements TiDBExpression {
 
 	private TiDBTable table;
 

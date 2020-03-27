@@ -7,6 +7,8 @@ import sqlancer.Randomly;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
 import sqlancer.tidb.TiDBSchema.TiDBDataType;
+import sqlancer.tidb.ast.TiDBBinaryArithmeticOperation;
+import sqlancer.tidb.ast.TiDBBinaryArithmeticOperation.TiDBBinaryArithmeticOperator;
 import sqlancer.tidb.ast.TiDBBinaryComparisonOperation;
 import sqlancer.tidb.ast.TiDBBinaryComparisonOperation.TiDBComparisonOperator;
 import sqlancer.tidb.ast.TiDBCollate;
@@ -37,7 +39,8 @@ public class TiDBExpressionGenerator {
 		COMPARISON,
 		REGEX,
 		COLLATE,
-		FUNCTION
+		FUNCTION,
+//		BINARY_ARITHMETIC
 	}
 	
 	public TiDBExpression generateExpression() {
@@ -75,6 +78,8 @@ public class TiDBExpressionGenerator {
 		case FUNCTION:
 			TiDBFunction func = TiDBFunction.getRandom();
 			return new TiDBFunctionCall(func, generateExpressions(depth, func.getNrArgs()));
+//		case BINARY_ARITHMETIC:
+//			return new TiDBBinaryArithmeticOperation(generateExpression(depth + 1), generateExpression(depth + 1), TiDBBinaryArithmeticOperator.getRandom());
 		default:
 			throw new AssertionError();
 		}

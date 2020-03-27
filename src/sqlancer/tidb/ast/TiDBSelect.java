@@ -3,7 +3,7 @@ package sqlancer.tidb.ast;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TiDBSelect extends TiDBExpression {
+public class TiDBSelect implements TiDBExpression {
 
 	private TiDBExpression wherePredicate;
 	private List<TiDBExpression> fetchColumns;

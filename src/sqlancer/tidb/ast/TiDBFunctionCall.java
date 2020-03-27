@@ -4,12 +4,15 @@ import java.util.List;
 
 import sqlancer.Randomly;
 
-public class TiDBFunctionCall extends TiDBExpression {
+public class TiDBFunctionCall implements TiDBExpression {
 
 	private TiDBFunction function;
 	private List<TiDBExpression> args;
 
 	public static enum TiDBFunction {
+		
+		
+		TIDB_VERSION(0),
 		
 		IF(3),
 		IFNULL(2),

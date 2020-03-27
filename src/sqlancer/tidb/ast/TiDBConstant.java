@@ -1,6 +1,6 @@
 package sqlancer.tidb.ast;
 
-public class TiDBConstant extends TiDBExpression {
+public class TiDBConstant implements TiDBExpression {
 	
 	public static class TiDBNullConstant extends TiDBConstant {
 

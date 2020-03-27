@@ -3,7 +3,7 @@ package sqlancer.tidb.ast;
 import sqlancer.Randomly;
 import sqlancer.visitor.BinaryOperation;
 
-public class TiDBRegexOperation extends TiDBExpression implements BinaryOperation<TiDBExpression> {
+public class TiDBRegexOperation implements TiDBExpression, BinaryOperation<TiDBExpression> {
 
 	public enum TiDBRegexOperator {
 		LIKE("LIKE"), //

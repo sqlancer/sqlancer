@@ -1,5 +1,5 @@
 package sqlancer.tidb.ast;
 
-public class TiDBExpression {
+public interface TiDBExpression {
 
 }
