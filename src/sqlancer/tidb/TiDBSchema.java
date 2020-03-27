@@ -19,7 +19,7 @@ public class TiDBSchema extends AbstractSchema<TiDBTable> {
 
 	public static enum TiDBDataType {
 
-		INT;
+		INT, TEXT, BOOL, FLOAT, DOUBLE;
 
 		private TiDBDataType() {
 			isPrimitive = true;
@@ -114,7 +114,22 @@ public class TiDBSchema extends AbstractSchema<TiDBTable> {
 		if (typeString.startsWith("int")) {
 			return new TiDBCompositeDataType(TiDBDataType.INT);
 		}
-		throw new AssertionError(typeString);
+		TiDBDataType primitiveType;
+		switch (typeString) {
+		case "text":
+			primitiveType = TiDBDataType.TEXT;
+			break;
+		case "float":
+		case "double":
+			primitiveType = TiDBDataType.FLOAT;
+			break;
+		case "tinyint(1)":
+			primitiveType = TiDBDataType.BOOL;
+			break;
+		default:
+			throw new AssertionError(typeString);
+		}
+		return new TiDBCompositeDataType(primitiveType);
 	}
 
 	public static class TiDBTable extends AbstractTable<TiDBColumn, TableIndex> {

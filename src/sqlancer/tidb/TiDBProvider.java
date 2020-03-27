@@ -19,10 +19,15 @@ import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.MySQLStateToReproduce;
 import sqlancer.StatementExecutor;
+import sqlancer.TestOracle;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
+import sqlancer.tidb.gen.TiDBAnalyzeTableGenerator;
+import sqlancer.tidb.gen.TiDBDeleteGenerator;
 import sqlancer.tidb.gen.TiDBIndexGenerator;
 import sqlancer.tidb.gen.TiDBInsertGenerator;
+import sqlancer.tidb.gen.TiDBSetGenerator;
 import sqlancer.tidb.gen.TiDBTableGenerator;
+import sqlancer.tidb.test.TiDBQueryPartitioningWhereTester;
 
 public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 
@@ -34,9 +39,12 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 
 	public static enum Action implements AbstractAction<TiDBGlobalState> {
 		INSERT(TiDBInsertGenerator::getQuery), //
-		ANALYZE_TABLE((g) -> new QueryAdapter("ANALYZE TABLE " + g.getSchema().getRandomTable().getName())),
+		ANALYZE_TABLE(TiDBAnalyzeTableGenerator::getQuery),
 		TRUNCATE((g) -> new QueryAdapter("TRUNCATE " + g.getSchema().getRandomTable().getName())),
-		CREATE_INDEX(TiDBIndexGenerator::getQuery);
+		CREATE_INDEX(TiDBIndexGenerator::getQuery),
+		DELETE(TiDBDeleteGenerator::getQuery),
+		SET(TiDBSetGenerator::getQuery),
+		ADMIN_CHECKSUM_TABLE((g) -> new QueryAdapter("ADMIN CHECKSUM TABLE " + g.getSchema().getRandomTable().getName()));
 
 		private final TiDBQueryProvider queryProvider;
 
@@ -72,7 +80,11 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 		case INSERT:
 			return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
 		case TRUNCATE:
+		case DELETE:
+		case ADMIN_CHECKSUM_TABLE:
 			return r.getInteger(0, 2);
+		case SET:
+			return r.getInteger(0, 50);
 		default:
 			throw new AssertionError(a);
 		}
@@ -98,8 +110,10 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 //
 
 		for (int i = 0; i < Randomly.fromOptions(1, 2, 3); i++) {
+			boolean success = false;
+			do {
 			Query qt = new TiDBTableGenerator().getQuery(globalState);
-			manager.execute(qt);
+			success = manager.execute(qt);
 			logger.writeCurrent(state);
 			globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
 			try {
@@ -109,6 +123,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 				e.printStackTrace();
 			}
 			logger.currentFileWriter = null;
+			} while (!success);
 		}
 		globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
 
@@ -123,30 +138,30 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 				});
 		se.executeStatements();
 		manager.incrementCreateDatabase();
-//		TestOracle oracle = globalState.getTiDBOptions().oracle.create(globalState);
-//		for (int i = 0; i < options.getNrQueries(); i++) {
-//			try {
-//				oracle.check();
-//				manager.incrementSelectQueryCount();
-//			} catch (IgnoreMeException e) {
-//
-//			}
-//		}
-//		try {
-//			if (options.logEachSelect()) {
-//				logger.getCurrentFileWriter().close();
-//				logger.currentFileWriter = null;
-//			}
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		TestOracle oracle = new TiDBQueryPartitioningWhereTester(globalState);
+		for (int i = 0; i < globalState.getOptions().getNrQueries(); i++) {
+			try {
+				oracle.check();
+				manager.incrementSelectQueryCount();
+			} catch (IgnoreMeException e) {
+
+			}
+		}
+		try {
+			if (globalState.getOptions().logEachSelect()) {
+				logger.getCurrentFileWriter().close();
+				logger.currentFileWriter = null;
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 
 	@Override
 	public Connection createDatabase(String databaseName, StateToReproduce state) throws SQLException {
-		String url = "jdbc:mysql://127.0.0.1:4000/";
+		String url = "jdbc:mysql://127.0.0.1:4001/";
 		Connection con = DriverManager.getConnection(url, "root", "");
 		state.statements.add(new QueryAdapter("USE test"));
 		state.statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName));
@@ -160,7 +175,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 			s.execute(createDatabaseCommand);
 		}
 		con.close();
-		con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:4000/" + databaseName, "root", "");
+		con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:4001/" + databaseName, "root", "");
 		return con;
 	}
 

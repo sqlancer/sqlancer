@@ -23,6 +23,8 @@ public class TiDBInsertGenerator {
 		errors.add("Duplicate entry");
 		errors.add("cannot be null");
 		errors.add("doesn't have a default value");
+		
+		errors.add("The value specified for generated column"); // TODO: do not insert data into generated columns
 	}
 
 	public static Query getQuery(TiDBGlobalState globalState) throws SQLException {

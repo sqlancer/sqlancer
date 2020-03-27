@@ -138,6 +138,7 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 		manager.execute(new QueryAdapter("SET CLUSTER SETTING diagnostics.reporting.enabled	 = false;"));
 		manager.execute(
 				new QueryAdapter("SET CLUSTER SETTING diagnostics.reporting.send_crash_reports		 = false;"));
+		manager.execute(new QueryAdapter("SET experimental_enable_temp_tables = 'on'"));
 
 		for (int i = 0; i < Randomly.fromOptions(1, 2, 3); i++) {
 			boolean success = false;

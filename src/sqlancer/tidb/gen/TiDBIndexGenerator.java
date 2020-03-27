@@ -16,13 +16,14 @@ public class TiDBIndexGenerator {
 
 	public static Query getQuery(TiDBGlobalState globalState) throws SQLException {
 		Set<String> errors = new HashSet<>();
-		
+
 		TiDBTable randomTable = globalState.getSchema().getRandomTable();
 		String indexName = globalState.getSchema().getFreeIndexName();
 		StringBuilder sb = new StringBuilder("CREATE ");
 		if (Randomly.getBooleanWithRatherLowProbability()) {
 			sb.append("UNIQUE ");
 			errors.add("Duplicate for key");
+			errors.add("Duplicate entry ");
 		}
 		sb.append("INDEX ");
 		sb.append(indexName);
@@ -36,6 +37,7 @@ public class TiDBIndexGenerator {
 				sb.append(", ");
 			}
 			sb.append(subset.get(i).getName());
+			TiDBTableGenerator.appendTextSizeSpecifier(sb, subset.get(i).getType().getPrimitiveDataType());
 			if (Randomly.getBoolean()) {
 				sb.append(" ");
 				sb.append(Randomly.fromOptions("ASC", "DESC"));

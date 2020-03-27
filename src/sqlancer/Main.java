@@ -400,6 +400,7 @@ public class Main {
 								logger.logFileWriter = null;
 								logger.logException(e.getCause(), stateToRepro);
 								threadsShutdown++;
+								break;
 							}
 						} catch (ReduceMeException reduce) {
 							logger.logRowNotFound(stateToRepro);
