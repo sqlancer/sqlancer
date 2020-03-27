@@ -7,6 +7,8 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import com.beust.jcommander.JCommander;
+
 import sqlancer.AbstractAction;
 import sqlancer.DatabaseProvider;
 import sqlancer.GlobalState;
@@ -27,7 +29,6 @@ import sqlancer.tidb.gen.TiDBIndexGenerator;
 import sqlancer.tidb.gen.TiDBInsertGenerator;
 import sqlancer.tidb.gen.TiDBSetGenerator;
 import sqlancer.tidb.gen.TiDBTableGenerator;
-import sqlancer.tidb.test.TiDBQueryPartitioningHavingTester;
 
 public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 
@@ -60,6 +61,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 	public static class TiDBGlobalState extends GlobalState {
 
 		private TiDBSchema schema;
+		private TiDBOptions tidbOptions;
 
 		public void setSchema(TiDBSchema schema) {
 			this.schema = schema;
@@ -67,6 +69,14 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 
 		public TiDBSchema getSchema() {
 			return schema;
+		}
+
+		public TiDBOptions getTiDBOptions() {
+			return tidbOptions;
+		}
+
+		public void setTiDBOptions(TiDBOptions tidbOptions) {
+			this.tidbOptions = tidbOptions;
 		}
 
 	}
@@ -104,11 +114,9 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 		globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
 		StateLogger logger = globalState.getLogger();
 		StateToReproduce state = globalState.getState();
-//		TiDBOptions TiDBOptions = new TiDBOptions();
-//		JCommander.newBuilder().addObject(TiDBOptions).build().parse(options.getDbmsOptions().split(" "));
-//		globalState.setTiDBOptions(TiDBOptions);
-//
-
+		TiDBOptions tidbOptions = new TiDBOptions();
+		JCommander.newBuilder().addObject(tidbOptions).build().parse(globalState.getOptions().getDbmsOptions().split(" "));
+		globalState.setTiDBOptions(tidbOptions);
 		for (int i = 0; i < Randomly.fromOptions(1, 2, 3); i++) {
 			boolean success = false;
 			do {
@@ -138,7 +146,8 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 				});
 		se.executeStatements();
 		manager.incrementCreateDatabase();
-		TestOracle oracle = new TiDBQueryPartitioningHavingTester(globalState);
+		TestOracle oracle = globalState.getTiDBOptions().oracle.create(globalState);
+
 		for (int i = 0; i < globalState.getOptions().getNrQueries(); i++) {
 			try {
 				oracle.check();
