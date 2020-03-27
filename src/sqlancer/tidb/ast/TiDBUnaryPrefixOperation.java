@@ -9,8 +9,10 @@ public class TiDBUnaryPrefixOperation extends UnaryNode<TiDBExpression> implemen
 
 	public static enum TiDBUnaryPrefixOperator {
 		NOT("NOT"), //
+		INVERSION("~"), //
 		PLUS("+"), //
-		MINUS("-"); //
+		MINUS("-"), //
+		BINARY("BINARY"); //
 
 		private String s;
 

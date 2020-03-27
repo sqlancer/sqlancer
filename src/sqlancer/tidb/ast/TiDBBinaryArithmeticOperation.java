@@ -3,7 +3,8 @@ package sqlancer.tidb.ast;
 import sqlancer.Randomly;
 import sqlancer.ast.BinaryNode;
 
-public class TiDBBinaryArithmeticOperation extends BinaryNode<TiDBExpression> implements TiDBExpression {
+
+public class TiDBBinaryArithmeticOperation  extends BinaryNode<TiDBExpression> implements TiDBExpression {
 
 	private final TiDBBinaryArithmeticOperator op;
 

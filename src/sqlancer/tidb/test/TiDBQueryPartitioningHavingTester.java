@@ -1,9 +1,8 @@
 package sqlancer.tidb.test;
 
+import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,14 +26,15 @@ import sqlancer.tidb.ast.TiDBUnaryPrefixOperation;
 import sqlancer.tidb.ast.TiDBUnaryPrefixOperation.TiDBUnaryPrefixOperator;
 import sqlancer.tidb.visitor.TiDBVisitor;
 
-public class TiDBQueryPartitioningWhereTester  implements TestOracle  {
+public class TiDBQueryPartitioningHavingTester  implements TestOracle  {
 
 	private final TiDBGlobalState state;
 	private final Set<String> errors = new HashSet<>();
 
-	public TiDBQueryPartitioningWhereTester(TiDBGlobalState state) {
+	public TiDBQueryPartitioningHavingTester(TiDBGlobalState state) {
 		this.state = state;
 		TiDBErrors.addExpressionErrors(errors);
+		TiDBErrors.addExpressionHavingErrors(errors);
 	}
 
 	@Override
@@ -46,39 +46,47 @@ public class TiDBQueryPartitioningWhereTester  implements TestOracle  {
 		select.setColumns(Arrays.asList(new TiDBColumnReference(targetTables.getColumns().get(0))));
 		List<TiDBExpression> tableList = targetTables.getTables().stream()
 				.map(t -> new TiDBTableReference(t)).collect(Collectors.toList());
-		// TODO joins
+//		List<TiDBTableReference> from = TiDBCommon.getTableReferences(tableList);
+//		if (Randomly.getBooleanWithRatherLowProbability()) {
+//			select.setJoinList(TiDBNoRECTester.getJoins(from, state));
+//		}
 		select.setFromTables(tableList);
-		select.setWhereCondition(null);
-		if (Randomly.getBoolean() && false) {
-			// TODO: this results in run-time errors
-			select.setOrderBy(gen.generateOrderBys());
-		}
-		String originalQueryString = TiDBVisitor.asString(select);
-		
-		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors, state.getConnection());
-		
-		TiDBExpression predicate = gen.generateExpression();
-		select.setOrderBy(Collections.emptyList());
-		select.setWhereCondition(predicate);
-		String firstQueryString = TiDBVisitor.asString(select);
-		select.setWhereCondition(new TiDBUnaryPrefixOperation(predicate, TiDBUnaryPrefixOperator.NOT));
-		String secondQueryString = TiDBVisitor.asString(select);
-		select.setWhereCondition(new TiDBUnaryPostfixOperation(predicate, TiDBUnaryPostfixOperator.IS_NULL));
-		String thirdQueryString = TiDBVisitor.asString(select);
-		List<String> secondResultSet;
-		String combinedString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL " + thirdQueryString;
+		// TODO order by?
 		if (Randomly.getBoolean()) {
-			secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors, state.getConnection());
-		} else {
-			secondResultSet = new ArrayList<>();
-			secondResultSet.addAll(DatabaseProvider.getResultSetFirstColumnAsString(firstQueryString, errors, state.getConnection()));
-			secondResultSet.addAll(DatabaseProvider.getResultSetFirstColumnAsString(secondQueryString, errors, state.getConnection()));
-			secondResultSet.addAll(DatabaseProvider.getResultSetFirstColumnAsString(thirdQueryString, errors, state.getConnection()));
+			select.setWhereCondition(gen.generateExpression());
 		}
+		select.setGroupByClause(gen.generateExpressions(Randomly.smallNumber() + 1));
+		select.setHavingClause(null);
+		String originalQueryString = TiDBVisitor.asString(select);
 		if (state.getOptions().logEachSelect()) {
 			state.getLogger().writeCurrent(originalQueryString);
-			state.getLogger().writeCurrent(combinedString);
+			try {
+				state.getLogger().getCurrentFileWriter().flush();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
+		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors, state.getConnection());
+		
+		TiDBExpression predicate = gen.generateHavingClause();
+		select.setHavingClause(predicate);
+		String firstQueryString = TiDBVisitor.asString(select);
+		select.setHavingClause(new TiDBUnaryPrefixOperation(predicate, TiDBUnaryPrefixOperator.NOT));
+		String secondQueryString = TiDBVisitor.asString(select);
+		select.setHavingClause(new TiDBUnaryPostfixOperation(predicate, TiDBUnaryPostfixOperator.IS_NULL));
+		String thirdQueryString = TiDBVisitor.asString(select);
+		String combinedString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL " + thirdQueryString;
+		if (state.getOptions().logEachSelect()) {
+			state.getLogger().writeCurrent(combinedString);
+			try {
+				state.getLogger().getCurrentFileWriter().flush();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		List<String> secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors, state.getConnection());
 		if (resultSet.size() != secondResultSet.size()) {
 			throw new AssertionError(originalQueryString + ";\n" + combinedString + ";");
 		}

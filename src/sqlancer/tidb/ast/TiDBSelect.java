@@ -9,6 +9,8 @@ public class TiDBSelect implements TiDBExpression {
 	private List<TiDBExpression> fetchColumns;
 	private List<TiDBExpression> from;
 	private List<TiDBExpression> orderBy = new ArrayList<>();
+	private List<TiDBExpression> groupBys = new ArrayList<>();
+	private TiDBExpression havingClause;
 
 	public void setWhereCondition(TiDBExpression wherePredicate) {
 		this.wherePredicate = wherePredicate;
@@ -40,6 +42,22 @@ public class TiDBSelect implements TiDBExpression {
 
 	public List<TiDBExpression> getOrderBy() {
 		return orderBy;
+	}
+
+	public void setGroupByClause(List<TiDBExpression> groupBys) {
+		this.groupBys = groupBys;
+	}
+
+	public List<TiDBExpression> getGroupBys() {
+		return groupBys;
+	}
+
+	public void setHavingClause(TiDBExpression havingClause) {
+		this.havingClause = havingClause;
+	}
+	
+	public TiDBExpression getHavingClause() {
+		return havingClause;
 	}
 	
 }

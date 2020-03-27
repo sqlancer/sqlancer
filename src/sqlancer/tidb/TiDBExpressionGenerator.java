@@ -9,6 +9,8 @@ import sqlancer.tidb.TiDBSchema.TiDBColumn;
 import sqlancer.tidb.TiDBSchema.TiDBDataType;
 import sqlancer.tidb.ast.TiDBBinaryComparisonOperation;
 import sqlancer.tidb.ast.TiDBBinaryComparisonOperation.TiDBComparisonOperator;
+import sqlancer.tidb.ast.TiDBBinaryLogicalOperation;
+import sqlancer.tidb.ast.TiDBBinaryLogicalOperation.TiDBBinaryLogicalOperator;
 import sqlancer.tidb.ast.TiDBCollate;
 import sqlancer.tidb.ast.TiDBColumnReference;
 import sqlancer.tidb.ast.TiDBConstant;
@@ -19,6 +21,8 @@ import sqlancer.tidb.ast.TiDBRegexOperation;
 import sqlancer.tidb.ast.TiDBRegexOperation.TiDBRegexOperator;
 import sqlancer.tidb.ast.TiDBUnaryPostfixOperation;
 import sqlancer.tidb.ast.TiDBUnaryPostfixOperation.TiDBUnaryPostfixOperator;
+import sqlancer.tidb.ast.TiDBUnaryPrefixOperation;
+import sqlancer.tidb.ast.TiDBUnaryPrefixOperation.TiDBUnaryPrefixOperator;
 
 public class TiDBExpressionGenerator {
 
@@ -30,7 +34,7 @@ public class TiDBExpressionGenerator {
 	}
 
 	private static enum Gen {
-//		UNARY_PREFIX, //
+		UNARY_PREFIX, //
 		UNARY_POSTFIX, //
 		CONSTANT, //
 		COLUMN, //
@@ -38,6 +42,7 @@ public class TiDBExpressionGenerator {
 		REGEX,
 		COLLATE,
 		FUNCTION,
+		BINARY_LOGICAL
 //		BINARY_ARITHMETIC
 	}
 	
@@ -61,8 +66,12 @@ public class TiDBExpressionGenerator {
 		case UNARY_POSTFIX:
 			return new TiDBUnaryPostfixOperation(generateExpression(depth + 1), TiDBUnaryPostfixOperator.getRandom());
 // https://github.com/pingcap/tidb/issues/15725
-//		case UNARY_PREFIX:
-//			return new TiDBUnaryPrefixOperation(generateExpression(depth + 1), TiDBUnaryPrefixOperator.getRandom());
+		case UNARY_PREFIX:
+			TiDBUnaryPrefixOperator rand;
+			do {
+				rand = TiDBUnaryPrefixOperator.getRandom();
+			} while (rand == TiDBUnaryPrefixOperator.NOT);
+			return new TiDBUnaryPrefixOperation(generateExpression(depth + 1), rand);
 		case COLUMN:
 			return generateColumn();
 		case CONSTANT:
@@ -76,6 +85,8 @@ public class TiDBExpressionGenerator {
 		case FUNCTION:
 			TiDBFunction func = TiDBFunction.getRandom();
 			return new TiDBFunctionCall(func, generateExpressions(depth, func.getNrArgs()));
+		case BINARY_LOGICAL:
+			return new TiDBBinaryLogicalOperation(generateExpression(depth + 1), generateExpression(depth + 1), TiDBBinaryLogicalOperator.getRandom());
 //		case BINARY_ARITHMETIC:
 //			return new TiDBBinaryArithmeticOperation(generateExpression(depth + 1), generateExpression(depth + 1), TiDBBinaryArithmeticOperator.getRandom());
 		default:
@@ -130,5 +141,13 @@ public class TiDBExpressionGenerator {
 	public TiDBExpressionGenerator setColumns(List<TiDBColumn> columns) {
 		this.columns = columns;
 		return this;
+	}
+
+	public List<TiDBExpression> generateExpressions(int nr) {
+		return generateExpressions(0, nr);
+	}
+
+	public TiDBExpression generateHavingClause() {
+		return generateExpression(); // TODO: enable aggregate functions
 	}
 }

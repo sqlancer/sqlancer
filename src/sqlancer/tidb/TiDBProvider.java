@@ -27,7 +27,7 @@ import sqlancer.tidb.gen.TiDBIndexGenerator;
 import sqlancer.tidb.gen.TiDBInsertGenerator;
 import sqlancer.tidb.gen.TiDBSetGenerator;
 import sqlancer.tidb.gen.TiDBTableGenerator;
-import sqlancer.tidb.test.TiDBQueryPartitioningWhereTester;
+import sqlancer.tidb.test.TiDBQueryPartitioningHavingTester;
 
 public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 
@@ -138,7 +138,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 				});
 		se.executeStatements();
 		manager.incrementCreateDatabase();
-		TestOracle oracle = new TiDBQueryPartitioningWhereTester(globalState);
+		TestOracle oracle = new TiDBQueryPartitioningHavingTester(globalState);
 		for (int i = 0; i < globalState.getOptions().getNrQueries(); i++) {
 			try {
 				oracle.check();

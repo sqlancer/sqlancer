@@ -12,6 +12,8 @@ public class TiDBSetGenerator {
 
 	private enum Action {
 
+//		SQL_MODE("sql_mode", (r) -> Randomly.fromOptions("TRADITIONAL", "ANSI", "POSTGRESQL", "ORACLE")),
+		
 		TIDB_OPT_AGG_PUSH_DOWN("tidb_opt_agg_push_down", (r) -> Randomly.fromOptions(0, 1)),
 		TIDB_BUILD_STATS_CONCURRENCY("tidb_build_stats_concurrency", (r) -> Randomly.getNotCachedInteger(0, 500)),
 		TIDB_DISTSQL_SCAN_CONCURRENCY("tidb_distsql_scan_concurrency", (r) -> Randomly.getNotCachedInteger(1, 500)),
@@ -28,6 +30,8 @@ public class TiDBSetGenerator {
 		// https://github.com/pingcap/tidb/issues/15751
 		// https://github.com/pingcap/tidb/issues/15752
 //		TIDB_ENABLE_FAST_ANALYZE("tidb_enable_fast_analyze", (r) -> Randomly.fromOptions(0, 1));
+		// TODO: global
+//		TIDB_SCATTER_REGION("tidb_scatter_region", (r) -> Randomly.fromOptions(0, 1));
 
 		private String name;
 		private Function<Randomly, Object> prod;

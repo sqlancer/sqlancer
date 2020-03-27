@@ -54,6 +54,14 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
 			sb.append(" ORDER BY ");
 			visitList(select.getOrderBy());
 		}
+		if (!select.getGroupBys().isEmpty()) {
+			sb.append(" GROUP BY ");
+			visitList(select.getGroupBys());
+		}
+		if (select.getHavingClause() != null) {
+			sb.append(" HAVING ");
+			visit(select.getHavingClause());
+		}
 	}
 
 	private void visitList(List<TiDBExpression> expressions) {
