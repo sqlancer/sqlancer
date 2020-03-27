@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBDataType;
 
-public class CockroachDBAggregate extends CockroachDBExpression {
+public class CockroachDBAggregate implements CockroachDBExpression {
 
 	private CockroachDBAggregateFunction func;
 	private List<CockroachDBExpression> expr;

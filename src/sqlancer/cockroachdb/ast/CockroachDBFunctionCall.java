@@ -2,7 +2,7 @@ package sqlancer.cockroachdb.ast;
 
 import java.util.List;
 
-public class CockroachDBFunctionCall extends CockroachDBExpression {
+public class CockroachDBFunctionCall implements CockroachDBExpression {
 
 	private final CockroachDBFunction function;
 	private final List<CockroachDBExpression> arguments;

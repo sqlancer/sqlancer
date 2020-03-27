@@ -3,7 +3,7 @@ package sqlancer.cockroachdb.ast;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
-public class CockroachDBConstant extends CockroachDBExpression {
+public class CockroachDBConstant implements CockroachDBExpression {
 
 	public static class CockroachDBNullConstant extends CockroachDBConstant {
 

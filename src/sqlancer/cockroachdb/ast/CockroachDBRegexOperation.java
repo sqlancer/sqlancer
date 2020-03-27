@@ -3,7 +3,7 @@ package sqlancer.cockroachdb.ast;
 import sqlancer.Randomly;
 import sqlancer.visitor.BinaryOperation;
 
-public class CockroachDBRegexOperation extends CockroachDBExpression implements BinaryOperation<CockroachDBExpression> {
+public class CockroachDBRegexOperation implements BinaryOperation<CockroachDBExpression>, CockroachDBExpression {
 
 	public enum CockroachDBRegexOperator {
 		LIKE("LIKE"), //

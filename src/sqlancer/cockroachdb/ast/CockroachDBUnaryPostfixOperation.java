@@ -3,7 +3,7 @@ package sqlancer.cockroachdb.ast;
 import sqlancer.Randomly;
 import sqlancer.visitor.UnaryOperation;
 
-public class CockroachDBUnaryPostfixOperation extends CockroachDBExpression implements UnaryOperation<CockroachDBExpression> {
+public class CockroachDBUnaryPostfixOperation implements UnaryOperation<CockroachDBExpression>, CockroachDBExpression {
 	
 	private final CockroachDBExpression expr;
 	private final CockroachDBUnaryPostfixOperator op;

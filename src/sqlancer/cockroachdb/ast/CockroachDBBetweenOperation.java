@@ -2,7 +2,7 @@ package sqlancer.cockroachdb.ast;
 
 import sqlancer.Randomly;
 
-public class CockroachDBBetweenOperation extends CockroachDBExpression {
+public class CockroachDBBetweenOperation implements CockroachDBExpression {
 
 	private final CockroachDBExpression expr;
 	private final CockroachDBExpression left;

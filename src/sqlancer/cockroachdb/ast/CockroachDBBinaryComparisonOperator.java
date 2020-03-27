@@ -3,8 +3,7 @@ package sqlancer.cockroachdb.ast;
 import sqlancer.Randomly;
 import sqlancer.visitor.BinaryOperation;
 
-public class CockroachDBBinaryComparisonOperator extends CockroachDBExpression
-		implements BinaryOperation<CockroachDBExpression> {
+public class CockroachDBBinaryComparisonOperator implements BinaryOperation<CockroachDBExpression>, CockroachDBExpression {
 
 	public enum CockroachDBComparisonOperator {
 		EQUALS("="), GREATER(">"), GREATER_EQUALS(">="), SMALLER("<"), SMALLER_EQUALS("<="), NOT_EQUALS("!="),

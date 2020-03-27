@@ -2,8 +2,7 @@ package sqlancer.cockroachdb.ast;
 
 import sqlancer.visitor.BinaryOperation;
 
-public class CockroachDBConcatOperation extends CockroachDBExpression
-implements BinaryOperation<CockroachDBExpression>  {
+public class CockroachDBConcatOperation implements CockroachDBExpression, BinaryOperation<CockroachDBExpression>  {
 	
 	private final CockroachDBExpression left;
 	private final CockroachDBExpression right;

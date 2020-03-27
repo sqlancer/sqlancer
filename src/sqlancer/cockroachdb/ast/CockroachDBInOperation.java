@@ -2,7 +2,7 @@ package sqlancer.cockroachdb.ast;
 
 import java.util.List;
 
-public class CockroachDBInOperation extends CockroachDBExpression {
+public class CockroachDBInOperation implements CockroachDBExpression {
 	
 	private final CockroachDBExpression left;
 	private final List<CockroachDBExpression> right;

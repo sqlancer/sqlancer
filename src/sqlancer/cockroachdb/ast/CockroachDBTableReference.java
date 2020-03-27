@@ -2,7 +2,7 @@ package sqlancer.cockroachdb.ast;
 
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 
-public class CockroachDBTableReference extends CockroachDBExpression {
+public class CockroachDBTableReference implements CockroachDBExpression {
 
 	private final CockroachDBTable table;
 

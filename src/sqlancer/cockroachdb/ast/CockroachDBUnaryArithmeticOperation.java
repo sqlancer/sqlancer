@@ -3,14 +3,15 @@ package sqlancer.cockroachdb.ast;
 import sqlancer.Randomly;
 import sqlancer.visitor.UnaryOperation;
 
-public class CockroachDBUnaryArithmeticOperation extends CockroachDBExpression implements UnaryOperation<CockroachDBExpression> {
-	
+public class CockroachDBUnaryArithmeticOperation
+		implements UnaryOperation<CockroachDBExpression>, CockroachDBExpression {
+
 	private final CockroachDBExpression expr;
 	private final CockroachDBUnaryAritmeticOperator op;
 
 	public enum CockroachDBUnaryAritmeticOperator {
 		PLUS("+"), MINUS("-"), NEGATION("~");
-		
+
 		private String textRepr;
 
 		private CockroachDBUnaryAritmeticOperator(String textRepr) {
@@ -20,9 +21,9 @@ public class CockroachDBUnaryArithmeticOperation extends CockroachDBExpression i
 		public static CockroachDBUnaryAritmeticOperator getRandom() {
 			return Randomly.fromOptions(values());
 		}
-	
+
 	}
-	
+
 	public CockroachDBUnaryArithmeticOperation(CockroachDBExpression expr, CockroachDBUnaryAritmeticOperator op) {
 		this.expr = expr;
 		this.op = op;

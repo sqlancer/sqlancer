@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class CockroachDBSelect extends CockroachDBExpression {
+public class CockroachDBSelect implements CockroachDBExpression {
 	
 	private List<CockroachDBExpression> columns = new ArrayList<>();
 	private List<CockroachDBTableReference> fromTables;

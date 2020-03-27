@@ -4,7 +4,7 @@ import java.util.List;
 
 import sqlancer.Randomly;
 
-public class CockroachDBMultiValuedComparison extends CockroachDBExpression {
+public class CockroachDBMultiValuedComparison implements CockroachDBExpression {
 	
 	private CockroachDBExpression left;
 	private List<CockroachDBExpression> right;

@@ -1,5 +1,5 @@
 package sqlancer.cockroachdb.ast;
 
-public abstract class CockroachDBExpression {
+public interface CockroachDBExpression {
 
 }

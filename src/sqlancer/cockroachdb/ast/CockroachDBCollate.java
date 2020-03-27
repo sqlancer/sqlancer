@@ -2,7 +2,7 @@ package sqlancer.cockroachdb.ast;
 
 import sqlancer.visitor.UnaryOperation;
 
-public class CockroachDBCollate extends CockroachDBExpression implements UnaryOperation<CockroachDBExpression> {
+public class CockroachDBCollate implements UnaryOperation<CockroachDBExpression>, CockroachDBExpression {
 
 	private final CockroachDBExpression expr;
 	private final String collate;

@@ -3,7 +3,7 @@ package sqlancer.cockroachdb.ast;
 import sqlancer.Randomly;
 import sqlancer.visitor.BinaryOperation;
 
-public class CockroachDBBinaryLogicalOperation extends CockroachDBExpression implements BinaryOperation<CockroachDBExpression>  {
+public class CockroachDBBinaryLogicalOperation implements BinaryOperation<CockroachDBExpression>, CockroachDBExpression  {
 	
 	public enum CockroachDBBinaryLogicalOperator {
 		AND("AND"), OR("OR");
