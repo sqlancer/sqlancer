@@ -1,35 +1,31 @@
 package sqlancer.tidb.ast;
 
 import sqlancer.Randomly;
-import sqlancer.visitor.UnaryOperation;
+import sqlancer.ast.UnaryNode;
 
-public class TiDBUnaryPrefixOperation implements TiDBExpression, UnaryOperation<TiDBExpression>   {
+public class TiDBUnaryPrefixOperation extends UnaryNode<TiDBExpression> implements TiDBExpression {
 
-	private final TiDBExpression expr;
 	private final TiDBUnaryPrefixOperator op;
-	
+
 	public static enum TiDBUnaryPrefixOperator {
-		NOT("NOT"); //
-		
+		NOT("NOT"), //
+		PLUS("+"), //
+		MINUS("-"); //
+
 		private String s;
-		
+
 		private TiDBUnaryPrefixOperator(String s) {
 			this.s = s;
 		}
-		
+
 		public static TiDBUnaryPrefixOperator getRandom() {
 			return Randomly.fromOptions(values());
 		}
 	}
 
 	public TiDBUnaryPrefixOperation(TiDBExpression expr, TiDBUnaryPrefixOperator op) {
-		this.expr = expr;
+		super(expr);
 		this.op = op;
-	}
-
-	@Override
-	public TiDBExpression getExpression() {
-		return expr;
 	}
 
 	@Override

@@ -1,20 +1,14 @@
 package sqlancer.tidb.ast;
 
-import sqlancer.visitor.UnaryOperation;
+import sqlancer.ast.UnaryNode;
 
-public class TiDBCollate implements TiDBExpression, UnaryOperation<TiDBExpression>  {
+public class TiDBCollate extends UnaryNode<TiDBExpression> implements TiDBExpression {
 
-	private final TiDBExpression expr;
 	private final String collate;
-	
-	public TiDBCollate(TiDBExpression expr, String text) {
-		this.expr = expr;
-		this.collate = text;
-	}
 
-	@Override
-	public TiDBExpression getExpression() {
-		return expr;
+	public TiDBCollate(TiDBExpression expr, String text) {
+		super(expr);
+		this.collate = text;
 	}
 
 	@Override
@@ -26,5 +20,5 @@ public class TiDBCollate implements TiDBExpression, UnaryOperation<TiDBExpressio
 	public OperatorKind getOperatorKind() {
 		return OperatorKind.POSTFIX;
 	}
-	
+
 }

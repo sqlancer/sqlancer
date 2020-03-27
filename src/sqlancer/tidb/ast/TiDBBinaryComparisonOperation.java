@@ -3,7 +3,7 @@ package sqlancer.tidb.ast;
 import sqlancer.Randomly;
 import sqlancer.ast.BinaryNode;
 
-public class TiDBBinaryComparisonOperation extends BinaryNode<TiDBExpression>  implements TiDBExpression {
+public class TiDBBinaryComparisonOperation extends BinaryNode<TiDBExpression> implements TiDBExpression {
 
 	public enum TiDBComparisonOperator {
 		EQUALS("="), //
@@ -11,7 +11,7 @@ public class TiDBBinaryComparisonOperation extends BinaryNode<TiDBExpression>  i
 		GREATER_EQUALS(">="), //
 		SMALLER("<"), //
 		SMALLER_EQUALS("<="), //
-		NOT_EQUALS("!="),
+		NOT_EQUALS("!="), //
 		NULL_SAFE_EQUALS("<=>");
 
 		private String textRepr;
@@ -28,8 +28,7 @@ public class TiDBBinaryComparisonOperation extends BinaryNode<TiDBExpression>  i
 
 	private final TiDBComparisonOperator op;
 
-	public TiDBBinaryComparisonOperation(TiDBExpression left, TiDBExpression right,
-			TiDBComparisonOperator op) {
+	public TiDBBinaryComparisonOperation(TiDBExpression left, TiDBExpression right, TiDBComparisonOperator op) {
 		super(left, right);
 		this.op = op;
 	}

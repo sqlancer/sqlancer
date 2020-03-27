@@ -1,11 +1,10 @@
 package sqlancer.tidb.ast;
 
 import sqlancer.Randomly;
-import sqlancer.visitor.UnaryOperation;
+import sqlancer.ast.UnaryNode;
 
-public class TiDBUnaryPostfixOperation implements TiDBExpression, UnaryOperation<TiDBExpression>  {
+public class TiDBUnaryPostfixOperation extends UnaryNode<TiDBExpression>  implements TiDBExpression  {
 
-	private final TiDBExpression expr;
 	private final TiDBUnaryPostfixOperator op;
 	
 	public static enum TiDBUnaryPostfixOperator {
@@ -24,13 +23,8 @@ public class TiDBUnaryPostfixOperation implements TiDBExpression, UnaryOperation
 	}
 
 	public TiDBUnaryPostfixOperation(TiDBExpression expr, TiDBUnaryPostfixOperator op) {
-		this.expr = expr;
+		super(expr);
 		this.op = op;
-	}
-
-	@Override
-	public TiDBExpression getExpression() {
-		return expr;
 	}
 
 	@Override
