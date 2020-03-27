@@ -6,10 +6,13 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.beust.jcommander.JCommander;
 
 import sqlancer.AbstractAction;
+import sqlancer.CompositeTestOracle;
 import sqlancer.DatabaseProvider;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
@@ -146,8 +149,15 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 				});
 		se.executeStatements();
 		manager.incrementCreateDatabase();
-		TestOracle oracle = globalState.getTiDBOptions().oracle.create(globalState);
-
+		List<TestOracle> oracles = globalState.getTiDBOptions().oracle.stream().map(o -> {
+			try {
+				return o.create(globalState);
+			} catch (SQLException e1) {
+				throw new AssertionError(e1);
+			}
+		}).collect(Collectors.toList());
+		CompositeTestOracle oracle = new CompositeTestOracle(oracles);
+		
 		for (int i = 0; i < globalState.getOptions().getNrQueries(); i++) {
 			try {
 				oracle.check();

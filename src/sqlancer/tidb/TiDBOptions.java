@@ -2,6 +2,7 @@ package sqlancer.tidb;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.beust.jcommander.Parameter;
@@ -16,7 +17,7 @@ import sqlancer.tidb.test.TiDBQueryPartitioningWhereTester;
 public class TiDBOptions {
 
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)
-	public TiDBOracle oracle = TiDBOracle.QUERY_PARTITIONING;
+	public List<TiDBOracle> oracle = Arrays.asList(TiDBOracle.QUERY_PARTITIONING);
 
 	public static enum TiDBOracle {
 		HAVING() {
