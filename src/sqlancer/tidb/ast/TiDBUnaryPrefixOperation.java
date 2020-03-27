@@ -1,13 +1,13 @@
 package sqlancer.tidb.ast;
 
 import sqlancer.Randomly;
-import sqlancer.ast.UnaryNode;
+import sqlancer.ast.BinaryOperatorNode.Operator;
+import sqlancer.ast.UnaryOperatorNode;
+import sqlancer.tidb.ast.TiDBUnaryPrefixOperation.TiDBUnaryPrefixOperator;
 
-public class TiDBUnaryPrefixOperation extends UnaryNode<TiDBExpression> implements TiDBExpression {
+public class TiDBUnaryPrefixOperation extends UnaryOperatorNode<TiDBExpression, TiDBUnaryPrefixOperator> implements TiDBExpression {
 
-	private final TiDBUnaryPrefixOperator op;
-
-	public static enum TiDBUnaryPrefixOperator {
+	public static enum TiDBUnaryPrefixOperator implements Operator {
 		NOT("NOT"), //
 		INVERSION("~"), //
 		PLUS("+"), //
@@ -23,17 +23,17 @@ public class TiDBUnaryPrefixOperation extends UnaryNode<TiDBExpression> implemen
 		public static TiDBUnaryPrefixOperator getRandom() {
 			return Randomly.fromOptions(values());
 		}
+
+		@Override
+		public String getTextRepresentation() {
+			return s;
+		}
 	}
 
 	public TiDBUnaryPrefixOperation(TiDBExpression expr, TiDBUnaryPrefixOperator op) {
-		super(expr);
-		this.op = op;
+		super(expr, op);
 	}
 
-	@Override
-	public String getOperatorRepresentation() {
-		return op.s;
-	}
 
 	@Override
 	public OperatorKind getOperatorKind() {

@@ -1,11 +1,14 @@
 package sqlancer.tidb.ast;
 
 import sqlancer.Randomly;
-import sqlancer.ast.BinaryNode;
+import sqlancer.ast.BinaryOperatorNode;
+import sqlancer.ast.BinaryOperatorNode.Operator;
+import sqlancer.tidb.ast.TiDBRegexOperation.TiDBRegexOperator;
 
-public class TiDBRegexOperation extends BinaryNode<TiDBExpression> implements TiDBExpression {
+public class TiDBRegexOperation extends BinaryOperatorNode<TiDBExpression, TiDBRegexOperator>
+		implements TiDBExpression {
 
-	public enum TiDBRegexOperator {
+	public enum TiDBRegexOperator implements Operator {
 		LIKE("LIKE"), //
 		NOT_LIKE("NOT LIKE"), //
 		ILIKE("REGEXP"), //
@@ -21,18 +24,15 @@ public class TiDBRegexOperation extends BinaryNode<TiDBExpression> implements Ti
 			return Randomly.fromOptions(values());
 		}
 
-	}
+		@Override
+		public String getTextRepresentation() {
+			return textRepr;
+		}
 
-	private final TiDBRegexOperator op;
+	}
 
 	public TiDBRegexOperation(TiDBExpression left, TiDBExpression right, TiDBRegexOperator op) {
-		super(left, right);
-		this.op = op;
-	}
-
-	@Override
-	public String getOperatorRepresentation() {
-		return op.textRepr;
+		super(left, right, op);
 	}
 
 }

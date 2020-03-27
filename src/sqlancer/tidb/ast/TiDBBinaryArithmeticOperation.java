@@ -1,15 +1,15 @@
 package sqlancer.tidb.ast;
 
 import sqlancer.Randomly;
-import sqlancer.ast.BinaryNode;
+import sqlancer.ast.BinaryOperatorNode;
+import sqlancer.ast.BinaryOperatorNode.Operator;
+import sqlancer.tidb.ast.TiDBBinaryArithmeticOperation.TiDBBinaryArithmeticOperator;
 
+public class TiDBBinaryArithmeticOperation extends BinaryOperatorNode<TiDBExpression, TiDBBinaryArithmeticOperator>
+		implements TiDBExpression {
 
-public class TiDBBinaryArithmeticOperation  extends BinaryNode<TiDBExpression> implements TiDBExpression {
-
-	private final TiDBBinaryArithmeticOperator op;
-
-	public static enum TiDBBinaryArithmeticOperator {
-		ADD("+"), // 
+	public static enum TiDBBinaryArithmeticOperator implements Operator {
+		ADD("+"), //
 		MINUS("-"), //
 		MULT("*"), //
 		DIV("/"), //
@@ -25,16 +25,15 @@ public class TiDBBinaryArithmeticOperation  extends BinaryNode<TiDBExpression> i
 		public static TiDBBinaryArithmeticOperator getRandom() {
 			return Randomly.fromOptions(values());
 		}
+
+		@Override
+		public String getTextRepresentation() {
+			return textRepresentation;
+		}
 	}
 
 	public TiDBBinaryArithmeticOperation(TiDBExpression left, TiDBExpression right, TiDBBinaryArithmeticOperator op) {
-		super(left, right);
-		this.op = op;
-	}
-
-	@Override
-	public String getOperatorRepresentation() {
-		return op.textRepresentation;
+		super(left, right, op);
 	}
 
 }

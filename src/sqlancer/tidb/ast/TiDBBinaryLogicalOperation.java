@@ -1,13 +1,14 @@
 package sqlancer.tidb.ast;
 
 import sqlancer.Randomly;
-import sqlancer.ast.BinaryNode;
+import sqlancer.ast.BinaryOperatorNode;
+import sqlancer.ast.BinaryOperatorNode.Operator;
+import sqlancer.tidb.ast.TiDBBinaryLogicalOperation.TiDBBinaryLogicalOperator;
 
-public class TiDBBinaryLogicalOperation extends BinaryNode<TiDBExpression> implements TiDBExpression {
+public class TiDBBinaryLogicalOperation extends BinaryOperatorNode<TiDBExpression, TiDBBinaryLogicalOperator>
+		implements TiDBExpression {
 
-	private final TiDBBinaryLogicalOperator op;
-
-	public static enum TiDBBinaryLogicalOperator {
+	public static enum TiDBBinaryLogicalOperator implements Operator {
 		AND("&"), //
 		OR("|"), //
 		XOR("^"), //
@@ -23,16 +24,15 @@ public class TiDBBinaryLogicalOperation extends BinaryNode<TiDBExpression> imple
 		public static TiDBBinaryLogicalOperator getRandom() {
 			return Randomly.fromOptions(values());
 		}
+
+		@Override
+		public String getTextRepresentation() {
+			return textRepresentation;
+		}
 	}
 
 	public TiDBBinaryLogicalOperation(TiDBExpression left, TiDBExpression right, TiDBBinaryLogicalOperator op) {
-		super(left, right);
-		this.op = op;
-	}
-
-	@Override
-	public String getOperatorRepresentation() {
-		return op.textRepresentation;
+		super(left, right, op);
 	}
 
 }
