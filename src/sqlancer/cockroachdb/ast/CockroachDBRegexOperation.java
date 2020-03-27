@@ -1,9 +1,9 @@
 package sqlancer.cockroachdb.ast;
 
 import sqlancer.Randomly;
-import sqlancer.visitor.BinaryOperation;
+import sqlancer.ast.BinaryNode;
 
-public class CockroachDBRegexOperation implements BinaryOperation<CockroachDBExpression>, CockroachDBExpression {
+public class CockroachDBRegexOperation extends BinaryNode<CockroachDBExpression> implements CockroachDBExpression {
 
 	public enum CockroachDBRegexOperator {
 		LIKE("LIKE"), //
@@ -29,25 +29,12 @@ public class CockroachDBRegexOperation implements BinaryOperation<CockroachDBExp
 
 	}
 
-	private final CockroachDBExpression left;
-	private final CockroachDBExpression right;
 	private final CockroachDBRegexOperator op;
 
 	public CockroachDBRegexOperation(CockroachDBExpression left, CockroachDBExpression right,
 			CockroachDBRegexOperator op) {
-		this.left = left;
-		this.right = right;
+		super(left, right);
 		this.op = op;
-	}
-
-	@Override
-	public CockroachDBExpression getLeft() {
-		return left;
-	}
-
-	@Override
-	public CockroachDBExpression getRight() {
-		return right;
 	}
 
 	@Override

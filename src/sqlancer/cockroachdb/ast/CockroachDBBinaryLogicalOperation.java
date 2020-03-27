@@ -1,9 +1,9 @@
 package sqlancer.cockroachdb.ast;
 
 import sqlancer.Randomly;
-import sqlancer.visitor.BinaryOperation;
+import sqlancer.ast.BinaryNode;
 
-public class CockroachDBBinaryLogicalOperation implements BinaryOperation<CockroachDBExpression>, CockroachDBExpression  {
+public class CockroachDBBinaryLogicalOperation extends BinaryNode<CockroachDBExpression> implements CockroachDBExpression  {
 	
 	public enum CockroachDBBinaryLogicalOperator {
 		AND("AND"), OR("OR");
@@ -20,24 +20,11 @@ public class CockroachDBBinaryLogicalOperation implements BinaryOperation<Cockro
 		
 	}
 	
-	private final CockroachDBExpression left;
-	private final CockroachDBExpression right;
 	private final CockroachDBBinaryLogicalOperator op;
 
 	public CockroachDBBinaryLogicalOperation(CockroachDBExpression left, CockroachDBExpression right, CockroachDBBinaryLogicalOperator op) {
-		this.left = left;
-		this.right = right;
+		super(left, right);
 		this.op = op;
-	}
-
-	@Override
-	public CockroachDBExpression getLeft() {
-		return left;
-	}
-
-	@Override
-	public CockroachDBExpression getRight() {
-		return right;
 	}
 
 	@Override

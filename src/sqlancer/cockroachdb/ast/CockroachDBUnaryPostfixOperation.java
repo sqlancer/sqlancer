@@ -1,11 +1,10 @@
 package sqlancer.cockroachdb.ast;
 
 import sqlancer.Randomly;
-import sqlancer.visitor.UnaryOperation;
+import sqlancer.ast.UnaryNode;
 
-public class CockroachDBUnaryPostfixOperation implements UnaryOperation<CockroachDBExpression>, CockroachDBExpression {
+public class CockroachDBUnaryPostfixOperation extends UnaryNode<CockroachDBExpression> implements CockroachDBExpression {
 	
-	private final CockroachDBExpression expr;
 	private final CockroachDBUnaryPostfixOperator op;
 	
 	public static enum CockroachDBUnaryPostfixOperator {
@@ -30,13 +29,8 @@ public class CockroachDBUnaryPostfixOperation implements UnaryOperation<Cockroac
 	}
 
 	public CockroachDBUnaryPostfixOperation(CockroachDBExpression expr, CockroachDBUnaryPostfixOperator op) {
-		this.expr = expr;
+		super(expr);
 		this.op = op;
-	}
-
-	@Override
-	public CockroachDBExpression getExpression() {
-		return expr;
 	}
 
 	@Override
