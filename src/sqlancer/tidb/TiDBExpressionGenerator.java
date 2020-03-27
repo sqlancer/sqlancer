@@ -7,8 +7,6 @@ import sqlancer.Randomly;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
 import sqlancer.tidb.TiDBSchema.TiDBDataType;
-import sqlancer.tidb.ast.TiDBBinaryArithmeticOperation;
-import sqlancer.tidb.ast.TiDBBinaryArithmeticOperation.TiDBBinaryArithmeticOperator;
 import sqlancer.tidb.ast.TiDBBinaryComparisonOperation;
 import sqlancer.tidb.ast.TiDBBinaryComparisonOperation.TiDBComparisonOperator;
 import sqlancer.tidb.ast.TiDBCollate;
