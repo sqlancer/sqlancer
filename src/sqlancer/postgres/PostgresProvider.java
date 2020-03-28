@@ -187,7 +187,7 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 			nrPerformed = r.getInteger(0, 10);
 			break;
 		case INSERT:
-			nrPerformed = r.getInteger(0, 30);
+			nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
 			break;
 		default:
 			throw new AssertionError(a);
