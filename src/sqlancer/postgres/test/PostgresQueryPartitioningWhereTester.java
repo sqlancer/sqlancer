@@ -20,13 +20,13 @@ public class PostgresQueryPartitioningWhereTester extends PostgresQueryPartition
 	public void check() throws SQLException {
 		super.check();
 		if (Randomly.getBooleanWithRatherLowProbability()) {
-			select.setOrderByClause(gen.generateOrderBy());
+			select.setOrderByExpressions(gen.generateOrderBy());
 		}
 		String originalQueryString = PostgresVisitor.asString(select);
 		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
 				state.getConnection());
 
-		select.setOrderByClause(Collections.emptyList());
+		select.setOrderByExpressions(Collections.emptyList());
 		select.setWhereClause(predicate);
 		String firstQueryString = PostgresVisitor.asString(select);
 		select.setWhereClause(negatedPredicate);

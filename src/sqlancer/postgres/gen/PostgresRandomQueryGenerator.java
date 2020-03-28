@@ -35,10 +35,10 @@ public class PostgresRandomQueryGenerator {
 			select.setWhereClause(gen.generateExpression(0, PostgresDataType.BOOLEAN));
 		}
 		if (Randomly.getBooleanWithSmallProbability()) {
-			select.setGroupByClause(gen.generateExpressions(Randomly.smallNumber() + 1));
+			select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
 		}
 		if (Randomly.getBooleanWithSmallProbability()) {
-			select.setOrderByClause(gen.generateOrderBy());
+			select.setOrderByExpressions(gen.generateOrderBy());
 		}
 		if (Randomly.getBoolean()) {
 			select.setLimitClause(PostgresConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));

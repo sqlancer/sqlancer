@@ -1,6 +1,5 @@
 package sqlancer.postgres;
 
-import sqlancer.IgnoreMeException;
 import sqlancer.postgres.ast.PostgresAggregate;
 import sqlancer.postgres.ast.PostgresBetweenOperation;
 import sqlancer.postgres.ast.PostgresCastOperation;
@@ -16,6 +15,7 @@ import sqlancer.postgres.ast.PostgresPostfixOperation;
 import sqlancer.postgres.ast.PostgresPostfixText;
 import sqlancer.postgres.ast.PostgresPrefixOperation;
 import sqlancer.postgres.ast.PostgresSelect;
+import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 
 public class PostgresExpectedValueVisitor implements PostgresVisitor {
@@ -146,6 +146,11 @@ public class PostgresExpectedValueVisitor implements PostgresVisitor {
 	public void visit(PostgresCollate op) {
 		print(op);
 		visit(op.getExpr());
+	}
+
+	@Override
+	public void visit(PostgresFromTable from) {
+		print(from);
 	}
 
 }

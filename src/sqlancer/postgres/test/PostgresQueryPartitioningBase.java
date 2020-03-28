@@ -51,7 +51,7 @@ public class PostgresQueryPartitioningBase implements TestOracle  {
 				.setColumns(targetTables.getColumns());
 		select = new PostgresSelect();
 		select.setFetchColumns(Arrays.asList(new PostgresColumnValue(targetTables.getColumns().get(0), null)));
-		List<PostgresFromTable> tableList = targetTables.getTables().stream()
+		List<PostgresExpression> tableList = targetTables.getTables().stream()
 				.map(t -> new PostgresFromTable(t, Randomly.getBoolean())).collect(Collectors.toList());
 		// TODO joins
 		select.setFromList(tableList);

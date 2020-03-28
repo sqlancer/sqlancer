@@ -87,7 +87,7 @@ public class PostgresNoRECOracle implements TestOracle {
 			PostgresJoin j = new PostgresJoin(table, joinClause, options);
 			joinStatements.add(j);
 		}
-		List<PostgresFromTable> fromTables = tables.stream().map(t -> new PostgresFromTable(t, Randomly.getBoolean()))
+		List<PostgresExpression> fromTables = tables.stream().map(t -> new PostgresFromTable(t, Randomly.getBoolean()))
 				.collect(Collectors.toList());
 		int secondCount = getSecondQuery(fromTables, randomWhereCondition, groupBys, joinStatements);
 		int firstCount = getFirstQueryCount(con, fromTables, columns, randomWhereCondition, groupBys, joinStatements);
@@ -95,7 +95,8 @@ public class PostgresNoRECOracle implements TestOracle {
 			throw new IgnoreMeException();
 		}
 		if (firstCount != secondCount) {
-			state.queryString = firstCount + " " + secondCount + " " + firstQueryString + ";\n" + secondQueryString + ";";
+			state.queryString = firstCount + " " + secondCount + " " + firstQueryString + ";\n" + secondQueryString
+					+ ";";
 			throw new AssertionError(firstQueryString + secondQueryString + firstCount + " " + secondCount);
 		}
 	}
@@ -112,18 +113,20 @@ public class PostgresNoRECOracle implements TestOracle {
 	}
 
 	private PostgresExpression getRandomWhereCondition(List<PostgresColumn> columns) {
-		return new PostgresExpressionGenerator(r).setColumns(columns).setGlobalState(globalState).generateExpression(PostgresDataType.BOOLEAN);
+		return new PostgresExpressionGenerator(r).setColumns(columns).setGlobalState(globalState)
+				.generateExpression(PostgresDataType.BOOLEAN);
 	}
 
-	private int getSecondQuery(List<PostgresFromTable> fromTables, PostgresExpression randomWhereCondition,
+	private int getSecondQuery(List<PostgresExpression> fromTables, PostgresExpression randomWhereCondition,
 			List<PostgresExpression> groupBys, List<PostgresJoin> joinStatements) throws SQLException {
 		PostgresSelect select = new PostgresSelect();
 //		select.setGroupByClause(groupBys);
 //		PostgresExpression isTrue = PostgresPostfixOperation.create(randomWhereCondition, PostfixOperator.IS_TRUE);
-		PostgresCastOperation isTrue = new PostgresCastOperation(randomWhereCondition, PostgresCompoundDataType.create(PostgresDataType.INT));
+		PostgresCastOperation isTrue = new PostgresCastOperation(randomWhereCondition,
+				PostgresCompoundDataType.create(PostgresDataType.INT));
 		PostgresPostfixText asText = new PostgresPostfixText(isTrue, " as count", null, PostgresDataType.INT);
 		select.setFetchColumns(Arrays.asList(asText));
-		select.setFromTables(fromTables);
+		select.setFromList(fromTables);
 		select.setSelectType(SelectType.ALL);
 		select.setJoinClauses(joinStatements);
 		int secondCount = 0;
@@ -149,20 +152,21 @@ public class PostgresNoRECOracle implements TestOracle {
 		return secondCount;
 	}
 
-	private int getFirstQueryCount(Connection con, List<PostgresFromTable> randomTables, List<PostgresColumn> columns,
+	private int getFirstQueryCount(Connection con, List<PostgresExpression> randomTables, List<PostgresColumn> columns,
 			PostgresExpression randomWhereCondition, List<PostgresExpression> groupBys,
 			List<PostgresJoin> joinStatements) throws SQLException {
 		PostgresSelect select = new PostgresSelect();
 //		select.setGroupByClause(groupBys);
 //		PostgresAggregate aggr = new PostgresAggregate(
-				PostgresColumnValue allColumns = new PostgresColumnValue(Randomly.fromList(columns), null);
+		PostgresColumnValue allColumns = new PostgresColumnValue(Randomly.fromList(columns), null);
 //				PostgresAggregateFunction.COUNT);
 //		select.setFetchColumns(Arrays.asList(aggr));
-				select.setFetchColumns(Arrays.asList(allColumns));
-		select.setFromTables(randomTables);
+		select.setFetchColumns(Arrays.asList(allColumns));
+		select.setFromList(randomTables);
 		select.setWhereClause(randomWhereCondition);
 		if (Randomly.getBooleanWithSmallProbability()) {
-			select.setOrderByClause(new PostgresExpressionGenerator(r).setColumns(columns).setGlobalState(globalState).generateOrderBy());
+			select.setOrderByExpressions(new PostgresExpressionGenerator(r).setColumns(columns).setGlobalState(globalState)
+					.generateOrderBy());
 		}
 		select.setSelectType(SelectType.ALL);
 		select.setJoinClauses(joinStatements);
@@ -182,7 +186,7 @@ public class PostgresNoRECOracle implements TestOracle {
 		}
 		return firstCount;
 	}
-	
+
 //	private int getFirstAlternativeQueryCount(Connection con, List<PostgresFromTable> randomTables, List<PostgresColumn> columns,
 //			PostgresExpression randomWhereCondition, List<PostgresExpression> groupBys,
 //			List<PostgresJoin> joinStatements) throws SQLException {

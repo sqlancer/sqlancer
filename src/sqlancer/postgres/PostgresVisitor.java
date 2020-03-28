@@ -15,6 +15,7 @@ import sqlancer.postgres.ast.PostgresPostfixOperation;
 import sqlancer.postgres.ast.PostgresPostfixText;
 import sqlancer.postgres.ast.PostgresPrefixOperation;
 import sqlancer.postgres.ast.PostgresSelect;
+import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 
 public interface PostgresVisitor {
@@ -48,6 +49,8 @@ public interface PostgresVisitor {
 	public abstract void visit(PostgresCollate op);
 
 	public abstract void visit(PostgresPOSIXRegularExpression op);
+	
+	public abstract void visit(PostgresFromTable from);
 
 	public default void visit(PostgresExpression expression) {
 		if (expression instanceof PostgresConstant) {
@@ -80,6 +83,8 @@ public interface PostgresVisitor {
 			visit((PostgresPOSIXRegularExpression) expression);
 		} else if (expression instanceof PostgresCollate) {
 			visit((PostgresCollate) expression);
+		} else if (expression instanceof PostgresFromTable) {
+			visit((PostgresFromTable) expression);
 		}
 
 		else {

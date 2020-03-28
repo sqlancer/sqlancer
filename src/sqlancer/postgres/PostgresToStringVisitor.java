@@ -21,6 +21,7 @@ import sqlancer.postgres.ast.PostgresPostfixOperation;
 import sqlancer.postgres.ast.PostgresPostfixText;
 import sqlancer.postgres.ast.PostgresPrefixOperation;
 import sqlancer.postgres.ast.PostgresSelect;
+import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 import sqlancer.visitor.ToStringVisitor;
 
@@ -62,6 +63,17 @@ public class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression>
 	}
 
 	@Override
+	public void visit(PostgresFromTable from) {
+		if (from.isOnly()) {
+			sb.append("ONLY ");
+		}
+		sb.append(from.getTable().getName());
+		if (!from.isOnly() && Randomly.getBoolean()) {
+			sb.append("*");
+		}
+	}
+
+	@Override
 	public void visit(PostgresSelect s) {
 		sb.append("SELECT ");
 		switch (s.getSelectOption()) {
@@ -85,18 +97,7 @@ public class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression>
 			visit(s.getFetchColumns());
 		}
 		sb.append(" FROM ");
-		for (int i = 0; i < s.getFromList().size(); i++) {
-			if (i != 0) {
-				sb.append(", ");
-			}
-			if (s.getFromList().get(i).isOnly()) {
-				sb.append("ONLY ");
-			}
-			sb.append(s.getFromList().get(i).getTable().getName());
-			if (!s.getFromList().get(i).isOnly() && Randomly.getBoolean()) {
-				sb.append("*");
-			}
-		}
+		visit(s.getFromList());
 
 		for (PostgresJoin j : s.getJoinClauses()) {
 			sb.append(" ");
@@ -134,18 +135,18 @@ public class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression>
 			sb.append(" WHERE ");
 			visit(s.getWhereClause());
 		}
-		if (s.getGroupByClause().size() > 0) {
+		if (s.getGroupByExpressions().size() > 0) {
 			sb.append(" GROUP BY ");
-			visit(s.getGroupByClause());
+			visit(s.getGroupByExpressions());
 		}
 		if (s.getHavingClause() != null) {
 			sb.append(" HAVING ");
 			visit(s.getHavingClause());
 
 		}
-		if (!s.getOrderByClause().isEmpty()) {
+		if (!s.getOrderByExpressions().isEmpty()) {
 			sb.append(" ORDER BY ");
-			visit(s.getOrderByClause());
+			visit(s.getOrderByExpressions());
 		}
 		if (s.getLimitClause() != null) {
 			sb.append(" LIMIT ");

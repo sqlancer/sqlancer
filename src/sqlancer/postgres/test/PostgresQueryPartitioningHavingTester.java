@@ -23,12 +23,12 @@ public class PostgresQueryPartitioningHavingTester extends PostgresQueryPartitio
 		public void check() throws SQLException {
 			super.check();
 			if (Randomly.getBooleanWithRatherLowProbability()) {
-				select.setOrderByClause(gen.generateOrderBy());
+				select.setOrderByExpressions(gen.generateOrderBy());
 			}
 			if (Randomly.getBoolean()) {
 				select.setWhereClause(gen.generateExpression(PostgresDataType.BOOLEAN));
 			}
-			select.setGroupByClause(gen.generateExpressions(Randomly.smallNumber() + 1));
+			select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
 			select.setHavingClause(null);
 			String originalQueryString = PostgresVisitor.asString(select);
 			if (state.getOptions().logEachSelect()) {
@@ -42,7 +42,7 @@ public class PostgresQueryPartitioningHavingTester extends PostgresQueryPartitio
 			}
 			List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors, state.getConnection());
 			
-			select.setOrderByClause(Collections.emptyList()); // not compatible with the union
+			select.setOrderByExpressions(Collections.emptyList()); // not compatible with the union
 			select.setHavingClause(predicate);
 			String firstQueryString = PostgresVisitor.asString(select);
 			select.setHavingClause(negatedPredicate);

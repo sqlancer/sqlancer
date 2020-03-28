@@ -1,6 +1,5 @@
 package sqlancer.cockroachdb;
 
-.Collectors;
 
 import java.util.stream.Collectors;
 

@@ -85,7 +85,7 @@ public class PostgresPivotedQuerySynthesisGenerator implements TestOracle {
 		selectStatement.setWhereClause(whereClause);
 		state.whereClause = selectStatement;
 		List<PostgresExpression> groupByClause = generateGroupByClause(columns, rw);
-		selectStatement.setGroupByClause(groupByClause);
+		selectStatement.setGroupByExpressions(groupByClause);
 		PostgresExpression limitClause = generateLimit();
 		selectStatement.setLimitClause(limitClause);
 		if (limitClause != null) {
@@ -93,7 +93,7 @@ public class PostgresPivotedQuerySynthesisGenerator implements TestOracle {
 			selectStatement.setOffsetClause(offsetClause);
 		}
 		List<PostgresExpression> orderBy = new PostgresExpressionGenerator(r).setColumns(columns).generateOrderBy();
-		selectStatement.setOrderByClause(orderBy);
+		selectStatement.setOrderByExpressions(orderBy);
 
 		StringBuilder sb2 = new StringBuilder();
 		sb2.append("SELECT * FROM (SELECT 1 FROM ");
