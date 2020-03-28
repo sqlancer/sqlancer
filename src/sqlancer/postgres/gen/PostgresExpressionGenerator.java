@@ -99,8 +99,8 @@ public class PostgresExpressionGenerator {
 	}
 
 	private enum BooleanExpression {
-		CONSTANT, POSTFIX_OPERATOR, COLUMN, NOT, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON, FUNCTION, CAST, LIKE,
-		BETWEEN, IN_OPERATION, SIMILAR_TO, POSIX_REGEX, BINARY_RANGE_COMPARISON;
+		POSTFIX_OPERATOR, NOT, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON, FUNCTION, CAST, LIKE, BETWEEN, IN_OPERATION,
+		SIMILAR_TO, POSIX_REGEX, BINARY_RANGE_COMPARISON;
 	}
 
 	private PostgresExpression generateFunctionWithUnknownResult(int depth, PostgresDataType type) {
@@ -136,41 +136,25 @@ public class PostgresExpressionGenerator {
 	}
 
 	private PostgresExpression generateBooleanExpression(int depth) {
-		BooleanExpression option;
-		if (depth >= maxDepth) {
-			if (Randomly.getBooleanWithSmallProbability()) {
-				option = BooleanExpression.CONSTANT;
-			} else {
-				option = BooleanExpression.COLUMN;
-			}
-		} else {
-			List<BooleanExpression> validOptions = new ArrayList<>(Arrays.asList(BooleanExpression.values()));
-			if (PostgresProvider.GENERATE_ONLY_KNOWN) {
-				validOptions.remove(BooleanExpression.SIMILAR_TO);
-				validOptions.remove(BooleanExpression.POSIX_REGEX);
-				validOptions.remove(BooleanExpression.BINARY_RANGE_COMPARISON);
-			}
-			option = Randomly.fromList(validOptions);
+		List<BooleanExpression> validOptions = new ArrayList<>(Arrays.asList(BooleanExpression.values()));
+		if (PostgresProvider.GENERATE_ONLY_KNOWN) {
+			validOptions.remove(BooleanExpression.SIMILAR_TO);
+			validOptions.remove(BooleanExpression.POSIX_REGEX);
+			validOptions.remove(BooleanExpression.BINARY_RANGE_COMPARISON);
 		}
-		if (filterColumns(PostgresDataType.BOOLEAN).isEmpty() && option == BooleanExpression.COLUMN) {
-			option = BooleanExpression.CONSTANT;
-		}
+		BooleanExpression option = Randomly.fromList(validOptions);
 		switch (option) {
-		case CONSTANT:
-			return generateConstant(r, PostgresDataType.BOOLEAN);
 		case POSTFIX_OPERATOR:
 			PostfixOperator random = PostfixOperator.getRandom();
 			return PostgresPostfixOperation
 					.create(generateExpression(depth + 1, Randomly.fromOptions(random.getInputDataTypes())), random);
-		case COLUMN:
-			return createColumnOfType(PostgresDataType.BOOLEAN);
 		case IN_OPERATION:
 			return inOperation(depth + 1);
 		case NOT:
-			return new PostgresPrefixOperation(generateBooleanExpression(depth + 1), PrefixOperator.NOT);
+			return new PostgresPrefixOperation(generateExpression(depth + 1, PostgresDataType.BOOLEAN), PrefixOperator.NOT);
 		case BINARY_LOGICAL_OPERATOR:
-			return new PostgresBinaryLogicalOperation(generateBooleanExpression(depth + 1),
-					generateBooleanExpression(depth + 1), BinaryLogicalOperator.getRandom());
+			return new PostgresBinaryLogicalOperation(generateExpression(depth + 1, PostgresDataType.BOOLEAN),
+					generateExpression(depth + 1, PostgresDataType.BOOLEAN), BinaryLogicalOperator.getRandom());
 		case BINARY_COMPARISON:
 			PostgresDataType dataType = getMeaningfulType();
 			return generateComparison(depth, dataType);
@@ -283,10 +267,6 @@ public class PostgresExpressionGenerator {
 				}
 			}
 		} else {
-//			// FIXME remove
-//			if (Randomly.getBoolean()) {
-//				return generateFunctionWithUnknownResult(depth, dataType);
-//			}
 			switch (dataType) {
 			case BOOLEAN:
 				return generateBooleanExpression(depth);
@@ -335,66 +315,36 @@ public class PostgresExpressionGenerator {
 	}
 
 	private enum RangeExpression {
-		CONSTANT, COLUMN, BINARY_OP;
+		BINARY_OP;
 	}
 
 	private PostgresExpression generateRangeExpression(int depth) {
 		RangeExpression option;
-		if (depth >= maxDepth) {
-			if (Randomly.getBooleanWithSmallProbability()) {
-				option = RangeExpression.CONSTANT;
-			} else {
-				option = RangeExpression.COLUMN;
-			}
-		} else {
-			List<RangeExpression> validOptions = new ArrayList<>(Arrays.asList(RangeExpression.values()));
-			option = Randomly.fromList(validOptions);
-		}
-		if (option == RangeExpression.COLUMN && filterColumns(PostgresDataType.RANGE).isEmpty()) {
-			option = RangeExpression.CONSTANT;
-		}
+		List<RangeExpression> validOptions = new ArrayList<>(Arrays.asList(RangeExpression.values()));
+		option = Randomly.fromList(validOptions);
 		switch (option) {
 		case BINARY_OP:
 			return new PostgresBinaryRangeOperation(PostgresBinaryRangeOperator.getRandom(),
 					generateExpression(depth + 1, PostgresDataType.RANGE),
 					generateExpression(depth + 1, PostgresDataType.RANGE));
-		case COLUMN:
-			return createColumnOfType(PostgresDataType.RANGE);
-		case CONSTANT:
-			return generateConstant(r, PostgresDataType.RANGE);
 		default:
 			throw new AssertionError(option);
 		}
 	}
 
 	private enum TextExpression {
-		CONSTANT, COLUMN, CAST, FUNCTION, CONCAT, COLLATE
+		CAST, FUNCTION, CONCAT, COLLATE
 	}
 
 	private PostgresExpression generateTextExpression(int depth) {
 		TextExpression option;
-		if (depth >= maxDepth) {
-			if (Randomly.getBooleanWithSmallProbability()) {
-				option = TextExpression.CONSTANT;
-			} else {
-				option = TextExpression.COLUMN;
-			}
-		} else {
-			List<TextExpression> validOptions = new ArrayList<>(Arrays.asList(TextExpression.values()));
-			if (expectedResult) {
-				validOptions.remove(TextExpression.COLLATE);
-			}
-			option = Randomly.fromList(validOptions);
+		List<TextExpression> validOptions = new ArrayList<>(Arrays.asList(TextExpression.values()));
+		if (expectedResult) {
+			validOptions.remove(TextExpression.COLLATE);
 		}
-		if (option == TextExpression.COLUMN && filterColumns(PostgresDataType.TEXT).isEmpty()) {
-			option = TextExpression.CONSTANT;
-		}
+		option = Randomly.fromList(validOptions);
 
 		switch (option) {
-		case CONSTANT:
-			return PostgresConstant.createTextConstant(r.getString());
-		case COLUMN:
-			return createColumnOfType(PostgresDataType.TEXT);
 		case CAST:
 			return new PostgresCastOperation(generateExpression(depth + 1), getCompoundDataType(PostgresDataType.TEXT));
 		case FUNCTION:
@@ -403,7 +353,7 @@ public class PostgresExpressionGenerator {
 			return generateConcat(depth);
 		case COLLATE:
 			assert !expectedResult;
-			return new PostgresCollate(generateTextExpression(depth + 1),
+			return new PostgresCollate(generateExpression(depth + 1, PostgresDataType.TEXT),
 					globalState == null ? Randomly.fromOptions("C", "POSIX", "de_CH.utf8", "es_CR.utf8")
 							: globalState.getRandomCollate());
 		default:
@@ -423,71 +373,41 @@ public class PostgresExpressionGenerator {
 	}
 
 	private enum BitExpression {
-		CONSTANT, COLUMN, BINARY_OPERATION
+		BINARY_OPERATION
 	};
 
 	private PostgresExpression generateBitExpression(int depth) {
 		BitExpression option;
-		if (depth >= maxDepth) {
-			if (Randomly.getBooleanWithSmallProbability()) {
-				option = BitExpression.CONSTANT;
-			} else {
-				option = BitExpression.COLUMN;
-			}
-		} else {
-			option = Randomly.fromOptions(BitExpression.values());
-		}
-		if (option == BitExpression.COLUMN && filterColumns(PostgresDataType.BIT).isEmpty()) {
-			option = BitExpression.CONSTANT;
-		}
+		option = Randomly.fromOptions(BitExpression.values());
 		switch (option) {
 		case BINARY_OPERATION:
 			return new PostgresBinaryBitOperation(PostgresBinaryBitOperator.getRandom(),
 					generateExpression(depth + 1, PostgresDataType.BIT),
 					generateExpression(depth + 1, PostgresDataType.BIT));
-		case COLUMN:
-			return createColumnOfType(PostgresDataType.BIT);
-		case CONSTANT:
-			return generateConstant(r, PostgresDataType.BIT);
 		default:
 			throw new AssertionError();
 		}
 	}
 
 	private enum IntExpression {
-		CONSTANT, COLUMN, UNARY_OPERATION, FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION
+		UNARY_OPERATION, FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION
 	}
 
 	private PostgresExpression generateIntExpression(int depth) {
 		IntExpression option;
-		if (depth >= maxDepth) {
-			if (Randomly.getBooleanWithSmallProbability()) {
-				option = IntExpression.CONSTANT;
-			} else {
-				option = IntExpression.COLUMN;
-			}
-		} else {
-			option = Randomly.fromOptions(IntExpression.values());
-		}
-		if (filterColumns(PostgresDataType.INT).isEmpty()) {
-			option = IntExpression.CONSTANT;
-		}
+		option = Randomly.fromOptions(IntExpression.values());
 		switch (option) {
 		case CAST:
 			return new PostgresCastOperation(generateExpression(depth + 1), getCompoundDataType(PostgresDataType.INT));
-		case CONSTANT:
-			return generateConstant(r, PostgresDataType.INT);
-		case COLUMN:
-			return createColumnOfType(PostgresDataType.INT);
 		case UNARY_OPERATION:
-			PostgresExpression intExpression = generateIntExpression(depth + 1);
+			PostgresExpression intExpression = generateExpression(depth + 1, PostgresDataType.INT);
 			return new PostgresPrefixOperation(intExpression,
 					Randomly.getBoolean() ? PrefixOperator.UNARY_PLUS : PrefixOperator.UNARY_MINUS);
 		case FUNCTION:
 			return generateFunction(depth + 1, PostgresDataType.INT);
 		case BINARY_ARITHMETIC_EXPRESSION:
-			return new PostgresBinaryArithmeticOperation(generateIntExpression(depth + 1),
-					generateIntExpression(depth + 1), PostgresBinaryOperator.getRandom());
+			return new PostgresBinaryArithmeticOperation(generateExpression(depth + 1, PostgresDataType.INT),
+					generateExpression(depth + 1, PostgresDataType.INT), PostgresBinaryOperator.getRandom());
 		default:
 			throw new AssertionError();
 		}
