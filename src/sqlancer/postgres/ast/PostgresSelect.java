@@ -37,6 +37,7 @@ public class PostgresSelect implements PostgresExpression {
 	private List<PostgresExpression> fetchColumns = Collections.emptyList();
 	private List<PostgresJoin> joinClauses = Collections.emptyList();
 	private PostgresExpression distinctOnClause;
+	private PostgresExpression havingClause;
 
 	public enum SelectType {
 		DISTINCT, ALL;
@@ -147,6 +148,13 @@ public class PostgresSelect implements PostgresExpression {
 	public PostgresExpression getDistinctOnClause() {
 		return distinctOnClause;
 	}
-	
+
+	public void setHavingClause(PostgresExpression havingClause) {
+		this.havingClause = havingClause;
+	}
+
+	public PostgresExpression getHavingClause() {
+		return havingClause;
+	}
 	
 }

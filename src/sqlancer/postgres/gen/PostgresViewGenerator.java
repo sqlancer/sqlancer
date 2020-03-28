@@ -74,14 +74,11 @@ public class PostgresViewGenerator {
 			sb.append(" CHECK OPTION");
 			errors.add("WITH CHECK OPTION is supported only on automatically updatable views");
 		}
-
+		PostgresCommon.addGroupingErrors(errors);
 		errors.add("already exists");
 		errors.add("cannot drop columns from view");
-		errors.add("non-integer constant in GROUP BY"); // TODO
 		errors.add("non-integer constant in ORDER BY"); // TODO
 		errors.add("for SELECT DISTINCT, ORDER BY expressions must appear in select list"); // TODO
-		errors.add("must appear in the GROUP BY clause or be used in an aggregate function"); // TODO
-		errors.add("is not in select list");
 		errors.add("cannot change data type of view column");
 		errors.add("specified more than once"); // TODO
 		errors.add("materialized views must not use temporary tables or views");

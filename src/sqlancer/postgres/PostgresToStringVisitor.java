@@ -26,7 +26,7 @@ import sqlancer.postgres.ast.PostgresSimilarTo;
 import sqlancer.visitor.ToStringVisitor;
 
 public class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression> implements PostgresVisitor {
-	
+
 	@Override
 	public void visitSpecific(PostgresExpression expr) {
 		PostgresVisitor.super.visit(expr);
@@ -83,13 +83,7 @@ public class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression>
 		if (s.getFetchColumns() == null) {
 			sb.append("*");
 		} else {
-			for (int i = 0; i < s.getFetchColumns().size(); i++) {
-				if (i != 0) {
-					sb.append(", ");
-				}
-				PostgresExpression column = s.getFetchColumns().get(i);
-				visit(column);
-			}
+			visitList(s.getFetchColumns());
 		}
 		sb.append(" FROM ");
 		for (int i = 0; i < s.getFromList().size(); i++) {
@@ -136,32 +130,23 @@ public class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression>
 				visit(j.getOnClause());
 			}
 		}
-		
+
 		if (s.getWhereClause() != null) {
-			PostgresExpression whereClause = s.getWhereClause();
 			sb.append(" WHERE ");
-			visit(whereClause);
+			visit(s.getWhereClause());
 		}
-		if (s.getGroupByClause() != null && s.getGroupByClause().size() > 0) {
-			sb.append(" ");
-			sb.append("GROUP BY ");
-			List<PostgresExpression> groupBys = s.getGroupByClause();
-			for (int i = 0; i < groupBys.size(); i++) {
-				if (i != 0) {
-					sb.append(", ");
-				}
-				visit(groupBys.get(i));
-			}
+		if (s.getGroupByClause().size() > 0) {
+			sb.append(" GROUP BY ");
+			visitList(s.getGroupByClause());
+		}
+		if (s.getHavingClause() != null) {
+			sb.append(" HAVING ");
+			visit(s.getHavingClause());
+
 		}
 		if (!s.getOrderByClause().isEmpty()) {
 			sb.append(" ORDER BY ");
-			List<PostgresExpression> orderBys = s.getOrderByClause();
-			for (int i = 0; i < orderBys.size(); i++) {
-				if (i != 0) {
-					sb.append(", ");
-				}
-				visit(s.getOrderByClause().get(i));
-			}
+			visitList(s.getOrderByClause());
 		}
 		if (s.getLimitClause() != null) {
 			sb.append(" LIMIT ");
@@ -281,7 +266,8 @@ public class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression>
 		sb.append(") AND (");
 		visit(op.getRight());
 		if ((op.getExpr().getExpressionType() == PostgresDataType.TEXT
-				&& op.getRight().getExpressionType() == PostgresDataType.TEXT) && PostgresProvider.GENERATE_ONLY_KNOWN) {
+				&& op.getRight().getExpressionType() == PostgresDataType.TEXT)
+				&& PostgresProvider.GENERATE_ONLY_KNOWN) {
 			sb.append(" COLLATE \"C\"");
 		}
 		sb.append(")");
@@ -296,12 +282,7 @@ public class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression>
 			sb.append(" NOT");
 		}
 		sb.append(" IN (");
-		for (int i = 0; i < op.getListElements().size(); i++) {
-			if (i != 0) {
-				sb.append(", ");
-			}
-			visit(op.getListElements().get(i));
-		}
+		visitList(op.getListElements());
 		sb.append(")");
 	}
 
@@ -347,6 +328,15 @@ public class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression>
 		sb.append(op.getCollate());
 		sb.append('"');
 		sb.append(")");
+	}
+
+	private void visitList(List<PostgresExpression> expressions) {
+		for (int i = 0; i < expressions.size(); i++) {
+			if (i != 0) {
+				sb.append(", ");
+			}
+			visit(expressions.get(i));
+		}
 	}
 
 }

@@ -405,4 +405,10 @@ public class PostgresCommon {
 		sb.append(Randomly.fromOptions("NO ACTION", "RESTRICT", "CASCADE", "SET NULL", "SET DEFAULT"));
 	}
 
+	public static void addGroupingErrors(Set<String> errors) {
+		errors.add("non-integer constant in GROUP BY"); // TODO
+		errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
+		errors.add("is not in select list");
+	}
+
 }
