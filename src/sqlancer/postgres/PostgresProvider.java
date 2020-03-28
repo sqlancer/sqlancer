@@ -11,7 +11,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.beust.jcommander.JCommander;
+
 import sqlancer.AbstractAction;
+import sqlancer.CompositeTestOracle;
 import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
@@ -23,6 +26,7 @@ import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.PostgresStateToReproduce;
 import sqlancer.StatementExecutor;
+import sqlancer.TestOracle;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.ast.PostgresExpression;
@@ -47,7 +51,6 @@ import sqlancer.postgres.gen.PostgresTruncateGenerator;
 import sqlancer.postgres.gen.PostgresUpdateGenerator;
 import sqlancer.postgres.gen.PostgresVacuumGenerator;
 import sqlancer.postgres.gen.PostgresViewGenerator;
-import sqlancer.postgres.test.PostgresNoRECOracle;
 import sqlancer.sqlite3.gen.SQLite3Common;
 
 // EXISTS
@@ -201,6 +204,9 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 		String databaseName = globalState.getDatabaseName();
 		Connection con = globalState.getConnection();
 		QueryManager manager = globalState.getManager();
+		PostgresOptions PostgresOptions = new PostgresOptions();
+		JCommander.newBuilder().addObject(PostgresOptions).build().parse(globalState.getOptions().getDbmsOptions().split(" "));
+		globalState.setPostgresOptions(PostgresOptions);
 		if (options.logEachSelect()) {
 			logger.writeCurrent(state);
 		}
@@ -245,11 +251,20 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 		globalState.setSchema(PostgresSchema.fromConnection(con, databaseName));
 
 		manager.execute(new QueryAdapter("SET SESSION statement_timeout = 5000;\n"));
-		PostgresNoRECOracle or = new PostgresNoRECOracle(globalState.getSchema(), globalState.getRandomly(), con,
-				(PostgresStateToReproduce) state, logger, options, manager, globalState);
+
+		
+		List<TestOracle> oracles = globalState.getPostgresOptions().oracle.stream().map(o -> {
+			try {
+				return o.create(globalState);
+			} catch (SQLException e1) {
+				throw new AssertionError(e1);
+			}
+		}).collect(Collectors.toList());
+		CompositeTestOracle oracle = new CompositeTestOracle(oracles);
+		
 		for (int i = 0; i < options.getNrQueries(); i++) {
 			try {
-				or.check();
+				oracle.check();
 			} catch (IgnoreMeException e) {
 				continue;
 			}

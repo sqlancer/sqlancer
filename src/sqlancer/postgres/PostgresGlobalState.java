@@ -16,6 +16,7 @@ public class PostgresGlobalState extends GlobalState {
 	private List<String> collates;
 	private List<String> opClasses;
 	private PostgresSchema schema;
+	private PostgresOptions postgresOptions;
 
 	@Override
 	public void setConnection(Connection con) {
@@ -98,4 +99,12 @@ public class PostgresGlobalState extends GlobalState {
 		return Randomly.fromList(opClasses);
 	}
 
+	public void setPostgresOptions(PostgresOptions postgresOptions) {
+		this.postgresOptions = postgresOptions;
+	}
+
+	public PostgresOptions getPostgresOptions() {
+		return postgresOptions;
+	}
+	
 }

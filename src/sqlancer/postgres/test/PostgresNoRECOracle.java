@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
-import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.Query;
@@ -52,14 +51,13 @@ public class PostgresNoRECOracle implements TestOracle {
 	private final List<String> errors = new ArrayList<>();
 	private PostgresGlobalState globalState;
 
-	public PostgresNoRECOracle(PostgresSchema s, Randomly r, Connection con,
-			PostgresStateToReproduce state, StateLogger logger, MainOptions options, QueryManager manager, PostgresGlobalState globalState) {
-		this.s = s;
-		this.r = r;
-		this.con = con;
-		this.state = state;
-		this.logger = logger;
-		this.options = options;
+	public PostgresNoRECOracle(PostgresGlobalState globalState) {
+		this.s = globalState.getSchema();
+		this.r = globalState.getRandomly();
+		this.con = globalState.getConnection();
+		this.state = (PostgresStateToReproduce) globalState.getState();
+		this.logger = globalState.getLogger();
+		this.options = globalState.getOptions();
 		this.globalState = globalState;
 	}
 
