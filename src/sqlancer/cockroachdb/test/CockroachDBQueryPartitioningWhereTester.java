@@ -43,26 +43,26 @@ public class CockroachDBQueryPartitioningWhereTester implements TestOracle {
 		CockroachDBTables targetTables = s.getRandomTableNonEmptyTables();
 		CockroachDBExpressionGenerator gen = new CockroachDBExpressionGenerator(state).setColumns(targetTables.getColumns());
 		CockroachDBSelect select = new CockroachDBSelect();
-		select.setColumns(Arrays.asList(new CockroachDBColumnReference(targetTables.getColumns().get(0))));
+		select.setFetchColumns(Arrays.asList(new CockroachDBColumnReference(targetTables.getColumns().get(0))));
 		List<CockroachDBTableReference> tableList = targetTables.getTables().stream()
 				.map(t -> new CockroachDBTableReference(t)).collect(Collectors.toList());
-		List<CockroachDBTableReference> from = CockroachDBCommon.getTableReferences(tableList);
+		List<CockroachDBExpression> from = CockroachDBCommon.getTableReferences(tableList);
 		if (Randomly.getBooleanWithRatherLowProbability()) {
 			select.setJoinList(CockroachDBNoRECTester.getJoins(from, state));
 		}
-		select.setFromTables(from);
+		select.setFromList(from);
 		// TODO order by?
-		select.setWhereCondition(null);
+		select.setWhereClause(null);
 		String originalQueryString = CockroachDBVisitor.asString(select);
 		
 		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors, state.getConnection());
 		
 		CockroachDBExpression predicate = gen.generateExpression(CockroachDBDataType.BOOL.get());
-		select.setWhereCondition(predicate);
+		select.setWhereClause(predicate);
 		String firstQueryString = CockroachDBVisitor.asString(select);
-		select.setWhereCondition(new CockroachDBNotOperation(predicate));
+		select.setWhereClause(new CockroachDBNotOperation(predicate));
 		String secondQueryString = CockroachDBVisitor.asString(select);
-		select.setWhereCondition(new CockroachDBUnaryPostfixOperation(predicate, CockroachDBUnaryPostfixOperator.IS_NULL));
+		select.setWhereClause(new CockroachDBUnaryPostfixOperation(predicate, CockroachDBUnaryPostfixOperator.IS_NULL));
 		String thirdQueryString = CockroachDBVisitor.asString(select);
 		String combinedString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL " + thirdQueryString;
 		List<String> secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors, state.getConnection());

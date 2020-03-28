@@ -52,7 +52,7 @@ public class CockroachDBNoRECTester implements TestOracle {
 		CockroachDBTables tables = globalState.getSchema().getRandomTableNonEmptyTables();
 		List<CockroachDBTableReference> tableL = tables.getTables().stream().map(t -> new CockroachDBTableReference(t))
 				.collect(Collectors.toList());
-		List<CockroachDBTableReference> tableList = CockroachDBCommon.getTableReferences(tableL);
+		List<CockroachDBExpression> tableList = CockroachDBCommon.getTableReferences(tableL);
 		gen = new CockroachDBExpressionGenerator(globalState).setColumns(tables.getColumns());
 		List<CockroachDBJoin> joinExpressions = getJoins(tableList, globalState);
 		CockroachDBExpression whereCondition = gen.generateExpression(CockroachDBDataType.BOOL.get());
@@ -76,12 +76,12 @@ public class CockroachDBNoRECTester implements TestOracle {
 		}
 	}
 
-	public static List<CockroachDBJoin> getJoins(List<CockroachDBTableReference> tableList,
+	public static List<CockroachDBJoin> getJoins(List<CockroachDBExpression> tableList,
 			CockroachDBGlobalState globalState) throws AssertionError {
 		List<CockroachDBJoin> joinExpressions = new ArrayList<>();
 		while (tableList.size() >= 2 && Randomly.getBoolean()) {
-			CockroachDBTableReference leftTable = tableList.remove(0);
-			CockroachDBTableReference rightTable = tableList.remove(0);
+			CockroachDBTableReference leftTable = (CockroachDBTableReference) tableList.remove(0);
+			CockroachDBTableReference rightTable = (CockroachDBTableReference) tableList.remove(0);
 			List<CockroachDBColumn> columns = new ArrayList<>(leftTable.getTable().getColumns());
 			columns.addAll(rightTable.getTable().getColumns());
 			CockroachDBExpressionGenerator joinGen = new CockroachDBExpressionGenerator(globalState)
@@ -109,16 +109,16 @@ public class CockroachDBNoRECTester implements TestOracle {
 	}
 
 	private int getOptimizableResult(Connection con, CockroachDBExpression whereCondition,
-			CockroachDBExpression havingCondition, List<CockroachDBTableReference> tableList, Set<String> errors,
+			CockroachDBExpression havingCondition, List<CockroachDBExpression> tableList, Set<String> errors,
 			List<CockroachDBJoin> joinExpressions) throws SQLException {
 		CockroachDBSelect select = new CockroachDBSelect();
 		CockroachDBColumn c = new CockroachDBColumn("COUNT(*)", null, false, false);
-		select.setColumns(Arrays.asList(new CockroachDBColumnReference(c)));
-		select.setFromTables(tableList);
-		select.setWhereCondition(whereCondition);
+		select.setFetchColumns(Arrays.asList(new CockroachDBColumnReference(c)));
+		select.setFromList(tableList);
+		select.setWhereClause(whereCondition);
 		select.setJoinList(joinExpressions);
 		if (Randomly.getBooleanWithRatherLowProbability()) {
-			select.setOrderByTerms(gen.getOrderingTerms());
+			select.setOrderByExpressions(gen.getOrderingTerms());
 		}
 		String s = CockroachDBVisitor.asString(select);
 		if (globalState.getOptions().logEachSelect()) {
@@ -130,9 +130,9 @@ public class CockroachDBNoRECTester implements TestOracle {
 	}
 
 	private int getNonOptimizedResult(Connection con, CockroachDBExpression whereCondition,
-			CockroachDBExpression havingCondition, List<CockroachDBTableReference> tableList, Set<String> errors,
+			CockroachDBExpression havingCondition, List<CockroachDBExpression> tableList, Set<String> errors,
 			List<CockroachDBJoin> joinList) throws SQLException {
-		String fromString = tableList.stream().map(t -> t.getTable().getName()).collect(Collectors.joining(", "));
+		String fromString = tableList.stream().map(t -> ((CockroachDBTableReference) t).getTable().getName()).collect(Collectors.joining(", "));
 		if (!tableList.isEmpty() && !joinList.isEmpty()) {
 			fromString += ", ";
 		}

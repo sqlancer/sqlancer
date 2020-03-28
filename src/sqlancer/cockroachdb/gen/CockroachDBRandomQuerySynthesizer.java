@@ -43,29 +43,29 @@ public class CockroachDBRandomQuerySynthesizer {
 				columns.add(gen.generateAggregate());
 			}
 		}
-		select.setColumns(columns);
+		select.setFetchColumns(columns);
 		List<CockroachDBTableReference> tableList = tables.getTables().stream()
 				.map(t -> new CockroachDBTableReference(t)).collect(Collectors.toList());
-		List<CockroachDBTableReference> updatedTableList = CockroachDBCommon.getTableReferences(tableList);
+		List<CockroachDBExpression> updatedTableList = CockroachDBCommon.getTableReferences(tableList);
 		if (Randomly.getBoolean()) {
 			select.setJoinList(CockroachDBNoRECTester.getJoins(updatedTableList, globalState));
 		}
-		select.setFromTables(updatedTableList);
+		select.setFromList(updatedTableList);
 		if (Randomly.getBoolean()) {
-			select.setWhereCondition(gen.generateExpression(CockroachDBDataType.BOOL.get()));
+			select.setWhereClause(gen.generateExpression(CockroachDBDataType.BOOL.get()));
 		}
 		if (Randomly.getBoolean()) {
-			select.setOrderByTerms(gen.getOrderingTerms());
+			select.setOrderByExpressions(gen.getOrderingTerms());
 		}
 		if (Randomly.getBoolean()) {
-			select.setGroupByClause(gen.generateExpressions(Randomly.smallNumber() + 1));
+			select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
 		}
 
 		if (Randomly.getBoolean()) { // TODO expression
-			select.setLimitTerm(gen.generateConstant(CockroachDBDataType.INT.get()));
+			select.setLimitClause(gen.generateConstant(CockroachDBDataType.INT.get()));
 		}
 		if (Randomly.getBoolean()) {
-			select.setOffset(gen.generateConstant(CockroachDBDataType.INT.get()));
+			select.setOffsetClause(gen.generateConstant(CockroachDBDataType.INT.get()));
 		}
 		if (Randomly.getBoolean()) {
 			select.setHavingClause(gen.generateHavingClause());

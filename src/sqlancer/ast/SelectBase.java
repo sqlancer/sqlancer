@@ -29,8 +29,8 @@ public class SelectBase<T> {
 	}
 
 	public void setFromList(List<T> fromList) {
-		if (fromList == null || fromList.size() == 0) {
-			throw new IllegalArgumentException(fromList.toString());
+		if (fromList == null /*|| fromList.size() == 0 TODO: refactor the CockroachDB implementation */) {
+			throw new IllegalArgumentException();
 		}
 		this.fromList = fromList;
 	}

@@ -1,6 +1,5 @@
 package sqlancer.cockroachdb;
 
-
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
@@ -82,38 +81,38 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
 		} else if (Randomly.getBoolean()) {
 			sb.append("ALL ");
 		}
-		visit(select.getColumns());
+		visit(select.getFetchColumns());
 		sb.append(" FROM ");
-		if (!select.getFromTables().isEmpty()) {
-			visit(select.getFromTables().stream().map(t -> (CockroachDBExpression) t).collect(Collectors.toList()));
+		if (!select.getFromList().isEmpty()) {
+			visit(select.getFromList().stream().map(t -> (CockroachDBExpression) t).collect(Collectors.toList()));
 		}
-		if (!select.getFromTables().isEmpty() && !select.getJoinList().isEmpty()) {
+		if (!select.getFromList().isEmpty() && !select.getJoinList().isEmpty()) {
 			sb.append(", ");
 		}
 		visit(select.getJoinList().stream().map(j -> (CockroachDBExpression) j).collect(Collectors.toList()));
-		if (select.getWhereCondition() != null) {
+		if (select.getWhereClause() != null) {
 			sb.append(" WHERE ");
-			visit(select.getWhereCondition());
+			visit(select.getWhereClause());
 		}
-		if (select.getGroupByExpression() != null && !select.getGroupByExpression().isEmpty()) {
+		if (select.getGroupByExpressions() != null && !select.getGroupByExpressions().isEmpty()) {
 			sb.append(" GROUP BY ");
-			visit(select.getGroupByExpression());
+			visit(select.getGroupByExpressions());
 		}
 		if (select.getHavingClause() != null) {
 			sb.append(" HAVING ");
 			visit(select.getHavingClause());
 		}
-		if (!select.getOrderByTerms().isEmpty()) {
+		if (!select.getOrderByExpressions().isEmpty()) {
 			sb.append(" ORDER BY ");
-			visit(select.getOrderByTerms());
+			visit(select.getOrderByExpressions());
 		}
-		if (select.getLimit() != null) {
+		if (select.getLimitClause() != null) {
 			sb.append(" LIMIT ");
-			visit(select.getLimit());
+			visit(select.getLimitClause());
 		}
-		if (select.getOffset() != null) {
+		if (select.getOffsetClause() != null) {
 			sb.append(" OFFSET ");
-			visit(select.getOffset());
+			visit(select.getOffsetClause());
 		}
 	}
 

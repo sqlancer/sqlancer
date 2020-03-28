@@ -17,6 +17,7 @@ import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.CockroachDBVisitor;
+import sqlancer.cockroachdb.ast.CockroachDBExpression;
 import sqlancer.cockroachdb.ast.CockroachDBSelect;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 import sqlancer.cockroachdb.gen.CockroachDBRandomQuerySynthesizer;
@@ -60,8 +61,8 @@ public class CockroachDBNoTableTester implements TestOracle {
 				resultSet.add(result.getString(1));
 			}
 		}
-		List<CockroachDBTableReference> fromTables = getNewFromTables(select, state.getConnection());
-		select.setFromTables(fromTables);
+		List<CockroachDBExpression> fromTables = getNewFromTables(select, state.getConnection());
+		select.setFromList(fromTables);
 
 		QueryAdapter noTableQuery = new QueryAdapter(CockroachDBVisitor.asString(select), errors);
 		state.getState().queryString = query.getQueryString() + ";\n" + noTableQuery.getQueryString() + ";\n";
@@ -82,12 +83,12 @@ public class CockroachDBNoTableTester implements TestOracle {
 
 	}
 
-	private List<CockroachDBTableReference> getNewFromTables(CockroachDBSelect select, Connection con)
+	private List<CockroachDBExpression> getNewFromTables(CockroachDBSelect select, Connection con)
 			throws SQLException {
-		List<CockroachDBTableReference> fromTables = select.getFromTables();
-		List<CockroachDBTableReference> newTables = new ArrayList<>();
-		for (CockroachDBTableReference t : fromTables) {
-			CockroachDBTable table = t.getTable();
+		List<CockroachDBExpression> fromTables = select.getFromList();
+		List<CockroachDBExpression> newTables = new ArrayList<>();
+		for (CockroachDBExpression t : fromTables) {
+			CockroachDBTable table = ((CockroachDBTableReference) t).getTable();
 			StringBuilder sb = new StringBuilder();
 			sb.append("(");
 			sb.append("VALUES ");

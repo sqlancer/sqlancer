@@ -60,22 +60,23 @@ public class CockroachDBQueryPartitioningAggregateTester implements TestOracle {
 		CockroachDBSelect select = new CockroachDBSelect();
 		CockroachDBAggregateFunction windowFunction = Randomly
 				.fromOptions(CockroachDBAggregate.CockroachDBAggregateFunction.getRandomMetamorphicOracle());
-		CockroachDBAggregate aggregate = gen.generateArgsForAggregate(windowFunction.getRandomReturnType().get(), windowFunction);
+		CockroachDBAggregate aggregate = gen.generateArgsForAggregate(windowFunction.getRandomReturnType().get(),
+				windowFunction);
 		List<CockroachDBExpression> fetchColumns = new ArrayList<>();
 		fetchColumns.add(aggregate);
 		while (Randomly.getBooleanWithRatherLowProbability()) {
 			fetchColumns.add(gen.generateAggregate());
 		}
-		select.setColumns(Arrays.asList(aggregate));
+		select.setFetchColumns(Arrays.asList(aggregate));
 		List<CockroachDBTableReference> tableList = targetTables.getTables().stream()
 				.map(t -> new CockroachDBTableReference(t)).collect(Collectors.toList());
-		List<CockroachDBTableReference> from = CockroachDBCommon.getTableReferences(tableList);
+		List<CockroachDBExpression> from = CockroachDBCommon.getTableReferences(tableList);
 		if (Randomly.getBooleanWithRatherLowProbability()) {
 			select.setJoinList(CockroachDBNoRECTester.getJoins(from, state));
 		}
-		select.setFromTables(from);
+		select.setFromList(from);
 		if (Randomly.getBooleanWithRatherLowProbability()) {
-			select.setOrderByTerms(gen.getOrderingTerms());
+			select.setOrderByExpressions(gen.getOrderingTerms());
 		}
 		originalQuery = CockroachDBVisitor.asString(select);
 		updateStateString();
@@ -100,7 +101,7 @@ public class CockroachDBQueryPartitioningAggregateTester implements TestOracle {
 	}
 
 	private String createMetamorphicUnionQuery(CockroachDBSelect select, CockroachDBAggregate aggregate,
-			List<CockroachDBTableReference> from) {
+			List<CockroachDBExpression> from) {
 		String metamorphicQuery;
 		CockroachDBExpression whereClause = gen.generateExpression(CockroachDBDataType.BOOL.get());
 		CockroachDBNotOperation negatedClause = new CockroachDBNotOperation(whereClause);
@@ -183,19 +184,19 @@ public class CockroachDBQueryPartitioningAggregateTester implements TestOracle {
 		}
 	}
 
-	private CockroachDBSelect getSelect(List<CockroachDBExpression> aggregates, List<CockroachDBTableReference> from,
+	private CockroachDBSelect getSelect(List<CockroachDBExpression> aggregates, List<CockroachDBExpression> from,
 			CockroachDBExpression whereClause, List<CockroachDBJoin> joinList) {
 		CockroachDBSelect leftSelect = new CockroachDBSelect();
-		leftSelect.setColumns(aggregates);
-		leftSelect.setFromTables(from);
-		leftSelect.setWhereCondition(whereClause);
+		leftSelect.setFetchColumns(aggregates);
+		leftSelect.setFromList(from);
+		leftSelect.setWhereClause(whereClause);
 		leftSelect.setJoinList(joinList);
 		if (Randomly.getBooleanWithSmallProbability()) {
-			leftSelect.setGroupByClause(gen.generateExpressions(Randomly.smallNumber() + 1));
+			leftSelect.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
 		}
 		return leftSelect;
 	}
-	
+
 	private void updateStateString() {
 		StringBuilder sb = new StringBuilder();
 		if (originalQuery != null) {
