@@ -1,11 +1,12 @@
 package sqlancer.postgres.ast;
 
 import sqlancer.Randomly;
+import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
 public class PostgresBinaryComparisonOperation extends PostgresBinaryOperation {
 	
-	public enum PostgresBinaryComparisonOperator {
+	public enum PostgresBinaryComparisonOperator implements Operator {
 		EQUALS("=") {
 			@Override
 			public PostgresConstant getExpectedValue(PostgresConstant leftVal, PostgresConstant rightVal) {

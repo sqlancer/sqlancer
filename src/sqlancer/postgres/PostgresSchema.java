@@ -410,10 +410,10 @@ public class PostgresSchema {
 
 		@Override
 		public String getIndexName() {
-			if (getIndexName().contentEquals("PRIMARY")) {
+			if (super.getIndexName().contentEquals("PRIMARY")) {
 				return "`PRIMARY`";
 			} else {
-				return getIndexName();
+				return super.getIndexName();
 			}
 		}
 

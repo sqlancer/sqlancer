@@ -1,6 +1,7 @@
 package sqlancer.postgres.ast;
 
 import sqlancer.Randomly;
+import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
 public class PostgresBinaryLogicalOperation extends PostgresBinaryOperation {
@@ -9,7 +10,7 @@ public class PostgresBinaryLogicalOperation extends PostgresBinaryOperation {
 	private final PostgresExpression right;
 	private final BinaryLogicalOperator op;
 
-	public enum BinaryLogicalOperator {
+	public enum BinaryLogicalOperator implements Operator {
 		AND {
 			@Override
 			public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
@@ -58,6 +59,11 @@ public class PostgresBinaryLogicalOperation extends PostgresBinaryOperation {
 
 		public static BinaryLogicalOperator getRandom() {
 			return Randomly.fromOptions(values());
+		}
+		
+		@Override
+		public String getTextRepresentation() {
+			return toString();
 		}
 	}
 

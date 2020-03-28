@@ -1,6 +1,7 @@
 package sqlancer.postgres.ast;
 
 import sqlancer.Randomly;
+import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
 public class PostgresPostfixOperation extends PostgresExpression {
@@ -9,7 +10,7 @@ public class PostgresPostfixOperation extends PostgresExpression {
 	private final PostfixOperator op;
 	private final String operatorTextRepresentation;
 
-	public static enum PostfixOperator {
+	public static enum PostfixOperator implements Operator {
 		IS_NULL("IS NULL", "ISNULL") {
 			@Override
 			public PostgresConstant apply(PostgresConstant expectedValue) {
@@ -105,6 +106,11 @@ public class PostgresPostfixOperation extends PostgresExpression {
 
 		public static PostfixOperator getRandom() {
 			return Randomly.fromOptions(values());
+		}
+		
+		@Override
+		public String getTextRepresentation() {
+			return toString();
 		}
 	}
 

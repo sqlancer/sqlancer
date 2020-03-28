@@ -312,8 +312,10 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 		}
 		con.close();
 		con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + databaseName, "lama", "password");
-		List<String> statements = Arrays.asList("CREATE EXTENSION IF NOT EXISTS btree_gin;",
-				"CREATE EXTENSION IF NOT EXISTS btree_gist;", "CREATE EXTENSION IF NOT EXISTS pg_prewarm;",
+		List<String> statements = Arrays.asList(
+//				"CREATE EXTENSION IF NOT EXISTS btree_gin;",
+//				"CREATE EXTENSION IF NOT EXISTS btree_gist;", // TODO:  undefined symbol: elog_start
+				"CREATE EXTENSION IF NOT EXISTS pg_prewarm;",
 				"SET max_parallel_workers_per_gather=16");
 		for (String s : statements) {
 			QueryAdapter query = new QueryAdapter(s);

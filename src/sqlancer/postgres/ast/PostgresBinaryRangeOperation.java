@@ -1,6 +1,7 @@
 package sqlancer.postgres.ast;
 
 import sqlancer.Randomly;
+import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
 public class PostgresBinaryRangeOperation extends PostgresBinaryOperation {
@@ -9,7 +10,7 @@ public class PostgresBinaryRangeOperation extends PostgresBinaryOperation {
 	private PostgresExpression left;
 	private PostgresExpression right;
 	
-	public enum PostgresBinaryRangeOperator {
+	public enum PostgresBinaryRangeOperator implements Operator {
 		UNION("*"), INTERSECTION("*"), DIFFERENCE("-");
 		
 		

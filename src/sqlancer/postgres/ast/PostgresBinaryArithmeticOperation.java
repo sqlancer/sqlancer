@@ -3,6 +3,7 @@ package sqlancer.postgres.ast;
 import java.util.function.BinaryOperator;
 
 import sqlancer.Randomly;
+import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
 public class PostgresBinaryArithmeticOperation extends PostgresBinaryOperation {
@@ -11,7 +12,7 @@ public class PostgresBinaryArithmeticOperation extends PostgresBinaryOperation {
 	private final PostgresExpression right;
 	private final PostgresBinaryOperator op;
 
-	public enum PostgresBinaryOperator {
+	public enum PostgresBinaryOperator implements Operator {
 
 		ADDITION("+") {
 			@Override

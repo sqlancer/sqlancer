@@ -1,11 +1,12 @@
 package sqlancer.postgres.ast;
 
 import sqlancer.IgnoreMeException;
+import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
 public class PostgresPrefixOperation extends PostgresExpression {
 
-	public enum PrefixOperator {
+	public enum PrefixOperator implements Operator {
 		NOT("NOT", PostgresDataType.BOOLEAN) {
 
 			@Override
@@ -66,6 +67,11 @@ public class PostgresPrefixOperation extends PostgresExpression {
 
 		protected abstract PostgresConstant getExpectedValue(PostgresConstant expectedValue);
 
+		@Override
+		public String getTextRepresentation() {
+			return toString();
+		}
+		
 	}
 
 	private final PostgresExpression expr;

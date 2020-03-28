@@ -11,13 +11,15 @@ import sqlancer.GlobalState;
 import sqlancer.Randomly;
 
 public class PostgresGlobalState extends GlobalState {
-	
-	private final List<String> operators;
-	private final List<String> collates;
-	private final List<String> opClasses;
+
+	private List<String> operators;
+	private List<String> collates;
+	private List<String> opClasses;
 	private PostgresSchema schema;
-	
-	public PostgresGlobalState() {
+
+	@Override
+	public void setConnection(Connection con) {
+		super.setConnection(con);
 		try {
 			this.opClasses = getOpclasses(getConnection());
 			this.operators = getOperators(getConnection());
@@ -26,15 +28,15 @@ public class PostgresGlobalState extends GlobalState {
 			throw new AssertionError(e);
 		}
 	}
-	
+
 	public void setSchema(PostgresSchema schema) {
 		this.schema = schema;
 	}
-	
+
 	public PostgresSchema getSchema() {
 		return schema;
 	}
-	
+
 	private List<String> getCollnames(Connection con) throws SQLException {
 		List<String> opClasses = new ArrayList<>();
 		try (Statement s = con.createStatement()) {
@@ -72,30 +74,28 @@ public class PostgresGlobalState extends GlobalState {
 		return opClasses;
 	}
 
-
-
 	public List<String> getOperators() {
 		return operators;
 	}
-	
+
 	public String getRandomOperator() {
 		return Randomly.fromList(operators);
 	}
-	
+
 	public List<String> getCollates() {
 		return collates;
 	}
-	
+
 	public String getRandomCollate() {
 		return Randomly.fromList(collates);
 	}
-	
+
 	public List<String> getOpClasses() {
 		return opClasses;
 	}
-	
+
 	public String getRandomOpclass() {
 		return Randomly.fromList(opClasses);
 	}
- 
+
 }
