@@ -43,19 +43,19 @@ public class TiDBQueryPartitioningHavingTester  implements TestOracle  {
 		TiDBTables targetTables = s.getRandomTableNonEmptyTables();
 		TiDBExpressionGenerator gen = new TiDBExpressionGenerator(state).setColumns(targetTables.getColumns());
 		TiDBSelect select = new TiDBSelect();
-		select.setColumns(Arrays.asList(new TiDBColumnReference(targetTables.getColumns().get(0))));
+		select.setFetchColumns(Arrays.asList(new TiDBColumnReference(targetTables.getColumns().get(0))));
 		List<TiDBExpression> tableList = targetTables.getTables().stream()
 				.map(t -> new TiDBTableReference(t)).collect(Collectors.toList());
 //		List<TiDBTableReference> from = TiDBCommon.getTableReferences(tableList);
 //		if (Randomly.getBooleanWithRatherLowProbability()) {
 //			select.setJoinList(TiDBNoRECTester.getJoins(from, state));
 //		}
-		select.setFromTables(tableList);
+		select.setFromList(tableList);
 		// TODO order by?
 		if (Randomly.getBoolean()) {
-			select.setWhereCondition(gen.generateExpression());
+			select.setWhereClause(gen.generateExpression());
 		}
-		select.setGroupByClause(gen.generateExpressions(Randomly.smallNumber() + 1));
+		select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
 		select.setHavingClause(null);
 		String originalQueryString = TiDBVisitor.asString(select);
 		if (state.getOptions().logEachSelect()) {

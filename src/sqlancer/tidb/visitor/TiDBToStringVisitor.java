@@ -43,18 +43,18 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
 		sb.append("SELECT ");
 		visit(select.getFetchColumns());
 		sb.append(" FROM ");
-		visit(select.getFrom());
-		if (select.getWherePredicate() != null) {
+		visit(select.getFromList());
+		if (select.getWhereClause() != null) {
 			sb.append(" WHERE ");
-			visit(select.getWherePredicate());
+			visit(select.getWhereClause());
 		}
-		if (!select.getOrderBy().isEmpty()) {
+		if (!select.getOrderByExpressions().isEmpty()) {
 			sb.append(" ORDER BY ");
-			visit(select.getOrderBy());
+			visit(select.getOrderByExpressions());
 		}
-		if (!select.getGroupBys().isEmpty()) {
+		if (!select.getGroupByExpressions().isEmpty()) {
 			sb.append(" GROUP BY ");
-			visit(select.getGroupBys());
+			visit(select.getGroupByExpressions());
 		}
 		if (select.getHavingClause() != null) {
 			sb.append(" HAVING ");

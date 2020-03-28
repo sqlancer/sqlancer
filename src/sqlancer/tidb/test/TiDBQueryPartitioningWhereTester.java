@@ -43,27 +43,27 @@ public class TiDBQueryPartitioningWhereTester  implements TestOracle  {
 		TiDBTables targetTables = s.getRandomTableNonEmptyTables();
 		TiDBExpressionGenerator gen = new TiDBExpressionGenerator(state).setColumns(targetTables.getColumns());
 		TiDBSelect select = new TiDBSelect();
-		select.setColumns(Arrays.asList(new TiDBColumnReference(targetTables.getColumns().get(0))));
+		select.setFetchColumns(Arrays.asList(new TiDBColumnReference(targetTables.getColumns().get(0))));
 		List<TiDBExpression> tableList = targetTables.getTables().stream()
 				.map(t -> new TiDBTableReference(t)).collect(Collectors.toList());
 		// TODO joins
-		select.setFromTables(tableList);
-		select.setWhereCondition(null);
+		select.setFromList(tableList);
+		select.setWhereClause(null);
 		if (Randomly.getBoolean() && false) {
 			// TODO: this results in run-time errors
-			select.setOrderBy(gen.generateOrderBys());
+			select.setOrderByExpressions(gen.generateOrderBys());
 		}
 		String originalQueryString = TiDBVisitor.asString(select);
 		
 		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors, state.getConnection());
 		
 		TiDBExpression predicate = gen.generateExpression();
-		select.setOrderBy(Collections.emptyList());
-		select.setWhereCondition(predicate);
+		select.setOrderByExpressions(Collections.emptyList());
+		select.setWhereClause(predicate);
 		String firstQueryString = TiDBVisitor.asString(select);
-		select.setWhereCondition(new TiDBUnaryPrefixOperation(predicate, TiDBUnaryPrefixOperator.NOT));
+		select.setWhereClause(new TiDBUnaryPrefixOperation(predicate, TiDBUnaryPrefixOperator.NOT));
 		String secondQueryString = TiDBVisitor.asString(select);
-		select.setWhereCondition(new TiDBUnaryPostfixOperation(predicate, TiDBUnaryPostfixOperator.IS_NULL));
+		select.setWhereClause(new TiDBUnaryPostfixOperation(predicate, TiDBUnaryPostfixOperator.IS_NULL));
 		String thirdQueryString = TiDBVisitor.asString(select);
 		List<String> secondResultSet;
 		String combinedString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL " + thirdQueryString;
