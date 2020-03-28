@@ -7,7 +7,6 @@ import sqlancer.Randomly;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.ast.PostgresAggregate;
 import sqlancer.postgres.ast.PostgresBetweenOperation;
-import sqlancer.postgres.ast.PostgresBinaryOperation;
 import sqlancer.postgres.ast.PostgresCastOperation;
 import sqlancer.postgres.ast.PostgresCollate;
 import sqlancer.postgres.ast.PostgresColumnValue;
@@ -24,10 +23,14 @@ import sqlancer.postgres.ast.PostgresPostfixText;
 import sqlancer.postgres.ast.PostgresPrefixOperation;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSimilarTo;
+import sqlancer.visitor.ToStringVisitor;
 
-public class PostgresToStringVisitor extends PostgresVisitor {
-
-	private final StringBuilder sb = new StringBuilder();
+public class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression> implements PostgresVisitor {
+	
+	@Override
+	public void visitSpecific(PostgresExpression expr) {
+		PostgresVisitor.super.visit(expr);
+	}
 
 	public void visit(PostgresConstant constant) {
 		sb.append(constant.getTextRepresentation());
@@ -259,17 +262,6 @@ public class PostgresToStringVisitor extends PostgresVisitor {
 			sb.append(size.get());
 			sb.append(")");
 		}
-	}
-
-	@Override
-	public void visit(PostgresBinaryOperation op) {
-		sb.append("(");
-		visit(op.getLeft());
-		sb.append(") ");
-		sb.append(op.getOperatorTextRepresentation());
-		sb.append(" (");
-		visit(op.getRight());
-		sb.append(")");
 	}
 
 	@Override

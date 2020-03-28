@@ -86,7 +86,7 @@ public class PostgresTableGenerator {
 
 	private void createStandard() throws AssertionError {
 		sb.append("(");
-		for (int i = 0; i < Randomly.smallNumber() + 3; i++) {
+		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
 			if (i != 0) {
 				sb.append(", ");
 			}

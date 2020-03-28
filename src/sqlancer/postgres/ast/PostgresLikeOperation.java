@@ -1,16 +1,13 @@
 package sqlancer.postgres.ast;
 
 import sqlancer.LikeImplementationHelper;
+import sqlancer.ast.BinaryNode;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
-public class PostgresLikeOperation extends PostgresBinaryOperation {
+public class PostgresLikeOperation extends BinaryNode<PostgresExpression> implements PostgresExpression {
 	
-	private final PostgresExpression left;
-	private final PostgresExpression right;
-
 	public PostgresLikeOperation(PostgresExpression left, PostgresExpression right) {
-		this.left = left;
-		this.right = right;
+		super(left, right);
 	}
 
 	@Override
@@ -20,8 +17,8 @@ public class PostgresLikeOperation extends PostgresBinaryOperation {
 
 	@Override
 	public PostgresConstant getExpectedValue() {
-		PostgresConstant leftVal = left.getExpectedValue();
-		PostgresConstant rightVal = right.getExpectedValue();
+		PostgresConstant leftVal = getLeft().getExpectedValue();
+		PostgresConstant rightVal = getRight().getExpectedValue();
 		if (leftVal.isNull() || rightVal.isNull()) {
 			return PostgresConstant.createNullConstant();
 		} else {
@@ -29,17 +26,9 @@ public class PostgresLikeOperation extends PostgresBinaryOperation {
 			return PostgresConstant.createBooleanConstant(val);
 		}
 	}
-	
-	public PostgresExpression getLeft() {
-		return left;
-	}
-	
-	public PostgresExpression getRight() {
-		return right;
-	}
 
 	@Override
-	public String getOperatorTextRepresentation() {
+	public String getOperatorRepresentation() {
 		return "LIKE";
 	}
 

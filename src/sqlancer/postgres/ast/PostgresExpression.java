@@ -6,5 +6,7 @@ public interface PostgresExpression {
 	
 	public PostgresDataType getExpressionType();
 
-	public PostgresConstant getExpectedValue();
+	public default PostgresConstant getExpectedValue() {
+		throw new AssertionError("operator does not support PQS evaluation!");
+	}
 }

@@ -1,14 +1,13 @@
 package sqlancer.postgres.ast;
 
 import sqlancer.Randomly;
+import sqlancer.ast.BinaryOperatorNode;
 import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
+import sqlancer.postgres.ast.PostgresBinaryLogicalOperation.BinaryLogicalOperator;
 
-public class PostgresBinaryLogicalOperation extends PostgresBinaryOperation {
-
-	private final PostgresExpression left;
-	private final PostgresExpression right;
-	private final BinaryLogicalOperator op;
+public class PostgresBinaryLogicalOperation extends BinaryOperatorNode<PostgresExpression, BinaryLogicalOperator>
+		implements PostgresExpression {
 
 	public enum BinaryLogicalOperator implements Operator {
 		AND {
@@ -60,7 +59,7 @@ public class PostgresBinaryLogicalOperation extends PostgresBinaryOperation {
 		public static BinaryLogicalOperator getRandom() {
 			return Randomly.fromOptions(values());
 		}
-		
+
 		@Override
 		public String getTextRepresentation() {
 			return toString();
@@ -68,21 +67,7 @@ public class PostgresBinaryLogicalOperation extends PostgresBinaryOperation {
 	}
 
 	public PostgresBinaryLogicalOperation(PostgresExpression left, PostgresExpression right, BinaryLogicalOperator op) {
-		this.left = left;
-		this.right = right;
-		this.op = op;
-	}
-
-	public PostgresExpression getLeft() {
-		return left;
-	}
-
-	public BinaryLogicalOperator getOp() {
-		return op;
-	}
-
-	public PostgresExpression getRight() {
-		return right;
+		super(left, right, op);
 	}
 
 	@Override
@@ -92,12 +77,7 @@ public class PostgresBinaryLogicalOperation extends PostgresBinaryOperation {
 
 	@Override
 	public PostgresConstant getExpectedValue() {
-		return op.apply(left.getExpectedValue(), right.getExpectedValue());
-	}
-
-	@Override
-	public String getOperatorTextRepresentation() {
-		return op.toString();
+		return getOp().apply(getLeft().getExpectedValue(), getRight().getExpectedValue());
 	}
 
 }

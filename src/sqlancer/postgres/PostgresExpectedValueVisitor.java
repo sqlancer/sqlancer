@@ -3,7 +3,6 @@ package sqlancer.postgres;
 import sqlancer.IgnoreMeException;
 import sqlancer.postgres.ast.PostgresAggregate;
 import sqlancer.postgres.ast.PostgresBetweenOperation;
-import sqlancer.postgres.ast.PostgresBinaryOperation;
 import sqlancer.postgres.ast.PostgresCastOperation;
 import sqlancer.postgres.ast.PostgresCollate;
 import sqlancer.postgres.ast.PostgresColumnValue;
@@ -19,7 +18,7 @@ import sqlancer.postgres.ast.PostgresPrefixOperation;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 
-public class PostgresExpectedValueVisitor extends PostgresVisitor {
+public class PostgresExpectedValueVisitor implements PostgresVisitor {
 
 	private final StringBuilder sb = new StringBuilder();
 	private int nrTabs = 0;
@@ -35,16 +34,16 @@ public class PostgresExpectedValueVisitor extends PostgresVisitor {
 		sb.append("\n");
 	}
 
-	@Override
-	public void visit(PostgresExpression expr) {
-		nrTabs++;
-		try {
-			super.visit(expr);
-		} catch (IgnoreMeException e) {
-
-		}
-		nrTabs--;
-	}
+//	@Override
+//	public void visit(PostgresExpression expr) {
+//		nrTabs++;
+//		try {
+//			super.visit(expr);
+//		} catch (IgnoreMeException e) {
+//
+//		}
+//		nrTabs--;
+//	}
 
 	@Override
 	public void visit(PostgresConstant constant) {
@@ -94,13 +93,6 @@ public class PostgresExpectedValueVisitor extends PostgresVisitor {
 	public void visit(PostgresCastOperation cast) {
 		print(cast);
 		visit(cast.getExpression());
-	}
-
-	@Override
-	public void visit(PostgresBinaryOperation op) {
-		print(op);
-		visit(op.getLeft());
-		visit(op.getRight());
 	}
 
 	@Override

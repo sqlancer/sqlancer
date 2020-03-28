@@ -1,11 +1,14 @@
 package sqlancer.postgres.ast;
 
 import sqlancer.Randomly;
+import sqlancer.ast.BinaryOperatorNode;
 import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
+import sqlancer.postgres.ast.PostgresBinaryComparisonOperation.PostgresBinaryComparisonOperator;
 
-public class PostgresBinaryComparisonOperation extends PostgresBinaryOperation {
-	
+public class PostgresBinaryComparisonOperation
+		extends BinaryOperatorNode<PostgresExpression, PostgresBinaryComparisonOperator> implements PostgresExpression {
+
 	public enum PostgresBinaryComparisonOperator implements Operator {
 		EQUALS("=") {
 			@Override
@@ -16,7 +19,8 @@ public class PostgresBinaryComparisonOperation extends PostgresBinaryOperation {
 		IS_DISTINCT("IS DISTINCT FROM") {
 			@Override
 			public PostgresConstant getExpectedValue(PostgresConstant leftVal, PostgresConstant rightVal) {
-				return PostgresConstant.createBooleanConstant(!IS_NOT_DISTINCT.getExpectedValue(leftVal, rightVal).asBoolean());
+				return PostgresConstant
+						.createBooleanConstant(!IS_NOT_DISTINCT.getExpectedValue(leftVal, rightVal).asBoolean());
 			}
 		},
 		IS_NOT_DISTINCT("IS NOT DISTINCT FROM") {
@@ -92,7 +96,7 @@ public class PostgresBinaryComparisonOperation extends PostgresBinaryOperation {
 			}
 
 		};
-		
+
 		private final String textRepresentation;
 
 		public String getTextRepresentation() {
@@ -108,45 +112,22 @@ public class PostgresBinaryComparisonOperation extends PostgresBinaryOperation {
 		public static PostgresBinaryComparisonOperator getRandom() {
 			return Randomly.fromOptions(PostgresBinaryComparisonOperator.values());
 		}
-		
-	}
-	
-	private final PostgresExpression left;
-	private final PostgresExpression right;
-	private final PostgresBinaryComparisonOperator op;
 
-	public PostgresBinaryComparisonOperation(PostgresExpression left, PostgresExpression right, PostgresBinaryComparisonOperator op) {
-		this.left = left;
-		this.right = right;
-		this.op = op;
 	}
 
-	public PostgresExpression getLeft() {
-		return left;
-	}
-
-	public PostgresBinaryComparisonOperator getOp() {
-		return op;
-	}
-
-	public PostgresExpression getRight() {
-		return right;
+	public PostgresBinaryComparisonOperation(PostgresExpression left, PostgresExpression right,
+			PostgresBinaryComparisonOperator op) {
+		super(left, right, op);
 	}
 
 	@Override
 	public PostgresConstant getExpectedValue() {
-		return op.getExpectedValue(left.getExpectedValue(), right.getExpectedValue());
+		return getOp().getExpectedValue(getLeft().getExpectedValue(), getRight().getExpectedValue());
 	}
 
 	@Override
 	public PostgresDataType getExpressionType() {
 		return PostgresDataType.BOOLEAN;
 	}
-
-	@Override
-	public String getOperatorTextRepresentation() {
-		return op.getTextRepresentation();
-	}
-
 
 }

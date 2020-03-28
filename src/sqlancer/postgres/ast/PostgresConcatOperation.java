@@ -1,15 +1,12 @@
 package sqlancer.postgres.ast;
 
+import sqlancer.ast.BinaryNode;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
-public class PostgresConcatOperation extends PostgresBinaryOperation {
-
-	private final PostgresExpression left;
-	private final PostgresExpression right;
+public class PostgresConcatOperation extends BinaryNode<PostgresExpression> implements PostgresExpression {
 
 	public PostgresConcatOperation(PostgresExpression left, PostgresExpression right) {
-		this.left = left;
-		this.right = right;
+		super(left, right);
 	}
 
 	@Override
@@ -19,26 +16,17 @@ public class PostgresConcatOperation extends PostgresBinaryOperation {
 
 	@Override
 	public PostgresConstant getExpectedValue() {
-		if (left.getExpectedValue().isNull() || right.getExpectedValue().isNull()) {
+		if (getLeft().getExpectedValue().isNull() || getRight().getExpectedValue().isNull()) {
 			return PostgresConstant.createNullConstant();
 		}
-		String leftStr = left.getExpectedValue().cast(PostgresDataType.TEXT).getUnquotedTextRepresentation();
-		String rightStr = right.getExpectedValue().cast(PostgresDataType.TEXT).getUnquotedTextRepresentation();
+		String leftStr = getLeft().getExpectedValue().cast(PostgresDataType.TEXT).getUnquotedTextRepresentation();
+		String rightStr = getRight().getExpectedValue().cast(PostgresDataType.TEXT).getUnquotedTextRepresentation();
 		return PostgresConstant.createTextConstant(leftStr + rightStr);
-	}
-	
-	public PostgresExpression getLeft() {
-		return left;
-	}
-	
-	public PostgresExpression getRight() {
-		return right;
 	}
 
 	@Override
-	public String getOperatorTextRepresentation() {
+	public String getOperatorRepresentation() {
 		return "||";
 	}
-	
-	
+
 }

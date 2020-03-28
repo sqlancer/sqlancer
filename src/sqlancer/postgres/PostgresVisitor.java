@@ -2,11 +2,9 @@ package sqlancer.postgres;
 
 import sqlancer.postgres.ast.PostgresAggregate;
 import sqlancer.postgres.ast.PostgresBetweenOperation;
-import sqlancer.postgres.ast.PostgresBinaryOperation;
 import sqlancer.postgres.ast.PostgresCastOperation;
 import sqlancer.postgres.ast.PostgresCollate;
 import sqlancer.postgres.ast.PostgresColumnValue;
-import sqlancer.postgres.ast.PostgresConcatOperation;
 import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresFunction;
@@ -19,7 +17,7 @@ import sqlancer.postgres.ast.PostgresPrefixOperation;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 
-public abstract class PostgresVisitor {
+public interface PostgresVisitor {
 
 	public abstract void visit(PostgresConstant constant);
 
@@ -37,8 +35,6 @@ public abstract class PostgresVisitor {
 
 	public abstract void visit(PostgresCastOperation cast);
 
-	public abstract void visit(PostgresBinaryOperation op);
-
 	public abstract void visit(PostgresBetweenOperation op);
 
 	public abstract void visit(PostgresInOperation op);
@@ -53,7 +49,7 @@ public abstract class PostgresVisitor {
 
 	public abstract void visit(PostgresPOSIXRegularExpression op);
 
-	public void visit(PostgresExpression expression) {
+	public default void visit(PostgresExpression expression) {
 		if (expression instanceof PostgresConstant) {
 			visit((PostgresConstant) expression);
 		} else if (expression instanceof PostgresPostfixOperation) {
@@ -72,8 +68,6 @@ public abstract class PostgresVisitor {
 			visit((PostgresCastOperation) expression);
 		} else if (expression instanceof PostgresBetweenOperation) {
 			visit((PostgresBetweenOperation) expression);
-		} else if (expression instanceof PostgresConcatOperation) {
-			visit((PostgresConcatOperation) expression);
 		} else if (expression instanceof PostgresInOperation) {
 			visit((PostgresInOperation) expression);
 		} else if (expression instanceof PostgresAggregate) {
@@ -86,8 +80,6 @@ public abstract class PostgresVisitor {
 			visit((PostgresPOSIXRegularExpression) expression);
 		} else if (expression instanceof PostgresCollate) {
 			visit((PostgresCollate) expression);
-		} else if (expression instanceof PostgresBinaryOperation) {
-			visit((PostgresBinaryOperation) expression);
 		}
 
 		else {

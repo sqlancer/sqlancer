@@ -19,7 +19,7 @@ public class PostgresQueryCatalogGenerator {
 				"pg_database", "pg_db_role_setting", "pg_default_acl", "pg_depend", "pg_description", "pg_enum",
 				"pg_event_trigger", "pg_extension", "pg_foreign_data_wrapper", "pg_foreign_server", "pg_foreign_table",
 				"pg_index", "pg_inherits", "pg_init_privs", "pg_language", "pg_largeobject", "pg_largeobject_metadata",
-				"pg_namespace", "pg_opclass", "pg_operator", "pg_opfamily", "pg_partitioned_table", "pg_pltemplate",
+				"pg_namespace", "pg_opclass", "pg_operator", "pg_opfamily", "pg_partitioned_table", /*"pg_pltemplate", */
 				"pg_policy", "pg_proc", "pg_publication", "pg_publication_rel", "pg_range", "pg_replication_origin",
 				"pg_rewrite", "pg_seclabel", "pg_sequence", "pg_shdepend", "pg_shdescription", "pg_shseclabel",
 				"pg_statistic", "pg_statistic_ext", "pg_statistic_ext_data", "pg_subscription", "pg_subscription_rel",

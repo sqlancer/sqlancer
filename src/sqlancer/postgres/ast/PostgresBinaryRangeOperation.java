@@ -1,19 +1,17 @@
 package sqlancer.postgres.ast;
 
 import sqlancer.Randomly;
+import sqlancer.ast.BinaryNode;
 import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
-public class PostgresBinaryRangeOperation extends PostgresBinaryOperation {
+public class PostgresBinaryRangeOperation extends BinaryNode<PostgresExpression> implements PostgresExpression {
 
-	private String op;
-	private PostgresExpression left;
-	private PostgresExpression right;
-	
+	private final String op;
+
 	public enum PostgresBinaryRangeOperator implements Operator {
 		UNION("*"), INTERSECTION("*"), DIFFERENCE("-");
-		
-		
+
 		private final String textRepresentation;
 
 		private PostgresBinaryRangeOperator(String textRepresentation) {
@@ -23,11 +21,11 @@ public class PostgresBinaryRangeOperation extends PostgresBinaryOperation {
 		public String getTextRepresentation() {
 			return textRepresentation;
 		}
-		
+
 		public static PostgresBinaryRangeOperator getRandom() {
 			return Randomly.fromOptions(values());
 		}
-		
+
 	}
 
 	public enum PostgresBinaryRangeComparisonOperator {
@@ -48,17 +46,17 @@ public class PostgresBinaryRangeOperation extends PostgresBinaryOperation {
 			return Randomly.fromOptions(values());
 		}
 	}
-	
-	public PostgresBinaryRangeOperation(PostgresBinaryRangeComparisonOperator op, PostgresExpression left, PostgresExpression right) {
+
+	public PostgresBinaryRangeOperation(PostgresBinaryRangeComparisonOperator op, PostgresExpression left,
+			PostgresExpression right) {
+		super(left, right);
 		this.op = op.getTextRepresentation();
-		this.left = left;
-		this.right = right;
 	}
-	
-	public PostgresBinaryRangeOperation(PostgresBinaryRangeOperator op, PostgresExpression left, PostgresExpression right) {
+
+	public PostgresBinaryRangeOperation(PostgresBinaryRangeOperator op, PostgresExpression left,
+			PostgresExpression right) {
+		super(left, right);
 		this.op = op.getTextRepresentation();
-		this.left = left;
-		this.right = right;
 	}
 
 	@Override
@@ -67,24 +65,7 @@ public class PostgresBinaryRangeOperation extends PostgresBinaryOperation {
 	}
 
 	@Override
-	public PostgresConstant getExpectedValue() {
-		return null;
-	}
-	
-	public PostgresExpression getLeft() {
-		return left;
-	}
-	
-	public String getOpAsText() {
-		return op;
-	}
-	
-	public PostgresExpression getRight() {
-		return right;
-	}
-
-	@Override
-	public String getOperatorTextRepresentation() {
+	public String getOperatorRepresentation() {
 		return op;
 	}
 

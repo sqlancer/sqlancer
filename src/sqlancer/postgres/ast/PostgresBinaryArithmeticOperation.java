@@ -3,14 +3,12 @@ package sqlancer.postgres.ast;
 import java.util.function.BinaryOperator;
 
 import sqlancer.Randomly;
+import sqlancer.ast.BinaryOperatorNode;
 import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
+import sqlancer.postgres.ast.PostgresBinaryArithmeticOperation.PostgresBinaryOperator;
 
-public class PostgresBinaryArithmeticOperation extends PostgresBinaryOperation {
-
-	private final PostgresExpression left;
-	private final PostgresExpression right;
-	private final PostgresBinaryOperator op;
+public class PostgresBinaryArithmeticOperation extends BinaryOperatorNode<PostgresExpression, PostgresBinaryOperator> implements PostgresExpression {
 
 	public enum PostgresBinaryOperator implements Operator {
 
@@ -92,41 +90,19 @@ public class PostgresBinaryArithmeticOperation extends PostgresBinaryOperation {
 
 	public PostgresBinaryArithmeticOperation(PostgresExpression left, PostgresExpression right,
 			PostgresBinaryOperator op) {
-		this.left = left;
-		this.right = right;
-		this.op = op;
+		super(left, right, op);
 	}
 
 	@Override
 	public PostgresConstant getExpectedValue() {
-		PostgresConstant leftExpected = left.getExpectedValue();
-		PostgresConstant rightExpected = right.getExpectedValue();
-		return op.apply(leftExpected, rightExpected);
-	}
-
-
-	public PostgresBinaryOperator getOp() {
-		return op;
-	}
-
-	@Override
-	public PostgresExpression getLeft() {
-		return left;
-	}
-
-	@Override
-	public PostgresExpression getRight() {
-		return right;
+		PostgresConstant leftExpected = getLeft().getExpectedValue();
+		PostgresConstant rightExpected = getRight().getExpectedValue();
+		return getOp().apply(leftExpected, rightExpected);
 	}
 
 	@Override
 	public PostgresDataType getExpressionType() {
 		return PostgresDataType.INT;
-	}
-
-	@Override
-	public String getOperatorTextRepresentation() {
-		return op.getTextRepresentation();
 	}
 
 }
