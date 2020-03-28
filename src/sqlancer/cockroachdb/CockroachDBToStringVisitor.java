@@ -1,6 +1,7 @@
 package sqlancer.cockroachdb;
 
-import java.util.List;
+.Collectors;
+
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
@@ -47,17 +48,8 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
 	public void visit(CockroachDBFunctionCall call) {
 		sb.append(call.getName());
 		sb.append("(");
-		visitList(call.getArguments());
+		visit(call.getArguments());
 		sb.append(")");
-	}
-
-	private void visitList(List<CockroachDBExpression> list) {
-		for (int i = 0; i < list.size(); i++) {
-			if (i != 0) {
-				sb.append(", ");
-			}
-			visit(list.get(i));
-		}
 	}
 
 	@Override
@@ -65,7 +57,7 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
 		sb.append("(");
 		visit(inOp.getLeft());
 		sb.append(") IN (");
-		visitList(inOp.getRight());
+		visit(inOp.getRight());
 		sb.append(")");
 	}
 
@@ -91,22 +83,22 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
 		} else if (Randomly.getBoolean()) {
 			sb.append("ALL ");
 		}
-		visitList(select.getColumns());
+		visit(select.getColumns());
 		sb.append(" FROM ");
 		if (!select.getFromTables().isEmpty()) {
-			visitList(select.getFromTables().stream().map(t -> (CockroachDBExpression) t).collect(Collectors.toList()));
+			visit(select.getFromTables().stream().map(t -> (CockroachDBExpression) t).collect(Collectors.toList()));
 		}
 		if (!select.getFromTables().isEmpty() && !select.getJoinList().isEmpty()) {
 			sb.append(", ");
 		}
-		visitList(select.getJoinList().stream().map(j -> (CockroachDBExpression) j).collect(Collectors.toList()));
+		visit(select.getJoinList().stream().map(j -> (CockroachDBExpression) j).collect(Collectors.toList()));
 		if (select.getWhereCondition() != null) {
 			sb.append(" WHERE ");
 			visit(select.getWhereCondition());
 		}
 		if (select.getGroupByExpression() != null && !select.getGroupByExpression().isEmpty()) {
 			sb.append(" GROUP BY ");
-			visitList(select.getGroupByExpression());
+			visit(select.getGroupByExpression());
 		}
 		if (select.getHavingClause() != null) {
 			sb.append(" HAVING ");
@@ -114,7 +106,7 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
 		}
 		if (!select.getOrderByTerms().isEmpty()) {
 			sb.append(" ORDER BY ");
-			visitList(select.getOrderByTerms());
+			visit(select.getOrderByTerms());
 		}
 		if (select.getLimit() != null) {
 			sb.append(" LIMIT ");
@@ -213,7 +205,7 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
 	public void visit(CockroachDBAggregate aggr) {
 		sb.append(aggr.getFunc().name());
 		sb.append("(");
-		visitList(aggr.getExpr());
+		visit(aggr.getExpr());
 		sb.append(")");
 	}
 
@@ -226,7 +218,7 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
 		sb.append(" ");
 		sb.append(comp.getType());
 		sb.append(" (");
-		visitList(comp.getRight());
+		visit(comp.getRight());
 		sb.append(")");
 		sb.append(")");
 	}

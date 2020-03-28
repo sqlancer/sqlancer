@@ -1,7 +1,6 @@
 package sqlancer.sqlite3;
 
 import java.util.Arrays;
-import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.sqlite3.ast.SQLite3Aggregate;
@@ -448,15 +447,6 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		}
 	}
 
-	private void visit(List<SQLite3Expression> expressions) {
-		for (int i = 0; i < expressions.size(); i++) {
-			if (i != 0) {
-				sb.append(", ");
-			}
-			visit(expressions.get(i));
-		}
-	}
-	
 	private void visit(SQLite3Expression[] expressions) {
 		visit(Arrays.asList(expressions));
 	}

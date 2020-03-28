@@ -1,6 +1,5 @@
 package sqlancer.postgres;
 
-import java.util.List;
 import java.util.Optional;
 
 import sqlancer.Randomly;
@@ -83,7 +82,7 @@ public class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression>
 		if (s.getFetchColumns() == null) {
 			sb.append("*");
 		} else {
-			visitList(s.getFetchColumns());
+			visit(s.getFetchColumns());
 		}
 		sb.append(" FROM ");
 		for (int i = 0; i < s.getFromList().size(); i++) {
@@ -137,7 +136,7 @@ public class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression>
 		}
 		if (s.getGroupByClause().size() > 0) {
 			sb.append(" GROUP BY ");
-			visitList(s.getGroupByClause());
+			visit(s.getGroupByClause());
 		}
 		if (s.getHavingClause() != null) {
 			sb.append(" HAVING ");
@@ -146,7 +145,7 @@ public class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression>
 		}
 		if (!s.getOrderByClause().isEmpty()) {
 			sb.append(" ORDER BY ");
-			visitList(s.getOrderByClause());
+			visit(s.getOrderByClause());
 		}
 		if (s.getLimitClause() != null) {
 			sb.append(" LIMIT ");
@@ -278,7 +277,7 @@ public class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression>
 			sb.append(" NOT");
 		}
 		sb.append(" IN (");
-		visitList(op.getListElements());
+		visit(op.getListElements());
 		sb.append(")");
 	}
 
@@ -324,15 +323,6 @@ public class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression>
 		sb.append(op.getCollate());
 		sb.append('"');
 		sb.append(")");
-	}
-
-	private void visitList(List<PostgresExpression> expressions) {
-		for (int i = 0; i < expressions.size(); i++) {
-			if (i != 0) {
-				sb.append(", ");
-			}
-			visit(expressions.get(i));
-		}
 	}
 
 }

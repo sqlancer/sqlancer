@@ -1,7 +1,5 @@
 package sqlancer.tidb.visitor;
 
-import java.util.List;
-
 import sqlancer.tidb.ast.TiDBColumnReference;
 import sqlancer.tidb.ast.TiDBConstant;
 import sqlancer.tidb.ast.TiDBExpression;
@@ -43,20 +41,20 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
 	@Override
 	public void visit(TiDBSelect select) {
 		sb.append("SELECT ");
-		visitList(select.getFetchColumns());
+		visit(select.getFetchColumns());
 		sb.append(" FROM ");
-		visitList(select.getFrom());
+		visit(select.getFrom());
 		if (select.getWherePredicate() != null) {
 			sb.append(" WHERE ");
 			visit(select.getWherePredicate());
 		}
 		if (!select.getOrderBy().isEmpty()) {
 			sb.append(" ORDER BY ");
-			visitList(select.getOrderBy());
+			visit(select.getOrderBy());
 		}
 		if (!select.getGroupBys().isEmpty()) {
 			sb.append(" GROUP BY ");
-			visitList(select.getGroupBys());
+			visit(select.getGroupBys());
 		}
 		if (select.getHavingClause() != null) {
 			sb.append(" HAVING ");
@@ -64,20 +62,11 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
 		}
 	}
 
-	private void visitList(List<TiDBExpression> expressions) {
-		for (int i = 0; i < expressions.size(); i++) {
-			if (i != 0) {
-				sb.append(", ");
-			}
-			visit(expressions.get(i));
-		}
-	}
-
 	@Override
 	public void visit(TiDBFunctionCall call) {
 		sb.append(call.getFunction());
 		sb.append("(");
-		visitList(call.getArgs());
+		visit(call.getArgs());
 		sb.append(")");
 	}
 }

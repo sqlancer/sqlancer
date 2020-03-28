@@ -1,11 +1,13 @@
 package sqlancer.visitor;
 
+import java.util.List;
+
 import sqlancer.visitor.UnaryOperation.OperatorKind;
 
 public abstract class ToStringVisitor<T> extends NodeVisitor<T> {
-	
+
 	protected final StringBuilder sb = new StringBuilder();
-	
+
 	public void visit(BinaryOperation<T> op) {
 		sb.append('(');
 		sb.append('(');
@@ -17,7 +19,7 @@ public abstract class ToStringVisitor<T> extends NodeVisitor<T> {
 		sb.append(')');
 		sb.append(')');
 	}
-	
+
 	public void visit(UnaryOperation<T> op) {
 		if (!op.omitBracketsWhenPrinting()) {
 			sb.append('(');
@@ -41,9 +43,7 @@ public abstract class ToStringVisitor<T> extends NodeVisitor<T> {
 			sb.append(')');
 		}
 	}
-	
-	
-	
+
 	@SuppressWarnings("unchecked")
 	public void visit(T expr) {
 		assert expr != null;
@@ -55,10 +55,17 @@ public abstract class ToStringVisitor<T> extends NodeVisitor<T> {
 			visitSpecific(expr);
 		}
 	}
-	
+
 	public abstract void visitSpecific(T expr);
 
-
+	public void visit(List<T> expressions) {
+		for (int i = 0; i < expressions.size(); i++) {
+			if (i != 0) {
+				sb.append(", ");
+			}
+			visit(expressions.get(i));
+		}
+	}
 
 	public String get() {
 		return sb.toString();
