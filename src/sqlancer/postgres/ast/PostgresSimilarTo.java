@@ -2,7 +2,7 @@ package sqlancer.postgres.ast;
 
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
-public class PostgresSimilarTo extends PostgresExpression {
+public class PostgresSimilarTo implements PostgresExpression {
 	
 	private final PostgresExpression string;
 	private final PostgresExpression similarTo;

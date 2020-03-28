@@ -2,9 +2,9 @@ package sqlancer.postgres.ast;
 
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
-public abstract class PostgresExpression {
+public interface PostgresExpression {
 	
-	public abstract PostgresDataType getExpressionType();
+	public PostgresDataType getExpressionType();
 
-	public abstract PostgresConstant getExpectedValue();
+	public PostgresConstant getExpectedValue();
 }

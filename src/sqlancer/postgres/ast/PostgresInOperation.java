@@ -4,7 +4,7 @@ import java.util.List;
 
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
-public class PostgresInOperation extends PostgresExpression {
+public class PostgresInOperation implements PostgresExpression {
 
 	private final PostgresExpression expr;
 	private final List<PostgresExpression> listElements;

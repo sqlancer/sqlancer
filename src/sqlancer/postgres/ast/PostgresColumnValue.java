@@ -3,7 +3,7 @@ package sqlancer.postgres.ast;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
-public class PostgresColumnValue  extends PostgresExpression {
+public class PostgresColumnValue implements PostgresExpression {
 	
 	private final PostgresColumn c;
 	private final PostgresConstant expectedValue;

@@ -7,7 +7,7 @@ import sqlancer.Randomly;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 
-public class PostgresSelect extends PostgresExpression {
+public class PostgresSelect implements PostgresExpression {
 	
 	public static class PostgresFromTable {
 		private PostgresTable t;

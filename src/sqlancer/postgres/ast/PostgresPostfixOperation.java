@@ -4,7 +4,7 @@ import sqlancer.Randomly;
 import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
-public class PostgresPostfixOperation extends PostgresExpression {
+public class PostgresPostfixOperation implements PostgresExpression {
 
 	private final PostgresExpression expr;
 	private final PostfixOperator op;

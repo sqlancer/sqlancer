@@ -4,7 +4,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
-public class PostgresPrefixOperation extends PostgresExpression {
+public class PostgresPrefixOperation implements PostgresExpression {
 
 	public enum PrefixOperator implements Operator {
 		NOT("NOT", PostgresDataType.BOOLEAN) {

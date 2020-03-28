@@ -4,7 +4,7 @@ import sqlancer.Randomly;
 import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
-public class PostgresPOSIXRegularExpression extends PostgresExpression {
+public class PostgresPOSIXRegularExpression implements PostgresExpression {
 
 	private PostgresExpression string;
 	private PostgresExpression regex;

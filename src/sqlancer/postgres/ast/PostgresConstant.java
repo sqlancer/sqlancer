@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import sqlancer.IgnoreMeException;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
-public abstract class PostgresConstant extends PostgresExpression {
+public abstract class PostgresConstant implements PostgresExpression {
 
 	public abstract String getTextRepresentation();
 	

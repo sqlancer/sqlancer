@@ -3,7 +3,7 @@ package sqlancer.postgres.ast;
 import sqlancer.postgres.PostgresCompoundDataType;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
-public class PostgresCastOperation extends PostgresExpression {
+public class PostgresCastOperation implements PostgresExpression {
 	
 	private PostgresExpression expression;
 	private PostgresCompoundDataType type;

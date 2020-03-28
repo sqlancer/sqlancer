@@ -2,7 +2,7 @@ package sqlancer.postgres.ast;
 
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
-public class PostgresPostfixText extends PostgresExpression {
+public class PostgresPostfixText implements PostgresExpression {
 	
 	private final PostgresExpression expr;
 	private final String text;

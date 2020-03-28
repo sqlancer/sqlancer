@@ -4,7 +4,7 @@ import sqlancer.Randomly;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 
-public class PostgresJoin extends PostgresExpression {
+public class PostgresJoin implements PostgresExpression {
 
 	public static enum PostgresJoinType {
 		INNER, LEFT, RIGHT, FULL, CROSS;

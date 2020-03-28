@@ -6,7 +6,7 @@ import sqlancer.postgres.PostgresSchema.PostgresDataType;
 /**
  * @see https://www.sqlite.org/lang_aggfunc.html
  */
-public class PostgresAggregate extends PostgresExpression {
+public class PostgresAggregate implements PostgresExpression {
 
 	private PostgresAggregateFunction func;
 	private PostgresExpression expr;

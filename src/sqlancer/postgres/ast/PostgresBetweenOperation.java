@@ -5,7 +5,7 @@ import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.ast.PostgresBinaryComparisonOperation.PostgresBinaryComparisonOperator;
 import sqlancer.postgres.ast.PostgresBinaryLogicalOperation.BinaryLogicalOperator;
 
-public class PostgresBetweenOperation extends PostgresExpression {
+public class PostgresBetweenOperation implements PostgresExpression {
 
 	private final PostgresExpression expr;
 	private final PostgresExpression left;

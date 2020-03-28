@@ -2,7 +2,7 @@ package sqlancer.postgres.ast;
 
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
-public class PostgresCollate extends PostgresExpression {
+public class PostgresCollate implements PostgresExpression {
 	
 
 	private final PostgresExpression expr;

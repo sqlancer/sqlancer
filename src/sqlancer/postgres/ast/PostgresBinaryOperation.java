@@ -1,6 +1,6 @@
 package sqlancer.postgres.ast;
 
-public abstract class PostgresBinaryOperation extends PostgresExpression {
+public abstract class PostgresBinaryOperation implements PostgresExpression {
 
 	public abstract PostgresExpression getLeft();
 	

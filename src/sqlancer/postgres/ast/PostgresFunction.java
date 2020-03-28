@@ -3,7 +3,7 @@ package sqlancer.postgres.ast;
 import sqlancer.Randomly;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
-public class PostgresFunction extends PostgresExpression {
+public class PostgresFunction implements PostgresExpression {
 
 	private final String func;
 	private final PostgresExpression[] args;

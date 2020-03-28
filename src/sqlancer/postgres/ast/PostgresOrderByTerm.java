@@ -3,7 +3,7 @@ package sqlancer.postgres.ast;
 import sqlancer.Randomly;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
-public class PostgresOrderByTerm extends PostgresExpression {
+public class PostgresOrderByTerm implements PostgresExpression {
 
 	private final PostgresOrder order;
 	private final PostgresExpression expr;
