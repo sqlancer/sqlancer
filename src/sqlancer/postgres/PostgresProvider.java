@@ -47,6 +47,7 @@ import sqlancer.postgres.gen.PostgresTruncateGenerator;
 import sqlancer.postgres.gen.PostgresUpdateGenerator;
 import sqlancer.postgres.gen.PostgresVacuumGenerator;
 import sqlancer.postgres.gen.PostgresViewGenerator;
+import sqlancer.postgres.test.PostgresNoRECOracle;
 import sqlancer.sqlite3.gen.SQLite3Common;
 
 // EXISTS
@@ -244,11 +245,11 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 		globalState.setSchema(PostgresSchema.fromConnection(con, databaseName));
 
 		manager.execute(new QueryAdapter("SET SESSION statement_timeout = 5000;\n"));
-		PostgresMetamorphicOracleGenerator or = new PostgresMetamorphicOracleGenerator(globalState.getSchema(), globalState.getRandomly(), con,
+		PostgresNoRECOracle or = new PostgresNoRECOracle(globalState.getSchema(), globalState.getRandomly(), con,
 				(PostgresStateToReproduce) state, logger, options, manager, globalState);
 		for (int i = 0; i < options.getNrQueries(); i++) {
 			try {
-				or.generateAndCheck();
+				or.check();
 			} catch (IgnoreMeException e) {
 				continue;
 			}

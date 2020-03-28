@@ -1,4 +1,4 @@
-package sqlancer.postgres.gen;
+package sqlancer.postgres.test;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -11,11 +11,12 @@ import java.util.stream.Collectors;
 import org.postgresql.util.PSQLException;
 
 import sqlancer.Main;
-import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce.PostgresStateToReproduce;
+import sqlancer.TestOracle;
+import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresRowValue;
@@ -26,8 +27,9 @@ import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
+import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
-public class PostgresQueryGenerator {
+public class PostgresPivotedQuerySynthesisGenerator implements TestOracle {
 
 	private Randomly r;
 	private PostgresStateToReproduce state;
@@ -35,17 +37,19 @@ public class PostgresQueryGenerator {
 	private Connection database;
 	private List<PostgresColumn> fetchColumns;
 	private PostgresSchema s;
+	private MainOptions options;
+	private StateLogger logger;
 
-	public PostgresQueryGenerator(QueryManager manager, Randomly r, Connection con, String databaseName)
-			throws SQLException {
-		this.r = r;
-		this.database = con;
-		this.s = PostgresSchema.fromConnection(con, databaseName);
+	public PostgresPivotedQuerySynthesisGenerator(PostgresGlobalState globalState) throws SQLException {
+		this.r = globalState.getRandomly();
+		this.database = globalState.getConnection();
+		this.s = globalState.getSchema();
+		options = globalState.getOptions();
+		logger = globalState.getLogger();
 	}
 
-	public void generateAndCheckQuery(PostgresStateToReproduce state, StateLogger logger, MainOptions options)
-			throws SQLException {
-
+	@Override
+	public void check() throws SQLException {
 		String queryString = getQueryThatContainsAtLeastOneRow(state);
 		state.queryString = queryString;
 		if (options.logEachSelect()) {
@@ -71,8 +75,10 @@ public class PostgresQueryGenerator {
 		rw = randomFromTables.getRandomRowValue(database, state);
 
 		fetchColumns = columns;
-		selectStatement.setFromList(randomFromTables.getTables().stream().map(t -> new PostgresFromTable(t, false)).collect(Collectors.toList()));
-		selectStatement.setFetchColumns(fetchColumns.stream().map(c -> new PostgresColumnValue(c, rw.getValues().get(c))).collect(Collectors.toList()));
+		selectStatement.setFromList(randomFromTables.getTables().stream().map(t -> new PostgresFromTable(t, false))
+				.collect(Collectors.toList()));
+		selectStatement.setFetchColumns(fetchColumns.stream()
+				.map(c -> new PostgresColumnValue(c, rw.getValues().get(c))).collect(Collectors.toList()));
 		state.queryTargetedColumnsString = fetchColumns.stream().map(c -> c.getFullQualifiedName())
 				.collect(Collectors.joining(", "));
 		PostgresExpression whereClause = generateWhereClauseThatContainsRowValue(columns, rw);

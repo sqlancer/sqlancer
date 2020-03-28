@@ -1,4 +1,4 @@
-package sqlancer.postgres;
+package sqlancer.postgres.test;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -18,10 +18,15 @@ import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce.PostgresStateToReproduce;
+import sqlancer.TestOracle;
+import sqlancer.postgres.PostgresCompoundDataType;
+import sqlancer.postgres.PostgresGlobalState;
+import sqlancer.postgres.PostgresSchema;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresSchema.PostgresTables;
+import sqlancer.postgres.PostgresVisitor;
 import sqlancer.postgres.ast.PostgresCastOperation;
 import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresExpression;
@@ -34,7 +39,7 @@ import sqlancer.postgres.ast.PostgresSelect.SelectType;
 import sqlancer.postgres.gen.PostgresCommon;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
-public class PostgresMetamorphicOracleGenerator {
+public class PostgresNoRECOracle implements TestOracle {
 
 	private PostgresSchema s;
 	private Randomly r;
@@ -47,7 +52,7 @@ public class PostgresMetamorphicOracleGenerator {
 	private final List<String> errors = new ArrayList<>();
 	private PostgresGlobalState globalState;
 
-	public PostgresMetamorphicOracleGenerator(PostgresSchema s, Randomly r, Connection con,
+	public PostgresNoRECOracle(PostgresSchema s, Randomly r, Connection con,
 			PostgresStateToReproduce state, StateLogger logger, MainOptions options, QueryManager manager, PostgresGlobalState globalState) {
 		this.s = s;
 		this.r = r;
@@ -58,7 +63,8 @@ public class PostgresMetamorphicOracleGenerator {
 		this.globalState = globalState;
 	}
 
-	public void generateAndCheck() throws SQLException {
+	@Override
+	public void check() throws SQLException {
 		PostgresCommon.addCommonExpressionErrors(errors);
 		PostgresCommon.addCommonFetchErrors(errors);
 		PostgresTables randomTables = s.getRandomTableNonEmptyTables();
