@@ -9,6 +9,25 @@ import sqlancer.postgres.PostgresSchema.PostgresTable;
 
 public class PostgresSelect implements PostgresExpression {
 	
+	public enum ForClause {
+		UPDATE("UPDATE"), NO_KEY_UPDATE("NO KEY UPDATE"), SHARE("SHARE"), KEY_SHARE("KEY SHARE");
+
+		private final String textRepresentation;
+
+		private ForClause(String textRepresentation) {
+			this.textRepresentation = textRepresentation;
+		}
+
+		public String getTextRepresentation() {
+			return textRepresentation;
+		}
+
+		public static ForClause getRandom() {
+			return Randomly.fromOptions(values());
+		}
+	}
+
+	
 	public static class PostgresFromTable {
 		private PostgresTable t;
 		private boolean only;
@@ -38,6 +57,7 @@ public class PostgresSelect implements PostgresExpression {
 	private List<PostgresJoin> joinClauses = Collections.emptyList();
 	private PostgresExpression distinctOnClause;
 	private PostgresExpression havingClause;
+	private ForClause forClause;
 
 	public enum SelectType {
 		DISTINCT, ALL;
@@ -155,6 +175,14 @@ public class PostgresSelect implements PostgresExpression {
 
 	public PostgresExpression getHavingClause() {
 		return havingClause;
+	}
+	
+	public void setForClause(ForClause forClause) {
+		this.forClause = forClause;
+	}
+	
+	public ForClause getForClause() {
+		return forClause;
 	}
 	
 }

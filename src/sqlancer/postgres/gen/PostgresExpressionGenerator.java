@@ -38,7 +38,6 @@ import sqlancer.postgres.ast.PostgresFunctionWithUnknownResult;
 import sqlancer.postgres.ast.PostgresInOperation;
 import sqlancer.postgres.ast.PostgresLikeOperation;
 import sqlancer.postgres.ast.PostgresOrderByTerm;
-import sqlancer.postgres.ast.PostgresOrderByTerm.ForClause;
 import sqlancer.postgres.ast.PostgresOrderByTerm.PostgresOrder;
 import sqlancer.postgres.ast.PostgresPOSIXRegularExpression;
 import sqlancer.postgres.ast.PostgresPOSIXRegularExpression.POSIXRegex;
@@ -92,12 +91,8 @@ public class PostgresExpressionGenerator {
 	public List<PostgresExpression> generateOrderBy() {
 		List<PostgresExpression> orderBys = new ArrayList<>();
 		for (int i = 0; i < Randomly.smallNumber(); i++) {
-			ForClause forClause = null;
-			if (Randomly.getBoolean()) {
-				forClause = ForClause.getRandom();
-			}
 			orderBys.add(new PostgresOrderByTerm(PostgresColumnValue.create(Randomly.fromList(columns), null),
-					PostgresOrder.getRandomOrder(), forClause));
+					PostgresOrder.getRandomOrder()));
 		}
 		return orderBys;
 	}

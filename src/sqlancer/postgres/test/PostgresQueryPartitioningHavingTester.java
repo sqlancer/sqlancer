@@ -2,6 +2,7 @@ package sqlancer.postgres.test;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 
 import sqlancer.DatabaseProvider;
@@ -21,11 +22,8 @@ public class PostgresQueryPartitioningHavingTester extends PostgresQueryPartitio
 		@Override
 		public void check() throws SQLException {
 			super.check();
-			if (Randomly.getBoolean() /* TODO */) {
+			if (Randomly.getBooleanWithRatherLowProbability()) {
 				select.setOrderByClause(gen.generateOrderBy());
-				errors.add("is not allowed with GROUP BY clause"); // TODO
-				errors.add("syntax error at or near \",\""); // TODO
-				errors.add("syntax error at or near \"UNION\"");
 			}
 			if (Randomly.getBoolean()) {
 				select.setWhereClause(gen.generateExpression(PostgresDataType.BOOLEAN));
@@ -44,6 +42,7 @@ public class PostgresQueryPartitioningHavingTester extends PostgresQueryPartitio
 			}
 			List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors, state.getConnection());
 			
+			select.setOrderByClause(Collections.emptyList()); // not compatible with the union
 			select.setHavingClause(predicate);
 			String firstQueryString = PostgresVisitor.asString(select);
 			select.setHavingClause(negatedPredicate);

@@ -19,7 +19,7 @@ public class PostgresQueryPartitioningWhereTester extends PostgresQueryPartition
 	@Override
 	public void check() throws SQLException {
 		super.check();
-		if (Randomly.getBoolean() && false /* TODO */) {
+		if (Randomly.getBooleanWithRatherLowProbability()) {
 			select.setOrderByClause(gen.generateOrderBy());
 		}
 		String originalQueryString = PostgresVisitor.asString(select);

@@ -11,6 +11,7 @@ import sqlancer.postgres.PostgresSchema.PostgresTables;
 import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresSelect;
+import sqlancer.postgres.ast.PostgresSelect.ForClause;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.ast.PostgresSelect.SelectType;
 
@@ -44,6 +45,9 @@ public class PostgresRandomQueryGenerator {
 			if (Randomly.getBoolean()) {
 				select.setOffsetClause(PostgresConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
 			}
+		}
+		if (Randomly.getBoolean()) {
+			select.setForClause(ForClause.getRandom());
 		}
 		return select;
 	}

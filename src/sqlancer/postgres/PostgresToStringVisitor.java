@@ -164,10 +164,6 @@ public class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression>
 		visit(op.getExpr());
 		sb.append(" ");
 		sb.append(op.getOrder());
-		if (op.getForClause() != null) {
-			sb.append(" FOR ");
-			sb.append(op.getForClause());
-		}
 	}
 
 	public void visit(PostgresFunction f) {

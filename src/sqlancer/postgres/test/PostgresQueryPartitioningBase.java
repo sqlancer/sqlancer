@@ -19,6 +19,7 @@ import sqlancer.postgres.ast.PostgresPostfixOperation;
 import sqlancer.postgres.ast.PostgresPostfixOperation.PostfixOperator;
 import sqlancer.postgres.ast.PostgresPrefixOperation;
 import sqlancer.postgres.ast.PostgresSelect;
+import sqlancer.postgres.ast.PostgresSelect.ForClause;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.gen.PostgresCommon;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
@@ -58,6 +59,9 @@ public class PostgresQueryPartitioningBase implements TestOracle  {
 		predicate = gen.generateExpression(PostgresDataType.BOOLEAN);
 		negatedPredicate = new PostgresPrefixOperation(predicate, PostgresPrefixOperation.PrefixOperator.NOT);
 		isNullPredicate = new PostgresPostfixOperation(predicate, PostfixOperator.IS_NULL);
+		if (Randomly.getBoolean()) {
+			select.setForClause(ForClause.getRandom());
+		}
 	}
 	
 }
