@@ -43,7 +43,7 @@ public class PostgresUpdateGenerator {
 				sb.append("DEFAULT");
 			} else {
 				sb.append("(");
-				PostgresExpression expr = PostgresExpressionGenerator.generateExpression(globalState.getRandomly(), randomTable.getColumns(),
+				PostgresExpression expr = PostgresExpressionGenerator.generateExpression(globalState, randomTable.getColumns(),
 						column.getColumnType());
 				// caused by casts
 				sb.append(PostgresVisitor.asString(expr));
@@ -58,7 +58,7 @@ public class PostgresUpdateGenerator {
 		PostgresCommon.addCommonExpressionErrors(errors);
 		if (!Randomly.getBooleanWithSmallProbability()) {
 			sb.append(" WHERE ");
-			PostgresExpression where = PostgresExpressionGenerator.generateExpression(globalState.getRandomly(), randomTable.getColumns(),
+			PostgresExpression where = PostgresExpressionGenerator.generateExpression(globalState, randomTable.getColumns(),
 					PostgresDataType.BOOLEAN);
 			sb.append(PostgresVisitor.asString(where));
 		}

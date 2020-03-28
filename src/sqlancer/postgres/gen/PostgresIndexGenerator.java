@@ -39,11 +39,12 @@ public class PostgresIndexGenerator {
 //		if (Randomly.getBoolean()) {
 //			sb.append("CONCURRENTLY ");
 //		}
-		PostgresTable randomTable = globalState.getSchema().getRandomTable(t -> !t.isView()); // TODO: materialized views
+		PostgresTable randomTable = globalState.getSchema().getRandomTable(t -> !t.isView()); // TODO: materialized
+																								// views
 		String indexName = getNewIndexName(randomTable);
 		sb.append(indexName);
 		sb.append(" ON ");
-		if (Randomly.getBoolean()){
+		if (Randomly.getBoolean()) {
 			sb.append("ONLY ");
 		}
 		sb.append(randomTable.getName());
@@ -68,7 +69,7 @@ public class PostgresIndexGenerator {
 					sb.append(randomTable.getRandomColumn().getName());
 				} else {
 					sb.append("(");
-					PostgresExpression expression = PostgresExpressionGenerator.generateExpression(globalState.getRandomly(),
+					PostgresExpression expression = PostgresExpressionGenerator.generateExpression(globalState,
 							randomTable.getColumns());
 					sb.append(PostgresVisitor.asString(expression));
 					sb.append(")");
@@ -109,7 +110,8 @@ public class PostgresIndexGenerator {
 //		}
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
-			PostgresExpression expr = new PostgresExpressionGenerator(globalState.getRandomly()).setColumns(randomTable.getColumns()).setGlobalState(globalState).generateExpression(PostgresDataType.BOOLEAN);
+			PostgresExpression expr = new PostgresExpressionGenerator(globalState).setColumns(randomTable.getColumns())
+					.setGlobalState(globalState).generateExpression(PostgresDataType.BOOLEAN);
 			sb.append(PostgresVisitor.asString(expr));
 		}
 		errors.add("already contains data"); // CONCURRENT INDEX failed

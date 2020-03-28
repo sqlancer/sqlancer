@@ -21,7 +21,6 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 public class PostgresTableGenerator {
 
 	private String tableName;
-	private Randomly r;
 	private boolean columnCanHavePrimaryKey;
 	private boolean columnHasPrimaryKey;
 	private final StringBuilder sb = new StringBuilder();
@@ -35,7 +34,6 @@ public class PostgresTableGenerator {
 
 	public PostgresTableGenerator(String tableName, Randomly r, PostgresSchema newSchema, boolean generateOnlyKnown, PostgresGlobalState globalState) {
 		this.tableName = tableName;
-		this.r = r;
 		this.newSchema = newSchema;
 		this.generateOnlyKnown = generateOnlyKnown;
 		this.globalState = globalState;
@@ -105,12 +103,12 @@ public class PostgresTableGenerator {
 			errors.add("unsupported ON COMMIT and foreign key combination");
 			errors.add("ERROR: invalid ON DELETE action for foreign key constraint containing generated column");
 			errors.add("exclusion constraints are not supported on partitioned tables");
-			PostgresCommon.addTableConstraints(columnHasPrimaryKey, sb, table, r, newSchema, errors, globalState.getOpClasses(), globalState.getOperators());
+			PostgresCommon.addTableConstraints(columnHasPrimaryKey, sb, table, globalState, errors);
 		}
 		sb.append(")");
 		generateInherits();
 		generatePartitionBy();
-		PostgresCommon.generateWith(sb, r, errors);
+		PostgresCommon.generateWith(sb, globalState, errors);
 		if (Randomly.getBoolean() && isTemporaryTable) {
 			sb.append(" ON COMMIT ");
 			sb.append(Randomly.fromOptions("PRESERVE ROWS", "DELETE ROWS", "DROP"));
@@ -173,7 +171,7 @@ public class PostgresTableGenerator {
 				sb.append(", ");
 			}
 			sb.append("(");
-			PostgresExpression expr = PostgresExpressionGenerator.generateExpression(r, columnsToBeAdded);
+			PostgresExpression expr = PostgresExpressionGenerator.generateExpression(globalState, columnsToBeAdded);
 			sb.append(PostgresVisitor.asString(expr));
 			sb.append(")");
 			if (Randomly.getBoolean()) {
@@ -243,7 +241,7 @@ public class PostgresTableGenerator {
 			case DEFAULT:
 				sb.append("DEFAULT");
 				sb.append(" (");
-				sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(r, type)));
+				sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(globalState, type)));
 				sb.append(")");
 				// CREATE TEMPORARY TABLE t1(c0 smallint DEFAULT ('566963878'));
 				errors.add("out of range");
@@ -252,7 +250,7 @@ public class PostgresTableGenerator {
 			case CHECK:
 				sb.append("CHECK (");
 				sb.append(PostgresVisitor.asString(
-						PostgresExpressionGenerator.generateExpression(r, columnsToBeAdded, PostgresDataType.BOOLEAN)));
+						PostgresExpressionGenerator.generateExpression(globalState, columnsToBeAdded, PostgresDataType.BOOLEAN)));
 				sb.append(")");
 				if (Randomly.getBoolean()) {
 					sb.append(" NO INHERIT");
@@ -264,7 +262,7 @@ public class PostgresTableGenerator {
 				if (Randomly.getBoolean()) {
 					sb.append(" ALWAYS AS (");
 					sb.append(PostgresVisitor
-							.asString(PostgresExpressionGenerator.generateExpression(r, columnsToBeAdded, type)));
+							.asString(PostgresExpressionGenerator.generateExpression(globalState, columnsToBeAdded, type)));
 					sb.append(") STORED");
 					errors.add("A generated column cannot reference another generated column.");
 					errors.add("cannot use generated column in partition key");

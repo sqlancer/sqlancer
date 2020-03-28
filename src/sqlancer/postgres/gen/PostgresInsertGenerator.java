@@ -74,7 +74,7 @@ public class PostgresInsertGenerator {
 				if (i != 0) {
 					sb.append(", ");
 				}
-				insertRow(globalState.getRandomly(), sb, columns, n == 1);
+				insertRow(globalState, sb, columns, n == 1);
 			}
 		}
 		if (Randomly.getBoolean()) {
@@ -99,7 +99,7 @@ public class PostgresInsertGenerator {
 		return new QueryAdapter(sb.toString(), errors);
 	}
 
-	private static void insertRow(Randomly r, StringBuilder sb, List<PostgresColumn> columns, boolean canBeDefault) {
+	private static void insertRow(PostgresGlobalState globalState, StringBuilder sb, List<PostgresColumn> columns, boolean canBeDefault) {
 		sb.append("(");
 		for (int i = 0; i < columns.size(); i++) {
 			if (i != 0) {
@@ -108,9 +108,9 @@ public class PostgresInsertGenerator {
 			if (!Randomly.getBooleanWithSmallProbability() || !canBeDefault) {
 				PostgresExpression generateConstant;
 				if (Randomly.getBoolean()) {
-					generateConstant = PostgresExpressionGenerator.generateConstant(r, columns.get(i).getColumnType());
+					generateConstant = PostgresExpressionGenerator.generateConstant(globalState.getRandomly(), columns.get(i).getColumnType());
 				} else {
-					generateConstant = new PostgresExpressionGenerator(r)
+					generateConstant = new PostgresExpressionGenerator(globalState)
 							.generateExpression(columns.get(i).getColumnType());
 				}
 				sb.append(PostgresVisitor.asString(generateConstant));

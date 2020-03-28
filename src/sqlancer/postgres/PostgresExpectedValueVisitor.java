@@ -122,7 +122,9 @@ public class PostgresExpectedValueVisitor implements PostgresVisitor {
 	@Override
 	public void visit(PostgresAggregate op) {
 		print(op);
-		visit(op.getExpr());
+		for (PostgresExpression expr : op.getArgs()) {
+			visit(expr);
+		}
 	}
 
 	@Override

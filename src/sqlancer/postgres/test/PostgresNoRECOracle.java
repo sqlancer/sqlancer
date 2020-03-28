@@ -43,7 +43,6 @@ import sqlancer.postgres.gen.PostgresExpressionGenerator;
 public class PostgresNoRECOracle implements TestOracle {
 
 	private PostgresSchema s;
-	private Randomly r;
 	private Connection con;
 	private PostgresStateToReproduce state;
 	private String firstQueryString;
@@ -55,7 +54,6 @@ public class PostgresNoRECOracle implements TestOracle {
 
 	public PostgresNoRECOracle(PostgresGlobalState globalState) {
 		this.s = globalState.getSchema();
-		this.r = globalState.getRandomly();
 		this.con = globalState.getConnection();
 		this.state = (PostgresStateToReproduce) globalState.getState();
 		this.logger = globalState.getLogger();
@@ -113,7 +111,7 @@ public class PostgresNoRECOracle implements TestOracle {
 	}
 
 	private PostgresExpression getRandomWhereCondition(List<PostgresColumn> columns) {
-		return new PostgresExpressionGenerator(r).setColumns(columns).setGlobalState(globalState)
+		return new PostgresExpressionGenerator(globalState).setColumns(columns).setGlobalState(globalState)
 				.generateExpression(PostgresDataType.BOOLEAN);
 	}
 
@@ -165,7 +163,7 @@ public class PostgresNoRECOracle implements TestOracle {
 		select.setFromList(randomTables);
 		select.setWhereClause(randomWhereCondition);
 		if (Randomly.getBooleanWithSmallProbability()) {
-			select.setOrderByExpressions(new PostgresExpressionGenerator(r).setColumns(columns).setGlobalState(globalState)
+			select.setOrderByExpressions(new PostgresExpressionGenerator(globalState).setColumns(columns).setGlobalState(globalState)
 					.generateOrderBy());
 		}
 		select.setSelectType(SelectType.ALL);

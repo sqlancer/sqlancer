@@ -1,5 +1,9 @@
 package sqlancer.postgres;
 
+import java.util.List;
+
+import sqlancer.postgres.PostgresSchema.PostgresColumn;
+import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.ast.PostgresAggregate;
 import sqlancer.postgres.ast.PostgresBetweenOperation;
 import sqlancer.postgres.ast.PostgresCastOperation;
@@ -17,6 +21,7 @@ import sqlancer.postgres.ast.PostgresPrefixOperation;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.ast.PostgresSimilarTo;
+import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
 public interface PostgresVisitor {
 
@@ -49,7 +54,7 @@ public interface PostgresVisitor {
 	public abstract void visit(PostgresCollate op);
 
 	public abstract void visit(PostgresPOSIXRegularExpression op);
-	
+
 	public abstract void visit(PostgresFromTable from);
 
 	public default void visit(PostgresExpression expression) {
@@ -102,6 +107,21 @@ public interface PostgresVisitor {
 		PostgresExpectedValueVisitor v = new PostgresExpectedValueVisitor();
 		v.visit(expr);
 		return v.get();
+	}
+
+	public static String getExpressionAsString(PostgresGlobalState globalState, PostgresDataType type) {
+		PostgresExpression expression = PostgresExpressionGenerator.generateExpression(globalState, type);
+		PostgresToStringVisitor visitor = new PostgresToStringVisitor();
+		visitor.visit(expression);
+		return visitor.get();
+	}
+
+	public static String getExpressionAsString(PostgresGlobalState globalState, PostgresDataType type,
+			List<PostgresColumn> columns) {
+		PostgresExpression expression = PostgresExpressionGenerator.generateExpression(globalState, columns, type);
+		PostgresToStringVisitor visitor = new PostgresToStringVisitor();
+		visitor.visit(expression);
+		return visitor.get();
 	}
 
 }

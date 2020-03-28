@@ -10,9 +10,8 @@ import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.mysql.MySQLVisitor;
+import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresProvider;
-import sqlancer.postgres.PostgresSchema;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
@@ -218,7 +217,7 @@ public class PostgresCommon {
 		}
 	}
 
-	public static void generateWith(StringBuilder sb, Randomly r, Set<String> errors) {
+	public static void generateWith(StringBuilder sb, PostgresGlobalState globalState, Set<String> errors) {
 		if (Randomly.getBoolean()) {
 			sb.append(" WITH (");
 			ArrayList<StorageParameters> values = new ArrayList<>(Arrays.asList(StorageParameters.values()));
@@ -233,46 +232,43 @@ public class PostgresCommon {
 				}
 				sb.append(parameter.parameter);
 				sb.append("=");
-				sb.append(parameter.op.apply(r));
+				sb.append(parameter.op.apply(globalState.getRandomly()));
 			}
 			sb.append(")");
 		}
 	}
 
-	public static void addTableConstraints(boolean excludePrimaryKey, StringBuilder sb, PostgresTable table, Randomly r,
-			PostgresSchema schema, Set<String> errors, List<String> opClasses, List<String> operators)
-			throws AssertionError {
+	public static void addTableConstraints(boolean excludePrimaryKey, StringBuilder sb, PostgresTable table,
+			PostgresGlobalState globalState, Set<String> errors) {
 		// TODO constraint name
 		List<TableConstraints> tableConstraints = Randomly.nonEmptySubset(TableConstraints.values());
 		if (excludePrimaryKey) {
 			tableConstraints.remove(TableConstraints.PRIMARY_KEY);
 		}
-		if (schema.getDatabaseTables().isEmpty()) {
+		if (globalState.getSchema().getDatabaseTables().isEmpty()) {
 			tableConstraints.remove(TableConstraints.FOREIGN_KEY);
 		}
 		for (TableConstraints t : tableConstraints) {
 			sb.append(", ");
 			// TODO add index parameters
-			addTableConstraint(sb, table, r, t, schema, errors, opClasses, operators);
+			addTableConstraint(sb, table, globalState, t, errors);
 		}
 	}
 
-	public static void addTableConstraint(StringBuilder sb, PostgresTable table, Randomly r, PostgresSchema schema,
-			Set<String> errors, List<String> opClasses, List<String> operators) {
-		addTableConstraint(sb, table, r, Randomly.fromOptions(TableConstraints.values()), schema, errors, opClasses,
-				operators);
+	public static void addTableConstraint(StringBuilder sb, PostgresTable table, PostgresGlobalState globalState,
+			Set<String> errors) {
+		addTableConstraint(sb, table, globalState, Randomly.fromOptions(TableConstraints.values()), errors);
 	}
 
-	private static void addTableConstraint(StringBuilder sb, PostgresTable table, Randomly r, TableConstraints t,
-			PostgresSchema schema, Set<String> errors, List<String> opClasses, List<String> operators)
-			throws AssertionError {
+	private static void addTableConstraint(StringBuilder sb, PostgresTable table, PostgresGlobalState globalState,
+			TableConstraints t, Set<String> errors) {
 		List<PostgresColumn> randomNonEmptyColumnSubset = table.getRandomNonEmptyColumnSubset();
 		List<PostgresColumn> otherColumns;
 		PostgresCommon.addCommonExpressionErrors(errors);
 		switch (t) {
 		case CHECK:
 			sb.append("CHECK(");
-			sb.append(MySQLVisitor.getExpressionAsString(r, PostgresDataType.BOOLEAN, table.getColumns()));
+			sb.append(PostgresVisitor.getExpressionAsString(globalState, PostgresDataType.BOOLEAN, table.getColumns()));
 			sb.append(")");
 			errors.add("constraint must be added to child tables too");
 			errors.add("missing FROM-clause entry for table");
@@ -281,19 +277,19 @@ public class PostgresCommon {
 			sb.append("UNIQUE(");
 			sb.append(randomNonEmptyColumnSubset.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
 			sb.append(")");
-			appendIndexParameters(sb, r, errors);
+			appendIndexParameters(sb, globalState, errors);
 			break;
 		case PRIMARY_KEY:
 			sb.append("PRIMARY KEY(");
 			sb.append(randomNonEmptyColumnSubset.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
 			sb.append(")");
-			appendIndexParameters(sb, r, errors);
+			appendIndexParameters(sb, globalState, errors);
 			break;
 		case FOREIGN_KEY:
 			sb.append("FOREIGN KEY (");
 			sb.append(randomNonEmptyColumnSubset.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
 			sb.append(") REFERENCES ");
-			PostgresTable randomOtherTable = schema.getRandomTable(tab -> !tab.isView());
+			PostgresTable randomOtherTable = globalState.getSchema().getRandomTable(tab -> !tab.isView());
 			sb.append(randomOtherTable.getName());
 			if (randomOtherTable.getColumns().size() < randomNonEmptyColumnSubset.size()) {
 				throw new IgnoreMeException();
@@ -337,12 +333,12 @@ public class PostgresCommon {
 				if (i != 0) {
 					sb.append(", ");
 				}
-				appendExcludeElement(sb, r, table.getColumns(), opClasses);
+				appendExcludeElement(sb, globalState, table.getColumns());
 				sb.append(" WITH ");
-				appendOperator(sb, operators);
+				appendOperator(sb, globalState.getOperators());
 			}
 			sb.append(")");
-			appendIndexParameters(sb, r, errors);
+			appendIndexParameters(sb, globalState, errors);
 			errors.add("is not valid");
 			errors.add("no operator matches");
 			errors.add("operator does not exist");
@@ -354,8 +350,8 @@ public class PostgresCommon {
 			if (Randomly.getBoolean()) {
 				sb.append(" WHERE ");
 				sb.append("(");
-				sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(r, table.getColumns(),
-						PostgresDataType.BOOLEAN)));
+				sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(globalState,
+						table.getColumns(), PostgresDataType.BOOLEAN)));
 				sb.append(")");
 			}
 			break;
@@ -364,9 +360,9 @@ public class PostgresCommon {
 		}
 	}
 
-	private static void appendIndexParameters(StringBuilder sb, Randomly r, Set<String> errors) {
+	private static void appendIndexParameters(StringBuilder sb, PostgresGlobalState globalState, Set<String> errors) {
 		if (Randomly.getBoolean()) {
-			generateWith(sb, r, errors);
+			generateWith(sb, globalState, errors);
 		}
 		// TODO: [ USING INDEX TABLESPACE tablespace ]
 	}
@@ -376,20 +372,20 @@ public class PostgresCommon {
 	}
 
 	// complete
-	private static void appendExcludeElement(StringBuilder sb, Randomly r, List<PostgresColumn> columns,
-			List<String> opClasses) {
+	private static void appendExcludeElement(StringBuilder sb, PostgresGlobalState globalState,
+			List<PostgresColumn> columns) {
 		if (Randomly.getBoolean()) {
 			// append column name
 			sb.append(Randomly.fromList(columns).getName());
 		} else {
 			// append expression
 			sb.append("(");
-			sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(r, columns)));
+			sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(globalState, columns)));
 			sb.append(")");
 		}
 		if (Randomly.getBoolean()) {
 			sb.append(" ");
-			sb.append(Randomly.fromList(opClasses));
+			sb.append(Randomly.fromList(globalState.getOpClasses()));
 		}
 		if (Randomly.getBoolean()) {
 			sb.append(" ");

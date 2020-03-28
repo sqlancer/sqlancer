@@ -8,7 +8,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
-import sqlancer.postgres.PostgresSchema;
+import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
@@ -19,10 +19,9 @@ public class PostgresAlterTableGenerator {
 	private PostgresTable randomTable;
 	private Randomly r;
 	private static PostgresColumn randomColumn;
-	private PostgresSchema schema;
 	private boolean generateOnlyKnown;
 	private List<String> opClasses;
-	private List<String> operators;
+	private PostgresGlobalState globalState;
 
 	private enum Action {
 //		ALTER_TABLE_ADD_COLUMN, // [ COLUMN ] column data_type [ COLLATE collation ] [
@@ -54,19 +53,17 @@ public class PostgresAlterTableGenerator {
 		REPLICA_IDENTITY
 	}
 
-	public PostgresAlterTableGenerator(PostgresTable randomTable, Randomly r, PostgresSchema s,
-			boolean generateOnlyKnown, List<String> opClasses, List<String> operators) {
+	public PostgresAlterTableGenerator(PostgresTable randomTable, PostgresGlobalState globalState,
+			boolean generateOnlyKnown) {
 		this.randomTable = randomTable;
-		this.r = r;
-		this.schema = s;
+		this.globalState = globalState;
+		this.r = globalState.getRandomly();
 		this.generateOnlyKnown = generateOnlyKnown;
-		this.opClasses = opClasses;
-		this.operators = operators;
+		this.opClasses = globalState.getOpClasses();
 	}
 
-	public static Query create(PostgresTable randomTable, Randomly r, PostgresSchema s, boolean generateOnlyKnown,
-			List<String> opClasses, List<String> operators) {
-		return new PostgresAlterTableGenerator(randomTable, r, s, generateOnlyKnown, opClasses, operators).generate();
+	public static Query create(PostgresTable randomTable, PostgresGlobalState globalState, boolean generateOnlyKnown) {
+		return new PostgresAlterTableGenerator(randomTable, globalState, generateOnlyKnown).generate();
 	}
 
 	private enum Attribute {
@@ -184,8 +181,8 @@ public class PostgresAlterTableGenerator {
 					sb.append("DROP DEFAULT");
 				} else {
 					sb.append("SET DEFAULT ");
-					sb.append(PostgresVisitor
-							.asString(PostgresExpressionGenerator.generateExpression(r, randomColumn.getColumnType())));
+					sb.append(PostgresVisitor.asString(
+							PostgresExpressionGenerator.generateExpression(globalState, randomColumn.getColumnType())));
 					errors.add("is out of range");
 					errors.add("but default expression is of type");
 					errors.add("cannot cast");
@@ -247,7 +244,7 @@ public class PostgresAlterTableGenerator {
 				break;
 			case ADD_TABLE_CONSTRAINT:
 				sb.append("ADD ");
-				PostgresCommon.addTableConstraint(sb, randomTable, r, schema, errors, opClasses, operators);
+				PostgresCommon.addTableConstraint(sb, randomTable, globalState, errors);
 				errors.add("multiple primary keys for table");
 				errors.add("could not create unique index");
 				errors.add("contains null values");

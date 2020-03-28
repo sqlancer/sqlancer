@@ -290,9 +290,9 @@ public class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression>
 
 	@Override
 	public void visit(PostgresAggregate op) {
-		sb.append(op.getFunc());
+		sb.append(op.getFunction());
 		sb.append("(");
-		visit(op.getExpr());
+		visit(op.getArgs());
 		sb.append(")");
 	}
 

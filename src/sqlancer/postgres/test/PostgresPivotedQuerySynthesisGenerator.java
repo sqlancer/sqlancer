@@ -31,7 +31,6 @@ import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
 public class PostgresPivotedQuerySynthesisGenerator implements TestOracle {
 
-	private Randomly r;
 	private PostgresStateToReproduce state;
 	private PostgresRowValue rw;
 	private Connection database;
@@ -39,9 +38,10 @@ public class PostgresPivotedQuerySynthesisGenerator implements TestOracle {
 	private PostgresSchema s;
 	private MainOptions options;
 	private StateLogger logger;
+	private PostgresGlobalState globalState;
 
 	public PostgresPivotedQuerySynthesisGenerator(PostgresGlobalState globalState) throws SQLException {
-		this.r = globalState.getRandomly();
+		this.globalState = globalState;
 		this.database = globalState.getConnection();
 		this.s = globalState.getSchema();
 		options = globalState.getOptions();
@@ -92,7 +92,7 @@ public class PostgresPivotedQuerySynthesisGenerator implements TestOracle {
 			PostgresExpression offsetClause = generateOffset();
 			selectStatement.setOffsetClause(offsetClause);
 		}
-		List<PostgresExpression> orderBy = new PostgresExpressionGenerator(r).setColumns(columns).generateOrderBy();
+		List<PostgresExpression> orderBy = new PostgresExpressionGenerator(globalState).setColumns(columns).generateOrderBy();
 		selectStatement.setOrderByExpressions(orderBy);
 
 		StringBuilder sb2 = new StringBuilder();
@@ -149,7 +149,7 @@ public class PostgresPivotedQuerySynthesisGenerator implements TestOracle {
 
 	private PostgresExpression generateWhereClauseThatContainsRowValue(List<PostgresColumn> columns,
 			PostgresRowValue rw) {
-		PostgresExpression expression = PostgresExpressionGenerator.generateTrueCondition(columns, rw, r);
+		PostgresExpression expression = PostgresExpressionGenerator.generateTrueCondition(columns, rw, globalState);
 		return expression;
 	}
 

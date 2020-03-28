@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.postgres.PostgresSchema;
+import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTables;
 import sqlancer.postgres.ast.PostgresConstant;
@@ -17,10 +17,10 @@ import sqlancer.postgres.ast.PostgresSelect.SelectType;
 
 public class PostgresRandomQueryGenerator {
 
-	public static PostgresSelect createRandomQuery(int nrColumns, PostgresSchema newSchema, Randomly r) {
+	public static PostgresSelect createRandomQuery(int nrColumns, PostgresGlobalState globalState) {
 		List<PostgresExpression> columns = new ArrayList<>();
-		PostgresTables tables = newSchema.getRandomTableNonEmptyTables();
-		PostgresExpressionGenerator gen = new PostgresExpressionGenerator(r).setColumns(tables.getColumns());
+		PostgresTables tables = globalState.getSchema().getRandomTableNonEmptyTables();
+		PostgresExpressionGenerator gen = new PostgresExpressionGenerator(globalState).setColumns(tables.getColumns());
 		for (int i = 0; i < nrColumns; i++) {
 			columns.add(gen.generateExpression(0));
 		}
@@ -34,10 +34,13 @@ public class PostgresRandomQueryGenerator {
 		if (Randomly.getBoolean()) {
 			select.setWhereClause(gen.generateExpression(0, PostgresDataType.BOOLEAN));
 		}
-		if (Randomly.getBooleanWithSmallProbability()) {
+		if (Randomly.getBooleanWithRatherLowProbability()) {
 			select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
+			if (Randomly.getBoolean()) {
+				select.setHavingClause(gen.generateHavingClause());
+			}
 		}
-		if (Randomly.getBooleanWithSmallProbability()) {
+		if (Randomly.getBooleanWithRatherLowProbability()) {
 			select.setOrderByExpressions(gen.generateOrderBy());
 		}
 		if (Randomly.getBoolean()) {
@@ -46,7 +49,7 @@ public class PostgresRandomQueryGenerator {
 				select.setOffsetClause(PostgresConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
 			}
 		}
-		if (Randomly.getBoolean()) {
+		if (Randomly.getBooleanWithRatherLowProbability()) {
 			select.setForClause(ForClause.getRandom());
 		}
 		return select;

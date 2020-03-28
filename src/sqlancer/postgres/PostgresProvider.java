@@ -69,8 +69,8 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 
 	public enum Action implements AbstractAction<PostgresGlobalState> {
 		ANALYZE(PostgresAnalyzeGenerator::create), //
-		ALTER_TABLE(g -> PostgresAlterTableGenerator.create(g.getSchema().getRandomTable(t -> !t.isView()),
-				g.getRandomly(), g.getSchema(), GENERATE_ONLY_KNOWN, g.getOpClasses(), g.getOperators())), //
+		ALTER_TABLE(g -> PostgresAlterTableGenerator.create(g.getSchema().getRandomTable(t -> !t.isView()), g,
+				GENERATE_ONLY_KNOWN)), //
 		CLUSTER(PostgresClusterGenerator::create), //
 		COMMIT(g -> {
 			Query query;
@@ -205,7 +205,8 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 		Connection con = globalState.getConnection();
 		QueryManager manager = globalState.getManager();
 		PostgresOptions PostgresOptions = new PostgresOptions();
-		JCommander.newBuilder().addObject(PostgresOptions).build().parse(globalState.getOptions().getDbmsOptions().split(" "));
+		JCommander.newBuilder().addObject(PostgresOptions).build()
+				.parse(globalState.getOptions().getDbmsOptions().split(" "));
 		globalState.setPostgresOptions(PostgresOptions);
 		if (options.logEachSelect()) {
 			logger.writeCurrent(state);
@@ -214,8 +215,8 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 		while (globalState.getSchema().getDatabaseTables().size() < 2) {
 			try {
 				String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
-				Query createTable = PostgresTableGenerator.generate(tableName, globalState.getRandomly(), globalState.getSchema(),
-						GENERATE_ONLY_KNOWN, globalState);
+				Query createTable = PostgresTableGenerator.generate(tableName, globalState.getRandomly(),
+						globalState.getSchema(), GENERATE_ONLY_KNOWN, globalState);
 				if (options.logEachSelect()) {
 					logger.writeCurrent(createTable.getQueryString());
 				}
@@ -252,7 +253,6 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 
 		manager.execute(new QueryAdapter("SET SESSION statement_timeout = 5000;\n"));
 
-		
 		List<TestOracle> oracles = globalState.getPostgresOptions().oracle.stream().map(o -> {
 			try {
 				return o.create(globalState);
@@ -261,7 +261,7 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 			}
 		}).collect(Collectors.toList());
 		CompositeTestOracle oracle = new CompositeTestOracle(oracles);
-		
+
 		for (int i = 0; i < options.getNrQueries(); i++) {
 			try {
 				oracle.check();

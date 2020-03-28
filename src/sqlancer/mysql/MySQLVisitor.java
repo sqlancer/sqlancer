@@ -1,8 +1,5 @@
 package sqlancer.mysql;
 
-import java.util.List;
-
-import sqlancer.Randomly;
 import sqlancer.mysql.ast.MySQLBetweenOperation;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
@@ -19,11 +16,6 @@ import sqlancer.mysql.ast.MySQLSelect;
 import sqlancer.mysql.ast.MySQLStringExpression;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperator;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
-import sqlancer.postgres.PostgresSchema.PostgresColumn;
-import sqlancer.postgres.PostgresSchema.PostgresDataType;
-import sqlancer.postgres.PostgresToStringVisitor;
-import sqlancer.postgres.ast.PostgresExpression;
-import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
 public abstract class MySQLVisitor {
 
@@ -102,20 +94,6 @@ public abstract class MySQLVisitor {
 	public static String asExpectedValues(MySQLExpression expr) {
 		MySQLExpectedValueVisitor visitor = new MySQLExpectedValueVisitor();
 		visitor.visit(expr);
-		return visitor.get();
-	}
-
-	public static String getExpressionAsString(Randomly r, PostgresDataType type) {
-		PostgresExpression expression = PostgresExpressionGenerator.generateExpression(r, type);
-		PostgresToStringVisitor visitor = new PostgresToStringVisitor();
-		visitor.visit(expression);
-		return visitor.get();
-	}
-	
-	public static String getExpressionAsString(Randomly r, PostgresDataType type, List<PostgresColumn> columns) {
-		PostgresExpression expression = PostgresExpressionGenerator.generateExpression(r, columns, type);
-		PostgresToStringVisitor visitor = new PostgresToStringVisitor();
-		visitor.visit(expression);
 		return visitor.get();
 	}
 
