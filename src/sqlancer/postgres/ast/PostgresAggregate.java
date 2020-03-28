@@ -1,15 +1,17 @@
 package sqlancer.postgres.ast;
 
+import java.util.Arrays;
+
 import sqlancer.Randomly;
+import sqlancer.ast.FunctionNode;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
+import sqlancer.postgres.ast.PostgresAggregate.PostgresAggregateFunction;
 
 /**
  * @see https://www.sqlite.org/lang_aggfunc.html
  */
-public class PostgresAggregate implements PostgresExpression {
-
-	private PostgresAggregateFunction func;
-	private PostgresExpression expr;
+public class PostgresAggregate extends FunctionNode<PostgresAggregateFunction, PostgresExpression>
+		implements PostgresExpression {
 
 	public enum PostgresAggregateFunction {
 		COUNT;
@@ -24,27 +26,8 @@ public class PostgresAggregate implements PostgresExpression {
 
 	}
 
-	public PostgresAggregate(PostgresExpression expr, PostgresAggregateFunction func) {
-		this.expr = expr;
-		this.func = func;
-	}
-
-	public PostgresAggregateFunction getFunc() {
-		return func;
-	}
-
-	public PostgresExpression getExpr() {
-		return expr;
-	}
-
-	@Override
-	public PostgresConstant getExpectedValue() {
-		throw new AssertionError();
-	}
-
-	@Override
-	public PostgresDataType getExpressionType() {
-		return PostgresDataType.INT;
+	public PostgresAggregate(PostgresExpression arg, PostgresAggregateFunction func) {
+		super(func, Arrays.asList(arg));
 	}
 
 }
