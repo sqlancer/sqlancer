@@ -1,6 +1,8 @@
 package sqlancer.postgres.ast;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.ast.FunctionNode;
@@ -14,7 +16,13 @@ public class PostgresAggregate extends FunctionNode<PostgresAggregateFunction, P
 		implements PostgresExpression {
 
 	public enum PostgresAggregateFunction {
-		COUNT;
+		COUNT(PostgresDataType.INT);
+
+		PostgresAggregateFunction(PostgresDataType... supportedReturnTypes) {
+			this.supportedReturnTypes = supportedReturnTypes;
+		}
+
+		private PostgresDataType supportedReturnTypes[];
 
 		public static PostgresAggregateFunction getRandom() {
 			return Randomly.fromOptions(values());
@@ -22,6 +30,27 @@ public class PostgresAggregate extends FunctionNode<PostgresAggregateFunction, P
 
 		public static PostgresAggregateFunction getRandom(PostgresDataType type) {
 			return Randomly.fromOptions(values());
+		}
+
+		public List<PostgresDataType> getTypes(PostgresDataType returnType) {
+			return Arrays.asList(returnType);
+		}
+
+		public boolean supportsReturnType(PostgresDataType returnType) {
+			return Arrays.asList(supportedReturnTypes).stream().anyMatch(t -> t == returnType);
+		}
+
+		public static List<PostgresAggregateFunction> getAggregates(PostgresDataType type) {
+			return Arrays.asList(values()).stream().filter(p -> p.supportsReturnType(type))
+					.collect(Collectors.toList());
+		}
+
+		public PostgresDataType getRandomReturnType() {
+			if (supportedReturnTypes.length == 0) {
+				return Randomly.fromOptions(PostgresDataType.getRandomType());
+			} else {
+				return Randomly.fromOptions(supportedReturnTypes);
+			}
 		}
 
 	}
