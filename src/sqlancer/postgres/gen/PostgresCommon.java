@@ -3,6 +3,7 @@ package sqlancer.postgres.gen;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -22,18 +23,18 @@ public class PostgresCommon {
 	private PostgresCommon() {
 	}
 
-	public static void addCommonFetchErrors(List<String> errors) {
+	public static void addCommonFetchErrors(Set<String> errors) {
 		errors.add("FULL JOIN is only supported with merge-joinable or hash-joinable join conditions");
 		errors.add("but it cannot be referenced from this part of the query");
 		errors.add("missing FROM-clause entry for table");
 	}
 
-	public static void addCommonTableErrors(List<String> errors) {
+	public static void addCommonTableErrors(Set<String> errors) {
 		errors.add("is not commutative"); // exclude
 		errors.add("operator requires run-time type coercion"); // exclude
 	}
 
-	public static void addCommonExpressionErrors(List<String> errors) {
+	public static void addCommonExpressionErrors(Set<String> errors) {
 		errors.add("You might need to add explicit type casts");
 		errors.add("invalid regular expression");
 		errors.add("could not determine which collation to use");
@@ -64,7 +65,7 @@ public class PostgresCommon {
 		addCommonRegexExpressionErrors(errors);
 	}
 
-	private static void addToCharFunctionErrors(List<String> errors) {
+	private static void addToCharFunctionErrors(Set<String> errors) {
 		errors.add("multiple decimal points");
 		errors.add("and decimal point together");
 		errors.add("multiple decimal points");
@@ -78,14 +79,14 @@ public class PostgresCommon {
 		errors.add("is not a number");
 	}
 
-	private static void addBitStringOperationErrors(List<String> errors) {
+	private static void addBitStringOperationErrors(Set<String> errors) {
 		errors.add("cannot XOR bit strings of different sizes");
 		errors.add("cannot AND bit strings of different sizes");
 		errors.add("cannot OR bit strings of different sizes");
 		errors.add("must be type boolean, not type text");
 	}
 
-	private static void addFunctionErrors(List<String> errors) {
+	private static void addFunctionErrors(Set<String> errors) {
 		errors.add("out of valid range"); // get_bit/get_byte
 		errors.add("cannot take logarithm of a negative number");
 		errors.add("cannot take logarithm of zero");
@@ -99,18 +100,18 @@ public class PostgresCommon {
 		errors.add("invalid mask length"); // set_masklen
 	}
 
-	private static void addCommonRegexExpressionErrors(List<String> errors) {
+	private static void addCommonRegexExpressionErrors(Set<String> errors) {
 		errors.add("is not a valid hexadecimal digit");
 	}
 
-	public static void addCommonRangeExpressionErrors(List<String> errors) {
+	public static void addCommonRangeExpressionErrors(Set<String> errors) {
 		errors.add("range lower bound must be less than or equal to range upper bound");
 		errors.add("result of range difference would not be contiguous");
 		errors.add("out of range");
 		errors.add("malformed range literal");
 	}
 
-	public static void addCommonInsertUpdateErrors(List<String> errors) {
+	public static void addCommonInsertUpdateErrors(Set<String> errors) {
 		errors.add("value too long for type character");
 		errors.add("not found in view targetlist");
 	}
@@ -217,7 +218,7 @@ public class PostgresCommon {
 		}
 	}
 
-	public static void generateWith(StringBuilder sb, Randomly r, List<String> errors) {
+	public static void generateWith(StringBuilder sb, Randomly r, Set<String> errors) {
 		if (Randomly.getBoolean()) {
 			sb.append(" WITH (");
 			ArrayList<StorageParameters> values = new ArrayList<>(Arrays.asList(StorageParameters.values()));
@@ -239,7 +240,7 @@ public class PostgresCommon {
 	}
 
 	public static void addTableConstraints(boolean excludePrimaryKey, StringBuilder sb, PostgresTable table, Randomly r,
-			PostgresSchema schema, List<String> errors, List<String> opClasses, List<String> operators)
+			PostgresSchema schema, Set<String> errors, List<String> opClasses, List<String> operators)
 			throws AssertionError {
 		// TODO constraint name
 		List<TableConstraints> tableConstraints = Randomly.nonEmptySubset(TableConstraints.values());
@@ -257,13 +258,13 @@ public class PostgresCommon {
 	}
 
 	public static void addTableConstraint(StringBuilder sb, PostgresTable table, Randomly r, PostgresSchema schema,
-			List<String> errors, List<String> opClasses, List<String> operators) {
+			Set<String> errors, List<String> opClasses, List<String> operators) {
 		addTableConstraint(sb, table, r, Randomly.fromOptions(TableConstraints.values()), schema, errors, opClasses,
 				operators);
 	}
 
 	private static void addTableConstraint(StringBuilder sb, PostgresTable table, Randomly r, TableConstraints t,
-			PostgresSchema schema, List<String> errors, List<String> opClasses, List<String> operators)
+			PostgresSchema schema, Set<String> errors, List<String> opClasses, List<String> operators)
 			throws AssertionError {
 		List<PostgresColumn> randomNonEmptyColumnSubset = table.getRandomNonEmptyColumnSubset();
 		List<PostgresColumn> otherColumns;
@@ -363,7 +364,7 @@ public class PostgresCommon {
 		}
 	}
 
-	private static void appendIndexParameters(StringBuilder sb, Randomly r, List<String> errors) {
+	private static void appendIndexParameters(StringBuilder sb, Randomly r, Set<String> errors) {
 		if (Randomly.getBoolean()) {
 			generateWith(sb, r, errors);
 		}

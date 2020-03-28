@@ -1,7 +1,9 @@
 package sqlancer.postgres.gen;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.Query;
@@ -26,7 +28,7 @@ public class PostgresTableGenerator {
 	private boolean isTemporaryTable;
 	private PostgresSchema newSchema;
 	private final List<PostgresColumn> columnsToBeAdded = new ArrayList<>();
-	private final List<String> errors = new ArrayList<>();
+	private final Set<String> errors = new HashSet<>();
 	private final PostgresTable table;
 	private boolean generateOnlyKnown;
 	private PostgresGlobalState globalState;

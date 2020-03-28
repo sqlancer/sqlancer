@@ -1,7 +1,8 @@
 package sqlancer.postgres.gen;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.Query;
@@ -23,7 +24,7 @@ public class PostgresIndexGenerator {
 	}
 
 	public static Query generate(PostgresGlobalState globalState) {
-		List<String> errors = new ArrayList<>();
+		Set<String> errors = new HashSet<>();
 		StringBuilder sb = new StringBuilder();
 		sb.append("CREATE");
 		if (Randomly.getBoolean()) {

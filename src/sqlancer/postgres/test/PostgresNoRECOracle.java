@@ -7,7 +7,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
@@ -48,7 +50,7 @@ public class PostgresNoRECOracle implements TestOracle {
 	private String secondQueryString;
 	private StateLogger logger;
 	private MainOptions options;
-	private final List<String> errors = new ArrayList<>();
+	private final Set<String> errors = new HashSet<>();
 	private PostgresGlobalState globalState;
 
 	public PostgresNoRECOracle(PostgresGlobalState globalState) {

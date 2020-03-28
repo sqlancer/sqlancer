@@ -1,7 +1,7 @@
 package sqlancer.postgres.gen;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
@@ -14,7 +14,7 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 public class PostgresViewGenerator {
 
 	public static Query create(PostgresGlobalState globalState) {
-		List<String> errors = new ArrayList<>();
+		Set<String> errors = new HashSet<>();
 		StringBuilder sb = new StringBuilder("CREATE");
 		boolean materialized;
 		boolean recursive = false;

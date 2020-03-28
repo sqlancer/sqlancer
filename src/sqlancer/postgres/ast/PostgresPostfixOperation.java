@@ -114,7 +114,7 @@ public class PostgresPostfixOperation implements PostgresExpression {
 		}
 	}
 
-	private PostgresPostfixOperation(PostgresExpression expr, PostfixOperator op) {
+	public PostgresPostfixOperation(PostgresExpression expr, PostfixOperator op) {
 		this.expr = expr;
 		this.operatorTextRepresentation = Randomly.fromOptions(op.textRepresentations);
 		this.op = op;

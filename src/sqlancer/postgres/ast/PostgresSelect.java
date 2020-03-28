@@ -27,7 +27,7 @@ public class PostgresSelect implements PostgresExpression {
 		}
 	}
 
-	private SelectType selectOption;
+	private SelectType selectOption = SelectType.ALL;
 	private List<PostgresFromTable> fromList = Collections.emptyList();
 	private PostgresExpression whereClause;
 	private List<PostgresExpression> groupByClause = Collections.emptyList();
