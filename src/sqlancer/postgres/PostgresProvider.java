@@ -7,11 +7,11 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.AbstractAction;
 import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
@@ -22,6 +22,7 @@ import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.PostgresStateToReproduce;
+import sqlancer.StatementExecutor;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.ast.PostgresExpression;
@@ -55,17 +56,17 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 	public static boolean GENERATE_ONLY_KNOWN = false;
 
 	private PostgresGlobalState globalState;
-	
+
 	@FunctionalInterface
 	public interface PostgresQueryProvider {
 
 		Query getQuery(PostgresGlobalState globalState) throws SQLException;
 	}
-	
-	private enum Action {
+
+	public enum Action implements AbstractAction<PostgresGlobalState> {
 		ANALYZE(PostgresAnalyzeGenerator::create), //
-		ALTER_TABLE(g -> PostgresAlterTableGenerator.create(g.getSchema().getRandomTable(t -> !t.isView()), g.getRandomly(),
-			g.getSchema(), GENERATE_ONLY_KNOWN, g.getOpClasses(), g.getOperators())), //
+		ALTER_TABLE(g -> PostgresAlterTableGenerator.create(g.getSchema().getRandomTable(t -> !t.isView()),
+				g.getRandomly(), g.getSchema(), GENERATE_ONLY_KNOWN, g.getOpClasses(), g.getOperators())), //
 		CLUSTER(PostgresClusterGenerator::create), //
 		COMMIT(g -> {
 			Query query;
@@ -97,24 +98,28 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 		UPDATE(PostgresUpdateGenerator::create), //
 		TRUNCATE(PostgresTruncateGenerator::create), //
 		VACUUM(PostgresVacuumGenerator::create), //
-		REINDEX( PostgresReindexGenerator::create), //
+		REINDEX(PostgresReindexGenerator::create), //
 		SET(PostgresSetGenerator::create), //
 		CREATE_INDEX(PostgresIndexGenerator::generate), //
 		SET_CONSTRAINTS((g) -> {
 			StringBuilder sb = new StringBuilder();
-		sb.append("SET CONSTRAINTS ALL ");
-		sb.append(Randomly.fromOptions("DEFERRED", "IMMEDIATE"));
-		return new QueryAdapter(sb.toString());}), //
+			sb.append("SET CONSTRAINTS ALL ");
+			sb.append(Randomly.fromOptions("DEFERRED", "IMMEDIATE"));
+			return new QueryAdapter(sb.toString());
+		}), //
 		RESET_ROLE((g) -> new QueryAdapter("RESET ROLE")), //
 		COMMENT_ON(PostgresCommentGenerator::generate), //
-		RESET((g) -> new QueryAdapter("RESET ALL") 	/* https://www.postgresql.org/docs/devel/sql-reset.html TODO: also configuration parameter */), //
+		RESET((g) -> new QueryAdapter("RESET ALL") /*
+													 * https://www.postgresql.org/docs/devel/sql-reset.html TODO: also
+													 * configuration parameter
+													 */), //
 		NOTIFY(PostgresNotifyGenerator::createNotify), //
 		LISTEN((g) -> PostgresNotifyGenerator.createListen()), //
 		UNLISTEN((g) -> PostgresNotifyGenerator.createUnlisten()), //
 		CREATE_SEQUENCE(PostgresSequenceGenerator::createSequence), //
 		CREATE_VIEW(PostgresViewGenerator::create), //
 		QUERY_CATALOG((g) -> PostgresQueryCatalogGenerator.query());
-		
+
 		private final PostgresQueryProvider queryProvider;
 
 		private Action(PostgresQueryProvider queryProvider) {
@@ -125,8 +130,67 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 			return queryProvider.getQuery(state);
 		}
 	}
-	
-	private final Randomly r = new Randomly();
+
+	private static int mapActions(PostgresGlobalState globalState, Action a) {
+		Randomly r = globalState.getRandomly();
+		int nrPerformed;
+		switch (a) {
+		case CREATE_INDEX:
+			nrPerformed = r.getInteger(0, 10);
+			break;
+		case CREATE_STATISTICS:
+			nrPerformed = r.getInteger(0, 5);
+			break;
+		case DISCARD:
+		case DROP_INDEX:
+			nrPerformed = r.getInteger(0, 5);
+			break;
+		case COMMIT:
+		case CLUSTER: // FIXME cluster broke during refactoring
+			nrPerformed = r.getInteger(0, 0);
+			break;
+		case ALTER_TABLE:
+			nrPerformed = r.getInteger(0, 5);
+			break;
+		case REINDEX:
+		case RESET:
+			nrPerformed = r.getInteger(0, 5);
+			break;
+		case DELETE:
+		case RESET_ROLE:
+		case SET:
+		case QUERY_CATALOG:
+			nrPerformed = r.getInteger(0, 5);
+			break;
+		case ANALYZE:
+			nrPerformed = r.getInteger(0, 10);
+			break;
+		case VACUUM:
+		case SET_CONSTRAINTS:
+		case COMMENT_ON:
+		case NOTIFY:
+		case LISTEN:
+		case UNLISTEN:
+		case CREATE_SEQUENCE:
+		case DROP_STATISTICS:
+		case TRUNCATE:
+			nrPerformed = r.getInteger(0, 2);
+			break;
+		case CREATE_VIEW:
+			nrPerformed = r.getInteger(0, 2);
+			break;
+		case UPDATE:
+			nrPerformed = r.getInteger(0, 10);
+			break;
+		case INSERT:
+			nrPerformed = r.getInteger(0, 30);
+			break;
+		default:
+			throw new AssertionError(a);
+		}
+		return nrPerformed;
+
+	}
 
 	@Override
 	public void generateAndTestDatabase(PostgresGlobalState globalState) throws SQLException {
@@ -143,8 +207,8 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 		while (globalState.getSchema().getDatabaseTables().size() < 2) {
 			try {
 				String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
-				Query createTable = PostgresTableGenerator.generate(tableName, r, globalState.getSchema(), GENERATE_ONLY_KNOWN,
-						globalState);
+				Query createTable = PostgresTableGenerator.generate(tableName, globalState.getRandomly(), globalState.getSchema(),
+						GENERATE_ONLY_KNOWN, globalState);
 				if (options.logEachSelect()) {
 					logger.writeCurrent(createTable.getQueryString());
 				}
@@ -155,123 +219,32 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 			}
 		}
 
-		int[] nrRemaining = new int[Action.values().length];
-		List<Action> actions = new ArrayList<>();
-		int total = 0;
-		for (int i = 0; i < Action.values().length; i++) {
-			Action action = Action.values()[i];
-			int nrPerformed = 0;
-			switch (action) {
-			case CREATE_INDEX:
-				nrPerformed = r.getInteger(0, 10);
-				break;
-			case CREATE_STATISTICS:
-				nrPerformed = r.getInteger(0, 5);
-				break;
-			case DISCARD:
-			case DROP_INDEX:
-				nrPerformed = r.getInteger(0, 5);
-				break;
-			case COMMIT:
-			case CLUSTER: // FIXME cluster broke during refactoring
-				nrPerformed = r.getInteger(0, 0);
-				break;
-			case ALTER_TABLE:
-				nrPerformed = r.getInteger(0, 5);
-				break;
-			case REINDEX:
-			case RESET:
-				nrPerformed = r.getInteger(0, 5);
-				break;
-			case DELETE:
-			case RESET_ROLE:
-			case SET:
-			case QUERY_CATALOG:
-				nrPerformed = r.getInteger(0, 5);
-				break;
-			case ANALYZE:
-				nrPerformed = r.getInteger(0, 10);
-				break;
-			case VACUUM:
-			case SET_CONSTRAINTS:
-			case COMMENT_ON:
-			case NOTIFY:
-			case LISTEN:
-			case UNLISTEN:
-			case CREATE_SEQUENCE:
-			case DROP_STATISTICS:
-			case TRUNCATE:
-				nrPerformed = r.getInteger(0, 2);
-				break;
-			case CREATE_VIEW:
-				nrPerformed = r.getInteger(0, 2);
-				break;
-			case UPDATE:
-				nrPerformed = r.getInteger(0, 10);
-				break;
-			case INSERT:
-				nrPerformed = r.getInteger(0, 30);
-				break;
-			default:
-				throw new AssertionError(action);
-			}
-			if (nrPerformed != 0) {
-				actions.add(action);
-			}
-			nrRemaining[action.ordinal()] = nrPerformed;
-			total += nrPerformed;
-		}
-		while (total != 0) {
-			Action nextAction = null;
-			int selection = r.getInteger(0, total);
-			int previousRange = 0;
-			for (int i = 0; i < nrRemaining.length; i++) {
-				if (previousRange <= selection && selection < previousRange + nrRemaining[i]) {
-					nextAction = Action.values()[i];
-					break;
-				} else {
-					previousRange += nrRemaining[i];
-				}
-			}
-			assert nextAction != null;
-			assert nrRemaining[nextAction.ordinal()] > 0;
-			nrRemaining[nextAction.ordinal()]--;
-			Query query;
-			boolean successful = false;
-			int tries = 0;
-			while (!successful && tries++ <= 100) {
-				
-				try {
-					query = nextAction.getQuery(globalState);
-				} catch (IgnoreMeException e) {
-					continue;
-				}
-				try {
-					if (options.logEachSelect()) {
-						logger.writeCurrent(query.getQueryString());
-					}
-					successful = manager.execute(query);
-					if (query.couldAffectSchema()) {
+		StatementExecutor<PostgresGlobalState, Action> se = new StatementExecutor<PostgresGlobalState, Action>(
+				globalState, globalState.getDatabaseName(), Action.values(), PostgresProvider::mapActions, (q) -> {
+					if (q.couldAffectSchema()) {
 						globalState.setSchema(PostgresSchema.fromConnection(con, databaseName));
 					}
-				} catch (Throwable t) {
-					if (t.getMessage().contains("current transaction is aborted")) {
-						manager.execute(new QueryAdapter("ABORT"));
-						globalState.setSchema(PostgresSchema.fromConnection(con, databaseName));
-					} else {
-						System.err.println(query.getQueryString());
-						throw t;
+					if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+						throw new IgnoreMeException();
 					}
-				}
-			}
-			total--;
-		}
+				});
+		// TODO: transactions broke during refactoring
+//		catch (Throwable t) {
+//			if (t.getMessage().contains("current transaction is aborted")) {
+//				manager.execute(new QueryAdapter("ABORT"));
+//				globalState.setSchema(PostgresSchema.fromConnection(con, databaseName));
+//			} else {
+//				System.err.println(query.getQueryString());
+//				throw t;
+//			}
+//		}
+		se.executeStatements();
+		manager.incrementCreateDatabase();
 		manager.execute(new QueryAdapter("COMMIT"));
 		globalState.setSchema(PostgresSchema.fromConnection(con, databaseName));
 
 		manager.execute(new QueryAdapter("SET SESSION statement_timeout = 5000;\n"));
-		manager.incrementCreateDatabase();
-		PostgresMetamorphicOracleGenerator or = new PostgresMetamorphicOracleGenerator(globalState.getSchema(), r, con,
+		PostgresMetamorphicOracleGenerator or = new PostgresMetamorphicOracleGenerator(globalState.getSchema(), globalState.getRandomly(), con,
 				(PostgresStateToReproduce) state, logger, options, manager, globalState);
 		for (int i = 0; i < options.getNrQueries(); i++) {
 			try {
@@ -283,9 +256,7 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 		}
 
 	}
-	
 
-	
 	public static int getNrRows(Connection con, PostgresTable table) throws SQLException {
 		try (Statement s = con.createStatement()) {
 			try (ResultSet query = s.executeQuery("SELECT COUNT(*) FROM " + table.getName())) {
@@ -315,8 +286,7 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 		List<String> statements = Arrays.asList(
 //				"CREATE EXTENSION IF NOT EXISTS btree_gin;",
 //				"CREATE EXTENSION IF NOT EXISTS btree_gist;", // TODO:  undefined symbol: elog_start
-				"CREATE EXTENSION IF NOT EXISTS pg_prewarm;",
-				"SET max_parallel_workers_per_gather=16");
+				"CREATE EXTENSION IF NOT EXISTS pg_prewarm;", "SET max_parallel_workers_per_gather=16");
 		for (String s : statements) {
 			QueryAdapter query = new QueryAdapter(s);
 			state.statements.add(query);
@@ -339,7 +309,6 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 				if (Randomly.getBoolean()) {
 					globalState = new PostgresGlobalState();
 					globalState.setConnection(con);
-					globalState.setRandomly(r);
 					sb.append(String.format(" %s = '%s'", lc, Randomly.fromList(globalState.getCollates())));
 				}
 			}
@@ -392,8 +361,6 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 	public StateToReproduce getStateToReproduce(String databaseName) {
 		return new PostgresStateToReproduce(databaseName);
 	}
-
-
 
 	@Override
 	public PostgresGlobalState generateGlobalState() {

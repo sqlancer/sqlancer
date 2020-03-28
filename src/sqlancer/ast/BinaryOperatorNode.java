@@ -19,5 +19,9 @@ public abstract class BinaryOperatorNode<T, O extends Operator> extends BinaryNo
 	public String getOperatorRepresentation() {
 		return op.getTextRepresentation();
 	}
+	
+	public O getOp() {
+		return op;
+	}
 
 }

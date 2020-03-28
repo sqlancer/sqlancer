@@ -8,11 +8,13 @@ public abstract class ToStringVisitor<T> extends NodeVisitor<T> {
 	
 	public void visit(BinaryOperation<T> op) {
 		sb.append('(');
+		sb.append('(');
 		visit(op.getLeft());
-		sb.append(' ');
+		sb.append(')');
 		sb.append(op.getOperatorRepresentation());
-		sb.append(' ');
+		sb.append('(');
 		visit(op.getRight());
+		sb.append(')');
 		sb.append(')');
 	}
 	
