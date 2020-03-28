@@ -12,6 +12,7 @@ import sqlancer.MainOptions.DBMSConverter;
 import sqlancer.TestOracle;
 import sqlancer.postgres.test.PostgresNoRECOracle;
 import sqlancer.postgres.test.PostgresPivotedQuerySynthesisGenerator;
+import sqlancer.postgres.test.PostgresQueryPartitioningAggregateTester;
 import sqlancer.postgres.test.PostgresQueryPartitioningHavingTester;
 import sqlancer.postgres.test.PostgresQueryPartitioningWhereTester;
 
@@ -39,6 +40,7 @@ public class PostgresOptions {
 				List<TestOracle> oracles = new ArrayList<>();
 				oracles.add(new PostgresQueryPartitioningWhereTester(globalState));
 				oracles.add(new PostgresQueryPartitioningHavingTester(globalState));
+				oracles.add(new PostgresQueryPartitioningAggregateTester(globalState));
 				return new CompositeTestOracle(oracles);
 			}
 		};

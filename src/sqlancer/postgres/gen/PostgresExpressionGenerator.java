@@ -253,15 +253,8 @@ public class PostgresExpressionGenerator {
 			return createColumnOfType(dataType);
 		}
 		if (allowAggregateFunctions && Randomly.getBoolean()) {
-			List<PostgresAggregateFunction> aggregates = PostgresAggregateFunction.getAggregates(dataType);
-			PostgresAggregateFunction agg = Randomly.fromList(aggregates);
-			List<PostgresDataType> types = agg.getTypes(dataType);
-			List<PostgresExpression> args = new ArrayList<>();
 			allowAggregateFunctions = false; // aggregate function calls cannot be nested
-			for (PostgresDataType argType : types) {
-				args.add(generateExpression(argType));
-			}
-			return new PostgresAggregate(args, agg);
+			return getAggregate(dataType);
 		}
 		if (Randomly.getBooleanWithRatherLowProbability() || depth > maxDepth) {
 			// generic expression
@@ -548,6 +541,25 @@ public class PostgresExpressionGenerator {
 		PostgresExpression expression = generateExpression(PostgresDataType.BOOLEAN);
 		this.allowAggregateFunctions = false;
 		return expression;
+	}
+
+	public PostgresExpression generateAggregate() {
+		return getAggregate(PostgresDataType.getRandomType());
+	}
+
+	private PostgresExpression getAggregate(PostgresDataType dataType) {
+		List<PostgresAggregateFunction> aggregates = PostgresAggregateFunction.getAggregates(dataType);
+		PostgresAggregateFunction agg = Randomly.fromList(aggregates);
+		return generateArgsForAggregate(dataType, agg);
+	}
+
+	public PostgresAggregate generateArgsForAggregate(PostgresDataType dataType, PostgresAggregateFunction agg) {
+		List<PostgresDataType> types = agg.getTypes(dataType);
+		List<PostgresExpression> args = new ArrayList<>();
+		for (PostgresDataType argType : types) {
+			args.add(generateExpression(argType));
+		}
+		return new PostgresAggregate(args, agg);
 	}
 
 }
