@@ -212,7 +212,7 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 			logger.writeCurrent(state);
 		}
 		globalState.setSchema(PostgresSchema.fromConnection(con, databaseName));
-		while (globalState.getSchema().getDatabaseTables().size() < 2) {
+		while (globalState.getSchema().getDatabaseTables().size() < 1) {
 			try {
 				String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
 				Query createTable = PostgresTableGenerator.generate(tableName, globalState.getRandomly(),

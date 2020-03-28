@@ -64,7 +64,8 @@ public class CockroachDBAggregate implements CockroachDBExpression {
 		}
 
 		public boolean supportsReturnType(CockroachDBDataType returnType) {
-			return Arrays.asList(supportedReturnTypes).stream().anyMatch(t -> t == returnType);
+			return Arrays.asList(supportedReturnTypes).stream().anyMatch(t -> t == returnType)
+					|| supportedReturnTypes.length == 0;
 		}
 
 		public static List<CockroachDBAggregateFunction> getAggregates(CockroachDBDataType type) {

@@ -15,6 +15,8 @@ import sqlancer.postgres.PostgresProvider;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresRowValue;
+import sqlancer.postgres.ast.PostgresAggregate;
+import sqlancer.postgres.ast.PostgresAggregate.PostgresAggregateFunction;
 import sqlancer.postgres.ast.PostgresBetweenOperation;
 import sqlancer.postgres.ast.PostgresBinaryArithmeticOperation;
 import sqlancer.postgres.ast.PostgresBinaryArithmeticOperation.PostgresBinaryOperator;
@@ -60,6 +62,8 @@ public class PostgresExpressionGenerator {
 	private boolean expectedResult;
 
 	private PostgresGlobalState globalState;
+
+	private boolean allowAggregateFunctions;
 
 	public PostgresExpressionGenerator(PostgresGlobalState globalState) {
 		this.r = globalState.getRandomly();
@@ -151,7 +155,8 @@ public class PostgresExpressionGenerator {
 		case IN_OPERATION:
 			return inOperation(depth + 1);
 		case NOT:
-			return new PostgresPrefixOperation(generateExpression(depth + 1, PostgresDataType.BOOLEAN), PrefixOperator.NOT);
+			return new PostgresPrefixOperation(generateExpression(depth + 1, PostgresDataType.BOOLEAN),
+					PrefixOperator.NOT);
 		case BINARY_LOGICAL_OPERATOR:
 			return new PostgresBinaryLogicalOperation(generateExpression(depth + 1, PostgresDataType.BOOLEAN),
 					generateExpression(depth + 1, PostgresDataType.BOOLEAN), BinaryLogicalOperator.getRandom());
@@ -247,10 +252,21 @@ public class PostgresExpressionGenerator {
 		if (!filterColumns(dataType).isEmpty() && Randomly.getBoolean()) {
 			return createColumnOfType(dataType);
 		}
-		if (Randomly.getBooleanWithSmallProbability() || depth > maxDepth) {
+		if (allowAggregateFunctions && Randomly.getBoolean()) {
+			List<PostgresAggregateFunction> aggregates = PostgresAggregateFunction.getAggregates(dataType);
+			PostgresAggregateFunction agg = Randomly.fromList(aggregates);
+			List<PostgresDataType> types = agg.getTypes(dataType);
+			List<PostgresExpression> args = new ArrayList<>();
+			allowAggregateFunctions = false; // aggregate function calls cannot be nested
+			for (PostgresDataType argType : types) {
+				args.add(generateExpression(argType));
+			}
+			return new PostgresAggregate(args, agg);
+		}
+		if (Randomly.getBooleanWithRatherLowProbability() || depth > maxDepth) {
 			// generic expression
 			if (Randomly.getBoolean() || depth > maxDepth) {
-				if (Randomly.getBooleanWithSmallProbability()) {
+				if (Randomly.getBooleanWithRatherLowProbability()) {
 					return generateConstant(r, dataType);
 				} else {
 					if (filterColumns(dataType).isEmpty()) {
@@ -362,14 +378,9 @@ public class PostgresExpressionGenerator {
 	}
 
 	private PostgresExpression generateConcat(int depth) {
-		while (true) {
-			PostgresExpression left = generateExpression(depth + 1);
-			PostgresExpression right = generateExpression(depth + 1);
-			if (left.getExpressionType() == PostgresDataType.TEXT
-					|| right.getExpressionType() == PostgresDataType.TEXT) {
-				return new PostgresConcatOperation(left, right);
-			}
-		}
+		PostgresExpression left = generateExpression(depth + 1, PostgresDataType.TEXT);
+		PostgresExpression right = generateExpression(depth + 1);
+		return new PostgresConcatOperation(left, right);
 	}
 
 	private enum BitExpression {
@@ -533,8 +544,10 @@ public class PostgresExpressionGenerator {
 	}
 
 	public PostgresExpression generateHavingClause() {
-		// TODO aggregate functions
-		return generateExpression(PostgresDataType.BOOLEAN);
+		this.allowAggregateFunctions = true;
+		PostgresExpression expression = generateExpression(PostgresDataType.BOOLEAN);
+		this.allowAggregateFunctions = false;
+		return expression;
 	}
 
 }
