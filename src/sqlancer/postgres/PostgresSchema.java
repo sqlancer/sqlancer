@@ -46,13 +46,6 @@ public class PostgresSchema {
 		private PostgresTable table;
 		private int precision;
 
-		public enum CollateSequence {
-			NOCASE, RTRIM, BINARY;
-
-			public static CollateSequence random() {
-				return Randomly.fromOptions(values());
-			}
-		}
 
 		public PostgresColumn(String name, PostgresDataType columnType) {
 			this.name = name;

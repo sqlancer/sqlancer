@@ -15,6 +15,7 @@ public class PostgresClusterGenerator {
 		Set<String> errors = new HashSet<>();
 		errors.add("there is no previously clustered index for table");
 		errors.add("cannot cluster a partitioned table");
+		errors.add("access method does not support clustering");
 		StringBuilder sb = new StringBuilder("CLUSTER ");
 		if (Randomly.getBoolean()) {
 			PostgresTable table = globalState.getSchema().getRandomTable(t -> !t.isView());

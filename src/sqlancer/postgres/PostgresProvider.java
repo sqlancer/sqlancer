@@ -4,7 +4,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
@@ -271,15 +270,6 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 			manager.incrementSelectQueryCount();
 		}
 
-	}
-
-	public static int getNrRows(Connection con, PostgresTable table) throws SQLException {
-		try (Statement s = con.createStatement()) {
-			try (ResultSet query = s.executeQuery("SELECT COUNT(*) FROM " + table.getName())) {
-				query.next();
-				return query.getInt(1);
-			}
-		}
 	}
 
 	@Override
