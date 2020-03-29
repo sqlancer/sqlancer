@@ -40,7 +40,7 @@ public class PostgresInsertGenerator {
 		sb.append("(");
 		sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
 		sb.append(")");
-		if (Randomly.getBoolean()) {
+		if (Randomly.getBooleanWithRatherLowProbability()) {
 			sb.append(" OVERRIDING");
 			sb.append(" ");
 			sb.append(Randomly.fromOptions("SYSTEM", "USER"));
@@ -48,8 +48,7 @@ public class PostgresInsertGenerator {
 		}
 		sb.append(" VALUES");
 
-		if (Randomly.getBooleanWithSmallProbability()) {
-			// bulk insert
+		if (globalState.getPostgresOptions().allowBulkInsert && Randomly.getBooleanWithSmallProbability()) {
 			StringBuilder sbRowValue = new StringBuilder();
 			sbRowValue.append("(");
 			for (int i = 0; i < columns.size(); i++) {
@@ -77,7 +76,7 @@ public class PostgresInsertGenerator {
 				insertRow(globalState, sb, columns, n == 1);
 			}
 		}
-		if (Randomly.getBoolean()) {
+		if (Randomly.getBooleanWithRatherLowProbability()) {
 			sb.append(" ON CONFLICT ");
 			if (Randomly.getBoolean()) {
 				sb.append("(");
@@ -99,7 +98,8 @@ public class PostgresInsertGenerator {
 		return new QueryAdapter(sb.toString(), errors);
 	}
 
-	private static void insertRow(PostgresGlobalState globalState, StringBuilder sb, List<PostgresColumn> columns, boolean canBeDefault) {
+	private static void insertRow(PostgresGlobalState globalState, StringBuilder sb, List<PostgresColumn> columns,
+			boolean canBeDefault) {
 		sb.append("(");
 		for (int i = 0; i < columns.size(); i++) {
 			if (i != 0) {
@@ -108,7 +108,8 @@ public class PostgresInsertGenerator {
 			if (!Randomly.getBooleanWithSmallProbability() || !canBeDefault) {
 				PostgresExpression generateConstant;
 				if (Randomly.getBoolean()) {
-					generateConstant = PostgresExpressionGenerator.generateConstant(globalState.getRandomly(), columns.get(i).getColumnType());
+					generateConstant = PostgresExpressionGenerator.generateConstant(globalState.getRandomly(),
+							columns.get(i).getColumnType());
 				} else {
 					generateConstant = new PostgresExpressionGenerator(globalState)
 							.generateExpression(columns.get(i).getColumnType());

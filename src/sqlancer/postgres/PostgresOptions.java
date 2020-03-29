@@ -18,6 +18,10 @@ import sqlancer.postgres.test.PostgresQueryPartitioningWhereTester;
 
 public class PostgresOptions {
 
+	
+	@Parameter(names = "--bulk-insert")
+	public boolean allowBulkInsert = false;
+	
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)
 	public List<PostgresOracle> oracle = Arrays.asList(PostgresOracle.QUERY_PARTITIONING);
 
