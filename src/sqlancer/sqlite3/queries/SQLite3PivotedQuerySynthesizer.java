@@ -41,8 +41,8 @@ import sqlancer.sqlite3.ast.SQLite3WindowFunction;
 import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema;
-import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3RowValue;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3RowValue;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
@@ -150,7 +150,7 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 				if (generateDistinct) {
 					colName = new SQLite3Distinct(colName);
 				}
-				SQLite3AggregateFunction aggFunc = SQLite3AggregateFunction.getRandom(c.getColumnType());
+				SQLite3AggregateFunction aggFunc = SQLite3AggregateFunction.getRandom(c.getType());
 				colName = new SQLite3Aggregate(Arrays.asList(colName), aggFunc);
 				if (Randomly.getBoolean() && !generateDistinct) {
 					colName = generateWindowFunction(columns, colName, true);

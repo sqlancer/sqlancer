@@ -1,7 +1,5 @@
 package sqlancer.schema;
 
-import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
-
 public class AbstractTableColumn<T extends AbstractTable<?, ?>, U>  implements Comparable<AbstractTableColumn<T, U>>  {
 
 	private final String name;
@@ -44,7 +42,8 @@ public class AbstractTableColumn<T extends AbstractTable<?, ?>, U>  implements C
 		if (!(obj instanceof AbstractTableColumn)) {
 			return false;
 		} else {
-			CockroachDBColumn c = (CockroachDBColumn) obj;
+			@SuppressWarnings("unchecked")
+			AbstractTableColumn<T, U> c = (AbstractTableColumn<T, U>) obj;
 			return table.getName().contentEquals(getName()) && getName().equals(c.getName());
 		}
 	}

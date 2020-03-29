@@ -26,7 +26,7 @@ import sqlancer.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.Subquery;
 import sqlancer.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import sqlancer.sqlite3.ast.SQLite3Function;
-import sqlancer.sqlite3.ast.SQLite3RowValue;
+import sqlancer.sqlite3.ast.SQLite3RowValueExpression;
 import sqlancer.sqlite3.ast.SQLite3SelectStatement;
 import sqlancer.sqlite3.ast.SQLite3SetClause;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation;
@@ -261,7 +261,7 @@ public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
 	}
 
 	@Override
-	public void visit(SQLite3RowValue rw) {
+	public void visit(SQLite3RowValueExpression rw) {
 		print(rw);
 		for (SQLite3Expression expr : rw.getExpressions()) {
 			visit(expr);

@@ -26,7 +26,7 @@ import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Text;
 import sqlancer.sqlite3.ast.SQLite3Expression.Subquery;
 import sqlancer.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import sqlancer.sqlite3.ast.SQLite3Function;
-import sqlancer.sqlite3.ast.SQLite3RowValue;
+import sqlancer.sqlite3.ast.SQLite3RowValueExpression;
 import sqlancer.sqlite3.ast.SQLite3SelectStatement;
 import sqlancer.sqlite3.ast.SQLite3SetClause;
 import sqlancer.sqlite3.ast.SQLite3WindowFunction;
@@ -376,7 +376,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 	}
 
 	@Override
-	public void visit(SQLite3RowValue rw) {
+	public void visit(SQLite3RowValueExpression rw) {
 		sb.append("(");
 		visit(rw.getExpressions());
 		sb.append(")");

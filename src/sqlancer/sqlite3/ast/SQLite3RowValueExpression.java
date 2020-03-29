@@ -4,11 +4,11 @@ import java.util.List;
 
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 
-public class SQLite3RowValue extends SQLite3Expression {
+public class SQLite3RowValueExpression extends SQLite3Expression {
 	
 	private final List<SQLite3Expression> expressions;
 
-	public SQLite3RowValue(List<SQLite3Expression> expressions) {
+	public SQLite3RowValueExpression(List<SQLite3Expression> expressions) {
 		this.expressions = expressions;
 	}
 

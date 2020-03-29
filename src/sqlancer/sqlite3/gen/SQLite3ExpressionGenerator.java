@@ -37,13 +37,13 @@ import sqlancer.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation.BinaryOpera
 import sqlancer.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import sqlancer.sqlite3.ast.SQLite3Function;
 import sqlancer.sqlite3.ast.SQLite3Function.ComputableFunction;
-import sqlancer.sqlite3.ast.SQLite3RowValue;
+import sqlancer.sqlite3.ast.SQLite3RowValueExpression;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation.UnaryOperator;
 import sqlancer.sqlite3.queries.SQLite3RandomQuerySynthesizer;
-import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3RowValue;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3RowValue;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class SQLite3ExpressionGenerator {
@@ -337,11 +337,11 @@ public class SQLite3ExpressionGenerator {
 		switch (randomOption) {
 		// TODO case
 		case STANDARD_COMPARISON:
-			return new BinaryComparisonOperation(new SQLite3RowValue(left), new SQLite3RowValue(right),
+			return new BinaryComparisonOperation(new SQLite3RowValueExpression(left), new SQLite3RowValueExpression(right),
 					BinaryComparisonOperator.getRandomRowValueOperator());
 		case BETWEEN:
 			return new BetweenOperation(getRandomRowValue(depth + 1, size), Randomly.getBoolean(),
-					new SQLite3RowValue(left), new SQLite3RowValue(right));
+					new SQLite3RowValueExpression(left), new SQLite3RowValueExpression(right));
 //		case IN:
 //			return new SQLite3Expression.InOperation(new SQLite3RowValue(left),
 //					SQLite3RandomQuerySynthesizer.generate(globalState, size));
@@ -350,8 +350,8 @@ public class SQLite3ExpressionGenerator {
 		}
 	}
 
-	private SQLite3RowValue getRandomRowValue(int depth, int size) {
-		return new SQLite3RowValue(getRandomExpressions(size, depth + 1));
+	private SQLite3RowValueExpression getRandomRowValue(int depth, int size) {
+		return new SQLite3RowValueExpression(getRandomExpressions(size, depth + 1));
 	}
 
 	private SQLite3Expression getMatchClause(int depth) {

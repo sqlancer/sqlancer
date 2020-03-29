@@ -25,7 +25,7 @@ import sqlancer.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.Subquery;
 import sqlancer.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import sqlancer.sqlite3.ast.SQLite3Function;
-import sqlancer.sqlite3.ast.SQLite3RowValue;
+import sqlancer.sqlite3.ast.SQLite3RowValueExpression;
 import sqlancer.sqlite3.ast.SQLite3SelectStatement;
 import sqlancer.sqlite3.ast.SQLite3SetClause;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation;
@@ -124,7 +124,7 @@ public interface SQLite3Visitor {
 	
 	public abstract void visit(SQLite3WindowFunction func);
 	
-	public abstract void visit(SQLite3RowValue rw);
+	public abstract void visit(SQLite3RowValueExpression rw);
 	
 	public abstract void visit(SQLite3WindowFunctionExpression windowFunction);
 	
@@ -181,8 +181,8 @@ public interface SQLite3Visitor {
 			visit((SQLite3WindowFunction) expr);
 		} else if (expr instanceof MatchOperation) {
 			visit((MatchOperation) expr);
-		} else if (expr instanceof SQLite3RowValue) {
-			visit((SQLite3RowValue) expr);
+		} else if (expr instanceof SQLite3RowValueExpression) {
+			visit((SQLite3RowValueExpression) expr);
 		} else if (expr instanceof SQLite3Text) {
 			visit((SQLite3Text) expr);
 		} else if (expr instanceof SQLite3WindowFunctionExpression) {

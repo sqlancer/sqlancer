@@ -18,6 +18,9 @@ import sqlancer.IgnoreMeException;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce.SQLite3StateToReproduce;
+import sqlancer.schema.AbstractTable;
+import sqlancer.schema.AbstractTableColumn;
+import sqlancer.schema.TableIndex;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3ToStringVisitor;
 import sqlancer.sqlite3.ast.SQLite3Constant;
@@ -49,15 +52,12 @@ public class SQLite3Schema {
 		}
 	}
 
-	public static class SQLite3Column implements Comparable<SQLite3Column> {
+	public static class SQLite3Column extends AbstractTableColumn<SQLite3Table, SQLite3DataType> {
 
-		private final String name;
-		private final SQLite3DataType columnType;
-		private final boolean isPrimaryKey;
 		private final boolean isInteger; // "INTEGER" type, not "INT"
-		private SQLite3Table table;
 		private final SQLite3CollateSequence collate;
 		private boolean generated;
+		private boolean isPrimaryKey;
 
 		public enum SQLite3CollateSequence {
 			NOCASE, RTRIM, BINARY;
@@ -69,8 +69,7 @@ public class SQLite3Schema {
 
 		public SQLite3Column(String name, SQLite3DataType columnType, boolean isInteger, boolean isPrimaryKey,
 				SQLite3CollateSequence collate) {
-			this.name = name;
-			this.columnType = columnType;
+			super(name, null, columnType);
 			this.isInteger = isInteger;
 			this.isPrimaryKey = isPrimaryKey;
 			this.collate = collate;
@@ -84,44 +83,12 @@ public class SQLite3Schema {
 			this.generated = generated;
 		}
 
-		@Override
-		public String toString() {
-			return String.format("%s.%s: %s", table.getName(), name, columnType);
-		}
-
-		@Override
-		public int hashCode() {
-			return name.hashCode() + 11 * columnType.hashCode();
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (!(obj instanceof SQLite3Column)) {
-				return false;
-			} else {
-				SQLite3Column c = (SQLite3Column) obj;
-				return table.getName().contentEquals(getName()) && name.equals(c.name);
-			}
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public String getFullQualifiedName() {
-			return table.getName() + "." + getName();
-		}
-
-		public SQLite3DataType getColumnType() {
-			return columnType;
-		}
-
 		public boolean isPrimaryKey() {
 			return isPrimaryKey;
 		}
 
 		public boolean isOnlyPrimaryKey() {
-			return isPrimaryKey && table.getColumns().stream().filter(c -> c.isPrimaryKey()).count() == 1;
+			return isPrimaryKey && getTable().getColumns().stream().filter(c -> c.isPrimaryKey()).count() == 1;
 		}
 
 		// see https://www.sqlite.org/lang_createtable.html#rowid
@@ -131,24 +98,7 @@ public class SQLite3Schema {
 		 * column is known as an INTEGER PRIMARY KEY.
 		 */
 		public boolean isIntegerPrimaryKey() {
-			return isInteger && isOnlyPrimaryKey() && !table.hasWithoutRowid();
-		}
-
-		public void setTable(SQLite3Table table) {
-			this.table = table;
-		}
-
-		public SQLite3Table getTable() {
-			return table;
-		}
-
-		@Override
-		public int compareTo(SQLite3Column o) {
-			if (o.getTable().equals(this.getTable())) {
-				return name.compareTo(o.getName());
-			} else {
-				return o.getTable().compareTo(table);
-			}
+			return isInteger && isOnlyPrimaryKey() && !getTable().hasWithoutRowid();
 		}
 
 		public SQLite3CollateSequence getCollateSequence() {
@@ -265,31 +215,28 @@ public class SQLite3Schema {
 
 	}
 
-	public static class SQLite3Table implements Comparable<SQLite3Table> {
+
+	public static class SQLite3Table  extends AbstractTable<SQLite3Column, TableIndex> {
+		// TODO: why does the SQLite implementation have no table indexes?
 
 		public static enum TableKind {
 			MAIN, TEMP;
 		}
 
-		private final String tableName;
-		private final List<SQLite3Column> columns;
 		private final TableKind tableType;
 		private SQLite3Column rowid;
 		private boolean withoutRowid;
 		private int nrRows;
-		private boolean isView;
 		private boolean isVirtual;
 		private boolean isReadOnly;
 
 		public SQLite3Table(String tableName, List<SQLite3Column> columns, TableKind tableType, boolean withoutRowid,
 				int nrRows, boolean isView, boolean isVirtual, boolean isReadOnly) {
-			this.tableName = tableName;
+			super(tableName, columns, Collections.emptyList(), isView);
 			this.tableType = tableType;
 			this.withoutRowid = withoutRowid;
-			this.isView = isView;
 			this.isVirtual = isVirtual;
 			this.isReadOnly = isReadOnly;
-			this.columns = Collections.unmodifiableList(columns);
 			this.nrRows = nrRows;
 		}
 
@@ -297,40 +244,6 @@ public class SQLite3Schema {
 			return withoutRowid;
 		}
 
-		@Override
-		public String toString() {
-			StringBuffer sb = new StringBuffer();
-			sb.append(tableName + "\n");
-			for (SQLite3Column c : columns) {
-				sb.append("\t" + c + "\n");
-			}
-			return sb.toString();
-		}
-
-		public String getName() {
-			return tableName;
-		}
-
-		public List<SQLite3Column> getColumns() {
-			return columns;
-		}
-
-		public String getColumnsAsString() {
-			return columns.stream().map(c -> c.getName()).collect(Collectors.joining(", "));
-		}
-
-		public String getColumnsAsString(Function<SQLite3Column, String> function) {
-			return columns.stream().map(function).collect(Collectors.joining(", "));
-		}
-
-		public SQLite3Column getRandomColumn() {
-			return Randomly.fromList(columns);
-		}
-
-		@Override
-		public int compareTo(SQLite3Table o) {
-			return o.getName().compareTo(tableName);
-		}
 
 		public void addRowid(SQLite3Column rowid) {
 			this.rowid = rowid;
@@ -348,20 +261,12 @@ public class SQLite3Schema {
 			return isVirtual;
 		}
 
-		public List<SQLite3Column> getRandomNonEmptyColumnSubset() {
-			return Randomly.nonEmptySubset(getColumns());
-		}
-
 		public boolean isSystemTable() {
 			return getName().startsWith("sqlit");
 		}
 
 		public int getNrRows() {
 			return nrRows;
-		}
-
-		public boolean isView() {
-			return isView;
 		}
 
 		public boolean isTemp() {
@@ -693,11 +598,11 @@ public class SQLite3Schema {
 	}
 
 	public List<SQLite3Table> getDatabaseTablesWithoutViews() {
-		return databaseTables.stream().filter(t -> !t.isView).collect(Collectors.toList());
+		return databaseTables.stream().filter(t -> !t.isView()).collect(Collectors.toList());
 	}
 
 	public List<SQLite3Table> getViews() {
-		return databaseTables.stream().filter(t -> t.isView).collect(Collectors.toList());
+		return databaseTables.stream().filter(t -> t.isView()).collect(Collectors.toList());
 	}
 
 	public SQLite3Table getRandomViewOrBailout() {
@@ -709,7 +614,7 @@ public class SQLite3Schema {
 	}
 
 	public List<SQLite3Table> getDatabaseTablesWithoutViewsWithoutVirtualTables() {
-		return databaseTables.stream().filter(t -> !t.isView && !t.isVirtual).collect(Collectors.toList());
+		return databaseTables.stream().filter(t -> !t.isView() && !t.isVirtual).collect(Collectors.toList());
 	}
 
 }
