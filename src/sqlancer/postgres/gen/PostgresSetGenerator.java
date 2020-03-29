@@ -60,10 +60,12 @@ public class PostgresSetGenerator {
 		// 19.13. Version and Platform Compatibility
 		DEFAULT_WITH_OIDS("default_with_oids", (r) -> Randomly.fromOptions(0, 1)),
 		SYNCHRONIZED_SEQSCANS("synchronize_seqscans", (r) -> Randomly.fromOptions(0, 1)),
-		// https://www.postgresql.org/docs/11/runtime-config-query.html
+		// https://www.postgresql.org/docs/devel/runtime-config-query.html
 		ENABLE_BITMAPSCAN("enable_bitmapscan", (r) -> Randomly.fromOptions(1, 0)),
 		ENABLE_GATHERMERGE("enable_gathermerge", (r) -> Randomly.fromOptions(1, 0)),
+		ENABLE_GROUPINGSETS_HASH_DISK("enable_groupingsets_hash_disk", (r) -> Randomly.fromOptions(1, 0)),
 		ENABLE_HASHAGG("enable_hashagg", (r) -> Randomly.fromOptions(1, 0)),
+		ENABLE_HASHAGG_DISK("enable_hashagg_disk", (r) -> Randomly.fromOptions(1, 0)),
 		ENABLE_HASHJOIN("enable_hashjoin", (r) -> Randomly.fromOptions(1, 0)),
 		ENABLE_INDEXSCAN("enable_indexscan", (r) -> Randomly.fromOptions(1, 0)),
 		ENABLE_INDEXONLYSCAN("enable_indexonlyscan", (r) -> Randomly.fromOptions(1, 0)),
@@ -78,7 +80,7 @@ public class PostgresSetGenerator {
 		ENABLE_SEGSCAN("enable_seqscan", (r) -> Randomly.fromOptions(1, 0)),
 		ENABLE_SORT("enable_sort", (r) -> Randomly.fromOptions(1, 0)),
 		ENABLE_TIDSCAN("enable_tidscan", (r) -> Randomly.fromOptions(1, 0)),
-		// 19.7.2. Planner Cost Constants
+		// 19.7.2. Planner Cost Constants (complete as of March 2020)
 		// https://www.postgresql.org/docs/current/runtime-config-query.html#RUNTIME-CONFIG-QUERY-CONSTANTS
 		SEQ_PAGE_COST("seq_page_cost", (r) -> Randomly.fromOptions(0d, 0.00001, 0.05, 0.1, 1, 10, 10000)),
 		RANDOM_PAGE_COST("random_page_cost", (r) -> Randomly.fromOptions(0d, 0.00001, 0.05, 0.1, 1, 10, 10000)),
@@ -94,7 +96,7 @@ public class PostgresSetGenerator {
 		JIT_INLINE_ABOVE_COST("jit_inline_above_cost", (r) -> Randomly.fromOptions(0, r.getLong(-1, Long.MAX_VALUE))),
 		JIT_OPTIMIZE_ABOVE_COST("jit_optimize_above_cost",
 				(r) -> Randomly.fromOptions(0, r.getLong(-1, Long.MAX_VALUE))),
-		// 19.7.3. Genetic Query Optimizer
+		// 19.7.3. Genetic Query Optimizer (complete as of March 2020)
 		// https://www.postgresql.org/docs/current/runtime-config-query.html#RUNTIME-CONFIG-QUERY-GEQO
 		GEQO("geqo", (r) -> Randomly.fromOptions(1, 0)),
 		GEQO_THRESHOLD("geqo_threshold", (r) -> r.getInteger(2, 2147483647)),
@@ -103,7 +105,7 @@ public class PostgresSetGenerator {
 		GEQO_GENERATIONS("geqo_generations", (r) -> r.getInteger(0, 2147483647)),
 		GEQO_SELECTION_BIAS("geqo_selection_bias", (r) -> Randomly.fromOptions(1.5, 1.8, 2.0)),
 		GEQO_SEED("geqo_seed", (r) -> Randomly.fromOptions(0, 0.5, 1)),
-		// 19.7.4. Other Planner Options
+		// 19.7.4. Other Planner Options (complete as of March 2020)
 		// https://www.postgresql.org/docs/current/runtime-config-query.html#RUNTIME-CONFIG-QUERY-OTHER
 		DEFAULT_STATISTICS_TARGET("default_statistics_target", (r) -> r.getInteger(1, 10000)),
 		CONSTRAINT_EXCLUSION("constraint_exclusion", (r) -> Randomly.fromOptions("on", "off", "partition")),
@@ -113,7 +115,8 @@ public class PostgresSetGenerator {
 		JIT("jit", (r) -> Randomly.fromOptions(1, 0)),
 		JOIN_COLLAPSE_LIMIT("join_collapse_limit", (r) -> r.getInteger(1, Integer.MAX_VALUE)),
 		PARALLEL_LEADER_PARTICIPATION("parallel_leader_participation", (r) -> Randomly.fromOptions(1, 0)),
-		FORCE_PARALLEL_MODE("force_parallel_mode", (r) -> Randomly.fromOptions("off", "on", "regress"));
+		FORCE_PARALLEL_MODE("force_parallel_mode", (r) -> Randomly.fromOptions("off", "on", "regress")),
+		PLAN_CACHE_MODE("plan_cache_mode", (r) -> Randomly.fromOptions("auto", "force_generic_plan", "force_custom_plan"));
 
 		private String optionName;
 		private Function<Randomly, Object> op;

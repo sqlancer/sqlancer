@@ -80,7 +80,7 @@ public class PostgresIndexGenerator {
 //					sb.append("COLLATE ");
 //					sb.append(Randomly.fromOptions("C", "POSIX"));
 //				}
-				if (Randomly.getBoolean()) {
+				if (Randomly.getBooleanWithRatherLowProbability()) {
 					sb.append(" ");
 					sb.append(globalState.getRandomOpclass());
 					errors.add("does not accept");
@@ -90,7 +90,7 @@ public class PostgresIndexGenerator {
 					sb.append(" ");
 					sb.append(Randomly.fromOptions("ASC", "DESC"));
 				}
-				if (Randomly.getBoolean()) {
+				if (Randomly.getBooleanWithRatherLowProbability()) {
 					sb.append(" NULLS ");
 					sb.append(Randomly.fromOptions("FIRST", "LAST"));
 				}
