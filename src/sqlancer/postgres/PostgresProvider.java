@@ -140,6 +140,7 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 		int nrPerformed;
 		switch (a) {
 		case CREATE_INDEX:
+		case CLUSTER:
 			nrPerformed = r.getInteger(0, 3);
 			break;
 		case CREATE_STATISTICS:
@@ -150,7 +151,6 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 			nrPerformed = r.getInteger(0, 5);
 			break;
 		case COMMIT:
-		case CLUSTER: // FIXME cluster broke during refactoring
 			nrPerformed = r.getInteger(0, 0);
 			break;
 		case ALTER_TABLE:
