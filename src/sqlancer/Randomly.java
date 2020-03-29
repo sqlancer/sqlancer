@@ -153,6 +153,13 @@ public final class Randomly {
 
 	public static <T> List<T> nonEmptySubset(List<T> columns) {
 		int nr = 1 + ThreadLocalRandom.current().nextInt(columns.size());
+		return nonEmptySubset(columns, nr);
+	}
+
+	public static <T> List<T> nonEmptySubset(List<T> columns, int nr) {
+		if (nr > columns.size()) {
+			throw new AssertionError(columns + " " + nr);
+		}
 		return extractNrRandomColumns(columns, nr);
 	}
 

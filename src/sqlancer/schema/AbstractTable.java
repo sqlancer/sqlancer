@@ -7,8 +7,9 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 
-public class AbstractTable<COL extends AbstractTableColumn<?, ?>,  I extends TableIndex> implements Comparable<AbstractTable<?, ?>> {
-	
+public class AbstractTable<COL extends AbstractTableColumn<?, ?>, I extends TableIndex>
+		implements Comparable<AbstractTable<?, ?>> {
+
 	private final String name;
 	private final List<COL> columns;
 	private final List<I> indexes;
@@ -20,16 +21,16 @@ public class AbstractTable<COL extends AbstractTableColumn<?, ?>,  I extends Tab
 		this.isView = isView;
 		this.columns = Collections.unmodifiableList(columns);
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
+
 	@Override
 	public int compareTo(AbstractTable<?, ?> o) {
 		return o.getName().compareTo(getName());
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
@@ -71,9 +72,13 @@ public class AbstractTable<COL extends AbstractTableColumn<?, ?>,  I extends Tab
 	public List<COL> getRandomNonEmptyColumnSubset() {
 		return Randomly.nonEmptySubset(getColumns());
 	}
-	
+
+	public List<COL> getRandomNonEmptyColumnSubset(int size) {
+		return Randomly.nonEmptySubset(getColumns(), size);
+	}
+
 	public boolean isView() {
 		return isView;
 	}
-	
+
 }
