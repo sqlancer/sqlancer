@@ -34,7 +34,7 @@ public class TiDBInsertGenerator {
 	}
 
 	private Query get() {
-		TiDBTable table = globalState.getSchema().getRandomTable();
+		TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
 		gen = new TiDBExpressionGenerator(globalState).setColumns(table.getColumns());
 		StringBuilder sb = new StringBuilder();
 		sb.append(Randomly.fromOptions("INSERT", "REPLACE"));

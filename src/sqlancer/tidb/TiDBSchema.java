@@ -111,12 +111,16 @@ public class TiDBSchema extends AbstractSchema<TiDBTable> {
 	}
 
 	private static TiDBCompositeDataType getColumnType(String typeString) {
-		if (typeString.startsWith("int")) {
+		if (typeString.startsWith("int") || typeString.startsWith("bigint") || typeString.contains("decimal")) {
 			return new TiDBCompositeDataType(TiDBDataType.INT);
+		}
+		if (typeString.startsWith("var_string") || typeString.contains("binary")) {
+			return new TiDBCompositeDataType(TiDBDataType.TEXT);
 		}
 		TiDBDataType primitiveType;
 		switch (typeString) {
 		case "text":
+		case "longtext":
 			primitiveType = TiDBDataType.TEXT;
 			break;
 		case "float":
@@ -125,6 +129,9 @@ public class TiDBSchema extends AbstractSchema<TiDBTable> {
 			break;
 		case "tinyint(1)":
 			primitiveType = TiDBDataType.BOOL;
+			break;
+		case "null":
+			primitiveType = TiDBDataType.INT;
 			break;
 		default:
 			throw new AssertionError(typeString);

@@ -150,4 +150,8 @@ public class TiDBExpressionGenerator {
 	public TiDBExpression generateHavingClause() {
 		return generateExpression(); // TODO: enable aggregate functions
 	}
+
+	public List<TiDBExpression> getOrderingTerms() {
+		return generateExpressions(Randomly.smallNumber() + 1); // TODO: generate ASC, DESC
+	}
 }

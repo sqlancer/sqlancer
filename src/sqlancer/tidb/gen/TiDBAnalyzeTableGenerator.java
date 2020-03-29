@@ -11,7 +11,7 @@ import sqlancer.tidb.TiDBSchema.TiDBTable;
 public class TiDBAnalyzeTableGenerator {
 	
 	public static Query getQuery(TiDBGlobalState globalState) throws SQLException {
-		TiDBTable table = globalState.getSchema().getRandomTable();
+		TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
 		boolean analyzeIndex = !table.getIndexes().isEmpty() && Randomly.getBoolean();
 		StringBuilder sb = new StringBuilder("ANALYZE ");
 		if (analyzeIndex && Randomly.getBoolean()) {

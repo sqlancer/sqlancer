@@ -32,6 +32,7 @@ import sqlancer.tidb.gen.TiDBIndexGenerator;
 import sqlancer.tidb.gen.TiDBInsertGenerator;
 import sqlancer.tidb.gen.TiDBSetGenerator;
 import sqlancer.tidb.gen.TiDBTableGenerator;
+import sqlancer.tidb.gen.TiDBViewGenerator;
 
 public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 
@@ -48,7 +49,8 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 		CREATE_INDEX(TiDBIndexGenerator::getQuery),
 		DELETE(TiDBDeleteGenerator::getQuery),
 		SET(TiDBSetGenerator::getQuery),
-		ADMIN_CHECKSUM_TABLE((g) -> new QueryAdapter("ADMIN CHECKSUM TABLE " + g.getSchema().getRandomTable().getName()));
+		ADMIN_CHECKSUM_TABLE((g) -> new QueryAdapter("ADMIN CHECKSUM TABLE " + g.getSchema().getRandomTable().getName())),
+		VIEW_GENERATOR(TiDBViewGenerator::getQuery);
 
 		private final TiDBQueryProvider queryProvider;
 
@@ -97,7 +99,9 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 		case ADMIN_CHECKSUM_TABLE:
 			return r.getInteger(0, 2);
 		case SET:
-			return r.getInteger(0, 50);
+			return r.getInteger(0, 5);
+		case VIEW_GENERATOR:
+			return r.getInteger(0, 2);
 		default:
 			throw new AssertionError(a);
 		}
@@ -141,7 +145,15 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 		StatementExecutor<TiDBGlobalState, Action> se = new StatementExecutor<TiDBGlobalState, Action>(globalState,
 				databaseName, Action.values(), TiDBProvider::mapActions, (q) -> {
 					if (q.couldAffectSchema()) {
-						globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
+						try {
+							globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
+						} catch (SQLException e) {
+							if (q.getQueryString().contains("CREATE VIEW")) {
+								throw new IgnoreMeException(); // TODO: drop view instead
+							} else {
+								throw new AssertionError(e);
+							}
+						}
 					}
 					if (globalState.getSchema().getDatabaseTables().isEmpty()) {
 						throw new IgnoreMeException();

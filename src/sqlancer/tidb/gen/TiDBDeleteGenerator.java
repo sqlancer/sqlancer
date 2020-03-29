@@ -13,7 +13,7 @@ import sqlancer.tidb.visitor.TiDBVisitor;
 public class TiDBDeleteGenerator {
 
 	public static Query getQuery(TiDBGlobalState globalState) throws SQLException {
-		TiDBTable table = globalState.getSchema().getRandomTable();
+		TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
 		TiDBExpressionGenerator gen = new TiDBExpressionGenerator(globalState).setColumns(table.getColumns());
 		StringBuilder sb = new StringBuilder("DELETE FROM ");
 		sb.append(table.getName());

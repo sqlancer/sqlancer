@@ -48,10 +48,6 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
 			sb.append(" WHERE ");
 			visit(select.getWhereClause());
 		}
-		if (!select.getOrderByExpressions().isEmpty()) {
-			sb.append(" ORDER BY ");
-			visit(select.getOrderByExpressions());
-		}
 		if (!select.getGroupByExpressions().isEmpty()) {
 			sb.append(" GROUP BY ");
 			visit(select.getGroupByExpressions());
@@ -59,6 +55,10 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
 		if (select.getHavingClause() != null) {
 			sb.append(" HAVING ");
 			visit(select.getHavingClause());
+		}
+		if (!select.getOrderByExpressions().isEmpty()) {
+			sb.append(" ORDER BY ");
+			visit(select.getOrderByExpressions());
 		}
 	}
 
