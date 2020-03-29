@@ -182,7 +182,7 @@ public class PostgresAlterTableGenerator {
 				} else {
 					sb.append("SET DEFAULT ");
 					sb.append(PostgresVisitor.asString(
-							PostgresExpressionGenerator.generateExpression(globalState, randomColumn.getColumnType())));
+							PostgresExpressionGenerator.generateExpression(globalState, randomColumn.getType())));
 					errors.add("is out of range");
 					errors.add("but default expression is of type");
 					errors.add("cannot cast");

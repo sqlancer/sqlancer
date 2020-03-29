@@ -56,7 +56,7 @@ public class PostgresInsertGenerator {
 					sbRowValue.append(", ");
 				}
 				sbRowValue.append(PostgresVisitor.asString(PostgresExpressionGenerator
-						.generateConstant(globalState.getRandomly(), columns.get(i).getColumnType())));
+						.generateConstant(globalState.getRandomly(), columns.get(i).getType())));
 			}
 			sbRowValue.append(")");
 
@@ -109,10 +109,10 @@ public class PostgresInsertGenerator {
 				PostgresExpression generateConstant;
 				if (Randomly.getBoolean()) {
 					generateConstant = PostgresExpressionGenerator.generateConstant(globalState.getRandomly(),
-							columns.get(i).getColumnType());
+							columns.get(i).getType());
 				} else {
 					generateConstant = new PostgresExpressionGenerator(globalState)
-							.generateExpression(columns.get(i).getColumnType());
+							.generateExpression(columns.get(i).getType());
 				}
 				sb.append(PostgresVisitor.asString(generateConstant));
 			} else {

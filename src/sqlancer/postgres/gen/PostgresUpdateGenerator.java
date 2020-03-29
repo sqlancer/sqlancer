@@ -37,14 +37,14 @@ public class PostgresUpdateGenerator {
 			sb.append(column.getName());
 			sb.append(" = ");
 			if (!Randomly.getBoolean()) {
-				PostgresExpression constant = PostgresExpressionGenerator.generateConstant(globalState.getRandomly(), column.getColumnType());
+				PostgresExpression constant = PostgresExpressionGenerator.generateConstant(globalState.getRandomly(), column.getType());
 				sb.append(PostgresVisitor.asString(constant));
 			} else if (Randomly.getBoolean()) {
 				sb.append("DEFAULT");
 			} else {
 				sb.append("(");
 				PostgresExpression expr = PostgresExpressionGenerator.generateExpression(globalState, randomTable.getColumns(),
-						column.getColumnType());
+						column.getType());
 				// caused by casts
 				sb.append(PostgresVisitor.asString(expr));
 				sb.append(")");

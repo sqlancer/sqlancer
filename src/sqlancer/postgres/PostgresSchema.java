@@ -19,8 +19,9 @@ import sqlancer.Randomly;
 import sqlancer.StateToReproduce.PostgresStateToReproduce;
 import sqlancer.postgres.PostgresSchema.PostgresTable.TableType;
 import sqlancer.postgres.ast.PostgresConstant;
+import sqlancer.schema.AbstractTable;
+import sqlancer.schema.AbstractTableColumn;
 import sqlancer.schema.TableIndex;
-import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 
 public class PostgresSchema {
 
@@ -38,75 +39,12 @@ public class PostgresSchema {
 			return Randomly.fromList(dataTypes);
 		}
 	}
-
-	public static class PostgresColumn implements Comparable<PostgresColumn> {
-
-		private final String name;
-		private final PostgresDataType columnType;
-		private PostgresTable table;
-		private int precision;
-
+	
+	
+	public static class PostgresColumn extends AbstractTableColumn<PostgresTable, PostgresDataType> {
 
 		public PostgresColumn(String name, PostgresDataType columnType) {
-			this.name = name;
-			this.columnType = columnType;
-		}
-
-		@Override
-		public String toString() {
-			return String.format("%s.%s: %s", table.getName(), name, columnType);
-		}
-
-		@Override
-		public int hashCode() {
-			return name.hashCode() + 11 * columnType.hashCode();
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (!(obj instanceof SQLite3Column)) {
-				return false;
-			} else {
-				PostgresColumn c = (PostgresColumn) obj;
-				return table.getName().contentEquals(getName()) && name.equals(c.name);
-			}
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public String getFullQualifiedName() {
-			if (table == null) {
-				return getName();
-			} else {
-				return table.getName() + "." + getName();
-			}
-		}
-
-		public PostgresDataType getColumnType() {
-			return columnType;
-		}
-
-		public int getPrecision() {
-			return precision;
-		}
-
-		public void setTable(PostgresTable t) {
-			this.table = t;
-		}
-
-		public PostgresTable getTable() {
-			return table;
-		}
-
-		@Override
-		public int compareTo(PostgresColumn o) {
-			if (o.getTable().equals(this.getTable())) {
-				return name.compareTo(o.getName());
-			} else {
-				return o.getTable().compareTo(table);
-			}
+			super(name, null, columnType);
 		}
 
 	}
@@ -164,7 +102,7 @@ public class PostgresSchema {
 					if (randomRowValues.getString(columnIndex) == null) {
 						constant = PostgresConstant.createNullConstant();
 					} else {
-						switch (column.getColumnType()) {
+						switch (column.getType()) {
 						case INT:
 							constant = PostgresConstant.createIntConstant(randomRowValues.getLong(columnIndex));
 							break;
@@ -175,7 +113,7 @@ public class PostgresSchema {
 							constant = PostgresConstant.createTextConstant(randomRowValues.getString(columnIndex));
 							break;
 						default:
-							throw new AssertionError(column.getColumnType());
+							throw new AssertionError(column.getType());
 						}
 					}
 					values.put(column, constant);
@@ -274,83 +212,25 @@ public class PostgresSchema {
 		}
 
 	}
-
-	public static class PostgresTable implements Comparable<PostgresTable> {
+	
+	public static class PostgresTable extends AbstractTable<PostgresColumn, PostgresIndex> {
 
 		public enum TableType {
 			STANDARD, TEMPORARY
 		}
 
-		private final String tableName;
-		private final List<PostgresColumn> columns;
-		private final List<PostgresIndex> indexes;
 		private final TableType tableType;
 		private List<PostgresStatisticsObject> statistics;
-		private final boolean isView;
 		private boolean isInsertable;
 
 		public PostgresTable(String tableName, List<PostgresColumn> columns, List<PostgresIndex> indexes,
 				TableType tableType, List<PostgresStatisticsObject> statistics, boolean isView, boolean isInsertable) {
-			this.tableName = tableName;
-			this.indexes = indexes;
+			super(tableName, columns, indexes, isView);
 			this.statistics = statistics;
-			this.isView = isView;
 			this.isInsertable = isInsertable;
-			this.columns = Collections.unmodifiableList(columns);
 			this.tableType = tableType;
 		}
 
-		@Override
-		public String toString() {
-			StringBuffer sb = new StringBuffer();
-			sb.append(tableName + "\n");
-			for (PostgresColumn c : columns) {
-				sb.append("\t" + c + "\n");
-			}
-			return sb.toString();
-		}
-
-		public List<PostgresIndex> getIndexes() {
-			return indexes;
-		}
-
-		public String getName() {
-			return tableName;
-		}
-
-		public List<PostgresColumn> getColumns() {
-			return columns;
-		}
-
-		public String getColumnsAsString() {
-			return columns.stream().map(c -> c.getName()).collect(Collectors.joining(", "));
-		}
-
-		public String getColumnsAsString(Function<PostgresColumn, String> function) {
-			return columns.stream().map(function).collect(Collectors.joining(", "));
-		}
-
-		public PostgresColumn getRandomColumn() {
-			return Randomly.fromList(columns);
-		}
-
-		public boolean hasIndexes() {
-			return !indexes.isEmpty();
-		}
-
-		public PostgresIndex getRandomIndex() {
-			return Randomly.fromList(indexes);
-		}
-
-		@Override
-		public int compareTo(PostgresTable o) {
-			return o.getName().compareTo(tableName);
-		}
-
-		public List<PostgresColumn> getRandomNonEmptyColumnSubset() {
-			return Randomly.nonEmptySubset(getColumns());
-		}
-		
 		public List<PostgresStatisticsObject> getStatistics() {
 			return statistics;
 		}
@@ -367,10 +247,6 @@ public class PostgresSchema {
 
 		public TableType getTableType() {
 			return tableType;
-		}
-		
-		public boolean isView() {
-			return isView;
 		}
 		
 		public boolean isInsertable() {

@@ -205,7 +205,7 @@ public class PostgresExpressionGenerator {
 		if (Randomly.getBooleanWithSmallProbability() || columns == null || columns.isEmpty()) {
 			return PostgresDataType.getRandomType();
 		} else {
-			return Randomly.fromList(columns).getColumnType();
+			return Randomly.fromList(columns).getType();
 		}
 	}
 
@@ -433,7 +433,7 @@ public class PostgresExpressionGenerator {
 		if (columns == null) {
 			return Collections.emptyList();
 		} else {
-			return columns.stream().filter(c -> c.getColumnType() == type).collect(Collectors.toList());
+			return columns.stream().filter(c -> c.getType() == type).collect(Collectors.toList());
 		}
 	}
 

@@ -16,7 +16,7 @@ public class PostgresColumnValue implements PostgresExpression {
 
 	@Override
 	public PostgresDataType getExpressionType() {
-		return c.getColumnType();
+		return c.getType();
 	}
 
 	@Override
