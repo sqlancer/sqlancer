@@ -158,8 +158,13 @@ public class PostgresExpressionGenerator {
 			return new PostgresPrefixOperation(generateExpression(depth + 1, PostgresDataType.BOOLEAN),
 					PrefixOperator.NOT);
 		case BINARY_LOGICAL_OPERATOR:
-			return new PostgresBinaryLogicalOperation(generateExpression(depth + 1, PostgresDataType.BOOLEAN),
-					generateExpression(depth + 1, PostgresDataType.BOOLEAN), BinaryLogicalOperator.getRandom());
+			PostgresExpression first = generateExpression(depth + 1, PostgresDataType.BOOLEAN);
+			int nr = Randomly.smallNumber() + 1;
+			for (int i = 0; i < nr; i++) {
+				first = new PostgresBinaryLogicalOperation(first,
+						generateExpression(depth + 1, PostgresDataType.BOOLEAN), BinaryLogicalOperator.getRandom());
+			}
+			return first;
 		case BINARY_COMPARISON:
 			PostgresDataType dataType = getMeaningfulType();
 			return generateComparison(depth, dataType);
@@ -560,6 +565,11 @@ public class PostgresExpressionGenerator {
 			args.add(generateExpression(argType));
 		}
 		return new PostgresAggregate(args, agg);
+	}
+
+	public PostgresExpressionGenerator allowAggregates(boolean value) {
+		allowAggregateFunctions = value;
+		return this;
 	}
 
 }

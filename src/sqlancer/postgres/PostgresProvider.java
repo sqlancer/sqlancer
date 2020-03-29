@@ -140,7 +140,7 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 		int nrPerformed;
 		switch (a) {
 		case CREATE_INDEX:
-			nrPerformed = r.getInteger(0, 10);
+			nrPerformed = r.getInteger(0, 3);
 			break;
 		case CREATE_STATISTICS:
 			nrPerformed = r.getInteger(0, 5);
@@ -158,7 +158,7 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 			break;
 		case REINDEX:
 		case RESET:
-			nrPerformed = r.getInteger(0, 5);
+			nrPerformed = r.getInteger(0, 3);
 			break;
 		case DELETE:
 		case RESET_ROLE:
@@ -167,7 +167,7 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 			nrPerformed = r.getInteger(0, 5);
 			break;
 		case ANALYZE:
-			nrPerformed = r.getInteger(0, 10);
+			nrPerformed = r.getInteger(0, 3);
 			break;
 		case VACUUM:
 		case SET_CONSTRAINTS:

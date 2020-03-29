@@ -26,6 +26,8 @@ public class PostgresCommon {
 		errors.add("FULL JOIN is only supported with merge-joinable or hash-joinable join conditions");
 		errors.add("but it cannot be referenced from this part of the query");
 		errors.add("missing FROM-clause entry for table");
+		
+		errors.add("canceling statement due to statement timeout");
 	}
 
 	public static void addCommonTableErrors(Set<String> errors) {
@@ -405,6 +407,7 @@ public class PostgresCommon {
 		errors.add("non-integer constant in GROUP BY"); // TODO
 		errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
 		errors.add("is not in select list");
+		errors.add("aggregate functions are not allowed in GROUP BY");
 	}
 
 }

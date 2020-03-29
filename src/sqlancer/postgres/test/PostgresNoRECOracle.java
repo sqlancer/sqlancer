@@ -76,15 +76,7 @@ public class PostgresNoRECOracle implements TestOracle {
 		}
 		List<PostgresTable> tables = randomTables.getTables();
 
-		List<PostgresJoin> joinStatements = new ArrayList<>();
-		for (int i = 1; i < tables.size(); i++) {
-			PostgresExpression joinClause = getRandomWhereCondition(columns);
-			PostgresTable table = Randomly.fromList(tables);
-			tables.remove(table);
-			PostgresJoinType options = PostgresJoinType.getRandom();
-			PostgresJoin j = new PostgresJoin(table, joinClause, options);
-			joinStatements.add(j);
-		}
+		List<PostgresJoin> joinStatements = getJoinStatements(globalState, columns, tables);
 		List<PostgresExpression> fromTables = tables.stream().map(t -> new PostgresFromTable(t, Randomly.getBoolean()))
 				.collect(Collectors.toList());
 		int secondCount = getSecondQuery(fromTables, randomWhereCondition, groupBys, joinStatements);
@@ -97,6 +89,20 @@ public class PostgresNoRECOracle implements TestOracle {
 					+ ";";
 			throw new AssertionError(firstQueryString + secondQueryString + firstCount + " " + secondCount);
 		}
+	}
+
+	public static List<PostgresJoin> getJoinStatements(PostgresGlobalState globalState, List<PostgresColumn> columns, List<PostgresTable> tables) {
+		List<PostgresJoin> joinStatements = new ArrayList<>();
+		PostgresExpressionGenerator gen = new PostgresExpressionGenerator(globalState).setColumns(columns);
+		for (int i = 1; i < tables.size(); i++) {
+			PostgresExpression joinClause = gen.generateExpression(PostgresDataType.BOOLEAN);
+			PostgresTable table = Randomly.fromList(tables);
+			tables.remove(table);
+			PostgresJoinType options = PostgresJoinType.getRandom();
+			PostgresJoin j = new PostgresJoin(table, joinClause, options);
+			joinStatements.add(j);
+		}
+		return joinStatements;
 	}
 
 	private List<PostgresExpression> getRandomExpressions(List<PostgresColumn> columns) {

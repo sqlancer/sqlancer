@@ -73,4 +73,12 @@ public class PostgresQueryPartitioningHavingTester extends PostgresQueryPartitio
 		return gen.generateHavingClause();
 	}
 
+	@Override
+	List<PostgresExpression> generateFetchColumns() {
+		List<PostgresExpression> expressions = gen.allowAggregates(true)
+				.generateExpressions(Randomly.smallNumber() + 1);
+		gen.allowAggregates(false);
+		return expressions;
+	}
+
 }

@@ -34,6 +34,14 @@ public class PostgresOptions {
 				return new PostgresPivotedQuerySynthesisGenerator(globalState);
 			}
 		},
+		HAVING {
+
+			@Override
+			public TestOracle create(PostgresGlobalState globalState) throws SQLException {
+				return new PostgresQueryPartitioningHavingTester(globalState);
+			}
+			
+		},
 		QUERY_PARTITIONING {
 			@Override
 			public TestOracle create(PostgresGlobalState globalState) throws SQLException {

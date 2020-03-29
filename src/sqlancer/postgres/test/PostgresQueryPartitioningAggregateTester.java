@@ -20,6 +20,7 @@ import sqlancer.postgres.ast.PostgresAggregate;
 import sqlancer.postgres.ast.PostgresAggregate.PostgresAggregateFunction;
 import sqlancer.postgres.ast.PostgresAlias;
 import sqlancer.postgres.ast.PostgresExpression;
+import sqlancer.postgres.ast.PostgresJoin;
 import sqlancer.postgres.ast.PostgresPostfixOperation;
 import sqlancer.postgres.ast.PostgresPostfixOperation.PostfixOperator;
 import sqlancer.postgres.ast.PostgresPrefixOperation;
@@ -38,10 +39,13 @@ public class PostgresQueryPartitioningAggregateTester extends PostgresQueryParti
 		super(state);
 		PostgresCommon.addGroupingErrors(errors);
 	}
-	
+
 	public void check() throws SQLException {
 		super.check();
-		PostgresAggregateFunction aggregateFunction = Randomly.fromOptions(PostgresAggregateFunction.MAX, PostgresAggregateFunction.MIN, PostgresAggregateFunction.SUM, PostgresAggregateFunction.BIT_AND, PostgresAggregateFunction.BIT_OR, PostgresAggregateFunction.BOOL_AND, PostgresAggregateFunction.BOOL_OR);
+		PostgresAggregateFunction aggregateFunction = Randomly.fromOptions(PostgresAggregateFunction.MAX,
+				PostgresAggregateFunction.MIN, PostgresAggregateFunction.SUM, PostgresAggregateFunction.BIT_AND,
+				PostgresAggregateFunction.BIT_OR, PostgresAggregateFunction.BOOL_AND, PostgresAggregateFunction.BOOL_OR,
+				PostgresAggregateFunction.COUNT);
 		PostgresAggregate aggregate = gen.generateArgsForAggregate(aggregateFunction.getRandomReturnType(),
 				aggregateFunction);
 		List<PostgresExpression> fetchColumns = new ArrayList<>();
@@ -50,9 +54,6 @@ public class PostgresQueryPartitioningAggregateTester extends PostgresQueryParti
 			fetchColumns.add(gen.generateAggregate());
 		}
 		select.setFetchColumns(Arrays.asList(aggregate));
-//		if (Randomly.getBooleanWithRatherLowProbability()) {
-//			select.setJoinList(PostgresNoRECTester.getJoins(from, state));
-//		}
 		if (Randomly.getBooleanWithRatherLowProbability()) {
 			select.setOrderByExpressions(gen.generateOrderBy());
 		}
@@ -85,9 +86,9 @@ public class PostgresQueryPartitioningAggregateTester extends PostgresQueryParti
 		PostgresExpression negatedClause = new PostgresPrefixOperation(whereClause, PrefixOperator.NOT);
 		PostgresExpression notNullClause = new PostgresPostfixOperation(whereClause, PostfixOperator.IS_NULL);
 		List<PostgresExpression> mappedAggregate = mapped(aggregate);
-		PostgresSelect leftSelect = getSelect(mappedAggregate, from, whereClause/* , select.getJoinList() */);
-		PostgresSelect middleSelect = getSelect(mappedAggregate, from, negatedClause/* , select.getJoinList() */);
-		PostgresSelect rightSelect = getSelect(mappedAggregate, from, notNullClause/* , select.getJoinList() */);
+		PostgresSelect leftSelect = getSelect(mappedAggregate, from, whereClause, select.getJoinClauses());
+		PostgresSelect middleSelect = getSelect(mappedAggregate, from, negatedClause, select.getJoinClauses());
+		PostgresSelect rightSelect = getSelect(mappedAggregate, from, notNullClause, select.getJoinClauses());
 		metamorphicQuery = "SELECT " + getOuterAggregateFunction(aggregate).toString() + " FROM (";
 		metamorphicQuery += PostgresVisitor.asString(leftSelect) + " UNION ALL "
 				+ PostgresVisitor.asString(middleSelect) + " UNION ALL " + PostgresVisitor.asString(rightSelect);
@@ -116,7 +117,7 @@ public class PostgresQueryPartitioningAggregateTester extends PostgresQueryParti
 	private List<PostgresExpression> mapped(PostgresAggregate aggregate) {
 		switch (aggregate.getFunction()) {
 		case SUM:
-//		case COUNT:
+		case COUNT:
 		case BIT_AND:
 		case BIT_OR:
 		case BOOL_AND:
@@ -150,21 +151,20 @@ public class PostgresQueryPartitioningAggregateTester extends PostgresQueryParti
 		switch (aggregate.getFunction()) {
 //		case AVG:
 //			return "SUM(agg0::DECIMAL)/SUM(agg1)::DECIMAL";
-//		case COUNT:
-//		case COUNT_ROWS:
-//			return PostgresAggregateFunction.SUM.toString() + "(agg0)";
+		case COUNT:
+			return PostgresAggregateFunction.SUM.toString() + "(agg0)";
 		default:
 			return aggregate.getFunction().toString() + "(agg0)";
 		}
 	}
 
 	private PostgresSelect getSelect(List<PostgresExpression> aggregates, List<PostgresExpression> from,
-			PostgresExpression whereClause/* , List<PostgresJoin> joinList */) {
+			PostgresExpression whereClause, List<PostgresJoin> joinList) {
 		PostgresSelect leftSelect = new PostgresSelect();
 		leftSelect.setFetchColumns(aggregates);
 		leftSelect.setFromList(from);
 		leftSelect.setWhereClause(whereClause);
-//		leftSelect.setJoinList(joinList);
+		leftSelect.setJoinClauses(joinList);
 		if (Randomly.getBooleanWithSmallProbability()) {
 			leftSelect.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
 		}
