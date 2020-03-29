@@ -21,6 +21,7 @@ import sqlancer.postgres.PostgresSchema.PostgresTable.TableType;
 import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.schema.AbstractTable;
 import sqlancer.schema.AbstractTableColumn;
+import sqlancer.schema.AbstractTables;
 import sqlancer.schema.TableIndex;
 
 public class PostgresSchema {
@@ -39,8 +40,7 @@ public class PostgresSchema {
 			return Randomly.fromList(dataTypes);
 		}
 	}
-	
-	
+
 	public static class PostgresColumn extends AbstractTableColumn<PostgresTable, PostgresDataType> {
 
 		public PostgresColumn(String name, PostgresDataType columnType) {
@@ -49,37 +49,10 @@ public class PostgresSchema {
 
 	}
 
-	public static class PostgresTables {
-		private final List<PostgresTable> tables;
-		private final List<PostgresColumn> columns;
+	public static class PostgresTables extends AbstractTables<PostgresTable, PostgresColumn> {
 
 		public PostgresTables(List<PostgresTable> tables) {
-			this.tables = tables;
-			columns = new ArrayList<>();
-			for (PostgresTable t : tables) {
-				columns.addAll(t.getColumns());
-			}
-		}
-
-		public String tableNamesAsString() {
-			return tables.stream().map(t -> t.getName()).collect(Collectors.joining(", "));
-		}
-
-		public List<PostgresTable> getTables() {
-			return tables;
-		}
-
-		public List<PostgresColumn> getColumns() {
-			return columns;
-		}
-
-		public String columnNamesAsString() {
-			return getColumns().stream().map(t -> t.getTable().getName() + "." + t.getName())
-					.collect(Collectors.joining(", "));
-		}
-
-		public String columnNamesAsString(Function<PostgresColumn, String> function) {
-			return getColumns().stream().map(function).collect(Collectors.joining(", "));
+			super(tables);
 		}
 
 		public PostgresRowValue getRandomRowValue(Connection con, PostgresStateToReproduce state) throws SQLException {
@@ -212,7 +185,7 @@ public class PostgresSchema {
 		}
 
 	}
-	
+
 	public static class PostgresTable extends AbstractTable<PostgresColumn, PostgresIndex> {
 
 		public enum TableType {
@@ -248,7 +221,7 @@ public class PostgresSchema {
 		public TableType getTableType() {
 			return tableType;
 		}
-		
+
 		public boolean isInsertable() {
 			return isInsertable;
 		}
@@ -301,12 +274,15 @@ public class PostgresSchema {
 						boolean isInsertable = rs.getBoolean("is_insertable_into");
 						// TODO: also check insertable
 						// TODO: insert into view?
-						boolean isView = tableName.startsWith("v");  //tableTypeStr.contains("VIEW") || tableTypeStr.contains("LOCAL TEMPORARY") && !isInsertable;
+						boolean isView = tableName.startsWith("v"); // tableTypeStr.contains("VIEW") ||
+																	// tableTypeStr.contains("LOCAL TEMPORARY") &&
+																	// !isInsertable;
 						PostgresTable.TableType tableType = getTableType(tableTypeSchema);
 						List<PostgresColumn> databaseColumns = getTableColumns(con, tableName, databaseName);
 						List<PostgresIndex> indexes = getIndexes(con, tableName, databaseName);
 						List<PostgresStatisticsObject> statistics = getStatistics(con);
-						PostgresTable t = new PostgresTable(tableName, databaseColumns, indexes, tableType, statistics, isView, isInsertable);
+						PostgresTable t = new PostgresTable(tableName, databaseColumns, indexes, tableType, statistics,
+								isView, isInsertable);
 						for (PostgresColumn c : databaseColumns) {
 							c.setTable(t);
 						}
@@ -420,7 +396,8 @@ public class PostgresSchema {
 	}
 
 	public PostgresTable getRandomTable(Function<PostgresTable, Boolean> f) {
-		List<PostgresTable> relevantTables = databaseTables.stream().filter(t -> f.apply(t)).collect(Collectors.toList());
+		List<PostgresTable> relevantTables = databaseTables.stream().filter(t -> f.apply(t))
+				.collect(Collectors.toList());
 		if (relevantTables.isEmpty()) {
 			throw new IgnoreMeException();
 		}
