@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
-import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.CollateSequence;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 
 public class SQLite3WindowFunctionExpression extends SQLite3Expression {
 
@@ -48,7 +48,7 @@ public class SQLite3WindowFunctionExpression extends SQLite3Expression {
 		}
 
 		@Override
-		public CollateSequence getExplicitCollateSequence() {
+		public SQLite3CollateSequence getExplicitCollateSequence() {
 			return null;
 		}
 
@@ -66,7 +66,7 @@ public class SQLite3WindowFunctionExpression extends SQLite3Expression {
 		}
 
 		@Override
-		public CollateSequence getExplicitCollateSequence() {
+		public SQLite3CollateSequence getExplicitCollateSequence() {
 			return null;
 		}
 
@@ -140,7 +140,7 @@ public class SQLite3WindowFunctionExpression extends SQLite3Expression {
 	}
 
 	@Override
-	public CollateSequence getExplicitCollateSequence() {
+	public SQLite3CollateSequence getExplicitCollateSequence() {
 		return null;
 	}
 

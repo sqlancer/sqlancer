@@ -29,8 +29,8 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
-import sqlancer.sqlite3.schema.SQLite3Schema.Table;
-import sqlancer.sqlite3.schema.SQLite3Schema.Tables;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
 public class SQLite3WindowFunctionTester {
 
@@ -61,11 +61,11 @@ public class SQLite3WindowFunctionTester {
 
 	public void generateAndCheck() throws SQLException {
 		queries.clear();
-		Tables randomTable = s.getRandomTableNonEmptyTables();
+		SQLite3Tables randomTable = s.getRandomTableNonEmptyTables();
 		List<SQLite3Column> columns = randomTable.getColumns();
 		SQLite3Expression randomWhereCondition = getRandomWhereCondition(columns);
 		List<SQLite3Expression> groupBys = Collections.emptyList(); // getRandomExpressions(columns);
-		List<Table> tables = randomTable.getTables();
+		List<SQLite3Table> tables = randomTable.getTables();
 		List<Join> joinStatements = new ArrayList<>();
 		SQLite3SelectStatement select = new SQLite3SelectStatement();
 		select.setGroupByClause(groupBys);

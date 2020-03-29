@@ -16,7 +16,7 @@ import sqlancer.sqlite3.gen.dml.SQLite3DeleteGenerator;
 import sqlancer.sqlite3.gen.dml.SQLite3InsertGenerator;
 import sqlancer.sqlite3.gen.dml.SQLite3UpdateGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema;
-import sqlancer.sqlite3.schema.SQLite3Schema.Table;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class SQLite3CreateTriggerGenerator {
 
@@ -31,7 +31,7 @@ public class SQLite3CreateTriggerGenerator {
 	public static Query create(SQLite3GlobalState globalState) throws SQLException {
 		SQLite3Schema s = globalState.getSchema();
 		StringBuilder sb = new StringBuilder();
-		Table table = s.getRandomTableOrBailout(t -> !t.isVirtual());
+		SQLite3Table table = s.getRandomTableOrBailout(t -> !t.isVirtual());
 		sb.append("CREATE");
 		if (table.isTemp()) {
 			sb.append(" ");
@@ -73,7 +73,7 @@ public class SQLite3CreateTriggerGenerator {
 		}
 		appendTableNameAndWhen(globalState, sb, table);
 
-		Table randomActionTable = s.getRandomTableNoViewOrBailout();
+		SQLite3Table randomActionTable = s.getRandomTableNoViewOrBailout();
 		sb.append(" BEGIN ");
 		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
 			switch (Randomly.fromOptions(TriggerAction.values())) {
@@ -104,7 +104,7 @@ public class SQLite3CreateTriggerGenerator {
 		return new QueryAdapter(sb.toString(), Arrays.asList("parser stack overflow", "unsupported frame specification"));
 	}
 
-	private static void appendTableNameAndWhen(SQLite3GlobalState globalState, StringBuilder sb, Table table) {
+	private static void appendTableNameAndWhen(SQLite3GlobalState globalState, StringBuilder sb, SQLite3Table table) {
 		sb.append(table.getName());
 		if (Randomly.getBoolean()) {
 			sb.append(" FOR EACH ROW ");
@@ -125,8 +125,8 @@ public class SQLite3CreateTriggerGenerator {
 		return q;
 	}
 
-	private static Table getTableNotEqualsTo(SQLite3Schema s, Table table) {
-		List<Table> tables = new ArrayList<>(s.getDatabaseTablesWithoutViews());
+	private static SQLite3Table getTableNotEqualsTo(SQLite3Schema s, SQLite3Table table) {
+		List<SQLite3Table> tables = new ArrayList<>(s.getDatabaseTablesWithoutViews());
 		tables.remove(table);
 		if (tables.isEmpty()) {
 			throw new IgnoreMeException();

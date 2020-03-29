@@ -49,8 +49,8 @@ import sqlancer.sqlite3.gen.dml.SQLite3InsertGenerator;
 import sqlancer.sqlite3.gen.dml.SQLite3UpdateGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
-import sqlancer.sqlite3.schema.SQLite3Schema.Table;
-import sqlancer.sqlite3.schema.SQLite3Schema.Table.TableKind;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table.TableKind;
 
 public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState> {
 
@@ -78,7 +78,7 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState> {
 		DROP_VIEW(SQLite3ViewGenerator::dropView), //
 		EXPLAIN(SQLite3ExplainGenerator::explain), //
 		CHECK_RTREE_TABLE((g) -> {
-			Table table = g.getSchema().getRandomTableOrBailout(t -> t.getName().startsWith("r"));
+			SQLite3Table table = g.getSchema().getRandomTableOrBailout(t -> t.getName().startsWith("r"));
 			String format = String.format("SELECT rtreecheck('%s');", table.getName());
 			return new QueryAdapter(format);
 		}), //
@@ -87,7 +87,7 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState> {
 		CREATE_TRIGGER(SQLite3CreateTriggerGenerator::create), //
 		MANIPULATE_STAT_TABLE((g) -> {
 			List<SQLite3Column> columns = new ArrayList<>();
-			Table t = new Table("sqlite_stat1", columns, TableKind.MAIN, false, 1, false, false, false);
+			SQLite3Table t = new SQLite3Table("sqlite_stat1", columns, TableKind.MAIN, false, 1, false, false, false);
 			if (Randomly.getBoolean()) {
 				return SQLite3DeleteGenerator.deleteContent(g, t);
 			} else {
@@ -332,7 +332,7 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState> {
 		manager.incrementCreateDatabase();
 		TestOracle oracle = globalState.getSqliteOptions().oracle.create(globalState);
 		if (oracle.onlyWorksForNonEmptyTables()) {
-			for (Table table : globalState.getSchema().getDatabaseTables()) {
+			for (SQLite3Table table : globalState.getSchema().getDatabaseTables()) {
 				int nrRows = SQLite3Schema.getNrRows(con, table.getName());
 				if (nrRows == 0) {
 					throw new IgnoreMeException();
@@ -360,7 +360,7 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState> {
 	}
 
 	private void checkTablesForGeneratedColumnLoops(Connection con, SQLite3Schema newSchema) throws SQLException {
-		for (Table table : newSchema.getDatabaseTables()) {
+		for (SQLite3Table table : newSchema.getDatabaseTables()) {
 			Query q = new QueryAdapter("SELECT * FROM " + table.getName(),
 					Arrays.asList("needs an odd number of arguments", " requires an even number of arguments",
 							"generated column loop", "integer overflow", "malformed JSON",
@@ -445,9 +445,9 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState> {
 		if (specificState.getRandomRowValues() != null) {
 			List<SQLite3Column> columnList = specificState.getRandomRowValues().keySet().stream()
 					.collect(Collectors.toList());
-			List<Table> tableList = columnList.stream().map(c -> c.getTable()).distinct().sorted()
+			List<SQLite3Table> tableList = columnList.stream().map(c -> c.getTable()).distinct().sorted()
 					.collect(Collectors.toList());
-			for (Table t : tableList) {
+			for (SQLite3Table t : tableList) {
 				sb.append("-- " + t.getName() + "\n");
 				List<SQLite3Column> columnsForTable = columnList.stream().filter(c -> c.getTable().equals(t))
 						.collect(Collectors.toList());

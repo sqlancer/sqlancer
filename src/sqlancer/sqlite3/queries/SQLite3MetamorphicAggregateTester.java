@@ -26,7 +26,7 @@ import sqlancer.sqlite3.ast.SQLite3UnaryOperation.UnaryOperator;
 import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema;
-import sqlancer.sqlite3.schema.SQLite3Schema.Tables;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
 public class SQLite3MetamorphicAggregateTester implements TestOracle {
 
@@ -42,7 +42,7 @@ public class SQLite3MetamorphicAggregateTester implements TestOracle {
 	@Override
 	public void check() throws SQLException {
 		SQLite3Schema s = state.getSchema();
-		Tables targetTables = s.getRandomTableNonEmptyTables();
+		SQLite3Tables targetTables = s.getRandomTableNonEmptyTables();
 		gen = new SQLite3ExpressionGenerator(state).setColumns(targetTables.getColumns());
 		SQLite3SelectStatement select = new SQLite3SelectStatement();
 		SQLite3AggregateFunction windowFunction = Randomly.fromOptions(SQLite3Aggregate.SQLite3AggregateFunction.MIN,

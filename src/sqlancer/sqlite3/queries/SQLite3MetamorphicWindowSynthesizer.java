@@ -37,9 +37,9 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3DataType;
 import sqlancer.sqlite3.schema.SQLite3Schema;
-import sqlancer.sqlite3.schema.SQLite3Schema.RowValue;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3RowValue;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
-import sqlancer.sqlite3.schema.SQLite3Schema.Tables;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
 public class SQLite3MetamorphicWindowSynthesizer implements TestOracle {
 
@@ -49,7 +49,7 @@ public class SQLite3MetamorphicWindowSynthesizer implements TestOracle {
 	List<String> errors = new ArrayList<>();
 	private String firstQueryString;
 	private String secondQueryString;
-	private RowValue pivotRow;
+	private SQLite3RowValue pivotRow;
 	private PivotRowResult unoptimizedWindowFunctionResult;
 	private PivotRowResult optimizedWindowFunctionResult;
 	private List<SQLite3Column> rowIds;
@@ -95,7 +95,7 @@ public class SQLite3MetamorphicWindowSynthesizer implements TestOracle {
 		unoptimizedWindowFunctionResult = null;
 		optimizedWindowFunctionResult = null;
 		SQLite3Schema s = state.getSchema();
-		Tables targetTables = s.getRandomTableNonEmptyTables();
+		SQLite3Tables targetTables = s.getRandomTableNonEmptyTables();
 		if (targetTables.getTables().size() != 1) {
 			throw new IgnoreMeException(); // TODO
 		}
@@ -184,7 +184,7 @@ public class SQLite3MetamorphicWindowSynthesizer implements TestOracle {
 		}
 	}
 
-	private PivotRowResult getResultRow(SQLite3SelectStatement select, RowValue pivotRow) throws SQLException {
+	private PivotRowResult getResultRow(SQLite3SelectStatement select, SQLite3RowValue pivotRow) throws SQLException {
 		firstQueryString = SQLite3Visitor.asString(select);
 		if (firstQueryString.contains("EXISTS")) {
 			throw new IgnoreMeException(); // TODO
@@ -209,7 +209,7 @@ public class SQLite3MetamorphicWindowSynthesizer implements TestOracle {
 	private final static int PARTITION_BY_TYPE_OFFSET = 1;
 	private final static int WINDOW_FUNCTION_RESULT_OFFSET = 2;
 
-	private PivotRowResult identifyPivotRowResult(RowValue pivotRow, ResultSet result) {
+	private PivotRowResult identifyPivotRowResult(SQLite3RowValue pivotRow, ResultSet result) {
 		if (result == null) {
 			throw new IgnoreMeException();
 		}
@@ -253,7 +253,7 @@ public class SQLite3MetamorphicWindowSynthesizer implements TestOracle {
 	}
 
 	// parition by, partition by type, window function, row values
-	private SQLite3SelectStatement generateWindowSelect(SQLite3Schema s, Tables targetTables) {
+	private SQLite3SelectStatement generateWindowSelect(SQLite3Schema s, SQLite3Tables targetTables) {
 		SQLite3SelectStatement select = new SQLite3SelectStatement();
 		// DISTINCT or ALL
 		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(state).setColumns(targetTables.getColumns());

@@ -17,7 +17,7 @@ import sqlancer.sqlite3.ast.SQLite3Constant;
 import sqlancer.sqlite3.ast.SQLite3Expression;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
-import sqlancer.sqlite3.schema.SQLite3Schema.Table;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class SQLite3InsertGenerator {
 
@@ -32,18 +32,18 @@ public class SQLite3InsertGenerator {
 	}
 
 	public static Query insertRow(SQLite3GlobalState globalState) throws SQLException {
-		Table randomTable = globalState.getSchema().getRandomTableOrBailout(t -> !t.isView() && !t.isReadOnly());
+		SQLite3Table randomTable = globalState.getSchema().getRandomTableOrBailout(t -> !t.isView() && !t.isReadOnly());
 		return insertRow(globalState, randomTable);
 	}
 
-	public static Query insertRow(SQLite3GlobalState globalState, Table randomTable) {
+	public static Query insertRow(SQLite3GlobalState globalState, SQLite3Table randomTable) {
 		SQLite3InsertGenerator generator = new SQLite3InsertGenerator(globalState, globalState.getRandomly(),
 				globalState.getConnection());
 		String query = generator.insertRow(randomTable);
 		return new QueryAdapter(query, generator.errors, true);
 	}
 
-	private String insertRow(Table table) {
+	private String insertRow(SQLite3Table table) {
 		errors.add("cannot UPDATE generated column");
 		errors.add("[SQLITE_CONSTRAINT]");
 		errors.add("[SQLITE_FULL]");

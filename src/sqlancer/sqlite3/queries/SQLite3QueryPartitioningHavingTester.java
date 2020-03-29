@@ -26,8 +26,8 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
-import sqlancer.sqlite3.schema.SQLite3Schema.Table;
-import sqlancer.sqlite3.schema.SQLite3Schema.Tables;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
 public class SQLite3QueryPartitioningHavingTester implements TestOracle {
 	
@@ -44,13 +44,13 @@ public class SQLite3QueryPartitioningHavingTester implements TestOracle {
 	@Override
 	public void check() throws SQLException {
 		SQLite3Schema s = state.getSchema();
-		Tables targetTables = s.getRandomTableNonEmptyTables();
+		SQLite3Tables targetTables = s.getRandomTableNonEmptyTables();
 		List<SQLite3Expression> groupByColumns = Randomly.nonEmptySubset(targetTables.getColumns()).stream().map(c -> new SQLite3ColumnName(c, null)).collect(Collectors.toList());
 		List<SQLite3Column> columns = targetTables.getColumns();
 		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(state).setColumns(columns);
 		SQLite3SelectStatement select = new SQLite3SelectStatement();
 		select.setFetchColumns(groupByColumns);
-		List<Table> tables = targetTables.getTables();
+		List<SQLite3Table> tables = targetTables.getTables();
 		List<Join> joinStatements = gen.getRandomJoinClauses(tables);
 		List<SQLite3Expression> from = SQLite3Common.getTableRefs(tables, state.getSchema());
 		select.setJoinClauses(joinStatements);

@@ -9,7 +9,7 @@ import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.schema.SQLite3Schema;
-import sqlancer.sqlite3.schema.SQLite3Schema.Table;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class SQLite3VirtualFTSTableCommandGenerator {
 	
@@ -33,7 +33,7 @@ public class SQLite3VirtualFTSTableCommandGenerator {
 	
 	private Query generate() {
 		errors.add("has no column named rank");
-		Table vTable = s.getRandomTableOrBailout(t -> t.isVirtual() && t.getName().startsWith("vt"));
+		SQLite3Table vTable = s.getRandomTableOrBailout(t -> t.isVirtual() && t.getName().startsWith("vt"));
 		Action a = Randomly.fromOptions(Action.values());
 		switch (a) {
 		case AUTOMERGE:

@@ -5,7 +5,7 @@ import java.util.Optional;
 import sqlancer.Randomly;
 import sqlancer.sqlite3.SQLite3CollateHelper;
 import sqlancer.sqlite3.schema.SQLite3DataType;
-import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.CollateSequence;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 import sqlancer.visitor.UnaryOperation;
 
 public class SQLite3UnaryOperation extends SQLite3Expression implements UnaryOperation<SQLite3Expression> {
@@ -13,7 +13,7 @@ public class SQLite3UnaryOperation extends SQLite3Expression implements UnaryOpe
 	// For the purposes of the previous sentence, a column name preceded by one or
 	// more unary "+" operators is still considered a column name.
 	@Override
-	public CollateSequence getImplicitCollateSequence() {
+	public SQLite3CollateSequence getImplicitCollateSequence() {
 		if (operation == UnaryOperator.PLUS) {
 			if (SQLite3CollateHelper.shouldGetSubexpressionAffinity(expression)) {
 				return expression.getImplicitCollateSequence();
@@ -139,7 +139,7 @@ public class SQLite3UnaryOperation extends SQLite3Expression implements UnaryOpe
 	}
 
 	@Override
-	public CollateSequence getExplicitCollateSequence() {
+	public SQLite3CollateSequence getExplicitCollateSequence() {
 		return expression.getExplicitCollateSequence();
 	}
 

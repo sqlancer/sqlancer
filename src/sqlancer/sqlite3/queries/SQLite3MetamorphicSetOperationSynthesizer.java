@@ -32,8 +32,8 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
-import sqlancer.sqlite3.schema.SQLite3Schema.Table;
-import sqlancer.sqlite3.schema.SQLite3Schema.Tables;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
 public class SQLite3MetamorphicSetOperationSynthesizer {
 
@@ -75,13 +75,13 @@ public class SQLite3MetamorphicSetOperationSynthesizer {
 
 	public void generateAndCheck() throws SQLException {
 		queries.clear();
-		Tables randomTable = s.getRandomTableNonEmptyTables();
+		SQLite3Tables randomTable = s.getRandomTableNonEmptyTables();
 		List<SQLite3Column> columns = randomTable.getColumns();
 		SQLite3Expression whereConditionA = getRandomWhereCondition(columns);
 		SQLite3Expression whereConditionB = getRandomWhereCondition(columns);
 
 //		List<SQLite3Expression> groupBys = Collections.emptyList(); //getRandomExpressions(columns);
-		List<Table> tables = randomTable.getTables();
+		List<SQLite3Table> tables = randomTable.getTables();
 //		List<Join> joinStatements = new ArrayList<>();
 //		if (Randomly.getBoolean()) {
 //			int nrJoinClauses =  (int) Randomly.getNotCachedInteger(0, tables.size());
@@ -156,7 +156,7 @@ public class SQLite3MetamorphicSetOperationSynthesizer {
 		return NOT_FOUND;
 	}
 
-	private String conditionAsQuery(Tables randomTable, SQLite3Expression randomWhereCondition) {
+	private String conditionAsQuery(SQLite3Tables randomTable, SQLite3Expression randomWhereCondition) {
 		SQLite3SelectStatement select = new SQLite3SelectStatement();
 		SQLite3ColumnName count =
 				// new SQLite3Aggregate(
@@ -170,7 +170,7 @@ public class SQLite3MetamorphicSetOperationSynthesizer {
 		return totalString;
 	}
 
-	private int getTotalCount(List<Table> list, List<SQLite3Expression> groupBys, List<Join> joinStatements)
+	private int getTotalCount(List<SQLite3Table> list, List<SQLite3Expression> groupBys, List<Join> joinStatements)
 			throws SQLException {
 		SQLite3SelectStatement select = new SQLite3SelectStatement();
 		select.setGroupByClause(groupBys);
@@ -203,7 +203,7 @@ public class SQLite3MetamorphicSetOperationSynthesizer {
 		TRUE, FALSE, ISNULL;
 	}
 
-	private int getSubsetCount(List<Table> list, SQLite3Expression condition, List<SQLite3Expression> groupBys,
+	private int getSubsetCount(List<SQLite3Table> list, SQLite3Expression condition, List<SQLite3Expression> groupBys,
 			List<Join> joinStatements, Mode m) throws SQLException {
 		SQLite3SelectStatement select = new SQLite3SelectStatement();
 		select.setGroupByClause(groupBys);

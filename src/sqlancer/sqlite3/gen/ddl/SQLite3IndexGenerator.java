@@ -16,7 +16,7 @@ import sqlancer.sqlite3.ast.SQLite3Expression;
 import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
-import sqlancer.sqlite3.schema.SQLite3Schema.Table;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 // see https://www.sqlite.org/lang_createindex.html
 public class SQLite3IndexGenerator {
@@ -33,7 +33,7 @@ public class SQLite3IndexGenerator {
 	}
 
 	private Query create() throws SQLException {
-		Table t = globalState.getSchema().getRandomTableOrBailout(tab -> !tab.isView() && !tab.isVirtual() && !tab.isReadOnly());
+		SQLite3Table t = globalState.getSchema().getRandomTableOrBailout(tab -> !tab.isView() && !tab.isVirtual() && !tab.isReadOnly());
 		String q = createIndex(t, t.getColumns());
 		errors.add("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)");
 		errors.add("subqueries prohibited in index expressions");
@@ -60,7 +60,7 @@ public class SQLite3IndexGenerator {
 		return new QueryAdapter(q, errors, true);
 	}
 
-	private String createIndex(Table t, List<SQLite3Column> columns) {
+	private String createIndex(SQLite3Table t, List<SQLite3Column> columns) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("CREATE");
 		if (Randomly.getBoolean()) {

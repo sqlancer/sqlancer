@@ -8,7 +8,7 @@ import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
-import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.CollateSequence;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 
 public class SQLite3WindowFunction extends SQLite3Expression {
 
@@ -125,7 +125,7 @@ public class SQLite3WindowFunction extends SQLite3Expression {
 	}
 	
 	@Override
-	public CollateSequence getExplicitCollateSequence() {
+	public SQLite3CollateSequence getExplicitCollateSequence() {
 		return null;
 	}
 	

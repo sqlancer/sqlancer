@@ -13,7 +13,7 @@ import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.ast.SQLite3Constant;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
-import sqlancer.sqlite3.schema.SQLite3Schema.Table;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class SQLite3UpdateGenerator {
 
@@ -28,16 +28,16 @@ public class SQLite3UpdateGenerator {
 	}
 
 	public static Query updateRow(SQLite3GlobalState globalState) {
-		Table randomTableNoViewOrBailout = globalState.getSchema().getRandomTable(t -> !t.isView() && !t.isReadOnly());
+		SQLite3Table randomTableNoViewOrBailout = globalState.getSchema().getRandomTable(t -> !t.isView() && !t.isReadOnly());
 		return updateRow(globalState, randomTableNoViewOrBailout);
 	}
 
-	public static Query updateRow(SQLite3GlobalState globalState, Table table) {
+	public static Query updateRow(SQLite3GlobalState globalState, SQLite3Table table) {
 		SQLite3UpdateGenerator generator = new SQLite3UpdateGenerator(globalState, globalState.getRandomly());
 		return generator.update(table);
 	}
 
-	private Query update(Table table) {
+	private Query update(SQLite3Table table) {
 		sb.append("UPDATE ");
 		if (Randomly.getBoolean()) {
 			sb.append("OR IGNORE ");

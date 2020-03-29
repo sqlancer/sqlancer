@@ -21,12 +21,12 @@ import sqlancer.StateToReproduce.SQLite3StateToReproduce;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3ToStringVisitor;
 import sqlancer.sqlite3.ast.SQLite3Constant;
-import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.CollateSequence;
-import sqlancer.sqlite3.schema.SQLite3Schema.Table.TableKind;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table.TableKind;
 
 public class SQLite3Schema {
 
-	private final List<Table> databaseTables;
+	private final List<SQLite3Table> databaseTables;
 	private final List<String> indexNames;
 
 	public List<String> getIndexNames() {
@@ -41,7 +41,7 @@ public class SQLite3Schema {
 		}
 	}
 
-	public Table getRandomTableOrBailout() {
+	public SQLite3Table getRandomTableOrBailout() {
 		if (databaseTables.isEmpty()) {
 			throw new IgnoreMeException();
 		} else {
@@ -55,20 +55,20 @@ public class SQLite3Schema {
 		private final SQLite3DataType columnType;
 		private final boolean isPrimaryKey;
 		private final boolean isInteger; // "INTEGER" type, not "INT"
-		private Table table;
-		private final CollateSequence collate;
+		private SQLite3Table table;
+		private final SQLite3CollateSequence collate;
 		private boolean generated;
 
-		public enum CollateSequence {
+		public enum SQLite3CollateSequence {
 			NOCASE, RTRIM, BINARY;
 
-			public static CollateSequence random() {
+			public static SQLite3CollateSequence random() {
 				return Randomly.fromOptions(values());
 			}
 		}
 
 		public SQLite3Column(String name, SQLite3DataType columnType, boolean isInteger, boolean isPrimaryKey,
-				CollateSequence collate) {
+				SQLite3CollateSequence collate) {
 			this.name = name;
 			this.columnType = columnType;
 			this.isInteger = isInteger;
@@ -79,7 +79,7 @@ public class SQLite3Schema {
 		}
 
 		public SQLite3Column(String rowId, SQLite3DataType columnType2, boolean contains, boolean b,
-				CollateSequence collate, boolean generated) {
+				SQLite3CollateSequence collate, boolean generated) {
 			this(rowId, columnType2, b, generated, collate);
 			this.generated = generated;
 		}
@@ -134,11 +134,11 @@ public class SQLite3Schema {
 			return isInteger && isOnlyPrimaryKey() && !table.hasWithoutRowid();
 		}
 
-		public void setTable(Table table) {
+		public void setTable(SQLite3Table table) {
 			this.table = table;
 		}
 
-		public Table getTable() {
+		public SQLite3Table getTable() {
 			return table;
 		}
 
@@ -151,7 +151,7 @@ public class SQLite3Schema {
 			}
 		}
 
-		public CollateSequence getCollateSequence() {
+		public SQLite3CollateSequence getCollateSequence() {
 			return collate;
 		}
 
@@ -198,14 +198,14 @@ public class SQLite3Schema {
 		return constant;
 	}
 
-	public static class Tables {
-		private final List<Table> tables;
+	public static class SQLite3Tables {
+		private final List<SQLite3Table> tables;
 		private final List<SQLite3Column> columns;
 
-		public Tables(List<Table> tables) {
+		public SQLite3Tables(List<SQLite3Table> tables) {
 			this.tables = tables;
 			columns = new ArrayList<>();
-			for (Table t : tables) {
+			for (SQLite3Table t : tables) {
 				columns.addAll(t.getColumns());
 			}
 		}
@@ -214,7 +214,7 @@ public class SQLite3Schema {
 			return tables.stream().map(t -> t.getName()).collect(Collectors.joining(", "));
 		}
 
-		public List<Table> getTables() {
+		public List<SQLite3Table> getTables() {
 			return tables;
 		}
 
@@ -231,7 +231,7 @@ public class SQLite3Schema {
 			return getColumns().stream().map(function).collect(Collectors.joining(", "));
 		}
 
-		public RowValue getRandomRowValue(Connection con, SQLite3StateToReproduce state) throws SQLException {
+		public SQLite3RowValue getRandomRowValue(Connection con, SQLite3StateToReproduce state) throws SQLException {
 			String randomRow = String.format("SELECT %s, %s FROM %s ORDER BY RANDOM() LIMIT 1", columnNamesAsString(
 					c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
 					columnNamesAsString(c -> "typeof(" + c.getTable().getName() + "." + c.getName() + ")"),
@@ -258,14 +258,14 @@ public class SQLite3Schema {
 				}
 				assert (!randomRowValues.next());
 				state.randomRowValues = values;
-				return new RowValue(this, values);
+				return new SQLite3RowValue(this, values);
 			}
 
 		}
 
 	}
 
-	public static class Table implements Comparable<Table> {
+	public static class SQLite3Table implements Comparable<SQLite3Table> {
 
 		public static enum TableKind {
 			MAIN, TEMP;
@@ -281,7 +281,7 @@ public class SQLite3Schema {
 		private boolean isVirtual;
 		private boolean isReadOnly;
 
-		public Table(String tableName, List<SQLite3Column> columns, TableKind tableType, boolean withoutRowid,
+		public SQLite3Table(String tableName, List<SQLite3Column> columns, TableKind tableType, boolean withoutRowid,
 				int nrRows, boolean isView, boolean isVirtual, boolean isReadOnly) {
 			this.tableName = tableName;
 			this.tableType = tableType;
@@ -328,7 +328,7 @@ public class SQLite3Schema {
 		}
 
 		@Override
-		public int compareTo(Table o) {
+		public int compareTo(SQLite3Table o) {
 			return o.getName().compareTo(tableName);
 		}
 
@@ -374,16 +374,16 @@ public class SQLite3Schema {
 
 	}
 
-	public static class RowValue {
-		private final Tables tables;
+	public static class SQLite3RowValue {
+		private final SQLite3Tables tables;
 		private final Map<SQLite3Column, SQLite3Constant> values;
 
-		RowValue(Tables tables, Map<SQLite3Column, SQLite3Constant> values) {
+		SQLite3RowValue(SQLite3Tables tables, Map<SQLite3Column, SQLite3Constant> values) {
 			this.tables = tables;
 			this.values = values;
 		}
 
-		public Tables getTable() {
+		public SQLite3Tables getTable() {
 			return tables;
 		}
 
@@ -426,7 +426,7 @@ public class SQLite3Schema {
 
 	}
 
-	public SQLite3Schema(List<Table> databaseTables, List<String> indexNames) {
+	public SQLite3Schema(List<SQLite3Table> databaseTables, List<String> indexNames) {
 		this.indexNames = indexNames;
 		this.databaseTables = Collections.unmodifiableList(databaseTables);
 	}
@@ -434,7 +434,7 @@ public class SQLite3Schema {
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		for (Table t : getDatabaseTables()) {
+		for (SQLite3Table t : getDatabaseTables()) {
 			sb.append(t + "\n");
 		}
 		return sb.toString();
@@ -462,7 +462,7 @@ public class SQLite3Schema {
 	}
 
 	static public SQLite3Schema fromConnection(Connection con) throws SQLException {
-		List<Table> databaseTables = new ArrayList<>();
+		List<SQLite3Table> databaseTables = new ArrayList<>();
 		List<String> indexNames = new ArrayList<>();
 
 		try (Statement s = con.createStatement()) {
@@ -503,7 +503,7 @@ public class SQLite3Schema {
 					} catch (IgnoreMeException e) {
 						nrRows = 0;
 					}
-					Table t = new Table(tableName, databaseColumns,
+					SQLite3Table t = new SQLite3Table(tableName, databaseColumns,
 							tableType.contentEquals("temp_table") ? TableKind.TEMP : TableKind.MAIN, withoutRowid,
 							nrRows, isView, isVirtual, isReadOnly);
 					try (Statement s3 = con.createStatement()) {
@@ -564,12 +564,12 @@ public class SQLite3Schema {
 					String columnTypeString = columnRs.getString("type");
 					boolean isPrimaryKey = columnRs.getBoolean("pk");
 					SQLite3DataType columnType = getColumnType(columnTypeString);
-					CollateSequence collate;
+					SQLite3CollateSequence collate;
 					if (!isDbStatsTable) {
 						String columnSql = columnCreates[columnCreateIndex++];
 						collate = getCollate(columnSql, isView);
 					} else {
-						collate = CollateSequence.BINARY;
+						collate = SQLite3CollateSequence.BINARY;
 					}
 					databaseColumns.add(new SQLite3Column(columnName, columnType,
 							columnTypeString.contentEquals("INTEGER"), isPrimaryKey, collate));
@@ -585,19 +585,19 @@ public class SQLite3Schema {
 		return databaseColumns;
 	}
 
-	private static CollateSequence getCollate(String sql, boolean isView) {
-		CollateSequence collate;
+	private static SQLite3CollateSequence getCollate(String sql, boolean isView) {
+		SQLite3CollateSequence collate;
 		if (isView) {
-			collate = CollateSequence.BINARY;
+			collate = SQLite3CollateSequence.BINARY;
 		} else {
 			if (sql.contains("collate binary")) {
-				collate = CollateSequence.BINARY;
+				collate = SQLite3CollateSequence.BINARY;
 			} else if (sql.contains("collate rtrim")) {
-				collate = CollateSequence.RTRIM;
+				collate = SQLite3CollateSequence.RTRIM;
 			} else if (sql.contains("collate nocase")) {
-				collate = CollateSequence.NOCASE;
+				collate = SQLite3CollateSequence.NOCASE;
 			} else {
-				collate = CollateSequence.BINARY;
+				collate = SQLite3CollateSequence.BINARY;
 			}
 		}
 		return collate;
@@ -636,24 +636,24 @@ public class SQLite3Schema {
 		return columnType;
 	}
 
-	public Table getRandomTable() {
+	public SQLite3Table getRandomTable() {
 		return Randomly.fromList(getDatabaseTables());
 	}
 
-	public Table getRandomTable(Predicate<Table> predicate) {
-		List<Table> collect = databaseTables.stream().filter(predicate).collect(Collectors.toList());
+	public SQLite3Table getRandomTable(Predicate<SQLite3Table> predicate) {
+		List<SQLite3Table> collect = databaseTables.stream().filter(predicate).collect(Collectors.toList());
 		if (collect.isEmpty()) {
 			throw new IgnoreMeException();
 		}
 		return Randomly.fromList(collect);
 	}
 
-	public List<Table> getTables(Predicate<Table> predicate) {
+	public List<SQLite3Table> getTables(Predicate<SQLite3Table> predicate) {
 		return databaseTables.stream().filter(predicate).collect(Collectors.toList());
 	}
 
-	public Table getRandomTableOrBailout(Predicate<Table> predicate) {
-		List<Table> tables = databaseTables.stream().filter(predicate).collect(Collectors.toList());
+	public SQLite3Table getRandomTableOrBailout(Predicate<SQLite3Table> predicate) {
+		List<SQLite3Table> tables = databaseTables.stream().filter(predicate).collect(Collectors.toList());
 		if (tables.isEmpty()) {
 			throw new IgnoreMeException();
 		} else {
@@ -661,46 +661,46 @@ public class SQLite3Schema {
 		}
 	}
 
-	public Table getRandomVirtualTable() {
+	public SQLite3Table getRandomVirtualTable() {
 		return getRandomTable(p -> p.isVirtual);
 	}
 
-	public List<Table> getDatabaseTables() {
+	public List<SQLite3Table> getDatabaseTables() {
 		return databaseTables;
 	}
 
-	public Tables getTables() {
-		return new Tables(databaseTables);
+	public SQLite3Tables getTables() {
+		return new SQLite3Tables(databaseTables);
 	}
 
-	public Tables getRandomTableNonEmptyTables() {
+	public SQLite3Tables getRandomTableNonEmptyTables() {
 		if (databaseTables.isEmpty()) {
 			throw new IgnoreMeException();
 		}
-		return new Tables(Randomly.nonEmptySubset(databaseTables));
+		return new SQLite3Tables(Randomly.nonEmptySubset(databaseTables));
 	}
 
-	public Table getRandomTableNoViewOrBailout() {
-		List<Table> databaseTablesWithoutViews = getDatabaseTablesWithoutViews();
+	public SQLite3Table getRandomTableNoViewOrBailout() {
+		List<SQLite3Table> databaseTablesWithoutViews = getDatabaseTablesWithoutViews();
 		if (databaseTablesWithoutViews.isEmpty()) {
 			throw new IgnoreMeException();
 		}
 		return Randomly.fromList(databaseTablesWithoutViews);
 	}
 
-	public Table getRandomTableNoViewNoVirtualTable() {
+	public SQLite3Table getRandomTableNoViewNoVirtualTable() {
 		return Randomly.fromList(getDatabaseTablesWithoutViewsWithoutVirtualTables());
 	}
 
-	public List<Table> getDatabaseTablesWithoutViews() {
+	public List<SQLite3Table> getDatabaseTablesWithoutViews() {
 		return databaseTables.stream().filter(t -> !t.isView).collect(Collectors.toList());
 	}
 
-	public List<Table> getViews() {
+	public List<SQLite3Table> getViews() {
 		return databaseTables.stream().filter(t -> t.isView).collect(Collectors.toList());
 	}
 
-	public Table getRandomViewOrBailout() {
+	public SQLite3Table getRandomViewOrBailout() {
 		if (getViews().isEmpty()) {
 			throw new IgnoreMeException();
 		} else {
@@ -708,7 +708,7 @@ public class SQLite3Schema {
 		}
 	}
 
-	public List<Table> getDatabaseTablesWithoutViewsWithoutVirtualTables() {
+	public List<SQLite3Table> getDatabaseTablesWithoutViewsWithoutVirtualTables() {
 		return databaseTables.stream().filter(t -> !t.isView && !t.isVirtual).collect(Collectors.toList());
 	}
 

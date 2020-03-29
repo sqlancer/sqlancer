@@ -2,7 +2,7 @@ package sqlancer.sqlite3.ast;
 
 import java.util.List;
 
-import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.CollateSequence;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 
 public class SQLite3RowValue extends SQLite3Expression {
 	
@@ -17,9 +17,9 @@ public class SQLite3RowValue extends SQLite3Expression {
 	}
 
 	@Override
-	public CollateSequence getExplicitCollateSequence() {
+	public SQLite3CollateSequence getExplicitCollateSequence() {
 		for (SQLite3Expression expr : expressions) {
-			CollateSequence collate = expr.getExplicitCollateSequence();
+			SQLite3CollateSequence collate = expr.getExplicitCollateSequence();
 			if (collate != null) {
 				return collate;
 			}

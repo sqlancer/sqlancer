@@ -5,7 +5,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import sqlancer.sqlite3.schema.SQLite3Schema.Table;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class DatabaseFacade {
 	
@@ -26,7 +26,7 @@ public class DatabaseFacade {
 		return DriverManager.getConnection(url, "lama", "lamalama123!");
 	}
 
-	public static String queryStringToGetRandomTableRow(Table table) {
+	public static String queryStringToGetRandomTableRow(SQLite3Table table) {
 		return String.format("SELECT %s, %s FROM %s ORDER BY RANDOM() LIMIT 1", table.getColumnsAsString(),
 				table.getColumnsAsString(c -> "typeof(" + c.getName() + ")"), table.getName());
 	}

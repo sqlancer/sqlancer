@@ -21,8 +21,8 @@ import sqlancer.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctio
 import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema;
-import sqlancer.sqlite3.schema.SQLite3Schema.Table;
-import sqlancer.sqlite3.schema.SQLite3Schema.Tables;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
 public class SQLite3RandomQuerySynthesizer {
 
@@ -31,7 +31,7 @@ public class SQLite3RandomQuerySynthesizer {
 	public static SQLite3Expression generate(SQLite3GlobalState globalState, int size) {
 		Randomly r = globalState.getRandomly();
 		SQLite3Schema s = globalState.getSchema();
-		Tables targetTables = s.getRandomTableNonEmptyTables();
+		SQLite3Tables targetTables = s.getRandomTableNonEmptyTables();
 		List<SQLite3Expression> expressions = new ArrayList<>();
 		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(globalState)
 				.setColumns(s.getTables().getColumns());
@@ -90,7 +90,7 @@ public class SQLite3RandomQuerySynthesizer {
 			}
 		}
 		select.setFetchColumns(expressions);
-		List<Table> tables = targetTables.getTables();
+		List<SQLite3Table> tables = targetTables.getTables();
 		if (Randomly.getBooleanWithRatherLowProbability()) {
 			// JOIN ... (might remove tables)
 			select.setJoinClauses(gen.getRandomJoinClauses(tables));

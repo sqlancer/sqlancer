@@ -11,16 +11,16 @@ import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
-import sqlancer.sqlite3.schema.SQLite3Schema.Table;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class SQLite3DeleteGenerator {
 
 	public static Query deleteContent(SQLite3GlobalState globalState) {
-		Table tableName = globalState.getSchema().getRandomTable(t -> !t.isView() && !t.isReadOnly());
+		SQLite3Table tableName = globalState.getSchema().getRandomTable(t -> !t.isView() && !t.isReadOnly());
 		return deleteContent(globalState, tableName);
 	}
 
-	public static Query deleteContent(SQLite3GlobalState globalState, Table tableName) {
+	public static Query deleteContent(SQLite3GlobalState globalState, SQLite3Table tableName) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("DELETE FROM ");
 		sb.append(tableName.getName());

@@ -2,7 +2,7 @@ package sqlancer.sqlite3.ast;
 
 import java.util.Optional;
 
-import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.CollateSequence;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 
 public abstract class SQLite3Case extends SQLite3Expression {
 
@@ -41,7 +41,7 @@ public abstract class SQLite3Case extends SQLite3Expression {
 		return elseExpr;
 	}
 	
-	protected CollateSequence getExplicitCasePairAndElseCollate() {
+	protected SQLite3CollateSequence getExplicitCasePairAndElseCollate() {
 		for (CasePair c : pairs) {
 			if (c.getCond().getExplicitCollateSequence() != null) {
 				return c.getCond().getExplicitCollateSequence();
@@ -63,7 +63,7 @@ public abstract class SQLite3Case extends SQLite3Expression {
 		}
 
 		@Override
-		public CollateSequence getExplicitCollateSequence() {
+		public SQLite3CollateSequence getExplicitCollateSequence() {
 			return getExplicitCasePairAndElseCollate();
 		}
 
@@ -98,7 +98,7 @@ public abstract class SQLite3Case extends SQLite3Expression {
 		}
 
 		@Override
-		public CollateSequence getExplicitCollateSequence() {
+		public SQLite3CollateSequence getExplicitCollateSequence() {
 			if (baseExpr.getExplicitCollateSequence() != null) {
 				return baseExpr.getExplicitCollateSequence();
 			} else {
@@ -121,7 +121,7 @@ public abstract class SQLite3Case extends SQLite3Expression {
 				if (whenComparisonValue == null) {
 					return null;
 				}// TODO collate
-				CollateSequence seq;
+				SQLite3CollateSequence seq;
 				if (baseExpr.getExplicitCollateSequence() != null) {
 					seq = baseExpr.getExplicitCollateSequence();
 				} else if (whenComparisonValue.getExplicitCollateSequence() != null) {
@@ -131,7 +131,7 @@ public abstract class SQLite3Case extends SQLite3Expression {
 				} else if (whenComparisonValue.getImplicitCollateSequence() != null) {
 					seq = c.getCond().getImplicitCollateSequence();
 				} else {
-					seq = CollateSequence.BINARY;
+					seq = SQLite3CollateSequence.BINARY;
 				}
 				ConstantTuple newVals = applyAffinities(baseExpr.getAffinity(), c.getCond().getAffinity(), baseExpr.getExpectedValue(), c.getCond().getExpectedValue());
 				SQLite3Constant equals = newVals.left.applyEquals(newVals.right, seq);

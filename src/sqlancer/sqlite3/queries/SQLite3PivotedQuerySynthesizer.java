@@ -41,10 +41,10 @@ import sqlancer.sqlite3.ast.SQLite3WindowFunction;
 import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema;
-import sqlancer.sqlite3.schema.SQLite3Schema.RowValue;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3RowValue;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
-import sqlancer.sqlite3.schema.SQLite3Schema.Table;
-import sqlancer.sqlite3.schema.SQLite3Schema.Tables;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
 public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 
@@ -52,7 +52,7 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 	private final SQLite3Schema s;
 	private final Randomly r;
 	private SQLite3StateToReproduce state;
-	private RowValue rw;
+	private SQLite3RowValue rw;
 	private List<SQLite3Column> fetchColumns;
 	private final List<String> errors = new ArrayList<>();
 	private List<SQLite3Expression> colExpressions;
@@ -102,14 +102,14 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 		if (s.getDatabaseTables().size() == 0) {
 			throw new IgnoreMeException();
 		}
-		Tables randomFromTables = s.getRandomTableNonEmptyTables();
-		List<Table> tables = randomFromTables.getTables();
+		SQLite3Tables randomFromTables = s.getRandomTableNonEmptyTables();
+		List<SQLite3Table> tables = randomFromTables.getTables();
 
 		globalState.getState().queryTargetedTablesString = randomFromTables.tableNamesAsString();
 		SQLite3SelectStatement selectStatement = new SQLite3SelectStatement();
 		selectStatement.setSelectType(Randomly.fromOptions(SQLite3SelectStatement.SelectType.values()));
 		List<SQLite3Column> columns = randomFromTables.getColumns();
-		for (Table t : tables) {
+		for (SQLite3Table t : tables) {
 			if (t.getRowid() != null) {
 				columns.add(t.getRowid());
 			}
@@ -119,7 +119,7 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 		List<Join> joinStatements = new ArrayList<>();
 		for (int i = 1; i < tables.size(); i++) {
 			SQLite3Expression joinClause = generateWhereClauseThatContainsRowValue(columns, rw);
-			Table table = Randomly.fromList(tables);
+			SQLite3Table table = Randomly.fromList(tables);
 			tables.remove(table);
 			JoinType options;
 			options = Randomly.fromOptions(JoinType.INNER, JoinType.CROSS, JoinType.OUTER);
@@ -139,7 +139,7 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 				.collect(Collectors.toList());
 		fetchColumns = Randomly.nonEmptySubset(columnsWithoutRowid);
 		colExpressions = new ArrayList<>();
-		List<Table> allTables = new ArrayList<>();
+		List<SQLite3Table> allTables = new ArrayList<>();
 		allTables.addAll(tables);
 		allTables.addAll(joinStatements.stream().map(join -> join.getTable()).collect(Collectors.toList()));
 		boolean allTablesContainOneRow = allTables.stream().allMatch(t -> t.getNrRows() == 1);
@@ -280,7 +280,7 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 		}
 	}
 
-	private List<SQLite3Expression> generateGroupByClause(List<SQLite3Column> columns, RowValue rw,
+	private List<SQLite3Expression> generateGroupByClause(List<SQLite3Column> columns, SQLite3RowValue rw,
 			boolean allTablesContainOneRow) {
 		errors.add("GROUP BY term out of range");
 		if (allTablesContainOneRow && Randomly.getBoolean()) {
@@ -307,14 +307,14 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 		}
 	}
 
-	private SQLite3Expression generateWhereClauseThatContainsRowValue(List<SQLite3Column> columns, RowValue rw) {
+	private SQLite3Expression generateWhereClauseThatContainsRowValue(List<SQLite3Column> columns, SQLite3RowValue rw) {
 
 		SQLite3Expression whereClause = generateNewExpression(columns, rw, true, 0);
 
 		return whereClause;
 	}
 
-	private SQLite3Expression generateNewExpression(List<SQLite3Column> columns, RowValue rw, boolean shouldBeTrue,
+	private SQLite3Expression generateNewExpression(List<SQLite3Column> columns, SQLite3RowValue rw, boolean shouldBeTrue,
 			int depth) {
 		do {
 			SQLite3Expression expr = new SQLite3ExpressionGenerator(globalState).setRowValue(rw).setColumns(columns)

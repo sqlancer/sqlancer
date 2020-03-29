@@ -3,7 +3,7 @@ package sqlancer.sqlite3.ast;
 import java.util.Collections;
 import java.util.List;
 
-import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.CollateSequence;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 
 public class SQLite3SelectStatement extends SQLite3Expression {
 
@@ -103,7 +103,7 @@ public class SQLite3SelectStatement extends SQLite3Expression {
 	}
 
 	@Override
-	public CollateSequence getExplicitCollateSequence() {
+	public SQLite3CollateSequence getExplicitCollateSequence() {
 		// TODO implement?
 		return null;
 	}

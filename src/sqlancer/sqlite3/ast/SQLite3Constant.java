@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 import sqlancer.Randomly;
 import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.schema.SQLite3DataType;
-import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.CollateSequence;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 
 public abstract class SQLite3Constant extends SQLite3Expression {
 
@@ -29,7 +29,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		}
 
 		@Override
-		public SQLite3Constant applyEquals(SQLite3Constant right, CollateSequence collate) {
+		public SQLite3Constant applyEquals(SQLite3Constant right, SQLite3CollateSequence collate) {
 			return SQLite3Constant.createNullConstant();
 		}
 
@@ -54,7 +54,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		}
 
 		@Override
-		public SQLite3Constant applyLess(SQLite3Constant right, CollateSequence collate) {
+		public SQLite3Constant applyLess(SQLite3Constant right, SQLite3CollateSequence collate) {
 			return SQLite3Constant.createNullConstant();
 		}
 
@@ -89,7 +89,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		}
 
 		@Override
-		public SQLite3Constant applyEquals(SQLite3Constant right, CollateSequence collate) {
+		public SQLite3Constant applyEquals(SQLite3Constant right, SQLite3CollateSequence collate) {
 			if (right instanceof SQLite3RealConstant) {
 				if (Double.isInfinite(right.asDouble())) {
 					return SQLite3Constant.createFalse();
@@ -128,7 +128,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		}
 
 		@Override
-		public SQLite3Constant applyLess(SQLite3Constant right, CollateSequence collate) {
+		public SQLite3Constant applyLess(SQLite3Constant right, SQLite3CollateSequence collate) {
 			if (right.isNull()) {
 				return right;
 			} else if (right.getDataType() == SQLite3DataType.TEXT || right.getDataType() == SQLite3DataType.BINARY) {
@@ -180,7 +180,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		}
 
 		@Override
-		public SQLite3Constant applyEquals(SQLite3Constant right, CollateSequence collate) {
+		public SQLite3Constant applyEquals(SQLite3Constant right, SQLite3CollateSequence collate) {
 			if (right instanceof SQLite3RealConstant) {
 				return SQLite3Constant.createBoolean(value == right.asDouble());
 			} else if (right instanceof SQLite3IntConstant) {
@@ -219,7 +219,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		}
 
 		@Override
-		public SQLite3Constant applyLess(SQLite3Constant right, CollateSequence collate) {
+		public SQLite3Constant applyLess(SQLite3Constant right, SQLite3CollateSequence collate) {
 			if (right.isNull()) {
 				return right;
 			} else if (right.getDataType() == SQLite3DataType.TEXT || right.getDataType() == SQLite3DataType.BINARY) {
@@ -274,7 +274,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 
 
 		@Override
-		public SQLite3Constant applyEquals(SQLite3Constant right, CollateSequence collate) {
+		public SQLite3Constant applyEquals(SQLite3Constant right, SQLite3CollateSequence collate) {
 			if (right.isNull()) {
 				return SQLite3Constant.createNullConstant();
 			} else if (right instanceof SQLite3TextConstant) {
@@ -382,7 +382,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		}
 
 		@Override
-		public SQLite3Constant applyLess(SQLite3Constant right, CollateSequence collate) {
+		public SQLite3Constant applyLess(SQLite3Constant right, SQLite3CollateSequence collate) {
 			if (right.isNull()) {
 				return right;
 			} else if (right.getDataType() == SQLite3DataType.BINARY) {
@@ -467,7 +467,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		}
 
 		@Override
-		public SQLite3Constant applyEquals(SQLite3Constant right, CollateSequence collate) {
+		public SQLite3Constant applyEquals(SQLite3Constant right, SQLite3CollateSequence collate) {
 			if (right.isNull()) {
 				return SQLite3Constant.createNullConstant();
 			} else if (right.getDataType() == SQLite3DataType.BINARY) {
@@ -493,7 +493,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		}
 
 		@Override
-		public SQLite3Constant applyLess(SQLite3Constant right, CollateSequence collate) {
+		public SQLite3Constant applyLess(SQLite3Constant right, SQLite3CollateSequence collate) {
 			if (right.isNull()) {
 				return right;
 			} else if (right.getDataType() == SQLite3DataType.TEXT || right.getDataType() == SQLite3DataType.INT
@@ -573,7 +573,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 	}
 
 	@Override
-	public CollateSequence getExplicitCollateSequence() {
+	public SQLite3CollateSequence getExplicitCollateSequence() {
 		return null;
 	}
 
@@ -598,14 +598,14 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		return new SQLite3Constant.SQLite3IntConstant(tr ? 1 : 0);
 	}
 
-	public abstract SQLite3Constant applyEquals(SQLite3Constant right, CollateSequence collate);
+	public abstract SQLite3Constant applyEquals(SQLite3Constant right, SQLite3CollateSequence collate);
 
-	public abstract SQLite3Constant applyLess(SQLite3Constant right, CollateSequence collate);
+	public abstract SQLite3Constant applyLess(SQLite3Constant right, SQLite3CollateSequence collate);
 
 	public abstract SQLite3Constant castToBoolean();
 
 	public SQLite3Constant applyEquals(SQLite3Constant right) {
-		return applyEquals(right, CollateSequence.BINARY);
+		return applyEquals(right, SQLite3CollateSequence.BINARY);
 	}
 
 	public boolean isReal() {

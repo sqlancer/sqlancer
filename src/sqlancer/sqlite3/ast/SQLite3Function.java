@@ -4,7 +4,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.sqlite3.ast.SQLite3Constant.SQLite3TextConstant;
 import sqlancer.sqlite3.schema.SQLite3DataType;
-import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.CollateSequence;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 
 public class SQLite3Function extends SQLite3Expression {
 
@@ -138,9 +138,9 @@ public class SQLite3Function extends SQLite3Expression {
 		},
 		NULLIF(2, "NULLIF") {
 			@Override
-			public SQLite3Constant apply(SQLite3Constant[] args, CollateSequence collateSequence) {
+			public SQLite3Constant apply(SQLite3Constant[] args, SQLite3CollateSequence collateSequence) {
 				if (collateSequence == null) {
-					collateSequence = CollateSequence.BINARY;
+					collateSequence = SQLite3CollateSequence.BINARY;
 				}
 				SQLite3Constant equals = args[0].applyEquals(args[1], collateSequence);
 				if (SQLite3Cast.isTrue(equals).isPresent() && SQLite3Cast.isTrue(equals).get()) {
@@ -152,7 +152,7 @@ public class SQLite3Function extends SQLite3Expression {
 
 			@Override
 			public SQLite3Constant apply(SQLite3Constant... args) {
-				CollateSequence collateSequence = null;
+				SQLite3CollateSequence collateSequence = null;
 				for (SQLite3Constant con : args) {
 					if (con.getExplicitCollateSequence() != null) {
 						collateSequence = con.getExplicitCollateSequence();
@@ -283,7 +283,7 @@ public class SQLite3Function extends SQLite3Expression {
 
 		public abstract SQLite3Constant apply(SQLite3Constant... args);
 
-		public SQLite3Constant apply(SQLite3Constant[] evaluatedArgs, CollateSequence collate) {
+		public SQLite3Constant apply(SQLite3Constant[] evaluatedArgs, SQLite3CollateSequence collate) {
 			return apply(evaluatedArgs);
 		}
 
@@ -307,7 +307,7 @@ public class SQLite3Function extends SQLite3Expression {
 	}
 
 	@Override
-	public CollateSequence getExplicitCollateSequence() {
+	public SQLite3CollateSequence getExplicitCollateSequence() {
 		for (SQLite3Expression expr : args) {
 			if (expr.getExplicitCollateSequence() != null) {
 				return expr.getExplicitCollateSequence();
@@ -332,7 +332,7 @@ public class SQLite3Function extends SQLite3Expression {
 				return null;
 			}
 		}
-		CollateSequence collate = getExplicitCollateSequence();
+		SQLite3CollateSequence collate = getExplicitCollateSequence();
 		if (collate == null) {
 			for (int i = 0; i < args.length; i++) {
 				if (args[i].getImplicitCollateSequence() != null) {

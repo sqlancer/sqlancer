@@ -30,8 +30,8 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
-import sqlancer.sqlite3.schema.SQLite3Schema.Table;
-import sqlancer.sqlite3.schema.SQLite3Schema.Tables;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
 public class SQLite3MetamorphicQuerySynthesizer implements TestOracle {
 
@@ -78,12 +78,12 @@ public class SQLite3MetamorphicQuerySynthesizer implements TestOracle {
 	public void check() throws SQLException {
 		firstValues.clear();
 		secondValues.clear();
-		Tables randomTables = s.getRandomTableNonEmptyTables();
+		SQLite3Tables randomTables = s.getRandomTableNonEmptyTables();
 		List<SQLite3Column> columns = randomTables.getColumns();
 		gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns);
 		SQLite3Expression randomWhereCondition = getRandomWhereCondition(columns);
 		List<SQLite3Expression> groupBys = gen.getRandomExpressions(Randomly.smallNumber());
-		List<Table> tables = randomTables.getTables();
+		List<SQLite3Table> tables = randomTables.getTables();
 		List<Join> joinStatements = gen.getRandomJoinClauses(tables);
 		List<SQLite3Expression> tableRefs = SQLite3Common.getTableRefs(tables, s);
 		randomColumnToCheck = Randomly.fromList(randomTables.getColumns());

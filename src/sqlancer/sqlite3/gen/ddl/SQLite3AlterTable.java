@@ -12,7 +12,7 @@ import sqlancer.sqlite3.gen.SQLite3ColumnBuilder;
 import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
-import sqlancer.sqlite3.schema.SQLite3Schema.Table;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class SQLite3AlterTable {
 
@@ -48,7 +48,7 @@ public class SQLite3AlterTable {
 		errors.add("subqueries prohibited in index expressions");
 		errors.add("parser stack overflow");
 		Option option = Randomly.fromOptions(Option.values());
-		Table t = s.getRandomTableOrBailout(tab -> !tab.isView() && !tab.isVirtual() && !tab.isReadOnly());
+		SQLite3Table t = s.getRandomTableOrBailout(tab -> !tab.isView() && !tab.isVirtual() && !tab.isReadOnly());
 		sb.append("ALTER TABLE ");
 		sb.append(t.getName());
 		switch (option) {

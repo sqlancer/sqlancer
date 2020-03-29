@@ -41,14 +41,14 @@ import sqlancer.sqlite3.ast.SQLite3RowValue;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation.UnaryOperator;
 import sqlancer.sqlite3.queries.SQLite3RandomQuerySynthesizer;
-import sqlancer.sqlite3.schema.SQLite3Schema.RowValue;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3RowValue;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
-import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.CollateSequence;
-import sqlancer.sqlite3.schema.SQLite3Schema.Table;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class SQLite3ExpressionGenerator {
 
-	private RowValue rw;
+	private SQLite3RowValue rw;
 	private final SQLite3GlobalState globalState;
 	private boolean tryToGenerateKnownResult;
 	private List<SQLite3Column> columns = Collections.emptyList();
@@ -83,7 +83,7 @@ public class SQLite3ExpressionGenerator {
 		return this;
 	}
 
-	public SQLite3ExpressionGenerator setRowValue(RowValue rw) {
+	public SQLite3ExpressionGenerator setRowValue(SQLite3RowValue rw) {
 		this.rw = rw;
 		return this;
 	}
@@ -115,13 +115,13 @@ public class SQLite3ExpressionGenerator {
 		return expressions;
 	}
 
-	public List<Join> getRandomJoinClauses(List<Table> tables) {
+	public List<Join> getRandomJoinClauses(List<SQLite3Table> tables) {
 		List<Join> joinStatements = new ArrayList<>();
 		if (Randomly.getBoolean() && tables.size() > 1) {
 			int nrJoinClauses = (int) Randomly.getNotCachedInteger(0, tables.size());
 			for (int i = 1; i < nrJoinClauses; i++) {
 				SQLite3Expression joinClause = getRandomExpression();
-				Table table = Randomly.fromList(tables);
+				SQLite3Table table = Randomly.fromList(tables);
 				tables.remove(table);
 				JoinType options;
 				options = Randomly.fromOptions(JoinType.INNER, JoinType.CROSS, JoinType.OUTER, JoinType.NATURAL);
@@ -258,7 +258,7 @@ public class SQLite3ExpressionGenerator {
 		case IN_OPERATOR:
 			return getInOperator(depth + 1);
 		case COLLATE:
-			return new CollateOperation(getRandomExpression(depth + 1), CollateSequence.random());
+			return new CollateOperation(getRandomExpression(depth + 1), SQLite3CollateSequence.random());
 		case EXISTS:
 			return getExists();
 		case CASE_OPERATOR:

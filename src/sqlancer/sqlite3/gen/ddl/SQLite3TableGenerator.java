@@ -14,8 +14,8 @@ import sqlancer.sqlite3.gen.SQLite3ColumnBuilder;
 import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
-import sqlancer.sqlite3.schema.SQLite3Schema.Table;
-import sqlancer.sqlite3.schema.SQLite3Schema.Table.TableKind;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table.TableKind;
 
 /**
  * See https://www.sqlite.org/lang_createtable.html
@@ -166,7 +166,7 @@ public class SQLite3TableGenerator {
 			}
 		} else {
 			final TableKind type = tempTable ? TableKind.TEMP : TableKind.MAIN;
-			List<Table> applicableTables = existingSchema.getTables().getTables().stream()
+			List<SQLite3Table> applicableTables = existingSchema.getTables().getTables().stream()
 					.filter(t -> t.getTableType() == type).collect(Collectors.toList());
 			if (applicableTables.isEmpty()) {
 				referencedTableName = tableName;
@@ -174,7 +174,7 @@ public class SQLite3TableGenerator {
 					columns.add(Randomly.fromList(columnNames));
 				}
 			} else {
-				Table randomTable = Randomly.fromList(applicableTables);
+				SQLite3Table randomTable = Randomly.fromList(applicableTables);
 				referencedTableName = randomTable.getName();
 				for (int i = 0; i < foreignKeyColumns.size(); i++) {
 					columns.add(randomTable.getRandomColumn().getName());

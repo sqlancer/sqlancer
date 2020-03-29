@@ -17,7 +17,7 @@ import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3TableReference;
 import sqlancer.sqlite3.schema.SQLite3DataType;
 import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
-import sqlancer.sqlite3.schema.SQLite3Schema.Table;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class SQLite3Common {
 	
@@ -120,7 +120,7 @@ public class SQLite3Common {
 		return candidateName;
 	}
 
-	public static String getFreeColumnName(Table t) {
+	public static String getFreeColumnName(SQLite3Table t) {
 		List<SQLite3Column> indexNames = t.getColumns();
 		final String[] candidateName = new String[1];
 		do {
@@ -156,9 +156,9 @@ public class SQLite3Common {
 		return new SQLite3Column(createColumnName(i), SQLite3DataType.NONE, false, false, null);
 	}
 
-	public static List<SQLite3Expression> getTableRefs(List<Table> tables, SQLite3Schema s) {
+	public static List<SQLite3Expression> getTableRefs(List<SQLite3Table> tables, SQLite3Schema s) {
 		List<SQLite3Expression> tableRefs = new ArrayList<>();
-		for (Table t : tables) {
+		for (SQLite3Table t : tables) {
 			SQLite3TableReference tableRef;
 			if (Randomly.getBooleanWithSmallProbability() && !s.getIndexNames().isEmpty()) {
 				tableRef = new SQLite3TableReference(s.getRandomIndexOrBailout(), t);
