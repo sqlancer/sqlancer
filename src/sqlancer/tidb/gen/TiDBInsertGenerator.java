@@ -9,21 +9,23 @@ import java.util.stream.Collectors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.tidb.TiDBExpressionGenerator;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
 import sqlancer.tidb.TiDBSchema.TiDBTable;
 
 public class TiDBInsertGenerator {
-	
+
 	private final TiDBGlobalState globalState;
 	private final Set<String> errors = new HashSet<>();
+	private TiDBExpressionGenerator gen;
 
 	public TiDBInsertGenerator(TiDBGlobalState globalState) {
 		this.globalState = globalState;
 		errors.add("Duplicate entry");
 		errors.add("cannot be null");
 		errors.add("doesn't have a default value");
-		
+
 		errors.add("The value specified for generated column"); // TODO: do not insert data into generated columns
 	}
 
@@ -33,6 +35,7 @@ public class TiDBInsertGenerator {
 
 	private Query get() {
 		TiDBTable table = globalState.getSchema().getRandomTable();
+		gen = new TiDBExpressionGenerator(globalState).setColumns(table.getColumns());
 		StringBuilder sb = new StringBuilder();
 		sb.append(Randomly.fromOptions("INSERT", "REPLACE"));
 		sb.append(" INTO ");
@@ -68,13 +71,8 @@ public class TiDBInsertGenerator {
 	}
 
 	private void insertValue(StringBuilder sb, TiDBColumn tiDBColumn) {
-		// TODO: make dependent on column
-		if (Randomly.getBooleanWithRatherLowProbability()) {
-			sb.append("NULL");
-		} else {
-			sb.append(Randomly.getNotCachedInteger(0, 100));
-			errors.add("out of range");
-		}
+		sb.append(gen.generateConstant());
+		errors.add("Out of range value");
 	}
 
 }

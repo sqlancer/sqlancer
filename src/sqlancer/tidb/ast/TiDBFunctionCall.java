@@ -9,8 +9,38 @@ public class TiDBFunctionCall implements TiDBExpression {
 	private TiDBFunction function;
 	private List<TiDBExpression> args;
 
+	// https://pingcap.github.io/docs/stable/reference/sql/functions-and-operators/numeric-functions-and-operators/
 	public static enum TiDBFunction {
 		
+		POW(2),
+		POWER(2),
+		EXP(1),
+		SQRT(1),
+		LN(1),
+		LOG(1),
+		LOG2(1),
+		LOG10(1),
+		PI(0),
+		TAN(1),
+		COT(1),
+		SIN(1),
+		COS(1),
+		ATAN(1),
+		ATAN2(2),
+		ACOS(1),
+		RADIANS(1),
+		DEGREES(1),
+		MOD(2),
+		ABS(1),
+		CEIL(1),
+		CEILING(1),
+		FLOOR(1),
+		ROUND(1),
+//		RAND(1),
+		SIGN(1),
+//		CONV()
+		// TRUNCATE(),
+		CRC32(1),
 		// https://pingcap.github.io/docs/stable/reference/sql/functions-and-operators/bit-functions-and-operators/
 		BIT_COUNT(1),
 		

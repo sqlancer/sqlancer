@@ -16,6 +16,10 @@ public class TiDBErrors {
 		
 		// https://github.com/pingcap/tidb/issues/15790
 		errors.add("Data truncation: %s value is out of range in '%s'");
+		
+		errors.add("DOUBLE value is out of range in 'cot(0)'");
+		errors.add("DOUBLE value is out of range in 'pow");
+		errors.add("DOUBLE value is out of range in 'exp(");
 	}
 
 	public static void addExpressionHavingErrors(Set<String> errors) {
