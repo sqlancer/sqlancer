@@ -1,9 +1,13 @@
 package sqlancer.tidb.visitor;
 
+import sqlancer.IgnoreMeException;
+import sqlancer.Randomly;
 import sqlancer.tidb.ast.TiDBColumnReference;
 import sqlancer.tidb.ast.TiDBConstant;
 import sqlancer.tidb.ast.TiDBExpression;
 import sqlancer.tidb.ast.TiDBFunctionCall;
+import sqlancer.tidb.ast.TiDBJoin;
+import sqlancer.tidb.ast.TiDBJoin.JoinType;
 import sqlancer.tidb.ast.TiDBSelect;
 import sqlancer.tidb.ast.TiDBTableReference;
 import sqlancer.visitor.ToStringVisitor;
@@ -44,6 +48,12 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
 		visit(select.getFetchColumns());
 		sb.append(" FROM ");
 		visit(select.getFromList());
+		if (!select.getFromList().isEmpty() && !select.getJoinExpressions().isEmpty()) {
+			sb.append(", ");
+		}
+		if (!select.getJoinExpressions().isEmpty()) {
+			visit(select.getJoinExpressions());
+		}
 		if (select.getWhereClause() != null) {
 			sb.append(" WHERE ");
 			visit(select.getWhereClause());
@@ -68,5 +78,67 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
 		sb.append("(");
 		visit(call.getArgs());
 		sb.append(")");
+	}
+
+	@Override
+	public void visit(TiDBJoin join) {
+		sb.append(" ");
+		visit(join.getLeftTable());
+		sb.append(" ");
+		switch (join.getJoinType()) {
+		case INNER:
+			if (Randomly.getBoolean()) {
+				sb.append("INNER ");
+			} else {
+				sb.append("CROSS ");
+			}
+			sb.append("JOIN ");
+			break;
+		case LEFT:
+			sb.append("LEFT ");
+			if (Randomly.getBoolean()) {
+				sb.append(" OUTER ");
+			}
+			sb.append("JOIN ");
+			if (true) {
+				// https://github.com/pingcap/tidb/issues/15846
+				throw new IgnoreMeException();
+			}
+			break;
+		case RIGHT:
+			sb.append("RIGHT ");
+			if (Randomly.getBoolean()) {
+				sb.append(" OUTER ");
+			}
+			sb.append("JOIN ");
+			break;
+		case STRAIGHT:
+			sb.append("STRAIGHT_JOIN ");
+			break;
+		case NATURAL:
+			sb.append("NATURAL ");
+			switch (join.getNaturalJoinType()) {
+			case INNER:
+				break;
+			case LEFT:
+				sb.append("LEFT ");
+				break;
+			case RIGHT:
+				if (true) {
+					// https://github.com/pingcap/tidb/issues/15844
+					throw new IgnoreMeException();
+				}
+				sb.append("RIGHT ");
+				break;
+			}
+			sb.append("JOIN ");
+			break;
+		}
+		visit(join.getRightTable());
+		sb.append(" ");
+		if (join.getJoinType() != JoinType.NATURAL) {
+			sb.append("ON ");
+			visit(join.getOnCondition());
+		}
 	}
 }

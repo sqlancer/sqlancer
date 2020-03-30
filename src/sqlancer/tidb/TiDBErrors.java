@@ -20,6 +20,10 @@ public class TiDBErrors {
 		errors.add("DOUBLE value is out of range in 'cot(0)'");
 		errors.add("DOUBLE value is out of range in 'pow");
 		errors.add("DOUBLE value is out of range in 'exp(");
+		
+		errors.add("index out of range"); // https://github.com/pingcap/tidb/issues/15810
+		errors.add("baseBuiltinFunc.evalString() should never be called, please contact the TiDB team for help"); // https://github.com/pingcap/tidb/issues/15847
+		errors.add("unsupport column type for encode 6"); // https://github.com/pingcap/tidb/issues/15850
 	}
 
 	public static void addExpressionHavingErrors(Set<String> errors) {

@@ -16,9 +16,11 @@ import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBExpressionGenerator;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema;
+import sqlancer.tidb.TiDBSchema.TiDBTable;
 import sqlancer.tidb.TiDBSchema.TiDBTables;
 import sqlancer.tidb.ast.TiDBColumnReference;
 import sqlancer.tidb.ast.TiDBExpression;
+import sqlancer.tidb.ast.TiDBJoin;
 import sqlancer.tidb.ast.TiDBSelect;
 import sqlancer.tidb.ast.TiDBTableReference;
 import sqlancer.tidb.ast.TiDBUnaryPostfixOperation;
@@ -44,10 +46,12 @@ public class TiDBQueryPartitioningWhereTester  implements TestOracle  {
 		TiDBExpressionGenerator gen = new TiDBExpressionGenerator(state).setColumns(targetTables.getColumns());
 		TiDBSelect select = new TiDBSelect();
 		select.setFetchColumns(Arrays.asList(new TiDBColumnReference(targetTables.getColumns().get(0))));
-		List<TiDBExpression> tableList = targetTables.getTables().stream()
+		List<TiDBTable> tables = targetTables.getTables();
+		List<TiDBExpression> tableList = tables.stream()
 				.map(t -> new TiDBTableReference(t)).collect(Collectors.toList());
-		// TODO joins
+		List<TiDBExpression> joinExpressions = TiDBJoin.getJoins(tableList, state);
 		select.setFromList(tableList);
+		select.setJoins(joinExpressions);
 		select.setWhereClause(null);
 		if (Randomly.getBoolean() && false) {
 			// TODO: this results in run-time errors
