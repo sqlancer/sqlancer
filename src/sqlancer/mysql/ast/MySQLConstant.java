@@ -7,7 +7,7 @@ import sqlancer.Randomly;
 import sqlancer.mysql.MySQLSchema.MySQLDataType;
 import sqlancer.mysql.ast.MySQLCastOperation.CastType;
 
-public abstract class MySQLConstant extends MySQLExpression {
+public abstract class MySQLConstant implements MySQLExpression {
 
 	public boolean isInt() {
 		return false;

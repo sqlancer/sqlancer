@@ -1,6 +1,6 @@
 package sqlancer.mysql.ast;
 
-public class MySQLCastOperation extends MySQLExpression {
+public class MySQLCastOperation implements MySQLExpression {
 
 	private final MySQLExpression expr;
 	private final CastType type;

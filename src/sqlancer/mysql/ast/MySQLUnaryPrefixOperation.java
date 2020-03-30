@@ -3,7 +3,7 @@ package sqlancer.mysql.ast;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 
-public class MySQLUnaryPrefixOperation extends MySQLExpression {
+public class MySQLUnaryPrefixOperation implements MySQLExpression {
 
 	private final MySQLExpression expr;
 	private MySQLUnaryPrefixOperator op;

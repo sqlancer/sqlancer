@@ -6,7 +6,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.mysql.ast.MySQLCastOperation.CastType;
 
-public class MySQLBinaryOperation extends MySQLExpression {
+public class MySQLBinaryOperation implements MySQLExpression {
 
 	private final MySQLExpression left;
 	private final MySQLExpression right;

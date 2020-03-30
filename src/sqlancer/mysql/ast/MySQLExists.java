@@ -1,6 +1,6 @@
 package sqlancer.mysql.ast;
 
-public class MySQLExists extends MySQLExpression {
+public class MySQLExists implements MySQLExpression {
 
 	private final MySQLExpression expr;
 	private final MySQLConstant expected;

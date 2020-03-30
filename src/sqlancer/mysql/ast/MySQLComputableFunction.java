@@ -7,7 +7,7 @@ import sqlancer.Randomly;
 import sqlancer.mysql.MySQLSchema.MySQLDataType;
 import sqlancer.mysql.ast.MySQLCastOperation.CastType;
 
-public class MySQLComputableFunction extends MySQLExpression {
+public class MySQLComputableFunction implements MySQLExpression {
 
 	private final MySQLFunction func;
 	private final MySQLExpression[] args;

@@ -1,6 +1,6 @@
 package sqlancer.mysql.ast;
 
-public class MySQLJoin extends MySQLExpression {
+public class MySQLJoin implements MySQLExpression {
 
 	@Override
 	public MySQLConstant getExpectedValue() {

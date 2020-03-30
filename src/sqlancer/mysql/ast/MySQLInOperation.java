@@ -7,7 +7,7 @@ import sqlancer.IgnoreMeException;
 /**
  * @see https://dev.mysql.com/doc/refman/8.0/en/comparison-operators.html#operator_in
  */
-public class MySQLInOperation extends MySQLExpression {
+public class MySQLInOperation implements MySQLExpression {
 
 	private final MySQLExpression expr;
 	private final List<MySQLExpression> listElements;

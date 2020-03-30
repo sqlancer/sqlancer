@@ -2,7 +2,7 @@ package sqlancer.mysql.ast;
 
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 
-public class MySQLTableReference extends MySQLExpression {
+public class MySQLTableReference implements MySQLExpression {
 	
 	private MySQLTable table;
 

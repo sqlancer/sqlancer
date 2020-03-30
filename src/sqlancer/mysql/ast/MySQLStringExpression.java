@@ -1,6 +1,6 @@
 package sqlancer.mysql.ast;
 
-public class MySQLStringExpression extends MySQLExpression {
+public class MySQLStringExpression implements MySQLExpression {
 
 	private final String str;
 	private final MySQLConstant expectedValue;

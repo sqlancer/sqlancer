@@ -2,7 +2,7 @@ package sqlancer.mysql.ast;
 
 import sqlancer.Randomly;
 
-public class MySQLOrderByTerm extends MySQLExpression {
+public class MySQLOrderByTerm implements MySQLExpression {
 	
 	private final MySQLOrder order;
 	private final MySQLExpression expr;

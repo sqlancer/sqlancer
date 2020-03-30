@@ -5,7 +5,7 @@ import sqlancer.Randomly;
 import sqlancer.mysql.MySQLSchema.MySQLDataType;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 
-public class MySQLBinaryComparisonOperation extends MySQLExpression {
+public class MySQLBinaryComparisonOperation implements MySQLExpression {
 
 	public enum BinaryComparisonOperator {
 		EQUALS("=") {

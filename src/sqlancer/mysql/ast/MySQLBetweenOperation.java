@@ -4,7 +4,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation.BinaryComparisonOperator;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation.MySQLBinaryLogicalOperator;
 
-public class MySQLBetweenOperation extends MySQLExpression {
+public class MySQLBetweenOperation implements MySQLExpression {
 
 	private final MySQLExpression expr;
 	private final MySQLExpression left;

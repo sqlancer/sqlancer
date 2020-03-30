@@ -2,7 +2,7 @@ package sqlancer.mysql.ast;
 
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 
-public class MySQLColumnValue extends MySQLExpression {
+public class MySQLColumnValue implements MySQLExpression {
 	
 	private final MySQLColumn column;
 	private final MySQLConstant value;

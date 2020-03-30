@@ -2,7 +2,7 @@ package sqlancer.mysql.ast;
 
 import sqlancer.mysql.ast.MySQLConstant.MySQLIntConstant;
 
-public class MySQLUnaryPostfixOperator extends MySQLExpression {
+public class MySQLUnaryPostfixOperator implements MySQLExpression {
 
 	private final MySQLExpression expression;
 	private final UnaryPostfixOperator operator;
