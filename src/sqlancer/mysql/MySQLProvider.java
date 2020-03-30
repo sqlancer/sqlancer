@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.AbstractAction;
 import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
@@ -18,6 +19,7 @@ import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
+import sqlancer.QueryProvider;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.MySQLStateToReproduce;
@@ -29,6 +31,7 @@ import sqlancer.mysql.gen.MySQLDropIndex;
 import sqlancer.mysql.gen.MySQLRowInserter;
 import sqlancer.mysql.gen.MySQLSetGenerator;
 import sqlancer.mysql.gen.MySQLTableGenerator;
+import sqlancer.mysql.gen.MySQLTruncateTableGenerator;
 import sqlancer.mysql.gen.admin.MySQLFlush;
 import sqlancer.mysql.gen.admin.MySQLReset;
 import sqlancer.mysql.gen.datadef.CreateIndexGenerator;
@@ -45,9 +48,39 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState> {
 	private QueryManager manager;
 	private String databaseName;
 
-	enum Action {
-		SHOW_TABLES, INSERT, SET_VARIABLE, REPAIR, OPTIMIZE, CHECKSUM, CHECK_TABLE, ANALYZE_TABLE, FLUSH, RESET,
-		CREATE_INDEX, ALTER_TABLE, TRUNCATE_TABLE, SELECT_INFO, CREATE_TABLE, DELETE, DROP_INDEX;
+	enum Action implements AbstractAction<MySQLGlobalState> {
+		SHOW_TABLES((g) -> new QueryAdapter("SHOW TABLES")), //
+		INSERT(MySQLRowInserter::insertRow), //
+		SET_VARIABLE(MySQLSetGenerator::set), //
+		REPAIR(MySQLRepair::repair), //
+		OPTIMIZE(MySQLOptimize::optimize), //
+		CHECKSUM(MySQLChecksum::checksum), //
+		CHECK_TABLE(MySQLCheckTable::check), //
+		ANALYZE_TABLE(MySQLAnalyzeTable::analyze), //
+		FLUSH(MySQLFlush::create), RESET(MySQLReset::create), CREATE_INDEX(CreateIndexGenerator::create), //
+		ALTER_TABLE(MySQLAlterTable::create), //
+		TRUNCATE_TABLE(MySQLTruncateTableGenerator::generate), //
+		SELECT_INFO((g) -> new QueryAdapter(
+				"select TABLE_NAME, ENGINE from information_schema.TABLES where table_schema = '" + g.getDatabaseName()
+						+ "'")), //
+		CREATE_TABLE((g) -> {
+			// TODO refactor
+			String tableName = SQLite3Common.createTableName(g.getSchema().getDatabaseTables().size());
+			return MySQLTableGenerator.generate(tableName, g.getRandomly(), g.getSchema());
+		}), //
+		DELETE(MySQLDeleteGenerator::delete), //
+		DROP_INDEX(MySQLDropIndex::generate);
+
+		private final QueryProvider<MySQLGlobalState> queryProvider;
+
+		private Action(QueryProvider<MySQLGlobalState> queryProvider) {
+			this.queryProvider = queryProvider;
+		}
+
+		@Override
+		public Query getQuery(MySQLGlobalState globalState) throws SQLException {
+			return queryProvider.getQuery(globalState);
+		}
 	}
 
 	private static int mapActions(MySQLGlobalState globalState, Action a) {
@@ -221,7 +254,8 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState> {
 					};
 					break;
 				case CREATE_TABLE:
-					String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
+					String tableName = SQLite3Common
+							.createTableName(globalState.getSchema().getDatabaseTables().size());
 					query = MySQLTableGenerator.generate(tableName, r, globalState.getSchema());
 					break;
 				case DELETE:
