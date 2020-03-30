@@ -38,7 +38,6 @@ import sqlancer.mysql.gen.tblmaintenance.MySQLChecksum;
 import sqlancer.mysql.gen.tblmaintenance.MySQLOptimize;
 import sqlancer.mysql.gen.tblmaintenance.MySQLRepair;
 import sqlancer.sqlite3.gen.SQLite3Common;
-import sqlancer.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
 
 public class MySQLProvider implements DatabaseProvider<MySQLGlobalState> {
 
@@ -144,8 +143,6 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState> {
 			nrRemaining[action.ordinal()] = nrPerformed;
 			total += nrPerformed;
 		}
-		CreateIndexGenerator createIndexGenerator = new CreateIndexGenerator(globalState.getSchema(), r);
-
 		while (total != 0) {
 			Action nextAction = null;
 			int selection = r.getInteger(0, total);
@@ -168,37 +165,37 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState> {
 					query = new QueryAdapter("SHOW TABLES");
 					break;
 				case INSERT:
-					query = MySQLRowInserter.insertRow(globalState.getSchema().getRandomTable(), r);
+					query = MySQLRowInserter.insertRow(globalState);
 					break;
 				case SET_VARIABLE:
-					query = MySQLSetGenerator.set(r, options);
+					query = MySQLSetGenerator.set(globalState);
 					break;
 				case REPAIR:
-					query = MySQLRepair.repair(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty());
+					query = MySQLRepair.repair(globalState);
 					break;
 				case OPTIMIZE:
-					query = MySQLOptimize.optimize(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty());
+					query = MySQLOptimize.optimize(globalState);
 					break;
 				case CHECKSUM:
-					query = MySQLChecksum.checksum(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty());
+					query = MySQLChecksum.checksum(globalState);
 					break;
 				case CHECK_TABLE:
-					query = MySQLCheckTable.check(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty());
+					query = MySQLCheckTable.check(globalState);
 					break;
 				case ANALYZE_TABLE:
-					query = MySQLAnalyzeTable.analyze(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty(), r);
+					query = MySQLAnalyzeTable.analyze(globalState);
 					break;
 				case FLUSH:
-					query = MySQLFlush.create(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty());
+					query = MySQLFlush.create(globalState);
 					break;
 				case RESET:
-					query = MySQLReset.create();
+					query = MySQLReset.create(globalState);
 					break;
 				case CREATE_INDEX:
-					query = createIndexGenerator.create();
+					query = CreateIndexGenerator.create(globalState);
 					break;
 				case ALTER_TABLE:
-					query = MySQLAlterTable.create(globalState.getSchema(), r);
+					query = MySQLAlterTable.create(globalState);
 					break;
 				case SELECT_INFO:
 					query = new QueryAdapter(
@@ -228,10 +225,10 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState> {
 					query = MySQLTableGenerator.generate(tableName, r, globalState.getSchema());
 					break;
 				case DELETE:
-					query = MySQLDeleteGenerator.delete(globalState.getSchema().getRandomTable(), r);
+					query = MySQLDeleteGenerator.delete(globalState);
 					break;
 				case DROP_INDEX:
-					query = MySQLDropIndex.generate(globalState.getSchema().getRandomTable());
+					query = MySQLDropIndex.generate(globalState);
 					break;
 				default:
 					throw new AssertionError(nextAction);
@@ -247,7 +244,6 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState> {
 				manager.execute(query);
 				if (query.couldAffectSchema()) {
 					globalState.setSchema(MySQLSchema.fromConnection(con, databaseName));
-					createIndexGenerator.setNewSchema(globalState.getSchema());
 				}
 			} catch (Throwable t) {
 				System.err.println(query.getQueryString());
@@ -255,11 +251,11 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState> {
 			}
 			total--;
 		}
-		for (MySQLTable t : globalState.getSchema().getDatabaseTables()) {
-			if (!ensureTableHasRows(con, t, r)) {
-				return;
-			}
-		}
+//		for (MySQLTable t : globalState.getSchema().getDatabaseTables()) {
+//			if (!ensureTableHasRows(con, t, r)) {
+//				return;
+//			}
+//		}
 
 		globalState.setSchema(MySQLSchema.fromConnection(con, databaseName));
 
@@ -275,22 +271,22 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState> {
 
 	}
 
-	private boolean ensureTableHasRows(Connection con, MySQLTable randomTable, Randomly r) throws SQLException {
-		int nrRows;
-		int counter = 1;
-		do {
-			try {
-				Query q = MySQLRowInserter.insertRow(randomTable, r);
-				manager.execute(q);
-			} catch (SQLException e) {
-				if (!SQLite3PivotedQuerySynthesizer.shouldIgnoreException(e)) {
-					throw new AssertionError(e);
-				}
-			}
-			nrRows = getNrRows(con, randomTable);
-		} while (nrRows == 0 && counter-- != 0);
-		return nrRows != 0;
-	}
+//	private boolean ensureTableHasRows(Connection con, MySQLTable randomTable, Randomly r) throws SQLException {
+//		int nrRows;
+//		int counter = 1;
+//		do {
+//			try {
+//				Query q = MySQLRowInserter.insertRow(randomTable, r);
+//				manager.execute(q);
+//			} catch (SQLException e) {
+//				if (!SQLite3PivotedQuerySynthesizer.shouldIgnoreException(e)) {
+//					throw new AssertionError(e);
+//				}
+//			}
+//			nrRows = getNrRows(con, randomTable);
+//		} while (nrRows == 0 && counter-- != 0);
+//		return nrRows != 0;
+//	}
 
 	public static int getNrRows(Connection con, MySQLTable table) throws SQLException {
 		try (Statement s = con.createStatement()) {

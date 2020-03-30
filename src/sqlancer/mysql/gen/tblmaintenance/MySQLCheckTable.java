@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 
 /**
@@ -20,8 +21,8 @@ public class MySQLCheckTable {
 		this.tables = tables;
 	}
 
-	public static Query check(List<MySQLTable> tables) {
-		return new MySQLCheckTable(tables).generate();
+	public static Query check(MySQLGlobalState globalState) {
+		return new MySQLCheckTable(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty()).generate();
 	}
 
 	// CHECK TABLE tbl_name [, tbl_name] ... [option] ...

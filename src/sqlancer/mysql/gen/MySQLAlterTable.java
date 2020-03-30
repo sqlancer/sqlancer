@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 
@@ -22,8 +23,8 @@ public class MySQLAlterTable {
 		this.schema = newSchema;
 	}
 
-	public static Query create(MySQLSchema newSchema, Randomly r) {
-		return new MySQLAlterTable(newSchema, r).create();
+	public static Query create(MySQLGlobalState globalState) {
+		return new MySQLAlterTable(globalState.getSchema(), globalState.getRandomly()).create();
 	}
 
 	private enum Action {

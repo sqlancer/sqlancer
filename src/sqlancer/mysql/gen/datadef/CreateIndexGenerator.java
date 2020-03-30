@@ -7,6 +7,7 @@ import java.util.List;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLDataType;
@@ -30,8 +31,8 @@ public class CreateIndexGenerator {
 		this.r = r;
 	}
 
-	public static Query create(Randomly r, MySQLSchema schema) {
-		return new CreateIndexGenerator(schema, r).create();
+	public static Query create(MySQLGlobalState globalState) {
+		return new CreateIndexGenerator(globalState.getSchema(), globalState.getRandomly()).create();
 	}
 
 	public Query create() {

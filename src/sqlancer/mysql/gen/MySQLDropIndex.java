@@ -6,6 +6,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 
 /**
@@ -22,15 +23,16 @@ public class MySQLDropIndex {
 //lock_option:
 //    LOCK [=] {DEFAULT|NONE|SHARED|EXCLUSIVE}
 
-	public static Query generate(MySQLTable randomTable) {
-		if (!randomTable.hasIndexes()) {
+	public static Query generate(MySQLGlobalState globalState) {
+		MySQLTable table = globalState.getSchema().getRandomTable();
+		if (!table.hasIndexes()) {
 			throw new IgnoreMeException();
 		}
 		StringBuilder sb = new StringBuilder();
 		sb.append("DROP INDEX ");
-		sb.append(randomTable.getRandomIndex().getIndexName());
+		sb.append(table.getRandomIndex().getIndexName());
 		sb.append(" ON ");
-		sb.append(randomTable.getName());
+		sb.append(table.getName());
 		if (Randomly.getBoolean()) {
 			sb.append(" ALGORITHM=");
 			sb.append(Randomly.fromOptions("DEFAULT", "INPLACE", "COPY"));

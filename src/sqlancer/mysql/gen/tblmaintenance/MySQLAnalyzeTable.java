@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 
@@ -23,8 +24,8 @@ public class MySQLAnalyzeTable {
 		this.r = r;
 	}
 
-	public static Query analyze(List<MySQLTable> databaseTablesRandomSubsetNotEmpty, Randomly r) {
-		return new MySQLAnalyzeTable(databaseTablesRandomSubsetNotEmpty, r).generate();
+	public static Query analyze(MySQLGlobalState globalState) {
+		return new MySQLAnalyzeTable(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty(), globalState.getRandomly()).generate();
 	}
 
 	private Query generate() {

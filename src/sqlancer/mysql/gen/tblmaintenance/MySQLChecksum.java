@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 
 /**
@@ -20,8 +21,8 @@ public class MySQLChecksum {
 		this.tables = tables;
 	}
 
-	public static Query checksum(List<MySQLTable> tables) {
-		return new MySQLChecksum(tables).checksum();
+	public static Query checksum(MySQLGlobalState globalState) {
+		return new MySQLChecksum(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty()).checksum();
 	}
 
 	// CHECKSUM TABLE tbl_name [, tbl_name] ... [QUICK | EXTENDED]

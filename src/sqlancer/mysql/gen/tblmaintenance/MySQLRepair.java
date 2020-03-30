@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.MySQLSchema.MySQLTable.MySQLEngine;
 
@@ -21,7 +22,8 @@ public class MySQLRepair {
 		this.tables = tables;
 	}
 
-	public static Query repair(List<MySQLTable> tables) {
+	public static Query repair(MySQLGlobalState globalState) {
+		List<MySQLTable> tables = globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty();
 		for (MySQLTable table : tables) {
 			// see https://bugs.mysql.com/bug.php?id=95820
 			if (table.getEngine() == MySQLEngine.MY_ISAM) {

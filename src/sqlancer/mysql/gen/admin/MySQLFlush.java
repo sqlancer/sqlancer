@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 
 /**
@@ -20,8 +21,8 @@ public class MySQLFlush {
 		this.tables = tables;
 	}
 
-	public static Query create(List<MySQLTable> tables) {
-		return new MySQLFlush(tables).generate();
+	public static Query create(MySQLGlobalState globalState) {
+		return new MySQLFlush(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty()).generate();
 	}
 
 	private Query generate() {

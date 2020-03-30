@@ -5,6 +5,7 @@ import java.util.Arrays;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 
 public class MySQLDeleteGenerator {
@@ -18,8 +19,8 @@ public class MySQLDeleteGenerator {
 		this.r = r;
 	}
 
-	public static Query delete(MySQLTable randomTable, Randomly r) {
-		return new MySQLDeleteGenerator(randomTable, r).generate();
+	public static Query delete(MySQLGlobalState globalState) {
+		return new MySQLDeleteGenerator(globalState.getSchema().getRandomTable(), globalState.getRandomly()).generate();
 	}
 
 	private Query generate() {

@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 
 /**
@@ -20,8 +21,8 @@ public class MySQLOptimize {
 		this.tables = tables;
 	}
 
-	public static Query optimize(List<MySQLTable> tables) {
-		return new MySQLOptimize(tables).optimize();
+	public static Query optimize(MySQLGlobalState globalState) {
+		return new MySQLOptimize(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty()).optimize();
 	}
 
 	// OPTIMIZE [NO_WRITE_TO_BINLOG | LOCAL]

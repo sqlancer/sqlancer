@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLDataType;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
@@ -24,7 +25,9 @@ public class MySQLRowInserter {
 		this.r = r;
 	}
 
-	public static Query insertRow(MySQLTable table, Randomly r) throws SQLException {
+	public static Query insertRow(MySQLGlobalState globalState) throws SQLException {
+		MySQLTable table = globalState.getSchema().getRandomTable();
+		Randomly r = globalState.getRandomly();
 		if (Randomly.getBoolean()) {
 			return new MySQLRowInserter(table, r).generateInsert();
 		} else {
@@ -114,5 +117,6 @@ public class MySQLRowInserter {
 			return new QueryAdapter(sb.toString(), Arrays.asList("Data truncation"));
 		}
 	}
+
 
 }

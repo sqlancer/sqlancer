@@ -8,6 +8,7 @@ import sqlancer.MainOptions;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.mysql.MySQLGlobalState;
 
 public class MySQLSetGenerator {
 
@@ -22,8 +23,8 @@ public class MySQLSetGenerator {
 		this.isSingleThreaded = options.getNumberConcurrentThreads() == 1;
 	}
 
-	public static Query set(Randomly r, MainOptions options) {
-		return new MySQLSetGenerator(r, options).get();
+	public static Query set(MySQLGlobalState globalState) {
+		return new MySQLSetGenerator(globalState.getRandomly(), globalState.getOptions()).get();
 	}
 
 	private enum Scope {
