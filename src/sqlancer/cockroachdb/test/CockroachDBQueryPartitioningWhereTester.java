@@ -53,13 +53,16 @@ public class CockroachDBQueryPartitioningWhereTester implements TestOracle {
 			select.setJoinList(CockroachDBNoRECTester.getJoins(from, state));
 		}
 		select.setFromList(from);
-		// TODO order by?
 		select.setWhereClause(null);
 		String originalQueryString = CockroachDBVisitor.asString(select);
 
 		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
 				state.getConnection(), state);
 
+		boolean allowOrderBy = Randomly.getBoolean();
+		if (allowOrderBy) {
+			select.setOrderByExpressions(gen.getOrderingTerms());
+		}
 		CockroachDBExpression predicate = gen.generateExpression(CockroachDBDataType.BOOL.get());
 		select.setWhereClause(predicate);
 		String firstQueryString = CockroachDBVisitor.asString(select);
@@ -69,7 +72,7 @@ public class CockroachDBQueryPartitioningWhereTester implements TestOracle {
 		String thirdQueryString = CockroachDBVisitor.asString(select);
 		List<String> combinedString = new ArrayList<>();
 		List<String> secondResultSet = TestOracle.getCombinedResultSet(firstQueryString, secondQueryString,
-				thirdQueryString, combinedString, Randomly.getBoolean(), state, errors);
+				thirdQueryString, combinedString, !allowOrderBy, state, errors);
 		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
 	}
 }

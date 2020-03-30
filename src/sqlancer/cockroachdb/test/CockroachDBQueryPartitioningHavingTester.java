@@ -53,7 +53,6 @@ public class CockroachDBQueryPartitioningHavingTester implements TestOracle {
 			select.setJoinList(CockroachDBNoRECTester.getJoins(from, state));
 		}
 		select.setFromList(from);
-		// TODO order by?
 		if (Randomly.getBoolean()) {
 			select.setWhereClause(gen.generateExpression(CockroachDBDataType.BOOL.get()));
 		}
@@ -64,6 +63,10 @@ public class CockroachDBQueryPartitioningHavingTester implements TestOracle {
 		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
 				state.getConnection(), state);
 
+		boolean orderBy = Randomly.getBoolean();
+		if (orderBy) {
+			select.setOrderByExpressions(gen.getOrderingTerms());
+		}
 		CockroachDBExpression predicate = gen.generateHavingClause();
 		select.setHavingClause(predicate);
 		String firstQueryString = CockroachDBVisitor.asString(select);
@@ -74,7 +77,7 @@ public class CockroachDBQueryPartitioningHavingTester implements TestOracle {
 		String thirdQueryString = CockroachDBVisitor.asString(select);
 		List<String> combinedString = new ArrayList<>();
 		List<String> secondResultSet = TestOracle.getCombinedResultSet(firstQueryString, secondQueryString,
-				thirdQueryString, combinedString, Randomly.getBoolean(), state, errors);
+				thirdQueryString, combinedString, !orderBy, state, errors);
 		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
 	}
 }
