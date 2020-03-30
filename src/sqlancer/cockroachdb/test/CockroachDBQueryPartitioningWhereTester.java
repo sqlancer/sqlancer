@@ -27,7 +27,7 @@ import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnar
 import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 
 public class CockroachDBQueryPartitioningWhereTester implements TestOracle {
-	
+
 	private final CockroachDBGlobalState state;
 	private final Set<String> errors = new HashSet<>();
 
@@ -41,7 +41,8 @@ public class CockroachDBQueryPartitioningWhereTester implements TestOracle {
 	public void check() throws SQLException {
 		CockroachDBSchema s = state.getSchema();
 		CockroachDBTables targetTables = s.getRandomTableNonEmptyTables();
-		CockroachDBExpressionGenerator gen = new CockroachDBExpressionGenerator(state).setColumns(targetTables.getColumns());
+		CockroachDBExpressionGenerator gen = new CockroachDBExpressionGenerator(state)
+				.setColumns(targetTables.getColumns());
 		CockroachDBSelect select = new CockroachDBSelect();
 		select.setFetchColumns(Arrays.asList(new CockroachDBColumnReference(targetTables.getColumns().get(0))));
 		List<CockroachDBTableReference> tableList = targetTables.getTables().stream()
@@ -54,9 +55,10 @@ public class CockroachDBQueryPartitioningWhereTester implements TestOracle {
 		// TODO order by?
 		select.setWhereClause(null);
 		String originalQueryString = CockroachDBVisitor.asString(select);
-		
-		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors, state.getConnection());
-		
+
+		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
+				state.getConnection(), state);
+
 		CockroachDBExpression predicate = gen.generateExpression(CockroachDBDataType.BOOL.get());
 		select.setWhereClause(predicate);
 		String firstQueryString = CockroachDBVisitor.asString(select);
@@ -65,7 +67,8 @@ public class CockroachDBQueryPartitioningWhereTester implements TestOracle {
 		select.setWhereClause(new CockroachDBUnaryPostfixOperation(predicate, CockroachDBUnaryPostfixOperator.IS_NULL));
 		String thirdQueryString = CockroachDBVisitor.asString(select);
 		String combinedString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL " + thirdQueryString;
-		List<String> secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors, state.getConnection());
+		List<String> secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors,
+				state.getConnection(), state);
 		if (state.getOptions().logEachSelect()) {
 			state.getLogger().writeCurrent(originalQueryString);
 			state.getLogger().writeCurrent(combinedString);

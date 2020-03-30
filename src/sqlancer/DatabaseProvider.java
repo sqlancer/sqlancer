@@ -1,6 +1,7 @@
 package sqlancer;
 
 import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -40,7 +41,17 @@ public interface DatabaseProvider<G extends GlobalState> {
 	}
 
 
-	public static List<String> getResultSetFirstColumnAsString(String queryString, Set<String> errors, Connection con) throws SQLException {
+	public static List<String> getResultSetFirstColumnAsString(String queryString, Set<String> errors, Connection con, GlobalState state) throws SQLException {
+		if (state.getOptions().logEachSelect()) {
+			// TODO: refactor me
+			state.getLogger().writeCurrent(queryString);
+			try {
+				state.getLogger().getCurrentFileWriter().flush();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		QueryAdapter q = new QueryAdapter(queryString, errors);
 		List<String> resultSet = new ArrayList<>();
 		try (ResultSet result = q.executeAndGet(con)) {

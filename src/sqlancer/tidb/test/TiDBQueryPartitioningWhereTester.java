@@ -27,7 +27,7 @@ public class TiDBQueryPartitioningWhereTester extends TiDBQueryPartitioningBase 
 		}
 		String originalQueryString = TiDBVisitor.asString(select);
 		
-		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors, state.getConnection());
+		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors, state.getConnection(), state);
 		
 		select.setOrderByExpressions(Collections.emptyList());
 		select.setWhereClause(predicate);
@@ -39,12 +39,12 @@ public class TiDBQueryPartitioningWhereTester extends TiDBQueryPartitioningBase 
 		List<String> secondResultSet;
 		String combinedString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL " + thirdQueryString;
 		if (Randomly.getBoolean()) {
-			secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors, state.getConnection());
+			secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors, state.getConnection(), state);
 		} else {
 			secondResultSet = new ArrayList<>();
-			secondResultSet.addAll(DatabaseProvider.getResultSetFirstColumnAsString(firstQueryString, errors, state.getConnection()));
-			secondResultSet.addAll(DatabaseProvider.getResultSetFirstColumnAsString(secondQueryString, errors, state.getConnection()));
-			secondResultSet.addAll(DatabaseProvider.getResultSetFirstColumnAsString(thirdQueryString, errors, state.getConnection()));
+			secondResultSet.addAll(DatabaseProvider.getResultSetFirstColumnAsString(firstQueryString, errors, state.getConnection(), state));
+			secondResultSet.addAll(DatabaseProvider.getResultSetFirstColumnAsString(secondQueryString, errors, state.getConnection(), state));
+			secondResultSet.addAll(DatabaseProvider.getResultSetFirstColumnAsString(thirdQueryString, errors, state.getConnection(), state));
 		}
 		if (state.getOptions().logEachSelect()) {
 			state.getLogger().writeCurrent(originalQueryString);

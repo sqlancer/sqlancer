@@ -1,6 +1,5 @@
 package sqlancer.tidb.test;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -28,17 +27,8 @@ public class TiDBQueryPartitioningHavingTester extends TiDBQueryPartitioningBase
 		select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
 		select.setHavingClause(null);
 		String originalQueryString = TiDBVisitor.asString(select);
-		if (state.getOptions().logEachSelect()) {
-			state.getLogger().writeCurrent(originalQueryString);
-			try {
-				state.getLogger().getCurrentFileWriter().flush();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
 		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
-				state.getConnection());
+				state.getConnection(), state);
 
 		select.setHavingClause(predicate);
 		String firstQueryString = TiDBVisitor.asString(select);
@@ -47,17 +37,8 @@ public class TiDBQueryPartitioningHavingTester extends TiDBQueryPartitioningBase
 		select.setHavingClause(isNullPredicate);
 		String thirdQueryString = TiDBVisitor.asString(select);
 		String combinedString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL " + thirdQueryString;
-		if (state.getOptions().logEachSelect()) {
-			state.getLogger().writeCurrent(combinedString);
-			try {
-				state.getLogger().getCurrentFileWriter().flush();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
 		List<String> secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors,
-				state.getConnection());
+				state.getConnection(), state);
 		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
 	}
 

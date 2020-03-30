@@ -1,6 +1,5 @@
 package sqlancer.cockroachdb.test;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -60,17 +59,9 @@ public class CockroachDBQueryPartitioningHavingTester implements TestOracle {
 		select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
 		select.setHavingClause(null);
 		String originalQueryString = CockroachDBVisitor.asString(select);
-		if (state.getOptions().logEachSelect()) {
-			state.getLogger().writeCurrent(originalQueryString);
-			try {
-				state.getLogger().getCurrentFileWriter().flush();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+
 		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
-				state.getConnection());
+				state.getConnection(), state);
 
 		CockroachDBExpression predicate = gen.generateHavingClause();
 		select.setHavingClause(predicate);
@@ -81,17 +72,8 @@ public class CockroachDBQueryPartitioningHavingTester implements TestOracle {
 				new CockroachDBUnaryPostfixOperation(predicate, CockroachDBUnaryPostfixOperator.IS_NULL));
 		String thirdQueryString = CockroachDBVisitor.asString(select);
 		String combinedString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL " + thirdQueryString;
-		if (state.getOptions().logEachSelect()) {
-			state.getLogger().writeCurrent(combinedString);
-			try {
-				state.getLogger().getCurrentFileWriter().flush();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
 		List<String> secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors,
-				state.getConnection());
+				state.getConnection(), state);
 		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
 	}
 }
