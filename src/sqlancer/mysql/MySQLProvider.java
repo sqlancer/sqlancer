@@ -7,7 +7,6 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,6 +22,7 @@ import sqlancer.QueryProvider;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.MySQLStateToReproduce;
+import sqlancer.StatementExecutor;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.gen.MySQLAlterTable;
@@ -163,128 +163,18 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState> {
 			globalState.setSchema(MySQLSchema.fromConnection(con, databaseName));
 		}
 
-		int[] nrRemaining = new int[Action.values().length];
-		List<Action> actions = new ArrayList<>();
-		int total = 0;
-		for (int i = 0; i < Action.values().length; i++) {
-			Action action = Action.values()[i];
-			int nrPerformed = mapActions(globalState, action);
+		StatementExecutor<MySQLGlobalState, Action> se = new StatementExecutor<MySQLGlobalState, Action>(globalState,
+				globalState.getDatabaseName(), Action.values(), MySQLProvider::mapActions, (q) -> {
+					if (q.couldAffectSchema()) {
+						globalState.setSchema(MySQLSchema.fromConnection(con, databaseName));
+					}
+					if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+						throw new IgnoreMeException();
+					}
+				});
+		se.executeStatements();
+		manager.incrementCreateDatabase();
 
-			if (nrPerformed != 0) {
-				actions.add(action);
-			}
-			nrRemaining[action.ordinal()] = nrPerformed;
-			total += nrPerformed;
-		}
-		while (total != 0) {
-			Action nextAction = null;
-			int selection = r.getInteger(0, total);
-			int previousRange = 0;
-			for (int i = 0; i < nrRemaining.length; i++) {
-				if (previousRange <= selection && selection < previousRange + nrRemaining[i]) {
-					nextAction = Action.values()[i];
-					break;
-				} else {
-					previousRange += nrRemaining[i];
-				}
-			}
-			assert nextAction != null;
-			assert nrRemaining[nextAction.ordinal()] > 0;
-			nrRemaining[nextAction.ordinal()]--;
-			Query query;
-			try {
-				switch (nextAction) {
-				case SHOW_TABLES:
-					query = new QueryAdapter("SHOW TABLES");
-					break;
-				case INSERT:
-					query = MySQLRowInserter.insertRow(globalState);
-					break;
-				case SET_VARIABLE:
-					query = MySQLSetGenerator.set(globalState);
-					break;
-				case REPAIR:
-					query = MySQLRepair.repair(globalState);
-					break;
-				case OPTIMIZE:
-					query = MySQLOptimize.optimize(globalState);
-					break;
-				case CHECKSUM:
-					query = MySQLChecksum.checksum(globalState);
-					break;
-				case CHECK_TABLE:
-					query = MySQLCheckTable.check(globalState);
-					break;
-				case ANALYZE_TABLE:
-					query = MySQLAnalyzeTable.analyze(globalState);
-					break;
-				case FLUSH:
-					query = MySQLFlush.create(globalState);
-					break;
-				case RESET:
-					query = MySQLReset.create(globalState);
-					break;
-				case CREATE_INDEX:
-					query = CreateIndexGenerator.create(globalState);
-					break;
-				case ALTER_TABLE:
-					query = MySQLAlterTable.create(globalState);
-					break;
-				case SELECT_INFO:
-					query = new QueryAdapter(
-							"select TABLE_NAME, ENGINE from information_schema.TABLES where table_schema = '"
-									+ databaseName + "'");
-					break;
-				case TRUNCATE_TABLE:
-					query = new QueryAdapter("TRUNCATE TABLE " + globalState.getSchema().getRandomTable().getName()) {
-						@Override
-						public boolean execute(Connection con) throws SQLException {
-							try {
-								super.execute(con);
-								return true;
-							} catch (SQLException e) {
-								if (e.getMessage().contains("doesn't have this option")) {
-									return false;
-								} else {
-									throw e;
-								}
-							}
-						}
-
-					};
-					break;
-				case CREATE_TABLE:
-					String tableName = SQLite3Common
-							.createTableName(globalState.getSchema().getDatabaseTables().size());
-					query = MySQLTableGenerator.generate(tableName, r, globalState.getSchema());
-					break;
-				case DELETE:
-					query = MySQLDeleteGenerator.delete(globalState);
-					break;
-				case DROP_INDEX:
-					query = MySQLDropIndex.generate(globalState);
-					break;
-				default:
-					throw new AssertionError(nextAction);
-				}
-			} catch (IgnoreMeException e) {
-				total--;
-				continue;
-			}
-			try {
-				if (options.logEachSelect()) {
-					logger.writeCurrent(query.getQueryString());
-				}
-				manager.execute(query);
-				if (query.couldAffectSchema()) {
-					globalState.setSchema(MySQLSchema.fromConnection(con, databaseName));
-				}
-			} catch (Throwable t) {
-				System.err.println(query.getQueryString());
-				throw t;
-			}
-			total--;
-		}
 //		for (MySQLTable t : globalState.getSchema().getDatabaseTables()) {
 //			if (!ensureTableHasRows(con, t, r)) {
 //				return;
