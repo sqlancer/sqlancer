@@ -24,7 +24,7 @@ public class PostgresQueryPartitioningWhereTester extends PostgresQueryPartition
 		}
 		String originalQueryString = PostgresVisitor.asString(select);
 		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
-				state.getConnection());
+				state.getConnection(), state);
 
 		select.setOrderByExpressions(Collections.emptyList());
 		select.setWhereClause(predicate);
@@ -37,15 +37,15 @@ public class PostgresQueryPartitioningWhereTester extends PostgresQueryPartition
 		String combinedString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL " + thirdQueryString;
 		if (Randomly.getBoolean()) {
 			secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors,
-					state.getConnection());
+					state.getConnection(), state);
 		} else {
 			secondResultSet = new ArrayList<>();
-			secondResultSet.addAll(
-					DatabaseProvider.getResultSetFirstColumnAsString(firstQueryString, errors, state.getConnection()));
-			secondResultSet.addAll(
-					DatabaseProvider.getResultSetFirstColumnAsString(secondQueryString, errors, state.getConnection()));
-			secondResultSet.addAll(
-					DatabaseProvider.getResultSetFirstColumnAsString(thirdQueryString, errors, state.getConnection()));
+			secondResultSet.addAll(DatabaseProvider.getResultSetFirstColumnAsString(firstQueryString, errors,
+					state.getConnection(), state));
+			secondResultSet.addAll(DatabaseProvider.getResultSetFirstColumnAsString(secondQueryString, errors,
+					state.getConnection(), state));
+			secondResultSet.addAll(DatabaseProvider.getResultSetFirstColumnAsString(thirdQueryString, errors,
+					state.getConnection(), state));
 		}
 		if (state.getOptions().logEachSelect()) {
 			state.getLogger().writeCurrent(originalQueryString);

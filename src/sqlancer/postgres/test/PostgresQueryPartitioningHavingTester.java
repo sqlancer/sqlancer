@@ -1,6 +1,5 @@
 package sqlancer.postgres.test;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
@@ -32,17 +31,8 @@ public class PostgresQueryPartitioningHavingTester extends PostgresQueryPartitio
 		select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
 		select.setHavingClause(null);
 		String originalQueryString = PostgresVisitor.asString(select);
-		if (state.getOptions().logEachSelect()) {
-			state.getLogger().writeCurrent(originalQueryString);
-			try {
-				state.getLogger().getCurrentFileWriter().flush();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
 		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
-				state.getConnection());
+				state.getConnection(), state);
 
 		select.setOrderByExpressions(Collections.emptyList()); // not compatible with the union
 		select.setHavingClause(predicate);
@@ -52,17 +42,8 @@ public class PostgresQueryPartitioningHavingTester extends PostgresQueryPartitio
 		select.setHavingClause(isNullPredicate);
 		String thirdQueryString = PostgresVisitor.asString(select);
 		String combinedString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL " + thirdQueryString;
-		if (state.getOptions().logEachSelect()) {
-			state.getLogger().writeCurrent(combinedString);
-			try {
-				state.getLogger().getCurrentFileWriter().flush();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
 		List<String> secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors,
-				state.getConnection());
+				state.getConnection(), state);
 		if (resultSet.size() != secondResultSet.size()) {
 			throw new AssertionError(originalQueryString + ";\n" + combinedString + ";");
 		}
