@@ -41,10 +41,6 @@ public class MySQLDeleteGenerator {
 			sb.append(" WHERE ");
 			sb.append(MySQLRandomExpressionGenerator.generateRandomExpressionString(randomTable.getColumns(), null, r));
 		}
-		if (Randomly.getBoolean()) {
-			sb.append(" ");
-			sb.append(r.getLong(0, Long.MAX_VALUE));
-		}
 
 		// TODO: support ORDER BY
 		return new QueryAdapter(sb.toString(), Arrays.asList("doesn't have this option", "Truncated incorrect DOUBLE value" /* ignore as a workaround for https://bugs.mysql.com/bug.php?id=95997 */));
