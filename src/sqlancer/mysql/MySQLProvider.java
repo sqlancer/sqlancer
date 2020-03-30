@@ -28,13 +28,13 @@ import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.gen.MySQLAlterTable;
 import sqlancer.mysql.gen.MySQLDeleteGenerator;
 import sqlancer.mysql.gen.MySQLDropIndex;
-import sqlancer.mysql.gen.MySQLRowInserter;
+import sqlancer.mysql.gen.MySQLInsertGenerator;
 import sqlancer.mysql.gen.MySQLSetGenerator;
 import sqlancer.mysql.gen.MySQLTableGenerator;
 import sqlancer.mysql.gen.MySQLTruncateTableGenerator;
 import sqlancer.mysql.gen.admin.MySQLFlush;
 import sqlancer.mysql.gen.admin.MySQLReset;
-import sqlancer.mysql.gen.datadef.CreateIndexGenerator;
+import sqlancer.mysql.gen.datadef.MySQLIndexGenerator;
 import sqlancer.mysql.gen.tblmaintenance.MySQLAnalyzeTable;
 import sqlancer.mysql.gen.tblmaintenance.MySQLCheckTable;
 import sqlancer.mysql.gen.tblmaintenance.MySQLChecksum;
@@ -50,14 +50,14 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState> {
 
 	enum Action implements AbstractAction<MySQLGlobalState> {
 		SHOW_TABLES((g) -> new QueryAdapter("SHOW TABLES")), //
-		INSERT(MySQLRowInserter::insertRow), //
+		INSERT(MySQLInsertGenerator::insertRow), //
 		SET_VARIABLE(MySQLSetGenerator::set), //
 		REPAIR(MySQLRepair::repair), //
 		OPTIMIZE(MySQLOptimize::optimize), //
 		CHECKSUM(MySQLChecksum::checksum), //
 		CHECK_TABLE(MySQLCheckTable::check), //
 		ANALYZE_TABLE(MySQLAnalyzeTable::analyze), //
-		FLUSH(MySQLFlush::create), RESET(MySQLReset::create), CREATE_INDEX(CreateIndexGenerator::create), //
+		FLUSH(MySQLFlush::create), RESET(MySQLReset::create), CREATE_INDEX(MySQLIndexGenerator::create), //
 		ALTER_TABLE(MySQLAlterTable::create), //
 		TRUNCATE_TABLE(MySQLTruncateTableGenerator::generate), //
 		SELECT_INFO((g) -> new QueryAdapter(

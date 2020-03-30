@@ -1,8 +1,8 @@
 package sqlancer.mysql.gen.datadef;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
@@ -17,7 +17,7 @@ import sqlancer.mysql.MySQLVisitor;
 import sqlancer.mysql.ast.MySQLExpression;
 import sqlancer.mysql.gen.MySQLRandomExpressionGenerator;
 
-public class CreateIndexGenerator {
+public class MySQLIndexGenerator {
 
 	private final Randomly r;
 	private StringBuilder sb = new StringBuilder();
@@ -26,23 +26,24 @@ public class CreateIndexGenerator {
 	private boolean containsInPlace;
 	private MySQLSchema schema;
 
-	public CreateIndexGenerator(MySQLSchema schema, Randomly r) {
+	public MySQLIndexGenerator(MySQLSchema schema, Randomly r) {
 		this.schema = schema;
 		this.r = r;
 	}
 
 	public static Query create(MySQLGlobalState globalState) {
-		return new CreateIndexGenerator(globalState.getSchema(), globalState.getRandomly()).create();
+		return new MySQLIndexGenerator(globalState.getSchema(), globalState.getRandomly()).create();
 	}
 
 	public Query create() {
-
+		Set<String> errors = new HashSet<>();
 		sb.append("CREATE ");
 		if (Randomly.getBoolean()) {
 			// "FULLTEXT" TODO Column 'c3' cannot be part of FULLTEXT index
 			// A SPATIAL index may only contain a geometrical type column
 			sb.append(Randomly.fromOptions("UNIQUE"));
 			sb.append(" ");
+			errors.add("Duplicate entry");
 		}
 		sb.append("INDEX i" + indexNr++);
 		indexType();
@@ -90,64 +91,29 @@ public class CreateIndexGenerator {
 		algorithmOption();
 		String string = sb.toString();
 		sb = new StringBuilder();
-		return new QueryAdapter(string) {
-			@Override
-			public boolean execute(Connection con) throws SQLException {
-				try {
-					super.execute(con);
-					return true;
-				} catch (java.sql.SQLIntegrityConstraintViolationException e) {
-					// IGNORE;
-				} catch (SQLException e) {
-					if (e.getMessage().startsWith("ALGORITHM=INPLACE is not supported") && containsInPlace) {
-						// ignore
-					} else if (e.getMessage().startsWith("A primary key index cannot be invisible")) {
-						// ignore
-					} else if (e.getMessage().startsWith("Table handler doesn't support NULL in given index.")
-							&& table.getEngine() == MySQLEngine.ARCHIVE) {
-						// ignore
-					} else if (e.getMessage().startsWith(
-							"Functional index on a column is not supported. Consider using a regular index instead.")) {
-						// ignore
-						// TODO: what does this mean?
-					} else if (e.getMessage()
-							.startsWith("Incorrect usage of spatial/fulltext/hash index and explicit index order")) {
-						// TODO what does this mean?
-					} else if (e.getMessage()
-							.startsWith("The storage engine for the table doesn't support descending indexes")) {
-						// TODO what does this mean?
-					} else if (e.getMessage().contains("must include all columns")) {
-						// partitioning functions
-					} else if (e.getMessage().contains("cannot index the expression")) {
-						// index NULL
-					} else if (e.getMessage().contains("Data truncation: Truncated incorrect ")) {
-
-					} else if (e.getMessage().contains("a disallowed function.")
-							&& (string.contains("BENCHMARK") || string.contains("EXISTS"))) {
-
-					} else if (e.getMessage().contains("Data truncation")) {
-
-					} else if (e.getMessage().contains(
-							"Cannot create a functional index on an expression that returns a BLOB or TEXT.")) {
-
-					} else if (e.getMessage().contains("used in key specification without a key length")) {
-
-					} else if (e.getMessage().contains("can't be used in key specification with the used table type")) {
-
-					} else if (e.getMessage().contains("Specified key was too long")) {
-
-					} else if (e.getMessage().contains("out of range")) {
-
-					} else if (e.getMessage().contains("Data truncated for functional index")) {
-
-					} else {
-						throw e;
-					}
-				}
-				return false;
-			}
-
-		};
+		if (containsInPlace) {
+			errors.add("ALGORITHM=INPLACE is not supported");
+		}
+		if (table.getEngine() == MySQLEngine.ARCHIVE) {
+			errors.add("Table handler doesn't support NULL in given index.");
+		}
+		errors.add("A primary key index cannot be invisible");
+		errors.add("Functional index on a column is not supported. Consider using a regular index instead.");
+		errors.add("Incorrect usage of spatial/fulltext/hash index and explicit index order");
+		errors.add("The storage engine for the table doesn't support descending indexes");
+		errors.add("must include all columns");
+		errors.add("cannot index the expression");
+		errors.add("Data truncation: Truncated incorrect");
+		errors.add("a disallowed function.");
+		errors.add("Data truncation");
+		errors.add("Cannot create a functional index on an expression that returns a BLOB or TEXT.");
+		errors.add("used in key specification without a key length");
+		errors.add("can't be used in key specification with the used table type");
+		errors.add("Specified key was too long");
+		errors.add("out of range");
+		errors.add("Data truncated for functional index");
+		errors.add("used in key specification without a key length");
+		return new QueryAdapter(string, errors);
 	}
 
 	private void algorithmOption() {

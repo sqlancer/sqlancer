@@ -1,8 +1,9 @@
 package sqlancer.mysql.gen;
 
 import java.sql.SQLException;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.Query;
@@ -13,14 +14,15 @@ import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLDataType;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 
-public class MySQLRowInserter {
+public class MySQLInsertGenerator {
 
 	private final MySQLTable table;
 	private final Randomly r;
 	private final StringBuilder sb = new StringBuilder();
 	boolean canFail;
+	private final Set<String> errors = new HashSet<>();
 
-	public MySQLRowInserter(MySQLTable table, Randomly r) {
+	public MySQLInsertGenerator(MySQLTable table, Randomly r) {
 		this.table = table;
 		this.r = r;
 	}
@@ -29,9 +31,9 @@ public class MySQLRowInserter {
 		MySQLTable table = globalState.getSchema().getRandomTable();
 		Randomly r = globalState.getRandomly();
 		if (Randomly.getBoolean()) {
-			return new MySQLRowInserter(table, r).generateInsert();
+			return new MySQLInsertGenerator(table, r).generateInsert();
 		} else {
-			return new MySQLRowInserter(table, r).generateReplace();
+			return new MySQLInsertGenerator(table, r).generateReplace();
 		}
 	}
 
@@ -109,14 +111,10 @@ public class MySQLRowInserter {
 			}
 			sb.append(")");
 		}
-		if (canFail)
+		errors.add("doesn't have a default value");
+		errors.add("Data truncation");
 
-		{
-			return new QueryAdapter(sb.toString()); // TODO: specify errors
-		} else {
-			return new QueryAdapter(sb.toString(), Arrays.asList("Data truncation"));
-		}
+		return new QueryAdapter(sb.toString(), errors);
 	}
-
 
 }
