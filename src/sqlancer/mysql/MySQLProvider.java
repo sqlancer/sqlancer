@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.DatabaseProvider;
-import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
@@ -41,7 +40,7 @@ import sqlancer.mysql.gen.tblmaintenance.MySQLRepair;
 import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
 
-public class MySQLProvider implements DatabaseProvider<GlobalState> {
+public class MySQLProvider implements DatabaseProvider<MySQLGlobalState> {
 
 	private final Randomly r = new Randomly();
 	private QueryManager manager;
@@ -52,27 +51,84 @@ public class MySQLProvider implements DatabaseProvider<GlobalState> {
 		CREATE_INDEX, ALTER_TABLE, TRUNCATE_TABLE, SELECT_INFO, CREATE_TABLE, DELETE, DROP_INDEX;
 	}
 
+	private static int mapActions(MySQLGlobalState globalState, Action a) {
+		Randomly r = globalState.getRandomly();
+		int nrPerformed = 0;
+		switch (a) {
+		case DROP_INDEX:
+			nrPerformed = r.getInteger(0, 2);
+			break;
+		case SHOW_TABLES:
+			nrPerformed = r.getInteger(0, 1);
+			break;
+		case CREATE_TABLE:
+			nrPerformed = r.getInteger(0, 1);
+			break;
+		case INSERT:
+			nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
+			break;
+		case REPAIR:
+			nrPerformed = r.getInteger(0, 1);
+			break;
+		case SET_VARIABLE:
+			nrPerformed = r.getInteger(0, 5);
+			break;
+		case CREATE_INDEX:
+			nrPerformed = r.getInteger(0, 5);
+			break;
+		case FLUSH:
+			nrPerformed = Randomly.getBooleanWithSmallProbability() ? r.getInteger(0, 1) : 0;
+			break;
+		case OPTIMIZE:
+			// seems to yield low CPU utilization
+			nrPerformed = Randomly.getBooleanWithSmallProbability() ? r.getInteger(0, 1) : 0;
+			break;
+		case RESET:
+			// affects the global state, so do not execute
+			nrPerformed = globalState.getOptions().getNumberConcurrentThreads() == 1 ? r.getInteger(0, 1) : 0;
+			break;
+		case CHECKSUM:
+		case CHECK_TABLE:
+		case ANALYZE_TABLE:
+			nrPerformed = r.getInteger(0, 2);
+		case ALTER_TABLE:
+			nrPerformed = r.getInteger(0, 5);
+			break;
+		case TRUNCATE_TABLE:
+			nrPerformed = r.getInteger(0, 2);
+			break;
+		case SELECT_INFO:
+			nrPerformed = r.getInteger(0, 10);
+		case DELETE:
+			nrPerformed = r.getInteger(0, 10);
+			break;
+		default:
+			throw new AssertionError(a);
+		}
+		return nrPerformed;
+	}
+
 	@Override
-	public void generateAndTestDatabase(GlobalState globalState) throws SQLException {
+	public void generateAndTestDatabase(MySQLGlobalState globalState) throws SQLException {
 		this.databaseName = globalState.getDatabaseName();
 		this.manager = globalState.getManager();
 		Connection con = globalState.getConnection();
 		MainOptions options = globalState.getOptions();
 		StateLogger logger = globalState.getLogger();
 		StateToReproduce state = globalState.getState();
-		MySQLSchema newSchema = MySQLSchema.fromConnection(con, databaseName);
+		globalState.setSchema(MySQLSchema.fromConnection(con, databaseName));
 		if (options.logEachSelect()) {
 			logger.writeCurrent(state);
 		}
 
-		while (newSchema.getDatabaseTables().size() < Randomly.smallNumber() + 1) {
-			String tableName = SQLite3Common.createTableName(newSchema.getDatabaseTables().size());
-			Query createTable = MySQLTableGenerator.generate(tableName, r, newSchema);
+		while (globalState.getSchema().getDatabaseTables().size() < Randomly.smallNumber() + 1) {
+			String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
+			Query createTable = MySQLTableGenerator.generate(tableName, r, globalState.getSchema());
 			if (options.logEachSelect()) {
 				logger.writeCurrent(createTable.getQueryString());
 			}
 			manager.execute(createTable);
-			newSchema = MySQLSchema.fromConnection(con, databaseName);
+			globalState.setSchema(MySQLSchema.fromConnection(con, databaseName));
 		}
 
 		int[] nrRemaining = new int[Action.values().length];
@@ -80,65 +136,15 @@ public class MySQLProvider implements DatabaseProvider<GlobalState> {
 		int total = 0;
 		for (int i = 0; i < Action.values().length; i++) {
 			Action action = Action.values()[i];
-			int nrPerformed = 0;
-			switch (action) {
-			case DROP_INDEX:
-				nrPerformed = r.getInteger(0, 2);
-				break;
-			case SHOW_TABLES:
-				nrPerformed = r.getInteger(0, 1);
-				break;
-			case CREATE_TABLE:
-				nrPerformed = r.getInteger(0, 1);
-				break;
-			case INSERT:
-				nrPerformed = r.getInteger(0, options.getMaxNumberInserts());
-				break;
-			case REPAIR:
-				nrPerformed = r.getInteger(0, 1);
-				break;
-			case SET_VARIABLE:
-				nrPerformed = r.getInteger(0, 5);
-				break;
-			case CREATE_INDEX:
-				nrPerformed = r.getInteger(0, 5);
-				break;
-			case FLUSH:
-				nrPerformed = Randomly.getBooleanWithSmallProbability() ? r.getInteger(0, 1) : 0;
-				break;
-			case OPTIMIZE:
-				// seems to yield low CPU utilization
-				nrPerformed = Randomly.getBooleanWithSmallProbability() ? r.getInteger(0, 1) : 0;
-				break;
-			case RESET:
-				// affects the global state, so do not execute
-				nrPerformed = options.getNumberConcurrentThreads() == 1 ? r.getInteger(0, 1) : 0;
-				break;
-			case CHECKSUM:
-			case CHECK_TABLE:
-			case ANALYZE_TABLE:
-				nrPerformed = r.getInteger(0, 2);
-			case ALTER_TABLE:
-				nrPerformed = r.getInteger(0, 5);
-				break;
-			case TRUNCATE_TABLE:
-				nrPerformed = r.getInteger(0, 2);
-				break;
-			case SELECT_INFO:
-				nrPerformed = r.getInteger(0, 10);
-			case DELETE:
-				nrPerformed = r.getInteger(0, 10);
-				break;
-			default:
-				throw new AssertionError(action);
-			}
+			int nrPerformed = mapActions(globalState, action);
+
 			if (nrPerformed != 0) {
 				actions.add(action);
 			}
 			nrRemaining[action.ordinal()] = nrPerformed;
 			total += nrPerformed;
 		}
-		CreateIndexGenerator createIndexGenerator = new CreateIndexGenerator(newSchema, r);
+		CreateIndexGenerator createIndexGenerator = new CreateIndexGenerator(globalState.getSchema(), r);
 
 		while (total != 0) {
 			Action nextAction = null;
@@ -162,28 +168,28 @@ public class MySQLProvider implements DatabaseProvider<GlobalState> {
 					query = new QueryAdapter("SHOW TABLES");
 					break;
 				case INSERT:
-					query = MySQLRowInserter.insertRow(newSchema.getRandomTable(), r);
+					query = MySQLRowInserter.insertRow(globalState.getSchema().getRandomTable(), r);
 					break;
 				case SET_VARIABLE:
 					query = MySQLSetGenerator.set(r, options);
 					break;
 				case REPAIR:
-					query = MySQLRepair.repair(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
+					query = MySQLRepair.repair(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty());
 					break;
 				case OPTIMIZE:
-					query = MySQLOptimize.optimize(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
+					query = MySQLOptimize.optimize(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty());
 					break;
 				case CHECKSUM:
-					query = MySQLChecksum.checksum(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
+					query = MySQLChecksum.checksum(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty());
 					break;
 				case CHECK_TABLE:
-					query = MySQLCheckTable.check(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
+					query = MySQLCheckTable.check(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty());
 					break;
 				case ANALYZE_TABLE:
-					query = MySQLAnalyzeTable.analyze(newSchema.getDatabaseTablesRandomSubsetNotEmpty(), r);
+					query = MySQLAnalyzeTable.analyze(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty(), r);
 					break;
 				case FLUSH:
-					query = MySQLFlush.create(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
+					query = MySQLFlush.create(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty());
 					break;
 				case RESET:
 					query = MySQLReset.create();
@@ -192,7 +198,7 @@ public class MySQLProvider implements DatabaseProvider<GlobalState> {
 					query = createIndexGenerator.create();
 					break;
 				case ALTER_TABLE:
-					query = MySQLAlterTable.create(newSchema, r);
+					query = MySQLAlterTable.create(globalState.getSchema(), r);
 					break;
 				case SELECT_INFO:
 					query = new QueryAdapter(
@@ -200,7 +206,7 @@ public class MySQLProvider implements DatabaseProvider<GlobalState> {
 									+ databaseName + "'");
 					break;
 				case TRUNCATE_TABLE:
-					query = new QueryAdapter("TRUNCATE TABLE " + newSchema.getRandomTable().getName()) {
+					query = new QueryAdapter("TRUNCATE TABLE " + globalState.getSchema().getRandomTable().getName()) {
 						@Override
 						public boolean execute(Connection con) throws SQLException {
 							try {
@@ -218,14 +224,14 @@ public class MySQLProvider implements DatabaseProvider<GlobalState> {
 					};
 					break;
 				case CREATE_TABLE:
-					String tableName = SQLite3Common.createTableName(newSchema.getDatabaseTables().size());
-					query = MySQLTableGenerator.generate(tableName, r, newSchema);
+					String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
+					query = MySQLTableGenerator.generate(tableName, r, globalState.getSchema());
 					break;
 				case DELETE:
-					query = MySQLDeleteGenerator.delete(newSchema.getRandomTable(), r);
+					query = MySQLDeleteGenerator.delete(globalState.getSchema().getRandomTable(), r);
 					break;
 				case DROP_INDEX:
-					query = MySQLDropIndex.generate(newSchema.getRandomTable());
+					query = MySQLDropIndex.generate(globalState.getSchema().getRandomTable());
 					break;
 				default:
 					throw new AssertionError(nextAction);
@@ -240,8 +246,8 @@ public class MySQLProvider implements DatabaseProvider<GlobalState> {
 				}
 				manager.execute(query);
 				if (query.couldAffectSchema()) {
-					newSchema = MySQLSchema.fromConnection(con, databaseName);
-					createIndexGenerator.setNewSchema(newSchema);
+					globalState.setSchema(MySQLSchema.fromConnection(con, databaseName));
+					createIndexGenerator.setNewSchema(globalState.getSchema());
 				}
 			} catch (Throwable t) {
 				System.err.println(query.getQueryString());
@@ -249,13 +255,13 @@ public class MySQLProvider implements DatabaseProvider<GlobalState> {
 			}
 			total--;
 		}
-		for (MySQLTable t : newSchema.getDatabaseTables()) {
+		for (MySQLTable t : globalState.getSchema().getDatabaseTables()) {
 			if (!ensureTableHasRows(con, t, r)) {
 				return;
 			}
 		}
 
-		newSchema = MySQLSchema.fromConnection(con, databaseName);
+		globalState.setSchema(MySQLSchema.fromConnection(con, databaseName));
 
 		MySQLQueryGenerator queryGenerator = new MySQLQueryGenerator(manager, r, con, databaseName);
 		for (int i = 0; i < options.getNrQueries(); i++) {
@@ -362,8 +368,8 @@ public class MySQLProvider implements DatabaseProvider<GlobalState> {
 	}
 
 	@Override
-	public GlobalState generateGlobalState() {
-		return new GlobalState();
+	public MySQLGlobalState generateGlobalState() {
+		return new MySQLGlobalState();
 	}
 
 }

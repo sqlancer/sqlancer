@@ -114,7 +114,7 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 		}
 
 	}
-
+	
 	@Override
 	public void generateAndTestDatabase(CockroachDBGlobalState globalState) throws SQLException {
 		Randomly r = new Randomly();
