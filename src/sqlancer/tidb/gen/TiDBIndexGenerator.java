@@ -37,7 +37,10 @@ public class TiDBIndexGenerator {
 				sb.append(", ");
 			}
 			sb.append(subset.get(i).getName());
-			TiDBTableGenerator.appendTextSizeSpecifier(sb, subset.get(i).getType().getPrimitiveDataType());
+			if (!randomTable.isView()) {
+				// TODO: otherwise: Incorrect prefix key; the used key part isn't a string, the used length is longer than the key part, or the storage engine doesn't support unique prefix keys
+				TiDBTableGenerator.appendTextSizeSpecifier(sb, subset.get(i).getType().getPrimitiveDataType());
+			}
 			if (Randomly.getBoolean()) {
 				sb.append(" ");
 				sb.append(Randomly.fromOptions("ASC", "DESC"));
