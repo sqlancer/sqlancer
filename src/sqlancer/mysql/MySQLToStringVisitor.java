@@ -79,10 +79,10 @@ public class MySQLToStringVisitor extends MySQLVisitor {
 			sb.append(" WHERE ");
 			visit(whereClause);
 		}
-		if (s.getGroupByClause() != null && s.getGroupByClause().size() > 0) {
+		if (s.getGroupByExpressions() != null && s.getGroupByExpressions().size() > 0) {
 			sb.append(" ");
 			sb.append("GROUP BY ");
-			List<MySQLExpression> groupBys = s.getGroupByClause();
+			List<MySQLExpression> groupBys = s.getGroupByExpressions();
 			for (int i = 0; i < groupBys.size(); i++) {
 				if (i != 0) {
 					sb.append(", ");
@@ -90,14 +90,14 @@ public class MySQLToStringVisitor extends MySQLVisitor {
 				visit(groupBys.get(i));
 			}
 		}
-		if (!s.getOrderByClause().isEmpty()) {
+		if (!s.getOrderByExpressions().isEmpty()) {
 			sb.append(" ORDER BY ");
-			List<MySQLExpression> orderBys = s.getOrderByClause();
+			List<MySQLExpression> orderBys = s.getOrderByExpressions();
 			for (int i = 0; i < orderBys.size(); i++) {
 				if (i != 0) {
 					sb.append(", ");
 				}
-				visit(s.getOrderByClause().get(i));
+				visit(s.getOrderByExpressions().get(i));
 			}
 		}
 		if (s.getLimitClause() != null) {

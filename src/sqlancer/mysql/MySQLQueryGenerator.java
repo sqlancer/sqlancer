@@ -103,8 +103,7 @@ public class MySQLQueryGenerator {
 //			joinStatements.add(j);
 //		}
 //		selectStatement.setJoinClauses(joinStatements);
-		selectStatement
-				.setFromTables(tables.stream().map(t -> new MySQLTableReference(t)).collect(Collectors.toList()));
+		selectStatement.setFromList(tables.stream().map(t -> new MySQLTableReference(t)).collect(Collectors.toList()));
 
 		fetchColumns = columns.stream().map(c -> new MySQLColumnValue(c, null)).collect(Collectors.toList());
 		selectStatement.setFetchColumns(fetchColumns);
@@ -114,7 +113,7 @@ public class MySQLQueryGenerator {
 		selectStatement.setWhereClause(whereClause);
 		state.whereClause = selectStatement;
 		List<MySQLExpression> groupByClause = generateGroupByClause(columns, rw);
-		selectStatement.setGroupByClause(groupByClause);
+		selectStatement.setGroupByExpressions(groupByClause);
 		MySQLExpression limitClause = generateLimit();
 		selectStatement.setLimitClause(limitClause);
 		if (limitClause != null) {
@@ -127,7 +126,7 @@ public class MySQLQueryGenerator {
 		// TODO: Incorrect usage/placement of 'SQL_BUFFER_RESULT'
 		selectStatement.setModifiers(modifiers);
 		List<MySQLExpression> orderBy = generateOrderBy(columns);
-		selectStatement.setOrderByClause(orderBy);
+		selectStatement.setOrderByExpressions(orderBy);
 
 		StringBuilder sb2 = new StringBuilder();
 		sb2.append("SELECT * FROM (SELECT 1 FROM ");
