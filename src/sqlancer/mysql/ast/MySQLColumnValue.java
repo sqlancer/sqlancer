@@ -7,7 +7,7 @@ public class MySQLColumnValue extends MySQLExpression {
 	private final MySQLColumn column;
 	private final MySQLConstant value;
 
-	private MySQLColumnValue(MySQLColumn column, MySQLConstant value) {
+	public MySQLColumnValue(MySQLColumn column, MySQLConstant value) {
 		this.column = column;
 		this.value = value;
 	}

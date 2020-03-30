@@ -14,11 +14,14 @@ import sqlancer.mysql.ast.MySQLInOperation;
 import sqlancer.mysql.ast.MySQLOrderByTerm;
 import sqlancer.mysql.ast.MySQLSelect;
 import sqlancer.mysql.ast.MySQLStringExpression;
+import sqlancer.mysql.ast.MySQLTableReference;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperator;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 
 public abstract class MySQLVisitor {
 
+	public abstract void visit(MySQLTableReference ref);
+	
 	public abstract void visit(MySQLConstant constant);
 
 	public abstract void visit(MySQLColumnValue column);
@@ -80,7 +83,11 @@ public abstract class MySQLVisitor {
 			visit((MySQLStringExpression) expr);
 		} else if (expr instanceof MySQLBetweenOperation) {
 			visit((MySQLBetweenOperation) expr);
-		} else {
+		} else if (expr instanceof MySQLTableReference) {
+			visit((MySQLTableReference) expr);
+		}
+		
+		else {
 			throw new AssertionError(expr);
 		}
 	}

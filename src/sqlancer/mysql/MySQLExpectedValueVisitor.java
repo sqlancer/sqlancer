@@ -16,6 +16,7 @@ import sqlancer.mysql.ast.MySQLJoin;
 import sqlancer.mysql.ast.MySQLOrderByTerm;
 import sqlancer.mysql.ast.MySQLSelect;
 import sqlancer.mysql.ast.MySQLStringExpression;
+import sqlancer.mysql.ast.MySQLTableReference;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperator;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 
@@ -146,6 +147,10 @@ public class MySQLExpectedValueVisitor extends MySQLVisitor {
 		visit(op.getExpr());
 		visit(op.getLeft());
 		visit(op.getRight());
+	}
+
+	@Override
+	public void visit(MySQLTableReference ref) {
 	}
 
 }

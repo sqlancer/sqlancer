@@ -2,6 +2,8 @@ package sqlancer.mysql.ast;
 
 public abstract class MySQLExpression {
 	
-	public abstract MySQLConstant getExpectedValue();
+	public MySQLConstant getExpectedValue() {
+		throw new AssertionError("PQS not supported for this operator");
+	}
 
 }

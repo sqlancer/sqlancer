@@ -3,19 +3,16 @@ package sqlancer.mysql.ast;
 import java.util.Collections;
 import java.util.List;
 
-import sqlancer.mysql.MySQLSchema.MySQLColumn;
-import sqlancer.mysql.MySQLSchema.MySQLTable;
-
 public class MySQLSelect extends MySQLExpression {
 
 	private SelectType fromOptions;
-	private List<MySQLTable> fromList = Collections.emptyList();
+	private List<MySQLExpression> fromList = Collections.emptyList();
 	private MySQLExpression whereClause;
 	private List<MySQLExpression> groupByClause = Collections.emptyList();
 	private MySQLExpression limitClause;
 	private List<MySQLExpression> orderByClause = Collections.emptyList();
 	private MySQLExpression offsetClause;
-	private List<MySQLColumn> fetchColumns = Collections.emptyList();
+	private List<MySQLExpression> fetchColumns = Collections.emptyList();
 	private List<MySQLJoin> joinStatements = Collections.emptyList();
 	private List<String> modifiers = Collections.emptyList();
 
@@ -27,7 +24,7 @@ public class MySQLSelect extends MySQLExpression {
 		this.setFromOptions(fromOptions);
 	}
 
-	public void setFromTables(List<MySQLTable> fromTables) {
+	public void setFromTables(List<MySQLExpression> fromTables) {
 		this.setFromList(fromTables);
 	}
 
@@ -39,11 +36,11 @@ public class MySQLSelect extends MySQLExpression {
 		this.fromOptions = fromOptions;
 	}
 
-	public List<MySQLTable> getFromList() {
+	public List<MySQLExpression> getFromList() {
 		return fromList;
 	}
 
-	public void setFromList(List<MySQLTable> fromList) {
+	public void setFromList(List<MySQLExpression> fromList) {
 		this.fromList = fromList;
 	}
 
@@ -87,11 +84,11 @@ public class MySQLSelect extends MySQLExpression {
 		return offsetClause;
 	}
 
-	public void selectFetchColumns(List<MySQLColumn> fetchColumns) {
+	public void setFetchColumns(List<MySQLExpression> fetchColumns) {
 		this.fetchColumns = fetchColumns;
 	}
 
-	public List<MySQLColumn> getFetchColumns() {
+	public List<MySQLExpression> getFetchColumns() {
 		return fetchColumns;
 	}
 

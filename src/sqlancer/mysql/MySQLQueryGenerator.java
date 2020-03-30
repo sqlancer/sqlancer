@@ -26,6 +26,7 @@ import sqlancer.mysql.ast.MySQLExpression;
 import sqlancer.mysql.ast.MySQLOrderByTerm;
 import sqlancer.mysql.ast.MySQLOrderByTerm.MySQLOrder;
 import sqlancer.mysql.ast.MySQLSelect;
+import sqlancer.mysql.ast.MySQLTableReference;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperator;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperator.UnaryPostfixOperator;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
@@ -34,17 +35,16 @@ import sqlancer.mysql.gen.MySQLRandomExpressionGenerator;
 
 public class MySQLQueryGenerator {
 
-	private QueryManager manager;
 	private Randomly r;
 	private Connection database;
 	private StateToReproduce state;
 	private MySQLSchema s;
 	private MySQLRowValue rw;
-	private List<MySQLColumn> fetchColumns;
+	private List<MySQLExpression> fetchColumns;
+	private List<MySQLColumn> columns;
 
 	public MySQLQueryGenerator(QueryManager manager, Randomly r, Connection con, String databaseName)
 			throws SQLException {
-		this.manager = manager;
 		this.r = r;
 		this.database = con;
 		this.s = MySQLSchema.fromConnection(con, databaseName);
@@ -78,7 +78,7 @@ public class MySQLQueryGenerator {
 		MySQLSelect selectStatement = new MySQLSelect();
 		selectStatement.setSelectType(Randomly.fromOptions(MySQLSelect.SelectType.values()));
 		state.whereClause = selectStatement;
-		List<MySQLColumn> columns = randomFromTables.getColumns();
+		columns = randomFromTables.getColumns();
 //		for (MySQLTable t : tables) {
 //			if (t.getRowid() != null) {
 //				columns.add(t.getRowid());
@@ -103,11 +103,12 @@ public class MySQLQueryGenerator {
 //			joinStatements.add(j);
 //		}
 //		selectStatement.setJoinClauses(joinStatements);
-		selectStatement.setFromTables(tables);
+		selectStatement
+				.setFromTables(tables.stream().map(t -> new MySQLTableReference(t)).collect(Collectors.toList()));
 
-		fetchColumns = columns;
-		selectStatement.selectFetchColumns(fetchColumns);
-		state.queryTargetedColumnsString = fetchColumns.stream().map(c -> c.getFullQualifiedName())
+		fetchColumns = columns.stream().map(c -> new MySQLColumnValue(c, null)).collect(Collectors.toList());
+		selectStatement.setFetchColumns(fetchColumns);
+		state.queryTargetedColumnsString = columns.stream().map(c -> c.getFullQualifiedName())
 				.collect(Collectors.joining(", "));
 		MySQLExpression whereClause = generateWhereClauseThatContainsRowValue(columns, rw);
 		selectStatement.setWhereClause(whereClause);
@@ -133,7 +134,7 @@ public class MySQLQueryGenerator {
 		sb2.append(randomFromTables.tableNamesAsString());
 		sb2.append(" WHERE ");
 		int i = 0;
-		for (MySQLColumn c : fetchColumns) {
+		for (MySQLColumn c : columns) {
 			if (i++ != 0) {
 				sb2.append(" AND ");
 			}
@@ -210,7 +211,7 @@ public class MySQLQueryGenerator {
 		sb.append(queryString);
 		sb.append(") as result WHERE ");
 		int i = 0;
-		for (MySQLColumn c : fetchColumns) {
+		for (MySQLColumn c : columns) {
 			if (i++ != 0) {
 				sb.append(" AND ");
 			}

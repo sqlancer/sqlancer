@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.ast.MySQLBetweenOperation;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
@@ -21,12 +20,14 @@ import sqlancer.mysql.ast.MySQLOrderByTerm;
 import sqlancer.mysql.ast.MySQLOrderByTerm.MySQLOrder;
 import sqlancer.mysql.ast.MySQLSelect;
 import sqlancer.mysql.ast.MySQLStringExpression;
+import sqlancer.mysql.ast.MySQLTableReference;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperator;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 
 public class MySQLToStringVisitor extends MySQLVisitor {
 
 	StringBuffer sb = new StringBuffer();
+	int ref;
 
 	@Override
 	public void visit(MySQLSelect s) {
@@ -55,14 +56,11 @@ public class MySQLToStringVisitor extends MySQLVisitor {
 				if (i != 0) {
 					sb.append(", ");
 				}
-				MySQLColumn column = s.getFetchColumns().get(i);
-				sb.append(column.getTable().getName());
-				sb.append('.');
-				sb.append(column.getName());
+				visit(s.getFetchColumns().get(i));
 				// MySQL does not allow duplicate column names
 				sb.append(" AS ");
-				sb.append(column.getTable().getName());
-				sb.append(column.getName());
+				sb.append("ref");
+				sb.append(ref++);
 			}
 		}
 		sb.append(" FROM ");
@@ -70,7 +68,7 @@ public class MySQLToStringVisitor extends MySQLVisitor {
 			if (i != 0) {
 				sb.append(", ");
 			}
-			sb.append(s.getFromList().get(i).getName());
+			visit(s.getFromList().get(i));
 		}
 		for (MySQLJoin j : s.getJoinClauses()) {
 			visit(j);
@@ -267,6 +265,11 @@ public class MySQLToStringVisitor extends MySQLVisitor {
 		sb.append(") AND (");
 		visit(op.getRight());
 		sb.append(")");
+	}
+
+	@Override
+	public void visit(MySQLTableReference ref) {
+		sb.append(ref.getTable().getName());
 	}
 
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLRowValue;
 import sqlancer.mysql.MySQLVisitor;
@@ -28,6 +29,14 @@ import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 public class MySQLRandomExpressionGenerator {
 
 	private final static int MAX_DEPTH = 3;
+	private Randomly r;
+	private List<MySQLColumn> columns;
+	private MySQLGlobalState state;
+
+	public MySQLRandomExpressionGenerator(MySQLGlobalState state) {
+		this.state = state;
+		this.r = state.getRandomly();
+	}
 
 	public static MySQLExpression generateRandomExpression(List<MySQLColumn> columns, MySQLRowValue rowVal,
 			Randomly r) {
@@ -38,6 +47,10 @@ public class MySQLRandomExpressionGenerator {
 	private enum Actions {
 		COLUMN, LITERAL, UNARY_PREFIX_OPERATION, UNARY_POSTFIX, FUNCTION, BINARY_LOGICAL_OPERATOR,
 		BINARY_COMPARISON_OPERATION, CAST, IN_OPERATION, /* BINARY_OPERATION, */ EXISTS, BETWEEN_OPERATOR;
+	}
+
+	public MySQLExpression generateExpression() {
+		return gen(columns, null, state.getOptions().getMaxExpressionDepth(), r);
 	}
 
 	public static MySQLExpression gen(List<MySQLColumn> columns, MySQLRowValue rowVal, int depth, Randomly r) {
@@ -147,6 +160,11 @@ public class MySQLRandomExpressionGenerator {
 	public static String generateRandomExpressionString(List<MySQLColumn> columns, Object object, Randomly r) {
 		MySQLExpression expr = generateRandomExpression(columns, null, r);
 		return MySQLVisitor.asString(expr);
+	}
+
+	public MySQLRandomExpressionGenerator setColumns(List<MySQLColumn> columns) {
+		this.columns = columns;
+		return this;
 	}
 
 }
