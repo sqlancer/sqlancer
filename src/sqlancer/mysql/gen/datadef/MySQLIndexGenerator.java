@@ -21,18 +21,19 @@ public class MySQLIndexGenerator {
 
 	private final Randomly r;
 	private StringBuilder sb = new StringBuilder();
-	private int indexNr;
 	private boolean columnIsPrimaryKey;
 	private boolean containsInPlace;
 	private MySQLSchema schema;
+	private final MySQLGlobalState globalState;
 
-	public MySQLIndexGenerator(MySQLSchema schema, Randomly r) {
+	public MySQLIndexGenerator(MySQLSchema schema, Randomly r, MySQLGlobalState globalState) {
 		this.schema = schema;
 		this.r = r;
+		this.globalState = globalState;
 	}
 
 	public static Query create(MySQLGlobalState globalState) {
-		return new MySQLIndexGenerator(globalState.getSchema(), globalState.getRandomly()).create();
+		return new MySQLIndexGenerator(globalState.getSchema(), globalState.getRandomly(), globalState).create();
 	}
 
 	public Query create() {
@@ -41,11 +42,11 @@ public class MySQLIndexGenerator {
 		if (Randomly.getBoolean()) {
 			// "FULLTEXT" TODO Column 'c3' cannot be part of FULLTEXT index
 			// A SPATIAL index may only contain a geometrical type column
-			sb.append(Randomly.fromOptions("UNIQUE"));
-			sb.append(" ");
+			sb.append("UNIQUE ");
 			errors.add("Duplicate entry");
 		}
-		sb.append("INDEX i" + indexNr++);
+		sb.append("INDEX ");
+		sb.append(globalState.getSchema().getFreeIndexName());
 		indexType();
 		sb.append(" ON ");
 		MySQLTable table = schema.getRandomTable();
@@ -74,7 +75,7 @@ public class MySQLIndexGenerator {
 					columnIsPrimaryKey = true;
 				}
 				sb.append(c.getName());
-				if (Randomly.getBoolean() && c.getColumnType() != MySQLDataType.INT) {
+				if (Randomly.getBoolean() && c.getType() != MySQLDataType.INT) {
 					sb.append("(");
 					// TODO for string
 					sb.append(r.getInteger(1, 5));
@@ -113,7 +114,7 @@ public class MySQLIndexGenerator {
 		errors.add("out of range");
 		errors.add("Data truncated for functional index");
 		errors.add("used in key specification without a key length");
-		return new QueryAdapter(string, errors);
+		return new QueryAdapter(string, errors, true);
 	}
 
 	private void algorithmOption() {

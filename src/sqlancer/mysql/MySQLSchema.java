@@ -6,30 +6,30 @@ import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce.MySQLStateToReproduce;
+import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.MySQLSchema.MySQLTable.MySQLEngine;
 import sqlancer.mysql.ast.MySQLConstant;
+import sqlancer.schema.AbstractSchema;
 import sqlancer.schema.AbstractTable;
 import sqlancer.schema.AbstractTableColumn;
+import sqlancer.schema.AbstractTables;
 import sqlancer.schema.TableIndex;
 
-public class MySQLSchema {
+public class MySQLSchema extends AbstractSchema<MySQLTable> {
 
 	private static final int NR_SCHEMA_READ_TRIES = 10;
 
 	public static enum MySQLDataType {
 		INT, VARCHAR;
 	}
-	
+
 	public static class MySQLColumn extends AbstractTableColumn<MySQLTable, MySQLDataType> {
 
 		private final boolean isPrimaryKey;
@@ -57,40 +57,12 @@ public class MySQLSchema {
 			return isPrimaryKey;
 		}
 
-
 	}
 
-	public static class MySQLTables {
-		private final List<MySQLTable> tables;
-		private final List<MySQLColumn> columns;
+	public static class MySQLTables extends AbstractTables<MySQLTable, MySQLColumn> {
 
 		public MySQLTables(List<MySQLTable> tables) {
-			this.tables = tables;
-			columns = new ArrayList<>();
-			for (MySQLTable t : tables) {
-				columns.addAll(t.getColumns());
-			}
-		}
-
-		public String tableNamesAsString() {
-			return tables.stream().map(t -> t.getName()).collect(Collectors.joining(", "));
-		}
-
-		public List<MySQLTable> getTables() {
-			return tables;
-		}
-
-		public List<MySQLColumn> getColumns() {
-			return columns;
-		}
-
-		public String columnNamesAsString() {
-			return getColumns().stream().map(t -> t.getTable().getName() + "." + t.getName())
-					.collect(Collectors.joining(", "));
-		}
-
-		public String columnNamesAsString(Function<MySQLColumn, String> function) {
-			return getColumns().stream().map(function).collect(Collectors.joining(", "));
+			super(tables);
 		}
 
 		public MySQLRowValue getRandomRowValue(Connection con, MySQLStateToReproduce state) throws SQLException {
@@ -255,7 +227,7 @@ public class MySQLSchema {
 		public MySQLEngine getEngine() {
 			return engine;
 		}
-		
+
 		public boolean hasPrimaryKey() {
 			return getColumns().stream().anyMatch(c -> c.isPrimaryKey());
 		}
@@ -349,35 +321,9 @@ public class MySQLSchema {
 		return columns;
 	}
 
-	private final List<MySQLTable> databaseTables;
-
 	public MySQLSchema(List<MySQLTable> databaseTables) {
-		this.databaseTables = Collections.unmodifiableList(databaseTables);
+		super(databaseTables);
 	}
 
-	@Override
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		for (MySQLTable t : getDatabaseTables()) {
-			sb.append(t + "\n");
-		}
-		return sb.toString();
-	}
-
-	public MySQLTable getRandomTable() {
-		return Randomly.fromList(getDatabaseTables());
-	}
-
-	public MySQLTables getRandomTableNonEmptyTables() {
-		return new MySQLTables(Randomly.nonEmptySubset(databaseTables));
-	}
-
-	public List<MySQLTable> getDatabaseTables() {
-		return databaseTables;
-	}
-
-	public List<MySQLTable> getDatabaseTablesRandomSubsetNotEmpty() {
-		return Randomly.nonEmptySubset(databaseTables);
-	}
 
 }
