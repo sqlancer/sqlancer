@@ -18,7 +18,9 @@ import sqlancer.Randomly;
 import sqlancer.StateToReproduce.MySQLStateToReproduce;
 import sqlancer.mysql.MySQLSchema.MySQLTable.MySQLEngine;
 import sqlancer.mysql.ast.MySQLConstant;
-import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
+import sqlancer.schema.AbstractTable;
+import sqlancer.schema.AbstractTableColumn;
+import sqlancer.schema.TableIndex;
 
 public class MySQLSchema {
 
@@ -27,13 +29,10 @@ public class MySQLSchema {
 	public static enum MySQLDataType {
 		INT, VARCHAR;
 	}
+	
+	public static class MySQLColumn extends AbstractTableColumn<MySQLTable, MySQLDataType> {
 
-	public static class MySQLColumn implements Comparable<MySQLColumn> {
-
-		private final String name;
-		private final MySQLDataType columnType;
 		private final boolean isPrimaryKey;
-		private MySQLTable table;
 		private int precision;
 
 		public enum CollateSequence {
@@ -45,42 +44,9 @@ public class MySQLSchema {
 		}
 
 		public MySQLColumn(String name, MySQLDataType columnType, boolean isPrimaryKey, int precision) {
-			this.name = name;
-			this.columnType = columnType;
+			super(name, null, columnType);
 			this.isPrimaryKey = isPrimaryKey;
 			this.precision = precision;
-		}
-
-		@Override
-		public String toString() {
-			return String.format("%s.%s: %s", table.getName(), name, columnType);
-		}
-
-		@Override
-		public int hashCode() {
-			return name.hashCode() + 11 * columnType.hashCode();
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (!(obj instanceof SQLite3Column)) {
-				return false;
-			} else {
-				MySQLColumn c = (MySQLColumn) obj;
-				return table.getName().contentEquals(getName()) && name.equals(c.name);
-			}
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public String getFullQualifiedName() {
-			return table.getName() + "." + getName();
-		}
-
-		public MySQLDataType getColumnType() {
-			return columnType;
 		}
 
 		public int getPrecision() {
@@ -91,22 +57,6 @@ public class MySQLSchema {
 			return isPrimaryKey;
 		}
 
-		public void setTable(MySQLTable t) {
-			this.table = t;
-		}
-
-		public MySQLTable getTable() {
-			return table;
-		}
-
-		@Override
-		public int compareTo(MySQLColumn o) {
-			if (o.getTable().equals(this.getTable())) {
-				return name.compareTo(o.getName());
-			} else {
-				return o.getTable().compareTo(table);
-			}
-		}
 
 	}
 
@@ -172,7 +122,7 @@ public class MySQLSchema {
 					if (randomRowValues.getString(columnIndex) == null) {
 						constant = MySQLConstant.createNullConstant();
 					} else {
-						switch (column.getColumnType()) {
+						switch (column.getType()) {
 						case INT:
 							value = randomRowValues.getLong(columnIndex);
 							constant = MySQLConstant.createIntConstant((long) value);
@@ -182,7 +132,7 @@ public class MySQLSchema {
 							constant = MySQLConstant.createStringConstant((String) value);
 							break;
 						default:
-							throw new AssertionError(column.getColumnType());
+							throw new AssertionError(column.getType());
 						}
 					}
 //							break;
@@ -273,7 +223,7 @@ public class MySQLSchema {
 
 	}
 
-	public static class MySQLTable implements Comparable<MySQLTable> {
+	public static class MySQLTable extends AbstractTable<MySQLColumn, MySQLIndex> {
 
 		public static enum MySQLEngine {
 			INNO_DB("InnoDB"), MY_ISAM("MyISAM"), MEMORY("MEMORY"), HEAP("HEAP"), CSV("CSV"), MERGE("MERGE"),
@@ -295,84 +245,27 @@ public class MySQLSchema {
 
 		}
 
-		private final String tableName;
-		private final List<MySQLColumn> columns;
-		private final List<MySQLIndex> indexes;
 		private final MySQLEngine engine;
 
 		public MySQLTable(String tableName, List<MySQLColumn> columns, List<MySQLIndex> indexes, MySQLEngine engine) {
-			this.tableName = tableName;
-			this.indexes = indexes;
+			super(tableName, columns, indexes, false /* TODO: support views */);
 			this.engine = engine;
-			this.columns = Collections.unmodifiableList(columns);
-		}
-
-		@Override
-		public String toString() {
-			StringBuffer sb = new StringBuffer();
-			sb.append(tableName + "\n");
-			for (MySQLColumn c : columns) {
-				sb.append("\t" + c + "\n");
-			}
-			return sb.toString();
-		}
-
-		public List<MySQLIndex> getIndexes() {
-			return indexes;
-		}
-
-		public String getName() {
-			return tableName;
-		}
-
-		public List<MySQLColumn> getColumns() {
-			return columns;
-		}
-
-		public String getColumnsAsString() {
-			return columns.stream().map(c -> c.getName()).collect(Collectors.joining(", "));
-		}
-
-		public String getColumnsAsString(Function<MySQLColumn, String> function) {
-			return columns.stream().map(function).collect(Collectors.joining(", "));
-		}
-
-		public MySQLColumn getRandomColumn() {
-			return Randomly.fromList(columns);
-		}
-
-		public boolean hasIndexes() {
-			return !indexes.isEmpty();
-		}
-
-		public MySQLIndex getRandomIndex() {
-			return Randomly.fromList(indexes);
-		}
-
-		@Override
-		public int compareTo(MySQLTable o) {
-			return o.getName().compareTo(tableName);
-		}
-
-		public List<MySQLColumn> getRandomNonEmptyColumnSubset() {
-			return Randomly.nonEmptySubset(getColumns());
 		}
 
 		public MySQLEngine getEngine() {
 			return engine;
 		}
-
+		
 		public boolean hasPrimaryKey() {
-			return columns.stream().anyMatch(c -> c.isPrimaryKey());
+			return getColumns().stream().anyMatch(c -> c.isPrimaryKey());
 		}
+
 	}
 
-	public static final class MySQLIndex {
-
-		private final String indexName;
+	public static final class MySQLIndex extends TableIndex {
 
 		private MySQLIndex(String indexName) {
-			this.indexName = indexName;
+			super(indexName);
 		}
 
 		public static MySQLIndex create(String indexName) {
@@ -380,10 +273,10 @@ public class MySQLSchema {
 		}
 
 		public String getIndexName() {
-			if (indexName.contentEquals("PRIMARY")) {
+			if (super.getIndexName().contentEquals("PRIMARY")) {
 				return "`PRIMARY`";
 			} else {
-				return indexName;
+				return super.getIndexName();
 			}
 		}
 

@@ -97,7 +97,7 @@ public class MySQLInsertGenerator {
 					sb.append("DEFAULT");
 				} else if (Randomly.getBooleanWithSmallProbability()) {
 					sb.append("NULL");
-				} else if (c.getColumnType() == MySQLDataType.INT) {
+				} else if (c.getType() == MySQLDataType.INT) {
 					// try to insert valid value;
 					long left = (long) -Math.pow(2, c.getPrecision()) - 1;
 					long right = (long) Math.pow(2, c.getPrecision() - 1) - 1;
