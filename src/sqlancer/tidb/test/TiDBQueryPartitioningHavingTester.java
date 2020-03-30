@@ -58,9 +58,7 @@ public class TiDBQueryPartitioningHavingTester extends TiDBQueryPartitioningBase
 		}
 		List<String> secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors,
 				state.getConnection());
-		if (resultSet.size() != secondResultSet.size()) {
-			throw new AssertionError(originalQueryString + ";\n" + combinedString + ";");
-		}
+		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
 	}
 
 	@Override

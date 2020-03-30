@@ -7,6 +7,7 @@ import java.util.List;
 
 import sqlancer.DatabaseProvider;
 import sqlancer.Randomly;
+import sqlancer.TestOracle;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.visitor.TiDBVisitor;
 
@@ -49,8 +50,6 @@ public class TiDBQueryPartitioningWhereTester extends TiDBQueryPartitioningBase 
 			state.getLogger().writeCurrent(originalQueryString);
 			state.getLogger().writeCurrent(combinedString);
 		}
-		if (resultSet.size() != secondResultSet.size()) {
-			throw new AssertionError(originalQueryString + ";\n" + combinedString + ";");
-		}
+		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
 	}
 }
