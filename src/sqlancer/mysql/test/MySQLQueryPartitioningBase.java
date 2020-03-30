@@ -12,11 +12,11 @@ import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.MySQLSchema.MySQLTables;
-import sqlancer.mysql.ast.MySQLColumnValue;
+import sqlancer.mysql.ast.MySQLColumnReference;
 import sqlancer.mysql.ast.MySQLExpression;
 import sqlancer.mysql.ast.MySQLSelect;
 import sqlancer.mysql.ast.MySQLTableReference;
-import sqlancer.mysql.ast.MySQLUnaryPostfixOperator;
+import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 import sqlancer.mysql.gen.MySQLRandomExpressionGenerator;
@@ -54,12 +54,12 @@ public abstract class MySQLQueryPartitioningBase implements TestOracle {
 //		select.setJoins(joins);
 		predicate = generatePredicate();
 		negatedPredicate = new MySQLUnaryPrefixOperation(predicate, MySQLUnaryPrefixOperator.NOT);
-		isNullPredicate = new MySQLUnaryPostfixOperator(predicate,
-				MySQLUnaryPostfixOperator.UnaryPostfixOperator.IS_NULL, false);
+		isNullPredicate = new MySQLUnaryPostfixOperation(predicate,
+				MySQLUnaryPostfixOperation.UnaryPostfixOperator.IS_NULL, false);
 	}
 
 	List<MySQLExpression> generateFetchColumns() {
-		return Arrays.asList(MySQLColumnValue.create(targetTables.getColumns().get(0), null));
+		return Arrays.asList(MySQLColumnReference.create(targetTables.getColumns().get(0), null));
 	}
 
 	MySQLExpression generatePredicate() {

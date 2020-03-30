@@ -9,7 +9,7 @@ import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
 import sqlancer.mysql.ast.MySQLBinaryOperation;
 import sqlancer.mysql.ast.MySQLCastOperation;
-import sqlancer.mysql.ast.MySQLColumnValue;
+import sqlancer.mysql.ast.MySQLColumnReference;
 import sqlancer.mysql.ast.MySQLComputableFunction;
 import sqlancer.mysql.ast.MySQLConstant;
 import sqlancer.mysql.ast.MySQLExists;
@@ -21,7 +21,7 @@ import sqlancer.mysql.ast.MySQLOrderByTerm.MySQLOrder;
 import sqlancer.mysql.ast.MySQLSelect;
 import sqlancer.mysql.ast.MySQLStringExpression;
 import sqlancer.mysql.ast.MySQLTableReference;
-import sqlancer.mysql.ast.MySQLUnaryPostfixOperator;
+import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 
 public class MySQLToStringVisitor extends MySQLVisitor {
@@ -121,7 +121,7 @@ public class MySQLToStringVisitor extends MySQLVisitor {
 	}
 
 	@Override
-	public void visit(MySQLColumnValue column) {
+	public void visit(MySQLColumnReference column) {
 		sb.append(column.getColumn().getFullQualifiedName());
 	}
 
@@ -134,7 +134,7 @@ public class MySQLToStringVisitor extends MySQLVisitor {
 	}
 
 	@Override
-	public void visit(MySQLUnaryPostfixOperator op) {
+	public void visit(MySQLUnaryPostfixOperation op) {
 		sb.append("(");
 		visit(op.getExpression());
 		sb.append(")");

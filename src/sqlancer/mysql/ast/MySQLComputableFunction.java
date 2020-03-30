@@ -232,8 +232,8 @@ public class MySQLComputableFunction implements MySQLExpression {
 		MySQLDataType type = null;
 		for (MySQLExpression expr : expressions) {
 			MySQLDataType exprType;
-			if (expr instanceof MySQLColumnValue) {
-				exprType = ((MySQLColumnValue) expr).getColumn().getType();
+			if (expr instanceof MySQLColumnReference) {
+				exprType = ((MySQLColumnReference) expr).getColumn().getType();
 			} else {
 				exprType = expr.getExpectedValue().getType();
 			}

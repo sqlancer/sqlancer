@@ -2,7 +2,7 @@ package sqlancer.mysql.ast;
 
 import sqlancer.mysql.ast.MySQLConstant.MySQLIntConstant;
 
-public class MySQLUnaryPostfixOperator implements MySQLExpression {
+public class MySQLUnaryPostfixOperation implements MySQLExpression {
 
 	private final MySQLExpression expression;
 	private final UnaryPostfixOperator operator;
@@ -12,7 +12,7 @@ public class MySQLUnaryPostfixOperator implements MySQLExpression {
 		IS_NULL, IS_TRUE, IS_FALSE;
 	}
 
-	public MySQLUnaryPostfixOperator(MySQLExpression expr, UnaryPostfixOperator op, boolean negate) {
+	public MySQLUnaryPostfixOperation(MySQLExpression expr, UnaryPostfixOperator op, boolean negate) {
 		this.expression = expr;
 		this.operator = op;
 		this.setNegate(negate);

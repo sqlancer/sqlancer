@@ -20,15 +20,15 @@ import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLRowValue;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.MySQLSchema.MySQLTables;
-import sqlancer.mysql.ast.MySQLColumnValue;
+import sqlancer.mysql.ast.MySQLColumnReference;
 import sqlancer.mysql.ast.MySQLConstant;
 import sqlancer.mysql.ast.MySQLExpression;
 import sqlancer.mysql.ast.MySQLOrderByTerm;
 import sqlancer.mysql.ast.MySQLOrderByTerm.MySQLOrder;
 import sqlancer.mysql.ast.MySQLSelect;
 import sqlancer.mysql.ast.MySQLTableReference;
-import sqlancer.mysql.ast.MySQLUnaryPostfixOperator;
-import sqlancer.mysql.ast.MySQLUnaryPostfixOperator.UnaryPostfixOperator;
+import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
+import sqlancer.mysql.ast.MySQLUnaryPostfixOperation.UnaryPostfixOperator;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 import sqlancer.mysql.gen.MySQLRandomExpressionGenerator;
@@ -105,7 +105,7 @@ public class MySQLQueryGenerator {
 //		selectStatement.setJoinClauses(joinStatements);
 		selectStatement.setFromList(tables.stream().map(t -> new MySQLTableReference(t)).collect(Collectors.toList()));
 
-		fetchColumns = columns.stream().map(c -> new MySQLColumnValue(c, null)).collect(Collectors.toList());
+		fetchColumns = columns.stream().map(c -> new MySQLColumnReference(c, null)).collect(Collectors.toList());
 		selectStatement.setFetchColumns(fetchColumns);
 		state.queryTargetedColumnsString = columns.stream().map(c -> c.getFullQualifiedName())
 				.collect(Collectors.joining(", "));
@@ -156,7 +156,7 @@ public class MySQLQueryGenerator {
 
 	private List<MySQLExpression> generateGroupByClause(List<MySQLColumn> columns, MySQLRowValue rw) {
 		if (Randomly.getBoolean()) {
-			return columns.stream().map(c -> MySQLColumnValue.create(c, rw.getValues().get(c)))
+			return columns.stream().map(c -> MySQLColumnReference.create(c, rw.getValues().get(c)))
 					.collect(Collectors.toList());
 		} else {
 			return Collections.emptyList();
@@ -166,7 +166,7 @@ public class MySQLQueryGenerator {
 	public List<MySQLExpression> generateOrderBy(List<MySQLColumn> columns) {
 		List<MySQLExpression> orderBys = new ArrayList<>();
 		for (int i = 0; i < Randomly.smallNumber(); i++) {
-			orderBys.add(new MySQLOrderByTerm(MySQLColumnValue.create(Randomly.fromList(columns), null),
+			orderBys.add(new MySQLOrderByTerm(MySQLColumnReference.create(Randomly.fromList(columns), null),
 					MySQLOrder.getRandomOrder()));
 		}
 		return orderBys;
@@ -193,7 +193,7 @@ public class MySQLQueryGenerator {
 		MySQLExpression expression = MySQLRandomExpressionGenerator.generateRandomExpression(columns, rw, r);
 		MySQLConstant expectedValue = expression.getExpectedValue();
 		if (expectedValue.isNull()) {
-			return new MySQLUnaryPostfixOperator(expression, UnaryPostfixOperator.IS_NULL, false);
+			return new MySQLUnaryPostfixOperation(expression, UnaryPostfixOperator.IS_NULL, false);
 		} else if (expectedValue.asBooleanNotNull()) {
 			return expression;
 		} else {

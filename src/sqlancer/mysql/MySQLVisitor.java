@@ -5,7 +5,7 @@ import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
 import sqlancer.mysql.ast.MySQLBinaryOperation;
 import sqlancer.mysql.ast.MySQLCastOperation;
-import sqlancer.mysql.ast.MySQLColumnValue;
+import sqlancer.mysql.ast.MySQLColumnReference;
 import sqlancer.mysql.ast.MySQLComputableFunction;
 import sqlancer.mysql.ast.MySQLConstant;
 import sqlancer.mysql.ast.MySQLExists;
@@ -15,7 +15,7 @@ import sqlancer.mysql.ast.MySQLOrderByTerm;
 import sqlancer.mysql.ast.MySQLSelect;
 import sqlancer.mysql.ast.MySQLStringExpression;
 import sqlancer.mysql.ast.MySQLTableReference;
-import sqlancer.mysql.ast.MySQLUnaryPostfixOperator;
+import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 
 public abstract class MySQLVisitor {
@@ -24,11 +24,11 @@ public abstract class MySQLVisitor {
 	
 	public abstract void visit(MySQLConstant constant);
 
-	public abstract void visit(MySQLColumnValue column);
+	public abstract void visit(MySQLColumnReference column);
 
 	public abstract void visit(MySQLUnaryPrefixOperation column);
 
-	public abstract void visit(MySQLUnaryPostfixOperator column);
+	public abstract void visit(MySQLUnaryPostfixOperation column);
 
 	public abstract void visit(MySQLComputableFunction f);
 
@@ -55,12 +55,12 @@ public abstract class MySQLVisitor {
 	public void visit(MySQLExpression expr) {
 		if (expr instanceof MySQLConstant) {
 			visit((MySQLConstant) expr);
-		} else if (expr instanceof MySQLColumnValue) {
-			visit((MySQLColumnValue) expr);
+		} else if (expr instanceof MySQLColumnReference) {
+			visit((MySQLColumnReference) expr);
 		} else if (expr instanceof MySQLUnaryPrefixOperation) {
 			visit((MySQLUnaryPrefixOperation) expr);
-		} else if (expr instanceof MySQLUnaryPostfixOperator) {
-			visit((MySQLUnaryPostfixOperator) expr);
+		} else if (expr instanceof MySQLUnaryPostfixOperation) {
+			visit((MySQLUnaryPostfixOperation) expr);
 		} else if (expr instanceof MySQLComputableFunction) {
 			visit((MySQLComputableFunction) expr);
 		} else if (expr instanceof MySQLBinaryLogicalOperation) {

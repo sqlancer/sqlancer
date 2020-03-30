@@ -14,7 +14,7 @@ import sqlancer.mysql.ast.MySQLBinaryComparisonOperation.BinaryComparisonOperato
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation.MySQLBinaryLogicalOperator;
 import sqlancer.mysql.ast.MySQLCastOperation;
-import sqlancer.mysql.ast.MySQLColumnValue;
+import sqlancer.mysql.ast.MySQLColumnReference;
 import sqlancer.mysql.ast.MySQLComputableFunction;
 import sqlancer.mysql.ast.MySQLComputableFunction.MySQLFunction;
 import sqlancer.mysql.ast.MySQLConstant;
@@ -22,7 +22,7 @@ import sqlancer.mysql.ast.MySQLExists;
 import sqlancer.mysql.ast.MySQLExpression;
 import sqlancer.mysql.ast.MySQLInOperation;
 import sqlancer.mysql.ast.MySQLStringExpression;
-import sqlancer.mysql.ast.MySQLUnaryPostfixOperator;
+import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 
@@ -74,8 +74,8 @@ public class MySQLRandomExpressionGenerator {
 			}
 			return new MySQLUnaryPrefixOperation(notSubExpr, MySQLUnaryPrefixOperator.getRandom());
 		case UNARY_POSTFIX:
-			return new MySQLUnaryPostfixOperator(gen(columns, rowVal, depth + 1, r),
-					Randomly.fromOptions(MySQLUnaryPostfixOperator.UnaryPostfixOperator.values()),
+			return new MySQLUnaryPostfixOperation(gen(columns, rowVal, depth + 1, r),
+					Randomly.fromOptions(MySQLUnaryPostfixOperation.UnaryPostfixOperator.values()),
 					Randomly.getBoolean());
 		case FUNCTION:
 			return getFunction(columns, rowVal, depth + 1, r);
@@ -154,7 +154,7 @@ public class MySQLRandomExpressionGenerator {
 		} else {
 			val = rowVal.getValues().get(c);
 		}
-		return MySQLColumnValue.create(c, val);
+		return MySQLColumnReference.create(c, val);
 	}
 
 	public static String generateRandomExpressionString(List<MySQLColumn> columns, Object object, Randomly r) {
