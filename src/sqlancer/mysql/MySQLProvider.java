@@ -175,11 +175,11 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState> {
 		se.executeStatements();
 		manager.incrementCreateDatabase();
 
-//		for (MySQLTable t : globalState.getSchema().getDatabaseTables()) {
-//			if (!ensureTableHasRows(con, t, r)) {
-//				return;
-//			}
-//		}
+		for (MySQLTable t : globalState.getSchema().getDatabaseTables()) {
+			if (!ensureTableHasRows(con, t, r)) {
+				return;
+			}
+		}
 
 		globalState.setSchema(MySQLSchema.fromConnection(con, databaseName));
 

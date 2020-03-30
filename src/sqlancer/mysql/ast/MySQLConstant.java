@@ -58,7 +58,7 @@ public abstract class MySQLConstant extends MySQLExpression {
 			StringBuilder sb = new StringBuilder();
 			String quotes = singleQuotes ? "'" : "\"";
 			sb.append(quotes);
-			String text = value.replace(quotes, quotes + quotes);
+			String text = value.replace(quotes, quotes + quotes).replace("\\", "\\\\");
 			sb.append(text);
 			sb.append(quotes);
 			return sb.toString();

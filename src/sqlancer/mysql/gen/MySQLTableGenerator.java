@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -66,6 +67,9 @@ public class MySQLTableGenerator {
 			appendTableOptions();
 			appendPartitionOptions();
 			if ((tableHasNullableColumn || setPrimaryKey) && (engine == MySQLEngine.CSV)) {
+				if (true) { // TODO
+					throw new IgnoreMeException();
+				}
 				return new QueryAdapter(sb.toString()) {
 					public boolean execute(java.sql.Connection con) throws java.sql.SQLException {
 
@@ -96,7 +100,7 @@ public class MySQLTableGenerator {
 				return new QueryAdapter(sb.toString(), errors);
 			}
 			addCommonErrors(errors);
-			return new QueryAdapter(sb.toString(), errors);
+			return new QueryAdapter(sb.toString(), errors, true);
 		}
 
 	}

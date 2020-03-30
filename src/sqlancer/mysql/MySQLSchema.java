@@ -325,5 +325,8 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
 		super(databaseTables);
 	}
 
+	public MySQLTables getRandomTableNonEmptyTables() {
+		return new MySQLTables(Randomly.nonEmptySubset(getDatabaseTables()));
+	}
 
 }

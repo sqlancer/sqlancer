@@ -43,7 +43,7 @@ public class MySQLDeleteGenerator {
 		}
 
 		// TODO: support ORDER BY
-		return new QueryAdapter(sb.toString(), Arrays.asList("doesn't have this option", "Truncated incorrect DOUBLE value" /* ignore as a workaround for https://bugs.mysql.com/bug.php?id=95997 */, "Truncated incorrect INTEGER value"));
+		return new QueryAdapter(sb.toString(), Arrays.asList("doesn't have this option", "Truncated incorrect DOUBLE value" /* ignore as a workaround for https://bugs.mysql.com/bug.php?id=95997 */, "Truncated incorrect INTEGER value", "Data truncated for functional index"));
 	}
 
 }

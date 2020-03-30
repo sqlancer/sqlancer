@@ -91,7 +91,7 @@ public class MySQLInsertGenerator {
 				if (Randomly.getBooleanWithSmallProbability()) {
 					canFail = true;
 					sb.append('"');
-					sb.append(r.getString());
+					sb.append(getString());
 					sb.append('"');
 				} else if (Randomly.getBooleanWithSmallProbability()) {
 					sb.append("DEFAULT");
@@ -104,7 +104,7 @@ public class MySQLInsertGenerator {
 					sb.append(r.getLong(left, right));
 				} else {
 					sb.append('"');
-					sb.append(r.getString());
+					sb.append(getString());
 					sb.append('"');
 				}
 
@@ -113,8 +113,16 @@ public class MySQLInsertGenerator {
 		}
 		errors.add("doesn't have a default value");
 		errors.add("Data truncation");
-
+		errors.add("Incorrect integer value");
+		errors.add("Duplicate entry");
+		errors.add("Data truncated for functional index");
+		errors.add("Data truncated for column");
+		errors.add("cannot be null");
 		return new QueryAdapter(sb.toString(), errors);
+	}
+
+	private String getString() {
+		return r.getString().replace("\\", "\\\\").replace("\"", "\\\"");
 	}
 
 }
