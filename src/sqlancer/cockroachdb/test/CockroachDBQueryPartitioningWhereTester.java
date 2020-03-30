@@ -70,8 +70,6 @@ public class CockroachDBQueryPartitioningWhereTester implements TestOracle {
 			state.getLogger().writeCurrent(originalQueryString);
 			state.getLogger().writeCurrent(combinedString);
 		}
-		if (resultSet.size() != secondResultSet.size()) {
-			throw new AssertionError(originalQueryString + ";\n" + combinedString + ";");
-		}
+		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
 	}
 }
