@@ -4,9 +4,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import sqlancer.postgres.PostgresGlobalState;
-import sqlancer.postgres.PostgresProvider.Action;
-
 public class StatementExecutor<G extends GlobalState, A extends AbstractAction<G>> {
 	
 	@FunctionalInterface
