@@ -20,6 +20,7 @@ import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
+import sqlancer.QueryProvider;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.MySQLStateToReproduce;
@@ -36,12 +37,6 @@ import sqlancer.tidb.gen.TiDBViewGenerator;
 
 public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 
-	@FunctionalInterface
-	public interface TiDBQueryProvider {
-
-		Query getQuery(TiDBGlobalState globalState) throws SQLException;
-	}
-
 	public static enum Action implements AbstractAction<TiDBGlobalState> {
 		INSERT(TiDBInsertGenerator::getQuery), //
 		ANALYZE_TABLE(TiDBAnalyzeTableGenerator::getQuery),
@@ -52,9 +47,9 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 		ADMIN_CHECKSUM_TABLE((g) -> new QueryAdapter("ADMIN CHECKSUM TABLE " + g.getSchema().getRandomTable().getName())),
 		VIEW_GENERATOR(TiDBViewGenerator::getQuery);
 
-		private final TiDBQueryProvider queryProvider;
+		private final QueryProvider<TiDBGlobalState> queryProvider;
 
-		private Action(TiDBQueryProvider queryProvider) {
+		private Action(QueryProvider<TiDBGlobalState> queryProvider) {
 			this.queryProvider = queryProvider;
 		}
 

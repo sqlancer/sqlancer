@@ -23,6 +23,7 @@ import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
+import sqlancer.QueryProvider;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.CockroachDBStateToReproduce;
@@ -43,12 +44,6 @@ import sqlancer.cockroachdb.gen.CockroachDBViewGenerator;
 import sqlancer.cockroachdb.gen.RockroachDBCommentOnGenerator;
 
 public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalState> {
-
-	@FunctionalInterface
-	public interface CockroachDBQueryProvider {
-
-		Query getQuery(CockroachDBGlobalState globalState) throws SQLException;
-	}
 
 	public static enum Action {
 		INSERT(CockroachDBInsertGenerator::insert), //
@@ -86,9 +81,9 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 				// https://github.com/cockroachdb/cockroach/issues/46401
 				Arrays.asList("scrub-fk: column \"t.rowid\" does not exist")));
 
-		private final CockroachDBQueryProvider queryProvider;
+		private final QueryProvider<CockroachDBGlobalState> queryProvider;
 
-		private Action(CockroachDBQueryProvider queryProvider) {
+		private Action(QueryProvider<CockroachDBGlobalState> queryProvider) {
 			this.queryProvider = queryProvider;
 		}
 

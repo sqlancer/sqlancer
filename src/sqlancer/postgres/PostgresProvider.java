@@ -21,6 +21,7 @@ import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
+import sqlancer.QueryProvider;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.PostgresStateToReproduce;
@@ -59,12 +60,6 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 	public static boolean GENERATE_ONLY_KNOWN = false;
 
 	private PostgresGlobalState globalState;
-
-	@FunctionalInterface
-	public interface PostgresQueryProvider {
-
-		Query getQuery(PostgresGlobalState globalState) throws SQLException;
-	}
 
 	public enum Action implements AbstractAction<PostgresGlobalState> {
 		ANALYZE(PostgresAnalyzeGenerator::create), //
@@ -123,9 +118,9 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 		CREATE_VIEW(PostgresViewGenerator::create), //
 		QUERY_CATALOG((g) -> PostgresQueryCatalogGenerator.query());
 
-		private final PostgresQueryProvider queryProvider;
+		private final QueryProvider<PostgresGlobalState> queryProvider;
 
-		private Action(PostgresQueryProvider queryProvider) {
+		private Action(QueryProvider<PostgresGlobalState> queryProvider) {
 			this.queryProvider = queryProvider;
 		}
 

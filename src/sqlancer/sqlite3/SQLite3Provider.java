@@ -22,6 +22,7 @@ import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
+import sqlancer.QueryProvider;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.SQLite3StateToReproduce;
@@ -54,11 +55,6 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table.TableKind;
 
 public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState> {
 
-	@FunctionalInterface
-	public interface SQLQueryProvider {
-
-		Query getQuery(SQLite3GlobalState globalState) throws SQLException;
-	}
 
 	public static enum Action {
 		PRAGMA(SQLite3PragmaGenerator::insertPragma), //
@@ -141,9 +137,9 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState> {
 			}
 		});
 
-		private final SQLQueryProvider queryProvider;
+		private final QueryProvider<SQLite3GlobalState> queryProvider;
 
-		private Action(SQLQueryProvider queryProvider) {
+		private Action(QueryProvider<SQLite3GlobalState> queryProvider) {
 			this.queryProvider = queryProvider;
 		}
 

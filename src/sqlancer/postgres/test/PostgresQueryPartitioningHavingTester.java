@@ -1,11 +1,12 @@
 package sqlancer.postgres.test;
 
 import java.sql.SQLException;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.DatabaseProvider;
 import sqlancer.Randomly;
+import sqlancer.TestOracle;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresVisitor;
@@ -22,9 +23,6 @@ public class PostgresQueryPartitioningHavingTester extends PostgresQueryPartitio
 	@Override
 	public void check() throws SQLException {
 		super.check();
-		if (Randomly.getBooleanWithRatherLowProbability()) {
-			select.setOrderByExpressions(gen.generateOrderBy());
-		}
 		if (Randomly.getBoolean()) {
 			select.setWhereClause(gen.generateExpression(PostgresDataType.BOOLEAN));
 		}
@@ -34,19 +32,20 @@ public class PostgresQueryPartitioningHavingTester extends PostgresQueryPartitio
 		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
 				state.getConnection(), state);
 
-		select.setOrderByExpressions(Collections.emptyList()); // not compatible with the union
+		boolean orderBy = Randomly.getBoolean();
+		if (orderBy) {
+			select.setOrderByExpressions(gen.generateOrderBy());
+		}
 		select.setHavingClause(predicate);
 		String firstQueryString = PostgresVisitor.asString(select);
 		select.setHavingClause(negatedPredicate);
 		String secondQueryString = PostgresVisitor.asString(select);
 		select.setHavingClause(isNullPredicate);
 		String thirdQueryString = PostgresVisitor.asString(select);
-		String combinedString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL " + thirdQueryString;
-		List<String> secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors,
-				state.getConnection(), state);
-		if (resultSet.size() != secondResultSet.size()) {
-			throw new AssertionError(originalQueryString + ";\n" + combinedString + ";");
-		}
+		List<String> combinedString = new ArrayList<>();
+		List<String> secondResultSet = TestOracle.getCombinedResultSet(firstQueryString, secondQueryString,
+				thirdQueryString, combinedString, !orderBy, state, errors);
+		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
 	}
 
 	@Override

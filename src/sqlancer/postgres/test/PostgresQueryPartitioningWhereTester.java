@@ -7,6 +7,7 @@ import java.util.List;
 
 import sqlancer.DatabaseProvider;
 import sqlancer.Randomly;
+import sqlancer.TestOracle;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresVisitor;
 
@@ -33,26 +34,9 @@ public class PostgresQueryPartitioningWhereTester extends PostgresQueryPartition
 		String secondQueryString = PostgresVisitor.asString(select);
 		select.setWhereClause(isNullPredicate);
 		String thirdQueryString = PostgresVisitor.asString(select);
-		List<String> secondResultSet;
-		String combinedString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL " + thirdQueryString;
-		if (Randomly.getBoolean()) {
-			secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors,
-					state.getConnection(), state);
-		} else {
-			secondResultSet = new ArrayList<>();
-			secondResultSet.addAll(DatabaseProvider.getResultSetFirstColumnAsString(firstQueryString, errors,
-					state.getConnection(), state));
-			secondResultSet.addAll(DatabaseProvider.getResultSetFirstColumnAsString(secondQueryString, errors,
-					state.getConnection(), state));
-			secondResultSet.addAll(DatabaseProvider.getResultSetFirstColumnAsString(thirdQueryString, errors,
-					state.getConnection(), state));
-		}
-		if (state.getOptions().logEachSelect()) {
-			state.getLogger().writeCurrent(originalQueryString);
-			state.getLogger().writeCurrent(combinedString);
-		}
-		if (resultSet.size() != secondResultSet.size()) {
-			throw new AssertionError(originalQueryString + ";\n" + combinedString + ";");
-		}
+		List<String> combinedString = new ArrayList<>();
+		List<String> secondResultSet = TestOracle.getCombinedResultSet(firstQueryString, secondQueryString,
+				thirdQueryString, combinedString, Randomly.getBoolean(), state, errors);
+		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
 	}
 }
