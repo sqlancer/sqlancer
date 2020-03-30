@@ -122,6 +122,10 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
 				break;
 			case LEFT:
 				sb.append("LEFT ");
+				if (true) {
+					// https://github.com/pingcap/tidb/issues/15846
+					throw new IgnoreMeException();
+				}
 				break;
 			case RIGHT:
 				if (true) {
