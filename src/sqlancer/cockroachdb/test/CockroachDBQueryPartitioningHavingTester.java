@@ -1,6 +1,7 @@
 package sqlancer.cockroachdb.test;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -71,9 +72,9 @@ public class CockroachDBQueryPartitioningHavingTester implements TestOracle {
 		select.setHavingClause(
 				new CockroachDBUnaryPostfixOperation(predicate, CockroachDBUnaryPostfixOperator.IS_NULL));
 		String thirdQueryString = CockroachDBVisitor.asString(select);
-		String combinedString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL " + thirdQueryString;
-		List<String> secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors,
-				state.getConnection(), state);
+		List<String> combinedString = new ArrayList<>();
+		List<String> secondResultSet = TestOracle.getCombinedResultSet(firstQueryString, secondQueryString,
+				thirdQueryString, combinedString, Randomly.getBoolean(), state, errors);
 		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
 	}
 }

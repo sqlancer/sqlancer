@@ -11,8 +11,7 @@ import sqlancer.TestOracle;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.visitor.TiDBVisitor;
 
-public class TiDBQueryPartitioningWhereTester extends TiDBQueryPartitioningBase  {
-
+public class TiDBQueryPartitioningWhereTester extends TiDBQueryPartitioningBase {
 
 	public TiDBQueryPartitioningWhereTester(TiDBGlobalState state) {
 		super(state);
@@ -22,13 +21,14 @@ public class TiDBQueryPartitioningWhereTester extends TiDBQueryPartitioningBase 
 	public void check() throws SQLException {
 		super.check();
 		select.setWhereClause(null);
+		String originalQueryString = TiDBVisitor.asString(select);
+
+		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
+				state.getConnection(), state);
+
 		if (Randomly.getBoolean()) {
 			select.setOrderByExpressions(gen.generateOrderBys());
 		}
-		String originalQueryString = TiDBVisitor.asString(select);
-		
-		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors, state.getConnection(), state);
-		
 		select.setOrderByExpressions(Collections.emptyList());
 		select.setWhereClause(predicate);
 		String firstQueryString = TiDBVisitor.asString(select);
@@ -36,20 +36,10 @@ public class TiDBQueryPartitioningWhereTester extends TiDBQueryPartitioningBase 
 		String secondQueryString = TiDBVisitor.asString(select);
 		select.setWhereClause(isNullPredicate);
 		String thirdQueryString = TiDBVisitor.asString(select);
-		List<String> secondResultSet;
-		String combinedString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL " + thirdQueryString;
-		if (Randomly.getBoolean()) {
-			secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors, state.getConnection(), state);
-		} else {
-			secondResultSet = new ArrayList<>();
-			secondResultSet.addAll(DatabaseProvider.getResultSetFirstColumnAsString(firstQueryString, errors, state.getConnection(), state));
-			secondResultSet.addAll(DatabaseProvider.getResultSetFirstColumnAsString(secondQueryString, errors, state.getConnection(), state));
-			secondResultSet.addAll(DatabaseProvider.getResultSetFirstColumnAsString(thirdQueryString, errors, state.getConnection(), state));
-		}
-		if (state.getOptions().logEachSelect()) {
-			state.getLogger().writeCurrent(originalQueryString);
-			state.getLogger().writeCurrent(combinedString);
-		}
+		List<String> combinedString = new ArrayList<>();
+		List<String> secondResultSet = TestOracle.getCombinedResultSet(firstQueryString, secondQueryString,
+				thirdQueryString, combinedString, Randomly.getBoolean(), state, errors);
 		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
 	}
+
 }

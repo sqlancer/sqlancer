@@ -1,6 +1,7 @@
 package sqlancer.tidb.test;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.DatabaseProvider;
@@ -20,9 +21,11 @@ public class TiDBQueryPartitioningHavingTester extends TiDBQueryPartitioningBase
 
 	@Override
 	public void check() throws SQLException {
-		// TODO order by?
 		if (Randomly.getBoolean()) {
 			select.setWhereClause(gen.generateExpression());
+		}
+		if (Randomly.getBoolean()) {
+			select.setOrderByExpressions(gen.generateOrderBys());
 		}
 		select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
 		select.setHavingClause(null);
@@ -36,9 +39,9 @@ public class TiDBQueryPartitioningHavingTester extends TiDBQueryPartitioningBase
 		String secondQueryString = TiDBVisitor.asString(select);
 		select.setHavingClause(isNullPredicate);
 		String thirdQueryString = TiDBVisitor.asString(select);
-		String combinedString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL " + thirdQueryString;
-		List<String> secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors,
-				state.getConnection(), state);
+		List<String> combinedString = new ArrayList<>();
+		List<String> secondResultSet = TestOracle.getCombinedResultSet(firstQueryString, secondQueryString,
+				thirdQueryString, combinedString, Randomly.getBoolean(), state, errors);
 		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
 	}
 
