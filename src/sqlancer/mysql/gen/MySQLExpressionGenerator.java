@@ -3,6 +3,7 @@ package sqlancer.mysql.gen;
 import java.util.ArrayList;
 import java.util.List;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
@@ -13,6 +14,8 @@ import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation.BinaryComparisonOperator;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation.MySQLBinaryLogicalOperator;
+import sqlancer.mysql.ast.MySQLBinaryOperation;
+import sqlancer.mysql.ast.MySQLBinaryOperation.MySQLBinaryOperator;
 import sqlancer.mysql.ast.MySQLCastOperation;
 import sqlancer.mysql.ast.MySQLColumnReference;
 import sqlancer.mysql.ast.MySQLComputableFunction;
@@ -46,7 +49,7 @@ public class MySQLExpressionGenerator {
 
 	private enum Actions {
 		COLUMN, LITERAL, UNARY_PREFIX_OPERATION, UNARY_POSTFIX, FUNCTION, BINARY_LOGICAL_OPERATOR,
-		BINARY_COMPARISON_OPERATION, CAST, IN_OPERATION, /* BINARY_OPERATION, */ EXISTS, BETWEEN_OPERATOR;
+		BINARY_COMPARISON_OPERATION, CAST, IN_OPERATION, BINARY_OPERATION, EXISTS, BETWEEN_OPERATOR;
 	}
 
 	public MySQLExpression generateExpression() {
@@ -67,12 +70,13 @@ public class MySQLExpressionGenerator {
 		case LITERAL:
 			return generateLiteral(r);
 		case UNARY_PREFIX_OPERATION:
-			MySQLExpression notSubExpr = gen(columns, rowVal, depth + 1, r);
-			/* workaround for https://bugs.mysql.com/bug.php?id=95900 */
-			while (notSubExpr instanceof MySQLUnaryPrefixOperation) {
-				notSubExpr = gen(columns, rowVal, depth + 1, r);
+			MySQLExpression subExpr = gen(columns, rowVal, depth + 1, r);
+			MySQLUnaryPrefixOperator random = MySQLUnaryPrefixOperator.getRandom();
+			if (random == MySQLUnaryPrefixOperator.MINUS) {
+				// workaround for https://bugs.mysql.com/bug.php?id=99122
+				throw new IgnoreMeException();
 			}
-			return new MySQLUnaryPrefixOperation(notSubExpr, MySQLUnaryPrefixOperator.getRandom());
+			return new MySQLUnaryPrefixOperation(subExpr, random);
 		case UNARY_POSTFIX:
 			return new MySQLUnaryPostfixOperation(gen(columns, rowVal, depth + 1, r),
 					Randomly.fromOptions(MySQLUnaryPostfixOperation.UnaryPostfixOperator.values()),
@@ -94,10 +98,9 @@ public class MySQLExpressionGenerator {
 				rightList.add(gen(columns, rowVal, depth + 1, r));
 			}
 			return new MySQLInOperation(expr, rightList, Randomly.getBoolean());
-		/* commented out as a workaround for https://bugs.mysql.com/bug.php?id=95983 */
-//		case BINARY_OPERATION:
-//			return new MySQLBinaryOperation(gen(columns, rowVal, depth + 1, r), gen(columns, rowVal, depth + 1, r),
-//					MySQLBinaryOperator.getRandom());
+		case BINARY_OPERATION:
+			return new MySQLBinaryOperation(gen(columns, rowVal, depth + 1, r), gen(columns, rowVal, depth + 1, r),
+					MySQLBinaryOperator.getRandom());
 		case EXISTS:
 			return getExists(columns, rowVal, depth + 1, r);
 		case BETWEEN_OPERATOR:

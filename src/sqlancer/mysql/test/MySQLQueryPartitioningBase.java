@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.TestOracle;
+import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
@@ -36,6 +37,7 @@ public abstract class MySQLQueryPartitioningBase implements TestOracle {
 
 	public MySQLQueryPartitioningBase(MySQLGlobalState state) {
 		this.state = state;
+		MySQLErrors.addExpressionErrors(errors);
 	}
 
 	@Override
