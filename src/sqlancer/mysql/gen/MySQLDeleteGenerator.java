@@ -39,7 +39,7 @@ public class MySQLDeleteGenerator {
 		sb.append(randomTable.getName());
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
-			sb.append(MySQLRandomExpressionGenerator.generateRandomExpressionString(randomTable.getColumns(), null, r));
+			sb.append(MySQLExpressionGenerator.generateRandomExpressionString(randomTable.getColumns(), null, r));
 		}
 
 		// TODO: support ORDER BY

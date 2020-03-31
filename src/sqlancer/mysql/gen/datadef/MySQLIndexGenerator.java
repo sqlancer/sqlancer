@@ -15,7 +15,7 @@ import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.MySQLSchema.MySQLTable.MySQLEngine;
 import sqlancer.mysql.MySQLVisitor;
 import sqlancer.mysql.ast.MySQLExpression;
-import sqlancer.mysql.gen.MySQLRandomExpressionGenerator;
+import sqlancer.mysql.gen.MySQLExpressionGenerator;
 
 public class MySQLIndexGenerator {
 
@@ -58,7 +58,7 @@ public class MySQLIndexGenerator {
 					sb.append(", ");
 				}
 				sb.append("(");
-				MySQLExpression randExpr = MySQLRandomExpressionGenerator.generateRandomExpression(table.getColumns(),
+				MySQLExpression randExpr = MySQLExpressionGenerator.generateRandomExpression(table.getColumns(),
 						null, r);
 				sb.append(MySQLVisitor.asString(randExpr));
 				sb.append(")");

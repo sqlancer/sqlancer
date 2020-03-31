@@ -31,7 +31,7 @@ import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperation.UnaryPostfixOperator;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
-import sqlancer.mysql.gen.MySQLRandomExpressionGenerator;
+import sqlancer.mysql.gen.MySQLExpressionGenerator;
 
 public class MySQLQueryGenerator {
 
@@ -190,7 +190,7 @@ public class MySQLQueryGenerator {
 	}
 
 	private MySQLExpression generateWhereClauseThatContainsRowValue(List<MySQLColumn> columns, MySQLRowValue rw) {
-		MySQLExpression expression = MySQLRandomExpressionGenerator.generateRandomExpression(columns, rw, r);
+		MySQLExpression expression = MySQLExpressionGenerator.generateRandomExpression(columns, rw, r);
 		MySQLConstant expectedValue = expression.getExpectedValue();
 		if (expectedValue.isNull()) {
 			return new MySQLUnaryPostfixOperation(expression, UnaryPostfixOperator.IS_NULL, false);

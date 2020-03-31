@@ -19,7 +19,7 @@ import sqlancer.mysql.ast.MySQLTableReference;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
-import sqlancer.mysql.gen.MySQLRandomExpressionGenerator;
+import sqlancer.mysql.gen.MySQLExpressionGenerator;
 
 public abstract class MySQLQueryPartitioningBase implements TestOracle {
 
@@ -28,7 +28,7 @@ public abstract class MySQLQueryPartitioningBase implements TestOracle {
 
 	MySQLSchema s;
 	MySQLTables targetTables;
-	MySQLRandomExpressionGenerator gen;
+	MySQLExpressionGenerator gen;
 	MySQLSelect select;
 	MySQLExpression predicate;
 	MySQLExpression negatedPredicate;
@@ -42,7 +42,7 @@ public abstract class MySQLQueryPartitioningBase implements TestOracle {
 	public void check() throws SQLException {
 		s = state.getSchema();
 		targetTables = s.getRandomTableNonEmptyTables();
-		gen = new MySQLRandomExpressionGenerator(state).setColumns(targetTables.getColumns());
+		gen = new MySQLExpressionGenerator(state).setColumns(targetTables.getColumns());
 		select = new MySQLSelect();
 		select.setFetchColumns(generateFetchColumns());
 		List<MySQLTable> tables = targetTables.getTables();

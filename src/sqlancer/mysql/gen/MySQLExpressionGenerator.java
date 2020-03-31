@@ -26,14 +26,14 @@ import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 
-public class MySQLRandomExpressionGenerator {
+public class MySQLExpressionGenerator {
 
-	private final static int MAX_DEPTH = 1;
+	private final static int MAX_DEPTH = 2;
 	private Randomly r;
 	private List<MySQLColumn> columns;
 	private MySQLGlobalState state;
 
-	public MySQLRandomExpressionGenerator(MySQLGlobalState state) {
+	public MySQLExpressionGenerator(MySQLGlobalState state) {
 		this.state = state;
 		this.r = state.getRandomly();
 	}
@@ -162,7 +162,7 @@ public class MySQLRandomExpressionGenerator {
 		return MySQLVisitor.asString(expr);
 	}
 
-	public MySQLRandomExpressionGenerator setColumns(List<MySQLColumn> columns) {
+	public MySQLExpressionGenerator setColumns(List<MySQLColumn> columns) {
 		this.columns = columns;
 		return this;
 	}
