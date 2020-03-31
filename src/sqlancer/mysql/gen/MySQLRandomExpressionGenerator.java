@@ -28,7 +28,7 @@ import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 
 public class MySQLRandomExpressionGenerator {
 
-	private final static int MAX_DEPTH = 3;
+	private final static int MAX_DEPTH = 1;
 	private Randomly r;
 	private List<MySQLColumn> columns;
 	private MySQLGlobalState state;
@@ -50,7 +50,7 @@ public class MySQLRandomExpressionGenerator {
 	}
 
 	public MySQLExpression generateExpression() {
-		return gen(columns, null, state.getOptions().getMaxExpressionDepth(), r);
+		return gen(columns, null, 0, r);
 	}
 
 	public static MySQLExpression gen(List<MySQLColumn> columns, MySQLRowValue rowVal, int depth, Randomly r) {
@@ -165,6 +165,19 @@ public class MySQLRandomExpressionGenerator {
 	public MySQLRandomExpressionGenerator setColumns(List<MySQLColumn> columns) {
 		this.columns = columns;
 		return this;
+	}
+
+	public List<MySQLExpression> generateOrderBys() {
+		// TODO: implement
+		return generateExpressions(Randomly.smallNumber() + 1);
+	}
+
+	private List<MySQLExpression> generateExpressions(int nr) {
+		List<MySQLExpression> expressions = new ArrayList<>();
+		for (int i = 0; i < nr; i++) {
+			expressions.add(generateExpression());
+		}
+		return expressions;
 	}
 
 }

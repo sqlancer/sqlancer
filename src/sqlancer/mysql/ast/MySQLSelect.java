@@ -7,7 +7,7 @@ import sqlancer.ast.SelectBase;
 
 public class MySQLSelect extends SelectBase<MySQLExpression> implements MySQLExpression {
 
-	private SelectType fromOptions;
+	private SelectType fromOptions = SelectType.ALL;
 	private List<MySQLJoin> joinStatements = Collections.emptyList();
 	private List<String> modifiers = Collections.emptyList();
 

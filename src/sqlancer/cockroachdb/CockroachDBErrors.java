@@ -69,6 +69,7 @@ public class CockroachDBErrors {
 		errors.add("expected DEFAULT expression to have type bytes");
 		errors.add("value type string doesn't match type bytes of column");
 		errors.add("to be of type decimal, found type float");
+		errors.add("to be of type float, found type decimal");
 		errors.add("to be of type bytes, found type string");
 		errors.add("as bytes, found type: string");
 		

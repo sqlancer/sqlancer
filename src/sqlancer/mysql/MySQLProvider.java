@@ -23,6 +23,7 @@ import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.MySQLStateToReproduce;
 import sqlancer.StatementExecutor;
+import sqlancer.TestOracle;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.gen.MySQLAlterTable;
@@ -40,6 +41,7 @@ import sqlancer.mysql.gen.tblmaintenance.MySQLCheckTable;
 import sqlancer.mysql.gen.tblmaintenance.MySQLChecksum;
 import sqlancer.mysql.gen.tblmaintenance.MySQLOptimize;
 import sqlancer.mysql.gen.tblmaintenance.MySQLRepair;
+import sqlancer.mysql.test.MySQLQueryPartitioningWhereTester;
 import sqlancer.sqlite3.gen.SQLite3Common;
 
 public class MySQLProvider implements DatabaseProvider<MySQLGlobalState> {
@@ -175,23 +177,33 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState> {
 		se.executeStatements();
 		manager.incrementCreateDatabase();
 
-		for (MySQLTable t : globalState.getSchema().getDatabaseTables()) {
-			if (!ensureTableHasRows(con, t, r)) {
-				return;
-			}
-		}
+//		for (MySQLTable t : globalState.getSchema().getDatabaseTables()) {
+//			if (!ensureTableHasRows(con, t, r)) {
+//				return;
+//			}
+//		}
 
 		globalState.setSchema(MySQLSchema.fromConnection(con, databaseName));
 
-		MySQLQueryGenerator queryGenerator = new MySQLQueryGenerator(manager, r, con, databaseName);
+		TestOracle oracle = new MySQLQueryPartitioningWhereTester(globalState);
 		for (int i = 0; i < options.getNrQueries(); i++) {
 			try {
-				queryGenerator.generateAndCheckQuery((MySQLStateToReproduce) state, logger, options);
+				oracle.check();
+				manager.incrementSelectQueryCount();
 			} catch (IgnoreMeException e) {
-
+				
 			}
-			manager.incrementSelectQueryCount();
 		}
+		
+//		MySQLQueryGenerator queryGenerator = new MySQLQueryGenerator(manager, r, con, databaseName);
+//		for (int i = 0; i < options.getNrQueries(); i++) {
+//			try {
+//				queryGenerator.generateAndCheckQuery((MySQLStateToReproduce) state, logger, options);
+//			} catch (IgnoreMeException e) {
+//
+//			}
+//			manager.incrementSelectQueryCount();
+//		}
 
 	}
 

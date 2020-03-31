@@ -104,7 +104,7 @@ public class MySQLTableGenerator {
 		}
 
 	}
-	
+
 	private void addCommonErrors(List<String> list) {
 		list.add("The storage engine for the table doesn't support");
 		list.add("doesn't have this option");
@@ -261,15 +261,13 @@ public class MySQLTableGenerator {
 		if (Randomly.getBoolean()) {
 			String fromOptions = Randomly.fromOptions("TINYINT", "SMALLINT", "MEDIUMINT", "INT", "BIGINT");
 			sb.append(fromOptions);
-			if (Randomly.getBoolean()) {
-				/* workaround for https://bugs.mysql.com/bug.php?id=95954 */
-				if (!fromOptions.contentEquals("BIGINT")) {
-					sb.append(" UNSIGNED");
-				}
+			if (false) {
+				/* https://bugs.mysql.com/bug.php?id=99127 */
+				sb.append(" UNSIGNED");
 			}
 		} else {
 			isTextType = true;
-			sb.append(Randomly.fromOptions("VARCHAR(5)", "TINYTEXT", "TEXT", "MEDIUMTEXT", "LONGTEXT"));
+			sb.append(Randomly.fromOptions("VARCHAR(500)", "TINYTEXT", "TEXT", "MEDIUMTEXT", "LONGTEXT"));
 		}
 		sb.append(" ");
 		// TODO: this was commented out since it makes the implementation of LIKE more
