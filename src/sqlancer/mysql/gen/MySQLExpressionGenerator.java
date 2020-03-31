@@ -99,6 +99,10 @@ public class MySQLExpressionGenerator {
 			}
 			return new MySQLInOperation(expr, rightList, Randomly.getBoolean());
 		case BINARY_OPERATION:
+			if (true) {
+				/* workaround for https://bugs.mysql.com/bug.php?id=99135 */
+				throw new IgnoreMeException();
+			}
 			return new MySQLBinaryOperation(gen(columns, rowVal, depth + 1, r), gen(columns, rowVal, depth + 1, r),
 					MySQLBinaryOperator.getRandom());
 		case EXISTS:
@@ -143,7 +147,12 @@ public class MySQLExpressionGenerator {
 		case NULL:
 			return MySQLConstant.createNullConstant();
 		case STRING:
-			return MySQLConstant.createStringConstant(r.getString());
+			String string = r.getString();
+			if (string.startsWith("\n")) {
+				// workaround for https://bugs.mysql.com/bug.php?id=99130
+				throw new IgnoreMeException();
+			}
+			return MySQLConstant.createStringConstant(string);
 		default:
 			throw new AssertionError();
 		}
