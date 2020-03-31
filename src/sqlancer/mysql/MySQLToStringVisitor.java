@@ -9,6 +9,7 @@ import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
 import sqlancer.mysql.ast.MySQLBinaryOperation;
 import sqlancer.mysql.ast.MySQLCastOperation;
+import sqlancer.mysql.ast.MySQLCollate;
 import sqlancer.mysql.ast.MySQLColumnReference;
 import sqlancer.mysql.ast.MySQLComputableFunction;
 import sqlancer.mysql.ast.MySQLConstant;
@@ -270,6 +271,15 @@ public class MySQLToStringVisitor extends MySQLVisitor {
 	@Override
 	public void visit(MySQLTableReference ref) {
 		sb.append(ref.getTable().getName());
+	}
+
+	@Override
+	public void visit(MySQLCollate collate) {
+		sb.append("(");
+		visit(collate.getExpression());
+		sb.append(" ");
+		sb.append(collate.getOperatorRepresentation());
+		sb.append(")");
 	}
 
 }

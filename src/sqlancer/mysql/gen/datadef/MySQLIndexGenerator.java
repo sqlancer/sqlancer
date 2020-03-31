@@ -7,6 +7,7 @@ import java.util.Set;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
@@ -38,6 +39,7 @@ public class MySQLIndexGenerator {
 
 	public Query create() {
 		Set<String> errors = new HashSet<>();
+		MySQLErrors.addExpressionErrors(errors);
 		sb.append("CREATE ");
 		if (Randomly.getBoolean()) {
 			// "FULLTEXT" TODO Column 'c3' cannot be part of FULLTEXT index

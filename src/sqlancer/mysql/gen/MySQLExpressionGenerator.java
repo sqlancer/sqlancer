@@ -17,6 +17,7 @@ import sqlancer.mysql.ast.MySQLBinaryLogicalOperation.MySQLBinaryLogicalOperator
 import sqlancer.mysql.ast.MySQLBinaryOperation;
 import sqlancer.mysql.ast.MySQLBinaryOperation.MySQLBinaryOperator;
 import sqlancer.mysql.ast.MySQLCastOperation;
+import sqlancer.mysql.ast.MySQLCollate;
 import sqlancer.mysql.ast.MySQLColumnReference;
 import sqlancer.mysql.ast.MySQLComputableFunction;
 import sqlancer.mysql.ast.MySQLComputableFunction.MySQLFunction;
@@ -31,7 +32,7 @@ import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 
 public class MySQLExpressionGenerator {
 
-	private final static int MAX_DEPTH = 2;
+	private final static int MAX_DEPTH = 3;
 	private Randomly r;
 	private List<MySQLColumn> columns;
 	private MySQLGlobalState state;
@@ -152,7 +153,11 @@ public class MySQLExpressionGenerator {
 				// workaround for https://bugs.mysql.com/bug.php?id=99130
 				throw new IgnoreMeException();
 			}
-			return MySQLConstant.createStringConstant(string);
+			MySQLConstant createStringConstant = MySQLConstant.createStringConstant(string);
+			if (Randomly.getBoolean()) {
+				return new MySQLCollate(createStringConstant, Randomly.fromOptions("ascii_bin", "binary"));
+			}
+			return createStringConstant;
 		default:
 			throw new AssertionError();
 		}

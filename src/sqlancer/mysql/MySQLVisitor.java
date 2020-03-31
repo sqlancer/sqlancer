@@ -5,6 +5,7 @@ import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
 import sqlancer.mysql.ast.MySQLBinaryOperation;
 import sqlancer.mysql.ast.MySQLCastOperation;
+import sqlancer.mysql.ast.MySQLCollate;
 import sqlancer.mysql.ast.MySQLColumnReference;
 import sqlancer.mysql.ast.MySQLComputableFunction;
 import sqlancer.mysql.ast.MySQLConstant;
@@ -51,6 +52,8 @@ public abstract class MySQLVisitor {
 	public abstract void visit(MySQLStringExpression op);
 	
 	public abstract void visit(MySQLBetweenOperation op);
+	
+	public abstract void visit(MySQLCollate collate);
 
 	public void visit(MySQLExpression expr) {
 		if (expr instanceof MySQLConstant) {
@@ -85,6 +88,8 @@ public abstract class MySQLVisitor {
 			visit((MySQLBetweenOperation) expr);
 		} else if (expr instanceof MySQLTableReference) {
 			visit((MySQLTableReference) expr);
+		} else if (expr instanceof MySQLCollate) {
+			visit((MySQLCollate) expr);
 		}
 		
 		else {
