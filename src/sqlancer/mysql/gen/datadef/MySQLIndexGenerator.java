@@ -52,6 +52,7 @@ public class MySQLIndexGenerator {
 		indexType();
 		sb.append(" ON ");
 		MySQLTable table = schema.getRandomTable();
+		MySQLExpressionGenerator gen = new MySQLExpressionGenerator(globalState).setColumns(table.getColumns());
 		sb.append(table.getName());
 		sb.append("(");
 		if (table.getEngine() == MySQLEngine.INNO_DB && Randomly.getBoolean()) {
@@ -60,8 +61,7 @@ public class MySQLIndexGenerator {
 					sb.append(", ");
 				}
 				sb.append("(");
-				MySQLExpression randExpr = MySQLExpressionGenerator.generateRandomExpression(table.getColumns(),
-						null, r);
+				MySQLExpression randExpr = gen.generateExpression();
 				sb.append(MySQLVisitor.asString(randExpr));
 				sb.append(")");
 

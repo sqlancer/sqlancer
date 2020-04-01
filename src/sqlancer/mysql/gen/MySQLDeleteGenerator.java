@@ -10,23 +10,24 @@ import sqlancer.Randomly;
 import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
+import sqlancer.mysql.MySQLVisitor;
 
 public class MySQLDeleteGenerator {
 
-	private MySQLTable randomTable;
-	private Randomly r;
 	private final StringBuilder sb = new StringBuilder();
+	private final MySQLGlobalState globalState;
 
-	public MySQLDeleteGenerator(MySQLTable randomTable, Randomly r) {
-		this.randomTable = randomTable;
-		this.r = r;
+	public MySQLDeleteGenerator(MySQLGlobalState globalState) {
+		this.globalState = globalState;
 	}
 
 	public static Query delete(MySQLGlobalState globalState) {
-		return new MySQLDeleteGenerator(globalState.getSchema().getRandomTable(), globalState.getRandomly()).generate();
+		return new MySQLDeleteGenerator(globalState).generate();
 	}
 
 	private Query generate() {
+		MySQLTable randomTable = globalState.getSchema().getRandomTable();
+		MySQLExpressionGenerator gen = new MySQLExpressionGenerator(globalState).setColumns(randomTable.getColumns());
 		Set<String> errors = new HashSet<>();
 		sb.append("DELETE");
 		if (Randomly.getBoolean()) {
@@ -43,7 +44,7 @@ public class MySQLDeleteGenerator {
 		sb.append(randomTable.getName());
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
-			sb.append(MySQLExpressionGenerator.generateRandomExpressionString(randomTable.getColumns(), null, r));
+			sb.append(MySQLVisitor.asString(gen.generateExpression()));
 			MySQLErrors.addExpressionErrors(errors);
 		}
 		errors.addAll(Arrays.asList("doesn't have this option", "Truncated incorrect DOUBLE value" /* ignore as a workaround for https://bugs.mysql.com/bug.php?id=95997 */, "Truncated incorrect INTEGER value", "Data truncated for functional index"));
