@@ -1,6 +1,5 @@
 package sqlancer.mysql.gen;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -69,30 +68,9 @@ public class MySQLTableGenerator {
 			appendPartitionOptions();
 			if ((tableHasNullableColumn || setPrimaryKey) && (engine == MySQLEngine.CSV)) {
 				if (true) { // TODO
+					// results in an error
 					throw new IgnoreMeException();
 				}
-				return new QueryAdapter(sb.toString()) {
-					public boolean execute(java.sql.Connection con) throws java.sql.SQLException {
-
-						try {
-							super.execute(con);
-							throw new AssertionError("expected error");
-						} catch (SQLException e) {
-							if (e.getMessage()
-									.startsWith("The storage engine for the table doesn't support nullable columns")) {
-								// ignore
-							} else if (e.getMessage().startsWith("Too many keys specified; max 0 keys allowed")) {
-								// ignore
-							} else if (shouldIgnoreCommon(e)) {
-								// ignore
-							} else {
-								throw e;
-							}
-						}
-						return false;
-
-					};
-				};
 			} else if ((tableHasNullableColumn || keysSpecified > 1) && engine == MySQLEngine.ARCHIVE) {
 				errors.add("Too many keys specified; max 1 keys allowed");
 				errors.add("Table handler doesn't support NULL in given index");
@@ -113,15 +91,6 @@ public class MySQLTableGenerator {
 		list.add("not allowed type for this type of partitioning");
 		list.add("doesn't support BLOB/TEXT columns");
 		list.add("A BLOB field is not allowed in partition function");
-	}
-
-	private boolean shouldIgnoreCommon(Exception e) {
-		return e.getMessage().contains("The storage engine for the table doesn't support")
-				|| e.getMessage().contains("doesn't have this option")
-				|| e.getMessage().contains("must include all columns")
-				|| e.getMessage().contains("not allowed type for this type of partitioning")
-				|| e.getMessage().contains("doesn't support BLOB/TEXT columns")
-				|| e.getMessage().contains("A BLOB field is not allowed in partition function");
 	}
 
 	private enum PartitionOptions {
