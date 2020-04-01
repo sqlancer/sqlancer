@@ -10,9 +10,13 @@ public abstract class UntypedExpressionGenerator<E, C> {
 	protected List<C> columns;
 	protected boolean allowAggregates;
 	
-	public abstract E generateExpression();
+	public E generateExpression() {
+		return generateExpression(0);
+	}
 	
 	public abstract E generateConstant();
+
+	protected abstract E generateExpression(int depth);
 	
 	protected abstract E generateColumn();
 	
