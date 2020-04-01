@@ -5,6 +5,7 @@ import java.util.Set;
 public class TiDBErrors {
 
 	public static void addExpressionErrors(Set<String> errors) {
+		errors.add("DECIMAL value is out of range");
 		errors.add("error parsing regexp");
 		errors.add("BIGINT UNSIGNED value is out of range");
 		errors.add("overflows bigint");

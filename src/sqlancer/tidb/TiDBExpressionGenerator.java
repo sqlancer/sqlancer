@@ -141,6 +141,9 @@ public class TiDBExpressionGenerator {
 		case CHAR:// TODO: wait for https://github.com/pingcap/tidb/issues/15743
 			return TiDBConstant.createIntConstant(globalState.getRandomly().getInteger());
 //			return TiDBConstant.createStringConstant(globalState.getRandomly().getChar());
+		case DECIMAL:
+		case NUMERIC:
+			return TiDBConstant.createIntConstant(globalState.getRandomly().getInteger());
 		default:
 			throw new AssertionError();
 		}
