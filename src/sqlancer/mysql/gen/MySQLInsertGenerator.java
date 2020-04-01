@@ -11,29 +11,27 @@ import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
-import sqlancer.mysql.MySQLSchema.MySQLDataType;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
+import sqlancer.mysql.MySQLVisitor;
 
 public class MySQLInsertGenerator {
 
 	private final MySQLTable table;
-	private final Randomly r;
 	private final StringBuilder sb = new StringBuilder();
 	boolean canFail;
 	private final Set<String> errors = new HashSet<>();
+	private MySQLGlobalState globalState;
 
-	public MySQLInsertGenerator(MySQLTable table, Randomly r) {
-		this.table = table;
-		this.r = r;
+	public MySQLInsertGenerator(MySQLGlobalState globalState) {
+		this.globalState = globalState;
+		table = globalState.getSchema().getRandomTable();
 	}
 
 	public static Query insertRow(MySQLGlobalState globalState) throws SQLException {
-		MySQLTable table = globalState.getSchema().getRandomTable();
-		Randomly r = globalState.getRandomly();
 		if (Randomly.getBoolean()) {
-			return new MySQLInsertGenerator(table, r).generateInsert();
+			return new MySQLInsertGenerator(globalState).generateInsert();
 		} else {
-			return new MySQLInsertGenerator(table, r).generateReplace();
+			return new MySQLInsertGenerator(globalState).generateReplace();
 		}
 	}
 
@@ -70,7 +68,7 @@ public class MySQLInsertGenerator {
 		sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
 		sb.append(") ");
 		sb.append("VALUES");
-
+		MySQLExpressionGenerator gen = new MySQLExpressionGenerator(globalState);
 		int nrRows;
 		if (Randomly.getBoolean()) {
 			nrRows = 1;
@@ -83,31 +81,12 @@ public class MySQLInsertGenerator {
 			}
 			sb.append("(");
 			int i = 0;
-			for (MySQLColumn c : columns) {
+			for (int c = 0; c < columns.size(); c++) {
 				if (i++ != 0) {
 					sb.append(", ");
 				}
-
-				if (Randomly.getBooleanWithSmallProbability()) {
-					canFail = true;
-					sb.append('"');
-					sb.append(getString());
-					sb.append('"');
-				} else if (Randomly.getBooleanWithSmallProbability()) {
-					sb.append("DEFAULT");
-				} else if (Randomly.getBooleanWithSmallProbability()) {
-					sb.append("NULL");
-				} else if (c.getType() == MySQLDataType.INT) {
-					// try to insert valid value;
-					long left = (long) -Math.pow(2, c.getPrecision()) - 1;
-					long right = (long) Math.pow(2, c.getPrecision() - 1) - 1;
-					sb.append(r.getLong(left, right));
-				} else {
-					sb.append('"');
-					sb.append(getString());
-					sb.append('"');
-				}
-
+				sb.append(MySQLVisitor.asString(gen.generateConstant()));
+				
 			}
 			sb.append(")");
 		}
@@ -119,10 +98,6 @@ public class MySQLInsertGenerator {
 		errors.add("Data truncated for column");
 		errors.add("cannot be null");
 		return new QueryAdapter(sb.toString(), errors);
-	}
-
-	private String getString() {
-		return r.getString().replace("\\", "\\\\").replace("\"", "\\\"");
 	}
 
 }

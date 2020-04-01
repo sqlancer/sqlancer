@@ -148,9 +148,9 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
 				throw new IgnoreMeException();
 			}
 			MySQLConstant createStringConstant = MySQLConstant.createStringConstant(string);
-			if (Randomly.getBoolean()) {
-				return new MySQLCollate(createStringConstant, Randomly.fromOptions("ascii_bin", "binary"));
-			}
+//			if (Randomly.getBoolean()) {
+//				return new MySQLCollate(createStringConstant, Randomly.fromOptions("ascii_bin", "binary"));
+//			}
 			return createStringConstant;
 		case DOUBLE:
 			double val = state.getRandomly().getDouble();
