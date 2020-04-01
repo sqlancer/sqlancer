@@ -144,7 +144,8 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
 				// workaround for https://bugs.mysql.com/bug.php?id=99130
 				throw new IgnoreMeException();
 			}
-			if (string.startsWith("-0") || string.startsWith("0.0")) {
+			if (string.startsWith("-0") || string.startsWith("0.")) {
+				// https://bugs.mysql.com/bug.php?id=99145
 				throw new IgnoreMeException();
 			}
 			MySQLConstant createStringConstant = MySQLConstant.createStringConstant(string);

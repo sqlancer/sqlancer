@@ -27,7 +27,12 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
 	private static final int NR_SCHEMA_READ_TRIES = 10;
 
 	public static enum MySQLDataType {
-		INT, VARCHAR;
+		INT, VARCHAR, DOUBLE;
+
+		public static MySQLDataType getRandom() {
+			return Randomly.fromOptions(values());
+		}
+	
 	}
 
 	public static class MySQLColumn extends AbstractTableColumn<MySQLTable, MySQLDataType> {
@@ -137,7 +142,9 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
 		case "text":
 		case "longtext":
 			return MySQLDataType.VARCHAR;
-			
+		case "double":
+		case "float":
+			return MySQLDataType.DOUBLE;
 		default:
 			throw new AssertionError(typeString);
 		}

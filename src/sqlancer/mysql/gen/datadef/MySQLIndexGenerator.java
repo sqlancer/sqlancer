@@ -77,7 +77,7 @@ public class MySQLIndexGenerator {
 					columnIsPrimaryKey = true;
 				}
 				sb.append(c.getName());
-				if (Randomly.getBoolean() && c.getType() != MySQLDataType.INT) {
+				if (Randomly.getBoolean() && c.getType() == MySQLDataType.VARCHAR) {
 					sb.append("(");
 					// TODO for string
 					sb.append(r.getInteger(1, 5));

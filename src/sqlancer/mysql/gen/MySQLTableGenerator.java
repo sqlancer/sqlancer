@@ -10,6 +10,7 @@ import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.mysql.MySQLSchema;
+import sqlancer.mysql.MySQLSchema.MySQLDataType;
 import sqlancer.mysql.MySQLSchema.MySQLTable.MySQLEngine;
 import sqlancer.sqlite3.gen.SQLite3Common;
 
@@ -257,18 +258,9 @@ public class MySQLTableGenerator {
 
 	private void appendColumnDefinition() {
 		sb.append(" ");
-		boolean isTextType = false;
-		if (Randomly.getBoolean()) {
-			String fromOptions = Randomly.fromOptions("TINYINT", "SMALLINT", "MEDIUMINT", "INT", "BIGINT");
-			sb.append(fromOptions);
-			if (false) {
-				/* https://bugs.mysql.com/bug.php?id=99127 */
-				sb.append(" UNSIGNED");
-			}
-		} else {
-			isTextType = true;
-			sb.append(Randomly.fromOptions("VARCHAR(500)", "TINYTEXT", "TEXT", "MEDIUMTEXT", "LONGTEXT"));
-		}
+		MySQLDataType randomType = MySQLDataType.getRandom();
+		boolean isTextType = randomType == MySQLDataType.VARCHAR;
+		appendTypeString(randomType);
 		sb.append(" ");
 		// TODO: this was commented out since it makes the implementation of LIKE more
 		// difficult
@@ -332,6 +324,24 @@ public class MySQLTableGenerator {
 			}
 		}
 
+	}
+
+	private void appendTypeString(MySQLDataType randomType) {
+		switch (randomType) {
+		case INT:
+			sb.append(Randomly.fromOptions("TINYINT", "SMALLINT", "MEDIUMINT", "INT", "BIGINT"));
+			if (Randomly.getBoolean() && false) {
+				/* https://bugs.mysql.com/bug.php?id=99127 */
+				sb.append(" UNSIGNED");
+			}
+			break;
+		case VARCHAR:
+			sb.append(Randomly.fromOptions("VARCHAR(500)", "TINYTEXT", "TEXT", "MEDIUMTEXT", "LONGTEXT"));
+			break;
+		case DOUBLE:
+			sb.append(Randomly.fromOptions("DOUBLE", "FLOAT"));
+			break;
+		}
 	}
 
 }
