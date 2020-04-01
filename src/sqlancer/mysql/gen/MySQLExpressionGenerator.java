@@ -22,6 +22,7 @@ import sqlancer.mysql.ast.MySQLColumnReference;
 import sqlancer.mysql.ast.MySQLComputableFunction;
 import sqlancer.mysql.ast.MySQLComputableFunction.MySQLFunction;
 import sqlancer.mysql.ast.MySQLConstant;
+import sqlancer.mysql.ast.MySQLConstant.MySQLDoubleConstant;
 import sqlancer.mysql.ast.MySQLExists;
 import sqlancer.mysql.ast.MySQLExpression;
 import sqlancer.mysql.ast.MySQLInOperation;
@@ -127,7 +128,7 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
 	}
 
 	private enum ConstantType {
-		INT, NULL, STRING;
+		INT, NULL, STRING, DOUBLE;
 	}
 
 	@Override
@@ -151,6 +152,8 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
 				return new MySQLCollate(createStringConstant, Randomly.fromOptions("ascii_bin", "binary"));
 			}
 			return createStringConstant;
+		case DOUBLE:
+			return new MySQLDoubleConstant(state.getRandomly().getDouble());
 		default:
 			throw new AssertionError();
 		}

@@ -17,6 +17,65 @@ public abstract class MySQLConstant implements MySQLExpression {
 		return false;
 	}
 
+	public abstract static class MySQLNoPQSConstant extends MySQLConstant {
+
+		@Override
+		public boolean asBooleanNotNull() {
+			throw throwException();
+		}
+
+		private RuntimeException throwException() {
+			throw new UnsupportedOperationException("not applicable for PQS evaluation!");
+		}
+
+		@Override
+		public MySQLConstant isEquals(MySQLConstant rightVal) {
+			throw throwException();
+
+		}
+
+		@Override
+		public MySQLConstant castAs(CastType type) {
+			throw throwException();
+		}
+
+		@Override
+		public String castAsString() {
+			throw throwException();
+
+		}
+
+		@Override
+		public MySQLDataType getType() {
+			throw throwException();
+		}
+
+		@Override
+		protected MySQLConstant isLessThan(MySQLConstant rightVal) {
+			throw throwException();
+		}
+
+	}
+
+	public static class MySQLDoubleConstant extends MySQLNoPQSConstant {
+
+		private double val;
+
+		public MySQLDoubleConstant(double val) {
+			this.val = val;
+			if (Double.isInfinite(val) || Double.isNaN(val)) {
+				// seems to not be supported by MySQL
+				throw new IgnoreMeException();
+			}
+		}
+
+		@Override
+		public String getTextRepresentation() {
+			return String.valueOf(val);
+		}
+
+	}
+
 	public static class MySQLTextConstant extends MySQLConstant {
 
 		private final String value;
@@ -29,12 +88,11 @@ public abstract class MySQLConstant implements MySQLExpression {
 		}
 
 		private void checkIfSmallFloatingPointText() {
-			boolean isSmallFloatingPointText = isString()
-					&& asBooleanNotNull()
+			boolean isSmallFloatingPointText = isString() && asBooleanNotNull()
 					&& castAs(CastType.SIGNED).getInt() == 0;
-				if (isSmallFloatingPointText) {
-					throw new IgnoreMeException();
-				}
+			if (isSmallFloatingPointText) {
+				throw new IgnoreMeException();
+			}
 		}
 
 		@Override
@@ -245,7 +303,7 @@ public abstract class MySQLConstant implements MySQLExpression {
 		public boolean isSigned() {
 			return isSigned;
 		}
-		
+
 		private final String getStringRepr() {
 			if (isSigned) {
 				return String.valueOf(value);
