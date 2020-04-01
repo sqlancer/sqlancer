@@ -152,6 +152,10 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
 //			if (Randomly.getBoolean()) {
 //				return new MySQLCollate(createStringConstant, Randomly.fromOptions("ascii_bin", "binary"));
 //			}
+			if (string.startsWith("1e")) {
+				// https://bugs.mysql.com/bug.php?id=99146
+				throw new IgnoreMeException();
+			}
 			return createStringConstant;
 		case DOUBLE:
 			double val = state.getRandomly().getDouble();
