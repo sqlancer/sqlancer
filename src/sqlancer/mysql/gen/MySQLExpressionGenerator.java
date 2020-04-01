@@ -163,6 +163,10 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
 				// https://bugs.mysql.com/bug.php?id=99145
 				throw new IgnoreMeException();
 			}
+			if (Math.abs(val) > 1.0E30) {
+				// https://bugs.mysql.com/bug.php?id=99146
+				throw new IgnoreMeException();
+			}
 			return new MySQLDoubleConstant(val);
 		default:
 			throw new AssertionError();
