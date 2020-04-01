@@ -5,6 +5,7 @@ import java.util.List;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.gen.UntypedExpressionGenerator;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLRowValue;
@@ -29,9 +30,8 @@ import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 
-public class MySQLExpressionGenerator {
+public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLExpression, MySQLColumn>{
 
-	private List<MySQLColumn> columns;
 	private MySQLGlobalState state;
 	private MySQLRowValue rowVal;
 
@@ -41,11 +41,6 @@ public class MySQLExpressionGenerator {
 
 	public MySQLExpression generateExpression() {
 		return gen(0);
-	}
-	
-	public MySQLExpressionGenerator setColumns(List<MySQLColumn> columns) {
-		this.columns = columns;
-		return this;
 	}
 	
 	public void setRowVal(MySQLRowValue rowVal) {
@@ -61,15 +56,11 @@ public class MySQLExpressionGenerator {
 	
 	public MySQLExpression gen(int depth) {
 		if (depth >= state.getOptions().getMaxExpressionDepth()) {
-			if (Randomly.getBoolean() && !columns.isEmpty()) {
-				return generateColumn(columns, rowVal);
-			} else {
-				return generateConstant();
-			}
+			return generateLeafNode();
 		}
 		switch (Randomly.fromOptions(Actions.values())) {
 		case COLUMN:
-			return generateColumn(columns, rowVal);
+			return generateColumn();
 		case LITERAL:
 			return generateConstant();
 		case UNARY_PREFIX_OPERATION:
@@ -143,7 +134,8 @@ public class MySQLExpressionGenerator {
 		INT, NULL, STRING;
 	}
 
-	private MySQLExpression generateConstant() {
+	@Override
+	public MySQLExpression generateConstant() {
 		switch (Randomly.fromOptions(ConstantType.values())) {
 		case INT:
 			return MySQLConstant.createIntConstant((int) state.getRandomly().getInteger());
@@ -168,7 +160,8 @@ public class MySQLExpressionGenerator {
 		}
 	}
 
-	private static MySQLExpression generateColumn(List<MySQLColumn> columns, MySQLRowValue rowVal) {
+	@Override
+	protected MySQLExpression generateColumn() {
 		MySQLColumn c = Randomly.fromList(columns);
 		MySQLConstant val;
 		if (rowVal == null) {
@@ -177,19 +170,6 @@ public class MySQLExpressionGenerator {
 			val = rowVal.getValues().get(c);
 		}
 		return MySQLColumnReference.create(c, val);
-	}
-
-	public List<MySQLExpression> generateOrderBys() {
-		// TODO: implement
-		return generateExpressions(Randomly.smallNumber() + 1);
-	}
-
-	private List<MySQLExpression> generateExpressions(int nr) {
-		List<MySQLExpression> expressions = new ArrayList<>();
-		for (int i = 0; i < nr; i++) {
-			expressions.add(generateExpression());
-		}
-		return expressions;
 	}
 
 }
