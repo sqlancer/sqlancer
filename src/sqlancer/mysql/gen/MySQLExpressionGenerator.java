@@ -153,7 +153,12 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
 			}
 			return createStringConstant;
 		case DOUBLE:
-			return new MySQLDoubleConstant(state.getRandomly().getDouble());
+			double val = state.getRandomly().getDouble();
+			if (Math.abs(val) <= 1 && val != 0) {
+				// https://bugs.mysql.com/bug.php?id=99145
+				throw new IgnoreMeException();
+			}
+			return new MySQLDoubleConstant(val);
 		default:
 			throw new AssertionError();
 		}
