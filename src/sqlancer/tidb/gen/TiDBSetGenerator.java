@@ -38,9 +38,7 @@ public class TiDBSetGenerator {
 		
 		TIDB_ENABLE_WINDOW_FUNCTION("tidb_enable_window_function", (r) -> Randomly.fromOptions(0, 1)),
 	
-		// https://github.com/pingcap/tidb/issues/15751
-		// https://github.com/pingcap/tidb/issues/15752
-//		TIDB_ENABLE_FAST_ANALYZE("tidb_enable_fast_analyze", (r) -> Randomly.fromOptions(0, 1));
+		TIDB_ENABLE_FAST_ANALYZE("tidb_enable_fast_analyze", (r) -> Randomly.fromOptions(0, 1)),
 		TIDB_WAIT_SPLIT_REGION_FINISH("tidb_wait_split_region_finish", (r) -> Randomly.fromOptions(0, 1)),
 		// TODO: global
 //		TIDB_SCATTER_REGION("tidb_scatter_region", (r) -> Randomly.fromOptions(0, 1));
