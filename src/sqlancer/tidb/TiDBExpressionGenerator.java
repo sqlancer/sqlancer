@@ -7,6 +7,8 @@ import sqlancer.Randomly;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
 import sqlancer.tidb.TiDBSchema.TiDBDataType;
+import sqlancer.tidb.ast.TiDBBinaryBitOperation;
+import sqlancer.tidb.ast.TiDBBinaryBitOperation.TiDBBinaryBitOperator;
 import sqlancer.tidb.ast.TiDBBinaryComparisonOperation;
 import sqlancer.tidb.ast.TiDBBinaryComparisonOperation.TiDBComparisonOperator;
 import sqlancer.tidb.ast.TiDBBinaryLogicalOperation;
@@ -42,7 +44,8 @@ public class TiDBExpressionGenerator {
 		REGEX,
 		COLLATE,
 		FUNCTION,
-		BINARY_LOGICAL
+		BINARY_LOGICAL,
+		BINARY_BIT
 //		BINARY_ARITHMETIC
 	}
 	
@@ -85,6 +88,8 @@ public class TiDBExpressionGenerator {
 		case FUNCTION:
 			TiDBFunction func = TiDBFunction.getRandom();
 			return new TiDBFunctionCall(func, generateExpressions(depth, func.getNrArgs()));
+		case BINARY_BIT:
+			return new TiDBBinaryBitOperation(generateExpression(depth + 1), generateExpression(depth + 1), TiDBBinaryBitOperator.getRandom());
 		case BINARY_LOGICAL:
 			return new TiDBBinaryLogicalOperation(generateExpression(depth + 1), generateExpression(depth + 1), TiDBBinaryLogicalOperator.getRandom());
 //		case BINARY_ARITHMETIC:
@@ -133,6 +138,9 @@ public class TiDBExpressionGenerator {
 		case FLOAT: // TODO: wait for https://github.com/pingcap/tidb/issues/15743
 			return TiDBConstant.createIntConstant(globalState.getRandomly().getInteger());
 //			return TiDBConstant.createFloatConstant(globalState.getRandomly().getDouble());
+		case CHAR:// TODO: wait for https://github.com/pingcap/tidb/issues/15743
+			return TiDBConstant.createIntConstant(globalState.getRandomly().getInteger());
+//			return TiDBConstant.createStringConstant(globalState.getRandomly().getChar());
 		default:
 			throw new AssertionError();
 		}

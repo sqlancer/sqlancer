@@ -19,7 +19,7 @@ public class TiDBSchema extends AbstractSchema<TiDBTable> {
 
 	public static enum TiDBDataType {
 
-		INT, TEXT, BOOL, FLOAT, DOUBLE;
+		INT, TEXT, BOOL, FLOAT, DOUBLE, CHAR;
 
 		private TiDBDataType() {
 			isPrimitive = true;
@@ -117,6 +117,9 @@ public class TiDBSchema extends AbstractSchema<TiDBTable> {
 		if (typeString.startsWith("var_string") || typeString.contains("binary")) {
 			return new TiDBCompositeDataType(TiDBDataType.TEXT);
 		}
+		if (typeString.startsWith("char")) {
+			return new TiDBCompositeDataType(TiDBDataType.CHAR);
+		}
 		TiDBDataType primitiveType;
 		switch (typeString) {
 		case "text":
@@ -133,6 +136,7 @@ public class TiDBSchema extends AbstractSchema<TiDBTable> {
 		case "null":
 			primitiveType = TiDBDataType.INT;
 			break;
+
 		default:
 			throw new AssertionError(typeString);
 		}

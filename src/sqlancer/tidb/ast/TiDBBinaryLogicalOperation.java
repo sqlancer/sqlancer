@@ -9,11 +9,8 @@ public class TiDBBinaryLogicalOperation extends BinaryOperatorNode<TiDBExpressio
 		implements TiDBExpression {
 
 	public static enum TiDBBinaryLogicalOperator implements Operator {
-		AND("&"), //
-		OR("|"), //
-		XOR("^"), //
-		LEFT_SHIFT("<<"), //
-		RIGHT_SHIFT(">>");
+		AND("AND"), //
+		OR("OR"); //
 
 		String textRepresentation;
 

@@ -48,16 +48,16 @@ public class TiDBFunctionCall implements TiDBExpression {
 		
 		// https://pingcap.github.io/docs/stable/reference/sql/functions-and-operators/information-functions/
 		CONNECTION_ID(0),
-//		CURRENT_USER(0), https://github.com/pingcap/tidb/issues/15789
+		CURRENT_USER(0),
 		DATABASE(0),
 //		FOUND_ROWS(0), <-- non-deterministic
 //		LAST_INSERT_ID(0), <-- non-deterministic
 //		ROW_COUNT(0),  <-- non-deterministic
-//		SCHEMA(0),  https://github.com/pingcap/tidb/issues/15789
-//		SESSION_USER(0),  https://github.com/pingcap/tidb/issues/15789
-//		SYSTEM_USER(0),  https://github.com/pingcap/tidb/issues/15789
-//		USER(0),  https://github.com/pingcap/tidb/issues/15789
-//		VERSION(0),  https://github.com/pingcap/tidb/issues/15789
+		SCHEMA(0),
+		SESSION_USER(0),
+		SYSTEM_USER(0),
+		USER(0),
+		VERSION(0),
 		
 		TIDB_VERSION(0),
 		
@@ -68,12 +68,12 @@ public class TiDBFunctionCall implements TiDBExpression {
 		ASCII(1),
 		BIN(1),
 		BIT_LENGTH(1),
-		// https://github.com/pingcap/tidb/issues/15789
+		// https://github.com/pingcap/tidb/issues/15847
 //		CHAR(1),
 		CHAR_LENGTH(1),
 		CHARACTER_LENGTH(1),
-//		CONCAT(1, true),
-//		CONCAT_WS(2, true),
+		CONCAT(1, true),
+		CONCAT_WS(2, true),
 		ELT(2, true),
 		EXPORT_SET(0) {
 			@Override

@@ -25,7 +25,9 @@ public class TiDBInsertGenerator {
 		errors.add("Duplicate entry");
 		errors.add("cannot be null");
 		errors.add("doesn't have a default value");
-
+		errors.add("Out of range value");
+		errors.add("Incorrect tinyint value");
+		errors.add("Data truncation");
 		errors.add("The value specified for generated column"); // TODO: do not insert data into generated columns
 	}
 
@@ -71,8 +73,7 @@ public class TiDBInsertGenerator {
 	}
 
 	private void insertValue(StringBuilder sb, TiDBColumn tiDBColumn) {
-		sb.append(gen.generateConstant());
-		errors.add("Out of range value");
+		sb.append(gen.generateConstant()); // TODO: try to insert valid data
 	}
 
 }
