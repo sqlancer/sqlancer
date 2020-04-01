@@ -1,6 +1,8 @@
 package sqlancer.mysql.gen;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -138,12 +140,27 @@ public class MySQLTableGenerator {
 	private enum TableOptions {
 		AUTO_INCREMENT, AVG_ROW_LENGTH, CHECKSUM, COMPRESSION, DELAY_KEY_WRITE, /* ENCRYPTION, */ ENGINE, INSERT_METHOD,
 		KEY_BLOCK_SIZE, MAX_ROWS, MIN_ROWS, PACK_KEYS, STATS_AUTO_RECALC, STATS_PERSISTENT, STATS_SAMPLE_PAGES;
+		
+		public static List<TableOptions> getRandomTableOptions() {
+			List<TableOptions> options;
+			// try to ensure that usually, only a few of these options are generated
+			if (Randomly.getBooleanWithSmallProbability()) {
+				options = Randomly.subset(TableOptions.values());
+			} else {
+				if (Randomly.getBoolean()) {
+					options = Collections.emptyList();
+				} else {
+					options = Randomly.nonEmptySubset(Arrays.asList(TableOptions.values()), Randomly.smallNumber());
+				}
+			}
+			return options;
+		}
 	}
 
 	private void appendTableOptions() {
-		List<TableOptions> options = Randomly.subset(TableOptions.values());
+		List<TableOptions> tableOptions = TableOptions.getRandomTableOptions();
 		int i = 0;
-		for (TableOptions o : options) {
+		for (TableOptions o : tableOptions) {
 			if (i++ != 0) {
 				sb.append(", ");
 			}
