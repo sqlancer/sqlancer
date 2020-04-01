@@ -153,6 +153,9 @@ public class MySQLExpressionGenerator {
 				// workaround for https://bugs.mysql.com/bug.php?id=99130
 				throw new IgnoreMeException();
 			}
+			if (string.startsWith("-0") || string.startsWith("0.0")) {
+				throw new IgnoreMeException();
+			}
 			MySQLConstant createStringConstant = MySQLConstant.createStringConstant(string);
 			if (Randomly.getBoolean()) {
 				return new MySQLCollate(createStringConstant, Randomly.fromOptions("ascii_bin", "binary"));

@@ -56,7 +56,7 @@ public class MySQLTableGenerator {
 			return new QueryAdapter(sb.toString());
 		} else {
 			sb.append("(");
-			for (int i = 0; i < 3 + Randomly.smallNumber(); i++) {
+			for (int i = 0; i < 1 + Randomly.smallNumber(); i++) {
 				if (i != 0) {
 					sb.append(", ");
 				}

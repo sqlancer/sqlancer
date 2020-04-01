@@ -137,6 +137,7 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
 		case "text":
 		case "longtext":
 			return MySQLDataType.VARCHAR;
+			
 		default:
 			throw new AssertionError(typeString);
 		}
