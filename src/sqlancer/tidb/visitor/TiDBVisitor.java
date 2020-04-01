@@ -7,6 +7,7 @@ import sqlancer.tidb.ast.TiDBFunctionCall;
 import sqlancer.tidb.ast.TiDBJoin;
 import sqlancer.tidb.ast.TiDBSelect;
 import sqlancer.tidb.ast.TiDBTableReference;
+import sqlancer.tidb.ast.TiDBText;
 
 public interface TiDBVisitor {
 
@@ -23,6 +24,8 @@ public interface TiDBVisitor {
 			visit((TiDBFunctionCall) expr);
 		} else if (expr instanceof TiDBJoin) {
 			visit((TiDBJoin) expr);
+		} else if (expr instanceof TiDBText) {
+			visit((TiDBText) expr);
 		} else {
 			throw new AssertionError(expr.getClass());
 		}
@@ -39,6 +42,8 @@ public interface TiDBVisitor {
 	void visit(TiDBSelect select);
 	
 	void visit(TiDBJoin join);
+	
+	void visit(TiDBText text);
 
 	public static String asString(TiDBExpression expr) {
 		TiDBToStringVisitor v = new TiDBToStringVisitor();

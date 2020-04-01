@@ -10,6 +10,7 @@ import sqlancer.tidb.ast.TiDBJoin;
 import sqlancer.tidb.ast.TiDBJoin.JoinType;
 import sqlancer.tidb.ast.TiDBSelect;
 import sqlancer.tidb.ast.TiDBTableReference;
+import sqlancer.tidb.ast.TiDBText;
 import sqlancer.visitor.ToStringVisitor;
 
 public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> implements TiDBVisitor {
@@ -45,6 +46,11 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
 	@Override
 	public void visit(TiDBSelect select) {
 		sb.append("SELECT ");
+		if (select.getHint() != null) {
+			sb.append("/*+ ");
+			visit(select.getHint());
+			sb.append("*/");
+		}
 		visit(select.getFetchColumns());
 		sb.append(" FROM ");
 		visit(select.getFromList());
@@ -144,5 +150,10 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
 			sb.append("ON ");
 			visit(join.getOnCondition());
 		}
+	}
+
+	@Override
+	public void visit(TiDBText text) {
+		sb.append(text.getText());
 	}
 }

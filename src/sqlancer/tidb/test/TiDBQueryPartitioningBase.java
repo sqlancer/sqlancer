@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import sqlancer.Randomly;
 import sqlancer.TestOracle;
+import sqlancer.schema.TableIndex;
 import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBExpressionGenerator;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
@@ -19,13 +21,14 @@ import sqlancer.tidb.ast.TiDBExpression;
 import sqlancer.tidb.ast.TiDBJoin;
 import sqlancer.tidb.ast.TiDBSelect;
 import sqlancer.tidb.ast.TiDBTableReference;
+import sqlancer.tidb.ast.TiDBText;
 import sqlancer.tidb.ast.TiDBUnaryPostfixOperation;
 import sqlancer.tidb.ast.TiDBUnaryPostfixOperation.TiDBUnaryPostfixOperator;
 import sqlancer.tidb.ast.TiDBUnaryPrefixOperation;
 import sqlancer.tidb.ast.TiDBUnaryPrefixOperation.TiDBUnaryPrefixOperator;
 
 public abstract class TiDBQueryPartitioningBase implements TestOracle {
-	
+
 	final TiDBGlobalState state;
 	final Set<String> errors = new HashSet<>();
 
@@ -50,12 +53,25 @@ public abstract class TiDBQueryPartitioningBase implements TestOracle {
 		select = new TiDBSelect();
 		select.setFetchColumns(generateFetchColumns());
 		List<TiDBTable> tables = targetTables.getTables();
-		List<TiDBExpression> tableList = tables.stream()
-				.map(t -> new TiDBTableReference(t)).collect(Collectors.toList());
+		if (Randomly.getBoolean()) {
+			TiDBTable table = Randomly.fromList(tables);
+			if (table.hasIndexes()) {
+				StringBuilder sb = new StringBuilder("USE_INDEX_MERGE(");
+				sb.append(table.getName());
+				sb.append(", ");
+				List<TableIndex> indexes = Randomly.nonEmptySubset(table.getIndexes());
+				sb.append(indexes.stream().map(i -> i.getIndexName()).collect(Collectors.joining(", ")));
+				sb.append(")");
+				select.setHint(new TiDBText(sb.toString()));
+			}
+		}
+
+		List<TiDBExpression> tableList = tables.stream().map(t -> new TiDBTableReference(t))
+				.collect(Collectors.toList());
 		List<TiDBExpression> joins = TiDBJoin.getJoins(tableList, state);
+		select.setJoins(joins);
 		select.setFromList(tableList);
 		select.setWhereClause(null);
-		select.setJoins(joins);
 		predicate = generatePredicate();
 		negatedPredicate = new TiDBUnaryPrefixOperation(predicate, TiDBUnaryPrefixOperator.NOT);
 		isNullPredicate = new TiDBUnaryPostfixOperation(predicate, TiDBUnaryPostfixOperator.IS_NULL);
