@@ -187,6 +187,21 @@ public class CockroachDBErrors {
 
 	private static void addGroupByErrors(Set<String> errors) {
 		errors.add("non-integer constant in GROUP BY");
+		
+		// https://github.com/cockroachdb/cockroach/pull/46649:
+		errors.add("ERROR: argument of HAVING must be type bool, not type string"); // MAX(NULL) etc.
+		errors.add("incompatible condition type: string"); // CASE WHEN MAX(NULL) etc.
+		errors.add("incompatible NOT argument type: string"); // NOT MAX(NULL) etc.
+		errors.add("incompatible AND argument type: string");
+		errors.add("incompatible OR argument type: string");
+		errors.add("ERROR: incompatible IF condition type: string");
+		errors.add(", found type: string");
+		errors.add("incompatible NULLIF expressions");
+		errors.add("ERROR: unsupported binary operator");
+		errors.add("incompatible value type");
+		errors.add(" ERROR: incompatible IF expressions");
+		errors.add(" to be of type string");
+
 	}
 
 	private static void addFunctionErrors(Set<String> errors) {
