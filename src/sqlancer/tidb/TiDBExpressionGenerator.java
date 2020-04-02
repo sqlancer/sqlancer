@@ -5,6 +5,7 @@ import java.util.List;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.gen.UntypedExpressionGenerator;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
 import sqlancer.tidb.TiDBSchema.TiDBDataType;
@@ -27,10 +28,9 @@ import sqlancer.tidb.ast.TiDBUnaryPostfixOperation.TiDBUnaryPostfixOperator;
 import sqlancer.tidb.ast.TiDBUnaryPrefixOperation;
 import sqlancer.tidb.ast.TiDBUnaryPrefixOperation.TiDBUnaryPrefixOperator;
 
-public class TiDBExpressionGenerator {
+public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpression, TiDBColumn> {
 
 	private final TiDBGlobalState globalState;
-	private List<TiDBColumn> columns = new ArrayList<>();
 
 	public TiDBExpressionGenerator(TiDBGlobalState globalState) {
 		this.globalState = globalState;
@@ -49,10 +49,6 @@ public class TiDBExpressionGenerator {
 		BINARY_BIT
 //		BINARY_ARITHMETIC
 	}
-	
-	public TiDBExpression generateExpression() {
-		return generateExpression(0);
-	}
 
 	public List<TiDBExpression> generateOrderBys() {
 		List<TiDBExpression> list = new ArrayList<>();
@@ -62,7 +58,7 @@ public class TiDBExpressionGenerator {
 		return list;
 	}
 	
-	private TiDBExpression generateExpression(int depth) {
+	protected TiDBExpression generateExpression(int depth) {
 		if (depth >= globalState.getOptions().getMaxExpressionDepth() || Randomly.getBoolean()) {
 			return generateLeafNode();
 		}
@@ -113,20 +109,13 @@ public class TiDBExpressionGenerator {
 		return args;
 	}
 
-	private TiDBExpression generateLeafNode() {
-		if (Randomly.getBoolean() || columns.isEmpty()) {
-			return generateConstant();
-		} else {
-			return generateColumn();
-		}
-	}
-
-	private TiDBExpression generateColumn() {
+	@Override
+	protected TiDBExpression generateColumn() {
 		TiDBColumn column = Randomly.fromList(columns);
 		return new TiDBColumnReference(column);
-
 	}
 
+	@Override
 	public TiDBExpression generateConstant() {
 		TiDBDataType type = TiDBDataType.getRandom();
 		if (Randomly.getBooleanWithRatherLowProbability()) {
@@ -155,20 +144,5 @@ public class TiDBExpressionGenerator {
 		}
 	}
 
-	public TiDBExpressionGenerator setColumns(List<TiDBColumn> columns) {
-		this.columns = columns;
-		return this;
-	}
-
-	public List<TiDBExpression> generateExpressions(int nr) {
-		return generateExpressions(0, nr);
-	}
-
-	public TiDBExpression generateHavingClause() {
-		return generateExpression(); // TODO: enable aggregate functions
-	}
-
-	public List<TiDBExpression> getOrderingTerms() {
-		return generateExpressions(Randomly.smallNumber() + 1); // TODO: generate ASC, DESC
-	}
+	// TODO override generateOrderBys to generate ASC/DESC
 }

@@ -40,7 +40,7 @@ public class TiDBRandomQuerySynthesizer {
 			select.setWhereClause(gen.generateExpression());
 		}
 		if (Randomly.getBooleanWithRatherLowProbability()) {
-			select.setOrderByExpressions(gen.getOrderingTerms());
+			select.setOrderByExpressions(gen.generateOrderBys());
 		}
 		if (Randomly.getBoolean()) {
 			select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
