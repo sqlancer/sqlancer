@@ -38,7 +38,8 @@ public class CockroachDBTableGenerator {
 
 	private Query gen() {
 		Set<String> errors = new HashSet<>();
-
+		errors.add("https://github.com/cockroachdb/cockroach/issues/35730"); // not indexable array types
+		
 		String tableName = Randomly.fromOptions("t0", "t1", "t2");
 		sb.append("CREATE ");
 		// TODO: temp table support (see https://github.com/cockroachdb/cockroach/issues/46393)

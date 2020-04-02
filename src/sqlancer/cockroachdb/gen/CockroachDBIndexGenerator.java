@@ -19,6 +19,7 @@ public class CockroachDBIndexGenerator {
 		errors.add("already contains column");
 		errors.add("violates unique constraint");
 		errors.add("schema change statement cannot follow a statement that has written in the same transaction");
+		errors.add("https://github.com/cockroachdb/cockroach/issues/35730"); // some array types are not indexable
 		CockroachDBTable table = s.getSchema().getRandomTable(t -> !t.isView());
 		StringBuilder sb = new StringBuilder("CREATE ");
 		if (Randomly.getBoolean()) {

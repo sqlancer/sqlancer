@@ -30,30 +30,32 @@ public enum CockroachDBFunction {
 //			return types;
 //		}
 //	},
-
-	IF(null) {
-		@Override
-		public boolean isCompatibleWithReturnType(CockroachDBCompositeDataType returnType) {
-			return true;
-		}
-
-		@Override
-		public CockroachDBDataType[] getArgumentTypes(CockroachDBCompositeDataType returnType) {
-			return new CockroachDBDataType[] { CockroachDBDataType.BOOL, returnType.getPrimitiveDataType(),
-					returnType.getPrimitiveDataType() };
-		}
-	},
-	NULLIF(null) {
-		@Override
-		public boolean isCompatibleWithReturnType(CockroachDBCompositeDataType returnType) {
-			return true;
-		}
-
-		@Override
-		public CockroachDBDataType[] getArgumentTypes(CockroachDBCompositeDataType returnType) {
-			return new CockroachDBDataType[] { returnType.getPrimitiveDataType(), returnType.getPrimitiveDataType() };
-		}
-	},
+// TODO: broke when implementing arrays
+	//
+//	IF(null) {
+//		@Override
+//		public boolean isCompatibleWithReturnType(CockroachDBCompositeDataType returnType) {
+//			return true;
+//		}
+//
+//		@Override
+//		public CockroachDBDataType[] getArgumentTypes(CockroachDBCompositeDataType returnType) {
+//			return new CockroachDBDataType[] { CockroachDBDataType.BOOL, returnType.getPrimitiveDataType(),
+//					returnType.getPrimitiveDataType() };
+//		}
+//	},
+// TODO: broke when implementing arrays
+	//	NULLIF(null) {
+//		@Override
+//		public boolean isCompatibleWithReturnType(CockroachDBCompositeDataType returnType) {
+//			return true;
+//		}
+//
+//		@Override
+//		public CockroachDBDataType[] getArgumentTypes(CockroachDBCompositeDataType returnType) {
+//			return new CockroachDBDataType[] { returnType.getPrimitiveDataType(), returnType.getPrimitiveDataType() };
+//		}
+//	},
 
 	// bool functions
 	ILIKE_ESCAPE(CockroachDBDataType.BOOL, CockroachDBDataType.STRING, CockroachDBDataType.STRING,

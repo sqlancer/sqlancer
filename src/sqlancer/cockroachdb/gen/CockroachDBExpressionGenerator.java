@@ -159,6 +159,7 @@ public class CockroachDBExpressionGenerator {
 			case JSONB:
 			case TIME:
 			case TIMETZ:
+			case ARRAY:
 				return generateLeafNode(type); // TODO
 			default:
 				throw new AssertionError(type);
@@ -326,6 +327,12 @@ public class CockroachDBExpressionGenerator {
 			return CockroachDBConstant.createTimestampConstant(globalState.getRandomly().getInteger());
 		case TIME:
 			return CockroachDBConstant.createTimeConstant(globalState.getRandomly().getInteger());
+		case ARRAY:
+			List<CockroachDBExpression> elements = new ArrayList<CockroachDBExpression>();
+			for (int i = 0; i < Randomly.smallNumber(); i++ ) {
+				elements.add(generateConstant(type.getElementType()));
+			}
+			return CockroachDBConstant.createArrayConstant(elements);
 		case DECIMAL:
 		case TIMESTAMPTZ:
 		case JSONB:

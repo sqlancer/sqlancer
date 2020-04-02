@@ -6,6 +6,16 @@ public class CockroachDBErrors {
 	
 	public static void addExpressionErrors(Set<String> errors) {
 		
+		if (true) {
+			// https://github.com/cockroachdb/cockroach/issues/46403
+			errors.add("duplicate column name");
+		}
+		
+		if (true) {
+			// https://github.com/cockroachdb/cockroach/issues/46915
+			errors.add("ERROR: at or near \"unknown\": syntax error");
+		}
+		
 		errors.add("cannot cast negative integer to bit varying with unbounded width");
 		
 		errors.add("negative value for LIMIT");
@@ -174,6 +184,46 @@ public class CockroachDBErrors {
 		
 		errors.add("argument of OFFSET must be type int, not type decimal");
 		errors.add("ERROR: for SELECT DISTINCT, ORDER BY expressions must appear in select list");
+		
+		
+		// arrays
+		errors.add("cannot determine type of empty array");
+		errors.add("unknown signature: max(unknown[])");
+		errors.add("unknown signature: min(unknown[])");
+		errors.add("unknown signature: max(interval[])");
+		errors.add("unknown signature: min(interval[])");
+		errors.add("unknown signature: max(string[])");
+		errors.add("unknown signature: min(string[])");
+		errors.add("unknown signature: max(decimal[])");
+		errors.add("unknown signature: min(decimal[])");
+		errors.add("unknown signature: max(varbit[])");
+		errors.add("unknown signature: min(varbit[])");
+		errors.add("unknown signature: max(int[])");
+		errors.add("unknown signature: min(int[])");
+		errors.add("unknown signature: min(bool[])");
+		errors.add("unknown signature: max(bool[])");
+		errors.add("unknown signature: max(timestamp[])");
+		errors.add("unknown signature: min(timestamp[])");
+		errors.add("unknown signature: min(timestamptz[])");
+		errors.add("unknown signature: max(timestamptz[])");
+		errors.add("unknown signature: min(timetz[])");
+		errors.add("unknown signature: max(timetz[])");
+		errors.add("unknown signature: max(time[])");
+		errors.add("unknown signature: min(time[])");
+		errors.add("unknown signature: min(int2[])");
+		errors.add("unknown signature: max(int2[])");
+		errors.add("unknown signature: max(int4[])");
+		errors.add("unknown signature: min(int4[])");
+		errors.add("unknown signature: max(bytes[])");
+		errors.add("unknown signature: min(bytes[])");
+		errors.add("unknown signature: min(bit[])");
+		errors.add("unknown signature: max(bit[])");
+		errors.add("unknown signature: min(float[])");
+		errors.add("unknown signature: max(float[])");
+		errors.add("array must be enclosed in { and }"); // when casting a string to an array
+		errors.add("unimplemented: nested arrays not supported"); // e.g., casting a string {{1}} to an array
+		
+		errors.add("https://github.com/cockroachdb/cockroach/issues/35707"); // arrays don't support ORDER BY
 	}
 
 	private static void addIntervalTypeErrors(Set<String> errors) {
@@ -188,7 +238,7 @@ public class CockroachDBErrors {
 	private static void addGroupByErrors(Set<String> errors) {
 		errors.add("non-integer constant in GROUP BY");
 		
-		// https://github.com/cockroachdb/cockroach/pull/46649:
+		// https://github.com/cockroachdb/cockroach/pull/46649 -> aggregates on NULL are not typed strings
 		errors.add("ERROR: argument of HAVING must be type bool, not type string"); // MAX(NULL) etc.
 		errors.add("incompatible condition type: string"); // CASE WHEN MAX(NULL) etc.
 		errors.add("incompatible NOT argument type: string"); // NOT MAX(NULL) etc.
@@ -201,6 +251,8 @@ public class CockroachDBErrors {
 		errors.add("incompatible value type");
 		errors.add(" ERROR: incompatible IF expressions");
 		errors.add(" to be of type string");
+		
+		errors.add("unknown signature: abs(string)");
 
 	}
 

@@ -2,6 +2,9 @@ package sqlancer.cockroachdb.ast;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.List;
+
+import sqlancer.cockroachdb.CockroachDBVisitor;
 
 public class CockroachDBConstant implements CockroachDBExpression {
 
@@ -114,6 +117,32 @@ public class CockroachDBConstant implements CockroachDBExpression {
 		
 	}
 	
+	public static class CockroachDBArrayConstant extends CockroachDBConstant {
+		
+		private final List<CockroachDBExpression> elements;
+		
+		public CockroachDBArrayConstant(List<CockroachDBExpression> elements) {
+			this.elements = elements;
+		}
+		
+		public List<CockroachDBExpression> getElements() {
+			return elements;
+		}
+		
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder("ARRAY[");
+			for (int i = 0; i < elements.size(); i++) {
+				if (i != 0) {
+					sb.append(", ");
+				}
+				sb.append(CockroachDBVisitor.asString(elements.get(i)));
+			}
+			sb.append("]");
+			return sb.toString();
+		}
+	}
+ 	
 	public static class CockroachDBIntervalConstant extends CockroachDBConstant {
 		
 		private long year;
@@ -194,6 +223,10 @@ public class CockroachDBConstant implements CockroachDBExpression {
 	public static CockroachDBExpression createIntervalConstant(long year, long month, long day,
 			long hour, long minute, long second) {
 		return new CockroachDBIntervalConstant(year, month, day, hour, minute, second);
+	}
+
+	public static CockroachDBExpression createArrayConstant(List<CockroachDBExpression> elements) {
+		return new CockroachDBArrayConstant(elements);
 	}
 
 }
