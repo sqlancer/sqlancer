@@ -1,7 +1,9 @@
 package sqlancer.cockroachdb.ast;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -30,32 +32,30 @@ public enum CockroachDBFunction {
 //			return types;
 //		}
 //	},
-// TODO: broke when implementing arrays
-	//
-//	IF(null) {
-//		@Override
-//		public boolean isCompatibleWithReturnType(CockroachDBCompositeDataType returnType) {
-//			return true;
-//		}
-//
-//		@Override
-//		public CockroachDBDataType[] getArgumentTypes(CockroachDBCompositeDataType returnType) {
-//			return new CockroachDBDataType[] { CockroachDBDataType.BOOL, returnType.getPrimitiveDataType(),
-//					returnType.getPrimitiveDataType() };
-//		}
-//	},
-// TODO: broke when implementing arrays
-	//	NULLIF(null) {
-//		@Override
-//		public boolean isCompatibleWithReturnType(CockroachDBCompositeDataType returnType) {
-//			return true;
-//		}
-//
-//		@Override
-//		public CockroachDBDataType[] getArgumentTypes(CockroachDBCompositeDataType returnType) {
-//			return new CockroachDBDataType[] { returnType.getPrimitiveDataType(), returnType.getPrimitiveDataType() };
-//		}
-//	},
+
+	IF(null) {
+		@Override
+		public boolean isCompatibleWithReturnType(CockroachDBCompositeDataType returnType) {
+			return true;
+		}
+
+		@Override
+		public CockroachDBDataType[] getArgumentTypes(CockroachDBCompositeDataType returnType) {
+			return new CockroachDBDataType[] { CockroachDBDataType.BOOL, returnType.getPrimitiveDataType(),
+					returnType.getPrimitiveDataType() };
+		}
+	},
+	NULLIF(null) {
+		@Override
+		public boolean isCompatibleWithReturnType(CockroachDBCompositeDataType returnType) {
+			return true;
+		}
+
+		@Override
+		public CockroachDBDataType[] getArgumentTypes(CockroachDBCompositeDataType returnType) {
+			return new CockroachDBDataType[] { returnType.getPrimitiveDataType(), returnType.getPrimitiveDataType() };
+		}
+	},
 
 	// bool functions
 	ILIKE_ESCAPE(CockroachDBDataType.BOOL, CockroachDBDataType.STRING, CockroachDBDataType.STRING,
@@ -110,18 +110,22 @@ public enum CockroachDBFunction {
 	QUOTE_NULLABLE(CockroachDBDataType.STRING, CockroachDBDataType.STRING),
 	REVERSE(CockroachDBDataType.STRING, CockroachDBDataType.STRING),
 	STRPOS(CockroachDBDataType.INT, CockroachDBDataType.STRING, CockroachDBDataType.STRING),
-	SPLIT_PART(CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.INT),
+	SPLIT_PART(CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.STRING,
+			CockroachDBDataType.INT),
 	SUBSTRING1("SUBSTRING", CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.STRING),
-	SUBSTRING2("SUBSTRING", CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.STRING),
+	SUBSTRING2("SUBSTRING", CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.STRING,
+			CockroachDBDataType.STRING),
 	SUBSTRING3("SUBSTRING", CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.INT),
-	SUBSTRING4("SUBSTRING", CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.INT, CockroachDBDataType.INT),
+	SUBSTRING4("SUBSTRING", CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.INT,
+			CockroachDBDataType.INT),
 	/* https://github.com/cockroachdb/cockroach/issues/44152 */
 	TO_ENGLISH(CockroachDBDataType.STRING, CockroachDBDataType.INT),
 	TO_HEX1("TO_HEX", CockroachDBDataType.STRING, CockroachDBDataType.INT),
 	TO_HEX("TO_HEX", CockroachDBDataType.STRING, CockroachDBDataType.BYTES),
 	TO_IP(CockroachDBDataType.BYTES, CockroachDBDataType.STRING),
 	TO_UUID(CockroachDBDataType.BYTES, CockroachDBDataType.STRING),
-	TRANSLATE(CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.STRING),
+	TRANSLATE(CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.STRING,
+			CockroachDBDataType.STRING),
 	UPPER(CockroachDBDataType.STRING, CockroachDBDataType.STRING),
 	REGEXP_REPLACE(CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.STRING,
 			CockroachDBDataType.STRING),
@@ -190,8 +194,25 @@ public enum CockroachDBFunction {
 	List<CockroachDBExpression> getArgumentsForReturnType(CockroachDBExpressionGenerator gen, int depth,
 			CockroachDBDataType[] argumentTypes2, CockroachDBCompositeDataType returnType2) {
 		List<CockroachDBExpression> arguments = new ArrayList<>();
+		/*
+		 * This is a workaround based on the assumption that array types should refer to
+		 * the same element type.
+		 */
+		CockroachDBCompositeDataType savedArrayType = null;
+		if (returnType2.getPrimitiveDataType() == CockroachDBDataType.ARRAY) {
+			savedArrayType = returnType2;
+		}
 		for (int i = 0; i < argumentTypes2.length; i++) {
-			arguments.add(gen.generateExpression(argumentTypes2[i].get(), depth + 1));
+			CockroachDBCompositeDataType type;
+			if (argumentTypes2[i] == CockroachDBDataType.ARRAY) {
+				if (savedArrayType == null) {
+					savedArrayType = argumentTypes2[i].get();
+				}
+				type = savedArrayType;
+			} else {
+				type = argumentTypes2[i].get();
+			}
+			arguments.add(gen.generateExpression(type, depth + 1));
 		}
 		return arguments;
 	}

@@ -186,6 +186,10 @@ public class CockroachDBErrors {
 		errors.add("ERROR: for SELECT DISTINCT, ORDER BY expressions must appear in select list");
 		
 		
+		addArrayErrors(errors);
+	}
+
+	private static void addArrayErrors(Set<String> errors) {
 		// arrays
 		errors.add("cannot determine type of empty array");
 		errors.add("unknown signature: max(unknown[])");
@@ -224,6 +228,10 @@ public class CockroachDBErrors {
 		errors.add("unimplemented: nested arrays not supported"); // e.g., casting a string {{1}} to an array
 		
 		errors.add("https://github.com/cockroachdb/cockroach/issues/35707"); // arrays don't support ORDER BY
+		
+		errors.add("as bytes[], found type: varbit[]");
+		
+		errors.add("to be of type unknown[]"); // IF with null array
 	}
 
 	private static void addIntervalTypeErrors(Set<String> errors) {
@@ -253,6 +261,7 @@ public class CockroachDBErrors {
 		errors.add(" to be of type string");
 		
 		errors.add("unknown signature: abs(string)");
+		errors.add("unknown signature: acos(string)");
 
 	}
 
