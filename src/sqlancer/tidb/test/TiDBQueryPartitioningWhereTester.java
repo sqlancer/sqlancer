@@ -2,7 +2,6 @@ package sqlancer.tidb.test;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import sqlancer.DatabaseProvider;
@@ -26,10 +25,10 @@ public class TiDBQueryPartitioningWhereTester extends TiDBQueryPartitioningBase 
 		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
 				state.getConnection(), state);
 
-		if (Randomly.getBoolean()) {
+		boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
+		if (orderBy) {
 			select.setOrderByExpressions(gen.generateOrderBys());
 		}
-		select.setOrderByExpressions(Collections.emptyList());
 		select.setWhereClause(predicate);
 		String firstQueryString = TiDBVisitor.asString(select);
 		select.setWhereClause(negatedPredicate);
@@ -38,7 +37,7 @@ public class TiDBQueryPartitioningWhereTester extends TiDBQueryPartitioningBase 
 		String thirdQueryString = TiDBVisitor.asString(select);
 		List<String> combinedString = new ArrayList<>();
 		List<String> secondResultSet = TestOracle.getCombinedResultSet(firstQueryString, secondQueryString,
-				thirdQueryString, combinedString, Randomly.getBoolean(), state, errors);
+				thirdQueryString, combinedString, !orderBy, state, errors);
 		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
 	}
 

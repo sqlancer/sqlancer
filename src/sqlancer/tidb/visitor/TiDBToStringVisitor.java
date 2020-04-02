@@ -2,6 +2,7 @@ package sqlancer.tidb.visitor;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.tidb.ast.TiDBAggregate;
 import sqlancer.tidb.ast.TiDBColumnReference;
 import sqlancer.tidb.ast.TiDBConstant;
 import sqlancer.tidb.ast.TiDBExpression;
@@ -147,5 +148,13 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
 	@Override
 	public void visit(TiDBText text) {
 		sb.append(text.getText());
+	}
+
+	@Override
+	public void visit(TiDBAggregate aggr) {
+		sb.append(aggr.getFunction());
+		sb.append("(");
+		visit(aggr.getArgs());
+		sb.append(")");
 	}
 }

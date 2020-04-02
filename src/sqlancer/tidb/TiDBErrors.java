@@ -26,6 +26,10 @@ public class TiDBErrors {
 			errors.add("Can't find a proper physical plan for this query");
 		}
 		
+		if (true) {
+			// https://github.com/pingcap/tidb/issues/16029
+			errors.add("No valid regexp pattern found");
+		}
 		
 		errors.add("DOUBLE value is out of range in 'cot(0)'");
 		errors.add("DOUBLE value is out of range in 'pow");

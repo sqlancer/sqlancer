@@ -9,6 +9,8 @@ import sqlancer.gen.UntypedExpressionGenerator;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
 import sqlancer.tidb.TiDBSchema.TiDBDataType;
+import sqlancer.tidb.ast.TiDBAggregate;
+import sqlancer.tidb.ast.TiDBAggregate.TiDBAggregateFunction;
 import sqlancer.tidb.ast.TiDBBinaryBitOperation;
 import sqlancer.tidb.ast.TiDBBinaryBitOperation.TiDBBinaryBitOperator;
 import sqlancer.tidb.ast.TiDBBinaryComparisonOperation;
@@ -54,6 +56,12 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
 	protected TiDBExpression generateExpression(int depth) {
 		if (depth >= globalState.getOptions().getMaxExpressionDepth() || Randomly.getBoolean()) {
 			return generateLeafNode();
+		}
+		if (allowAggregates && Randomly.getBoolean()) {
+			allowAggregates = false;
+			TiDBAggregateFunction func = TiDBAggregateFunction.getRandom();
+			List<TiDBExpression> args = generateExpressions(func.getNrArgs());
+			return new TiDBAggregate(args, func);
 		}
 		switch (Randomly.fromOptions(Gen.values())) {
 		case UNARY_POSTFIX:

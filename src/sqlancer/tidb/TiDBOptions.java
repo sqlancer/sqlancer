@@ -36,7 +36,7 @@ public class TiDBOptions {
 			@Override
 			public TestOracle create(TiDBGlobalState globalState) throws SQLException {
 				List<TestOracle> oracles = new ArrayList<>();
-				oracles.add(new TiDBQueryPartitioningHavingTester(globalState));
+				oracles.add(new TiDBQueryPartitioningWhereTester(globalState));
 				oracles.add(new TiDBQueryPartitioningHavingTester(globalState));
 				return new CompositeTestOracle(oracles);
 			}

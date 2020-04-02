@@ -74,7 +74,8 @@ public class TiDBFunctionCall implements TiDBExpression {
 		CHAR_LENGTH(1),
 		CHARACTER_LENGTH(1),
 		CONCAT(1, true),
-		CONCAT_WS(2, true),
+		/* https://github.com/pingcap/tidb/issues/16023 */
+//		CONCAT_WS(2, true),
 		ELT(2, true),
 		EXPORT_SET(0) {
 			@Override

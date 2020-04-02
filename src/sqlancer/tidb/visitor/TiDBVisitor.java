@@ -1,5 +1,6 @@
 package sqlancer.tidb.visitor;
 
+import sqlancer.tidb.ast.TiDBAggregate;
 import sqlancer.tidb.ast.TiDBColumnReference;
 import sqlancer.tidb.ast.TiDBConstant;
 import sqlancer.tidb.ast.TiDBExpression;
@@ -26,10 +27,16 @@ public interface TiDBVisitor {
 			visit((TiDBJoin) expr);
 		} else if (expr instanceof TiDBText) {
 			visit((TiDBText) expr);
-		} else {
+		} else if (expr instanceof TiDBAggregate) {
+			visit((TiDBAggregate) expr);
+		}
+
+		else {
 			throw new AssertionError(expr.getClass());
 		}
 	}
+
+	void visit(TiDBAggregate aggr);
 
 	void visit(TiDBFunctionCall call);
 
@@ -40,9 +47,9 @@ public interface TiDBVisitor {
 	void visit(TiDBTableReference expr);
 
 	void visit(TiDBSelect select);
-	
+
 	void visit(TiDBJoin join);
-	
+
 	void visit(TiDBText text);
 
 	public static String asString(TiDBExpression expr) {
