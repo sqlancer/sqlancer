@@ -45,10 +45,8 @@ public class TiDBTableGenerator {
 			sb.append(" ");
 			TiDBDataType type = TiDBDataType.getRandom();
 			sb.append(type);
-			appendTextSizeSpecifier(sb, type);
-			if (type == TiDBDataType.INT && Randomly.getBoolean()) {
-				sb.append(" UNSIGNED");
-			}
+			appendSpecifiers(sb, type);
+			appendSizeSpecifiers(sb, type);
 			sb.append(" ");
 			boolean isGeneratedColumn = Randomly.getBooleanWithRatherLowProbability();
 			if (isGeneratedColumn && false /* https://github.com/pingcap/tidb/issues/16020, https://github.com/pingcap/tidb/issues/15994 */) {
@@ -76,6 +74,10 @@ public class TiDBTableGenerator {
 				errors.add("Invalid default value");
 				errors.add("All parts of a PRIMARY KEY must be NOT NULL; if you need NULL in a key, use UNIQUE instead");
 			}
+			if (type == TiDBDataType.INT && Randomly.getBooleanWithRatherLowProbability()) {
+				sb.append(" AUTO_INCREMENT ");
+				errors.add("there can be only one auto column and it must be defined as a key");
+			}
 			if (Randomly.getBooleanWithRatherLowProbability()  && (type != TiDBDataType.TEXT)) {
 				sb.append("UNIQUE ");
 			}
@@ -95,7 +97,16 @@ public class TiDBTableGenerator {
 		return new QueryAdapter(sb.toString(), errors, true);
 	}
 
-	static void appendTextSizeSpecifier(StringBuilder sb, TiDBDataType type) {
+	private void appendSizeSpecifiers(StringBuilder sb, TiDBDataType type) {
+		if (type.isNumeric() && Randomly.getBoolean() && false /* https://github.com/pingcap/tidb/issues/16028 */) {
+			sb.append(" UNSIGNED");
+		}
+		if (type.isNumeric() && Randomly.getBoolean() && false /* seems to be the same bug as https://github.com/pingcap/tidb/issues/16028 */) {
+			sb.append(" ZEROFILL");
+		}		
+	}
+
+	static void appendSpecifiers(StringBuilder sb, TiDBDataType type) {
 		if (type == TiDBDataType.TEXT) {
 			sb.append("(500)");
 		}

@@ -38,6 +38,23 @@ public class TiDBSchema extends AbstractSchema<TiDBTable> {
 		public boolean isPrimitive() {
 			return isPrimitive;
 		}
+		
+		public boolean isNumeric() {
+			switch (this) {
+			case INT:
+			case DECIMAL:
+			case FLOAT:
+			case DOUBLE:
+			case BOOL:
+			case NUMERIC:
+				return true;
+			case CHAR:
+			case TEXT:
+				return false;
+			default:
+				throw new AssertionError(this);
+			}
+		}
 	}
 
 	public static class TiDBCompositeDataType {
@@ -111,6 +128,7 @@ public class TiDBSchema extends AbstractSchema<TiDBTable> {
 	}
 
 	private static TiDBCompositeDataType getColumnType(String typeString) {
+		typeString = typeString.replace(" zerofill", "").replace(" unsigned", "");
 		if (typeString.startsWith("int") || typeString.startsWith("bigint") || typeString.contains("decimal")) {
 			return new TiDBCompositeDataType(TiDBDataType.INT);
 		}
