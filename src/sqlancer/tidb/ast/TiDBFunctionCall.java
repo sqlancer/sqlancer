@@ -96,8 +96,10 @@ public class TiDBFunctionCall implements TiDBExpression {
 		TRIM(1),
 		UCASE(1),
 		UNHEX(1),
-		UPPER(1)
-		;
+		UPPER(1),
+		
+		
+		COALESCE(1, true);
 		
 		private int nrArgs;
 		private boolean isVariadic;

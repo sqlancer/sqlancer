@@ -21,6 +21,7 @@ import sqlancer.tidb.ast.TiDBConstant;
 import sqlancer.tidb.ast.TiDBExpression;
 import sqlancer.tidb.ast.TiDBFunctionCall;
 import sqlancer.tidb.ast.TiDBFunctionCall.TiDBFunction;
+import sqlancer.tidb.ast.TiDBOrderingTerm;
 import sqlancer.tidb.ast.TiDBRegexOperation;
 import sqlancer.tidb.ast.TiDBRegexOperation.TiDBRegexOperator;
 import sqlancer.tidb.ast.TiDBUnaryPostfixOperation;
@@ -50,14 +51,6 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
 //		BINARY_ARITHMETIC
 	}
 
-	public List<TiDBExpression> generateOrderBys() {
-		List<TiDBExpression> list = new ArrayList<>();
-		do {
-			list.add(generateExpression(0));
-		} while (Randomly.getBoolean());
-		return list;
-	}
-	
 	protected TiDBExpression generateExpression(int depth) {
 		if (depth >= globalState.getOptions().getMaxExpressionDepth() || Randomly.getBoolean()) {
 			return generateLeafNode();
@@ -143,6 +136,20 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
 			throw new AssertionError();
 		}
 	}
+	
+	@Override
+	public List<TiDBExpression> generateOrderBys() {
+		List<TiDBExpression> expressions = super.generateOrderBys();
+		List<TiDBExpression> newExpressions = new ArrayList<>();
+		for (TiDBExpression expr : expressions) {
+			TiDBExpression newExpr = expr;
+			if (Randomly.getBoolean()) {
+				newExpr = new TiDBOrderingTerm(expr, Randomly.getBoolean());
+			}
+			newExpressions.add(newExpr);
+		}
+		return newExpressions;
+	}
 
-	// TODO override generateOrderBys to generate ASC/DESC
+
 }
