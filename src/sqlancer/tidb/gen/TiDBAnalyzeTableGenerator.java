@@ -1,6 +1,7 @@
 package sqlancer.tidb.gen;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
@@ -28,7 +29,7 @@ public class TiDBAnalyzeTableGenerator {
 			sb.append(Randomly.getNotCachedInteger(1, 1024));
 			sb.append(" BUCKETS");
 		}
-		return new QueryAdapter(sb.toString());
+		return new QueryAdapter(sb.toString(), Arrays.asList("https://github.com/pingcap/tidb/issues/15993") /* https://github.com/pingcap/tidb/issues/15993 */);
 	}
 
 }

@@ -3,6 +3,7 @@ package sqlancer.tidb;
 import java.util.ArrayList;
 import java.util.List;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
@@ -68,12 +69,8 @@ public class TiDBExpressionGenerator {
 		switch (Randomly.fromOptions(Gen.values())) {
 		case UNARY_POSTFIX:
 			return new TiDBUnaryPostfixOperation(generateExpression(depth + 1), TiDBUnaryPostfixOperator.getRandom());
-// https://github.com/pingcap/tidb/issues/15725
 		case UNARY_PREFIX:
-			TiDBUnaryPrefixOperator rand;
-			do {
-				rand = TiDBUnaryPrefixOperator.getRandom();
-			} while (rand == TiDBUnaryPrefixOperator.NOT);
+			TiDBUnaryPrefixOperator rand = TiDBUnaryPrefixOperator.getRandom();
 			return new TiDBUnaryPrefixOperation(generateExpression(depth + 1), rand);
 		case COLUMN:
 			return generateColumn();
@@ -91,6 +88,11 @@ public class TiDBExpressionGenerator {
 		case BINARY_BIT:
 			return new TiDBBinaryBitOperation(generateExpression(depth + 1), generateExpression(depth + 1), TiDBBinaryBitOperator.getRandom());
 		case BINARY_LOGICAL:
+			if (true) {
+				// https://github.com/pingcap/tidb/issues/15990
+				// https://github.com/pingcap/tidb/issues/15987
+				throw new IgnoreMeException();
+			}
 			return new TiDBBinaryLogicalOperation(generateExpression(depth + 1), generateExpression(depth + 1), TiDBBinaryLogicalOperator.getRandom());
 //		case BINARY_ARITHMETIC:
 //			return new TiDBBinaryArithmeticOperation(generateExpression(depth + 1), generateExpression(depth + 1), TiDBBinaryArithmeticOperator.getRandom());
