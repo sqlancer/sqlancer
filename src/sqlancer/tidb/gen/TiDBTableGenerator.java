@@ -51,14 +51,15 @@ public class TiDBTableGenerator {
 			}
 			sb.append(" ");
 			boolean isGeneratedColumn = Randomly.getBooleanWithRatherLowProbability();
-			if (isGeneratedColumn && false) {
-				// TODO: https://github.com/pingcap/tidb/issues/15733
+			if (isGeneratedColumn) {
 				sb.append(" AS (");
 				sb.append(TiDBVisitor.asString(gen.generateExpression()));
 				sb.append(") ");
 				sb.append(Randomly.fromOptions("STORED", "VIRTUAL"));
 				sb.append(" ");
 				errors.add("Generated column can refer only to generated columns defined prior to it");
+				errors.add("'Defining a virtual generated column as primary key' is not supported for generated columns.");
+				errors.add("contains a disallowed function.");
 			}
 			if (Randomly.getBooleanWithRatherLowProbability()) {
 				sb.append("CHECK (");
@@ -68,12 +69,12 @@ public class TiDBTableGenerator {
 			if (Randomly.getBooleanWithRatherLowProbability()) {
 				sb.append("NOT NULL ");
 			}
-			if (Randomly.getBoolean() && type != TiDBDataType.TEXT && false ) {
-				// TODO: https://github.com/pingcap/tidb/issues/15733
+			if (Randomly.getBoolean() && type != TiDBDataType.TEXT && !isGeneratedColumn) {
 				sb.append("DEFAULT ");
 				sb.append(TiDBVisitor.asString(gen.generateConstant()));
 				sb.append(" ");
 				errors.add("Invalid default value");
+				errors.add("All parts of a PRIMARY KEY must be NOT NULL; if you need NULL in a key, use UNIQUE instead");
 			}
 			if (Randomly.getBooleanWithRatherLowProbability()  && (type != TiDBDataType.TEXT)) {
 				sb.append("UNIQUE ");

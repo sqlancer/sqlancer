@@ -26,7 +26,7 @@ public class TiDBDeleteGenerator {
 			errors.add("Truncated incorrect");
 			errors.add("Data truncation");
 		}
-		return new QueryAdapter(sb.toString());
+		return new QueryAdapter(sb.toString(), errors);
 		
 	}
 	
