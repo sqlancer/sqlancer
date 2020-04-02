@@ -13,6 +13,7 @@ import sqlancer.tidb.TiDBExpressionGenerator;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
 import sqlancer.tidb.TiDBSchema.TiDBTable;
+import sqlancer.tidb.visitor.TiDBVisitor;
 
 public class TiDBInsertGenerator {
 
@@ -40,7 +41,19 @@ public class TiDBInsertGenerator {
 		TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
 		gen = new TiDBExpressionGenerator(globalState).setColumns(table.getColumns());
 		StringBuilder sb = new StringBuilder();
-		sb.append(Randomly.fromOptions("INSERT", "REPLACE"));
+		boolean isInsert = Randomly.getBoolean();
+		if (isInsert) {
+			sb.append("INSERT");
+		} else {
+			sb.append("REPLACE");
+		}
+		if (Randomly.getBooleanWithRatherLowProbability()) {
+			sb.append(" ");
+			sb.append(Randomly.fromOptions("LOW_PRIORITY", "HIGH_PRIORITY", "DELAYED"));
+		}
+		if (isInsert && Randomly.getBoolean() && false /* https://github.com/pingcap/tidb/issues/16025 */) {
+			sb.append(" IGNORE ");
+		}
 		sb.append(" INTO ");
 		sb.append(table.getName());
 		if (Randomly.getBoolean()) {
@@ -53,6 +66,12 @@ public class TiDBInsertGenerator {
 			sb.append(columnSubset.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
 			sb.append(") VALUES ");
 			insertColumns(sb, columnSubset);
+		}
+		if (isInsert && Randomly.getBoolean()) {
+			sb.append(" ON DUPLICATE KEY UPDATE ");
+			sb.append(table.getRandomColumn().getName());
+			sb.append("=");
+			sb.append(TiDBVisitor.asString(gen.generateExpression()));
 		}
 		return new QueryAdapter(sb.toString(), errors);
 	}
