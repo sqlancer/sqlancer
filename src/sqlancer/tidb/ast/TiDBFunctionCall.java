@@ -65,6 +65,7 @@ public class TiDBFunctionCall implements TiDBExpression {
 		IFNULL(2),
 		NULLIF(2),
 		
+		// string functions
 		ASCII(1),
 		BIN(1),
 		BIT_LENGTH(1),
@@ -80,7 +81,22 @@ public class TiDBFunctionCall implements TiDBExpression {
 			public int getNrArgs() {
 				return Randomly.fromOptions(3, 4, 5);
 			}
-		}
+		},
+		// [...]
+		REPLACE(3),
+		REVERSE(1),
+		RIGHT(2),
+		// RPAD TODO
+		RTRIM(1),
+		SPACE(1),
+		STRCMP(2),
+		SUBSTRING(2), // TODO: support other versions
+		SUBSTRING_INDEX(3),
+		TO_BASE64(1),
+		TRIM(1),
+		UCASE(1),
+		UNHEX(1),
+		UPPER(1)
 		;
 		
 		private int nrArgs;
