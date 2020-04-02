@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.TestOracle;
-import sqlancer.schema.TableIndex;
 import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBExpressionGenerator;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
@@ -21,11 +20,11 @@ import sqlancer.tidb.ast.TiDBExpression;
 import sqlancer.tidb.ast.TiDBJoin;
 import sqlancer.tidb.ast.TiDBSelect;
 import sqlancer.tidb.ast.TiDBTableReference;
-import sqlancer.tidb.ast.TiDBText;
 import sqlancer.tidb.ast.TiDBUnaryPostfixOperation;
 import sqlancer.tidb.ast.TiDBUnaryPostfixOperation.TiDBUnaryPostfixOperator;
 import sqlancer.tidb.ast.TiDBUnaryPrefixOperation;
 import sqlancer.tidb.ast.TiDBUnaryPrefixOperation.TiDBUnaryPrefixOperator;
+import sqlancer.tidb.gen.TiDBHintGenerator;
 
 public abstract class TiDBQueryPartitioningBase implements TestOracle {
 
@@ -54,16 +53,7 @@ public abstract class TiDBQueryPartitioningBase implements TestOracle {
 		select.setFetchColumns(generateFetchColumns());
 		List<TiDBTable> tables = targetTables.getTables();
 		if (Randomly.getBoolean()) {
-			TiDBTable table = Randomly.fromList(tables);
-			if (table.hasIndexes()) {
-				StringBuilder sb = new StringBuilder("USE_INDEX_MERGE(");
-				sb.append(table.getName());
-				sb.append(", ");
-				List<TableIndex> indexes = Randomly.nonEmptySubset(table.getIndexes());
-				sb.append(indexes.stream().map(i -> i.getIndexName()).collect(Collectors.joining(", ")));
-				sb.append(")");
-				select.setHint(new TiDBText(sb.toString()));
-			}
+			TiDBHintGenerator.generateHints(select, tables);
 		}
 
 		List<TiDBExpression> tableList = tables.stream().map(t -> new TiDBTableReference(t))
