@@ -20,6 +20,12 @@ public class TiDBHintGenerator {
 		TiDBTable table = Randomly.fromList(tables);
 		switch (Randomly.fromOptions(IndexHint.values())) {
 		case USE_INDEX_MERGE:
+			if (true) {
+				// https://github.com/pingcap/tidb/issues/15994
+				// https://github.com/pingcap/tidb/issues/15992
+				// https://github.com/pingcap/tidb/issues/15991
+				throw new IgnoreMeException();
+			}
 			if (table.hasIndexes()) {
 				StringBuilder sb = new StringBuilder("USE_INDEX_MERGE(");
 				sb.append(table.getName());

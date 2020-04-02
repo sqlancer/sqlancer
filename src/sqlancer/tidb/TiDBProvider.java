@@ -96,7 +96,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 		case SET:
 			return r.getInteger(0, 5);
 		case VIEW_GENERATOR:
-			return r.getInteger(0, 2);
+			return r.getInteger(0, 0);
 		default:
 			throw new AssertionError(a);
 		}
