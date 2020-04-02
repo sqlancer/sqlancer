@@ -51,7 +51,7 @@ public class TiDBTableGenerator {
 			}
 			sb.append(" ");
 			boolean isGeneratedColumn = Randomly.getBooleanWithRatherLowProbability();
-			if (isGeneratedColumn) {
+			if (isGeneratedColumn && false /* https://github.com/pingcap/tidb/issues/16020, https://github.com/pingcap/tidb/issues/15994 */) {
 				sb.append(" AS (");
 				sb.append(TiDBVisitor.asString(gen.generateExpression()));
 				sb.append(") ");

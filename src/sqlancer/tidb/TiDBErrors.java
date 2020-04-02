@@ -18,6 +18,15 @@ public class TiDBErrors {
 		// https://github.com/pingcap/tidb/issues/15790
 		errors.add("Data truncation: %s value is out of range in '%s'");
 		
+		// known issue: https://github.com/pingcap/tidb/issues/14819
+		errors.add("Wrong plan type for dataReaderBuilder");
+		
+		if (true) {
+			// https://github.com/pingcap/tidb/issues/16017
+			errors.add("Can't find a proper physical plan for this query");
+		}
+		
+		
 		errors.add("DOUBLE value is out of range in 'cot(0)'");
 		errors.add("DOUBLE value is out of range in 'pow");
 		errors.add("DOUBLE value is out of range in 'exp(");

@@ -81,6 +81,10 @@ public class TiDBExpressionGenerator {
 		case REGEX:
 			return new TiDBRegexOperation(generateExpression(depth + 1), generateExpression(depth + 1), TiDBRegexOperator.getRandom());
 		case COLLATE:
+			if (true) {
+				// https://github.com/pingcap/tidb/issues/15988
+				throw new IgnoreMeException();
+			}
 			return new TiDBCollate(generateExpression(depth + 1), Randomly.fromOptions("utf8mb4_bin", "latin1_bin", "binary", "ascii_bin", "utf8_bin"));
 		case FUNCTION:
 			TiDBFunction func = TiDBFunction.getRandom();

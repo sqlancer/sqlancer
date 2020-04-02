@@ -28,6 +28,7 @@ public class TiDBInsertGenerator {
 		errors.add("Out of range value");
 		errors.add("Incorrect tinyint value");
 		errors.add("Data truncation");
+		errors.add("Bad Number");
 		errors.add("The value specified for generated column"); // TODO: do not insert data into generated columns
 	}
 
