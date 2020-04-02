@@ -109,11 +109,15 @@ public class TiDBHintGenerator {
 	private void indexesHint(String string) {
 		sb.append(string);
 		sb.append("(");
-		List<TableIndex> indexes = tables.stream().flatMap(t -> t.getIndexes().stream()).collect(Collectors.toList());
-		if (indexes.isEmpty()) {
+		// FIXME: select one table
+		TiDBTable table = Randomly.fromList(tables);
+		List<TableIndex> allIndexes = table.getIndexes();
+		if (allIndexes.isEmpty()) {
 			throw new IgnoreMeException();
 		}
-		List<TableIndex> indexSubset = Randomly.nonEmptySubset(indexes);
+		List<TableIndex> indexSubset = Randomly.nonEmptySubset(allIndexes);
+		sb.append(table.getName());
+		sb.append(", ");
 		sb.append(indexSubset.stream().map(i -> i.getIndexName()).collect(Collectors.joining(", ")));
 		sb.append(")");
 	}
