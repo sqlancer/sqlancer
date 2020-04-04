@@ -269,6 +269,7 @@ public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<Coc
 		switch (type.getPrimitiveDataType()) {
 		case INT:
 		case SERIAL:
+		case DECIMAL: // TODO: generate random decimals
 			return CockroachDBConstant.createIntConstant(globalState.getRandomly().getInteger());
 		case BOOL:
 			return CockroachDBConstant.createBooleanConstant(Randomly.getBoolean());
@@ -284,7 +285,7 @@ public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<Coc
 			if (Randomly.getBoolean()) {
 				return CockroachDBConstant.createBitConstant(globalState.getRandomly().getInteger());
 			} else {
-				return CockroachDBConstant.createBitConstantWithSize((int) Randomly.getNotCachedInteger(1, 10000));
+				return CockroachDBConstant.createBitConstantWithSize((int) Randomly.getNotCachedInteger(1, 10));
 			}
 		case INTERVAL:
 			return CockroachDBConstant.createIntervalConstant(globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger());
@@ -302,7 +303,6 @@ public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<Coc
 				elements.add(generateConstant(type.getElementType()));
 			}
 			return CockroachDBConstant.createArrayConstant(elements);
-		case DECIMAL:
 		case JSONB:
 			return CockroachDBConstant.createNullConstant(); // TODO
 		default:

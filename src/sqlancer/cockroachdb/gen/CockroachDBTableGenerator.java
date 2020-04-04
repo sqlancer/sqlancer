@@ -36,11 +36,11 @@ public class CockroachDBTableGenerator extends CockroachDBGenerator {
 	public void buildStatement() {
 		errors.add("https://github.com/cockroachdb/cockroach/issues/35730"); // not indexable array types
 
-		String tableName = Randomly.fromOptions("t0", "t1", "t2");
+		String tableName = globalState.getSchema().getFreeTableName();
 		sb.append("CREATE ");
 		// TODO: temp table support (see
 		// https://github.com/cockroachdb/cockroach/issues/46393)
-		sb.append("TABLE IF NOT EXISTS ");
+		sb.append("TABLE ");
 		sb.append(tableName);
 		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
 			String columnName = "c" + i;
