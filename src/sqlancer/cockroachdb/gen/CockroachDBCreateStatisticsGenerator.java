@@ -21,7 +21,7 @@ public class CockroachDBCreateStatisticsGenerator {
 		sb.append(" FROM ");
 		sb.append(randomTable.getName());
 
-		Query q = new QueryAdapter(sb.toString(), Arrays.asList("current transaction is aborted, commands ignored until end of transaction block", "ERROR: unable to encode table key: *tree.DArray" /* https://github.com/cockroachdb/cockroach/issues/46964 */));
+		Query q = new QueryAdapter(sb.toString(), Arrays.asList("current transaction is aborted, commands ignored until end of transaction block", "ERROR: unable to encode table key: *tree.DArray" /* https://github.com/cockroachdb/cockroach/issues/46964 */, "overflow during Encode"));
 		return q;
 	}
 	

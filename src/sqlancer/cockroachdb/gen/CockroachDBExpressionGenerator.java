@@ -39,22 +39,18 @@ import sqlancer.cockroachdb.ast.CockroachDBRegexOperation.CockroachDBRegexOperat
 import sqlancer.cockroachdb.ast.CockroachDBTypeAnnotation;
 import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation;
 import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnaryPostfixOperator;
+import sqlancer.gen.TypedExpressionGenerator;
 
-public class CockroachDBExpressionGenerator {
+public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<CockroachDBExpression, CockroachDBColumn, CockroachDBCompositeDataType> {
 
 	private final CockroachDBGlobalState globalState;
-	private List<CockroachDBColumn> columns = new ArrayList<>();
-	private boolean allowAggregates;
 
 	public CockroachDBExpressionGenerator(CockroachDBGlobalState globalState) {
 		this.globalState = globalState;
 	}
 
-	public CockroachDBExpressionGenerator setColumns(List<CockroachDBColumn> columns) {
-		this.columns = columns;
-		return this;
-	}
 
+	@Override
 	public CockroachDBExpression generateExpression(CockroachDBCompositeDataType dataType) {
 		return generateExpression(dataType, 0);
 	}
@@ -68,13 +64,6 @@ public class CockroachDBExpressionGenerator {
 		return generateExpression(CockroachDBDataType.BOOL.get());
 	}
 
-	public List<CockroachDBExpression> generateExpressions(int nr) {
-		List<CockroachDBExpression> expressions = new ArrayList<>();
-		for (int i = 0; i < nr; i++) {
-			expressions.add(generateExpression(getRandomType()));
-		}
-		return expressions;
-	}
 
 	public List<CockroachDBExpression> getOrderingTerms() {
 		List<CockroachDBExpression> orderingTerms = new ArrayList<>();
@@ -92,6 +81,7 @@ public class CockroachDBExpressionGenerator {
 		return orderingTerms;
 	}
 
+	@Override
 	public CockroachDBExpression generateExpression(CockroachDBCompositeDataType type, int depth) {
 //		if (type == CockroachDBDataType.FLOAT && Randomly.getBooleanWithRatherLowProbability()) {
 //			type = CockroachDBDataType.INT;
@@ -138,10 +128,6 @@ public class CockroachDBExpressionGenerator {
 			case INT:
 			case SERIAL:
 				return new CockroachDBBinaryArithmeticOperation(generateExpression(CockroachDBDataType.INT.get(), depth + 1), generateExpression(CockroachDBDataType.INT.get(), depth + 1), CockroachDBBinaryArithmeticOperator.getRandom());
- // new CockroachDBUnaryArithmeticOperation(generateExpression(type, depth
-												// + 1),
-			// CockroachDBUnaryAritmeticOperator.getRandom()); /* wait for
-			// https://github.com/cockroachdb/cockroach/issues/44137 */
 			case STRING:
 			case BYTES: // TODO split
 				CockroachDBExpression stringExpr = generateStringExpression(depth);
@@ -183,13 +169,6 @@ public class CockroachDBExpressionGenerator {
 		return new CockroachDBAggregate(agg, args);
 	}
 
-	private CockroachDBExpression generateLeafNode(CockroachDBCompositeDataType type) {
-		if (Randomly.getBooleanWithRatherLowProbability() || !canGenerateConstantOfType(type)) {
-			return generateConstant(type);
-		} else {
-			return getRandomColumn(type);
-		}
-	}
 
 	private enum BooleanExpression {
 		NOT, COMPARISON, AND_OR_CHAIN, REGEX, IS_NULL, IS_NAN, IN, BETWEEN, MULTI_VALUED_COMPARISON
@@ -241,10 +220,7 @@ public class CockroachDBExpressionGenerator {
 		case MULTI_VALUED_COMPARISON: // TODO other operators
 			type = getRandomType();
 			left = generateExpression(type, depth + 1);
-			List<CockroachDBExpression> rightList;
-			do {
-				rightList = generateExpressions(type, depth + 1);
-			} while (rightList.size() <= 1);
+			List<CockroachDBExpression> rightList = generateExpressions(type, Randomly.smallNumber()  + 2, depth + 1);
 			return new CockroachDBMultiValuedComparison(left, rightList, MultiValuedComparisonType.getRandom(), MultiValuedComparisonOperator.getRandomGenericComparisonOperator());
 		default:
 			throw new AssertionError(exprType);
@@ -262,23 +238,16 @@ public class CockroachDBExpressionGenerator {
 
 	private CockroachDBExpression getInOperation(int depth) {
 		CockroachDBCompositeDataType type = getRandomType();
-		return new CockroachDBInOperation(generateExpression(type, depth + 1), generateExpressions(type, depth + 1));
+		return new CockroachDBInOperation(generateExpression(type, depth + 1), generateExpressions(type, Randomly.smallNumber() + 1, depth + 1));
 	}
 
-	private CockroachDBCompositeDataType getRandomType() {
+	@Override
+	protected CockroachDBCompositeDataType getRandomType() {
 		if (columns.isEmpty() || Randomly.getBoolean()) {
 			return CockroachDBCompositeDataType.getRandom();
 		} else {
 			return Randomly.fromList(columns).getType();
 		}
-	}
-
-	private List<CockroachDBExpression> generateExpressions(CockroachDBCompositeDataType type, int depth) {
-		List<CockroachDBExpression> expressions = new ArrayList<>();
-		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
-			expressions.add(generateExpression(type, depth + 1));
-		}
-		return expressions;
 	}
 
 	private CockroachDBExpression getBinaryComparison(int depth) {
@@ -288,18 +257,9 @@ public class CockroachDBExpressionGenerator {
 		return new CockroachDBBinaryComparisonOperator(left, right, CockroachDBComparisonOperator.getRandom());
 	}
 
-	private boolean canGenerateConstantOfType(CockroachDBCompositeDataType type) {
+	@Override
+	protected boolean canGenerateColumnOfType(CockroachDBCompositeDataType type) {
 		return columns.stream().anyMatch(c -> c.getType() == type);
-	}
-
-	private CockroachDBExpression getRandomColumn(CockroachDBCompositeDataType type) {
-		CockroachDBColumn column = Randomly
-				.fromList(columns.stream().filter(c -> c.getType() == type).collect(Collectors.toList()));
-		CockroachDBExpression columnReference = new CockroachDBColumnReference(column);
-		if (column.getType().isString() && Randomly.getBooleanWithRatherLowProbability()) {
-			columnReference = new CockroachDBCollate(columnReference, CockroachDBCommon.getRandomCollate());
-		}
-		return columnReference;
 	}
 
 	public CockroachDBExpression generateConstant(CockroachDBCompositeDataType type) {
@@ -354,6 +314,18 @@ public class CockroachDBExpressionGenerator {
 
 	public CockroachDBGlobalState getGlobalState() {
 		return globalState;
+	}
+
+
+	@Override
+	protected CockroachDBExpression generateColumn(CockroachDBCompositeDataType type) {
+		CockroachDBColumn column = Randomly
+				.fromList(columns.stream().filter(c -> c.getType() == type).collect(Collectors.toList()));
+		CockroachDBExpression columnReference = new CockroachDBColumnReference(column);
+		if (column.getType().isString() && Randomly.getBooleanWithRatherLowProbability()) {
+			columnReference = new CockroachDBCollate(columnReference, CockroachDBCommon.getRandomCollate());
+		}
+		return columnReference;
 	}
 
 
