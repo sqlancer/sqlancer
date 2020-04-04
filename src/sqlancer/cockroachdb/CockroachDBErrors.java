@@ -89,6 +89,7 @@ public class CockroachDBErrors {
 		errors.add("unsupported comparison operator: <string> != <bytes>");
 		errors.add("expected DEFAULT expression to have type bytes");
 		errors.add("value type string doesn't match type bytes of column");
+		errors.add("as decimal, found type: int");
 		errors.add("to be of type decimal, found type float");
 		errors.add("to be of type float, found type decimal");
 		errors.add("to be of type bytes, found type string");

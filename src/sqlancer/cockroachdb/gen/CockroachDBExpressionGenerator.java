@@ -56,7 +56,7 @@ public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<Coc
 	}
 	
 	public CockroachDBExpression generateAggregate() {
-		return getAggregate(CockroachDBDataType.getRandom().get());
+		return getAggregate(getRandomType());
 	}
 	
 	public CockroachDBExpression generateHavingClause() {
@@ -243,7 +243,7 @@ public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<Coc
 
 	@Override
 	protected CockroachDBCompositeDataType getRandomType() {
-		if (columns.isEmpty() || Randomly.getBoolean()) {
+		if (columns.isEmpty() || Randomly.getBooleanWithRatherLowProbability()) {
 			return CockroachDBCompositeDataType.getRandom();
 		} else {
 			return Randomly.fromList(columns).getType();
