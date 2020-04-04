@@ -67,4 +67,8 @@ public class CockroachDBOptions {
 			"--test_hash_indexes" }, description = "Test the USING HASH WITH BUCKET_COUNT=n_buckets option in CREATE INDEX")
 	public boolean testHashIndexes = true;
 
+	@Parameter(names = {
+			"--test_temp_tables" }, description = "Test TEMPORARY tables")
+	public boolean testTempTables = true;
+
 }

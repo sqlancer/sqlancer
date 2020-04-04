@@ -15,6 +15,9 @@ public class CockroachDBTruncateGenerator {
 		Set<String> errors = new HashSet<>();
 		errors.add("is interleaved by table");
 		errors.add("is referenced by foreign key");
+		
+		// https://github.com/cockroachdb/cockroach/issues/47030
+		errors.add("unexpected value: <nil>");
 		StringBuilder sb = new StringBuilder();
 		sb.append("TRUNCATE");
 		if (Randomly.getBoolean()) {

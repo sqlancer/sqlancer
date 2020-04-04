@@ -312,7 +312,7 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
 	private static List<String> getTableNames(Connection con) throws SQLException {
 		List<String> tableNames = new ArrayList<>();
 		try (Statement s = con.createStatement()) {
-			ResultSet tableRs = s.executeQuery("SHOW TABLES");
+			ResultSet tableRs = s.executeQuery("SELECT table_name FROM information_schema.tables WHERE TABLE_TYPE IN ('BASE TABLE', 'LOCAL TEMPORARY');");
 			while (tableRs.next()) {
 				String tableName = tableRs.getString(1);
 				tableNames.add(tableName);

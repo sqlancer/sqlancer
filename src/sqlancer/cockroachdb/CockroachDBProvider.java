@@ -79,7 +79,8 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 		SCRUB((g) -> new QueryAdapter(
 				"EXPERIMENTAL SCRUB table " + g.getSchema().getRandomTable(t -> !t.isView()).getName(),
 				// https://github.com/cockroachdb/cockroach/issues/46401
-				Arrays.asList("scrub-fk: column \"t.rowid\" does not exist")));
+				Arrays.asList("scrub-fk: column \"t.rowid\" does not exist",
+						"check-constraint: cannot access temporary tables of other sessions" /* https://github.com/cockroachdb/cockroach/issues/47031 */)));
 
 		private final QueryProvider<CockroachDBGlobalState> queryProvider;
 
@@ -133,7 +134,6 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 		standardSettings.add("--Don't send automatic bug reports\n" + "SET CLUSTER SETTING debug.panic_on_failed_assertions = true;");
 		standardSettings.add("SET CLUSTER SETTING diagnostics.reporting.enabled	= false;");
 		standardSettings.add("SET CLUSTER SETTING diagnostics.reporting.send_crash_reports = false;");
-		standardSettings.add("SET experimental_enable_temp_tables = 'on'");
 
 		standardSettings.add("-- Disable the collection of metrics and hope that it helps performance\n"
 				+ "SET CLUSTER SETTING sql.metrics.statement_details.enabled = 'off'");
@@ -143,6 +143,9 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 
 		if (globalState.getCockroachdbOptions().testHashIndexes) {
 			standardSettings.add("set experimental_enable_hash_sharded_indexes='on';");
+		}
+		if (globalState.getCockroachdbOptions().testTempTables) {
+			standardSettings.add("SET experimental_enable_temp_tables = 'on'");
 		}
 		for (String s : standardSettings) {
 			manager.execute(new QueryAdapter(s));
