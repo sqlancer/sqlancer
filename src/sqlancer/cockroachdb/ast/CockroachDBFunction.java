@@ -33,6 +33,9 @@ public enum CockroachDBFunction {
 //		}
 //	},
 
+//	ARRAY_CAT(CockroachDBDataType.ARRAY, CockroachDBDataType.ARRAY, CockroachDBDataType.ARRAY),
+	
+	
 	IF(null) {
 		@Override
 		public boolean isCompatibleWithReturnType(CockroachDBCompositeDataType returnType) {

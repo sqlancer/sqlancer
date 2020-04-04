@@ -11,6 +11,8 @@ import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 
+
+// https://www.cockroachlabs.com/docs/stable/create-index.html
 public class CockroachDBIndexGenerator {
 	
 	public static Query create(CockroachDBGlobalState s) {
@@ -29,8 +31,16 @@ public class CockroachDBIndexGenerator {
 		sb.append(table.getName());
 		List<CockroachDBColumn> columns = table.getRandomNonEmptyColumnSubset();
 		addColumns(sb, columns, true);
+		if (s.getCockroachdbOptions().testHashIndexes && Randomly.getBoolean()) {
+			sb.append(" USING HASH WITH BUCKET_COUNT=");
+			sb.append(Math.min(1, Randomly.getNotCachedInteger(1, Integer.MAX_VALUE)));
+			errors.add("null value in column");
+			errors.add("cannot create a sharded index on a computed column");
+		}
 		if (Randomly.getBoolean()) {
-			sb.append(" STORING ");
+			sb.append(" ");
+			sb.append(Randomly.fromOptions("STORING", "COVERING"));
+			sb.append(" ");
 			addColumns(sb, table.getRandomNonEmptyColumnSubset(), false);
 		}
 		

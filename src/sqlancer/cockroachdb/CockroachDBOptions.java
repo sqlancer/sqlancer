@@ -63,4 +63,8 @@ public class CockroachDBOptions {
 
 	}
 
+	@Parameter(names = {
+			"--test_hash_indexes" }, description = "Test the USING HASH WITH BUCKET_COUNT=n_buckets option in CREATE INDEX")
+	public boolean testHashIndexes = true;
+
 }

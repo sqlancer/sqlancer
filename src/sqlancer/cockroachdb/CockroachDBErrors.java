@@ -5,6 +5,7 @@ import java.util.Set;
 public class CockroachDBErrors {
 	
 	public static void addExpressionErrors(Set<String> errors) {
+		errors.add(" non-streaming operator encountered when vectorize=auto");
 		
 		if (true) {
 			// https://github.com/cockroachdb/cockroach/issues/46403
@@ -12,8 +13,18 @@ public class CockroachDBErrors {
 		}
 		
 		if (true) {
+			// https://github.com/pingcap/tidb/issues/16017
+			errors.add("Can't find a proper physical plan for this query");
+		}
+		
+		if (true) {
 			// https://github.com/cockroachdb/cockroach/issues/46915
 			errors.add("ERROR: at or near \"unknown\": syntax error");
+		}
+		
+		if (true) {
+			// https://github.com/cockroachdb/cockroach/issues/45703
+			errors.add("github.com/cockroachdb/cockroach/pkg/sql/execinfra/expr.go:78: processExpression()");
 		}
 		
 		errors.add("cannot cast negative integer to bit varying with unbounded width");
@@ -224,12 +235,16 @@ public class CockroachDBErrors {
 		errors.add("unknown signature: max(bit[])");
 		errors.add("unknown signature: min(float[])");
 		errors.add("unknown signature: max(float[])");
+		
 		errors.add("array must be enclosed in { and }"); // when casting a string to an array
+		errors.add("extra text after closing right brace");
 		errors.add("unimplemented: nested arrays not supported"); // e.g., casting a string {{1}} to an array
+		errors.add("malformed array");
 		
 		errors.add("https://github.com/cockroachdb/cockroach/issues/35707"); // arrays don't support ORDER BY
 		
 		errors.add("as bytes[], found type: varbit[]");
+		errors.add("to be of type decimal[], found type float[]");
 		
 		errors.add("to be of type unknown[]"); // IF with null array
 	}
@@ -259,6 +274,7 @@ public class CockroachDBErrors {
 		errors.add("incompatible value type");
 		errors.add(" ERROR: incompatible IF expressions");
 		errors.add(" to be of type string");
+		errors.add("found type string");
 		
 		errors.add("unknown signature: abs(string)");
 		errors.add("unknown signature: acos(string)");
