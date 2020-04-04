@@ -177,8 +177,10 @@ public class CockroachDBConstant implements CockroachDBExpression {
 	public static class CockroachDBTimeRelatedConstant extends CockroachDBConstant {
 		
 		private final String textRepr;
+		private final String typeRepresentation;
 
-		public CockroachDBTimeRelatedConstant(long val, String format) {
+		public CockroachDBTimeRelatedConstant(String typeRepresentation, long val, String format) {
+			this.typeRepresentation = typeRepresentation;
 			Timestamp timestamp = new Timestamp(val);
 			SimpleDateFormat dateFormat = new SimpleDateFormat(format);
 			textRepr = dateFormat.format(timestamp);
@@ -187,7 +189,7 @@ public class CockroachDBConstant implements CockroachDBExpression {
 		
 		@Override
 		public String toString() {
-			return String.format("TIMESTAMP '%s'", textRepr);
+			return String.format("%s '%s'", typeRepresentation, textRepr);
 		}
 		
 	}
@@ -225,13 +227,21 @@ public class CockroachDBConstant implements CockroachDBExpression {
 	}
 	
 	public static CockroachDBExpression createTimestampConstant(long integer) {
-		return new CockroachDBTimeRelatedConstant(integer, "yyyy-MM-dd");
+		return new CockroachDBTimeRelatedConstant("TIMESTAMP", integer, "yyyy-MM-dd");
 	}
 	
 	public static CockroachDBExpression createTimeConstant(long integer) {
-		return new CockroachDBTimeRelatedConstant(integer, "HH:mm:ss");
+		return new CockroachDBTimeRelatedConstant("TIME", integer, "HH:mm:ss");
+	}
+	
+	public static CockroachDBExpression createTimetz(long integer) {
+		return new CockroachDBTimeRelatedConstant("TIMETZ", integer, "HH:mm:ss"); // TODO: support the complete format
 	}
 
+
+	public static CockroachDBExpression createTimestamptzConstant(long integer) {
+		return new CockroachDBTimeRelatedConstant("TIMESTAMPTZ", integer, "HH:mm:ss"); // TODO: support the complete format
+	}
 
 	public static CockroachDBExpression createIntervalConstant(long year, long month, long day,
 			long hour, long minute, long second) {
@@ -241,5 +251,6 @@ public class CockroachDBConstant implements CockroachDBExpression {
 	public static CockroachDBExpression createArrayConstant(List<CockroachDBExpression> elements) {
 		return new CockroachDBArrayConstant(elements);
 	}
+
 
 }

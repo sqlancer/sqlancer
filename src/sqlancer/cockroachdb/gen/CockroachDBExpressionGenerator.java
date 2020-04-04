@@ -290,8 +290,12 @@ public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<Coc
 			return CockroachDBConstant.createIntervalConstant(globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger());
 		case TIMESTAMP:
 			return CockroachDBConstant.createTimestampConstant(globalState.getRandomly().getInteger());
+		case TIMESTAMPTZ:
+			return CockroachDBConstant.createTimestamptzConstant(globalState.getRandomly().getInteger());
 		case TIME:
 			return CockroachDBConstant.createTimeConstant(globalState.getRandomly().getInteger());
+		case TIMETZ:
+			return CockroachDBConstant.createTimetz(globalState.getRandomly().getInteger());
 		case ARRAY:
 			List<CockroachDBExpression> elements = new ArrayList<CockroachDBExpression>();
 			for (int i = 0; i < Randomly.smallNumber(); i++ ) {
@@ -299,9 +303,7 @@ public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<Coc
 			}
 			return CockroachDBConstant.createArrayConstant(elements);
 		case DECIMAL:
-		case TIMESTAMPTZ:
 		case JSONB:
-		case TIMETZ:
 			return CockroachDBConstant.createNullConstant(); // TODO
 		default:
 			throw new AssertionError(type);
