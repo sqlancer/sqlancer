@@ -21,6 +21,7 @@ public class CockroachDBIndexGenerator extends CockroachDBGenerator {
 
 	@Override
 	public void buildStatement() {
+		// TODO inverted index
 		errors.add("is part of the primary index and therefore implicit in all indexes");
 		errors.add("already contains column");
 		errors.add("violates unique constraint");
@@ -35,7 +36,8 @@ public class CockroachDBIndexGenerator extends CockroachDBGenerator {
 		sb.append(table.getName());
 		List<CockroachDBColumn> columns = table.getRandomNonEmptyColumnSubset();
 		addColumns(sb, columns, true);
-		if (globalState.getCockroachdbOptions().testHashIndexes && Randomly.getBoolean()) {
+		boolean hashSharded = globalState.getCockroachdbOptions().testHashIndexes && Randomly.getBoolean();
+		if (hashSharded) {
 			sb.append(" USING HASH WITH BUCKET_COUNT=");
 			sb.append(Math.min(1, Randomly.getNotCachedInteger(1, Integer.MAX_VALUE)));
 			errors.add("null value in column");
@@ -46,6 +48,9 @@ public class CockroachDBIndexGenerator extends CockroachDBGenerator {
 			sb.append(Randomly.fromOptions("STORING", "COVERING"));
 			sb.append(" ");
 			addColumns(sb, table.getRandomNonEmptyColumnSubset(), false);
+		}
+		if (!hashSharded /* interleaved indexes cannot also be hash sharded */ && Randomly.getBoolean()) {
+			generateInterleave();
 		}
 	}
 

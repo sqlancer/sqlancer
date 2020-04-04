@@ -1,14 +1,11 @@
 package sqlancer.cockroachdb.gen;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Query;
-import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBCommon;
 import sqlancer.cockroachdb.CockroachDBErrors;
@@ -19,30 +16,30 @@ import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBDataType;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.CockroachDBVisitor;
 
-public class CockroachDBTableGenerator {
+public class CockroachDBTableGenerator extends CockroachDBGenerator {
 
-	private final CockroachDBGlobalState globalState;
-	private final StringBuilder sb = new StringBuilder();
 	private final boolean primaryKey = Randomly.getBoolean();
 	private final List<CockroachDBColumn> columns = new ArrayList<>();
 	private boolean singleColumnPrimaryKey = primaryKey && Randomly.getBoolean();
 	private boolean compoundPrimaryKey = primaryKey && !singleColumnPrimaryKey;
 
 	public CockroachDBTableGenerator(CockroachDBGlobalState globalState) {
-		this.globalState = globalState;
+		super(globalState);
+		canAffectSchema = true;
 	}
 
 	public static Query generate(CockroachDBGlobalState globalState) {
-		return new CockroachDBTableGenerator(globalState).gen();
+		return new CockroachDBTableGenerator(globalState).getQuery();
 	}
 
-	private Query gen() {
-		Set<String> errors = new HashSet<>();
+	@Override
+	public void buildStatement() {
 		errors.add("https://github.com/cockroachdb/cockroach/issues/35730"); // not indexable array types
-		
+
 		String tableName = Randomly.fromOptions("t0", "t1", "t2");
 		sb.append("CREATE ");
-		// TODO: temp table support (see https://github.com/cockroachdb/cockroach/issues/46393)
+		// TODO: temp table support (see
+		// https://github.com/cockroachdb/cockroach/issues/46393)
 		sb.append("TABLE IF NOT EXISTS ");
 		sb.append(tableName);
 		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
@@ -67,7 +64,8 @@ public class CockroachDBTableGenerator {
 			if (cockroachDBColumn.getType().isString() && Randomly.getBoolean()) {
 				sb.append(" COLLATE " + CockroachDBCommon.getRandomCollate());
 			}
-			boolean generatedColumn = Randomly.getBooleanWithRatherLowProbability() && cockroachDBColumn.getType().getPrimitiveDataType() != CockroachDBDataType.SERIAL;
+			boolean generatedColumn = Randomly.getBooleanWithRatherLowProbability()
+					&& cockroachDBColumn.getType().getPrimitiveDataType() != CockroachDBDataType.SERIAL;
 			if (generatedColumn) {
 				sb.append(" AS (");
 				sb.append(CockroachDBVisitor.asString(gen.generateExpression(cockroachDBColumn.getType())));
@@ -85,18 +83,21 @@ public class CockroachDBTableGenerator {
 				sb.append(" PRIMARY KEY");
 				singleColumnPrimaryKey = false;
 			}
-			if (!generatedColumn && cockroachDBColumn.getType().getPrimitiveDataType() != CockroachDBDataType.SERIAL && Randomly.getBoolean()) {
+			if (!generatedColumn && cockroachDBColumn.getType().getPrimitiveDataType() != CockroachDBDataType.SERIAL
+					&& Randomly.getBoolean()) {
 				sb.append(" DEFAULT (");
 				sb.append(CockroachDBVisitor.asString(new CockroachDBExpressionGenerator(globalState)
 						.generateExpression(cockroachDBColumn.getType())));
 				sb.append(")");
 				errors.add("has type unknown"); // NULLIF
 			}
-			if (Randomly.getBooleanWithRatherLowProbability() && !globalState.getSchema().getDatabaseTables().isEmpty()) {
+			if (Randomly.getBooleanWithRatherLowProbability()
+					&& !globalState.getSchema().getDatabaseTables().isEmpty()) {
 				// TODO: also allow referencing itself
 				sb.append(" REFERENCES ");
 				CockroachDBTable otherTable = globalState.getSchema().getRandomTable();
-				List<CockroachDBColumn> applicableColumns = otherTable.getColumns().stream().filter(c -> c.getType() == cockroachDBColumn.getType()).collect(Collectors.toList());
+				List<CockroachDBColumn> applicableColumns = otherTable.getColumns().stream()
+						.filter(c -> c.getType() == cockroachDBColumn.getType()).collect(Collectors.toList());
 				if (applicableColumns.isEmpty()) {
 					throw new IgnoreMeException();
 				}
@@ -171,22 +172,10 @@ public class CockroachDBTableGenerator {
 		}
 		sb.append(")");
 		if (Randomly.getBooleanWithRatherLowProbability() && !globalState.getSchema().getDatabaseTables().isEmpty()) {
-			CockroachDBTable parentTable = globalState.getSchema().getRandomTable();
-			List<CockroachDBColumn> parentColumns = parentTable.getRandomNonEmptyColumnSubset();
-			sb.append(" INTERLEAVE IN PARENT ");
-			sb.append(parentTable.getName());
-			sb.append("(");
-			sb.append(parentColumns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
-			sb.append(")");
+			generateInterleave();
 		}
-
-		errors.add("must refer to a prefix of the primary key column names being interleaved");
-		errors.add("must match the parent's primary index");
-		errors.add("must match type and sort direction of the parent's primary index");
-		errors.add("must be a prefix of the primary key columns being interleaved");
 		errors.add("collatedstring");
 		CockroachDBErrors.addExpressionErrors(errors);
-		return new QueryAdapter(sb.toString(), errors, true);
 	}
 
 }
