@@ -279,8 +279,13 @@ public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<Coc
 		case FLOAT:
 			return CockroachDBConstant.createFloatConstant(globalState.getRandomly().getDouble());
 		case BIT:
+			return CockroachDBConstant.createBitConstantWithSize(type.getSize());
 		case VARBIT:
-			return CockroachDBConstant.createBitConstant(globalState.getRandomly().getInteger());
+			if (Randomly.getBoolean()) {
+				return CockroachDBConstant.createBitConstant(globalState.getRandomly().getInteger());
+			} else {
+				return CockroachDBConstant.createBitConstantWithSize((int) Randomly.getNotCachedInteger(1, 10000));
+			}
 		case INTERVAL:
 			return CockroachDBConstant.createIntervalConstant(globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger());
 		case TIMESTAMP:

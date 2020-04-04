@@ -33,7 +33,7 @@ public abstract class TypedExpressionGenerator<E, C, T> {
 	}
 	
 	public E generateLeafNode(T type) {
-		if (Randomly.getBoolean() || !canGenerateColumnOfType(type)) {
+		if (Randomly.getBooleanWithRatherLowProbability() || !canGenerateColumnOfType(type)) {
 			return generateConstant(type);
 		} else {
 			return generateColumn(type);

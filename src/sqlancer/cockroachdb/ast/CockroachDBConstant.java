@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
+import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBVisitor;
 
 public class CockroachDBConstant implements CockroachDBExpression {
@@ -85,6 +86,10 @@ public class CockroachDBConstant implements CockroachDBExpression {
 
 		public CockroachDBBitConstant(long value) {
 			this.value = Long.toBinaryString(value);
+		}
+		
+		public CockroachDBBitConstant(String binaryString) {
+			this.value = binaryString;
 		}
 
 		public String getValue() {
@@ -209,6 +214,14 @@ public class CockroachDBConstant implements CockroachDBExpression {
 
 	public static CockroachDBExpression createBitConstant(long integer) {
 		return new CockroachDBBitConstant(integer);
+	}
+	
+	public static CockroachDBExpression createBitConstantWithSize(int size) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < size; i++) {
+			sb.append(Randomly.getBoolean() ? 0 : 1);
+		}
+		return new CockroachDBBitConstant(sb.toString());
 	}
 	
 	public static CockroachDBExpression createTimestampConstant(long integer) {

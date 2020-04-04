@@ -45,6 +45,7 @@ public abstract class CockroachDBGenerator extends AbstractGenerator {
 		errors.add("must refer to a prefix of the index column names being interleaved");
 		errors.add("must match the parent's primary index");
 		errors.add("must match type and sort direction of the parent's primary index");
+		errors.add("must be a prefix of the index columns being interleaved");
 		errors.add("must be a prefix of the primary key columns being interleaved");
 	}
 	
