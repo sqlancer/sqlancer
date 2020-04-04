@@ -114,7 +114,7 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 		}
 
 	}
-	
+
 	@Override
 	public void generateAndTestDatabase(CockroachDBGlobalState globalState) throws SQLException {
 		Randomly r = new Randomly();
@@ -129,13 +129,23 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 		JCommander.newBuilder().addObject(cockroachdbOptions).build().parse(options.getDbmsOptions().split(" "));
 		globalState.setCockroachDBOptions(cockroachdbOptions);
 
-		manager.execute(new QueryAdapter("SET CLUSTER SETTING debug.panic_on_failed_assertions = true;"));
-		manager.execute(new QueryAdapter("SET CLUSTER SETTING diagnostics.reporting.enabled	 = false;"));
-		manager.execute(
-				new QueryAdapter("SET CLUSTER SETTING diagnostics.reporting.send_crash_reports		 = false;"));
-		manager.execute(new QueryAdapter("SET experimental_enable_temp_tables = 'on'"));
+		List<String> standardSettings = new ArrayList<String>();
+		standardSettings.add("--Don't send automatic bug reports\n" + "SET CLUSTER SETTING debug.panic_on_failed_assertions = true;");
+		standardSettings.add("SET CLUSTER SETTING diagnostics.reporting.enabled	= false;");
+		standardSettings.add("SET CLUSTER SETTING diagnostics.reporting.send_crash_reports = false;");
+		standardSettings.add("SET experimental_enable_temp_tables = 'on'");
+
+		standardSettings.add("-- Disable the collection of metrics and hope that it helps performance\n"
+				+ "SET CLUSTER SETTING sql.metrics.statement_details.enabled = 'off'");
+		standardSettings.add("SET CLUSTER SETTING sql.metrics.statement_details.plan_collection.enabled = 'off'");
+		standardSettings.add("SET CLUSTER SETTING sql.stats.automatic_collection.enabled = 'off'");
+		standardSettings.add("SET CLUSTER SETTING timeseries.storage.enabled = 'off'");
+
 		if (globalState.getCockroachdbOptions().testHashIndexes) {
-			manager.execute(new QueryAdapter("set experimental_enable_hash_sharded_indexes='on';"));
+			standardSettings.add("set experimental_enable_hash_sharded_indexes='on';");
+		}
+		for (String s : standardSettings) {
+			manager.execute(new QueryAdapter(s));
 		}
 
 		for (int i = 0; i < Randomly.fromOptions(1, 2, 3); i++) {
