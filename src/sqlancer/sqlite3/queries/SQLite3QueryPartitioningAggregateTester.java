@@ -28,13 +28,13 @@ import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
-public class SQLite3MetamorphicAggregateTester implements TestOracle {
+public class SQLite3QueryPartitioningAggregateTester implements TestOracle {
 
 	private SQLite3GlobalState state;
 	private final List<String> errors = new ArrayList<>();
 	private SQLite3ExpressionGenerator gen;
 
-	public SQLite3MetamorphicAggregateTester(SQLite3GlobalState state) {
+	public SQLite3QueryPartitioningAggregateTester(SQLite3GlobalState state) {
 		this.state = state;
 		SQLite3Errors.addExpectedExpressionErrors(errors);
 	}

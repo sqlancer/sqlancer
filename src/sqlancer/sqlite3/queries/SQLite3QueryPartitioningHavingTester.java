@@ -61,7 +61,7 @@ public class SQLite3QueryPartitioningHavingTester implements TestOracle {
 		select.setHavingClause(null);
 		String originalQueryString = SQLite3Visitor.asString(select);
 		
-		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors, state.getConnection());
+		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors, state.getConnection(), state);
 		
 		SQLite3Expression predicate = gen.getHavingClause();
 		select.setHavingClause(predicate);
@@ -74,7 +74,7 @@ public class SQLite3QueryPartitioningHavingTester implements TestOracle {
 		if (combinedString.contains("EXIST")) {
 			throw new IgnoreMeException();
 		}
-		List<String> secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors, state.getConnection());
+		List<String> secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors, state.getConnection(), state);
 		if (state.getOptions().logEachSelect()) {
 			state.getLogger().writeCurrent(originalQueryString);
 			state.getLogger().writeCurrent(combinedString);
