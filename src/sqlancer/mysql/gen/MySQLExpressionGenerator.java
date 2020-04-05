@@ -39,8 +39,9 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
 		this.state = state;
 	}
 
-	public void setRowVal(MySQLRowValue rowVal) {
+	public MySQLExpressionGenerator setRowVal(MySQLRowValue rowVal) {
 		this.rowVal = rowVal;
+		return this;
 	}
 
 

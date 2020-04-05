@@ -1,6 +1,5 @@
-package sqlancer.mysql;
+package sqlancer.mysql.test;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -9,12 +8,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.Main.QueryManager;
-import sqlancer.Main.StateLogger;
-import sqlancer.MainOptions;
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.MySQLStateToReproduce;
+import sqlancer.TestOracle;
+import sqlancer.mysql.MySQLGlobalState;
+import sqlancer.mysql.MySQLSchema;
+import sqlancer.mysql.MySQLToStringVisitor;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLRowValue;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
@@ -32,29 +31,28 @@ import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 import sqlancer.mysql.gen.MySQLExpressionGenerator;
 
-public class MySQLPivotedQuerySynthesisTester {
+public class MySQLPivotedQuerySynthesisTester implements TestOracle {
 
-	private Randomly r;
-	private Connection database;
-	private StateToReproduce state;
+	private MySQLStateToReproduce state;
 	private MySQLSchema s;
 	private MySQLRowValue rw;
 	private List<MySQLExpression> fetchColumns;
 	private List<MySQLColumn> columns;
+	private MySQLGlobalState globalState;
 
-	public MySQLPivotedQuerySynthesisTester(QueryManager manager, Randomly r, Connection con, String databaseName)
+	public MySQLPivotedQuerySynthesisTester(MySQLGlobalState globalState)
 			throws SQLException {
-		this.r = r;
-		this.database = con;
-		this.s = MySQLSchema.fromConnection(con, databaseName);
+		this.globalState = globalState;
+		this.s = globalState.getSchema();
+		this.state = (MySQLStateToReproduce) globalState.getState();
 	}
-
-	public void generateAndCheckQuery(MySQLStateToReproduce state, StateLogger logger, MainOptions options)
-			throws SQLException {
-		String queryString = getQueryThatContainsAtLeastOneRow(state);
-
+	
+	@Override
+	public void check() throws SQLException {
+		String queryString = getQueryThatContainsAtLeastOneRow();
+		
 		try {
-			boolean isContainedIn = isContainedIn(queryString, options, logger);
+			boolean isContainedIn = isContainedIn(queryString);
 			if (!isContainedIn) {
 				throw new AssertionError(queryString);
 			}
@@ -65,10 +63,10 @@ public class MySQLPivotedQuerySynthesisTester {
 				throw e;
 			}
 		}
+		
 	}
 
-	public String getQueryThatContainsAtLeastOneRow(MySQLStateToReproduce state) throws SQLException {
-		this.state = state;
+	public String getQueryThatContainsAtLeastOneRow() throws SQLException {
 		MySQLTables randomFromTables = s.getRandomTableNonEmptyTables();
 		List<MySQLTable> tables = randomFromTables.getTables();
 
@@ -83,7 +81,7 @@ public class MySQLPivotedQuerySynthesisTester {
 //				columns.add(t.getRowid());
 //			}
 //		}
-		rw = randomFromTables.getRandomRowValue(database, state);
+		rw = randomFromTables.getRandomRowValue(globalState.getConnection(), state);
 
 //		List<Join> joinStatements = new ArrayList<>();
 //		for (int i = 1; i < tables.size(); i++) {
@@ -189,7 +187,7 @@ public class MySQLPivotedQuerySynthesisTester {
 	}
 
 	private MySQLExpression generateWhereClauseThatContainsRowValue(List<MySQLColumn> columns, MySQLRowValue rw) {
-		MySQLExpression expression = MySQLExpressionGenerator.generateRandomExpression(columns, rw, r);
+		MySQLExpression expression = new MySQLExpressionGenerator(globalState).setRowVal(rw).setColumns(columns).generateExpression();
 		MySQLConstant expectedValue = expression.getExpectedValue();
 		if (expectedValue.isNull()) {
 			return new MySQLUnaryPostfixOperation(expression, UnaryPostfixOperator.IS_NULL, false);
@@ -200,9 +198,9 @@ public class MySQLPivotedQuerySynthesisTester {
 		}
 	}
 
-	private boolean isContainedIn(String queryString, MainOptions options, StateLogger logger) throws SQLException {
+	private boolean isContainedIn(String queryString) throws SQLException {
 		Statement createStatement;
-		createStatement = database.createStatement();
+		createStatement = globalState.getConnection().createStatement();
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
@@ -224,8 +222,8 @@ public class MySQLPivotedQuerySynthesisTester {
 
 		String resultingQueryString = sb.toString();
 		state.queryString = resultingQueryString;
-		if (options.logEachSelect()) {
-			logger.writeCurrent(resultingQueryString);
+		if (globalState.getOptions().logEachSelect()) {
+			globalState.getLogger().writeCurrent(resultingQueryString);
 		}
 		try (ResultSet result = createStatement.executeQuery(resultingQueryString)) {
 			boolean isContainedIn = result.next();
