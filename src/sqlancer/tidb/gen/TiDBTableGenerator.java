@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.tidb.TiDBBugs;
 import sqlancer.tidb.TiDBExpressionGenerator;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
@@ -49,7 +50,7 @@ public class TiDBTableGenerator {
 			appendSizeSpecifiers(sb, type);
 			sb.append(" ");
 			boolean isGeneratedColumn = Randomly.getBooleanWithRatherLowProbability();
-			if (isGeneratedColumn && false /* https://github.com/pingcap/tidb/issues/16020, https://github.com/pingcap/tidb/issues/15994 */) {
+			if (isGeneratedColumn && !TiDBBugs.BUG_15994 & !TiDBBugs.BUG_16020) {
 				sb.append(" AS (");
 				sb.append(TiDBVisitor.asString(gen.generateExpression()));
 				sb.append(") ");
@@ -98,10 +99,10 @@ public class TiDBTableGenerator {
 	}
 
 	private void appendSizeSpecifiers(StringBuilder sb, TiDBDataType type) {
-		if (type.isNumeric() && Randomly.getBoolean() && false /* https://github.com/pingcap/tidb/issues/16028 */) {
+		if (type.isNumeric() && Randomly.getBoolean() && !TiDBBugs.BUG_16028) {
 			sb.append(" UNSIGNED");
 		}
-		if (type.isNumeric() && Randomly.getBoolean() && false /* seems to be the same bug as https://github.com/pingcap/tidb/issues/16028 */) {
+		if (type.isNumeric() && Randomly.getBoolean() && !TiDBBugs.BUG_16028 /* seems to be the same bug as https://github.com/pingcap/tidb/issues/16028 */) {
 			sb.append(" ZEROFILL");
 		}		
 	}
