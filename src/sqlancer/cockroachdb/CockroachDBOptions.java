@@ -3,6 +3,7 @@ package sqlancer.cockroachdb;
 import java.sql.SQLException;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 
 import sqlancer.MainOptions.DBMSConverter;
 import sqlancer.TestOracle;
@@ -14,6 +15,7 @@ import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningHavingTester;
 import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningTester;
 import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningWhereTester;
 
+@Parameters(separators = "=", commandDescription = "Test CockroachDB")
 public class CockroachDBOptions {
 
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)

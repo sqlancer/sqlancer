@@ -48,7 +48,7 @@ public class PostgresInsertGenerator {
 		}
 		sb.append(" VALUES");
 
-		if (globalState.getPostgresOptions().allowBulkInsert && Randomly.getBooleanWithSmallProbability()) {
+		if (globalState.getDmbsSpecificOptions().allowBulkInsert && Randomly.getBooleanWithSmallProbability()) {
 			StringBuilder sbRowValue = new StringBuilder();
 			sbRowValue.append("(");
 			for (int i = 0; i < columns.size(); i++) {

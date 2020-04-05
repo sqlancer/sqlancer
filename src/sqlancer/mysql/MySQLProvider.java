@@ -44,9 +44,8 @@ import sqlancer.mysql.gen.tblmaintenance.MySQLRepair;
 import sqlancer.mysql.test.MySQLQueryPartitioningWhereTester;
 import sqlancer.sqlite3.gen.SQLite3Common;
 
-public class MySQLProvider implements DatabaseProvider<MySQLGlobalState> {
+public class MySQLProvider implements DatabaseProvider<MySQLGlobalState, MySQLOptions> {
 
-	private final Randomly r = new Randomly();
 	private QueryManager manager;
 	private String databaseName;
 
@@ -150,6 +149,7 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState> {
 		MainOptions options = globalState.getOptions();
 		StateLogger logger = globalState.getLogger();
 		StateToReproduce state = globalState.getState();
+		Randomly r = globalState.getRandomly();
 		globalState.setSchema(MySQLSchema.fromConnection(con, databaseName));
 		if (options.logEachSelect()) {
 			logger.writeCurrent(state);
@@ -302,6 +302,11 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState> {
 	@Override
 	public MySQLGlobalState generateGlobalState() {
 		return new MySQLGlobalState();
+	}
+
+	@Override
+	public MySQLOptions getCommand() {
+		return new MySQLOptions();
 	}
 
 }

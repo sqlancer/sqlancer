@@ -3,7 +3,7 @@ package sqlancer.mysql;
 
 import sqlancer.GlobalState;
 
-public class MySQLGlobalState extends GlobalState {
+public class MySQLGlobalState extends GlobalState<MySQLOptions> {
 	
 	private MySQLSchema schema;
 

@@ -15,7 +15,9 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -23,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.beust.jcommander.JCommander;
+import com.beust.jcommander.JCommander.Builder;
 
 import sqlancer.cockroachdb.CockroachDBProvider;
 import sqlancer.mariadb.MariaDBProvider;
@@ -56,7 +59,7 @@ public class Main {
 		public FileWriter currentFileWriter;
 		private static final List<String> initializedProvidersNames = new ArrayList<>();
 		private boolean logEachSelect = true;
-		private DatabaseProvider provider;
+		private DatabaseProvider<?, ?> provider;
 
 		private final static class AlsoWriteToConsoleFileWriter extends FileWriter {
 
@@ -77,7 +80,7 @@ public class Main {
 			}
 		}
 
-		public StateLogger(String databaseName, DatabaseProvider provider, MainOptions options) {
+		public StateLogger(String databaseName, DatabaseProvider<?, ?> provider, MainOptions options) {
 			this.provider = provider;
 			File dir = new File(LOG_DIRECTORY, provider.getLogFileSubdirectoryName());
 			if (dir.exists() && !dir.isDirectory()) {
@@ -92,7 +95,7 @@ public class Main {
 			}
 		}
 
-		private synchronized void ensureExistsAndIsEmpty(File dir, DatabaseProvider provider) {
+		private synchronized void ensureExistsAndIsEmpty(File dir, DatabaseProvider<?, ?> provider) {
 			if (initializedProvidersNames.contains(provider.getLogFileSubdirectoryName())) {
 				return;
 			}
@@ -289,9 +292,35 @@ public class Main {
 	}
 
 	public static void main(String[] args) {
-
+		List<DatabaseProvider<?, ?>> providers = new ArrayList<>();
+		providers.add(new SQLite3Provider());
+		providers.add(new CockroachDBProvider());
+		providers.add(new MySQLProvider());
+		providers.add(new MariaDBProvider());
+		providers.add(new TiDBProvider());
+		providers.add(new PostgresProvider());
+		providers.add(new TDEngineProvider());
+		Map<String, DatabaseProvider<?, ?>> nameToProvider = new HashMap<>();
+		Map<String, Object> nameToOptions = new HashMap<>();
 		MainOptions options = new MainOptions();
-		JCommander.newBuilder().addObject(options).build().parse(args);
+		Builder commandBuilder = JCommander.newBuilder()
+				.addObject(options);
+		for (DatabaseProvider<?, ?> provider : providers) {
+			String name = provider.getLogFileSubdirectoryName();
+			Object command = provider.getCommand();
+			if (command == null) {
+				throw new IllegalStateException();
+			}
+			nameToProvider.put(name, provider);
+			nameToOptions.put(name, command);
+			commandBuilder = commandBuilder.addCommand(name, command);
+		}
+		JCommander jc = commandBuilder.build();
+		jc.parse(args);
+		if (jc.getParsedCommand() == null) {
+			jc.usage();
+			System.exit(-1);
+		}
 
 		final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 		scheduler.scheduleAtFixedRate(new Runnable() {
@@ -336,59 +365,42 @@ public class Main {
 
 				StateToReproduce stateToRepro;
 				StateLogger logger;
-				DatabaseProvider<?> provider;
+				DatabaseProvider<?, ?> provider;
 
 				@Override
 				public void run() {
-					switch (options.getDbms()) {
-					case MariaDB:
-						provider = new MariaDBProvider();
-						break;
-					case MySQL:
-						provider = new MySQLProvider();
-						break;
-					case PostgreSQL:
-						provider = new PostgresProvider();
-						break;
-					case SQLite3:
-						provider = new SQLite3Provider();
-						break;
-					case TDEngine:
-						provider = new TDEngineProvider();
-						break;
-					case CockroachDB:
-						provider = new CockroachDBProvider();
-						break;
-					case TiDB:
-						provider = new TiDBProvider();
-						break;
-					}
 					runThread(databaseName);
 				}
 
 				private void runThread(final String databaseName) {
 					Thread.currentThread().setName(databaseName);
 					while (true) {
+						// create a new instance of the provider in case it has a global state
+						try {
+							provider = nameToProvider.get(jc.getParsedCommand()).getClass().newInstance();
+						} catch (Exception e) {
+							throw new AssertionError(e);
+						}
 						stateToRepro = provider.getStateToReproduce(databaseName);
 						logger = new StateLogger(databaseName, provider, options);
 						try (Connection con = provider.createDatabase(databaseName, stateToRepro)) {
 							QueryManager manager = new QueryManager(con, stateToRepro);
 							java.sql.DatabaseMetaData meta = con.getMetaData();
 							stateToRepro.databaseVersion = meta.getDatabaseProductVersion();
-							GlobalState state = (GlobalState) provider.generateGlobalState();
+							GlobalState<?> state = (GlobalState<?>) provider.generateGlobalState();
 							state.setState(stateToRepro);
 							Randomly r = new Randomly();
 							state.setDatabaseName(databaseName);
 							state.setConnection(con);
 							state.setRandomly(r);
 							state.setMainOptions(options);
+							Object dmbsSpecificOptions = nameToOptions.get(jc.getParsedCommand());
+							state.setDmbsSpecificOptions(dmbsSpecificOptions);
 							state.setStateLogger(logger);
 							state.setManager(manager);
 							Method method = provider.getClass().getMethod("generateAndTestDatabase", state.getClass());
 							method.setAccessible(true);
 							method.invoke(provider, state);
-//							provider.generateAndTestDatabase(state);
-//							provider.generateAndTestDatabase(databaseName, con, logger, state, manager, options);
 						} catch (IgnoreMeException e) {
 							continue;
 						} catch (InvocationTargetException e) {

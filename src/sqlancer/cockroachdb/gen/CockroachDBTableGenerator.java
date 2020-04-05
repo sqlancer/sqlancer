@@ -35,13 +35,13 @@ public class CockroachDBTableGenerator extends CockroachDBGenerator {
 	@Override
 	public void buildStatement() {
 		errors.add("https://github.com/cockroachdb/cockroach/issues/35730"); // not indexable array types
-		if (globalState.getCockroachdbOptions().testTempTables) {
+		if (globalState.getDmbsSpecificOptions().testTempTables) {
 			errors.add("constraints on temporary tables may reference only temporary tables");
 			errors.add("constraints on permanent tables may reference only permanent tables");
 		}
 		String tableName = globalState.getSchema().getFreeTableName();
 		sb.append("CREATE ");
-		if (Randomly.getBoolean() && globalState.getCockroachdbOptions().testTempTables) {
+		if (Randomly.getBoolean() && globalState.getDmbsSpecificOptions().testTempTables) {
 			sb.append("TEMP ");
 		}
 		sb.append("TABLE ");
@@ -134,18 +134,9 @@ public class CockroachDBTableGenerator extends CockroachDBGenerator {
 			}
 		}
 		if (compoundPrimaryKey) {
-			sb.append(", CONSTRAINT \"primary\" PRIMARY KEY (");
+			sb.append(", CONSTRAINT \"primary\" PRIMARY KEY");
 			List<CockroachDBColumn> primaryKeyColumns = Randomly.nonEmptySubset(columns);
-			for (int i = 0; i < primaryKeyColumns.size(); i++) {
-				if (i != 0) {
-					sb.append(", ");
-				}
-				sb.append(primaryKeyColumns.get(i).getName());
-				if (Randomly.getBoolean()) {
-					sb.append(Randomly.fromOptions(" ASC", " DESC"));
-				}
-			}
-			sb.append(")");
+			addColumns(sb, primaryKeyColumns, true);
 		}
 		if (Randomly.getBoolean()) {
 			sb.append(", FAMILY \"primary\" (");

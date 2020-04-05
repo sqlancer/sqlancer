@@ -31,7 +31,7 @@ import sqlancer.tdengine.gen.TDEngineQueryGenerator;
 import sqlancer.tdengine.gen.TDEngineRowGenerator;
 import sqlancer.tdengine.gen.TDEngineTableGenerator;
 
-public class TDEngineProvider implements DatabaseProvider<GlobalState> {
+public class TDEngineProvider implements DatabaseProvider<GlobalState<TDEngineOptions>, TDEngineOptions> {
 
 	public static enum Action {
 
@@ -319,8 +319,13 @@ public class TDEngineProvider implements DatabaseProvider<GlobalState> {
 	}
 
 	@Override
-	public GlobalState generateGlobalState() {
-		return new GlobalState();
+	public GlobalState<TDEngineOptions> generateGlobalState() {
+		return new GlobalState<TDEngineOptions>();
+	}
+
+	@Override
+	public TDEngineOptions getCommand() {
+		return new TDEngineOptions();
 	}
 
 }

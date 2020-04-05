@@ -10,8 +10,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.beust.jcommander.JCommander;
-
 import sqlancer.AbstractAction;
 import sqlancer.CompositeTestOracle;
 import sqlancer.DatabaseProvider;
@@ -55,7 +53,7 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 
 // EXISTS
 // IN
-public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
+public class PostgresProvider implements DatabaseProvider<PostgresGlobalState, PostgresOptions> {
 
 	public static boolean GENERATE_ONLY_KNOWN = false;
 
@@ -198,10 +196,6 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 		String databaseName = globalState.getDatabaseName();
 		Connection con = globalState.getConnection();
 		QueryManager manager = globalState.getManager();
-		PostgresOptions PostgresOptions = new PostgresOptions();
-		JCommander.newBuilder().addObject(PostgresOptions).build()
-				.parse(globalState.getOptions().getDbmsOptions().split(" "));
-		globalState.setPostgresOptions(PostgresOptions);
 		if (options.logEachSelect()) {
 			logger.writeCurrent(state);
 		}
@@ -247,7 +241,7 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 
 		manager.execute(new QueryAdapter("SET SESSION statement_timeout = 5000;\n"));
 
-		List<TestOracle> oracles = globalState.getPostgresOptions().oracle.stream().map(o -> {
+		List<TestOracle> oracles = globalState.getDmbsSpecificOptions().oracle.stream().map(o -> {
 			try {
 				return o.create(globalState);
 			} catch (SQLException e1) {
@@ -366,6 +360,11 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState> {
 	@Override
 	public PostgresGlobalState generateGlobalState() {
 		return new PostgresGlobalState();
+	}
+
+	@Override
+	public PostgresOptions getCommand() {
+		return new PostgresOptions();
 	}
 
 }

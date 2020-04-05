@@ -2,7 +2,9 @@ package sqlancer;
 
 import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 
+@Parameters(separators = "=", commandDescription = "Options applicable to all DBMS")
 public class MainOptions {
 
 	@Parameter(names = {
@@ -26,12 +28,6 @@ public class MainOptions {
 	@Parameter(names = "--log-each-select", description = "Logs every statement issued", arity = 1)
 	private boolean logEachSelect = true;
 
-	@Parameter(names = "--dbms-specific-options")
-	private String dbmsSpecificOptions = "";
-
-	@Parameter(names = "--dbms", converter = DBMSConverter.class, required = true)
-	private DBMS dbms;
-	
 	public int getMaxExpressionDepth() {
 		return maxExpressionDepth;
 	}
@@ -52,10 +48,6 @@ public class MainOptions {
 		return logEachSelect;
 	}
 
-	public String getDbmsOptions() {
-		return dbmsSpecificOptions;
-	}
-
 	public int getNrQueries() {
 		return nrQueries;
 	}
@@ -73,10 +65,6 @@ public class MainOptions {
 		public DBMS convert(String value) {
 			return DBMS.valueOf(value);
 		}
-	}
-
-	public DBMS getDbms() {
-		return dbms;
 	}
 
 }

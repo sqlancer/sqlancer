@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 
 import sqlancer.CompositeTestOracle;
 import sqlancer.MainOptions.DBMSConverter;
@@ -16,6 +17,7 @@ import sqlancer.postgres.test.PostgresQueryPartitioningAggregateTester;
 import sqlancer.postgres.test.PostgresQueryPartitioningHavingTester;
 import sqlancer.postgres.test.PostgresQueryPartitioningWhereTester;
 
+@Parameters
 public class PostgresOptions {
 
 	

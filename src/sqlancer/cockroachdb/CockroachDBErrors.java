@@ -246,6 +246,7 @@ public class CockroachDBErrors {
 		
 		errors.add("as bytes[], found type: varbit[]");
 		errors.add("to be of type decimal[], found type float[]");
+		errors.add("to be of type int[], found type decimal[]");
 		
 		errors.add("to be of type unknown[]"); // IF with null array
 	}

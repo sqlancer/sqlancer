@@ -341,6 +341,9 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
 			try (ResultSet rs = s.executeQuery("SHOW COLUMNS FROM " + tableName)) {
 				while (rs.next()) {
 					String columnName = rs.getString("column_name");
+					if (columnName.contains("crdb_internal")) {
+						continue; // created for CREATE INDEX ON t0(c0) USING HASH WITH BUCKET_COUNT = 1;
+					}
 					String dataType = rs.getString("data_type");
 					boolean isNullable = rs.getBoolean("is_nullable");
 					String indices = rs.getString("indices");

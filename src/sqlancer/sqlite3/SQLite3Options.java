@@ -6,18 +6,20 @@ import java.util.List;
 
 import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 
 import sqlancer.CompositeTestOracle;
 import sqlancer.MainOptions.DBMSConverter;
 import sqlancer.TestOracle;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.queries.SQLite3Fuzzer;
-import sqlancer.sqlite3.queries.SQLite3QueryPartitioningAggregateTester;
 import sqlancer.sqlite3.queries.SQLite3MetamorphicQuerySynthesizer;
 import sqlancer.sqlite3.queries.SQLite3MetamorphicWindowSynthesizer;
 import sqlancer.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
+import sqlancer.sqlite3.queries.SQLite3QueryPartitioningAggregateTester;
 import sqlancer.sqlite3.queries.SQLite3QueryPartitioningHavingTester;
 
+@Parameters(separators = "=", commandDescription = "SQLite3")
 public class SQLite3Options {
 
 	@Parameter(names = { "--test-fts" }, description = "Test the FTS extensions", arity = 1)

@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.beust.jcommander.JCommander;
-
 import sqlancer.DatabaseProvider;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
@@ -29,6 +27,7 @@ import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.CockroachDBStateToReproduce;
 import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
+import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.gen.CockroachDBCreateStatisticsGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBDeleteGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBIndexGenerator;
@@ -43,7 +42,7 @@ import sqlancer.cockroachdb.gen.CockroachDBUpdateGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBViewGenerator;
 import sqlancer.cockroachdb.gen.RockroachDBCommentOnGenerator;
 
-public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalState> {
+public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalState, CockroachDBOptions> {
 
 	public static enum Action {
 		INSERT(CockroachDBInsertGenerator::insert), //
@@ -80,7 +79,20 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 				"EXPERIMENTAL SCRUB table " + g.getSchema().getRandomTable(t -> !t.isView()).getName(),
 				// https://github.com/cockroachdb/cockroach/issues/46401
 				Arrays.asList("scrub-fk: column \"t.rowid\" does not exist",
-						"check-constraint: cannot access temporary tables of other sessions" /* https://github.com/cockroachdb/cockroach/issues/47031 */)));
+						"check-constraint: cannot access temporary tables of other sessions" /* https://github.com/cockroachdb/cockroach/issues/47031 */))),
+		SPLIT((g) -> {
+			StringBuilder sb = new StringBuilder("ALTER INDEX ");
+			CockroachDBTable randomTable = g.getSchema().getRandomTable();
+			sb.append(randomTable.getName());
+			sb.append("@");
+			sb.append(randomTable.getRandomIndex());
+			if (Randomly.getBoolean()) {
+				sb.append(" SPLIT AT VALUES (true), (false);");
+			} else {
+				sb.append(" SPLIT AT VALUES (NULL);");
+			}
+			return new QueryAdapter(sb.toString(), Arrays.asList("must be of type"));
+		});
 
 		private final QueryProvider<CockroachDBGlobalState> queryProvider;
 
@@ -93,10 +105,9 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 		}
 	}
 
-	public static class CockroachDBGlobalState extends GlobalState {
+	public static class CockroachDBGlobalState extends GlobalState<CockroachDBOptions> {
 
 		private CockroachDBSchema schema;
-		private CockroachDBOptions cockroachdbOptions;
 
 		public void setSchema(CockroachDBSchema schema) {
 			this.schema = schema;
@@ -104,14 +115,6 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 
 		public CockroachDBSchema getSchema() {
 			return schema;
-		}
-
-		public void setCockroachDBOptions(CockroachDBOptions cockroachdbOptions) {
-			this.cockroachdbOptions = cockroachdbOptions;
-		}
-
-		public CockroachDBOptions getCockroachdbOptions() {
-			return cockroachdbOptions;
 		}
 
 	}
@@ -126,9 +129,6 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 		StateToReproduce state = globalState.getState();
 		MainOptions options = globalState.getOptions();
 		globalState.setSchema(CockroachDBSchema.fromConnection(con, databaseName));
-		CockroachDBOptions cockroachdbOptions = new CockroachDBOptions();
-		JCommander.newBuilder().addObject(cockroachdbOptions).build().parse(options.getDbmsOptions().split(" "));
-		globalState.setCockroachDBOptions(cockroachdbOptions);
 
 		List<String> standardSettings = new ArrayList<String>();
 		standardSettings.add("--Don't send automatic bug reports\n" + "SET CLUSTER SETTING debug.panic_on_failed_assertions = true;");
@@ -141,10 +141,10 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 		standardSettings.add("SET CLUSTER SETTING sql.stats.automatic_collection.enabled = 'off'");
 		standardSettings.add("SET CLUSTER SETTING timeseries.storage.enabled = 'off'");
 
-		if (globalState.getCockroachdbOptions().testHashIndexes) {
+		if (globalState.getDmbsSpecificOptions().testHashIndexes) {
 			standardSettings.add("set experimental_enable_hash_sharded_indexes='on';");
 		}
-		if (globalState.getCockroachdbOptions().testTempTables) {
+		if (globalState.getDmbsSpecificOptions().testTempTables) {
 			standardSettings.add("SET experimental_enable_temp_tables = 'on'");
 		}
 		for (String s : standardSettings) {
@@ -184,6 +184,7 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 				nrPerformed = r.getInteger(0, options.getMaxNumberInserts());
 				break;
 			case UPDATE:
+			case SPLIT:
 				nrPerformed = r.getInteger(0, 3);
 				break;
 			case EXPLAIN:
@@ -263,7 +264,7 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 		if (Randomly.getBoolean()) {
 			manager.execute(new QueryAdapter("SET vectorize=on;"));
 		}
-		TestOracle oracle = globalState.getCockroachdbOptions().oracle.create(globalState);
+		TestOracle oracle = globalState.getDmbsSpecificOptions().oracle.create(globalState);
 		for (int i = 0; i < options.getNrQueries(); i++) {
 			try {
 				oracle.check();
@@ -323,5 +324,10 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 	@Override
 	public CockroachDBGlobalState generateGlobalState() {
 		return new CockroachDBGlobalState();
+	}
+
+	@Override
+	public CockroachDBOptions getCommand() {
+		return new CockroachDBOptions();
 	}
 }

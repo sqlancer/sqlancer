@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public interface DatabaseProvider<G extends GlobalState> {
+public interface DatabaseProvider<G extends GlobalState<O>, O> {
 	
 	void generateAndTestDatabase(G globalState) throws SQLException;
 
@@ -22,6 +22,8 @@ public interface DatabaseProvider<G extends GlobalState> {
 	void printDatabaseSpecificState(FileWriter writer, StateToReproduce state);
 
 	StateToReproduce getStateToReproduce(String databaseName);
+	
+	O getCommand();
 
 	public static boolean isEqualDouble(String first, String second) {
 		try {
@@ -41,7 +43,7 @@ public interface DatabaseProvider<G extends GlobalState> {
 	}
 
 
-	public static List<String> getResultSetFirstColumnAsString(String queryString, Set<String> errors, Connection con, GlobalState state) throws SQLException {
+	public static List<String> getResultSetFirstColumnAsString(String queryString, Set<String> errors, Connection con, GlobalState<?> state) throws SQLException {
 		if (state.getOptions().logEachSelect()) {
 			// TODO: refactor me
 			state.getLogger().writeCurrent(queryString);

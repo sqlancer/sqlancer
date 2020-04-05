@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 
 import sqlancer.CompositeTestOracle;
 import sqlancer.MainOptions.DBMSConverter;
@@ -14,6 +15,7 @@ import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.test.TiDBQueryPartitioningHavingTester;
 import sqlancer.tidb.test.TiDBQueryPartitioningWhereTester;
 
+@Parameters
 public class TiDBOptions {
 
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)

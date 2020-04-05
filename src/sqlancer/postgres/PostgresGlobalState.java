@@ -10,13 +10,12 @@ import java.util.List;
 import sqlancer.GlobalState;
 import sqlancer.Randomly;
 
-public class PostgresGlobalState extends GlobalState {
+public class PostgresGlobalState extends GlobalState<PostgresOptions> {
 
 	private List<String> operators;
 	private List<String> collates;
 	private List<String> opClasses;
 	private PostgresSchema schema;
-	private PostgresOptions postgresOptions;
 
 	@Override
 	public void setConnection(Connection con) {
@@ -97,14 +96,6 @@ public class PostgresGlobalState extends GlobalState {
 
 	public String getRandomOpclass() {
 		return Randomly.fromList(opClasses);
-	}
-
-	public void setPostgresOptions(PostgresOptions postgresOptions) {
-		this.postgresOptions = postgresOptions;
-	}
-
-	public PostgresOptions getPostgresOptions() {
-		return postgresOptions;
 	}
 	
 }

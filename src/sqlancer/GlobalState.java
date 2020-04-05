@@ -5,18 +5,28 @@ import java.sql.Connection;
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
 
-public class GlobalState {
+public class GlobalState<O> {
 
 	private Connection con;
 	private Randomly r;
 	private MainOptions options;
+	private O dmbsSpecificOptions;
 	private StateLogger logger;
 	private StateToReproduce state;
 	private QueryManager manager;
 	private String databaseName;
-
+	
 	public void setConnection(Connection con) {
 		this.con = con;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void setDmbsSpecificOptions(Object dmbsSpecificOptions) {
+		this.dmbsSpecificOptions = (O) dmbsSpecificOptions;
+	}
+	
+	public O getDmbsSpecificOptions() {
+		return dmbsSpecificOptions;
 	}
 
 	public Connection getConnection() {

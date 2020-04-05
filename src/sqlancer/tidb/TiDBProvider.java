@@ -9,8 +9,6 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.beust.jcommander.JCommander;
-
 import sqlancer.AbstractAction;
 import sqlancer.CompositeTestOracle;
 import sqlancer.DatabaseProvider;
@@ -35,7 +33,7 @@ import sqlancer.tidb.gen.TiDBSetGenerator;
 import sqlancer.tidb.gen.TiDBTableGenerator;
 import sqlancer.tidb.gen.TiDBViewGenerator;
 
-public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
+public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptions> {
 
 	public static enum Action implements AbstractAction<TiDBGlobalState> {
 		INSERT(TiDBInsertGenerator::getQuery), //
@@ -58,10 +56,9 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 		}
 	}
 
-	public static class TiDBGlobalState extends GlobalState {
+	public static class TiDBGlobalState extends GlobalState<TiDBOptions> {
 
 		private TiDBSchema schema;
-		private TiDBOptions tidbOptions;
 
 		public void setSchema(TiDBSchema schema) {
 			this.schema = schema;
@@ -69,14 +66,6 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 
 		public TiDBSchema getSchema() {
 			return schema;
-		}
-
-		public TiDBOptions getTiDBOptions() {
-			return tidbOptions;
-		}
-
-		public void setTiDBOptions(TiDBOptions tidbOptions) {
-			this.tidbOptions = tidbOptions;
 		}
 
 	}
@@ -116,9 +105,6 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 		globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
 		StateLogger logger = globalState.getLogger();
 		StateToReproduce state = globalState.getState();
-		TiDBOptions tidbOptions = new TiDBOptions();
-		JCommander.newBuilder().addObject(tidbOptions).build().parse(globalState.getOptions().getDbmsOptions().split(" "));
-		globalState.setTiDBOptions(tidbOptions);
 		for (int i = 0; i < Randomly.fromOptions(1, 2, 3); i++) {
 			boolean success = false;
 			do {
@@ -156,7 +142,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 				});
 		se.executeStatements();
 		manager.incrementCreateDatabase();
-		List<TestOracle> oracles = globalState.getTiDBOptions().oracle.stream().map(o -> {
+		List<TestOracle> oracles = globalState.getDmbsSpecificOptions().oracle.stream().map(o -> {
 			try {
 				return o.create(globalState);
 			} catch (SQLException e1) {
@@ -219,6 +205,11 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState> {
 	@Override
 	public StateToReproduce getStateToReproduce(String databaseName) {
 		return new MySQLStateToReproduce(databaseName);
+	}
+
+	@Override
+	public TiDBOptions getCommand() {
+		return new TiDBOptions();
 	}
 
 }

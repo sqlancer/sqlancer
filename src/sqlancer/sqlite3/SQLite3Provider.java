@@ -11,8 +11,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.beust.jcommander.JCommander;
-
 import sqlancer.DatabaseFacade;
 import sqlancer.DatabaseProvider;
 import sqlancer.GlobalState;
@@ -53,7 +51,7 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table.TableKind;
 
-public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState> {
+public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQLite3Options> {
 
 
 	public static enum Action {
@@ -154,7 +152,7 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState> {
 	private SQLite3StateToReproduce state;
 	private String databaseName;
 
-	public static class SQLite3GlobalState extends GlobalState {
+	public static class SQLite3GlobalState extends GlobalState<SQLite3Options> {
 
 		private SQLite3Schema schema;
 		private SQLite3Options sqliteOptions;
@@ -188,8 +186,7 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState> {
 	@Override
 	public void generateAndTestDatabase(SQLite3GlobalState globalState) throws SQLException {
 		this.globalState = globalState;
-		SQLite3Options sqliteOptions = new SQLite3Options();
-		JCommander.newBuilder().addObject(sqliteOptions).build().parse(globalState.getOptions().getDbmsOptions().split(" "));
+		SQLite3Options sqliteOptions = globalState.getDmbsSpecificOptions();
 		Connection con = globalState.getConnection();
 		QueryManager manager = globalState.getManager();
 		MainOptions options = globalState.getOptions();
@@ -476,6 +473,11 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState> {
 	@Override
 	public SQLite3GlobalState generateGlobalState() {
 		return new SQLite3GlobalState();
+	}
+
+	@Override
+	public SQLite3Options getCommand() {
+		return new SQLite3Options();
 	}
 
 }

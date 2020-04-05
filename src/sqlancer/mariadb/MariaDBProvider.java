@@ -28,7 +28,7 @@ import sqlancer.mariadb.gen.MariaDBTruncateGenerator;
 import sqlancer.mariadb.gen.MariaDBUpdateGenerator;
 import sqlancer.sqlite3.gen.SQLite3Common;
 
-public class MariaDBProvider implements DatabaseProvider<GlobalState> {
+public class MariaDBProvider implements DatabaseProvider<GlobalState<MariaDBOptions>, MariaDBOptions> {
 
 	public static final int MAX_EXPRESSION_DEPTH = 3;
 	private final Randomly r = new Randomly();
@@ -48,7 +48,7 @@ public class MariaDBProvider implements DatabaseProvider<GlobalState> {
 	}
 
 	@Override
-	public void generateAndTestDatabase(GlobalState globalState) throws SQLException {
+	public void generateAndTestDatabase(GlobalState<MariaDBOptions> globalState) throws SQLException {
 		this.databaseName = globalState.getDatabaseName();
 		MainOptions options = globalState.getOptions();
 		Connection con = globalState.getConnection();
@@ -294,8 +294,13 @@ public class MariaDBProvider implements DatabaseProvider<GlobalState> {
 	}
 
 	@Override
-	public GlobalState generateGlobalState() {
-		return new GlobalState();
+	public GlobalState<MariaDBOptions> generateGlobalState() {
+		return new GlobalState<MariaDBOptions>();
+	}
+
+	@Override
+	public MariaDBOptions getCommand() {
+		return new MariaDBOptions();
 	}
 
 }
