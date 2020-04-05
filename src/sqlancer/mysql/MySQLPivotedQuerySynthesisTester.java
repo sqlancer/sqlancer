@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.Main;
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
@@ -33,7 +32,7 @@ import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 import sqlancer.mysql.gen.MySQLExpressionGenerator;
 
-public class MySQLQueryGenerator {
+public class MySQLPivotedQuerySynthesisTester {
 
 	private Randomly r;
 	private Connection database;
@@ -43,7 +42,7 @@ public class MySQLQueryGenerator {
 	private List<MySQLExpression> fetchColumns;
 	private List<MySQLColumn> columns;
 
-	public MySQLQueryGenerator(QueryManager manager, Randomly r, Connection con, String databaseName)
+	public MySQLPivotedQuerySynthesisTester(QueryManager manager, Randomly r, Connection con, String databaseName)
 			throws SQLException {
 		this.r = r;
 		this.database = con;
@@ -57,7 +56,7 @@ public class MySQLQueryGenerator {
 		try {
 			boolean isContainedIn = isContainedIn(queryString, options, logger);
 			if (!isContainedIn) {
-				throw new Main.ReduceMeException();
+				throw new AssertionError(queryString);
 			}
 		} catch (SQLException e) {
 			if (e.getMessage().contains("BIGINT value is out of range")) {

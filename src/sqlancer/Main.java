@@ -43,12 +43,6 @@ public class Main {
 	public static volatile AtomicLong nrSuccessfulActions = new AtomicLong();
 	public static volatile AtomicLong nrUnsuccessfulActions = new AtomicLong();
 
-	public static class ReduceMeException extends RuntimeException {
-
-		private static final long serialVersionUID = -3701934543692760005L;
-
-	}
-
 	public final static class StateLogger {
 
 		private final File loggerFile;
@@ -315,7 +309,7 @@ public class Main {
 			nameToOptions.put(name, command);
 			commandBuilder = commandBuilder.addCommand(name, command);
 		}
-		JCommander jc = commandBuilder.build();
+		JCommander jc = commandBuilder.programName("SQLancer").build();
 		jc.parse(args);
 		if (jc.getParsedCommand() == null) {
 			jc.usage();
@@ -414,10 +408,6 @@ public class Main {
 								threadsShutdown++;
 								break;
 							}
-						} catch (ReduceMeException reduce) {
-							logger.logRowNotFound(stateToRepro);
-							threadsShutdown++;
-							break;
 						} catch (Throwable reduce) {
 							reduce.printStackTrace();
 							stateToRepro.exception = reduce.getMessage();

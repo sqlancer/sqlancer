@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
-import sqlancer.Main;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -72,7 +71,7 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 		}
 		boolean isContainedIn = isContainedIn(query);
 		if (!isContainedIn) {
-			throw new Main.ReduceMeException();
+			throw new AssertionError(query);
 		}
 	}
 

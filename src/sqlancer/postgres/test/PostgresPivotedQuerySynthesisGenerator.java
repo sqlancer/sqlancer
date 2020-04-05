@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 
 import org.postgresql.util.PSQLException;
 
-import sqlancer.Main;
 import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
@@ -58,7 +57,7 @@ public class PostgresPivotedQuerySynthesisGenerator implements TestOracle {
 
 		boolean isContainedIn = isContainedIn(queryString, options, logger);
 		if (!isContainedIn) {
-			throw new Main.ReduceMeException();
+			throw new AssertionError(queryString);
 		}
 
 	}

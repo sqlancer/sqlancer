@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import sqlancer.Main;
 import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.Query;
@@ -57,7 +56,7 @@ public class TDEngineQueryGenerator {
 		}
 		boolean isContainedIn = isContainedIn(query);
 		if (!isContainedIn) {
-			throw new Main.ReduceMeException();
+			throw new AssertionError(query);
 		}
 	}
 
