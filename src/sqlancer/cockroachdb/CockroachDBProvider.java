@@ -1,6 +1,5 @@
 package sqlancer.cockroachdb;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;

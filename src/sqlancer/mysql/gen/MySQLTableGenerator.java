@@ -10,6 +10,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.mysql.MySQLBugs;
 import sqlancer.mysql.MySQLSchema;
 import sqlancer.mysql.MySQLSchema.MySQLDataType;
 import sqlancer.mysql.MySQLSchema.MySQLTable.MySQLEngine;
@@ -316,27 +317,53 @@ public class MySQLTableGenerator {
 		switch (randomType) {
 		case DECIMAL:
 			sb.append("DECIMAL");
+			optionallyAddPrecisionAndScale();
 			break;
 		case INT:
 			sb.append(Randomly.fromOptions("TINYINT", "SMALLINT", "MEDIUMINT", "INT", "BIGINT"));
+			if (Randomly.getBoolean()) {
+				sb.append("(");
+				sb.append(Randomly.getNotCachedInteger(0, 255)); // Display width out of range for column 'c0' (max = 255)
+				sb.append(")");
+			}
 			break;
 		case VARCHAR:
 			sb.append(Randomly.fromOptions("VARCHAR(500)", "TINYTEXT", "TEXT", "MEDIUMTEXT", "LONGTEXT"));
 			break;
 		case FLOAT:
 			sb.append("FLOAT");
+			optionallyAddPrecisionAndScale();
 			break;
 		case DOUBLE:
 			sb.append(Randomly.fromOptions("DOUBLE", "FLOAT"));
+			optionallyAddPrecisionAndScale();
 			break;
 		}
 		if (randomType.isNumeric()) {
-			if (Randomly.getBoolean() && false /* https://bugs.mysql.com/bug.php?id=99127 */) {
-				sb.append(" UNSIGNED");
+			if (Randomly.getBoolean()) {
+				if (randomType != MySQLDataType.INT && !MySQLBugs.BUG_99127) {
+					sb.append(" UNSIGNED");
+				}
 			}
 			if (Randomly.getBoolean()) {
 				sb.append(" ZEROFILL");
 			}
+		}
+	}
+
+	private void optionallyAddPrecisionAndScale() {
+		if (Randomly.getBoolean() && !MySQLBugs.BUG_99183) {
+			sb.append("(");
+			// The maximum number of digits (M) for DECIMAL is 65
+			long m = Randomly.getNotCachedInteger(1, 65);
+			sb.append(m);
+			sb.append(", ");
+			// The maximum number of supported decimals (D) is 30
+			long nCandidate = Randomly.getNotCachedInteger(1, 30);
+			// For float(M,D), double(M,D) or decimal(M,D), M must be >= D (column 'c0').
+			long n = Math.min(nCandidate, m);
+			sb.append(n);
+			sb.append(")");
 		}
 	}
 

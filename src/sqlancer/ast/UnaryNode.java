@@ -4,7 +4,7 @@ import sqlancer.visitor.UnaryOperation;
 
 public abstract class UnaryNode<T> implements UnaryOperation<T> {
 	
-	private final T expr;
+	protected final T expr;
 
 	public UnaryNode(T expr) {
 		this.expr = expr;
