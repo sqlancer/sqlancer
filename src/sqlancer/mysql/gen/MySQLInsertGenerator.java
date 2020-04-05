@@ -97,6 +97,7 @@ public class MySQLInsertGenerator {
 		errors.add("Data truncated for functional index");
 		errors.add("Data truncated for column");
 		errors.add("cannot be null");
+		errors.add("Incorrect decimal value");
 		return new QueryAdapter(sb.toString(), errors);
 	}
 

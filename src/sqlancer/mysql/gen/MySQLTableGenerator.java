@@ -314,19 +314,29 @@ public class MySQLTableGenerator {
 
 	private void appendTypeString(MySQLDataType randomType) {
 		switch (randomType) {
+		case DECIMAL:
+			sb.append("DECIMAL");
+			break;
 		case INT:
 			sb.append(Randomly.fromOptions("TINYINT", "SMALLINT", "MEDIUMINT", "INT", "BIGINT"));
-			if (Randomly.getBoolean() && false) {
-				/* https://bugs.mysql.com/bug.php?id=99127 */
-				sb.append(" UNSIGNED");
-			}
 			break;
 		case VARCHAR:
 			sb.append(Randomly.fromOptions("VARCHAR(500)", "TINYTEXT", "TEXT", "MEDIUMTEXT", "LONGTEXT"));
 			break;
+		case FLOAT:
+			sb.append("FLOAT");
+			break;
 		case DOUBLE:
 			sb.append(Randomly.fromOptions("DOUBLE", "FLOAT"));
 			break;
+		}
+		if (randomType.isNumeric()) {
+			if (Randomly.getBoolean() && false /* https://bugs.mysql.com/bug.php?id=99127 */) {
+				sb.append(" UNSIGNED");
+			}
+			if (Randomly.getBoolean()) {
+				sb.append(" ZEROFILL");
+			}
 		}
 	}
 

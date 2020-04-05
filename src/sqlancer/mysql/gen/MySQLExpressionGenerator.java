@@ -6,6 +6,7 @@ import java.util.List;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.gen.UntypedExpressionGenerator;
+import sqlancer.mysql.MySQLBugs;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLRowValue;
@@ -99,6 +100,10 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
 		case EXISTS:
 			return getExists(depth + 1);
 		case BETWEEN_OPERATOR:
+			if (MySQLBugs.BUG_99181) {
+				// TODO: there are a number of bugs that are triggered by the BETWEEN operator
+				throw new IgnoreMeException();
+			}
 			return new MySQLBetweenOperation(generateExpression(depth + 1), generateExpression(depth + 1),
 					generateExpression(depth + 1));
 		default:
