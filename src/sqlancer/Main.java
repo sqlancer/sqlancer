@@ -426,6 +426,9 @@ public class Main {
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
+							if (threadsShutdown == options.getTotalNumberTries()) {
+								System.exit(-1);
+							}
 						}
 					}
 				}
