@@ -16,7 +16,7 @@ public interface TestOracle {
 	}
 
 	public static void assumeResultSetsAreEqual(List<String> resultSet, List<String> secondResultSet,
-			String originalQueryString, List<String> combinedString, GlobalState state) {
+			String originalQueryString, List<String> combinedString, GlobalState<?> state) {
 		if (resultSet.size() != secondResultSet.size()) {
 			String queryFormatString = "%s; -- cardinality: %d";
 			String firstQueryString = String.format(queryFormatString, originalQueryString, resultSet.size());
@@ -48,7 +48,7 @@ public interface TestOracle {
 	}
 	
 	public static List<String> getCombinedResultSet(String firstQueryString, String secondQueryString,
-			String thirdQueryString, List<String> combinedString, boolean asUnion, GlobalState state, Set<String> errors) throws SQLException {
+			String thirdQueryString, List<String> combinedString, boolean asUnion, GlobalState<?> state, Set<String> errors) throws SQLException {
 		List<String> secondResultSet;
 		if (asUnion) {
 			String unionString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL "

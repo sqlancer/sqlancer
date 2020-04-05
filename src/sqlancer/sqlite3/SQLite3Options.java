@@ -14,7 +14,6 @@ import sqlancer.TestOracle;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.queries.SQLite3Fuzzer;
 import sqlancer.sqlite3.queries.SQLite3MetamorphicQuerySynthesizer;
-import sqlancer.sqlite3.queries.SQLite3MetamorphicWindowSynthesizer;
 import sqlancer.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
 import sqlancer.sqlite3.queries.SQLite3QueryPartitioningAggregateTester;
 import sqlancer.sqlite3.queries.SQLite3QueryPartitioningHavingTester;
@@ -48,12 +47,6 @@ public class SQLite3Options {
 			@Override
 			public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
 				return new SQLite3Fuzzer(globalState);
-			}
-		},
-		WINDOW() {
-			@Override
-			public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
-				return new SQLite3MetamorphicWindowSynthesizer(globalState);
 			}
 		},
 		AGGREGATE() {

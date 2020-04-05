@@ -74,7 +74,7 @@ public class TDEngineProvider implements DatabaseProvider<GlobalState<TDEngineOp
 	private String databaseName;
 
 	@Override
-	public void generateAndTestDatabase(GlobalState globalState) throws SQLException {
+	public void generateAndTestDatabase(GlobalState<TDEngineOptions> globalState) throws SQLException {
 		this.databaseName = globalState.getDatabaseName();
 		Connection con = globalState.getConnection();
 		QueryManager manager = globalState.getManager();

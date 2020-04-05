@@ -4,7 +4,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StatementExecutor<G extends GlobalState, A extends AbstractAction<G>> {
+public class StatementExecutor<G extends GlobalState<?>, A extends AbstractAction<G>> {
 	
 	@FunctionalInterface
 	public interface AfterQueryAction {

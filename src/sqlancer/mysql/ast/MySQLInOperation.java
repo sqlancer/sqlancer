@@ -29,8 +29,6 @@ public class MySQLInOperation implements MySQLExpression {
 
 	@Override
 	public MySQLConstant getExpectedValue() {
-		boolean allAreConstValues = listElements.stream().allMatch(e -> e instanceof MySQLConstant)
-				&& expr instanceof MySQLConstant;
 		MySQLConstant leftVal = expr.getExpectedValue();
 		if (leftVal.isNull()) {
 			return MySQLConstant.createNullConstant();
@@ -48,17 +46,7 @@ public class MySQLInOperation implements MySQLExpression {
 			if (rightVal.isInt() && !rightVal.isSigned()) {
 				throw new IgnoreMeException();
 			}
-			MySQLConstant convertedRightVal;
-			if (allAreConstValues && false /* workaround for https://bugs.mysql.com/bug.php?id=95975 */) {
-				// If all values are constants, they are evaluated according to the type of expr
-				// and sorted.
-				convertedRightVal = MySQLComputableFunction.castToMostGeneralType(rightVal, leftVal);
-			} else {
-				// Otherwise, type conversion takes place according to the rules described in
-				// Section 12.2, “Type Conversion in Expression Evaluation”, but applied to all
-				// the arguments.
-				convertedRightVal = rightVal;
-			}
+			MySQLConstant convertedRightVal = rightVal;
 			MySQLConstant isEquals = leftVal.isEquals(convertedRightVal);
 			if (isEquals.isNull()) {
 				isNull = true;
