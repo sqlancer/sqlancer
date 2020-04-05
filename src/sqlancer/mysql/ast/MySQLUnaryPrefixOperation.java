@@ -2,14 +2,14 @@ package sqlancer.mysql.ast;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.ast.BinaryOperatorNode.Operator;
+import sqlancer.ast.UnaryOperatorNode;
+import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 
-public class MySQLUnaryPrefixOperation implements MySQLExpression {
+public class MySQLUnaryPrefixOperation extends UnaryOperatorNode<MySQLExpression, MySQLUnaryPrefixOperator>
+		implements MySQLExpression {
 
-	private final MySQLExpression expr;
-	private MySQLUnaryPrefixOperator op;
-	private final String operatorTextRepresentation;
-
-	public enum MySQLUnaryPrefixOperator {
+	public enum MySQLUnaryPrefixOperator implements Operator {
 		NOT("!", "NOT") {
 			@Override
 			public MySQLConstant applyNotNull(MySQLConstant expr) {
@@ -30,7 +30,7 @@ public class MySQLUnaryPrefixOperation implements MySQLExpression {
 					throw new IgnoreMeException();
 				} else if (expr.isInt()) {
 					if (!expr.isSigned()) {
-						// TODO 
+						// TODO
 						throw new IgnoreMeException();
 					}
 					return MySQLConstant.createIntConstant(-expr.getInt());
@@ -51,20 +51,15 @@ public class MySQLUnaryPrefixOperation implements MySQLExpression {
 		public static MySQLUnaryPrefixOperator getRandom() {
 			return Randomly.fromOptions(values());
 		}
+
+		@Override
+		public String getTextRepresentation() {
+			return Randomly.fromOptions(textRepresentations);
+		}
 	}
 
 	public MySQLUnaryPrefixOperation(MySQLExpression expr, MySQLUnaryPrefixOperator op) {
-		this.expr = expr;
-		this.op = op;
-		this.operatorTextRepresentation = Randomly.fromOptions(op.textRepresentations);
-	}
-
-	public MySQLExpression getExpression() {
-		return expr;
-	}
-
-	public String getOperatorTextRepresentation() {
-		return operatorTextRepresentation;
+		super(expr, op);
 	}
 
 	@Override
@@ -75,6 +70,11 @@ public class MySQLUnaryPrefixOperation implements MySQLExpression {
 		} else {
 			return op.applyNotNull(subExprVal);
 		}
+	}
+
+	@Override
+	public OperatorKind getOperatorKind() {
+		return OperatorKind.PREFIX;
 	}
 
 }

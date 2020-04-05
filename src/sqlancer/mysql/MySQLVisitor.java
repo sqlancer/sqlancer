@@ -17,51 +17,46 @@ import sqlancer.mysql.ast.MySQLSelect;
 import sqlancer.mysql.ast.MySQLStringExpression;
 import sqlancer.mysql.ast.MySQLTableReference;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
-import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 
-public abstract class MySQLVisitor {
+public interface MySQLVisitor {
 
-	public abstract void visit(MySQLTableReference ref);
+	public void visit(MySQLTableReference ref);
 	
-	public abstract void visit(MySQLConstant constant);
+	public void visit(MySQLConstant constant);
 
-	public abstract void visit(MySQLColumnReference column);
+	public void visit(MySQLColumnReference column);
 
-	public abstract void visit(MySQLUnaryPrefixOperation column);
+	public void visit(MySQLUnaryPostfixOperation column);
 
-	public abstract void visit(MySQLUnaryPostfixOperation column);
+	public void visit(MySQLComputableFunction f);
 
-	public abstract void visit(MySQLComputableFunction f);
+	public void visit(MySQLBinaryLogicalOperation op);
 
-	public abstract void visit(MySQLBinaryLogicalOperation op);
+	public void visit(MySQLSelect select);
 
-	public abstract void visit(MySQLSelect select);
+	public void visit(MySQLBinaryComparisonOperation op);
 
-	public abstract void visit(MySQLBinaryComparisonOperation op);
+	public void visit(MySQLCastOperation op);
 
-	public abstract void visit(MySQLCastOperation op);
+	public void visit(MySQLInOperation op);
 
-	public abstract void visit(MySQLInOperation op);
+	public void visit(MySQLBinaryOperation op);
 
-	public abstract void visit(MySQLBinaryOperation op);
+	public void visit(MySQLOrderByTerm op);
 
-	public abstract void visit(MySQLOrderByTerm op);
+	public void visit(MySQLExists op);
 
-	public abstract void visit(MySQLExists op);
-
-	public abstract void visit(MySQLStringExpression op);
+	public void visit(MySQLStringExpression op);
 	
-	public abstract void visit(MySQLBetweenOperation op);
+	public void visit(MySQLBetweenOperation op);
 	
-	public abstract void visit(MySQLCollate collate);
+	public void visit(MySQLCollate collate);
 
-	public void visit(MySQLExpression expr) {
+	public default void visit(MySQLExpression expr) {
 		if (expr instanceof MySQLConstant) {
 			visit((MySQLConstant) expr);
 		} else if (expr instanceof MySQLColumnReference) {
 			visit((MySQLColumnReference) expr);
-		} else if (expr instanceof MySQLUnaryPrefixOperation) {
-			visit((MySQLUnaryPrefixOperation) expr);
 		} else if (expr instanceof MySQLUnaryPostfixOperation) {
 			visit((MySQLUnaryPostfixOperation) expr);
 		} else if (expr instanceof MySQLComputableFunction) {

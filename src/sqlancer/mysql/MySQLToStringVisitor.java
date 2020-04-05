@@ -23,12 +23,16 @@ import sqlancer.mysql.ast.MySQLSelect;
 import sqlancer.mysql.ast.MySQLStringExpression;
 import sqlancer.mysql.ast.MySQLTableReference;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
-import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
+import sqlancer.visitor.ToStringVisitor;
 
-public class MySQLToStringVisitor extends MySQLVisitor {
+public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> implements MySQLVisitor {
 
-	StringBuffer sb = new StringBuffer();
 	int ref;
+	
+	@Override
+	public void visitSpecific(MySQLExpression expr) {
+		MySQLVisitor.super.visit(expr);
+	}
 
 	@Override
 	public void visit(MySQLSelect s) {
@@ -124,14 +128,6 @@ public class MySQLToStringVisitor extends MySQLVisitor {
 	@Override
 	public void visit(MySQLColumnReference column) {
 		sb.append(column.getColumn().getFullQualifiedName());
-	}
-
-	@Override
-	public void visit(MySQLUnaryPrefixOperation column) {
-		sb.append(column.getOperatorTextRepresentation());
-		sb.append("(");
-		visit(column.getExpression());
-		sb.append(")");
 	}
 
 	@Override
