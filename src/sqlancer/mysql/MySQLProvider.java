@@ -253,7 +253,7 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState, MySQLOp
 	}
 
 	@Override
-	public String getLogFileSubdirectoryName() {
+	public String getDBMSName() {
 		return "mysql";
 	}
 

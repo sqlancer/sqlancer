@@ -1,6 +1,5 @@
 package sqlancer.mariadb;
 
-import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -275,17 +274,13 @@ public class MariaDBProvider implements DatabaseProvider<GlobalState<MariaDBOpti
 	}
 
 	@Override
-	public String getLogFileSubdirectoryName() {
+	public String getDBMSName() {
 		return "mariadb";
 	}
 
 	@Override
 	public String toString() {
 		return String.format("MariaDBProvider [database: %s]", databaseName);
-	}
-
-	@Override
-	public void printDatabaseSpecificState(FileWriter writer, StateToReproduce state) {
 	}
 
 	@Override

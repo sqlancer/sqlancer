@@ -76,7 +76,7 @@ public class Main {
 
 		public StateLogger(String databaseName, DatabaseProvider<?, ?> provider, MainOptions options) {
 			this.provider = provider;
-			File dir = new File(LOG_DIRECTORY, provider.getLogFileSubdirectoryName());
+			File dir = new File(LOG_DIRECTORY, provider.getDBMSName());
 			if (dir.exists() && !dir.isDirectory()) {
 				throw new AssertionError(dir);
 			}
@@ -90,7 +90,7 @@ public class Main {
 		}
 
 		private synchronized void ensureExistsAndIsEmpty(File dir, DatabaseProvider<?, ?> provider) {
-			if (initializedProvidersNames.contains(provider.getLogFileSubdirectoryName())) {
+			if (initializedProvidersNames.contains(provider.getDBMSName())) {
 				return;
 			}
 			if (!dir.exists()) {
@@ -105,7 +105,7 @@ public class Main {
 					file.delete();
 				}
 			}
-			initializedProvidersNames.add(provider.getLogFileSubdirectoryName());
+			initializedProvidersNames.add(provider.getDBMSName());
 		}
 
 		private FileWriter getLogFileWriter() {
@@ -300,7 +300,7 @@ public class Main {
 		Builder commandBuilder = JCommander.newBuilder()
 				.addObject(options);
 		for (DatabaseProvider<?, ?> provider : providers) {
-			String name = provider.getLogFileSubdirectoryName();
+			String name = provider.getDBMSName();
 			Object command = provider.getCommand();
 			if (command == null) {
 				throw new IllegalStateException();

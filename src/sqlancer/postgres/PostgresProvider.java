@@ -313,7 +313,7 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState, P
 	}
 
 	@Override
-	public String getLogFileSubdirectoryName() {
+	public String getDBMSName() {
 		return "postgres";
 	}
 

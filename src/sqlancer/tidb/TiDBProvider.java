@@ -1,6 +1,5 @@
 package sqlancer.tidb;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -192,14 +191,8 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 	}
 
 	@Override
-	public String getLogFileSubdirectoryName() {
+	public String getDBMSName() {
 		return "TiDB";
-	}
-
-	@Override
-	public void printDatabaseSpecificState(FileWriter writer, StateToReproduce state) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override

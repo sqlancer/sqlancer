@@ -17,9 +17,19 @@ public interface DatabaseProvider<G extends GlobalState<O>, O> {
 
 	Connection createDatabase(String databaseName, StateToReproduce state) throws SQLException;
 
-	String getLogFileSubdirectoryName();
+	
+	/**
+	 * The DBMS name is used to name the log directory and command to test the respective DBMS.
+	 * 
+	 * @return
+	 */
+	String getDBMSName();
 
-	void printDatabaseSpecificState(FileWriter writer, StateToReproduce state);
+	
+	// TODO: remove this
+	default void printDatabaseSpecificState(FileWriter writer, StateToReproduce state) {
+		
+	}
 
 	StateToReproduce getStateToReproduce(String databaseName);
 	

@@ -268,7 +268,7 @@ public class TDEngineProvider implements DatabaseProvider<GlobalState<TDEngineOp
 	}
 
 	@Override
-	public String getLogFileSubdirectoryName() {
+	public String getDBMSName() {
 		return "tdengine";
 	}
 

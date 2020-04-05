@@ -422,7 +422,7 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQL
 	}
 
 	@Override
-	public String getLogFileSubdirectoryName() {
+	public String getDBMSName() {
 		return "sqlite3";
 	}
 

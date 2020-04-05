@@ -306,14 +306,8 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 	}
 
 	@Override
-	public String getLogFileSubdirectoryName() {
+	public String getDBMSName() {
 		return "cockroachdb";
-	}
-
-	@Override
-	public void printDatabaseSpecificState(FileWriter writer, StateToReproduce state) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
