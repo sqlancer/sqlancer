@@ -43,6 +43,12 @@ public class Main {
 	public static volatile AtomicLong nrDatabases = new AtomicLong();
 	public static volatile AtomicLong nrSuccessfulActions = new AtomicLong();
 	public static volatile AtomicLong nrUnsuccessfulActions = new AtomicLong();
+	
+	static {
+		if (!LOG_DIRECTORY.exists()) {
+			LOG_DIRECTORY.mkdir();
+		}
+	}
 
 	public final static class StateLogger {
 
