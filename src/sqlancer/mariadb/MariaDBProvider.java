@@ -254,13 +254,13 @@ public class MariaDBProvider implements DatabaseProvider<GlobalState<MariaDBOpti
 	}
 
 	@Override
-	public Connection createDatabase(String databaseName, StateToReproduce state) throws SQLException {
-		state.statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName));
-		state.statements.add(new QueryAdapter("CREATE DATABASE " + databaseName));
-		state.statements.add(new QueryAdapter("USE " + databaseName));
+	public Connection createDatabase(GlobalState<?> globalState) throws SQLException {
+		globalState.getState().statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName));
+		globalState.getState().statements.add(new QueryAdapter("CREATE DATABASE " + databaseName));
+		globalState.getState().statements.add(new QueryAdapter("USE " + databaseName));
 		// /?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
 		String url = "jdbc:mariadb://localhost:3306";
-		Connection con = DriverManager.getConnection(url, "lama", "password");
+		Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(), globalState.getOptions().getPassword());
 		try (Statement s = con.createStatement()) {
 			s.execute("DROP DATABASE IF EXISTS " + databaseName);
 		}

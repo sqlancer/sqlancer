@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
 import sqlancer.DatabaseProvider;
+import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
@@ -234,12 +235,13 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState, MySQLOp
 	}
 
 	@Override
-	public Connection createDatabase(String databaseName, StateToReproduce state) throws SQLException {
-		state.statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName));
-		state.statements.add(new QueryAdapter("CREATE DATABASE " + databaseName));
-		state.statements.add(new QueryAdapter("USE " + databaseName));
+	public Connection createDatabase(GlobalState<?> globalState) throws SQLException {
+		String databaseName = globalState.getDatabaseName();
+		globalState.getState().statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName));
+		globalState.getState().statements.add(new QueryAdapter("CREATE DATABASE " + databaseName));
+		globalState.getState().statements.add(new QueryAdapter("USE " + databaseName));
 		String url = "jdbc:mysql://localhost:3306/?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true";
-		Connection con = DriverManager.getConnection(url, "lama", "password");
+		Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(), globalState.getOptions().getPassword());
 		try (Statement s = con.createStatement()) {
 			s.execute("DROP DATABASE IF EXISTS " + databaseName);
 		}

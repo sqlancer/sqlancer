@@ -2,12 +2,10 @@ package sqlancer.sqlite3.ast;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.sqlite3.schema.SQLite3DataType;
 
 public class SQLite3Cast {
@@ -219,11 +217,11 @@ public class SQLite3Cast {
 	static Connection castDatabase;
 
 	static {
-		try {
-			castDatabase = new SQLite3Provider().createDatabase("test", null);
-		} catch (SQLException e) {
-			throw new AssertionError(e);
-		}
+//		try {
+////			castDatabase = new SQLite3Provider().createDatabase("test", null);
+//		} catch (SQLException e) {
+//			throw new AssertionError(e);
+//		}
 	}
 
 	public static SQLite3Constant castToText(SQLite3Constant cons) {

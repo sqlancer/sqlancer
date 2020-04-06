@@ -377,19 +377,19 @@ public class Main {
 						} catch (Exception e) {
 							throw new AssertionError(e);
 						}
+						GlobalState<?> state = (GlobalState<?>) provider.generateGlobalState();
 						stateToRepro = provider.getStateToReproduce(databaseName);
+						state.setState(stateToRepro);
 						logger = new StateLogger(databaseName, provider, options);
-						try (Connection con = provider.createDatabase(databaseName, stateToRepro)) {
+						Randomly r = new Randomly();
+						state.setRandomly(r);
+						state.setDatabaseName(databaseName);
+						state.setMainOptions(options);
+						try (Connection con = provider.createDatabase(state)) {
 							QueryManager manager = new QueryManager(con, stateToRepro);
 							java.sql.DatabaseMetaData meta = con.getMetaData();
 							stateToRepro.databaseVersion = meta.getDatabaseProductVersion();
-							GlobalState<?> state = (GlobalState<?>) provider.generateGlobalState();
-							state.setState(stateToRepro);
-							Randomly r = new Randomly();
-							state.setDatabaseName(databaseName);
 							state.setConnection(con);
-							state.setRandomly(r);
-							state.setMainOptions(options);
 							Object dmbsSpecificOptions = nameToOptions.get(jc.getParsedCommand());
 							state.setDmbsSpecificOptions(dmbsSpecificOptions);
 							state.setStateLogger(logger);

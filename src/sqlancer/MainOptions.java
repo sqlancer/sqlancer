@@ -31,7 +31,13 @@ public class MainOptions {
 
 	@Parameter(names = "--log-each-select", description = "Logs every statement issued", arity = 1)
 	private boolean logEachSelect = true;
-
+	
+	@Parameter(names="--username", description = "The user name used to log into the DBMS")
+	private String userName = "sqlancer";
+	
+	@Parameter(names="--password", description = "The password used to log into the DBMS")
+	private String password = "sqlancer";
+	
 	public int getMaxExpressionDepth() {
 		return maxExpressionDepth;
 	}
@@ -66,6 +72,14 @@ public class MainOptions {
 
 	public static enum DBMS {
 		MariaDB, SQLite3, MySQL, PostgreSQL, TDEngine, CockroachDB, TiDB
+	}
+	
+	public String getUserName() {
+		return userName;
+	}
+	
+	public String getPassword() {
+		return password;
 	}
 
 	public class DBMSConverter implements IStringConverter<DBMS> {

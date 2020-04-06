@@ -78,7 +78,11 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 				"EXPERIMENTAL SCRUB table " + g.getSchema().getRandomTable(t -> !t.isView()).getName(),
 				// https://github.com/cockroachdb/cockroach/issues/46401
 				Arrays.asList("scrub-fk: column \"t.rowid\" does not exist",
-						"check-constraint: cannot access temporary tables of other sessions" /* https://github.com/cockroachdb/cockroach/issues/47031 */))),
+						"check-constraint: cannot access temporary tables of other sessions" /*
+																								 * https://github.com/
+																								 * cockroachdb/cockroach
+																								 * /issues/47031
+																								 */))),
 		SPLIT((g) -> {
 			StringBuilder sb = new StringBuilder("ALTER INDEX ");
 			CockroachDBTable randomTable = g.getSchema().getRandomTable();
@@ -130,7 +134,8 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 		globalState.setSchema(CockroachDBSchema.fromConnection(con, databaseName));
 
 		List<String> standardSettings = new ArrayList<String>();
-		standardSettings.add("--Don't send automatic bug reports\n" + "SET CLUSTER SETTING debug.panic_on_failed_assertions = true;");
+		standardSettings.add("--Don't send automatic bug reports\n"
+				+ "SET CLUSTER SETTING debug.panic_on_failed_assertions = true;");
 		standardSettings.add("SET CLUSTER SETTING diagnostics.reporting.enabled	= false;");
 		standardSettings.add("SET CLUSTER SETTING diagnostics.reporting.send_crash_reports = false;");
 
@@ -285,14 +290,16 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 	}
 
 	@Override
-	public Connection createDatabase(String databaseName, StateToReproduce state) throws SQLException {
+	public Connection createDatabase(GlobalState<?> globalState) throws SQLException {
+		String databaseName = globalState.getDatabaseName();
 		String url = "jdbc:postgresql://localhost:26257/test";
-		Connection con = DriverManager.getConnection(url, "root", "");
-		state.statements.add(new QueryAdapter("USE test"));
-		state.statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName + " CASCADE"));
+		Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
+				globalState.getOptions().getPassword());
+		globalState.getState().statements.add(new QueryAdapter("USE test"));
+		globalState.getState().statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName + " CASCADE"));
 		String createDatabaseCommand = "CREATE DATABASE " + databaseName;
-		state.statements.add(new QueryAdapter(createDatabaseCommand));
-		state.statements.add(new QueryAdapter("USE " + databaseName));
+		globalState.getState().statements.add(new QueryAdapter(createDatabaseCommand));
+		globalState.getState().statements.add(new QueryAdapter("USE " + databaseName));
 		try (Statement s = con.createStatement()) {
 			s.execute("DROP DATABASE IF EXISTS " + databaseName);
 		}
@@ -300,7 +307,8 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 			s.execute(createDatabaseCommand);
 		}
 		con.close();
-		con = DriverManager.getConnection("jdbc:postgresql://localhost:26257/" + databaseName, "root", "");
+		con = DriverManager.getConnection("jdbc:postgresql://localhost:26257/" + databaseName,
+				globalState.getOptions().getUserName(), globalState.getOptions().getPassword());
 		return con;
 	}
 

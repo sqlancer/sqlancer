@@ -15,7 +15,8 @@ public interface DatabaseProvider<G extends GlobalState<O>, O> {
 
 	G generateGlobalState();
 
-	Connection createDatabase(String databaseName, StateToReproduce state) throws SQLException;
+	// TODO: should be type G
+	Connection createDatabase(GlobalState<?> globalState) throws SQLException;
 
 	
 	/**

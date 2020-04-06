@@ -168,7 +168,7 @@ public class TDEngineProvider implements DatabaseProvider<GlobalState<TDEngineOp
 	}
 
 	@Override
-	public Connection createDatabase(String databaseName, StateToReproduce state) throws SQLException {
+	public Connection createDatabase(GlobalState<?> globalState) throws SQLException {
 		try {
 			Class.forName("com.taosdata.jdbc.TSDBDriver");
 		} catch (ClassNotFoundException e) {

@@ -1,8 +1,10 @@
 package sqlancer.sqlite3;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -11,7 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.DatabaseFacade;
 import sqlancer.DatabaseProvider;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
@@ -417,8 +418,13 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQL
 	}
 
 	@Override
-	public Connection createDatabase(String databaseName, StateToReproduce state) throws SQLException {
-		return DatabaseFacade.createDatabase(databaseName);
+	public Connection createDatabase(GlobalState<?> globalState) throws SQLException {
+		File dataBase = new File("." + File.separator + "databases", globalState.getDatabaseName() + ".db");
+		if (dataBase.exists()) {
+			dataBase.delete();
+		}
+		String url = "jdbc:sqlite:" + dataBase.getAbsolutePath();
+		return DriverManager.getConnection(url);
 	}
 
 	@Override

@@ -68,8 +68,8 @@ public class ClickhouseProvider implements DatabaseProvider<ClickhouseGlobalStat
 	public void generateAndTestDatabase(ClickhouseGlobalState globalState) throws SQLException {
 		StateLogger logger = globalState.getLogger();
 		QueryManager manager = globalState.getManager();
-		globalState.setSchema(
-				ClickhouseSchema.fromConnection(globalState.getConnection(), globalState.getDatabaseName()));
+		globalState
+				.setSchema(ClickhouseSchema.fromConnection(globalState.getConnection(), globalState.getDatabaseName()));
 		for (int i = 0; i < Randomly.fromOptions(1); i++) {
 			boolean success = false;
 			do {
@@ -100,9 +100,9 @@ public class ClickhouseProvider implements DatabaseProvider<ClickhouseGlobalStat
 				});
 		se.executeStatements();
 		manager.incrementCreateDatabase();
-		
+
 		ClickhouseQueryPartitioningWhereTester oracle = new ClickhouseQueryPartitioningWhereTester(globalState);
-		
+
 		for (int i = 0; i < globalState.getOptions().getNrQueries(); i++) {
 			try {
 				oracle.check();
@@ -123,14 +123,16 @@ public class ClickhouseProvider implements DatabaseProvider<ClickhouseGlobalStat
 	}
 
 	@Override
-	public Connection createDatabase(String databaseName, StateToReproduce state) throws SQLException {
+	public Connection createDatabase(GlobalState<?> globalState) throws SQLException {
 		String url = "jdbc:clickhouse://localhost:8123/test";
-		Connection con = DriverManager.getConnection(url, "", "password");
-		state.statements.add(new QueryAdapter("USE test"));
-		state.statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName + " CASCADE"));
+		String databaseName = globalState.getDatabaseName();
+		Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
+				globalState.getOptions().getPassword());
+		globalState.getState().statements.add(new QueryAdapter("USE test"));
+		globalState.getState().statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName + " CASCADE"));
 		String createDatabaseCommand = "CREATE DATABASE " + databaseName;
-		state.statements.add(new QueryAdapter(createDatabaseCommand));
-		state.statements.add(new QueryAdapter("USE " + databaseName));
+		globalState.getState().statements.add(new QueryAdapter(createDatabaseCommand));
+		globalState.getState().statements.add(new QueryAdapter("USE " + databaseName));
 		try (Statement s = con.createStatement()) {
 			s.execute("DROP DATABASE IF EXISTS " + databaseName);
 		}
@@ -138,7 +140,8 @@ public class ClickhouseProvider implements DatabaseProvider<ClickhouseGlobalStat
 			s.execute(createDatabaseCommand);
 		}
 		con.close();
-		con = DriverManager.getConnection("jdbc:clickhouse://localhost:8123/" + databaseName, "", "password");
+		con = DriverManager.getConnection("jdbc:clickhouse://localhost:8123/" + databaseName,
+				globalState.getOptions().getUserName(), globalState.getOptions().getPassword());
 		return con;
 	}
 

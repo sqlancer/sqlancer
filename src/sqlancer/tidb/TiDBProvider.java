@@ -38,10 +38,10 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 		INSERT(TiDBInsertGenerator::getQuery), //
 		ANALYZE_TABLE(TiDBAnalyzeTableGenerator::getQuery),
 		TRUNCATE((g) -> new QueryAdapter("TRUNCATE " + g.getSchema().getRandomTable().getName())),
-		CREATE_INDEX(TiDBIndexGenerator::getQuery),
-		DELETE(TiDBDeleteGenerator::getQuery),
+		CREATE_INDEX(TiDBIndexGenerator::getQuery), DELETE(TiDBDeleteGenerator::getQuery),
 		SET(TiDBSetGenerator::getQuery),
-		ADMIN_CHECKSUM_TABLE((g) -> new QueryAdapter("ADMIN CHECKSUM TABLE " + g.getSchema().getRandomTable().getName())),
+		ADMIN_CHECKSUM_TABLE(
+				(g) -> new QueryAdapter("ADMIN CHECKSUM TABLE " + g.getSchema().getRandomTable().getName())),
 		VIEW_GENERATOR(TiDBViewGenerator::getQuery);
 
 		private final QueryProvider<TiDBGlobalState> queryProvider;
@@ -107,17 +107,17 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 		for (int i = 0; i < Randomly.fromOptions(1, 2, 3); i++) {
 			boolean success = false;
 			do {
-			Query qt = new TiDBTableGenerator().getQuery(globalState);
-			success = manager.execute(qt);
-			logger.writeCurrent(state);
-			globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
-			try {
-				logger.getCurrentFileWriter().close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			logger.currentFileWriter = null;
+				Query qt = new TiDBTableGenerator().getQuery(globalState);
+				success = manager.execute(qt);
+				logger.writeCurrent(state);
+				globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
+				try {
+					logger.getCurrentFileWriter().close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				logger.currentFileWriter = null;
 			} while (!success);
 		}
 		globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
@@ -149,7 +149,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 			}
 		}).collect(Collectors.toList());
 		CompositeTestOracle oracle = new CompositeTestOracle(oracles);
-		
+
 		for (int i = 0; i < globalState.getOptions().getNrQueries(); i++) {
 			try {
 				oracle.check();
@@ -171,14 +171,16 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 	}
 
 	@Override
-	public Connection createDatabase(String databaseName, StateToReproduce state) throws SQLException {
+	public Connection createDatabase(GlobalState<?> globalState) throws SQLException {
+		String databaseName = globalState.getDatabaseName();
 		String url = "jdbc:mysql://127.0.0.1:4001/";
-		Connection con = DriverManager.getConnection(url, "root", "");
-		state.statements.add(new QueryAdapter("USE test"));
-		state.statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName));
+		Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
+				globalState.getOptions().getPassword());
+		globalState.getState().statements.add(new QueryAdapter("USE test"));
+		globalState.getState().statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName));
 		String createDatabaseCommand = "CREATE DATABASE " + databaseName;
-		state.statements.add(new QueryAdapter(createDatabaseCommand));
-		state.statements.add(new QueryAdapter("USE " + databaseName));
+		globalState.getState().statements.add(new QueryAdapter(createDatabaseCommand));
+		globalState.getState().statements.add(new QueryAdapter("USE " + databaseName));
 		try (Statement s = con.createStatement()) {
 			s.execute("DROP DATABASE IF EXISTS " + databaseName);
 		}
@@ -186,7 +188,8 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 			s.execute(createDatabaseCommand);
 		}
 		con.close();
-		con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:4001/" + databaseName, "root", "");
+		con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:4001/" + databaseName,
+				globalState.getOptions().getUserName(), globalState.getOptions().getPassword());
 		return con;
 	}
 

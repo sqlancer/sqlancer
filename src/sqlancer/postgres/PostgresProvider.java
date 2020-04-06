@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import sqlancer.AbstractAction;
 import sqlancer.CompositeTestOracle;
 import sqlancer.DatabaseProvider;
+import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
@@ -262,14 +263,15 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState, P
 	}
 
 	@Override
-	public Connection createDatabase(String databaseName, StateToReproduce state) throws SQLException {
+	public Connection createDatabase(GlobalState<?> globalState) throws SQLException {
 		String url = "jdbc:postgresql://localhost:5432/test";
-		Connection con = DriverManager.getConnection(url, "lama", "password");
-		state.statements.add(new QueryAdapter("\\c test;"));
-		state.statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName));
+		String databaseName = globalState.getDatabaseName();
+		Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(), globalState.getOptions().getPassword());
+		globalState.getState().statements.add(new QueryAdapter("\\c test;"));
+		globalState.getState().statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName));
 		String createDatabaseCommand = getCreateDatabaseCommand(databaseName, con);
-		state.statements.add(new QueryAdapter(createDatabaseCommand));
-		state.statements.add(new QueryAdapter("\\c " + databaseName));
+		globalState.getState().statements.add(new QueryAdapter(createDatabaseCommand));
+		globalState.getState().statements.add(new QueryAdapter("\\c " + databaseName));
 		try (Statement s = con.createStatement()) {
 			s.execute("DROP DATABASE IF EXISTS " + databaseName);
 		}
@@ -277,14 +279,14 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState, P
 			s.execute(createDatabaseCommand);
 		}
 		con.close();
-		con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + databaseName, "lama", "password");
+		con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + databaseName, globalState.getOptions().getUserName(), globalState.getOptions().getPassword());
 		List<String> statements = Arrays.asList(
 //				"CREATE EXTENSION IF NOT EXISTS btree_gin;",
 //				"CREATE EXTENSION IF NOT EXISTS btree_gist;", // TODO:  undefined symbol: elog_start
 				"CREATE EXTENSION IF NOT EXISTS pg_prewarm;", "SET max_parallel_workers_per_gather=16");
 		for (String s : statements) {
 			QueryAdapter query = new QueryAdapter(s);
-			state.statements.add(query);
+			globalState.getState().statements.add(query);
 			query.execute(con);
 		}
 //		new QueryAdapter("set jit_above_cost = 0; set jit_inline_above_cost = 0; set jit_optimize_above_cost = 0;").execute(con);
