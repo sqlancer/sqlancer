@@ -11,15 +11,23 @@ import sqlancer.QueryAdapter;
 import sqlancer.clickhouse.ClickhouseProvider.ClickhouseGlobalState;
 import sqlancer.clickhouse.ClickhouseSchema.ClickhouseColumn;
 import sqlancer.clickhouse.ClickhouseSchema.ClickhouseTable;
+import sqlancer.clickhouse.ClickhouseToStringVisitor;
 import sqlancer.gen.AbstractInsertGenerator;
 
 public class ClickhouseInsertGenerator extends AbstractInsertGenerator<ClickhouseColumn> {
 	
 	private ClickhouseGlobalState globalState;
 	private Set<String> errors = new HashSet<>();
+	private ClickhouseExpressionGenerator gen;
 
 	public ClickhouseInsertGenerator(ClickhouseGlobalState globalState) {
 		this.globalState = globalState;
+		gen = new ClickhouseExpressionGenerator(globalState);
+		errors.add("Cannot insert NULL value into a column of type 'Int32'"); // TODO
+		errors.add("Cannot insert NULL value into a column of type 'String'");
+		
+		errors.add("Cannot parse string");
+		errors.add("Cannot parse Int32 from String, because value is too short");
 	}
 	
 	public static Query getQuery(ClickhouseGlobalState globalState) throws SQLException {
@@ -40,8 +48,9 @@ public class ClickhouseInsertGenerator extends AbstractInsertGenerator<Clickhous
 	}
 
 	@Override
-	protected void insertValue(ClickhouseColumn tiDBColumn) {
-		sb.append(globalState.getRandomly().getInteger());
+	protected void insertValue(ClickhouseColumn column) {
+		String s = ClickhouseToStringVisitor.asString(gen.generateConstant());
+		sb.append(s);
 	}
 	
 }

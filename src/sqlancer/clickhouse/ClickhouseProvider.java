@@ -21,6 +21,7 @@ import sqlancer.StatementExecutor;
 import sqlancer.clickhouse.ClickhouseProvider.ClickhouseGlobalState;
 import sqlancer.clickhouse.gen.ClickhouseInsertGenerator;
 import sqlancer.clickhouse.gen.ClickhouseTableGenerator;
+import sqlancer.clickhouse.test.ClickhouseQueryPartitioningWhereTester;
 
 public class ClickhouseProvider implements DatabaseProvider<ClickhouseGlobalState, ClickhouseOptions> {
 
@@ -99,6 +100,26 @@ public class ClickhouseProvider implements DatabaseProvider<ClickhouseGlobalStat
 				});
 		se.executeStatements();
 		manager.incrementCreateDatabase();
+		
+		ClickhouseQueryPartitioningWhereTester oracle = new ClickhouseQueryPartitioningWhereTester(globalState);
+		
+		for (int i = 0; i < globalState.getOptions().getNrQueries(); i++) {
+			try {
+				oracle.check();
+				manager.incrementSelectQueryCount();
+			} catch (IgnoreMeException e) {
+
+			}
+		}
+		try {
+			if (globalState.getOptions().logEachSelect()) {
+				logger.getCurrentFileWriter().close();
+				logger.currentFileWriter = null;
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override

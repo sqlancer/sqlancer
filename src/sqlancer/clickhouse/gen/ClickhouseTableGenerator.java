@@ -1,5 +1,8 @@
 package sqlancer.clickhouse.gen;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -13,6 +16,7 @@ public class ClickhouseTableGenerator {
 	}
 
 	StringBuilder sb = new StringBuilder("CREATE TABLE ");
+	Set<String> errors = new HashSet<>();
 
 	public Query getQuery(ClickhouseGlobalState globalState) {
 		ClickhouseEngine engine = Randomly.fromOptions(ClickhouseEngine.values());
@@ -25,7 +29,13 @@ public class ClickhouseTableGenerator {
 			sb.append("c");
 			sb.append(i);
 			sb.append(" ");
-			sb.append(ClickhouseDataType.getRandom());
+			if (Randomly.getBoolean()) {
+				sb.append(ClickhouseDataType.getRandom());
+			} else {
+				sb.append("Nullable(");
+				sb.append(ClickhouseDataType.getRandom());
+				sb.append(")");
+			}
 			potentiallyAppendCodec();
 		}
 		sb.append(") ENGINE = ");
@@ -45,12 +55,13 @@ public class ClickhouseTableGenerator {
 		}
 		sb.append(")");
 		sb.append(";");
-		return new QueryAdapter(sb.toString());
+		return new QueryAdapter(sb.toString(), errors);
 	}
 
 	private void potentiallyAppendCodec() {
 		if (Randomly.getBoolean()) {
 			sb.append(" CODEC(");
+			errors.add(" in memory is not of fixed size");
 			sb.append(Randomly.fromOptions("NONE", "ZSTD", "LZ4HC", "Delta"));
 			sb.append(")");
 		}

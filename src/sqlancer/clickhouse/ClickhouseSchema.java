@@ -20,10 +20,21 @@ public class ClickhouseSchema extends AbstractSchema<ClickhouseTable> {
 
 	public static enum ClickhouseDataType {
 
-		INT;
+		INT("INT"), STRING("String");
 
+		private String textRepr;
+
+		private ClickhouseDataType(String textRepr) {
+			this.textRepr = textRepr;
+		}
+		
 		public static ClickhouseDataType getRandom() {
 			return Randomly.fromOptions(values());
+		}
+		
+		@Override
+		public String toString() {
+			return textRepr;
 		}
 
 	}
@@ -87,9 +98,15 @@ public class ClickhouseSchema extends AbstractSchema<ClickhouseTable> {
 
 	private static ClickhouseCompositeDataType getColumnType(String typeString) {
 		ClickhouseDataType primitiveType;
+		if (typeString.startsWith("Nullable(")) {
+			typeString = typeString.substring("Nullable(".length(), typeString.length() - 1);
+		}
 		switch (typeString) {
 		case "Int32":
 			primitiveType = ClickhouseDataType.INT;
+			break;
+		case "String":
+			primitiveType = ClickhouseDataType.STRING;
 			break;
 		default:
 			throw new AssertionError(typeString);
