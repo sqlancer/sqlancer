@@ -25,6 +25,10 @@ public class MainOptions {
 			"--num_queries" }, description = "Specifies the number of queries to be issued to a database before creating a new database")
 	private int nrQueries = 100000;
 
+	@Parameter(names = {
+			"--num_statement_kind_retries" }, description = "Specifies the number of times a specific statement kind (e.g., INSERT) should be retried when the DBMS indicates that it failed")
+	private int nrStatementRetryCount = 1000;
+
 	@Parameter(names = "--log-each-select", description = "Logs every statement issued", arity = 1)
 	private boolean logEachSelect = true;
 
@@ -54,6 +58,10 @@ public class MainOptions {
 
 	public int getMaxNumberInserts() {
 		return maxNumberInserts;
+	}
+	
+	public int getNrStatementRetryCount() {
+		return nrStatementRetryCount;
 	}
 
 	public static enum DBMS {

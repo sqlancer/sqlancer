@@ -69,7 +69,7 @@ public class StatementExecutor<G extends GlobalState<?>, A extends AbstractActio
 						globalState.getLogger().writeCurrent(query.getQueryString());
 					}
 					success = globalState.getManager().execute(query);
-				} while (!success && nrTries++ < 1000);
+				} while (!success && nrTries++ < globalState.getOptions().getNrStatementRetryCount());
 			} catch (IgnoreMeException e) {
 
 			}
