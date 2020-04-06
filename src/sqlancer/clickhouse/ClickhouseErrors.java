@@ -18,6 +18,7 @@ public class ClickhouseErrors {
 		
 		// regex
 		errors.add("invalid escape sequence");
+		errors.add("invalid character class range");
 	}
 
 }
