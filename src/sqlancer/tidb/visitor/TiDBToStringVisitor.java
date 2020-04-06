@@ -55,11 +55,11 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
 		visit(select.getFetchColumns());
 		sb.append(" FROM ");
 		visit(select.getFromList());
-		if (!select.getFromList().isEmpty() && !select.getJoinExpressions().isEmpty()) {
+		if (!select.getFromList().isEmpty() && !select.getJoinList().isEmpty()) {
 			sb.append(", ");
 		}
-		if (!select.getJoinExpressions().isEmpty()) {
-			visit(select.getJoinExpressions());
+		if (!select.getJoinList().isEmpty()) {
+			visit(select.getJoinList());
 		}
 		if (select.getWhereClause() != null) {
 			sb.append(" WHERE ");

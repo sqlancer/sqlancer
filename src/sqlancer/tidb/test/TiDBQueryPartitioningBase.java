@@ -59,7 +59,7 @@ public abstract class TiDBQueryPartitioningBase implements TestOracle {
 		List<TiDBExpression> tableList = tables.stream().map(t -> new TiDBTableReference(t))
 				.collect(Collectors.toList());
 		List<TiDBExpression> joins = TiDBJoin.getJoins(tableList, state);
-		select.setJoins(joins);
+		select.setJoinList(joins);
 		select.setFromList(tableList);
 		select.setWhereClause(null);
 		predicate = generatePredicate();

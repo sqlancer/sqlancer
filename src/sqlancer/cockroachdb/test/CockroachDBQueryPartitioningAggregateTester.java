@@ -28,7 +28,6 @@ import sqlancer.cockroachdb.ast.CockroachDBAggregate.CockroachDBAggregateFunctio
 import sqlancer.cockroachdb.ast.CockroachDBAlias;
 import sqlancer.cockroachdb.ast.CockroachDBCast;
 import sqlancer.cockroachdb.ast.CockroachDBExpression;
-import sqlancer.cockroachdb.ast.CockroachDBJoin;
 import sqlancer.cockroachdb.ast.CockroachDBNotOperation;
 import sqlancer.cockroachdb.ast.CockroachDBSelect;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
@@ -185,7 +184,7 @@ public class CockroachDBQueryPartitioningAggregateTester implements TestOracle {
 	}
 
 	private CockroachDBSelect getSelect(List<CockroachDBExpression> aggregates, List<CockroachDBExpression> from,
-			CockroachDBExpression whereClause, List<CockroachDBJoin> joinList) {
+			CockroachDBExpression whereClause, List<CockroachDBExpression> joinList) {
 		CockroachDBSelect leftSelect = new CockroachDBSelect();
 		leftSelect.setFetchColumns(aggregates);
 		leftSelect.setFromList(from);

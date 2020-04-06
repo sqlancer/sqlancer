@@ -21,7 +21,7 @@ import sqlancer.mysql.ast.MySQLTableReference;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 
-public class MySQLExpectedValueVisitor extends MySQLVisitor {
+public class MySQLExpectedValueVisitor implements MySQLVisitor {
 
 	private final StringBuilder sb = new StringBuilder();
 	private int nrTabs = 0;
@@ -91,7 +91,7 @@ public class MySQLExpectedValueVisitor extends MySQLVisitor {
 
 	@Override
 	public void visit(MySQLSelect select) {
-		for (MySQLJoin j : select.getJoinClauses()) {
+		for (MySQLJoin j : select.getJoinList()) {
 			visit(j);
 		}
 		if (select.getWhereClause() != null) {

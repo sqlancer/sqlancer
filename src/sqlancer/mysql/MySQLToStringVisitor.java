@@ -16,7 +16,6 @@ import sqlancer.mysql.ast.MySQLConstant;
 import sqlancer.mysql.ast.MySQLExists;
 import sqlancer.mysql.ast.MySQLExpression;
 import sqlancer.mysql.ast.MySQLInOperation;
-import sqlancer.mysql.ast.MySQLJoin;
 import sqlancer.mysql.ast.MySQLOrderByTerm;
 import sqlancer.mysql.ast.MySQLOrderByTerm.MySQLOrder;
 import sqlancer.mysql.ast.MySQLSelect;
@@ -75,7 +74,7 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
 			}
 			visit(s.getFromList().get(i));
 		}
-		for (MySQLJoin j : s.getJoinClauses()) {
+		for (MySQLExpression j : s.getJoinList()) {
 			visit(j);
 		}
 

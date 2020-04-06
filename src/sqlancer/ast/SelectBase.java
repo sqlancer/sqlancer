@@ -8,6 +8,7 @@ public class SelectBase<T> {
 	List<T> fetchColumns;
 	List<T> groupByExpressions = Collections.emptyList();
 	List<T> orderByExpressions = Collections.emptyList();
+	List<T> joinList = Collections.emptyList();
 	List<T> fromList;
 	T whereClause;
 	T havingClause;
@@ -96,6 +97,14 @@ public class SelectBase<T> {
 
 	public T getOffsetClause() {
 		return offsetClause;
+	}
+	
+	public List<T> getJoinList() {
+		return joinList;
+	}
+	
+	public void setJoinList(List<T> joinList) {
+		this.joinList = joinList;
 	}
 
 }
