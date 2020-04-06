@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.JCommander.Builder;
 
+import sqlancer.clickhouse.ClickhouseProvider;
 import sqlancer.cockroachdb.CockroachDBProvider;
 import sqlancer.mariadb.MariaDBProvider;
 import sqlancer.mysql.MySQLProvider;
@@ -294,6 +295,7 @@ public class Main {
 		providers.add(new TiDBProvider());
 		providers.add(new PostgresProvider());
 		providers.add(new TDEngineProvider());
+		providers.add(new ClickhouseProvider());
 		Map<String, DatabaseProvider<?, ?>> nameToProvider = new HashMap<>();
 		Map<String, Object> nameToOptions = new HashMap<>();
 		MainOptions options = new MainOptions();

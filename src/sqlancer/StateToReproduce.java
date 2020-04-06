@@ -18,7 +18,7 @@ import sqlancer.tdengine.expr.TDEngineConstant;
 import sqlancer.tdengine.expr.TDEngineExpression;
 import sqlancer.tdengine.expr.TDEngineSelectStatement;
 
-public abstract class StateToReproduce {
+public class StateToReproduce {
 
 	public final List<Query> statements = new ArrayList<>();
 	public String queryString;

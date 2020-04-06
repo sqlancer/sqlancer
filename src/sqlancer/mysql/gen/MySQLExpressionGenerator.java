@@ -47,7 +47,7 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
 
 
 	private enum Actions {
-		COLUMN, LITERAL, UNARY_PREFIX_OPERATION, UNARY_POSTFIX, FUNCTION, BINARY_LOGICAL_OPERATOR,
+		COLUMN, LITERAL, UNARY_PREFIX_OPERATION, UNARY_POSTFIX, COMPUTABLE_FUNCTION, BINARY_LOGICAL_OPERATOR,
 		BINARY_COMPARISON_OPERATION, CAST, IN_OPERATION, BINARY_OPERATION, EXISTS, BETWEEN_OPERATOR;
 	}
 
@@ -73,8 +73,8 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
 			return new MySQLUnaryPostfixOperation(generateExpression(depth + 1),
 					Randomly.fromOptions(MySQLUnaryPostfixOperation.UnaryPostfixOperator.values()),
 					Randomly.getBoolean());
-		case FUNCTION:
-			return getFunction(depth + 1);
+		case COMPUTABLE_FUNCTION:
+			return getComputableFunction(depth + 1);
 		case BINARY_LOGICAL_OPERATOR:
 			return new MySQLBinaryLogicalOperation(generateExpression(depth + 1),
 					generateExpression(depth + 1), MySQLBinaryLogicalOperator.getRandom());
@@ -119,7 +119,7 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
 		}
 	}
 
-	private MySQLExpression getFunction(int depth) {
+	private MySQLExpression getComputableFunction(int depth) {
 		MySQLFunction func = MySQLFunction.getRandomFunction();
 		int nrArgs = func.getNrArgs();
 		if (func.isVariadic()) {
