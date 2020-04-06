@@ -47,10 +47,8 @@ public class Main {
 	public final static class StateLogger {
 
 		private final File loggerFile;
-		private final File reducedFile;
 		private File curFile;
 		private FileWriter logFileWriter;
-		private FileWriter reducedFileWriter;
 		public FileWriter currentFileWriter;
 		private static final List<String> initializedProvidersNames = new ArrayList<>();
 		private boolean logEachSelect = true;
@@ -83,7 +81,6 @@ public class Main {
 			}
 			ensureExistsAndIsEmpty(dir, provider);
 			loggerFile = new File(dir, databaseName + ".log");
-			reducedFile = new File(dir, databaseName + "-reduced.log");
 			logEachSelect = options.logEachSelect();
 			if (logEachSelect) {
 				curFile = new File(dir, databaseName + "-cur.log");
@@ -118,17 +115,6 @@ public class Main {
 				}
 			}
 			return logFileWriter;
-		}
-
-		private FileWriter getReducedFileWriter() {
-			if (reducedFileWriter == null) {
-				try {
-					reducedFileWriter = new FileWriter(reducedFile);
-				} catch (IOException e) {
-					throw new AssertionError(e);
-				}
-			}
-			return reducedFileWriter;
 		}
 
 		public FileWriter getCurrentFileWriter() {
@@ -204,19 +190,6 @@ public class Main {
 			e1.printStackTrace(pw);
 			String stackTrace = "--" + sw.toString().replace("\n", "\n--");
 			return stackTrace;
-		}
-
-		public void logReduced(StateToReproduce state, int i, int from, int to) {
-			try {
-				FileWriter fw = getReducedFileWriter();
-				fw.append("-- Reduce run nr " + i + "\n");
-				fw.append("-- Reduced from " + from + " to " + to + "\n");
-				printState(fw, state);
-				reducedFileWriter.close();
-				reducedFileWriter = null;
-			} catch (IOException e) {
-				throw new AssertionError(e);
-			}
 		}
 
 		private void printState(FileWriter writer, StateToReproduce state) {
@@ -299,8 +272,7 @@ public class Main {
 		Map<String, DatabaseProvider<?, ?>> nameToProvider = new HashMap<>();
 		Map<String, Object> nameToOptions = new HashMap<>();
 		MainOptions options = new MainOptions();
-		Builder commandBuilder = JCommander.newBuilder()
-				.addObject(options);
+		Builder commandBuilder = JCommander.newBuilder().addObject(options);
 		for (DatabaseProvider<?, ?> provider : providers) {
 			String name = provider.getDBMSName();
 			Object command = provider.getCommand();
