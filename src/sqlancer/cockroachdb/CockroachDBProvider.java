@@ -54,8 +54,9 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 		SET_CLUSTER_SETTING(CockroachDBSetClusterSettingGenerator::create), DELETE(CockroachDBDeleteGenerator::delete),
 		COMMENT_ON(RockroachDBCommentOnGenerator::comment), SHOW(CockroachDBShowGenerator::show), TRANSACTION((g) -> {
 			String s = Randomly.fromOptions("BEGIN", "ROLLBACK", "COMMIT");
-			return new QueryAdapter(s, Arrays.asList("there is no transaction in progress",
-					"there is already a transaction in progress", "current transaction is aborted"));
+			return new QueryAdapter(s,
+					Arrays.asList("there is no transaction in progress", "there is already a transaction in progress",
+							"current transaction is aborted", "does not exist" /* interleaved indexes */));
 		}), EXPLAIN((g) -> {
 			new CockroachDBRandomQuerySynthesizer();
 			StringBuilder sb = new StringBuilder("EXPLAIN ");
@@ -195,7 +196,6 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 				nrPerformed = r.getInteger(0, 10);
 				break;
 			case SHOW:
-			case COMMENT_ON:
 			case TRUNCATE:
 			case DELETE:
 			case CREATE_STATISTICS:
@@ -211,8 +211,12 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 			case CREATE_INDEX:
 				nrPerformed = r.getInteger(0, 10);
 				break;
+			case COMMENT_ON:
 			case SCRUB:
-				nrPerformed = 1;
+				nrPerformed = 0; /*
+									 * there are a number of open SCRUB bugs, of which
+									 * https://github.com/cockroachdb/cockroach/issues/47116 crashes the server
+									 */
 				break;
 			case TRANSACTION:
 				nrPerformed = 0; // r.getInteger(0, 0);
