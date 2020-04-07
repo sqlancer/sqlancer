@@ -22,13 +22,13 @@ public class CockroachDBOptions {
 	public CockroachDBOracle oracle = CockroachDBOracle.NOREC;
 
 	public static enum CockroachDBOracle {
-		NOREC() {
+		NOREC {
 			@Override
 			public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
 				return new CockroachDBNoRECTester(globalState);
 			}
 		},
-		AGGREGATE() {
+		AGGREGATE {
 
 			@Override
 			public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
@@ -36,19 +36,19 @@ public class CockroachDBOptions {
 			}
 
 		},
-		NOTABLE() {
+		NOTABLE {
 			@Override
 			public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
 				return new CockroachDBNoTableTester(globalState);
 			}
 		},
-		HAVING() {
+		HAVING {
 			@Override
 			public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
 				return new CockroachDBQueryPartitioningHavingTester(globalState);
 			}
 		},
-		WHERE() {
+		WHERE {
 			@Override
 			public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
 				return new CockroachDBQueryPartitioningWhereTester(globalState);
@@ -69,8 +69,11 @@ public class CockroachDBOptions {
 			"--test_hash_indexes" }, description = "Test the USING HASH WITH BUCKET_COUNT=n_buckets option in CREATE INDEX")
 	public boolean testHashIndexes = true;
 
-	@Parameter(names = {
-			"--test_temp_tables" }, description = "Test TEMPORARY tables")
+	@Parameter(names = { "--test_temp_tables" }, description = "Test TEMPORARY tables")
 	public boolean testTempTables = true;
+
+	@Parameter(names = { "--increased_vectorization",
+			"Generate VECTORIZE=on with a higher probability (which found a number of bugs in the past)" })
+	public boolean makeVectorizationMoreLikely = true;
 
 }

@@ -269,7 +269,7 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 			total--;
 		}
 		manager.incrementCreateDatabase();
-		if (Randomly.getBoolean()) {
+		if (globalState.getDmbsSpecificOptions().makeVectorizationMoreLikely && Randomly.getBoolean()) {
 			manager.execute(new QueryAdapter("SET vectorize=on;"));
 		}
 		TestOracle oracle = globalState.getDmbsSpecificOptions().oracle.create(globalState);
