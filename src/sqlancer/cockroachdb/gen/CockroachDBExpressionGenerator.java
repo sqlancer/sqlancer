@@ -61,7 +61,9 @@ public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<Coc
 	
 	public CockroachDBExpression generateHavingClause() {
 		allowAggregates = true;
-		return generateExpression(CockroachDBDataType.BOOL.get());
+		CockroachDBExpression expression = generateExpression(CockroachDBDataType.BOOL.get());
+		allowAggregates = false;
+		return expression;
 	}
 
 
