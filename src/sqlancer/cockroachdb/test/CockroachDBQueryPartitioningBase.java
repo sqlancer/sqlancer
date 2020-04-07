@@ -1,0 +1,72 @@
+package sqlancer.cockroachdb.test;
+
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import sqlancer.TestOracle;
+import sqlancer.cockroachdb.CockroachDBErrors;
+import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
+import sqlancer.cockroachdb.CockroachDBSchema;
+import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBDataType;
+import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
+import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTables;
+import sqlancer.cockroachdb.ast.CockroachDBColumnReference;
+import sqlancer.cockroachdb.ast.CockroachDBExpression;
+import sqlancer.cockroachdb.ast.CockroachDBNotOperation;
+import sqlancer.cockroachdb.ast.CockroachDBSelect;
+import sqlancer.cockroachdb.ast.CockroachDBTableReference;
+import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation;
+import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnaryPostfixOperator;
+import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
+
+public class CockroachDBQueryPartitioningBase implements TestOracle {
+
+
+	final CockroachDBGlobalState state;
+	final Set<String> errors = new HashSet<>();
+
+	CockroachDBSchema s;
+	CockroachDBTables targetTables;
+	CockroachDBExpressionGenerator gen;
+	CockroachDBSelect select;
+	CockroachDBExpression predicate;
+	CockroachDBExpression negatedPredicate;
+	CockroachDBExpression isNullPredicate;
+
+	public CockroachDBQueryPartitioningBase(CockroachDBGlobalState state) {
+		this.state = state;
+		CockroachDBErrors.addExpressionErrors(errors);
+	}
+
+	@Override
+	public void check() throws SQLException {
+		s = state.getSchema();
+		targetTables = s.getRandomTableNonEmptyTables();
+		gen = new CockroachDBExpressionGenerator(state).setColumns(targetTables.getColumns());
+		select = new CockroachDBSelect();
+		select.setFetchColumns(generateFetchColumns());
+		List<CockroachDBTable> tables = targetTables.getTables();
+		List<CockroachDBExpression> tableList = tables.stream().map(t -> new CockroachDBTableReference(t))
+				.collect(Collectors.toList());
+		List<CockroachDBExpression> joins = CockroachDBNoRECTester.getJoins(tableList, state);
+		select.setJoinList(joins);
+		select.setFromList(tableList);
+		select.setWhereClause(null);
+		predicate = generatePredicate();
+		negatedPredicate = new CockroachDBNotOperation(predicate);
+		isNullPredicate = new CockroachDBUnaryPostfixOperation(predicate, CockroachDBUnaryPostfixOperator.IS_NULL);
+	}
+
+	List<CockroachDBExpression> generateFetchColumns() {
+		return Arrays.asList(new CockroachDBColumnReference(targetTables.getColumns().get(0)));
+	}
+
+	CockroachDBExpression generatePredicate() {
+		return gen.generateExpression(CockroachDBDataType.BOOL.get());
+	}
+
+}
