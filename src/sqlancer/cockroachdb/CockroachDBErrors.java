@@ -40,9 +40,6 @@ public class CockroachDBErrors {
 		errors.add("as type int: strconv.ParseInt");
 		errors.add("as type float: strconv.ParseFloat: parsing");
 		
-		// TODO: do not generate incorrect ASC/DESC ordering terms
-		errors.add("ERROR: at or near \"asc\": syntax error");
-		errors.add("ERROR: at or near \"desc\": syntax error");
 		errors.add("is not in select list");
 		errors.add("non-integer constant in ORDER BY");
 		
