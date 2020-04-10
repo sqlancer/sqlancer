@@ -17,7 +17,8 @@ public class CockroachDBQueryPartitioningTester implements TestOracle {
 		oracles.add(new CockroachDBQueryPartitioningAggregateTester(state));
 		oracles.add(new CockroachDBQueryPartitioningHavingTester(state));
 		oracles.add(new CockroachDBQueryPartitioningWhereTester(state));
-		this.oracles = oracles.toArray(new TestOracle[3]);
+		oracles.add(new CockroachDBQueryPartitioningExtendedWhereTester(state));
+		this.oracles = oracles.toArray(new TestOracle[4]);
 	}
 	
 	@Override
