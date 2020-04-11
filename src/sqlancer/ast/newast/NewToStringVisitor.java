@@ -23,6 +23,8 @@ public abstract class NewToStringVisitor<E> {
 			visit((NewFunctionNode<E, ?>) expr);
 		} else if (expr instanceof NewBetweenOperatorNode<?>) {
 			visit((NewBetweenOperatorNode<E>) expr);
+		} else if (expr instanceof NewInOperatorNode<?>) {
+			visit((NewInOperatorNode<E>) expr);
 		}
 		
 		else {
@@ -71,6 +73,17 @@ public abstract class NewToStringVisitor<E> {
 		sb.append("(");
 		visit(funcCall.getArgs());
 		sb.append(")");
+	}
+	
+	public void visit(NewInOperatorNode<E> in) {
+		sb.append("(");
+		visit(in.getLeft());
+		if (in.isNegated()) {
+			sb.append(" NOT");
+		}
+		sb.append(" IN (");
+		visit(in.getRight());
+		sb.append("))");
 	}
 
 	

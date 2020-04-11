@@ -7,6 +7,7 @@ import sqlancer.ast.newast.ColumnReferenceNode;
 import sqlancer.ast.newast.NewBetweenOperatorNode;
 import sqlancer.ast.newast.NewBinaryOperatorNode;
 import sqlancer.ast.newast.NewFunctionNode;
+import sqlancer.ast.newast.NewInOperatorNode;
 import sqlancer.ast.newast.NewUnaryPostfixOperatorNode;
 import sqlancer.ast.newast.NewUnaryPrefixOperatorNode;
 import sqlancer.ast.newast.Node;
@@ -27,7 +28,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 	}
 
 	private enum Expression {
-		UNARY_POSTFIX, UNARY_PREFIX, BINARY_COMPARISON, BINARY_LOGICAL, BINARY_ARITHMETIC, CAST, FUNC, BETWEEN
+		UNARY_POSTFIX, UNARY_PREFIX, BINARY_COMPARISON, BINARY_LOGICAL, BINARY_ARITHMETIC, CAST, FUNC, BETWEEN, IN
 	}
 
 	protected Node<DuckDBExpression> generateExpression(int depth) {
@@ -64,6 +65,8 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 		case BETWEEN:
 			return new NewBetweenOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
 					generateExpression(depth + 1), generateExpression(depth + 1), Randomly.getBoolean());
+		case IN:
+			return new NewInOperatorNode<DuckDBExpression>(generateExpression(depth + 1), generateExpressions(Randomly.smallNumber() + 1), Randomly.getBoolean());
 		}
 		return generateLeafNode();
 	}
