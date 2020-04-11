@@ -217,14 +217,11 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
 
 	private static List<String> getTableNames(Connection con) throws SQLException {
 		List<String> tableNames = new ArrayList<>();
-		// FIXME: DuckDB does not seem to provide a way to query the tables, so just probe 
-		for (int i = 0; i < 100; i++) {
-			String tableName = String.format("t%d", i);
-			try (Statement s = con.createStatement()) {
-				s.execute(String.format("SELECT * FROM pragma_table_info('%s');", tableName));
-				tableNames.add(tableName);
-			} catch (Exception e) {
-				// IGNORE
+		try (Statement s = con.createStatement()) {
+			try (ResultSet rs = s.executeQuery("SELECT * FROM sqlite_master()")) {
+				while (rs.next()) {
+					tableNames.add(rs.getString("name"));
+				}
 			}
 		}
 		return tableNames;
