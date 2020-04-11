@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -17,6 +18,10 @@ import sqlancer.duckdb.ast.DuckDBExpression;
 public class DuckDBIndexGenerator {
 	
 	public static Query getQuery(DuckDBGlobalState globalState) {
+		if (true) {
+			// https://github.com/cwida/duckdb/issues/495
+			throw new IgnoreMeException();
+		}
 		Set<String> errors = new HashSet<>();
 		StringBuilder sb = new StringBuilder();
 		sb.append("CREATE ");
@@ -48,8 +53,6 @@ public class DuckDBIndexGenerator {
 			sb.append(DuckDBToStringVisitor.asString(expr));
 		}
 		errors.add("already exists!");
-		errors.add("Invalid type for index");
-		errors.add("Not implemented: Cannot create data from this type"); // https://github.com/cwida/duckdb/issues/504
 		return new QueryAdapter(sb.toString(), errors, true);
 	}
 

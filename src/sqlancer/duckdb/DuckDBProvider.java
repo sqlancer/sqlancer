@@ -12,6 +12,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
 import sqlancer.Query;
+import sqlancer.QueryAdapter;
 import sqlancer.QueryProvider;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
@@ -27,7 +28,10 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 	public static enum Action implements AbstractAction<DuckDBGlobalState> {
 
 		INSERT(DuckDBInsertGenerator::getQuery),
-		CREATE_INDEX(DuckDBIndexGenerator::getQuery);
+		CREATE_INDEX(DuckDBIndexGenerator::getQuery),
+		VACUUM((g) -> new QueryAdapter("VACUUM;")),
+		ANALYZE((g) -> new QueryAdapter("ANALYZE;"));
+
 
 		private final QueryProvider<DuckDBGlobalState> queryProvider;
 
@@ -47,6 +51,9 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 			return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
 		case CREATE_INDEX:
 			return r.getInteger(0, 4);
+		case VACUUM: // seems to be ignored
+		case ANALYZE:  // seems to be ignored
+			return r.getInteger(0, 2);
 		default:
 			throw new AssertionError(a);
 		}

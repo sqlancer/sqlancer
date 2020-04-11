@@ -41,13 +41,7 @@ public class DuckDBInsertGenerator extends AbstractInsertGenerator<DuckDBColumn>
 		errors.add("PRIMARY KEY or UNIQUE constraint violated");
 		errors.add("duplicate key value violates primary key or unique constraint");
 		errors.add("can't be cast because the value is out of range for the destination type");
-		errors.add("Invalid type for index"); // TODO: why not checked earlier?
 		errors.add("Could not convert string");
-		
-		if (true) {
-			// https://github.com/cwida/duckdb/issues/504
-			errors.add("Not implemented: Cannot create data from this type");
-		}
 		
 		return new QueryAdapter(sb.toString(), errors);
 	}

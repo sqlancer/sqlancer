@@ -3,7 +3,6 @@ package sqlancer.duckdb.ast;
 import java.util.ArrayList;
 import java.util.List;
 
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.ast.newast.Node;
 import sqlancer.ast.newast.TableReferenceNode;
@@ -72,7 +71,7 @@ public class DuckDBJoin implements Node<DuckDBExpression> {
 	public static List<Node<DuckDBExpression>> getJoins(
 			List<TableReferenceNode<DuckDBExpression, DuckDBTable>> tableList, DuckDBGlobalState globalState) {
 		List<Node<DuckDBExpression>> joinExpressions = new ArrayList<>();
-		while (tableList.size() >= 2 && Randomly.getBoolean()) {
+		while (tableList.size() >= 2 && Randomly.getBooleanWithRatherLowProbability()) {
 			TableReferenceNode<DuckDBExpression, DuckDBTable> leftTable = tableList.remove(0);
 			TableReferenceNode<DuckDBExpression, DuckDBTable> rightTable = tableList.remove(0);
 			List<DuckDBColumn> columns = new ArrayList<>(leftTable.getTable().getColumns());
@@ -88,16 +87,8 @@ public class DuckDBJoin implements Node<DuckDBExpression> {
 			case LEFT:
 				joinExpressions
 						.add(DuckDBJoin.createLeftOuterJoin(leftTable, rightTable, joinGen.generateExpression()));
-				if (true) {
-					// https://github.com/cwida/duckdb/issues/508
-					throw new IgnoreMeException();
-				}
 				break;
 			case RIGHT:
-				if (true) {
-					// https://github.com/cwida/duckdb/issues/505
-					throw new IgnoreMeException();
-				}
 				joinExpressions
 						.add(DuckDBJoin.createRightOuterJoin(leftTable, rightTable, joinGen.generateExpression()));
 				break;
