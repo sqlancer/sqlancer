@@ -145,7 +145,7 @@ public class SQLite3ExpressionGenerator {
 		}
 		if (Randomly.getBoolean()) {
 			expr = new SQLite3PostfixText(expr, Randomly.fromOptions(" NULLS FIRST", " NULLS LAST"),
-					expr.getExpectedValue()) {
+					null /*expr.getExpectedValue() */) {
 				@Override
 				public boolean omitBracketsWhenPrinting() {
 					return true;

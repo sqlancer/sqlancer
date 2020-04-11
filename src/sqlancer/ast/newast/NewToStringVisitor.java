@@ -10,7 +10,7 @@ public abstract class NewToStringVisitor<E> {
 	public void visit(Node<E> expr) {
 		assert expr != null;
 		if (expr instanceof ColumnReferenceNode<?, ?>) {
-			sb.append(((ColumnReferenceNode<?, ?>) expr).getColumn().getName());
+			sb.append(((ColumnReferenceNode<?, ?>) expr).getColumn().getFullQualifiedName());
 		} else if (expr instanceof NewUnaryPostfixOperatorNode<?>) {
 			visit((NewUnaryPostfixOperatorNode<E>) expr);
 		} else if (expr instanceof NewUnaryPrefixOperatorNode<?>) {
@@ -19,7 +19,13 @@ public abstract class NewToStringVisitor<E> {
 			visit((NewBinaryOperatorNode<E>) expr);
 		} else if (expr instanceof TableReferenceNode<?, ?>) {
 			visit((TableReferenceNode<E, ?>) expr);
-		} else {
+		} else if (expr instanceof NewFunctionNode<?, ?>) {
+			visit((NewFunctionNode<E, ?>) expr);
+		} else if (expr instanceof NewBetweenOperatorNode<?>) {
+			visit((NewBetweenOperatorNode<E>) expr);
+		}
+		
+		else {
 			visitSpecific(expr);
 		}
 	}
@@ -36,7 +42,22 @@ public abstract class NewToStringVisitor<E> {
 	public void visit(TableReferenceNode<E, ?> tableRef) {
 		sb.append(tableRef.getTable().getName());
 	}
+	
 
+	public void visit(NewBetweenOperatorNode<E> opNode) {
+		sb.append("(");
+		visit(opNode.getLeft());
+		if (!opNode.isTrue()) {
+			sb.append(" NOT");
+		}
+		sb.append(" BETWEEN ");
+		visit(opNode.getMiddle());
+		sb.append(" AND ");
+		visit(opNode.getRight());
+		sb.append(")");
+	}
+
+	
 	public void visit(NewUnaryPostfixOperatorNode<E> opNode) {
 		sb.append("(");
 		visit(opNode.getExpr());
@@ -45,6 +66,14 @@ public abstract class NewToStringVisitor<E> {
 		sb.append(")");
 	}
 
+	public void visit(NewFunctionNode<E, ?> funcCall) {
+		sb.append(funcCall.getFunc().toString());
+		sb.append("(");
+		visit(funcCall.getArgs());
+		sb.append(")");
+	}
+
+	
 	public void visit(NewUnaryPrefixOperatorNode<E> opNode) {
 		sb.append("(");
 		sb.append(opNode.getOperatorRepresentation());

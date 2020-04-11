@@ -15,9 +15,6 @@ public class TiDBErrors {
 		// functions
 		errors.add("BIGINT value is out of range");
 		
-		// https://github.com/pingcap/tidb/issues/15790
-		errors.add("Data truncation: %s value is out of range in '%s'");
-		
 		// known issue: https://github.com/pingcap/tidb/issues/14819
 		errors.add("Wrong plan type for dataReaderBuilder");
 		
@@ -38,6 +35,10 @@ public class TiDBErrors {
 		errors.add("index out of range"); // https://github.com/pingcap/tidb/issues/15810
 		errors.add("baseBuiltinFunc.evalString() should never be called, please contact the TiDB team for help"); // https://github.com/pingcap/tidb/issues/15847
 		errors.add("unsupport column type for encode 6"); // https://github.com/pingcap/tidb/issues/15850
+		
+		
+		// regex
+		errors.add("missing )");
 	}
 
 	public static void addExpressionHavingErrors(Set<String> errors) {

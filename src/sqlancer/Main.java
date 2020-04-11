@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import com.beust.jcommander.JCommander.Builder;
 
 import sqlancer.clickhouse.ClickhouseProvider;
 import sqlancer.cockroachdb.CockroachDBProvider;
+import sqlancer.duckdb.DuckDBProvider;
 import sqlancer.mariadb.MariaDBProvider;
 import sqlancer.mysql.MySQLProvider;
 import sqlancer.postgres.PostgresProvider;
@@ -275,6 +277,7 @@ public class Main {
 		providers.add(new PostgresProvider());
 		providers.add(new TDEngineProvider());
 		providers.add(new ClickhouseProvider());
+		providers.add(new DuckDBProvider());
 		Map<String, DatabaseProvider<?, ?>> nameToProvider = new HashMap<>();
 		Map<String, Object> nameToOptions = new HashMap<>();
 		MainOptions options = new MainOptions();
@@ -365,8 +368,12 @@ public class Main {
 						state.setMainOptions(options);
 						try (Connection con = provider.createDatabase(state)) {
 							QueryManager manager = new QueryManager(con, stateToRepro);
-							java.sql.DatabaseMetaData meta = con.getMetaData();
-							stateToRepro.databaseVersion = meta.getDatabaseProductVersion();
+							try {
+								java.sql.DatabaseMetaData meta = con.getMetaData();
+								stateToRepro.databaseVersion = meta.getDatabaseProductVersion();
+							} catch (SQLFeatureNotSupportedException e) {
+								// ignore
+							}
 							state.setConnection(con);
 							Object dmbsSpecificOptions = nameToOptions.get(jc.getParsedCommand());
 							state.setDmbsSpecificOptions(dmbsSpecificOptions);

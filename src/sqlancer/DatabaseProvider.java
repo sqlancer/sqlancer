@@ -78,6 +78,9 @@ public interface DatabaseProvider<G extends GlobalState<O>, O> {
 			if (e instanceof IgnoreMeException) {
 				throw e;
 			}
+			if (e.getMessage() == null) {
+				throw new AssertionError(queryString, e);
+			}
 			for (String error : errors) {
 				if (e.getMessage().contains(error)) {
 					throw new IgnoreMeException();
