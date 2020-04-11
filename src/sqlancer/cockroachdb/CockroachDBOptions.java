@@ -13,6 +13,7 @@ import sqlancer.cockroachdb.test.CockroachDBNoTableTester;
 import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningAggregateTester;
 import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningExtendedWhereTester;
 import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningHavingTester;
+import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningJoinTester;
 import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningTester;
 import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningWhereTester;
 
@@ -59,6 +60,12 @@ public class CockroachDBOptions {
 			@Override
 			public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
 				return new CockroachDBQueryPartitioningExtendedWhereTester(globalState);
+			}
+		},
+		JOIN {
+			@Override
+			public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
+				return new CockroachDBQueryPartitioningJoinTester(globalState);
 			}
 		},
 		QUERY_PARTITIONING {

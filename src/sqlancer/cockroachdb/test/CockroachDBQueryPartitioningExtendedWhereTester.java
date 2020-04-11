@@ -7,6 +7,7 @@ import java.util.List;
 import sqlancer.DatabaseProvider;
 import sqlancer.Randomly;
 import sqlancer.TestOracle;
+import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBVisitor;
 import sqlancer.cockroachdb.ast.CockroachDBBinaryLogicalOperation;
@@ -23,6 +24,7 @@ public class CockroachDBQueryPartitioningExtendedWhereTester extends CockroachDB
 
 	public CockroachDBQueryPartitioningExtendedWhereTester(CockroachDBGlobalState state) {
 		super(state);
+		CockroachDBErrors.addExpressionErrors(errors);
 		errors.add("GROUP BY term out of range");
 	}
 

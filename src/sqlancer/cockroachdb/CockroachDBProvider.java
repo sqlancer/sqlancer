@@ -156,7 +156,7 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 			manager.execute(new QueryAdapter(s));
 		}
 
-		for (int i = 0; i < Randomly.fromOptions(1, 2, 3); i++) {
+		for (int i = 0; i < Randomly.fromOptions(2, 3); i++) {
 			boolean success = false;
 			do {
 				try {
