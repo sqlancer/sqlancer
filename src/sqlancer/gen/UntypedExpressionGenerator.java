@@ -42,6 +42,15 @@ public abstract class UntypedExpressionGenerator<E, C> {
 		return expressions;
 	}
 
+	public List<E> generateExpressions(int depth, int nr) {
+		List<E> expressions = new ArrayList<>();
+		for (int i = 0; i < nr; i++) {
+			expressions.add(generateExpression(depth));
+		}
+		return expressions;
+	}
+
+	
 	// override this class to also generate ASC, DESC
 	public List<E> generateOrderBys() {
 		return generateExpressions(Randomly.smallNumber() + 1);

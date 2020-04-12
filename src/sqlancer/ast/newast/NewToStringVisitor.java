@@ -25,6 +25,8 @@ public abstract class NewToStringVisitor<E> {
 			visit((NewBetweenOperatorNode<E>) expr);
 		} else if (expr instanceof NewInOperatorNode<?>) {
 			visit((NewInOperatorNode<E>) expr);
+		} else if (expr instanceof NewCaseOperatorNode<?>) {
+			visit((NewCaseOperatorNode<E>) expr);
 		}
 		
 		else {
@@ -43,6 +45,22 @@ public abstract class NewToStringVisitor<E> {
 
 	public void visit(TableReferenceNode<E, ?> tableRef) {
 		sb.append(tableRef.getTable().getName());
+	}
+	
+	public void visit(NewCaseOperatorNode<E> op) {
+		sb.append("(CASE ");
+		visit(op.getSwitchCondition());
+		for (int i =0; i < op.getConditions().size(); i++) {
+			sb.append(" WHEN ");
+			visit(op.getConditions().get(i));
+			sb.append(" THEN ");
+			visit(op.getExpressions().get(i));
+		}
+		if (op.getElseExpr() != null) {
+			sb.append(" ELSE ");
+			visit(op.getElseExpr());
+		}
+		sb.append(" END )");
 	}
 	
 
