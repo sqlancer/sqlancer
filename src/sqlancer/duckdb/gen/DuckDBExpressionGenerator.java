@@ -36,6 +36,13 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 		if (depth >= globalState.getOptions().getMaxExpressionDepth() || Randomly.getBoolean()) {
 			return generateLeafNode();
 		}
+		if (allowAggregates && Randomly.getBoolean()) {
+			DuckDBAggregateFunction aggregate = DuckDBAggregateFunction.getRandom();
+			allowAggregates = false;
+			NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> aggr = new NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction>(
+					generateExpressions(depth + 1, aggregate.getNrArgs()), aggregate);
+			return aggr;
+		}
 		Expression expr = Randomly.fromOptions(Expression.values());
 		switch (expr) {
 		case UNARY_PREFIX:
@@ -53,9 +60,6 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 			return new NewBinaryOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
 					generateExpression(depth + 1), op);
 		case BINARY_ARITHMETIC:
-			if (true) {
-				throw new IgnoreMeException();
-			}
 			return new NewBinaryOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
 					generateExpression(depth + 1), DuckDBBinaryArithmeticOperator.getRandom());
 		case CAST:
@@ -67,10 +71,13 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 			return new NewBetweenOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
 					generateExpression(depth + 1), generateExpression(depth + 1), Randomly.getBoolean());
 		case IN:
-			return new NewInOperatorNode<DuckDBExpression>(generateExpression(depth + 1), generateExpressions(depth + 1, Randomly.smallNumber() + 1), Randomly.getBoolean());
+			return new NewInOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
+					generateExpressions(depth + 1, Randomly.smallNumber() + 1), Randomly.getBoolean());
 		case CASE:
 			int nr = Randomly.smallNumber() + 1;
-			return new NewCaseOperatorNode<DuckDBExpression>(generateExpression(depth + 1), generateExpressions(depth + 1, nr), generateExpressions(depth + 1, nr), generateExpression(depth + 1));
+			return new NewCaseOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
+					generateExpressions(depth + 1, nr), generateExpressions(depth + 1, nr),
+					generateExpression(depth + 1));
 		}
 		return generateLeafNode();
 	}
@@ -89,8 +96,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 		DuckDBDataType type = DuckDBDataType.getRandom();
 		switch (type) {
 		case INT:
-			return DuckDBConstant.createIntConstant(globalState.getRandomly().getInteger(-30, 30)); // TODO:
-																									// https://github.com/cwida/duckdb/issues/495
+			return DuckDBConstant.createIntConstant(globalState.getRandomly().getInteger());
 		case VARCHAR:
 		case DATE: // TODO
 		case TIMESTAMP: // TODO
@@ -119,12 +125,31 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 
 	}
 
+	public enum DuckDBAggregateFunction {
+		MAX(1), MIN(1), AVG(1), COUNT(1), STRING_AGG(1), FIRST(1), LAST(1), STDDEV_SAMP(1), STDDEV_POP(1), VAR_POP(1),
+		VAR_SAMP(1), COVAR_POP(1), COVAR_SAMP(1);
+
+		private int nrArgs;
+
+		DuckDBAggregateFunction(int nrArgs) {
+			this.nrArgs = nrArgs;
+		}
+
+		public static DuckDBAggregateFunction getRandom() {
+			return Randomly.fromOptions(values());
+		}
+
+		public int getNrArgs() {
+			return nrArgs;
+		}
+
+	}
+
 	public enum DBFunction {
 		ACOS(1), ASIN(1), ATAN(1), COS(1), SIN(1), TAN(1), COT(1), ATAN2(1), CEIL(1), CEILING(1), FLOOR(1), LOG(1),
 		LOG10(1), LOG2(1), LN(1), PI(0), SQRT(1), POWER(1), CBRT(1), CONTAINS(2), PREFIX(2), SUFFIX(2), ABS(1),
-		/* ROUND(2) https://github.com/cwida/duckdb/issues/521  ,*/ LENGTH(1), LOWER(1), UPPER(1), SUBSTRING(3), REVERSE(1), /*CONCAT(1, true), https://github.com/cwida/duckdb/issues/526 */ CONCAT_WS(1, true),
-		INSTR(2), PRINTF(1, true);
-		/*REGEXP_MATCHES(2); https://github.com/cwida/duckdb/issues/528 */
+		ROUND(2), LENGTH(1), LOWER(1), UPPER(1), SUBSTRING(3), REVERSE(1), CONCAT(1, true), CONCAT_WS(1, true),
+		INSTR(2), PRINTF(1, true), REGEXP_MATCHES(2);
 //		REGEX_REPLACE(3);
 
 		private int nrArgs;
@@ -211,7 +236,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 	}
 
 	public enum DuckDBBinaryArithmeticOperator implements Operator {
-		ADD("+"), SUB("-"), MULT("*"), DIV("/"), MOD("%"), AND("&"), OR("|"), XOR("#"), LSHIFT("<<"), RSHIFT(">>");
+		CONCAT("||"), ADD("+"), SUB("-"), MULT("*"), DIV("/"), MOD("%"), AND("&"), OR("|"), XOR("#"), LSHIFT("<<"), RSHIFT(">>");
 
 		private String textRepr;
 

@@ -17,6 +17,7 @@ import sqlancer.QueryProvider;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.StatementExecutor;
+import sqlancer.TestOracle;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.gen.DuckDBDeleteGenerator;
 import sqlancer.duckdb.gen.DuckDBIndexGenerator;
@@ -24,7 +25,6 @@ import sqlancer.duckdb.gen.DuckDBInsertGenerator;
 import sqlancer.duckdb.gen.DuckDBTableGenerator;
 import sqlancer.duckdb.gen.DuckDBUpdateGenerator;
 import sqlancer.duckdb.gen.DuckDBViewGenerator;
-import sqlancer.duckdb.test.DuckDBQueryPartitioningWhereTester;
 
 public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckDBOptions> {
 
@@ -63,7 +63,7 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 		case DELETE:
 			return r.getInteger(0, 2);
 		case CREATE_VIEW:
-			return 0; // TODO
+			return 0;
 		default:
 			throw new AssertionError(a);
 		}
@@ -88,7 +88,7 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 		StateLogger logger = globalState.getLogger();
 		QueryManager manager = globalState.getManager();
 		globalState.setSchema(DuckDBSchema.fromConnection(globalState.getConnection(), globalState.getDatabaseName()));
-		for (int i = 0; i < Randomly.fromOptions(1, 2, 3); i++) {
+		for (int i = 0; i < Randomly.fromOptions(1, 2); i++) {
 			boolean success = false;
 			do {
 				Query qt = new DuckDBTableGenerator().getQuery(globalState);
@@ -116,7 +116,7 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 		se.executeStatements();
 		manager.incrementCreateDatabase();
 
-		DuckDBQueryPartitioningWhereTester oracle = new DuckDBQueryPartitioningWhereTester(globalState);
+		TestOracle oracle = globalState.getDmbsSpecificOptions().oracle.get(0).create(globalState);
 
 		for (int i = 0; i < globalState.getOptions().getNrQueries(); i++) {
 			try {

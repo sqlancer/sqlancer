@@ -8,10 +8,10 @@ import java.util.stream.Collectors;
 
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
+import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
 import sqlancer.duckdb.DuckDBSchema.DuckDBTable;
-import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBToStringVisitor;
 import sqlancer.gen.AbstractInsertGenerator;
 
@@ -30,7 +30,7 @@ public class DuckDBInsertGenerator extends AbstractInsertGenerator<DuckDBColumn>
 
 	private Query generate() {
 		sb.append("INSERT INTO ");
-		DuckDBTable table = globalState.getSchema().getRandomTable();
+		DuckDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
 		List<DuckDBColumn> columns = table.getRandomNonEmptyColumnSubset();
 		sb.append(table.getName());
 		sb.append("(");

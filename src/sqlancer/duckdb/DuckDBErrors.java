@@ -13,12 +13,11 @@ public class DuckDBErrors {
 		errors.add("Not implemented: Unimplemented type for cast");
 		
 
-		if (true) {
-			// https://github.com/cwida/duckdb/issues/533
-			errors.add("Conversion: Invalid TypeId -1"); 
-		}
-		
 		errors.add("Type mismatch when combining rows"); // BETWEEN
+		
+		errors.add("invalid UTF-8"); // TODO
+		
+		errors.add("Conversion: Invalid TypeId "); // TODO
 		
 		addRegexErrors(errors);
 		
@@ -48,6 +47,11 @@ public class DuckDBErrors {
 		errors.add("Could not convert string");
 		errors.add("timestamp field value out of range");
 		errors.add("Not implemented: Unimplemented type for cast"); // TODO: report?		
+	}
+
+	public static void addGroupByErrors(Set<String> errors) {
+		errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
+		errors.add("GROUP BY term out of range");		
 	}
 
 }

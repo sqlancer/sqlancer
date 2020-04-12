@@ -7,13 +7,15 @@ import java.util.List;
 import sqlancer.DatabaseProvider;
 import sqlancer.Randomly;
 import sqlancer.TestOracle;
+import sqlancer.ast.newast.Node;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBToStringVisitor;
+import sqlancer.duckdb.ast.DuckDBExpression;
 
-public class DuckDBQueryPartitioningWhereTester extends DuckDBQueryPartitioningBase {
+public class DuckDBQueryPartitioningHavingTester extends DuckDBQueryPartitioningBase implements TestOracle {
 
-	public DuckDBQueryPartitioningWhereTester(DuckDBGlobalState state) {
+	public DuckDBQueryPartitioningHavingTester(DuckDBGlobalState state) {
 		super(state);
 		DuckDBErrors.addGroupByErrors(errors);
 	}
@@ -21,21 +23,24 @@ public class DuckDBQueryPartitioningWhereTester extends DuckDBQueryPartitioningB
 	@Override
 	public void check() throws SQLException {
 		super.check();
-		select.setWhereClause(null);
-		String originalQueryString = DuckDBToStringVisitor.asString(select);
-
-		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
-				state.getConnection(), state);
-
-		boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
+		if (Randomly.getBoolean()) {
+			select.setWhereClause(gen.generateExpression());
+		}
+		boolean orderBy = Randomly.getBoolean();
 		if (orderBy) {
 			select.setOrderByExpressions(gen.generateOrderBys());
 		}
-		select.setWhereClause(predicate);
+		select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
+		select.setHavingClause(null);
+		String originalQueryString = DuckDBToStringVisitor.asString(select);
+		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
+				state.getConnection(), state);
+
+		select.setHavingClause(predicate);
 		String firstQueryString = DuckDBToStringVisitor.asString(select);
-		select.setWhereClause(negatedPredicate);
+		select.setHavingClause(negatedPredicate);
 		String secondQueryString = DuckDBToStringVisitor.asString(select);
-		select.setWhereClause(isNullPredicate);
+		select.setHavingClause(isNullPredicate);
 		String thirdQueryString = DuckDBToStringVisitor.asString(select);
 		List<String> combinedString = new ArrayList<>();
 		List<String> secondResultSet = TestOracle.getCombinedResultSet(firstQueryString, secondQueryString,
@@ -43,4 +48,8 @@ public class DuckDBQueryPartitioningWhereTester extends DuckDBQueryPartitioningB
 		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
 	}
 
+	@Override
+	Node<DuckDBExpression> generatePredicate() {
+		return gen.generateHavingClause();
+	}
 }

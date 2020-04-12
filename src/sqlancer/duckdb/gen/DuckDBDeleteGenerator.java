@@ -16,7 +16,7 @@ public class DuckDBDeleteGenerator {
 	public static Query generate(DuckDBGlobalState globalState) {
 		StringBuilder sb = new StringBuilder("DELETE FROM ");
 		Set<String> errors = new HashSet<>();
-		DuckDBTable table = globalState.getSchema().getRandomTable();
+		DuckDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
 		sb.append(table.getName());
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");

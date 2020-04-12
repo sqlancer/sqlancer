@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -19,12 +18,9 @@ import sqlancer.duckdb.ast.DuckDBExpression;
 public class DuckDBUpdateGenerator {
 	
 	public static Query getQuery(DuckDBGlobalState globalState) {
-		if (true) {
-			// https://github.com/cwida/duckdb/issues/534
-			throw new IgnoreMeException();
-		}
 		StringBuilder sb = new StringBuilder("UPDATE ");
-		DuckDBTable table = globalState.getSchema().getRandomTable();
+		Set<String> errors = new HashSet<>();
+		DuckDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
 		sb.append(table.getName());
 		DuckDBExpressionGenerator gen = new DuckDBExpressionGenerator(globalState).setColumns(table.getColumns());
 		sb.append(" SET ");
@@ -38,12 +34,12 @@ public class DuckDBUpdateGenerator {
 			Node<DuckDBExpression> expr;
 			if (Randomly.getBooleanWithSmallProbability()) {
 				expr = gen.generateExpression();
+				DuckDBErrors.addExpressionErrors(errors);
 			} else {
 				expr = gen.generateConstant();
 			}
 			sb.append(DuckDBToStringVisitor.asString(expr));
 		}
-		Set<String> errors = new HashSet<>();
 		DuckDBErrors.addInsertErrors(errors);
 		return new QueryAdapter(sb.toString(), errors);
 	}

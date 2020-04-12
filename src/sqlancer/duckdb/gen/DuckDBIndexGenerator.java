@@ -27,7 +27,7 @@ public class DuckDBIndexGenerator {
 		sb.append("INDEX ");
 		sb.append(Randomly.fromOptions("i0", "i1", "i2", "i3", "i4")); // cannot query this information
 		sb.append(" ON ");
-		DuckDBTable table = globalState.getSchema().getRandomTable();
+		DuckDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
 		sb.append(table.getName());
 		sb.append("(");
 		List<DuckDBColumn> columns = table.getRandomNonEmptyColumnSubset();
