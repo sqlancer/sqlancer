@@ -129,7 +129,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 	}
 
 	public enum DuckDBAggregateFunction {
-		MAX(1), MIN(1), AVG(1), COUNT(1), STRING_AGG(1), FIRST(1), LAST(1), STDDEV_SAMP(1), STDDEV_POP(1), VAR_POP(1),
+		MAX(1), MIN(1), AVG(1), COUNT(1), STRING_AGG(1), FIRST(1), STDDEV_SAMP(1), STDDEV_POP(1), VAR_POP(1),
 		VAR_SAMP(1), COVAR_POP(1), COVAR_SAMP(1);
 
 		private int nrArgs;

@@ -10,6 +10,7 @@ import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.ast.newast.Node;
+import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
 import sqlancer.duckdb.DuckDBSchema.DuckDBCompositeDataType;
@@ -45,6 +46,7 @@ public class DuckDBTableGenerator {
 			if (Randomly.getBooleanWithRatherLowProbability()) {
 				sb.append(" CHECK(");
 				sb.append(DuckDBToStringVisitor.asString(gen.generateExpression()));
+				DuckDBErrors.addExpressionErrors(errors);
 				sb.append(")");
 			}
 			if (Randomly.getBoolean()) {

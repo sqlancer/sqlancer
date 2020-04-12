@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 
 import sqlancer.AbstractAction;
 import sqlancer.DatabaseProvider;
@@ -22,6 +24,7 @@ import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.gen.DuckDBDeleteGenerator;
 import sqlancer.duckdb.gen.DuckDBIndexGenerator;
 import sqlancer.duckdb.gen.DuckDBInsertGenerator;
+import sqlancer.duckdb.gen.DuckDBRandomQuerySynthesizer;
 import sqlancer.duckdb.gen.DuckDBTableGenerator;
 import sqlancer.duckdb.gen.DuckDBUpdateGenerator;
 import sqlancer.duckdb.gen.DuckDBViewGenerator;
@@ -36,7 +39,13 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 		ANALYZE((g) -> new QueryAdapter("ANALYZE;")),
 		DELETE(DuckDBDeleteGenerator::generate),
 		UPDATE(DuckDBUpdateGenerator::getQuery),
-		CREATE_VIEW(DuckDBViewGenerator::generate);
+		CREATE_VIEW(DuckDBViewGenerator::generate),
+		EXPLAIN((g) -> {
+			Set<String> errors = new HashSet<>();
+			DuckDBErrors.addExpressionErrors(errors);;
+			DuckDBErrors.addGroupByErrors(errors);
+			return new QueryAdapter("EXPLAIN " + DuckDBToStringVisitor.asString(DuckDBRandomQuerySynthesizer.generateSelect(g, Randomly.smallNumber() + 1)), errors);	
+		});
 
 
 		private final QueryProvider<DuckDBGlobalState> queryProvider;
@@ -61,6 +70,7 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 		case VACUUM: // seems to be ignored
 		case ANALYZE:  // seems to be ignored
 		case DELETE:
+		case EXPLAIN:
 			return r.getInteger(0, 2);
 		case CREATE_VIEW:
 			return 0;
