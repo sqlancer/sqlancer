@@ -31,14 +31,14 @@ public class DuckDBTableGenerator {
 			sb.append(columns.get(i).getName());
 			sb.append(" ");
 			sb.append(columns.get(i).getType());
-			if (Randomly.getBooleanWithRatherLowProbability() && columns.get(i).getType().getPrimitiveDataType() != DuckDBDataType.BOOLEAN && false /* https://github.com/cwida/duckdb/issues/495  */) {
+			if (Randomly.getBooleanWithRatherLowProbability() && columns.get(i).getType().getPrimitiveDataType() != DuckDBDataType.BOOLEAN) {
 				sb.append(" UNIQUE");
 			}
 			if (Randomly.getBooleanWithRatherLowProbability()) {
 				sb.append(" NOT NULL");
 			}
 		}
-		if (Randomly.getBoolean() && false /* https://github.com/cwida/duckdb/issues/495  */) {
+		if (Randomly.getBoolean()) {
 			errors.add("Invalid type for index");
 			List<DuckDBColumn> primaryKeyColumns = Randomly.nonEmptySubset(columns);
 			sb.append(", PRIMARY KEY(");

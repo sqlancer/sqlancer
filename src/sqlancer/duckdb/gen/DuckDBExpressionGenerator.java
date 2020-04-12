@@ -116,10 +116,10 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 	public enum DBFunction {
 		ACOS(1), ASIN(1), ATAN(1), COS(1), SIN(1), TAN(1), COT(1), ATAN2(1), CEIL(1), CEILING(1), FLOOR(1), LOG(1),
 		LOG10(1), LOG2(1), LN(1), PI(0), SQRT(1), POWER(1), CBRT(1), CONTAINS(2), PREFIX(2), SUFFIX(2), ABS(1),
-		/*ROUND(2) https://github.com/cwida/duckdb/issues/521 ,*/ LENGTH(1), LOWER(1), UPPER(1), SUBSTRING(3), REVERSE(1), CONCAT(1, true), CONCAT_WS(1, true),
-		INSTR(2), PRINTF(1, true);
-//		REGEXP_MATCHES(2),
-//		REGEX_REPLACE(3);
+		ROUND(2), LENGTH(1), LOWER(1), UPPER(1), SUBSTRING(3), REVERSE(1), /*CONCAT(1, true), https://github.com/cwida/duckdb/issues/526 */ CONCAT_WS(1, true),
+		INSTR(2), PRINTF(1, true),
+		REGEXP_MATCHES(2),
+		REGEX_REPLACE(3);
 
 		private int nrArgs;
 		private boolean isVariadic;

@@ -18,10 +18,6 @@ import sqlancer.duckdb.ast.DuckDBExpression;
 public class DuckDBIndexGenerator {
 	
 	public static Query getQuery(DuckDBGlobalState globalState) {
-		if (true) {
-			// https://github.com/cwida/duckdb/issues/495
-			throw new IgnoreMeException();
-		}
 		Set<String> errors = new HashSet<>();
 		StringBuilder sb = new StringBuilder();
 		sb.append("CREATE ");
