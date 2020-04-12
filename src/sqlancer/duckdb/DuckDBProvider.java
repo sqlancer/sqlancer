@@ -18,6 +18,7 @@ import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.StatementExecutor;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
+import sqlancer.duckdb.gen.DuckDBDeleteGenerator;
 import sqlancer.duckdb.gen.DuckDBIndexGenerator;
 import sqlancer.duckdb.gen.DuckDBInsertGenerator;
 import sqlancer.duckdb.gen.DuckDBTableGenerator;
@@ -30,7 +31,8 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 		INSERT(DuckDBInsertGenerator::getQuery),
 		CREATE_INDEX(DuckDBIndexGenerator::getQuery),
 		VACUUM((g) -> new QueryAdapter("VACUUM;")),
-		ANALYZE((g) -> new QueryAdapter("ANALYZE;"));
+		ANALYZE((g) -> new QueryAdapter("ANALYZE;")),
+		DELETE(DuckDBDeleteGenerator::generate);
 
 
 		private final QueryProvider<DuckDBGlobalState> queryProvider;
@@ -53,6 +55,7 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 			return r.getInteger(0, 4);
 		case VACUUM: // seems to be ignored
 		case ANALYZE:  // seems to be ignored
+		case DELETE:
 			return r.getInteger(0, 2);
 		default:
 			throw new AssertionError(a);
