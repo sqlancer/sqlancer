@@ -9,7 +9,8 @@ public class DuckDBErrors {
 		errors.add("ORDER term out of range - should be between ");
 		errors.add("You might need to add explicit type casts.");
 		errors.add("can't be cast because the value is out of range for the destination type");
-		errors.add("Invalid TypeId -1"); // TODO report
+		errors.add("field value out of range");
+		errors.add("Not implemented: Unimplemented type for cast");
 		
 		if (true) {
 			// https://github.com/cwida/duckdb/issues/513
@@ -29,6 +30,8 @@ public class DuckDBErrors {
 		errors.add("invalid escape sequence");
 		errors.add("no argument for repetition operator: ");
 		errors.add("bad repetition operator");
+		errors.add("trailing \\");
+		errors.add("invalid perl operator");
 	}
 
 	private static void addFunctionErrors(Set<String> errors) {

@@ -12,7 +12,6 @@ import sqlancer.Randomly;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
 import sqlancer.duckdb.DuckDBSchema.DuckDBCompositeDataType;
-import sqlancer.duckdb.DuckDBSchema.DuckDBDataType;
 
 public class DuckDBTableGenerator {
 
@@ -31,7 +30,7 @@ public class DuckDBTableGenerator {
 			sb.append(columns.get(i).getName());
 			sb.append(" ");
 			sb.append(columns.get(i).getType());
-			if (Randomly.getBooleanWithRatherLowProbability() && columns.get(i).getType().getPrimitiveDataType() != DuckDBDataType.BOOLEAN) {
+			if (Randomly.getBooleanWithRatherLowProbability()) {
 				sb.append(" UNIQUE");
 			}
 			if (Randomly.getBooleanWithRatherLowProbability()) {

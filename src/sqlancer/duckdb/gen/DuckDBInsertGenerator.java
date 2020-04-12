@@ -42,6 +42,9 @@ public class DuckDBInsertGenerator extends AbstractInsertGenerator<DuckDBColumn>
 		errors.add("duplicate key value violates primary key or unique constraint");
 		errors.add("can't be cast because the value is out of range for the destination type");
 		errors.add("Could not convert string");
+		errors.add("timestamp field value out of range");
+		
+		errors.add("Not implemented: Unimplemented type for cast"); // TODO: report?
 		
 		return new QueryAdapter(sb.toString(), errors);
 	}

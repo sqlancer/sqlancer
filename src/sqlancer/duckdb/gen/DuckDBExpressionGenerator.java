@@ -92,6 +92,8 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 			return DuckDBConstant.createIntConstant(globalState.getRandomly().getInteger(-30, 30)); // TODO:
 																									// https://github.com/cwida/duckdb/issues/495
 		case VARCHAR:
+		case DATE: // TODO
+		case TIMESTAMP: // TODO
 			return DuckDBConstant.createIntConstant(globalState.getRandomly().getInteger());
 //			return DuckDBConstant.createStringConstant(globalState.getRandomly().getString());
 		case BOOLEAN:

@@ -19,10 +19,19 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
 
 	public static enum DuckDBDataType {
 
-		INT, VARCHAR, BOOLEAN, FLOAT;
+		INT, VARCHAR, BOOLEAN, FLOAT, DATE, TIMESTAMP;
 
 		public static DuckDBDataType getRandom() {
-			return Randomly.fromOptions(values());
+			while (true) {
+				DuckDBDataType type = Randomly.fromOptions(values());
+				if (type == DATE) {
+					continue; // https://github.com/cwida/duckdb/issues/531
+				}
+				if (type == TIMESTAMP) {
+					continue; // https://github.com/cwida/duckdb/issues/532
+				}
+				return type;
+			}
 		}
 
 	}
@@ -66,6 +75,8 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
 				break;
 			case BOOLEAN:
 			case VARCHAR:
+			case DATE:
+			case TIMESTAMP:
 				size = 0;
 				break;
 			default:
@@ -106,6 +117,10 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
 				}
 			case BOOLEAN:
 				return Randomly.fromOptions("BOOLEAN", "BOOL");
+			case TIMESTAMP:
+				return Randomly.fromOptions("TIMESTAMP", "DATETIME");
+			case DATE:
+				return Randomly.fromOptions("DATE");
 			default:
 				throw new AssertionError(getPrimitiveDataType());
 			}
@@ -179,6 +194,12 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
 			break;
 		case "BOOLEAN":
 			primitiveType = DuckDBDataType.BOOLEAN;
+			break;
+		case "DATE":
+			primitiveType = DuckDBDataType.DATE;
+			break;
+		case "TIMESTAMP":
+			primitiveType = DuckDBDataType.TIMESTAMP;
 			break;
 		default:
 			throw new AssertionError(typeString);
