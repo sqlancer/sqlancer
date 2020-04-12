@@ -1,5 +1,8 @@
 package sqlancer.duckdb.gen;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.ast.BinaryOperatorNode.Operator;
@@ -9,6 +12,8 @@ import sqlancer.ast.newast.NewBinaryOperatorNode;
 import sqlancer.ast.newast.NewCaseOperatorNode;
 import sqlancer.ast.newast.NewFunctionNode;
 import sqlancer.ast.newast.NewInOperatorNode;
+import sqlancer.ast.newast.NewOrderingTerm;
+import sqlancer.ast.newast.NewOrderingTerm.Ordering;
 import sqlancer.ast.newast.NewUnaryPostfixOperatorNode;
 import sqlancer.ast.newast.NewUnaryPrefixOperatorNode;
 import sqlancer.ast.newast.Node;
@@ -113,6 +118,19 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 			throw new AssertionError();
 		}
 	}
+	
+	public List<Node<DuckDBExpression>> generateOrderBys() {
+		List<Node<DuckDBExpression>> expr = super.generateOrderBys();
+		List<Node<DuckDBExpression>> newExpr = new ArrayList<>(expr.size());
+		for (int i = 0; i < expr.size(); i++) {
+			Node<DuckDBExpression> curExpr = expr.get(i);
+			if (Randomly.getBoolean()) {
+				curExpr = new NewOrderingTerm<DuckDBExpression>(curExpr, Ordering.getRandom());
+			}
+			newExpr.add(curExpr);
+		}
+		return newExpr;
+	};
 
 	public class DuckDBCastOperation extends NewUnaryPostfixOperatorNode<DuckDBExpression> {
 
