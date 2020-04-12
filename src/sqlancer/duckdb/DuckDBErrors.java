@@ -12,9 +12,10 @@ public class DuckDBErrors {
 		errors.add("field value out of range");
 		errors.add("Not implemented: Unimplemented type for cast");
 		
+
 		if (true) {
-			// https://github.com/cwida/duckdb/issues/513
-			errors.add("Not implemented: Unimplemented type for nested loop join!");
+			// https://github.com/cwida/duckdb/issues/533
+			errors.add("Conversion: Invalid TypeId -1"); 
 		}
 		
 		errors.add("Type mismatch when combining rows"); // BETWEEN
@@ -37,6 +38,16 @@ public class DuckDBErrors {
 	private static void addFunctionErrors(Set<String> errors) {
 		errors.add("SUBSTRING cannot handle negative offsets");
 		errors.add("is undefined outside [-1,1]"); // ACOS etc
+	}
+
+	public static void addInsertErrors(Set<String> errors) {
+		errors.add("NOT NULL constraint failed");
+		errors.add("PRIMARY KEY or UNIQUE constraint violated");
+		errors.add("duplicate key value violates primary key or unique constraint");
+		errors.add("can't be cast because the value is out of range for the destination type");
+		errors.add("Could not convert string");
+		errors.add("timestamp field value out of range");
+		errors.add("Not implemented: Unimplemented type for cast"); // TODO: report?		
 	}
 
 }

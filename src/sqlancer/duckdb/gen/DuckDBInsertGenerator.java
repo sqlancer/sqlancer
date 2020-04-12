@@ -11,6 +11,7 @@ import sqlancer.QueryAdapter;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
 import sqlancer.duckdb.DuckDBSchema.DuckDBTable;
+import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBToStringVisitor;
 import sqlancer.gen.AbstractInsertGenerator;
 
@@ -37,15 +38,7 @@ public class DuckDBInsertGenerator extends AbstractInsertGenerator<DuckDBColumn>
 		sb.append(")");
 		sb.append(" VALUES ");
 		insertColumns(columns);
-		errors.add("NOT NULL constraint failed");
-		errors.add("PRIMARY KEY or UNIQUE constraint violated");
-		errors.add("duplicate key value violates primary key or unique constraint");
-		errors.add("can't be cast because the value is out of range for the destination type");
-		errors.add("Could not convert string");
-		errors.add("timestamp field value out of range");
-		
-		errors.add("Not implemented: Unimplemented type for cast"); // TODO: report?
-		
+		DuckDBErrors.addInsertErrors(errors);
 		return new QueryAdapter(sb.toString(), errors);
 	}
 

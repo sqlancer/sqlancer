@@ -22,6 +22,7 @@ import sqlancer.duckdb.gen.DuckDBDeleteGenerator;
 import sqlancer.duckdb.gen.DuckDBIndexGenerator;
 import sqlancer.duckdb.gen.DuckDBInsertGenerator;
 import sqlancer.duckdb.gen.DuckDBTableGenerator;
+import sqlancer.duckdb.gen.DuckDBUpdateGenerator;
 import sqlancer.duckdb.test.DuckDBQueryPartitioningWhereTester;
 
 public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckDBOptions> {
@@ -32,7 +33,8 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 		CREATE_INDEX(DuckDBIndexGenerator::getQuery),
 		VACUUM((g) -> new QueryAdapter("VACUUM;")),
 		ANALYZE((g) -> new QueryAdapter("ANALYZE;")),
-		DELETE(DuckDBDeleteGenerator::generate);
+		DELETE(DuckDBDeleteGenerator::generate),
+		UPDATE(DuckDBUpdateGenerator::getQuery);
 
 
 		private final QueryProvider<DuckDBGlobalState> queryProvider;
@@ -52,6 +54,7 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 		case INSERT:
 			return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
 		case CREATE_INDEX:
+		case UPDATE:
 			return r.getInteger(0, 4);
 		case VACUUM: // seems to be ignored
 		case ANALYZE:  // seems to be ignored
