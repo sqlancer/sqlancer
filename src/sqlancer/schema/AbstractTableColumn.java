@@ -17,7 +17,11 @@ public class AbstractTableColumn<T extends AbstractTable<?, ?>, U>  implements C
 	}
 	
 	public String getFullQualifiedName() {
-		return table.getName() + "." + getName();
+		if (table == null) {
+			return getName();
+		} else {
+			return table.getName() + "." + getName();
+		}
 	}
 	
 	public void setTable(T table) {

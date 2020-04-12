@@ -24,9 +24,6 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
 		public static DuckDBDataType getRandom() {
 			while (true) {
 				DuckDBDataType type = Randomly.fromOptions(values());
-				if (type == DATE) {
-					continue; // https://github.com/cwida/duckdb/issues/531
-				}
 				if (type == TIMESTAMP) {
 					continue; // https://github.com/cwida/duckdb/issues/532
 				}

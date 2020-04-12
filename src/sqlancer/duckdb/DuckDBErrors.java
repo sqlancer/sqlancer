@@ -46,7 +46,9 @@ public class DuckDBErrors {
 		errors.add("can't be cast because the value is out of range for the destination type");
 		errors.add("Could not convert string");
 		errors.add("timestamp field value out of range");
-		errors.add("Not implemented: Unimplemented type for cast"); // TODO: report?		
+		errors.add("Not implemented: Unimplemented type for cast"); // TODO: report?
+		errors.add("date/time field value out of range");
+		errors.add("CHECK constraint failed");
 	}
 
 	public static void addGroupByErrors(Set<String> errors) {

@@ -9,9 +9,13 @@ import java.util.stream.Collectors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.ast.newast.Node;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
 import sqlancer.duckdb.DuckDBSchema.DuckDBCompositeDataType;
+import sqlancer.duckdb.DuckDBToStringVisitor;
+import sqlancer.duckdb.ast.DuckDBExpression;
+import sqlancer.gen.UntypedExpressionGenerator;
 
 public class DuckDBTableGenerator {
 
@@ -23,6 +27,8 @@ public class DuckDBTableGenerator {
 		sb.append(tableName);
 		sb.append("(");
 		List<DuckDBColumn> columns = getNewColumns();
+		UntypedExpressionGenerator<Node<DuckDBExpression>, DuckDBColumn> gen = new DuckDBExpressionGenerator(
+				globalState).setColumns(columns);
 		for (int i = 0; i < columns.size(); i++) {
 			if (i != 0) {
 				sb.append(", ");
@@ -36,6 +42,16 @@ public class DuckDBTableGenerator {
 			if (Randomly.getBooleanWithRatherLowProbability()) {
 				sb.append(" NOT NULL");
 			}
+			if (Randomly.getBooleanWithRatherLowProbability()) {
+				sb.append(" CHECK(");
+				sb.append(DuckDBToStringVisitor.asString(gen.generateExpression()));
+				sb.append(")");
+			}
+			if (Randomly.getBoolean()) {
+				sb.append(" DEFAULT(");
+				sb.append(DuckDBToStringVisitor.asString(gen.generateConstant()));
+				sb.append(")");
+			}
 		}
 		if (Randomly.getBoolean()) {
 			errors.add("Invalid type for index");
@@ -47,7 +63,7 @@ public class DuckDBTableGenerator {
 		sb.append(")");
 		return new QueryAdapter(sb.toString(), errors, true);
 	}
-	
+
 	private static List<DuckDBColumn> getNewColumns() {
 		List<DuckDBColumn> columns = new ArrayList<>();
 		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
@@ -58,6 +74,4 @@ public class DuckDBTableGenerator {
 		return columns;
 	}
 
-	
-	
 }
