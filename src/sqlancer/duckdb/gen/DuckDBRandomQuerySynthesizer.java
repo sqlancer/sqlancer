@@ -10,6 +10,7 @@ import sqlancer.ast.newast.TableReferenceNode;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBTable;
 import sqlancer.duckdb.DuckDBSchema.DuckDBTables;
+import sqlancer.duckdb.ast.DuckDBConstant;
 import sqlancer.duckdb.ast.DuckDBExpression;
 import sqlancer.duckdb.ast.DuckDBJoin;
 import sqlancer.duckdb.ast.DuckDBSelect;
@@ -52,10 +53,10 @@ public class DuckDBRandomQuerySynthesizer {
 		}
 
 		if (Randomly.getBoolean()) {
-			select.setLimitClause(gen.generateExpression());
+			select.setLimitClause(DuckDBConstant.createIntConstant(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)));
 		}
 		if (Randomly.getBoolean()) {
-			select.setOffsetClause(gen.generateExpression());
+			select.setOffsetClause(DuckDBConstant.createIntConstant(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)));
 		}
 		if (Randomly.getBoolean()) {
 			select.setHavingClause(gen.generateHavingClause());

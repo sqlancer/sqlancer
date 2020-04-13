@@ -1,12 +1,13 @@
 package sqlancer.duckdb.test;
 
 import java.sql.SQLException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import sqlancer.Randomly;
 import sqlancer.TestOracle;
 import sqlancer.ast.newast.ColumnReferenceNode;
 import sqlancer.ast.newast.NewUnaryPostfixOperatorNode;
@@ -65,7 +66,13 @@ public class DuckDBQueryPartitioningBase implements TestOracle {
 	}
 
 	List<Node<DuckDBExpression>> generateFetchColumns() {
-		return Arrays.asList(new ColumnReferenceNode<DuckDBExpression, DuckDBColumn>(targetTables.getColumns().get(0)));
+		List<Node<DuckDBExpression>> columns = new ArrayList<>();
+		if (Randomly.getBoolean()) {
+			columns.add(new ColumnReferenceNode<DuckDBExpression, DuckDBSchema.DuckDBColumn>(new DuckDBColumn("*", null, false, false)));
+		} else {
+			columns = Randomly.nonEmptySubset(targetTables.getColumns()).stream().map(c -> new ColumnReferenceNode<DuckDBExpression, DuckDBColumn>(c)).collect(Collectors.toList());
+		}
+		return columns;
 	}
 
 	Node<DuckDBExpression> generatePredicate() {

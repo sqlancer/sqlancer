@@ -22,6 +22,9 @@ public class DuckDBErrors {
 		addRegexErrors(errors);
 		
 		addFunctionErrors(errors);
+		
+		errors.add("Overflow in multiplication");
+		errors.add("Out of Range");
 	}
 
 	private static void addRegexErrors(Set<String> errors) {

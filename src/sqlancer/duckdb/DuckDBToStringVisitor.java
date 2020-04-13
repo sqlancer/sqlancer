@@ -69,6 +69,14 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
 			sb.append(" ORDER BY ");
 			visit(select.getOrderByExpressions());
 		}
+		if (select.getLimitClause() != null) {
+			sb.append(" LIMIT ");
+			visit(select.getLimitClause());
+		}
+		if (select.getOffsetClause() != null) {
+			sb.append(" OFFSET ");
+			visit(select.getOffsetClause());
+		}
 	}
 
 	public static String asString(Node<DuckDBExpression> expr) {
