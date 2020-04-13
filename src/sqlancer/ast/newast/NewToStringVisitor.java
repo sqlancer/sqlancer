@@ -29,6 +29,8 @@ public abstract class NewToStringVisitor<E> {
 			visit((NewCaseOperatorNode<E>) expr);
 		} else if (expr instanceof NewOrderingTerm<?>) {
 			visit((NewOrderingTerm<E>) expr);
+		} else if (expr instanceof NewAliasNode<?>) {
+			visit((NewAliasNode<E>) expr);
 		}
 		
 		else {
@@ -47,6 +49,12 @@ public abstract class NewToStringVisitor<E> {
 
 	public void visit(TableReferenceNode<E, ?> tableRef) {
 		sb.append(tableRef.getTable().getName());
+	}
+	
+	public void visit(NewAliasNode<E> alias) {
+		visit(alias.getExpr());
+		sb.append(" AS ");
+		sb.append(alias.getAlias());
 	}
 	
 	public void visit(NewOrderingTerm<E> ordering) {

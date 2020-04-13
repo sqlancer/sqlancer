@@ -65,7 +65,7 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
 			int size = -1;
 			switch (type) {
 			case INT:
-				size = Randomly.fromOptions(2, 4, 8);
+				size = Randomly.fromOptions(1, 2, 4, 8);
 				break;
 			case FLOAT:
 				size = Randomly.fromOptions(4, 8);
@@ -98,6 +98,8 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
 					return Randomly.fromOptions("INTEGER", "INT", "INT4", "SIGNED");
 				case 2:
 					return Randomly.fromOptions("SMALLINT", "INT2");
+				case 1:
+					return Randomly.fromOptions("TINYINT", "INT1");
 				default:
 					throw new AssertionError(size);
 				}
@@ -177,6 +179,10 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
 		case "BIGINT":
 			primitiveType = DuckDBDataType.INT;
 			size = 8;
+			break;
+		case "TINYINT":
+			primitiveType = DuckDBDataType.INT;
+			size = 1;
 			break;
 		case "VARCHAR":
 			primitiveType = DuckDBDataType.VARCHAR;

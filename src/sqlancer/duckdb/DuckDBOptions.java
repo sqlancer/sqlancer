@@ -12,6 +12,7 @@ import sqlancer.CompositeTestOracle;
 import sqlancer.MainOptions.DBMSConverter;
 import sqlancer.TestOracle;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
+import sqlancer.duckdb.test.DuckDBQueryPartitioningAggregateTester;
 import sqlancer.duckdb.test.DuckDBQueryPartitioningHavingTester;
 import sqlancer.duckdb.test.DuckDBQueryPartitioningWhereTester;
 
@@ -34,12 +35,21 @@ public class DuckDBOptions {
 				return new DuckDBQueryPartitioningWhereTester(globalState);
 			}
 		},
+		AGGREGATE {
+
+			@Override
+			public TestOracle create(DuckDBGlobalState globalState) throws SQLException {
+				return new DuckDBQueryPartitioningAggregateTester(globalState);
+			}
+			
+		},
 		QUERY_PARTITIONING {
 			@Override
 			public TestOracle create(DuckDBGlobalState globalState) throws SQLException {
 				List<TestOracle> oracles = new ArrayList<>();
 				oracles.add(new DuckDBQueryPartitioningWhereTester(globalState));
 				oracles.add(new DuckDBQueryPartitioningHavingTester(globalState));
+				oracles.add(new DuckDBQueryPartitioningAggregateTester(globalState));
 				return new CompositeTestOracle(oracles);
 			}
 		};

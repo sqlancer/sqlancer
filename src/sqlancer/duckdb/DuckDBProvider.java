@@ -71,9 +71,8 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 		case ANALYZE:  // seems to be ignored
 		case DELETE:
 		case EXPLAIN:
-			return r.getInteger(0, 2);
 		case CREATE_VIEW:
-			return 0;
+			return r.getInteger(0, 2);
 		default:
 			throw new AssertionError(a);
 		}

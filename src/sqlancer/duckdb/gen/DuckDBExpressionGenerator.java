@@ -3,7 +3,6 @@ package sqlancer.duckdb.gen;
 import java.util.ArrayList;
 import java.util.List;
 
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.ast.newast.ColumnReferenceNode;
@@ -65,10 +64,6 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 			return new NewBinaryOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
 					generateExpression(depth + 1), op);
 		case BINARY_ARITHMETIC:
-			if (true) {
-				// https://github.com/cwida/duckdb/issues/530
-				throw new IgnoreMeException();
-			}
 			return new NewBinaryOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
 					generateExpression(depth + 1), DuckDBBinaryArithmeticOperator.getRandom());
 		case CAST:
@@ -132,7 +127,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 		return newExpr;
 	};
 
-	public class DuckDBCastOperation extends NewUnaryPostfixOperatorNode<DuckDBExpression> {
+	public static class DuckDBCastOperation extends NewUnaryPostfixOperatorNode<DuckDBExpression> {
 
 		public DuckDBCastOperation(Node<DuckDBExpression> expr, DuckDBCompositeDataType type) {
 			super(expr, new Operator() {
@@ -147,8 +142,8 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 	}
 
 	public enum DuckDBAggregateFunction {
-		MAX(1), MIN(1), AVG(1), COUNT(1), STRING_AGG(1), FIRST(1); /*, STDDEV_SAMP(1), STDDEV_POP(1), VAR_POP(1),
-		VAR_SAMP(1), COVAR_POP(1), COVAR_SAMP(1); can result in NaNs, see https://github.com/cwida/duckdb/issues/530 */
+		MAX(1), MIN(1), AVG(1), COUNT(1), STRING_AGG(1), FIRST(1), SUM(1), STDDEV_SAMP(1), STDDEV_POP(1), VAR_POP(1),
+		VAR_SAMP(1), COVAR_POP(1), COVAR_SAMP(1);
 
 		private int nrArgs;
 
@@ -167,7 +162,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 	}
 
 	public enum DBFunction {
-		ACOS(1), ASIN(1), ATAN(1), COS(1), SIN(1), TAN(1), COT(1), ATAN2(1), CEIL(1), CEILING(1), FLOOR(1), LOG(1),
+		/* ACOS(1), ASIN(1), ATAN(1), COS(1), SIN(1), TAN(1), COT(1), ATAN2(1), https://github.com/cwida/duckdb/issues/523 */CEIL(1), CEILING(1), FLOOR(1), LOG(1),
 		LOG10(1), LOG2(1), LN(1), PI(0), SQRT(1), POWER(1), CBRT(1), CONTAINS(2), PREFIX(2), SUFFIX(2), ABS(1),
 		ROUND(2), LENGTH(1), LOWER(1), UPPER(1), SUBSTRING(3), REVERSE(1), CONCAT(1, true), CONCAT_WS(1, true),
 		INSTR(2), PRINTF(1, true), REGEXP_MATCHES(2),
@@ -301,6 +296,15 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 			return textRepr;
 		}
 
+	}
+
+	public NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> generateArgsForAggregate(DuckDBAggregateFunction aggregateFunction) {
+		return new NewFunctionNode<DuckDBExpression, DuckDBExpressionGenerator.DuckDBAggregateFunction>(generateExpressions(aggregateFunction.getNrArgs()), aggregateFunction);
+	}
+
+	public Node<DuckDBExpression> generateAggregate() {
+		DuckDBAggregateFunction aggrFunc = DuckDBAggregateFunction.getRandom();
+		return generateArgsForAggregate(aggrFunc);
 	}
 
 }

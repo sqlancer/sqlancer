@@ -41,6 +41,7 @@ public class DuckDBErrors {
 		errors.add("is undefined outside [-1,1]"); // ACOS etc
 		errors.add("invalid type specifier"); // PRINTF
 		errors.add("argument index out of range"); // PRINTF
+		errors.add("invalid format string"); // PRINTF
 	}
 
 	public static void addInsertErrors(Set<String> errors) {
