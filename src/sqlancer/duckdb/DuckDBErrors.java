@@ -32,11 +32,15 @@ public class DuckDBErrors {
 		errors.add("bad repetition operator");
 		errors.add("trailing \\");
 		errors.add("invalid perl operator");
+		errors.add("invalid character class range");
+		errors.add("width is not integer");
 	}
 
 	private static void addFunctionErrors(Set<String> errors) {
 		errors.add("SUBSTRING cannot handle negative offsets");
 		errors.add("is undefined outside [-1,1]"); // ACOS etc
+		errors.add("invalid type specifier"); // PRINTF
+		errors.add("argument index out of range"); // PRINTF
 	}
 
 	public static void addInsertErrors(Set<String> errors) {
