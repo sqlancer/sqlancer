@@ -84,6 +84,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 		case SET:
 			return r.getInteger(0, 5);
 		case VIEW_GENERATOR:
+			// https://github.com/tidb-challenge-program/bug-hunting-issue/issues/8
 			return r.getInteger(0, 0);
 		default:
 			throw new AssertionError(a);
@@ -104,7 +105,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 		globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
 		StateLogger logger = globalState.getLogger();
 		StateToReproduce state = globalState.getState();
-		for (int i = 0; i < Randomly.fromOptions(1, 2, 3); i++) {
+		for (int i = 0; i < Randomly.fromOptions(1, 2); i++) {
 			boolean success = false;
 			do {
 				Query qt = new TiDBTableGenerator().getQuery(globalState);

@@ -15,6 +15,7 @@ import sqlancer.tidb.TiDBExpressionGenerator;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
 import sqlancer.tidb.TiDBSchema.TiDBDataType;
+import sqlancer.tidb.TiDBSchema.TiDBTable;
 import sqlancer.tidb.visitor.TiDBVisitor;
 
 public class TiDBTableGenerator {
@@ -37,6 +38,18 @@ public class TiDBTableGenerator {
 		
 		StringBuilder sb = new StringBuilder("CREATE TABLE ");
 		sb.append(tableName);
+		
+		if (Randomly.getBoolean() && globalState.getSchema().getDatabaseTables().size() > 0) {
+			sb.append(" LIKE ");
+			TiDBTable otherTable = globalState.getSchema().getRandomTable();
+			sb.append(otherTable.getName());
+		} else {
+			createNewTable(gen, sb);
+		}
+		return new QueryAdapter(sb.toString(), errors, true);
+	}
+
+	private void createNewTable(TiDBExpressionGenerator gen, StringBuilder sb) {
 		sb.append("(");
 		for (int i = 0; i < columns.size(); i++) {
 			if (i != 0) {
@@ -95,7 +108,19 @@ public class TiDBTableGenerator {
 			errors.add(" used in key specification without a key length");
 		}
 		sb.append(")");
-		return new QueryAdapter(sb.toString(), errors, true);
+		if (Randomly.getBooleanWithRatherLowProbability()) {
+			sb.append("PARTITION BY HASH(");
+			sb.append(TiDBVisitor.asString(gen.generateExpression()));
+			sb.append(") ");
+			sb.append("PARTITIONS ");
+			sb.append(Randomly.getNotCachedInteger(1, 100));
+			errors.add("Constant, random or timezone-dependent expressions in (sub)partitioning function are not allowed");
+			errors.add("This partition function is not allowed");
+			errors.add("A PRIMARY KEY must include all columns in the table's partitioning function");
+			errors.add("A UNIQUE INDEX must include all columns in the table's partitioning function");
+			errors.add("is of a not allowed type for this type of partitioning");
+			errors.add("The PARTITION function returns the wrong type");
+		}
 	}
 
 	private void appendSizeSpecifiers(StringBuilder sb, TiDBDataType type) {
@@ -109,7 +134,9 @@ public class TiDBTableGenerator {
 
 	static void appendSpecifiers(StringBuilder sb, TiDBDataType type) {
 		if (type == TiDBDataType.TEXT) {
-			sb.append("(500)");
+			sb.append("(");
+			sb.append(Randomly.getNotCachedInteger(1, 500));
+			sb.append(")");
 		}
 	}
 }

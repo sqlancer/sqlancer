@@ -76,7 +76,7 @@ public class TiDBFunctionCall implements TiDBExpression {
 		CONCAT(1, true),
 		/* https://github.com/pingcap/tidb/issues/16023 */
 //		CONCAT_WS(2, true),
-		ELT(2, true),
+//		ELT(2, true), https://github.com/tidb-challenge-program/bug-hunting-issue/issues/4
 		EXPORT_SET(0) {
 			@Override
 			public int getNrArgs() {
@@ -89,7 +89,7 @@ public class TiDBFunctionCall implements TiDBExpression {
 		RIGHT(2),
 		// RPAD TODO
 		RTRIM(1),
-		SPACE(1),
+		//SPACE(1), https://github.com/tidb-challenge-program/bug-hunting-issue/issues/6
 		STRCMP(2),
 		SUBSTRING(2), // TODO: support other versions
 		SUBSTRING_INDEX(3),

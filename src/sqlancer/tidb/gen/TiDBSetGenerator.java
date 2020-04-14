@@ -42,6 +42,7 @@ public class TiDBSetGenerator {
 		TIDB_WAIT_SPLIT_REGION_FINISH("tidb_wait_split_region_finish", (r) -> Randomly.fromOptions(0, 1)),
 		// TODO: global
 //		TIDB_SCATTER_REGION("tidb_scatter_region", (r) -> Randomly.fromOptions(0, 1));
+		TIDB_ENABLE_STMT_SUMMARY("tidb_enable_stmt_summary", (r) -> Randomly.fromOptions(0, 1)),
 		TIDB_ENABLE_CHUNK_RPC("tidb_enable_chunk_rpc", (r) -> Randomly.fromOptions(0, 1));
 
 		private String name;
