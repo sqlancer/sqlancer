@@ -8,9 +8,6 @@ public class TiDBBugs {
 	// // https://github.com/pingcap/tidb/issues/15988
 	public static boolean BUG_15988 = true;
 
-	//  https://github.com/pingcap/tidb/issues/15994
-	public static boolean BUG_15994 = true;
-
 	// https://github.com/pingcap/tidb/issues/16028
 	public static boolean BUG_16028 = true;
 	

@@ -80,7 +80,6 @@ public class TiDBHintGenerator {
 			if (true) {
 				// https://github.com/pingcap/tidb/issues/15994
 				// https://github.com/pingcap/tidb/issues/15992
-				// https://github.com/pingcap/tidb/issues/15991
 				throw new IgnoreMeException();
 			}
 			if (table.hasIndexes()) {

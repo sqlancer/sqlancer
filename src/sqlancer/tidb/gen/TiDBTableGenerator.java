@@ -50,7 +50,7 @@ public class TiDBTableGenerator {
 			appendSizeSpecifiers(sb, type);
 			sb.append(" ");
 			boolean isGeneratedColumn = Randomly.getBooleanWithRatherLowProbability();
-			if (isGeneratedColumn && !TiDBBugs.BUG_15994 & !TiDBBugs.BUG_16020) {
+			if (isGeneratedColumn && !TiDBBugs.BUG_16020) {
 				sb.append(" AS (");
 				sb.append(TiDBVisitor.asString(gen.generateExpression()));
 				sb.append(") ");

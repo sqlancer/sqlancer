@@ -99,14 +99,6 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
 		}
 	}
 
-	private List<TiDBExpression> generateExpressions(int depth, int nrArgs) {
-		List<TiDBExpression> args = new ArrayList<>();
-		for (int i = 0; i < nrArgs; i++) {
-			args.add(generateExpression(depth + 1));
-		}
-		return args;
-	}
-
 	@Override
 	protected TiDBExpression generateColumn() {
 		TiDBColumn column = Randomly.fromList(columns);
