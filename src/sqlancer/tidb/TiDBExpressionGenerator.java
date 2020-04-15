@@ -17,6 +17,7 @@ import sqlancer.tidb.ast.TiDBBinaryComparisonOperation;
 import sqlancer.tidb.ast.TiDBBinaryComparisonOperation.TiDBComparisonOperator;
 import sqlancer.tidb.ast.TiDBBinaryLogicalOperation;
 import sqlancer.tidb.ast.TiDBBinaryLogicalOperation.TiDBBinaryLogicalOperator;
+import sqlancer.tidb.ast.TiDBCastOperation;
 import sqlancer.tidb.ast.TiDBCollate;
 import sqlancer.tidb.ast.TiDBColumnReference;
 import sqlancer.tidb.ast.TiDBConstant;
@@ -49,7 +50,8 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
 		COLLATE,
 		FUNCTION,
 		BINARY_LOGICAL,
-		BINARY_BIT
+		BINARY_BIT,
+		CAST
 //		BINARY_ARITHMETIC
 	}
 
@@ -94,6 +96,8 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
 			return new TiDBBinaryLogicalOperation(generateExpression(depth + 1), generateExpression(depth + 1), TiDBBinaryLogicalOperator.getRandom());
 //		case BINARY_ARITHMETIC:
 //			return new TiDBBinaryArithmeticOperation(generateExpression(depth + 1), generateExpression(depth + 1), TiDBBinaryArithmeticOperator.getRandom());
+		case CAST:
+			return new TiDBCastOperation(generateExpression(depth + 1), Randomly.fromOptions("BINARY", "CHAR", /*"DATE", "DATETIME", "TIME", https://github.com/tidb-challenge-program/bug-hunting-issue/issues/13 */ "DECIMAL", "SIGNED", "UNSIGNED"));
 		default:
 			throw new AssertionError();
 		}

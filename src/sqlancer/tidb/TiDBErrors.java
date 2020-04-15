@@ -8,6 +8,8 @@ public class TiDBErrors {
 		errors.add("DECIMAL value is out of range");
 		errors.add("error parsing regexp");
 		errors.add("BIGINT UNSIGNED value is out of range");
+		errors.add("Data truncation: Truncated incorrect time value");
+		errors.add("Data truncation: Incorrect time value");
 		errors.add("overflows bigint");
 		errors.add("strconv.ParseFloat: parsing");
 		errors.add("in 'order clause'"); // int constants in order by clause
