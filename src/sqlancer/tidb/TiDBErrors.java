@@ -48,4 +48,15 @@ public class TiDBErrors {
 		errors.add("Unknown column");
 	}
 
+	public static void addInsertErrors(Set<String> errors) {
+		errors.add("Duplicate entry");
+		errors.add("cannot be null");
+		errors.add("doesn't have a default value");
+		errors.add("Out of range value");
+		errors.add("Incorrect tinyint value");
+		errors.add("Data truncation");
+		errors.add("Bad Number");
+		errors.add("The value specified for generated column"); // TODO: do not insert data into generated columns		
+	}
+
 }

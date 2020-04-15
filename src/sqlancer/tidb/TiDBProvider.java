@@ -34,6 +34,7 @@ import sqlancer.tidb.gen.TiDBInsertGenerator;
 import sqlancer.tidb.gen.TiDBRandomQuerySynthesizer;
 import sqlancer.tidb.gen.TiDBSetGenerator;
 import sqlancer.tidb.gen.TiDBTableGenerator;
+import sqlancer.tidb.gen.TiDBUpdateGenerator;
 import sqlancer.tidb.gen.TiDBViewGenerator;
 
 public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptions> {
@@ -44,6 +45,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 		TRUNCATE((g) -> new QueryAdapter("TRUNCATE " + g.getSchema().getRandomTable().getName())),
 		CREATE_INDEX(TiDBIndexGenerator::getQuery), DELETE(TiDBDeleteGenerator::getQuery),
 		SET(TiDBSetGenerator::getQuery),
+		UPDATE(TiDBUpdateGenerator::getQuery),
 		ADMIN_CHECKSUM_TABLE(
 				(g) -> new QueryAdapter("ADMIN CHECKSUM TABLE " + g.getSchema().getRandomTable().getName())),
 		VIEW_GENERATOR(TiDBViewGenerator::getQuery), ALTER_TABLE(TiDBAlterTableGenerator::getQuery), EXPLAIN((g) -> {
@@ -93,6 +95,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 		case ADMIN_CHECKSUM_TABLE:
 			return r.getInteger(0, 2);
 		case SET:
+		case UPDATE:
 			return r.getInteger(0, 5);
 		case VIEW_GENERATOR:
 			// https://github.com/tidb-challenge-program/bug-hunting-issue/issues/8

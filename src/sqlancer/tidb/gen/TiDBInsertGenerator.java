@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBExpressionGenerator;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
@@ -23,14 +24,7 @@ public class TiDBInsertGenerator {
 
 	public TiDBInsertGenerator(TiDBGlobalState globalState) {
 		this.globalState = globalState;
-		errors.add("Duplicate entry");
-		errors.add("cannot be null");
-		errors.add("doesn't have a default value");
-		errors.add("Out of range value");
-		errors.add("Incorrect tinyint value");
-		errors.add("Data truncation");
-		errors.add("Bad Number");
-		errors.add("The value specified for generated column"); // TODO: do not insert data into generated columns
+		TiDBErrors.addInsertErrors(errors);
 	}
 
 	public static Query getQuery(TiDBGlobalState globalState) throws SQLException {
