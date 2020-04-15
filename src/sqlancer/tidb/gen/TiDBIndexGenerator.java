@@ -51,6 +51,7 @@ public class TiDBIndexGenerator {
 			sb.append(" KEY_BLOCK_SIZE ");
 			sb.append(Randomly.getPositiveOrZeroNonCachedInteger());
 		}
+		errors.add("index already exist");
 		return new QueryAdapter(sb.toString(), errors, true);
 	}
 

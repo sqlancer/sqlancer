@@ -79,7 +79,6 @@ public class TiDBHintGenerator {
 		case USE_INDEX_MERGE:
 			if (true) {
 				// https://github.com/pingcap/tidb/issues/15994
-				// https://github.com/pingcap/tidb/issues/15992
 				throw new IgnoreMeException();
 			}
 			if (table.hasIndexes()) {

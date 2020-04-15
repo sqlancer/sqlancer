@@ -250,7 +250,7 @@ public final class Randomly {
 			chars = getInteger(0, 30);
 		}
 		for (int i = 0; i < chars; i++) {
-			if (Randomly.getBooleanWithRatherLowProbability() && false /* https://github.com/cwida/duckdb/issues/539 */) {
+			if (Randomly.getBooleanWithRatherLowProbability()) {
 				char val = (char) getInteger();
 				if (val != 0) {
 					sb.append(val); 

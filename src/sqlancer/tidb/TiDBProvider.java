@@ -5,7 +5,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
@@ -24,10 +26,12 @@ import sqlancer.StateToReproduce.MySQLStateToReproduce;
 import sqlancer.StatementExecutor;
 import sqlancer.TestOracle;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
+import sqlancer.tidb.gen.TiDBAlterTableGenerator;
 import sqlancer.tidb.gen.TiDBAnalyzeTableGenerator;
 import sqlancer.tidb.gen.TiDBDeleteGenerator;
 import sqlancer.tidb.gen.TiDBIndexGenerator;
 import sqlancer.tidb.gen.TiDBInsertGenerator;
+import sqlancer.tidb.gen.TiDBRandomQuerySynthesizer;
 import sqlancer.tidb.gen.TiDBSetGenerator;
 import sqlancer.tidb.gen.TiDBTableGenerator;
 import sqlancer.tidb.gen.TiDBViewGenerator;
@@ -42,7 +46,13 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 		SET(TiDBSetGenerator::getQuery),
 		ADMIN_CHECKSUM_TABLE(
 				(g) -> new QueryAdapter("ADMIN CHECKSUM TABLE " + g.getSchema().getRandomTable().getName())),
-		VIEW_GENERATOR(TiDBViewGenerator::getQuery);
+		VIEW_GENERATOR(TiDBViewGenerator::getQuery), ALTER_TABLE(TiDBAlterTableGenerator::getQuery), EXPLAIN((g) -> {
+			Set<String> errors = new HashSet<>();
+			TiDBErrors.addExpressionErrors(errors);
+			TiDBErrors.addExpressionHavingErrors(errors);
+			return new QueryAdapter(
+					"EXPLAIN " + TiDBRandomQuerySynthesizer.generate(g, Randomly.smallNumber() + 1).getQueryString(), errors);
+		});
 
 		private final QueryProvider<TiDBGlobalState> queryProvider;
 
@@ -76,6 +86,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 		case CREATE_INDEX:
 			return r.getInteger(0, 5);
 		case INSERT:
+		case EXPLAIN:
 			return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
 		case TRUNCATE:
 		case DELETE:
@@ -86,6 +97,8 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 		case VIEW_GENERATOR:
 			// https://github.com/tidb-challenge-program/bug-hunting-issue/issues/8
 			return r.getInteger(0, 0);
+		case ALTER_TABLE:
+			return r.getInteger(0, 10); // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/10
 		default:
 			throw new AssertionError(a);
 		}

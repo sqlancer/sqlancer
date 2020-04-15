@@ -31,6 +31,8 @@ public abstract class NewToStringVisitor<E> {
 			visit((NewOrderingTerm<E>) expr);
 		} else if (expr instanceof NewAliasNode<?>) {
 			visit((NewAliasNode<E>) expr);
+		} else if (expr instanceof NewPostfixTextNode<?>) {
+			visit((NewPostfixTextNode<E>) expr);
 		}
 		
 		else {
@@ -45,6 +47,11 @@ public abstract class NewToStringVisitor<E> {
 			}
 			visit(expressions.get(i));
 		}
+	}
+	
+	public void visit(NewPostfixTextNode<E> postFixText) {
+		visit(postFixText.getExpr());
+		sb.append(postFixText.getText());
 	}
 
 	public void visit(TableReferenceNode<E, ?> tableRef) {
@@ -95,9 +102,9 @@ public abstract class NewToStringVisitor<E> {
 
 	
 	public void visit(NewUnaryPostfixOperatorNode<E> opNode) {
-		sb.append("(");
+		sb.append("((");
 		visit(opNode.getExpr());
-		sb.append(" ");
+		sb.append(") ");
 		sb.append(opNode.getOperatorRepresentation());
 		sb.append(")");
 	}

@@ -35,6 +35,7 @@ public class SQLite3IndexGenerator {
 	private Query create() throws SQLException {
 		SQLite3Table t = globalState.getSchema().getRandomTableOrBailout(tab -> !tab.isView() && !tab.isVirtual() && !tab.isReadOnly());
 		String q = createIndex(t, t.getColumns());
+		errors.add("no such collation sequence: UINT");
 		errors.add("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)");
 		errors.add("subqueries prohibited in index expressions");
 		errors.add("subqueries prohibited in partial index WHERE clauses");

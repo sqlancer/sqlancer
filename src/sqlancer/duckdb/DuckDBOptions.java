@@ -12,6 +12,7 @@ import sqlancer.CompositeTestOracle;
 import sqlancer.MainOptions.DBMSConverter;
 import sqlancer.TestOracle;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
+import sqlancer.duckdb.test.DuckDBNoRECOracle;
 import sqlancer.duckdb.test.DuckDBQueryPartitioningAggregateTester;
 import sqlancer.duckdb.test.DuckDBQueryPartitioningHavingTester;
 import sqlancer.duckdb.test.DuckDBQueryPartitioningWhereTester;
@@ -23,6 +24,14 @@ public class DuckDBOptions {
 	public List<DuckDBOracle> oracle = Arrays.asList(DuckDBOracle.QUERY_PARTITIONING);
 
 	public static enum DuckDBOracle {
+		NOREC {
+
+			@Override
+			public TestOracle create(DuckDBGlobalState globalState) throws SQLException {
+				return new DuckDBNoRECOracle(globalState);
+			}
+			
+		},
 		HAVING {
 			@Override
 			public TestOracle create(DuckDBGlobalState globalState) throws SQLException {

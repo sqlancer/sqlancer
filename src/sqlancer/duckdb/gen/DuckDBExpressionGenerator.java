@@ -3,6 +3,7 @@ package sqlancer.duckdb.gen;
 import java.util.ArrayList;
 import java.util.List;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.ast.newast.ColumnReferenceNode;
@@ -162,7 +163,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 	}
 
 	public enum DBFunction {
-		/* ACOS(1), ASIN(1), ATAN(1), COS(1), SIN(1), TAN(1), COT(1), ATAN2(1), https://github.com/cwida/duckdb/issues/523 */CEIL(1), CEILING(1), FLOOR(1), LOG(1),
+		ACOS(1), ASIN(1), ATAN(1), COS(1), SIN(1), TAN(1), COT(1), ATAN2(1), CEIL(1), CEILING(1), FLOOR(1), LOG(1),
 		LOG10(1), LOG2(1), LN(1), PI(0), SQRT(1), POWER(1), CBRT(1), CONTAINS(2), PREFIX(2), SUFFIX(2), ABS(1),
 		ROUND(2), LENGTH(1), LOWER(1), UPPER(1), SUBSTRING(3), REVERSE(1), CONCAT(1, true), CONCAT_WS(1, true),
 		INSTR(2), PRINTF(1, true), REGEXP_MATCHES(2),
