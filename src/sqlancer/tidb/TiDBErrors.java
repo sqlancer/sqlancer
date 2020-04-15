@@ -10,12 +10,14 @@ public class TiDBErrors {
 		errors.add("BIGINT UNSIGNED value is out of range");
 		errors.add("Data truncation: Truncated incorrect time value");
 		errors.add("Data truncation: Incorrect time value");
+		errors.add("overflows double");
 		errors.add("overflows bigint");
 		errors.add("strconv.ParseFloat: parsing");
 		errors.add("in 'order clause'"); // int constants in order by clause
 		
 		// functions
 		errors.add("BIGINT value is out of range");
+		errors.add("doesn't have a default value"); // default
 		
 		// known issue: https://github.com/pingcap/tidb/issues/14819
 		errors.add("Wrong plan type for dataReaderBuilder");
@@ -53,6 +55,9 @@ public class TiDBErrors {
 		errors.add("cannot be null");
 		errors.add("doesn't have a default value");
 		errors.add("Out of range value");
+		errors.add("Incorrect double value");
+		errors.add("Incorrect float value");
+		errors.add("Incorrect int value");
 		errors.add("Incorrect tinyint value");
 		errors.add("Data truncation");
 		errors.add("Bad Number");

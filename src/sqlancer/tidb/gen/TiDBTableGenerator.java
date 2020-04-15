@@ -120,6 +120,7 @@ public class TiDBTableGenerator {
 			errors.add("A UNIQUE INDEX must include all columns in the table's partitioning function");
 			errors.add("is of a not allowed type for this type of partitioning");
 			errors.add("The PARTITION function returns the wrong type");
+			errors.add("UnknownType: *ast.WhenClause"); // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/16
 		}
 	}
 

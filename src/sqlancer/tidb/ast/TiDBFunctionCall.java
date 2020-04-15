@@ -100,7 +100,7 @@ public class TiDBFunctionCall implements TiDBExpression {
 		UPPER(1),
 		
 		
-		COALESCE(1, true);
+		COALESCE(1, true), DEFAULT(-1);
 		
 		private int nrArgs;
 		private boolean isVariadic;
@@ -115,7 +115,13 @@ public class TiDBFunctionCall implements TiDBExpression {
 		}
 		
 		public static TiDBFunction getRandom() {
-			return Randomly.fromOptions(values());
+			while (true) {
+				TiDBFunction func = Randomly.fromOptions(values());
+				if (func.getNrArgs() != -1) {
+					// special functions that need to be created manually (e.g., DEFAULT)
+					return func;
+				}
+			}
 		}
 		
 		public int getNrArgs() {

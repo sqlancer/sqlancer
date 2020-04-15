@@ -1,6 +1,7 @@
 package sqlancer.tidb;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.IgnoreMeException;
@@ -17,6 +18,7 @@ import sqlancer.tidb.ast.TiDBBinaryComparisonOperation;
 import sqlancer.tidb.ast.TiDBBinaryComparisonOperation.TiDBComparisonOperator;
 import sqlancer.tidb.ast.TiDBBinaryLogicalOperation;
 import sqlancer.tidb.ast.TiDBBinaryLogicalOperation.TiDBBinaryLogicalOperator;
+import sqlancer.tidb.ast.TiDBCase;
 import sqlancer.tidb.ast.TiDBCastOperation;
 import sqlancer.tidb.ast.TiDBCollate;
 import sqlancer.tidb.ast.TiDBColumnReference;
@@ -51,7 +53,9 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
 		FUNCTION,
 		BINARY_LOGICAL,
 		BINARY_BIT,
-		CAST
+		CAST,
+		DEFAULT,
+		CASE
 //		BINARY_ARITHMETIC
 	}
 
@@ -66,6 +70,15 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
 			return new TiDBAggregate(args, func);
 		}
 		switch (Randomly.fromOptions(Gen.values())) {
+		case DEFAULT:
+			if (true) {
+				// https://github.com/tidb-challenge-program/bug-hunting-issue/issues/15
+				throw new IgnoreMeException();
+			}
+			if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+				throw new IgnoreMeException();
+			}
+			return new TiDBFunctionCall(TiDBFunction.DEFAULT, Arrays.asList(generateColumn()));
 		case UNARY_POSTFIX:
 			return new TiDBUnaryPostfixOperation(generateExpression(depth + 1), TiDBUnaryPostfixOperator.getRandom());
 		case UNARY_PREFIX:
@@ -98,6 +111,11 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
 //			return new TiDBBinaryArithmeticOperation(generateExpression(depth + 1), generateExpression(depth + 1), TiDBBinaryArithmeticOperator.getRandom());
 		case CAST:
 			return new TiDBCastOperation(generateExpression(depth + 1), Randomly.fromOptions("BINARY", "CHAR", /*"DATE", "DATETIME", "TIME", https://github.com/tidb-challenge-program/bug-hunting-issue/issues/13 */ "DECIMAL", "SIGNED", "UNSIGNED"));
+		case CASE:
+			int nr = Randomly.fromOptions(1, 2);
+			return new TiDBCase(generateExpression(depth + 1),
+					generateExpressions(depth + 1, nr), generateExpressions(depth + 1, nr),
+					generateExpression(depth + 1));
 		default:
 			throw new AssertionError();
 		}

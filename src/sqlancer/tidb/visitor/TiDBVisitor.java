@@ -1,6 +1,7 @@
 package sqlancer.tidb.visitor;
 
 import sqlancer.tidb.ast.TiDBAggregate;
+import sqlancer.tidb.ast.TiDBCase;
 import sqlancer.tidb.ast.TiDBCastOperation;
 import sqlancer.tidb.ast.TiDBColumnReference;
 import sqlancer.tidb.ast.TiDBConstant;
@@ -32,12 +33,16 @@ public interface TiDBVisitor {
 			visit((TiDBAggregate) expr);
 		} else if (expr instanceof TiDBCastOperation) {
 			visit((TiDBCastOperation) expr);
+		} else if (expr instanceof TiDBCase) {
+			visit((TiDBCase) expr);
 		}
 
 		else {
 			throw new AssertionError(expr.getClass());
 		}
 	}
+	
+	void visit(TiDBCase caseExpr);
 	
 	void visit(TiDBCastOperation cast);
 

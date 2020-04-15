@@ -3,6 +3,7 @@ package sqlancer.tidb.visitor;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.tidb.ast.TiDBAggregate;
+import sqlancer.tidb.ast.TiDBCase;
 import sqlancer.tidb.ast.TiDBCastOperation;
 import sqlancer.tidb.ast.TiDBColumnReference;
 import sqlancer.tidb.ast.TiDBConstant;
@@ -44,7 +45,7 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
 	public void visit(TiDBTableReference expr) {
 		sb.append(expr.getTable().getName());
 	}
-	
+
 	@Override
 	public void visit(TiDBSelect select) {
 		sb.append("SELECT ");
@@ -166,5 +167,22 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
 		sb.append(" AS ");
 		sb.append(cast.getType());
 		sb.append(")");
+	}
+
+	@Override
+	public void visit(TiDBCase op) {
+		sb.append("(CASE ");
+		visit(op.getSwitchCondition());
+		for (int i = 0; i < op.getConditions().size(); i++) {
+			sb.append(" WHEN ");
+			visit(op.getConditions().get(i));
+			sb.append(" THEN ");
+			visit(op.getExpressions().get(i));
+		}
+		if (op.getElseExpr() != null) {
+			sb.append(" ELSE ");
+			visit(op.getElseExpr());
+		}
+		sb.append(" END )");
 	}
 }
