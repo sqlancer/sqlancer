@@ -110,8 +110,12 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
 //		case BINARY_ARITHMETIC:
 //			return new TiDBBinaryArithmeticOperation(generateExpression(depth + 1), generateExpression(depth + 1), TiDBBinaryArithmeticOperator.getRandom());
 		case CAST:
-			return new TiDBCastOperation(generateExpression(depth + 1), Randomly.fromOptions("BINARY", "CHAR", /*"DATE", "DATETIME", "TIME", https://github.com/tidb-challenge-program/bug-hunting-issue/issues/13 */ "DECIMAL", "SIGNED", "UNSIGNED"));
+			return new TiDBCastOperation(generateExpression(depth + 1), Randomly.fromOptions("BINARY", "CHAR", /*"DATE", "DATETIME", "TIME", https://github.com/tidb-challenge-program/bug-hunting-issue/issues/13 */ "DECIMAL", "SIGNED"/*, "UNSIGNED" https://github.com/pingcap/tidb/issues/16028 */));
 		case CASE:
+			if (true) {
+				// https://github.com/tidb-challenge-program/bug-hunting-issue/issues/19
+				throw new IgnoreMeException();
+			}
 			int nr = Randomly.fromOptions(1, 2);
 			return new TiDBCase(generateExpression(depth + 1),
 					generateExpressions(depth + 1, nr), generateExpressions(depth + 1, nr),

@@ -24,6 +24,7 @@ public class TiDBIndexGenerator {
 			sb.append("UNIQUE ");
 			errors.add("Duplicate for key");
 			errors.add("Duplicate entry ");
+			errors.add("A UNIQUE INDEX must include all columns in the table's partitioning function");
 		}
 		sb.append("INDEX ");
 		sb.append(indexName);

@@ -27,11 +27,6 @@ public class TiDBErrors {
 			errors.add("Can't find a proper physical plan for this query");
 		}
 		
-		if (true) {
-			// https://github.com/pingcap/tidb/issues/16029
-			errors.add("No valid regexp pattern found");
-		}
-		
 		errors.add("DOUBLE value is out of range in 'cot(0)'");
 		errors.add("DOUBLE value is out of range in 'pow");
 		errors.add("DOUBLE value is out of range in 'exp(");
@@ -61,7 +56,8 @@ public class TiDBErrors {
 		errors.add("Incorrect tinyint value");
 		errors.add("Data truncation");
 		errors.add("Bad Number");
-		errors.add("The value specified for generated column"); // TODO: do not insert data into generated columns		
+		errors.add("The value specified for generated column"); // TODO: do not insert data into generated columns
+		errors.add("incorrect utf8 value");
 	}
 
 }

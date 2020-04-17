@@ -99,8 +99,22 @@ public class TiDBFunctionCall implements TiDBExpression {
 		UNHEX(1),
 		UPPER(1),
 		
+		COALESCE(1, true), //
 		
-		COALESCE(1, true), DEFAULT(-1);
+		// https://pingcap.github.io/docs/stable/reference/sql/functions-and-operators/miscellaneous-functions/
+//		INET_ATON(1),
+//		INET_NTOA(1),
+//		INET6_ATON(1),
+//		INET6_NTOA(1),
+//		IS_IPV4(1),
+//		IS_IPV4_COMPAT(1),
+//		IS_IPV4_MAPPED(1),
+//		IS_IPV6(1),
+//		NAME_CONST(2),
+		
+		DATE_FORMAT(2),
+//		ANY_VALUE(1),
+		DEFAULT(-1);
 		
 		private int nrArgs;
 		private boolean isVariadic;

@@ -108,7 +108,7 @@ public class TiDBTableGenerator {
 			errors.add(" used in key specification without a key length");
 		}
 		sb.append(")");
-		if (Randomly.getBooleanWithRatherLowProbability()) {
+		if (Randomly.getBooleanWithRatherLowProbability() && false /* TODO: a number of partitioning errors */) {
 			sb.append("PARTITION BY HASH(");
 			sb.append(TiDBVisitor.asString(gen.generateExpression()));
 			sb.append(") ");
