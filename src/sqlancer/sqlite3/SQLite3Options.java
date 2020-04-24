@@ -43,6 +43,9 @@ public class SQLite3Options {
 	
 	@Parameter(names = { "--test-temp-tables" }, description = "Generate TEMP/TEMPORARY tables", arity = 1)
 	public boolean testTempTables = true;
+	
+	@Parameter(names = { "--test-check-constraints" }, description = "Allow CHECK constraints in tables", arity = 1)
+	public boolean testCheckConstraints = true;
 
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)
 	public SQLite3Oracle oracle = SQLite3Oracle.METAMORPHIC;
