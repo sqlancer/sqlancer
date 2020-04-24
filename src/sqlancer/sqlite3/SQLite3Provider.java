@@ -216,7 +216,7 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQL
 		} while (globalState.getSchema().getDatabaseTables().size() != nrTablesToCreate);
 		assert globalState.getSchema().getTables().getTables().size() == nrTablesToCreate;
 		checkTablesForGeneratedColumnLoops(con, globalState.getSchema());
-		if (Randomly.getBooleanWithSmallProbability()) {
+		if (globalState.getDmbsSpecificOptions().testDBStats && Randomly.getBooleanWithSmallProbability()) {
 			QueryAdapter tableQuery = new QueryAdapter("CREATE VIRTUAL TABLE IF NOT EXISTS stat USING dbstat(main)");
 			manager.execute(tableQuery);
 			globalState.setSchema(SQLite3Schema.fromConnection(con));
@@ -229,7 +229,7 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQL
 			int nrPerformed = 0;
 			switch (action) {
 			case CREATE_VIEW:
-				nrPerformed = r.getInteger(0, 3);
+				nrPerformed = r.getInteger(0, 2);
 				break;
 			case DELETE:
 			case DROP_VIEW:
@@ -255,7 +255,7 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQL
 				nrPerformed = r.getInteger(0, 5);
 				break;
 			case INDEX:
-				nrPerformed = r.getInteger(0, 20);
+				nrPerformed = r.getInteger(0, 5);
 				break;
 			case VIRTUAL_TABLE_ACTION:
 			case UPDATE:

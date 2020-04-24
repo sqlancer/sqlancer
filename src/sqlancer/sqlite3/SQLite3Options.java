@@ -28,6 +28,12 @@ public class SQLite3Options {
 	@Parameter(names = { "--test-rtree" }, description = "Test the R*Tree extensions", arity = 1)
 	public boolean testRtree = true;
 
+	@Parameter(names = { "--test-dbstats" }, description = "Test the DBSTAT Virtual Table (see https://www.sqlite.org/dbstat.html)", arity = 1)
+	public boolean testDBStats = true;
+	
+	@Parameter(names = { "--test-generated-columns" }, description = "Test generated columns", arity = 1)
+	public boolean testGeneratedColumns = true;
+
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)
 	public SQLite3Oracle oracle = SQLite3Oracle.METAMORPHIC;
 
