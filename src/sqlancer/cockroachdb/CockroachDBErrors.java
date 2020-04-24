@@ -8,11 +8,6 @@ public class CockroachDBErrors {
 		errors.add(" non-streaming operator encountered when vectorize=auto");
 		
 		if (true) {
-			// https://github.com/pingcap/tidb/issues/16017
-			errors.add("Can't find a proper physical plan for this query");
-		}
-		
-		if (true) {
 			// https://github.com/cockroachdb/cockroach/issues/46915
 			errors.add("ERROR: at or near \"unknown\": syntax error");
 		}

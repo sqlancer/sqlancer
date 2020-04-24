@@ -1,16 +1,18 @@
 package sqlancer.cockroachdb.test;
 
 import java.sql.SQLException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import sqlancer.Randomly;
 import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema;
+import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBDataType;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTables;
@@ -62,7 +64,13 @@ public class CockroachDBQueryPartitioningBase implements TestOracle {
 	}
 
 	List<CockroachDBExpression> generateFetchColumns() {
-		return Arrays.asList(new CockroachDBColumnReference(targetTables.getColumns().get(0)));
+		List<CockroachDBExpression> columns = new ArrayList<CockroachDBExpression>();
+		if (Randomly.getBoolean()) {
+			columns.add(new CockroachDBColumnReference(new CockroachDBColumn("*", null, false, false)));
+		} else {
+			columns.addAll(Randomly.nonEmptySubset(targetTables.getColumns()).stream().map(c -> new CockroachDBColumnReference(c)).collect(Collectors.toList()));
+		}
+		return columns;
 	}
 
 	CockroachDBExpression generatePredicate() {
