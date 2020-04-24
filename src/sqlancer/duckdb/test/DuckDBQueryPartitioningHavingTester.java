@@ -2,6 +2,7 @@ package sqlancer.duckdb.test;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.DatabaseProvider;
@@ -52,4 +53,10 @@ public class DuckDBQueryPartitioningHavingTester extends DuckDBQueryPartitioning
 	Node<DuckDBExpression> generatePredicate() {
 		return gen.generateHavingClause();
 	}
+
+	List<Node<DuckDBExpression>> generateFetchColumns() {
+		List<Node<DuckDBExpression>> columns = Arrays.asList(gen.generateHavingClause());
+		return columns;
+	}
+
 }

@@ -19,6 +19,8 @@ public class DuckDBErrors {
 		
 		errors.add("Conversion: Invalid TypeId "); // TODO
 		
+		errors.add("GROUP BY clause cannot contain aggregates!"); // investigate
+		
 		addRegexErrors(errors);
 		
 		addFunctionErrors(errors);

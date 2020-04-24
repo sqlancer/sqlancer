@@ -3,7 +3,6 @@ package sqlancer.duckdb.gen;
 import java.util.ArrayList;
 import java.util.List;
 
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.ast.newast.ColumnReferenceNode;

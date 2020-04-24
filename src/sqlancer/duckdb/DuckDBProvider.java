@@ -65,7 +65,6 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 		case INSERT:
 			return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
 		case CREATE_INDEX:
-		case UPDATE:
 			return r.getInteger(0, 4);
 		case VACUUM: // seems to be ignored
 		case ANALYZE:  // seems to be ignored
@@ -73,6 +72,8 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 		case EXPLAIN:
 		case CREATE_VIEW:
 			return r.getInteger(0, 2);
+		case UPDATE:
+			return 0; // https://github.com/cwida/duckdb/issues/579
 		default:
 			throw new AssertionError(a);
 		}
