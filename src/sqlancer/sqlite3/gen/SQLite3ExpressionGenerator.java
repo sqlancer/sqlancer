@@ -120,7 +120,7 @@ public class SQLite3ExpressionGenerator {
 		List<Join> joinStatements = new ArrayList<>();
 		if (Randomly.getBoolean() && tables.size() > 1) {
 			int nrJoinClauses = (int) Randomly.getNotCachedInteger(0, tables.size());
-			for (int i = 1; i < nrJoinClauses; i++) {
+			for (int i = 0; i < nrJoinClauses; i++) {
 				SQLite3Expression joinClause = generateExpression();
 				SQLite3Table table = Randomly.fromList(tables);
 				tables.remove(table);
