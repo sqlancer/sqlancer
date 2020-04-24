@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.ast.SQLite3Aggregate;
@@ -107,7 +108,7 @@ public class SQLite3ExpressionGenerator {
 		return new SQLite3ExpressionGenerator(globalState).getRandomLiteralValueInternal(globalState.getRandomly());
 	}
 
-	public List<SQLite3Expression> generateOrderingTerms() {
+	public List<SQLite3Expression> generateOrderBys() {
 		List<SQLite3Expression> expressions = new ArrayList<>();
 		for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
 			expressions.add(generateOrderingTerm());
@@ -260,6 +261,9 @@ public class SQLite3ExpressionGenerator {
 		case COLLATE:
 			return new CollateOperation(getRandomExpression(depth + 1), SQLite3CollateSequence.random());
 		case EXISTS:
+			if (true) {
+				throw new IgnoreMeException();
+			}
 			return getExists();
 		case CASE_OPERATOR:
 			return getCaseOperator(depth + 1);

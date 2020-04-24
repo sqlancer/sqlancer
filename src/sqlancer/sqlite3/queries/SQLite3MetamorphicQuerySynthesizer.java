@@ -63,12 +63,12 @@ public class SQLite3MetamorphicQuerySynthesizer implements TestOracle {
 		this.globalState = globalState;
 		SQLite3Errors.addExpectedExpressionErrors(errors);
 		SQLite3Errors.addMatchQueryErrors(errors);
+		SQLite3Errors.addQueryErrors(errors);
 		// aggregate
 		errors.add("misuse of aggregate");
 		errors.add("misuse of window function");
 		errors.add("second argument to nth_value must be a positive integer");
 		errors.add("no such table");
-		errors.add("ON clause references tables to its right");
 		// FIXME implement
 		errors.add("no query solution"); // INDEXED BY
 		errors.add("unable to use function MATCH in the requested context");
@@ -203,7 +203,7 @@ public class SQLite3MetamorphicQuerySynthesizer implements TestOracle {
 
 	private void setRandomOrderBy(SQLite3Select select) {
 		if (Randomly.getBoolean()) {
-			select.setOrderByClause(gen.generateOrderingTerms());
+			select.setOrderByExpressions(gen.generateOrderBys());
 		}
 	}
 

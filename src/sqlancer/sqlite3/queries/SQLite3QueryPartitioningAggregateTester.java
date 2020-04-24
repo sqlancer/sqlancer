@@ -53,7 +53,7 @@ public class SQLite3QueryPartitioningAggregateTester implements TestOracle {
 		List<SQLite3Expression> from = SQLite3Common.getTableRefs(targetTables.getTables(), s);
 		select.setFromList(from);
 		if (Randomly.getBoolean()) {
-			select.setOrderByClause(gen.generateOrderingTerms());
+			select.setOrderByExpressions(gen.generateOrderBys());
 		}
 		String originalQuery = SQLite3Visitor.asString(select);
 
@@ -118,7 +118,7 @@ public class SQLite3QueryPartitioningAggregateTester implements TestOracle {
 			leftSelect.setGroupByClause(gen.getRandomExpressions(Randomly.smallNumber() + 1));
 		}
 		if (Randomly.getBoolean()) {
-			leftSelect.setOrderByClause(gen.generateOrderingTerms());
+			leftSelect.setOrderByExpressions(gen.generateOrderBys());
 		}
 		return leftSelect;
 	}

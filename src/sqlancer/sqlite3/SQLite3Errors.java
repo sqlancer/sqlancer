@@ -3,6 +3,7 @@ package sqlancer.sqlite3;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public class SQLite3Errors {
 
@@ -75,6 +76,10 @@ public class SQLite3Errors {
 		errors.add("non-deterministic functions prohibited in CHECK constraints");
 		errors.addAll(Arrays.asList("subqueries prohibited in CHECK constraints",
 				"generated columns cannot be part of the PRIMARY KEY", "must have at least one non-generated column"));
+	}
+	
+	public static void addQueryErrors(Set<String> errors) {
+		errors.add("ON clause references tables to its right");
 	}
 
 	public static void addInsertNowErrors(List<String> errors) {

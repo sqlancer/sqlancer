@@ -17,6 +17,7 @@ import sqlancer.sqlite3.queries.SQLite3MetamorphicQuerySynthesizer;
 import sqlancer.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
 import sqlancer.sqlite3.queries.SQLite3QueryPartitioningAggregateTester;
 import sqlancer.sqlite3.queries.SQLite3QueryPartitioningHavingTester;
+import sqlancer.sqlite3.queries.SQLite3QueryPartitioningWhereTester;
 
 @Parameters(separators = "=", commandDescription = "SQLite3")
 public class SQLite3Options {
@@ -57,7 +58,14 @@ public class SQLite3Options {
 			}
 
 		},
-		
+		WHERE {
+
+			@Override
+			public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
+				return new SQLite3QueryPartitioningWhereTester(globalState);
+			}
+			
+		},
 		HAVING() {
 			@Override
 			public TestOracle create(SQLite3GlobalState globalState) throws SQLException {

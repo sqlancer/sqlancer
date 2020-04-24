@@ -188,7 +188,7 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 			selectStatement.setOffsetClause(offsetClause);
 		}
 		List<SQLite3Expression> orderBy = generateOrderBy(columns);
-		selectStatement.setOrderByClause(orderBy);
+		selectStatement.setOrderByExpressions(orderBy);
 		if (groupByClause.size() != 0 && Randomly.getBoolean()) {
 			SQLite3Expression randomExpression = SQLite3Common.getTrueExpression(columns, globalState);
 			if (Randomly.getBoolean()) {

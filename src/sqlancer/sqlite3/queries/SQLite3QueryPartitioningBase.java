@@ -42,6 +42,7 @@ public class SQLite3QueryPartitioningBase implements TestOracle {
 	public SQLite3QueryPartitioningBase(SQLite3GlobalState state) {
 		this.state = state;
 		SQLite3Errors.addExpectedExpressionErrors(errors);
+		SQLite3Errors.addQueryErrors(errors);
 	}
 
 	@Override

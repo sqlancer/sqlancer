@@ -74,7 +74,7 @@ public class SQLite3Select extends SQLite3Expression {
 		return orderByClause;
 	}
 
-	public void setOrderByClause(List<SQLite3Expression> orderBy) {
+	public void setOrderByExpressions(List<SQLite3Expression> orderBy) {
 		this.orderByClause = orderBy;
 	}
 

@@ -59,7 +59,7 @@ public class SQLite3RandomQuerySynthesizer {
 					windowFunction.setFilterClause(gen.generateExpression());
 				}
 				if (Randomly.getBooleanWithRatherLowProbability()) {
-					windowFunction.setOrderBy(gen.generateOrderingTerms());
+					windowFunction.setOrderBy(gen.generateOrderBys());
 				}
 				if (Randomly.getBooleanWithRatherLowProbability()) {
 					windowFunction.setPartitionBy(gen.getRandomExpressions(Randomly.smallNumber()));
@@ -118,7 +118,7 @@ public class SQLite3RandomQuerySynthesizer {
 		boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
 		if (orderBy) {
 			// ORDER BY
-			select.setOrderByClause(gen.generateOrderingTerms());
+			select.setOrderByExpressions(gen.generateOrderBys());
 		}
 		if (Randomly.getBooleanWithRatherLowProbability()) {
 			// LIMIT
