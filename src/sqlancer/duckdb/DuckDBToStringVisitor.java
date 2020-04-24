@@ -44,6 +44,9 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
 
 	private void visit(DuckDBSelect select) {
 		sb.append("SELECT ");
+		if (select.isDistinct()) {
+			sb.append("DISTINCT ");
+		}
 		visit(select.getFetchColumns());
 		sb.append(" FROM ");
 		visit(select.getFromList());

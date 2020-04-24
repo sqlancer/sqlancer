@@ -14,6 +14,7 @@ import sqlancer.TestOracle;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.test.DuckDBNoRECOracle;
 import sqlancer.duckdb.test.DuckDBQueryPartitioningAggregateTester;
+import sqlancer.duckdb.test.DuckDBQueryPartitioningDistinctTester;
 import sqlancer.duckdb.test.DuckDBQueryPartitioningHavingTester;
 import sqlancer.duckdb.test.DuckDBQueryPartitioningWhereTester;
 
@@ -52,6 +53,12 @@ public class DuckDBOptions {
 			}
 			
 		},
+		DISTINCT {
+			@Override
+			public TestOracle create(DuckDBGlobalState globalState) throws SQLException {
+				return new DuckDBQueryPartitioningDistinctTester(globalState);
+			}
+		},	
 		QUERY_PARTITIONING {
 			@Override
 			public TestOracle create(DuckDBGlobalState globalState) throws SQLException {
