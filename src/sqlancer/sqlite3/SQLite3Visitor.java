@@ -26,7 +26,7 @@ import sqlancer.sqlite3.ast.SQLite3Expression.Subquery;
 import sqlancer.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import sqlancer.sqlite3.ast.SQLite3Function;
 import sqlancer.sqlite3.ast.SQLite3RowValueExpression;
-import sqlancer.sqlite3.ast.SQLite3SelectStatement;
+import sqlancer.sqlite3.ast.SQLite3Select;
 import sqlancer.sqlite3.ast.SQLite3SetClause;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation;
 import sqlancer.sqlite3.ast.SQLite3WindowFunction;
@@ -86,7 +86,7 @@ public interface SQLite3Visitor {
 
 	public abstract void visit(Function f);
 
-	public abstract void visit(SQLite3SelectStatement s, boolean inner);
+	public abstract void visit(SQLite3Select s, boolean inner);
 
 	public abstract void visit(SQLite3OrderingTerm term);
 	
@@ -159,8 +159,8 @@ public interface SQLite3Visitor {
 			visit((Subquery) expr);
 		} else if (expr instanceof Join) {
 			visit((Join) expr);
-		} else if (expr instanceof SQLite3SelectStatement) {
-			visit((SQLite3SelectStatement) expr, true);
+		} else if (expr instanceof SQLite3Select) {
+			visit((SQLite3Select) expr, true);
 		} else if (expr instanceof SQLite3Exist) {
 			visit((SQLite3Exist) expr);
 		} else if (expr instanceof BinaryComparisonOperation) {
@@ -205,8 +205,8 @@ public interface SQLite3Visitor {
 			throw new AssertionError();
 		}
 		SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
-		if (expr instanceof SQLite3SelectStatement) {
-			visitor.visit((SQLite3SelectStatement) expr, false);
+		if (expr instanceof SQLite3Select) {
+			visitor.visit((SQLite3Select) expr, false);
 		} else {
 			visitor.visit(expr);
 		}

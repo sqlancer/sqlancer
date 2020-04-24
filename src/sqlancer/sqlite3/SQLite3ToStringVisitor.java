@@ -27,7 +27,7 @@ import sqlancer.sqlite3.ast.SQLite3Expression.Subquery;
 import sqlancer.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import sqlancer.sqlite3.ast.SQLite3Function;
 import sqlancer.sqlite3.ast.SQLite3RowValueExpression;
-import sqlancer.sqlite3.ast.SQLite3SelectStatement;
+import sqlancer.sqlite3.ast.SQLite3Select;
 import sqlancer.sqlite3.ast.SQLite3SetClause;
 import sqlancer.sqlite3.ast.SQLite3WindowFunction;
 import sqlancer.sqlite3.ast.SQLite3WindowFunctionExpression;
@@ -92,7 +92,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		sb.append(")");
 	}
 
-	public void visit(SQLite3SelectStatement s, boolean inner) {
+	public void visit(SQLite3Select s, boolean inner) {
 		if (inner) {
 			sb.append("(");
 		}
@@ -115,7 +115,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 			if (i != 0) {
 				sb.append(", ");
 			}
-			if (s.getFromList().get(i) instanceof SQLite3SelectStatement) {
+			if (s.getFromList().get(i) instanceof SQLite3Select) {
 				sb.append("(");
 				// TODO: fix this workaround
 				visit(s.getFromList().get(i));

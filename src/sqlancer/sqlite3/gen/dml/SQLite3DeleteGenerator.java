@@ -27,7 +27,7 @@ public class SQLite3DeleteGenerator {
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
 			sb.append(SQLite3Visitor.asString(new SQLite3ExpressionGenerator(globalState)
-					.setColumns(tableName.getColumns()).getRandomExpression()));
+					.setColumns(tableName.getColumns()).generateExpression()));
 		}
 		List<String> errors = new ArrayList<>();
 		SQLite3Errors.addExpectedExpressionErrors(errors);

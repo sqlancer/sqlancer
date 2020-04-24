@@ -24,8 +24,8 @@ import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
-import sqlancer.sqlite3.ast.SQLite3SelectStatement;
-import sqlancer.sqlite3.ast.SQLite3SelectStatement.SelectType;
+import sqlancer.sqlite3.ast.SQLite3Select;
+import sqlancer.sqlite3.ast.SQLite3Select.SelectType;
 import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema;
@@ -107,12 +107,12 @@ public class SQLite3MetamorphicQuerySynthesizer implements TestOracle {
 			errors.add("SQL logic error");
 			gen.allowMatchClause();
 		}
-		return gen.getRandomExpression();
+		return gen.generateExpression();
 	}
 
 	private int getSecondQuery(List<SQLite3Expression> fromList, SQLite3Expression randomWhereCondition,
 			List<SQLite3Expression> groupBys, List<Join> joinStatements) throws SQLException {
-		SQLite3SelectStatement select = new SQLite3SelectStatement();
+		SQLite3Select select = new SQLite3Select();
 		setRandomOrderBy(select);
 		SQLite3PostfixUnaryOperation isTrue = new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.IS_TRUE,
 				randomWhereCondition);
@@ -161,7 +161,7 @@ public class SQLite3MetamorphicQuerySynthesizer implements TestOracle {
 	private int getFirstQueryCount(Connection con, List<SQLite3Expression> fromList,
 			SQLite3Expression randomWhereCondition, List<SQLite3Expression> groupBys, List<Join> joinStatements)
 			throws SQLException {
-		SQLite3SelectStatement select = new SQLite3SelectStatement();
+		SQLite3Select select = new SQLite3Select();
 		// TODO: readd group by (removed due to INTERSECT/UNION)
 //		select.setGroupByClause(groupBys);
 		setRandomOrderBy(select);
@@ -201,7 +201,7 @@ public class SQLite3MetamorphicQuerySynthesizer implements TestOracle {
 		return firstCount;
 	}
 
-	private void setRandomOrderBy(SQLite3SelectStatement select) {
+	private void setRandomOrderBy(SQLite3Select select) {
 		if (Randomly.getBoolean()) {
 			select.setOrderByClause(gen.generateOrderingTerms());
 		}

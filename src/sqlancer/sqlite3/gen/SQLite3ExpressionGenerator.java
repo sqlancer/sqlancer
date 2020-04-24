@@ -120,7 +120,7 @@ public class SQLite3ExpressionGenerator {
 		if (Randomly.getBoolean() && tables.size() > 1) {
 			int nrJoinClauses = (int) Randomly.getNotCachedInteger(0, tables.size());
 			for (int i = 1; i < nrJoinClauses; i++) {
-				SQLite3Expression joinClause = getRandomExpression();
+				SQLite3Expression joinClause = generateExpression();
 				SQLite3Table table = Randomly.fromList(tables);
 				tables.remove(table);
 				JoinType options;
@@ -138,7 +138,7 @@ public class SQLite3ExpressionGenerator {
 	}
 
 	public SQLite3Expression generateOrderingTerm() {
-		SQLite3Expression expr = getRandomExpression();
+		SQLite3Expression expr = generateExpression();
 		// COLLATE is potentially already generated
 		if (Randomly.getBoolean()) {
 			expr = new SQLite3OrderingTerm(expr, Ordering.getRandomValue());
@@ -188,14 +188,14 @@ public class SQLite3ExpressionGenerator {
 		CASE_OPERATOR, MATCH, AGGREGATE_FUNCTION, ROW_VALUE_COMPARISON, AND_OR_CHAIN
 	}
 
-	public SQLite3Expression getRandomExpression() {
+	public SQLite3Expression generateExpression() {
 		return getRandomExpression(0);
 	}
 
 	public List<SQLite3Expression> getRandomExpressions(int size) {
 		List<SQLite3Expression> expressions = new ArrayList<>();
 		for (int i = 0; i < size; i++) {
-			expressions.add(getRandomExpression());
+			expressions.add(generateExpression());
 		}
 		return expressions;
 	}
@@ -639,7 +639,7 @@ public class SQLite3ExpressionGenerator {
 
 	public SQLite3Expression getHavingClause() {
 		allowAggreates = true;
-		return getRandomExpression();
+		return generateExpression();
 	}
 
 }

@@ -27,7 +27,7 @@ import sqlancer.sqlite3.ast.SQLite3Expression.Subquery;
 import sqlancer.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import sqlancer.sqlite3.ast.SQLite3Function;
 import sqlancer.sqlite3.ast.SQLite3RowValueExpression;
-import sqlancer.sqlite3.ast.SQLite3SelectStatement;
+import sqlancer.sqlite3.ast.SQLite3Select;
 import sqlancer.sqlite3.ast.SQLite3SetClause;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation;
 import sqlancer.sqlite3.ast.SQLite3WindowFunction;
@@ -92,7 +92,7 @@ public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
 	}
 
 	@Override
-	public void visit(SQLite3SelectStatement s, boolean inner) {
+	public void visit(SQLite3Select s, boolean inner) {
 		for (SQLite3Expression expr : s.getFetchColumns()) {
 			if (expr instanceof SQLite3Aggregate) {
 				visit(expr);

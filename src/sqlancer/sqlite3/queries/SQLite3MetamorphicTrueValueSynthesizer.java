@@ -24,8 +24,8 @@ import sqlancer.sqlite3.ast.SQLite3Expression.Join.JoinType;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
-import sqlancer.sqlite3.ast.SQLite3SelectStatement;
-import sqlancer.sqlite3.ast.SQLite3SelectStatement.SelectType;
+import sqlancer.sqlite3.ast.SQLite3Select;
+import sqlancer.sqlite3.ast.SQLite3Select.SelectType;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation.UnaryOperator;
 import sqlancer.sqlite3.gen.SQLite3Common;
@@ -103,7 +103,7 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 	
 	private int getTotalCount(List<SQLite3Table> list,
 			List<SQLite3Expression> groupBys, List<Join> joinStatements) throws SQLException {
-		SQLite3SelectStatement select = new SQLite3SelectStatement();
+		SQLite3Select select = new SQLite3Select();
 		select.setGroupByClause(groupBys);
 		SQLite3Aggregate count = new SQLite3Aggregate(
 				Arrays.asList(SQLite3ColumnName.createDummy("*")),
@@ -136,7 +136,7 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 	
 	private int getSubsetCount(List<SQLite3Table> list, SQLite3Expression condition,
 			List<SQLite3Expression> groupBys, List<Join> joinStatements, Mode m) throws SQLException {
-		SQLite3SelectStatement select = new SQLite3SelectStatement();
+		SQLite3Select select = new SQLite3Select();
 		select.setGroupByClause(groupBys);
 		SQLite3Aggregate aggr = new SQLite3Aggregate(
 				Arrays.asList(SQLite3ColumnName.createDummy("*")),
@@ -177,7 +177,7 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 //		if (randomTable.isVirtual()) {
 //			gen.allowMatchClause();
 //		}
-		return gen.getRandomExpression();
+		return gen.generateExpression();
 	}
 
 	private final static int NOT_FOUND = -1;

@@ -112,7 +112,7 @@ public class SQLite3CreateTriggerGenerator {
 		if (Randomly.getBoolean()) {
 			sb.append(" WHEN ");
 			sb.append(SQLite3Visitor
-					.asString(new SQLite3ExpressionGenerator(globalState).setColumns(table.getColumns()).getRandomExpression()));
+					.asString(new SQLite3ExpressionGenerator(globalState).setColumns(table.getColumns()).generateExpression()));
 		}
 	}
 

@@ -84,7 +84,7 @@ public class SQLite3UpdateGenerator {
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
 			String whereClause = SQLite3Visitor.asString(
-					new SQLite3ExpressionGenerator(globalState).setColumns(table.getColumns()).getRandomExpression());
+					new SQLite3ExpressionGenerator(globalState).setColumns(table.getColumns()).generateExpression());
 			sb.append(whereClause);
 		}
 

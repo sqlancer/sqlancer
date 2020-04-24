@@ -11,7 +11,7 @@ import sqlancer.Randomly;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.ast.SQLite3Expression;
-import sqlancer.sqlite3.ast.SQLite3SelectStatement;
+import sqlancer.sqlite3.ast.SQLite3Select;
 import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
 import sqlancer.sqlite3.queries.SQLite3RandomQuerySynthesizer;
@@ -44,7 +44,7 @@ public class SQLite3ViewGenerator {
 		if (Randomly.getBoolean()) {
 			SQLite3PivotedQuerySynthesizer queryGen = new SQLite3PivotedQuerySynthesizer(globalState);
 			try {
-				SQLite3SelectStatement q = queryGen.getQuery(globalState);
+				SQLite3Select q = queryGen.getQuery(globalState);
 //			for (SQLite3Expression expr : q.getFetchColumns()) {
 //				if (expr.getAffinity() != null || expr.getImplicitCollateSequence() != null || expr.getExplicitCollateSequence() != null) {
 //					throw new IgnoreMeException();

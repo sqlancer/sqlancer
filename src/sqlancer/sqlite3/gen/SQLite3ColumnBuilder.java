@@ -56,7 +56,7 @@ public class SQLite3ColumnBuilder {
 				switch (c) {
 				case GENERATED_AS:
 					sb.append(" GENERATED ALWAYS AS (");
-					sb.append(SQLite3Visitor.asString(new SQLite3ExpressionGenerator(globalState).deterministicOnly().setColumns(columns.stream().filter(p -> !p.getName().contentEquals(columnName)).collect(Collectors.toList())).getRandomExpression()));
+					sb.append(SQLite3Visitor.asString(new SQLite3ExpressionGenerator(globalState).deterministicOnly().setColumns(columns.stream().filter(p -> !p.getName().contentEquals(columnName)).collect(Collectors.toList())).generateExpression()));
 					sb.append(")");
 					break;
 				case PRIMARY_KEY:

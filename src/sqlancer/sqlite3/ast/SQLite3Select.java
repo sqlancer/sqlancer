@@ -5,7 +5,7 @@ import java.util.List;
 
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 
-public class SQLite3SelectStatement extends SQLite3Expression {
+public class SQLite3Select extends SQLite3Expression {
 
 	private SelectType fromOptions = SelectType.ALL;
 	private List<SQLite3Expression> fromList = Collections.emptyList();

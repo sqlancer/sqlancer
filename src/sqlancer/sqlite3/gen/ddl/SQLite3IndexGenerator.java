@@ -80,7 +80,7 @@ public class SQLite3IndexGenerator {
 			if (i != 0) {
 				sb.append(",");
 			}
-			SQLite3Expression expr = new SQLite3ExpressionGenerator(globalState).setColumns(columns).deterministicOnly().getRandomExpression();
+			SQLite3Expression expr = new SQLite3ExpressionGenerator(globalState).setColumns(columns).deterministicOnly().generateExpression();
 			SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
 			visitor.fullyQualifiedNames = false;
 			visitor.visit(expr);
@@ -93,7 +93,7 @@ public class SQLite3IndexGenerator {
 		sb.append(")");
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
-			SQLite3Expression expr = new SQLite3ExpressionGenerator(globalState).setColumns(columns).deterministicOnly().getRandomExpression();
+			SQLite3Expression expr = new SQLite3ExpressionGenerator(globalState).setColumns(columns).deterministicOnly().generateExpression();
 			SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
 			visitor.fullyQualifiedNames = false;
 			visitor.visit(expr);

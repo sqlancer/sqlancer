@@ -20,7 +20,7 @@ import sqlancer.sqlite3.ast.SQLite3Expression;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
-import sqlancer.sqlite3.ast.SQLite3SelectStatement;
+import sqlancer.sqlite3.ast.SQLite3Select;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation.UnaryOperator;
 import sqlancer.sqlite3.gen.SQLite3Common;
@@ -44,7 +44,7 @@ public class SQLite3QueryPartitioningAggregateTester implements TestOracle {
 		SQLite3Schema s = state.getSchema();
 		SQLite3Tables targetTables = s.getRandomTableNonEmptyTables();
 		gen = new SQLite3ExpressionGenerator(state).setColumns(targetTables.getColumns());
-		SQLite3SelectStatement select = new SQLite3SelectStatement();
+		SQLite3Select select = new SQLite3Select();
 		SQLite3AggregateFunction windowFunction = Randomly.fromOptions(SQLite3Aggregate.SQLite3AggregateFunction.MIN,
 				SQLite3Aggregate.SQLite3AggregateFunction.MAX, SQLite3AggregateFunction.SUM,
 				SQLite3AggregateFunction.TOTAL);
@@ -57,14 +57,14 @@ public class SQLite3QueryPartitioningAggregateTester implements TestOracle {
 		}
 		String originalQuery = SQLite3Visitor.asString(select);
 
-		SQLite3Expression whereClause = gen.getRandomExpression();
+		SQLite3Expression whereClause = gen.generateExpression();
 		SQLite3UnaryOperation negatedClause = new SQLite3UnaryOperation(UnaryOperator.NOT, whereClause);
 		SQLite3PostfixUnaryOperation notNullClause = new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.ISNULL,
 				whereClause);
 
-		SQLite3SelectStatement leftSelect = getSelect(aggregate, from, whereClause);
-		SQLite3SelectStatement middleSelect = getSelect(aggregate, from, negatedClause);
-		SQLite3SelectStatement rightSelect = getSelect(aggregate, from, notNullClause);
+		SQLite3Select leftSelect = getSelect(aggregate, from, whereClause);
+		SQLite3Select middleSelect = getSelect(aggregate, from, negatedClause);
+		SQLite3Select rightSelect = getSelect(aggregate, from, notNullClause);
 		String metamorphicText = "SELECT " + aggregate.getFunc().toString() + "(aggr) FROM (";
 		metamorphicText += SQLite3Visitor.asString(leftSelect) + " UNION ALL " + SQLite3Visitor.asString(middleSelect)
 				+ " UNION ALL " + SQLite3Visitor.asString(rightSelect);
@@ -108,9 +108,9 @@ public class SQLite3QueryPartitioningAggregateTester implements TestOracle {
 
 	}
 
-	private SQLite3SelectStatement getSelect(SQLite3Aggregate aggregate, List<SQLite3Expression> from,
+	private SQLite3Select getSelect(SQLite3Aggregate aggregate, List<SQLite3Expression> from,
 			SQLite3Expression whereClause) {
-		SQLite3SelectStatement leftSelect = new SQLite3SelectStatement();
+		SQLite3Select leftSelect = new SQLite3Select();
 		leftSelect.setFetchColumns(Arrays.asList(new SQLite3PostfixText(aggregate, " as aggr", null)));
 		leftSelect.setFromList(from);
 		leftSelect.setWhereClause(whereClause);

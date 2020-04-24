@@ -39,13 +39,13 @@ public class SQLite3Common {
 
 	public static String getCheckConstraint(SQLite3GlobalState globalState, List<SQLite3Column> columns) {
 		SQLite3Expression expression = new SQLite3ExpressionGenerator(globalState).setColumns(columns)
-				.getRandomExpression();
+				.generateExpression();
 		return (" CHECK ( " + SQLite3Visitor.asString(expression) + ")");
 	}
 
 	public static SQLite3Expression getTrueExpression(List<SQLite3Column> columns, SQLite3GlobalState globalState) {
 		SQLite3Expression randomExpression = new SQLite3ExpressionGenerator(globalState).setColumns(columns)
-				.getRandomExpression();
+				.generateExpression();
 		SQLite3Constant expectedValue = randomExpression.getExpectedValue();
 		if (expectedValue == null) {
 			throw new IgnoreMeException();
@@ -66,7 +66,7 @@ public class SQLite3Common {
 	// https://www.sqlite.org/syntax/ordering-term.html
 	public static String getOrderingTerm(List<SQLite3Column> columns, SQLite3GlobalState globalState) {
 		SQLite3Expression randExpr = new SQLite3ExpressionGenerator(globalState).setColumns(columns)
-				.getRandomExpression();
+				.generateExpression();
 		StringBuilder sb = new StringBuilder(SQLite3Visitor.asString(randExpr));
 		sb.append(" ");
 		if (Randomly.getBoolean()) {
