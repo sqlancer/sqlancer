@@ -40,6 +40,9 @@ public class SQLite3Options {
 	
 	@Parameter(names = { "--test-without-rowids" }, description = "Generate WITHOUT ROWID tables", arity = 1)
 	public boolean testWithoutRowids = true;
+	
+	@Parameter(names = { "--test-temp-tables" }, description = "Generate TEMP/TEMPORARY tables", arity = 1)
+	public boolean testTempTables = true;
 
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)
 	public SQLite3Oracle oracle = SQLite3Oracle.METAMORPHIC;

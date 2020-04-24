@@ -60,7 +60,7 @@ public class SQLite3TableGenerator {
 
 	public void start() {
 		sb.append("CREATE ");
-		if (Randomly.getBoolean()) {
+		if (globalState.getDmbsSpecificOptions().testTempTables && Randomly.getBoolean()) {
 			tempTable = true;
 			if (Randomly.getBoolean()) {
 				sb.append("TEMP ");
