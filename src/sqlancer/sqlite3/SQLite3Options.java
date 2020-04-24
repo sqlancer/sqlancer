@@ -33,6 +33,9 @@ public class SQLite3Options {
 	
 	@Parameter(names = { "--test-generated-columns" }, description = "Test generated columns", arity = 1)
 	public boolean testGeneratedColumns = true;
+	
+	@Parameter(names = { "--test-foreign-keys" }, description = "Test foreign key constraints", arity = 1)
+	public boolean testForeignKeys = true;
 
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)
 	public SQLite3Oracle oracle = SQLite3Oracle.METAMORPHIC;

@@ -108,7 +108,7 @@ public class SQLite3TableGenerator {
 			}
 		}
 
-		if (Randomly.getBooleanWithSmallProbability()) {
+		if (globalState.getDmbsSpecificOptions().testForeignKeys && Randomly.getBooleanWithSmallProbability()) {
 			addForeignKey();
 		}
 
