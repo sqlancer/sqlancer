@@ -75,7 +75,7 @@ public class SQLite3TableGenerator {
 		sb.append(tableName + " ");
 		sb.append("(");
 		boolean allowPrimaryKeyInColumn = Randomly.getBoolean();
-		int nrColumns = 3 + Randomly.smallNumber();
+		int nrColumns = 1 + Randomly.smallNumber();
 		for (int i = 0; i < nrColumns; i++) {
 			columns.add(SQLite3Column.createDummy(SQLite3Common.createColumnName(i)));
 		}
@@ -108,7 +108,7 @@ public class SQLite3TableGenerator {
 			}
 		}
 
-		if (Randomly.getBoolean()) {
+		if (Randomly.getBooleanWithSmallProbability()) {
 			addForeignKey();
 		}
 

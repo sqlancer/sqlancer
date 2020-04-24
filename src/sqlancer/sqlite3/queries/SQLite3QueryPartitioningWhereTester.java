@@ -25,7 +25,7 @@ public class SQLite3QueryPartitioningWhereTester extends SQLite3QueryPartitionin
 		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
 				state.getConnection(), state);
 
-		boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
+		boolean orderBy = Randomly.getBooleanWithSmallProbability();
 		if (orderBy) {
 			select.setOrderByExpressions(gen.generateOrderBys());
 		}

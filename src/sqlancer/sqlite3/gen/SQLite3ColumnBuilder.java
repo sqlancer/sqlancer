@@ -43,7 +43,7 @@ public class SQLite3ColumnBuilder {
 		String dataType = Randomly.fromOptions("INT", "TEXT", "BLOB", "REAL", "INTEGER");
 		sb.append(dataType);
 
-		if (Randomly.getBoolean()) {
+		if (Randomly.getBooleanWithRatherLowProbability()) {
 			List<Constraints> constraints = Randomly.subset(Constraints.values());
 			if (!Randomly.getBooleanWithSmallProbability() || globalState.getDmbsSpecificOptions().testGeneratedColumns) {
 				constraints.remove(Constraints.GENERATED_AS);
