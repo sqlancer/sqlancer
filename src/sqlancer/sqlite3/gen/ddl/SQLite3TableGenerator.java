@@ -117,7 +117,7 @@ public class SQLite3TableGenerator {
 		}
 
 		sb.append(")");
-		if (containsPrimaryKey && !containsAutoIncrement) {
+		if (globalState.getDmbsSpecificOptions().testWithoutRowids && containsPrimaryKey && !containsAutoIncrement) {
 			if (Randomly.getBoolean()) {
 				// see https://sqlite.org/withoutrowid.html
 				sb.append(" WITHOUT ROWID");
@@ -143,6 +143,7 @@ public class SQLite3TableGenerator {
 	 * @see https://www.sqlite.org/foreignkeys.html
 	 */
 	private void addForeignKey() {
+		assert globalState.getDmbsSpecificOptions().testForeignKeys;
 		List<String> foreignKeyColumns = new ArrayList<>();
 		if (Randomly.getBoolean()) {
 			foreignKeyColumns = Arrays.asList(Randomly.fromList(columnNames));

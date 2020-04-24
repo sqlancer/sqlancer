@@ -36,6 +36,9 @@ public class SQLite3Options {
 	
 	@Parameter(names = { "--test-foreign-keys" }, description = "Test foreign key constraints", arity = 1)
 	public boolean testForeignKeys = true;
+	
+	@Parameter(names = { "--test-without-rowids" }, description = "Generate WITHOUT ROWID tables", arity = 1)
+	public boolean testWithoutRowids = true;
 
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)
 	public SQLite3Oracle oracle = SQLite3Oracle.METAMORPHIC;
