@@ -30,6 +30,9 @@ public class DuckDBOptions {
 	@Parameter(names = "--test-default-values", description="Allow generating DEFAULT values in tables")
 	public boolean testDefaultValues = true;
 	
+	@Parameter(names = "--test-not-null", description="Allow generating NOT NULL constraints in tables")
+	public boolean testNotNullConstraints = true;
+	
 	@Parameter(names = "--test-functions", description="Allow generating functions in expressions")
 	public boolean testFunctions = true;
 	
