@@ -6,3 +6,7 @@
 # Test Suite
 
 SQLancer does not have a test suite. We found that bugs in SQLancer are quickly found when testing the DBMS. The PQS implementation had a test suite, which was removed in commit 36ede0c0c68b3856e03ef5ba802a7c2575bb3f12.
+
+# Supported DBMS
+
+* (TDEngine: We removed the TDEngine implementation since all but one of our bug reports were still unaddressed five months after we reported them)
