@@ -133,14 +133,26 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 		DuckDBDataType type = DuckDBDataType.getRandom();
 		switch (type) {
 		case INT:
+			if (!globalState.getDmbsSpecificOptions().testIntConstants) {
+				throw new IgnoreMeException();
+			}
 			return DuckDBConstant.createIntConstant(globalState.getRandomly().getInteger());
 		case VARCHAR:
 		case DATE: // TODO
 		case TIMESTAMP: // TODO
+			if (!globalState.getDmbsSpecificOptions().testStringConstants) {
+				throw new IgnoreMeException();
+			}
 			return DuckDBConstant.createStringConstant(globalState.getRandomly().getString());
 		case BOOLEAN:
+			if (!globalState.getDmbsSpecificOptions().testBooleanConstants) {
+				throw new IgnoreMeException();
+			}
 			return DuckDBConstant.createBooleanConstant(Randomly.getBoolean());
 		case FLOAT:
+			if (!globalState.getDmbsSpecificOptions().testFloatConstants) {
+				throw new IgnoreMeException();
+			}
 			return DuckDBConstant.createFloatConstant(globalState.getRandomly().getDouble());
 		default:
 			throw new AssertionError();

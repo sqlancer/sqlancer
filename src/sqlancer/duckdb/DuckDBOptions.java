@@ -36,7 +36,7 @@ public class DuckDBOptions {
 	@Parameter(names = "--test-functions", description="Allow generating functions in expressions")
 	public boolean testFunctions = true;
 	
-	@Parameter(names = "--test-functions", description="Allow generating casts in expressions")
+	@Parameter(names = "--test-casts", description="Allow generating casts in expressions")
 	public boolean testCasts = true;
 	
 	@Parameter(names = "--test-between", description="Allow generating the BETWEEN operator in expressions")
@@ -50,6 +50,18 @@ public class DuckDBOptions {
 	
 	@Parameter(names = "--test-binary-logicals", description="Allow generating AND and OR in expressions")
 	public boolean testBinaryLogicals = true;
+	
+	@Parameter(names = "--test-int-constants", description="Allow generating INTEGER constants")
+	public boolean testIntConstants = true;
+	
+	@Parameter(names = "--test-varchar-constants", description="Allow generating VARCHAR constants")
+	public boolean testStringConstants = true;
+	
+	@Parameter(names = "--test-float-constants", description="Allow generating floating-point constants")
+	public boolean testFloatConstants = true;
+	
+	@Parameter(names = "--test-boolean-constants", description="Allow generating boolean constants")
+	public boolean testBooleanConstants = true;
 	
 	@Parameter(names = "--test-binary-comparisons", description="Allow generating binary comparison operators (e.g., >= or LIKE)")
 	public boolean testBinaryComparisons = true;
