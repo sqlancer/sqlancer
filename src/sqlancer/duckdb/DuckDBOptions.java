@@ -24,6 +24,33 @@ public class DuckDBOptions {
 	@Parameter(names = "--test-collate")
 	public boolean testCollate = true;
 	
+	@Parameter(names = "--test-check", description="Allow generating CHECK constraints in tables")
+	public boolean testCheckConstraints = true;
+	
+	@Parameter(names = "--test-default-values", description="Allow generating DEFAULT values in tables")
+	public boolean testDefaultValues = true;
+	
+	@Parameter(names = "--test-functions", description="Allow generating functions in expressions")
+	public boolean testFunctions = true;
+	
+	@Parameter(names = "--test-functions", description="Allow generating casts in expressions")
+	public boolean testCasts = true;
+	
+	@Parameter(names = "--test-between", description="Allow generating the BETWEEN operator in expressions")
+	public boolean testBetween = true;
+	
+	@Parameter(names = "--test-in", description="Allow generating the IN operator in expressions")
+	public boolean testIn = true;
+	
+	@Parameter(names = "--test-case", description="Allow generating the CASE operator in expressions")
+	public boolean testCase = true;
+	
+	@Parameter(names = "--test-binary-logicals", description="Allow generating AND and OR in expressions")
+	public boolean testBinaryLogicals = true;
+	
+	@Parameter(names = "--test-binary-comparisons", description="Allow generating binary comparison operators (e.g., >= or LIKE)")
+	public boolean testBinaryComparisons = true;
+	
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)
 	public List<DuckDBOracle> oracle = Arrays.asList(DuckDBOracle.QUERY_PARTITIONING);
 

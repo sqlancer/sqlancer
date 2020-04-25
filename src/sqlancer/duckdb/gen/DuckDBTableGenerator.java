@@ -38,7 +38,7 @@ public class DuckDBTableGenerator {
 			sb.append(columns.get(i).getName());
 			sb.append(" ");
 			sb.append(columns.get(i).getType());
-			if (globalState.getDmbsSpecificOptions().testCollate && columns.get(i).getType().getPrimitiveDataType() == DuckDBDataType.VARCHAR) {
+			if (globalState.getDmbsSpecificOptions().testCollate && Randomly.getBooleanWithRatherLowProbability() && columns.get(i).getType().getPrimitiveDataType() == DuckDBDataType.VARCHAR) {
 				sb.append(" COLLATE ");
 				sb.append(getRandomCollate());
 			}
@@ -48,13 +48,13 @@ public class DuckDBTableGenerator {
 			if (Randomly.getBooleanWithRatherLowProbability()) {
 				sb.append(" NOT NULL");
 			}
-			if (Randomly.getBooleanWithRatherLowProbability()) {
+			if (globalState.getDmbsSpecificOptions().testCheckConstraints && Randomly.getBooleanWithRatherLowProbability()) {
 				sb.append(" CHECK(");
 				sb.append(DuckDBToStringVisitor.asString(gen.generateExpression()));
 				DuckDBErrors.addExpressionErrors(errors);
 				sb.append(")");
 			}
-			if (Randomly.getBoolean()) {
+			if (Randomly.getBoolean() && globalState.getDmbsSpecificOptions().testDefaultValues) {
 				sb.append(" DEFAULT(");
 				sb.append(DuckDBToStringVisitor.asString(gen.generateConstant()));
 				sb.append(")");

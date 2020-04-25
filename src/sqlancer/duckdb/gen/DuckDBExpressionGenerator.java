@@ -53,6 +53,27 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 		if (!globalState.getDmbsSpecificOptions().testCollate) {
 			possibleOptions.remove(Expression.COLLATE);
 		}
+		if (!globalState.getDmbsSpecificOptions().testFunctions) {
+			possibleOptions.remove(Expression.FUNC);
+		}
+		if (!globalState.getDmbsSpecificOptions().testCasts) {
+			possibleOptions.remove(Expression.CAST);
+		}
+		if (!globalState.getDmbsSpecificOptions().testBetween) {
+			possibleOptions.remove(Expression.BETWEEN);
+		}
+		if (!globalState.getDmbsSpecificOptions().testIn) {
+			possibleOptions.remove(Expression.IN);
+		}
+		if (!globalState.getDmbsSpecificOptions().testCase) {
+			possibleOptions.remove(Expression.CASE);
+		}
+		if (!globalState.getDmbsSpecificOptions().testBinaryComparisons) {
+			possibleOptions.remove(Expression.BINARY_COMPARISON);
+		}
+		if (!globalState.getDmbsSpecificOptions().testBinaryLogicals) {
+			possibleOptions.remove(Expression.BINARY_LOGICAL);
+		}
 		Expression expr = Randomly.fromList(possibleOptions);
 		switch (expr) {
 		case COLLATE:
