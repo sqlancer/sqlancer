@@ -13,10 +13,6 @@ import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.sqlite3.ast.SQLite3Constant;
 import sqlancer.sqlite3.ast.SQLite3Expression;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
-import sqlancer.tdengine.TDEngineSchema.TDEngineColumn;
-import sqlancer.tdengine.expr.TDEngineConstant;
-import sqlancer.tdengine.expr.TDEngineExpression;
-import sqlancer.tdengine.expr.TDEngineSelectStatement;
 
 public class StateToReproduce {
 
@@ -102,25 +98,6 @@ public class StateToReproduce {
 		
 	}
 	
-	
-	public static class TDEngineStateToReproduce extends StateToReproduce {
-		public TDEngineStateToReproduce(String databaseName) {
-			super(databaseName);
-		}
-
-		public Map<TDEngineColumn, TDEngineConstant> getRandomRowValues() {
-			return randomRowValues;
-		}
-		
-		public Map<TDEngineColumn, TDEngineConstant> randomRowValues;
-		
-		public TDEngineSelectStatement whereClause;
-		
-		public TDEngineExpression getWhereClause() {
-			return whereClause;
-		}
-
-	}
 	
 	public static class SQLite3StateToReproduce extends StateToReproduce {
 		public SQLite3StateToReproduce(String databaseName) {

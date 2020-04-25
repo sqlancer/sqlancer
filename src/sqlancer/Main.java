@@ -35,7 +35,6 @@ import sqlancer.mariadb.MariaDBProvider;
 import sqlancer.mysql.MySQLProvider;
 import sqlancer.postgres.PostgresProvider;
 import sqlancer.sqlite3.SQLite3Provider;
-import sqlancer.tdengine.TDEngineProvider;
 import sqlancer.tidb.TiDBProvider;
 
 public class Main {
@@ -275,7 +274,6 @@ public class Main {
 		providers.add(new MariaDBProvider());
 		providers.add(new TiDBProvider());
 		providers.add(new PostgresProvider());
-		providers.add(new TDEngineProvider());
 		providers.add(new ClickhouseProvider());
 		providers.add(new DuckDBProvider());
 		Map<String, DatabaseProvider<?, ?>> nameToProvider = new HashMap<>();
