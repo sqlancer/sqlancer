@@ -187,7 +187,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 
 				@Override
 				public String getTextRepresentation() {
-					return "::" + type.getPrimitiveDataType().toString();
+					return "::" + type.toString();
 				}
 			});
 		}

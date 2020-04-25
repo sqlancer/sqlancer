@@ -11,27 +11,27 @@ public class DuckDBErrors {
 		errors.add("can't be cast because the value is out of range for the destination type");
 		errors.add("field value out of range");
 		errors.add("Not implemented: Unimplemented type for cast");
-		
 
 		errors.add("Type mismatch when combining rows"); // BETWEEN
-		
+
 		errors.add("invalid UTF-8"); // TODO
 		errors.add("String value is not valid UTF8");
-		
+
 		errors.add("Conversion: Invalid TypeId "); // TODO
-		
+
 		errors.add("GROUP BY clause cannot contain aggregates!"); // investigate
-		
+
 		addRegexErrors(errors);
-		
+
 		addFunctionErrors(errors);
-		
+
 		errors.add("Overflow in multiplication");
 		errors.add("Out of Range");
-		
+
 		// collate
 		errors.add("Cannot combine types with different collation!");
 		errors.add("collations are only supported for type varchar");
+		
 	}
 
 	private static void addRegexErrors(Set<String> errors) {
@@ -66,11 +66,14 @@ public class DuckDBErrors {
 		errors.add("Not implemented: Unimplemented type for cast"); // TODO: report?
 		errors.add("date/time field value out of range");
 		errors.add("CHECK constraint failed");
+		errors.add("Cannot explicitly insert values into rowid column"); // TODO: don't insert into rowid
+		errors.add(" Column with name rowid does not exist!"); // currently, there doesn't seem to way to determine if
+																// the table has a primary key
 	}
 
 	public static void addGroupByErrors(Set<String> errors) {
 		errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
-		errors.add("GROUP BY term out of range");		
+		errors.add("GROUP BY term out of range");
 	}
 
 }
