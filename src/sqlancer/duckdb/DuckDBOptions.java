@@ -21,6 +21,9 @@ import sqlancer.duckdb.test.DuckDBQueryPartitioningWhereTester;
 @Parameters
 public class DuckDBOptions {
 	
+	@Parameter(names = "--test-collate")
+	public boolean testCollate = true;
+	
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)
 	public List<DuckDBOracle> oracle = Arrays.asList(DuckDBOracle.QUERY_PARTITIONING);
 

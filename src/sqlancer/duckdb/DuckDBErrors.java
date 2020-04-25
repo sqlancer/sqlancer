@@ -28,6 +28,10 @@ public class DuckDBErrors {
 		
 		errors.add("Overflow in multiplication");
 		errors.add("Out of Range");
+		
+		// collate
+		errors.add("Cannot combine types with different collation!");
+		errors.add("collations are only supported for type varchar");
 	}
 
 	private static void addRegexErrors(Set<String> errors) {

@@ -1,6 +1,7 @@
 package sqlancer.duckdb.gen;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.IgnoreMeException;
@@ -34,7 +35,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 	}
 
 	private enum Expression {
-		UNARY_POSTFIX, UNARY_PREFIX, BINARY_COMPARISON, BINARY_LOGICAL, BINARY_ARITHMETIC, CAST, FUNC, BETWEEN, CASE, IN
+		UNARY_POSTFIX, UNARY_PREFIX, BINARY_COMPARISON, BINARY_LOGICAL, BINARY_ARITHMETIC, CAST, FUNC, BETWEEN, CASE, IN, COLLATE
 	}
 
 	protected Node<DuckDBExpression> generateExpression(int depth) {
@@ -48,8 +49,14 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 					generateExpressions(depth + 1, aggregate.getNrArgs()), aggregate);
 			return aggr;
 		}
-		Expression expr = Randomly.fromOptions(Expression.values());
+		List<Expression> possibleOptions = new ArrayList<>(Arrays.asList(Expression.values()));
+		if (!globalState.getDmbsSpecificOptions().testCollate) {
+			possibleOptions.remove(Expression.COLLATE);
+		}
+		Expression expr = Randomly.fromList(possibleOptions);
 		switch (expr) {
+		case COLLATE:
+			return new NewUnaryPostfixOperatorNode<DuckDBExpression>(generateExpression(depth + 1), DuckDBCollate.getRandom());
 		case UNARY_PREFIX:
 			return new NewUnaryPrefixOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
 					DuckDBUnaryPrefixOperator.getRandom());
@@ -222,6 +229,25 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 
 		public static DuckDBUnaryPostfixOperator getRandom() {
 			return Randomly.fromOptions(values());
+		}
+
+	}
+	
+	public static class DuckDBCollate implements Operator {
+
+		private String textRepr;
+
+		private DuckDBCollate(String textRepr) {
+			this.textRepr = textRepr;
+		}
+
+		@Override
+		public String getTextRepresentation() {
+			return "COLLATE " + textRepr;
+		}
+
+		public static DuckDBCollate getRandom() {
+			return new DuckDBCollate(DuckDBTableGenerator.getRandomCollate());
 		}
 
 	}

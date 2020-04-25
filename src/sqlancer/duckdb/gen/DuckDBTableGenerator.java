@@ -14,6 +14,7 @@ import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
 import sqlancer.duckdb.DuckDBSchema.DuckDBCompositeDataType;
+import sqlancer.duckdb.DuckDBSchema.DuckDBDataType;
 import sqlancer.duckdb.DuckDBToStringVisitor;
 import sqlancer.duckdb.ast.DuckDBExpression;
 import sqlancer.gen.UntypedExpressionGenerator;
@@ -37,6 +38,10 @@ public class DuckDBTableGenerator {
 			sb.append(columns.get(i).getName());
 			sb.append(" ");
 			sb.append(columns.get(i).getType());
+			if (globalState.getDmbsSpecificOptions().testCollate && columns.get(i).getType().getPrimitiveDataType() == DuckDBDataType.VARCHAR) {
+				sb.append(" COLLATE ");
+				sb.append(getRandomCollate());
+			}
 			if (Randomly.getBooleanWithRatherLowProbability()) {
 				sb.append(" UNIQUE");
 			}
@@ -64,6 +69,10 @@ public class DuckDBTableGenerator {
 		}
 		sb.append(")");
 		return new QueryAdapter(sb.toString(), errors, true);
+	}
+
+	public static String getRandomCollate() {
+		return Randomly.fromOptions("NOCASE", "NOACCENT", "NOACCENT.NOCASE", "C", "POSIX");
 	}
 
 	private static List<DuckDBColumn> getNewColumns() {
