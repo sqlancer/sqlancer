@@ -3,6 +3,7 @@ package sqlancer.duckdb.gen;
 import java.util.ArrayList;
 import java.util.List;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.ast.newast.ColumnReferenceNode;
@@ -72,6 +73,10 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 			DBFunction func = DBFunction.getRandom();
 			return new NewFunctionNode<DuckDBExpression, DBFunction>(generateExpressions(func.getNrArgs()), func);
 		case BETWEEN:
+			if (true) {
+				// https://github.com/cwida/duckdb/issues/584
+				throw new IgnoreMeException();
+			}
 			return new NewBetweenOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
 					generateExpression(depth + 1), generateExpression(depth + 1), Randomly.getBoolean());
 		case IN:
@@ -170,6 +175,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 		DEGREES(1),
 		RADIANS(1),
 		SIGN(1),
+		STRIP_ACCENTS(1)
 		;
 //		REGEX_REPLACE(3);
 

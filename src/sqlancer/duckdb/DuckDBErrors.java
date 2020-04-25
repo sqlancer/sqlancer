@@ -16,6 +16,7 @@ public class DuckDBErrors {
 		errors.add("Type mismatch when combining rows"); // BETWEEN
 		
 		errors.add("invalid UTF-8"); // TODO
+		errors.add("String value is not valid UTF8");
 		
 		errors.add("Conversion: Invalid TypeId "); // TODO
 		
