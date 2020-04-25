@@ -51,6 +51,9 @@ public class DuckDBOptions {
 	@Parameter(names = "--test-binary-comparisons", description="Allow generating binary comparison operators (e.g., >= or LIKE)")
 	public boolean testBinaryComparisons = true;
 	
+	@Parameter(names = "--test-indexes", description="Allow explicit (i.e. CREATE INDEX) and implicit (i.e., UNIQUE and PRIMARY KEY) indexes")
+	public boolean testIndexes = true;
+	
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)
 	public List<DuckDBOracle> oracle = Arrays.asList(DuckDBOracle.QUERY_PARTITIONING);
 

@@ -65,6 +65,10 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 		case INSERT:
 			return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
 		case CREATE_INDEX:
+			if (!globalState.getDmbsSpecificOptions().testIndexes) {
+				return 0;
+			}
+			// fall through
 		case UPDATE:
 			return r.getInteger(0, 4);
 		case VACUUM: // seems to be ignored

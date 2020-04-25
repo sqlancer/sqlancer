@@ -38,17 +38,19 @@ public class DuckDBTableGenerator {
 			sb.append(columns.get(i).getName());
 			sb.append(" ");
 			sb.append(columns.get(i).getType());
-			if (globalState.getDmbsSpecificOptions().testCollate && Randomly.getBooleanWithRatherLowProbability() && columns.get(i).getType().getPrimitiveDataType() == DuckDBDataType.VARCHAR) {
+			if (globalState.getDmbsSpecificOptions().testCollate && Randomly.getBooleanWithRatherLowProbability()
+					&& columns.get(i).getType().getPrimitiveDataType() == DuckDBDataType.VARCHAR) {
 				sb.append(" COLLATE ");
 				sb.append(getRandomCollate());
 			}
-			if (Randomly.getBooleanWithRatherLowProbability()) {
+			if (globalState.getDmbsSpecificOptions().testIndexes && Randomly.getBooleanWithRatherLowProbability()) {
 				sb.append(" UNIQUE");
 			}
 			if (Randomly.getBooleanWithRatherLowProbability()) {
 				sb.append(" NOT NULL");
 			}
-			if (globalState.getDmbsSpecificOptions().testCheckConstraints && Randomly.getBooleanWithRatherLowProbability()) {
+			if (globalState.getDmbsSpecificOptions().testCheckConstraints
+					&& Randomly.getBooleanWithRatherLowProbability()) {
 				sb.append(" CHECK(");
 				sb.append(DuckDBToStringVisitor.asString(gen.generateExpression()));
 				DuckDBErrors.addExpressionErrors(errors);
@@ -60,7 +62,7 @@ public class DuckDBTableGenerator {
 				sb.append(")");
 			}
 		}
-		if (Randomly.getBoolean()) {
+		if (globalState.getDmbsSpecificOptions().testIndexes && Randomly.getBoolean()) {
 			errors.add("Invalid type for index");
 			List<DuckDBColumn> primaryKeyColumns = Randomly.nonEmptySubset(columns);
 			sb.append(", PRIMARY KEY(");
