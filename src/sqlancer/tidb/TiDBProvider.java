@@ -42,7 +42,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 	public static enum Action implements AbstractAction<TiDBGlobalState> {
 		INSERT(TiDBInsertGenerator::getQuery), //
 		ANALYZE_TABLE(TiDBAnalyzeTableGenerator::getQuery),
-		TRUNCATE((g) -> new QueryAdapter("TRUNCATE " + g.getSchema().getRandomTable().getName())),
+		TRUNCATE((g) -> new QueryAdapter("TRUNCATE " + g.getSchema().getRandomTable(t -> !t.isView()).getName())),
 		CREATE_INDEX(TiDBIndexGenerator::getQuery), DELETE(TiDBDeleteGenerator::getQuery),
 		SET(TiDBSetGenerator::getQuery),
 		UPDATE(TiDBUpdateGenerator::getQuery),
@@ -86,7 +86,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 		switch (a) {
 		case ANALYZE_TABLE:
 		case CREATE_INDEX:
-			return r.getInteger(0, 5);
+			return r.getInteger(0, 2);
 		case INSERT:
 		case EXPLAIN:
 			return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
@@ -99,7 +99,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 			return r.getInteger(0, 5);
 		case VIEW_GENERATOR:
 			// https://github.com/tidb-challenge-program/bug-hunting-issue/issues/8
-			return r.getInteger(0, 0);
+			return r.getInteger(0, 2);
 		case ALTER_TABLE:
 			return r.getInteger(0, 10); // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/10
 		default:

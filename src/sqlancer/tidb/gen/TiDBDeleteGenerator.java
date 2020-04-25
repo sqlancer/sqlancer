@@ -37,6 +37,7 @@ public class TiDBDeleteGenerator {
 			sb.append(TiDBVisitor.asString(gen.generateExpression()));
 			errors.add("Truncated incorrect");
 			errors.add("Data truncation");
+			errors.add("Truncated incorrect FLOAT value");
 		}
 		if (Randomly.getBoolean()) {
 			sb.append(" ORDER BY ");
@@ -47,6 +48,9 @@ public class TiDBDeleteGenerator {
 			sb.append(" LIMIT ");
 			sb.append(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE));
 		}
+		errors.add("Bad Number");
+		errors.add("Division by 0");
+		errors.add("error parsing regexp");
 		return new QueryAdapter(sb.toString(), errors);
 		
 	}

@@ -67,11 +67,13 @@ public class QueryAdapter extends Query {
 	@Override
 	public ResultSet executeAndGet(Connection con) throws SQLException {
 		Statement s = con.createStatement();
+		ResultSet result = null;
 		try {
-			ResultSet result = s.executeQuery(query);
+			result = s.executeQuery(query);
 			Main.nrSuccessfulActions.addAndGet(1);
 			return result;
 		} catch (Exception e) {
+			s.close();
 			boolean isExcluded = false;
 			Main.nrUnsuccessfulActions.addAndGet(1);
 			for (String expectedError : expectedErrors) {

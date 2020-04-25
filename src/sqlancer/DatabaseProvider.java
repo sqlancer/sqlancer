@@ -67,16 +67,23 @@ public interface DatabaseProvider<G extends GlobalState<O>, O> {
 		}
 		QueryAdapter q = new QueryAdapter(queryString, errors);
 		List<String> resultSet = new ArrayList<>();
-		try (ResultSet result = q.executeAndGet(con)) {
+		ResultSet result = null;
+		try {
+			result = q.executeAndGet(con);
 			if (result == null) {
 				throw new IgnoreMeException();
 			}
 			while (result.next()) {
 				resultSet.add(result.getString(1));
 			}
+			result.getStatement().close();
 		} catch (Exception e) {
 			if (e instanceof IgnoreMeException) {
 				throw e;
+			}
+			if (e instanceof NumberFormatException) {
+				// https://github.com/tidb-challenge-program/bug-hunting-issue/issues/57
+				throw new IgnoreMeException();
 			}
 			if (e.getMessage() == null) {
 				throw new AssertionError(queryString, e);
@@ -87,6 +94,11 @@ public interface DatabaseProvider<G extends GlobalState<O>, O> {
 				}
 			}
 			throw new AssertionError(queryString, e);
+		} finally {
+			if (result != null) {
+				result.getStatement().close();
+				result.close();
+			}
 		}
 		return resultSet;
 	}

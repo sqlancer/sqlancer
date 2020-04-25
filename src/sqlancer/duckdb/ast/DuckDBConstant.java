@@ -1,6 +1,9 @@
 package sqlancer.duckdb.ast;
 
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+
 import sqlancer.ast.newast.Node;
 
 public class DuckDBConstant implements Node<DuckDBExpression> {
@@ -94,6 +97,50 @@ public class DuckDBConstant implements Node<DuckDBExpression> {
 		}
 
 	}
+
+	
+	public static class DuckDBDateConstant extends DuckDBConstant {
+
+		public String textRepr;
+
+		public DuckDBDateConstant(long val) {
+			Timestamp timestamp = new Timestamp(val);
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+			textRepr = dateFormat.format(timestamp);
+		}
+
+		public String getValue() {
+			return textRepr;
+		}
+
+		@Override
+		public String toString() {
+			return String.format("DATE '%s'", textRepr);
+		}
+
+	}
+
+	public static class DuckDBTimestampConstant extends DuckDBConstant {
+
+		public String textRepr;
+
+		public DuckDBTimestampConstant(long val) {
+			Timestamp timestamp = new Timestamp(val);
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			textRepr = dateFormat.format(timestamp);
+		}
+
+		public String getValue() {
+			return textRepr;
+		}
+
+		@Override
+		public String toString() {
+			return String.format("TIMESTAMP '%s'", textRepr);
+		}
+
+	}
+	
 	
 	public static class DuckDBBooleanConstant extends DuckDBConstant {
 		
@@ -132,6 +179,14 @@ public class DuckDBConstant implements Node<DuckDBExpression> {
 
 	public static Node<DuckDBExpression> createBooleanConstant(boolean val) {
 		return new DuckDBBooleanConstant(val);
+	}
+
+	public static Node<DuckDBExpression> createDateConstant(long integer) {
+		return new DuckDBDateConstant(integer);
+	}
+
+	public static Node<DuckDBExpression> createTimestampConstant(long integer) {
+		return new DuckDBTimestampConstant(integer);
 	}
 
 }

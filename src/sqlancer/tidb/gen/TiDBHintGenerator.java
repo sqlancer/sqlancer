@@ -53,6 +53,10 @@ public class TiDBHintGenerator {
 			tablesHint("INL_JOIN");
 			break;
 		case INL_HASH_JOIN:
+			if (true) {
+				// INL_HASH_JOIN
+				throw new IgnoreMeException();
+			}
 			tablesHint("INL_HASH_JOIN");
 			break;
 		case INL_MERGE_JOIN:
@@ -77,10 +81,6 @@ public class TiDBHintGenerator {
 			sb.append("AGG_TO_COP()");
 			break;
 		case USE_INDEX_MERGE:
-			if (true) {
-				// https://github.com/pingcap/tidb/issues/15994
-				throw new IgnoreMeException();
-			}
 			if (table.hasIndexes()) {
 				sb.append("USE_INDEX_MERGE(");
 				sb.append(table.getName());
@@ -116,7 +116,7 @@ public class TiDBHintGenerator {
 		List<TableIndex> indexSubset = Randomly.nonEmptySubset(allIndexes);
 		sb.append(table.getName());
 		sb.append(", ");
-		sb.append(indexSubset.stream().map(i -> i.getIndexName()).collect(Collectors.joining(", ")));
+		sb.append(indexSubset.stream().map(i -> i.getIndexName()).distinct().collect(Collectors.joining(", ")));
 		sb.append(")");
 	}
 

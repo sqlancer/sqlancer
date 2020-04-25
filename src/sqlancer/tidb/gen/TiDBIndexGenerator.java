@@ -17,7 +17,7 @@ public class TiDBIndexGenerator {
 	public static Query getQuery(TiDBGlobalState globalState) throws SQLException {
 		Set<String> errors = new HashSet<>();
 
-		TiDBTable randomTable = globalState.getSchema().getRandomTable();
+		TiDBTable randomTable = globalState.getSchema().getRandomTable(t -> !t.isView());
 		String indexName = globalState.getSchema().getFreeIndexName();
 		StringBuilder sb = new StringBuilder("CREATE ");
 		if (Randomly.getBooleanWithRatherLowProbability()) {
@@ -52,6 +52,7 @@ public class TiDBIndexGenerator {
 			sb.append(" KEY_BLOCK_SIZE ");
 			sb.append(Randomly.getPositiveOrZeroNonCachedInteger());
 		}
+		errors.add("Cannot decode index value, because"); // invalid value for generated column
 		errors.add("index already exist");
 		return new QueryAdapter(sb.toString(), errors, true);
 	}

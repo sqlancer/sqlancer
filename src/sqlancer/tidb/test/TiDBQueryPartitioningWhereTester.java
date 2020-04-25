@@ -7,6 +7,7 @@ import java.util.List;
 import sqlancer.DatabaseProvider;
 import sqlancer.Randomly;
 import sqlancer.TestOracle;
+import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.visitor.TiDBVisitor;
 
@@ -14,6 +15,7 @@ public class TiDBQueryPartitioningWhereTester extends TiDBQueryPartitioningBase 
 
 	public TiDBQueryPartitioningWhereTester(TiDBGlobalState state) {
 		super(state);
+		TiDBErrors.addExpressionErrors(errors);
 	}
 
 	@Override

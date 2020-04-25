@@ -22,22 +22,25 @@ public class TiDBErrors {
 		// known issue: https://github.com/pingcap/tidb/issues/14819
 		errors.add("Wrong plan type for dataReaderBuilder");
 		
-		if (true) {
-			// https://github.com/pingcap/tidb/issues/16017
-			errors.add("Can't find a proper physical plan for this query");
-		}
-		
-		errors.add("DOUBLE value is out of range in 'cot(0)'");
-		errors.add("DOUBLE value is out of range in 'pow");
-		errors.add("DOUBLE value is out of range in 'exp(");
+		errors.add("DOUBLE value is out of range");
 		
 		errors.add("index out of range"); // https://github.com/pingcap/tidb/issues/15810
 		errors.add("baseBuiltinFunc.evalString() should never be called, please contact the TiDB team for help"); // https://github.com/pingcap/tidb/issues/15847
 		errors.add("unsupport column type for encode 6"); // https://github.com/pingcap/tidb/issues/15850
 		
+		errors.add("Data truncation: %s value is out of range in '%s'");
+		errors.add("Truncated incorrect FLOAT value");
+		errors.add("Bad Number");
 		
 		// regex
-		errors.add("missing )");
+		errors.add("error parsing regexp");
+		
+		// https://github.com/tidb-challenge-program/bug-hunting-issue/issues/57
+		errors.add("For input string: \"+Inf\"");
+		
+		errors.add("inconsistent index"); // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/58
+		
+		errors.add("Illegal mix of collations");
 	}
 
 	public static void addExpressionHavingErrors(Set<String> errors) {
@@ -58,6 +61,16 @@ public class TiDBErrors {
 		errors.add("Bad Number");
 		errors.add("The value specified for generated column"); // TODO: do not insert data into generated columns
 		errors.add("incorrect utf8 value");
+		errors.add("Data truncation: %s value is out of range in '%s'");
+		errors.add("Incorrect smallint value");
+		errors.add("Incorrect bigint value");
+		errors.add("Incorrect decimal value");
+		errors.add("error parsing regexp");
+		
+		if (true) {
+			// https://github.com/tidb-challenge-program/bug-hunting-issue/issues/54
+			errors.add("Miss column");
+		}
 	}
 
 }

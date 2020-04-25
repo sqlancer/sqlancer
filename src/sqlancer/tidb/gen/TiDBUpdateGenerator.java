@@ -42,6 +42,7 @@ public class TiDBUpdateGenerator {
 			sb.append(" WHERE ");
 			TiDBErrors.addExpressionErrors(errors);
 			sb.append(TiDBVisitor.asString(gen.generateExpression()));
+			errors.add("Data Too Long"); // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/43
 		}
 		TiDBErrors.addInsertErrors(errors);
 		

@@ -93,9 +93,6 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
 		case REGEX:
 			return new TiDBRegexOperation(generateExpression(depth + 1), generateExpression(depth + 1), TiDBRegexOperator.getRandom());
 		case COLLATE:
-			if (TiDBBugs.BUG_15988) {
-				throw new IgnoreMeException();
-			}
 			return new TiDBCollate(generateExpression(depth + 1), Randomly.fromOptions("utf8mb4_bin", "latin1_bin", "binary", "ascii_bin", "utf8_bin"));
 		case FUNCTION:
 			TiDBFunction func = TiDBFunction.getRandom();
@@ -103,14 +100,17 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
 		case BINARY_BIT:
 			return new TiDBBinaryBitOperation(generateExpression(depth + 1), generateExpression(depth + 1), TiDBBinaryBitOperator.getRandom());
 		case BINARY_LOGICAL:
-			if (TiDBBugs.BUG_15987 || TiDBBugs.BUG_15990) {
+//			if (TiDBBugs.BUG_15987 || TiDBBugs.BUG_15990) {
+//				throw new IgnoreMeException();
+//			}
+			if (true /* https://github.com/tidb-challenge-program/bug-hunting-issue/issues/48 */) {
 				throw new IgnoreMeException();
 			}
 			return new TiDBBinaryLogicalOperation(generateExpression(depth + 1), generateExpression(depth + 1), TiDBBinaryLogicalOperator.getRandom());
 //		case BINARY_ARITHMETIC:
 //			return new TiDBBinaryArithmeticOperation(generateExpression(depth + 1), generateExpression(depth + 1), TiDBBinaryArithmeticOperator.getRandom());
 		case CAST:
-			return new TiDBCastOperation(generateExpression(depth + 1), Randomly.fromOptions("BINARY", "CHAR", /*"DATE", "DATETIME", "TIME", https://github.com/tidb-challenge-program/bug-hunting-issue/issues/13 */ "DECIMAL", "SIGNED"/*, "UNSIGNED" https://github.com/pingcap/tidb/issues/16028 */));
+			return new TiDBCastOperation(generateExpression(depth + 1), Randomly.fromOptions(/*"BINARY" https://github.com/tidb-challenge-program/bug-hunting-issue/issues/52 */ "CHAR", /*"DATE", "DATETIME", "TIME", https://github.com/tidb-challenge-program/bug-hunting-issue/issues/13 */ "DECIMAL", "SIGNED"/*, "UNSIGNED" https://github.com/pingcap/tidb/issues/16028 */));
 		case CASE:
 			if (true) {
 				// https://github.com/tidb-challenge-program/bug-hunting-issue/issues/19
@@ -140,18 +140,15 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
 		switch (type) {
 		case INT:
 			return TiDBConstant.createIntConstant(globalState.getRandomly().getInteger());
-		case TEXT: // TODO: wait for https://github.com/pingcap/tidb/issues/15743
-			return TiDBConstant.createIntConstant(globalState.getRandomly().getInteger());
-//			return TiDBConstant.createStringConstant(globalState.getRandomly().getString());
+		case BLOB:
+		case TEXT:
+			return TiDBConstant.createStringConstant(globalState.getRandomly().getString());
 		case BOOL:
 			return TiDBConstant.createBooleanConstant(Randomly.getBoolean());
-		case DOUBLE:
-		case FLOAT: // TODO: wait for https://github.com/pingcap/tidb/issues/15743
-			return TiDBConstant.createIntConstant(globalState.getRandomly().getInteger());
-//			return TiDBConstant.createFloatConstant(globalState.getRandomly().getDouble());
-		case CHAR:// TODO: wait for https://github.com/pingcap/tidb/issues/15743
-			return TiDBConstant.createIntConstant(globalState.getRandomly().getInteger());
-//			return TiDBConstant.createStringConstant(globalState.getRandomly().getChar());
+		case FLOATING:
+			return TiDBConstant.createFloatConstant(globalState.getRandomly().getDouble());
+		case CHAR:
+			return TiDBConstant.createStringConstant(globalState.getRandomly().getChar());
 		case DECIMAL:
 		case NUMERIC:
 			return TiDBConstant.createIntConstant(globalState.getRandomly().getInteger());

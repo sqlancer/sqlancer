@@ -22,13 +22,8 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
 		INT, VARCHAR, BOOLEAN, FLOAT, DATE, TIMESTAMP;
 
 		public static DuckDBDataType getRandom() {
-			while (true) {
-				DuckDBDataType type = Randomly.fromOptions(values());
-				if (type == TIMESTAMP) {
-					continue; // https://github.com/cwida/duckdb/issues/532
-				}
-				return type;
-			}
+			DuckDBDataType type = Randomly.fromOptions(values());
+			return type;
 		}
 
 	}
@@ -59,7 +54,7 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
 			}
 			return size;
 		}
-		
+
 		public static DuckDBCompositeDataType getRandom() {
 			DuckDBDataType type = DuckDBDataType.getRandom();
 			int size = -1;
@@ -79,14 +74,14 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
 			default:
 				throw new AssertionError(type);
 			}
-			
+
 			return new DuckDBCompositeDataType(type, size);
 		}
 
 		public static DuckDBCompositeDataType getInt(int size) {
 			return new DuckDBCompositeDataType(DuckDBDataType.INT, size);
 		}
-		
+
 		@Override
 		public String toString() {
 			switch (getPrimitiveDataType()) {

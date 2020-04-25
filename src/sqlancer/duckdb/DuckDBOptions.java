@@ -57,6 +57,12 @@ public class DuckDBOptions {
 	@Parameter(names = "--test-varchar-constants", description="Allow generating VARCHAR constants", arity = 1)
 	public boolean testStringConstants = true;
 	
+	@Parameter(names = "--test-date-constants", description="Allow generating DATE constants", arity = 1)
+	public boolean testDateConstants = true;
+	
+	@Parameter(names = "--test-timestamp-constants", description="Allow generating TIMESTAMP constants", arity = 1)
+	public boolean testTimestampConstants = true;
+	
 	@Parameter(names = "--test-float-constants", description="Allow generating floating-point constants", arity = 1)
 	public boolean testFloatConstants = true;
 	

@@ -52,6 +52,8 @@ public class DuckDBErrors {
 		errors.add("invalid type specifier"); // PRINTF
 		errors.add("argument index out of range"); // PRINTF
 		errors.add("invalid format string"); // PRINTF
+		errors.add("Could not choose a best candidate function for the function call \"date_part"); // date_part
+		errors.add("extract specifier"); // date_part
 	}
 
 	public static void addInsertErrors(Set<String> errors) {

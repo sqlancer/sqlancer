@@ -52,7 +52,7 @@ public abstract class TiDBQueryPartitioningBase implements TestOracle {
 		select = new TiDBSelect();
 		select.setFetchColumns(generateFetchColumns());
 		List<TiDBTable> tables = targetTables.getTables();
-		if (Randomly.getBoolean() && false) {
+		if (Randomly.getBoolean()) {
 			TiDBHintGenerator.generateHints(select, tables);
 		}
 

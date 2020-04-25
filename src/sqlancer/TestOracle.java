@@ -71,4 +71,28 @@ public interface TestOracle {
 		return secondResultSet;
 	}
 
+	public static List<String> getCombinedResultSetNoDuplicates(String firstQueryString, String secondQueryString,
+			String thirdQueryString, List<String> combinedString, boolean asUnion, GlobalState<?> state, Set<String> errors) throws SQLException {
+		List<String> secondResultSet;
+		if (asUnion) {
+			String unionString = firstQueryString + " UNION " + secondQueryString + " UNION "
+					+ thirdQueryString;
+			combinedString.add(unionString);
+			secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(unionString, errors,
+					state.getConnection(), state);
+		} else {
+			secondResultSet = new ArrayList<>();
+			secondResultSet.addAll(DatabaseProvider.getResultSetFirstColumnAsString(firstQueryString, errors,
+					state.getConnection(), state));
+			secondResultSet.addAll(DatabaseProvider.getResultSetFirstColumnAsString(secondQueryString, errors,
+					state.getConnection(), state));
+			secondResultSet.addAll(DatabaseProvider.getResultSetFirstColumnAsString(thirdQueryString, errors,
+					state.getConnection(), state));
+			combinedString.add(firstQueryString);
+			combinedString.add(secondQueryString);
+			combinedString.add(thirdQueryString);
+		}
+		return secondResultSet;
+	}
+	
 }

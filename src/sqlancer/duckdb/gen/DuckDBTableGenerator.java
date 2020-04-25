@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -38,6 +39,10 @@ public class DuckDBTableGenerator {
 			sb.append(columns.get(i).getName());
 			sb.append(" ");
 			sb.append(columns.get(i).getType());
+			if (columns.get(i).getType().getPrimitiveDataType() == DuckDBDataType.DATE || columns.get(i).getType().getPrimitiveDataType() == DuckDBDataType.TIMESTAMP) {
+				// https://github.com/cwida/duckdb/issues/532
+				throw new IgnoreMeException();
+			}
 			if (globalState.getDmbsSpecificOptions().testCollate && Randomly.getBooleanWithRatherLowProbability()
 					&& columns.get(i).getType().getPrimitiveDataType() == DuckDBDataType.VARCHAR) {
 				sb.append(" COLLATE ");

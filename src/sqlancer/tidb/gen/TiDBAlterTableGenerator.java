@@ -23,7 +23,7 @@ public class TiDBAlterTableGenerator {
 	public static Query getQuery(TiDBGlobalState globalState) {
 		Set<String> errors = new HashSet<>();
 		StringBuilder sb = new StringBuilder("ALTER TABLE ");
-		TiDBTable table = globalState.getSchema().getRandomTable();
+		TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
 		TiDBExpressionGenerator gen = new TiDBExpressionGenerator(globalState).setColumns(table.getColumns());
 		TiDBColumn column = table.getRandomColumn();
 		sb.append(table.getName());
@@ -48,6 +48,7 @@ public class TiDBAlterTableGenerator {
 			sb.append(column.getName());
 			errors.add("with index covered now");
 			errors.add("Unsupported drop integer primary key");
+			errors.add("has a generated column dependency");
 			break;
 		case ENABLE_DISABLE_KEYS:
 			sb.append(Randomly.fromOptions("ENABLE", "DISABLE"));

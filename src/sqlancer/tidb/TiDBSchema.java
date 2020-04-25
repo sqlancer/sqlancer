@@ -19,7 +19,7 @@ public class TiDBSchema extends AbstractSchema<TiDBTable> {
 
 	public static enum TiDBDataType {
 
-		INT, TEXT, BOOL, FLOAT, DOUBLE, CHAR, DECIMAL, NUMERIC;
+		INT, TEXT, BOOL, FLOATING, CHAR, DECIMAL, NUMERIC, BLOB;
 
 		private TiDBDataType() {
 			isPrimitive = true;
@@ -38,18 +38,18 @@ public class TiDBSchema extends AbstractSchema<TiDBTable> {
 		public boolean isPrimitive() {
 			return isPrimitive;
 		}
-		
+
 		public boolean isNumeric() {
 			switch (this) {
 			case INT:
 			case DECIMAL:
-			case FLOAT:
-			case DOUBLE:
+			case FLOATING:
 			case BOOL:
 			case NUMERIC:
 				return true;
 			case CHAR:
 			case TEXT:
+			case BLOB:
 				return false;
 			default:
 				throw new AssertionError(this);
@@ -86,6 +86,54 @@ public class TiDBSchema extends AbstractSchema<TiDBTable> {
 
 		public static TiDBCompositeDataType getInt(int size) {
 			return new TiDBCompositeDataType(TiDBDataType.INT, size);
+		}
+
+		public static TiDBCompositeDataType getRandom() {
+			TiDBDataType primitiveType = TiDBDataType.getRandom();
+			int size = -1;
+			switch (primitiveType) {
+			case INT:
+				size = Randomly.fromOptions(1, 2, 4, 8);
+				break;
+			case FLOATING:
+				size = Randomly.fromOptions(4, 8);
+				break;
+			default:
+				break;
+			}
+			return new TiDBCompositeDataType(primitiveType, size);
+		}
+
+		@Override
+		public String toString() {
+			switch (getPrimitiveDataType()) {
+			case INT:
+				switch (size) {
+				case 1:
+					return "TINYINT";
+				case 2:
+					return "SMALLINT";
+				case 3:
+					return "MEDIUMINT";
+				case 4:
+					return "INTEGER";
+				case 8:
+					return "BIGINT";
+				default:
+					throw new AssertionError(size);
+				}
+			case FLOATING:
+				switch (size) {
+				case 4:
+					return "FLOAT";
+				case 8:
+					return "DOUBLE";
+				default:
+					throw new AssertionError(size);
+				}
+			default:
+				return getPrimitiveDataType().toString();
+			}
 		}
 
 	}
@@ -129,8 +177,8 @@ public class TiDBSchema extends AbstractSchema<TiDBTable> {
 
 	private static TiDBCompositeDataType getColumnType(String typeString) {
 		typeString = typeString.replace(" zerofill", "").replace(" unsigned", "");
-		if (typeString.startsWith("int") || typeString.startsWith("bigint") || typeString.contains("decimal")) {
-			return new TiDBCompositeDataType(TiDBDataType.INT);
+		if (typeString.contains("decimal")) {
+			return new TiDBCompositeDataType(TiDBDataType.DECIMAL);
 		}
 		if (typeString.startsWith("var_string") || typeString.contains("binary")) {
 			return new TiDBCompositeDataType(TiDBDataType.TEXT);
@@ -139,26 +187,47 @@ public class TiDBSchema extends AbstractSchema<TiDBTable> {
 			return new TiDBCompositeDataType(TiDBDataType.CHAR);
 		}
 		TiDBDataType primitiveType;
-		switch (typeString) {
-		case "text":
-		case "longtext":
-			primitiveType = TiDBDataType.TEXT;
-			break;
-		case "float":
-		case "double":
-			primitiveType = TiDBDataType.FLOAT;
-			break;
-		case "tinyint(1)":
-			primitiveType = TiDBDataType.BOOL;
-			break;
-		case "null":
+		int size = -1;
+		if (typeString.startsWith("bigint")) {
 			primitiveType = TiDBDataType.INT;
-			break;
-
-		default:
-			throw new AssertionError(typeString);
+			size = 8;
+		} else {
+			switch (typeString) {
+			case "text":
+			case "longtext":
+				primitiveType = TiDBDataType.TEXT;
+				break;
+			case "float":
+			case "double":
+				primitiveType = TiDBDataType.FLOATING;
+				break;
+			case "tinyint(1)":
+				primitiveType = TiDBDataType.BOOL;
+				break;
+			case "null":
+				primitiveType = TiDBDataType.INT;
+				break;
+			case "tinyint(4)":
+				primitiveType = TiDBDataType.INT;
+				size = 1;
+				break;
+			case "smallint(6)":
+				primitiveType = TiDBDataType.INT;
+				size = 2;
+				break;
+			case "int(11)":
+				primitiveType = TiDBDataType.INT;
+				size = 4;
+				break;
+			case "blob":
+			case "longblob":
+				primitiveType = TiDBDataType.BLOB;
+				break;
+			default:
+				throw new AssertionError(typeString);
+			}
 		}
-		return new TiDBCompositeDataType(primitiveType);
+		return new TiDBCompositeDataType(primitiveType, size);
 	}
 
 	public static class TiDBTable extends AbstractTable<TiDBColumn, TableIndex> {

@@ -317,7 +317,7 @@ public class MySQLTableGenerator {
 		switch (randomType) {
 		case DECIMAL:
 			sb.append("DECIMAL");
-			optionallyAddPrecisionAndScale();
+			optionallyAddPrecisionAndScale(sb);
 			break;
 		case INT:
 			sb.append(Randomly.fromOptions("TINYINT", "SMALLINT", "MEDIUMINT", "INT", "BIGINT"));
@@ -332,11 +332,11 @@ public class MySQLTableGenerator {
 			break;
 		case FLOAT:
 			sb.append("FLOAT");
-			optionallyAddPrecisionAndScale();
+			optionallyAddPrecisionAndScale(sb);
 			break;
 		case DOUBLE:
 			sb.append(Randomly.fromOptions("DOUBLE", "FLOAT"));
-			optionallyAddPrecisionAndScale();
+			optionallyAddPrecisionAndScale(sb);
 			break;
 		}
 		if (randomType.isNumeric()) {
@@ -351,7 +351,7 @@ public class MySQLTableGenerator {
 		}
 	}
 
-	private void optionallyAddPrecisionAndScale() {
+	public static void optionallyAddPrecisionAndScale(StringBuilder sb) {
 		if (Randomly.getBoolean() && !MySQLBugs.BUG_99183) {
 			sb.append("(");
 			// The maximum number of digits (M) for DECIMAL is 65

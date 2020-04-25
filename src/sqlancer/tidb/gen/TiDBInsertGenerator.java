@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -14,7 +13,6 @@ import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBExpressionGenerator;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
-import sqlancer.tidb.TiDBSchema.TiDBDataType;
 import sqlancer.tidb.TiDBSchema.TiDBTable;
 import sqlancer.tidb.visitor.TiDBVisitor;
 
@@ -48,10 +46,6 @@ public class TiDBInsertGenerator {
 			sb.append(Randomly.fromOptions("LOW_PRIORITY", "HIGH_PRIORITY", "DELAYED"));
 		}
 		if (isInsert && Randomly.getBoolean()) {
-			if (table.getColumns().stream().anyMatch(c -> c.getType().getPrimitiveDataType() == TiDBDataType.DECIMAL)) {
-				/* https://github.com/pingcap/tidb/issues/16025 */
-				throw new IgnoreMeException();
-			}
 			sb.append(" IGNORE ");
 		}
 		sb.append(" INTO ");
@@ -73,6 +67,7 @@ public class TiDBInsertGenerator {
 			sb.append("=");
 			sb.append(TiDBVisitor.asString(gen.generateExpression()));
 		}
+		errors.add("Illegal mix of collations");
 		return new QueryAdapter(sb.toString(), errors);
 	}
 
