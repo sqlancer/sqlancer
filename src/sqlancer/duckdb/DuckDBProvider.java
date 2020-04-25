@@ -70,13 +70,15 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 			}
 			// fall through
 		case UPDATE:
-			return r.getInteger(0, 4);
+			return r.getInteger(0, globalState.getDmbsSpecificOptions().maxNumUpdates + 1);
 		case VACUUM: // seems to be ignored
 		case ANALYZE:  // seems to be ignored
-		case DELETE:
 		case EXPLAIN:
-		case CREATE_VIEW:
 			return r.getInteger(0, 2);
+		case DELETE:
+			return r.getInteger(0, globalState.getDmbsSpecificOptions().maxNumDeletes + 1);
+		case CREATE_VIEW:
+			return r.getInteger(0, globalState.getDmbsSpecificOptions().maxNumViews + 1);
 		default:
 			throw new AssertionError(a);
 		}

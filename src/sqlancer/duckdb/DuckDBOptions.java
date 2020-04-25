@@ -57,6 +57,15 @@ public class DuckDBOptions {
 	@Parameter(names = "--test-indexes", description="Allow explicit (i.e. CREATE INDEX) and implicit (i.e., UNIQUE and PRIMARY KEY) indexes")
 	public boolean testIndexes = true;
 	
+	@Parameter(names = "--max-num-views", description="The maximum number of views that can be generated for a database")
+	public int maxNumViews = 1;
+	
+	@Parameter(names = "--max-num-deletes", description="The maximum number of DELETE statements that are issued for a database")
+	public int maxNumDeletes = 1;
+	
+	@Parameter(names = "--max-num-updates", description="The maximum number of UPDATE statements that are issued for a database")
+	public int maxNumUpdates = 5;
+	
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)
 	public List<DuckDBOracle> oracle = Arrays.asList(DuckDBOracle.QUERY_PARTITIONING);
 
