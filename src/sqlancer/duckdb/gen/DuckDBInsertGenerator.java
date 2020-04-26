@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
+import sqlancer.Randomly;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
@@ -45,7 +46,11 @@ public class DuckDBInsertGenerator extends AbstractInsertGenerator<DuckDBColumn>
 	@Override
 	protected void insertValue(DuckDBColumn tiDBColumn) {
 		// TODO: select a more meaningful value
-		sb.append(DuckDBToStringVisitor.asString(new DuckDBExpressionGenerator(globalState).generateConstant()));
+		if (Randomly.getBooleanWithRatherLowProbability()) {
+			sb.append("DEFAULT");
+		} else {
+			sb.append(DuckDBToStringVisitor.asString(new DuckDBExpressionGenerator(globalState).generateConstant()));
+		}
 	}
 
 }

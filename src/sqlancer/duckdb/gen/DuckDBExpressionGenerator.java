@@ -101,10 +101,6 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 			DBFunction func = DBFunction.getRandom();
 			return new NewFunctionNode<DuckDBExpression, DBFunction>(generateExpressions(func.getNrArgs()), func);
 		case BETWEEN:
-			if (true) {
-				// https://github.com/cwida/duckdb/issues/584
-				throw new IgnoreMeException();
-			}
 			return new NewBetweenOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
 					generateExpression(depth + 1), generateExpression(depth + 1), Randomly.getBoolean());
 		case IN:

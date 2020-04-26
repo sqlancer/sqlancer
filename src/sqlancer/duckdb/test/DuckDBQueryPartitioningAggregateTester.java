@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.postgresql.util.PSQLException;
-
 import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.QueryAdapter;
@@ -104,10 +102,14 @@ public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartition
 			} else {
 				resultString = result.getString(1);
 			}
-		} catch (PSQLException e) {
-			throw new AssertionError(queryString, e);
+			return resultString;
+		} catch (SQLException e) {
+			if (!e.getMessage().contains("Not implemented type")) {
+				throw new AssertionError(queryString, e);
+			} else {
+				throw new IgnoreMeException();
+			}
 		}
-		return resultString;
 	}
 
 	private List<Node<DuckDBExpression>> mapped(NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> aggregate) {
