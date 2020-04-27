@@ -21,14 +21,22 @@ public class SQLite3Fuzzer implements TestOracle {
 	@Override
 	public void check() throws SQLException {
 		String s = SQLite3Visitor
-				.asString(SQLite3RandomQuerySynthesizer.generate(globalState, Randomly.smallNumber() + 1));
+				.asString(SQLite3RandomQuerySynthesizer.generate(globalState, Randomly.smallNumber() + 1)) + ";";
 		MainOptions options = globalState.getOptions();
 		try {
 			if (options.logEachSelect()) {
 				globalState.getLogger().writeCurrent(s);
 			}
-			globalState.getManager().execute(new QueryAdapter(s));
-			globalState.getManager().incrementSelectQueryCount();
+			if (globalState.getDmbsSpecificOptions().printStatements) {
+				System.out.println(s);
+			}
+			if (globalState.getDmbsSpecificOptions().executeQuery) {
+				globalState.getManager().execute(new QueryAdapter(s));
+				if (globalState.getDmbsSpecificOptions().executeStatementsAndPrintSuccessfulOnes) {
+					System.out.println(s);
+				}
+				globalState.getManager().incrementSelectQueryCount();
+			}
 		} catch (Error e) {
 
 		}

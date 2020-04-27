@@ -364,6 +364,8 @@ public class Main {
 						state.setRandomly(r);
 						state.setDatabaseName(databaseName);
 						state.setMainOptions(options);
+						Object dmbsSpecificOptions = nameToOptions.get(jc.getParsedCommand());
+						state.setDmbsSpecificOptions(dmbsSpecificOptions);
 						try (Connection con = provider.createDatabase(state)) {
 							QueryManager manager = new QueryManager(con, stateToRepro);
 							try {
@@ -373,8 +375,6 @@ public class Main {
 								// ignore
 							}
 							state.setConnection(con);
-							Object dmbsSpecificOptions = nameToOptions.get(jc.getParsedCommand());
-							state.setDmbsSpecificOptions(dmbsSpecificOptions);
 							state.setStateLogger(logger);
 							state.setManager(manager);
 							Method method = provider.getClass().getMethod("generateAndTestDatabase", state.getClass());

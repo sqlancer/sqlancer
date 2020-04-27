@@ -117,5 +117,23 @@ public class SQLite3Options {
 			return SQLite3Oracle.valueOf(value);
 		}
 	}
+	
+	@Parameter(names = { "--delete-existing-databases" }, description = "Delete a database file if it already exists", arity = 1)
+	public boolean deleteIfExists = true;
+
+	@Parameter(names = { "--generate-new-database" }, description = "Specifies whether new databases should be generated", arity = 1)
+	public boolean generateDatabase = true;
+	
+	@Parameter(names = { "--print-statements" }, description = "Specifies whether to print SQL statements to stdout", arity = 1)
+	public boolean printStatements = false;
+	
+	@Parameter(names = { "--execute-queries" }, description = "Specifies whether the query in the fuzzer should be executed", arity = 1)
+	public boolean executeQuery = true;
+	
+	@Parameter(names = { "--print-successful-statements" }, description = "Specifies whether to print SQL statements to stdout", arity = 1)
+	public boolean executeStatementsAndPrintSuccessfulOnes = false;
+
+	@Parameter(names = { "--exit-after-first-database" }, description = "Specifies whether to stop SQLancer after creating and executing the test oracle on the first database", arity = 1)
+	public boolean exitAfterFirstDatabase = false;
 
 }
