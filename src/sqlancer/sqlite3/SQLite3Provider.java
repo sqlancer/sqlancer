@@ -429,6 +429,9 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQL
 					Randomly.fromOptions("UTF-8", "UTF-16", "UTF-16le", "UTF-16be")));
 		}
 		for (String s : pragmasToExecute) {
+			if (globalState.getDmbsSpecificOptions().printStatements) {
+				System.out.println(s);
+			}
 			Query q = new QueryAdapter(s);
 			state.statements.add(q);
 			q.execute(con);
