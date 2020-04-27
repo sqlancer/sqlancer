@@ -48,14 +48,18 @@ public class SQLite3Options {
 	public boolean testCheckConstraints = true;
 	
 	@Parameter(names = { "--test-nulls-first-last" }, description = "Allow NULLS FIRST/NULLS LAST in ordering terms", arity = 1)
-	public boolean testNullsFirstLast;
+	public boolean testNullsFirstLast = true;
 
 	@Parameter(names = { "--test-joins" }, description = "Allow the generation of JOIN clauses", arity = 1)
-	public boolean testJoins;
+	public boolean testJoins = true;
 
 	@Parameter(names = { "--test-functions" }, description = "Allow the generation of funcitons in expressions", arity = 1)
-	public boolean testFunctions;
+	public boolean testFunctions = true;
 
+	@Parameter(names = { "--test-match" }, description = "Allow the generation of the MATCH operator", arity = 1)
+	public boolean testMatch = true;
+
+	
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)
 	public SQLite3Oracle oracle = SQLite3Oracle.METAMORPHIC;
 

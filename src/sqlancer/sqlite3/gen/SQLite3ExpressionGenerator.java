@@ -240,6 +240,9 @@ public class SQLite3ExpressionGenerator {
 		if (!globalState.getDmbsSpecificOptions().testFunctions) {
 			list.remove(ExpressionType.FUNCTION);
 		}
+		if (!globalState.getDmbsSpecificOptions().testMatch) {
+			list.remove(ExpressionType.MATCH);
+		}
 		ExpressionType randomExpressionType = Randomly.fromList(list);
 		switch (randomExpressionType) {
 		case AND_OR_CHAIN:
