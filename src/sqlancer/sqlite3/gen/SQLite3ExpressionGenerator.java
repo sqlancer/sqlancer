@@ -144,7 +144,7 @@ public class SQLite3ExpressionGenerator {
 		if (Randomly.getBoolean()) {
 			expr = new SQLite3OrderingTerm(expr, Ordering.getRandomValue());
 		}
-		if (Randomly.getBoolean()) {
+		if (globalState.getDmbsSpecificOptions().testNullsFirstLast && Randomly.getBoolean()) {
 			expr = new SQLite3PostfixText(expr, Randomly.fromOptions(" NULLS FIRST", " NULLS LAST"),
 					null /*expr.getExpectedValue() */) {
 				@Override
