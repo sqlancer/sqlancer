@@ -237,6 +237,9 @@ public class SQLite3ExpressionGenerator {
 		if (!allowSubqueries) {
 			list.remove(ExpressionType.RANDOM_QUERY);
 		}
+		if (!globalState.getDmbsSpecificOptions().testFunctions) {
+			list.remove(ExpressionType.FUNCTION);
+		}
 		ExpressionType randomExpressionType = Randomly.fromList(list);
 		switch (randomExpressionType) {
 		case AND_OR_CHAIN:

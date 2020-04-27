@@ -53,6 +53,8 @@ public class SQLite3Options {
 	@Parameter(names = { "--test-joins" }, description = "Allow the generation of JOIN clauses", arity = 1)
 	public boolean testJoins;
 
+	@Parameter(names = { "--test-functions" }, description = "Allow the generation of funcitons in expressions", arity = 1)
+	public boolean testFunctions;
 
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)
 	public SQLite3Oracle oracle = SQLite3Oracle.METAMORPHIC;
