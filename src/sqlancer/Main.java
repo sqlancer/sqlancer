@@ -297,39 +297,9 @@ public class Main {
 			System.exit(-1);
 		}
 
-		final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-		scheduler.scheduleAtFixedRate(new Runnable() {
-
-			private long timeMillis = System.currentTimeMillis();
-			private long lastNrQueries = 0;
-			private long lastNrDbs;
-
-			{
-				timeMillis = System.currentTimeMillis();
-			}
-
-			@Override
-			public void run() {
-				long elapsedTimeMillis = System.currentTimeMillis() - timeMillis;
-				long currentNrQueries = nrQueries.get();
-				long nrCurrentQueries = currentNrQueries - lastNrQueries;
-				double throughput = nrCurrentQueries / (elapsedTimeMillis / 1000d);
-				long currentNrDbs = nrDatabases.get();
-				long nrCurrentDbs = currentNrDbs - lastNrDbs;
-				double throughputDbs = nrCurrentDbs / (elapsedTimeMillis / 1000d);
-				long successfulStatementsRatio = (long) (100.0 * nrSuccessfulActions.get()
-						/ (nrSuccessfulActions.get() + nrUnsuccessfulActions.get()));
-				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-				Date date = new Date();
-				System.out.println(String.format(
-						"[%s] Executed %d queries (%d queries/s; %.2f/s dbs, successful statements: %2d%%). Threads shut down: %d.",
-						dateFormat.format(date), currentNrQueries, (int) throughput, throughputDbs,
-						successfulStatementsRatio, threadsShutdown));
-				timeMillis = System.currentTimeMillis();
-				lastNrQueries = currentNrQueries;
-				lastNrDbs = currentNrDbs;
-			}
-		}, 5, 5, TimeUnit.SECONDS);
+		if (options.printProgressInformation()) {
+			startProgressMonitor();
+		}
 
 		ExecutorService executor = Executors.newFixedThreadPool(options.getNumberConcurrentThreads());
 
@@ -420,6 +390,42 @@ public class Main {
 			});
 		}
 
+	}
+
+	private static void startProgressMonitor() {
+		final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+		scheduler.scheduleAtFixedRate(new Runnable() {
+
+			private long timeMillis = System.currentTimeMillis();
+			private long lastNrQueries = 0;
+			private long lastNrDbs;
+
+			{
+				timeMillis = System.currentTimeMillis();
+			}
+
+			@Override
+			public void run() {
+				long elapsedTimeMillis = System.currentTimeMillis() - timeMillis;
+				long currentNrQueries = nrQueries.get();
+				long nrCurrentQueries = currentNrQueries - lastNrQueries;
+				double throughput = nrCurrentQueries / (elapsedTimeMillis / 1000d);
+				long currentNrDbs = nrDatabases.get();
+				long nrCurrentDbs = currentNrDbs - lastNrDbs;
+				double throughputDbs = nrCurrentDbs / (elapsedTimeMillis / 1000d);
+				long successfulStatementsRatio = (long) (100.0 * nrSuccessfulActions.get()
+						/ (nrSuccessfulActions.get() + nrUnsuccessfulActions.get()));
+				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+				Date date = new Date();
+				System.out.println(String.format(
+						"[%s] Executed %d queries (%d queries/s; %.2f/s dbs, successful statements: %2d%%). Threads shut down: %d.",
+						dateFormat.format(date), currentNrQueries, (int) throughput, throughputDbs,
+						successfulStatementsRatio, threadsShutdown));
+				timeMillis = System.currentTimeMillis();
+				lastNrQueries = currentNrQueries;
+				lastNrDbs = currentNrDbs;
+			}
+		}, 5, 5, TimeUnit.SECONDS);
 	}
 
 }

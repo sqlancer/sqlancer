@@ -38,6 +38,9 @@ public class MainOptions {
 	@Parameter(names="--password", description = "The password used to log into the DBMS")
 	private String password = "sqlancer";
 	
+	@Parameter(names="--print-progress-information", description = "Whether to print progress information such as the number of databases generated or queries issued", arity = 1)
+	private boolean printProgressInformation = true;
+	
 	public int getMaxExpressionDepth() {
 		return maxExpressionDepth;
 	}
@@ -87,6 +90,10 @@ public class MainOptions {
 		public DBMS convert(String value) {
 			return DBMS.valueOf(value);
 		}
+	}
+	
+	public boolean printProgressInformation() {
+		return printProgressInformation;
 	}
 
 }
