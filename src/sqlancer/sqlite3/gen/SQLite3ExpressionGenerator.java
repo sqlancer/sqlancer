@@ -118,6 +118,9 @@ public class SQLite3ExpressionGenerator {
 
 	public List<Join> getRandomJoinClauses(List<SQLite3Table> tables) {
 		List<Join> joinStatements = new ArrayList<>();
+		if (!globalState.getDmbsSpecificOptions().testJoins) {
+			return joinStatements;
+		}
 		if (Randomly.getBoolean() && tables.size() > 1) {
 			int nrJoinClauses = (int) Randomly.getNotCachedInteger(0, tables.size());
 			for (int i = 0; i < nrJoinClauses; i++) {

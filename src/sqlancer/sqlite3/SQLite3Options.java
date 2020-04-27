@@ -50,6 +50,9 @@ public class SQLite3Options {
 	@Parameter(names = { "--test-nulls-first-last" }, description = "Allow NULLS FIRST/NULLS LAST in ordering terms", arity = 1)
 	public boolean testNullsFirstLast;
 
+	@Parameter(names = { "--test-joins" }, description = "Allow the generation of JOIN clauses", arity = 1)
+	public boolean testJoins;
+
 
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)
 	public SQLite3Oracle oracle = SQLite3Oracle.METAMORPHIC;
