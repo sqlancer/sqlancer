@@ -266,7 +266,7 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
 				}
 			}
 		}
-		if (false && columns.stream().noneMatch(c -> c.isPrimaryKey())) {
+		if (columns.stream().noneMatch(c -> c.isPrimaryKey())) {
 			// https://github.com/cwida/duckdb/issues/589
 			// https://github.com/cwida/duckdb/issues/588
 			// TODO: implement an option to enable/disable rowids

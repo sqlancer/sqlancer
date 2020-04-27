@@ -9,7 +9,6 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
 import sqlancer.CompositeTestOracle;
-import sqlancer.MainOptions.DBMSConverter;
 import sqlancer.TestOracle;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.test.DuckDBNoRECOracle;
@@ -75,6 +74,9 @@ public class DuckDBOptions {
 	@Parameter(names = "--test-indexes", description="Allow explicit (i.e. CREATE INDEX) and implicit (i.e., UNIQUE and PRIMARY KEY) indexes", arity = 1)
 	public boolean testIndexes = true;
 	
+	@Parameter(names = "--test-rowid", description="Test tables' rowid columns", arity = 1)
+	public boolean testRowid = true;
+	
 	@Parameter(names = "--max-num-views", description="The maximum number of views that can be generated for a database", arity = 1)
 	public int maxNumViews = 1;
 	
@@ -84,7 +86,7 @@ public class DuckDBOptions {
 	@Parameter(names = "--max-num-updates", description="The maximum number of UPDATE statements that are issued for a database", arity = 1)
 	public int maxNumUpdates = 5;
 	
-	@Parameter(names = "--oracle", converter = DBMSConverter.class)
+	@Parameter(names = "--oracle")
 	public List<DuckDBOracle> oracle = Arrays.asList(DuckDBOracle.QUERY_PARTITIONING);
 
 	public static enum DuckDBOracle {

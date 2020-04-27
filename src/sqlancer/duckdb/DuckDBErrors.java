@@ -1,6 +1,6 @@
 package sqlancer.duckdb;
 
-import java.util.Set;
+import java.util.Set;import com.beust.jcommander.Parameter;
 
 public class DuckDBErrors {
 
@@ -36,6 +36,7 @@ public class DuckDBErrors {
 		errors.add("Not implemented type: DATE");
 		errors.add("Not implemented type: TIMESTAMP");
 		
+		errors.add("does not have a column named \"rowid\""); // TODO: this can be removed if we can query whether a table supports rowids
 	}
 
 	private static void addRegexErrors(Set<String> errors) {
