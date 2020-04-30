@@ -6,8 +6,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
+import sqlancer.CompositeTestOracle;
 import sqlancer.DatabaseProvider;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
@@ -131,7 +133,13 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 		se.executeStatements();
 		manager.incrementCreateDatabase();
 
-		TestOracle oracle = globalState.getDmbsSpecificOptions().oracle.get(0).create(globalState);
+		TestOracle oracle = new CompositeTestOracle(globalState.getDmbsSpecificOptions().oracle.stream().map(o -> {
+			try {
+				return o.create(globalState);
+			} catch (SQLException e1) {
+				throw new AssertionError(e1);
+			}
+		}).collect(Collectors.toList()));
 
 		for (int i = 0; i < globalState.getOptions().getNrQueries(); i++) {
 			try {

@@ -12,6 +12,7 @@ import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.TestOracle;
 import sqlancer.ast.newast.NewAliasNode;
+import sqlancer.ast.newast.NewBinaryOperatorNode;
 import sqlancer.ast.newast.NewFunctionNode;
 import sqlancer.ast.newast.NewUnaryPostfixOperatorNode;
 import sqlancer.ast.newast.NewUnaryPrefixOperatorNode;
@@ -24,6 +25,7 @@ import sqlancer.duckdb.DuckDBToStringVisitor;
 import sqlancer.duckdb.ast.DuckDBExpression;
 import sqlancer.duckdb.ast.DuckDBSelect;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator.DuckDBAggregateFunction;
+import sqlancer.duckdb.gen.DuckDBExpressionGenerator.DuckDBBinaryArithmeticOperator;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator.DuckDBCastOperation;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator.DuckDBUnaryPostfixOperator;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator.DuckDBUnaryPrefixOperator;
@@ -43,9 +45,10 @@ public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartition
 	public void check() throws SQLException {
 		super.check();
 		DuckDBAggregateFunction aggregateFunction = Randomly.fromOptions(DuckDBAggregateFunction.MAX,
-				DuckDBAggregateFunction.MIN, DuckDBAggregateFunction.SUM,
-				DuckDBAggregateFunction.COUNT/*, DuckDBAggregateFunction.AVG https://github.com/cwida/duckdb/issues/543 */);
-		NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> aggregate = gen.generateArgsForAggregate(aggregateFunction);
+				DuckDBAggregateFunction.MIN, DuckDBAggregateFunction.SUM, DuckDBAggregateFunction.COUNT,
+				DuckDBAggregateFunction.AVG/*, DuckDBAggregateFunction.STDDEV_POP*/);
+		NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> aggregate = gen
+				.generateArgsForAggregate(aggregateFunction);
 		List<Node<DuckDBExpression>> fetchColumns = new ArrayList<>();
 		fetchColumns.add(aggregate);
 		while (Randomly.getBooleanWithRatherLowProbability()) {
@@ -73,19 +76,22 @@ public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartition
 
 	}
 
-	private String createMetamorphicUnionQuery(DuckDBSelect select, NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> aggregate,
-			List<Node<DuckDBExpression>> from) {
+	private String createMetamorphicUnionQuery(DuckDBSelect select,
+			NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> aggregate, List<Node<DuckDBExpression>> from) {
 		String metamorphicQuery;
 		Node<DuckDBExpression> whereClause = gen.generateExpression();
-		Node<DuckDBExpression> negatedClause = new NewUnaryPrefixOperatorNode<DuckDBExpression>(whereClause, DuckDBUnaryPrefixOperator.NOT);
-		Node<DuckDBExpression> notNullClause = new NewUnaryPostfixOperatorNode<DuckDBExpression>(whereClause, DuckDBUnaryPostfixOperator.IS_NULL);
+		Node<DuckDBExpression> negatedClause = new NewUnaryPrefixOperatorNode<DuckDBExpression>(whereClause,
+				DuckDBUnaryPrefixOperator.NOT);
+		Node<DuckDBExpression> notNullClause = new NewUnaryPostfixOperatorNode<DuckDBExpression>(whereClause,
+				DuckDBUnaryPostfixOperator.IS_NULL);
 		List<Node<DuckDBExpression>> mappedAggregate = mapped(aggregate);
 		DuckDBSelect leftSelect = getSelect(mappedAggregate, from, whereClause, select.getJoinList());
 		DuckDBSelect middleSelect = getSelect(mappedAggregate, from, negatedClause, select.getJoinList());
 		DuckDBSelect rightSelect = getSelect(mappedAggregate, from, notNullClause, select.getJoinList());
 		metamorphicQuery = "SELECT " + getOuterAggregateFunction(aggregate).toString() + " FROM (";
 		metamorphicQuery += DuckDBToStringVisitor.asString(leftSelect) + " UNION ALL "
-				+ DuckDBToStringVisitor.asString(middleSelect) + " UNION ALL " + DuckDBToStringVisitor.asString(rightSelect);
+				+ DuckDBToStringVisitor.asString(middleSelect) + " UNION ALL "
+				+ DuckDBToStringVisitor.asString(rightSelect);
 		metamorphicQuery += ") as asdf";
 		return metamorphicQuery;
 	}
@@ -121,11 +127,25 @@ public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartition
 		case SUM:
 			return aliasArgs(Arrays.asList(aggregate));
 		case AVG:
-			NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> sum = new NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction>(aggregate.getArgs(), DuckDBAggregateFunction.SUM);
+			NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> sum = new NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction>(
+					aggregate.getArgs(), DuckDBAggregateFunction.SUM);
 			count = new DuckDBCastOperation(
-					new NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction>(aggregate.getArgs(), DuckDBAggregateFunction.COUNT),
-					new DuckDBCompositeDataType(DuckDBDataType.FLOAT, 64));
+					new NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction>(aggregate.getArgs(),
+							DuckDBAggregateFunction.COUNT),
+					new DuckDBCompositeDataType(DuckDBDataType.FLOAT, 8));
 			return aliasArgs(Arrays.asList(sum, count));
+		case STDDEV_POP:
+			NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> sumSquared = new NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction>(
+					Arrays.asList(new NewBinaryOperatorNode<DuckDBExpression>(aggregate.getArgs().get(0),
+							aggregate.getArgs().get(0), DuckDBBinaryArithmeticOperator.MULT)),
+					DuckDBAggregateFunction.SUM);
+			count = new DuckDBCastOperation(
+					new NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction>(aggregate.getArgs(),
+							DuckDBAggregateFunction.COUNT),
+					new DuckDBCompositeDataType(DuckDBDataType.FLOAT, 8));
+			NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> avg = new NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction>(
+					aggregate.getArgs(), DuckDBAggregateFunction.AVG);
+			return aliasArgs(Arrays.asList(sumSquared, count, avg));
 		default:
 			throw new AssertionError(aggregate.getFunc());
 		}
@@ -142,6 +162,8 @@ public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartition
 
 	private String getOuterAggregateFunction(NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> aggregate) {
 		switch (aggregate.getFunc()) {
+		case STDDEV_POP:
+			return "sqrt(SUM(agg0)/SUM(agg1)-SUM(agg2)*SUM(agg2))";
 		case AVG:
 			return "SUM(agg0::FLOAT)/SUM(agg1)::FLOAT";
 		case COUNT:

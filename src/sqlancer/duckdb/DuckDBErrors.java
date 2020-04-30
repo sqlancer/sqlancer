@@ -27,7 +27,8 @@ public class DuckDBErrors {
 
 		errors.add("Overflow in multiplication");
 		errors.add("Out of Range");
-
+		errors.add("Conversion: Date out of range");
+		
 		// collate
 		errors.add("Cannot combine types with different collation!");
 		errors.add("collations are only supported for type varchar");
@@ -57,6 +58,7 @@ public class DuckDBErrors {
 		errors.add("invalid type specifier"); // PRINTF
 		errors.add("argument index out of range"); // PRINTF
 		errors.add("invalid format string"); // PRINTF
+		errors.add("number is too big"); // PRINTF
 		errors.add("Could not choose a best candidate function for the function call \"date_part"); // date_part
 		errors.add("extract specifier"); // date_part
 	}
