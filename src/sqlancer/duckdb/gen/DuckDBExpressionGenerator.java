@@ -123,7 +123,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 
 	@Override
 	public Node<DuckDBExpression> generateConstant() {
-		if (Randomly.getBooleanWithRatherLowProbability()) {
+		if (Randomly.getBooleanWithSmallProbability()) {
 			return DuckDBConstant.createNullConstant();
 		}
 		DuckDBDataType type = DuckDBDataType.getRandom();
@@ -259,6 +259,27 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 		DATE_PART(2),
 		AGE(2),
 		
+		COALESCE(3),
+		NULLIF(2),
+		
+		
+//		LPAD(3),
+//		RPAD(3),
+		LTRIM(1),
+		RTRIM(1),
+//		REPEAT(2),
+		REPLACE(3),
+		UNICODE(1),
+		
+		BIT_COUNT(1),
+		BIT_LENGTH(1),
+		LAST_DAY(1),
+		MONTHNAME(1),
+		DAYNAME(1),
+		YEARWEEK(1),
+		DAYOFMONTH(1),
+		WEEKDAY(1),
+		WEEKOFYEAR(1)
 		;
 
 		private int nrArgs;
@@ -386,7 +407,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 	public enum DuckDBBinaryComparisonOperator implements Operator {
 
 		EQUALS("="), GREATER(">"), GREATER_EQUALS(">="), SMALLER("<"), SMALLER_EQUALS("<="), NOT_EQUALS("!="),
-		LIKE("LIKE"), NOT_LIKE("NOT LIKE"), SIMILAR_TO("SIMILAR TO"), NOT_SIMILAR_TO("NOT SIMILAR TO");
+		LIKE("LIKE"), NOT_LIKE("NOT LIKE"), SIMILAR_TO("SIMILAR TO"), NOT_SIMILAR_TO("NOT SIMILAR TO"), REGEX_POSIX("~"), REGEX_POSIT_NOT("!~");
 
 		private String textRepr;
 

@@ -61,6 +61,8 @@ public class DuckDBErrors {
 		errors.add("number is too big"); // PRINTF
 		errors.add("Could not choose a best candidate function for the function call \"date_part"); // date_part
 		errors.add("extract specifier"); // date_part
+		errors.add("Insufficient padding in RPAD"); // RPAD
+		errors.add("Could not choose a best candidate function for the function call"); //monthname
 	}
 
 	public static void addInsertErrors(Set<String> errors) {

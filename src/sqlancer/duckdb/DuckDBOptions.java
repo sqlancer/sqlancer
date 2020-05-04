@@ -130,7 +130,7 @@ public class DuckDBOptions {
 			public TestOracle create(DuckDBGlobalState globalState) throws SQLException {
 				return new DuckDBQueryPartitioningDistinctTester(globalState);
 			}
-		},	
+		},
 		QUERY_PARTITIONING {
 			@Override
 			public TestOracle create(DuckDBGlobalState globalState) throws SQLException {
