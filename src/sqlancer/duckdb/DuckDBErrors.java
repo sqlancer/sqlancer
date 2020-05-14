@@ -12,6 +12,7 @@ public class DuckDBErrors {
 		errors.add("field value out of range");
 		errors.add("Not implemented: Unimplemented type for cast");
 
+		errors.add("Escape string must be empty or one character.");
 		errors.add("Type mismatch when combining rows"); // BETWEEN
 
 		errors.add("invalid UTF-8"); // TODO
@@ -38,6 +39,9 @@ public class DuckDBErrors {
 		errors.add("Not implemented type: TIMESTAMP");
 		
 		errors.add("does not have a column named \"rowid\""); // TODO: this can be removed if we can query whether a table supports rowids
+	
+		errors.add("does not have a column named"); // TODO: this only happens for views whose underlying table has a removed column
+		errors.add("Contents of view were altered: types don't match!");
 	}
 
 	private static void addRegexErrors(Set<String> errors) {

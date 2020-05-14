@@ -92,7 +92,7 @@ public class DuckDBNoRECOracle implements TestOracle {
 		DuckDBSelect select = new DuckDBSelect();
 //			select.setGroupByClause(groupBys);
 //			DuckDBExpression isTrue = DuckDBPostfixOperation.create(randomWhereCondition, PostfixOperator.IS_TRUE);
-		Node<DuckDBExpression> asText = new NewPostfixTextNode<DuckDBExpression>(new DuckDBCastOperation(new NewPostfixTextNode<DuckDBExpression>(randomWhereCondition, " IS NOT NULL AND " + DuckDBToStringVisitor.asString(randomWhereCondition) + "::BOOL"), new DuckDBCompositeDataType(DuckDBDataType.INT, 8)), "as count");
+		Node<DuckDBExpression> asText = new NewPostfixTextNode<DuckDBExpression>(new DuckDBCastOperation(new NewPostfixTextNode<DuckDBExpression>(randomWhereCondition, " IS NOT NULL AND " + DuckDBToStringVisitor.asString(randomWhereCondition) + ""), new DuckDBCompositeDataType(DuckDBDataType.INT, 8)), "as count");
 		select.setFetchColumns(Arrays.asList(asText));
 		select.setFromList(tableList);
 //		select.setSelectType(SelectType.ALL);

@@ -14,6 +14,7 @@ import sqlancer.ast.newast.NewCaseOperatorNode;
 import sqlancer.ast.newast.NewFunctionNode;
 import sqlancer.ast.newast.NewInOperatorNode;
 import sqlancer.ast.newast.NewOrderingTerm;
+import sqlancer.ast.newast.NewTernaryNode;
 import sqlancer.ast.newast.NewOrderingTerm.Ordering;
 import sqlancer.ast.newast.NewUnaryPostfixOperatorNode;
 import sqlancer.ast.newast.NewUnaryPrefixOperatorNode;
@@ -35,7 +36,8 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 	}
 
 	private enum Expression {
-		UNARY_POSTFIX, UNARY_PREFIX, BINARY_COMPARISON, BINARY_LOGICAL, BINARY_ARITHMETIC, CAST, FUNC, BETWEEN, CASE, IN, COLLATE
+		UNARY_POSTFIX, UNARY_PREFIX, BINARY_COMPARISON, BINARY_LOGICAL, BINARY_ARITHMETIC, CAST, FUNC, BETWEEN, CASE,
+		IN, COLLATE, LIKE_ESCAPE
 	}
 
 	protected Node<DuckDBExpression> generateExpression(int depth) {
@@ -77,7 +79,8 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 		Expression expr = Randomly.fromList(possibleOptions);
 		switch (expr) {
 		case COLLATE:
-			return new NewUnaryPostfixOperatorNode<DuckDBExpression>(generateExpression(depth + 1), DuckDBCollate.getRandom());
+			return new NewUnaryPostfixOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
+					DuckDBCollate.getRandom());
 		case UNARY_PREFIX:
 			return new NewUnaryPrefixOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
 					DuckDBUnaryPrefixOperator.getRandom());
@@ -111,6 +114,9 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 			return new NewCaseOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
 					generateExpressions(depth + 1, nr), generateExpressions(depth + 1, nr),
 					generateExpression(depth + 1));
+		case LIKE_ESCAPE:
+			return new NewTernaryNode<DuckDBExpression>(generateExpression(depth + 1), generateExpression(depth + 1),
+					generateExpression(depth + 1), "LIKE", "ESCAPE");
 		}
 		return generateLeafNode();
 	}
@@ -162,7 +168,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 			throw new AssertionError();
 		}
 	}
-	
+
 	public List<Node<DuckDBExpression>> generateOrderBys() {
 		List<Node<DuckDBExpression>> expr = super.generateOrderBys();
 		List<Node<DuckDBExpression>> newExpr = new ArrayList<>(expr.size());
@@ -212,11 +218,11 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 
 	public enum DBFunction {
 		// trigonometric functions
-		ACOS(1), // 
+		ACOS(1), //
 		ASIN(1), //
 		ATAN(1), //
 		COS(1), //
-		SIN(1), // 
+		SIN(1), //
 		TAN(1), //
 		COT(1), //
 		ATAN2(1), //
@@ -226,8 +232,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 		CEILING(1), //
 		FLOOR(1), //
 		LOG(1), //
-		LOG10(1),
-		LOG2(1), //
+		LOG10(1), LOG2(1), //
 		LN(1), //
 		PI(0), //
 		SQRT(1), //
@@ -245,8 +250,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 		SUBSTRING(3), //
 		REVERSE(1), //
 		CONCAT(1, true), //
-		CONCAT_WS(1, true),
-		CONTAINS(2), //
+		CONCAT_WS(1, true), CONTAINS(2), //
 		PREFIX(2), //
 		SUFFIX(2), //
 		INSTR(2), //
@@ -254,33 +258,23 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 		REGEXP_MATCHES(2), //
 		REGEXP_REPLACE(3), //
 		STRIP_ACCENTS(1), //
-		
+
 		// date functions
-		DATE_PART(2),
-		AGE(2),
-		
-		COALESCE(3),
-		NULLIF(2),
-		
-		
+		DATE_PART(2), AGE(2),
+
+		COALESCE(3), NULLIF(2),
+
 //		LPAD(3),
 //		RPAD(3),
-		LTRIM(1),
-		RTRIM(1),
+		LTRIM(1), RTRIM(1),
+//		LEFT(2), https://github.com/cwida/duckdb/issues/633
 //		REPEAT(2),
-		REPLACE(3),
-		UNICODE(1),
+		REPLACE(3), UNICODE(1),
+
+		BIT_COUNT(1), BIT_LENGTH(1), LAST_DAY(1), MONTHNAME(1), DAYNAME(1), YEARWEEK(1), DAYOFMONTH(1), WEEKDAY(1),
+		WEEKOFYEAR(1),
 		
-		BIT_COUNT(1),
-		BIT_LENGTH(1),
-		LAST_DAY(1),
-		MONTHNAME(1),
-		DAYNAME(1),
-		YEARWEEK(1),
-		DAYOFMONTH(1),
-		WEEKDAY(1),
-		WEEKOFYEAR(1)
-		;
+		IFNULL(2), IF(3);
 
 		private int nrArgs;
 		private boolean isVariadic;
@@ -328,7 +322,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 		}
 
 	}
-	
+
 	public static class DuckDBCollate implements Operator {
 
 		private String textRepr;
@@ -385,7 +379,8 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 	}
 
 	public enum DuckDBBinaryArithmeticOperator implements Operator {
-		CONCAT("||"), ADD("+"), SUB("-"), MULT("*"), DIV("/"), MOD("%"), AND("&"), OR("|"), XOR("#"), LSHIFT("<<"), RSHIFT(">>");
+		CONCAT("||"), ADD("+"), SUB("-"), MULT("*"), DIV("/"), MOD("%"), AND("&"), OR("|"), XOR("#"), LSHIFT("<<"),
+		RSHIFT(">>");
 
 		private String textRepr;
 
@@ -407,7 +402,8 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 	public enum DuckDBBinaryComparisonOperator implements Operator {
 
 		EQUALS("="), GREATER(">"), GREATER_EQUALS(">="), SMALLER("<"), SMALLER_EQUALS("<="), NOT_EQUALS("!="),
-		LIKE("LIKE"), NOT_LIKE("NOT LIKE"), SIMILAR_TO("SIMILAR TO"), NOT_SIMILAR_TO("NOT SIMILAR TO"), REGEX_POSIX("~"), REGEX_POSIT_NOT("!~");
+		LIKE("LIKE"), NOT_LIKE("NOT LIKE"), SIMILAR_TO("SIMILAR TO"), NOT_SIMILAR_TO("NOT SIMILAR TO"),
+		REGEX_POSIX("~"), REGEX_POSIT_NOT("!~");
 
 		private String textRepr;
 
@@ -426,8 +422,10 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 
 	}
 
-	public NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> generateArgsForAggregate(DuckDBAggregateFunction aggregateFunction) {
-		return new NewFunctionNode<DuckDBExpression, DuckDBExpressionGenerator.DuckDBAggregateFunction>(generateExpressions(aggregateFunction.getNrArgs()), aggregateFunction);
+	public NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> generateArgsForAggregate(
+			DuckDBAggregateFunction aggregateFunction) {
+		return new NewFunctionNode<DuckDBExpression, DuckDBExpressionGenerator.DuckDBAggregateFunction>(
+				generateExpressions(aggregateFunction.getNrArgs()), aggregateFunction);
 	}
 
 	public Node<DuckDBExpression> generateAggregate() {
