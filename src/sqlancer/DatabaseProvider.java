@@ -95,7 +95,7 @@ public interface DatabaseProvider<G extends GlobalState<O>, O> {
 			}
 			throw new AssertionError(queryString, e);
 		} finally {
-			if (result != null) {
+			if (result != null && !result.isClosed()) {
 				result.getStatement().close();
 				result.close();
 			}
