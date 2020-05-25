@@ -33,6 +33,8 @@ public abstract class NewToStringVisitor<E> {
 			visit((NewAliasNode<E>) expr);
 		} else if (expr instanceof NewPostfixTextNode<?>) {
 			visit((NewPostfixTextNode<E>) expr);
+		} else if (expr instanceof NewTernaryNode<?>) {
+			visit((NewTernaryNode<E>) expr);
 		}
 		
 		else {
@@ -150,6 +152,21 @@ public abstract class NewToStringVisitor<E> {
 		sb.append(")");
 	}
 
+	
+	public void visit(NewTernaryNode<E> ternaryNode) {
+		sb.append("(");
+		visit(ternaryNode.getLeft());
+		sb.append(" ");
+		sb.append(ternaryNode.getLeftStr());
+		sb.append(" ");
+		visit(ternaryNode.getMiddle());
+		sb.append(" ");
+		sb.append(ternaryNode.getRightStr());
+		sb.append(" ");
+		visit(ternaryNode.getRight());
+		sb.append(")");
+	}
+	
 	public String get() {
 		return sb.toString();
 	}
