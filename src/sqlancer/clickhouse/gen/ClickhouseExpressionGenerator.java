@@ -46,8 +46,9 @@ public class ClickhouseExpressionGenerator
 		case BINARY_LOGICAL:
 			return new NewBinaryOperatorNode<ClickhouseExpression>(generateExpression(depth + 1),
 					generateExpression(depth + 1), ClickhouseBinaryLogicalOperator.getRandom());
+		default:
+			throw new AssertionError(expr);
 		}
-		return generateLeafNode();
 	}
 
 	@Override

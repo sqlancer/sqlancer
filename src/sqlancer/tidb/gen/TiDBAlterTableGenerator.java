@@ -93,6 +93,8 @@ public class TiDBAlterTableGenerator {
 					.map(c -> c.getName() + Randomly.fromOptions("", " ASC", " DESC"))
 					.collect(Collectors.joining(", ")));
 			break;
+		default:
+			throw new AssertionError();
 		}
 
 		return new QueryAdapter(sb.toString(), errors, true);

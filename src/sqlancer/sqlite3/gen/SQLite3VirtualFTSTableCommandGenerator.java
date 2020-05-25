@@ -98,6 +98,8 @@ public class SQLite3VirtualFTSTableCommandGenerator {
 			sb.append(String.format("INSERT INTO %s(%s, rank) VALUES('rank', 'bm25(10.0, 5.0)');", vTable.getName(),
 					vTable.getName()));
 			break;
+		default:
+			throw new AssertionError();
 		}
 		return new QueryAdapter(sb.toString(), errors);
 	}

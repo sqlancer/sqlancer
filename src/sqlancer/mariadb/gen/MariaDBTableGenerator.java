@@ -73,6 +73,8 @@ public class MariaDBTableGenerator {
 			case BOOLEAN:
 				sb.append("BOOLEAN");
 				break;
+			default:
+				throw new AssertionError(dataType);
 			}
 			final boolean isGeneratedColumn;
 			if (Randomly.getBoolean() && false) { // wait for crash bug to be fixed

@@ -203,6 +203,8 @@ public class SQLite3Cast {
 			case UNIT_SEPARATOR:
 			case SYNCHRONOUS_IDLE:
 				return true;
+			default:
+				// fall through
 			}
 
 			if (Character.isWhitespace(charAt)) {

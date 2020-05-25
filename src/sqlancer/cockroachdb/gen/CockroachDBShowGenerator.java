@@ -51,6 +51,8 @@ public class CockroachDBShowGenerator {
 			}
 			sb.append("TRACE FOR SESSION;");
 			break;
+		default:
+			throw new AssertionError();
 		}
 		CockroachDBErrors.addTransactionErrors(errors);
 		return new QueryAdapter(sb.toString(), errors);

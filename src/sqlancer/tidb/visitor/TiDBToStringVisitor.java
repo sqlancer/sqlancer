@@ -135,9 +135,13 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
 				}
 				sb.append("RIGHT ");
 				break;
+			default:
+				throw new AssertionError();
 			}
 			sb.append("JOIN ");
 			break;
+		default:
+			throw new AssertionError();
 		}
 		visit(join.getRightTable());
 		sb.append(" ");

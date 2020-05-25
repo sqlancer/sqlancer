@@ -135,6 +135,8 @@ public class MySQLTableGenerator {
 			sb.append(Randomly.nonEmptySubset(columns).stream().collect(Collectors.joining(", ")));
 			sb.append(")");
 			break;
+		default:
+			throw new AssertionError();
 		}
 	}
 
@@ -308,6 +310,8 @@ public class MySQLTableGenerator {
 					columnHasPrimaryKey = true;
 				}
 				break;
+			default:
+				throw new AssertionError();
 			}
 		}
 
@@ -339,6 +343,8 @@ public class MySQLTableGenerator {
 			sb.append(Randomly.fromOptions("DOUBLE", "FLOAT"));
 			optionallyAddPrecisionAndScale(sb);
 			break;
+		default:
+			throw new AssertionError();
 		}
 		if (randomType.isNumeric()) {
 			if (Randomly.getBoolean()) {

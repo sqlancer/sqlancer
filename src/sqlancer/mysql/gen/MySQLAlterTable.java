@@ -154,6 +154,8 @@ public class MySQLAlterTable {
 				sb.append("t" + Randomly.smallNumber());
 				couldAffectSchema = true;
 				break;
+			default:
+				throw new AssertionError(a);
 			}
 		}
 		if (Randomly.getBooleanWithSmallProbability()) {

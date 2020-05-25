@@ -152,6 +152,8 @@ public class TiDBTableGenerator {
 				sb.append(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE));
 				errors.add("Unsupported shard_row_id_bits for table with primary key as row id");
 				break;
+			default:
+				throw new AssertionError(a);
 			}
 		}
 	}

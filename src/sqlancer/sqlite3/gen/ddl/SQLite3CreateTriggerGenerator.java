@@ -70,6 +70,8 @@ public class SQLite3CreateTriggerGenerator {
 			}
 			sb.append("ON ");
 			break;
+		default:
+			throw new AssertionError();
 		}
 		appendTableNameAndWhen(globalState, sb, table);
 
@@ -96,6 +98,8 @@ public class SQLite3CreateTriggerGenerator {
 				}
 				sb.append(")");
 				break;
+			default:
+				throw new AssertionError();
 			}
 			sb.append(";");
 		}

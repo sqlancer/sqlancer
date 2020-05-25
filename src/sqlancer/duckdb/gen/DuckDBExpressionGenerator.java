@@ -118,8 +118,9 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 		case LIKE_ESCAPE:
 			return new NewTernaryNode<DuckDBExpression>(generateExpression(depth + 1), generateExpression(depth + 1),
 					generateExpression(depth + 1), "LIKE", "ESCAPE");
+		default:
+			throw new AssertionError();
 		}
-		return generateLeafNode();
 	}
 
 	@Override

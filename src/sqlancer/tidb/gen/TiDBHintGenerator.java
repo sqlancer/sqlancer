@@ -100,6 +100,8 @@ public class TiDBHintGenerator {
 			sb.append(Randomly.getBoolean());
 			sb.append(")");
 			break;
+		default:
+			throw new AssertionError();
 		}
 		select.setHint(new TiDBText(sb.toString()));
 	}

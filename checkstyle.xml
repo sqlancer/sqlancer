@@ -166,7 +166,7 @@
         <module name="IllegalInstantiation"/>
         <module name="InnerAssignment"/>
         <!-- TODO: enable and add exceptions: <module name="MagicNumber"/> -->
-        <!-- TODO: <module name="MissingSwitchDefault"/> -->
+        <module name="MissingSwitchDefault"/>
         <module name="MultipleVariableDeclarations"/>
         <!-- TODO: <module name="SimplifyBooleanExpression"/> -->
         <module name="SimplifyBooleanReturn"/>

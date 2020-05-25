@@ -38,6 +38,8 @@ public class SQLite3ReindexGenerator {
 				sb.append(" ");
 				sb.append(s.getRandomTableOrBailout(tab -> !tab.isTemp() && !tab.isView()).getName());
 				break;
+			default:
+				throw new AssertionError(t);
 			}
 		}
 		return new QueryAdapter(sb.toString(), errors, true);

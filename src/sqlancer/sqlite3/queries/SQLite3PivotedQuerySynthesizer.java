@@ -362,6 +362,8 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 			case CURRENT_ROW:
 				sb.append("CURRENT ROW");
 				break;
+			default:
+				throw new AssertionError();
 			}
 //			sb.append(" BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING");
 			if (Randomly.getBoolean()) {
