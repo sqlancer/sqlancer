@@ -412,7 +412,7 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQL
 	}
 
 	// PRAGMAS to achieve good performance
-	private final static List<String> DEFAULT_PRAGMAS = Arrays.asList("PRAGMA cache_size = 50000;",
+	private static final List<String> DEFAULT_PRAGMAS = Arrays.asList("PRAGMA cache_size = 50000;",
 			"PRAGMA temp_store=MEMORY;", "PRAGMA synchronous=off;");
 
 	private void addSensiblePragmaDefaults(Connection con) throws SQLException {

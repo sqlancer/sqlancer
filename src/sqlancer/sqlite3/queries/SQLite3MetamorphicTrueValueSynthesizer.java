@@ -178,6 +178,6 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 		return gen.generateExpression();
 	}
 
-	private final static int NOT_FOUND = -1;
+	private static final int NOT_FOUND = -1;
 
 }

@@ -39,7 +39,7 @@ public class SQLite3MetamorphicQuerySynthesizer implements TestOracle {
 	// SELECT SUM(count) FROM (SELECT <cond> IS TRUE as count FROM t0);
 	// SELECT (SELECT COUNT(*) FROM t0 WHERE c0 IS NOT 0) = (SELECT COUNT(*) FROM
 	// (SELECT c0 is NOT 0 FROM t0));
-	private final static int NOT_FOUND = -1;
+	private static final int NOT_FOUND = -1;
 	private SQLite3ExpressionGenerator gen;
 	private SQLite3Schema s;
 	private Connection con;

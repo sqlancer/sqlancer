@@ -51,7 +51,7 @@ public class Main {
 		}
 	}
 
-	public final static class StateLogger {
+	public static final class StateLogger {
 
 		private final File loggerFile;
 		private File curFile;
@@ -61,7 +61,7 @@ public class Main {
 		private boolean logEachSelect = true;
 		private DatabaseProvider<?, ?> provider;
 
-		private final static class AlsoWriteToConsoleFileWriter extends FileWriter {
+		private static final class AlsoWriteToConsoleFileWriter extends FileWriter {
 
 			public AlsoWriteToConsoleFileWriter(File file) throws IOException {
 				super(file);

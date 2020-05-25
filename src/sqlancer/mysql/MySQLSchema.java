@@ -280,7 +280,7 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
 
 	}
 
-	static public MySQLSchema fromConnection(Connection con, String databaseName) throws SQLException {
+	public static MySQLSchema fromConnection(Connection con, String databaseName) throws SQLException {
 		Exception ex = null;
 		/* the loop is a workaround for https://bugs.mysql.com/bug.php?id=95929 */
 		for (int i = 0; i < NR_SCHEMA_READ_TRIES; i++) {

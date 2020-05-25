@@ -279,7 +279,7 @@ public class SQLite3Cast {
 //		throw new AssertionError();
 	}
 
-	private synchronized static SQLite3Constant castRealToText(SQLite3Constant cons) throws AssertionError {
+	private static synchronized SQLite3Constant castRealToText(SQLite3Constant cons) throws AssertionError {
 		try (Statement s = castDatabase.createStatement()) {
 			String castResult = s.executeQuery("SELECT CAST(" + cons.asDouble() + " AS TEXT)").getString(1);
 			return SQLite3Constant.createTextConstant(castResult);
