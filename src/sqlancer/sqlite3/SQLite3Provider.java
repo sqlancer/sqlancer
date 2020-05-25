@@ -145,8 +145,8 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQL
 		}
 	}
 
-	public static boolean ALLOW_FLOATING_POINT_FP = true;
-	public static boolean MUST_KNOW_RESULT = false;
+	public static boolean allowFloatingPointFp = true;
+	public static boolean mustKnowResult = false;
 
 	private SQLite3StateToReproduce state;
 	private String databaseName;
@@ -420,7 +420,7 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQL
 		if (!Randomly.getBooleanWithSmallProbability()) {
 			pragmasToExecute.addAll(DEFAULT_PRAGMAS);
 		}
-		if (Randomly.getBoolean() && !MUST_KNOW_RESULT) {
+		if (Randomly.getBoolean() && !mustKnowResult) {
 			pragmasToExecute.add("PRAGMA case_sensitive_like=ON;");
 		}
 		if (Randomly.getBoolean()) {

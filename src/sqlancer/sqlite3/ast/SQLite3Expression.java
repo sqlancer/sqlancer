@@ -1104,7 +1104,7 @@ public abstract class SQLite3Expression {
 					if (left.getExpectedValue() == null || right.getExpectedValue() == null) {
 						return null;
 					}
-					if (!SQLite3Provider.ALLOW_FLOATING_POINT_FP && (left.getDataType() == SQLite3DataType.REAL
+					if (!SQLite3Provider.allowFloatingPointFp && (left.getDataType() == SQLite3DataType.REAL
 							|| right.getDataType() == SQLite3DataType.REAL)) {
 						throw new IgnoreMeException();
 					}

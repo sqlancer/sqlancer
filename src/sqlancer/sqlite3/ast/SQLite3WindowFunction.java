@@ -96,7 +96,7 @@ public class SQLite3WindowFunction extends SQLite3Expression {
 		}
 
 		public SQLite3Constant apply(SQLite3Constant... args) {
-			if (SQLite3Provider.MUST_KNOW_RESULT) {
+			if (SQLite3Provider.mustKnowResult) {
 				throw new AssertionError();
 			}
 			return null;
@@ -127,7 +127,7 @@ public class SQLite3WindowFunction extends SQLite3Expression {
 
 	@Override
 	public SQLite3Constant getExpectedValue() {
-		if (!SQLite3Provider.MUST_KNOW_RESULT) {
+		if (!SQLite3Provider.mustKnowResult) {
 			return null;
 		}
 		SQLite3Constant[] evaluatedConst = new SQLite3Constant[args.length];

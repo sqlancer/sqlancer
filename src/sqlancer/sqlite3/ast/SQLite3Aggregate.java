@@ -48,7 +48,7 @@ public class SQLite3Aggregate extends SQLite3Expression {
 			@Override
 			public SQLite3Constant apply(SQLite3Constant exprVal) {
 				SQLite3Constant castToText = SQLite3Cast.castToText(exprVal);
-				if (castToText == null && SQLite3Provider.MUST_KNOW_RESULT) {
+				if (castToText == null && SQLite3Provider.mustKnowResult) {
 					throw new IgnoreMeException();
 				}
 				return castToText;
@@ -89,7 +89,7 @@ public class SQLite3Aggregate extends SQLite3Expression {
 
 		public static SQLite3AggregateFunction getRandom() {
 			List<SQLite3AggregateFunction> functions = new ArrayList<>(Arrays.asList(values()));
-			if (SQLite3Provider.MUST_KNOW_RESULT) {
+			if (SQLite3Provider.mustKnowResult) {
 				functions.remove(SQLite3AggregateFunction.SUM);
 				functions.remove(SQLite3AggregateFunction.TOTAL);
 				functions.remove(SQLite3AggregateFunction.GROUP_CONCAT);
@@ -124,7 +124,7 @@ public class SQLite3Aggregate extends SQLite3Expression {
 
 	@Override
 	public SQLite3Constant getExpectedValue() {
-		assert !SQLite3Provider.MUST_KNOW_RESULT;
+		assert !SQLite3Provider.mustKnowResult;
 		return null;
 //		return func.apply(expr.getExpectedValue());
 	}

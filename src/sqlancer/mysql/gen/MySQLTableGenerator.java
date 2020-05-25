@@ -348,7 +348,7 @@ public class MySQLTableGenerator {
 		}
 		if (randomType.isNumeric()) {
 			if (Randomly.getBoolean()) {
-				if (randomType != MySQLDataType.INT && !MySQLBugs.BUG_99127) {
+				if (randomType != MySQLDataType.INT && !MySQLBugs.bug99127) {
 					sb.append(" UNSIGNED");
 				}
 			}
@@ -359,7 +359,7 @@ public class MySQLTableGenerator {
 	}
 
 	public static void optionallyAddPrecisionAndScale(StringBuilder sb) {
-		if (Randomly.getBoolean() && !MySQLBugs.BUG_99183) {
+		if (Randomly.getBoolean() && !MySQLBugs.bug99183) {
 			sb.append("(");
 			// The maximum number of digits (M) for DECIMAL is 65
 			long m = Randomly.getNotCachedInteger(1, 65);

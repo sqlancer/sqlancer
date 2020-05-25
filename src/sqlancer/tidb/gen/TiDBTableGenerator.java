@@ -191,11 +191,11 @@ public class TiDBTableGenerator {
 	}
 
 	private void appendSizeSpecifiers(StringBuilder sb, TiDBDataType type) {
-		if (type.isNumeric() && Randomly.getBoolean() && !TiDBBugs.BUG_16028) {
+		if (type.isNumeric() && Randomly.getBoolean() && !TiDBBugs.bug16028) {
 			sb.append(" UNSIGNED");
 		}
 		if (type.isNumeric() && Randomly.getBoolean()
-				&& !TiDBBugs.BUG_16028 /* seems to be the same bug as https://github.com/pingcap/tidb/issues/16028 */) {
+				&& !TiDBBugs.bug16028 /* seems to be the same bug as https://github.com/pingcap/tidb/issues/16028 */) {
 			sb.append(" ZEROFILL");
 		}
 	}

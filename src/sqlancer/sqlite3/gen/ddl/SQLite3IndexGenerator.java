@@ -46,7 +46,7 @@ public class SQLite3IndexGenerator {
 		errors.add("non-deterministic use of date() in an index");
 		errors.add("non-deterministic use of datetime() in an index");
 		SQLite3Errors.addExpectedExpressionErrors(errors);
-		if (!SQLite3Provider.MUST_KNOW_RESULT) {
+		if (!SQLite3Provider.mustKnowResult) {
 			// can only happen when PRAGMA case_sensitive_like=ON;
 			errors.add("non-deterministic functions prohibited");
 		}
