@@ -17,6 +17,8 @@ public class CockroachDBErrors {
 			errors.add("github.com/cockroachdb/cockroach/pkg/sql/execinfra/expr.go:78: processExpression()");
 		}
 		
+		errors.add("exceeds supported timestamp bounds");
+		
 		errors.add("cannot cast negative integer to bit varying with unbounded width");
 		
 		errors.add("negative value for LIMIT");
