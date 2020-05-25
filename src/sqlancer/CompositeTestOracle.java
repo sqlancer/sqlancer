@@ -14,7 +14,10 @@ public class CompositeTestOracle implements TestOracle {
 	
 	@Override
 	public void check() throws SQLException {
-		oracles[i].check();
-		i = (i + 1) % oracles.length;
+		try {
+			oracles[i].check();
+		} finally {
+			i = (i + 1) % oracles.length;
+		}
 	}
 }
