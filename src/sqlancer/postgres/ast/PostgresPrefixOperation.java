@@ -19,7 +19,8 @@ public class PostgresPrefixOperation implements PostgresExpression {
 				if (expectedValue.isNull()) {
 					return PostgresConstant.createNullConstant();
 				} else {
-					return PostgresConstant.createBooleanConstant(!expectedValue.cast(PostgresDataType.BOOLEAN).asBoolean());
+					return PostgresConstant
+							.createBooleanConstant(!expectedValue.cast(PostgresDataType.BOOLEAN).asBoolean());
 				}
 			}
 		},
@@ -71,7 +72,7 @@ public class PostgresPrefixOperation implements PostgresExpression {
 		public String getTextRepresentation() {
 			return toString();
 		}
-		
+
 	}
 
 	private final PostgresExpression expr;

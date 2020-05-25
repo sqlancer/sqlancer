@@ -32,7 +32,8 @@ public class PostgresTableGenerator {
 	private boolean generateOnlyKnown;
 	private PostgresGlobalState globalState;
 
-	public PostgresTableGenerator(String tableName, Randomly r, PostgresSchema newSchema, boolean generateOnlyKnown, PostgresGlobalState globalState) {
+	public PostgresTableGenerator(String tableName, Randomly r, PostgresSchema newSchema, boolean generateOnlyKnown,
+			PostgresGlobalState globalState) {
 		this.tableName = tableName;
 		this.newSchema = newSchema;
 		this.generateOnlyKnown = generateOnlyKnown;
@@ -56,7 +57,8 @@ public class PostgresTableGenerator {
 		PostgresCommon.addCommonTableErrors(errors);
 	}
 
-	public static Query generate(String tableName, Randomly r, PostgresSchema newSchema, boolean generateOnlyKnown, PostgresGlobalState globalState) {
+	public static Query generate(String tableName, Randomly r, PostgresSchema newSchema, boolean generateOnlyKnown,
+			PostgresGlobalState globalState) {
 		return new PostgresTableGenerator(tableName, r, newSchema, generateOnlyKnown, globalState).generate();
 	}
 
@@ -249,8 +251,8 @@ public class PostgresTableGenerator {
 				break;
 			case CHECK:
 				sb.append("CHECK (");
-				sb.append(PostgresVisitor.asString(
-						PostgresExpressionGenerator.generateExpression(globalState, columnsToBeAdded, PostgresDataType.BOOLEAN)));
+				sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(globalState,
+						columnsToBeAdded, PostgresDataType.BOOLEAN)));
 				sb.append(")");
 				if (Randomly.getBoolean()) {
 					sb.append(" NO INHERIT");
@@ -261,8 +263,8 @@ public class PostgresTableGenerator {
 				sb.append("GENERATED ");
 				if (Randomly.getBoolean()) {
 					sb.append(" ALWAYS AS (");
-					sb.append(PostgresVisitor
-							.asString(PostgresExpressionGenerator.generateExpression(globalState, columnsToBeAdded, type)));
+					sb.append(PostgresVisitor.asString(
+							PostgresExpressionGenerator.generateExpression(globalState, columnsToBeAdded, type)));
 					sb.append(") STORED");
 					errors.add("A generated column cannot reference another generated column.");
 					errors.add("cannot use generated column in partition key");

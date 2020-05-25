@@ -3,7 +3,7 @@ package sqlancer.cockroachdb.ast;
 import java.util.List;
 
 public class CockroachDBInOperation implements CockroachDBExpression {
-	
+
 	private final CockroachDBExpression left;
 	private final List<CockroachDBExpression> right;
 
@@ -15,9 +15,9 @@ public class CockroachDBInOperation implements CockroachDBExpression {
 	public CockroachDBExpression getLeft() {
 		return left;
 	}
-	
+
 	public List<CockroachDBExpression> getRight() {
 		return right;
 	}
-	
+
 }

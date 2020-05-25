@@ -20,7 +20,7 @@ public class MariaDBSchema {
 
 	private static final int NR_SCHEMA_READ_TRIES = 10;
 
-	public static enum MariaDBDataType {
+	public enum MariaDBDataType {
 		INT, VARCHAR, REAL, BOOLEAN;
 	}
 
@@ -140,7 +140,6 @@ public class MariaDBSchema {
 		}
 	}
 
-
 	private static MariaDBDataType getColumnType(String typeString) {
 		switch (typeString) {
 		case "tinyint":
@@ -164,11 +163,10 @@ public class MariaDBSchema {
 		}
 	}
 
-
 	public static class MariaDBTable implements Comparable<MariaDBTable> {
 
-		public static enum MariaDBEngine {
-			
+		public enum MariaDBEngine {
+
 			INNO_DB("InnoDB"), MY_ISAM("MyISAM"), ARIA("Aria");
 
 			private String s;
@@ -196,7 +194,8 @@ public class MariaDBSchema {
 		private final List<MariaDBIndex> indexes;
 		private final MariaDBEngine engine;
 
-		public MariaDBTable(String tableName, List<MariaDBColumn> columns, List<MariaDBIndex> indexes, MariaDBEngine engine) {
+		public MariaDBTable(String tableName, List<MariaDBColumn> columns, List<MariaDBIndex> indexes,
+				MariaDBEngine engine) {
 			this.tableName = tableName;
 			this.indexes = indexes;
 			this.engine = engine;
@@ -285,7 +284,7 @@ public class MariaDBSchema {
 
 	}
 
-	static public MariaDBSchema fromConnection(Connection con, String databaseName) throws SQLException {
+	public static MariaDBSchema fromConnection(Connection con, String databaseName) throws SQLException {
 		Exception ex = null;
 		/* the loop is a workaround for https://bugs.MariaDB.com/bug.php?id=95929 */
 		for (int i = 0; i < NR_SCHEMA_READ_TRIES; i++) {

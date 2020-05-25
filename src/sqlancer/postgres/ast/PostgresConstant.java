@@ -8,7 +8,7 @@ import sqlancer.postgres.PostgresSchema.PostgresDataType;
 public abstract class PostgresConstant implements PostgresExpression {
 
 	public abstract String getTextRepresentation();
-	
+
 	public abstract String getUnquotedTextRepresentation();
 
 	public static class BooleanConstant extends PostgresConstant {
@@ -46,7 +46,8 @@ public abstract class PostgresConstant implements PostgresExpression {
 			} else if (rightVal.isBoolean()) {
 				return PostgresConstant.createBooleanConstant(value == rightVal.asBoolean());
 			} else if (rightVal.isString()) {
-				return PostgresConstant.createBooleanConstant(value == rightVal.cast(PostgresDataType.BOOLEAN).asBoolean());
+				return PostgresConstant
+						.createBooleanConstant(value == rightVal.cast(PostgresDataType.BOOLEAN).asBoolean());
 			} else {
 				throw new AssertionError(rightVal);
 			}
@@ -123,11 +124,11 @@ public abstract class PostgresConstant implements PostgresExpression {
 		}
 
 	}
-	
+
 	public static class StringConstant extends PostgresConstant {
-		
+
 		private final String value;
-		
+
 		public StringConstant(String value) {
 			this.value = value;
 		}
@@ -219,12 +220,12 @@ public abstract class PostgresConstant implements PostgresExpression {
 		public PostgresDataType getExpressionType() {
 			return PostgresDataType.TEXT;
 		}
-		
+
 		@Override
 		public boolean isString() {
 			return true;
 		}
-		
+
 		@Override
 		public String asString() {
 			return value;
@@ -234,7 +235,7 @@ public abstract class PostgresConstant implements PostgresExpression {
 		public String getUnquotedTextRepresentation() {
 			return value;
 		}
-		
+
 	}
 
 	public static class IntConstant extends PostgresConstant {
@@ -273,7 +274,7 @@ public abstract class PostgresConstant implements PostgresExpression {
 				return cast(PostgresDataType.BOOLEAN).isEquals(rightVal);
 			} else if (rightVal.isInt()) {
 				return PostgresConstant.createBooleanConstant(val == rightVal.asInt());
-			}  else if (rightVal.isString()) {
+			} else if (rightVal.isString()) {
 				return PostgresConstant.createBooleanConstant(val == rightVal.cast(PostgresDataType.INT).asInt());
 			} else {
 				throw new AssertionError(rightVal);
@@ -293,7 +294,7 @@ public abstract class PostgresConstant implements PostgresExpression {
 			} else {
 				throw new IgnoreMeException();
 			}
-			
+
 		}
 
 		@Override
@@ -378,7 +379,7 @@ public abstract class PostgresConstant implements PostgresExpression {
 	public String toString() {
 		return getTextRepresentation();
 	}
-	
+
 	public abstract PostgresConstant cast(PostgresDataType type);
 
 	public static PostgresConstant createTextConstant(String string) {
@@ -386,7 +387,7 @@ public abstract class PostgresConstant implements PostgresExpression {
 	}
 
 	public abstract static class PostgresConstantBase extends PostgresConstant {
-		
+
 		@Override
 		public String getUnquotedTextRepresentation() {
 			throw new AssertionError();
@@ -409,11 +410,11 @@ public abstract class PostgresConstant implements PostgresExpression {
 
 		}
 	}
-	
+
 	public static class DecimalConstant extends PostgresConstantBase {
-		
+
 		private final BigDecimal val;
-		
+
 		public DecimalConstant(BigDecimal val) {
 			this.val = val;
 		}
@@ -423,18 +424,17 @@ public abstract class PostgresConstant implements PostgresExpression {
 			return String.valueOf(val);
 		}
 
-
 		@Override
 		public PostgresDataType getExpressionType() {
 			return PostgresDataType.DECIMAL;
 		}
-		
+
 	}
-	
+
 	public static class InetConstant extends PostgresConstantBase {
-		
+
 		private final String val;
-		
+
 		public InetConstant(String val) {
 			this.val = "'" + val + "'";
 		}
@@ -444,19 +444,17 @@ public abstract class PostgresConstant implements PostgresExpression {
 			return String.valueOf(val);
 		}
 
-
 		@Override
 		public PostgresDataType getExpressionType() {
 			return PostgresDataType.INET;
 		}
-		
+
 	}
-	
-	
+
 	public static class FloatConstant extends PostgresConstantBase {
-		
+
 		private final float val;
-		
+
 		public FloatConstant(float val) {
 			this.val = val;
 		}
@@ -470,18 +468,17 @@ public abstract class PostgresConstant implements PostgresExpression {
 			}
 		}
 
-
 		@Override
 		public PostgresDataType getExpressionType() {
 			return PostgresDataType.FLOAT;
 		}
-		
+
 	}
-	
+
 	public static class DoubleConstant extends PostgresConstantBase {
-		
+
 		private final double val;
-		
+
 		public DoubleConstant(double val) {
 			this.val = val;
 		}
@@ -495,18 +492,17 @@ public abstract class PostgresConstant implements PostgresExpression {
 			}
 		}
 
-
 		@Override
 		public PostgresDataType getExpressionType() {
 			return PostgresDataType.FLOAT;
 		}
-		
+
 	}
-	
+
 	public static class BitConstant extends PostgresConstantBase {
-		
+
 		private final long val;
-		
+
 		public BitConstant(long val) {
 			this.val = val;
 		}
@@ -516,21 +512,19 @@ public abstract class PostgresConstant implements PostgresExpression {
 			return String.format("B'%s'", Long.toBinaryString(val));
 		}
 
-
 		@Override
 		public PostgresDataType getExpressionType() {
 			return PostgresDataType.BIT;
 		}
-		
+
 	}
-	
+
 	public static class RangeConstant extends PostgresConstantBase {
-		
+
 		private long left;
 		private boolean leftIsInclusive;
 		private long right;
 		private boolean rightIsInclusive;
-
 
 		public RangeConstant(long left, boolean leftIsInclusive, long right, boolean rightIsInclusive) {
 			this.left = left;
@@ -538,7 +532,6 @@ public abstract class PostgresConstant implements PostgresExpression {
 			this.right = right;
 			this.rightIsInclusive = rightIsInclusive;
 		}
-
 
 		@Override
 		public String getTextRepresentation() {
@@ -562,14 +555,12 @@ public abstract class PostgresConstant implements PostgresExpression {
 			return sb.toString();
 		}
 
-
 		@Override
 		public PostgresDataType getExpressionType() {
 			return PostgresDataType.RANGE;
 		}
-		
-	}
 
+	}
 
 	public static PostgresConstant createDecimalConstant(BigDecimal bigDecimal) {
 		return new DecimalConstant(bigDecimal);
@@ -583,7 +574,8 @@ public abstract class PostgresConstant implements PostgresExpression {
 		return new DoubleConstant(val);
 	}
 
-	public static PostgresConstant createRange(long left, boolean leftIsInclusive, long right, boolean rightIsInclusive) {
+	public static PostgresConstant createRange(long left, boolean leftIsInclusive, long right,
+			boolean rightIsInclusive) {
 		if (left > right) {
 			long temp = right;
 			right = left;

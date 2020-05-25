@@ -47,18 +47,11 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
 		UNARY_POSTFIX, //
 		CONSTANT, //
 		COLUMN, //
-		COMPARISON,
-		REGEX,
-		COLLATE,
-		FUNCTION,
-		BINARY_LOGICAL,
-		BINARY_BIT,
-		CAST,
-		DEFAULT,
-		CASE
+		COMPARISON, REGEX, COLLATE, FUNCTION, BINARY_LOGICAL, BINARY_BIT, CAST, DEFAULT, CASE
 //		BINARY_ARITHMETIC
 	}
 
+	@Override
 	protected TiDBExpression generateExpression(int depth) {
 		if (depth >= globalState.getOptions().getMaxExpressionDepth() || Randomly.getBoolean()) {
 			return generateLeafNode();
@@ -89,16 +82,20 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
 		case CONSTANT:
 			return generateConstant();
 		case COMPARISON:
-			return new TiDBBinaryComparisonOperation(generateExpression(depth + 1), generateExpression(depth + 1), TiDBComparisonOperator.getRandom());
+			return new TiDBBinaryComparisonOperation(generateExpression(depth + 1), generateExpression(depth + 1),
+					TiDBComparisonOperator.getRandom());
 		case REGEX:
-			return new TiDBRegexOperation(generateExpression(depth + 1), generateExpression(depth + 1), TiDBRegexOperator.getRandom());
+			return new TiDBRegexOperation(generateExpression(depth + 1), generateExpression(depth + 1),
+					TiDBRegexOperator.getRandom());
 		case COLLATE:
-			return new TiDBCollate(generateExpression(depth + 1), Randomly.fromOptions("utf8mb4_bin", "latin1_bin", "binary", "ascii_bin", "utf8_bin"));
+			return new TiDBCollate(generateExpression(depth + 1),
+					Randomly.fromOptions("utf8mb4_bin", "latin1_bin", "binary", "ascii_bin", "utf8_bin"));
 		case FUNCTION:
 			TiDBFunction func = TiDBFunction.getRandom();
 			return new TiDBFunctionCall(func, generateExpressions(depth, func.getNrArgs()));
 		case BINARY_BIT:
-			return new TiDBBinaryBitOperation(generateExpression(depth + 1), generateExpression(depth + 1), TiDBBinaryBitOperator.getRandom());
+			return new TiDBBinaryBitOperation(generateExpression(depth + 1), generateExpression(depth + 1),
+					TiDBBinaryBitOperator.getRandom());
 		case BINARY_LOGICAL:
 //			if (TiDBBugs.BUG_15987 || TiDBBugs.BUG_15990) {
 //				throw new IgnoreMeException();
@@ -106,20 +103,28 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
 			if (true /* https://github.com/tidb-challenge-program/bug-hunting-issue/issues/48 */) {
 				throw new IgnoreMeException();
 			}
-			return new TiDBBinaryLogicalOperation(generateExpression(depth + 1), generateExpression(depth + 1), TiDBBinaryLogicalOperator.getRandom());
+			return new TiDBBinaryLogicalOperation(generateExpression(depth + 1), generateExpression(depth + 1),
+					TiDBBinaryLogicalOperator.getRandom());
 //		case BINARY_ARITHMETIC:
 //			return new TiDBBinaryArithmeticOperation(generateExpression(depth + 1), generateExpression(depth + 1), TiDBBinaryArithmeticOperator.getRandom());
 		case CAST:
-			return new TiDBCastOperation(generateExpression(depth + 1), Randomly.fromOptions(/*"BINARY" https://github.com/tidb-challenge-program/bug-hunting-issue/issues/52 */ "CHAR", /*"DATE", "DATETIME", "TIME", https://github.com/tidb-challenge-program/bug-hunting-issue/issues/13 */ "DECIMAL", "SIGNED"/*, "UNSIGNED" https://github.com/pingcap/tidb/issues/16028 */));
+			return new TiDBCastOperation(generateExpression(depth + 1),
+					Randomly.fromOptions(/*
+											 * "BINARY"
+											 * https://github.com/tidb-challenge-program/bug-hunting-issue/issues/52
+											 */ "CHAR",
+							/*
+							 * "DATE", "DATETIME", "TIME",
+							 * https://github.com/tidb-challenge-program/bug-hunting-issue/issues/13
+							 */ "DECIMAL", "SIGNED"/* , "UNSIGNED" https://github.com/pingcap/tidb/issues/16028 */));
 		case CASE:
 			if (true) {
 				// https://github.com/tidb-challenge-program/bug-hunting-issue/issues/19
 				throw new IgnoreMeException();
 			}
 			int nr = Randomly.fromOptions(1, 2);
-			return new TiDBCase(generateExpression(depth + 1),
-					generateExpressions(depth + 1, nr), generateExpressions(depth + 1, nr),
-					generateExpression(depth + 1));
+			return new TiDBCase(generateExpression(depth + 1), generateExpressions(depth + 1, nr),
+					generateExpressions(depth + 1, nr), generateExpression(depth + 1));
 		default:
 			throw new AssertionError();
 		}
@@ -156,7 +161,7 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
 			throw new AssertionError();
 		}
 	}
-	
+
 	@Override
 	public List<TiDBExpression> generateOrderBys() {
 		List<TiDBExpression> expressions = super.generateOrderBys();
@@ -170,6 +175,5 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
 		}
 		return newExpressions;
 	}
-
 
 }

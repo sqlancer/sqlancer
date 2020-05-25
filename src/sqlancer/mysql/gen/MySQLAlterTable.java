@@ -60,7 +60,9 @@ public class MySQLAlterTable {
 	}
 
 	private Query create() {
-		List<String> errors = new ArrayList<>(Arrays.asList("does not support the create option", "doesn't have this option", "is not supported for this operation", "Data truncation", "Specified key was too long"));
+		List<String> errors = new ArrayList<>(
+				Arrays.asList("does not support the create option", "doesn't have this option",
+						"is not supported for this operation", "Data truncation", "Specified key was too long"));
 		errors.add("Data truncated for functional index ");
 		sb.append("ALTER TABLE ");
 		MySQLTable table = schema.getRandomTable();

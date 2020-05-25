@@ -6,7 +6,7 @@ public class NewUnaryPostfixOperatorNode<T> implements Node<T> {
 
 	protected final Operator op;
 	private Node<T> expr;
-	
+
 	public NewUnaryPostfixOperatorNode(Node<T> expr, Operator op) {
 		this.expr = expr;
 		this.op = op;
@@ -19,6 +19,5 @@ public class NewUnaryPostfixOperatorNode<T> implements Node<T> {
 	public Node<T> getExpr() {
 		return expr;
 	}
-	
-}
 
+}

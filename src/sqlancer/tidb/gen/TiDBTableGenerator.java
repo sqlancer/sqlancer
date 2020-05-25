@@ -62,7 +62,8 @@ public class TiDBTableGenerator {
 			TiDBCompositeDataType type;
 			do {
 				type = TiDBCompositeDataType.getRandom();
-			} while (type.getPrimitiveDataType() == TiDBDataType.INT && type.getSize() < 4 || type.getPrimitiveDataType() == TiDBDataType.BOOL); // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/49
+			} while (type.getPrimitiveDataType() == TiDBDataType.INT && type.getSize() < 4
+					|| type.getPrimitiveDataType() == TiDBDataType.BOOL); // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/49
 			appendType(sb, type);
 			sb.append(" ");
 			boolean isGeneratedColumn = Randomly.getBooleanWithRatherLowProbability();

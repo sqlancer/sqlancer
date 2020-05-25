@@ -103,7 +103,7 @@ public class PostgresBinaryComparisonOperation
 			return textRepresentation;
 		}
 
-		private PostgresBinaryComparisonOperator(String textRepresentation) {
+		PostgresBinaryComparisonOperator(String textRepresentation) {
 			this.textRepresentation = textRepresentation;
 		}
 

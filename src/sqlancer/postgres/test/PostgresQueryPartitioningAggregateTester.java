@@ -40,6 +40,7 @@ public class PostgresQueryPartitioningAggregateTester extends PostgresQueryParti
 		PostgresCommon.addGroupingErrors(errors);
 	}
 
+	@Override
 	public void check() throws SQLException {
 		super.check();
 		PostgresAggregateFunction aggregateFunction = Randomly.fromOptions(PostgresAggregateFunction.MAX,

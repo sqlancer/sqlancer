@@ -11,7 +11,7 @@ import sqlancer.tidb.ast.TiDBSelect;
 import sqlancer.tidb.ast.TiDBText;
 
 public class TiDBHintGenerator {
-	
+
 	private TiDBSelect select;
 	private List<TiDBTable> tables;
 	private final StringBuilder sb = new StringBuilder();
@@ -40,7 +40,7 @@ public class TiDBHintGenerator {
 
 	public static void generateHints(TiDBSelect select, List<TiDBTable> tables) {
 		new TiDBHintGenerator(select, tables).generate();
-		
+
 	}
 
 	private void generate() {

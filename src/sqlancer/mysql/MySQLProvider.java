@@ -192,10 +192,10 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState, MySQLOp
 				oracle.check();
 				manager.incrementSelectQueryCount();
 			} catch (IgnoreMeException e) {
-				
+
 			}
 		}
-		
+
 //		MySQLQueryGenerator queryGenerator = new MySQLQueryGenerator(manager, r, con, databaseName);
 //		for (int i = 0; i < options.getNrQueries(); i++) {
 //			try {
@@ -241,7 +241,8 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState, MySQLOp
 		globalState.getState().statements.add(new QueryAdapter("CREATE DATABASE " + databaseName));
 		globalState.getState().statements.add(new QueryAdapter("USE " + databaseName));
 		String url = "jdbc:mysql://localhost:3306/?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true";
-		Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(), globalState.getOptions().getPassword());
+		Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
+				globalState.getOptions().getPassword());
 		try (Statement s = con.createStatement()) {
 			s.execute("DROP DATABASE IF EXISTS " + databaseName);
 		}

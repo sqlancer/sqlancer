@@ -2,7 +2,6 @@ package sqlancer.tidb.ast;
 
 import sqlancer.Randomly;
 import sqlancer.ast.BinaryOperatorNode;
-import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.tidb.ast.TiDBBinaryComparisonOperation.TiDBComparisonOperator;
 
 public class TiDBBinaryComparisonOperation extends BinaryOperatorNode<TiDBExpression, TiDBComparisonOperator>

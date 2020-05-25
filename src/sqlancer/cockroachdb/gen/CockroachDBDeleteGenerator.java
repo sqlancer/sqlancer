@@ -23,7 +23,8 @@ public class CockroachDBDeleteGenerator {
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
 			CockroachDBErrors.addExpressionErrors(errors);
-			sb.append(CockroachDBVisitor.asString(new CockroachDBExpressionGenerator(globalState).setColumns(table.getColumns()).generateExpression(CockroachDBDataType.BOOL.get())));
+			sb.append(CockroachDBVisitor.asString(new CockroachDBExpressionGenerator(globalState)
+					.setColumns(table.getColumns()).generateExpression(CockroachDBDataType.BOOL.get())));
 		} else {
 			errors.add("rejected: DELETE without WHERE clause (sql_safe_updates = true)");
 		}
@@ -31,5 +32,5 @@ public class CockroachDBDeleteGenerator {
 		CockroachDBErrors.addTransactionErrors(errors);
 		return new QueryAdapter(sb.toString(), errors);
 	}
-	
+
 }

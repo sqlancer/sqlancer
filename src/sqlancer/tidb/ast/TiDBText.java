@@ -7,7 +7,7 @@ public class TiDBText implements TiDBExpression {
 	public TiDBText(String text) {
 		this.text = text;
 	}
-	
+
 	public String getText() {
 		return text;
 	}

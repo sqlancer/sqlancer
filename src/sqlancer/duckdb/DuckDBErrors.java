@@ -1,6 +1,6 @@
 package sqlancer.duckdb;
 
-import java.util.Set;import com.beust.jcommander.Parameter;
+import java.util.Set;
 
 public class DuckDBErrors {
 
@@ -29,18 +29,20 @@ public class DuckDBErrors {
 		errors.add("Overflow in multiplication");
 		errors.add("Out of Range");
 		errors.add("Conversion: Date out of range");
-		
+
 		// collate
 		errors.add("Cannot combine types with different collation!");
 		errors.add("collations are only supported for type varchar");
-		
+
 		// // https://github.com/cwida/duckdb/issues/532
 		errors.add("Not implemented type: DATE");
 		errors.add("Not implemented type: TIMESTAMP");
-		
-		errors.add("does not have a column named \"rowid\""); // TODO: this can be removed if we can query whether a table supports rowids
-	
-		errors.add("does not have a column named"); // TODO: this only happens for views whose underlying table has a removed column
+
+		errors.add("does not have a column named \"rowid\""); // TODO: this can be removed if we can query whether a
+																// table supports rowids
+
+		errors.add("does not have a column named"); // TODO: this only happens for views whose underlying table has a
+													// removed column
 		errors.add("Contents of view were altered: types don't match!");
 	}
 
@@ -66,7 +68,7 @@ public class DuckDBErrors {
 		errors.add("Could not choose a best candidate function for the function call \"date_part"); // date_part
 		errors.add("extract specifier"); // date_part
 		errors.add("Insufficient padding in RPAD"); // RPAD
-		errors.add("Could not choose a best candidate function for the function call"); //monthname
+		errors.add("Could not choose a best candidate function for the function call"); // monthname
 	}
 
 	public static void addInsertErrors(Set<String> errors) {

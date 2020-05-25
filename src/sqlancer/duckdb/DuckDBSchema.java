@@ -215,7 +215,6 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
 			return getColumns().stream().anyMatch(c -> c.isPrimaryKey());
 		}
 
-
 	}
 
 	public static DuckDBSchema fromConnection(Connection con, String databaseName) throws SQLException {

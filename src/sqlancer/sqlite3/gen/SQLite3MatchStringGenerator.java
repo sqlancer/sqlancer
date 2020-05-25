@@ -3,7 +3,7 @@ package sqlancer.sqlite3.gen;
 import sqlancer.Randomly;
 
 public class SQLite3MatchStringGenerator {
-	
+
 	private final Randomly r;
 	private int depth;
 	private final StringBuilder sb = new StringBuilder();
@@ -18,11 +18,10 @@ public class SQLite3MatchStringGenerator {
 		gen.generate();
 		return gen.sb.toString();
 	}
-	
+
 	enum MatchAction {
 		NEAR, LOGICAL_BINARY_OPERATOR, NOT, COLUMN, COLSPEC, STRING
 	};
-	
 
 	private void generate() {
 		if (depth == 0) {

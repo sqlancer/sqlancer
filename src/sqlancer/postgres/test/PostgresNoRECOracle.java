@@ -91,7 +91,8 @@ public class PostgresNoRECOracle implements TestOracle {
 		}
 	}
 
-	public static List<PostgresJoin> getJoinStatements(PostgresGlobalState globalState, List<PostgresColumn> columns, List<PostgresTable> tables) {
+	public static List<PostgresJoin> getJoinStatements(PostgresGlobalState globalState, List<PostgresColumn> columns,
+			List<PostgresTable> tables) {
 		List<PostgresJoin> joinStatements = new ArrayList<>();
 		PostgresExpressionGenerator gen = new PostgresExpressionGenerator(globalState).setColumns(columns);
 		for (int i = 1; i < tables.size(); i++) {
@@ -169,8 +170,8 @@ public class PostgresNoRECOracle implements TestOracle {
 		select.setFromList(randomTables);
 		select.setWhereClause(randomWhereCondition);
 		if (Randomly.getBooleanWithSmallProbability()) {
-			select.setOrderByExpressions(new PostgresExpressionGenerator(globalState).setColumns(columns).setGlobalState(globalState)
-					.generateOrderBy());
+			select.setOrderByExpressions(new PostgresExpressionGenerator(globalState).setColumns(columns)
+					.setGlobalState(globalState).generateOrderBy());
 		}
 		select.setSelectType(SelectType.ALL);
 		select.setJoinClauses(joinStatements);

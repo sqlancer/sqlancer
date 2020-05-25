@@ -4,14 +4,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class MariaDBStringVisitor extends MariaDBVisitor {
-	
+
 	private final StringBuilder sb = new StringBuilder();
 
 	@Override
 	public void visit(MariaDBConstant c) {
 		sb.append(c.toString());
 	}
-	
+
 	public String getString() {
 		return sb.toString();
 	}
@@ -107,7 +107,7 @@ public class MariaDBStringVisitor extends MariaDBVisitor {
 			visit(func.getArgs().get(i));
 		}
 		sb.append(")");
-		
+
 	}
 
 	@Override

@@ -7,6 +7,9 @@ import sqlancer.postgres.PostgresGlobalState;
 
 public class PostgresNotifyGenerator {
 
+	private PostgresNotifyGenerator() {
+	}
+
 	private static String getChannel() {
 		return Randomly.fromOptions("asdf", "test");
 	}

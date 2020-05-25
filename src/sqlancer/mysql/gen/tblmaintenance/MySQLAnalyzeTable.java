@@ -25,7 +25,8 @@ public class MySQLAnalyzeTable {
 	}
 
 	public static Query analyze(MySQLGlobalState globalState) {
-		return new MySQLAnalyzeTable(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty(), globalState.getRandomly()).generate();
+		return new MySQLAnalyzeTable(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty(),
+				globalState.getRandomly()).generate();
 	}
 
 	private Query generate() {

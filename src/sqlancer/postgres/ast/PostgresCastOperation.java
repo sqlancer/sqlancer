@@ -4,7 +4,7 @@ import sqlancer.postgres.PostgresCompoundDataType;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
 public class PostgresCastOperation implements PostgresExpression {
-	
+
 	private PostgresExpression expression;
 	private PostgresCompoundDataType type;
 
@@ -37,5 +37,5 @@ public class PostgresCastOperation implements PostgresExpression {
 	public PostgresCompoundDataType getCompoundType() {
 		return type;
 	}
-	
+
 }

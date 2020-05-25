@@ -6,26 +6,26 @@ import java.util.List;
 import sqlancer.Randomly;
 
 public abstract class UntypedExpressionGenerator<E, C> {
-	
+
 	protected List<C> columns;
 	protected boolean allowAggregates;
-	
+
 	public E generateExpression() {
 		return generateExpression(0);
 	}
-	
+
 	public abstract E generateConstant();
 
 	protected abstract E generateExpression(int depth);
-	
+
 	protected abstract E generateColumn();
-	
+
 	@SuppressWarnings("unchecked") // unsafe
 	public <U extends UntypedExpressionGenerator<E, C>> U setColumns(List<C> columns) {
 		this.columns = columns;
 		return (U) this;
 	}
-	
+
 	public E generateLeafNode() {
 		if (Randomly.getBoolean() && !columns.isEmpty()) {
 			return generateColumn();
@@ -33,7 +33,7 @@ public abstract class UntypedExpressionGenerator<E, C> {
 			return generateConstant();
 		}
 	}
-	
+
 	public List<E> generateExpressions(int nr) {
 		List<E> expressions = new ArrayList<>();
 		for (int i = 0; i < nr; i++) {
@@ -50,7 +50,6 @@ public abstract class UntypedExpressionGenerator<E, C> {
 		return expressions;
 	}
 
-	
 	// override this class to also generate ASC, DESC
 	public List<E> generateOrderBys() {
 		return generateExpressions(Randomly.smallNumber() + 1);
@@ -63,5 +62,5 @@ public abstract class UntypedExpressionGenerator<E, C> {
 		allowAggregates = false;
 		return expr;
 	}
-	
+
 }

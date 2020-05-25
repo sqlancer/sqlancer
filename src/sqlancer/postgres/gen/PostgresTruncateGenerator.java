@@ -10,6 +10,9 @@ import sqlancer.postgres.PostgresGlobalState;
 
 public class PostgresTruncateGenerator {
 
+	private PostgresTruncateGenerator() {
+	}
+
 	public static Query create(PostgresGlobalState globalState) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("TRUNCATE");
@@ -31,7 +34,8 @@ public class PostgresTruncateGenerator {
 			sb.append(" ");
 			sb.append(Randomly.fromOptions("CASCADE", "RESTRICT"));
 		}
-		return new QueryAdapter(sb.toString(), Arrays.asList("cannot truncate a table referenced in a foreign key constraint", "is not a table"));
+		return new QueryAdapter(sb.toString(),
+				Arrays.asList("cannot truncate a table referenced in a foreign key constraint", "is not a table"));
 	}
 
 }

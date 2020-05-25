@@ -132,7 +132,8 @@ public class CockroachDBNoRECTester implements TestOracle {
 	private int getNonOptimizedResult(Connection con, CockroachDBExpression whereCondition,
 			CockroachDBExpression havingCondition, List<CockroachDBExpression> tableList, Set<String> errors,
 			List<CockroachDBExpression> joinList) throws SQLException {
-		String fromString = tableList.stream().map(t -> ((CockroachDBTableReference) t).getTable().getName()).collect(Collectors.joining(", "));
+		String fromString = tableList.stream().map(t -> ((CockroachDBTableReference) t).getTable().getName())
+				.collect(Collectors.joining(", "));
 		if (!tableList.isEmpty() && !joinList.isEmpty()) {
 			fromString += ", ";
 		}
@@ -146,7 +147,7 @@ public class CockroachDBNoRECTester implements TestOracle {
 		Query q = new QueryAdapter(s, errors);
 		return getCount(con, q);
 	}
-	
+
 	private int getCount(Connection con, Query q) throws AssertionError {
 		int count = 0;
 		try (ResultSet rs = q.executeAndGet(con)) {

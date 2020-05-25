@@ -8,7 +8,7 @@ public class MariaDBBinaryOperator extends MariaDBExpression {
 	private MariaDBExpression right;
 	private MariaDBBinaryComparisonOperator op;
 
-	public static enum MariaDBBinaryComparisonOperator {
+	public enum MariaDBBinaryComparisonOperator {
 		NOT_EQUAL("!="), LESS_THAN("<"), /* NULL_SAFE_EQUAL("<=>"), EQUALS("="), */ GREATER_THAN(">"),
 		GREATER_THAN_EQUAL(">="),
 
@@ -16,12 +16,12 @@ public class MariaDBBinaryOperator extends MariaDBExpression {
 		LIKE("LIKE"), RLIKE("RLIKE"), REGEXP("REGEXP"),
 		// PLUS("+");
 		AND("AND"), OR("OR"), XOR("XOR"),
-		
+
 		BITWISE_AND("&"), LEFT_SHIFT("<<"), RIGHT_SHIFT(">>"), BITWISE_XOR("^"), BITWISE_OR("|");
 
 		private String op;
 
-		private MariaDBBinaryComparisonOperator(String op) {
+		MariaDBBinaryComparisonOperator(String op) {
 			this.op = op;
 		}
 

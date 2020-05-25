@@ -9,6 +9,9 @@ import sqlancer.Randomly;
 
 public class PostgresTransactionGenerator {
 
+	private PostgresTransactionGenerator() {
+	}
+
 	public static Query executeBegin() {
 		List<String> errors = new ArrayList<>();
 		StringBuilder sb = new StringBuilder("BEGIN");
@@ -26,7 +29,7 @@ public class PostgresTransactionGenerator {
 			public boolean couldAffectSchema() {
 				return true;
 			}
-		};	
+		};
 		return query;
 	}
 

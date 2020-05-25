@@ -10,13 +10,13 @@ public class PostgresPOSIXRegularExpression implements PostgresExpression {
 	private PostgresExpression regex;
 	private POSIXRegex op;
 
-	public static enum POSIXRegex implements Operator {
+	public enum POSIXRegex implements Operator {
 		MATCH_CASE_SENSITIVE("~"), MATCH_CASE_INSENSITIVE("~*"), NOT_MATCH_CASE_SENSITIVE("!~"),
 		NOT_MATCH_CASE_INSENSITIVE("!~*");
 
 		private String repr;
 
-		private POSIXRegex(String repr) {
+		POSIXRegex(String repr) {
 			this.repr = repr;
 		}
 

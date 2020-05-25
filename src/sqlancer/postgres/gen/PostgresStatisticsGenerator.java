@@ -15,6 +15,9 @@ import sqlancer.postgres.PostgresSchema.PostgresTable;
 
 public class PostgresStatisticsGenerator {
 
+	private PostgresStatisticsGenerator() {
+	}
+
 	public static Query insert(PostgresGlobalState globalState) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("CREATE STATISTICS ");

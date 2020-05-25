@@ -7,31 +7,30 @@ import java.util.List;
 import sqlancer.Randomly;
 
 public abstract class TypedExpressionGenerator<E, C, T> {
-	
+
 	protected List<C> columns = Collections.emptyList();
 	protected boolean allowAggregates;
-	
+
 	public E generateExpression(T type) {
 		return generateExpression(type, 0);
 	}
-	
+
 	public abstract E generateConstant(T type);
 
 	protected abstract E generateExpression(T type, int depth);
-	
+
 	protected abstract E generateColumn(T type);
-	
+
 	protected abstract T getRandomType();
-	
+
 	protected abstract boolean canGenerateColumnOfType(T type);
 
-	
 	@SuppressWarnings("unchecked") // unsafe
 	public <U extends TypedExpressionGenerator<E, C, T>> U setColumns(List<C> columns) {
 		this.columns = columns;
 		return (U) this;
 	}
-	
+
 	public E generateLeafNode(T type) {
 		if (Randomly.getBooleanWithRatherLowProbability() || !canGenerateColumnOfType(type)) {
 			return generateConstant(type);
@@ -39,7 +38,7 @@ public abstract class TypedExpressionGenerator<E, C, T> {
 			return generateColumn(type);
 		}
 	}
-	
+
 	public List<E> generateExpressions(T type, int nr) {
 		List<E> expressions = new ArrayList<>();
 		for (int i = 0; i < nr; i++) {
@@ -47,7 +46,7 @@ public abstract class TypedExpressionGenerator<E, C, T> {
 		}
 		return expressions;
 	}
-	
+
 	public List<E> generateExpressions(T type, int nr, int depth) {
 		List<E> expressions = new ArrayList<>();
 		for (int i = 0; i < nr; i++) {
@@ -55,7 +54,7 @@ public abstract class TypedExpressionGenerator<E, C, T> {
 		}
 		return expressions;
 	}
-	
+
 	public List<E> generateExpressions(int nr) {
 		List<E> expressions = new ArrayList<>();
 		for (int i = 0; i < nr; i++) {
@@ -68,7 +67,6 @@ public abstract class TypedExpressionGenerator<E, C, T> {
 	public List<E> generateOrderBys() {
 		return generateExpressions(Randomly.smallNumber() + 1);
 	}
-	
 
 	// override this class to generate aggregate functions
 //	public E generateHavingClause() {
@@ -77,5 +75,5 @@ public abstract class TypedExpressionGenerator<E, C, T> {
 //		allowAggregates = false;
 //		return expr;
 //	}
-	
+
 }

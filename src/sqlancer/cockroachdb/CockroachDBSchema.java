@@ -63,8 +63,7 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
 			this.size = size;
 		}
 
-		public CockroachDBCompositeDataType(CockroachDBDataType dataType,
-				CockroachDBCompositeDataType elementType) {
+		public CockroachDBCompositeDataType(CockroachDBDataType dataType, CockroachDBCompositeDataType elementType) {
 			if (dataType != CockroachDBDataType.ARRAY) {
 				throw new IllegalArgumentException();
 			}
@@ -155,19 +154,19 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
 				return new CockroachDBCompositeDataType(randomDataType, (int) Randomly.getNotCachedInteger(1, 200));
 			} else if (randomDataType == CockroachDBDataType.ARRAY) {
 				return new CockroachDBCompositeDataType(randomDataType, getRandomForType(getArrayElementType()));
-			}
-			
-			else {
+			} else {
 				return new CockroachDBCompositeDataType(randomDataType);
 			}
 		}
-		
+
 		private static CockroachDBDataType getArrayElementType() {
 			while (true) {
 				CockroachDBDataType type = CockroachDBDataType.getRandom();
 				if (type != CockroachDBDataType.ARRAY && type != CockroachDBDataType.JSONB) {
-					// nested arrays are not supported: https://github.com/cockroachdb/cockroach/issues/32552
-					// JSONB arrays are not supported as well: https://github.com/cockroachdb/cockroach/issues/23468
+					// nested arrays are not supported:
+					// https://github.com/cockroachdb/cockroach/issues/32552
+					// JSONB arrays are not supported as well:
+					// https://github.com/cockroachdb/cockroach/issues/23468
 					return type;
 				}
 			}
@@ -176,11 +175,11 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
 		public static CockroachDBCompositeDataType getVarBit(int maxSize) {
 			return new CockroachDBCompositeDataType(CockroachDBDataType.VARBIT, maxSize);
 		}
-		
+
 		public CockroachDBCompositeDataType getElementType() {
 			return elementType;
 		}
-		
+
 	}
 
 	public static class CockroachDBColumn extends AbstractTableColumn<CockroachDBTable, CockroachDBCompositeDataType> {
@@ -216,12 +215,10 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
 	public CockroachDBSchema(List<CockroachDBTable> databaseTables) {
 		super(databaseTables);
 	}
-	
 
 	public CockroachDBTables getRandomTableNonEmptyTables() {
 		return new CockroachDBTables(Randomly.nonEmptySubset(getDatabaseTables()));
 	}
-
 
 	private static CockroachDBCompositeDataType getColumnType(String typeString) {
 		if (typeString.endsWith("[]")) {
@@ -312,7 +309,8 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
 	private static List<String> getTableNames(Connection con) throws SQLException {
 		List<String> tableNames = new ArrayList<>();
 		try (Statement s = con.createStatement()) {
-			ResultSet tableRs = s.executeQuery("SELECT table_name FROM information_schema.tables WHERE TABLE_TYPE IN ('BASE TABLE', 'LOCAL TEMPORARY');");
+			ResultSet tableRs = s.executeQuery(
+					"SELECT table_name FROM information_schema.tables WHERE TABLE_TYPE IN ('BASE TABLE', 'LOCAL TEMPORARY');");
 			while (tableRs.next()) {
 				String tableName = tableRs.getString(1);
 				tableNames.add(tableName);
@@ -357,7 +355,4 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
 		return columns;
 	}
 
-
-	
-	
 }

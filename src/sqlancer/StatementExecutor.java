@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StatementExecutor<G extends GlobalState<?>, A extends AbstractAction<G>> {
-	
+
 	@FunctionalInterface
 	public interface AfterQueryAction {
 		public void notify(Query q) throws SQLException;
@@ -21,8 +21,8 @@ public class StatementExecutor<G extends GlobalState<?>, A extends AbstractActio
 	private final ActionMapper<G, A> mapping;
 	private final AfterQueryAction queryConsumer;
 
-	public StatementExecutor(G globalState, String databaseName, A[] actions,
-			ActionMapper<G, A> mapping, AfterQueryAction queryConsumer) {
+	public StatementExecutor(G globalState, String databaseName, A[] actions, ActionMapper<G, A> mapping,
+			AfterQueryAction queryConsumer) {
 		this.globalState = globalState;
 		this.actions = actions;
 		this.mapping = mapping;

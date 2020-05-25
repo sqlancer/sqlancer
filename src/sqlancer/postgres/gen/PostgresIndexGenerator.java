@@ -19,7 +19,10 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 
 public class PostgresIndexGenerator {
 
-	public static enum IndexType {
+	private PostgresIndexGenerator() {
+	}
+
+	public enum IndexType {
 		BTREE, HASH, GIST, GIN
 	}
 
@@ -104,10 +107,6 @@ public class PostgresIndexGenerator {
 			sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
 			sb.append(")");
 		}
-//		if (Randomly.getBoolean()) {
-//			sb.append(" WITH ");
-//			
-//		}
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
 			PostgresExpression expr = new PostgresExpressionGenerator(globalState).setColumns(randomTable.getColumns())

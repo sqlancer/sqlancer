@@ -11,6 +11,9 @@ import sqlancer.postgres.PostgresSchema.PostgresTable;
 
 public class PostgresAnalyzeGenerator {
 
+	private PostgresAnalyzeGenerator() {
+	}
+
 	public static Query create(PostgresGlobalState globalState) {
 		PostgresTable table = globalState.getSchema().getRandomTable();
 		StringBuilder sb = new StringBuilder("ANALYZE");

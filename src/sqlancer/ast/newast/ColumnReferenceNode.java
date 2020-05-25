@@ -9,10 +9,9 @@ public class ColumnReferenceNode<E, C extends AbstractTableColumn<?, ?>> impleme
 	public ColumnReferenceNode(C c) {
 		this.c = c;
 	}
-	
+
 	public C getColumn() {
 		return c;
 	}
-	
-	
+
 }

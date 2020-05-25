@@ -14,7 +14,7 @@ public class QueryResultCheckAdapter extends QueryAdapter {
 		super(query);
 		this.rsChecker = rsChecker;
 	}
-	
+
 	@Override
 	public boolean execute(Connection con) throws SQLException {
 		try (Statement s = con.createStatement()) {

@@ -12,7 +12,7 @@ import sqlancer.duckdb.DuckDBSchema.DuckDBTable;
 import sqlancer.duckdb.DuckDBToStringVisitor;
 
 public class DuckDBDeleteGenerator {
-	
+
 	public static Query generate(DuckDBGlobalState globalState) {
 		StringBuilder sb = new StringBuilder("DELETE FROM ");
 		Set<String> errors = new HashSet<>();
@@ -20,7 +20,8 @@ public class DuckDBDeleteGenerator {
 		sb.append(table.getName());
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
-			sb.append(DuckDBToStringVisitor.asString(new DuckDBExpressionGenerator(globalState).setColumns(table.getColumns()).generateExpression()));
+			sb.append(DuckDBToStringVisitor.asString(
+					new DuckDBExpressionGenerator(globalState).setColumns(table.getColumns()).generateExpression()));
 		}
 		DuckDBErrors.addExpressionErrors(errors);
 		return new QueryAdapter(sb.toString(), errors);

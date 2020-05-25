@@ -57,7 +57,7 @@ public class Main {
 		private File curFile;
 		private FileWriter logFileWriter;
 		public FileWriter currentFileWriter;
-		private static final List<String> initializedProvidersNames = new ArrayList<>();
+		private static final List<String> INITIALIZED_PROVIDER_NAMES = new ArrayList<>();
 		private boolean logEachSelect = true;
 		private DatabaseProvider<?, ?> provider;
 
@@ -95,7 +95,7 @@ public class Main {
 		}
 
 		private synchronized void ensureExistsAndIsEmpty(File dir, DatabaseProvider<?, ?> provider) {
-			if (initializedProvidersNames.contains(provider.getDBMSName())) {
+			if (INITIALIZED_PROVIDER_NAMES.contains(provider.getDBMSName())) {
 				return;
 			}
 			if (!dir.exists()) {
@@ -110,7 +110,7 @@ public class Main {
 					file.delete();
 				}
 			}
-			initializedProvidersNames.add(provider.getDBMSName());
+			INITIALIZED_PROVIDER_NAMES.add(provider.getDBMSName());
 		}
 
 		private FileWriter getLogFileWriter() {
@@ -326,7 +326,7 @@ public class Main {
 						} catch (Exception e) {
 							throw new AssertionError(e);
 						}
-						GlobalState<?> state = (GlobalState<?>) provider.generateGlobalState();
+						GlobalState<?> state = provider.generateGlobalState();
 						stateToRepro = provider.getStateToReproduce(databaseName);
 						state.setState(stateToRepro);
 						logger = new StateLogger(databaseName, provider, options);

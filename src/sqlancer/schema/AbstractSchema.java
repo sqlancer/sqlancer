@@ -10,7 +10,7 @@ import sqlancer.Randomly;
 public class AbstractSchema<A extends AbstractTable<?, ?>> {
 
 	private final List<A> databaseTables;
-	
+
 	public AbstractSchema(List<A> databaseTables) {
 		this.databaseTables = Collections.unmodifiableList(databaseTables);
 	}
@@ -45,8 +45,7 @@ public class AbstractSchema<A extends AbstractTable<?, ?>> {
 		if (Randomly.getBooleanWithRatherLowProbability()) {
 			i = (int) Randomly.getNotCachedInteger(0, 100);
 		}
-		outer:
-		do {
+		outer: do {
 			String indexName = String.format("i%d", i++);
 			for (A table : databaseTables) {
 				if (table.getIndexes().stream().anyMatch(ind -> ind.getIndexName().contentEquals(indexName))) {
@@ -70,7 +69,7 @@ public class AbstractSchema<A extends AbstractTable<?, ?>> {
 		} while (true);
 
 	}
-	
+
 	public String getFreeViewName() {
 		int i = 0;
 		if (Randomly.getBooleanWithRatherLowProbability()) {
@@ -84,7 +83,5 @@ public class AbstractSchema<A extends AbstractTable<?, ?>> {
 		} while (true);
 
 	}
-	
-	
-	
+
 }

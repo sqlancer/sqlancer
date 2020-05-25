@@ -12,7 +12,7 @@ import sqlancer.clickhouse.ClickhouseSchema.ClickhouseDataType;
 public class ClickhouseTableGenerator {
 
 	private enum ClickhouseEngine {
-		TinyLog, StripeLog, Log, Memory/*, MergeTree*/
+		TinyLog, StripeLog, Log, Memory/* , MergeTree */
 	}
 
 	StringBuilder sb = new StringBuilder("CREATE TABLE ");

@@ -9,31 +9,14 @@ import java.util.function.Supplier;
 
 public final class Randomly {
 
-	// CACHING
-
-//	private class Cache<T> {
-//		private final List<T> cachedValues = new ArrayList<>();
-//		
-//		void addToCache(T val) {
-//			if (USE_CACHING && cachedValues.size() < CACHE_SIZE && !cachedValues.contains(val)) {
-//				cachedValues.add(val);
-//			}	
-//		}
-//	}
-//	
-//	private final Cache<Long> longCache = new Cache<Long>();
-//	private final Cache<String> stringCache = new Cache<String>();
-//	private final Cache<Double> doubleCache = new Cache<Double>();
-//	private final Cache<Byte[]> bytesCache = new Cache<Byte[]>();
-
-	private static boolean USE_CACHING = true;
+	private static final boolean USE_CACHING = true;
 	private static final int CACHE_SIZE = 100;
 
 	private final List<Long> cachedLongs = new ArrayList<>();
 	private final List<String> cachedStrings = new ArrayList<>();
 	private final List<Double> cachedDoubles = new ArrayList<>();
 	private final List<byte[]> cachedBytes = new ArrayList<>();
-	private final static String ALPHABET = new String(
+	private static final String ALPHABET = new String(
 			"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzöß!#<>/.,~-+'*()[]{} ^*?%_\t\n\r|&\\");
 	private Supplier<String> provider;
 
@@ -214,7 +197,7 @@ public final class Randomly {
 
 	public long getInteger() {
 		if (smallBiasProbability()) {
-			return Randomly.fromOptions(-1l, Long.MAX_VALUE, Long.MIN_VALUE, 1l, 0l);
+			return Randomly.fromOptions(-1L, Long.MAX_VALUE, Long.MIN_VALUE, 1L, 0L);
 		} else {
 			if (cacheProbability()) {
 				Long l = getFromLongCache();
@@ -253,7 +236,7 @@ public final class Randomly {
 			if (Randomly.getBooleanWithRatherLowProbability()) {
 				char val = (char) getInteger();
 				if (val != 0) {
-					sb.append(val); 
+					sb.append(val);
 				}
 			} else {
 				sb.append(ALPHABET.charAt(ThreadLocalRandom.current().nextInt(n)));
@@ -300,7 +283,7 @@ public final class Randomly {
 	public long getNonZeroInteger() {
 		long value;
 		if (smallBiasProbability()) {
-			return Randomly.fromOptions(-1l, Long.MAX_VALUE, Long.MIN_VALUE, 1l);
+			return Randomly.fromOptions(-1L, Long.MAX_VALUE, Long.MIN_VALUE, 1L);
 		}
 		if (cacheProbability()) {
 			Long l = getFromLongCache();
@@ -325,7 +308,7 @@ public final class Randomly {
 		}
 		long value;
 		if (smallBiasProbability()) {
-			value = Randomly.fromOptions(0l, Long.MAX_VALUE, 1l);
+			value = Randomly.fromOptions(0L, Long.MAX_VALUE, 1L);
 		} else {
 			value = ThreadLocalRandom.current().nextLong(Long.MAX_VALUE);
 		}
@@ -365,7 +348,7 @@ public final class Randomly {
 	public static boolean getBooleanWithRatherLowProbability() {
 		return ThreadLocalRandom.current().nextInt(10) == 1;
 	}
-	
+
 	public static boolean getBooleanWithSmallProbability() {
 		return smallBiasProbability();
 	}
@@ -416,7 +399,7 @@ public final class Randomly {
 	public Randomly(Supplier<String> provider) {
 		this.provider = provider;
 	}
-	
+
 	public Randomly() {
 	}
 

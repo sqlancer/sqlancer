@@ -32,31 +32,29 @@ public class SQLite3PragmaGenerator {
 		BUSY_TIMEOUT, //
 		CACHE_SIZE, //
 		CACHE_SPILL_ENABLED, //
-		CACHE_SPILL_SIZE,
-		/* CASE_SENSITIVE_LIKE */ CELL_SIZE_CHECK, CHECKPOINT_FULLSYNC, DEFAULT_CACHE_SIZE, DEFER_FOREIGN_KEY, /*ENCODING,*/
+		CACHE_SPILL_SIZE, /* CASE_SENSITIVE_LIKE */ CELL_SIZE_CHECK, CHECKPOINT_FULLSYNC, DEFAULT_CACHE_SIZE,
+		DEFER_FOREIGN_KEY, /* ENCODING, */
 		FOREIGN_KEYS, IGNORE_CHECK_CONSTRAINTS, INCREMENTAL_VACUUM, INTEGRITY_CHECK, JOURNAL_MODE, JOURNAL_SIZE_LIMIT,
 		/* LEGACY_ALTER_TABLE */ OPTIMIZE, LEGACY_FORMAT, LOCKING_MODE, MMAP_SIZE, RECURSIVE_TRIGGERS,
 		REVERSE_UNORDERED_SELECTS, SECURE_DELETE, SHRINK_MEMORY, SOFT_HEAP_LIMIT, //
-		STATS, // 
+		STATS, //
 		SHORT_COLUMN_NAMES,
 		/* TEMP_STORE, */ //
 		THREADS, //
 		WAL_AUTOCHECKPOINT, //
 		WAL_CHECKPOINT; //
 //		WRITEABLE_SCHEMA
-		
-		
+
 //		VDBE_ADDOPTRACE(PragmaAttribute.DEBUG); // produces too much textual output directly on the console
 //		VDBE_LISTING(PragmaAttribute.DEBUG); // produces too much textual output directly on the console
-		
+
 		Pragma(PragmaAttribute... attrs) {
 		}
-		
 
 		private enum PragmaAttribute {
 			DEBUG /* only available in debug mode */
 		}
-	
+
 	}
 
 	private final StringBuilder sb = new StringBuilder();
@@ -238,16 +236,6 @@ public class SQLite3PragmaGenerator {
 			sb.append(")");
 			errors.add("database table is locked");
 			break;
-// writeable schema can cause ALTER TABLE commands to result in a malformed schema
-//		case WRITEABLE_SCHEMA:
-//			createPragma("writable_schema", () -> Randomly.getBoolean());
-//			break;
-//		case VDBE_ADDOPTRACE:
-//			createPragma("vdbe_addoptrace", () -> getRandomTextBoolean());
-//			break;
-//		case VDBE_LISTING:
-//			createPragma("vdbe_listing", () -> getRandomTextBoolean());
-//			break;			
 		default:
 			throw new AssertionError(p);
 		}

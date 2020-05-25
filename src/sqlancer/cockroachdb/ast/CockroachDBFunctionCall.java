@@ -15,7 +15,7 @@ public class CockroachDBFunctionCall implements CockroachDBExpression {
 	public List<CockroachDBExpression> getArguments() {
 		return arguments;
 	}
-	
+
 	public CockroachDBFunction getFunction() {
 		return function;
 	}
@@ -23,5 +23,5 @@ public class CockroachDBFunctionCall implements CockroachDBExpression {
 	public String getName() {
 		return function.getFunctionName();
 	}
-	
+
 }

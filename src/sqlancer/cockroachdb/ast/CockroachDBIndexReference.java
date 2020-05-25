@@ -4,8 +4,9 @@ import sqlancer.Randomly;
 import sqlancer.schema.TableIndex;
 import sqlancer.visitor.UnaryOperation;
 
-public class CockroachDBIndexReference extends CockroachDBTableReference implements UnaryOperation<CockroachDBExpression> {
-	
+public class CockroachDBIndexReference extends CockroachDBTableReference
+		implements UnaryOperation<CockroachDBExpression> {
+
 	private CockroachDBTableReference tableReference;
 	private TableIndex index;
 
@@ -33,10 +34,10 @@ public class CockroachDBIndexReference extends CockroachDBTableReference impleme
 	public OperatorKind getOperatorKind() {
 		return OperatorKind.POSTFIX;
 	}
-	
+
 	@Override
 	public boolean omitBracketsWhenPrinting() {
 		return true;
 	}
-	
+
 }

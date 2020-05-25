@@ -40,7 +40,7 @@ public abstract class SQLite3Case extends SQLite3Expression {
 	public SQLite3Expression getElseExpr() {
 		return elseExpr;
 	}
-	
+
 	protected SQLite3CollateSequence getExplicitCasePairAndElseCollate() {
 		for (CasePair c : pairs) {
 			if (c.getCond().getExplicitCollateSequence() != null) {
@@ -87,7 +87,7 @@ public abstract class SQLite3Case extends SQLite3Expression {
 		}
 
 	}
-	
+
 	public static class SQLite3CaseWithBaseExpression extends SQLite3Case {
 
 		private final SQLite3Expression baseExpr;
@@ -109,7 +109,7 @@ public abstract class SQLite3Case extends SQLite3Expression {
 		public SQLite3Expression getBaseExpr() {
 			return baseExpr;
 		}
-		
+
 		@Override
 		public SQLite3Constant getExpectedValue() {
 			SQLite3Constant baseExprValue = baseExpr.getExpectedValue();
@@ -120,7 +120,7 @@ public abstract class SQLite3Case extends SQLite3Expression {
 				SQLite3Constant whenComparisonValue = c.getCond().getExpectedValue();
 				if (whenComparisonValue == null) {
 					return null;
-				}// TODO collate
+				} // TODO collate
 				SQLite3CollateSequence seq;
 				if (baseExpr.getExplicitCollateSequence() != null) {
 					seq = baseExpr.getExplicitCollateSequence();
@@ -133,7 +133,8 @@ public abstract class SQLite3Case extends SQLite3Expression {
 				} else {
 					seq = SQLite3CollateSequence.BINARY;
 				}
-				ConstantTuple newVals = applyAffinities(baseExpr.getAffinity(), c.getCond().getAffinity(), baseExpr.getExpectedValue(), c.getCond().getExpectedValue());
+				ConstantTuple newVals = applyAffinities(baseExpr.getAffinity(), c.getCond().getAffinity(),
+						baseExpr.getExpectedValue(), c.getCond().getExpectedValue());
 				SQLite3Constant equals = newVals.left.applyEquals(newVals.right, seq);
 				if (!equals.isNull() && equals.asInt() == 1) {
 					return c.getThen().getExpectedValue();
@@ -145,6 +146,6 @@ public abstract class SQLite3Case extends SQLite3Expression {
 				return elseExpr.getExpectedValue();
 			}
 		}
-		
+
 	}
 }

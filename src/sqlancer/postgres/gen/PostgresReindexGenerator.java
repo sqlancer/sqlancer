@@ -12,7 +12,10 @@ import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresIndex;
 
 public class PostgresReindexGenerator {
-	
+
+	private PostgresReindexGenerator() {
+	}
+
 	private enum Scope {
 		INDEX, TABLE, DATABASE;
 	}

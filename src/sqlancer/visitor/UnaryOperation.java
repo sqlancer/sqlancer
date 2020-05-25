@@ -1,19 +1,19 @@
 package sqlancer.visitor;
 
-public interface UnaryOperation<T>  {
-	
-	public static enum OperatorKind {
+public interface UnaryOperation<T> {
+
+	static enum OperatorKind {
 		PREFIX, POSTFIX
 	}
-	
-	public T getExpression();
 
-	public String getOperatorRepresentation();
-	
-	public default boolean omitBracketsWhenPrinting() {
+	T getExpression();
+
+	String getOperatorRepresentation();
+
+	default boolean omitBracketsWhenPrinting() {
 		return false;
 	}
 
-	public OperatorKind getOperatorKind();
-	
+	OperatorKind getOperatorKind();
+
 }

@@ -141,7 +141,7 @@ public class MySQLTableGenerator {
 	private enum TableOptions {
 		AUTO_INCREMENT, AVG_ROW_LENGTH, CHECKSUM, COMPRESSION, DELAY_KEY_WRITE, /* ENCRYPTION, */ ENGINE, INSERT_METHOD,
 		KEY_BLOCK_SIZE, MAX_ROWS, MIN_ROWS, PACK_KEYS, STATS_AUTO_RECALC, STATS_PERSISTENT, STATS_SAMPLE_PAGES;
-		
+
 		public static List<TableOptions> getRandomTableOptions() {
 			List<TableOptions> options;
 			// try to ensure that usually, only a few of these options are generated
@@ -323,7 +323,8 @@ public class MySQLTableGenerator {
 			sb.append(Randomly.fromOptions("TINYINT", "SMALLINT", "MEDIUMINT", "INT", "BIGINT"));
 			if (Randomly.getBoolean()) {
 				sb.append("(");
-				sb.append(Randomly.getNotCachedInteger(0, 255)); // Display width out of range for column 'c0' (max = 255)
+				sb.append(Randomly.getNotCachedInteger(0, 255)); // Display width out of range for column 'c0' (max =
+																	// 255)
 				sb.append(")");
 			}
 			break;

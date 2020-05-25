@@ -429,7 +429,7 @@ public class PostgresExpressionGenerator {
 		return PostgresColumnValue.create(fromList, value);
 	}
 
-	private final List<PostgresColumn> filterColumns(PostgresDataType type) {
+	final List<PostgresColumn> filterColumns(PostgresDataType type) {
 		if (columns == null) {
 			return Collections.emptyList();
 		} else {

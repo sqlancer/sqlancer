@@ -17,7 +17,6 @@ import sqlancer.duckdb.ast.DuckDBSelect;
 
 public class DuckDBRandomQuerySynthesizer {
 
-
 	public static DuckDBSelect generateSelect(DuckDBGlobalState globalState, int nrColumns) {
 		DuckDBTables targetTables = globalState.getSchema().getRandomTableNonEmptyTables();
 		DuckDBExpressionGenerator gen = new DuckDBExpressionGenerator(globalState)
@@ -29,8 +28,8 @@ public class DuckDBRandomQuerySynthesizer {
 		List<Node<DuckDBExpression>> columns = new ArrayList<>();
 		for (int i = 0; i < nrColumns; i++) {
 //			if (allowAggregates && Randomly.getBoolean()) {
-				Node<DuckDBExpression> expression = gen.generateExpression();
-				columns.add(expression);
+			Node<DuckDBExpression> expression = gen.generateExpression();
+			columns.add(expression);
 //			} else {
 //				columns.add(gen());
 //			}
@@ -56,7 +55,8 @@ public class DuckDBRandomQuerySynthesizer {
 			select.setLimitClause(DuckDBConstant.createIntConstant(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)));
 		}
 		if (Randomly.getBoolean()) {
-			select.setOffsetClause(DuckDBConstant.createIntConstant(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)));
+			select.setOffsetClause(
+					DuckDBConstant.createIntConstant(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)));
 		}
 		if (Randomly.getBoolean()) {
 			select.setHavingClause(gen.generateHavingClause());

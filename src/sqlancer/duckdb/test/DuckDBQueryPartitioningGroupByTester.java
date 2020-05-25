@@ -45,6 +45,7 @@ public class DuckDBQueryPartitioningGroupByTester extends DuckDBQueryPartitionin
 		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
 	}
 
+	@Override
 	List<Node<DuckDBExpression>> generateFetchColumns() {
 		List<Node<DuckDBExpression>> columns = new ArrayList<>();
 		columns = Randomly.nonEmptySubset(targetTables.getColumns()).stream()

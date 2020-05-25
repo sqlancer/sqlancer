@@ -1,6 +1,5 @@
 package sqlancer.duckdb.gen;
 
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -17,7 +16,7 @@ import sqlancer.duckdb.DuckDBToStringVisitor;
 import sqlancer.gen.AbstractInsertGenerator;
 
 public class DuckDBInsertGenerator extends AbstractInsertGenerator<DuckDBColumn> {
-	
+
 	private DuckDBGlobalState globalState;
 	private final Set<String> errors = new HashSet<>();
 

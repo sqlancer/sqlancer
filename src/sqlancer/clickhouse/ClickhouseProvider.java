@@ -35,6 +35,7 @@ public class ClickhouseProvider implements DatabaseProvider<ClickhouseGlobalStat
 			this.queryProvider = queryProvider;
 		}
 
+		@Override
 		public Query getQuery(ClickhouseGlobalState state) throws SQLException {
 			return queryProvider.getQuery(state);
 		}

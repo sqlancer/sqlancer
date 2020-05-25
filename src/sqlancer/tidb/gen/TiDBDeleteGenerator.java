@@ -42,7 +42,8 @@ public class TiDBDeleteGenerator {
 		if (Randomly.getBoolean()) {
 			sb.append(" ORDER BY ");
 			TiDBErrors.addExpressionErrors(errors);
-			sb.append(gen.generateOrderBys().stream().map(o -> TiDBVisitor.asString(o)).collect(Collectors.joining(", ")));
+			sb.append(gen.generateOrderBys().stream().map(o -> TiDBVisitor.asString(o))
+					.collect(Collectors.joining(", ")));
 		}
 		if (Randomly.getBoolean()) {
 			sb.append(" LIMIT ");
@@ -52,7 +53,7 @@ public class TiDBDeleteGenerator {
 		errors.add("Division by 0");
 		errors.add("error parsing regexp");
 		return new QueryAdapter(sb.toString(), errors);
-		
+
 	}
-	
+
 }

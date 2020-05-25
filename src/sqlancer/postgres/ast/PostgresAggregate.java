@@ -17,22 +17,16 @@ public class PostgresAggregate extends FunctionNode<PostgresAggregateFunction, P
 
 	public enum PostgresAggregateFunction {
 		AVG(PostgresDataType.INT, PostgresDataType.FLOAT, PostgresDataType.REAL, PostgresDataType.DECIMAL),
-		BIT_AND(PostgresDataType.INT),
-		BIT_OR(PostgresDataType.INT),
-		BOOL_AND(PostgresDataType.BOOLEAN),
-		BOOL_OR(PostgresDataType.BOOLEAN),
-		COUNT(PostgresDataType.INT),
-		EVERY(PostgresDataType.BOOLEAN),
-		MAX,
-		MIN,
+		BIT_AND(PostgresDataType.INT), BIT_OR(PostgresDataType.INT), BOOL_AND(PostgresDataType.BOOLEAN),
+		BOOL_OR(PostgresDataType.BOOLEAN), COUNT(PostgresDataType.INT), EVERY(PostgresDataType.BOOLEAN), MAX, MIN,
 		// STRING_AGG
 		SUM(PostgresDataType.INT, PostgresDataType.FLOAT, PostgresDataType.REAL, PostgresDataType.DECIMAL);
-		
+
 		PostgresAggregateFunction(PostgresDataType... supportedReturnTypes) {
 			this.supportedReturnTypes = supportedReturnTypes;
 		}
 
-		private PostgresDataType supportedReturnTypes[];
+		private PostgresDataType[] supportedReturnTypes;
 
 		public static PostgresAggregateFunction getRandom() {
 			return Randomly.fromOptions(values());
@@ -47,7 +41,8 @@ public class PostgresAggregate extends FunctionNode<PostgresAggregateFunction, P
 		}
 
 		public boolean supportsReturnType(PostgresDataType returnType) {
-			return Arrays.asList(supportedReturnTypes).stream().anyMatch(t -> t == returnType) || supportedReturnTypes.length == 0;
+			return Arrays.asList(supportedReturnTypes).stream().anyMatch(t -> t == returnType)
+					|| supportedReturnTypes.length == 0;
 		}
 
 		public static List<PostgresAggregateFunction> getAggregates(PostgresDataType type) {

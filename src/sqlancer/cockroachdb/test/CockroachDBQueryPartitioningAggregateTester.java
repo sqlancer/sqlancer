@@ -52,6 +52,7 @@ public class CockroachDBQueryPartitioningAggregateTester implements TestOracle {
 		errors.add("float out of range");
 	}
 
+	@Override
 	public void check() throws SQLException {
 		CockroachDBSchema s = state.getSchema();
 		CockroachDBTables targetTables = s.getRandomTableNonEmptyTables();

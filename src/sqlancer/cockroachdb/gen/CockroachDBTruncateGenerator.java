@@ -15,7 +15,7 @@ public class CockroachDBTruncateGenerator {
 		Set<String> errors = new HashSet<>();
 		errors.add("is interleaved by table");
 		errors.add("is referenced by foreign key");
-		
+
 		// https://github.com/cockroachdb/cockroach/issues/47030
 		errors.add("unexpected value: <nil>");
 		StringBuilder sb = new StringBuilder();
@@ -41,5 +41,5 @@ public class CockroachDBTruncateGenerator {
 		Query q = new QueryAdapter(sb.toString(), errors);
 		return q;
 	}
-	
+
 }

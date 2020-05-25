@@ -8,7 +8,8 @@ import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.ast.PostgresBinaryArithmeticOperation.PostgresBinaryOperator;
 
-public class PostgresBinaryArithmeticOperation extends BinaryOperatorNode<PostgresExpression, PostgresBinaryOperator> implements PostgresExpression {
+public class PostgresBinaryArithmeticOperation extends BinaryOperatorNode<PostgresExpression, PostgresBinaryOperator>
+		implements PostgresExpression {
 
 	public enum PostgresBinaryOperator implements Operator {
 
@@ -54,9 +55,7 @@ public class PostgresBinaryArithmeticOperation extends BinaryOperatorNode<Postgr
 //				return applyBitOperation(left, right, (l, r) -> (long) Math.pow(l, r));
 				throw new AssertionError();
 			}
-		}
-
-		;
+		};
 
 		private static PostgresConstant applyBitOperation(PostgresConstant left, PostgresConstant right,
 				BinaryOperator<Long> op) {
@@ -72,7 +71,7 @@ public class PostgresBinaryArithmeticOperation extends BinaryOperatorNode<Postgr
 
 		private String textRepresentation;
 
-		private PostgresBinaryOperator(String textRepresentation) {
+		PostgresBinaryOperator(String textRepresentation) {
 			this.textRepresentation = textRepresentation;
 		}
 

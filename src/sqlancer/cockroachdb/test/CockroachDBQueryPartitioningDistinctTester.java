@@ -16,7 +16,6 @@ import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnar
 
 public class CockroachDBQueryPartitioningDistinctTester extends CockroachDBQueryPartitioningBase {
 
-
 	public CockroachDBQueryPartitioningDistinctTester(CockroachDBGlobalState state) {
 		super(state);
 		errors.add("GROUP BY term out of range");

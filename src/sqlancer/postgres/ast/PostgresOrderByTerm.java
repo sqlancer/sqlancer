@@ -8,7 +8,6 @@ public class PostgresOrderByTerm implements PostgresExpression {
 	private final PostgresOrder order;
 	private final PostgresExpression expr;
 
-	
 	public enum PostgresOrder {
 		ASC, DESC;
 

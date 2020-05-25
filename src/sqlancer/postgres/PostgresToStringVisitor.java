@@ -25,17 +25,19 @@ import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 import sqlancer.visitor.ToStringVisitor;
 
-public class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression> implements PostgresVisitor {
+public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression> implements PostgresVisitor {
 
 	@Override
 	public void visitSpecific(PostgresExpression expr) {
 		PostgresVisitor.super.visit(expr);
 	}
 
+	@Override
 	public void visit(PostgresConstant constant) {
 		sb.append(constant.getTextRepresentation());
 	}
 
+	@Override
 	public String get() {
 		return sb.toString();
 	}
@@ -166,6 +168,7 @@ public class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression>
 		sb.append(op.getOrder());
 	}
 
+	@Override
 	public void visit(PostgresFunction f) {
 		sb.append(f.getFunctionName());
 		sb.append("(");

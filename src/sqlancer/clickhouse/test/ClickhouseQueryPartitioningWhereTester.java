@@ -10,7 +10,6 @@ import sqlancer.TestOracle;
 import sqlancer.clickhouse.ClickhouseProvider.ClickhouseGlobalState;
 import sqlancer.clickhouse.ClickhouseToStringVisitor;
 
-
 public class ClickhouseQueryPartitioningWhereTester extends ClickhouseQueryPartitioningBase {
 
 	public ClickhouseQueryPartitioningWhereTester(ClickhouseGlobalState state) {

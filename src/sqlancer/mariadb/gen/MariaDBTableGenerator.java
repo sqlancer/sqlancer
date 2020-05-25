@@ -41,11 +41,9 @@ public class MariaDBTableGenerator {
 		}
 		return new QueryAdapter(sb.toString(), errors);
 	}
-	
+
 	private enum PrimaryKeyState {
-		NO_PRIMARY_KEY,
-		COLUMN_CONSTRAINT,
-		TABLE_CONSTRAINT
+		NO_PRIMARY_KEY, COLUMN_CONSTRAINT, TABLE_CONSTRAINT
 	}
 
 	private void newTable() {
@@ -94,7 +92,7 @@ public class MariaDBTableGenerator {
 				sb.append(" PRIMARY KEY");
 				primaryKeyState = PrimaryKeyState.NO_PRIMARY_KEY;
 			}
-			if (Randomly.getBoolean()  && !isGeneratedColumn) {
+			if (Randomly.getBoolean() && !isGeneratedColumn) {
 				sb.append(" NOT NULL");
 			}
 		}
@@ -103,7 +101,7 @@ public class MariaDBTableGenerator {
 			sb.append(Randomly.nonEmptySubset(columnNames).stream().collect(Collectors.joining(", ")));
 			sb.append(")");
 			errors.add("Primary key cannot be defined upon a generated column");
-			
+
 		}
 		sb.append(")");
 		if (Randomly.getBoolean()) {

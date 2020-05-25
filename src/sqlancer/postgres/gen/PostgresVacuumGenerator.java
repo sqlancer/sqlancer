@@ -13,6 +13,9 @@ import sqlancer.postgres.PostgresSchema.PostgresTable;
 
 public class PostgresVacuumGenerator {
 
+	private PostgresVacuumGenerator() {
+	}
+
 	public static Query create(PostgresGlobalState globalState) {
 		PostgresTable table = globalState.getSchema().getRandomTable();
 		StringBuilder sb = new StringBuilder("VACUUM ");

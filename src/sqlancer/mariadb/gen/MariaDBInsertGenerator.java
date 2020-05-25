@@ -12,7 +12,7 @@ import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 import sqlancer.mariadb.ast.MariaDBVisitor;
 
 public class MariaDBInsertGenerator {
-	
+
 	public static Query insert(MariaDBSchema s, Randomly r) {
 		MariaDBTable randomTable = s.getRandomTable();
 		StringBuilder sb = new StringBuilder();
@@ -26,7 +26,8 @@ public class MariaDBInsertGenerator {
 			if (Randomly.getBooleanWithSmallProbability()) {
 				sb.append(MariaDBVisitor.asString(MariaDBExpressionGenerator.getRandomConstant(r)));
 			} else {
-				sb.append(MariaDBVisitor.asString(MariaDBExpressionGenerator.getRandomConstant(r, randomTable.getColumns().get(i).getColumnType())));
+				sb.append(MariaDBVisitor.asString(MariaDBExpressionGenerator.getRandomConstant(r,
+						randomTable.getColumns().get(i).getColumnType())));
 			}
 		}
 		sb.append(")");

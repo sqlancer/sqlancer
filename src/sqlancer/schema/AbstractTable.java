@@ -80,7 +80,7 @@ public class AbstractTable<COL extends AbstractTableColumn<?, ?>, I extends Tabl
 	public boolean isView() {
 		return isView;
 	}
-	
+
 	public String getFreeColumnName() {
 		int i = 0;
 		if (Randomly.getBooleanWithRatherLowProbability()) {

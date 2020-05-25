@@ -9,7 +9,7 @@ public class TiDBSelect extends SelectBase<TiDBExpression> implements TiDBExpres
 	public void setHint(TiDBExpression hint) {
 		this.hint = hint;
 	}
-	
+
 	public TiDBExpression getHint() {
 		return hint;
 	}

@@ -15,7 +15,7 @@ import sqlancer.duckdb.DuckDBToStringVisitor;
 import sqlancer.duckdb.ast.DuckDBExpression;
 
 public class DuckDBIndexGenerator {
-	
+
 	public static Query getQuery(DuckDBGlobalState globalState) {
 		Set<String> errors = new HashSet<>();
 		StringBuilder sb = new StringBuilder();
@@ -44,7 +44,8 @@ public class DuckDBIndexGenerator {
 		sb.append(")");
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
-			Node<DuckDBExpression> expr = new DuckDBExpressionGenerator(globalState).setColumns(table.getColumns()).generateExpression();
+			Node<DuckDBExpression> expr = new DuckDBExpressionGenerator(globalState).setColumns(table.getColumns())
+					.generateExpression();
 			sb.append(DuckDBToStringVisitor.asString(expr));
 		}
 		errors.add("already exists!");

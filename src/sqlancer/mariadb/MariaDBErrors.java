@@ -3,7 +3,10 @@ package sqlancer.mariadb;
 import java.util.List;
 
 public class MariaDBErrors {
-	
+
+	private MariaDBErrors() {
+	}
+
 	public static void addInsertErrors(List<String> errors) {
 		errors.add("Out of range");
 		errors.add("Duplicate entry"); // violates UNIQUE constraint

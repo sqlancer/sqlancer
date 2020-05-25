@@ -26,7 +26,7 @@ public class PostgresCommon {
 		errors.add("FULL JOIN is only supported with merge-joinable or hash-joinable join conditions");
 		errors.add("but it cannot be referenced from this part of the query");
 		errors.add("missing FROM-clause entry for table");
-		
+
 		errors.add("canceling statement due to statement timeout");
 	}
 
@@ -213,7 +213,7 @@ public class PostgresCommon {
 		private String parameter;
 		private Function<Randomly, Object> op;
 
-		private StorageParameters(String parameter, Function<Randomly, Object> op) {
+		StorageParameters(String parameter, Function<Randomly, Object> op) {
 			this.parameter = parameter;
 			this.op = op;
 		}

@@ -31,19 +31,19 @@ public class MainOptions {
 
 	@Parameter(names = "--log-each-select", description = "Logs every statement issued", arity = 1)
 	private boolean logEachSelect = true;
-	
-	@Parameter(names="--username", description = "The user name used to log into the DBMS")
+
+	@Parameter(names = "--username", description = "The user name used to log into the DBMS")
 	private String userName = "sqlancer";
-	
-	@Parameter(names="--password", description = "The password used to log into the DBMS")
+
+	@Parameter(names = "--password", description = "The password used to log into the DBMS")
 	private String password = "sqlancer";
-	
-	@Parameter(names="--print-progress-information", description = "Whether to print progress information such as the number of databases generated or queries issued", arity = 1)
+
+	@Parameter(names = "--print-progress-information", description = "Whether to print progress information such as the number of databases generated or queries issued", arity = 1)
 	private boolean printProgressInformation = true;
-	
-	@Parameter(names="--timeout-seconds", description = "The timeout in seconds")
+
+	@Parameter(names = "--timeout-seconds", description = "The timeout in seconds")
 	private int timeoutSeconds = -1;
-	
+
 	public int getMaxExpressionDepth() {
 		return maxExpressionDepth;
 	}
@@ -71,7 +71,7 @@ public class MainOptions {
 	public int getMaxNumberInserts() {
 		return maxNumberInserts;
 	}
-	
+
 	public int getNrStatementRetryCount() {
 		return nrStatementRetryCount;
 	}
@@ -79,11 +79,11 @@ public class MainOptions {
 	public static enum DBMS {
 		MariaDB, SQLite3, MySQL, PostgreSQL, TDEngine, CockroachDB, TiDB
 	}
-	
+
 	public String getUserName() {
 		return userName;
 	}
-	
+
 	public String getPassword() {
 		return password;
 	}
@@ -94,11 +94,11 @@ public class MainOptions {
 			return DBMS.valueOf(value);
 		}
 	}
-	
+
 	public boolean printProgressInformation() {
 		return printProgressInformation;
 	}
-	
+
 	public int getTimeoutSeconds() {
 		return timeoutSeconds;
 	}

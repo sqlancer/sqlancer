@@ -8,7 +8,6 @@ import sqlancer.LikeImplementationHelper;
 import sqlancer.Randomly;
 import sqlancer.sqlite3.SQLite3CollateHelper;
 import sqlancer.sqlite3.SQLite3Provider;
-import sqlancer.sqlite3.ast.SQLite3Constant.SQLite3IntConstant;
 import sqlancer.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation.BinaryComparisonOperator;
 import sqlancer.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation.BinaryOperator;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation.UnaryOperator;
@@ -20,35 +19,35 @@ import sqlancer.visitor.BinaryOperation;
 import sqlancer.visitor.UnaryOperation;
 
 public abstract class SQLite3Expression {
-	
+
 	public static class SQLite3TableReference extends SQLite3Expression {
 
 		private final String indexedBy;
 		private final SQLite3Table table;
-		
+
 		public SQLite3TableReference(String indexedBy, SQLite3Table table) {
 			this.indexedBy = indexedBy;
 			this.table = table;
 		}
-		
+
 		public SQLite3TableReference(SQLite3Table table) {
 			this.indexedBy = null;
 			this.table = table;
 		}
-		
+
 		@Override
 		public SQLite3CollateSequence getExplicitCollateSequence() {
 			return null;
 		}
-		
+
 		public SQLite3Table getTable() {
 			return table;
 		}
-		
+
 		public String getIndexedBy() {
 			return indexedBy;
 		}
-		
+
 	}
 
 	public static class SQLite3Distinct extends SQLite3Expression {
@@ -72,7 +71,7 @@ public abstract class SQLite3Expression {
 		public SQLite3Expression getExpression() {
 			return expr;
 		}
-		
+
 		@Override
 		public SQLite3CollateSequence getImplicitCollateSequence() {
 			// https://www.sqlite.org/src/tktview/18ab5da2c05ad57d7f9d79c41d3138b141378543
@@ -104,7 +103,7 @@ public abstract class SQLite3Expression {
 	 * See
 	 * https://www.sqlite.org/datatype3.html#assigning_collating_sequences_from_sql
 	 * 7.1
-	 * 
+	 *
 	 * @return
 	 */
 	public abstract SQLite3CollateSequence getExplicitCollateSequence();
@@ -129,7 +128,7 @@ public abstract class SQLite3Expression {
 		public SQLite3CollateSequence getExplicitCollateSequence() {
 			return null;
 		}
-		
+
 	}
 
 	public static class Join extends SQLite3Expression {
@@ -147,7 +146,7 @@ public abstract class SQLite3Expression {
 			this.onClause = onClause;
 			this.type = type;
 		}
-		
+
 		public Join(SQLite3Table table, JoinType type) {
 			this.table = table;
 			if (type != JoinType.NATURAL) {
@@ -177,7 +176,7 @@ public abstract class SQLite3Expression {
 		public void setOnClause(SQLite3Expression onClause) {
 			this.onClause = onClause;
 		}
-		
+
 	}
 
 	public static class Subquery extends SQLite3Expression {
@@ -279,11 +278,11 @@ public abstract class SQLite3Expression {
 			}
 		}
 
-		@Override
 		/**
 		 * An expression of the form "CAST(expr AS type)" has an affinity that is the
 		 * same as a column with a declared type of "type".
 		 */
+		@Override
 		public TypeAffinity getAffinity() {
 			switch (type.type) {
 			case BLOB:
@@ -363,7 +362,7 @@ public abstract class SQLite3Expression {
 		public SQLite3Constant getExpectedValue() {
 			return getTopNode().getExpectedValue();
 		}
-		
+
 		public SQLite3Expression getTopNode() {
 			BinaryComparisonOperation leftOp = new BinaryComparisonOperation(expr, left,
 					BinaryComparisonOperator.GREATER_EQUALS);
@@ -480,7 +479,8 @@ public abstract class SQLite3Expression {
 
 	}
 
-	public static class SQLite3PostfixUnaryOperation extends SQLite3Expression implements UnaryOperation<SQLite3Expression> {
+	public static class SQLite3PostfixUnaryOperation extends SQLite3Expression
+			implements UnaryOperation<SQLite3Expression> {
 
 		public enum PostfixUnaryOperator {
 			ISNULL("ISNULL") {
@@ -574,6 +574,7 @@ public abstract class SQLite3Expression {
 			return operation;
 		}
 
+		@Override
 		public SQLite3Expression getExpression() {
 			return expression;
 		}
@@ -590,7 +591,6 @@ public abstract class SQLite3Expression {
 		public SQLite3CollateSequence getExplicitCollateSequence() {
 			return expression.getExplicitCollateSequence();
 		}
-
 
 		@Override
 		public String getOperatorRepresentation() {
@@ -614,7 +614,7 @@ public abstract class SQLite3Expression {
 			this.left = left;
 			this.rightExpressionList = right;
 		}
-		
+
 		public InOperation(SQLite3Expression left, SQLite3Expression select) {
 			this.left = left;
 			this.rightSelect = select;
@@ -631,7 +631,7 @@ public abstract class SQLite3Expression {
 		public SQLite3Expression getRightSelect() {
 			return rightSelect;
 		}
-		
+
 		@Override
 		// The collating sequence used for expressions of the form "x IN (y, z, ...)" is
 		// the collating sequence of x.
@@ -694,23 +694,24 @@ public abstract class SQLite3Expression {
 			this.left = left;
 			this.right = right;
 		}
-		
+
 		@Override
 		public SQLite3CollateSequence getExplicitCollateSequence() {
 			return null;
 		}
-		
+
 		public SQLite3Expression getLeft() {
 			return left;
 		}
-		
+
 		public SQLite3Expression getRight() {
 			return right;
 		}
-		
+
 	}
-	
-	public static class BinaryComparisonOperation extends SQLite3Expression implements BinaryOperation<SQLite3Expression> {
+
+	public static class BinaryComparisonOperation extends SQLite3Expression
+			implements BinaryOperation<SQLite3Expression> {
 
 		private final BinaryComparisonOperator operation;
 		private final SQLite3Expression left;
@@ -727,10 +728,12 @@ public abstract class SQLite3Expression {
 			return operation;
 		}
 
+		@Override
 		public SQLite3Expression getLeft() {
 			return left;
 		}
 
+		@Override
 		public SQLite3Expression getRight() {
 			return right;
 		}
@@ -1022,7 +1025,7 @@ public abstract class SQLite3Expression {
 				return true;
 			}
 
-			private final String textRepresentation[];
+			private final String[] textRepresentation;
 
 			private BinaryComparisonOperator(String... textRepresentation) {
 				this.textRepresentation = textRepresentation;
@@ -1031,7 +1034,7 @@ public abstract class SQLite3Expression {
 			public static BinaryComparisonOperator getRandomOperator() {
 				return Randomly.fromOptions(values());
 			}
-			
+
 			public static BinaryComparisonOperator getRandomRowValueOperator() {
 				return Randomly.fromOptions(SMALLER, SMALLER_EQUALS, GREATER, GREATER_EQUALS, EQUALS, NOT_EQUALS);
 			}
@@ -1101,7 +1104,8 @@ public abstract class SQLite3Expression {
 					if (left.getExpectedValue() == null || right.getExpectedValue() == null) {
 						return null;
 					}
-					if (!SQLite3Provider.ALLOW_FLOATING_POINT_FP && (left.getDataType() == SQLite3DataType.REAL || right.getDataType() == SQLite3DataType.REAL)) {
+					if (!SQLite3Provider.ALLOW_FLOATING_POINT_FP && (left.getDataType() == SQLite3DataType.REAL
+							|| right.getDataType() == SQLite3DataType.REAL)) {
 						throw new IgnoreMeException();
 					}
 					if (left.getExpectedValue().isNull() || right.getExpectedValue().isNull()) {
@@ -1242,8 +1246,7 @@ public abstract class SQLite3Expression {
 							double rightDouble = rightNumeric.asDouble();
 							if ((long) rightDouble == 0) {
 								return SQLite3Constant.createNullConstant();
-							} 				
-							else {
+							} else {
 								return SQLite3Constant.createRealConstant(leftInt % (long) rightDouble);
 							}
 						}
@@ -1368,7 +1371,7 @@ public abstract class SQLite3Expression {
 							if (rightResult == Long.MIN_VALUE) {
 								return leftResult >= 0 ? 0L : -1L;
 							}
-							return SHIFT_RIGHT.apply(left, SQLite3IntConstant.createIntConstant(-rightResult)).asInt();
+							return SHIFT_RIGHT.apply(left, SQLite3Constant.createIntConstant(-rightResult)).asInt();
 						}
 
 					});
@@ -1389,7 +1392,7 @@ public abstract class SQLite3Expression {
 							if (rightResult == Long.MIN_VALUE) {
 								return 0L;
 							}
-							return SHIFT_LEFT.apply(left, SQLite3IntConstant.createIntConstant(-rightResult)).asInt();
+							return SHIFT_LEFT.apply(left, SQLite3Constant.createIntConstant(-rightResult)).asInt();
 						}
 
 					});
@@ -1457,7 +1460,7 @@ public abstract class SQLite3Expression {
 				}
 			};
 
-			private final String textRepresentation[];
+			private final String[] textRepresentation;
 
 			private BinaryOperator(String... textRepresentation) {
 				this.textRepresentation = textRepresentation;
@@ -1516,10 +1519,12 @@ public abstract class SQLite3Expression {
 			return operation;
 		}
 
+		@Override
 		public SQLite3Expression getLeft() {
 			return left;
 		}
 
+		@Override
 		public SQLite3Expression getRight() {
 			return right;
 		}
@@ -1533,13 +1538,14 @@ public abstract class SQLite3Expression {
 					right.getAffinity());
 		}
 
-		public static Sqlite3BinaryOperation create(SQLite3Expression leftVal, SQLite3Expression rightVal, BinaryOperator op) {
+		public static Sqlite3BinaryOperation create(SQLite3Expression leftVal, SQLite3Expression rightVal,
+				BinaryOperator op) {
 			return new Sqlite3BinaryOperation(leftVal, rightVal, op);
 		}
 
 		private static void checkArguments(SQLite3Constant left, SQLite3Constant right) {
 //			if (!SQLite3Provider.ALLOW_FLOATING_POINT_FP && (left.isReal() || right.isReal()) ) {
-				throw new IgnoreMeException();
+			throw new IgnoreMeException();
 //			}
 		}
 
@@ -1549,7 +1555,6 @@ public abstract class SQLite3Expression {
 		}
 
 	}
-
 
 	public static class SQLite3ColumnName extends SQLite3Expression {
 
@@ -1642,9 +1647,9 @@ public abstract class SQLite3Expression {
 		}
 		return new ConstantTuple(left, right);
 	}
-	
+
 	public static class SQLite3Text extends SQLite3Expression {
-		
+
 		private final String text;
 		private final SQLite3Constant expectedValue;
 
@@ -1652,7 +1657,7 @@ public abstract class SQLite3Expression {
 			this.text = text;
 			this.expectedValue = expectedValue;
 		}
-		
+
 		public String getText() {
 			return text;
 		}
@@ -1661,16 +1666,16 @@ public abstract class SQLite3Expression {
 		public SQLite3CollateSequence getExplicitCollateSequence() {
 			return null;
 		}
-		
+
 		@Override
 		public SQLite3Constant getExpectedValue() {
 			return expectedValue;
 		}
-		
+
 	}
-	
+
 	public static class SQLite3PostfixText extends SQLite3Expression implements UnaryOperation<SQLite3Expression> {
-		
+
 		private final SQLite3Expression expr;
 		private final String text;
 		private SQLite3Constant expectedValue;
@@ -1680,7 +1685,7 @@ public abstract class SQLite3Expression {
 			this.text = text;
 			this.expectedValue = expectedValue;
 		}
-		
+
 		public SQLite3PostfixText(String text, SQLite3Constant expectedValue) {
 			this(null, text, expectedValue);
 		}
@@ -1697,7 +1702,7 @@ public abstract class SQLite3Expression {
 				return expr.getExplicitCollateSequence();
 			}
 		}
-		
+
 		@Override
 		public SQLite3Constant getExpectedValue() {
 			return expectedValue;
@@ -1717,7 +1722,8 @@ public abstract class SQLite3Expression {
 		public OperatorKind getOperatorKind() {
 			return OperatorKind.POSTFIX;
 		}
-		
+
+		@Override
 		public boolean omitBracketsWhenPrinting() {
 			return true;
 		}

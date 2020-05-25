@@ -27,7 +27,6 @@ import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 
 public class CockroachDBQueryPartitioningBase implements TestOracle {
 
-
 	final CockroachDBGlobalState state;
 	final Set<String> errors = new HashSet<>();
 
@@ -68,7 +67,8 @@ public class CockroachDBQueryPartitioningBase implements TestOracle {
 		if (Randomly.getBoolean()) {
 			columns.add(new CockroachDBColumnReference(new CockroachDBColumn("*", null, false, false)));
 		} else {
-			columns.addAll(Randomly.nonEmptySubset(targetTables.getColumns()).stream().map(c -> new CockroachDBColumnReference(c)).collect(Collectors.toList()));
+			columns.addAll(Randomly.nonEmptySubset(targetTables.getColumns()).stream()
+					.map(c -> new CockroachDBColumnReference(c)).collect(Collectors.toList()));
 		}
 		return columns;
 	}

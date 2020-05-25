@@ -9,7 +9,8 @@ public class NewCaseOperatorNode<T> implements Node<T> {
 	private Node<T> elseExpr;
 	private Node<T> switchCondition;
 
-	public NewCaseOperatorNode(Node<T> switchCondition, List<Node<T>> conditions, List<Node<T>> expressions, Node<T> elseExpr) {
+	public NewCaseOperatorNode(Node<T> switchCondition, List<Node<T>> conditions, List<Node<T>> expressions,
+			Node<T> elseExpr) {
 		this.switchCondition = switchCondition;
 		this.conditions = conditions;
 		this.expressions = expressions;
@@ -18,20 +19,21 @@ public class NewCaseOperatorNode<T> implements Node<T> {
 			throw new IllegalArgumentException();
 		}
 	}
-	
+
 	public Node<T> getSwitchCondition() {
 		return switchCondition;
 	}
-	
+
 	public List<Node<T>> getConditions() {
 		return conditions;
 	}
+
 	public List<Node<T>> getExpressions() {
 		return expressions;
 	}
-	
+
 	public Node<T> getElseExpr() {
 		return elseExpr;
 	}
-	
+
 }

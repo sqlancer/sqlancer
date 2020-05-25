@@ -3,7 +3,7 @@ package sqlancer.mysql.ast;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 
 public class MySQLColumnReference implements MySQLExpression {
-	
+
 	private final MySQLColumn column;
 	private final MySQLConstant value;
 

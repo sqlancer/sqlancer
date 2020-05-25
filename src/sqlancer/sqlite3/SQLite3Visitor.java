@@ -36,8 +36,7 @@ import sqlancer.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctio
 
 public interface SQLite3Visitor {
 
-
-	public static byte[] hexStringToByteArray(String s) {
+	static byte[] hexStringToByteArray(String s) {
 		byte[] b = new byte[s.length() / 2];
 		for (int i = 0; i < b.length; i++) {
 			int index = i * 2;
@@ -47,92 +46,91 @@ public interface SQLite3Visitor {
 		return b;
 	}
 
-	public static String byteArrayToHex(byte[] a) {
+	static String byteArrayToHex(byte[] a) {
 		StringBuilder sb = new StringBuilder(a.length * 2);
-		for (byte b : a)
+		for (byte b : a) {
 			sb.append(String.format("%02x", b));
+		}
 		return sb.toString();
 	}
 
-	
-	
 	// TODO remove these default methods
-	
-	public default void visit(BinaryComparisonOperation op) {
-		
+
+	default void visit(BinaryComparisonOperation op) {
+
 	}
 
-	public default void visit(Sqlite3BinaryOperation op) {
-		
-	}
-	
-	public default void visit(SQLite3UnaryOperation exp) {
-		
+	default void visit(Sqlite3BinaryOperation op) {
+
 	}
 
-	public default void visit(SQLite3PostfixText op) {
-		
-	}
-	
-	public default void visit(SQLite3PostfixUnaryOperation exp) {
-		
+	default void visit(SQLite3UnaryOperation exp) {
+
 	}
 
-	public abstract void visit(BetweenOperation op);
+	default void visit(SQLite3PostfixText op) {
 
-	public abstract void visit(SQLite3ColumnName c);
+	}
 
-	public abstract void visit(SQLite3Constant c);
+	default void visit(SQLite3PostfixUnaryOperation exp) {
 
-	public abstract void visit(Function f);
+	}
 
-	public abstract void visit(SQLite3Select s, boolean inner);
+	void visit(BetweenOperation op);
 
-	public abstract void visit(SQLite3OrderingTerm term);
-	
-	public abstract void visit (SQLite3TableReference tableReference);
+	void visit(SQLite3ColumnName c);
 
-	public abstract void visit(SQLite3SetClause set);
-	
-	public abstract void visit(CollateOperation op);
+	void visit(SQLite3Constant c);
 
-	public abstract void visit(Cast cast);
+	void visit(Function f);
 
-	public abstract void visit(TypeLiteral literal);
+	void visit(SQLite3Select s, boolean inner);
 
-	public abstract void visit(InOperation op);
+	void visit(SQLite3OrderingTerm term);
 
-	public abstract void visit(Subquery query);
+	void visit(SQLite3TableReference tableReference);
 
-	public abstract void visit(SQLite3Exist exist);
+	void visit(SQLite3SetClause set);
 
-	public abstract void visit(Join join);
-	
-	public abstract void visit(MatchOperation match);
+	void visit(CollateOperation op);
 
-	public abstract void visit(SQLite3Function func);
-	
-	public abstract void visit(SQLite3Text func);
+	void visit(Cast cast);
 
-	public abstract void visit(SQLite3Distinct distinct);
+	void visit(TypeLiteral literal);
 
-	public abstract void visit(SQLite3CaseWithoutBaseExpression casExpr);
-	
-	public abstract void visit(SQLite3CaseWithBaseExpression casExpr);
+	void visit(InOperation op);
 
-	public abstract void visit(SQLite3Aggregate aggr);
-	
-	public abstract void visit(SQLite3WindowFunction func);
-	
-	public abstract void visit(SQLite3RowValueExpression rw);
-	
-	public abstract void visit(SQLite3WindowFunctionExpression windowFunction);
-	
-	public abstract void visit(SQLite3WindowFunctionFrameSpecTerm term);
-	
-	public abstract void visit(SQLite3WindowFunctionFrameSpecBetween between);
-	
-	public default void visit(SQLite3Expression expr) {
+	void visit(Subquery query);
+
+	void visit(SQLite3Exist exist);
+
+	void visit(Join join);
+
+	void visit(MatchOperation match);
+
+	void visit(SQLite3Function func);
+
+	void visit(SQLite3Text func);
+
+	void visit(SQLite3Distinct distinct);
+
+	void visit(SQLite3CaseWithoutBaseExpression casExpr);
+
+	void visit(SQLite3CaseWithBaseExpression casExpr);
+
+	void visit(SQLite3Aggregate aggr);
+
+	void visit(SQLite3WindowFunction func);
+
+	void visit(SQLite3RowValueExpression rw);
+
+	void visit(SQLite3WindowFunctionExpression windowFunction);
+
+	void visit(SQLite3WindowFunctionFrameSpecTerm term);
+
+	void visit(SQLite3WindowFunctionFrameSpecBetween between);
+
+	default void visit(SQLite3Expression expr) {
 		if (expr instanceof Sqlite3BinaryOperation) {
 			visit((Sqlite3BinaryOperation) expr);
 		} else if (expr instanceof SQLite3ColumnName) {
@@ -200,7 +198,7 @@ public interface SQLite3Visitor {
 		}
 	}
 
-	public static String asString(SQLite3Expression expr) {
+	static String asString(SQLite3Expression expr) {
 		if (expr == null) {
 			throw new AssertionError();
 		}
@@ -212,9 +210,8 @@ public interface SQLite3Visitor {
 		}
 		return visitor.get();
 	}
-	
 
-	public static String asExpectedValues(SQLite3Expression expr) {
+	static String asExpectedValues(SQLite3Expression expr) {
 		SQLite3ExpectedValueVisitor visitor = new SQLite3ExpectedValueVisitor();
 		visitor.visit(expr);
 		return visitor.get();

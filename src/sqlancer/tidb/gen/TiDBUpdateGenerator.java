@@ -45,8 +45,8 @@ public class TiDBUpdateGenerator {
 			errors.add("Data Too Long"); // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/43
 		}
 		TiDBErrors.addInsertErrors(errors);
-		
+
 		return new QueryAdapter(sb.toString(), errors);
 	}
-	
+
 }

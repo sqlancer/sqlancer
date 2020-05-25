@@ -11,13 +11,13 @@ public class NewFunctionNode<T, F> implements Node<T> {
 		this.args = args;
 		this.func = func;
 	}
-	
+
 	public List<Node<T>> getArgs() {
 		return args;
 	}
-	
+
 	public F getFunc() {
 		return func;
 	}
-	
+
 }

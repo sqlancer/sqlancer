@@ -5,7 +5,8 @@ import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.ast.UnaryOperatorNode;
 import sqlancer.tidb.ast.TiDBUnaryPrefixOperation.TiDBUnaryPrefixOperator;
 
-public class TiDBUnaryPrefixOperation extends UnaryOperatorNode<TiDBExpression, TiDBUnaryPrefixOperator> implements TiDBExpression {
+public class TiDBUnaryPrefixOperation extends UnaryOperatorNode<TiDBExpression, TiDBUnaryPrefixOperator>
+		implements TiDBExpression {
 
 	public static enum TiDBUnaryPrefixOperator implements Operator {
 		NOT("NOT"), //
@@ -33,7 +34,6 @@ public class TiDBUnaryPrefixOperation extends UnaryOperatorNode<TiDBExpression, 
 	public TiDBUnaryPrefixOperation(TiDBExpression expr, TiDBUnaryPrefixOperator op) {
 		super(expr, op);
 	}
-
 
 	@Override
 	public OperatorKind getOperatorKind() {

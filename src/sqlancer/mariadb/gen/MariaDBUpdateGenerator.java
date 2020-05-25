@@ -12,7 +12,7 @@ import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 import sqlancer.mariadb.ast.MariaDBVisitor;
 
 public class MariaDBUpdateGenerator {
-	
+
 	public static Query update(MariaDBSchema s, Randomly r) {
 		MariaDBTable randomTable = s.getRandomTable();
 		StringBuilder sb = new StringBuilder("UPDATE ");
@@ -35,14 +35,7 @@ public class MariaDBUpdateGenerator {
 			} else {
 				sb.append("DEFAULT");
 			}
-			/*
-			 * 
-			 *   [WHERE where_condition]
-  [ORDER BY ...]
-  [LIMIT row_count]
-			 * 
-			 * 
-			 */
+			// [WHERE where_condition] [ORDER BY ...] [LIMIT row_count]
 		}
 		List<String> errors = new ArrayList<>();
 		MariaDBErrors.addInsertErrors(errors);

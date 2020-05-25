@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.DatabaseProvider;
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBErrors;
@@ -33,7 +32,6 @@ import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 
 public class CockroachDBQueryPartitioningJoinTester implements TestOracle {
 
-
 	final CockroachDBGlobalState state;
 	final Set<String> errors = new HashSet<>();
 
@@ -44,7 +42,7 @@ public class CockroachDBQueryPartitioningJoinTester implements TestOracle {
 	CockroachDBExpression predicate;
 	CockroachDBExpression negatedPredicate;
 	CockroachDBExpression isNullPredicate;
-	
+
 	public CockroachDBQueryPartitioningJoinTester(CockroachDBGlobalState state) {
 		errors.add("GROUP BY term out of range");
 		CockroachDBErrors.addExpressionErrors(errors);
@@ -75,15 +73,15 @@ public class CockroachDBQueryPartitioningJoinTester implements TestOracle {
 		predicate = generatePredicate();
 		negatedPredicate = new CockroachDBNotOperation(predicate);
 		isNullPredicate = new CockroachDBUnaryPostfixOperation(predicate, CockroachDBUnaryPostfixOperator.IS_NULL);
-		
-		
+
 		String originalQueryString1 = CockroachDBVisitor.asString(select);
-		
+
 		CockroachDBJoin leftJoinFalse = CockroachDBJoin.createOuterJoin(leftTable, rightTable, OuterType.LEFT,
 				CockroachDBConstant.createBooleanConstant(false));
 		select.setJoinList(Arrays.asList(leftJoinFalse));
 		String originalQueryString2 = CockroachDBVisitor.asString(select);
-		String originalQueryString = originalQueryString1 + " UNION ALL " + originalQueryString2 + " UNION ALL " + originalQueryString2;
+		String originalQueryString = originalQueryString1 + " UNION ALL " + originalQueryString2 + " UNION ALL "
+				+ originalQueryString2;
 
 		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
 				state.getConnection(), state);
@@ -93,22 +91,23 @@ public class CockroachDBQueryPartitioningJoinTester implements TestOracle {
 //			select.setOrderByExpressions(gen.getOrderingTerms());
 //		}
 
-		select.setJoinList(Arrays.asList(CockroachDBJoin.createOuterJoin(leftTable, rightTable, OuterType.LEFT,
-				predicate)));
+		select.setJoinList(
+				Arrays.asList(CockroachDBJoin.createOuterJoin(leftTable, rightTable, OuterType.LEFT, predicate)));
 		String firstQueryString = CockroachDBVisitor.asString(select);
-		
-		select.setJoinList(Arrays.asList(CockroachDBJoin.createOuterJoin(leftTable, rightTable, OuterType.LEFT,
-				negatedPredicate)));
+
+		select.setJoinList(Arrays
+				.asList(CockroachDBJoin.createOuterJoin(leftTable, rightTable, OuterType.LEFT, negatedPredicate)));
 		String secondQueryString = CockroachDBVisitor.asString(select);
-		
-		select.setJoinList(Arrays.asList(CockroachDBJoin.createOuterJoin(leftTable, rightTable, OuterType.LEFT,
-				isNullPredicate)));
+
+		select.setJoinList(
+				Arrays.asList(CockroachDBJoin.createOuterJoin(leftTable, rightTable, OuterType.LEFT, isNullPredicate)));
 		String thirdQueryString = CockroachDBVisitor.asString(select);
 		List<String> combinedString = new ArrayList<>();
 		List<String> secondResultSet = TestOracle.getCombinedResultSet(firstQueryString, secondQueryString,
 				thirdQueryString, combinedString, Randomly.getBoolean(), state, errors);
 		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
 	}
+
 	List<CockroachDBExpression> generateFetchColumns() {
 		return Arrays.asList(new CockroachDBColumnReference(targetTables.getColumns().get(0)));
 	}
@@ -116,5 +115,5 @@ public class CockroachDBQueryPartitioningJoinTester implements TestOracle {
 	CockroachDBExpression generatePredicate() {
 		return gen.generateExpression(CockroachDBDataType.BOOL.get());
 	}
-	
+
 }

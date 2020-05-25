@@ -13,11 +13,11 @@ import sqlancer.StateToReproduce.MySQLStateToReproduce;
 import sqlancer.TestOracle;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema;
-import sqlancer.mysql.MySQLToStringVisitor;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLRowValue;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.MySQLSchema.MySQLTables;
+import sqlancer.mysql.MySQLToStringVisitor;
 import sqlancer.mysql.ast.MySQLColumnReference;
 import sqlancer.mysql.ast.MySQLConstant;
 import sqlancer.mysql.ast.MySQLExpression;
@@ -40,17 +40,16 @@ public class MySQLPivotedQuerySynthesisTester implements TestOracle {
 	private List<MySQLColumn> columns;
 	private MySQLGlobalState globalState;
 
-	public MySQLPivotedQuerySynthesisTester(MySQLGlobalState globalState)
-			throws SQLException {
+	public MySQLPivotedQuerySynthesisTester(MySQLGlobalState globalState) throws SQLException {
 		this.globalState = globalState;
 		this.s = globalState.getSchema();
 		this.state = (MySQLStateToReproduce) globalState.getState();
 	}
-	
+
 	@Override
 	public void check() throws SQLException {
 		String queryString = getQueryThatContainsAtLeastOneRow();
-		
+
 		try {
 			boolean isContainedIn = isContainedIn(queryString);
 			if (!isContainedIn) {
@@ -63,7 +62,7 @@ public class MySQLPivotedQuerySynthesisTester implements TestOracle {
 				throw e;
 			}
 		}
-		
+
 	}
 
 	public String getQueryThatContainsAtLeastOneRow() throws SQLException {
@@ -187,7 +186,8 @@ public class MySQLPivotedQuerySynthesisTester implements TestOracle {
 	}
 
 	private MySQLExpression generateWhereClauseThatContainsRowValue(List<MySQLColumn> columns, MySQLRowValue rw) {
-		MySQLExpression expression = new MySQLExpressionGenerator(globalState).setRowVal(rw).setColumns(columns).generateExpression();
+		MySQLExpression expression = new MySQLExpressionGenerator(globalState).setRowVal(rw).setColumns(columns)
+				.generateExpression();
 		MySQLConstant expectedValue = expression.getExpectedValue();
 		if (expectedValue.isNull()) {
 			return new MySQLUnaryPostfixOperation(expression, UnaryPostfixOperator.IS_NULL, false);

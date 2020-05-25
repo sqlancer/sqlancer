@@ -20,14 +20,13 @@ import sqlancer.postgres.test.PostgresQueryPartitioningWhereTester;
 @Parameters
 public class PostgresOptions {
 
-	
 	@Parameter(names = "--bulk-insert")
 	public boolean allowBulkInsert = false;
-	
+
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)
 	public List<PostgresOracle> oracle = Arrays.asList(PostgresOracle.QUERY_PARTITIONING);
 
-	public static enum PostgresOracle {
+	public enum PostgresOracle {
 		NOREC {
 			@Override
 			public TestOracle create(PostgresGlobalState globalState) throws SQLException {
@@ -46,7 +45,7 @@ public class PostgresOptions {
 			public TestOracle create(PostgresGlobalState globalState) throws SQLException {
 				return new PostgresQueryPartitioningHavingTester(globalState);
 			}
-			
+
 		},
 		QUERY_PARTITIONING {
 			@Override

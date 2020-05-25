@@ -9,13 +9,13 @@ import java.util.stream.Collectors;
 
 public interface TestOracle {
 
-	public void check() throws SQLException;
+	void check() throws SQLException;
 
-	public default boolean onlyWorksForNonEmptyTables() {
+	default boolean onlyWorksForNonEmptyTables() {
 		return false;
 	}
 
-	public static void assumeResultSetsAreEqual(List<String> resultSet, List<String> secondResultSet,
+	static void assumeResultSetsAreEqual(List<String> resultSet, List<String> secondResultSet,
 			String originalQueryString, List<String> combinedString, GlobalState<?> state) {
 		if (resultSet.size() != secondResultSet.size()) {
 			String queryFormatString = "%s; -- cardinality: %d";
@@ -49,9 +49,9 @@ public interface TestOracle {
 		}
 	}
 
-	public static List<String> getCombinedResultSet(String firstQueryString, String secondQueryString,
-			String thirdQueryString, List<String> combinedString, boolean asUnion, GlobalState<?> state,
-			Set<String> errors) throws SQLException {
+	static List<String> getCombinedResultSet(String firstQueryString, String secondQueryString, String thirdQueryString,
+			List<String> combinedString, boolean asUnion, GlobalState<?> state, Set<String> errors)
+			throws SQLException {
 		List<String> secondResultSet;
 		if (asUnion) {
 			String unionString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL "
@@ -74,7 +74,7 @@ public interface TestOracle {
 		return secondResultSet;
 	}
 
-	public static List<String> getCombinedResultSetNoDuplicates(String firstQueryString, String secondQueryString,
+	static List<String> getCombinedResultSetNoDuplicates(String firstQueryString, String secondQueryString,
 			String thirdQueryString, List<String> combinedString, boolean asUnion, GlobalState<?> state,
 			Set<String> errors) throws SQLException {
 		if (!asUnion) {

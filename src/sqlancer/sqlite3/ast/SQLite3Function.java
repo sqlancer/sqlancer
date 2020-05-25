@@ -324,6 +324,7 @@ public class SQLite3Function extends SQLite3Expression {
 		return func;
 	}
 
+	@Override
 	public SQLite3Constant getExpectedValue() {
 		SQLite3Constant[] constants = new SQLite3Constant[args.length];
 		for (int i = 0; i < constants.length; i++) {

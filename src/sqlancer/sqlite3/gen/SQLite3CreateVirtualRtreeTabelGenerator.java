@@ -12,7 +12,6 @@ import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 
 public class SQLite3CreateVirtualRtreeTabelGenerator {
-	
 
 	public static Query createTableStatement(String rTreeTableName, SQLite3GlobalState globalState) {
 		Set<String> errors = new HashSet<>();
@@ -35,15 +34,15 @@ public class SQLite3CreateVirtualRtreeTabelGenerator {
 			sb.append(", ");
 			sb.append("+");
 			String columnName = SQLite3Common.createColumnName(size + i);
-			SQLite3ColumnBuilder columnBuilder = new SQLite3ColumnBuilder()
-					.allowPrimaryKey(false).allowNotNull(false).allowUnique(false).allowCheck(false);
+			SQLite3ColumnBuilder columnBuilder = new SQLite3ColumnBuilder().allowPrimaryKey(false).allowNotNull(false)
+					.allowUnique(false).allowCheck(false);
 			String c = columnBuilder.createColumn(columnName, globalState, columns);
 			sb.append(c);
 			sb.append(" ");
 		}
 		errors.add("virtual tables cannot use computed columns");
 		sb.append(")");
-		
+
 		errors.add("Wrong number of columns for an rtree table");
 		errors.add("Too many columns for an rtree table");
 		return new QueryAdapter(sb.toString(), errors);

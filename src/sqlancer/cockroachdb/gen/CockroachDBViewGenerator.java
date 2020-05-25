@@ -32,5 +32,5 @@ public class CockroachDBViewGenerator {
 		errors.add("already exists");
 		return new QueryAdapter(sb.toString(), errors, true);
 	}
-	
+
 }

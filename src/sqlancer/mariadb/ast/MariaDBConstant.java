@@ -31,7 +31,7 @@ public class MariaDBConstant extends MariaDBExpression {
 	}
 
 	public static class MariaDBDoubleConstant extends MariaDBConstant {
-		
+
 		private final double value;
 
 		public MariaDBDoubleConstant(double value) {
@@ -41,12 +41,12 @@ public class MariaDBConstant extends MariaDBExpression {
 		public double getValue() {
 			return value;
 		}
-		
+
 		@Override
 		public String toString() {
 			return String.valueOf(value);
 		}
-		
+
 	}
 
 	public static class MariaDBTextConstant extends MariaDBConstant {
@@ -67,15 +67,15 @@ public class MariaDBConstant extends MariaDBExpression {
 		}
 
 	}
-	
+
 	public static class MariaDBBooleanConstant extends MariaDBConstant {
-		
+
 		private final boolean value;
-		
+
 		public MariaDBBooleanConstant(boolean value) {
 			this.value = value;
 		}
-		
+
 		public boolean getValue() {
 			return value;
 		}
@@ -84,21 +84,21 @@ public class MariaDBConstant extends MariaDBExpression {
 		public String toString() {
 			return String.valueOf(value);
 		}
-		
+
 	}
-	
+
 	public static MariaDBTextConstant createTextConstant(String text) {
 		return new MariaDBTextConstant(text);
 	}
-	
+
 	public static MariaDBDoubleConstant createDoubleConstant(double val) {
 		return new MariaDBDoubleConstant(val);
 	}
-	
+
 	public static MariaDBIntConstant createIntConstant(long val) {
 		return new MariaDBIntConstant(val);
 	}
-	
+
 	public static MariaDBNullConstant createNullConstant() {
 		return new MariaDBNullConstant();
 	}

@@ -11,6 +11,9 @@ import sqlancer.postgres.PostgresSchema.PostgresTable;
 
 public class PostgresClusterGenerator {
 
+	private PostgresClusterGenerator() {
+	}
+
 	public static Query create(PostgresGlobalState globalState) {
 		Set<String> errors = new HashSet<>();
 		errors.add("there is no previously clustered index for table");

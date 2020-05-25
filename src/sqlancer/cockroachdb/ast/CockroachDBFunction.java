@@ -12,28 +12,6 @@ import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 
 public enum CockroachDBFunction {
 
-//	GREATEST(null, true) {
-//		
-//		
-//		@Override
-//		public boolean isCompatibleWithReturnType(CockroachDBDataType returnType) {
-//			return true;
-//		}
-//		
-//		@Override
-//		public CockroachDBDataType[] getArgumentTypes(CockroachDBDataType returnType) {
-//			int args = Randomly.smallNumber() + 1;
-//			CockroachDBDataType[] types = new CockroachDBDataType[args];
-//			for (int i = 0; i < types.length; i++) {
-//				types[i] = returnType;
-//			}
-//			return types;
-//		}
-//	},
-
-//	ARRAY_CAT(CockroachDBDataType.ARRAY, CockroachDBDataType.ARRAY, CockroachDBDataType.ARRAY),
-	
-	
 	IF(null) {
 		@Override
 		public boolean isCompatibleWithReturnType(CockroachDBCompositeDataType returnType) {
@@ -145,9 +123,7 @@ public enum CockroachDBFunction {
 	// System info function
 	/* see https://github.com/cockroachdb/cockroach/issues/44203 */
 	CURRENT_DATABASE(CockroachDBDataType.STRING), CURRENT_SCHEMA(CockroachDBDataType.STRING),
-	CURRENT_USER(CockroachDBDataType.STRING), VERSION(CockroachDBDataType.STRING),
-
-	;
+	CURRENT_USER(CockroachDBDataType.STRING), VERSION(CockroachDBDataType.STRING);
 
 	private CockroachDBDataType returnType;
 	private CockroachDBDataType[] argumentTypes;

@@ -20,39 +20,39 @@ import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
 
 public interface MySQLVisitor {
 
-	public void visit(MySQLTableReference ref);
-	
-	public void visit(MySQLConstant constant);
+	void visit(MySQLTableReference ref);
 
-	public void visit(MySQLColumnReference column);
+	void visit(MySQLConstant constant);
 
-	public void visit(MySQLUnaryPostfixOperation column);
+	void visit(MySQLColumnReference column);
 
-	public void visit(MySQLComputableFunction f);
+	void visit(MySQLUnaryPostfixOperation column);
 
-	public void visit(MySQLBinaryLogicalOperation op);
+	void visit(MySQLComputableFunction f);
 
-	public void visit(MySQLSelect select);
+	void visit(MySQLBinaryLogicalOperation op);
 
-	public void visit(MySQLBinaryComparisonOperation op);
+	void visit(MySQLSelect select);
 
-	public void visit(MySQLCastOperation op);
+	void visit(MySQLBinaryComparisonOperation op);
 
-	public void visit(MySQLInOperation op);
+	void visit(MySQLCastOperation op);
 
-	public void visit(MySQLBinaryOperation op);
+	void visit(MySQLInOperation op);
 
-	public void visit(MySQLOrderByTerm op);
+	void visit(MySQLBinaryOperation op);
 
-	public void visit(MySQLExists op);
+	void visit(MySQLOrderByTerm op);
 
-	public void visit(MySQLStringExpression op);
-	
-	public void visit(MySQLBetweenOperation op);
-	
-	public void visit(MySQLCollate collate);
+	void visit(MySQLExists op);
 
-	public default void visit(MySQLExpression expr) {
+	void visit(MySQLStringExpression op);
+
+	void visit(MySQLBetweenOperation op);
+
+	void visit(MySQLCollate collate);
+
+	default void visit(MySQLExpression expr) {
 		if (expr instanceof MySQLConstant) {
 			visit((MySQLConstant) expr);
 		} else if (expr instanceof MySQLColumnReference) {
@@ -85,20 +85,18 @@ public interface MySQLVisitor {
 			visit((MySQLTableReference) expr);
 		} else if (expr instanceof MySQLCollate) {
 			visit((MySQLCollate) expr);
-		}
-		
-		else {
+		} else {
 			throw new AssertionError(expr);
 		}
 	}
 
-	public static String asString(MySQLExpression expr) {
+	static String asString(MySQLExpression expr) {
 		MySQLToStringVisitor visitor = new MySQLToStringVisitor();
 		visitor.visit(expr);
 		return visitor.get();
 	}
 
-	public static String asExpectedValues(MySQLExpression expr) {
+	static String asExpectedValues(MySQLExpression expr) {
 		MySQLExpectedValueVisitor visitor = new MySQLExpectedValueVisitor();
 		visitor.visit(expr);
 		return visitor.get();

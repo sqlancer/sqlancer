@@ -3,20 +3,17 @@ package sqlancer.duckdb.gen;
 import java.util.HashSet;
 import java.util.Set;
 
-import nl.cwi.da.duckdb.DuckDBDatabase;
-import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBCompositeDataType;
-import sqlancer.duckdb.DuckDBSchema.DuckDBDataType;
 import sqlancer.duckdb.DuckDBSchema.DuckDBTable;
 import sqlancer.duckdb.DuckDBToStringVisitor;
 
 public class DuckDBAlterTableGenerator {
-	
+
 	enum Action {
 		ADD_COLUMN, ALTER_COLUMN, DROP_COLUMN
 	}

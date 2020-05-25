@@ -31,7 +31,7 @@ import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 
-public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLExpression, MySQLColumn>{
+public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLExpression, MySQLColumn> {
 
 	private MySQLGlobalState state;
 	private MySQLRowValue rowVal;
@@ -45,13 +45,12 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
 		return this;
 	}
 
-
 	private enum Actions {
 		COLUMN, LITERAL, UNARY_PREFIX_OPERATION, UNARY_POSTFIX, COMPUTABLE_FUNCTION, BINARY_LOGICAL_OPERATOR,
 		BINARY_COMPARISON_OPERATION, CAST, IN_OPERATION, BINARY_OPERATION, EXISTS, BETWEEN_OPERATOR;
 	}
 
-	
+	@Override
 	public MySQLExpression generateExpression(int depth) {
 		if (depth >= state.getOptions().getMaxExpressionDepth()) {
 			return generateLeafNode();
@@ -76,11 +75,11 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
 		case COMPUTABLE_FUNCTION:
 			return getComputableFunction(depth + 1);
 		case BINARY_LOGICAL_OPERATOR:
-			return new MySQLBinaryLogicalOperation(generateExpression(depth + 1),
-					generateExpression(depth + 1), MySQLBinaryLogicalOperator.getRandom());
+			return new MySQLBinaryLogicalOperation(generateExpression(depth + 1), generateExpression(depth + 1),
+					MySQLBinaryLogicalOperator.getRandom());
 		case BINARY_COMPARISON_OPERATION:
-			return new MySQLBinaryComparisonOperation(generateExpression(depth + 1),
-					generateExpression(depth + 1), BinaryComparisonOperator.getRandom());
+			return new MySQLBinaryComparisonOperation(generateExpression(depth + 1), generateExpression(depth + 1),
+					BinaryComparisonOperator.getRandom());
 		case CAST:
 			return new MySQLCastOperation(generateExpression(depth + 1), MySQLCastOperation.CastType.getRandom());
 		case IN_OPERATION:

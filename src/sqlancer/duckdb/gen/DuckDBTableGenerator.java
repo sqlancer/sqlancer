@@ -46,7 +46,8 @@ public class DuckDBTableGenerator {
 			if (globalState.getDmbsSpecificOptions().testIndexes && Randomly.getBooleanWithRatherLowProbability()) {
 				sb.append(" UNIQUE");
 			}
-			if (globalState.getDmbsSpecificOptions().testNotNullConstraints && Randomly.getBooleanWithRatherLowProbability()) {
+			if (globalState.getDmbsSpecificOptions().testNotNullConstraints
+					&& Randomly.getBooleanWithRatherLowProbability()) {
 				sb.append(" NOT NULL");
 			}
 			if (globalState.getDmbsSpecificOptions().testCheckConstraints

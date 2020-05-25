@@ -15,7 +15,7 @@ public class PostgresSelect extends SelectBase<PostgresExpression> implements Po
 
 		private final String textRepresentation;
 
-		private ForClause(String textRepresentation) {
+		ForClause(String textRepresentation) {
 			this.textRepresentation = textRepresentation;
 		}
 

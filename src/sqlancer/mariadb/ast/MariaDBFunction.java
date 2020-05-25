@@ -11,13 +11,13 @@ public class MariaDBFunction extends MariaDBExpression {
 		this.func = func;
 		this.args = args;
 	}
-	
+
 	public MariaDBFunctionName getFunc() {
 		return func;
 	}
-	
+
 	public List<MariaDBExpression> getArgs() {
 		return args;
 	}
-	
+
 }

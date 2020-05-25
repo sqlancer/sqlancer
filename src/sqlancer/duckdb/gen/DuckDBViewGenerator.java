@@ -11,7 +11,7 @@ import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBToStringVisitor;
 
 public class DuckDBViewGenerator {
-	
+
 	public static Query generate(DuckDBGlobalState globalState) {
 		int nrColumns = Randomly.smallNumber() + 1;
 		StringBuilder sb = new StringBuilder("CREATE ");

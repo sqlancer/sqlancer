@@ -11,7 +11,7 @@ public class CockroachDBAlias implements UnaryOperation<CockroachDBExpression>, 
 		this.expr = expr;
 		this.alias = alias;
 	}
-	
+
 	@Override
 	public CockroachDBExpression getExpression() {
 		return expr;
@@ -26,7 +26,7 @@ public class CockroachDBAlias implements UnaryOperation<CockroachDBExpression>, 
 	public OperatorKind getOperatorKind() {
 		return OperatorKind.POSTFIX;
 	}
-	
+
 	@Override
 	public boolean omitBracketsWhenPrinting() {
 		return true;

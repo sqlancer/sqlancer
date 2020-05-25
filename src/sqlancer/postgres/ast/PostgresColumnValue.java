@@ -4,10 +4,9 @@ import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
 public class PostgresColumnValue implements PostgresExpression {
-	
+
 	private final PostgresColumn c;
 	private final PostgresConstant expectedValue;
-	
 
 	public PostgresColumnValue(PostgresColumn c, PostgresConstant expectedValue) {
 		this.c = c;
@@ -23,11 +22,11 @@ public class PostgresColumnValue implements PostgresExpression {
 	public PostgresConstant getExpectedValue() {
 		return expectedValue;
 	}
-	
+
 	public static PostgresColumnValue create(PostgresColumn c) {
 		return new PostgresColumnValue(c, null);
 	}
-	
+
 	public static PostgresColumnValue create(PostgresColumn c, PostgresConstant expected) {
 		return new PostgresColumnValue(c, expected);
 	}

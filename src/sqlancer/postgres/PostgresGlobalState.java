@@ -97,5 +97,5 @@ public class PostgresGlobalState extends GlobalState<PostgresOptions> {
 	public String getRandomOpclass() {
 		return Randomly.fromList(opClasses);
 	}
-	
+
 }

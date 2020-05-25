@@ -357,7 +357,7 @@ public abstract class MySQLConstant implements MySQLExpression {
 
 		@Override
 		public MySQLConstant isEquals(MySQLConstant rightVal) {
-			return MySQLNullConstant.createNullConstant();
+			return MySQLConstant.createNullConstant();
 		}
 
 		@Override

@@ -77,7 +77,7 @@ public class SQLite3Errors {
 		errors.addAll(Arrays.asList("subqueries prohibited in CHECK constraints",
 				"generated columns cannot be part of the PRIMARY KEY", "must have at least one non-generated column"));
 	}
-	
+
 	public static void addQueryErrors(Set<String> errors) {
 		errors.add("ON clause references tables to its right");
 	}

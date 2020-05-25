@@ -1,10 +1,10 @@
 package sqlancer.visitor;
 
 public interface BinaryOperation<T> {
-	
-	public abstract T getLeft();
 
-	public abstract T getRight();
+	T getLeft();
 
-	public abstract String getOperatorRepresentation();
+	T getRight();
+
+	String getOperatorRepresentation();
 }

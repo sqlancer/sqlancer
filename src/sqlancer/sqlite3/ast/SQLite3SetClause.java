@@ -11,22 +11,22 @@ public class SQLite3SetClause extends SQLite3Expression {
 
 	public static enum SQLite3ClauseType {
 		UNION("UNION"), UNION_ALL("UNION ALL"), INTERSECT("INTERSECT"), EXCEPT("EXCEPT");
-		
+
 		private final String textRepresentation;
 
 		private SQLite3ClauseType(String textRepresentation) {
 			this.textRepresentation = textRepresentation;
 		}
-		
+
 		public static SQLite3ClauseType getRandom() {
 			return Randomly.fromOptions(values());
 		}
-		
+
 		public String getTextRepresentation() {
 			return textRepresentation;
 		}
 	}
-	
+
 	public SQLite3SetClause(SQLite3Expression left, SQLite3Expression right, SQLite3ClauseType type) {
 		this.left = left;
 		this.right = right;
@@ -36,15 +36,15 @@ public class SQLite3SetClause extends SQLite3Expression {
 	public SQLite3Expression getLeft() {
 		return left;
 	}
-	
+
 	public SQLite3Expression getRight() {
 		return right;
 	}
-	
+
 	public SQLite3ClauseType getType() {
 		return type;
 	}
-	
+
 	@Override
 	public SQLite3CollateSequence getExplicitCollateSequence() {
 		// TODO Auto-generated method stub

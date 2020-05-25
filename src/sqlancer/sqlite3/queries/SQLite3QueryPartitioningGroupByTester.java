@@ -41,6 +41,7 @@ public class SQLite3QueryPartitioningGroupByTester extends SQLite3QueryPartition
 		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
 	}
 
+	@Override
 	List<SQLite3Expression> generateFetchColumns() {
 		List<SQLite3Expression> columns = new ArrayList<>();
 		columns = Randomly.nonEmptySubset(targetTables.getColumns()).stream().map(c -> new SQLite3ColumnName(c, null))

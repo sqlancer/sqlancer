@@ -5,7 +5,7 @@ import sqlancer.ast.BinaryNode;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
 public class PostgresLikeOperation extends BinaryNode<PostgresExpression> implements PostgresExpression {
-	
+
 	public PostgresLikeOperation(PostgresExpression left, PostgresExpression right) {
 		super(left, right);
 	}

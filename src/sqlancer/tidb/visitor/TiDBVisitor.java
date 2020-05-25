@@ -35,15 +35,13 @@ public interface TiDBVisitor {
 			visit((TiDBCastOperation) expr);
 		} else if (expr instanceof TiDBCase) {
 			visit((TiDBCase) expr);
-		}
-
-		else {
+		} else {
 			throw new AssertionError(expr.getClass());
 		}
 	}
-	
+
 	void visit(TiDBCase caseExpr);
-	
+
 	void visit(TiDBCastOperation cast);
 
 	void visit(TiDBAggregate aggr);

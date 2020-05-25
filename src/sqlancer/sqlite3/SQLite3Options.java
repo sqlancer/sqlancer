@@ -30,37 +30,39 @@ public class SQLite3Options {
 	@Parameter(names = { "--test-rtree" }, description = "Test the R*Tree extensions", arity = 1)
 	public boolean testRtree = true;
 
-	@Parameter(names = { "--test-dbstats" }, description = "Test the DBSTAT Virtual Table (see https://www.sqlite.org/dbstat.html)", arity = 1)
+	@Parameter(names = {
+			"--test-dbstats" }, description = "Test the DBSTAT Virtual Table (see https://www.sqlite.org/dbstat.html)", arity = 1)
 	public boolean testDBStats = true;
-	
+
 	@Parameter(names = { "--test-generated-columns" }, description = "Test generated columns", arity = 1)
 	public boolean testGeneratedColumns = true;
-	
+
 	@Parameter(names = { "--test-foreign-keys" }, description = "Test foreign key constraints", arity = 1)
 	public boolean testForeignKeys = true;
-	
+
 	@Parameter(names = { "--test-without-rowids" }, description = "Generate WITHOUT ROWID tables", arity = 1)
 	public boolean testWithoutRowids = true;
-	
+
 	@Parameter(names = { "--test-temp-tables" }, description = "Generate TEMP/TEMPORARY tables", arity = 1)
 	public boolean testTempTables = true;
-	
+
 	@Parameter(names = { "--test-check-constraints" }, description = "Allow CHECK constraints in tables", arity = 1)
 	public boolean testCheckConstraints = true;
-	
-	@Parameter(names = { "--test-nulls-first-last" }, description = "Allow NULLS FIRST/NULLS LAST in ordering terms", arity = 1)
+
+	@Parameter(names = {
+			"--test-nulls-first-last" }, description = "Allow NULLS FIRST/NULLS LAST in ordering terms", arity = 1)
 	public boolean testNullsFirstLast = true;
 
 	@Parameter(names = { "--test-joins" }, description = "Allow the generation of JOIN clauses", arity = 1)
 	public boolean testJoins = true;
 
-	@Parameter(names = { "--test-functions" }, description = "Allow the generation of funcitons in expressions", arity = 1)
+	@Parameter(names = {
+			"--test-functions" }, description = "Allow the generation of funcitons in expressions", arity = 1)
 	public boolean testFunctions = true;
 
 	@Parameter(names = { "--test-match" }, description = "Allow the generation of the MATCH operator", arity = 1)
 	public boolean testMatch = true;
 
-	
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)
 	public SQLite3Oracle oracle = SQLite3Oracle.METAMORPHIC;
 
@@ -97,7 +99,7 @@ public class SQLite3Options {
 			public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
 				return new SQLite3QueryPartitioningWhereTester(globalState);
 			}
-			
+
 		},
 		DISTINCT {
 			@Override
@@ -140,23 +142,29 @@ public class SQLite3Options {
 			return SQLite3Oracle.valueOf(value);
 		}
 	}
-	
-	@Parameter(names = { "--delete-existing-databases" }, description = "Delete a database file if it already exists", arity = 1)
+
+	@Parameter(names = {
+			"--delete-existing-databases" }, description = "Delete a database file if it already exists", arity = 1)
 	public boolean deleteIfExists = true;
 
-	@Parameter(names = { "--generate-new-database" }, description = "Specifies whether new databases should be generated", arity = 1)
+	@Parameter(names = {
+			"--generate-new-database" }, description = "Specifies whether new databases should be generated", arity = 1)
 	public boolean generateDatabase = true;
-	
-	@Parameter(names = { "--print-statements" }, description = "Specifies whether to print SQL statements to stdout", arity = 1)
+
+	@Parameter(names = {
+			"--print-statements" }, description = "Specifies whether to print SQL statements to stdout", arity = 1)
 	public boolean printStatements = false;
-	
-	@Parameter(names = { "--execute-queries" }, description = "Specifies whether the query in the fuzzer should be executed", arity = 1)
+
+	@Parameter(names = {
+			"--execute-queries" }, description = "Specifies whether the query in the fuzzer should be executed", arity = 1)
 	public boolean executeQuery = true;
-	
-	@Parameter(names = { "--print-successful-statements" }, description = "Specifies whether to print SQL statements to stdout", arity = 1)
+
+	@Parameter(names = {
+			"--print-successful-statements" }, description = "Specifies whether to print SQL statements to stdout", arity = 1)
 	public boolean executeStatementsAndPrintSuccessfulOnes = false;
 
-	@Parameter(names = { "--exit-after-first-database" }, description = "Specifies whether to stop SQLancer after creating and executing the test oracle on the first database", arity = 1)
+	@Parameter(names = {
+			"--exit-after-first-database" }, description = "Specifies whether to stop SQLancer after creating and executing the test oracle on the first database", arity = 1)
 	public boolean exitAfterFirstDatabase = false;
 
 }

@@ -25,39 +25,39 @@ import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
 public interface PostgresVisitor {
 
-	public abstract void visit(PostgresConstant constant);
+	void visit(PostgresConstant constant);
 
-	public abstract void visit(PostgresPostfixOperation op);
+	void visit(PostgresPostfixOperation op);
 
-	public abstract void visit(PostgresColumnValue c);
+	void visit(PostgresColumnValue c);
 
-	public abstract void visit(PostgresPrefixOperation op);
+	void visit(PostgresPrefixOperation op);
 
-	public abstract void visit(PostgresSelect op);
+	void visit(PostgresSelect op);
 
-	public abstract void visit(PostgresOrderByTerm op);
+	void visit(PostgresOrderByTerm op);
 
-	public abstract void visit(PostgresFunction f);
+	void visit(PostgresFunction f);
 
-	public abstract void visit(PostgresCastOperation cast);
+	void visit(PostgresCastOperation cast);
 
-	public abstract void visit(PostgresBetweenOperation op);
+	void visit(PostgresBetweenOperation op);
 
-	public abstract void visit(PostgresInOperation op);
+	void visit(PostgresInOperation op);
 
-	public abstract void visit(PostgresPostfixText op);
+	void visit(PostgresPostfixText op);
 
-	public abstract void visit(PostgresAggregate op);
+	void visit(PostgresAggregate op);
 
-	public abstract void visit(PostgresSimilarTo op);
+	void visit(PostgresSimilarTo op);
 
-	public abstract void visit(PostgresCollate op);
+	void visit(PostgresCollate op);
 
-	public abstract void visit(PostgresPOSIXRegularExpression op);
+	void visit(PostgresPOSIXRegularExpression op);
 
-	public abstract void visit(PostgresFromTable from);
+	void visit(PostgresFromTable from);
 
-	public default void visit(PostgresExpression expression) {
+	default void visit(PostgresExpression expression) {
 		if (expression instanceof PostgresConstant) {
 			visit((PostgresConstant) expression);
 		} else if (expression instanceof PostgresPostfixOperation) {
@@ -90,33 +90,31 @@ public interface PostgresVisitor {
 			visit((PostgresCollate) expression);
 		} else if (expression instanceof PostgresFromTable) {
 			visit((PostgresFromTable) expression);
-		}
-
-		else {
+		} else {
 			throw new AssertionError(expression);
 		}
 	}
 
-	public static String asString(PostgresExpression expr) {
+	static String asString(PostgresExpression expr) {
 		PostgresToStringVisitor visitor = new PostgresToStringVisitor();
 		visitor.visit(expr);
 		return visitor.get();
 	}
 
-	public static String asExpectedValues(PostgresExpression expr) {
+	static String asExpectedValues(PostgresExpression expr) {
 		PostgresExpectedValueVisitor v = new PostgresExpectedValueVisitor();
 		v.visit(expr);
 		return v.get();
 	}
 
-	public static String getExpressionAsString(PostgresGlobalState globalState, PostgresDataType type) {
+	static String getExpressionAsString(PostgresGlobalState globalState, PostgresDataType type) {
 		PostgresExpression expression = PostgresExpressionGenerator.generateExpression(globalState, type);
 		PostgresToStringVisitor visitor = new PostgresToStringVisitor();
 		visitor.visit(expression);
 		return visitor.get();
 	}
 
-	public static String getExpressionAsString(PostgresGlobalState globalState, PostgresDataType type,
+	static String getExpressionAsString(PostgresGlobalState globalState, PostgresDataType type,
 			List<PostgresColumn> columns) {
 		PostgresExpression expression = PostgresExpressionGenerator.generateExpression(globalState, columns, type);
 		PostgresToStringVisitor visitor = new PostgresToStringVisitor();

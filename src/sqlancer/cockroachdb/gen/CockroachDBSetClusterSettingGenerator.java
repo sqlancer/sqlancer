@@ -19,12 +19,14 @@ public class CockroachDBSetClusterSettingGenerator {
 		BACKPRESSURE_RANGE_SIZE_MULTIPLIER(" kv.range.backpressure_range_size_multiplier",
 				(g) -> Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)),
 		RANGE_DESCRIPTOR_CACHE_SIZE("kv.range_descriptor_cache.size", (g) -> Randomly.getNonCachedInteger()),
-		SQL_DEFAULTS_VECTORIZE_ROW_COUNT_THRESHOLD("sql.defaults.vectorize_row_count_threshold", (g) -> Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)),
+		SQL_DEFAULTS_VECTORIZE_ROW_COUNT_THRESHOLD("sql.defaults.vectorize_row_count_threshold",
+				(g) -> Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)),
 //		SQL_DEFAULTS_EXPERIMENTAL_OPTIMIZER_FOREIGN_KEYS_ENABLED("sql.defaults.experimental_optimizer_foreign_keys.enabled", CockroachDBSetSessionGenerator::onOff),
 		MERGE_JOINS_ENABLED("sql.distsql.merge_joins.enabled", CockroachDBSetSessionGenerator::onOff),
 		PARALLEL_SCANS_ENABLED("sql.parallel_scans.enabled", CockroachDBSetSessionGenerator::onOff),
 		SQL_QUERY_CACHE_ENABLED("sql.query_cache.enabled", CockroachDBSetSessionGenerator::onOff),
-		SQL_STATS_HISTOGRAM_COLLECTION_ENABLED("sql.stats.histogram_collection.enabled", CockroachDBSetSessionGenerator::onOff);
+		SQL_STATS_HISTOGRAM_COLLECTION_ENABLED("sql.stats.histogram_collection.enabled",
+				CockroachDBSetSessionGenerator::onOff);
 		private Function<CockroachDBGlobalState, Object> f;
 		private String name;
 
@@ -47,7 +49,7 @@ public class CockroachDBSetClusterSettingGenerator {
 		Set<String> errors = new HashSet<>();
 		CockroachDBErrors.addTransactionErrors(errors);
 		errors.add("setting updated but timed out waiting to read new value");
-		
+
 		CockroachDBErrors.addTransactionErrors(errors);
 		Query q = new QueryAdapter(sb.toString(), errors);
 		return q;

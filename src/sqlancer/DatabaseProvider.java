@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface DatabaseProvider<G extends GlobalState<O>, O> {
-	
+
 	void generateAndTestDatabase(G globalState) throws SQLException;
 
 	G generateGlobalState();
@@ -18,22 +18,19 @@ public interface DatabaseProvider<G extends GlobalState<O>, O> {
 	// TODO: should be type G
 	Connection createDatabase(GlobalState<?> globalState) throws SQLException;
 
-	
 	/**
-	 * The DBMS name is used to name the log directory and command to test the respective DBMS.
-	 * 
-	 * @return
+	 * The DBMS name is used to name the log directory and command to test the
+	 * respective DBMS.
 	 */
 	String getDBMSName();
 
-	
 	// TODO: remove this
 	default void printDatabaseSpecificState(FileWriter writer, StateToReproduce state) {
-		
+
 	}
 
 	StateToReproduce getStateToReproduce(String databaseName);
-	
+
 	O getCommand();
 
 	public static boolean isEqualDouble(String first, String second) {
@@ -47,14 +44,15 @@ public interface DatabaseProvider<G extends GlobalState<O>, O> {
 	}
 
 	public static boolean equals(double a, double b) {
-		if (a == b)
+		if (a == b) {
 			return true;
+		}
 		// If the difference is less than epsilon, treat as equal.
 		return Math.abs(a - b) < 0.0001 * Math.max(Math.abs(a), Math.abs(b));
 	}
 
-
-	public static List<String> getResultSetFirstColumnAsString(String queryString, Set<String> errors, Connection con, GlobalState<?> state) throws SQLException {
+	public static List<String> getResultSetFirstColumnAsString(String queryString, Set<String> errors, Connection con,
+			GlobalState<?> state) throws SQLException {
 		if (state.getOptions().logEachSelect()) {
 			// TODO: refactor me
 			state.getLogger().writeCurrent(queryString);
@@ -102,5 +100,5 @@ public interface DatabaseProvider<G extends GlobalState<O>, O> {
 		}
 		return resultSet;
 	}
-	
+
 }

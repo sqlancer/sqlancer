@@ -11,18 +11,19 @@ public class SQLite3WindowFunctionExpression extends SQLite3Expression {
 	public static class SQLite3WindowFunctionFrameSpecTerm extends SQLite3Expression {
 
 		public static enum SQLite3WindowFunctionFrameSpecTermKind {
-			UNBOUNDED_PRECEDING("UNBOUNDED PRECEDING"), EXPR_PRECEDING("PRECEDING"), CURRENT_ROW("CURRENT ROW"), EXPR_FOLLOWING("FOLLOWING"), UNBOUNDED_FOLLOWING("UNBOUNDED FOLLOWING");
+			UNBOUNDED_PRECEDING("UNBOUNDED PRECEDING"), EXPR_PRECEDING("PRECEDING"), CURRENT_ROW("CURRENT ROW"),
+			EXPR_FOLLOWING("FOLLOWING"), UNBOUNDED_FOLLOWING("UNBOUNDED FOLLOWING");
 
 			String s;
-			
+
 			SQLite3WindowFunctionFrameSpecTermKind(String s) {
 				this.s = s;
 			}
-			
+
 			public String getString() {
 				return s;
 			}
-			
+
 		}
 
 		private final SQLite3Expression expression;

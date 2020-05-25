@@ -14,8 +14,8 @@ import sqlancer.ast.newast.NewCaseOperatorNode;
 import sqlancer.ast.newast.NewFunctionNode;
 import sqlancer.ast.newast.NewInOperatorNode;
 import sqlancer.ast.newast.NewOrderingTerm;
-import sqlancer.ast.newast.NewTernaryNode;
 import sqlancer.ast.newast.NewOrderingTerm.Ordering;
+import sqlancer.ast.newast.NewTernaryNode;
 import sqlancer.ast.newast.NewUnaryPostfixOperatorNode;
 import sqlancer.ast.newast.NewUnaryPrefixOperatorNode;
 import sqlancer.ast.newast.Node;
@@ -40,6 +40,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 		IN, COLLATE, LIKE_ESCAPE
 	}
 
+	@Override
 	protected Node<DuckDBExpression> generateExpression(int depth) {
 		if (depth >= globalState.getOptions().getMaxExpressionDepth() || Randomly.getBoolean()) {
 			return generateLeafNode();
@@ -169,6 +170,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 		}
 	}
 
+	@Override
 	public List<Node<DuckDBExpression>> generateOrderBys() {
 		List<Node<DuckDBExpression>> expr = super.generateOrderBys();
 		List<Node<DuckDBExpression>> newExpr = new ArrayList<>(expr.size());
@@ -273,7 +275,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 
 		BIT_COUNT(1), BIT_LENGTH(1), LAST_DAY(1), MONTHNAME(1), DAYNAME(1), YEARWEEK(1), DAYOFMONTH(1), WEEKDAY(1),
 		WEEKOFYEAR(1),
-		
+
 		IFNULL(2), IF(3);
 
 		private int nrArgs;

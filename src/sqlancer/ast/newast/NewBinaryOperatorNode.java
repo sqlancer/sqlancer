@@ -17,11 +17,11 @@ public class NewBinaryOperatorNode<T> implements Node<T> {
 	public String getOperatorRepresentation() {
 		return op.getTextRepresentation();
 	}
-	
+
 	public Node<T> getLeft() {
 		return left;
 	}
-	
+
 	public Node<T> getRight() {
 		return right;
 	}

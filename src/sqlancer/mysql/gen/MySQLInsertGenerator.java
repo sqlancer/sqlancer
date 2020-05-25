@@ -86,7 +86,7 @@ public class MySQLInsertGenerator {
 					sb.append(", ");
 				}
 				sb.append(MySQLVisitor.asString(gen.generateConstant()));
-				
+
 			}
 			sb.append(")");
 		}

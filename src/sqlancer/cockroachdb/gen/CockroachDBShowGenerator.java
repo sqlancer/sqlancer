@@ -10,23 +10,19 @@ import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 
 public class CockroachDBShowGenerator {
-	
+
 	private enum Option {
-		EXPERIMENTAL_FINGERPRINTS, //https://github.com/cockroachdb/cockroach/issues/44237
-		DATABASES,
-		JOBS,
-		RANGES,
-		LOCALITY,
-		SEQUENCES,
-		TRACE_FOR_SESSION
+		EXPERIMENTAL_FINGERPRINTS, // https://github.com/cockroachdb/cockroach/issues/44237
+		DATABASES, JOBS, RANGES, LOCALITY, SEQUENCES, TRACE_FOR_SESSION
 	}
-	
+
 	public static Query show(CockroachDBGlobalState globalState) {
 		Set<String> errors = new HashSet<>();
 		StringBuilder sb = new StringBuilder();
 		switch (Randomly.fromOptions(Option.values())) {
 		case EXPERIMENTAL_FINGERPRINTS:
-			sb.append("SHOW EXPERIMENTAL_FINGERPRINTS FROM TABLE " + globalState.getSchema().getRandomTable(t -> !t.isView()).getName());
+			sb.append("SHOW EXPERIMENTAL_FINGERPRINTS FROM TABLE "
+					+ globalState.getSchema().getRandomTable(t -> !t.isView()).getName());
 			errors.add("as type bytes: bytea encoded value ends with incomplete escape sequence");
 			errors.add("invalid bytea escape sequence");
 			break;

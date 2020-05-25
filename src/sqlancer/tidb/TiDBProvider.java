@@ -44,8 +44,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 		ANALYZE_TABLE(TiDBAnalyzeTableGenerator::getQuery),
 		TRUNCATE((g) -> new QueryAdapter("TRUNCATE " + g.getSchema().getRandomTable(t -> !t.isView()).getName())),
 		CREATE_INDEX(TiDBIndexGenerator::getQuery), DELETE(TiDBDeleteGenerator::getQuery),
-		SET(TiDBSetGenerator::getQuery),
-		UPDATE(TiDBUpdateGenerator::getQuery),
+		SET(TiDBSetGenerator::getQuery), UPDATE(TiDBUpdateGenerator::getQuery),
 		ADMIN_CHECKSUM_TABLE(
 				(g) -> new QueryAdapter("ADMIN CHECKSUM TABLE " + g.getSchema().getRandomTable().getName())),
 		VIEW_GENERATOR(TiDBViewGenerator::getQuery), ALTER_TABLE(TiDBAlterTableGenerator::getQuery), EXPLAIN((g) -> {
@@ -53,7 +52,8 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 			TiDBErrors.addExpressionErrors(errors);
 			TiDBErrors.addExpressionHavingErrors(errors);
 			return new QueryAdapter(
-					"EXPLAIN " + TiDBRandomQuerySynthesizer.generate(g, Randomly.smallNumber() + 1).getQueryString(), errors);
+					"EXPLAIN " + TiDBRandomQuerySynthesizer.generate(g, Randomly.smallNumber() + 1).getQueryString(),
+					errors);
 		});
 
 		private final QueryProvider<TiDBGlobalState> queryProvider;
@@ -62,6 +62,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 			this.queryProvider = queryProvider;
 		}
 
+		@Override
 		public Query getQuery(TiDBGlobalState state) throws SQLException {
 			return queryProvider.getQuery(state);
 		}

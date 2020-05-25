@@ -10,7 +10,10 @@ import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresIndex;
 import sqlancer.sqlite3.gen.SQLite3Common;
 
-public class PostgresDropIndex {
+public class PostgresDropIndexGenerator {
+
+	private PostgresDropIndexGenerator() {
+	}
 
 	public static Query create(PostgresGlobalState globalState) {
 		List<PostgresIndex> indexes = globalState.getSchema().getRandomTable().getIndexes();
@@ -40,7 +43,10 @@ public class PostgresDropIndex {
 			sb.append(" ");
 			sb.append(Randomly.fromOptions("CASCADE", "RESTRICT"));
 		}
-		return new QueryAdapter(sb.toString(), Arrays.asList("cannot drop desired object(s) because other objects depend on them", "cannot drop index", "does not exist"), true);
+		return new QueryAdapter(sb.toString(),
+				Arrays.asList("cannot drop desired object(s) because other objects depend on them", "cannot drop index",
+						"does not exist"),
+				true);
 	}
 
 }

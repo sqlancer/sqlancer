@@ -111,7 +111,7 @@ public class SQLite3Select extends SQLite3Expression {
 	public void setHavingClause(SQLite3Expression havingClause) {
 		this.havingClause = havingClause;
 	}
-	
+
 	public SQLite3Expression getHavingClause() {
 		assert orderByClause != null;
 		return havingClause;

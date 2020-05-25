@@ -15,7 +15,7 @@ import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.schema.TableIndex;
 
 public class RockroachDBCommentOnGenerator {
-	
+
 	private enum Option {
 		TABLE, INDEX, COLUMN
 	}
@@ -54,5 +54,5 @@ public class RockroachDBCommentOnGenerator {
 		CockroachDBErrors.addTransactionErrors(errors);
 		return new QueryAdapter(sb.toString(), errors);
 	}
-	
+
 }

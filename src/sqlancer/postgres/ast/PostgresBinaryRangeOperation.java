@@ -14,10 +14,11 @@ public class PostgresBinaryRangeOperation extends BinaryNode<PostgresExpression>
 
 		private final String textRepresentation;
 
-		private PostgresBinaryRangeOperator(String textRepresentation) {
+		PostgresBinaryRangeOperator(String textRepresentation) {
 			this.textRepresentation = textRepresentation;
 		}
 
+		@Override
 		public String getTextRepresentation() {
 			return textRepresentation;
 		}
@@ -34,7 +35,7 @@ public class PostgresBinaryRangeOperation extends BinaryNode<PostgresExpression>
 
 		private final String textRepresentation;
 
-		private PostgresBinaryRangeComparisonOperator(String textRepresentation) {
+		PostgresBinaryRangeComparisonOperator(String textRepresentation) {
 			this.textRepresentation = textRepresentation;
 		}
 

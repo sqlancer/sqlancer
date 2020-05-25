@@ -16,8 +16,9 @@ public class PostgresFunction implements PostgresExpression {
 		this.returnType = returnType;
 		this.args = args;
 	}
-	
-	public PostgresFunction(PostgresFunctionWithUnknownResult f, PostgresDataType returnType, PostgresExpression...args) {
+
+	public PostgresFunction(PostgresFunctionWithUnknownResult f, PostgresDataType returnType,
+			PostgresExpression... args) {
 		this.func = f.getName();
 		this.returnType = returnType;
 		this.args = args;
@@ -210,43 +211,8 @@ public class PostgresFunction implements PostgresExpression {
 				return true;
 			}
 
-		},
-//		TO_HEX(1, "to_hex") {
-//
-//			@Override
-//			public PostgresConstant apply(PostgresConstant[] evaluatedArgs, PostgresExpression[] args) {
-//				throw new IgnoreMeException();
-//				// TODO: needs to take into account the column types
-//				if (evaluatedArgs[0].isNull()) {
-//					return PostgresConstant.createNullConstant();
-//				} else {
-//					long val = evaluatedArgs[0].cast(PostgresDataType.INT).asInt();
-//					String hexString;
-//					if ((int) val == val) {
-//						hexString = Integer.toHexString((int) val);
-//					} else {
-//						hexString = Long.toHexString(val);
-//					}
-//					if (hexString.startsWith("0")) {
-//						hexString = " " + hexString.substring(1);
-//					}
-//					return PostgresConstant.createTextConstant(hexString);
-//				}
-//			}
-//
-//			@Override
-//			public boolean supportsReturnType(PostgresDataType type) {
-//				return type == PostgresDataType.TEXT;
-//			}
-//
-//			@Override
-//			public PostgresDataType[] getInputTypesForReturnType(PostgresDataType returnType, int nrArguments) {
-//				return new PostgresDataType[] { PostgresDataType.INT};
-//			}
-//			
-//		},;
+		};
 
-		;
 		public PostgresDataType[] getRandomTypes(int nr) {
 			PostgresDataType[] types = new PostgresDataType[nr];
 			for (int i = 0; i < types.length; i++) {
@@ -267,13 +233,13 @@ public class PostgresFunction implements PostgresExpression {
 		final int nrArgs;
 		private final boolean variadic;
 
-		private PostgresFunctionWithResult(int nrArgs, String functionName) {
+		PostgresFunctionWithResult(int nrArgs, String functionName) {
 			this.nrArgs = nrArgs;
 			this.functionName = functionName;
 			this.variadic = false;
 		}
 
-		private PostgresFunctionWithResult(int nrArgs, String functionName, boolean variadic) {
+		PostgresFunctionWithResult(int nrArgs, String functionName, boolean variadic) {
 			this.nrArgs = nrArgs;
 			this.functionName = functionName;
 			this.variadic = variadic;

@@ -9,7 +9,7 @@ import sqlancer.postgres.ast.PostgresBinaryBitOperation.PostgresBinaryBitOperato
 public class PostgresBinaryBitOperation extends BinaryOperatorNode<PostgresExpression, PostgresBinaryBitOperator>
 		implements PostgresExpression {
 
-	public static enum PostgresBinaryBitOperator implements Operator {
+	public enum PostgresBinaryBitOperator implements Operator {
 		CONCATENATION("||"), //
 		BITWISE_AND("&"), //
 		BITWISE_OR("|"), //
@@ -19,7 +19,7 @@ public class PostgresBinaryBitOperation extends BinaryOperatorNode<PostgresExpre
 
 		private String text;
 
-		private PostgresBinaryBitOperator(String text) {
+		PostgresBinaryBitOperator(String text) {
 			this.text = text;
 		}
 

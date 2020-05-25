@@ -56,6 +56,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		sb.append(hexVal);
 	}
 
+	@Override
 	public void visit(BetweenOperation op) {
 		sb.append("(");
 		sb.append("(");
@@ -75,6 +76,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		sb.append(")");
 	}
 
+	@Override
 	public void visit(SQLite3ColumnName c) {
 		if (fullyQualifiedNames) {
 			if (c.getColumn().getTable() != null) {
@@ -85,6 +87,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		sb.append(c.getColumn().getName());
 	}
 
+	@Override
 	public void visit(Function f) {
 		sb.append(f.getName());
 		sb.append("(");
@@ -92,6 +95,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		sb.append(")");
 	}
 
+	@Override
 	public void visit(SQLite3Select s, boolean inner) {
 		if (inner) {
 			sb.append("(");
@@ -104,6 +108,8 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		case ALL:
 			sb.append(Randomly.fromOptions("ALL ", ""));
 			break;
+		default:
+			throw new AssertionError(s.getFromOptions());
 		}
 		if (s.getFetchColumns() == null) {
 			sb.append("*");
@@ -161,6 +167,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		}
 	}
 
+	@Override
 	public void visit(SQLite3Constant c) {
 		if (c.isNull()) {
 			sb.append("NULL");
@@ -215,6 +222,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		}
 	}
 
+	@Override
 	public void visit(Join join) {
 		sb.append(" ");
 		switch (join.getType()) {
@@ -241,6 +249,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		}
 	}
 
+	@Override
 	public void visit(SQLite3OrderingTerm term) {
 		visit(term.getExpression());
 		// TODO make order optional?
@@ -248,12 +257,14 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		sb.append(term.getOrdering().toString());
 	}
 
+	@Override
 	public void visit(CollateOperation op) {
 		visit(op.getExpression());
 		sb.append(" COLLATE ");
 		sb.append(op.getCollate());
 	}
 
+	@Override
 	public void visit(Cast cast) {
 		sb.append("CAST(");
 		visit(cast.getExpression());
@@ -262,10 +273,12 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		sb.append(")");
 	}
 
+	@Override
 	public void visit(TypeLiteral literal) {
 		sb.append(literal.getType());
 	}
 
+	@Override
 	public void visit(InOperation op) {
 		sb.append("(");
 		visit(op.getLeft());
@@ -280,10 +293,12 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		sb.append(")");
 	}
 
+	@Override
 	public void visit(Subquery query) {
 		sb.append(query.getQuery());
 	}
 
+	@Override
 	public void visit(SQLite3Exist exist) {
 		sb.append(" EXISTS ");
 		if (exist.getExpression() instanceof SQLite3SetClause) {
@@ -308,6 +323,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 		}
 	}
 
+	@Override
 	public String get() {
 		return sb.toString();
 	}

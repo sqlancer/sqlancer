@@ -68,9 +68,11 @@ public class DuckDBQueryPartitioningBase implements TestOracle {
 	List<Node<DuckDBExpression>> generateFetchColumns() {
 		List<Node<DuckDBExpression>> columns = new ArrayList<>();
 		if (Randomly.getBoolean()) {
-			columns.add(new ColumnReferenceNode<DuckDBExpression, DuckDBSchema.DuckDBColumn>(new DuckDBColumn("*", null, false, false)));
+			columns.add(new ColumnReferenceNode<DuckDBExpression, DuckDBSchema.DuckDBColumn>(
+					new DuckDBColumn("*", null, false, false)));
 		} else {
-			columns = Randomly.nonEmptySubset(targetTables.getColumns()).stream().map(c -> new ColumnReferenceNode<DuckDBExpression, DuckDBColumn>(c)).collect(Collectors.toList());
+			columns = Randomly.nonEmptySubset(targetTables.getColumns()).stream()
+					.map(c -> new ColumnReferenceNode<DuckDBExpression, DuckDBColumn>(c)).collect(Collectors.toList());
 		}
 		return columns;
 	}

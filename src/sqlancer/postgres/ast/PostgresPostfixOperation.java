@@ -10,7 +10,7 @@ public class PostgresPostfixOperation implements PostgresExpression {
 	private final PostfixOperator op;
 	private final String operatorTextRepresentation;
 
-	public static enum PostfixOperator implements Operator {
+	public enum PostfixOperator implements Operator {
 		IS_NULL("IS NULL", "ISNULL") {
 			@Override
 			public PostgresConstant apply(PostgresConstant expectedValue) {
@@ -66,7 +66,8 @@ public class PostgresPostfixOperation implements PostgresExpression {
 				if (expectedValue.isNull()) {
 					return PostgresConstant.createFalse();
 				} else {
-					return PostgresConstant.createBooleanConstant(expectedValue.cast(PostgresDataType.BOOLEAN).asBoolean());
+					return PostgresConstant
+							.createBooleanConstant(expectedValue.cast(PostgresDataType.BOOLEAN).asBoolean());
 				}
 			}
 
@@ -83,7 +84,8 @@ public class PostgresPostfixOperation implements PostgresExpression {
 				if (expectedValue.isNull()) {
 					return PostgresConstant.createFalse();
 				} else {
-					return PostgresConstant.createBooleanConstant(!expectedValue.cast(PostgresDataType.BOOLEAN).asBoolean());
+					return PostgresConstant
+							.createBooleanConstant(!expectedValue.cast(PostgresDataType.BOOLEAN).asBoolean());
 				}
 			}
 
@@ -96,7 +98,7 @@ public class PostgresPostfixOperation implements PostgresExpression {
 
 		private String[] textRepresentations;
 
-		private PostfixOperator(String... textRepresentations) {
+		PostfixOperator(String... textRepresentations) {
 			this.textRepresentations = textRepresentations;
 		}
 
@@ -107,7 +109,7 @@ public class PostgresPostfixOperation implements PostgresExpression {
 		public static PostfixOperator getRandom() {
 			return Randomly.fromOptions(values());
 		}
-		
+
 		@Override
 		public String getTextRepresentation() {
 			return toString();

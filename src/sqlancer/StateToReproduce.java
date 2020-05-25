@@ -62,43 +62,38 @@ public class StateToReproduce {
 			super(databaseName);
 		}
 
-
 		public Map<MySQLColumn, MySQLConstant> getRandomRowValues() {
 			return randomRowValues;
 		}
-		
+
 		public Map<MySQLColumn, MySQLConstant> randomRowValues;
-		
+
 		public MySQLExpression whereClause;
 
 		public String queryThatSelectsRow;
-		
+
 		public MySQLExpression getWhereClause() {
 			return whereClause;
 		}
-		
-		
+
 	}
-	
+
 	public static class MariaDBStateToReproduce extends StateToReproduce {
 
 		public MariaDBStateToReproduce(String databaseName) {
 			super(databaseName);
 		}
 
-		
 	}
-	
+
 	public static class CockroachDBStateToReproduce extends StateToReproduce {
 
 		public CockroachDBStateToReproduce(String databaseName) {
 			super(databaseName);
 		}
 
-		
 	}
-	
-	
+
 	public static class SQLite3StateToReproduce extends StateToReproduce {
 		public SQLite3StateToReproduce(String databaseName) {
 			super(databaseName);
@@ -107,17 +102,17 @@ public class StateToReproduce {
 		public Map<SQLite3Column, SQLite3Constant> getRandomRowValues() {
 			return randomRowValues;
 		}
-		
+
 		public Map<SQLite3Column, SQLite3Constant> randomRowValues;
-		
+
 		public SQLite3Expression whereClause;
-		
+
 		public SQLite3Expression getWhereClause() {
 			return whereClause;
 		}
 
 	}
-	
+
 	public static class PostgresStateToReproduce extends StateToReproduce {
 		public PostgresStateToReproduce(String databaseName) {
 			super(databaseName);
@@ -126,13 +121,13 @@ public class StateToReproduce {
 		public Map<PostgresColumn, PostgresConstant> getRandomRowValues() {
 			return randomRowValues;
 		}
-		
+
 		public Map<PostgresColumn, PostgresConstant> randomRowValues;
-		
+
 		public PostgresExpression whereClause;
 
 		public String queryThatSelectsRow;
-		
+
 		public PostgresExpression getWhereClause() {
 			return whereClause;
 		}

@@ -67,7 +67,8 @@ public class TiDBAlterTableGenerator {
 			break;
 		case ADD_PRIMARY_KEY:
 			sb.append("ADD PRIMARY KEY(");
-			sb.append(table.getRandomNonEmptyColumnSubset().stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
+			sb.append(table.getRandomNonEmptyColumnSubset().stream().map(c -> c.getName())
+					.collect(Collectors.joining(", ")));
 			sb.append(")");
 			errors.add("Unsupported add primary key, alter-primary-key is false");
 			break;
@@ -88,7 +89,9 @@ public class TiDBAlterTableGenerator {
 			break;
 		case ORDER_BY:
 			sb.append(" ORDER BY ");
-			sb.append(table.getRandomNonEmptyColumnSubset().stream().map(c -> c.getName() + Randomly.fromOptions("", " ASC", " DESC")).collect(Collectors.joining(", ")));
+			sb.append(table.getRandomNonEmptyColumnSubset().stream()
+					.map(c -> c.getName() + Randomly.fromOptions("", " ASC", " DESC"))
+					.collect(Collectors.joining(", ")));
 			break;
 		}
 

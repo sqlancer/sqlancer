@@ -27,7 +27,7 @@ import sqlancer.visitor.ToStringVisitor;
 public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> implements MySQLVisitor {
 
 	int ref;
-	
+
 	@Override
 	public void visitSpecific(MySQLExpression expr) {
 		MySQLVisitor.super.visit(expr);
@@ -120,6 +120,7 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
 		sb.append(constant.getTextRepresentation());
 	}
 
+	@Override
 	public String get() {
 		return sb.toString();
 	}

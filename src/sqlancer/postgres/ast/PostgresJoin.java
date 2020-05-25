@@ -6,14 +6,13 @@ import sqlancer.postgres.PostgresSchema.PostgresTable;
 
 public class PostgresJoin implements PostgresExpression {
 
-	public static enum PostgresJoinType {
+	public enum PostgresJoinType {
 		INNER, LEFT, RIGHT, FULL, CROSS;
-
 
 		public static PostgresJoinType getRandom() {
 			return Randomly.fromOptions(values());
 		}
-		
+
 	}
 
 	private final PostgresTable table;
@@ -47,6 +46,5 @@ public class PostgresJoin implements PostgresExpression {
 	public PostgresConstant getExpectedValue() {
 		throw new AssertionError();
 	}
-
 
 }

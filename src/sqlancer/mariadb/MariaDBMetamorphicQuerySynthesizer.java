@@ -90,7 +90,8 @@ public class MariaDBMetamorphicQuerySynthesizer {
 			List<MariaDBExpression> groupBys) throws SQLException {
 		MariaDBSelectStatement select = new MariaDBSelectStatement();
 		select.setGroupByClause(groupBys);
-		MariaDBPostfixUnaryOperation isTrue = new MariaDBPostfixUnaryOperation(MariaDBPostfixUnaryOperator.IS_TRUE, randomWhereCondition);
+		MariaDBPostfixUnaryOperation isTrue = new MariaDBPostfixUnaryOperation(MariaDBPostfixUnaryOperator.IS_TRUE,
+				randomWhereCondition);
 		MariaDBText asText = new MariaDBText(isTrue, " as count", false);
 		select.setFetchColumns(Arrays.asList(asText));
 		select.setFromTables(Arrays.asList(randomTable));
@@ -145,6 +146,6 @@ public class MariaDBMetamorphicQuerySynthesizer {
 		return firstCount;
 	}
 
-	private final static int NOT_FOUND = -1;
+	private static final int NOT_FOUND = -1;
 
 }

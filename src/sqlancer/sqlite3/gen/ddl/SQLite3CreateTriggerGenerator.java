@@ -101,7 +101,8 @@ public class SQLite3CreateTriggerGenerator {
 		}
 		sb.append("END");
 
-		return new QueryAdapter(sb.toString(), Arrays.asList("parser stack overflow", "unsupported frame specification"));
+		return new QueryAdapter(sb.toString(),
+				Arrays.asList("parser stack overflow", "unsupported frame specification"));
 	}
 
 	private static void appendTableNameAndWhen(SQLite3GlobalState globalState, StringBuilder sb, SQLite3Table table) {
@@ -111,8 +112,8 @@ public class SQLite3CreateTriggerGenerator {
 		}
 		if (Randomly.getBoolean()) {
 			sb.append(" WHEN ");
-			sb.append(SQLite3Visitor
-					.asString(new SQLite3ExpressionGenerator(globalState).setColumns(table.getColumns()).generateExpression()));
+			sb.append(SQLite3Visitor.asString(
+					new SQLite3ExpressionGenerator(globalState).setColumns(table.getColumns()).generateExpression()));
 		}
 	}
 

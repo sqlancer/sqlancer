@@ -275,22 +275,22 @@ public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
 
 	@Override
 	public void visit(SQLite3WindowFunctionExpression windowFunction) {
-		
+
 	}
 
 	@Override
 	public void visit(SQLite3WindowFunctionFrameSpecTerm term) {
-		
+
 	}
 
 	@Override
 	public void visit(SQLite3WindowFunctionFrameSpecBetween between) {
-		
+
 	}
 
 	@Override
 	public void visit(SQLite3TableReference tableReference) {
-		
+
 	}
 
 	@Override

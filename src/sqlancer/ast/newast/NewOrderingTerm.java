@@ -14,18 +14,18 @@ public class NewOrderingTerm<T> implements Node<T> {
 			return Randomly.fromOptions(values());
 		}
 	}
-	
+
 	public NewOrderingTerm(Node<T> expr, Ordering ordering) {
 		this.expr = expr;
 		this.ordering = ordering;
 	}
-	
+
 	public Node<T> getExpr() {
 		return expr;
 	}
-	
+
 	public Ordering getOrdering() {
 		return ordering;
 	}
-	
+
 }

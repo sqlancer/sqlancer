@@ -8,11 +8,8 @@ public class CockroachDBRegexOperation extends BinaryNode<CockroachDBExpression>
 	public enum CockroachDBRegexOperator {
 		LIKE("LIKE"), //
 		NOT_LIKE("NOT LIKE"), //
-		ILIKE("ILIKE"),
-		NOT_ILIKE("NOT ILIKE"),
-		SIMILAR("SIMILAR TO"), //
-		NOT_SIMILAR("NOT SIMILAR TO"),
-		MATCH_CASE_SENSITIVE("~"), //
+		ILIKE("ILIKE"), NOT_ILIKE("NOT ILIKE"), SIMILAR("SIMILAR TO"), //
+		NOT_SIMILAR("NOT SIMILAR TO"), MATCH_CASE_SENSITIVE("~"), //
 		NOT_MATCH_CASE_SENSITIVE("!~"), //
 		MATCH_CASE_INSENSITIVE("~*"), //
 		NOT_MATCH_CASE_INSENSITIVE("!~*");

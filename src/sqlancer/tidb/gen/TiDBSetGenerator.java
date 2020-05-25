@@ -19,11 +19,14 @@ public class TiDBSetGenerator {
 		TIDB_DISTSQL_SCAN_CONCURRENCY("tidb_distsql_scan_concurrency", (r) -> Randomly.getNotCachedInteger(1, 500)),
 		TIDB_INDEX_LOOKUP_SIZE("tidb_index_lookup_size", (r) -> Randomly.getNotCachedInteger(1, 100000)),
 		TIDB_INDEX_LOOKUP_CONCURRENCY("tidb_index_lookup_concurrency", (r) -> Randomly.getNotCachedInteger(1, 100)),
-		TIDB_INDEX_LOOKUP_JOIN_CONCURRENCY("tidb_index_lookup_join_concurrency", (r) -> Randomly.getNotCachedInteger(1, 100)),
+		TIDB_INDEX_LOOKUP_JOIN_CONCURRENCY("tidb_index_lookup_join_concurrency",
+				(r) -> Randomly.getNotCachedInteger(1, 100)),
 		TIDB_HASH_JOIN_CONCURRENCY("tidb_hash_join_concurrency", (r) -> Randomly.getNotCachedInteger(1, 100)),
-		TIDB_INDEX_SERIAL_SCAN_CONCURRENCY("tidb_index_serial_scan_concurrency", (r) -> Randomly.getNotCachedInteger(1, 100)),
+		TIDB_INDEX_SERIAL_SCAN_CONCURRENCY("tidb_index_serial_scan_concurrency",
+				(r) -> Randomly.getNotCachedInteger(1, 100)),
 		TIDB_PROJECTION_CONCURRENCY("tidb_projection_concurrency", (r) -> Randomly.getNotCachedInteger(1, 100)),
-		TIDB_HASHAGG_PARTIAL_CONCURRENCY("tidb_hashagg_partial_concurrency", (r) -> Randomly.getNotCachedInteger(1, 100)),
+		TIDB_HASHAGG_PARTIAL_CONCURRENCY("tidb_hashagg_partial_concurrency",
+				(r) -> Randomly.getNotCachedInteger(1, 100)),
 		TIDB_HASHAGG_FINAL_CONCURRENCY("tidb_hashagg_final_concurrency", (r) -> Randomly.getNotCachedInteger(1, 100)),
 		TIDB_INDEX_JOIN_BATCH_SIZE("tidb_index_join_batch_size", (r) -> Randomly.getNotCachedInteger(1, 5000)), //
 		TIDB_INDEX_SKIP_UTF8_CHECK("tidb_skip_utf8_check", (r) -> Randomly.fromOptions(0, 1)),
@@ -35,9 +38,9 @@ public class TiDBSetGenerator {
 				(r) -> Randomly.fromOptions(0, 0.0001, 0.1, 0.25, 0.50, 0.75, 0.9, 0.9999999, 1)),
 		TIDB_OPT_CORRELATION_EXP_FACTOR("tidb_opt_correlation_exp_factor",
 				(r) -> Randomly.getNotCachedInteger(0, 10000)),
-		
+
 		TIDB_ENABLE_WINDOW_FUNCTION("tidb_enable_window_function", (r) -> Randomly.fromOptions(0, 1)),
-	
+
 		TIDB_ENABLE_FAST_ANALYZE("tidb_enable_fast_analyze", (r) -> Randomly.fromOptions(0, 1)),
 		TIDB_WAIT_SPLIT_REGION_FINISH("tidb_wait_split_region_finish", (r) -> Randomly.fromOptions(0, 1)),
 		// TODO: global

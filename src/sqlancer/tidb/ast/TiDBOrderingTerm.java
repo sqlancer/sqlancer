@@ -26,7 +26,7 @@ public class TiDBOrderingTerm implements UnaryOperation<TiDBExpression>, TiDBExp
 	public OperatorKind getOperatorKind() {
 		return OperatorKind.POSTFIX;
 	}
-	
+
 	@Override
 	public boolean omitBracketsWhenPrinting() {
 		return true;

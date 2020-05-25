@@ -31,8 +31,10 @@ public class MySQLFlush {
 			sb.append(" ");
 			sb.append(Randomly.fromOptions("NO_WRITE_TO_BINLOG", "LOCAL"));
 			sb.append(" ");
-			// TODO:   | RELAY LOGS [FOR CHANNEL channel] not fully implemented
-			List<String> options = Randomly.nonEmptySubset("BINARY LOGS", "ENGINE LOGS", "ERROR LOGS", "GENERAL LOGS", "HOSTS", "LOGS", "PRIVILEGES", "OPTIMIZER_COSTS", "RELAY LOGS", "SLOW LOGS", "STATUS", "USER_RESOURCES");
+			// TODO: | RELAY LOGS [FOR CHANNEL channel] not fully implemented
+			List<String> options = Randomly.nonEmptySubset("BINARY LOGS", "ENGINE LOGS", "ERROR LOGS", "GENERAL LOGS",
+					"HOSTS", "LOGS", "PRIVILEGES", "OPTIMIZER_COSTS", "RELAY LOGS", "SLOW LOGS", "STATUS",
+					"USER_RESOURCES");
 			sb.append(options.stream().collect(Collectors.joining(", ")));
 		} else {
 			sb.append(" ");

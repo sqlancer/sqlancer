@@ -241,7 +241,8 @@ public class MariaDBProvider implements DatabaseProvider<GlobalState<MariaDBOpti
 //
 		newSchema = MariaDBSchema.fromConnection(con, databaseName);
 //
-		MariaDBMetamorphicQuerySynthesizer queryGenerator = new MariaDBMetamorphicQuerySynthesizer(newSchema, r, con, (MariaDBStateToReproduce) state);
+		MariaDBMetamorphicQuerySynthesizer queryGenerator = new MariaDBMetamorphicQuerySynthesizer(newSchema, r, con,
+				(MariaDBStateToReproduce) state);
 		for (int i = 0; i < options.getNrQueries(); i++) {
 			try {
 				queryGenerator.generateAndCheck();
@@ -260,7 +261,8 @@ public class MariaDBProvider implements DatabaseProvider<GlobalState<MariaDBOpti
 		globalState.getState().statements.add(new QueryAdapter("USE " + databaseName));
 		// /?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
 		String url = "jdbc:mariadb://localhost:3306";
-		Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(), globalState.getOptions().getPassword());
+		Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
+				globalState.getOptions().getPassword());
 		try (Statement s = con.createStatement()) {
 			s.execute("DROP DATABASE IF EXISTS " + databaseName);
 		}

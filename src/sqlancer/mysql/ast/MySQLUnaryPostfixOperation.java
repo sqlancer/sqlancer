@@ -1,7 +1,5 @@
 package sqlancer.mysql.ast;
 
-import sqlancer.mysql.ast.MySQLConstant.MySQLIntConstant;
-
 public class MySQLUnaryPostfixOperation implements MySQLExpression {
 
 	private final MySQLExpression expression;
@@ -54,7 +52,7 @@ public class MySQLUnaryPostfixOperation implements MySQLExpression {
 		if (negate) {
 			val = !val;
 		}
-		return MySQLIntConstant.createIntConstant(val ? 1 : 0);
+		return MySQLConstant.createIntConstant(val ? 1 : 0);
 	}
 
 }

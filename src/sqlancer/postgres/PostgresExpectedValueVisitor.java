@@ -18,7 +18,7 @@ import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 
-public class PostgresExpectedValueVisitor implements PostgresVisitor {
+public final class PostgresExpectedValueVisitor implements PostgresVisitor {
 
 	private final StringBuilder sb = new StringBuilder();
 	private int nrTabs = 0;
@@ -103,7 +103,6 @@ public class PostgresExpectedValueVisitor implements PostgresVisitor {
 		visit(op.getRight());
 	}
 
-
 	@Override
 	public void visit(PostgresInOperation op) {
 		print(op);
@@ -136,7 +135,7 @@ public class PostgresExpectedValueVisitor implements PostgresVisitor {
 			visit(op.getEscapeCharacter());
 		}
 	}
-	
+
 	@Override
 	public void visit(PostgresPOSIXRegularExpression op) {
 		print(op);

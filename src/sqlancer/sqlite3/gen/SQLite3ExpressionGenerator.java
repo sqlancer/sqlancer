@@ -149,7 +149,7 @@ public class SQLite3ExpressionGenerator {
 		}
 		if (globalState.getDmbsSpecificOptions().testNullsFirstLast && Randomly.getBoolean()) {
 			expr = new SQLite3PostfixText(expr, Randomly.fromOptions(" NULLS FIRST", " NULLS LAST"),
-					null /*expr.getExpectedValue() */) {
+					null /* expr.getExpectedValue() */) {
 				@Override
 				public boolean omitBracketsWhenPrinting() {
 					return true;
@@ -159,8 +159,8 @@ public class SQLite3ExpressionGenerator {
 		return expr;
 	}
 
-	/***
-	 * 
+	/**
+	 *
 	 * @see https://www.sqlite.org/syntax/literal-value.html
 	 * @return
 	 */
@@ -350,8 +350,8 @@ public class SQLite3ExpressionGenerator {
 		switch (randomOption) {
 		// TODO case
 		case STANDARD_COMPARISON:
-			return new BinaryComparisonOperation(new SQLite3RowValueExpression(left), new SQLite3RowValueExpression(right),
-					BinaryComparisonOperator.getRandomRowValueOperator());
+			return new BinaryComparisonOperation(new SQLite3RowValueExpression(left),
+					new SQLite3RowValueExpression(right), BinaryComparisonOperator.getRandomRowValueOperator());
 		case BETWEEN:
 			return new BetweenOperation(getRandomRowValue(depth + 1, size), Randomly.getBoolean(),
 					new SQLite3RowValueExpression(left), new SQLite3RowValueExpression(right));
@@ -373,7 +373,7 @@ public class SQLite3ExpressionGenerator {
 		if (Randomly.getBoolean()) {
 			right = getRandomExpression(depth + 1);
 		} else {
-			right = SQLite3TextConstant.createTextConstant(SQLite3MatchStringGenerator.generateMatchString(r));
+			right = SQLite3Constant.createTextConstant(SQLite3MatchStringGenerator.generateMatchString(r));
 		}
 		return new MatchOperation(left, right);
 	}
@@ -464,7 +464,7 @@ public class SQLite3ExpressionGenerator {
 		JSON_REMOVE("json_remove", 2, Attribute.VARIADIC), JSON_TYPE("json_type", 1), //
 		JSON_VALID("json_valid", 1), //
 		JSON_QUOTE("json_quote", 1), //
-		
+
 		RTREENODE("rtreenode", 2),
 
 		// FTS
@@ -479,7 +479,7 @@ public class SQLite3ExpressionGenerator {
 //		fts5_expr_tcl("fts5_expr_tcl", 1),
 //		fts5_fold("fts5_fold", 1),
 //		fts5_isalnum("fts5_isalnum", 1);
-		
+
 		private int minNrArgs;
 		private boolean variadic;
 		private boolean deterministic;

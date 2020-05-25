@@ -96,12 +96,13 @@ public class SQLite3MetamorphicQuerySynthesizer implements TestOracle {
 			state.queryString = firstQueryString + ";\n" + secondQueryString + ";";
 			throw new AssertionError(firstCount + " " + secondCount);
 		}
-		if (firstCount != NOT_FOUND && secondCount != NOT_FOUND && (!firstValues.containsAll(secondValues) || !secondValues.containsAll(firstValues))) {
+		if (firstCount != NOT_FOUND && secondCount != NOT_FOUND
+				&& (!firstValues.containsAll(secondValues) || !secondValues.containsAll(firstValues))) {
 			state.queryString = firstQueryString + ";\n" + secondQueryString + ";";
 			throw new AssertionError(firstCount + " " + secondCount + "\n" + firstValues + "\n" + secondValues);
 		}
 	}
-		
+
 	private SQLite3Expression getRandomWhereCondition(List<SQLite3Column> columns) {
 		if (Randomly.getBoolean()) {
 			errors.add("SQL logic error");

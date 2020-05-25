@@ -91,7 +91,8 @@ public class PostgresPivotedQuerySynthesisGenerator implements TestOracle {
 			PostgresExpression offsetClause = generateOffset();
 			selectStatement.setOffsetClause(offsetClause);
 		}
-		List<PostgresExpression> orderBy = new PostgresExpressionGenerator(globalState).setColumns(columns).generateOrderBy();
+		List<PostgresExpression> orderBy = new PostgresExpressionGenerator(globalState).setColumns(columns)
+				.generateOrderBy();
 		selectStatement.setOrderByExpressions(orderBy);
 
 		StringBuilder sb2 = new StringBuilder();

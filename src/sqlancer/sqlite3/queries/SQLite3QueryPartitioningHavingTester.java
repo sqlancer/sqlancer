@@ -30,7 +30,7 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
 public class SQLite3QueryPartitioningHavingTester implements TestOracle {
-	
+
 	private final SQLite3GlobalState state;
 	private final Set<String> errors = new HashSet<>();
 
@@ -45,7 +45,8 @@ public class SQLite3QueryPartitioningHavingTester implements TestOracle {
 	public void check() throws SQLException {
 		SQLite3Schema s = state.getSchema();
 		SQLite3Tables targetTables = s.getRandomTableNonEmptyTables();
-		List<SQLite3Expression> groupByColumns = Randomly.nonEmptySubset(targetTables.getColumns()).stream().map(c -> new SQLite3ColumnName(c, null)).collect(Collectors.toList());
+		List<SQLite3Expression> groupByColumns = Randomly.nonEmptySubset(targetTables.getColumns()).stream()
+				.map(c -> new SQLite3ColumnName(c, null)).collect(Collectors.toList());
 		List<SQLite3Column> columns = targetTables.getColumns();
 		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(state).setColumns(columns);
 		SQLite3Select select = new SQLite3Select();
@@ -60,9 +61,10 @@ public class SQLite3QueryPartitioningHavingTester implements TestOracle {
 		select.setGroupByClause(groupByColumns);
 		select.setHavingClause(null);
 		String originalQueryString = SQLite3Visitor.asString(select);
-		
-		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors, state.getConnection(), state);
-		
+
+		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
+				state.getConnection(), state);
+
 		SQLite3Expression predicate = gen.getHavingClause();
 		select.setHavingClause(predicate);
 		String firstQueryString = SQLite3Visitor.asString(select);
@@ -74,7 +76,8 @@ public class SQLite3QueryPartitioningHavingTester implements TestOracle {
 		if (combinedString.contains("EXIST")) {
 			throw new IgnoreMeException();
 		}
-		List<String> secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors, state.getConnection(), state);
+		List<String> secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors,
+				state.getConnection(), state);
 		if (state.getOptions().logEachSelect()) {
 			state.getLogger().writeCurrent(originalQueryString);
 			state.getLogger().writeCurrent(combinedString);

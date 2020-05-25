@@ -112,7 +112,8 @@ public class SQLite3TableGenerator {
 			addForeignKey();
 		}
 
-		if (globalState.getDmbsSpecificOptions().testCheckConstraints && Randomly.getBooleanWithRatherLowProbability()) {
+		if (globalState.getDmbsSpecificOptions().testCheckConstraints
+				&& Randomly.getBooleanWithRatherLowProbability()) {
 			sb.append(SQLite3Common.getCheckConstraint(globalState, columns));
 		}
 

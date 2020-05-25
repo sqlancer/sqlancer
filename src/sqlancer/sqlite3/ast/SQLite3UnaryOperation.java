@@ -25,13 +25,11 @@ public class SQLite3UnaryOperation extends SQLite3Expression implements UnaryOpe
 		}
 	}
 
-
-
 	/**
 	 * Supported unary prefix operators are these:
-	 * 
+	 *
 	 * - + ~ NOT
-	 * 
+	 *
 	 * @see https://www.sqlite.org/lang_expr.html
 	 *
 	 */
@@ -125,6 +123,7 @@ public class SQLite3UnaryOperation extends SQLite3Expression implements UnaryOpe
 		return operation;
 	}
 
+	@Override
 	public SQLite3Expression getExpression() {
 		return expression;
 	}

@@ -35,9 +35,7 @@ public abstract class NewToStringVisitor<E> {
 			visit((NewPostfixTextNode<E>) expr);
 		} else if (expr instanceof NewTernaryNode<?>) {
 			visit((NewTernaryNode<E>) expr);
-		}
-		
-		else {
+		} else {
 			visitSpecific(expr);
 		}
 	}
@@ -50,7 +48,7 @@ public abstract class NewToStringVisitor<E> {
 			visit(expressions.get(i));
 		}
 	}
-	
+
 	public void visit(NewPostfixTextNode<E> postFixText) {
 		visit(postFixText.getExpr());
 		sb.append(postFixText.getText());
@@ -59,23 +57,23 @@ public abstract class NewToStringVisitor<E> {
 	public void visit(TableReferenceNode<E, ?> tableRef) {
 		sb.append(tableRef.getTable().getName());
 	}
-	
+
 	public void visit(NewAliasNode<E> alias) {
 		visit(alias.getExpr());
 		sb.append(" AS ");
 		sb.append(alias.getAlias());
 	}
-	
+
 	public void visit(NewOrderingTerm<E> ordering) {
 		visit(ordering.getExpr());
 		sb.append(" ");
 		sb.append(ordering.getOrdering());
 	}
-	
+
 	public void visit(NewCaseOperatorNode<E> op) {
 		sb.append("(CASE ");
 		visit(op.getSwitchCondition());
-		for (int i =0; i < op.getConditions().size(); i++) {
+		for (int i = 0; i < op.getConditions().size(); i++) {
 			sb.append(" WHEN ");
 			visit(op.getConditions().get(i));
 			sb.append(" THEN ");
@@ -87,7 +85,6 @@ public abstract class NewToStringVisitor<E> {
 		}
 		sb.append(" END )");
 	}
-	
 
 	public void visit(NewBetweenOperatorNode<E> opNode) {
 		sb.append("(");
@@ -102,7 +99,6 @@ public abstract class NewToStringVisitor<E> {
 		sb.append(")");
 	}
 
-	
 	public void visit(NewUnaryPostfixOperatorNode<E> opNode) {
 		sb.append("((");
 		visit(opNode.getExpr());
@@ -117,7 +113,7 @@ public abstract class NewToStringVisitor<E> {
 		visit(funcCall.getArgs());
 		sb.append(")");
 	}
-	
+
 	public void visit(NewInOperatorNode<E> in) {
 		sb.append("(");
 		visit(in.getLeft());
@@ -129,7 +125,6 @@ public abstract class NewToStringVisitor<E> {
 		sb.append("))");
 	}
 
-	
 	public void visit(NewUnaryPrefixOperatorNode<E> opNode) {
 		sb.append("(");
 		sb.append(opNode.getOperatorRepresentation());
@@ -152,7 +147,6 @@ public abstract class NewToStringVisitor<E> {
 		sb.append(")");
 	}
 
-	
 	public void visit(NewTernaryNode<E> ternaryNode) {
 		sb.append("(");
 		visit(ternaryNode.getLeft());
@@ -166,7 +160,7 @@ public abstract class NewToStringVisitor<E> {
 		visit(ternaryNode.getRight());
 		sb.append(")");
 	}
-	
+
 	public String get() {
 		return sb.toString();
 	}

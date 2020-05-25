@@ -13,6 +13,9 @@ import sqlancer.postgres.PostgresVisitor;
 
 public class PostgresDeleteGenerator {
 
+	private PostgresDeleteGenerator() {
+	}
+
 	public static Query create(PostgresGlobalState globalState) {
 		PostgresTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
 		Set<String> errors = new HashSet<>();
@@ -27,12 +30,13 @@ public class PostgresDeleteGenerator {
 		sb.append(table.getName());
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
-			sb.append(PostgresVisitor.asString(
-					PostgresExpressionGenerator.generateExpression(globalState, table.getColumns(), PostgresDataType.BOOLEAN)));
+			sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(globalState,
+					table.getColumns(), PostgresDataType.BOOLEAN)));
 		}
 		if (Randomly.getBoolean()) {
 			sb.append(" RETURNING ");
-			sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(globalState, table.getColumns())));
+			sb.append(PostgresVisitor
+					.asString(PostgresExpressionGenerator.generateExpression(globalState, table.getColumns())));
 		}
 		PostgresCommon.addCommonExpressionErrors(errors);
 		errors.add("out of range");

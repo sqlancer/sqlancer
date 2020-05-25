@@ -1,7 +1,7 @@
 package sqlancer.ast.newast;
 
 public class NewBetweenOperatorNode<T> implements Node<T> {
-	
+
 	protected Node<T> left;
 	protected Node<T> middle;
 	protected Node<T> right;
@@ -13,15 +13,15 @@ public class NewBetweenOperatorNode<T> implements Node<T> {
 		this.right = right;
 		this.isTrue = isTrue;
 	}
-	
+
 	public Node<T> getLeft() {
 		return left;
 	}
-	
+
 	public Node<T> getMiddle() {
 		return middle;
 	}
-	
+
 	public Node<T> getRight() {
 		return right;
 	}
@@ -29,5 +29,5 @@ public class NewBetweenOperatorNode<T> implements Node<T> {
 	public boolean isTrue() {
 		return isTrue;
 	}
-	
+
 }

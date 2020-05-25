@@ -53,11 +53,11 @@ public class CockroachDBAggregate implements CockroachDBExpression {
 			@Override
 			public List<CockroachDBDataType> getTypes(CockroachDBDataType returnType) {
 				return Arrays.asList(returnType, returnType);
-			}//
-		},
+			}
+		}, //
 		CONCAT_AGG(CockroachDBDataType.STRING, CockroachDBDataType.BYTES);
 
-		private CockroachDBDataType supportedReturnTypes[];
+		private CockroachDBDataType[] supportedReturnTypes;
 
 		public List<CockroachDBDataType> getTypes(CockroachDBDataType returnType) {
 			return Arrays.asList(returnType);

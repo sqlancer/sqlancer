@@ -17,6 +17,9 @@ import sqlancer.postgres.ast.PostgresSelect.SelectType;
 
 public class PostgresRandomQueryGenerator {
 
+	private PostgresRandomQueryGenerator() {
+	}
+
 	public static PostgresSelect createRandomQuery(int nrColumns, PostgresGlobalState globalState) {
 		List<PostgresExpression> columns = new ArrayList<>();
 		PostgresTables tables = globalState.getSchema().getRandomTableNonEmptyTables();
@@ -29,7 +32,8 @@ public class PostgresRandomQueryGenerator {
 		if (select.getSelectOption() == SelectType.DISTINCT && Randomly.getBoolean()) {
 			select.setDistinctOnClause(gen.generateExpression(0));
 		}
-		select.setFromList(tables.getTables().stream().map(t -> new PostgresFromTable(t, Randomly.getBoolean())).collect(Collectors.toList()));
+		select.setFromList(tables.getTables().stream().map(t -> new PostgresFromTable(t, Randomly.getBoolean()))
+				.collect(Collectors.toList()));
 		select.setFetchColumns(columns);
 		if (Randomly.getBoolean()) {
 			select.setWhereClause(gen.generateExpression(0, PostgresDataType.BOOLEAN));
@@ -46,7 +50,8 @@ public class PostgresRandomQueryGenerator {
 		if (Randomly.getBoolean()) {
 			select.setLimitClause(PostgresConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
 			if (Randomly.getBoolean()) {
-				select.setOffsetClause(PostgresConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
+				select.setOffsetClause(
+						PostgresConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
 			}
 		}
 		if (Randomly.getBooleanWithRatherLowProbability()) {

@@ -16,6 +16,9 @@ import sqlancer.postgres.ast.PostgresExpression;
 
 public class PostgresInsertGenerator {
 
+	private PostgresInsertGenerator() {
+	}
+
 	public static Query insert(PostgresGlobalState globalState) {
 		PostgresTable table = globalState.getSchema().getRandomTable(t -> t.isInsertable());
 		Set<String> errors = new HashSet<>();

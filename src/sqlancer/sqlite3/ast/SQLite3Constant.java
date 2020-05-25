@@ -106,7 +106,6 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 			}
 		}
 
-
 		@Override
 		public SQLite3Constant applyNumericAffinity() {
 			return this;
@@ -197,7 +196,6 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 			}
 		}
 
-
 		@Override
 		public SQLite3Constant applyNumericAffinity() {
 			return this;
@@ -242,8 +240,6 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 
 	}
 
-
-
 	public static class SQLite3TextConstant extends SQLite3Constant {
 
 		private final String text;
@@ -271,7 +267,6 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		public SQLite3DataType getDataType() {
 			return SQLite3DataType.TEXT;
 		}
-
 
 		@Override
 		public SQLite3Constant applyEquals(SQLite3Constant right, SQLite3CollateSequence collate) {
@@ -438,7 +433,6 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 		public byte[] asBinary() {
 			return bytes;
 		}
-
 
 		@Override
 		public SQLite3Constant applyNumericAffinity() {

@@ -62,7 +62,7 @@ public class MariaDBExpressionGenerator {
 	}
 
 	public MariaDBExpressionGenerator setColumns(List<MariaDBColumn> columns) {
-		this.columns  = columns;
+		this.columns = columns;
 		return this;
 	}
 
@@ -73,11 +73,10 @@ public class MariaDBExpressionGenerator {
 	public MariaDBExpressionGenerator setState(MariaDBStateToReproduce state) {
 		return this;
 	}
-	
+
 	private enum ExpressionType {
 		LITERAL, COLUMN, BINARY_COMPARISON, UNARY_POSTFIX_OPERATOR, UNARY_PREFIX_OPERATOR, FUNCTION, IN
 	}
-	
 
 	public MariaDBExpression getRandomExpression(int depth) {
 		if (depth >= MariaDBProvider.MAX_EXPRESSION_DEPTH || Randomly.getBoolean()) {
@@ -98,21 +97,24 @@ public class MariaDBExpressionGenerator {
 		case LITERAL:
 			return getRandomConstant(r);
 		case BINARY_COMPARISON:
-			return new MariaDBBinaryOperator(getRandomExpression(depth + 1), getRandomExpression(depth + 1), MariaDBBinaryComparisonOperator.getRandom());
+			return new MariaDBBinaryOperator(getRandomExpression(depth + 1), getRandomExpression(depth + 1),
+					MariaDBBinaryComparisonOperator.getRandom());
 		case UNARY_PREFIX_OPERATOR:
-			return new MariaDBUnaryPrefixOperation(getRandomExpression(depth + 1), MariaDBUnaryPrefixOperator.getRandom());
+			return new MariaDBUnaryPrefixOperation(getRandomExpression(depth + 1),
+					MariaDBUnaryPrefixOperator.getRandom());
 		case UNARY_POSTFIX_OPERATOR:
-			return new MariaDBPostfixUnaryOperation(MariaDBPostfixUnaryOperator.getRandom(), getRandomExpression(depth + 1));
+			return new MariaDBPostfixUnaryOperation(MariaDBPostfixUnaryOperator.getRandom(),
+					getRandomExpression(depth + 1));
 		case FUNCTION:
 			MariaDBFunctionName func = MariaDBFunctionName.getRandom();
 			return new MariaDBFunction(func, getArgs(func, depth + 1));
 		case IN:
-			return new MariaDBInOperation(getRandomExpression(depth + 1), getSmallNumberRandomExpressions(depth + 1), Randomly.getBoolean());
+			return new MariaDBInOperation(getRandomExpression(depth + 1), getSmallNumberRandomExpressions(depth + 1),
+					Randomly.getBoolean());
 		default:
 			throw new AssertionError(expressionType);
 		}
 	}
-
 
 	private List<MariaDBExpression> getSmallNumberRandomExpressions(int depth) {
 		List<MariaDBExpression> expressions = new ArrayList<>();

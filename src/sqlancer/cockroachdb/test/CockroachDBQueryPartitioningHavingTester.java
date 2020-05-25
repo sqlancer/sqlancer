@@ -46,11 +46,10 @@ public class CockroachDBQueryPartitioningHavingTester extends CockroachDBQueryPa
 				thirdQueryString, combinedString, !orderBy, state, errors);
 		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
 	}
-	
 
 	@Override
 	CockroachDBExpression generatePredicate() {
 		return gen.generateHavingClause();
 	}
-	
+
 }

@@ -14,32 +14,32 @@ public class TiDBErrors {
 		errors.add("overflows bigint");
 		errors.add("strconv.ParseFloat: parsing");
 		errors.add("in 'order clause'"); // int constants in order by clause
-		
+
 		// functions
 		errors.add("BIGINT value is out of range");
 		errors.add("doesn't have a default value"); // default
-		
+
 		// known issue: https://github.com/pingcap/tidb/issues/14819
 		errors.add("Wrong plan type for dataReaderBuilder");
-		
+
 		errors.add("DOUBLE value is out of range");
-		
+
 		errors.add("index out of range"); // https://github.com/pingcap/tidb/issues/15810
 		errors.add("baseBuiltinFunc.evalString() should never be called, please contact the TiDB team for help"); // https://github.com/pingcap/tidb/issues/15847
 		errors.add("unsupport column type for encode 6"); // https://github.com/pingcap/tidb/issues/15850
-		
+
 		errors.add("Data truncation: %s value is out of range in '%s'");
 		errors.add("Truncated incorrect FLOAT value");
 		errors.add("Bad Number");
-		
+
 		// regex
 		errors.add("error parsing regexp");
-		
+
 		// https://github.com/tidb-challenge-program/bug-hunting-issue/issues/57
 		errors.add("For input string: \"+Inf\"");
-		
+
 		errors.add("inconsistent index"); // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/58
-		
+
 		errors.add("Illegal mix of collations");
 	}
 
@@ -66,7 +66,7 @@ public class TiDBErrors {
 		errors.add("Incorrect bigint value");
 		errors.add("Incorrect decimal value");
 		errors.add("error parsing regexp");
-		
+
 		if (true) {
 			// https://github.com/tidb-challenge-program/bug-hunting-issue/issues/54
 			errors.add("Miss column");

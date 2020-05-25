@@ -27,6 +27,7 @@ public class ClickhouseExpressionGenerator
 		UNARY_POSTFIX, UNARY_PREFIX, BINARY_COMPARISON, BINARY_LOGICAL
 	}
 
+	@Override
 	protected Node<ClickhouseExpression> generateExpression(int depth) {
 		if (depth >= globalState.getOptions().getMaxExpressionDepth() || Randomly.getBoolean()) {
 			return generateLeafNode();

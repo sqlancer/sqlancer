@@ -9,7 +9,7 @@ public class TiDBTableReference implements TiDBExpression {
 	public TiDBTableReference(TiDBTable table) {
 		this.table = table;
 	}
-	
+
 	public TiDBTable getTable() {
 		return table;
 	}

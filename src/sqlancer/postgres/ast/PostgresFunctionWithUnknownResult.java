@@ -8,7 +8,7 @@ import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
 public enum PostgresFunctionWithUnknownResult {
-	
+
 	ABBREV("abbrev", PostgresDataType.TEXT, PostgresDataType.INET),
 	BROADCAST("broadcast", PostgresDataType.INET, PostgresDataType.INET),
 	FAMILY("family", PostgresDataType.INT, PostgresDataType.INET),
@@ -19,11 +19,10 @@ public enum PostgresFunctionWithUnknownResult {
 	TEXT("text", PostgresDataType.TEXT, PostgresDataType.INET),
 	INET_SAME_FAMILY("inet_same_family", PostgresDataType.BOOLEAN, PostgresDataType.INET, PostgresDataType.INET),
 
-	
 	// https://www.postgresql.org/docs/devel/functions-admin.html#FUNCTIONS-ADMIN-SIGNAL-TABLE
 //	PG_RELOAD_CONF("pg_reload_conf", PostgresDataType.BOOLEAN), // too much output
 //	PG_ROTATE_LOGFILE("pg_rotate_logfile", PostgresDataType.BOOLEAN), prints warning
-	
+
 	// https://www.postgresql.org/docs/devel/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE
 	CURRENT_DATABASE("current_database", PostgresDataType.TEXT), // name
 //	CURRENT_QUERY("current_query", PostgresDataType.TEXT), // can generate false positives
@@ -36,20 +35,18 @@ public enum PostgresFunctionWithUnknownResult {
 	PG_IS_OTHER_TEMP_SCHEMA("pg_is_other_temp_schema", PostgresDataType.BOOLEAN),
 	PG_JIT_AVAILABLE("pg_jit_available", PostgresDataType.BOOLEAN),
 	PG_NOTIFICATION_QUEUE_USAGE("pg_notification_queue_usage", PostgresDataType.REAL),
-	PG_TRIGGER_DEPTH("pg_trigger_depth", PostgresDataType.INT),
-	VERSION("version", PostgresDataType.TEXT),
+	PG_TRIGGER_DEPTH("pg_trigger_depth", PostgresDataType.INT), VERSION("version", PostgresDataType.TEXT),
 
-	
-	// 
+	//
 	TO_CHAR("to_char", PostgresDataType.TEXT, PostgresDataType.TEXT, PostgresDataType.TEXT) {
 		@Override
 		public PostgresExpression[] getArguments(PostgresDataType returnType, PostgresExpressionGenerator gen) {
 			PostgresExpression[] args = super.getArguments(returnType, gen);
 			args[0] = gen.generateExpression(PostgresDataType.getRandomType());
-			return args;		
+			return args;
 		}
 	},
-	
+
 	// String functions
 	ASCII("ascii", PostgresDataType.INT, PostgresDataType.TEXT),
 	BTRIM("btrim", PostgresDataType.TEXT, PostgresDataType.TEXT, PostgresDataType.TEXT),
@@ -74,7 +71,8 @@ public enum PostgresFunctionWithUnknownResult {
 	QUOTE_LITERAL("quote_literal", PostgresDataType.TEXT, PostgresDataType.TEXT),
 	QUOTE_IDENT("quote_ident", PostgresDataType.TEXT, PostgresDataType.TEXT),
 	REGEX_REPLACE("regex_replace", PostgresDataType.TEXT, PostgresDataType.TEXT, PostgresDataType.TEXT),
-	//	REPEAT("repeat", PostgresDataType.TEXT, PostgresDataType.TEXT, PostgresDataType.INT),
+	// REPEAT("repeat", PostgresDataType.TEXT, PostgresDataType.TEXT,
+	// PostgresDataType.INT),
 	REPLACE("replace", PostgresDataType.TEXT, PostgresDataType.TEXT, PostgresDataType.TEXT),
 	REVERSE("reverse", PostgresDataType.TEXT, PostgresDataType.TEXT),
 	RIGHT("right", PostgresDataType.TEXT, PostgresDataType.TEXT, PostgresDataType.INT),
@@ -89,12 +87,10 @@ public enum PostgresFunctionWithUnknownResult {
 	// mathematical functions
 	// https://www.postgresql.org/docs/9.5/functions-math.html
 	ABS("abs", PostgresDataType.REAL, PostgresDataType.REAL),
-	CBRT("cbrt", PostgresDataType.REAL, PostgresDataType.REAL),
-	CEILING("ceiling", PostgresDataType.REAL), //
-	DEGREES("degrees", PostgresDataType.REAL),
-	EXP("exp", PostgresDataType.REAL), LN("ln", PostgresDataType.REAL), LOG("log", PostgresDataType.REAL),
-	LOG2("log", PostgresDataType.REAL, PostgresDataType.REAL), PI("pi", PostgresDataType.REAL),
-	POWER("power", PostgresDataType.REAL, PostgresDataType.REAL),
+	CBRT("cbrt", PostgresDataType.REAL, PostgresDataType.REAL), CEILING("ceiling", PostgresDataType.REAL), //
+	DEGREES("degrees", PostgresDataType.REAL), EXP("exp", PostgresDataType.REAL), LN("ln", PostgresDataType.REAL),
+	LOG("log", PostgresDataType.REAL), LOG2("log", PostgresDataType.REAL, PostgresDataType.REAL),
+	PI("pi", PostgresDataType.REAL), POWER("power", PostgresDataType.REAL, PostgresDataType.REAL),
 	TRUNC("trunc", PostgresDataType.REAL, PostgresDataType.INT),
 	TRUNC2("trunc", PostgresDataType.REAL, PostgresDataType.INT, PostgresDataType.REAL),
 	FLOOR("floor", PostgresDataType.REAL),
@@ -117,7 +113,7 @@ public enum PostgresFunctionWithUnknownResult {
 	SIND("sind", PostgresDataType.REAL), //
 	TAN("tan", PostgresDataType.REAL), //
 	TAND("tand", PostgresDataType.REAL), //
-	
+
 	// hyperbolic functions - complete
 	// https://www.postgresql.org/docs/12/functions-math.html#FUNCTIONS-MATH-HYP-TABLE
 	SINH("sinh", PostgresDataType.REAL), //
@@ -127,12 +123,12 @@ public enum PostgresFunctionWithUnknownResult {
 	ACOSH("acosh", PostgresDataType.REAL), //
 	ATANH("atanh", PostgresDataType.REAL), //
 
-
 	// https://www.postgresql.org/docs/devel/functions-binarystring.html
 	GET_BIT("get_bit", PostgresDataType.INT, PostgresDataType.TEXT, PostgresDataType.INT),
 	GET_BYTE("get_byte", PostgresDataType.INT, PostgresDataType.TEXT, PostgresDataType.INT),
-	
-	// range functions https://www.postgresql.org/docs/devel/functions-range.html#RANGE-FUNCTIONS-TABLE
+
+	// range functions
+	// https://www.postgresql.org/docs/devel/functions-range.html#RANGE-FUNCTIONS-TABLE
 	RANGE_LOWER("lower", PostgresDataType.INT, PostgresDataType.RANGE), //
 	RANGE_UPPER("upper", PostgresDataType.INT, PostgresDataType.RANGE), //
 	RANGE_ISEMPTY("isempty", PostgresDataType.BOOLEAN, PostgresDataType.RANGE), //
@@ -142,21 +138,16 @@ public enum PostgresFunctionWithUnknownResult {
 	RANGE_UPPER_INF("upper_inf", PostgresDataType.BOOLEAN, PostgresDataType.RANGE), //
 	RANGE_MERGE("range_merge", PostgresDataType.RANGE, PostgresDataType.RANGE, PostgresDataType.RANGE), //
 
-	
-
 	// https://www.postgresql.org/docs/devel/functions-admin.html#FUNCTIONS-ADMIN-DBSIZE
 	GET_COLUMN_SIZE("get_column_size", PostgresDataType.INT, PostgresDataType.TEXT);
 //	PG_DATABASE_SIZE("pg_database_size", PostgresDataType.INT, PostgresDataType.INT);
 //	PG_SIZE_BYTES("pg_size_bytes", PostgresDataType.INT, PostgresDataType.TEXT);
-	
-	
-	
-	
+
 	private String functionName;
 	private PostgresDataType returnType;
 	private PostgresDataType[] argTypes;
 
-	private PostgresFunctionWithUnknownResult(String functionName, PostgresDataType returnType,
+	PostgresFunctionWithUnknownResult(String functionName, PostgresDataType returnType,
 			PostgresDataType... indexType) {
 		this.functionName = functionName;
 		this.returnType = returnType;

@@ -112,9 +112,8 @@ public class MySQLSetGenerator {
 				Scope.SESSION),
 //		SQL_REQUIRE_PRIMARY_KEY("sql_require_primary_key", (r) -> Randomly.fromOptions("OFF", "ON"), Scope.GLOBAL),
 		TMP_TABLE_SIZE("tmp_table_size", (r) -> r.getLong(1024, Long.MAX_VALUE), Scope.GLOBAL, Scope.SESSION),
-		UNIQUE_CHECKS("unique_checks", (r) -> Randomly.fromOptions("OFF", "ON"), Scope.GLOBAL, Scope.SESSION)
+		UNIQUE_CHECKS("unique_checks", (r) -> Randomly.fromOptions("OFF", "ON"), Scope.GLOBAL, Scope.SESSION);
 		// TODO: https://dev.mysql.com/doc/refman/8.0/en/switchable-optimizations.html
-		;
 
 		private String name;
 		private Function<Randomly, Object> prod;

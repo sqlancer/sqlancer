@@ -4,7 +4,6 @@ import java.util.List;
 
 public class NewInOperatorNode<T> implements Node<T> {
 
-
 	private Node<T> left;
 	private List<Node<T>> right;
 	private boolean isNegated;
@@ -18,14 +17,13 @@ public class NewInOperatorNode<T> implements Node<T> {
 	public Node<T> getLeft() {
 		return left;
 	}
-	
+
 	public List<Node<T>> getRight() {
 		return right;
 	}
-	
+
 	public boolean isNegated() {
 		return isNegated;
 	}
 
-	
 }

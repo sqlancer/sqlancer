@@ -10,11 +10,11 @@ import sqlancer.cockroachdb.ast.CockroachDBIndexReference;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 
 public class CockroachDBCommon {
-	
+
 	public static String getRandomCollate() {
 		return Randomly.fromOptions("en", "de", "es", "cmn");
 	}
-	
+
 	public static List<CockroachDBExpression> getTableReferences(List<CockroachDBTableReference> tableList) {
 		List<CockroachDBExpression> from = new ArrayList<>();
 		for (CockroachDBTableReference t : tableList) {

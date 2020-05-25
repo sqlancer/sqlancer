@@ -21,7 +21,7 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
 			throw new AssertionError(expr.getClass());
 		}
 	}
-	
+
 	private void visit(DuckDBJoin join) {
 		visit(join.getLeftTable());
 		sb.append(" ");

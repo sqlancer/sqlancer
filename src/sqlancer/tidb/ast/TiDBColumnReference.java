@@ -9,9 +9,9 @@ public class TiDBColumnReference implements TiDBExpression {
 	public TiDBColumnReference(TiDBColumn c) {
 		this.c = c;
 	}
-	
+
 	public TiDBColumn getColumn() {
 		return c;
 	}
-	
+
 }

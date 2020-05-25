@@ -8,25 +8,25 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class QueryAdapter extends Query {
-	
+
 	private final String query;
 	private final Collection<String> expectedErrors;
 	private final boolean couldAffectSchema;
-	
+
 	public QueryAdapter(String query) {
 		this(query, new ArrayList<>());
 	}
-	
+
 	public QueryAdapter(String query, boolean couldAffectSchema) {
 		this(query, new ArrayList<>(), couldAffectSchema);
 	}
-	
+
 	public QueryAdapter(String query, Collection<String> expectedErrors) {
 		this.query = query;
 		this.expectedErrors = expectedErrors;
 		this.couldAffectSchema = false;
 	}
-	
+
 	public QueryAdapter(String query, Collection<String> expectedErrors, boolean couldAffectSchema) {
 		this.query = query;
 		this.expectedErrors = expectedErrors;
@@ -63,7 +63,7 @@ public class QueryAdapter extends Query {
 			throw new AssertionError(query, e);
 		}
 	}
-	
+
 	@Override
 	public ResultSet executeAndGet(Connection con) throws SQLException {
 		Statement s = con.createStatement();
@@ -98,5 +98,5 @@ public class QueryAdapter extends Query {
 	public Collection<String> getExpectedErrors() {
 		return expectedErrors;
 	}
-	
+
 }

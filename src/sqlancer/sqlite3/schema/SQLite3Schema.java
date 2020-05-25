@@ -114,7 +114,7 @@ public class SQLite3Schema {
 		}
 
 	}
-	
+
 	public static SQLite3Constant getConstant(ResultSet randomRowValues, int columnIndex, SQLite3DataType valueType)
 			throws SQLException, AssertionError {
 		Object value;
@@ -215,11 +215,10 @@ public class SQLite3Schema {
 
 	}
 
-
-	public static class SQLite3Table  extends AbstractTable<SQLite3Column, TableIndex> {
+	public static class SQLite3Table extends AbstractTable<SQLite3Column, TableIndex> {
 		// TODO: why does the SQLite implementation have no table indexes?
 
-		public static enum TableKind {
+		public enum TableKind {
 			MAIN, TEMP;
 		}
 
@@ -243,7 +242,6 @@ public class SQLite3Schema {
 		public boolean hasWithoutRowid() {
 			return withoutRowid;
 		}
-
 
 		public void addRowid(SQLite3Column rowid) {
 			this.rowid = rowid;
@@ -366,7 +364,7 @@ public class SQLite3Schema {
 		}
 	}
 
-	static public SQLite3Schema fromConnection(Connection con) throws SQLException {
+	public static SQLite3Schema fromConnection(Connection con) throws SQLException {
 		List<SQLite3Table> databaseTables = new ArrayList<>();
 		List<String> indexNames = new ArrayList<>();
 
@@ -388,7 +386,7 @@ public class SQLite3Schema {
 							|| tableName.endsWith("_segdir") || tableName.endsWith("_stat")
 							|| tableName.endsWith("_segments") || tableName.contains("_")) {
 						isReadOnly = true;
-						continue; //  TODO
+						continue; // TODO
 					} else if (sqlString.contains("using dbstat")) {
 						isReadOnly = true;
 					} else if (sqlString.contains("content=''")) {
@@ -400,11 +398,12 @@ public class SQLite3Schema {
 					boolean isView = tableType.contentEquals("view");
 					boolean isVirtual = sqlString.contains("virtual");
 					boolean isDbStatsTable = sqlString.contains("using dbstat");
-					List<SQLite3Column> databaseColumns = getTableColumns(con, tableName, sqlString, isView, isDbStatsTable);
+					List<SQLite3Column> databaseColumns = getTableColumns(con, tableName, sqlString, isView,
+							isDbStatsTable);
 					int nrRows;
 					try {
 						// FIXME
-						nrRows =  getNrRows(con, tableName);
+						nrRows = getNrRows(con, tableName);
 					} catch (IgnoreMeException e) {
 						nrRows = 0;
 					}
@@ -424,7 +423,7 @@ public class SQLite3Schema {
 								rowid.setTable(t);
 							}
 						}
-					} 
+					}
 					for (SQLite3Column c : databaseColumns) {
 						c.setTable(t);
 					}
@@ -448,8 +447,8 @@ public class SQLite3Schema {
 		return new SQLite3Schema(databaseTables, indexNames);
 	}
 
-	private static List<SQLite3Column> getTableColumns(Connection con, String tableName, String sql, boolean isView, boolean isDbStatsTable)
-			throws SQLException {
+	private static List<SQLite3Column> getTableColumns(Connection con, String tableName, String sql, boolean isView,
+			boolean isDbStatsTable) throws SQLException {
 		List<SQLite3Column> databaseColumns = new ArrayList<>();
 		try (Statement s2 = con.createStatement()) {
 			String tableInfoStr = String.format("PRAGMA table_xinfo(%s)", tableName);

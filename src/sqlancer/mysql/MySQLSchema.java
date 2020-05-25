@@ -32,7 +32,6 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
 		public static MySQLDataType getRandom() {
 			return Randomly.fromOptions(values());
 		}
-		
 
 		public boolean isNumeric() {
 			switch (this) {
@@ -47,7 +46,7 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
 				throw new AssertionError(this);
 			}
 		}
-	
+
 	}
 
 	public static class MySQLColumn extends AbstractTableColumn<MySQLTable, MySQLDataType> {
@@ -270,6 +269,7 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
 			return new MySQLIndex(indexName);
 		}
 
+		@Override
 		public String getIndexName() {
 			if (super.getIndexName().contentEquals("PRIMARY")) {
 				return "`PRIMARY`";

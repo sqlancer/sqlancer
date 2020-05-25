@@ -39,7 +39,9 @@ public class TiDBIndexGenerator {
 			}
 			sb.append(subset.get(i).getName());
 			if (!randomTable.isView()) {
-				// TODO: otherwise: Incorrect prefix key; the used key part isn't a string, the used length is longer than the key part, or the storage engine doesn't support unique prefix keys
+				// TODO: otherwise: Incorrect prefix key; the used key part isn't a string, the
+				// used length is longer than the key part, or the storage engine doesn't
+				// support unique prefix keys
 				TiDBTableGenerator.appendSpecifiers(sb, subset.get(i).getType().getPrimitiveDataType());
 			}
 			if (Randomly.getBoolean()) {

@@ -96,7 +96,6 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQL
 						}
 						indexName = rs.getString("name");
 					}
-					;
 				}
 				sb.append(" VALUES");
 				sb.append("('");
@@ -194,7 +193,7 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQL
 		globalState.setRandomly(r);
 		StateLogger logger = globalState.getLogger();
 		this.state = (SQLite3StateToReproduce) globalState.getState();
-		globalState.setState((SQLite3StateToReproduce) state);
+		globalState.setState(state);
 		if (globalState.getDmbsSpecificOptions().generateDatabase) {
 
 			addSensiblePragmaDefaults(con);

@@ -35,20 +35,18 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 
 	public static enum Action implements AbstractAction<DuckDBGlobalState> {
 
-		INSERT(DuckDBInsertGenerator::getQuery),
-		CREATE_INDEX(DuckDBIndexGenerator::getQuery),
-		VACUUM((g) -> new QueryAdapter("VACUUM;")),
-		ANALYZE((g) -> new QueryAdapter("ANALYZE;")),
-		DELETE(DuckDBDeleteGenerator::generate),
-		UPDATE(DuckDBUpdateGenerator::getQuery),
-		CREATE_VIEW(DuckDBViewGenerator::generate),
-		EXPLAIN((g) -> {
+		INSERT(DuckDBInsertGenerator::getQuery), CREATE_INDEX(DuckDBIndexGenerator::getQuery),
+		VACUUM((g) -> new QueryAdapter("VACUUM;")), ANALYZE((g) -> new QueryAdapter("ANALYZE;")),
+		DELETE(DuckDBDeleteGenerator::generate), UPDATE(DuckDBUpdateGenerator::getQuery),
+		CREATE_VIEW(DuckDBViewGenerator::generate), EXPLAIN((g) -> {
 			Set<String> errors = new HashSet<>();
-			DuckDBErrors.addExpressionErrors(errors);;
+			DuckDBErrors.addExpressionErrors(errors);
 			DuckDBErrors.addGroupByErrors(errors);
-			return new QueryAdapter("EXPLAIN " + DuckDBToStringVisitor.asString(DuckDBRandomQuerySynthesizer.generateSelect(g, Randomly.smallNumber() + 1)), errors);	
+			return new QueryAdapter(
+					"EXPLAIN " + DuckDBToStringVisitor
+							.asString(DuckDBRandomQuerySynthesizer.generateSelect(g, Randomly.smallNumber() + 1)),
+					errors);
 		});
-
 
 		private final QueryProvider<DuckDBGlobalState> queryProvider;
 
@@ -56,6 +54,7 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 			this.queryProvider = queryProvider;
 		}
 
+		@Override
 		public Query getQuery(DuckDBGlobalState state) throws SQLException {
 			return queryProvider.getQuery(state);
 		}
@@ -74,7 +73,7 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 		case UPDATE:
 			return r.getInteger(0, globalState.getDmbsSpecificOptions().maxNumUpdates + 1);
 		case VACUUM: // seems to be ignored
-		case ANALYZE:  // seems to be ignored
+		case ANALYZE: // seems to be ignored
 		case EXPLAIN:
 			return r.getInteger(0, 2);
 		case DELETE:

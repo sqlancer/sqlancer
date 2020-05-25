@@ -64,6 +64,7 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 		s = SQLite3Schema.fromConnection(database);
 	}
 
+	@Override
 	public void check() throws SQLException {
 		Query query = getQueryThatContainsAtLeastOneRow(globalState);
 		if (globalState.getOptions().logEachSelect()) {
@@ -313,8 +314,8 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 		return whereClause;
 	}
 
-	private SQLite3Expression generateNewExpression(List<SQLite3Column> columns, SQLite3RowValue rw, boolean shouldBeTrue,
-			int depth) {
+	private SQLite3Expression generateNewExpression(List<SQLite3Column> columns, SQLite3RowValue rw,
+			boolean shouldBeTrue, int depth) {
 		do {
 			SQLite3Expression expr = new SQLite3ExpressionGenerator(globalState).setRowValue(rw).setColumns(columns)
 					.generateExpression();

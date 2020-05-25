@@ -41,8 +41,8 @@ public class MySQLDropIndex {
 			sb.append(" LOCK=");
 			sb.append(Randomly.fromOptions("DEFAULT", "NONE", "SHARED", "EXCLUSIVE"));
 		}
-		return new QueryAdapter(sb.toString(),
-				Arrays.asList("LOCK=NONE is not supported", "ALGORITHM=INPLACE is not supported", "Data truncation", "Data truncated for functional index"));
+		return new QueryAdapter(sb.toString(), Arrays.asList("LOCK=NONE is not supported",
+				"ALGORITHM=INPLACE is not supported", "Data truncation", "Data truncated for functional index"));
 	}
 
 }

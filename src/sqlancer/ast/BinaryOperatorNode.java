@@ -9,7 +9,7 @@ public abstract class BinaryOperatorNode<T, O extends Operator> extends BinaryNo
 	public interface Operator {
 		String getTextRepresentation();
 	}
-	
+
 	public BinaryOperatorNode(T left, T right, O op) {
 		super(left, right);
 		this.op = op;
@@ -19,7 +19,7 @@ public abstract class BinaryOperatorNode<T, O extends Operator> extends BinaryNo
 	public String getOperatorRepresentation() {
 		return op.getTextRepresentation();
 	}
-	
+
 	public O getOp() {
 		return op;
 	}

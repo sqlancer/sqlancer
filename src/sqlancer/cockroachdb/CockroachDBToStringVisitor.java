@@ -84,12 +84,12 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
 		visit(select.getFetchColumns());
 		sb.append(" FROM ");
 		if (!select.getFromList().isEmpty()) {
-			visit(select.getFromList().stream().map(t -> (CockroachDBExpression) t).collect(Collectors.toList()));
+			visit(select.getFromList().stream().map(t -> t).collect(Collectors.toList()));
 		}
 		if (!select.getFromList().isEmpty() && !select.getJoinList().isEmpty()) {
 			sb.append(", ");
 		}
-		visit(select.getJoinList().stream().map(j -> (CockroachDBExpression) j).collect(Collectors.toList()));
+		visit(select.getJoinList().stream().map(j -> j).collect(Collectors.toList()));
 		if (select.getWhereClause() != null) {
 			sb.append(" WHERE ");
 			visit(select.getWhereClause());

@@ -33,7 +33,8 @@ public class SQLite3IndexGenerator {
 	}
 
 	private Query create() throws SQLException {
-		SQLite3Table t = globalState.getSchema().getRandomTableOrBailout(tab -> !tab.isView() && !tab.isVirtual() && !tab.isReadOnly());
+		SQLite3Table t = globalState.getSchema()
+				.getRandomTableOrBailout(tab -> !tab.isView() && !tab.isVirtual() && !tab.isReadOnly());
 		String q = createIndex(t, t.getColumns());
 		errors.add("no such collation sequence: UINT");
 		errors.add("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)");
@@ -50,7 +51,7 @@ public class SQLite3IndexGenerator {
 			errors.add("non-deterministic functions prohibited");
 		}
 
-		/**
+		/*
 		 * Strings in single quotes are sometimes interpreted as column names. Since we
 		 * found an issue with double quotes, they can no longer be used (see
 		 * https://sqlite.org/src/info/9b78184b). Single quotes are interpreted as
@@ -80,7 +81,8 @@ public class SQLite3IndexGenerator {
 			if (i != 0) {
 				sb.append(",");
 			}
-			SQLite3Expression expr = new SQLite3ExpressionGenerator(globalState).setColumns(columns).deterministicOnly().generateExpression();
+			SQLite3Expression expr = new SQLite3ExpressionGenerator(globalState).setColumns(columns).deterministicOnly()
+					.generateExpression();
 			SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
 			visitor.fullyQualifiedNames = false;
 			visitor.visit(expr);
@@ -93,7 +95,8 @@ public class SQLite3IndexGenerator {
 		sb.append(")");
 		if (Randomly.getBoolean()) {
 			sb.append(" WHERE ");
-			SQLite3Expression expr = new SQLite3ExpressionGenerator(globalState).setColumns(columns).deterministicOnly().generateExpression();
+			SQLite3Expression expr = new SQLite3ExpressionGenerator(globalState).setColumns(columns).deterministicOnly()
+					.generateExpression();
 			SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
 			visitor.fullyQualifiedNames = false;
 			visitor.visit(expr);
@@ -101,7 +104,6 @@ public class SQLite3IndexGenerator {
 		}
 		return sb.toString();
 	}
-
 
 	/**
 	 * Appends ASC, DESC, or nothing
@@ -115,6 +117,5 @@ public class SQLite3IndexGenerator {
 			}
 		}
 	}
-
 
 }

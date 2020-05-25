@@ -42,11 +42,12 @@ public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartition
 		DuckDBErrors.addGroupByErrors(errors);
 	}
 
+	@Override
 	public void check() throws SQLException {
 		super.check();
 		DuckDBAggregateFunction aggregateFunction = Randomly.fromOptions(DuckDBAggregateFunction.MAX,
 				DuckDBAggregateFunction.MIN, DuckDBAggregateFunction.SUM, DuckDBAggregateFunction.COUNT,
-				DuckDBAggregateFunction.AVG/*, DuckDBAggregateFunction.STDDEV_POP*/);
+				DuckDBAggregateFunction.AVG/* , DuckDBAggregateFunction.STDDEV_POP */);
 		NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> aggregate = gen
 				.generateArgsForAggregate(aggregateFunction);
 		List<Node<DuckDBExpression>> fetchColumns = new ArrayList<>();

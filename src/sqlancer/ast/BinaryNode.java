@@ -3,7 +3,7 @@ package sqlancer.ast;
 import sqlancer.visitor.BinaryOperation;
 
 public abstract class BinaryNode<T> implements BinaryOperation<T> {
-	
+
 	private final T left;
 	private final T right;
 
@@ -11,7 +11,7 @@ public abstract class BinaryNode<T> implements BinaryOperation<T> {
 		this.left = left;
 		this.right = right;
 	}
-	
+
 	@Override
 	public T getLeft() {
 		return left;

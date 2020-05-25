@@ -3,7 +3,7 @@ package sqlancer.ast;
 import java.util.List;
 
 public abstract class FunctionNode<F, A> {
-	
+
 	protected F function;
 	protected List<A> args;
 
@@ -15,7 +15,7 @@ public abstract class FunctionNode<F, A> {
 	public F getFunction() {
 		return function;
 	}
-	
+
 	public List<A> getArgs() {
 		return args;
 	}

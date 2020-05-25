@@ -13,6 +13,9 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 
 public class PostgresViewGenerator {
 
+	private PostgresViewGenerator() {
+	}
+
 	public static Query create(PostgresGlobalState globalState) {
 		Set<String> errors = new HashSet<>();
 		StringBuilder sb = new StringBuilder("CREATE");

@@ -67,14 +67,17 @@ public class CockroachDBInsertGenerator {
 		}
 		if (Randomly.getBoolean() && !isUpsert) {
 			sb.append(" ON CONFLICT (");
-			sb.append(table.getRandomNonEmptyColumnSubset().stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
+			sb.append(table.getRandomNonEmptyColumnSubset().stream().map(c -> c.getName())
+					.collect(Collectors.joining(", ")));
 			sb.append(")");
-			// WHERE clause not yet implemented, see https://github.com/cockroachdb/cockroach/issues/32557
+			// WHERE clause not yet implemented, see
+			// https://github.com/cockroachdb/cockroach/issues/32557
 			sb.append(" DO ");
 			if (Randomly.getBoolean()) {
 				sb.append(" NOTHING ");
 			} else {
-				// TODO: also support excluded. (see https://www.cockroachlabs.com/docs/stable/insert.html)
+				// TODO: also support excluded. (see
+				// https://www.cockroachlabs.com/docs/stable/insert.html)
 				sb.append(" UPDATE SET ");
 				List<CockroachDBColumn> columns = table.getRandomNonEmptyColumnSubset();
 				int i = 0;

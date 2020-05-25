@@ -15,7 +15,8 @@ public class SQLite3TransactionGenerator {
 		if (Randomly.getBoolean()) {
 			sb.append(" TRANSACTION");
 		}
-		return new QueryAdapter(sb.toString(), Arrays.asList("no transaction is active", "FOREIGN KEY constraint failed"), true);
+		return new QueryAdapter(sb.toString(),
+				Arrays.asList("no transaction is active", "FOREIGN KEY constraint failed"), true);
 	}
 
 	public static Query generateBeginTransaction(SQLite3GlobalState globalState) {

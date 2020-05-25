@@ -11,7 +11,7 @@ public class CockroachDBQueryPartitioningTester implements TestOracle {
 
 	private final TestOracle[] oracles;
 	private int i;
-	
+
 	public CockroachDBQueryPartitioningTester(CockroachDBGlobalState state) {
 		List<TestOracle> oracles = new ArrayList<>();
 		oracles.add(new CockroachDBQueryPartitioningAggregateTester(state));
@@ -22,7 +22,7 @@ public class CockroachDBQueryPartitioningTester implements TestOracle {
 		oracles.add(new CockroachDBQueryPartitioningDistinctTester(state));
 		this.oracles = oracles.toArray(new TestOracle[4]);
 	}
-	
+
 	@Override
 	public void check() throws SQLException {
 		oracles[i].check();

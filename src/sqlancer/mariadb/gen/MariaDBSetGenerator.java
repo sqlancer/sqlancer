@@ -75,9 +75,10 @@ public class MariaDBSetGenerator {
 //		PRELOAD_BUFFER_SIZE("preload_buffer_size", (r) -> r.getLong(1024, 1073741824), Scope.GLOBAL, Scope.SESSION),
 //		QUERY_ALLOC_BLOCK_SIZE("query_alloc_block_size", (r) -> r.getLong(1024, 4294967295L), Scope.GLOBAL,
 //				Scope.SESSION),
-		
+
 		// causes out of memory errors
-		//QUERY_PREALLOC_SIZE("query_prealloc_size", (r) -> r.getLong(8192, Long.MAX_VALUE), Scope.GLOBAL, Scope.SESSION),
+		// QUERY_PREALLOC_SIZE("query_prealloc_size", (r) -> r.getLong(8192,
+		// Long.MAX_VALUE), Scope.GLOBAL, Scope.SESSION),
 //		RANGE_ALLOC_BLOCK_SIZE("range_alloc_block_size", (r) -> r.getLong(4096, Long.MAX_VALUE), Scope.GLOBAL,
 //				Scope.SESSION),
 		/*
@@ -101,11 +102,9 @@ public class MariaDBSetGenerator {
 //		TMP_TABLE_SIZE("tmp_table_size", (r) -> r.getLong(1024, Long.MAX_VALUE), Scope.GLOBAL, Scope.SESSION),
 		UNIQUE_CHECKS("unique_checks", (r) -> Randomly.fromOptions("OFF", "ON"), Scope.GLOBAL, Scope.SESSION),
 		// TODO: https://dev.mysql.com/doc/refman/8.0/en/switchable-optimizations.html
-		
-		
+
 		// MariaDB-specific
-		JOIN_CACHE_LEVEL("join_cache_level", (r) -> r.getInteger(1, 8), Scope.GLOBAL, Scope.SESSION)
-		;
+		JOIN_CACHE_LEVEL("join_cache_level", (r) -> r.getInteger(1, 8), Scope.GLOBAL, Scope.SESSION);
 
 		private String name;
 		private Function<Randomly, Object> prod;
@@ -123,7 +122,10 @@ public class MariaDBSetGenerator {
 		private static String getOptimizerSwitchConfiguration(Randomly r) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("'");
-			String[] options = new String[] { /*("batched_key_access", /*"block_nested_loop", "condition_fanout_filter", */
+			String[] options = new String[] { /*
+												 * ("batched_key_access", /*"block_nested_loop",
+												 * "condition_fanout_filter",
+												 */
 					"condition_pushdown_for_derived", // MariaDB
 					"condition_pushdown_for_subquery", // MariaDB
 					"derived_merge", //
@@ -133,15 +135,16 @@ public class MariaDBSetGenerator {
 					"extended_keys", // MariaDB
 					"firstmatch", // MariaDB
 					"index_condition_pushdown", //
-					/*"use_index_extensions", */
+					/* "use_index_extensions", */
 					"index_merge", //
 					"index_merge_intersection", //
 					"index_merge_sort_intersection", //
 					"index_merge_sort_union", //
-					"index_merge_union",
-					"in_to_exists", // MariaDB
-					/*"use_invisible_indexes", */ "mrr", "mrr_cost_based", /*"skip_scan",*/ "semijoin", /*"duplicateweedout",*/
-					"firstmatch", "loosescan", "materialization", /*"subquery_materialization_cost_based"*/ };
+					"index_merge_union", "in_to_exists", // MariaDB
+					/* "use_invisible_indexes", */ "mrr", "mrr_cost_based", /* "skip_scan", */ "semijoin", /*
+																											 * "duplicateweedout",
+																											 */
+					"firstmatch", "loosescan", "materialization", /* "subquery_materialization_cost_based" */ };
 			List<String> optionSubset = Arrays.asList(Randomly.fromOptions(options));
 			sb.append(optionSubset.stream().map(s -> s + "=" + Randomly.fromOptions("on", "off"))
 					.collect(Collectors.joining(",")));

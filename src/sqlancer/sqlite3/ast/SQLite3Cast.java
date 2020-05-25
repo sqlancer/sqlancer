@@ -183,11 +183,11 @@ public class SQLite3Cast {
 		}
 	}
 
-	private final static byte FILE_SEPARATOR = 0x1c;
-	private final static byte GROUP_SEPARATOR = 0x1d;
-	private final static byte RECORD_SEPARATOR = 0x1e;
-	private final static byte UNIT_SEPARATOR = 0x1f;
-	private final static byte SYNCHRONOUS_IDLE = 0x16;
+	private static final byte FILE_SEPARATOR = 0x1c;
+	private static final byte GROUP_SEPARATOR = 0x1d;
+	private static final byte RECORD_SEPARATOR = 0x1e;
+	private static final byte UNIT_SEPARATOR = 0x1f;
+	private static final byte SYNCHRONOUS_IDLE = 0x16;
 
 	private static boolean unprintAbleCharThatLetsBecomeNumberZero(String s) {
 		// non-printable characters are ignored by Double.valueOf

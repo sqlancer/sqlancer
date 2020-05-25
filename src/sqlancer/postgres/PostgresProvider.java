@@ -35,7 +35,7 @@ import sqlancer.postgres.gen.PostgresClusterGenerator;
 import sqlancer.postgres.gen.PostgresCommentGenerator;
 import sqlancer.postgres.gen.PostgresDeleteGenerator;
 import sqlancer.postgres.gen.PostgresDiscardGenerator;
-import sqlancer.postgres.gen.PostgresDropIndex;
+import sqlancer.postgres.gen.PostgresDropIndexGenerator;
 import sqlancer.postgres.gen.PostgresIndexGenerator;
 import sqlancer.postgres.gen.PostgresInsertGenerator;
 import sqlancer.postgres.gen.PostgresNotifyGenerator;
@@ -54,9 +54,9 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 
 // EXISTS
 // IN
-public class PostgresProvider implements DatabaseProvider<PostgresGlobalState, PostgresOptions> {
+public final class PostgresProvider implements DatabaseProvider<PostgresGlobalState, PostgresOptions> {
 
-	public static boolean GENERATE_ONLY_KNOWN = false;
+	public static final boolean GENERATE_ONLY_KNOWN = false;
 
 	private PostgresGlobalState globalState;
 
@@ -90,7 +90,7 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState, P
 		DROP_STATISTICS(PostgresStatisticsGenerator::remove), //
 		DELETE(PostgresDeleteGenerator::create), //
 		DISCARD(PostgresDiscardGenerator::create), //
-		DROP_INDEX(PostgresDropIndex::create), //
+		DROP_INDEX(PostgresDropIndexGenerator::create), //
 		INSERT(PostgresInsertGenerator::insert), //
 		UPDATE(PostgresUpdateGenerator::create), //
 		TRUNCATE(PostgresTruncateGenerator::create), //
@@ -119,10 +119,11 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState, P
 
 		private final QueryProvider<PostgresGlobalState> queryProvider;
 
-		private Action(QueryProvider<PostgresGlobalState> queryProvider) {
+		Action(QueryProvider<PostgresGlobalState> queryProvider) {
 			this.queryProvider = queryProvider;
 		}
 
+		@Override
 		public Query getQuery(PostgresGlobalState state) throws SQLException {
 			return queryProvider.getQuery(state);
 		}
@@ -266,7 +267,8 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState, P
 	public Connection createDatabase(GlobalState<?> globalState) throws SQLException {
 		String url = "jdbc:postgresql://localhost:5432/test";
 		String databaseName = globalState.getDatabaseName();
-		Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(), globalState.getOptions().getPassword());
+		Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
+				globalState.getOptions().getPassword());
 		globalState.getState().statements.add(new QueryAdapter("\\c test;"));
 		globalState.getState().statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName));
 		String createDatabaseCommand = getCreateDatabaseCommand(databaseName, con);
@@ -279,7 +281,8 @@ public class PostgresProvider implements DatabaseProvider<PostgresGlobalState, P
 			s.execute(createDatabaseCommand);
 		}
 		con.close();
-		con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + databaseName, globalState.getOptions().getUserName(), globalState.getOptions().getPassword());
+		con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + databaseName,
+				globalState.getOptions().getUserName(), globalState.getOptions().getPassword());
 		List<String> statements = Arrays.asList(
 //				"CREATE EXTENSION IF NOT EXISTS btree_gin;",
 //				"CREATE EXTENSION IF NOT EXISTS btree_gist;", // TODO:  undefined symbol: elog_start

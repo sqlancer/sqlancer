@@ -35,7 +35,7 @@ public class CockroachDBNoTableTester implements TestOracle {
 
 		// https://github.com/cockroachdb/cockroach/issues/46187
 		errors.add("internal error: node lookup-join with MaxCost added to the memo");
-		
+
 		errors.add("invalid batch limit");
 	}
 
@@ -47,7 +47,8 @@ public class CockroachDBNoTableTester implements TestOracle {
 		List<String> secondResultSet = new ArrayList<>();
 		state.getState().queryString = query.getQueryString();
 		// https://github.com/cockroachdb/cockroach/issues/46196
-		if (query.getQueryString().contains("MAX") || query.getQueryString().contains("MIN") || query.getQueryString().contains("BOOL_AND")  || query.getQueryString().contains("BOOL_OR" )) {
+		if (query.getQueryString().contains("MAX") || query.getQueryString().contains("MIN")
+				|| query.getQueryString().contains("BOOL_AND") || query.getQueryString().contains("BOOL_OR")) {
 			throw new IgnoreMeException();
 		}
 		try (ResultSet result = query.executeAndGet(state.getConnection())) {
@@ -83,8 +84,7 @@ public class CockroachDBNoTableTester implements TestOracle {
 
 	}
 
-	private List<CockroachDBExpression> getNewFromTables(CockroachDBSelect select, Connection con)
-			throws SQLException {
+	private List<CockroachDBExpression> getNewFromTables(CockroachDBSelect select, Connection con) throws SQLException {
 		List<CockroachDBExpression> fromTables = select.getFromList();
 		List<CockroachDBExpression> newTables = new ArrayList<>();
 		for (CockroachDBExpression t : fromTables) {

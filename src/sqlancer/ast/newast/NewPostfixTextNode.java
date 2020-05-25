@@ -10,11 +10,10 @@ public class NewPostfixTextNode<T> implements Node<T> {
 		this.text = text;
 	}
 
-
 	public Node<T> getExpr() {
 		return expr;
 	}
-	
+
 	public String getText() {
 		return text;
 	}

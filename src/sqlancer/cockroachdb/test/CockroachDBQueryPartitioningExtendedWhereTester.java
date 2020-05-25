@@ -19,7 +19,6 @@ import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnar
 
 public class CockroachDBQueryPartitioningExtendedWhereTester extends CockroachDBQueryPartitioningBase {
 
-
 	private CockroachDBExpression originalPredicate;
 
 	public CockroachDBQueryPartitioningExtendedWhereTester(CockroachDBGlobalState state) {
@@ -45,14 +44,15 @@ public class CockroachDBQueryPartitioningExtendedWhereTester extends CockroachDB
 		String firstQueryString = CockroachDBVisitor.asString(select);
 		select.setWhereClause(combinePredicate(new CockroachDBNotOperation(predicate)));
 		String secondQueryString = CockroachDBVisitor.asString(select);
-		select.setWhereClause(combinePredicate(new CockroachDBUnaryPostfixOperation(predicate, CockroachDBUnaryPostfixOperator.IS_NULL)));
+		select.setWhereClause(combinePredicate(
+				new CockroachDBUnaryPostfixOperation(predicate, CockroachDBUnaryPostfixOperator.IS_NULL)));
 		String thirdQueryString = CockroachDBVisitor.asString(select);
 		List<String> combinedString = new ArrayList<>();
 		List<String> secondResultSet = TestOracle.getCombinedResultSet(firstQueryString, secondQueryString,
 				thirdQueryString, combinedString, !allowOrderBy, state, errors);
 		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
 	}
-	
+
 	public CockroachDBExpression combinePredicate(CockroachDBExpression expr) {
 		return new CockroachDBBinaryLogicalOperation(originalPredicate, expr, CockroachDBBinaryLogicalOperator.AND);
 

@@ -9,13 +9,13 @@ public class NewAliasNode<E> implements Node<E> {
 		this.expr = expr;
 		this.alias = alias;
 	}
-	
+
 	public Node<E> getExpr() {
 		return expr;
 	}
-	
+
 	public String getAlias() {
 		return alias;
 	}
-	
+
 }

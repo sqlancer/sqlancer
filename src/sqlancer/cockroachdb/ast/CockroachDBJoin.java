@@ -17,7 +17,7 @@ public class CockroachDBJoin implements CockroachDBExpression {
 			return Randomly.fromOptions(values());
 		}
 	}
-	
+
 	public static enum OuterType {
 		FULL, LEFT, RIGHT;
 
@@ -26,38 +26,40 @@ public class CockroachDBJoin implements CockroachDBExpression {
 		}
 	}
 
-	public CockroachDBJoin(CockroachDBExpression leftTable, CockroachDBExpression rightTable, JoinType joinType, CockroachDBExpression whereCondition) {
+	public CockroachDBJoin(CockroachDBExpression leftTable, CockroachDBExpression rightTable, JoinType joinType,
+			CockroachDBExpression whereCondition) {
 		this.leftTable = leftTable;
 		this.rightTable = rightTable;
 		this.joinType = joinType;
 		this.onCondition = whereCondition;
 	}
-	
+
 	public CockroachDBExpression getLeftTable() {
 		return leftTable;
 	}
-	
+
 	public CockroachDBExpression getRightTable() {
 		return rightTable;
 	}
-	
+
 	public JoinType getJoinType() {
 		return joinType;
 	}
-	
+
 	public CockroachDBExpression getOnCondition() {
 		return onCondition;
 	}
-	
+
 	public static CockroachDBJoin createNaturalJoin(CockroachDBExpression left, CockroachDBExpression right) {
 		return new CockroachDBJoin(left, right, JoinType.NATURAL, null);
 	}
-	
+
 	public static CockroachDBJoin createCrossJoin(CockroachDBExpression left, CockroachDBExpression right) {
 		return new CockroachDBJoin(left, right, JoinType.CROSS, null);
 	}
 
-	public static CockroachDBJoin createOuterJoin(CockroachDBExpression left, CockroachDBExpression right, OuterType type, CockroachDBExpression onClause) {
+	public static CockroachDBJoin createOuterJoin(CockroachDBExpression left, CockroachDBExpression right,
+			OuterType type, CockroachDBExpression onClause) {
 		CockroachDBJoin join = new CockroachDBJoin(left, right, JoinType.OUTER, onClause);
 		join.setOuterType(type);
 		return join;
@@ -70,5 +72,5 @@ public class CockroachDBJoin implements CockroachDBExpression {
 	public OuterType getOuterType() {
 		return outerType;
 	}
-	
+
 }

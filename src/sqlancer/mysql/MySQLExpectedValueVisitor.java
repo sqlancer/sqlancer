@@ -1,6 +1,5 @@
 package sqlancer.mysql;
 
-import sqlancer.IgnoreMeException;
 import sqlancer.mysql.ast.MySQLBetweenOperation;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
@@ -13,13 +12,11 @@ import sqlancer.mysql.ast.MySQLConstant;
 import sqlancer.mysql.ast.MySQLExists;
 import sqlancer.mysql.ast.MySQLExpression;
 import sqlancer.mysql.ast.MySQLInOperation;
-import sqlancer.mysql.ast.MySQLJoin;
 import sqlancer.mysql.ast.MySQLOrderByTerm;
 import sqlancer.mysql.ast.MySQLSelect;
 import sqlancer.mysql.ast.MySQLStringExpression;
 import sqlancer.mysql.ast.MySQLTableReference;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
-import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 
 public class MySQLExpectedValueVisitor implements MySQLVisitor {
 
@@ -40,11 +37,14 @@ public class MySQLExpectedValueVisitor implements MySQLVisitor {
 	@Override
 	public void visit(MySQLExpression expr) {
 		nrTabs++;
-		try {
-			super.visit(expr);
-		} catch (IgnoreMeException e) {
-
+		if (true) {
+			throw new AssertionError("TODO");
 		}
+		// try {
+//			super.visit(expr);
+//		} catch (IgnoreMeException e) {
+//
+//		}
 		nrTabs--;
 	}
 
@@ -56,12 +56,6 @@ public class MySQLExpectedValueVisitor implements MySQLVisitor {
 	@Override
 	public void visit(MySQLColumnReference column) {
 		print(column);
-	}
-
-	@Override
-	public void visit(MySQLUnaryPrefixOperation op) {
-		print(op);
-		visit(op.getExpression());
 	}
 
 	@Override
@@ -91,7 +85,7 @@ public class MySQLExpectedValueVisitor implements MySQLVisitor {
 
 	@Override
 	public void visit(MySQLSelect select) {
-		for (MySQLJoin j : select.getJoinList()) {
+		for (MySQLExpression j : select.getJoinList()) {
 			visit(j);
 		}
 		if (select.getWhereClause() != null) {

@@ -20,7 +20,9 @@ public class SQLite3DropIndexGenerator {
 		sb.append('"');
 		sb.append(indexName);
 		sb.append('"');
-		return new QueryAdapter(sb.toString(), Arrays.asList("[SQLITE_ERROR] SQL error or missing database (index associated with UNIQUE or PRIMARY KEY constraint cannot be dropped)"), true);
+		return new QueryAdapter(sb.toString(), Arrays.asList(
+				"[SQLITE_ERROR] SQL error or missing database (index associated with UNIQUE or PRIMARY KEY constraint cannot be dropped)"),
+				true);
 	}
 
 }

@@ -10,7 +10,7 @@ public class CockroachDBCollate extends UnaryNode<CockroachDBExpression> impleme
 		super(expr);
 		this.collate = collate;
 	}
-	
+
 	public String getCollate() {
 		return collate;
 	}
@@ -24,5 +24,5 @@ public class CockroachDBCollate extends UnaryNode<CockroachDBExpression> impleme
 	public OperatorKind getOperatorKind() {
 		return OperatorKind.POSTFIX;
 	}
-	
+
 }

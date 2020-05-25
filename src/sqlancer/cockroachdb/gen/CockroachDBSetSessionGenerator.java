@@ -11,11 +11,11 @@ import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 
 public class CockroachDBSetSessionGenerator {
-	
+
 	public static String onOff(CockroachDBGlobalState globalState) {
 		return Randomly.fromOptions("true", "false");
 	}
-	
+
 	// https://www.cockroachlabs.com/docs/stable/set-vars.html
 	private enum CockroachDBSetting {
 		BYTEA_OUTPUT((g) -> Randomly.fromOptions("hex", "escape", "base64")),
@@ -30,11 +30,14 @@ public class CockroachDBSetSessionGenerator {
 		REORDER_JOINS_LIMIT((g) -> g.getRandomly().getInteger(0, Integer.MAX_VALUE)),
 		SQL_SAFE_UPDATES(CockroachDBSetSessionGenerator::onOff),
 //		TRACING(CockroachDBSetSessionGenerator::onOff)
-		VECTORIZE((g) -> Randomly.fromOptions("auto", "on", "off")),  /* see https://github.com/cockroachdb/cockroach/issues/44133, https://github.com/cockroachdb/cockroach/issues/44207 */
-		;
-		
+		VECTORIZE((g) -> Randomly.fromOptions("auto", "on",
+				"off")); /*
+							 * see https://github.com/cockroachdb/cockroach/issues/44133,
+							 * https://github.com/cockroachdb/cockroach/issues/44207
+							 */
+
 		private Function<CockroachDBGlobalState, Object> f;
-		
+
 		private CockroachDBSetting(Function<CockroachDBGlobalState, Object> f) {
 			this.f = f;
 		}
@@ -51,5 +54,5 @@ public class CockroachDBSetSessionGenerator {
 		Query q = new QueryAdapter(sb.toString(), errors);
 		return q;
 	}
-	
+
 }

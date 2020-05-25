@@ -5,7 +5,7 @@ import sqlancer.QueryAdapter;
 import sqlancer.mariadb.MariaDBSchema;
 
 public class MariaDBTruncateGenerator {
-	
+
 	public static Query truncate(MariaDBSchema s) {
 		StringBuilder sb = new StringBuilder("TRUNCATE ");
 		sb.append(s.getRandomTable().getName());

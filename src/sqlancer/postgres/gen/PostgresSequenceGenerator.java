@@ -10,6 +10,9 @@ import sqlancer.postgres.PostgresGlobalState;
 
 public class PostgresSequenceGenerator {
 
+	private PostgresSequenceGenerator() {
+	}
+
 	public static Query createSequence(PostgresGlobalState globalState) {
 		List<String> errors = new ArrayList<>();
 		StringBuilder sb = new StringBuilder("CREATE");

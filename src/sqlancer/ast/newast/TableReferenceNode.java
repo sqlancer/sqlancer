@@ -9,10 +9,9 @@ public class TableReferenceNode<E, T extends AbstractTable<?, ?>> implements Nod
 	public TableReferenceNode(T table) {
 		this.t = table;
 	}
-	
+
 	public T getTable() {
 		return t;
 	}
-	
-	
+
 }

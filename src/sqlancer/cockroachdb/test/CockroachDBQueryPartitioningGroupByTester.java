@@ -1,6 +1,5 @@
 package sqlancer.cockroachdb.test;
 
-
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,9 +41,11 @@ public class CockroachDBQueryPartitioningGroupByTester extends CockroachDBQueryP
 		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
 	}
 
+	@Override
 	List<CockroachDBExpression> generateFetchColumns() {
 		List<CockroachDBExpression> columns = new ArrayList<>();
-		columns = Randomly.nonEmptySubset(targetTables.getColumns().stream().map(c -> new CockroachDBColumnReference(c)).collect(Collectors.toList()));
+		columns = Randomly.nonEmptySubset(targetTables.getColumns().stream().map(c -> new CockroachDBColumnReference(c))
+				.collect(Collectors.toList()));
 		return columns;
 	}
 

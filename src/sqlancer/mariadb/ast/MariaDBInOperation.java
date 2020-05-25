@@ -3,7 +3,7 @@ package sqlancer.mariadb.ast;
 import java.util.List;
 
 public class MariaDBInOperation extends MariaDBExpression {
-	
+
 	private MariaDBExpression expr;
 	private List<MariaDBExpression> list;
 	private boolean negated;
@@ -17,13 +17,13 @@ public class MariaDBInOperation extends MariaDBExpression {
 	public MariaDBExpression getExpr() {
 		return expr;
 	}
-	
+
 	public List<MariaDBExpression> getList() {
 		return list;
 	}
-	
+
 	public boolean isNegated() {
 		return negated;
 	}
-	
+
 }

@@ -9,9 +9,9 @@ public class CockroachDBTableReference implements CockroachDBExpression {
 	public CockroachDBTableReference(CockroachDBTable table) {
 		this.table = table;
 	}
-	
+
 	public CockroachDBTable getTable() {
 		return table;
 	}
-	
+
 }

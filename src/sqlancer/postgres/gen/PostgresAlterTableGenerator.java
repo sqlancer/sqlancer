@@ -71,7 +71,7 @@ public class PostgresAlterTableGenerator {
 
 		private String val;
 
-		private Attribute(String val) {
+		Attribute(String val) {
 			this.val = val;
 		}
 	};

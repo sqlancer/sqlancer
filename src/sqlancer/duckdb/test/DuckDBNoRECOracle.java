@@ -75,24 +75,28 @@ public class DuckDBNoRECOracle implements TestOracle {
 		List<TableReferenceNode<DuckDBExpression, DuckDBTable>> tableList = tables.stream()
 				.map(t -> new TableReferenceNode<DuckDBExpression, DuckDBTable>(t)).collect(Collectors.toList());
 		List<Node<DuckDBExpression>> joins = DuckDBJoin.getJoins(tableList, globalState);
-		int secondCount = getSecondQuery(tableList.stream().collect(Collectors.toList()), randomWhereCondition, groupBys, joins);
-		int firstCount = getFirstQueryCount(con, tableList.stream().collect(Collectors.toList()), columns, randomWhereCondition, groupBys, joins);
+		int secondCount = getSecondQuery(tableList.stream().collect(Collectors.toList()), randomWhereCondition,
+				groupBys, joins);
+		int firstCount = getFirstQueryCount(con, tableList.stream().collect(Collectors.toList()), columns,
+				randomWhereCondition, groupBys, joins);
 		if (firstCount == -1 || secondCount == -1) {
 			throw new IgnoreMeException();
 		}
 		if (firstCount != secondCount) {
-			throw new AssertionError(firstQueryString + "; -- " + firstCount + "\n" +  secondQueryString + " -- " + secondCount);
+			throw new AssertionError(
+					firstQueryString + "; -- " + firstCount + "\n" + secondQueryString + " -- " + secondCount);
 		}
 	}
-
-
 
 	private int getSecondQuery(List<Node<DuckDBExpression>> tableList, Node<DuckDBExpression> randomWhereCondition,
 			List<Node<DuckDBExpression>> groupBys, List<Node<DuckDBExpression>> joins) throws SQLException {
 		DuckDBSelect select = new DuckDBSelect();
 //			select.setGroupByClause(groupBys);
 //			DuckDBExpression isTrue = DuckDBPostfixOperation.create(randomWhereCondition, PostfixOperator.IS_TRUE);
-		Node<DuckDBExpression> asText = new NewPostfixTextNode<DuckDBExpression>(new DuckDBCastOperation(new NewPostfixTextNode<DuckDBExpression>(randomWhereCondition, " IS NOT NULL AND " + DuckDBToStringVisitor.asString(randomWhereCondition) + ""), new DuckDBCompositeDataType(DuckDBDataType.INT, 8)), "as count");
+		Node<DuckDBExpression> asText = new NewPostfixTextNode<DuckDBExpression>(new DuckDBCastOperation(
+				new NewPostfixTextNode<DuckDBExpression>(randomWhereCondition,
+						" IS NOT NULL AND " + DuckDBToStringVisitor.asString(randomWhereCondition) + ""),
+				new DuckDBCompositeDataType(DuckDBDataType.INT, 8)), "as count");
 		select.setFetchColumns(Arrays.asList(asText));
 		select.setFromList(tableList);
 //		select.setSelectType(SelectType.ALL);
@@ -121,19 +125,21 @@ public class DuckDBNoRECOracle implements TestOracle {
 	}
 
 	private int getFirstQueryCount(Connection con, List<Node<DuckDBExpression>> tableList, List<DuckDBColumn> columns,
-			Node<DuckDBExpression> randomWhereCondition, List<Node<DuckDBExpression>> groupBys, List<Node<DuckDBExpression>> joins)
-			throws SQLException {
+			Node<DuckDBExpression> randomWhereCondition, List<Node<DuckDBExpression>> groupBys,
+			List<Node<DuckDBExpression>> joins) throws SQLException {
 		DuckDBSelect select = new DuckDBSelect();
 //			select.setGroupByClause(groupBys);
 //			DuckDBAggregate aggr = new DuckDBAggregate(
-		List<Node<DuckDBExpression>> allColumns = columns.stream().map((c) -> new ColumnReferenceNode<DuckDBExpression, DuckDBColumn>(c)).collect(Collectors.toList());
+		List<Node<DuckDBExpression>> allColumns = columns.stream()
+				.map((c) -> new ColumnReferenceNode<DuckDBExpression, DuckDBColumn>(c)).collect(Collectors.toList());
 //					DuckDBAggregateFunction.COUNT);
 //			select.setFetchColumns(Arrays.asList(aggr));
 		select.setFetchColumns(allColumns);
 		select.setFromList(tableList);
 		select.setWhereClause(randomWhereCondition);
 		if (Randomly.getBooleanWithSmallProbability()) {
-			select.setOrderByExpressions(new DuckDBExpressionGenerator(globalState).setColumns(columns).generateOrderBys());
+			select.setOrderByExpressions(
+					new DuckDBExpressionGenerator(globalState).setColumns(columns).generateOrderBys());
 		}
 //		select.setSelectType(SelectType.ALL);
 		select.setJoinList(joins);

@@ -73,18 +73,6 @@ public class SQLite3Aggregate extends SQLite3Expression {
 			}
 
 		},
-		// zipfile needs to be loaded as an extension
-//		ZIPFILE() {
-//
-//			@Override
-//			public SQLite3Constant apply(SQLite3Constant exprVal) {
-//				if (SQLite3Provider.MUST_KNOW_RESULT) {
-//					throw new AssertionError();
-//				}
-//				return null;
-//			}
-//			
-//		},
 		TOTAL() {
 			@Override
 			public SQLite3Constant apply(SQLite3Constant exprVal) {

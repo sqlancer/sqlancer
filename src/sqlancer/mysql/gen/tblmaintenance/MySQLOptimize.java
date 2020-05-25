@@ -26,7 +26,7 @@ public class MySQLOptimize {
 	}
 
 	// OPTIMIZE [NO_WRITE_TO_BINLOG | LOCAL]
-    // TABLE tbl_name [, tbl_name] ...
+	// TABLE tbl_name [, tbl_name] ...
 	private Query optimize() {
 		sb.append("OPTIMIZE");
 		if (Randomly.getBoolean()) {

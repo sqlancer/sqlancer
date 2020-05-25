@@ -41,7 +41,8 @@ import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation;
 import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnaryPostfixOperator;
 import sqlancer.gen.TypedExpressionGenerator;
 
-public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<CockroachDBExpression, CockroachDBColumn, CockroachDBCompositeDataType> {
+public class CockroachDBExpressionGenerator
+		extends TypedExpressionGenerator<CockroachDBExpression, CockroachDBColumn, CockroachDBCompositeDataType> {
 
 	private final CockroachDBGlobalState globalState;
 
@@ -49,23 +50,21 @@ public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<Coc
 		this.globalState = globalState;
 	}
 
-
 	@Override
 	public CockroachDBExpression generateExpression(CockroachDBCompositeDataType dataType) {
 		return generateExpression(dataType, 0);
 	}
-	
+
 	public CockroachDBExpression generateAggregate() {
 		return getAggregate(getRandomType());
 	}
-	
+
 	public CockroachDBExpression generateHavingClause() {
 		allowAggregates = true;
 		CockroachDBExpression expression = generateExpression(CockroachDBDataType.BOOL.get());
 		allowAggregates = false;
 		return expression;
 	}
-
 
 	public List<CockroachDBExpression> getOrderingTerms() {
 		List<CockroachDBExpression> orderingTerms = new ArrayList<>();
@@ -91,8 +90,7 @@ public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<Coc
 		if (allowAggregates && Randomly.getBoolean()) {
 			return getAggregate(type);
 		}
-		if (depth >= globalState.getOptions().getMaxExpressionDepth()
-				|| Randomly.getBoolean()) {
+		if (depth >= globalState.getOptions().getMaxExpressionDepth() || Randomly.getBoolean()) {
 			return generateLeafNode(type);
 		} else {
 			if (Randomly.getBooleanWithRatherLowProbability()) {
@@ -129,7 +127,10 @@ public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<Coc
 				return generateBooleanExpression(depth);
 			case INT:
 			case SERIAL:
-				return new CockroachDBBinaryArithmeticOperation(generateExpression(CockroachDBDataType.INT.get(), depth + 1), generateExpression(CockroachDBDataType.INT.get(), depth + 1), CockroachDBBinaryArithmeticOperator.getRandom());
+				return new CockroachDBBinaryArithmeticOperation(
+						generateExpression(CockroachDBDataType.INT.get(), depth + 1),
+						generateExpression(CockroachDBDataType.INT.get(), depth + 1),
+						CockroachDBBinaryArithmeticOperator.getRandom());
 			case STRING:
 			case BYTES: // TODO split
 				CockroachDBExpression stringExpr = generateStringExpression(depth);
@@ -156,7 +157,8 @@ public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<Coc
 	}
 
 	private CockroachDBExpression getAggregate(CockroachDBCompositeDataType type) {
-		CockroachDBAggregateFunction agg = Randomly.fromList(CockroachDBAggregate.CockroachDBAggregateFunction.getAggregates(type.getPrimitiveDataType()));
+		CockroachDBAggregateFunction agg = Randomly
+				.fromList(CockroachDBAggregate.CockroachDBAggregateFunction.getAggregates(type.getPrimitiveDataType()));
 		return generateArgsForAggregate(type, agg);
 	}
 
@@ -164,13 +166,12 @@ public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<Coc
 			CockroachDBAggregateFunction agg) {
 		List<CockroachDBDataType> types = agg.getTypes(type.getPrimitiveDataType());
 		List<CockroachDBExpression> args = new ArrayList<>();
-		allowAggregates = false; // 
+		allowAggregates = false; //
 		for (CockroachDBDataType argType : types) {
 			args.add(generateExpression(argType.get()));
 		}
 		return new CockroachDBAggregate(agg, args);
 	}
-
 
 	private enum BooleanExpression {
 		NOT, COMPARISON, AND_OR_CHAIN, REGEX, IS_NULL, IS_NAN, IN, BETWEEN, MULTI_VALUED_COMPARISON
@@ -179,12 +180,13 @@ public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<Coc
 	private enum StringExpression {
 		CONCAT
 	}
-	
+
 	private CockroachDBExpression generateStringExpression(int depth) {
 		StringExpression exprType = Randomly.fromOptions(StringExpression.values());
 		switch (exprType) {
 		case CONCAT:
-			return new CockroachDBConcatOperation(generateExpression(CockroachDBDataType.STRING.get(), depth + 1), generateExpression(CockroachDBDataType.STRING.get(), depth + 1));
+			return new CockroachDBConcatOperation(generateExpression(CockroachDBDataType.STRING.get(), depth + 1),
+					generateExpression(CockroachDBDataType.STRING.get(), depth + 1));
 		default:
 			throw new AssertionError(exprType);
 		}
@@ -222,8 +224,9 @@ public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<Coc
 		case MULTI_VALUED_COMPARISON: // TODO other operators
 			type = getRandomType();
 			left = generateExpression(type, depth + 1);
-			List<CockroachDBExpression> rightList = generateExpressions(type, Randomly.smallNumber()  + 2, depth + 1);
-			return new CockroachDBMultiValuedComparison(left, rightList, MultiValuedComparisonType.getRandom(), MultiValuedComparisonOperator.getRandomGenericComparisonOperator());
+			List<CockroachDBExpression> rightList = generateExpressions(type, Randomly.smallNumber() + 2, depth + 1);
+			return new CockroachDBMultiValuedComparison(left, rightList, MultiValuedComparisonType.getRandom(),
+					MultiValuedComparisonOperator.getRandomGenericComparisonOperator());
 		default:
 			throw new AssertionError(exprType);
 		}
@@ -240,7 +243,8 @@ public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<Coc
 
 	private CockroachDBExpression getInOperation(int depth) {
 		CockroachDBCompositeDataType type = getRandomType();
-		return new CockroachDBInOperation(generateExpression(type, depth + 1), generateExpressions(type, Randomly.smallNumber() + 1, depth + 1));
+		return new CockroachDBInOperation(generateExpression(type, depth + 1),
+				generateExpressions(type, Randomly.smallNumber() + 1, depth + 1));
 	}
 
 	@Override
@@ -264,6 +268,7 @@ public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<Coc
 		return columns.stream().anyMatch(c -> c.getType() == type);
 	}
 
+	@Override
 	public CockroachDBExpression generateConstant(CockroachDBCompositeDataType type) {
 		if (Randomly.getBooleanWithRatherLowProbability()) {
 			return CockroachDBConstant.createNullConstant();
@@ -290,7 +295,10 @@ public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<Coc
 				return CockroachDBConstant.createBitConstantWithSize((int) Randomly.getNotCachedInteger(1, 10));
 			}
 		case INTERVAL:
-			return CockroachDBConstant.createIntervalConstant(globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger());
+			return CockroachDBConstant.createIntervalConstant(globalState.getRandomly().getInteger(),
+					globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(),
+					globalState.getRandomly().getInteger(), globalState.getRandomly().getInteger(),
+					globalState.getRandomly().getInteger());
 		case TIMESTAMP:
 			return CockroachDBConstant.createTimestampConstant(globalState.getRandomly().getInteger());
 		case TIMESTAMPTZ:
@@ -301,7 +309,7 @@ public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<Coc
 			return CockroachDBConstant.createTimetz(globalState.getRandomly().getInteger());
 		case ARRAY:
 			List<CockroachDBExpression> elements = new ArrayList<CockroachDBExpression>();
-			for (int i = 0; i < Randomly.smallNumber(); i++ ) {
+			for (int i = 0; i < Randomly.smallNumber(); i++) {
 				elements.add(generateConstant(type.getElementType()));
 			}
 			return CockroachDBConstant.createArrayConstant(elements);
@@ -325,7 +333,6 @@ public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<Coc
 		return globalState;
 	}
 
-
 	@Override
 	protected CockroachDBExpression generateColumn(CockroachDBCompositeDataType type) {
 		CockroachDBColumn column = Randomly
@@ -336,6 +343,5 @@ public class CockroachDBExpressionGenerator extends TypedExpressionGenerator<Coc
 		}
 		return columnReference;
 	}
-
 
 }

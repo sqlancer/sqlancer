@@ -11,6 +11,9 @@ import sqlancer.postgres.PostgresGlobalState;
 
 public class PostgresSetGenerator {
 
+	private PostgresSetGenerator() {
+	}
+
 	private enum ConfigurationOption {
 		// https://www.postgresql.org/docs/11/runtime-config-wal.html
 		// This parameter can only be set at server start.
@@ -116,12 +119,13 @@ public class PostgresSetGenerator {
 		JOIN_COLLAPSE_LIMIT("join_collapse_limit", (r) -> r.getInteger(1, Integer.MAX_VALUE)),
 		PARALLEL_LEADER_PARTICIPATION("parallel_leader_participation", (r) -> Randomly.fromOptions(1, 0)),
 		FORCE_PARALLEL_MODE("force_parallel_mode", (r) -> Randomly.fromOptions("off", "on", "regress")),
-		PLAN_CACHE_MODE("plan_cache_mode", (r) -> Randomly.fromOptions("auto", "force_generic_plan", "force_custom_plan"));
+		PLAN_CACHE_MODE("plan_cache_mode",
+				(r) -> Randomly.fromOptions("auto", "force_generic_plan", "force_custom_plan"));
 
 		private String optionName;
 		private Function<Randomly, Object> op;
 
-		private ConfigurationOption(String optionName, Function<Randomly, Object> op) {
+		ConfigurationOption(String optionName, Function<Randomly, Object> op) {
 			this.optionName = optionName;
 			this.op = op;
 		}

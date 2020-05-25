@@ -12,6 +12,9 @@ import sqlancer.postgres.PostgresSchema.PostgresTable;
  */
 public class PostgresCommentGenerator {
 
+	private PostgresCommentGenerator() {
+	}
+
 	private enum Action {
 		INDEX, COLUMN, STATISTICS, TABLE
 	}

@@ -1,7 +1,7 @@
 package sqlancer.mariadb.ast;
 
 public class MariaDBAggregate extends MariaDBExpression {
-	
+
 	private MariaDBExpression expr;
 	private MariaDBAggregateFunction aggr;
 
@@ -13,11 +13,11 @@ public class MariaDBAggregate extends MariaDBExpression {
 	public enum MariaDBAggregateFunction {
 		COUNT
 	}
-	
+
 	public MariaDBExpression getExpr() {
 		return expr;
 	}
-	
+
 	public MariaDBAggregateFunction getAggr() {
 		return aggr;
 	}

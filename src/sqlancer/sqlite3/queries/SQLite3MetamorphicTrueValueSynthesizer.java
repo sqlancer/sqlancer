@@ -60,7 +60,7 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 		errors.add("misuse of aggregate");
 		errors.add("second argument to nth_value must be a positive integer");
 		errors.add("no such table");
-//		errors.add("no such index"); // INDEXED BY 
+//		errors.add("no such index"); // INDEXED BY
 //		errors.add("no query solution"); // INDEXED BY
 	}
 
@@ -69,11 +69,11 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 		SQLite3Tables randomTable = s.getRandomTableNonEmptyTables();
 		List<SQLite3Column> columns = randomTable.getColumns();
 		SQLite3Expression randomWhereCondition = getRandomWhereCondition(columns);
-		List<SQLite3Expression> groupBys = Collections.emptyList(); //getRandomExpressions(columns);
+		List<SQLite3Expression> groupBys = Collections.emptyList(); // getRandomExpressions(columns);
 		List<SQLite3Table> tables = randomTable.getTables();
 		List<Join> joinStatements = new ArrayList<>();
 		if (Randomly.getBoolean()) {
-			int nrJoinClauses =  (int) Randomly.getNotCachedInteger(0, tables.size());
+			int nrJoinClauses = (int) Randomly.getNotCachedInteger(0, tables.size());
 			for (int i = 1; i < nrJoinClauses; i++) {
 				SQLite3Expression joinClause = getRandomWhereCondition(columns);
 				SQLite3Table table = Randomly.fromList(tables);
@@ -86,7 +86,7 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 				Join j = new SQLite3Expression.Join(table, joinClause, options);
 				joinStatements.add(j);
 			}
-			
+
 		}
 		int totalCount = getTotalCount(tables, groupBys, joinStatements);
 		int trueCount = getSubsetCount(tables, randomWhereCondition, groupBys, joinStatements, Mode.TRUE);
@@ -97,23 +97,23 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 		}
 		int totalCount2 = trueCount + falseCount + nullCount;
 		if (totalCount != totalCount2) {
-			throw new AssertionError(totalCount + " " + totalCount2 + "\n" + queries.stream().collect(Collectors.joining("\n")));
+			throw new AssertionError(
+					totalCount + " " + totalCount2 + "\n" + queries.stream().collect(Collectors.joining("\n")));
 		}
 	}
-	
-	private int getTotalCount(List<SQLite3Table> list,
-			List<SQLite3Expression> groupBys, List<Join> joinStatements) throws SQLException {
+
+	private int getTotalCount(List<SQLite3Table> list, List<SQLite3Expression> groupBys, List<Join> joinStatements)
+			throws SQLException {
 		SQLite3Select select = new SQLite3Select();
 		select.setGroupByClause(groupBys);
-		SQLite3Aggregate count = new SQLite3Aggregate(
-				Arrays.asList(SQLite3ColumnName.createDummy("*")),
+		SQLite3Aggregate count = new SQLite3Aggregate(Arrays.asList(SQLite3ColumnName.createDummy("*")),
 				SQLite3AggregateFunction.COUNT);
 		select.setFetchColumns(Arrays.asList(count));
 		select.setFromTables(SQLite3Common.getTableRefs(list, s));
 		select.setSelectType(SelectType.ALL);
 		select.setJoinClauses(joinStatements);
 		int totalCount = 0;
-		
+
 		String totalString = SQLite3Visitor.asString(select);
 		queries.add(totalString);
 		QueryAdapter q = new QueryAdapter(totalString, errors);
@@ -129,17 +129,16 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 		}
 		return totalCount;
 	}
-	
+
 	private enum Mode {
 		TRUE, FALSE, ISNULL;
 	}
-	
-	private int getSubsetCount(List<SQLite3Table> list, SQLite3Expression condition,
-			List<SQLite3Expression> groupBys, List<Join> joinStatements, Mode m) throws SQLException {
+
+	private int getSubsetCount(List<SQLite3Table> list, SQLite3Expression condition, List<SQLite3Expression> groupBys,
+			List<Join> joinStatements, Mode m) throws SQLException {
 		SQLite3Select select = new SQLite3Select();
 		select.setGroupByClause(groupBys);
-		SQLite3Aggregate aggr = new SQLite3Aggregate(
-				Arrays.asList(SQLite3ColumnName.createDummy("*")),
+		SQLite3Aggregate aggr = new SQLite3Aggregate(Arrays.asList(SQLite3ColumnName.createDummy("*")),
 				SQLite3AggregateFunction.COUNT);
 		select.setFetchColumns(Arrays.asList(aggr));
 		select.setFromTables(SQLite3Common.getTableRefs(list, s));
@@ -153,7 +152,7 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 			select.setWhereClause(new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.ISNULL, condition));
 		}
 		int totalCount = 0;
-		
+
 		String totalString = SQLite3Visitor.asString(select);
 		queries.add(totalString);
 		QueryAdapter q = new QueryAdapter(totalString, errors);
@@ -169,7 +168,6 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
 		}
 		return totalCount;
 	}
-
 
 	private SQLite3Expression getRandomWhereCondition(List<SQLite3Column> columns) {
 		SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns);

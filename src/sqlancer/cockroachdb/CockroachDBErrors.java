@@ -3,54 +3,52 @@ package sqlancer.cockroachdb;
 import java.util.Set;
 
 public class CockroachDBErrors {
-	
+
 	public static void addExpressionErrors(Set<String> errors) {
 		errors.add(" non-streaming operator encountered when vectorize=auto");
-		
+
 		if (true) {
 			// https://github.com/cockroachdb/cockroach/issues/46915
 			errors.add("ERROR: at or near \"unknown\": syntax error");
 		}
-		
+
 		if (true) {
 			// https://github.com/cockroachdb/cockroach/issues/45703
 			errors.add("github.com/cockroachdb/cockroach/pkg/sql/execinfra/expr.go:78: processExpression()");
 		}
-		
+
 		errors.add("exceeds supported timestamp bounds");
-		
+
 		errors.add("cannot cast negative integer to bit varying with unbounded width");
-		
+
 		errors.add("negative value for LIMIT");
 		errors.add("negative value for OFFSET");
-		
-		
+
 		errors.add("LIKE regexp compilation failed");
 		errors.add("error parsing regexp");
-		
+
 		errors.add("expected 9223372036854775808 to be of type int, found type decimal"); // int overflow
 		errors.add("integer out of range");
 		errors.add("expected -9223372036854775809 to be of type int, found type decimal");
 		errors.add("to be of type int4, found type decimal");
-		
+
 		errors.add("as type bool: invalid bool value");
 		errors.add("as type int: strconv.ParseInt");
 		errors.add("as type float: strconv.ParseFloat: parsing");
-		
+
 		errors.add("is not in select list");
 		errors.add("non-integer constant in ORDER BY");
-		
+
 		errors.add("collatedstring");
-		
+
 		errors.add("invalid cast:");
-		
+
 		// string to bytes
 		errors.add("invalid bytea escape sequence");
 		errors.add("bytea encoded value ends with incomplete escape sequence");
 		errors.add("bytea encoded value ends with escape character");
 		errors.add("encoding/hex: invalid byte");
 
-		
 		errors.add("unsupported comparison operator: <bytes> > <string>");
 		errors.add("unsupported comparison operator: <bytes> < <string>");
 		errors.add("unsupported comparison operator: <string> > <bytes>");
@@ -83,16 +81,15 @@ public class CockroachDBErrors {
 		errors.add("to be of type float, found type decimal");
 		errors.add("to be of type bytes, found type string");
 		errors.add("as bytes, found type: string");
-		
+
 		errors.add("bit string length"); // TODO restrict generated bit constants
 		errors.add("could not parse string as bit array");
-		
-		
+
 		errors.add("ambiguous call");
-		
+
 		errors.add(" could not produce a query plan conforming to the");
 		errors.add("LOOKUP can only be used with INNER or LEFT joins"); // TODO
-		
+
 		errors.add("ambiguous binary operator: <unknown> || <unknown>");
 		errors.add(" ERROR: unsupported binary operator: <string> || <string> (desired <bytes>)");
 		errors.add("unsupported binary operator: <unknown> || <string> (desired <bytes>)");
@@ -150,43 +147,42 @@ public class CockroachDBErrors {
 		errors.add("unknown signature: bit_and(decimal)");
 		errors.add("unknown signature: bit_or(decimal)");
 
-		
 		errors.add("exists but is not a directory"); // TODO
-		
+
 		errors.add("could not parse JSON: trailing characters after JSON document");
 		errors.add("could not parse JSON: unable to decode JSON: invalid character");
 		errors.add("could not parse JSON: unable to decode JSON: EOF");
 		errors.add("could not parse JSON: unable to decode JSON: unexpected EOF");
 		errors.add("can't order by column type jsonb");
-		
+
 		if (true) {
 			errors.add("aggregate functions are not allowed in GROUP BY");
-			errors.add(" must appear in the GROUP BY clause or be used in an aggregate function"); // TODO: better control what is generated in a view
+			errors.add(" must appear in the GROUP BY clause or be used in an aggregate function"); // TODO: better
+																									// control what is
+																									// generated in a
+																									// view
 		}
-		
+
 		if (true) {
 			// TODO https://github.com/cockroachdb/cockroach/issues/44757
 			errors.add("no builtin aggregate");
 		}
-		
+
 		errors.add("unable to vectorize execution plan"); // SET vectorize=experimental_always;
 		errors.add(" mismatched physical types at index"); // SET vectorize=experimental_always;
 		errors.add("unsupported type time");
 		errors.add("unsupported type varbit");
 		errors.add("unsupported type bit");
-		
+
 		errors.add("unknown signature: xor_agg(string)");
 		errors.add("unknown signature: string_agg(string, bytes)");
 		errors.add("unknown signature: string_agg(bytes, string)");
 		errors.add("arguments to xor must all be the same length");
 		errors.add("unknown signature: acos(decimal)");
-		
-		
-		
+
 		errors.add("argument of OFFSET must be type int, not type decimal");
 		errors.add("ERROR: for SELECT DISTINCT, ORDER BY expressions must appear in select list");
-		
-		
+
 		addArrayErrors(errors);
 	}
 
@@ -225,18 +221,18 @@ public class CockroachDBErrors {
 		errors.add("unknown signature: max(bit[])");
 		errors.add("unknown signature: min(float[])");
 		errors.add("unknown signature: max(float[])");
-		
+
 		errors.add("array must be enclosed in { and }"); // when casting a string to an array
 		errors.add("extra text after closing right brace");
 		errors.add("unimplemented: nested arrays not supported"); // e.g., casting a string {{1}} to an array
 		errors.add("malformed array");
-		
+
 		errors.add("https://github.com/cockroachdb/cockroach/issues/35707"); // arrays don't support ORDER BY
-		
+
 		errors.add("as bytes[], found type: varbit[]");
 		errors.add("to be of type decimal[], found type float[]");
 		errors.add("to be of type int[], found type decimal[]");
-		
+
 		errors.add("to be of type unknown[]"); // IF with null array
 	}
 
@@ -251,8 +247,9 @@ public class CockroachDBErrors {
 
 	private static void addGroupByErrors(Set<String> errors) {
 		errors.add("non-integer constant in GROUP BY");
-		
-		// https://github.com/cockroachdb/cockroach/pull/46649 -> aggregates on NULL are not typed strings
+
+		// https://github.com/cockroachdb/cockroach/pull/46649 -> aggregates on NULL are
+		// not typed strings
 		errors.add("ERROR: argument of HAVING must be type bool, not type string"); // MAX(NULL) etc.
 		errors.add("incompatible condition type: string"); // CASE WHEN MAX(NULL) etc.
 		errors.add("incompatible NOT argument type: string"); // NOT MAX(NULL) etc.
@@ -266,7 +263,7 @@ public class CockroachDBErrors {
 		errors.add(" ERROR: incompatible IF expressions");
 		errors.add(" to be of type string");
 		errors.add("found type string");
-		
+
 		errors.add("unknown signature: abs(string)");
 		errors.add("unknown signature: acos(string)");
 

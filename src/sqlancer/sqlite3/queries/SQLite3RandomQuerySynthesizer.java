@@ -101,7 +101,7 @@ public class SQLite3RandomQuerySynthesizer {
 //		if (Randomly.getBooleanWithSmallProbability()) {
 //			select.getFromList().add(SQLite3RandomQuerySynthesizer.generate(globalState, Randomly.smallNumber() + 1));
 //		}
-		
+
 		// WHERE
 		if (Randomly.getBoolean()) {
 			select.setWhereClause(whereClauseGen.generateExpression());
@@ -145,12 +145,13 @@ public class SQLite3RandomQuerySynthesizer {
 			return new SQLite3WindowFunctionFrameSpecTerm(SQLite3WindowFunctionFrameSpecTermKind.CURRENT_ROW);
 		} else {
 			if (isLeftTerm) {
-				return new SQLite3WindowFunctionFrameSpecTerm(SQLite3WindowFunctionFrameSpecTermKind.UNBOUNDED_PRECEDING);
+				return new SQLite3WindowFunctionFrameSpecTerm(
+						SQLite3WindowFunctionFrameSpecTermKind.UNBOUNDED_PRECEDING);
 			} else {
-				return new SQLite3WindowFunctionFrameSpecTerm(SQLite3WindowFunctionFrameSpecTermKind.UNBOUNDED_FOLLOWING);
+				return new SQLite3WindowFunctionFrameSpecTerm(
+						SQLite3WindowFunctionFrameSpecTermKind.UNBOUNDED_FOLLOWING);
 			}
 		}
 	}
-
 
 }

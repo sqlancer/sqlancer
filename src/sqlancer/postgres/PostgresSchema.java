@@ -26,7 +26,7 @@ import sqlancer.schema.TableIndex;
 
 public class PostgresSchema {
 
-	public static enum PostgresDataType {
+	public enum PostgresDataType {
 		INT, BOOLEAN, TEXT, DECIMAL, FLOAT, REAL, RANGE, MONEY, BIT, INET;
 
 		public static PostgresDataType getRandomType() {
@@ -251,7 +251,7 @@ public class PostgresSchema {
 
 	}
 
-	static public PostgresSchema fromConnection(Connection con, String databaseName) throws SQLException {
+	public static PostgresSchema fromConnection(Connection con, String databaseName) throws SQLException {
 		Exception ex = null;
 		try {
 			List<PostgresTable> databaseTables = new ArrayList<>();

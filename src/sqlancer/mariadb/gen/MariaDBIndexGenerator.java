@@ -12,7 +12,7 @@ import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 import sqlancer.sqlite3.gen.SQLite3Common;
 
 public class MariaDBIndexGenerator {
-	
+
 	public static Query generate(MariaDBSchema s) {
 		List<String> errors = new ArrayList<>();
 		StringBuilder sb = new StringBuilder("CREATE ");
@@ -50,7 +50,7 @@ public class MariaDBIndexGenerator {
 //			sb.append(Randomly.fromOptions("DEFAULT", "INPLACE", "COPY", "NOCOPY", "INSTANT"));
 //			errors.add("is not supported for this operation");
 //		}
-		
+
 		return new QueryAdapter(sb.toString(), errors, true);
 	}
 

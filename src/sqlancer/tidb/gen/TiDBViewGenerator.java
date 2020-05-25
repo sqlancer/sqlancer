@@ -35,7 +35,8 @@ public class TiDBViewGenerator {
 		sb.append(TiDBRandomQuerySynthesizer.generate(globalState, nrColumns).getQueryString());
 		Set<String> errors = new HashSet<>();
 		TiDBErrors.addExpressionErrors(errors);
-		errors.add("references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them");
+		errors.add(
+				"references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them");
 		errors.add("Unknown column ");
 		if (Randomly.getBoolean()) {
 			sb.append(" WITH ");

@@ -27,11 +27,11 @@ public class ClickhouseSchema extends AbstractSchema<ClickhouseTable> {
 		private ClickhouseDataType(String textRepr) {
 			this.textRepr = textRepr;
 		}
-		
+
 		public static ClickhouseDataType getRandom() {
 			return Randomly.fromOptions(values());
 		}
-		
+
 		@Override
 		public String toString() {
 			return textRepr;
@@ -116,7 +116,8 @@ public class ClickhouseSchema extends AbstractSchema<ClickhouseTable> {
 
 	public static class ClickhouseTable extends AbstractTable<ClickhouseColumn, TableIndex> {
 
-		public ClickhouseTable(String tableName, List<ClickhouseColumn> columns, List<TableIndex> indexes, boolean isView) {
+		public ClickhouseTable(String tableName, List<ClickhouseColumn> columns, List<TableIndex> indexes,
+				boolean isView) {
 			super(tableName, columns, indexes, isView);
 		}
 

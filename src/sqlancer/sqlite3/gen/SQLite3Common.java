@@ -20,9 +20,9 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class SQLite3Common {
-	
+
 	public static String getRandomCollate() {
-		return Randomly.fromOptions(" COLLATE BINARY", " COLLATE RTRIM", " COLLATE NOCASE"/*, " COLLATE UINT"*/);
+		return Randomly.fromOptions(" COLLATE BINARY", " COLLATE RTRIM", " COLLATE NOCASE"/* , " COLLATE UINT" */);
 	}
 
 	public static String createTableName(int nr) {
