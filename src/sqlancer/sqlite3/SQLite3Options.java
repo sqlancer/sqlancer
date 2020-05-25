@@ -17,6 +17,7 @@ import sqlancer.sqlite3.queries.SQLite3MetamorphicQuerySynthesizer;
 import sqlancer.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
 import sqlancer.sqlite3.queries.SQLite3QueryPartitioningAggregateTester;
 import sqlancer.sqlite3.queries.SQLite3QueryPartitioningDistinctTester;
+import sqlancer.sqlite3.queries.SQLite3QueryPartitioningGroupByTester;
 import sqlancer.sqlite3.queries.SQLite3QueryPartitioningHavingTester;
 import sqlancer.sqlite3.queries.SQLite3QueryPartitioningWhereTester;
 
@@ -104,6 +105,12 @@ public class SQLite3Options {
 				return new SQLite3QueryPartitioningDistinctTester(globalState);
 			}
 		},
+		GROUP_BY {
+			@Override
+			public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
+				return new SQLite3QueryPartitioningGroupByTester(globalState);
+			}
+		},
 		HAVING() {
 			@Override
 			public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
@@ -114,8 +121,11 @@ public class SQLite3Options {
 			@Override
 			public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
 				List<TestOracle> oracles = new ArrayList<>();
-				oracles.add(new SQLite3QueryPartitioningAggregateTester(globalState));
+				oracles.add(new SQLite3QueryPartitioningWhereTester(globalState));
+				oracles.add(new SQLite3QueryPartitioningDistinctTester(globalState));
+				oracles.add(new SQLite3QueryPartitioningGroupByTester(globalState));
 				oracles.add(new SQLite3QueryPartitioningHavingTester(globalState));
+				oracles.add(new SQLite3QueryPartitioningAggregateTester(globalState));
 				return new CompositeTestOracle(oracles);
 			}
 		};
