@@ -41,6 +41,9 @@ public class MainOptions {
 	@Parameter(names="--print-progress-information", description = "Whether to print progress information such as the number of databases generated or queries issued", arity = 1)
 	private boolean printProgressInformation = true;
 	
+	@Parameter(names="--timeout-seconds", description = "The timeout in seconds")
+	private int timeoutSeconds = -1;
+	
 	public int getMaxExpressionDepth() {
 		return maxExpressionDepth;
 	}
@@ -94,6 +97,10 @@ public class MainOptions {
 	
 	public boolean printProgressInformation() {
 		return printProgressInformation;
+	}
+	
+	public int getTimeoutSeconds() {
+		return timeoutSeconds;
 	}
 
 }

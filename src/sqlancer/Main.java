@@ -44,7 +44,7 @@ public class Main {
 	public static volatile AtomicLong nrDatabases = new AtomicLong();
 	public static volatile AtomicLong nrSuccessfulActions = new AtomicLong();
 	public static volatile AtomicLong nrUnsuccessfulActions = new AtomicLong();
-	
+
 	static {
 		if (!LOG_DIRECTORY.exists()) {
 			LOG_DIRECTORY.mkdir();
@@ -298,7 +298,7 @@ public class Main {
 		}
 
 		if (options.printProgressInformation()) {
-			startProgressMonitor();
+			startProgressMonitor(options);
 		}
 
 		ExecutorService executor = Executors.newFixedThreadPool(options.getNumberConcurrentThreads());
@@ -392,8 +392,8 @@ public class Main {
 
 	}
 
-	private static void startProgressMonitor() {
-		final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+	private static void startProgressMonitor(MainOptions options) {
+		final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
 		scheduler.scheduleAtFixedRate(new Runnable() {
 
 			private long timeMillis = System.currentTimeMillis();
@@ -426,6 +426,15 @@ public class Main {
 				lastNrDbs = currentNrDbs;
 			}
 		}, 5, 5, TimeUnit.SECONDS);
+		if (options.getTimeoutSeconds() != -1) {
+			scheduler.schedule(new Runnable() {
+
+				@Override
+				public void run() {
+					System.exit(0);
+				}
+			}, options.getTimeoutSeconds(), TimeUnit.SECONDS);
+		}
 	}
 
 }
