@@ -32,7 +32,7 @@ public class PostgresTableGenerator {
 	private boolean generateOnlyKnown;
 	private PostgresGlobalState globalState;
 
-	public PostgresTableGenerator(String tableName, Randomly r, PostgresSchema newSchema, boolean generateOnlyKnown,
+	public PostgresTableGenerator(String tableName, PostgresSchema newSchema, boolean generateOnlyKnown,
 			PostgresGlobalState globalState) {
 		this.tableName = tableName;
 		this.newSchema = newSchema;
@@ -57,9 +57,9 @@ public class PostgresTableGenerator {
 		PostgresCommon.addCommonTableErrors(errors);
 	}
 
-	public static Query generate(String tableName, Randomly r, PostgresSchema newSchema, boolean generateOnlyKnown,
+	public static Query generate(String tableName, PostgresSchema newSchema, boolean generateOnlyKnown,
 			PostgresGlobalState globalState) {
-		return new PostgresTableGenerator(tableName, r, newSchema, generateOnlyKnown, globalState).generate();
+		return new PostgresTableGenerator(tableName, newSchema, generateOnlyKnown, globalState).generate();
 	}
 
 	private Query generate() {

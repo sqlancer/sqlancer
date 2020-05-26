@@ -125,6 +125,7 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState, MySQLOp
 		case CHECK_TABLE:
 		case ANALYZE_TABLE:
 			nrPerformed = r.getInteger(0, 2);
+			break;
 		case ALTER_TABLE:
 			nrPerformed = r.getInteger(0, 5);
 			break;
@@ -133,6 +134,7 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState, MySQLOp
 			break;
 		case SELECT_INFO:
 			nrPerformed = r.getInteger(0, 10);
+			break;
 		case DELETE:
 			nrPerformed = r.getInteger(0, 10);
 			break;

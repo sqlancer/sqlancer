@@ -206,7 +206,7 @@ public class SQLite3Schema {
 					SQLite3Constant constant = getConstant(randomRowValues, columnIndex, valueType);
 					values.put(column, constant);
 				}
-				assert (!randomRowValues.next());
+				assert !randomRowValues.next();
 				state.randomRowValues = values;
 				return new SQLite3RowValue(this, values);
 			}

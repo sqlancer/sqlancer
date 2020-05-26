@@ -205,8 +205,8 @@ public final class PostgresProvider implements DatabaseProvider<PostgresGlobalSt
 		while (globalState.getSchema().getDatabaseTables().size() < 1) {
 			try {
 				String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
-				Query createTable = PostgresTableGenerator.generate(tableName, globalState.getRandomly(),
-						globalState.getSchema(), GENERATE_ONLY_KNOWN, globalState);
+				Query createTable = PostgresTableGenerator.generate(tableName, globalState.getSchema(),
+						GENERATE_ONLY_KNOWN, globalState);
 				if (options.logEachSelect()) {
 					logger.writeCurrent(createTable.getQueryString());
 				}

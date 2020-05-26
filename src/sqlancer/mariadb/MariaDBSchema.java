@@ -14,7 +14,6 @@ import java.util.stream.Stream;
 
 import sqlancer.Randomly;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable.MariaDBEngine;
-import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 
 public class MariaDBSchema {
 
@@ -59,7 +58,7 @@ public class MariaDBSchema {
 
 		@Override
 		public boolean equals(Object obj) {
-			if (!(obj instanceof SQLite3Column)) {
+			if (!(obj instanceof MariaDBColumn)) {
 				return false;
 			} else {
 				MariaDBColumn c = (MariaDBColumn) obj;
