@@ -17,15 +17,15 @@ import sqlancer.tidb.TiDBSchema.TiDBTable;
 
 public class TiDBSchema extends AbstractSchema<TiDBTable> {
 
-	public static enum TiDBDataType {
+	public enum TiDBDataType {
 
 		INT, TEXT, BOOL, FLOATING, CHAR, DECIMAL, NUMERIC, BLOB;
 
-		private TiDBDataType() {
+		TiDBDataType() {
 			isPrimitive = true;
 		}
 
-		private TiDBDataType(boolean isPrimitive) {
+		TiDBDataType(boolean isPrimitive) {
 			this.isPrimitive = isPrimitive;
 		}
 

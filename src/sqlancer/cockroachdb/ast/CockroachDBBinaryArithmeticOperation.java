@@ -9,7 +9,7 @@ public class CockroachDBBinaryArithmeticOperation
 		extends BinaryOperatorNode<CockroachDBExpression, CockroachDBBinaryArithmeticOperator>
 		implements CockroachDBExpression {
 
-	public static enum CockroachDBBinaryArithmeticOperator implements Operator {
+	public enum CockroachDBBinaryArithmeticOperator implements Operator {
 		ADD("+"), MULT("*"), MINUS("-"), DIV("/");
 
 		String textRepresentation;

@@ -17,7 +17,7 @@ import sqlancer.schema.TableIndex;
 
 public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
 
-	public static enum DuckDBDataType {
+	public enum DuckDBDataType {
 
 		INT, VARCHAR, BOOLEAN, FLOAT, DATE, TIMESTAMP;
 

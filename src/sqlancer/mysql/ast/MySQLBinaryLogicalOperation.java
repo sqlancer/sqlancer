@@ -59,7 +59,7 @@ public class MySQLBinaryLogicalOperation implements MySQLExpression {
 
 		private final String[] textRepresentations;
 
-		private MySQLBinaryLogicalOperator(String... textRepresentations) {
+		MySQLBinaryLogicalOperator(String... textRepresentations) {
 			this.textRepresentations = textRepresentations;
 		}
 

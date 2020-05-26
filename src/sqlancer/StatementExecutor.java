@@ -8,12 +8,12 @@ public class StatementExecutor<G extends GlobalState<?>, A extends AbstractActio
 
 	@FunctionalInterface
 	public interface AfterQueryAction {
-		public void notify(Query q) throws SQLException;
+		void notify(Query q) throws SQLException;
 	}
 
 	@FunctionalInterface
 	public interface ActionMapper<T, A> {
-		public int map(T globalState, A action);
+		int map(T globalState, A action);
 	}
 
 	private final G globalState;

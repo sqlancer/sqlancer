@@ -8,7 +8,7 @@ import sqlancer.tidb.ast.TiDBUnaryPrefixOperation.TiDBUnaryPrefixOperator;
 public class TiDBUnaryPrefixOperation extends UnaryOperatorNode<TiDBExpression, TiDBUnaryPrefixOperator>
 		implements TiDBExpression {
 
-	public static enum TiDBUnaryPrefixOperator implements Operator {
+	public enum TiDBUnaryPrefixOperator implements Operator {
 		NOT("NOT"), //
 		INVERSION("~"), //
 		PLUS("+"), //
@@ -17,7 +17,7 @@ public class TiDBUnaryPrefixOperation extends UnaryOperatorNode<TiDBExpression, 
 
 		private String s;
 
-		private TiDBUnaryPrefixOperator(String s) {
+		TiDBUnaryPrefixOperator(String s) {
 			this.s = s;
 		}
 

@@ -16,7 +16,7 @@ public class CockroachDBRegexOperation extends BinaryNode<CockroachDBExpression>
 
 		private String textRepr;
 
-		private CockroachDBRegexOperator(String textRepr) {
+		CockroachDBRegexOperator(String textRepr) {
 			this.textRepr = textRepr;
 		}
 

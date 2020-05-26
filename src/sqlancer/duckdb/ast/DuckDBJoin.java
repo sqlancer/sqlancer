@@ -19,7 +19,7 @@ public class DuckDBJoin implements Node<DuckDBExpression> {
 	private final Node<DuckDBExpression> onCondition;
 	private OuterType outerType;
 
-	public static enum JoinType {
+	public enum JoinType {
 		INNER, NATURAL, LEFT, RIGHT;
 
 		public static JoinType getRandom() {
@@ -27,7 +27,7 @@ public class DuckDBJoin implements Node<DuckDBExpression> {
 		}
 	}
 
-	public static enum OuterType {
+	public enum OuterType {
 		FULL, LEFT, RIGHT;
 
 		public static OuterType getRandom() {

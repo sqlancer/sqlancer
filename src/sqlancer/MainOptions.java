@@ -76,7 +76,7 @@ public class MainOptions {
 		return nrStatementRetryCount;
 	}
 
-	public static enum DBMS {
+	public enum DBMS {
 		MariaDB, SQLite3, MySQL, PostgreSQL, TDEngine, CockroachDB, TiDB
 	}
 

@@ -53,7 +53,7 @@ public class MySQLAlterTable {
 
 		private String[] potentialErrors;
 
-		private Action(String... couldCauseErrors) {
+		Action(String... couldCauseErrors) {
 			this.potentialErrors = couldCauseErrors;
 		}
 

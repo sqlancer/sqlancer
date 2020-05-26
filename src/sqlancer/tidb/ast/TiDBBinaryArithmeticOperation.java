@@ -8,7 +8,7 @@ import sqlancer.tidb.ast.TiDBBinaryArithmeticOperation.TiDBBinaryArithmeticOpera
 public class TiDBBinaryArithmeticOperation extends BinaryOperatorNode<TiDBExpression, TiDBBinaryArithmeticOperator>
 		implements TiDBExpression {
 
-	public static enum TiDBBinaryArithmeticOperator implements Operator {
+	public enum TiDBBinaryArithmeticOperator implements Operator {
 		ADD("+"), //
 		MINUS("-"), //
 		MULT("*"), //

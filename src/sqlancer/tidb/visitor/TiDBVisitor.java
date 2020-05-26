@@ -14,7 +14,7 @@ import sqlancer.tidb.ast.TiDBText;
 
 public interface TiDBVisitor {
 
-	public default void visit(TiDBExpression expr) {
+	default void visit(TiDBExpression expr) {
 		if (expr instanceof TiDBConstant) {
 			visit((TiDBConstant) expr);
 		} else if (expr instanceof TiDBColumnReference) {
@@ -60,7 +60,7 @@ public interface TiDBVisitor {
 
 	void visit(TiDBText text);
 
-	public static String asString(TiDBExpression expr) {
+	static String asString(TiDBExpression expr) {
 		TiDBToStringVisitor v = new TiDBToStringVisitor();
 		v.visit(expr);
 		return v.getString();

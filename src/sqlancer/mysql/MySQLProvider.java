@@ -75,7 +75,7 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState, MySQLOp
 
 		private final QueryProvider<MySQLGlobalState> queryProvider;
 
-		private Action(QueryProvider<MySQLGlobalState> queryProvider) {
+		Action(QueryProvider<MySQLGlobalState> queryProvider) {
 			this.queryProvider = queryProvider;
 		}
 

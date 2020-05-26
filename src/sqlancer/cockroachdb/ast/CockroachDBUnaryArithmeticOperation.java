@@ -13,7 +13,7 @@ public class CockroachDBUnaryArithmeticOperation extends
 
 		private String textRepr;
 
-		private CockroachDBUnaryAritmeticOperator(String textRepr) {
+		CockroachDBUnaryAritmeticOperator(String textRepr) {
 			this.textRepr = textRepr;
 		}
 

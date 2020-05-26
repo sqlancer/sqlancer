@@ -63,7 +63,7 @@ public class Main {
 
 		private static final class AlsoWriteToConsoleFileWriter extends FileWriter {
 
-			public AlsoWriteToConsoleFileWriter(File file) throws IOException {
+			AlsoWriteToConsoleFileWriter(File file) throws IOException {
 				super(file);
 			}
 

@@ -30,7 +30,7 @@ public class CockroachDBSetClusterSettingGenerator {
 		private Function<CockroachDBGlobalState, Object> f;
 		private String name;
 
-		private CockroachDBClusterSetting(String name, Function<CockroachDBGlobalState, Object> f) {
+		CockroachDBClusterSetting(String name, Function<CockroachDBGlobalState, Object> f) {
 			this.name = name;
 			this.f = f;
 		}

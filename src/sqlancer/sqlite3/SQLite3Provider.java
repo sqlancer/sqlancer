@@ -54,7 +54,7 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table.TableKind;
 
 public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQLite3Options> {
 
-	public static enum Action {
+	public enum Action {
 		PRAGMA(SQLite3PragmaGenerator::insertPragma), //
 		INDEX(SQLite3IndexGenerator::insertIndex), //
 		INSERT(SQLite3InsertGenerator::insertRow), //
@@ -136,7 +136,7 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQL
 
 		private final QueryProvider<SQLite3GlobalState> queryProvider;
 
-		private Action(QueryProvider<SQLite3GlobalState> queryProvider) {
+		Action(QueryProvider<SQLite3GlobalState> queryProvider) {
 			this.queryProvider = queryProvider;
 		}
 

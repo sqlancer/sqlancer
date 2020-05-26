@@ -8,7 +8,7 @@ import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnar
 public class CockroachDBUnaryPostfixOperation extends
 		UnaryOperatorNode<CockroachDBExpression, CockroachDBUnaryPostfixOperator> implements CockroachDBExpression {
 
-	public static enum CockroachDBUnaryPostfixOperator implements Operator {
+	public enum CockroachDBUnaryPostfixOperator implements Operator {
 		IS_NULL("IS NULL"), //
 		IS_NOT_NULL("IS NOT NULL"), //
 		IS_NAN("IS NAN"), //
@@ -17,7 +17,7 @@ public class CockroachDBUnaryPostfixOperation extends
 
 		private String s;
 
-		private CockroachDBUnaryPostfixOperator(String s) {
+		CockroachDBUnaryPostfixOperator(String s) {
 			this.s = s;
 		}
 

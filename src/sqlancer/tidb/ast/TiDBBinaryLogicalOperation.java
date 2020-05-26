@@ -8,7 +8,7 @@ import sqlancer.tidb.ast.TiDBBinaryLogicalOperation.TiDBBinaryLogicalOperator;
 public class TiDBBinaryLogicalOperation extends BinaryOperatorNode<TiDBExpression, TiDBBinaryLogicalOperator>
 		implements TiDBExpression {
 
-	public static enum TiDBBinaryLogicalOperator implements Operator {
+	public enum TiDBBinaryLogicalOperator implements Operator {
 		AND("AND"), //
 		OR("OR"); //
 

@@ -13,7 +13,7 @@ public class CockroachDBBinaryLogicalOperation extends
 
 		private String textRepr;
 
-		private CockroachDBBinaryLogicalOperator(String textRepr) {
+		CockroachDBBinaryLogicalOperator(String textRepr) {
 			this.textRepr = textRepr;
 		}
 

@@ -304,7 +304,7 @@ public abstract class MySQLConstant implements MySQLExpression {
 			return isSigned;
 		}
 
-		private final String getStringRepr() {
+		private String getStringRepr() {
 			if (isSigned) {
 				return String.valueOf(value);
 			} else {

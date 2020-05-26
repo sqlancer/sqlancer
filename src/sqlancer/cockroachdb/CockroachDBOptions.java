@@ -25,7 +25,7 @@ public class CockroachDBOptions {
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)
 	public CockroachDBOracle oracle = CockroachDBOracle.NOREC;
 
-	public static enum CockroachDBOracle {
+	public enum CockroachDBOracle {
 		NOREC {
 			@Override
 			public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {

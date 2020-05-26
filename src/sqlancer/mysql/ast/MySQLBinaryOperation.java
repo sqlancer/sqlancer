@@ -48,7 +48,7 @@ public class MySQLBinaryOperation implements MySQLExpression {
 
 		private String textRepresentation;
 
-		private MySQLBinaryOperator(String textRepresentation) {
+		MySQLBinaryOperator(String textRepresentation) {
 			this.textRepresentation = textRepresentation;
 		}
 

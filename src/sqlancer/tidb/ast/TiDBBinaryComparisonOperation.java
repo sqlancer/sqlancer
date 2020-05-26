@@ -19,7 +19,7 @@ public class TiDBBinaryComparisonOperation extends BinaryOperatorNode<TiDBExpres
 
 		private String textRepr;
 
-		private TiDBComparisonOperator(String textRepr) {
+		TiDBComparisonOperator(String textRepr) {
 			this.textRepr = textRepr;
 		}
 

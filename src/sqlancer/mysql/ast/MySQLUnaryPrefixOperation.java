@@ -42,7 +42,7 @@ public class MySQLUnaryPrefixOperation extends UnaryOperatorNode<MySQLExpression
 
 		private String[] textRepresentations;
 
-		private MySQLUnaryPrefixOperator(String... textRepresentations) {
+		MySQLUnaryPrefixOperator(String... textRepresentations) {
 			this.textRepresentations = textRepresentations;
 		}
 

@@ -79,7 +79,7 @@ public class ClickhouseExpressionGenerator
 
 		private String textRepr;
 
-		private ClickhouseUnaryPostfixOperator(String textRepr) {
+		ClickhouseUnaryPostfixOperator(String textRepr) {
 			this.textRepr = textRepr;
 		}
 
@@ -100,7 +100,7 @@ public class ClickhouseExpressionGenerator
 
 		private String textRepr;
 
-		private ClickhouseUnaryPrefixOperator(String textRepr) {
+		ClickhouseUnaryPrefixOperator(String textRepr) {
 			this.textRepr = textRepr;
 		}
 
@@ -137,7 +137,7 @@ public class ClickhouseExpressionGenerator
 
 		private String textRepr;
 
-		private ClickhouseBinaryComparisonOperator(String textRepr) {
+		ClickhouseBinaryComparisonOperator(String textRepr) {
 			this.textRepr = textRepr;
 		}
 

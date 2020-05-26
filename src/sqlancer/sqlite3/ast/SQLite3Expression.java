@@ -84,7 +84,7 @@ public abstract class SQLite3Expression {
 		return null;
 	}
 
-	public static enum TypeAffinity {
+	public enum TypeAffinity {
 		INTEGER, TEXT, BLOB, REAL, NUMERIC, NONE;
 
 		public boolean isNumeric() {
@@ -133,7 +133,7 @@ public abstract class SQLite3Expression {
 
 	public static class Join extends SQLite3Expression {
 
-		public static enum JoinType {
+		public enum JoinType {
 			INNER, CROSS, OUTER, NATURAL;
 		}
 
@@ -206,7 +206,7 @@ public abstract class SQLite3Expression {
 
 		private final Type type;
 
-		public static enum Type {
+		public enum Type {
 			TEXT {
 				@Override
 				public SQLite3Constant apply(SQLite3Constant cons) {
@@ -541,7 +541,7 @@ public abstract class SQLite3Expression {
 
 			private final String textRepresentation;
 
-			private PostfixUnaryOperator(String textRepresentation) {
+			PostfixUnaryOperator(String textRepresentation) {
 				this.textRepresentation = textRepresentation;
 			}
 
@@ -1027,7 +1027,7 @@ public abstract class SQLite3Expression {
 
 			private final String[] textRepresentation;
 
-			private BinaryComparisonOperator(String... textRepresentation) {
+			BinaryComparisonOperator(String... textRepresentation) {
 				this.textRepresentation = textRepresentation;
 			}
 
@@ -1462,7 +1462,7 @@ public abstract class SQLite3Expression {
 
 			private final String[] textRepresentation;
 
-			private BinaryOperator(String... textRepresentation) {
+			BinaryOperator(String... textRepresentation) {
 				this.textRepresentation = textRepresentation;
 			}
 
@@ -1618,7 +1618,7 @@ public abstract class SQLite3Expression {
 		SQLite3Constant left;
 		SQLite3Constant right;
 
-		public ConstantTuple(SQLite3Constant left, SQLite3Constant right) {
+		ConstantTuple(SQLite3Constant left, SQLite3Constant right) {
 			this.left = left;
 			this.right = right;
 		}

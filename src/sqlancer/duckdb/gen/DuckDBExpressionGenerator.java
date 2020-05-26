@@ -311,7 +311,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 
 		private String textRepr;
 
-		private DuckDBUnaryPostfixOperator(String textRepr) {
+		DuckDBUnaryPostfixOperator(String textRepr) {
 			this.textRepr = textRepr;
 		}
 
@@ -351,7 +351,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 
 		private String textRepr;
 
-		private DuckDBUnaryPrefixOperator(String textRepr) {
+		DuckDBUnaryPrefixOperator(String textRepr) {
 			this.textRepr = textRepr;
 		}
 
@@ -387,7 +387,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 
 		private String textRepr;
 
-		private DuckDBBinaryArithmeticOperator(String textRepr) {
+		DuckDBBinaryArithmeticOperator(String textRepr) {
 			this.textRepr = textRepr;
 		}
 
@@ -410,7 +410,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 
 		private String textRepr;
 
-		private DuckDBBinaryComparisonOperator(String textRepr) {
+		DuckDBBinaryComparisonOperator(String textRepr) {
 			this.textRepr = textRepr;
 		}
 

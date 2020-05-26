@@ -21,14 +21,14 @@ public class TiDBOptions {
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)
 	public List<TiDBOracle> oracle = Arrays.asList(TiDBOracle.QUERY_PARTITIONING);
 
-	public static enum TiDBOracle {
-		HAVING() {
+	public enum TiDBOracle {
+		HAVING {
 			@Override
 			public TestOracle create(TiDBGlobalState globalState) throws SQLException {
 				return new TiDBQueryPartitioningHavingTester(globalState);
 			}
 		},
-		WHERE() {
+		WHERE {
 			@Override
 			public TestOracle create(TiDBGlobalState globalState) throws SQLException {
 				return new TiDBQueryPartitioningWhereTester(globalState);

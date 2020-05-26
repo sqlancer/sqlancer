@@ -10,7 +10,7 @@ public class CockroachDBJoin implements CockroachDBExpression {
 	private final CockroachDBExpression onCondition;
 	private OuterType outerType;
 
-	public static enum JoinType {
+	public enum JoinType {
 		INNER, NATURAL, CROSS, OUTER;
 
 		public static JoinType getRandom() {
@@ -18,7 +18,7 @@ public class CockroachDBJoin implements CockroachDBExpression {
 		}
 	}
 
-	public static enum OuterType {
+	public enum OuterType {
 		FULL, LEFT, RIGHT;
 
 		public static OuterType getRandom() {

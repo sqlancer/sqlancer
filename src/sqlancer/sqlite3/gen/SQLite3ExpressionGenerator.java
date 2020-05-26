@@ -484,7 +484,7 @@ public class SQLite3ExpressionGenerator {
 		private boolean deterministic;
 		private String name;
 
-		private AnyFunction(String name, int minNrArgs, Attribute... attributes) {
+		AnyFunction(String name, int minNrArgs, Attribute... attributes) {
 			this.name = name;
 			List<Attribute> attrs = Arrays.asList(attributes);
 			this.minNrArgs = minNrArgs;

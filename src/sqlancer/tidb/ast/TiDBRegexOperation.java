@@ -16,7 +16,7 @@ public class TiDBRegexOperation extends BinaryOperatorNode<TiDBExpression, TiDBR
 
 		private String textRepr;
 
-		private TiDBRegexOperator(String textRepr) {
+		TiDBRegexOperator(String textRepr) {
 			this.textRepr = textRepr;
 		}
 

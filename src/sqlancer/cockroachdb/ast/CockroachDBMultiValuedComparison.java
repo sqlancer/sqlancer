@@ -11,7 +11,7 @@ public class CockroachDBMultiValuedComparison implements CockroachDBExpression {
 	private MultiValuedComparisonType type;
 	private MultiValuedComparisonOperator op;
 
-	public static enum MultiValuedComparisonType {
+	public enum MultiValuedComparisonType {
 		ANY, SOME, ALL;
 
 		public static MultiValuedComparisonType getRandom() {
@@ -19,12 +19,12 @@ public class CockroachDBMultiValuedComparison implements CockroachDBExpression {
 		}
 	}
 
-	public static enum MultiValuedComparisonOperator {
+	public enum MultiValuedComparisonOperator {
 		SMALLER("<"), GREATER(">"), EQUALS("="), SMALLER_EQUALS("<="), GREATER_EQUALS(">="), NOT_EQUALS("!=");
 
 		private String stringRepr;
 
-		private MultiValuedComparisonOperator(String stringRepr) {
+		MultiValuedComparisonOperator(String stringRepr) {
 			this.stringRepr = stringRepr;
 		}
 

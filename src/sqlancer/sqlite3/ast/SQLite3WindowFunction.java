@@ -24,7 +24,7 @@ public class SQLite3WindowFunction extends SQLite3Expression {
 		return new SQLite3WindowFunction(func, args);
 	}
 
-	public static enum WindowFunction {
+	public enum WindowFunction {
 
 		ROW_NUMBER {
 			@Override
@@ -91,7 +91,7 @@ public class SQLite3WindowFunction extends SQLite3Expression {
 			this.nrArgs = nrArgs;
 		};
 
-		private WindowFunction() {
+		WindowFunction() {
 			this(0);
 		}
 

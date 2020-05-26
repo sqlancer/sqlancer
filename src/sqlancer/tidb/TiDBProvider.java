@@ -39,7 +39,7 @@ import sqlancer.tidb.gen.TiDBViewGenerator;
 
 public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptions> {
 
-	public static enum Action implements AbstractAction<TiDBGlobalState> {
+	public enum Action implements AbstractAction<TiDBGlobalState> {
 		INSERT(TiDBInsertGenerator::getQuery), //
 		ANALYZE_TABLE(TiDBAnalyzeTableGenerator::getQuery),
 		TRUNCATE((g) -> new QueryAdapter("TRUNCATE " + g.getSchema().getRandomTable(t -> !t.isView()).getName())),
@@ -58,7 +58,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 
 		private final QueryProvider<TiDBGlobalState> queryProvider;
 
-		private Action(QueryProvider<TiDBGlobalState> queryProvider) {
+		Action(QueryProvider<TiDBGlobalState> queryProvider) {
 			this.queryProvider = queryProvider;
 		}
 

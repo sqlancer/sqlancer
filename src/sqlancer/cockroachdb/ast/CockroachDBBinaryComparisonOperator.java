@@ -14,7 +14,7 @@ public class CockroachDBBinaryComparisonOperator extends
 
 		private String textRepr;
 
-		private CockroachDBComparisonOperator(String textRepr) {
+		CockroachDBComparisonOperator(String textRepr) {
 			this.textRepr = textRepr;
 		}
 

@@ -2,7 +2,7 @@ package sqlancer.visitor;
 
 public interface UnaryOperation<T> {
 
-	static enum OperatorKind {
+	enum OperatorKind {
 		PREFIX, POSTFIX
 	}
 

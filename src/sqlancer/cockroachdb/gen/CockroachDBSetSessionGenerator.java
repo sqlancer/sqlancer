@@ -38,7 +38,7 @@ public class CockroachDBSetSessionGenerator {
 
 		private Function<CockroachDBGlobalState, Object> f;
 
-		private CockroachDBSetting(Function<CockroachDBGlobalState, Object> f) {
+		CockroachDBSetting(Function<CockroachDBGlobalState, Object> f) {
 			this.f = f;
 		}
 	}

@@ -268,7 +268,7 @@ public class SQLite3Function extends SQLite3Expression {
 		private String functionName;
 		final int nrArgs;
 
-		private ComputableFunction(int nrArgs, String functionName) {
+		ComputableFunction(int nrArgs, String functionName) {
 			this.nrArgs = nrArgs;
 			this.functionName = functionName;
 		}

@@ -33,7 +33,7 @@ public interface DatabaseProvider<G extends GlobalState<O>, O> {
 
 	O getCommand();
 
-	public static boolean isEqualDouble(String first, String second) {
+	static boolean isEqualDouble(String first, String second) {
 		try {
 			double val = Double.parseDouble(first);
 			double secVal = Double.parseDouble(second);
@@ -43,7 +43,7 @@ public interface DatabaseProvider<G extends GlobalState<O>, O> {
 		}
 	}
 
-	public static boolean equals(double a, double b) {
+	static boolean equals(double a, double b) {
 		if (a == b) {
 			return true;
 		}
@@ -51,7 +51,7 @@ public interface DatabaseProvider<G extends GlobalState<O>, O> {
 		return Math.abs(a - b) < 0.0001 * Math.max(Math.abs(a), Math.abs(b));
 	}
 
-	public static List<String> getResultSetFirstColumnAsString(String queryString, Set<String> errors, Connection con,
+	static List<String> getResultSetFirstColumnAsString(String queryString, Set<String> errors, Connection con,
 			GlobalState<?> state) throws SQLException {
 		if (state.getOptions().logEachSelect()) {
 			// TODO: refactor me

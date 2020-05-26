@@ -18,13 +18,13 @@ import sqlancer.schema.TableIndex;
 
 public class ClickhouseSchema extends AbstractSchema<ClickhouseTable> {
 
-	public static enum ClickhouseDataType {
+	public enum ClickhouseDataType {
 
 		INT("INT"), STRING("String");
 
 		private String textRepr;
 
-		private ClickhouseDataType(String textRepr) {
+		ClickhouseDataType(String textRepr) {
 			this.textRepr = textRepr;
 		}
 

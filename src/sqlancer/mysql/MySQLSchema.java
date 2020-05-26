@@ -26,7 +26,7 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
 
 	private static final int NR_SCHEMA_READ_TRIES = 10;
 
-	public static enum MySQLDataType {
+	public enum MySQLDataType {
 		INT, VARCHAR, FLOAT, DOUBLE, DECIMAL;
 
 		public static MySQLDataType getRandom() {
@@ -222,7 +222,7 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
 
 	public static class MySQLTable extends AbstractTable<MySQLColumn, MySQLIndex> {
 
-		public static enum MySQLEngine {
+		public enum MySQLEngine {
 			INNO_DB("InnoDB"), MY_ISAM("MyISAM"), MEMORY("MEMORY"), HEAP("HEAP"), CSV("CSV"), MERGE("MERGE"),
 			ARCHIVE("ARCHIVE"), FEDERATED("FEDERATED");
 

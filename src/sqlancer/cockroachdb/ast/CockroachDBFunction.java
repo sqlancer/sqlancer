@@ -129,13 +129,13 @@ public enum CockroachDBFunction {
 	private CockroachDBDataType[] argumentTypes;
 	private String functionName;
 
-	private CockroachDBFunction(CockroachDBDataType returnType, CockroachDBDataType... argumentTypes) {
+	CockroachDBFunction(CockroachDBDataType returnType, CockroachDBDataType... argumentTypes) {
 		this.returnType = returnType;
 		this.argumentTypes = argumentTypes;
 		this.functionName = toString();
 	}
 
-	private CockroachDBFunction(CockroachDBDataType returnType) {
+	CockroachDBFunction(CockroachDBDataType returnType) {
 		this.returnType = returnType;
 		this.argumentTypes = new CockroachDBDataType[0];
 		this.functionName = toString();
@@ -145,7 +145,7 @@ public enum CockroachDBFunction {
 		return functionName;
 	}
 
-	private CockroachDBFunction(String functionName, CockroachDBDataType returnType,
+	CockroachDBFunction(String functionName, CockroachDBDataType returnType,
 			CockroachDBDataType... argumentTypes) {
 		this.functionName = functionName;
 		this.returnType = returnType;

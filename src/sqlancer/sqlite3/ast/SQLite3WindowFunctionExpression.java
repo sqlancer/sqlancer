@@ -10,7 +10,7 @@ public class SQLite3WindowFunctionExpression extends SQLite3Expression {
 
 	public static class SQLite3WindowFunctionFrameSpecTerm extends SQLite3Expression {
 
-		public static enum SQLite3WindowFunctionFrameSpecTermKind {
+		public enum SQLite3WindowFunctionFrameSpecTermKind {
 			UNBOUNDED_PRECEDING("UNBOUNDED PRECEDING"), EXPR_PRECEDING("PRECEDING"), CURRENT_ROW("CURRENT ROW"),
 			EXPR_FOLLOWING("FOLLOWING"), UNBOUNDED_FOLLOWING("UNBOUNDED FOLLOWING");
 
@@ -81,13 +81,13 @@ public class SQLite3WindowFunctionExpression extends SQLite3Expression {
 
 	}
 
-	public static enum SQLite3FrameSpecExclude {
+	public enum SQLite3FrameSpecExclude {
 		EXCLUDE_NO_OTHERS("EXCLUDE NO OTHERS"), EXCLUDE_CURRENT_ROW("EXCLUDE CURRENT ROW"),
 		EXCLUDE_GROUP("EXCLUDE GROUP"), EXCLUDE_TIES("EXCLUDE TIES");
 
 		private final String s;
 
-		private SQLite3FrameSpecExclude(String s) {
+		SQLite3FrameSpecExclude(String s) {
 			this.s = s;
 		}
 
@@ -100,7 +100,7 @@ public class SQLite3WindowFunctionExpression extends SQLite3Expression {
 		}
 	}
 
-	public static enum SQLite3FrameSpecKind {
+	public enum SQLite3FrameSpecKind {
 		RANGE, ROWS, GROUPS;
 
 		public static SQLite3FrameSpecKind getRandom() {

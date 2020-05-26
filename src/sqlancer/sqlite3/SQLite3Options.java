@@ -70,26 +70,26 @@ public class SQLite3Options {
 	@Parameter(names = "--oracle", converter = DBMSConverter.class)
 	public SQLite3Oracle oracle = SQLite3Oracle.METAMORPHIC;
 
-	public static enum SQLite3Oracle {
-		PQS() {
+	public enum SQLite3Oracle {
+		PQS {
 			@Override
 			public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
 				return new SQLite3PivotedQuerySynthesizer(globalState);
 			}
 		},
-		METAMORPHIC() {
+		METAMORPHIC {
 			@Override
 			public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
 				return new SQLite3MetamorphicQuerySynthesizer(globalState);
 			}
 		},
-		FUZZER() {
+		FUZZER {
 			@Override
 			public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
 				return new SQLite3Fuzzer(globalState);
 			}
 		},
-		AGGREGATE() {
+		AGGREGATE {
 
 			@Override
 			public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
@@ -117,7 +117,7 @@ public class SQLite3Options {
 				return new SQLite3QueryPartitioningGroupByTester(globalState);
 			}
 		},
-		HAVING() {
+		HAVING {
 			@Override
 			public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
 				return new SQLite3QueryPartitioningHavingTester(globalState);

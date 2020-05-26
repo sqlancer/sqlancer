@@ -2,10 +2,10 @@ package sqlancer.visitor;
 
 public interface TernaryOperation<T> {
 
-	public abstract T getLeft();
+	T getLeft();
 
-	public abstract T getMiddle();
+	T getMiddle();
 
-	public abstract T getRight();
+	T getRight();
 
 }

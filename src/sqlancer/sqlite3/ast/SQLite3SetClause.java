@@ -9,12 +9,12 @@ public class SQLite3SetClause extends SQLite3Expression {
 	private final SQLite3Expression right;
 	private final SQLite3ClauseType type;
 
-	public static enum SQLite3ClauseType {
+	public enum SQLite3ClauseType {
 		UNION("UNION"), UNION_ALL("UNION ALL"), INTERSECT("INTERSECT"), EXCEPT("EXCEPT");
 
 		private final String textRepresentation;
 
-		private SQLite3ClauseType(String textRepresentation) {
+		SQLite3ClauseType(String textRepresentation) {
 			this.textRepresentation = textRepresentation;
 		}
 

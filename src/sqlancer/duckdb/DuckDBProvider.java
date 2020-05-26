@@ -33,7 +33,7 @@ import sqlancer.duckdb.gen.DuckDBViewGenerator;
 
 public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckDBOptions> {
 
-	public static enum Action implements AbstractAction<DuckDBGlobalState> {
+	public enum Action implements AbstractAction<DuckDBGlobalState> {
 
 		INSERT(DuckDBInsertGenerator::getQuery), CREATE_INDEX(DuckDBIndexGenerator::getQuery),
 		VACUUM((g) -> new QueryAdapter("VACUUM;")), ANALYZE((g) -> new QueryAdapter("ANALYZE;")),
@@ -50,7 +50,7 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 
 		private final QueryProvider<DuckDBGlobalState> queryProvider;
 
-		private Action(QueryProvider<DuckDBGlobalState> queryProvider) {
+		Action(QueryProvider<DuckDBGlobalState> queryProvider) {
 			this.queryProvider = queryProvider;
 		}
 

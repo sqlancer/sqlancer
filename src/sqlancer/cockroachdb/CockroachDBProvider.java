@@ -43,7 +43,7 @@ import sqlancer.cockroachdb.gen.RockroachDBCommentOnGenerator;
 
 public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalState, CockroachDBOptions> {
 
-	public static enum Action {
+	public enum Action {
 		INSERT(CockroachDBInsertGenerator::insert), //
 		TRUNCATE(CockroachDBTruncateGenerator::truncate), //
 		CREATE_STATISTICS(CockroachDBCreateStatisticsGenerator::create), //
@@ -100,7 +100,7 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
 
 		private final QueryProvider<CockroachDBGlobalState> queryProvider;
 
-		private Action(QueryProvider<CockroachDBGlobalState> queryProvider) {
+		Action(QueryProvider<CockroachDBGlobalState> queryProvider) {
 			this.queryProvider = queryProvider;
 		}
 

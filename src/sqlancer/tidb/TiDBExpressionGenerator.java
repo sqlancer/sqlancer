@@ -42,7 +42,7 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
 		this.globalState = globalState;
 	}
 
-	private static enum Gen {
+	private enum Gen {
 		UNARY_PREFIX, //
 		UNARY_POSTFIX, //
 		CONSTANT, //

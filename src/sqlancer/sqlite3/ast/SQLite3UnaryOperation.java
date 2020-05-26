@@ -90,7 +90,7 @@ public class SQLite3UnaryOperation extends SQLite3Expression implements UnaryOpe
 
 		private String textRepresentation;
 
-		private UnaryOperator(String textRepresentation) {
+		UnaryOperator(String textRepresentation) {
 			this.textRepresentation = textRepresentation;
 		}
 

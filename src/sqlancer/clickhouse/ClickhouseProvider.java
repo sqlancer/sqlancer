@@ -25,13 +25,13 @@ import sqlancer.clickhouse.test.ClickhouseQueryPartitioningWhereTester;
 
 public class ClickhouseProvider implements DatabaseProvider<ClickhouseGlobalState, ClickhouseOptions> {
 
-	public static enum Action implements AbstractAction<ClickhouseGlobalState> {
+	public enum Action implements AbstractAction<ClickhouseGlobalState> {
 
 		INSERT(ClickhouseInsertGenerator::getQuery);
 
 		private final QueryProvider<ClickhouseGlobalState> queryProvider;
 
-		private Action(QueryProvider<ClickhouseGlobalState> queryProvider) {
+		Action(QueryProvider<ClickhouseGlobalState> queryProvider) {
 			this.queryProvider = queryProvider;
 		}
 

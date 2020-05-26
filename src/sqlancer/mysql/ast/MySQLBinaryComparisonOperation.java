@@ -108,7 +108,7 @@ public class MySQLBinaryComparisonOperation implements MySQLExpression {
 			return textRepresentation;
 		}
 
-		private BinaryComparisonOperator(String textRepresentation) {
+		BinaryComparisonOperator(String textRepresentation) {
 			this.textRepresentation = textRepresentation;
 		}
 

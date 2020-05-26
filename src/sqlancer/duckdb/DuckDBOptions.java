@@ -90,7 +90,7 @@ public class DuckDBOptions {
 	@Parameter(names = "--oracle")
 	public List<DuckDBOracle> oracle = Arrays.asList(DuckDBOracle.QUERY_PARTITIONING);
 
-	public static enum DuckDBOracle {
+	public enum DuckDBOracle {
 		NOREC {
 
 			@Override

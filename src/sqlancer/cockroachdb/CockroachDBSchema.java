@@ -17,16 +17,16 @@ import sqlancer.schema.TableIndex;
 
 public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
 
-	public static enum CockroachDBDataType {
+	public enum CockroachDBDataType {
 
 		INT, BOOL, STRING, FLOAT, BYTES, BIT, VARBIT, SERIAL, INTERVAL, TIMESTAMP, TIMESTAMPTZ, DECIMAL, JSONB, TIME,
 		TIMETZ, ARRAY;
 
-		private CockroachDBDataType() {
+		CockroachDBDataType() {
 			isPrimitive = true;
 		}
 
-		private CockroachDBDataType(boolean isPrimitive) {
+		CockroachDBDataType(boolean isPrimitive) {
 			this.isPrimitive = isPrimitive;
 		}
 

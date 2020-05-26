@@ -160,13 +160,13 @@ public class MySQLComputableFunction implements MySQLExpression {
 		final int nrArgs;
 		private final boolean variadic;
 
-		private MySQLFunction(int nrArgs, String functionName) {
+		MySQLFunction(int nrArgs, String functionName) {
 			this.nrArgs = nrArgs;
 			this.functionName = functionName;
 			this.variadic = false;
 		}
 
-		private MySQLFunction(int nrArgs, String functionName, boolean variadic) {
+		MySQLFunction(int nrArgs, String functionName, boolean variadic) {
 			this.nrArgs = nrArgs;
 			this.functionName = functionName;
 			this.variadic = variadic;

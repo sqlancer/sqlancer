@@ -16,7 +16,7 @@ public class TiDBJoin implements TiDBExpression {
 	private final TiDBExpression onCondition;
 	private NaturalJoinType outerType;
 
-	public static enum JoinType {
+	public enum JoinType {
 		INNER, NATURAL, STRAIGHT, LEFT, RIGHT;
 
 		public static JoinType getRandom() {
@@ -24,7 +24,7 @@ public class TiDBJoin implements TiDBExpression {
 		}
 	}
 
-	public static enum NaturalJoinType {
+	public enum NaturalJoinType {
 		INNER, LEFT, RIGHT;
 
 		public static NaturalJoinType getRandom() {

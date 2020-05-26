@@ -8,13 +8,13 @@ import sqlancer.tidb.ast.TiDBUnaryPostfixOperation.TiDBUnaryPostfixOperator;
 public class TiDBUnaryPostfixOperation extends UnaryOperatorNode<TiDBExpression, TiDBUnaryPostfixOperator>
 		implements TiDBExpression {
 
-	public static enum TiDBUnaryPostfixOperator implements Operator {
+	public enum TiDBUnaryPostfixOperator implements Operator {
 		IS_NULL("IS NULL"), //
 		IS_NOT_NULL("IS NOT NULL"); //
 
 		private String s;
 
-		private TiDBUnaryPostfixOperator(String s) {
+		TiDBUnaryPostfixOperator(String s) {
 			this.s = s;
 		}
 
