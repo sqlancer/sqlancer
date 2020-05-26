@@ -40,8 +40,8 @@ public enum PostgresFunctionWithUnknownResult {
 	//
 	TO_CHAR("to_char", PostgresDataType.TEXT, PostgresDataType.TEXT, PostgresDataType.TEXT) {
 		@Override
-		public PostgresExpression[] getArguments(PostgresDataType returnType, PostgresExpressionGenerator gen) {
-			PostgresExpression[] args = super.getArguments(returnType, gen);
+		public PostgresExpression[] getArguments(PostgresDataType returnType, PostgresExpressionGenerator gen, int depth) {
+			PostgresExpression[] args = super.getArguments(returnType, gen, depth);
 			args[0] = gen.generateExpression(PostgresDataType.getRandomType());
 			return args;
 		}
@@ -53,8 +53,8 @@ public enum PostgresFunctionWithUnknownResult {
 	CHR("chr", PostgresDataType.TEXT, PostgresDataType.INT),
 	CONVERT_FROM("convert_from", PostgresDataType.TEXT, PostgresDataType.TEXT, PostgresDataType.TEXT) {
 		@Override
-		public PostgresExpression[] getArguments(PostgresDataType returnType, PostgresExpressionGenerator gen) {
-			PostgresExpression[] args = super.getArguments(returnType, gen);
+		public PostgresExpression[] getArguments(PostgresDataType returnType, PostgresExpressionGenerator gen, int depth) {
+			PostgresExpression[] args = super.getArguments(returnType, gen, depth);
 			args[1] = PostgresConstant.createTextConstant(Randomly.fromOptions("UTF8", "LATIN1"));
 			return args;
 		}
@@ -159,10 +159,10 @@ public enum PostgresFunctionWithUnknownResult {
 		return t == returnType;
 	}
 
-	public PostgresExpression[] getArguments(PostgresDataType returnType, PostgresExpressionGenerator gen) {
+	public PostgresExpression[] getArguments(PostgresDataType returnType, PostgresExpressionGenerator gen, int depth) {
 		PostgresExpression[] args = new PostgresExpression[argTypes.length];
 		for (int i = 0; i < args.length; i++) {
-			args[i] = gen.generateExpression(argTypes[i]);
+			args[i] = gen.generateExpression(depth, argTypes[i]);
 		}
 		return args;
 

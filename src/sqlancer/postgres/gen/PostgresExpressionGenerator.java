@@ -114,7 +114,7 @@ public class PostgresExpressionGenerator {
 			throw new IgnoreMeException();
 		}
 		PostgresFunctionWithUnknownResult randomFunction = Randomly.fromList(supportedFunctions);
-		return new PostgresFunction(randomFunction, type, randomFunction.getArguments(type, this));
+		return new PostgresFunction(randomFunction, type, randomFunction.getArguments(type, this, depth + 1));
 	}
 
 	private PostgresExpression generateFunctionWithKnownResult(int depth, PostgresDataType type) {
@@ -247,7 +247,7 @@ public class PostgresExpressionGenerator {
 		return new PostgresExpressionGenerator(globalState).generateExpression(0, type);
 	}
 
-	PostgresExpression generateExpression(int depth, PostgresDataType dataType) {
+	public PostgresExpression generateExpression(int depth, PostgresDataType dataType) {
 		if (dataType == PostgresDataType.REAL && Randomly.getBoolean()) {
 			dataType = Randomly.fromOptions(PostgresDataType.INT, PostgresDataType.FLOAT);
 		}
