@@ -120,7 +120,7 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 			throw new IgnoreMeException(); // TODO
 		}
 		StatementExecutor<DuckDBGlobalState, Action> se = new StatementExecutor<DuckDBGlobalState, Action>(globalState,
-				globalState.getDatabaseName(), Action.values(), DuckDBProvider::mapActions, (q) -> {
+				Action.values(), DuckDBProvider::mapActions, (q) -> {
 					if (q.couldAffectSchema()) {
 						globalState.setSchema(DuckDBSchema.fromConnection(globalState.getConnection(),
 								globalState.getDatabaseName()));

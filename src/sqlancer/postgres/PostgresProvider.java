@@ -218,7 +218,7 @@ public final class PostgresProvider implements DatabaseProvider<PostgresGlobalSt
 		}
 
 		StatementExecutor<PostgresGlobalState, Action> se = new StatementExecutor<PostgresGlobalState, Action>(
-				globalState, globalState.getDatabaseName(), Action.values(), PostgresProvider::mapActions, (q) -> {
+				globalState, Action.values(), PostgresProvider::mapActions, (q) -> {
 					if (q.couldAffectSchema()) {
 						globalState.setSchema(PostgresSchema.fromConnection(con, databaseName));
 					}

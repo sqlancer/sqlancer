@@ -141,7 +141,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 		globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
 
 		StatementExecutor<TiDBGlobalState, Action> se = new StatementExecutor<TiDBGlobalState, Action>(globalState,
-				databaseName, Action.values(), TiDBProvider::mapActions, (q) -> {
+				Action.values(), TiDBProvider::mapActions, (q) -> {
 					if (q.couldAffectSchema()) {
 						try {
 							globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));

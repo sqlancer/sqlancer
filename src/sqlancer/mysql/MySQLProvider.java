@@ -167,7 +167,7 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState, MySQLOp
 		}
 
 		StatementExecutor<MySQLGlobalState, Action> se = new StatementExecutor<MySQLGlobalState, Action>(globalState,
-				globalState.getDatabaseName(), Action.values(), MySQLProvider::mapActions, (q) -> {
+				Action.values(), MySQLProvider::mapActions, (q) -> {
 					if (q.couldAffectSchema()) {
 						globalState.setSchema(MySQLSchema.fromConnection(con, databaseName));
 					}

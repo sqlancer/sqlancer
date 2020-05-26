@@ -21,7 +21,7 @@ public class StatementExecutor<G extends GlobalState<?>, A extends AbstractActio
 	private final ActionMapper<G, A> mapping;
 	private final AfterQueryAction queryConsumer;
 
-	public StatementExecutor(G globalState, String databaseName, A[] actions, ActionMapper<G, A> mapping,
+	public StatementExecutor(G globalState, A[] actions, ActionMapper<G, A> mapping,
 			AfterQueryAction queryConsumer) {
 		this.globalState = globalState;
 		this.actions = actions;

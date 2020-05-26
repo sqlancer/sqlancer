@@ -90,7 +90,7 @@ public class ClickhouseProvider implements DatabaseProvider<ClickhouseGlobalStat
 		}
 
 		StatementExecutor<ClickhouseGlobalState, Action> se = new StatementExecutor<ClickhouseGlobalState, Action>(
-				globalState, globalState.getDatabaseName(), Action.values(), ClickhouseProvider::mapActions, (q) -> {
+				globalState, Action.values(), ClickhouseProvider::mapActions, (q) -> {
 					if (q.couldAffectSchema()) {
 						globalState.setSchema(ClickhouseSchema.fromConnection(globalState.getConnection(),
 								globalState.getDatabaseName()));
