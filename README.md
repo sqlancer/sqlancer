@@ -1,12 +1,80 @@
+# SQLancer
 
+![SQLancer](media/logo/png/sqlancer_logo_logo_pos.png)
 
-# TODOS
-* SQLancer currently runs also embedded DBMS in the process of the JVM. If SQLancer triggers a crash in the tested DBMS, the JVM also crashes along. Having individiual testing process would address this.
+SQLancer (Synthesized Query Lancer) is a tool to automatically test Database Management Systems (DBMS) in order to find logic bugs in their implementation. We refer to logic bugs as those bugs that cause the DBMS to fetch an incorrect result set (e.g., by omitting a record).
 
-# Test Suite
+SQLancer operates in the following two phases:
 
-SQLancer does not have a test suite. We found that bugs in SQLancer are quickly found when testing the DBMS. The PQS implementation had a test suite, which was removed in commit 36ede0c0c68b3856e03ef5ba802a7c2575bb3f12.
+1. Database generation: The goal of this phase is to create a populated database, and stress the DBMS to increase the probability of causing an inconsistent database state that could be detected subsequently. First, random tables are created. Then, randomly SQL statements are chosen to generate, modify, and delete data. Also other statements, such as those to create indexes as well as views and to set DBMS-specific options are sent to the DBMS.
+2. Testing: The goal of this phase is to detect the logic bugs based on the generated database. See Testing Approaches below.
+
+# Quickstart
+
+Requirements:
+* [Maven](https://maven.apache.org/) (`sudo apt install maven` on Ubuntu)
+
+The following commands clone SQLancer, create a JAR, and start SQLancer to fuzz SQLite using Ternary Logic Query Partitioning (TLP):
+
+```
+git clone https://github.com/sqlancer/sqlancer
+cd sqlancer
+mvn package
+cd target
+java -jar SQLancer-0.0.1-SNAPSHOT.jar --num_threads 16 --num_tries 5 --max_expression_depth 3 --num_queries 100000 --max_num_inserts 30 sqlite3 --oracle query_partitioning
+```
+
+If you launch SQLancer without parameters, available options and commands are displayed.
+
+# Potential Commercialization
+
+Due to the significant interest that we have received, we are considering to commercialize our bug-finding efforts. If you represent a company and would be interested in a bug-finding service, please approach us ([Manuel Rigger](manuel.rigger@inf.ethz.ch) and [Zhendong Su](zhendong.su@inf.ethz.ch)) with your expectations and requirements for such a service.
+
+# Research Prototype
+
+This project should at this stage still be seen as a research prototype. We believe that the tool is not ready to be used. However, we have received many requests by companies, organizations, and individual developers, which is why we decided to prematurely release the tool. Expect errors, incompatabilities, lack of documentation, and insufficient code quality. That being said, we are working hard to address these issues and enhance SQLancer to become a production-quality piece of software. We welcome any issue reports, extension requests, and code contributions.
+
+# Testing Approaches
+
+| Approach                                             | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+|------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Pivoted Query Synthesis (PQS)                        | PQS is the first technique that we designed and implemented. It randomly selects a row, called a pivot row, for which a query is generated that is guaranteed to fetch the row. If the row is not contained in the result set, a bug has been detected. It is fully described [here](https://arxiv.org/abs/2001.04174). PQS is the most powerful technique, but also requires more implementation effort than the other two techniques. It is currently unmaintained. |
+| Non-optimizing Reference Engine Construction (NoREC) | NoREC aims to find optimization bugs. It is described [here](https://www.manuelrigger.at/preprints/NoREC.pdf). It translates a query that is potentially optimized by the DBMS to one for which hardly any optimizations are applicable, and compares the two result sets. A mismatch between the result sets indicates a bug in the DBMS.                                                                                                                                                                                                        |
+| Ternary Logic Partitioning (TLP)                     | TLP partitions a query into three partitioning queries, whose results are composed and compare to the original query's result set. A mismatch in the result sets indicates a bug in the DBMS. In contrast to NoREC and PQS, it can detect bugs in advanced features such as aggregate functions.                                                                                                                                                                                                                                                  |
 
 # Supported DBMS
 
-* (TDEngine: We removed the TDEngine implementation since all but one of our bug reports were still unaddressed five months after we reported them)
+Since SQL dialects differ widely, each DBMS to be tested requires a separate implementation.
+
+| DBMS        | Status      | Expression Generation | Description                                                                                                                                                                                     |
+|-------------|-------------|-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| SQLite      | Working     | Untyped               | This implementation is currently affected by a significant performance regression that still needs to be investigated                                                                           |
+| MySQL       | Working     | Untyped               | Running this implementation likely uncovers additional, unreported bugs.                                                                                                                        |
+| PostgreSQL  | Working     | Typed                 |                                                                                                                                                                                                 |
+| MariaDB     | Preliminary | Untyped               | The implementation of this DBMS is very preliminary, since we stopped extending it after all but one of our bug reports were addressed. Running it likely uncovers additional, unreported bugs. |
+| CockroachDB | Working     | Typed                 |                                                                                                                                                                                                 |
+| TiDB        | Working     | Untyped               |                                                                                                                                                                                                 |
+| DuckDB      | Working     | Untyped, Generic      | DuckDB currently [does not provide a Maven artifact](https://github.com/cwida/duckdb/issues/649), which is why its JDBC driver needs to be manually added.                                      |
+| ClickHouse  | Preliminary | Untyped, Generic      | Implementing the different table engines was not convenient, which is why only a very preliminary implementation exists.                                                                        |
+| TDEngine    | Removed     | Untyped               | We removed the TDEngine implementation since all but one of our bug reports were still unaddressed five months after we reported them.                                                          |
+
+
+# Continuous Integration and Test Suite
+
+SQLancer uses [Checkstyle](https://checkstyle.sourceforge.io/) to enforce a consistent coding standard. You can run it using the following command:
+
+```bash
+mvn verify
+```
+
+We plan to soon add a [CI](https://github.com/sqlancer/sqlancer/issues/2) to automatically check PRs. Subsequently, we also plan to add smoke testing for each DBMS to test that the respective testing implementation is not obviously broken, see [here](https://github.com/sqlancer/sqlancer/issues/3).
+
+SQLancer does not have a test suite. We found that bugs in SQLancer are quickly found and easy to debug when testing the DBMS. The PQS implementation had a test suite, which was removed in commit 36ede0c0c68b3856e03ef5ba802a7c2575bb3f12.
+
+# Found Bugs
+
+We would appreciate it if you mention SQLancer when you report bugs found by it. We would also be excited to know if you are using SQLancer to find bugs, or if you have extended it to test another DBMS (also if you do not plan to contribute it to this project). SQLancer has found over 400 bugs in widely-used DBMS, which are listed [here](https://www.manuelrigger.at/dbms-bugs/).
+
+# Community
+
+We have created a [Slack workspace](https://join.slack.com/t/sqlancer/shared_invite/zt-eozrcao4-ieG29w1LNaBDMF7OB_~ACg) to discuss SQLancer, and DBMS testing in general.
