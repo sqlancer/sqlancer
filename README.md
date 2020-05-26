@@ -61,7 +61,11 @@ Since SQL dialects differ widely, each DBMS to be tested requires a separate imp
 
 # Continuous Integration and Test Suite
 
-SQLancer uses [Checkstyle](https://checkstyle.sourceforge.io/) to enforce a consistent coding standard. You can run it using the following command:
+To improve and maintain SQLancer's code quality, we adopted several tools:
+* [Checkstyle](https://checkstyle.sourceforge.io/) to enforce a consistent coding standard.
+* [PMD](https://pmd.github.io/), which finds programming flaws using static analysis.
+
+You can run them using the following command:
 
 ```bash
 mvn verify
@@ -70,6 +74,14 @@ mvn verify
 We plan to soon add a [CI](https://github.com/sqlancer/sqlancer/issues/2) to automatically check PRs. Subsequently, we also plan to add smoke testing for each DBMS to test that the respective testing implementation is not obviously broken, see [here](https://github.com/sqlancer/sqlancer/issues/3).
 
 SQLancer does not have a test suite. We found that bugs in SQLancer are quickly found and easy to debug when testing the DBMS. The PQS implementation had a test suite, which was removed in commit 36ede0c0c68b3856e03ef5ba802a7c2575bb3f12.
+
+# Logs
+
+SQLancer stores logs in the `target/logs` subdirectory. By default, the option `--log-each-select` is enabled, which results in every SQL statement that is sent to the DBMS being logged. The corresponding file names are postfixed with `-cur.log`. In addition, if SQLancer detects a logic bug, it creates a file with the extension `.log`, in which the statements to reproduce the bug are logged.
+
+# Reducing the Bug
+
+After finding a bug, it is useful to produce a minimal test case before reporting the bug, to save the DBMS developers' time and effort. For many test cases, [C-Reduce](https://embed.cs.utah.edu/creduce/) does a great job. In addition, we have been working on a SQL-specific reducer, which we plan to release soon.
 
 # Found Bugs
 
