@@ -20,11 +20,7 @@ public class SQLite3ExplainGenerator {
 		Action action;
 		do {
 			action = Randomly.fromOptions(SQLite3Provider.Action.values());
-			if (action == Action.EXPLAIN) {
-				continue;
-			}
-			break;
-		} while (true);
+		} while (action == Action.EXPLAIN);
 		Query query = action.getQuery(globalState);
 		sb.append(query);
 		return new QueryAdapter(sb.toString(), query.getExpectedErrors());

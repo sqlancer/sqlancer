@@ -45,14 +45,18 @@ public class AbstractSchema<A extends AbstractTable<?, ?>> {
 		if (Randomly.getBooleanWithRatherLowProbability()) {
 			i = (int) Randomly.getNotCachedInteger(0, 100);
 		}
-		outer: do {
+		do {
 			String indexName = String.format("i%d", i++);
+			boolean indexNameFound = false;
 			for (A table : databaseTables) {
 				if (table.getIndexes().stream().anyMatch(ind -> ind.getIndexName().contentEquals(indexName))) {
-					continue outer;
+					indexNameFound = true;
+					break;
 				}
 			}
-			return indexName;
+			if (!indexNameFound) {
+				return indexName;
+			}
 		} while (true);
 	}
 
