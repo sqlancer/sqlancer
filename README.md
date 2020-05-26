@@ -32,7 +32,7 @@ Due to the significant interest that we have received, we are considering to com
 
 # Research Prototype
 
-This project should at this stage still be seen as a research prototype. We believe that the tool is not ready to be used. However, we have received many requests by companies, organizations, and individual developers, which is why we decided to prematurely release the tool. Expect errors, incompatabilities, lack of documentation, and insufficient code quality. That being said, we are working hard to address these issues and enhance SQLancer to become a production-quality piece of software. We welcome any issue reports, extension requests, and code contributions.
+This project should at this stage still be seen as a research prototype. We believe that the tool is not ready to be used. However, we have received many requests by companies, organizations, and individual developers, which is why we decided to prematurely release the tool. Expect errors, incompatibilities, lack of documentation, and insufficient code quality. That being said, we are working hard to address these issues and enhance SQLancer to become a production-quality piece of software. We welcome any issue reports, extension requests, and code contributions.
 
 # Testing Approaches
 
@@ -94,3 +94,8 @@ The DuckDB implementation provides a good template for a new implementation. The
 # Community
 
 We have created a [Slack workspace](https://join.slack.com/t/sqlancer/shared_invite/zt-eozrcao4-ieG29w1LNaBDMF7OB_~ACg) to discuss SQLancer, and DBMS testing in general. SQLancer's official Twitter handle is [@sqlancer_dbms](https://twitter.com/sqlancer_dbms).
+
+# Additional Resources
+
+* An (older) Pivoted Query Synthesis (PQS) talk is available on [YouTube](https://www.youtube.com/watch?v=yzENTaWe7qg).
+* PingCAP has implemented PQS in a tool called [wreck-it](https://github.com/chaos-mesh/wreck-it).
