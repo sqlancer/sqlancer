@@ -57,8 +57,12 @@ public class SQLite3Options {
 	public boolean testJoins = true;
 
 	@Parameter(names = {
-			"--test-functions" }, description = "Allow the generation of funcitons in expressions", arity = 1)
+			"--test-functions" }, description = "Allow the generation of functions in expressions", arity = 1)
 	public boolean testFunctions = true;
+
+	@Parameter(names = {
+			"--test-soundex" }, description = "Test the soundex function, which can be enabled using a compile-time option.", arity = 1)
+	public boolean testSoundex = false;
 
 	@Parameter(names = { "--test-match" }, description = "Allow the generation of the MATCH operator", arity = 1)
 	public boolean testMatch = true;

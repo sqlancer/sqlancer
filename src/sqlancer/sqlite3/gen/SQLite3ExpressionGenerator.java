@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
@@ -264,7 +263,7 @@ public class SQLite3ExpressionGenerator {
 		case CAST_EXPRESSION:
 			return getCastOperator(depth + 1);
 		case FUNCTION:
-			return getFunction(depth);
+			return getFunction(globalState, depth);
 		case IN_OPERATOR:
 			return getInOperator(depth + 1);
 		case COLLATE:
@@ -501,13 +500,24 @@ public class SQLite3ExpressionGenerator {
 			return minNrArgs;
 		}
 
-		static AnyFunction getRandom() {
-			return Randomly.fromOptions(AnyFunction.values());
+		static AnyFunction getRandom(SQLite3GlobalState globalState) {
+			return Randomly.fromList(getAllFunctions(globalState));
 		}
 
-		static AnyFunction getRandomDeterministic() {
+		private static List<AnyFunction> getAllFunctions(SQLite3GlobalState globalState) {
+			List<AnyFunction> functions = new ArrayList<>(Arrays.asList(AnyFunction.values()));
+			if (!globalState.getDmbsSpecificOptions().testSoundex) {
+				boolean removed = functions.removeIf(f -> f.name.equals("soundex"));
+				if (!removed) {
+					throw new IllegalStateException();
+				}
+			}
+			return functions;
+		}
+
+		static AnyFunction getRandomDeterministic(SQLite3GlobalState globalState) {
 			return Randomly.fromList(
-					Stream.of(AnyFunction.values()).filter(f -> f.deterministic).collect(Collectors.toList()));
+					getAllFunctions(globalState).stream().filter(f -> f.deterministic).collect(Collectors.toList()));
 		}
 
 		@Override
@@ -524,15 +534,15 @@ public class SQLite3ExpressionGenerator {
 		}
 	}
 
-	private SQLite3Expression getFunction(int depth) {
+	private SQLite3Expression getFunction(SQLite3GlobalState globalState, int depth) {
 		if (tryToGenerateKnownResult || Randomly.getBoolean()) {
 			return getComputableFunction(depth + 1);
 		} else {
 			AnyFunction randomFunction;
 			if (deterministicOnly) {
-				randomFunction = AnyFunction.getRandomDeterministic();
+				randomFunction = AnyFunction.getRandomDeterministic(globalState);
 			} else {
-				randomFunction = AnyFunction.getRandom();
+				randomFunction = AnyFunction.getRandom(globalState);
 			}
 			int nrArgs = randomFunction.getMinNrArgs();
 			if (randomFunction.isVariadic()) {
