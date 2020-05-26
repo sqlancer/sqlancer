@@ -32,7 +32,7 @@ public class SQLite3Options {
 
 	@Parameter(names = {
 			"--test-dbstats" }, description = "Test the DBSTAT Virtual Table (see https://www.sqlite.org/dbstat.html)", arity = 1)
-	public boolean testDBStats = true;
+	public boolean testDBStats = false;
 
 	@Parameter(names = { "--test-generated-columns" }, description = "Test generated columns", arity = 1)
 	public boolean testGeneratedColumns = true;

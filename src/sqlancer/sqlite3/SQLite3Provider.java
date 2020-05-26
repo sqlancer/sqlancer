@@ -11,7 +11,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import sqlancer.DatabaseProvider;
 import sqlancer.GlobalState;
@@ -463,36 +462,6 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQL
 
 	@Override
 	public void printDatabaseSpecificState(FileWriter writer, StateToReproduce state) {
-		StringBuilder sb = new StringBuilder();
-		SQLite3StateToReproduce specificState = (SQLite3StateToReproduce) state;
-		if (specificState.getRandomRowValues() != null) {
-			List<SQLite3Column> columnList = specificState.getRandomRowValues().keySet().stream()
-					.collect(Collectors.toList());
-			List<SQLite3Table> tableList = columnList.stream().map(c -> c.getTable()).distinct().sorted()
-					.collect(Collectors.toList());
-			for (SQLite3Table t : tableList) {
-				sb.append("-- " + t.getName() + "\n");
-				List<SQLite3Column> columnsForTable = columnList.stream().filter(c -> c.getTable().equals(t))
-						.collect(Collectors.toList());
-				for (SQLite3Column c : columnsForTable) {
-					sb.append("--\t");
-					sb.append(c);
-					sb.append("=");
-					sb.append(specificState.getRandomRowValues().get(c));
-					sb.append("\n");
-				}
-			}
-			sb.append("-- expected values: \n");
-			String asExpectedValues = "-- "
-					+ SQLite3Visitor.asExpectedValues(specificState.getWhereClause()).replace("\n", "\n-- ");
-			sb.append(asExpectedValues);
-		}
-		try {
-			writer.write(sb.toString());
-			writer.flush();
-		} catch (IOException e) {
-			throw new AssertionError();
-		}
 	}
 
 	@Override
