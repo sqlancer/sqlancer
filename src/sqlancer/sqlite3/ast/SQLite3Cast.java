@@ -218,14 +218,6 @@ public class SQLite3Cast {
 
 	static Connection castDatabase;
 
-	static {
-//		try {
-////			castDatabase = new SQLite3Provider().createDatabase("test", null);
-//		} catch (SQLException e) {
-//			throw new AssertionError(e);
-//		}
-	}
-
 	public static SQLite3Constant castToText(SQLite3Constant cons) {
 		if (cons.getDataType() == SQLite3DataType.TEXT) {
 			return cons;

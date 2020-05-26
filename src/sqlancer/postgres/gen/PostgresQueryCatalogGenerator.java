@@ -36,9 +36,12 @@ public class PostgresQueryCatalogGenerator {
 			public boolean execute(Connection con) throws SQLException {
 				try (Statement s = con.createStatement()) {
 					try (ResultSet rs = s.executeQuery(getQueryString())) {
+						// CHECKSTYLE:OFF
 						while (rs.next()) {
-							// do nothing
+							// only force the DBMS to fetch the records and hope that they cause an
+							// invalid state
 						}
+						// CHECKSTYLE:ON
 					}
 				}
 				return true;

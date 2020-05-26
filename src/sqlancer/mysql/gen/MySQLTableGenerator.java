@@ -45,9 +45,7 @@ public class MySQLTableGenerator {
 		List<String> errors = new ArrayList<>();
 
 		sb.append("CREATE");
-		if (Randomly.getBoolean()) {
-//			sb.append(" TEMPORARY"); // FIXME support temporary tables in the schema
-		}
+		// TODO support temporary tables in the schema
 		sb.append(" TABLE");
 		if (Randomly.getBoolean()) {
 			sb.append(" IF NOT EXISTS");

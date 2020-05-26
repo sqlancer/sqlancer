@@ -213,7 +213,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 
 	@Override
 	public String getDBMSName() {
-		return "TiDB";
+		return "tidb";
 	}
 
 	@Override

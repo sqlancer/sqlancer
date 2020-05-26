@@ -56,9 +56,7 @@ public class MySQLPivotedQuerySynthesisTester implements TestOracle {
 				throw new AssertionError(queryString);
 			}
 		} catch (SQLException e) {
-			if (e.getMessage().contains("BIGINT value is out of range")) {
-				// IGNORE
-			} else {
+			if (!e.getMessage().contains("BIGINT value is out of range")) {
 				throw e;
 			}
 		}

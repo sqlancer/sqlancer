@@ -282,6 +282,9 @@ public class Main {
 		Builder commandBuilder = JCommander.newBuilder().addObject(options);
 		for (DatabaseProvider<?, ?> provider : providers) {
 			String name = provider.getDBMSName();
+			if (!name.toLowerCase().equals(name)) {
+				throw new AssertionError(name + " should be in lowercase!");
+			}
 			Object command = provider.getCommand();
 			if (command == null) {
 				throw new IllegalStateException();

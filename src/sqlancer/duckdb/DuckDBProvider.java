@@ -176,7 +176,7 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 
 	@Override
 	public String getDBMSName() {
-		return "DuckDB";
+		return "duckdb";
 	}
 
 	@Override

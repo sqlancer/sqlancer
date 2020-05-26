@@ -148,7 +148,7 @@ public class ClickhouseProvider implements DatabaseProvider<ClickhouseGlobalStat
 
 	@Override
 	public String getDBMSName() {
-		return "Clickhouse";
+		return "clickhouse";
 	}
 
 	@Override
