@@ -74,26 +74,21 @@ public class SQLite3InsertGenerator {
         }
         boolean defaultValues = false;
         sb.append("INTO " + table.getName());
-        if (Randomly.getBooleanWithSmallProbability() && false) {
-            defaultValues = true;
-            sb.append(" DEFAULT VALUES");
+        List<SQLite3Column> cols = table.getRandomNonEmptyColumnSubset();
+        if (cols.size() != table.getColumns().size() || Randomly.getBoolean()) {
+            sb.append("(");
+            appendColumnNames(cols, sb);
+            sb.append(")");
         } else {
-            List<SQLite3Column> columns = table.getRandomNonEmptyColumnSubset();
-            if (columns.size() != table.getColumns().size() || Randomly.getBoolean()) {
-                sb.append("(");
-                appendColumnNames(columns, sb);
-                sb.append(")");
-            } else {
-                // If the column-name list after table-name is omitted then the number of values
-                // inserted into each row must be the same as the number of columns in the
-                // table.
-                columns = table.getColumns(); // get them again in sorted order
-                assert columns.size() == table.getColumns().size();
-            }
-            sb.append(" VALUES ");
-            int nrRows = 1 + Randomly.smallNumber();
-            appendNrValues(sb, columns, nrRows);
+            // If the column-name list after table-name is omitted then the number of values
+            // inserted into each row must be the same as the number of columns in the
+            // table.
+            cols = table.getColumns(); // get them again in sorted order
+            assert cols.size() == table.getColumns().size();
         }
+        sb.append(" VALUES ");
+        int nrRows = 1 + Randomly.smallNumber();
+        appendNrValues(sb, cols, nrRows);
         boolean columnsInConflictClause = Randomly.getBoolean();
         if (!defaultValues && Randomly.getBooleanWithSmallProbability() && !table.isVirtual()) {
             sb.append(" ON CONFLICT");

@@ -3,7 +3,6 @@ package sqlancer.sqlite3.gen;
 import java.util.HashSet;
 import java.util.Set;
 
-import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -29,7 +28,7 @@ public class SQLite3VirtualFTSTableCommandGenerator {
     }
 
     private enum Action {
-        AUTOMERGE, CRISISMERGE, INTEGRITYCHECK, MERGE, OPTIMIZE, REBUILD, USER_MERGE, PGSZ, DELETE_ALL, RANK;
+        AUTOMERGE, CRISISMERGE, INTEGRITYCHECK, MERGE, OPTIMIZE, REBUILD, USER_MERGE, PGSZ, RANK; // TODO: delete all
     }
 
     private Query generate() {
@@ -86,13 +85,6 @@ public class SQLite3VirtualFTSTableCommandGenerator {
         case PGSZ:
             sb.append(String.format("INSERT INTO %s(%s, rank) VALUES('pgsz', '%d');", vTable.getName(),
                     vTable.getName(), r.getLong(32, 65536)));
-            break;
-        case DELETE_ALL:
-            if (true) {
-                throw new IgnoreMeException();
-            }
-            errors.add("'delete-all' may only be used with a contentless or external content fts5 table");
-            sb.append(String.format("INSERT INTO %s(%s) VALUES('delete-all');", vTable.getName(), vTable.getName()));
             break;
         case RANK:
             sb.append(String.format("INSERT INTO %s(%s, rank) VALUES('rank', 'bm25(10.0, 5.0)');", vTable.getName(),

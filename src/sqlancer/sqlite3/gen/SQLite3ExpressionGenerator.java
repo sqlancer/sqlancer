@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.ast.SQLite3Aggregate;
@@ -26,12 +25,10 @@ import sqlancer.sqlite3.ast.SQLite3Expression.Join.JoinType;
 import sqlancer.sqlite3.ast.SQLite3Expression.MatchOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Exist;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm.Ordering;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Text;
 import sqlancer.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation.BinaryOperator;
 import sqlancer.sqlite3.ast.SQLite3Expression.TypeLiteral;
@@ -186,7 +183,7 @@ public class SQLite3ExpressionGenerator {
     }
 
     enum ExpressionType {
-        RANDOM_QUERY, COLUMN_NAME, LITERAL_VALUE, UNARY_OPERATOR, POSTFIX_UNARY_OPERATOR, BINARY_OPERATOR, BETWEEN_OPERATOR, CAST_EXPRESSION, BINARY_COMPARISON_OPERATOR, FUNCTION, IN_OPERATOR, COLLATE, EXISTS, CASE_OPERATOR, MATCH, AGGREGATE_FUNCTION, ROW_VALUE_COMPARISON, AND_OR_CHAIN
+        RANDOM_QUERY, COLUMN_NAME, LITERAL_VALUE, UNARY_OPERATOR, POSTFIX_UNARY_OPERATOR, BINARY_OPERATOR, BETWEEN_OPERATOR, CAST_EXPRESSION, BINARY_COMPARISON_OPERATOR, FUNCTION, IN_OPERATOR, COLLATE, CASE_OPERATOR, MATCH, AGGREGATE_FUNCTION, ROW_VALUE_COMPARISON, AND_OR_CHAIN
     }
 
     public SQLite3Expression generateExpression() {
@@ -266,11 +263,6 @@ public class SQLite3ExpressionGenerator {
             return getInOperator(depth + 1);
         case COLLATE:
             return new CollateOperation(getRandomExpression(depth + 1), SQLite3CollateSequence.random());
-        case EXISTS:
-            if (true) {
-                throw new IgnoreMeException();
-            }
-            return getExists();
         case CASE_OPERATOR:
             return getCaseOperator(depth + 1);
         case MATCH:
@@ -373,22 +365,6 @@ public class SQLite3ExpressionGenerator {
             right = SQLite3Constant.createTextConstant(SQLite3MatchStringGenerator.generateMatchString(r));
         }
         return new MatchOperation(left, right);
-    }
-
-    private SQLite3Expression getExists() {
-        SQLite3Expression val;
-        if (tryToGenerateKnownResult || (!Randomly.getBooleanWithSmallProbability()
-                || globalState.getConnection() == null || globalState.getState() == null || globalState == null)) {
-            if (Randomly.getBoolean()) {
-                val = new SQLite3Text("(SELECT 1)", SQLite3Constant.createIntConstant(1));
-            } else {
-                val = new SQLite3Text("(SELECT 0 WHERE 0)", SQLite3Constant.createIntConstant(0));
-            }
-        } else {
-            // generating a random query is costly, so do it infrequently
-            val = SQLite3RandomQuerySynthesizer.generate(globalState, Randomly.smallNumber() + 1);
-        }
-        return new SQLite3Exist(val);
     }
 
     private SQLite3Expression getRandomColumn() {
