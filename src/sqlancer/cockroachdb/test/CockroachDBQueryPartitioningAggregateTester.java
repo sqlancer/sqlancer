@@ -79,13 +79,9 @@ public class CockroachDBQueryPartitioningAggregateTester implements TestOracle {
 			select.setOrderByExpressions(gen.getOrderingTerms());
 		}
 		originalQuery = CockroachDBVisitor.asString(select);
-		updateStateString();
 		firstResult = getAggregateResult(originalQuery);
-		updateStateString();
 		metamorphicQuery = createMetamorphicUnionQuery(select, aggregate, from);
-		updateStateString();
 		secondResult = getAggregateResult(metamorphicQuery);
-		updateStateString();
 
 		state.getState().queryString = "--" + originalQuery + ";\n--" + metamorphicQuery + "\n-- " + firstResult
 				+ "\n-- " + secondResult;
@@ -195,28 +191,6 @@ public class CockroachDBQueryPartitioningAggregateTester implements TestOracle {
 			leftSelect.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
 		}
 		return leftSelect;
-	}
-
-	private void updateStateString() {
-		StringBuilder sb = new StringBuilder();
-		if (originalQuery != null) {
-			sb.append(originalQuery);
-			sb.append(";");
-			if (firstResult != null) {
-				sb.append("-- ");
-				sb.append(firstResult);
-			}
-			sb.append("\n");
-		}
-		if (metamorphicQuery != null) {
-			sb.append(metamorphicQuery);
-			sb.append(";");
-			if (secondResult != null) {
-				sb.append("-- ");
-				sb.append(secondResult);
-			}
-			sb.append("\n");
-		}
 	}
 
 }
