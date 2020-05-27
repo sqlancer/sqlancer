@@ -54,6 +54,20 @@
 				</configuration>
 			</plugin>
 			<plugin>
+				<groupId>net.revelc.code.formatter</groupId>
+				<artifactId>formatter-maven-plugin</artifactId>
+				<version>2.11.0</version>
+				<executions>
+					<execution>
+						<id>eclipseformat</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>validate</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
 				<version>3.1.1</version>
