@@ -56,14 +56,14 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 // IN
 public final class PostgresProvider implements DatabaseProvider<PostgresGlobalState, PostgresOptions> {
 
-    public static final boolean GENERATE_ONLY_KNOWN = false;
+    public static boolean generateOnlyKnown = false;
 
     private PostgresGlobalState globalState;
 
     public enum Action implements AbstractAction<PostgresGlobalState> {
         ANALYZE(PostgresAnalyzeGenerator::create), //
         ALTER_TABLE(g -> PostgresAlterTableGenerator.create(g.getSchema().getRandomTable(t -> !t.isView()), g,
-                GENERATE_ONLY_KNOWN)), //
+                generateOnlyKnown)), //
         CLUSTER(PostgresClusterGenerator::create), //
         COMMIT(g -> {
             Query query;
@@ -206,7 +206,7 @@ public final class PostgresProvider implements DatabaseProvider<PostgresGlobalSt
             try {
                 String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
                 Query createTable = PostgresTableGenerator.generate(tableName, globalState.getSchema(),
-                        GENERATE_ONLY_KNOWN, globalState);
+                        generateOnlyKnown, globalState);
                 if (options.logEachSelect()) {
                     logger.writeCurrent(createTable.getQueryString());
                 }

@@ -137,7 +137,7 @@ public class PostgresCommon {
                 sb.append("TEXT");
             } else if (Randomly.getBoolean()) {
                 // TODO: support CHAR (without VAR)
-                if (PostgresProvider.GENERATE_ONLY_KNOWN || Randomly.getBoolean()) {
+                if (PostgresProvider.generateOnlyKnown || Randomly.getBoolean()) {
                     sb.append("VAR");
                 }
                 sb.append("CHAR");

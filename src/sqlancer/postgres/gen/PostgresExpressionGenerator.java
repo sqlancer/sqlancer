@@ -140,7 +140,7 @@ public class PostgresExpressionGenerator {
 
     private PostgresExpression generateBooleanExpression(int depth) {
         List<BooleanExpression> validOptions = new ArrayList<>(Arrays.asList(BooleanExpression.values()));
-        if (PostgresProvider.GENERATE_ONLY_KNOWN) {
+        if (PostgresProvider.generateOnlyKnown) {
             validOptions.remove(BooleanExpression.SIMILAR_TO);
             validOptions.remove(BooleanExpression.POSIX_REGEX);
             validOptions.remove(BooleanExpression.BINARY_RANGE_COMPARISON);
@@ -209,7 +209,7 @@ public class PostgresExpressionGenerator {
     }
 
     private PostgresExpression generateFunction(int depth, PostgresDataType type) {
-        if (PostgresProvider.GENERATE_ONLY_KNOWN || Randomly.getBoolean()) {
+        if (PostgresProvider.generateOnlyKnown || Randomly.getBoolean()) {
             return generateFunctionWithKnownResult(depth, type);
         } else {
             return generateFunctionWithUnknownResult(depth, type);
@@ -225,7 +225,7 @@ public class PostgresExpressionGenerator {
     private PostgresExpression getComparison(PostgresExpression leftExpr, PostgresExpression rightExpr) {
         PostgresBinaryComparisonOperation op = new PostgresBinaryComparisonOperation(leftExpr, rightExpr,
                 PostgresBinaryComparisonOperation.PostgresBinaryComparisonOperator.getRandom());
-        if (PostgresProvider.GENERATE_ONLY_KNOWN && op.getLeft().getExpressionType() == PostgresDataType.TEXT
+        if (PostgresProvider.generateOnlyKnown && op.getLeft().getExpressionType() == PostgresDataType.TEXT
                 && op.getRight().getExpressionType() == PostgresDataType.TEXT) {
             return new PostgresCollate(op, "C");
         }

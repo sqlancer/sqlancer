@@ -31,7 +31,7 @@ public class PostgresSchema {
 
         public static PostgresDataType getRandomType() {
             List<PostgresDataType> dataTypes = Arrays.asList(values());
-            if (PostgresProvider.GENERATE_ONLY_KNOWN) {
+            if (PostgresProvider.generateOnlyKnown) {
                 dataTypes.remove(PostgresDataType.DECIMAL);
                 dataTypes.remove(PostgresDataType.FLOAT);
                 dataTypes.remove(PostgresDataType.REAL);
