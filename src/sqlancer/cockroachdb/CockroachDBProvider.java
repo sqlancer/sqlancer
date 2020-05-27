@@ -143,7 +143,7 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
         List<String> standardSettings = new ArrayList<String>();
         standardSettings.add("--Don't send automatic bug reports\n"
                 + "SET CLUSTER SETTING debug.panic_on_failed_assertions = true;");
-        standardSettings.add("SET CLUSTER SETTING diagnostics.reporting.enabled	= false;");
+        standardSettings.add("SET CLUSTER SETTING diagnostics.reporting.enabled    = false;");
         standardSettings.add("SET CLUSTER SETTING diagnostics.reporting.send_crash_reports = false;");
 
         standardSettings.add("-- Disable the collection of metrics and hope that it helps performance\n"

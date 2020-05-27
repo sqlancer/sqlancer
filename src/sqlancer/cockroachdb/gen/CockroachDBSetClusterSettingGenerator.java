@@ -14,7 +14,7 @@ public class CockroachDBSetClusterSettingGenerator {
 
     // https://www.cockroachlabs.com/docs/stable/set-vars.html
     private enum CockroachDBClusterSetting {
-        COMPATOR_ENABLED("compactor.enabled	", CockroachDBSetSessionGenerator::onOff), BUFFER_INCREMENT(
+        COMPATOR_ENABLED("compactor.enabled    ", CockroachDBSetSessionGenerator::onOff), BUFFER_INCREMENT(
                 "kv.bulk_ingest.buffer_increment",
                 (g) -> ("'" + Randomly.getUncachedDouble() + "'")), BACKPRESSURE_RANGE_SIZE_MULTIPLIER(
                         " kv.range.backpressure_range_size_multiplier",
