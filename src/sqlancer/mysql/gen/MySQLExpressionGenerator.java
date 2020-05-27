@@ -89,8 +89,7 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
             }
             return new MySQLInOperation(expr, rightList, Randomly.getBoolean());
         case BINARY_OPERATION:
-            if (true) {
-                /* workaround for https://bugs.mysql.com/bug.php?id=99135 */
+            if (MySQLBugs.bug99135) {
                 throw new IgnoreMeException();
             }
             return new MySQLBinaryOperation(generateExpression(depth + 1), generateExpression(depth + 1),

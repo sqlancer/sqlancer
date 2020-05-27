@@ -1,5 +1,6 @@
 package sqlancer.mysql;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.mysql.ast.MySQLBetweenOperation;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
@@ -37,14 +38,11 @@ public class MySQLExpectedValueVisitor implements MySQLVisitor {
     @Override
     public void visit(MySQLExpression expr) {
         nrTabs++;
-        if (true) {
-            throw new AssertionError("TODO");
+        try {
+            MySQLVisitor.super.visit(expr);
+        } catch (IgnoreMeException e) {
+
         }
-        // try {
-        // super.visit(expr);
-        // } catch (IgnoreMeException e) {
-        //
-        // }
         nrTabs--;
     }
 
