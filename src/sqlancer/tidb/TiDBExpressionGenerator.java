@@ -64,8 +64,7 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
         }
         switch (Randomly.fromOptions(Gen.values())) {
         case DEFAULT:
-            if (true) {
-                // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/15
+            if (TiDBBugs.bug15) {
                 throw new IgnoreMeException();
             }
             if (globalState.getSchema().getDatabaseTables().isEmpty()) {
@@ -97,10 +96,7 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
             return new TiDBBinaryBitOperation(generateExpression(depth + 1), generateExpression(depth + 1),
                     TiDBBinaryBitOperator.getRandom());
         case BINARY_LOGICAL:
-            // if (TiDBBugs.BUG_15987 || TiDBBugs.BUG_15990) {
-            // throw new IgnoreMeException();
-            // }
-            if (true /* https://github.com/tidb-challenge-program/bug-hunting-issue/issues/48 */) {
+            if (TiDBBugs.bug48) {
                 throw new IgnoreMeException();
             }
             return new TiDBBinaryLogicalOperation(generateExpression(depth + 1), generateExpression(depth + 1),
@@ -117,8 +113,7 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
                      * "DATE", "DATETIME", "TIME", https://github.com/tidb-challenge-program/bug-hunting-issue/issues/13
                      */ "DECIMAL", "SIGNED"/* , "UNSIGNED" https://github.com/pingcap/tidb/issues/16028 */));
         case CASE:
-            if (true) {
-                // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/19
+            if (TiDBBugs.bug19) {
                 throw new IgnoreMeException();
             }
             int nr = Randomly.fromOptions(1, 2);

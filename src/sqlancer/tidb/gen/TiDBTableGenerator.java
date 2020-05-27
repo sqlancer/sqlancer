@@ -120,7 +120,8 @@ public class TiDBTableGenerator {
             errors.add(" used in key specification without a key length");
         }
         sb.append(")");
-        if (Randomly.getBooleanWithRatherLowProbability() && false /* TODO: a number of partitioning errors */) {
+        if (Randomly.getBooleanWithRatherLowProbability()
+                && !TiDBBugs.bug14 /* there are also a number of unresolved other partitioning bugs */) {
             sb.append("PARTITION BY HASH(");
             sb.append(TiDBVisitor.asString(gen.generateExpression()));
             sb.append(") ");
@@ -133,7 +134,9 @@ public class TiDBTableGenerator {
             errors.add("A UNIQUE INDEX must include all columns in the table's partitioning function");
             errors.add("is of a not allowed type for this type of partitioning");
             errors.add("The PARTITION function returns the wrong type");
-            errors.add("UnknownType: *ast.WhenClause"); // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/16
+            if (TiDBBugs.bug16) {
+                errors.add("UnknownType: *ast.WhenClause");
+            }
         }
         List<Action> actions = Randomly.nonEmptySubset(Action.values());
         for (Action a : actions) {

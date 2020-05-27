@@ -8,7 +8,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
-import sqlancer.tidb.TiDBExpressionGenerator;
+import sqlancer.tidb.TiDBBugs;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
 import sqlancer.tidb.TiDBSchema.TiDBDataType;
@@ -24,14 +24,13 @@ public class TiDBAlterTableGenerator {
         Set<String> errors = new HashSet<>();
         StringBuilder sb = new StringBuilder("ALTER TABLE ");
         TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-        TiDBExpressionGenerator gen = new TiDBExpressionGenerator(globalState).setColumns(table.getColumns());
         TiDBColumn column = table.getRandomColumn();
         sb.append(table.getName());
         Action a = Randomly.fromOptions(Action.values());
         sb.append(" ");
         switch (a) {
         case MODIFY_COLUMN:
-            if (true) {
+            if (TiDBBugs.bug10) {
                 throw new IgnoreMeException();
             }
             sb.append("MODIFY ");
@@ -73,7 +72,7 @@ public class TiDBAlterTableGenerator {
             errors.add("Unsupported add primary key, alter-primary-key is false");
             break;
         case CHANGE:
-            if (true) {
+            if (TiDBBugs.bug10) {
                 throw new IgnoreMeException();
             }
             sb.append(" CHANGE ");

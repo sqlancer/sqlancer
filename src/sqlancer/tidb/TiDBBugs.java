@@ -18,4 +18,28 @@ public class TiDBBugs {
     // https://github.com/pingcap/tidb/issues/15990
     public static boolean bug15990 = true;
 
+    // https://github.com/pingcap/tidb/issues/15844
+    public static boolean bug15844 = true;
+
+    // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/10
+    public static boolean bug10 = true;
+
+    // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/14
+    public static boolean bug14 = true;
+
+    // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/15
+    public static boolean bug15 = true;
+
+    // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/16
+    public static boolean bug16 = true;
+
+    // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/19
+    public static boolean bug19 = true;
+
+    // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/48
+    public static boolean bug48 = true;
+
+    // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/50
+    public static boolean bug50 = true;
+
 }
