@@ -28,52 +28,52 @@ import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
 public class PostgresQueryPartitioningBase implements TestOracle {
 
-	final PostgresGlobalState state;
-	final Set<String> errors = new HashSet<>();
+    final PostgresGlobalState state;
+    final Set<String> errors = new HashSet<>();
 
-	PostgresSchema s;
-	PostgresTables targetTables;
-	PostgresExpressionGenerator gen;
-	PostgresSelect select;
-	PostgresExpression predicate;
-	PostgresPrefixOperation negatedPredicate;
-	PostgresPostfixOperation isNullPredicate;
+    PostgresSchema s;
+    PostgresTables targetTables;
+    PostgresExpressionGenerator gen;
+    PostgresSelect select;
+    PostgresExpression predicate;
+    PostgresPrefixOperation negatedPredicate;
+    PostgresPostfixOperation isNullPredicate;
 
-	public PostgresQueryPartitioningBase(PostgresGlobalState state) {
-		this.state = state;
-		PostgresCommon.addCommonExpressionErrors(errors);
-		PostgresCommon.addCommonFetchErrors(errors);
-	}
+    public PostgresQueryPartitioningBase(PostgresGlobalState state) {
+        this.state = state;
+        PostgresCommon.addCommonExpressionErrors(errors);
+        PostgresCommon.addCommonFetchErrors(errors);
+    }
 
-	@Override
-	public void check() throws SQLException {
-		s = state.getSchema();
-		targetTables = s.getRandomTableNonEmptyTables();
-		gen = new PostgresExpressionGenerator(state).setColumns(targetTables.getColumns());
-		select = new PostgresSelect();
-		select.setFetchColumns(generateFetchColumns());
-		List<PostgresTable> tables = targetTables.getTables();
-		List<PostgresJoin> joins = PostgresNoRECOracle.getJoinStatements(state, targetTables.getColumns(), tables);
-		List<PostgresExpression> tableList = tables.stream().map(t -> new PostgresFromTable(t, Randomly.getBoolean()))
-				.collect(Collectors.toList());
-		// TODO joins
-		select.setFromList(tableList);
-		select.setWhereClause(null);
-		select.setJoinClauses(joins);
-		predicate = generatePredicate();
-		negatedPredicate = new PostgresPrefixOperation(predicate, PostgresPrefixOperation.PrefixOperator.NOT);
-		isNullPredicate = new PostgresPostfixOperation(predicate, PostfixOperator.IS_NULL);
-		if (Randomly.getBoolean()) {
-			select.setForClause(ForClause.getRandom());
-		}
-	}
+    @Override
+    public void check() throws SQLException {
+        s = state.getSchema();
+        targetTables = s.getRandomTableNonEmptyTables();
+        gen = new PostgresExpressionGenerator(state).setColumns(targetTables.getColumns());
+        select = new PostgresSelect();
+        select.setFetchColumns(generateFetchColumns());
+        List<PostgresTable> tables = targetTables.getTables();
+        List<PostgresJoin> joins = PostgresNoRECOracle.getJoinStatements(state, targetTables.getColumns(), tables);
+        List<PostgresExpression> tableList = tables.stream().map(t -> new PostgresFromTable(t, Randomly.getBoolean()))
+                .collect(Collectors.toList());
+        // TODO joins
+        select.setFromList(tableList);
+        select.setWhereClause(null);
+        select.setJoinClauses(joins);
+        predicate = generatePredicate();
+        negatedPredicate = new PostgresPrefixOperation(predicate, PostgresPrefixOperation.PrefixOperator.NOT);
+        isNullPredicate = new PostgresPostfixOperation(predicate, PostfixOperator.IS_NULL);
+        if (Randomly.getBoolean()) {
+            select.setForClause(ForClause.getRandom());
+        }
+    }
 
-	List<PostgresExpression> generateFetchColumns() {
-		return Arrays.asList(new PostgresColumnValue(targetTables.getColumns().get(0), null));
-	}
+    List<PostgresExpression> generateFetchColumns() {
+        return Arrays.asList(new PostgresColumnValue(targetTables.getColumns().get(0), null));
+    }
 
-	PostgresExpression generatePredicate() {
-		return gen.generateExpression(PostgresDataType.BOOLEAN);
-	}
+    PostgresExpression generatePredicate() {
+        return gen.generateExpression(PostgresDataType.BOOLEAN);
+    }
 
 }

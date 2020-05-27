@@ -9,99 +9,99 @@ import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.ast.PostgresBinaryArithmeticOperation.PostgresBinaryOperator;
 
 public class PostgresBinaryArithmeticOperation extends BinaryOperatorNode<PostgresExpression, PostgresBinaryOperator>
-		implements PostgresExpression {
+        implements PostgresExpression {
 
-	public enum PostgresBinaryOperator implements Operator {
+    public enum PostgresBinaryOperator implements Operator {
 
-		ADDITION("+") {
-			@Override
-			public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-				return applyBitOperation(left, right, (l, r) -> l + r);
-			}
+        ADDITION("+") {
+            @Override
+            public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
+                return applyBitOperation(left, right, (l, r) -> l + r);
+            }
 
-		},
-		SUBTRACTION("-") {
-			@Override
-			public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-				return applyBitOperation(left, right, (l, r) -> l - r);
-			}
-		},
-		MULTIPLICATION("*") {
-			@Override
-			public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-				return applyBitOperation(left, right, (l, r) -> l * r);
-			}
-		},
-		DIVISION("/") {
+        },
+        SUBTRACTION("-") {
+            @Override
+            public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
+                return applyBitOperation(left, right, (l, r) -> l - r);
+            }
+        },
+        MULTIPLICATION("*") {
+            @Override
+            public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
+                return applyBitOperation(left, right, (l, r) -> l * r);
+            }
+        },
+        DIVISION("/") {
 
-			@Override
-			public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-				return applyBitOperation(left, right, (l, r) -> r == 0 ? -1 : l / r);
+            @Override
+            public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
+                return applyBitOperation(left, right, (l, r) -> r == 0 ? -1 : l / r);
 
-			}
+            }
 
-		},
-		MODULO("%") {
-			@Override
-			public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-				return applyBitOperation(left, right, (l, r) -> r == 0 ? -1 : l % r);
+        },
+        MODULO("%") {
+            @Override
+            public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
+                return applyBitOperation(left, right, (l, r) -> r == 0 ? -1 : l % r);
 
-			}
-		},
-		// TODO no implementation
-		EXPONENTIATION("^") {
-			@Override
-			public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-//				return applyBitOperation(left, right, (l, r) -> (long) Math.pow(l, r));
-				throw new AssertionError();
-			}
-		};
+            }
+        },
+        // TODO no implementation
+        EXPONENTIATION("^") {
+            @Override
+            public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
+                // return applyBitOperation(left, right, (l, r) -> (long) Math.pow(l, r));
+                throw new AssertionError();
+            }
+        };
 
-		private static PostgresConstant applyBitOperation(PostgresConstant left, PostgresConstant right,
-				BinaryOperator<Long> op) {
-			if (left.isNull() || right.isNull()) {
-				return PostgresConstant.createNullConstant();
-			} else {
-				long leftVal = left.cast(PostgresDataType.INT).asInt();
-				long rightVal = right.cast(PostgresDataType.INT).asInt();
-				long value = op.apply(leftVal, rightVal);
-				return PostgresConstant.createIntConstant(value);
-			}
-		}
+        private static PostgresConstant applyBitOperation(PostgresConstant left, PostgresConstant right,
+                BinaryOperator<Long> op) {
+            if (left.isNull() || right.isNull()) {
+                return PostgresConstant.createNullConstant();
+            } else {
+                long leftVal = left.cast(PostgresDataType.INT).asInt();
+                long rightVal = right.cast(PostgresDataType.INT).asInt();
+                long value = op.apply(leftVal, rightVal);
+                return PostgresConstant.createIntConstant(value);
+            }
+        }
 
-		private String textRepresentation;
+        private String textRepresentation;
 
-		PostgresBinaryOperator(String textRepresentation) {
-			this.textRepresentation = textRepresentation;
-		}
+        PostgresBinaryOperator(String textRepresentation) {
+            this.textRepresentation = textRepresentation;
+        }
 
-		public String getTextRepresentation() {
-			return textRepresentation;
-		}
+        public String getTextRepresentation() {
+            return textRepresentation;
+        }
 
-		public abstract PostgresConstant apply(PostgresConstant left, PostgresConstant right);
+        public abstract PostgresConstant apply(PostgresConstant left, PostgresConstant right);
 
-		public static PostgresBinaryOperator getRandom() {
-			return Randomly.fromOptions(values());
-		}
+        public static PostgresBinaryOperator getRandom() {
+            return Randomly.fromOptions(values());
+        }
 
-	}
+    }
 
-	public PostgresBinaryArithmeticOperation(PostgresExpression left, PostgresExpression right,
-			PostgresBinaryOperator op) {
-		super(left, right, op);
-	}
+    public PostgresBinaryArithmeticOperation(PostgresExpression left, PostgresExpression right,
+            PostgresBinaryOperator op) {
+        super(left, right, op);
+    }
 
-	@Override
-	public PostgresConstant getExpectedValue() {
-		PostgresConstant leftExpected = getLeft().getExpectedValue();
-		PostgresConstant rightExpected = getRight().getExpectedValue();
-		return getOp().apply(leftExpected, rightExpected);
-	}
+    @Override
+    public PostgresConstant getExpectedValue() {
+        PostgresConstant leftExpected = getLeft().getExpectedValue();
+        PostgresConstant rightExpected = getRight().getExpectedValue();
+        return getOp().apply(leftExpected, rightExpected);
+    }
 
-	@Override
-	public PostgresDataType getExpressionType() {
-		return PostgresDataType.INT;
-	}
+    @Override
+    public PostgresDataType getExpressionType() {
+        return PostgresDataType.INT;
+    }
 
 }

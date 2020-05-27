@@ -5,39 +5,39 @@ import sqlancer.schema.TableIndex;
 import sqlancer.visitor.UnaryOperation;
 
 public class CockroachDBIndexReference extends CockroachDBTableReference
-		implements UnaryOperation<CockroachDBExpression> {
+        implements UnaryOperation<CockroachDBExpression> {
 
-	private CockroachDBTableReference tableReference;
-	private TableIndex index;
+    private CockroachDBTableReference tableReference;
+    private TableIndex index;
 
-	public CockroachDBIndexReference(CockroachDBTableReference tableReference, TableIndex index) {
-		super(tableReference.getTable());
-		this.tableReference = tableReference;
-		this.index = index;
-	}
+    public CockroachDBIndexReference(CockroachDBTableReference tableReference, TableIndex index) {
+        super(tableReference.getTable());
+        this.tableReference = tableReference;
+        this.index = index;
+    }
 
-	@Override
-	public CockroachDBExpression getExpression() {
-		return tableReference;
-	}
+    @Override
+    public CockroachDBExpression getExpression() {
+        return tableReference;
+    }
 
-	@Override
-	public String getOperatorRepresentation() {
-		if (Randomly.getBoolean()) {
-			return String.format("@{FORCE_INDEX=%s}", index.getIndexName());
-		} else {
-			return String.format("@{FORCE_INDEX=%s,%s}", index.getIndexName(), Randomly.fromOptions("ASC", "DESC"));
-		}
-	}
+    @Override
+    public String getOperatorRepresentation() {
+        if (Randomly.getBoolean()) {
+            return String.format("@{FORCE_INDEX=%s}", index.getIndexName());
+        } else {
+            return String.format("@{FORCE_INDEX=%s,%s}", index.getIndexName(), Randomly.fromOptions("ASC", "DESC"));
+        }
+    }
 
-	@Override
-	public OperatorKind getOperatorKind() {
-		return OperatorKind.POSTFIX;
-	}
+    @Override
+    public OperatorKind getOperatorKind() {
+        return OperatorKind.POSTFIX;
+    }
 
-	@Override
-	public boolean omitBracketsWhenPrinting() {
-		return true;
-	}
+    @Override
+    public boolean omitBracketsWhenPrinting() {
+        return true;
+    }
 
 }

@@ -16,30 +16,30 @@ import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnar
 
 public class CockroachDBQueryPartitioningDistinctTester extends CockroachDBQueryPartitioningBase {
 
-	public CockroachDBQueryPartitioningDistinctTester(CockroachDBGlobalState state) {
-		super(state);
-		errors.add("GROUP BY term out of range");
-	}
+    public CockroachDBQueryPartitioningDistinctTester(CockroachDBGlobalState state) {
+        super(state);
+        errors.add("GROUP BY term out of range");
+    }
 
-	@Override
-	public void check() throws SQLException {
-		super.check();
-		select.setDistinct(true);
-		String originalQueryString = CockroachDBVisitor.asString(select);
+    @Override
+    public void check() throws SQLException {
+        super.check();
+        select.setDistinct(true);
+        String originalQueryString = CockroachDBVisitor.asString(select);
 
-		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
-				state.getConnection(), state);
-		select.setDistinct(false);
-		CockroachDBExpression predicate = gen.generateExpression(CockroachDBDataType.BOOL.get());
-		select.setWhereClause(predicate);
-		String firstQueryString = CockroachDBVisitor.asString(select);
-		select.setWhereClause(new CockroachDBNotOperation(predicate));
-		String secondQueryString = CockroachDBVisitor.asString(select);
-		select.setWhereClause(new CockroachDBUnaryPostfixOperation(predicate, CockroachDBUnaryPostfixOperator.IS_NULL));
-		String thirdQueryString = CockroachDBVisitor.asString(select);
-		List<String> combinedString = new ArrayList<>();
-		List<String> secondResultSet = TestOracle.getCombinedResultSetNoDuplicates(firstQueryString, secondQueryString,
-				thirdQueryString, combinedString, true, state, errors);
-		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
-	}
+        List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
+                state.getConnection(), state);
+        select.setDistinct(false);
+        CockroachDBExpression predicate = gen.generateExpression(CockroachDBDataType.BOOL.get());
+        select.setWhereClause(predicate);
+        String firstQueryString = CockroachDBVisitor.asString(select);
+        select.setWhereClause(new CockroachDBNotOperation(predicate));
+        String secondQueryString = CockroachDBVisitor.asString(select);
+        select.setWhereClause(new CockroachDBUnaryPostfixOperation(predicate, CockroachDBUnaryPostfixOperator.IS_NULL));
+        String thirdQueryString = CockroachDBVisitor.asString(select);
+        List<String> combinedString = new ArrayList<>();
+        List<String> secondResultSet = TestOracle.getCombinedResultSetNoDuplicates(firstQueryString, secondQueryString,
+                thirdQueryString, combinedString, true, state, errors);
+        TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
+    }
 }

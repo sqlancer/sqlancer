@@ -4,34 +4,34 @@ import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
 public class PostgresPostfixText implements PostgresExpression {
 
-	private final PostgresExpression expr;
-	private final String text;
-	private PostgresConstant expectedValue;
-	private PostgresDataType type;
+    private final PostgresExpression expr;
+    private final String text;
+    private PostgresConstant expectedValue;
+    private PostgresDataType type;
 
-	public PostgresPostfixText(PostgresExpression expr, String text, PostgresConstant expectedValue,
-			PostgresDataType type) {
-		this.expr = expr;
-		this.text = text;
-		this.expectedValue = expectedValue;
-		this.type = type;
-	}
+    public PostgresPostfixText(PostgresExpression expr, String text, PostgresConstant expectedValue,
+            PostgresDataType type) {
+        this.expr = expr;
+        this.text = text;
+        this.expectedValue = expectedValue;
+        this.type = type;
+    }
 
-	public PostgresExpression getExpr() {
-		return expr;
-	}
+    public PostgresExpression getExpr() {
+        return expr;
+    }
 
-	public String getText() {
-		return text;
-	}
+    public String getText() {
+        return text;
+    }
 
-	@Override
-	public PostgresConstant getExpectedValue() {
-		return expectedValue;
-	}
+    @Override
+    public PostgresConstant getExpectedValue() {
+        return expectedValue;
+    }
 
-	@Override
-	public PostgresDataType getExpressionType() {
-		return type;
-	}
+    @Override
+    public PostgresDataType getExpressionType() {
+        return type;
+    }
 }

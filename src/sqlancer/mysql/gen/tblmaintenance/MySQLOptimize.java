@@ -14,28 +14,28 @@ import sqlancer.mysql.MySQLSchema.MySQLTable;
  */
 public class MySQLOptimize {
 
-	private final List<MySQLTable> tables;
-	private final StringBuilder sb = new StringBuilder();
+    private final List<MySQLTable> tables;
+    private final StringBuilder sb = new StringBuilder();
 
-	public MySQLOptimize(List<MySQLTable> tables) {
-		this.tables = tables;
-	}
+    public MySQLOptimize(List<MySQLTable> tables) {
+        this.tables = tables;
+    }
 
-	public static Query optimize(MySQLGlobalState globalState) {
-		return new MySQLOptimize(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty()).optimize();
-	}
+    public static Query optimize(MySQLGlobalState globalState) {
+        return new MySQLOptimize(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty()).optimize();
+    }
 
-	// OPTIMIZE [NO_WRITE_TO_BINLOG | LOCAL]
-	// TABLE tbl_name [, tbl_name] ...
-	private Query optimize() {
-		sb.append("OPTIMIZE");
-		if (Randomly.getBoolean()) {
-			sb.append(" ");
-			sb.append(Randomly.fromOptions("NO_WRITE_TO_BINLOG", "LOCAL"));
-		}
-		sb.append(" TABLE ");
-		sb.append(tables.stream().map(t -> t.getName()).collect(Collectors.joining(", ")));
-		return new QueryAdapter(sb.toString());
-	}
+    // OPTIMIZE [NO_WRITE_TO_BINLOG | LOCAL]
+    // TABLE tbl_name [, tbl_name] ...
+    private Query optimize() {
+        sb.append("OPTIMIZE");
+        if (Randomly.getBoolean()) {
+            sb.append(" ");
+            sb.append(Randomly.fromOptions("NO_WRITE_TO_BINLOG", "LOCAL"));
+        }
+        sb.append(" TABLE ");
+        sb.append(tables.stream().map(t -> t.getName()).collect(Collectors.joining(", ")));
+        return new QueryAdapter(sb.toString());
+    }
 
 }

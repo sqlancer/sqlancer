@@ -6,32 +6,32 @@ import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.cockroachdb.ast.CockroachDBBinaryArithmeticOperation.CockroachDBBinaryArithmeticOperator;
 
 public class CockroachDBBinaryArithmeticOperation
-		extends BinaryOperatorNode<CockroachDBExpression, CockroachDBBinaryArithmeticOperator>
-		implements CockroachDBExpression {
+        extends BinaryOperatorNode<CockroachDBExpression, CockroachDBBinaryArithmeticOperator>
+        implements CockroachDBExpression {
 
-	public enum CockroachDBBinaryArithmeticOperator implements Operator {
-		ADD("+"), MULT("*"), MINUS("-"), DIV("/");
+    public enum CockroachDBBinaryArithmeticOperator implements Operator {
+        ADD("+"), MULT("*"), MINUS("-"), DIV("/");
 
-		String textRepresentation;
+        String textRepresentation;
 
-		CockroachDBBinaryArithmeticOperator(String textRepresentation) {
-			this.textRepresentation = textRepresentation;
-		}
+        CockroachDBBinaryArithmeticOperator(String textRepresentation) {
+            this.textRepresentation = textRepresentation;
+        }
 
-		public static CockroachDBBinaryArithmeticOperator getRandom() {
-			return Randomly.fromOptions(values());
-		}
+        public static CockroachDBBinaryArithmeticOperator getRandom() {
+            return Randomly.fromOptions(values());
+        }
 
-		@Override
-		public String getTextRepresentation() {
-			return textRepresentation;
-		}
+        @Override
+        public String getTextRepresentation() {
+            return textRepresentation;
+        }
 
-	}
+    }
 
-	public CockroachDBBinaryArithmeticOperation(CockroachDBExpression left, CockroachDBExpression right,
-			CockroachDBBinaryArithmeticOperator op) {
-		super(left, right, op);
-	}
+    public CockroachDBBinaryArithmeticOperation(CockroachDBExpression left, CockroachDBExpression right,
+            CockroachDBBinaryArithmeticOperator op) {
+        super(left, right, op);
+    }
 
 }

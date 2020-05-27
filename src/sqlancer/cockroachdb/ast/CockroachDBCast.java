@@ -5,27 +5,27 @@ import sqlancer.visitor.UnaryOperation;
 
 public class CockroachDBCast implements UnaryOperation<CockroachDBExpression>, CockroachDBExpression {
 
-	private final CockroachDBExpression expr;
-	private final CockroachDBCompositeDataType type;
+    private final CockroachDBExpression expr;
+    private final CockroachDBCompositeDataType type;
 
-	public CockroachDBCast(CockroachDBExpression expr, CockroachDBCompositeDataType type) {
-		this.expr = expr;
-		this.type = type;
-	}
+    public CockroachDBCast(CockroachDBExpression expr, CockroachDBCompositeDataType type) {
+        this.expr = expr;
+        this.type = type;
+    }
 
-	@Override
-	public CockroachDBExpression getExpression() {
-		return expr;
-	}
+    @Override
+    public CockroachDBExpression getExpression() {
+        return expr;
+    }
 
-	@Override
-	public String getOperatorRepresentation() {
-		return "::" + type.toString();
-	}
+    @Override
+    public String getOperatorRepresentation() {
+        return "::" + type.toString();
+    }
 
-	@Override
-	public OperatorKind getOperatorKind() {
-		return OperatorKind.POSTFIX;
-	}
+    @Override
+    public OperatorKind getOperatorKind() {
+        return OperatorKind.POSTFIX;
+    }
 
 }

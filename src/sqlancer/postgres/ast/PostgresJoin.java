@@ -6,45 +6,45 @@ import sqlancer.postgres.PostgresSchema.PostgresTable;
 
 public class PostgresJoin implements PostgresExpression {
 
-	public enum PostgresJoinType {
-		INNER, LEFT, RIGHT, FULL, CROSS;
+    public enum PostgresJoinType {
+        INNER, LEFT, RIGHT, FULL, CROSS;
 
-		public static PostgresJoinType getRandom() {
-			return Randomly.fromOptions(values());
-		}
+        public static PostgresJoinType getRandom() {
+            return Randomly.fromOptions(values());
+        }
 
-	}
+    }
 
-	private final PostgresTable table;
-	private final PostgresExpression onClause;
-	private final PostgresJoinType type;
+    private final PostgresTable table;
+    private final PostgresExpression onClause;
+    private final PostgresJoinType type;
 
-	public PostgresJoin(PostgresTable table, PostgresExpression onClause, PostgresJoinType type) {
-		this.table = table;
-		this.onClause = onClause;
-		this.type = type;
-	}
+    public PostgresJoin(PostgresTable table, PostgresExpression onClause, PostgresJoinType type) {
+        this.table = table;
+        this.onClause = onClause;
+        this.type = type;
+    }
 
-	public PostgresTable getTable() {
-		return table;
-	}
+    public PostgresTable getTable() {
+        return table;
+    }
 
-	public PostgresExpression getOnClause() {
-		return onClause;
-	}
+    public PostgresExpression getOnClause() {
+        return onClause;
+    }
 
-	public PostgresJoinType getType() {
-		return type;
-	}
+    public PostgresJoinType getType() {
+        return type;
+    }
 
-	@Override
-	public PostgresDataType getExpressionType() {
-		throw new AssertionError();
-	}
+    @Override
+    public PostgresDataType getExpressionType() {
+        throw new AssertionError();
+    }
 
-	@Override
-	public PostgresConstant getExpectedValue() {
-		throw new AssertionError();
-	}
+    @Override
+    public PostgresConstant getExpectedValue() {
+        throw new AssertionError();
+    }
 
 }

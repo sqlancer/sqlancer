@@ -16,122 +16,122 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 
 public class StateToReproduce {
 
-	public final List<Query> statements = new ArrayList<>();
-	public String queryString;
+    public final List<Query> statements = new ArrayList<>();
+    public String queryString;
 
-	private String databaseName;
+    private String databaseName;
 
-	public String databaseVersion;
+    public String databaseVersion;
 
-	public String values;
+    public String values;
 
-	String exception;
+    String exception;
 
-	public String queryTargetedTablesString;
+    public String queryTargetedTablesString;
 
-	public String queryTargetedColumnsString;
+    public String queryTargetedColumnsString;
 
-	public StateToReproduce(String databaseName) {
-		this.databaseName = databaseName;
+    public StateToReproduce(String databaseName) {
+        this.databaseName = databaseName;
 
-	}
+    }
 
-	public String getException() {
-		return exception;
-	}
+    public String getException() {
+        return exception;
+    }
 
-	public String getDatabaseName() {
-		return databaseName;
-	}
+    public String getDatabaseName() {
+        return databaseName;
+    }
 
-	public String getDatabaseVersion() {
-		return databaseVersion;
-	}
+    public String getDatabaseVersion() {
+        return databaseVersion;
+    }
 
-	public List<Query> getStatements() {
-		return statements;
-	}
+    public List<Query> getStatements() {
+        return statements;
+    }
 
-	public String getQueryString() {
-		return queryString;
-	}
+    public String getQueryString() {
+        return queryString;
+    }
 
-	public static class MySQLStateToReproduce extends StateToReproduce {
+    public static class MySQLStateToReproduce extends StateToReproduce {
 
-		public MySQLStateToReproduce(String databaseName) {
-			super(databaseName);
-		}
+        public MySQLStateToReproduce(String databaseName) {
+            super(databaseName);
+        }
 
-		public Map<MySQLColumn, MySQLConstant> getRandomRowValues() {
-			return randomRowValues;
-		}
+        public Map<MySQLColumn, MySQLConstant> getRandomRowValues() {
+            return randomRowValues;
+        }
 
-		public Map<MySQLColumn, MySQLConstant> randomRowValues;
+        public Map<MySQLColumn, MySQLConstant> randomRowValues;
 
-		public MySQLExpression whereClause;
+        public MySQLExpression whereClause;
 
-		public String queryThatSelectsRow;
+        public String queryThatSelectsRow;
 
-		public MySQLExpression getWhereClause() {
-			return whereClause;
-		}
+        public MySQLExpression getWhereClause() {
+            return whereClause;
+        }
 
-	}
+    }
 
-	public static class MariaDBStateToReproduce extends StateToReproduce {
+    public static class MariaDBStateToReproduce extends StateToReproduce {
 
-		public MariaDBStateToReproduce(String databaseName) {
-			super(databaseName);
-		}
+        public MariaDBStateToReproduce(String databaseName) {
+            super(databaseName);
+        }
 
-	}
+    }
 
-	public static class CockroachDBStateToReproduce extends StateToReproduce {
+    public static class CockroachDBStateToReproduce extends StateToReproduce {
 
-		public CockroachDBStateToReproduce(String databaseName) {
-			super(databaseName);
-		}
+        public CockroachDBStateToReproduce(String databaseName) {
+            super(databaseName);
+        }
 
-	}
+    }
 
-	public static class SQLite3StateToReproduce extends StateToReproduce {
-		public SQLite3StateToReproduce(String databaseName) {
-			super(databaseName);
-		}
+    public static class SQLite3StateToReproduce extends StateToReproduce {
+        public SQLite3StateToReproduce(String databaseName) {
+            super(databaseName);
+        }
 
-		public Map<SQLite3Column, SQLite3Constant> getRandomRowValues() {
-			return randomRowValues;
-		}
+        public Map<SQLite3Column, SQLite3Constant> getRandomRowValues() {
+            return randomRowValues;
+        }
 
-		public Map<SQLite3Column, SQLite3Constant> randomRowValues;
+        public Map<SQLite3Column, SQLite3Constant> randomRowValues;
 
-		public SQLite3Expression whereClause;
+        public SQLite3Expression whereClause;
 
-		public SQLite3Expression getWhereClause() {
-			return whereClause;
-		}
+        public SQLite3Expression getWhereClause() {
+            return whereClause;
+        }
 
-	}
+    }
 
-	public static class PostgresStateToReproduce extends StateToReproduce {
-		public PostgresStateToReproduce(String databaseName) {
-			super(databaseName);
-		}
+    public static class PostgresStateToReproduce extends StateToReproduce {
+        public PostgresStateToReproduce(String databaseName) {
+            super(databaseName);
+        }
 
-		public Map<PostgresColumn, PostgresConstant> getRandomRowValues() {
-			return randomRowValues;
-		}
+        public Map<PostgresColumn, PostgresConstant> getRandomRowValues() {
+            return randomRowValues;
+        }
 
-		public Map<PostgresColumn, PostgresConstant> randomRowValues;
+        public Map<PostgresColumn, PostgresConstant> randomRowValues;
 
-		public PostgresExpression whereClause;
+        public PostgresExpression whereClause;
 
-		public String queryThatSelectsRow;
+        public String queryThatSelectsRow;
 
-		public PostgresExpression getWhereClause() {
-			return whereClause;
-		}
+        public PostgresExpression getWhereClause() {
+            return whereClause;
+        }
 
-	}
+    }
 
 }

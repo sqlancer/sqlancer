@@ -6,38 +6,38 @@ import sqlancer.ast.UnaryOperatorNode;
 import sqlancer.tidb.ast.TiDBUnaryPrefixOperation.TiDBUnaryPrefixOperator;
 
 public class TiDBUnaryPrefixOperation extends UnaryOperatorNode<TiDBExpression, TiDBUnaryPrefixOperator>
-		implements TiDBExpression {
+        implements TiDBExpression {
 
-	public enum TiDBUnaryPrefixOperator implements Operator {
-		NOT("NOT"), //
-		INVERSION("~"), //
-		PLUS("+"), //
-		MINUS("-"), //
-		BINARY("BINARY"); //
+    public enum TiDBUnaryPrefixOperator implements Operator {
+        NOT("NOT"), //
+        INVERSION("~"), //
+        PLUS("+"), //
+        MINUS("-"), //
+        BINARY("BINARY"); //
 
-		private String s;
+        private String s;
 
-		TiDBUnaryPrefixOperator(String s) {
-			this.s = s;
-		}
+        TiDBUnaryPrefixOperator(String s) {
+            this.s = s;
+        }
 
-		public static TiDBUnaryPrefixOperator getRandom() {
-			return Randomly.fromOptions(values());
-		}
+        public static TiDBUnaryPrefixOperator getRandom() {
+            return Randomly.fromOptions(values());
+        }
 
-		@Override
-		public String getTextRepresentation() {
-			return s;
-		}
-	}
+        @Override
+        public String getTextRepresentation() {
+            return s;
+        }
+    }
 
-	public TiDBUnaryPrefixOperation(TiDBExpression expr, TiDBUnaryPrefixOperator op) {
-		super(expr, op);
-	}
+    public TiDBUnaryPrefixOperation(TiDBExpression expr, TiDBUnaryPrefixOperator op) {
+        super(expr, op);
+    }
 
-	@Override
-	public OperatorKind getOperatorKind() {
-		return OperatorKind.PREFIX;
-	}
+    @Override
+    public OperatorKind getOperatorKind() {
+        return OperatorKind.PREFIX;
+    }
 
 }

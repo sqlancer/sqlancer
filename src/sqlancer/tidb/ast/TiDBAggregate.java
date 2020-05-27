@@ -8,31 +8,31 @@ import sqlancer.tidb.ast.TiDBAggregate.TiDBAggregateFunction;
 
 public class TiDBAggregate extends FunctionNode<TiDBAggregateFunction, TiDBExpression> implements TiDBExpression {
 
-	public enum TiDBAggregateFunction {
-		COUNT(1), //
-		SUM(1), //
-		AVG(1), //
-		MIN(1), //
-		MAX(1);
+    public enum TiDBAggregateFunction {
+        COUNT(1), //
+        SUM(1), //
+        AVG(1), //
+        MIN(1), //
+        MAX(1);
 
-		private int nrArgs;
+        private int nrArgs;
 
-		TiDBAggregateFunction(int nrArgs) {
-			this.nrArgs = nrArgs;
-		}
+        TiDBAggregateFunction(int nrArgs) {
+            this.nrArgs = nrArgs;
+        }
 
-		public static TiDBAggregateFunction getRandom() {
-			return Randomly.fromOptions(values());
-		}
+        public static TiDBAggregateFunction getRandom() {
+            return Randomly.fromOptions(values());
+        }
 
-		public int getNrArgs() {
-			return nrArgs;
-		}
+        public int getNrArgs() {
+            return nrArgs;
+        }
 
-	}
+    }
 
-	public TiDBAggregate(List<TiDBExpression> args, TiDBAggregateFunction func) {
-		super(func, args);
-	}
+    public TiDBAggregate(List<TiDBExpression> args, TiDBAggregateFunction func) {
+        super(func, args);
+    }
 
 }

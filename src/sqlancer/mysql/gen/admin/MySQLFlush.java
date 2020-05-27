@@ -14,38 +14,38 @@ import sqlancer.mysql.MySQLSchema.MySQLTable;
  */
 public class MySQLFlush {
 
-	private final List<MySQLTable> tables;
-	private final StringBuilder sb = new StringBuilder();
+    private final List<MySQLTable> tables;
+    private final StringBuilder sb = new StringBuilder();
 
-	public MySQLFlush(List<MySQLTable> tables) {
-		this.tables = tables;
-	}
+    public MySQLFlush(List<MySQLTable> tables) {
+        this.tables = tables;
+    }
 
-	public static Query create(MySQLGlobalState globalState) {
-		return new MySQLFlush(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty()).generate();
-	}
+    public static Query create(MySQLGlobalState globalState) {
+        return new MySQLFlush(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty()).generate();
+    }
 
-	private Query generate() {
-		sb.append("FLUSH");
-		if (Randomly.getBoolean()) {
-			sb.append(" ");
-			sb.append(Randomly.fromOptions("NO_WRITE_TO_BINLOG", "LOCAL"));
-			sb.append(" ");
-			// TODO: | RELAY LOGS [FOR CHANNEL channel] not fully implemented
-			List<String> options = Randomly.nonEmptySubset("BINARY LOGS", "ENGINE LOGS", "ERROR LOGS", "GENERAL LOGS",
-					"HOSTS", "LOGS", "PRIVILEGES", "OPTIMIZER_COSTS", "RELAY LOGS", "SLOW LOGS", "STATUS",
-					"USER_RESOURCES");
-			sb.append(options.stream().collect(Collectors.joining(", ")));
-		} else {
-			sb.append(" ");
-			sb.append("TABLES");
-			if (Randomly.getBoolean()) {
-				sb.append(" ");
-				sb.append(tables.stream().map(t -> t.getName()).collect(Collectors.joining(", ")));
-				// TODO implement READ LOCK and other variants
-			}
-		}
-		return new QueryAdapter(sb.toString());
-	}
+    private Query generate() {
+        sb.append("FLUSH");
+        if (Randomly.getBoolean()) {
+            sb.append(" ");
+            sb.append(Randomly.fromOptions("NO_WRITE_TO_BINLOG", "LOCAL"));
+            sb.append(" ");
+            // TODO: | RELAY LOGS [FOR CHANNEL channel] not fully implemented
+            List<String> options = Randomly.nonEmptySubset("BINARY LOGS", "ENGINE LOGS", "ERROR LOGS", "GENERAL LOGS",
+                    "HOSTS", "LOGS", "PRIVILEGES", "OPTIMIZER_COSTS", "RELAY LOGS", "SLOW LOGS", "STATUS",
+                    "USER_RESOURCES");
+            sb.append(options.stream().collect(Collectors.joining(", ")));
+        } else {
+            sb.append(" ");
+            sb.append("TABLES");
+            if (Randomly.getBoolean()) {
+                sb.append(" ");
+                sb.append(tables.stream().map(t -> t.getName()).collect(Collectors.joining(", ")));
+                // TODO implement READ LOCK and other variants
+            }
+        }
+        return new QueryAdapter(sb.toString());
+    }
 
 }

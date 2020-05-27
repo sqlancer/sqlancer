@@ -4,24 +4,24 @@ import sqlancer.ast.BinaryOperatorNode.Operator;
 
 public abstract class BinaryOperatorNode<T, O extends Operator> extends BinaryNode<T> {
 
-	private final O op;
+    private final O op;
 
-	public interface Operator {
-		String getTextRepresentation();
-	}
+    public interface Operator {
+        String getTextRepresentation();
+    }
 
-	public BinaryOperatorNode(T left, T right, O op) {
-		super(left, right);
-		this.op = op;
-	}
+    public BinaryOperatorNode(T left, T right, O op) {
+        super(left, right);
+        this.op = op;
+    }
 
-	@Override
-	public String getOperatorRepresentation() {
-		return op.getTextRepresentation();
-	}
+    @Override
+    public String getOperatorRepresentation() {
+        return op.getTextRepresentation();
+    }
 
-	public O getOp() {
-		return op;
-	}
+    public O getOp() {
+        return op;
+    }
 
 }

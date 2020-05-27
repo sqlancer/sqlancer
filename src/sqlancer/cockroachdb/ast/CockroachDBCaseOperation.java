@@ -4,27 +4,27 @@ import java.util.List;
 
 public class CockroachDBCaseOperation implements CockroachDBExpression {
 
-	private List<CockroachDBExpression> conditions;
-	private List<CockroachDBExpression> thenClauses;
-	private CockroachDBExpression elseClause;
+    private List<CockroachDBExpression> conditions;
+    private List<CockroachDBExpression> thenClauses;
+    private CockroachDBExpression elseClause;
 
-	public CockroachDBCaseOperation(List<CockroachDBExpression> conditions, List<CockroachDBExpression> thenClauses,
-			CockroachDBExpression elseClause) {
-		this.conditions = conditions;
-		this.thenClauses = thenClauses;
-		this.elseClause = elseClause;
-	}
+    public CockroachDBCaseOperation(List<CockroachDBExpression> conditions, List<CockroachDBExpression> thenClauses,
+            CockroachDBExpression elseClause) {
+        this.conditions = conditions;
+        this.thenClauses = thenClauses;
+        this.elseClause = elseClause;
+    }
 
-	public List<CockroachDBExpression> getConditions() {
-		return conditions;
-	}
+    public List<CockroachDBExpression> getConditions() {
+        return conditions;
+    }
 
-	public List<CockroachDBExpression> getThenClauses() {
-		return thenClauses;
-	}
+    public List<CockroachDBExpression> getThenClauses() {
+        return thenClauses;
+    }
 
-	public CockroachDBExpression getElseClause() {
-		return elseClause;
-	}
+    public CockroachDBExpression getElseClause() {
+        return elseClause;
+    }
 
 }

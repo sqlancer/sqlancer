@@ -14,26 +14,26 @@ import sqlancer.mysql.MySQLSchema.MySQLTable;
  */
 public class MySQLChecksum {
 
-	private final List<MySQLTable> tables;
-	private final StringBuilder sb = new StringBuilder();
+    private final List<MySQLTable> tables;
+    private final StringBuilder sb = new StringBuilder();
 
-	public MySQLChecksum(List<MySQLTable> tables) {
-		this.tables = tables;
-	}
+    public MySQLChecksum(List<MySQLTable> tables) {
+        this.tables = tables;
+    }
 
-	public static Query checksum(MySQLGlobalState globalState) {
-		return new MySQLChecksum(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty()).checksum();
-	}
+    public static Query checksum(MySQLGlobalState globalState) {
+        return new MySQLChecksum(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty()).checksum();
+    }
 
-	// CHECKSUM TABLE tbl_name [, tbl_name] ... [QUICK | EXTENDED]
-	private Query checksum() {
-		sb.append("CHECKSUM TABLE ");
-		sb.append(tables.stream().map(t -> t.getName()).collect(Collectors.joining(", ")));
-		if (Randomly.getBoolean()) {
-			sb.append(" ");
-			sb.append(Randomly.fromOptions("QUICK", "EXTENDED"));
-		}
-		return new QueryAdapter(sb.toString());
-	}
+    // CHECKSUM TABLE tbl_name [, tbl_name] ... [QUICK | EXTENDED]
+    private Query checksum() {
+        sb.append("CHECKSUM TABLE ");
+        sb.append(tables.stream().map(t -> t.getName()).collect(Collectors.joining(", ")));
+        if (Randomly.getBoolean()) {
+            sb.append(" ");
+            sb.append(Randomly.fromOptions("QUICK", "EXTENDED"));
+        }
+        return new QueryAdapter(sb.toString());
+    }
 
 }

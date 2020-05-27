@@ -4,12 +4,12 @@ import java.io.File;
 
 public class SQLite3GeneratorOptions {
 
-	public String databaseFile = "." + File.separator + "databases/test.db";
+    public String databaseFile = "." + File.separator + "databases/test.db";
 
-	public boolean deleteIfExists = true;
+    public boolean deleteIfExists = true;
 
-	public boolean generateDatabase = true;
+    public boolean generateDatabase = true;
 
-	public int printNrQueries = 1000;
+    public int printNrQueries = 1000;
 
 }

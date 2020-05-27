@@ -4,32 +4,32 @@ import sqlancer.visitor.UnaryOperation;
 
 public class CockroachDBOrderingTerm implements UnaryOperation<CockroachDBExpression>, CockroachDBExpression {
 
-	private final CockroachDBExpression expr;
-	private final boolean asc;
+    private final CockroachDBExpression expr;
+    private final boolean asc;
 
-	public CockroachDBOrderingTerm(CockroachDBExpression expr, boolean asc) {
-		this.expr = expr;
-		this.asc = asc;
-	}
+    public CockroachDBOrderingTerm(CockroachDBExpression expr, boolean asc) {
+        this.expr = expr;
+        this.asc = asc;
+    }
 
-	@Override
-	public CockroachDBExpression getExpression() {
-		return expr;
-	}
+    @Override
+    public CockroachDBExpression getExpression() {
+        return expr;
+    }
 
-	@Override
-	public String getOperatorRepresentation() {
-		return asc ? "ASC" : "DESC";
-	}
+    @Override
+    public String getOperatorRepresentation() {
+        return asc ? "ASC" : "DESC";
+    }
 
-	@Override
-	public OperatorKind getOperatorKind() {
-		return OperatorKind.POSTFIX;
-	}
+    @Override
+    public OperatorKind getOperatorKind() {
+        return OperatorKind.POSTFIX;
+    }
 
-	@Override
-	public boolean omitBracketsWhenPrinting() {
-		return true;
-	}
+    @Override
+    public boolean omitBracketsWhenPrinting() {
+        return true;
+    }
 
 }

@@ -16,41 +16,41 @@ import sqlancer.gen.AbstractInsertGenerator;
 
 public class ClickhouseInsertGenerator extends AbstractInsertGenerator<ClickhouseColumn> {
 
-	private ClickhouseGlobalState globalState;
-	private Set<String> errors = new HashSet<>();
-	private ClickhouseExpressionGenerator gen;
+    private ClickhouseGlobalState globalState;
+    private Set<String> errors = new HashSet<>();
+    private ClickhouseExpressionGenerator gen;
 
-	public ClickhouseInsertGenerator(ClickhouseGlobalState globalState) {
-		this.globalState = globalState;
-		gen = new ClickhouseExpressionGenerator(globalState);
-		errors.add("Cannot insert NULL value into a column of type 'Int32'"); // TODO
-		errors.add("Cannot insert NULL value into a column of type 'String'");
+    public ClickhouseInsertGenerator(ClickhouseGlobalState globalState) {
+        this.globalState = globalState;
+        gen = new ClickhouseExpressionGenerator(globalState);
+        errors.add("Cannot insert NULL value into a column of type 'Int32'"); // TODO
+        errors.add("Cannot insert NULL value into a column of type 'String'");
 
-		errors.add("Cannot parse string");
-		errors.add("Cannot parse Int32 from String, because value is too short");
-	}
+        errors.add("Cannot parse string");
+        errors.add("Cannot parse Int32 from String, because value is too short");
+    }
 
-	public static Query getQuery(ClickhouseGlobalState globalState) throws SQLException {
-		return new ClickhouseInsertGenerator(globalState).get();
-	}
+    public static Query getQuery(ClickhouseGlobalState globalState) throws SQLException {
+        return new ClickhouseInsertGenerator(globalState).get();
+    }
 
-	private Query get() {
-		ClickhouseTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-		List<ClickhouseColumn> columns = table.getRandomNonEmptyColumnSubset();
-		sb.append("INSERT INTO ");
-		sb.append(table.getName());
-		sb.append("(");
-		sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
-		sb.append(")");
-		sb.append(" VALUES ");
-		insertColumns(columns);
-		return new QueryAdapter(sb.toString(), errors);
-	}
+    private Query get() {
+        ClickhouseTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
+        List<ClickhouseColumn> columns = table.getRandomNonEmptyColumnSubset();
+        sb.append("INSERT INTO ");
+        sb.append(table.getName());
+        sb.append("(");
+        sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
+        sb.append(")");
+        sb.append(" VALUES ");
+        insertColumns(columns);
+        return new QueryAdapter(sb.toString(), errors);
+    }
 
-	@Override
-	protected void insertValue(ClickhouseColumn column) {
-		String s = ClickhouseToStringVisitor.asString(gen.generateConstant());
-		sb.append(s);
-	}
+    @Override
+    protected void insertValue(ClickhouseColumn column) {
+        String s = ClickhouseToStringVisitor.asString(gen.generateConstant());
+        sb.append(s);
+    }
 
 }

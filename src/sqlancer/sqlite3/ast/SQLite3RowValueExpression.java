@@ -6,25 +6,25 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequenc
 
 public class SQLite3RowValueExpression extends SQLite3Expression {
 
-	private final List<SQLite3Expression> expressions;
+    private final List<SQLite3Expression> expressions;
 
-	public SQLite3RowValueExpression(List<SQLite3Expression> expressions) {
-		this.expressions = expressions;
-	}
+    public SQLite3RowValueExpression(List<SQLite3Expression> expressions) {
+        this.expressions = expressions;
+    }
 
-	public List<SQLite3Expression> getExpressions() {
-		return expressions;
-	}
+    public List<SQLite3Expression> getExpressions() {
+        return expressions;
+    }
 
-	@Override
-	public SQLite3CollateSequence getExplicitCollateSequence() {
-		for (SQLite3Expression expr : expressions) {
-			SQLite3CollateSequence collate = expr.getExplicitCollateSequence();
-			if (collate != null) {
-				return collate;
-			}
-		}
-		return null;
-	}
+    @Override
+    public SQLite3CollateSequence getExplicitCollateSequence() {
+        for (SQLite3Expression expr : expressions) {
+            SQLite3CollateSequence collate = expr.getExplicitCollateSequence();
+            if (collate != null) {
+                return collate;
+            }
+        }
+        return null;
+    }
 
 }

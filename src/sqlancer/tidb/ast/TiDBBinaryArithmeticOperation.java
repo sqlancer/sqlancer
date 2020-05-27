@@ -6,34 +6,34 @@ import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.tidb.ast.TiDBBinaryArithmeticOperation.TiDBBinaryArithmeticOperator;
 
 public class TiDBBinaryArithmeticOperation extends BinaryOperatorNode<TiDBExpression, TiDBBinaryArithmeticOperator>
-		implements TiDBExpression {
+        implements TiDBExpression {
 
-	public enum TiDBBinaryArithmeticOperator implements Operator {
-		ADD("+"), //
-		MINUS("-"), //
-		MULT("*"), //
-		DIV("/"), //
-		INTEGER_DIV("DIV"), //
-		MOD("%"); //
+    public enum TiDBBinaryArithmeticOperator implements Operator {
+        ADD("+"), //
+        MINUS("-"), //
+        MULT("*"), //
+        DIV("/"), //
+        INTEGER_DIV("DIV"), //
+        MOD("%"); //
 
-		String textRepresentation;
+        String textRepresentation;
 
-		TiDBBinaryArithmeticOperator(String textRepresentation) {
-			this.textRepresentation = textRepresentation;
-		}
+        TiDBBinaryArithmeticOperator(String textRepresentation) {
+            this.textRepresentation = textRepresentation;
+        }
 
-		public static TiDBBinaryArithmeticOperator getRandom() {
-			return Randomly.fromOptions(values());
-		}
+        public static TiDBBinaryArithmeticOperator getRandom() {
+            return Randomly.fromOptions(values());
+        }
 
-		@Override
-		public String getTextRepresentation() {
-			return textRepresentation;
-		}
-	}
+        @Override
+        public String getTextRepresentation() {
+            return textRepresentation;
+        }
+    }
 
-	public TiDBBinaryArithmeticOperation(TiDBExpression left, TiDBExpression right, TiDBBinaryArithmeticOperator op) {
-		super(left, right, op);
-	}
+    public TiDBBinaryArithmeticOperation(TiDBExpression left, TiDBExpression right, TiDBBinaryArithmeticOperator op) {
+        super(left, right, op);
+    }
 
 }

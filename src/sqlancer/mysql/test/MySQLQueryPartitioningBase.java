@@ -24,48 +24,48 @@ import sqlancer.mysql.gen.MySQLExpressionGenerator;
 
 public abstract class MySQLQueryPartitioningBase implements TestOracle {
 
-	final MySQLGlobalState state;
-	final Set<String> errors = new HashSet<>();
+    final MySQLGlobalState state;
+    final Set<String> errors = new HashSet<>();
 
-	MySQLSchema s;
-	MySQLTables targetTables;
-	MySQLExpressionGenerator gen;
-	MySQLSelect select;
-	MySQLExpression predicate;
-	MySQLExpression negatedPredicate;
-	MySQLExpression isNullPredicate;
+    MySQLSchema s;
+    MySQLTables targetTables;
+    MySQLExpressionGenerator gen;
+    MySQLSelect select;
+    MySQLExpression predicate;
+    MySQLExpression negatedPredicate;
+    MySQLExpression isNullPredicate;
 
-	public MySQLQueryPartitioningBase(MySQLGlobalState state) {
-		this.state = state;
-		MySQLErrors.addExpressionErrors(errors);
-	}
+    public MySQLQueryPartitioningBase(MySQLGlobalState state) {
+        this.state = state;
+        MySQLErrors.addExpressionErrors(errors);
+    }
 
-	@Override
-	public void check() throws SQLException {
-		s = state.getSchema();
-		targetTables = s.getRandomTableNonEmptyTables();
-		gen = new MySQLExpressionGenerator(state).setColumns(targetTables.getColumns());
-		select = new MySQLSelect();
-		select.setFetchColumns(generateFetchColumns());
-		List<MySQLTable> tables = targetTables.getTables();
-		List<MySQLExpression> tableList = tables.stream().map(t -> new MySQLTableReference(t))
-				.collect(Collectors.toList());
-//		List<MySQLExpression> joins = MySQLJoin.getJoins(tableList, state);
-		select.setFromList(tableList);
-		select.setWhereClause(null);
-//		select.setJoins(joins);
-		predicate = generatePredicate();
-		negatedPredicate = new MySQLUnaryPrefixOperation(predicate, MySQLUnaryPrefixOperator.NOT);
-		isNullPredicate = new MySQLUnaryPostfixOperation(predicate,
-				MySQLUnaryPostfixOperation.UnaryPostfixOperator.IS_NULL, false);
-	}
+    @Override
+    public void check() throws SQLException {
+        s = state.getSchema();
+        targetTables = s.getRandomTableNonEmptyTables();
+        gen = new MySQLExpressionGenerator(state).setColumns(targetTables.getColumns());
+        select = new MySQLSelect();
+        select.setFetchColumns(generateFetchColumns());
+        List<MySQLTable> tables = targetTables.getTables();
+        List<MySQLExpression> tableList = tables.stream().map(t -> new MySQLTableReference(t))
+                .collect(Collectors.toList());
+        // List<MySQLExpression> joins = MySQLJoin.getJoins(tableList, state);
+        select.setFromList(tableList);
+        select.setWhereClause(null);
+        // select.setJoins(joins);
+        predicate = generatePredicate();
+        negatedPredicate = new MySQLUnaryPrefixOperation(predicate, MySQLUnaryPrefixOperator.NOT);
+        isNullPredicate = new MySQLUnaryPostfixOperation(predicate,
+                MySQLUnaryPostfixOperation.UnaryPostfixOperator.IS_NULL, false);
+    }
 
-	List<MySQLExpression> generateFetchColumns() {
-		return Arrays.asList(MySQLColumnReference.create(targetTables.getColumns().get(0), null));
-	}
+    List<MySQLExpression> generateFetchColumns() {
+        return Arrays.asList(MySQLColumnReference.create(targetTables.getColumns().get(0), null));
+    }
 
-	MySQLExpression generatePredicate() {
-		return gen.generateExpression();
-	}
+    MySQLExpression generatePredicate() {
+        return gen.generateExpression();
+    }
 
 }

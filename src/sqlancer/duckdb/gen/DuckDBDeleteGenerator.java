@@ -13,18 +13,18 @@ import sqlancer.duckdb.DuckDBToStringVisitor;
 
 public class DuckDBDeleteGenerator {
 
-	public static Query generate(DuckDBGlobalState globalState) {
-		StringBuilder sb = new StringBuilder("DELETE FROM ");
-		Set<String> errors = new HashSet<>();
-		DuckDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-		sb.append(table.getName());
-		if (Randomly.getBoolean()) {
-			sb.append(" WHERE ");
-			sb.append(DuckDBToStringVisitor.asString(
-					new DuckDBExpressionGenerator(globalState).setColumns(table.getColumns()).generateExpression()));
-		}
-		DuckDBErrors.addExpressionErrors(errors);
-		return new QueryAdapter(sb.toString(), errors);
-	}
+    public static Query generate(DuckDBGlobalState globalState) {
+        StringBuilder sb = new StringBuilder("DELETE FROM ");
+        Set<String> errors = new HashSet<>();
+        DuckDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
+        sb.append(table.getName());
+        if (Randomly.getBoolean()) {
+            sb.append(" WHERE ");
+            sb.append(DuckDBToStringVisitor.asString(
+                    new DuckDBExpressionGenerator(globalState).setColumns(table.getColumns()).generateExpression()));
+        }
+        DuckDBErrors.addExpressionErrors(errors);
+        return new QueryAdapter(sb.toString(), errors);
+    }
 
 }

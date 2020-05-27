@@ -12,33 +12,33 @@ import sqlancer.clickhouse.ClickhouseToStringVisitor;
 
 public class ClickhouseQueryPartitioningWhereTester extends ClickhouseQueryPartitioningBase {
 
-	public ClickhouseQueryPartitioningWhereTester(ClickhouseGlobalState state) {
-		super(state);
-	}
+    public ClickhouseQueryPartitioningWhereTester(ClickhouseGlobalState state) {
+        super(state);
+    }
 
-	@Override
-	public void check() throws SQLException {
-		super.check();
-		select.setWhereClause(null);
-		String originalQueryString = ClickhouseToStringVisitor.asString(select);
+    @Override
+    public void check() throws SQLException {
+        super.check();
+        select.setWhereClause(null);
+        String originalQueryString = ClickhouseToStringVisitor.asString(select);
 
-		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
-				state.getConnection(), state);
+        List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
+                state.getConnection(), state);
 
-		boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
-		if (orderBy) {
-			select.setOrderByExpressions(gen.generateOrderBys());
-		}
-		select.setWhereClause(predicate);
-		String firstQueryString = ClickhouseToStringVisitor.asString(select);
-		select.setWhereClause(negatedPredicate);
-		String secondQueryString = ClickhouseToStringVisitor.asString(select);
-		select.setWhereClause(isNullPredicate);
-		String thirdQueryString = ClickhouseToStringVisitor.asString(select);
-		List<String> combinedString = new ArrayList<>();
-		List<String> secondResultSet = TestOracle.getCombinedResultSet(firstQueryString, secondQueryString,
-				thirdQueryString, combinedString, !orderBy, state, errors);
-		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
-	}
+        boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
+        if (orderBy) {
+            select.setOrderByExpressions(gen.generateOrderBys());
+        }
+        select.setWhereClause(predicate);
+        String firstQueryString = ClickhouseToStringVisitor.asString(select);
+        select.setWhereClause(negatedPredicate);
+        String secondQueryString = ClickhouseToStringVisitor.asString(select);
+        select.setWhereClause(isNullPredicate);
+        String thirdQueryString = ClickhouseToStringVisitor.asString(select);
+        List<String> combinedString = new ArrayList<>();
+        List<String> secondResultSet = TestOracle.getCombinedResultSet(firstQueryString, secondQueryString,
+                thirdQueryString, combinedString, !orderBy, state, errors);
+        TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
+    }
 
 }

@@ -4,24 +4,24 @@ import java.util.List;
 
 public class CockroachDBFunctionCall implements CockroachDBExpression {
 
-	private final CockroachDBFunction function;
-	private final List<CockroachDBExpression> arguments;
+    private final CockroachDBFunction function;
+    private final List<CockroachDBExpression> arguments;
 
-	public CockroachDBFunctionCall(CockroachDBFunction function, List<CockroachDBExpression> arguments) {
-		this.function = function;
-		this.arguments = arguments;
-	}
+    public CockroachDBFunctionCall(CockroachDBFunction function, List<CockroachDBExpression> arguments) {
+        this.function = function;
+        this.arguments = arguments;
+    }
 
-	public List<CockroachDBExpression> getArguments() {
-		return arguments;
-	}
+    public List<CockroachDBExpression> getArguments() {
+        return arguments;
+    }
 
-	public CockroachDBFunction getFunction() {
-		return function;
-	}
+    public CockroachDBFunction getFunction() {
+        return function;
+    }
 
-	public String getName() {
-		return function.getFunctionName();
-	}
+    public String getName() {
+        return function.getFunctionName();
+    }
 
 }

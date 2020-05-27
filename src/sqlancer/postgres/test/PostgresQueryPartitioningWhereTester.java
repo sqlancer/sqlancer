@@ -13,30 +13,30 @@ import sqlancer.postgres.PostgresVisitor;
 
 public class PostgresQueryPartitioningWhereTester extends PostgresQueryPartitioningBase {
 
-	public PostgresQueryPartitioningWhereTester(PostgresGlobalState state) {
-		super(state);
-	}
+    public PostgresQueryPartitioningWhereTester(PostgresGlobalState state) {
+        super(state);
+    }
 
-	@Override
-	public void check() throws SQLException {
-		super.check();
-		if (Randomly.getBooleanWithRatherLowProbability()) {
-			select.setOrderByExpressions(gen.generateOrderBy());
-		}
-		String originalQueryString = PostgresVisitor.asString(select);
-		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
-				state.getConnection(), state);
+    @Override
+    public void check() throws SQLException {
+        super.check();
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            select.setOrderByExpressions(gen.generateOrderBy());
+        }
+        String originalQueryString = PostgresVisitor.asString(select);
+        List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
+                state.getConnection(), state);
 
-		select.setOrderByExpressions(Collections.emptyList());
-		select.setWhereClause(predicate);
-		String firstQueryString = PostgresVisitor.asString(select);
-		select.setWhereClause(negatedPredicate);
-		String secondQueryString = PostgresVisitor.asString(select);
-		select.setWhereClause(isNullPredicate);
-		String thirdQueryString = PostgresVisitor.asString(select);
-		List<String> combinedString = new ArrayList<>();
-		List<String> secondResultSet = TestOracle.getCombinedResultSet(firstQueryString, secondQueryString,
-				thirdQueryString, combinedString, Randomly.getBoolean(), state, errors);
-		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
-	}
+        select.setOrderByExpressions(Collections.emptyList());
+        select.setWhereClause(predicate);
+        String firstQueryString = PostgresVisitor.asString(select);
+        select.setWhereClause(negatedPredicate);
+        String secondQueryString = PostgresVisitor.asString(select);
+        select.setWhereClause(isNullPredicate);
+        String thirdQueryString = PostgresVisitor.asString(select);
+        List<String> combinedString = new ArrayList<>();
+        List<String> secondResultSet = TestOracle.getCombinedResultSet(firstQueryString, secondQueryString,
+                thirdQueryString, combinedString, Randomly.getBoolean(), state, errors);
+        TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
+    }
 }

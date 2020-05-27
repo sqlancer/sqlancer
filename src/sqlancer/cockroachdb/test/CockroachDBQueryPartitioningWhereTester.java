@@ -17,33 +17,33 @@ import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnar
 
 public class CockroachDBQueryPartitioningWhereTester extends CockroachDBQueryPartitioningBase {
 
-	public CockroachDBQueryPartitioningWhereTester(CockroachDBGlobalState state) {
-		super(state);
-		errors.add("GROUP BY term out of range");
-	}
+    public CockroachDBQueryPartitioningWhereTester(CockroachDBGlobalState state) {
+        super(state);
+        errors.add("GROUP BY term out of range");
+    }
 
-	@Override
-	public void check() throws SQLException {
-		super.check();
-		String originalQueryString = CockroachDBVisitor.asString(select);
+    @Override
+    public void check() throws SQLException {
+        super.check();
+        String originalQueryString = CockroachDBVisitor.asString(select);
 
-		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
-				state.getConnection(), state);
+        List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
+                state.getConnection(), state);
 
-		boolean allowOrderBy = Randomly.getBoolean();
-		if (allowOrderBy) {
-			select.setOrderByExpressions(gen.getOrderingTerms());
-		}
-		CockroachDBExpression predicate = gen.generateExpression(CockroachDBDataType.BOOL.get());
-		select.setWhereClause(predicate);
-		String firstQueryString = CockroachDBVisitor.asString(select);
-		select.setWhereClause(new CockroachDBNotOperation(predicate));
-		String secondQueryString = CockroachDBVisitor.asString(select);
-		select.setWhereClause(new CockroachDBUnaryPostfixOperation(predicate, CockroachDBUnaryPostfixOperator.IS_NULL));
-		String thirdQueryString = CockroachDBVisitor.asString(select);
-		List<String> combinedString = new ArrayList<>();
-		List<String> secondResultSet = TestOracle.getCombinedResultSet(firstQueryString, secondQueryString,
-				thirdQueryString, combinedString, !allowOrderBy, state, errors);
-		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
-	}
+        boolean allowOrderBy = Randomly.getBoolean();
+        if (allowOrderBy) {
+            select.setOrderByExpressions(gen.getOrderingTerms());
+        }
+        CockroachDBExpression predicate = gen.generateExpression(CockroachDBDataType.BOOL.get());
+        select.setWhereClause(predicate);
+        String firstQueryString = CockroachDBVisitor.asString(select);
+        select.setWhereClause(new CockroachDBNotOperation(predicate));
+        String secondQueryString = CockroachDBVisitor.asString(select);
+        select.setWhereClause(new CockroachDBUnaryPostfixOperation(predicate, CockroachDBUnaryPostfixOperator.IS_NULL));
+        String thirdQueryString = CockroachDBVisitor.asString(select);
+        List<String> combinedString = new ArrayList<>();
+        List<String> secondResultSet = TestOracle.getCombinedResultSet(firstQueryString, secondQueryString,
+                thirdQueryString, combinedString, !allowOrderBy, state, errors);
+        TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
+    }
 }

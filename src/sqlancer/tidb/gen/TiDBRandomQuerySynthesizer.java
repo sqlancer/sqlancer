@@ -17,44 +17,44 @@ import sqlancer.tidb.visitor.TiDBVisitor;
 
 public class TiDBRandomQuerySynthesizer {
 
-	public static Query generate(TiDBGlobalState globalState, int nrColumns) {
-		TiDBSelect select = generateSelect(globalState, nrColumns);
-		return new QueryAdapter(TiDBVisitor.asString(select));
+    public static Query generate(TiDBGlobalState globalState, int nrColumns) {
+        TiDBSelect select = generateSelect(globalState, nrColumns);
+        return new QueryAdapter(TiDBVisitor.asString(select));
 
-	}
+    }
 
-	public static TiDBSelect generateSelect(TiDBGlobalState globalState, int nrColumns) {
-		TiDBTables tables = globalState.getSchema().getRandomTableNonEmptyTables();
-		TiDBExpressionGenerator gen = new TiDBExpressionGenerator(globalState).setColumns(tables.getColumns());
-		TiDBSelect select = new TiDBSelect();
-//		select.setDistinct(Randomly.getBoolean());
-		List<TiDBExpression> columns = new ArrayList<>();
-		// TODO: also generate aggregates
-		columns.addAll(gen.generateExpressions(nrColumns));
-		select.setFetchColumns(columns);
-		List<TiDBExpression> tableList = tables.getTables().stream().map(t -> new TiDBTableReference(t))
-				.collect(Collectors.toList());
-		// TODO: generate joins
-		select.setFromList(tableList);
-		if (Randomly.getBoolean()) {
-			select.setWhereClause(gen.generateExpression());
-		}
-		if (Randomly.getBooleanWithRatherLowProbability()) {
-			select.setOrderByExpressions(gen.generateOrderBys());
-		}
-		if (Randomly.getBoolean()) {
-			select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
-			if (Randomly.getBoolean()) {
-				select.setHavingClause(gen.generateHavingClause());
-			}
-		}
-		if (Randomly.getBoolean()) {
-			select.setLimitClause(gen.generateExpression());
-		}
-		if (Randomly.getBoolean()) {
-			select.setOffsetClause(gen.generateExpression());
-		}
-		return select;
-	}
+    public static TiDBSelect generateSelect(TiDBGlobalState globalState, int nrColumns) {
+        TiDBTables tables = globalState.getSchema().getRandomTableNonEmptyTables();
+        TiDBExpressionGenerator gen = new TiDBExpressionGenerator(globalState).setColumns(tables.getColumns());
+        TiDBSelect select = new TiDBSelect();
+        // select.setDistinct(Randomly.getBoolean());
+        List<TiDBExpression> columns = new ArrayList<>();
+        // TODO: also generate aggregates
+        columns.addAll(gen.generateExpressions(nrColumns));
+        select.setFetchColumns(columns);
+        List<TiDBExpression> tableList = tables.getTables().stream().map(t -> new TiDBTableReference(t))
+                .collect(Collectors.toList());
+        // TODO: generate joins
+        select.setFromList(tableList);
+        if (Randomly.getBoolean()) {
+            select.setWhereClause(gen.generateExpression());
+        }
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            select.setOrderByExpressions(gen.generateOrderBys());
+        }
+        if (Randomly.getBoolean()) {
+            select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
+            if (Randomly.getBoolean()) {
+                select.setHavingClause(gen.generateHavingClause());
+            }
+        }
+        if (Randomly.getBoolean()) {
+            select.setLimitClause(gen.generateExpression());
+        }
+        if (Randomly.getBoolean()) {
+            select.setOffsetClause(gen.generateExpression());
+        }
+        return select;
+    }
 
 }

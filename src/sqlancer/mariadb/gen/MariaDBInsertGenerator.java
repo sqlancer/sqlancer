@@ -13,27 +13,27 @@ import sqlancer.mariadb.ast.MariaDBVisitor;
 
 public class MariaDBInsertGenerator {
 
-	public static Query insert(MariaDBSchema s, Randomly r) {
-		MariaDBTable randomTable = s.getRandomTable();
-		StringBuilder sb = new StringBuilder();
-		sb.append("INSERT INTO ");
-		sb.append(randomTable.getName());
-		sb.append(" VALUES (");
-		for (int i = 0; i < randomTable.getColumns().size(); i++) {
-			if (i != 0) {
-				sb.append(", ");
-			}
-			if (Randomly.getBooleanWithSmallProbability()) {
-				sb.append(MariaDBVisitor.asString(MariaDBExpressionGenerator.getRandomConstant(r)));
-			} else {
-				sb.append(MariaDBVisitor.asString(MariaDBExpressionGenerator.getRandomConstant(r,
-						randomTable.getColumns().get(i).getColumnType())));
-			}
-		}
-		sb.append(")");
-		List<String> errors = new ArrayList<>();
-		MariaDBErrors.addInsertErrors(errors);
-		return new QueryAdapter(sb.toString(), errors);
-	}
+    public static Query insert(MariaDBSchema s, Randomly r) {
+        MariaDBTable randomTable = s.getRandomTable();
+        StringBuilder sb = new StringBuilder();
+        sb.append("INSERT INTO ");
+        sb.append(randomTable.getName());
+        sb.append(" VALUES (");
+        for (int i = 0; i < randomTable.getColumns().size(); i++) {
+            if (i != 0) {
+                sb.append(", ");
+            }
+            if (Randomly.getBooleanWithSmallProbability()) {
+                sb.append(MariaDBVisitor.asString(MariaDBExpressionGenerator.getRandomConstant(r)));
+            } else {
+                sb.append(MariaDBVisitor.asString(MariaDBExpressionGenerator.getRandomConstant(r,
+                        randomTable.getColumns().get(i).getColumnType())));
+            }
+        }
+        sb.append(")");
+        List<String> errors = new ArrayList<>();
+        MariaDBErrors.addInsertErrors(errors);
+        return new QueryAdapter(sb.toString(), errors);
+    }
 
 }

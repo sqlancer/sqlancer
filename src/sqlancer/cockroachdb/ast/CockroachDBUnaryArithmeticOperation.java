@@ -6,35 +6,35 @@ import sqlancer.ast.UnaryOperatorNode;
 import sqlancer.cockroachdb.ast.CockroachDBUnaryArithmeticOperation.CockroachDBUnaryAritmeticOperator;
 
 public class CockroachDBUnaryArithmeticOperation extends
-		UnaryOperatorNode<CockroachDBExpression, CockroachDBUnaryAritmeticOperator> implements CockroachDBExpression {
+        UnaryOperatorNode<CockroachDBExpression, CockroachDBUnaryAritmeticOperator> implements CockroachDBExpression {
 
-	public enum CockroachDBUnaryAritmeticOperator implements Operator {
-		PLUS("+"), MINUS("-"), NEGATION("~");
+    public enum CockroachDBUnaryAritmeticOperator implements Operator {
+        PLUS("+"), MINUS("-"), NEGATION("~");
 
-		private String textRepr;
+        private String textRepr;
 
-		CockroachDBUnaryAritmeticOperator(String textRepr) {
-			this.textRepr = textRepr;
-		}
+        CockroachDBUnaryAritmeticOperator(String textRepr) {
+            this.textRepr = textRepr;
+        }
 
-		public static CockroachDBUnaryAritmeticOperator getRandom() {
-			return Randomly.fromOptions(values());
-		}
+        public static CockroachDBUnaryAritmeticOperator getRandom() {
+            return Randomly.fromOptions(values());
+        }
 
-		@Override
-		public String getTextRepresentation() {
-			return textRepr;
-		}
+        @Override
+        public String getTextRepresentation() {
+            return textRepr;
+        }
 
-	}
+    }
 
-	public CockroachDBUnaryArithmeticOperation(CockroachDBExpression expr, CockroachDBUnaryAritmeticOperator op) {
-		super(expr, op);
-	}
+    public CockroachDBUnaryArithmeticOperation(CockroachDBExpression expr, CockroachDBUnaryAritmeticOperator op) {
+        super(expr, op);
+    }
 
-	@Override
-	public OperatorKind getOperatorKind() {
-		return OperatorKind.PREFIX;
-	}
+    @Override
+    public OperatorKind getOperatorKind() {
+        return OperatorKind.PREFIX;
+    }
 
 }

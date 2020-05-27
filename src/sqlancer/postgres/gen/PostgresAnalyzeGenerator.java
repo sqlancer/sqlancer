@@ -11,33 +11,33 @@ import sqlancer.postgres.PostgresSchema.PostgresTable;
 
 public class PostgresAnalyzeGenerator {
 
-	private PostgresAnalyzeGenerator() {
-	}
+    private PostgresAnalyzeGenerator() {
+    }
 
-	public static Query create(PostgresGlobalState globalState) {
-		PostgresTable table = globalState.getSchema().getRandomTable();
-		StringBuilder sb = new StringBuilder("ANALYZE");
-		if (Randomly.getBoolean()) {
-			sb.append("(");
-			if (Randomly.getBoolean()) {
-				sb.append(" VERBOSE");
-			} else {
-				sb.append(" SKIP_LOCKED");
-			}
-			sb.append(")");
-		}
-		if (Randomly.getBoolean()) {
-			sb.append(" ");
-			sb.append(table.getName());
-			if (Randomly.getBoolean()) {
-				sb.append("(");
-				sb.append(table.getRandomNonEmptyColumnSubset().stream().map(c -> c.getName())
-						.collect(Collectors.joining(", ")));
-				sb.append(")");
-			}
-		}
-		// FIXME: bug in postgres?
-		return new QueryAdapter(sb.toString(), Arrays.asList("deadlock"));
-	}
+    public static Query create(PostgresGlobalState globalState) {
+        PostgresTable table = globalState.getSchema().getRandomTable();
+        StringBuilder sb = new StringBuilder("ANALYZE");
+        if (Randomly.getBoolean()) {
+            sb.append("(");
+            if (Randomly.getBoolean()) {
+                sb.append(" VERBOSE");
+            } else {
+                sb.append(" SKIP_LOCKED");
+            }
+            sb.append(")");
+        }
+        if (Randomly.getBoolean()) {
+            sb.append(" ");
+            sb.append(table.getName());
+            if (Randomly.getBoolean()) {
+                sb.append("(");
+                sb.append(table.getRandomNonEmptyColumnSubset().stream().map(c -> c.getName())
+                        .collect(Collectors.joining(", ")));
+                sb.append(")");
+            }
+        }
+        // FIXME: bug in postgres?
+        return new QueryAdapter(sb.toString(), Arrays.asList("deadlock"));
+    }
 
 }

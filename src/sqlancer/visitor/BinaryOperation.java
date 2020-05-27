@@ -2,9 +2,9 @@ package sqlancer.visitor;
 
 public interface BinaryOperation<T> {
 
-	T getLeft();
+    T getLeft();
 
-	T getRight();
+    T getRight();
 
-	String getOperatorRepresentation();
+    String getOperatorRepresentation();
 }

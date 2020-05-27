@@ -28,51 +28,51 @@ import sqlancer.tidb.gen.TiDBHintGenerator;
 
 public abstract class TiDBQueryPartitioningBase implements TestOracle {
 
-	final TiDBGlobalState state;
-	final Set<String> errors = new HashSet<>();
+    final TiDBGlobalState state;
+    final Set<String> errors = new HashSet<>();
 
-	TiDBSchema s;
-	TiDBTables targetTables;
-	TiDBExpressionGenerator gen;
-	TiDBSelect select;
-	TiDBExpression predicate;
-	TiDBExpression negatedPredicate;
-	TiDBExpression isNullPredicate;
+    TiDBSchema s;
+    TiDBTables targetTables;
+    TiDBExpressionGenerator gen;
+    TiDBSelect select;
+    TiDBExpression predicate;
+    TiDBExpression negatedPredicate;
+    TiDBExpression isNullPredicate;
 
-	public TiDBQueryPartitioningBase(TiDBGlobalState state) {
-		this.state = state;
-		TiDBErrors.addExpressionErrors(errors);
-	}
+    public TiDBQueryPartitioningBase(TiDBGlobalState state) {
+        this.state = state;
+        TiDBErrors.addExpressionErrors(errors);
+    }
 
-	@Override
-	public void check() throws SQLException {
-		s = state.getSchema();
-		targetTables = s.getRandomTableNonEmptyTables();
-		gen = new TiDBExpressionGenerator(state).setColumns(targetTables.getColumns());
-		select = new TiDBSelect();
-		select.setFetchColumns(generateFetchColumns());
-		List<TiDBTable> tables = targetTables.getTables();
-		if (Randomly.getBoolean()) {
-			TiDBHintGenerator.generateHints(select, tables);
-		}
+    @Override
+    public void check() throws SQLException {
+        s = state.getSchema();
+        targetTables = s.getRandomTableNonEmptyTables();
+        gen = new TiDBExpressionGenerator(state).setColumns(targetTables.getColumns());
+        select = new TiDBSelect();
+        select.setFetchColumns(generateFetchColumns());
+        List<TiDBTable> tables = targetTables.getTables();
+        if (Randomly.getBoolean()) {
+            TiDBHintGenerator.generateHints(select, tables);
+        }
 
-		List<TiDBExpression> tableList = tables.stream().map(t -> new TiDBTableReference(t))
-				.collect(Collectors.toList());
-		List<TiDBExpression> joins = TiDBJoin.getJoins(tableList, state);
-		select.setJoinList(joins);
-		select.setFromList(tableList);
-		select.setWhereClause(null);
-		predicate = generatePredicate();
-		negatedPredicate = new TiDBUnaryPrefixOperation(predicate, TiDBUnaryPrefixOperator.NOT);
-		isNullPredicate = new TiDBUnaryPostfixOperation(predicate, TiDBUnaryPostfixOperator.IS_NULL);
-	}
+        List<TiDBExpression> tableList = tables.stream().map(t -> new TiDBTableReference(t))
+                .collect(Collectors.toList());
+        List<TiDBExpression> joins = TiDBJoin.getJoins(tableList, state);
+        select.setJoinList(joins);
+        select.setFromList(tableList);
+        select.setWhereClause(null);
+        predicate = generatePredicate();
+        negatedPredicate = new TiDBUnaryPrefixOperation(predicate, TiDBUnaryPrefixOperator.NOT);
+        isNullPredicate = new TiDBUnaryPostfixOperation(predicate, TiDBUnaryPostfixOperator.IS_NULL);
+    }
 
-	List<TiDBExpression> generateFetchColumns() {
-		return Arrays.asList(new TiDBColumnReference(targetTables.getColumns().get(0)));
-	}
+    List<TiDBExpression> generateFetchColumns() {
+        return Arrays.asList(new TiDBColumnReference(targetTables.getColumns().get(0)));
+    }
 
-	TiDBExpression generatePredicate() {
-		return gen.generateExpression();
-	}
+    TiDBExpression generatePredicate() {
+        return gen.generateExpression();
+    }
 
 }

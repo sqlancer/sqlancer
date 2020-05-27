@@ -12,33 +12,33 @@ import sqlancer.sqlite3.SQLite3Visitor;
 
 public class SQLite3QueryPartitioningWhereTester extends SQLite3QueryPartitioningBase {
 
-	public SQLite3QueryPartitioningWhereTester(SQLite3GlobalState state) {
-		super(state);
-	}
+    public SQLite3QueryPartitioningWhereTester(SQLite3GlobalState state) {
+        super(state);
+    }
 
-	@Override
-	public void check() throws SQLException {
-		super.check();
-		select.setWhereClause(null);
-		String originalQueryString = SQLite3Visitor.asString(select);
+    @Override
+    public void check() throws SQLException {
+        super.check();
+        select.setWhereClause(null);
+        String originalQueryString = SQLite3Visitor.asString(select);
 
-		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
-				state.getConnection(), state);
+        List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
+                state.getConnection(), state);
 
-		boolean orderBy = Randomly.getBooleanWithSmallProbability();
-		if (orderBy) {
-			select.setOrderByExpressions(gen.generateOrderBys());
-		}
-		select.setWhereClause(predicate);
-		String firstQueryString = SQLite3Visitor.asString(select);
-		select.setWhereClause(negatedPredicate);
-		String secondQueryString = SQLite3Visitor.asString(select);
-		select.setWhereClause(isNullPredicate);
-		String thirdQueryString = SQLite3Visitor.asString(select);
-		List<String> combinedString = new ArrayList<>();
-		List<String> secondResultSet = TestOracle.getCombinedResultSet(firstQueryString, secondQueryString,
-				thirdQueryString, combinedString, !orderBy, state, errors);
-		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
-	}
+        boolean orderBy = Randomly.getBooleanWithSmallProbability();
+        if (orderBy) {
+            select.setOrderByExpressions(gen.generateOrderBys());
+        }
+        select.setWhereClause(predicate);
+        String firstQueryString = SQLite3Visitor.asString(select);
+        select.setWhereClause(negatedPredicate);
+        String secondQueryString = SQLite3Visitor.asString(select);
+        select.setWhereClause(isNullPredicate);
+        String thirdQueryString = SQLite3Visitor.asString(select);
+        List<String> combinedString = new ArrayList<>();
+        List<String> secondResultSet = TestOracle.getCombinedResultSet(firstQueryString, secondQueryString,
+                thirdQueryString, combinedString, !orderBy, state, errors);
+        TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
+    }
 
 }

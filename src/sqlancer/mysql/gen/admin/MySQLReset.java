@@ -9,11 +9,11 @@ import sqlancer.mysql.MySQLGlobalState;
 
 public class MySQLReset {
 
-	public static Query create(MySQLGlobalState globalState) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("RESET ");
-		sb.append(Randomly.nonEmptySubset("MASTER", "SLAVE").stream().collect(Collectors.joining(", ")));
-		return new QueryAdapter(sb.toString());
-	}
+    public static Query create(MySQLGlobalState globalState) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("RESET ");
+        sb.append(Randomly.nonEmptySubset("MASTER", "SLAVE").stream().collect(Collectors.joining(", ")));
+        return new QueryAdapter(sb.toString());
+    }
 
 }

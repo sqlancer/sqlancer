@@ -5,21 +5,21 @@ import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBCompositeDataType;
 
 public class CockroachDBTypeAnnotation extends UnaryNode<CockroachDBExpression> implements CockroachDBExpression {
 
-	private final CockroachDBCompositeDataType type;
+    private final CockroachDBCompositeDataType type;
 
-	public CockroachDBTypeAnnotation(CockroachDBExpression expr, CockroachDBCompositeDataType type) {
-		super(expr);
-		this.type = type;
-	}
+    public CockroachDBTypeAnnotation(CockroachDBExpression expr, CockroachDBCompositeDataType type) {
+        super(expr);
+        this.type = type;
+    }
 
-	@Override
-	public String getOperatorRepresentation() {
-		return ":::" + type.toString();
-	}
+    @Override
+    public String getOperatorRepresentation() {
+        return ":::" + type.toString();
+    }
 
-	@Override
-	public OperatorKind getOperatorKind() {
-		return OperatorKind.POSTFIX;
-	}
+    @Override
+    public OperatorKind getOperatorKind() {
+        return OperatorKind.POSTFIX;
+    }
 
 }

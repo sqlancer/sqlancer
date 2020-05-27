@@ -6,30 +6,30 @@ import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.tidb.ast.TiDBBinaryLogicalOperation.TiDBBinaryLogicalOperator;
 
 public class TiDBBinaryLogicalOperation extends BinaryOperatorNode<TiDBExpression, TiDBBinaryLogicalOperator>
-		implements TiDBExpression {
+        implements TiDBExpression {
 
-	public enum TiDBBinaryLogicalOperator implements Operator {
-		AND("AND"), //
-		OR("OR"); //
+    public enum TiDBBinaryLogicalOperator implements Operator {
+        AND("AND"), //
+        OR("OR"); //
 
-		String textRepresentation;
+        String textRepresentation;
 
-		TiDBBinaryLogicalOperator(String textRepresentation) {
-			this.textRepresentation = textRepresentation;
-		}
+        TiDBBinaryLogicalOperator(String textRepresentation) {
+            this.textRepresentation = textRepresentation;
+        }
 
-		public static TiDBBinaryLogicalOperator getRandom() {
-			return Randomly.fromOptions(values());
-		}
+        public static TiDBBinaryLogicalOperator getRandom() {
+            return Randomly.fromOptions(values());
+        }
 
-		@Override
-		public String getTextRepresentation() {
-			return textRepresentation;
-		}
-	}
+        @Override
+        public String getTextRepresentation() {
+            return textRepresentation;
+        }
+    }
 
-	public TiDBBinaryLogicalOperation(TiDBExpression left, TiDBExpression right, TiDBBinaryLogicalOperator op) {
-		super(left, right, op);
-	}
+    public TiDBBinaryLogicalOperation(TiDBExpression left, TiDBExpression right, TiDBBinaryLogicalOperator op) {
+        super(left, right, op);
+    }
 
 }

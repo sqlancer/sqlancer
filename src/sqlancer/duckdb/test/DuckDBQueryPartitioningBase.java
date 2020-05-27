@@ -29,56 +29,56 @@ import sqlancer.duckdb.gen.DuckDBExpressionGenerator.DuckDBUnaryPrefixOperator;
 
 public class DuckDBQueryPartitioningBase implements TestOracle {
 
-	final DuckDBGlobalState state;
-	final Set<String> errors = new HashSet<>();
+    final DuckDBGlobalState state;
+    final Set<String> errors = new HashSet<>();
 
-	DuckDBSchema s;
-	DuckDBTables targetTables;
-	DuckDBExpressionGenerator gen;
-	DuckDBSelect select;
-	Node<DuckDBExpression> predicate;
-	Node<DuckDBExpression> negatedPredicate;
-	Node<DuckDBExpression> isNullPredicate;
+    DuckDBSchema s;
+    DuckDBTables targetTables;
+    DuckDBExpressionGenerator gen;
+    DuckDBSelect select;
+    Node<DuckDBExpression> predicate;
+    Node<DuckDBExpression> negatedPredicate;
+    Node<DuckDBExpression> isNullPredicate;
 
-	public DuckDBQueryPartitioningBase(DuckDBGlobalState state) {
-		this.state = state;
-		DuckDBErrors.addExpressionErrors(errors);
-	}
+    public DuckDBQueryPartitioningBase(DuckDBGlobalState state) {
+        this.state = state;
+        DuckDBErrors.addExpressionErrors(errors);
+    }
 
-	@Override
-	public void check() throws SQLException {
-		s = state.getSchema();
-		targetTables = s.getRandomTableNonEmptyTables();
-		gen = new DuckDBExpressionGenerator(state).setColumns(targetTables.getColumns());
-		select = new DuckDBSelect();
-		select.setFetchColumns(generateFetchColumns());
-		List<DuckDBTable> tables = targetTables.getTables();
-		List<TableReferenceNode<DuckDBExpression, DuckDBTable>> tableList = tables.stream()
-				.map(t -> new TableReferenceNode<DuckDBExpression, DuckDBTable>(t)).collect(Collectors.toList());
-		List<Node<DuckDBExpression>> joins = DuckDBJoin.getJoins(tableList, state);
-		select.setJoinList(joins.stream().collect(Collectors.toList()));
-		select.setFromList(tableList.stream().collect(Collectors.toList()));
-		select.setWhereClause(null);
-		predicate = generatePredicate();
-		negatedPredicate = new NewUnaryPrefixOperatorNode<DuckDBExpression>(predicate, DuckDBUnaryPrefixOperator.NOT);
-		isNullPredicate = new NewUnaryPostfixOperatorNode<DuckDBExpression>(predicate,
-				DuckDBUnaryPostfixOperator.IS_NULL);
-	}
+    @Override
+    public void check() throws SQLException {
+        s = state.getSchema();
+        targetTables = s.getRandomTableNonEmptyTables();
+        gen = new DuckDBExpressionGenerator(state).setColumns(targetTables.getColumns());
+        select = new DuckDBSelect();
+        select.setFetchColumns(generateFetchColumns());
+        List<DuckDBTable> tables = targetTables.getTables();
+        List<TableReferenceNode<DuckDBExpression, DuckDBTable>> tableList = tables.stream()
+                .map(t -> new TableReferenceNode<DuckDBExpression, DuckDBTable>(t)).collect(Collectors.toList());
+        List<Node<DuckDBExpression>> joins = DuckDBJoin.getJoins(tableList, state);
+        select.setJoinList(joins.stream().collect(Collectors.toList()));
+        select.setFromList(tableList.stream().collect(Collectors.toList()));
+        select.setWhereClause(null);
+        predicate = generatePredicate();
+        negatedPredicate = new NewUnaryPrefixOperatorNode<DuckDBExpression>(predicate, DuckDBUnaryPrefixOperator.NOT);
+        isNullPredicate = new NewUnaryPostfixOperatorNode<DuckDBExpression>(predicate,
+                DuckDBUnaryPostfixOperator.IS_NULL);
+    }
 
-	List<Node<DuckDBExpression>> generateFetchColumns() {
-		List<Node<DuckDBExpression>> columns = new ArrayList<>();
-		if (Randomly.getBoolean()) {
-			columns.add(new ColumnReferenceNode<DuckDBExpression, DuckDBSchema.DuckDBColumn>(
-					new DuckDBColumn("*", null, false, false)));
-		} else {
-			columns = Randomly.nonEmptySubset(targetTables.getColumns()).stream()
-					.map(c -> new ColumnReferenceNode<DuckDBExpression, DuckDBColumn>(c)).collect(Collectors.toList());
-		}
-		return columns;
-	}
+    List<Node<DuckDBExpression>> generateFetchColumns() {
+        List<Node<DuckDBExpression>> columns = new ArrayList<>();
+        if (Randomly.getBoolean()) {
+            columns.add(new ColumnReferenceNode<DuckDBExpression, DuckDBSchema.DuckDBColumn>(
+                    new DuckDBColumn("*", null, false, false)));
+        } else {
+            columns = Randomly.nonEmptySubset(targetTables.getColumns()).stream()
+                    .map(c -> new ColumnReferenceNode<DuckDBExpression, DuckDBColumn>(c)).collect(Collectors.toList());
+        }
+        return columns;
+    }
 
-	Node<DuckDBExpression> generatePredicate() {
-		return gen.generateExpression();
-	}
+    Node<DuckDBExpression> generatePredicate() {
+        return gen.generateExpression();
+    }
 
 }

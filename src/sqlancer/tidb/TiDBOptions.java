@@ -18,34 +18,34 @@ import sqlancer.tidb.test.TiDBQueryPartitioningWhereTester;
 @Parameters
 public class TiDBOptions {
 
-	@Parameter(names = "--oracle", converter = DBMSConverter.class)
-	public List<TiDBOracle> oracle = Arrays.asList(TiDBOracle.QUERY_PARTITIONING);
+    @Parameter(names = "--oracle", converter = DBMSConverter.class)
+    public List<TiDBOracle> oracle = Arrays.asList(TiDBOracle.QUERY_PARTITIONING);
 
-	public enum TiDBOracle {
-		HAVING {
-			@Override
-			public TestOracle create(TiDBGlobalState globalState) throws SQLException {
-				return new TiDBQueryPartitioningHavingTester(globalState);
-			}
-		},
-		WHERE {
-			@Override
-			public TestOracle create(TiDBGlobalState globalState) throws SQLException {
-				return new TiDBQueryPartitioningWhereTester(globalState);
-			}
-		},
-		QUERY_PARTITIONING {
-			@Override
-			public TestOracle create(TiDBGlobalState globalState) throws SQLException {
-				List<TestOracle> oracles = new ArrayList<>();
-				oracles.add(new TiDBQueryPartitioningWhereTester(globalState));
-				oracles.add(new TiDBQueryPartitioningHavingTester(globalState));
-				return new CompositeTestOracle(oracles);
-			}
-		};
+    public enum TiDBOracle {
+        HAVING {
+            @Override
+            public TestOracle create(TiDBGlobalState globalState) throws SQLException {
+                return new TiDBQueryPartitioningHavingTester(globalState);
+            }
+        },
+        WHERE {
+            @Override
+            public TestOracle create(TiDBGlobalState globalState) throws SQLException {
+                return new TiDBQueryPartitioningWhereTester(globalState);
+            }
+        },
+        QUERY_PARTITIONING {
+            @Override
+            public TestOracle create(TiDBGlobalState globalState) throws SQLException {
+                List<TestOracle> oracles = new ArrayList<>();
+                oracles.add(new TiDBQueryPartitioningWhereTester(globalState));
+                oracles.add(new TiDBQueryPartitioningHavingTester(globalState));
+                return new CompositeTestOracle(oracles);
+            }
+        };
 
-		public abstract TestOracle create(TiDBGlobalState globalState) throws SQLException;
+        public abstract TestOracle create(TiDBGlobalState globalState) throws SQLException;
 
-	}
+    }
 
 }

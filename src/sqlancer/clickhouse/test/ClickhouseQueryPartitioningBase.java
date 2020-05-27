@@ -27,50 +27,50 @@ import sqlancer.clickhouse.gen.ClickhouseExpressionGenerator.ClickhouseUnaryPref
 
 public class ClickhouseQueryPartitioningBase implements TestOracle {
 
-	final ClickhouseGlobalState state;
-	final Set<String> errors = new HashSet<>();
+    final ClickhouseGlobalState state;
+    final Set<String> errors = new HashSet<>();
 
-	ClickhouseSchema s;
-	ClickhouseTables targetTables;
-	ClickhouseExpressionGenerator gen;
-	ClickhouseSelect select;
-	Node<ClickhouseExpression> predicate;
-	Node<ClickhouseExpression> negatedPredicate;
-	Node<ClickhouseExpression> isNullPredicate;
+    ClickhouseSchema s;
+    ClickhouseTables targetTables;
+    ClickhouseExpressionGenerator gen;
+    ClickhouseSelect select;
+    Node<ClickhouseExpression> predicate;
+    Node<ClickhouseExpression> negatedPredicate;
+    Node<ClickhouseExpression> isNullPredicate;
 
-	public ClickhouseQueryPartitioningBase(ClickhouseGlobalState state) {
-		this.state = state;
-		ClickhouseErrors.addExpressionErrors(errors);
-	}
+    public ClickhouseQueryPartitioningBase(ClickhouseGlobalState state) {
+        this.state = state;
+        ClickhouseErrors.addExpressionErrors(errors);
+    }
 
-	@Override
-	public void check() throws SQLException {
-		s = state.getSchema();
-		targetTables = s.getRandomTableNonEmptyTables();
-		gen = new ClickhouseExpressionGenerator(state).setColumns(targetTables.getColumns());
-		select = new ClickhouseSelect();
-		select.setFetchColumns(generateFetchColumns());
-		List<ClickhouseTable> tables = targetTables.getTables();
-		List<Node<ClickhouseExpression>> tableList = tables.stream()
-				.map(t -> new TableReferenceNode<ClickhouseExpression, ClickhouseTable>(t))
-				.collect(Collectors.toList());
-		// TODO join
-		select.setFromList(tableList);
-		select.setWhereClause(null);
-		predicate = generatePredicate();
-		negatedPredicate = new NewUnaryPrefixOperatorNode<ClickhouseExpression>(predicate,
-				ClickhouseUnaryPrefixOperator.NOT);
-		isNullPredicate = new NewUnaryPostfixOperatorNode<ClickhouseExpression>(predicate,
-				ClickhouseUnaryPostfixOperator.IS_NULL);
-	}
+    @Override
+    public void check() throws SQLException {
+        s = state.getSchema();
+        targetTables = s.getRandomTableNonEmptyTables();
+        gen = new ClickhouseExpressionGenerator(state).setColumns(targetTables.getColumns());
+        select = new ClickhouseSelect();
+        select.setFetchColumns(generateFetchColumns());
+        List<ClickhouseTable> tables = targetTables.getTables();
+        List<Node<ClickhouseExpression>> tableList = tables.stream()
+                .map(t -> new TableReferenceNode<ClickhouseExpression, ClickhouseTable>(t))
+                .collect(Collectors.toList());
+        // TODO join
+        select.setFromList(tableList);
+        select.setWhereClause(null);
+        predicate = generatePredicate();
+        negatedPredicate = new NewUnaryPrefixOperatorNode<ClickhouseExpression>(predicate,
+                ClickhouseUnaryPrefixOperator.NOT);
+        isNullPredicate = new NewUnaryPostfixOperatorNode<ClickhouseExpression>(predicate,
+                ClickhouseUnaryPostfixOperator.IS_NULL);
+    }
 
-	List<Node<ClickhouseExpression>> generateFetchColumns() {
-		return Arrays.asList(
-				new ColumnReferenceNode<ClickhouseExpression, ClickhouseColumn>(targetTables.getColumns().get(0)));
-	}
+    List<Node<ClickhouseExpression>> generateFetchColumns() {
+        return Arrays.asList(
+                new ColumnReferenceNode<ClickhouseExpression, ClickhouseColumn>(targetTables.getColumns().get(0)));
+    }
 
-	Node<ClickhouseExpression> generatePredicate() {
-		return gen.generateExpression();
-	}
+    Node<ClickhouseExpression> generatePredicate() {
+        return gen.generateExpression();
+    }
 
 }

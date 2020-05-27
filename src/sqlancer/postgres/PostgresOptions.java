@@ -20,46 +20,46 @@ import sqlancer.postgres.test.PostgresQueryPartitioningWhereTester;
 @Parameters
 public class PostgresOptions {
 
-	@Parameter(names = "--bulk-insert")
-	public boolean allowBulkInsert = false;
+    @Parameter(names = "--bulk-insert")
+    public boolean allowBulkInsert = false;
 
-	@Parameter(names = "--oracle", converter = DBMSConverter.class)
-	public List<PostgresOracle> oracle = Arrays.asList(PostgresOracle.QUERY_PARTITIONING);
+    @Parameter(names = "--oracle", converter = DBMSConverter.class)
+    public List<PostgresOracle> oracle = Arrays.asList(PostgresOracle.QUERY_PARTITIONING);
 
-	public enum PostgresOracle {
-		NOREC {
-			@Override
-			public TestOracle create(PostgresGlobalState globalState) throws SQLException {
-				return new PostgresNoRECOracle(globalState);
-			}
-		},
-		PQS {
-			@Override
-			public TestOracle create(PostgresGlobalState globalState) throws SQLException {
-				return new PostgresPivotedQuerySynthesisGenerator(globalState);
-			}
-		},
-		HAVING {
+    public enum PostgresOracle {
+        NOREC {
+            @Override
+            public TestOracle create(PostgresGlobalState globalState) throws SQLException {
+                return new PostgresNoRECOracle(globalState);
+            }
+        },
+        PQS {
+            @Override
+            public TestOracle create(PostgresGlobalState globalState) throws SQLException {
+                return new PostgresPivotedQuerySynthesisGenerator(globalState);
+            }
+        },
+        HAVING {
 
-			@Override
-			public TestOracle create(PostgresGlobalState globalState) throws SQLException {
-				return new PostgresQueryPartitioningHavingTester(globalState);
-			}
+            @Override
+            public TestOracle create(PostgresGlobalState globalState) throws SQLException {
+                return new PostgresQueryPartitioningHavingTester(globalState);
+            }
 
-		},
-		QUERY_PARTITIONING {
-			@Override
-			public TestOracle create(PostgresGlobalState globalState) throws SQLException {
-				List<TestOracle> oracles = new ArrayList<>();
-				oracles.add(new PostgresQueryPartitioningWhereTester(globalState));
-				oracles.add(new PostgresQueryPartitioningHavingTester(globalState));
-				oracles.add(new PostgresQueryPartitioningAggregateTester(globalState));
-				return new CompositeTestOracle(oracles);
-			}
-		};
+        },
+        QUERY_PARTITIONING {
+            @Override
+            public TestOracle create(PostgresGlobalState globalState) throws SQLException {
+                List<TestOracle> oracles = new ArrayList<>();
+                oracles.add(new PostgresQueryPartitioningWhereTester(globalState));
+                oracles.add(new PostgresQueryPartitioningHavingTester(globalState));
+                oracles.add(new PostgresQueryPartitioningAggregateTester(globalState));
+                return new CompositeTestOracle(oracles);
+            }
+        };
 
-		public abstract TestOracle create(PostgresGlobalState globalState) throws SQLException;
+        public abstract TestOracle create(PostgresGlobalState globalState) throws SQLException;
 
-	}
+    }
 
 }

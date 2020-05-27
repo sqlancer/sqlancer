@@ -8,15 +8,15 @@ import sqlancer.QueryAdapter;
 
 public abstract class AbstractGenerator {
 
-	protected final Set<String> errors = new HashSet<>();
-	protected final StringBuilder sb = new StringBuilder();
-	protected boolean canAffectSchema;
+    protected final Set<String> errors = new HashSet<>();
+    protected final StringBuilder sb = new StringBuilder();
+    protected boolean canAffectSchema;
 
-	public Query getQuery() {
-		buildStatement();
-		return new QueryAdapter(sb.toString(), errors, canAffectSchema);
-	}
+    public Query getQuery() {
+        buildStatement();
+        return new QueryAdapter(sb.toString(), errors, canAffectSchema);
+    }
 
-	public abstract void buildStatement();
+    public abstract void buildStatement();
 
 }

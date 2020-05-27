@@ -18,39 +18,39 @@ import sqlancer.duckdb.ast.DuckDBExpression;
 
 public class DuckDBQueryPartitioningGroupByTester extends DuckDBQueryPartitioningBase {
 
-	public DuckDBQueryPartitioningGroupByTester(DuckDBGlobalState state) {
-		super(state);
-		DuckDBErrors.addGroupByErrors(errors);
-	}
+    public DuckDBQueryPartitioningGroupByTester(DuckDBGlobalState state) {
+        super(state);
+        DuckDBErrors.addGroupByErrors(errors);
+    }
 
-	@Override
-	public void check() throws SQLException {
-		super.check();
-		select.setGroupByExpressions(select.getFetchColumns());
-		select.setWhereClause(null);
-		String originalQueryString = DuckDBToStringVisitor.asString(select);
+    @Override
+    public void check() throws SQLException {
+        super.check();
+        select.setGroupByExpressions(select.getFetchColumns());
+        select.setWhereClause(null);
+        String originalQueryString = DuckDBToStringVisitor.asString(select);
 
-		List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
-				state.getConnection(), state);
+        List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
+                state.getConnection(), state);
 
-		select.setWhereClause(predicate);
-		String firstQueryString = DuckDBToStringVisitor.asString(select);
-		select.setWhereClause(negatedPredicate);
-		String secondQueryString = DuckDBToStringVisitor.asString(select);
-		select.setWhereClause(isNullPredicate);
-		String thirdQueryString = DuckDBToStringVisitor.asString(select);
-		List<String> combinedString = new ArrayList<>();
-		List<String> secondResultSet = TestOracle.getCombinedResultSetNoDuplicates(firstQueryString, secondQueryString,
-				thirdQueryString, combinedString, true, state, errors);
-		TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
-	}
+        select.setWhereClause(predicate);
+        String firstQueryString = DuckDBToStringVisitor.asString(select);
+        select.setWhereClause(negatedPredicate);
+        String secondQueryString = DuckDBToStringVisitor.asString(select);
+        select.setWhereClause(isNullPredicate);
+        String thirdQueryString = DuckDBToStringVisitor.asString(select);
+        List<String> combinedString = new ArrayList<>();
+        List<String> secondResultSet = TestOracle.getCombinedResultSetNoDuplicates(firstQueryString, secondQueryString,
+                thirdQueryString, combinedString, true, state, errors);
+        TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
+    }
 
-	@Override
-	List<Node<DuckDBExpression>> generateFetchColumns() {
-		List<Node<DuckDBExpression>> columns = new ArrayList<>();
-		columns = Randomly.nonEmptySubset(targetTables.getColumns()).stream()
-				.map(c -> new ColumnReferenceNode<DuckDBExpression, DuckDBColumn>(c)).collect(Collectors.toList());
-		return columns;
-	}
+    @Override
+    List<Node<DuckDBExpression>> generateFetchColumns() {
+        List<Node<DuckDBExpression>> columns = new ArrayList<>();
+        columns = Randomly.nonEmptySubset(targetTables.getColumns()).stream()
+                .map(c -> new ColumnReferenceNode<DuckDBExpression, DuckDBColumn>(c)).collect(Collectors.toList());
+        return columns;
+    }
 
 }
