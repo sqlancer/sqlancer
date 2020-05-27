@@ -13,7 +13,7 @@ import sqlancer.MainOptions.DBMSConverter;
 import sqlancer.TestOracle;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.queries.SQLite3Fuzzer;
-import sqlancer.sqlite3.queries.SQLite3MetamorphicQuerySynthesizer;
+import sqlancer.sqlite3.queries.SQLite3NoRECTester;
 import sqlancer.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
 import sqlancer.sqlite3.queries.SQLite3QueryPartitioningAggregateTester;
 import sqlancer.sqlite3.queries.SQLite3QueryPartitioningDistinctTester;
@@ -68,7 +68,7 @@ public class SQLite3Options {
     public boolean testMatch = true;
 
     @Parameter(names = "--oracle", converter = DBMSConverter.class)
-    public SQLite3Oracle oracle = SQLite3Oracle.METAMORPHIC;
+    public SQLite3Oracle oracle = SQLite3Oracle.NoREC;
 
     public enum SQLite3Oracle {
         PQS {
@@ -77,10 +77,10 @@ public class SQLite3Options {
                 return new SQLite3PivotedQuerySynthesizer(globalState);
             }
         },
-        METAMORPHIC {
+        NoREC {
             @Override
             public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
-                return new SQLite3MetamorphicQuerySynthesizer(globalState);
+                return new SQLite3NoRECTester(globalState);
             }
         },
         FUZZER {

@@ -33,7 +33,7 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
-public class SQLite3MetamorphicQuerySynthesizer implements TestOracle {
+public class SQLite3NoRECTester implements TestOracle {
 
     // SELECT COUNT(*) FROM t0 WHERE <cond>;
     // SELECT SUM(count) FROM (SELECT <cond> IS TRUE as count FROM t0);
@@ -54,7 +54,7 @@ public class SQLite3MetamorphicQuerySynthesizer implements TestOracle {
     Set<String> firstValues = new HashSet<>();
     Set<String> secondValues = new HashSet<>();
 
-    public SQLite3MetamorphicQuerySynthesizer(SQLite3GlobalState globalState) {
+    public SQLite3NoRECTester(SQLite3GlobalState globalState) {
         this.s = globalState.getSchema();
         this.con = globalState.getConnection();
         this.state = (SQLite3StateToReproduce) globalState.getState();
