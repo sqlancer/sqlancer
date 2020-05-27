@@ -34,7 +34,7 @@ public class SQLite3ViewGenerator {
             sb.append(Randomly.fromOptions("TEMP", "TEMPORARY"));
         }
         sb.append(" VIEW ");
-        if (Randomly.getBoolean() || true) {
+        if (Randomly.getBoolean()) {
             sb.append(" IF NOT EXISTS ");
         }
         sb.append(SQLite3Common.getFreeViewName(globalState.getSchema()));

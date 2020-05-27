@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.mysql.MySQLBugs;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
@@ -68,7 +69,7 @@ public class MySQLAlterTable {
         sb.append(table.getName());
         sb.append(" ");
         List<Action> list = new ArrayList<>(Arrays.asList(Action.values()));
-        if (!table.hasPrimaryKey() || true /* https://bugs.mysql.com/bug.php?id=95894 */) {
+        if (!table.hasPrimaryKey() || MySQLBugs.bug95894) {
             list.remove(Action.DROP_PRIMARY_KEY);
         }
         if (table.getColumns().size() == 1) {

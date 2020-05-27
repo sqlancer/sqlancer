@@ -156,7 +156,7 @@ public class SQLite3InsertGenerator {
                 sb.append(", ");
             }
             SQLite3Expression literal;
-            if (columns.get(i).isIntegerPrimaryKey() || true) {
+            if (columns.get(i).isIntegerPrimaryKey()) {
                 literal = SQLite3Constant.createIntConstant(r.getInteger(0, 1000));
             } else {
                 if (Randomly.getBooleanWithSmallProbability()) {

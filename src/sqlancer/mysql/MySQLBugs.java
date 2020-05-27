@@ -13,4 +13,7 @@ public class MySQLBugs {
     // https://bugs.mysql.com/bug.php?id=99183
     public static boolean bug99183 = true;
 
+    // https://bugs.mysql.com/bug.php?id=95894
+    public static boolean bug95894 = true;
+
 }
