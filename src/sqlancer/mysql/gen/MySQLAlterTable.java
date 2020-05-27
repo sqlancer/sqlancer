@@ -20,12 +20,12 @@ public class MySQLAlterTable {
     boolean couldAffectSchema;
     private List<Action> selectedActions;
 
-    public MySQLAlterTable(MySQLSchema newSchema, Randomly r) {
+    public MySQLAlterTable(MySQLSchema newSchema) {
         this.schema = newSchema;
     }
 
     public static Query create(MySQLGlobalState globalState) {
-        return new MySQLAlterTable(globalState.getSchema(), globalState.getRandomly()).create();
+        return new MySQLAlterTable(globalState.getSchema()).create();
     }
 
     private enum Action {

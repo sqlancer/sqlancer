@@ -81,13 +81,13 @@ public class TiDBInsertGenerator {
                 if (nrColumn != 0) {
                     sb.append(", ");
                 }
-                insertValue(sb, columns.get(nrColumn));
+                insertValue(sb);
             }
             sb.append(")");
         }
     }
 
-    private void insertValue(StringBuilder sb, TiDBColumn tiDBColumn) {
+    private void insertValue(StringBuilder sb) {
         sb.append(gen.generateConstant()); // TODO: try to insert valid data
     }
 

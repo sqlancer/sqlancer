@@ -81,17 +81,16 @@ public class SQLite3NoRECTester implements TestOracle {
         SQLite3Tables randomTables = s.getRandomTableNonEmptyTables();
         List<SQLite3Column> columns = randomTables.getColumns();
         gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns);
-        SQLite3Expression randomWhereCondition = getRandomWhereCondition(columns);
-        List<SQLite3Expression> groupBys = gen.getRandomExpressions(Randomly.smallNumber());
+        SQLite3Expression randomWhereCondition = getRandomWhereCondition();
         List<SQLite3Table> tables = randomTables.getTables();
         List<Join> joinStatements = gen.getRandomJoinClauses(tables);
         List<SQLite3Expression> tableRefs = SQLite3Common.getTableRefs(tables, s);
         randomColumnToCheck = Randomly.fromList(randomTables.getColumns());
-        int firstCount = getFirstQueryCount(con, tableRefs, randomWhereCondition, groupBys, joinStatements);
+        int firstCount = getFirstQueryCount(con, tableRefs, randomWhereCondition, joinStatements);
         if (firstQueryString.contains("EXISTS")) {
             throw new IgnoreMeException();
         }
-        int secondCount = getSecondQuery(tableRefs, randomWhereCondition, groupBys, joinStatements);
+        int secondCount = getSecondQuery(tableRefs, randomWhereCondition, joinStatements);
         if (firstCount != secondCount && firstCount != NOT_FOUND && secondCount != NOT_FOUND) {
             state.queryString = firstQueryString + ";\n" + secondQueryString + ";";
             throw new AssertionError(firstCount + " " + secondCount);
@@ -103,7 +102,7 @@ public class SQLite3NoRECTester implements TestOracle {
         }
     }
 
-    private SQLite3Expression getRandomWhereCondition(List<SQLite3Column> columns) {
+    private SQLite3Expression getRandomWhereCondition() {
         if (Randomly.getBoolean()) {
             errors.add("SQL logic error");
             gen.allowMatchClause();
@@ -112,7 +111,7 @@ public class SQLite3NoRECTester implements TestOracle {
     }
 
     private int getSecondQuery(List<SQLite3Expression> fromList, SQLite3Expression randomWhereCondition,
-            List<SQLite3Expression> groupBys, List<Join> joinStatements) throws SQLException {
+            List<Join> joinStatements) throws SQLException {
         SQLite3Select select = new SQLite3Select();
         setRandomOrderBy(select);
         SQLite3PostfixUnaryOperation isTrue = new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.IS_TRUE,
@@ -160,8 +159,7 @@ public class SQLite3NoRECTester implements TestOracle {
     }
 
     private int getFirstQueryCount(Connection con, List<SQLite3Expression> fromList,
-            SQLite3Expression randomWhereCondition, List<SQLite3Expression> groupBys, List<Join> joinStatements)
-            throws SQLException {
+            SQLite3Expression randomWhereCondition, List<Join> joinStatements) throws SQLException {
         SQLite3Select select = new SQLite3Select();
         // TODO: readd group by (removed due to INTERSECT/UNION)
         // select.setGroupByClause(groupBys);

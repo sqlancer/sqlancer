@@ -309,13 +309,12 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 
     private SQLite3Expression generateWhereClauseThatContainsRowValue(List<SQLite3Column> columns, SQLite3RowValue rw) {
 
-        SQLite3Expression whereClause = generateNewExpression(columns, rw, true, 0);
+        SQLite3Expression whereClause = generateNewExpression(columns, rw);
 
         return whereClause;
     }
 
-    private SQLite3Expression generateNewExpression(List<SQLite3Column> columns, SQLite3RowValue rw,
-            boolean shouldBeTrue, int depth) {
+    private SQLite3Expression generateNewExpression(List<SQLite3Column> columns, SQLite3RowValue rw) {
         do {
             SQLite3Expression expr = new SQLite3ExpressionGenerator(globalState).setRowValue(rw).setColumns(columns)
                     .generateExpression();

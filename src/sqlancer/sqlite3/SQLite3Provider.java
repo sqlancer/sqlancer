@@ -207,7 +207,7 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQL
 
             globalState.setSchema(SQLite3Schema.fromConnection(con));
             do {
-                Query tableQuery = getTableQuery(state, r, globalState.getSchema(), i++);
+                Query tableQuery = getTableQuery(r, i++);
                 executeStatement(globalState, manager, tableQuery);
                 globalState.setSchema(SQLite3Schema.fromConnection(con));
             } while (globalState.getSchema().getDatabaseTables().size() != nrTablesToCreate);
@@ -381,8 +381,7 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQL
         }
     }
 
-    private Query getTableQuery(StateToReproduce state, Randomly r, SQLite3Schema newSchema, int i)
-            throws AssertionError {
+    private Query getTableQuery(Randomly r, int i) throws AssertionError {
         Query tableQuery;
         List<TableType> options = new ArrayList<>(Arrays.asList(TableType.values()));
         if (!globalState.getSqliteOptions().testFts) {

@@ -268,8 +268,8 @@ public class PostgresSchema {
                                                                     // tableTypeStr.contains("LOCAL TEMPORARY") &&
                                                                     // !isInsertable;
                         PostgresTable.TableType tableType = getTableType(tableTypeSchema);
-                        List<PostgresColumn> databaseColumns = getTableColumns(con, tableName, databaseName);
-                        List<PostgresIndex> indexes = getIndexes(con, tableName, databaseName);
+                        List<PostgresColumn> databaseColumns = getTableColumns(con, tableName);
+                        List<PostgresIndex> indexes = getIndexes(con, tableName);
                         List<PostgresStatisticsObject> statistics = getStatistics(con);
                         PostgresTable t = new PostgresTable(tableName, databaseColumns, indexes, tableType, statistics,
                                 isView, isInsertable);
@@ -311,8 +311,7 @@ public class PostgresSchema {
         return tableType;
     }
 
-    private static List<PostgresIndex> getIndexes(Connection con, String tableName, String databaseName)
-            throws SQLException {
+    private static List<PostgresIndex> getIndexes(Connection con, String tableName) throws SQLException {
         List<PostgresIndex> indexes = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s
@@ -330,8 +329,7 @@ public class PostgresSchema {
         return indexes;
     }
 
-    private static List<PostgresColumn> getTableColumns(Connection con, String tableName, String databaseName)
-            throws SQLException {
+    private static List<PostgresColumn> getTableColumns(Connection con, String tableName) throws SQLException {
         List<PostgresColumn> columns = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s

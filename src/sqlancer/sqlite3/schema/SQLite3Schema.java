@@ -77,8 +77,8 @@ public class SQLite3Schema {
             assert !isInteger || columnType == SQLite3DataType.INT;
         }
 
-        public SQLite3Column(String rowId, SQLite3DataType columnType2, boolean contains, boolean b,
-                SQLite3CollateSequence collate, boolean generated) {
+        public SQLite3Column(String rowId, SQLite3DataType columnType2, boolean b, SQLite3CollateSequence collate,
+                boolean generated) {
             this(rowId, columnType2, b, generated, collate);
             this.generated = generated;
         }
@@ -416,8 +416,7 @@ public class SQLite3Schema {
                                 SQLite3DataType columnType = getColumnType(dataType);
                                 boolean generated = dataType.toUpperCase().contains("GENERATED AS");
                                 String rowId = Randomly.fromOptions("rowid", "_rowid_", "oid");
-                                SQLite3Column rowid = new SQLite3Column(rowId, columnType, dataType.contains("INTEGER"),
-                                        true, null, generated);
+                                SQLite3Column rowid = new SQLite3Column(rowId, columnType, true, null, generated);
                                 t.addRowid(rowid);
                                 rowid.setTable(t);
                             }

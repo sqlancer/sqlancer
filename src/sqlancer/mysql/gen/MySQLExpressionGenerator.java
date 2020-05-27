@@ -95,7 +95,7 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
             return new MySQLBinaryOperation(generateExpression(depth + 1), generateExpression(depth + 1),
                     MySQLBinaryOperator.getRandom());
         case EXISTS:
-            return getExists(depth + 1);
+            return getExists();
         case BETWEEN_OPERATOR:
             if (MySQLBugs.bug99181) {
                 // TODO: there are a number of bugs that are triggered by the BETWEEN operator
@@ -108,7 +108,7 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
         }
     }
 
-    private MySQLExpression getExists(int depth) {
+    private MySQLExpression getExists() {
         if (Randomly.getBoolean()) {
             return new MySQLExists(new MySQLStringExpression("SELECT 1", MySQLConstant.createTrue()));
         } else {

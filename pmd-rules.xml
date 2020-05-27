@@ -17,7 +17,6 @@
 		<exclude name="PreserveStackTrace" /> <!-- TODO -->
 		<exclude name="WhileLoopWithLiteralBoolean" /> 
 		<exclude name="AvoidReassigningParameters" />
-		<exclude name="UnusedFormalParameter" />
 		<exclude name="PositionLiteralsFirstInComparisons" />
 		<exclude name="ForLoopCanBeForeach" />
 		<exclude name="ArrayIsStoredDirectly" />

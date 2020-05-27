@@ -247,7 +247,7 @@ public class TiDBSchema extends AbstractSchema<TiDBTable> {
         List<String> tableNames = getTableNames(con);
         for (String tableName : tableNames) {
             List<TiDBColumn> databaseColumns = getTableColumns(con, tableName);
-            List<TableIndex> indexes = getIndexes(con, tableName, databaseName);
+            List<TableIndex> indexes = getIndexes(con, tableName);
             boolean isView = tableName.startsWith("v");
             TiDBTable t = new TiDBTable(tableName, databaseColumns, indexes, isView);
             for (TiDBColumn c : databaseColumns) {
@@ -271,8 +271,7 @@ public class TiDBSchema extends AbstractSchema<TiDBTable> {
         return tableNames;
     }
 
-    private static List<TableIndex> getIndexes(Connection con, String tableName, String databaseName)
-            throws SQLException {
+    private static List<TableIndex> getIndexes(Connection con, String tableName) throws SQLException {
         List<TableIndex> indexes = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery(String.format("SHOW INDEX FROM %s", tableName))) {

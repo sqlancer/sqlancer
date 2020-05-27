@@ -1120,7 +1120,6 @@ public abstract class SQLite3Expression {
             MULTIPLY("*") {
                 @Override
                 SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
-                    checkArguments(left, right);
                     SQLite3Constant result = compute(left, right);
                     if (result.getDataType() == SQLite3DataType.REAL) {
                         double val = result.asDouble();
@@ -1172,7 +1171,6 @@ public abstract class SQLite3Expression {
 
                 @Override
                 SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
-                    checkArguments(left, right);
                     SQLite3Constant leftNumeric = SQLite3Cast.castToNumericFromNumOperand(left);
                     SQLite3Constant rightNumeric = SQLite3Cast.castToNumericFromNumOperand(right);
                     if (leftNumeric.isNull() || rightNumeric.isNull()) {
@@ -1224,7 +1222,6 @@ public abstract class SQLite3Expression {
             REMAINDER("%") {
                 @Override
                 SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
-                    checkArguments(left, right);
                     SQLite3Constant leftNumeric = SQLite3Cast.castToNumericFromNumOperand(left);
                     SQLite3Constant rightNumeric = SQLite3Cast.castToNumericFromNumOperand(right);
                     if (leftNumeric.isNull() || rightNumeric.isNull()) {
@@ -1276,7 +1273,6 @@ public abstract class SQLite3Expression {
 
                 @Override
                 SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
-                    checkArguments(left, right);
                     SQLite3Constant leftNumeric = SQLite3Cast.castToNumericFromNumOperand(left);
                     SQLite3Constant rightNumeric = SQLite3Cast.castToNumericFromNumOperand(right);
                     if (leftNumeric.isNull() || rightNumeric.isNull()) {
@@ -1318,7 +1314,6 @@ public abstract class SQLite3Expression {
 
                 @Override
                 SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
-                    checkArguments(left, right);
                     SQLite3Constant leftNumeric = SQLite3Cast.castToNumericFromNumOperand(left);
                     SQLite3Constant rightNumeric = SQLite3Cast.castToNumericFromNumOperand(right);
                     if (leftNumeric.isNull() || rightNumeric.isNull()) {
@@ -1539,12 +1534,6 @@ public abstract class SQLite3Expression {
         public static Sqlite3BinaryOperation create(SQLite3Expression leftVal, SQLite3Expression rightVal,
                 BinaryOperator op) {
             return new Sqlite3BinaryOperation(leftVal, rightVal, op);
-        }
-
-        private static void checkArguments(SQLite3Constant left, SQLite3Constant right) {
-            // if (!SQLite3Provider.ALLOW_FLOATING_POINT_FP && (left.isReal() || right.isReal()) ) {
-            throw new IgnoreMeException();
-            // }
         }
 
         @Override

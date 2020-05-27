@@ -1,6 +1,5 @@
 package sqlancer.sqlite3.gen.dml;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +24,7 @@ public class SQLite3InsertGenerator {
     private final List<String> errors;
     private final SQLite3GlobalState globalState;
 
-    public SQLite3InsertGenerator(SQLite3GlobalState globalState, Randomly r, Connection con) {
+    public SQLite3InsertGenerator(SQLite3GlobalState globalState, Randomly r) {
         this.globalState = globalState;
         this.r = r;
         errors = new ArrayList<>();
@@ -37,8 +36,7 @@ public class SQLite3InsertGenerator {
     }
 
     public static Query insertRow(SQLite3GlobalState globalState, SQLite3Table randomTable) {
-        SQLite3InsertGenerator generator = new SQLite3InsertGenerator(globalState, globalState.getRandomly(),
-                globalState.getConnection());
+        SQLite3InsertGenerator generator = new SQLite3InsertGenerator(globalState, globalState.getRandomly());
         String query = generator.insertRow(randomTable);
         return new QueryAdapter(query, generator.errors, true);
     }

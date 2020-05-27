@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import sqlancer.Randomly;
@@ -207,8 +208,8 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
 
     public static class DuckDBTable extends AbstractTable<DuckDBColumn, TableIndex> {
 
-        public DuckDBTable(String tableName, List<DuckDBColumn> columns, List<TableIndex> indexes, boolean isView) {
-            super(tableName, columns, indexes, isView);
+        public DuckDBTable(String tableName, List<DuckDBColumn> columns, boolean isView) {
+            super(tableName, columns, Collections.emptyList(), isView);
         }
 
         public boolean hasPrimaryKey() {
@@ -222,9 +223,8 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
         List<String> tableNames = getTableNames(con);
         for (String tableName : tableNames) {
             List<DuckDBColumn> databaseColumns = getTableColumns(con, tableName);
-            List<TableIndex> indexes = getIndexes(con, tableName, databaseName);
             boolean isView = tableName.startsWith("v");
-            DuckDBTable t = new DuckDBTable(tableName, databaseColumns, indexes, isView);
+            DuckDBTable t = new DuckDBTable(tableName, databaseColumns, isView);
             for (DuckDBColumn c : databaseColumns) {
                 c.setTable(t);
             }
@@ -244,12 +244,6 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
             }
         }
         return tableNames;
-    }
-
-    private static List<TableIndex> getIndexes(Connection con, String tableName, String databaseName)
-            throws SQLException {
-        List<TableIndex> indexes = new ArrayList<>();
-        return indexes;
     }
 
     private static List<DuckDBColumn> getTableColumns(Connection con, String tableName) throws SQLException {

@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 import sqlancer.IgnoreMeException;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce.SQLite3StateToReproduce;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
@@ -48,8 +47,7 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
     private final List<String> errors = new ArrayList<>();
     private final SQLite3GlobalState globalState;
 
-    public SQLite3MetamorphicTrueValueSynthesizer(SQLite3Schema s, Randomly r, Connection con,
-            SQLite3StateToReproduce state, SQLite3GlobalState globalState) {
+    public SQLite3MetamorphicTrueValueSynthesizer(SQLite3Schema s, Connection con, SQLite3GlobalState globalState) {
         this.s = s;
         this.con = con;
         this.globalState = globalState;
