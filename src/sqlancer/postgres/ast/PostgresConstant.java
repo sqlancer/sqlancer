@@ -177,7 +177,7 @@ public abstract class PostgresConstant implements PostgresExpression {
 			switch (type) {
 			case BOOLEAN:
 				try {
-					return PostgresConstant.createBooleanConstant(Long.valueOf(s) != 0);
+					return PostgresConstant.createBooleanConstant(Long.parseLong(s) != 0);
 				} catch (NumberFormatException e) {
 				}
 				switch (s.toUpperCase()) {
@@ -205,7 +205,7 @@ public abstract class PostgresConstant implements PostgresExpression {
 				}
 			case INT:
 				try {
-					return PostgresConstant.createIntConstant(Long.valueOf(s));
+					return PostgresConstant.createIntConstant(Long.parseLong(s));
 				} catch (NumberFormatException e) {
 					return PostgresConstant.createIntConstant(-1);
 				}

@@ -164,7 +164,7 @@ public abstract class MySQLConstant implements MySQLExpression {
 				for (int i = value.length(); i >= 0; i--) {
 					try {
 						String substring = value.substring(0, i);
-						long val = Long.valueOf(substring);
+						long val = Long.parseLong(substring);
 						return MySQLConstant.createIntConstant(val, type == CastType.SIGNED ? true : false);
 					} catch (NumberFormatException e) {
 						// ignore

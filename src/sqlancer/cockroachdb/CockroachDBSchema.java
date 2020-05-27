@@ -230,11 +230,11 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
 			return new CockroachDBCompositeDataType(CockroachDBDataType.STRING);
 		}
 		if (typeString.startsWith("BIT(")) {
-			int val = Integer.valueOf(typeString.substring(4, typeString.length() - 1));
+			int val = Integer.parseInt(typeString.substring(4, typeString.length() - 1));
 			return CockroachDBCompositeDataType.getBit(val);
 		}
 		if (typeString.startsWith("VARBIT(")) {
-			int val = Integer.valueOf(typeString.substring(7, typeString.length() - 1));
+			int val = Integer.parseInt(typeString.substring(7, typeString.length() - 1));
 			return CockroachDBCompositeDataType.getBit(val);
 		}
 		switch (typeString) {
