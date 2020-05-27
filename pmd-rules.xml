@@ -18,6 +18,16 @@
 		<exclude name="WhileLoopWithLiteralBoolean" /> 
 		<exclude name="AvoidReassigningParameters" />
 		<exclude name="UnusedFormalParameter" />
+		<exclude name="PositionLiteralsFirstInComparisons" />
+		<exclude name="ForLoopCanBeForeach" />
+		<exclude name="ArrayIsStoredDirectly" />
+		<exclude name="MethodReturnsInternalArray" />
+		<exclude name="CheckResultSet" />
+		<exclude name="UseVarargs" />
+		<exclude name="UseTryWithResources" />
+		<exclude name="AvoidReassigningLoopVariables" />
+		<exclude name="AbstractClassWithoutAbstractMethod" />
+		<priority>2</priority>
 	</rule>
 	
 

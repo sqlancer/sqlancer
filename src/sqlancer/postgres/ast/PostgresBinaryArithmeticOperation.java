@@ -75,6 +75,7 @@ public class PostgresBinaryArithmeticOperation extends BinaryOperatorNode<Postgr
             this.textRepresentation = textRepresentation;
         }
 
+        @Override
         public String getTextRepresentation() {
             return textRepresentation;
         }

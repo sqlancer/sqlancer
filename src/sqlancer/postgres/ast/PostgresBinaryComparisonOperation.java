@@ -99,6 +99,7 @@ public class PostgresBinaryComparisonOperation
 
         private final String textRepresentation;
 
+        @Override
         public String getTextRepresentation() {
             return textRepresentation;
         }
