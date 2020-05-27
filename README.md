@@ -12,6 +12,7 @@ SQLancer operates in the following two phases:
 # Getting Started
 
 Requirements:
+* Java 11
 * [Maven](https://maven.apache.org/) (`sudo apt install maven` on Ubuntu)
 * The DBMS that you want to test (SQLite is an embedded DBMS and is included)
 
