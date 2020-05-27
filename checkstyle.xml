@@ -168,7 +168,7 @@
         <!-- TODO: enable and add exceptions: <module name="MagicNumber"/> -->
         <module name="MissingSwitchDefault"/>
         <module name="MultipleVariableDeclarations"/>
-        <!-- TODO: <module name="SimplifyBooleanExpression"/> -->
+        <module name="SimplifyBooleanExpression"/>
         <module name="SimplifyBooleanReturn"/>
 
         <!-- Checks for class design                         -->
