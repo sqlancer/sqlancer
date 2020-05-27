@@ -30,7 +30,7 @@ If you launch SQLancer without parameters, available options and commands are di
 
 # Potential Commercialization
 
-Due to the significant interest that we have received, we are considering to commercialize our bug-finding efforts. If you represent a company and would be interested in a bug-finding service, please approach us ([Manuel Rigger](manuel.rigger@inf.ethz.ch) and [Zhendong Su](zhendong.su@inf.ethz.ch)) with your expectations and requirements for such a service.
+Due to the significant interest that we have received, we are considering to commercialize our bug-finding efforts. If you represent a company and would be interested in a bug-finding service, please approach us ([Manuel Rigger](mailto:manuel.rigger@inf.ethz.ch) and [Zhendong Su](mailto:zhendong.su@inf.ethz.ch)) with your expectations and requirements for such a service.
 
 # Research Prototype
 
