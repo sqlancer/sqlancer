@@ -76,21 +76,35 @@ We plan to soon add a [CI](https://github.com/sqlancer/sqlancer/issues/2) to aut
 
 SQLancer does not have a test suite. We found that bugs in SQLancer are quickly found and easy to debug when testing the DBMS. The PQS implementation had a test suite, which was removed in commit 36ede0c0c68b3856e03ef5ba802a7c2575bb3f12.
 
-# Logs
+# Using SQLancer
+
+## Logs
 
 SQLancer stores logs in the `target/logs` subdirectory. By default, the option `--log-each-select` is enabled, which results in every SQL statement that is sent to the DBMS being logged. The corresponding file names are postfixed with `-cur.log`. In addition, if SQLancer detects a logic bug, it creates a file with the extension `.log`, in which the statements to reproduce the bug are logged.
 
-# Reducing the Bug
+## Reducing a Bug
 
 After finding a bug, it is useful to produce a minimal test case before reporting the bug, to save the DBMS developers' time and effort. For many test cases, [C-Reduce](https://embed.cs.utah.edu/creduce/) does a great job. In addition, we have been working on a SQL-specific reducer, which we plan to release soon.
 
-# Found Bugs
+## Found Bugs
 
 We would appreciate it if you mention SQLancer when you report bugs found by it. We would also be excited to know if you are using SQLancer to find bugs, or if you have extended it to test another DBMS (also if you do not plan to contribute it to this project). SQLancer has found over 400 bugs in widely-used DBMS, which are listed [here](https://www.manuelrigger.at/dbms-bugs/).
 
-# Implementing Support for a New DBMS
+# Extending and Improving SQLancer
+
+## Implementing Support for a New DBMS
 
 The DuckDB implementation provides a good template for a new implementation. The `DuckDBProvider` class is the central class that manages the creation of the databases and executes the selected test oracles. Try to copy its structure for the new DBMS that you want to implement, and start by generate databases (without implementing a test oracle). As part of this, you will also need to implement the equivalent of `DuckDBSchema`, which represents the database schema of the generated database. After you can successfully generate databases, the next step is to generate one of the test oracles. For example, you might want to implement NoREC (see `DuckDBNoRECOracle` or `DuckDBQueryPartitioningWhereTester` for TLP). As part of this, you must also implement a random expression generator (see `DuckDBExpressionGenerator`) and a visitor to derive the textual representation of an expression (see `DuckDBToStringVisitor`).
+
+## Working with Eclipse
+
+Developing SQLancer using Eclipse is expected to work well. You can import SQLancer with a single step:
+
+```
+File -> Import -> Existing Maven Projects -> Select the SQLancer directory as root directory -> Finish
+```
+If you do not find an option to import Maven projects, you might need to install the [M2Eclipse plugin](https://www.eclipse.org/m2e/).
+
 
 # Community
 
