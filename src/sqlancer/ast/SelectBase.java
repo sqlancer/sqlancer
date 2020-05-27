@@ -17,7 +17,7 @@ public class SelectBase<T> {
 
     public void setFetchColumns(List<T> fetchColumns) {
         if (fetchColumns == null || fetchColumns.size() == 0) {
-            throw new IllegalArgumentException(fetchColumns.toString());
+            throw new IllegalArgumentException();
         }
         this.fetchColumns = fetchColumns;
     }

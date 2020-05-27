@@ -105,7 +105,9 @@ public class Main {
                     throw new AssertionError(e);
                 }
             }
-            for (File file : dir.listFiles()) {
+            File[] listFiles = dir.listFiles();
+            assert listFiles != null : "directory was just created, so it should exist";
+            for (File file : listFiles) {
                 if (!file.isDirectory()) {
                     file.delete();
                 }
