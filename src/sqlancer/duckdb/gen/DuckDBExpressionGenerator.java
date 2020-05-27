@@ -174,8 +174,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
     public List<Node<DuckDBExpression>> generateOrderBys() {
         List<Node<DuckDBExpression>> expr = super.generateOrderBys();
         List<Node<DuckDBExpression>> newExpr = new ArrayList<>(expr.size());
-        for (int i = 0; i < expr.size(); i++) {
-            Node<DuckDBExpression> curExpr = expr.get(i);
+        for (Node<DuckDBExpression> curExpr : expr) {
             if (Randomly.getBoolean()) {
                 curExpr = new NewOrderingTerm<DuckDBExpression>(curExpr, Ordering.getRandom());
             }

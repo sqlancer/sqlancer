@@ -335,9 +335,9 @@ public class SQLite3Function extends SQLite3Expression {
         }
         SQLite3CollateSequence collate = getExplicitCollateSequence();
         if (collate == null) {
-            for (int i = 0; i < args.length; i++) {
-                if (args[i].getImplicitCollateSequence() != null) {
-                    collate = args[i].getImplicitCollateSequence();
+            for (SQLite3Expression arg : args) {
+                if (arg.getImplicitCollateSequence() != null) {
+                    collate = arg.getImplicitCollateSequence();
                     break;
                 }
             }

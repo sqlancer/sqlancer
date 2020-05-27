@@ -191,15 +191,15 @@ public enum CockroachDBFunction {
         if (returnType2.getPrimitiveDataType() == CockroachDBDataType.ARRAY) {
             savedArrayType = returnType2;
         }
-        for (int i = 0; i < argumentTypes2.length; i++) {
+        for (CockroachDBDataType arg : argumentTypes2) {
             CockroachDBCompositeDataType type;
-            if (argumentTypes2[i] == CockroachDBDataType.ARRAY) {
+            if (arg == CockroachDBDataType.ARRAY) {
                 if (savedArrayType == null) {
-                    savedArrayType = argumentTypes2[i].get();
+                    savedArrayType = arg.get();
                 }
                 type = savedArrayType;
             } else {
-                type = argumentTypes2[i].get();
+                type = arg.get();
             }
             arguments.add(gen.generateExpression(type, depth + 1));
         }
