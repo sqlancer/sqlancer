@@ -37,7 +37,7 @@ public class SQLite3Schema {
     }
 
     public String getRandomIndexOrBailout() {
-        if (indexNames.size() == 0) {
+        if (indexNames.isEmpty()) {
             throw new IgnoreMeException();
         } else {
             return Randomly.fromList(indexNames);

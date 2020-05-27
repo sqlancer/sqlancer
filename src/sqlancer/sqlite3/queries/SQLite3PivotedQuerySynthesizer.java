@@ -99,7 +99,7 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
 
     public SQLite3Select getQuery(SQLite3GlobalState globalState) throws SQLException {
         this.state = (SQLite3StateToReproduce) globalState.getState();
-        if (s.getDatabaseTables().size() == 0) {
+        if (s.getDatabaseTables().isEmpty()) {
             throw new IgnoreMeException();
         }
         SQLite3Tables randomFromTables = s.getRandomTableNonEmptyTables();
@@ -190,7 +190,7 @@ public class SQLite3PivotedQuerySynthesizer implements TestOracle {
         }
         List<SQLite3Expression> orderBy = generateOrderBy(columns);
         selectStatement.setOrderByExpressions(orderBy);
-        if (groupByClause.size() != 0 && Randomly.getBoolean()) {
+        if (!groupByClause.isEmpty() && Randomly.getBoolean()) {
             SQLite3Expression randomExpression = SQLite3Common.getTrueExpression(columns, globalState);
             if (Randomly.getBoolean()) {
                 SQLite3AggregateFunction aggFunc = SQLite3AggregateFunction.getRandom();

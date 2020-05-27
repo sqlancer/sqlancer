@@ -16,7 +16,7 @@ public class SelectBase<T> {
     T offsetClause;
 
     public void setFetchColumns(List<T> fetchColumns) {
-        if (fetchColumns == null || fetchColumns.size() == 0) {
+        if (fetchColumns == null || fetchColumns.isEmpty()) {
             throw new IllegalArgumentException();
         }
         this.fetchColumns = fetchColumns;
