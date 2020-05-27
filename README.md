@@ -9,7 +9,7 @@ SQLancer operates in the following two phases:
 1. Database generation: The goal of this phase is to create a populated database, and stress the DBMS to increase the probability of causing an inconsistent database state that could be detected subsequently. First, random tables are created. Then, randomly SQL statements are chosen to generate, modify, and delete data. Also other statements, such as those to create indexes as well as views and to set DBMS-specific options are sent to the DBMS.
 2. Testing: The goal of this phase is to detect the logic bugs based on the generated database. See Testing Approaches below.
 
-# Quickstart
+# Getting Started
 
 Requirements:
 * [Maven](https://maven.apache.org/) (`sudo apt install maven` on Ubuntu)
@@ -23,6 +23,8 @@ mvn package
 cd target
 java -jar SQLancer-0.0.1-SNAPSHOT.jar --num_threads 16 --num_tries 5 --max_expression_depth 3 --num_queries 100000 --max_num_inserts 30 sqlite3 --oracle query_partitioning
 ```
+
+If the execution prints progress information every five seconds, then the tool works as expected. Note that SQLancer might find bugs in SQLite. Before reporting these, be sure to check that they can still be reproduced when using the latest development version.
 
 If you launch SQLancer without parameters, available options and commands are displayed.
 
