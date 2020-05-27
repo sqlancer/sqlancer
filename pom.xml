@@ -110,6 +110,9 @@
 						<configuration>
 							<failurePriority>2</failurePriority>
 							<failOnViolation>true</failOnViolation>
+							<rulesets>
+								<ruleset>pmd-rules.xml</ruleset>
+							</rulesets>
 						</configuration>
 					</execution>
 				</executions>

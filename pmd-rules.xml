@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+
+<ruleset name="Custom Rules"
+    xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+	<description>SQLancer's PMD configuration</description>
+
+	<!-- best practices https://pmd.github.io/latest/pmd_rules_java_bestpractices.html -->
+	<!-- TODO: use a logger <rule ref="category/java/bestpractices.xml/SystemPrintln" /> -->
+	
+	<rule ref="category/java/bestpractices.xml">
+		<exclude name="AvoidPrintStackTrace" /> <!-- TODO: add a logger -->
+		<exclude name="SystemPrintln" /> <!-- TODO: add a logger -->
+		<exclude name="AvoidStringBufferField" />
+		<exclude name="PreserveStackTrace" /> <!-- TODO -->
+		<exclude name="WhileLoopWithLiteralBoolean" /> 
+		<exclude name="AvoidReassigningParameters" />
+		<exclude name="UnusedFormalParameter" />
+	</rule>
+	
+
+	<!--
+	<rule ref="category/java/design.xml">
+		<priority>4</priority>
+	</rule>
+
+    <rule ref="category/java/codestyle.xml">
+		<priority>3</priority>
+		<exclude name="MethodArgumentCouldBeFinal"/>
+	</rule>
+	
+		<rule ref="category/java/performance.xml">
+		<priority>5</priority>
+		<exclude name="MethodArgumentCouldBeFinal"/>
+		<exclude name="LocalVariableCouldBeFinal"/>
+	</rule>
+	-->
+	
+
+
+</ruleset>
