@@ -16,7 +16,7 @@ Requirements:
 
 The following commands clone SQLancer, create a JAR, and start SQLancer to fuzz SQLite using Ternary Logic Query Partitioning (TLP):
 
-```
+```console
 git clone https://github.com/sqlancer/sqlancer
 cd sqlancer
 mvn package
@@ -70,7 +70,7 @@ To improve and maintain SQLancer's code quality, we use several tools:
 
 You can run them using the following command:
 
-```bash
+```console
 mvn verify
 ```
 
