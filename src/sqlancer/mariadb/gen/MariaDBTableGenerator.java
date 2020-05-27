@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.mariadb.MariaDBBugs;
 import sqlancer.mariadb.MariaDBSchema;
 import sqlancer.mariadb.MariaDBSchema.MariaDBDataType;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable.MariaDBEngine;
@@ -77,7 +78,7 @@ public class MariaDBTableGenerator {
                 throw new AssertionError(dataType);
             }
             final boolean isGeneratedColumn;
-            if (Randomly.getBoolean() && false) { // wait for crash bug to be fixed
+            if (Randomly.getBoolean() && !MariaDBBugs.bug21058) {
                 sb.append(" GENERATED ALWAYS AS(");
                 // TODO columns
                 sb.append(MariaDBVisitor.asString(new MariaDBExpressionGenerator(r).getRandomExpression()));
