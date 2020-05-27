@@ -138,11 +138,6 @@
 			<artifactId>mariadb-java-client</artifactId>
 			<version>2.6.0</version>
 		</dependency>
-		<dependency>
-			<groupId>ru.yandex.clickhouse</groupId>
-			<artifactId>clickhouse-jdbc</artifactId>
-			<version>0.2.4</version>
-		</dependency>
 	</dependencies>
 
 	<reporting>
