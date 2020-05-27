@@ -14,6 +14,9 @@ import sqlancer.sqlite3.schema.SQLite3Schema;
  */
 public class SQLite3ReindexGenerator {
 
+    private SQLite3ReindexGenerator() {
+    }
+
     private enum Target {
         TABLE, INDEX, COLLATION_NAME
     }

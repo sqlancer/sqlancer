@@ -11,6 +11,9 @@ import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 
 public class CockroachDBCommon {
 
+    private CockroachDBCommon() {
+    }
+
     public static String getRandomCollate() {
         return Randomly.fromOptions("en", "de", "es", "cmn");
     }

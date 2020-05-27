@@ -10,6 +10,9 @@ import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 
 public class CockroachDBTruncateGenerator {
 
+    private CockroachDBTruncateGenerator() {
+    }
+
     // https://www.cockroachlabs.com/docs/v19.2/truncate.html
     public static Query truncate(CockroachDBGlobalState globalState) {
         Set<String> errors = new HashSet<>();

@@ -9,6 +9,9 @@ import sqlancer.mysql.MySQLGlobalState;
 
 public class MySQLReset {
 
+    private MySQLReset() {
+    }
+
     public static Query create(MySQLGlobalState globalState) {
         StringBuilder sb = new StringBuilder();
         sb.append("RESET ");

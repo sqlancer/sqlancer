@@ -11,6 +11,9 @@ import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 
 public class CockroachDBViewGenerator {
 
+    private CockroachDBViewGenerator() {
+    }
+
     public static Query generate(CockroachDBGlobalState globalState) {
         int nrColumns = Randomly.smallNumber() + 1;
         StringBuilder sb = new StringBuilder("CREATE ");

@@ -10,6 +10,9 @@ import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 
 public class CockroachDBCreateStatisticsGenerator {
 
+    private CockroachDBCreateStatisticsGenerator() {
+    }
+
     public static Query create(CockroachDBGlobalState globalState) {
         CockroachDBTable randomTable = globalState.getSchema().getRandomTable(t -> !t.isView());
         StringBuilder sb = new StringBuilder("CREATE STATISTICS s");

@@ -13,6 +13,9 @@ import sqlancer.duckdb.DuckDBToStringVisitor;
 
 public class DuckDBDeleteGenerator {
 
+    private DuckDBDeleteGenerator() {
+    }
+
     public static Query generate(DuckDBGlobalState globalState) {
         StringBuilder sb = new StringBuilder("DELETE FROM ");
         Set<String> errors = new HashSet<>();

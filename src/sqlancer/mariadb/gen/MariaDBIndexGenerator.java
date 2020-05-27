@@ -13,6 +13,9 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 
 public class MariaDBIndexGenerator {
 
+    private MariaDBIndexGenerator() {
+    }
+
     public static Query generate(MariaDBSchema s) {
         List<String> errors = new ArrayList<>();
         StringBuilder sb = new StringBuilder("CREATE ");

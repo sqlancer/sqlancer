@@ -2,6 +2,9 @@ package sqlancer.tidb.ast;
 
 public class TiDBConstant implements TiDBExpression {
 
+    private TiDBConstant() {
+    }
+
     public static class TiDBNullConstant extends TiDBConstant {
 
         @Override

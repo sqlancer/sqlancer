@@ -15,6 +15,9 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class SQLite3DeleteGenerator {
 
+    private SQLite3DeleteGenerator() {
+    }
+
     public static Query deleteContent(SQLite3GlobalState globalState) {
         SQLite3Table tableName = globalState.getSchema().getRandomTable(t -> !t.isView() && !t.isReadOnly());
         return deleteContent(globalState, tableName);

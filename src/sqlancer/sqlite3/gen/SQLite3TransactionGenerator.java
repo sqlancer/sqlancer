@@ -9,6 +9,9 @@ import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
 public class SQLite3TransactionGenerator {
 
+    private SQLite3TransactionGenerator() {
+    }
+
     public static Query generateCommit(SQLite3GlobalState globalState) {
         StringBuilder sb = new StringBuilder();
         sb.append(Randomly.fromOptions("COMMIT", "END"));

@@ -4,6 +4,9 @@ import java.util.Set;
 
 public class TiDBErrors {
 
+    private TiDBErrors() {
+    }
+
     public static void addExpressionErrors(Set<String> errors) {
         errors.add("DECIMAL value is out of range");
         errors.add("error parsing regexp");

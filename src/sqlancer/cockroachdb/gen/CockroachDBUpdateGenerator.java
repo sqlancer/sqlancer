@@ -16,6 +16,9 @@ import sqlancer.cockroachdb.CockroachDBVisitor;
 
 public class CockroachDBUpdateGenerator {
 
+    private CockroachDBUpdateGenerator() {
+    }
+
     public static Query gen(CockroachDBGlobalState globalState) {
         Set<String> errors = new HashSet<String>();
         CockroachDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());

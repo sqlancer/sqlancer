@@ -293,7 +293,7 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
         List<String> tableNames = getTableNames(con);
         for (String tableName : tableNames) {
             List<CockroachDBColumn> databaseColumns = getTableColumns(con, tableName);
-            List<TableIndex> indexes = getIndexes(con, tableName, databaseName);
+            List<TableIndex> indexes = getIndexes(con, tableName);
             boolean isView = tableName.startsWith("v");
             CockroachDBTable t = new CockroachDBTable(tableName, databaseColumns, indexes, isView);
             for (CockroachDBColumn c : databaseColumns) {
@@ -318,8 +318,7 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
         return tableNames;
     }
 
-    private static List<TableIndex> getIndexes(Connection con, String tableName, String databaseName)
-            throws SQLException {
+    private static List<TableIndex> getIndexes(Connection con, String tableName) throws SQLException {
         List<TableIndex> indexes = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery(String.format("SHOW INDEX FROM %s", tableName))) {

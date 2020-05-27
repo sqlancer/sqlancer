@@ -12,6 +12,9 @@ import sqlancer.duckdb.DuckDBToStringVisitor;
 
 public class DuckDBViewGenerator {
 
+    private DuckDBViewGenerator() {
+    }
+
     public static Query generate(DuckDBGlobalState globalState) {
         int nrColumns = Randomly.smallNumber() + 1;
         StringBuilder sb = new StringBuilder("CREATE ");

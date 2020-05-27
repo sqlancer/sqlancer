@@ -16,6 +16,9 @@ import sqlancer.cockroachdb.CockroachDBVisitor;
 
 public class CockroachDBInsertGenerator {
 
+    private CockroachDBInsertGenerator() {
+    }
+
     public static Query insert(CockroachDBGlobalState globalState) {
         Set<String> errors = new HashSet<>();
 

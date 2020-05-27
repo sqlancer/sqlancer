@@ -51,6 +51,9 @@ public class Main {
         }
     }
 
+    private Main() {
+    }
+
     public static final class StateLogger {
 
         private final File loggerFile;

@@ -14,6 +14,9 @@ import sqlancer.duckdb.DuckDBToStringVisitor;
 
 public class DuckDBAlterTableGenerator {
 
+    private DuckDBAlterTableGenerator() {
+    }
+
     enum Action {
         ADD_COLUMN, ALTER_COLUMN, DROP_COLUMN
     }

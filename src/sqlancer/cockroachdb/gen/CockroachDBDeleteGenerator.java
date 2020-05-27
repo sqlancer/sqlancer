@@ -14,6 +14,9 @@ import sqlancer.cockroachdb.CockroachDBVisitor;
 
 public class CockroachDBDeleteGenerator {
 
+    private CockroachDBDeleteGenerator() {
+    }
+
     public static Query delete(CockroachDBGlobalState globalState) {
         Set<String> errors = new HashSet<>();
         StringBuilder sb = new StringBuilder();

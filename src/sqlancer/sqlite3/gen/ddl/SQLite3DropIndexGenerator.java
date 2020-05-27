@@ -10,6 +10,9 @@ import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 // see https://www.sqlite.org/lang_dropindex.html
 public class SQLite3DropIndexGenerator {
 
+    private SQLite3DropIndexGenerator() {
+    }
+
     public static Query dropIndex(SQLite3GlobalState globalState) {
         String indexName = globalState.getSchema().getRandomIndexOrBailout();
         StringBuilder sb = new StringBuilder();

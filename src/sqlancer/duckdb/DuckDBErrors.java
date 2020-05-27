@@ -4,6 +4,9 @@ import java.util.Set;
 
 public class DuckDBErrors {
 
+    private DuckDBErrors() {
+    }
+
     public static void addExpressionErrors(Set<String> errors) {
         errors.add("Could not convert string");
         errors.add("ORDER term out of range - should be between ");

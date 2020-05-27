@@ -19,6 +19,9 @@ import sqlancer.sqlite3.schema.SQLite3Schema;
 
 public class SQLite3ViewGenerator {
 
+    private SQLite3ViewGenerator() {
+    }
+
     public static Query dropView(SQLite3GlobalState globalState) {
         SQLite3Schema s = globalState.getSchema();
         StringBuilder sb = new StringBuilder("DROP VIEW ");

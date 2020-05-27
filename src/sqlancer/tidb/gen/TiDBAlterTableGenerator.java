@@ -16,6 +16,9 @@ import sqlancer.tidb.TiDBSchema.TiDBTable;
 
 public class TiDBAlterTableGenerator {
 
+    private TiDBAlterTableGenerator() {
+    }
+
     private enum Action {
         MODIFY_COLUMN, ENABLE_DISABLE_KEYS, FORCE, DROP_PRIMARY_KEY, ADD_PRIMARY_KEY, ADD, CHANGE, DROP_COLUMN, ORDER_BY
     }

@@ -13,6 +13,9 @@ import sqlancer.mariadb.ast.MariaDBVisitor;
 
 public class MariaDBInsertGenerator {
 
+    private MariaDBInsertGenerator() {
+    }
+
     public static Query insert(MariaDBSchema s, Randomly r) {
         MariaDBTable randomTable = s.getRandomTable();
         StringBuilder sb = new StringBuilder();

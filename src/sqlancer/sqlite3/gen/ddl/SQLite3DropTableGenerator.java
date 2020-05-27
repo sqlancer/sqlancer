@@ -10,6 +10,9 @@ import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
 public class SQLite3DropTableGenerator {
 
+    private SQLite3DropTableGenerator() {
+    }
+
     public static Query dropTable(SQLite3GlobalState globalState) {
         if (globalState.getSchema().getTables(t -> !t.isView()).size() == 1) {
             throw new IgnoreMeException();

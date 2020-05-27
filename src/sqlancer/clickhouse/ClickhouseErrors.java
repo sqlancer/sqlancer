@@ -4,6 +4,9 @@ import java.util.Set;
 
 public class ClickhouseErrors {
 
+    private ClickhouseErrors() {
+    }
+
     public static void addExpressionErrors(Set<String> errors) {
         // errors.add("Illegal type (String) of argument of function not");
         // errors.add("Illegal type String of column for constant filter. Must be UInt8 or Nullable(UInt8)");

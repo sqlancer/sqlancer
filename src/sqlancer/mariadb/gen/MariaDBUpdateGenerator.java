@@ -13,6 +13,9 @@ import sqlancer.mariadb.ast.MariaDBVisitor;
 
 public class MariaDBUpdateGenerator {
 
+    private MariaDBUpdateGenerator() {
+    }
+
     public static Query update(MariaDBSchema s, Randomly r) {
         MariaDBTable randomTable = s.getRandomTable();
         StringBuilder sb = new StringBuilder("UPDATE ");

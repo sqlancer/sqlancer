@@ -17,6 +17,9 @@ import sqlancer.tidb.visitor.TiDBVisitor;
 
 public class TiDBUpdateGenerator {
 
+    private TiDBUpdateGenerator() {
+    }
+
     public static Query getQuery(TiDBGlobalState globalState) throws SQLException {
         Set<String> errors = new HashSet<>();
         TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());

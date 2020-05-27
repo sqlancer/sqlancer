@@ -13,6 +13,9 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 
 public class SQLite3CreateVirtualRtreeTabelGenerator {
 
+    private SQLite3CreateVirtualRtreeTabelGenerator() {
+    }
+
     public static Query createTableStatement(String rTreeTableName, SQLite3GlobalState globalState) {
         Set<String> errors = new HashSet<>();
         List<SQLite3Column> columns = new ArrayList<>();

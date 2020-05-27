@@ -4,6 +4,9 @@ import sqlancer.Randomly;
 
 public class SQLite3SpecialStringGenerator {
 
+    private SQLite3SpecialStringGenerator() {
+    }
+
     private enum Options {
         TIME_DATE_REGEX, NOW, DATE_TIME, TIME_MODIFIER, FLOAT
     }

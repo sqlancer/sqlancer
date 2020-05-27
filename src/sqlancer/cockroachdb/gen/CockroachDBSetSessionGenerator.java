@@ -12,6 +12,9 @@ import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 
 public class CockroachDBSetSessionGenerator {
 
+    private CockroachDBSetSessionGenerator() {
+    }
+
     public static String onOff(CockroachDBGlobalState globalState) {
         return Randomly.fromOptions("true", "false");
     }

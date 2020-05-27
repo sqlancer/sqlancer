@@ -9,6 +9,9 @@ import sqlancer.cockroachdb.CockroachDBVisitor;
 
 public class CockroachDBConstant implements CockroachDBExpression {
 
+    private CockroachDBConstant() {
+    }
+
     public static class CockroachDBNullConstant extends CockroachDBConstant {
 
         @Override

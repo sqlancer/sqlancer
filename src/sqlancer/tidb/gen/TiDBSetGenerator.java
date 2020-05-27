@@ -10,6 +10,9 @@ import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 
 public class TiDBSetGenerator {
 
+    private TiDBSetGenerator() {
+    }
+
     private enum Action {
 
         // SQL_MODE("sql_mode", (r) -> Randomly.fromOptions("TRADITIONAL", "ANSI", "POSTGRESQL", "ORACLE")),

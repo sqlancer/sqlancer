@@ -14,7 +14,10 @@ import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.schema.TableIndex;
 
-public class RockroachDBCommentOnGenerator {
+public class CockroachDBCommentOnGenerator {
+
+    private CockroachDBCommentOnGenerator() {
+    }
 
     private enum Option {
         TABLE, INDEX, COLUMN

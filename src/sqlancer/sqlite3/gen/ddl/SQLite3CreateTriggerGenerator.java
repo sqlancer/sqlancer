@@ -20,6 +20,9 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class SQLite3CreateTriggerGenerator {
 
+    private SQLite3CreateTriggerGenerator() {
+    }
+
     private enum OnAction {
         INSERT, DELETE, UPDATE
     }

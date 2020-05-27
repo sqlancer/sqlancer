@@ -2,6 +2,9 @@ package sqlancer;
 
 public class LikeImplementationHelper {
 
+    private LikeImplementationHelper() {
+    }
+
     public static boolean match(String str, String regex, int regexPosition, int strPosition, boolean caseSensitive) {
         if (strPosition == str.length() && regexPosition == regex.length()) {
             return true;

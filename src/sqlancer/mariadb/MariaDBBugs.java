@@ -2,6 +2,9 @@ package sqlancer.mariadb;
 
 public class MariaDBBugs {
 
+    private MariaDBBugs() {
+    }
+
     // https://jira.mariadb.org/browse/MDEV-21058
     public static boolean bug21058 = true;
 

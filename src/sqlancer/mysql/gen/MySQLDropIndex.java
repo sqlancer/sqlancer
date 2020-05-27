@@ -14,6 +14,9 @@ import sqlancer.mysql.MySQLSchema.MySQLTable;
  */
 public class MySQLDropIndex {
 
+    private MySQLDropIndex() {
+    }
+
     // DROP INDEX index_name ON tbl_name
     // [algorithm_option | lock_option] ...
     //

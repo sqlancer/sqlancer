@@ -11,6 +11,9 @@ import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 
 public class TiDBViewGenerator {
 
+    private TiDBViewGenerator() {
+    }
+
     public static Query getQuery(TiDBGlobalState globalState) {
         int nrColumns = Randomly.smallNumber() + 1;
         StringBuilder sb = new StringBuilder("CREATE ");

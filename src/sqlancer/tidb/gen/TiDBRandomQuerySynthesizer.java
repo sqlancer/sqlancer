@@ -17,10 +17,12 @@ import sqlancer.tidb.visitor.TiDBVisitor;
 
 public class TiDBRandomQuerySynthesizer {
 
+    private TiDBRandomQuerySynthesizer() {
+    }
+
     public static Query generate(TiDBGlobalState globalState, int nrColumns) {
         TiDBSelect select = generateSelect(globalState, nrColumns);
         return new QueryAdapter(TiDBVisitor.asString(select));
-
     }
 
     public static TiDBSelect generateSelect(TiDBGlobalState globalState, int nrColumns) {

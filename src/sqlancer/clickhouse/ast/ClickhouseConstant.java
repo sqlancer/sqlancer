@@ -4,6 +4,9 @@ import sqlancer.ast.newast.Node;
 
 public class ClickhouseConstant implements Node<ClickhouseExpression> {
 
+    private ClickhouseConstant() {
+    }
+
     public static class ClickhouseNullConstant extends ClickhouseConstant {
 
         @Override

@@ -16,6 +16,9 @@ import sqlancer.duckdb.ast.DuckDBExpression;
 
 public class DuckDBIndexGenerator {
 
+    private DuckDBIndexGenerator() {
+    }
+
     public static Query getQuery(DuckDBGlobalState globalState) {
         Set<String> errors = new HashSet<>();
         StringBuilder sb = new StringBuilder();

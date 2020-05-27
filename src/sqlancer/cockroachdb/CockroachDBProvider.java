@@ -27,6 +27,7 @@ import sqlancer.StateToReproduce.CockroachDBStateToReproduce;
 import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
+import sqlancer.cockroachdb.gen.CockroachDBCommentOnGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBCreateStatisticsGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBDeleteGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBIndexGenerator;
@@ -39,7 +40,6 @@ import sqlancer.cockroachdb.gen.CockroachDBTableGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBTruncateGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBUpdateGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBViewGenerator;
-import sqlancer.cockroachdb.gen.RockroachDBCommentOnGenerator;
 
 public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalState, CockroachDBOptions> {
 
@@ -52,14 +52,13 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
         UPDATE(CockroachDBUpdateGenerator::gen), //
         CREATE_VIEW(CockroachDBViewGenerator::generate), //
         SET_CLUSTER_SETTING(CockroachDBSetClusterSettingGenerator::create), DELETE(
-                CockroachDBDeleteGenerator::delete), COMMENT_ON(RockroachDBCommentOnGenerator::comment), SHOW(
+                CockroachDBDeleteGenerator::delete), COMMENT_ON(CockroachDBCommentOnGenerator::comment), SHOW(
                         CockroachDBShowGenerator::show), TRANSACTION((g) -> {
                             String s = Randomly.fromOptions("BEGIN", "ROLLBACK", "COMMIT");
                             return new QueryAdapter(s, Arrays.asList("there is no transaction in progress",
                                     "there is already a transaction in progress", "current transaction is aborted",
                                     "does not exist" /* interleaved indexes */));
                         }), EXPLAIN((g) -> {
-                            new CockroachDBRandomQuerySynthesizer();
                             StringBuilder sb = new StringBuilder("EXPLAIN ");
                             Set<String> errors = new HashSet<>();
                             if (Randomly.getBoolean()) {
@@ -177,7 +176,7 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
                     }
                     logger.currentFileWriter = null;
                 } catch (IgnoreMeException e) {
-
+                    // continue trying
                 }
             } while (!success);
             globalState.setSchema(CockroachDBSchema.fromConnection(con, databaseName));

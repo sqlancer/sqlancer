@@ -4,6 +4,9 @@ import sqlancer.Randomly;
 
 public class MariaDBCommon {
 
+    private MariaDBCommon() {
+    }
+
     public static void addWaitClause(StringBuilder sb) {
         if (Randomly.getBoolean()) {
             sb.append(" WAIT 1");

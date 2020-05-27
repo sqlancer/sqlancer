@@ -7,6 +7,9 @@ import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
 public class SQLite3AnalyzeGenerator {
 
+    private SQLite3AnalyzeGenerator() {
+    }
+
     private enum AnalyzeTarget {
         SCHEMA, TABLE, INDEX, SQL_MASTER
     }

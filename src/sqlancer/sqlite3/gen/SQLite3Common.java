@@ -21,6 +21,9 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class SQLite3Common {
 
+    private SQLite3Common() {
+    }
+
     public static String getRandomCollate() {
         return Randomly.fromOptions(" COLLATE BINARY", " COLLATE RTRIM", " COLLATE NOCASE"/* , " COLLATE UINT" */);
     }

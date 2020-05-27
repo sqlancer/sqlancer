@@ -16,6 +16,9 @@ import sqlancer.tidb.visitor.TiDBVisitor;
 
 public class TiDBDeleteGenerator {
 
+    private TiDBDeleteGenerator() {
+    }
+
     public static Query getQuery(TiDBGlobalState globalState) throws SQLException {
         Set<String> errors = new HashSet<>();
         TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());

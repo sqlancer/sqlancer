@@ -11,6 +11,9 @@ import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
 public class SQLite3ExplainGenerator {
 
+    private SQLite3ExplainGenerator() {
+    }
+
     public static Query explain(SQLite3GlobalState globalState) throws SQLException {
         StringBuilder sb = new StringBuilder();
         sb.append("EXPLAIN ");

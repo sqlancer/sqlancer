@@ -12,6 +12,9 @@ import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
  */
 public class SQLite3VacuumGenerator {
 
+    private SQLite3VacuumGenerator() {
+    }
+
     public static Query executeVacuum(SQLite3GlobalState globalState) {
         StringBuilder sb = new StringBuilder("VACUUM");
         if (Randomly.getBoolean()) {

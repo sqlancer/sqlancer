@@ -14,6 +14,9 @@ import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 
 public class MariaDBTableAdminCommandGenerator {
 
+    private MariaDBTableAdminCommandGenerator() {
+    }
+
     public static Query checksumTable(MariaDBSchema newSchema) {
         StringBuilder sb = addCommandAndTables(newSchema, "CHECKSUM TABLE");
         if (Randomly.getBoolean()) {

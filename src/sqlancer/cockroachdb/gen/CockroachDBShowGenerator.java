@@ -11,6 +11,9 @@ import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 
 public class CockroachDBShowGenerator {
 
+    private CockroachDBShowGenerator() {
+    }
+
     private enum Option {
         EXPERIMENTAL_FINGERPRINTS, // https://github.com/cockroachdb/cockroach/issues/44237
         DATABASES, JOBS, RANGES, LOCALITY, SEQUENCES, TRACE_FOR_SESSION

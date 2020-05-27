@@ -71,7 +71,7 @@
     <!-- Checks for Size Violations.                    -->
     <!-- See https://checkstyle.org/config_sizes.html -->
     <module name="FileLength"/>
-    <!-- <module name="LineLength">
+    <!-- we do not care about the line length: <module name="LineLength">
       <property name="fileExtensions" value="java"/>
     </module> -->
 
@@ -175,7 +175,7 @@
         <!-- See https://checkstyle.org/config_design.html -->
         <!-- TODO: enable <module name="DesignForExtension"/> -->
         <!-- TODO: <module name="FinalClass"/> -->
-        <!-- TODO: <module name="HideUtilityClassConstructor"/> -->
+        <module name="HideUtilityClassConstructor"/>
         <module name="InterfaceIsType"/>
         <!-- TODO: <module name="VisibilityModifier"/> -->
 

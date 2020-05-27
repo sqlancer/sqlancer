@@ -17,6 +17,9 @@ import sqlancer.duckdb.ast.DuckDBExpression;
 
 public class DuckDBUpdateGenerator {
 
+    private DuckDBUpdateGenerator() {
+    }
+
     public static Query getQuery(DuckDBGlobalState globalState) {
         StringBuilder sb = new StringBuilder("UPDATE ");
         Set<String> errors = new HashSet<>();

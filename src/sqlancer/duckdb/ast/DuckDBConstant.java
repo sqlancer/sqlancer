@@ -7,6 +7,9 @@ import sqlancer.ast.newast.Node;
 
 public class DuckDBConstant implements Node<DuckDBExpression> {
 
+    private DuckDBConstant() {
+    }
+
     public static class DuckDBNullConstant extends DuckDBConstant {
 
         @Override

@@ -14,6 +14,9 @@ import sqlancer.tidb.TiDBSchema.TiDBTable;
 
 public class TiDBIndexGenerator {
 
+    private TiDBIndexGenerator() {
+    }
+
     public static Query getQuery(TiDBGlobalState globalState) throws SQLException {
         Set<String> errors = new HashSet<>();
 

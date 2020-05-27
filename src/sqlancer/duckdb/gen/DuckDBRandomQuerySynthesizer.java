@@ -17,6 +17,9 @@ import sqlancer.duckdb.ast.DuckDBSelect;
 
 public class DuckDBRandomQuerySynthesizer {
 
+    private DuckDBRandomQuerySynthesizer() {
+    }
+
     public static DuckDBSelect generateSelect(DuckDBGlobalState globalState, int nrColumns) {
         DuckDBTables targetTables = globalState.getSchema().getRandomTableNonEmptyTables();
         DuckDBExpressionGenerator gen = new DuckDBExpressionGenerator(globalState)

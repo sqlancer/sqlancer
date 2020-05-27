@@ -19,10 +19,12 @@ import sqlancer.cockroachdb.test.CockroachDBNoRECTester;
 
 public class CockroachDBRandomQuerySynthesizer {
 
+    private CockroachDBRandomQuerySynthesizer() {
+    }
+
     public static Query generate(CockroachDBGlobalState globalState, int nrColumns) {
         CockroachDBSelect select = generateSelect(globalState, nrColumns);
         return new QueryAdapter(CockroachDBVisitor.asString(select));
-
     }
 
     public static CockroachDBSelect generateSelect(CockroachDBGlobalState globalState, int nrColumns) {

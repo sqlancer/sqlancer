@@ -4,16 +4,17 @@ import java.util.Set;
 
 public class CockroachDBErrors {
 
+    private CockroachDBErrors() {
+    }
+
     public static void addExpressionErrors(Set<String> errors) {
         errors.add(" non-streaming operator encountered when vectorize=auto");
 
-        if (true) {
-            // https://github.com/cockroachdb/cockroach/issues/46915
+        if (CockroachDBBugs.bug46915) {
             errors.add("ERROR: at or near \"unknown\": syntax error");
         }
 
-        if (true) {
-            // https://github.com/cockroachdb/cockroach/issues/45703
+        if (CockroachDBBugs.bug45703) {
             errors.add("github.com/cockroachdb/cockroach/pkg/sql/execinfra/expr.go:78: processExpression()");
         }
 
@@ -155,16 +156,11 @@ public class CockroachDBErrors {
         errors.add("could not parse JSON: unable to decode JSON: unexpected EOF");
         errors.add("can't order by column type jsonb");
 
-        if (true) {
-            errors.add("aggregate functions are not allowed in GROUP BY");
-            errors.add(" must appear in the GROUP BY clause or be used in an aggregate function"); // TODO: better
-                                                                                                   // control what is
-                                                                                                   // generated in a
-                                                                                                   // view
-        }
+        // TODO: better control what is generated in a view
+        errors.add("aggregate functions are not allowed in GROUP BY");
+        errors.add(" must appear in the GROUP BY clause or be used in an aggregate function");
 
-        if (true) {
-            // TODO https://github.com/cockroachdb/cockroach/issues/44757
+        if (CockroachDBBugs.bug44757) {
             errors.add("no builtin aggregate");
         }
 

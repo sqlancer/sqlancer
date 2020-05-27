@@ -7,6 +7,9 @@ import java.util.Set;
 
 public class SQLite3Errors {
 
+    private SQLite3Errors() {
+    }
+
     public static void addDeleteErrors(List<String> errors) {
         // DELETE trigger for a view/table to which colomns were added or deleted
         errors.add("columns but");

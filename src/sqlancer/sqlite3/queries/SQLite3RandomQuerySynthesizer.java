@@ -26,6 +26,9 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
 public class SQLite3RandomQuerySynthesizer {
 
+    private SQLite3RandomQuerySynthesizer() {
+    }
+
     // TODO join clauses
     // TODO union, intersect
     public static SQLite3Expression generate(SQLite3GlobalState globalState, int size) {
