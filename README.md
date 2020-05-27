@@ -61,9 +61,10 @@ Since SQL dialects differ widely, each DBMS to be tested requires a separate imp
 
 # Continuous Integration and Test Suite
 
-To improve and maintain SQLancer's code quality, we adopted several tools:
+To improve and maintain SQLancer's code quality, we use several tools:
 * [Checkstyle](https://checkstyle.sourceforge.io/) to enforce a consistent coding standard.
 * [PMD](https://pmd.github.io/), which finds programming flaws using static analysis.
+* [SpotBugs](https://spotbugs.github.io/), which also uses static analysis to find bugs and programming flaws.
 
 You can run them using the following command:
 

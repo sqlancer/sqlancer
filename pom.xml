@@ -91,9 +91,28 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+				<version>4.0.0</version>
+				<executions>
+					<execution>
+						<id>spotbugs</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
+							<effort>Low</effort>
+							<threshold>High</threshold>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
-
 	</build>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.beust</groupId>
