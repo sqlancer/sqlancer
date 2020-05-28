@@ -23,8 +23,7 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
         INT, VARCHAR, BOOLEAN, FLOAT, DATE, TIMESTAMP;
 
         public static DuckDBDataType getRandom() {
-            DuckDBDataType type = Randomly.fromOptions(values());
-            return type;
+            return Randomly.fromOptions(values());
         }
 
     }

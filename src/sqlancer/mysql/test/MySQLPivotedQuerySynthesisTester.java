@@ -144,8 +144,7 @@ public class MySQLPivotedQuerySynthesisTester implements TestOracle {
 
         MySQLToStringVisitor visitor = new MySQLToStringVisitor();
         visitor.visit(selectStatement);
-        String queryString = visitor.get();
-        return queryString;
+        return visitor.get();
     }
 
     private List<MySQLExpression> generateGroupByClause(List<MySQLColumn> columns, MySQLRowValue rw) {

@@ -168,9 +168,8 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
             e.printStackTrace();
         }
         String url = "jdbc:duckdb:";
-        Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
+        return DriverManager.getConnection(url, globalState.getOptions().getUserName(),
                 globalState.getOptions().getPassword());
-        return con;
     }
 
     @Override

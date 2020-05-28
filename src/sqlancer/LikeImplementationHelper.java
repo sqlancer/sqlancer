@@ -48,8 +48,7 @@ public final class LikeImplementationHelper {
 
     private static char toUpper(char cur) {
         if (cur >= 'a' && cur <= 'z') {
-            char c = (char) (cur + 'A' - 'a');
-            return c;
+            return (char) (cur + 'A' - 'a');
         } else {
             return cur;
         }

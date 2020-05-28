@@ -59,8 +59,7 @@ public final class CockroachDBSetClusterSettingGenerator {
         errors.add("setting updated but timed out waiting to read new value");
 
         CockroachDBErrors.addTransactionErrors(errors);
-        Query q = new QueryAdapter(sb.toString(), errors);
-        return q;
+        return new QueryAdapter(sb.toString(), errors);
     }
 
 }

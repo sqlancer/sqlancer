@@ -282,8 +282,7 @@ public class CockroachDBExpressionGenerator
             return CockroachDBConstant.createBooleanConstant(Randomly.getBoolean());
         case STRING:
         case BYTES: // TODO: also generate byte constants
-            CockroachDBExpression strConst = getStringConstant();
-            return strConst;
+            return getStringConstant();
         case FLOAT:
             return CockroachDBConstant.createFloatConstant(globalState.getRandomly().getDouble());
         case BIT:

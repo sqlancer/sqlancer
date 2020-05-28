@@ -200,8 +200,7 @@ public final class Main {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             e1.printStackTrace(pw);
-            String stackTrace = "--" + sw.toString().replace("\n", "\n--");
-            return stackTrace;
+            return "--" + sw.toString().replace("\n", "\n--");
         }
 
         private void printState(FileWriter writer, StateToReproduce state) {

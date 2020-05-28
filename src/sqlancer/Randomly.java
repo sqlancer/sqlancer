@@ -187,8 +187,7 @@ public final class Randomly {
 
     public static int smallNumber() {
         // no need to cache for small numbers
-        int val = (int) (Math.abs(ThreadLocalRandom.current().nextGaussian()) * 2);
-        return val;
+        return (int) (Math.abs(ThreadLocalRandom.current().nextGaussian()) * 2);
     }
 
     public static boolean getBoolean() {

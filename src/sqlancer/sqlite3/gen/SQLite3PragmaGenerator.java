@@ -94,8 +94,7 @@ public class SQLite3PragmaGenerator {
                 if (Randomly.getBoolean()) {
                     return 0;
                 } else {
-                    long value = Math.max(10000, Randomly.getNonCachedInteger());
-                    return value;
+                    return Math.max(10000, Randomly.getNonCachedInteger());
                 }
 
             });

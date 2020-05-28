@@ -55,8 +55,7 @@ public final class CockroachDBSetSessionGenerator {
         sb.append(s.f.apply(globalState));
         Set<String> errors = new HashSet<>();
         CockroachDBErrors.addTransactionErrors(errors);
-        Query q = new QueryAdapter(sb.toString(), errors);
-        return q;
+        return new QueryAdapter(sb.toString(), errors);
     }
 
 }

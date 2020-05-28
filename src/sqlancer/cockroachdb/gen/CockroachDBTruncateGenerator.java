@@ -41,8 +41,7 @@ public final class CockroachDBTruncateGenerator {
             sb.append(" ");
             sb.append(Randomly.fromOptions("CASCADE", "RESTRICT"));
         }
-        Query q = new QueryAdapter(sb.toString(), errors);
-        return q;
+        return new QueryAdapter(sb.toString(), errors);
     }
 
 }

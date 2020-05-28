@@ -24,13 +24,7 @@ public final class PostgresTransactionGenerator {
             // sb.append(Randomly.fromOptions("READ WRITE", "READ ONLY"));
             // }
         }
-        QueryAdapter query = new QueryAdapter(sb.toString(), errors) {
-            @Override
-            public boolean couldAffectSchema() {
-                return true;
-            }
-        };
-        return query;
+        return new QueryAdapter(sb.toString(), errors, true);
     }
 
 }

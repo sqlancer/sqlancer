@@ -369,8 +369,7 @@ public class SQLite3ExpressionGenerator {
 
     private SQLite3Expression getRandomColumn() {
         SQLite3Column c = Randomly.fromList(columns);
-        SQLite3ColumnName columnName = new SQLite3ColumnName(c, rw == null ? null : rw.getValues().get(c));
-        return columnName;
+        return new SQLite3ColumnName(c, rw == null ? null : rw.getValues().get(c));
     }
 
     enum Attribute {
@@ -580,8 +579,7 @@ public class SQLite3ExpressionGenerator {
                 args[i] = new SQLite3Distinct(args[i]);
             }
         }
-        SQLite3Function sqlFunction = new SQLite3Function(func, args);
-        return sqlFunction;
+        return new SQLite3Function(func, args);
     }
 
     private SQLite3Expression getBetweenOperator(int depth) {

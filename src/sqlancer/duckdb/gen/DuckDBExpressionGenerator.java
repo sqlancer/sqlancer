@@ -47,9 +47,7 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
         if (allowAggregates && Randomly.getBoolean()) {
             DuckDBAggregateFunction aggregate = DuckDBAggregateFunction.getRandom();
             allowAggregates = false;
-            NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> aggr = new NewFunctionNode<>(
-                    generateExpressions(depth + 1, aggregate.getNrArgs()), aggregate);
-            return aggr;
+            return new NewFunctionNode<>(generateExpressions(depth + 1, aggregate.getNrArgs()), aggregate);
         }
         List<Expression> possibleOptions = new ArrayList<>(Arrays.asList(Expression.values()));
         if (!globalState.getDmbsSpecificOptions().testCollate) {

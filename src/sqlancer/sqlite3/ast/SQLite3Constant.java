@@ -302,8 +302,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
                     text.setCharAt(i, Character.toLowerCase(c));
                 }
             }
-            String string = text.toString();
-            return string;
+            return text.toString();
         }
 
         public static String toUpper(String t) {
@@ -314,8 +313,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
                     text.setCharAt(i, Character.toUpperCase(c));
                 }
             }
-            String string = text.toString();
-            return string;
+            return text.toString();
         }
 
         public static String trim(String str) {
@@ -354,8 +352,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
             }
             Matcher matcher = leadingDigitPattern.matcher(trimmedString);
             if (matcher.matches()) {
-                SQLite3Constant castValue = SQLite3Cast.castToNumeric(this);
-                return castValue;
+                return SQLite3Cast.castToNumeric(this);
             } else {
                 return this;
             }

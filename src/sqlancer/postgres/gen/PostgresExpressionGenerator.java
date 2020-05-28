@@ -134,8 +134,7 @@ public class PostgresExpressionGenerator {
                 args[i] = generateExpression(depth + 1, argTypes[i]);
             }
         } while (!randomFunction.checkArguments(args));
-        PostgresFunction f = new PostgresFunction(randomFunction, type, args);
-        return f;
+        return new PostgresFunction(randomFunction, type, args);
     }
 
     private PostgresExpression generateBooleanExpression(int depth) {

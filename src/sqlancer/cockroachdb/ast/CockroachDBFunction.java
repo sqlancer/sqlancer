@@ -177,8 +177,7 @@ public enum CockroachDBFunction {
             int depth) {
         CockroachDBDataType[] argumentTypes2 = getArgumentTypes(returnType);
         List<CockroachDBExpression> arguments = getArgumentsForReturnType(gen, depth, argumentTypes2, returnType);
-        CockroachDBFunctionCall call = new CockroachDBFunctionCall(this, arguments);
-        return call;
+        return new CockroachDBFunctionCall(this, arguments);
     }
 
     List<CockroachDBExpression> getArgumentsForReturnType(CockroachDBExpressionGenerator gen, int depth,

@@ -55,7 +55,6 @@
 		<exclude name="ConfusingTernary" />
 		<exclude name="FieldDeclarationsShouldBeAtStartOfClass" />
 		<exclude name="PrematureDeclaration" />
-		<exclude name="UnnecessaryLocalBeforeReturn" />
 		<exclude name="BooleanGetMethodName" />
 	</rule>
 	<!-- <rule ref="category/java/design.xml"> <priority>4</priority> </rule> 

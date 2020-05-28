@@ -117,8 +117,7 @@ public class PostgresPivotedQuerySynthesisGenerator implements TestOracle {
 
         PostgresToStringVisitor visitor = new PostgresToStringVisitor();
         visitor.visit(selectStatement);
-        String queryString = visitor.get();
-        return queryString;
+        return visitor.get();
     }
 
     private List<PostgresExpression> generateGroupByClause(List<PostgresColumn> columns, PostgresRowValue rw) {
@@ -149,8 +148,7 @@ public class PostgresPivotedQuerySynthesisGenerator implements TestOracle {
 
     private PostgresExpression generateWhereClauseThatContainsRowValue(List<PostgresColumn> columns,
             PostgresRowValue rw) {
-        PostgresExpression expression = PostgresExpressionGenerator.generateTrueCondition(columns, rw, globalState);
-        return expression;
+        return PostgresExpressionGenerator.generateTrueCondition(columns, rw, globalState);
     }
 
     private boolean isContainedIn(String queryString, MainOptions options, StateLogger logger) throws SQLException {

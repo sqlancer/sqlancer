@@ -101,14 +101,12 @@ public class DuckDBJoin implements Node<DuckDBExpression> {
 
     public static DuckDBJoin createRightOuterJoin(TableReferenceNode<DuckDBExpression, DuckDBTable> left,
             TableReferenceNode<DuckDBExpression, DuckDBTable> right, Node<DuckDBExpression> predicate) {
-        DuckDBJoin duckDBJoin = new DuckDBJoin(left, right, JoinType.RIGHT, predicate);
-        return duckDBJoin;
+        return new DuckDBJoin(left, right, JoinType.RIGHT, predicate);
     }
 
     public static DuckDBJoin createLeftOuterJoin(TableReferenceNode<DuckDBExpression, DuckDBTable> left,
             TableReferenceNode<DuckDBExpression, DuckDBTable> right, Node<DuckDBExpression> predicate) {
-        DuckDBJoin duckDBJoin = new DuckDBJoin(left, right, JoinType.LEFT, predicate);
-        return duckDBJoin;
+        return new DuckDBJoin(left, right, JoinType.LEFT, predicate);
     }
 
     public static DuckDBJoin createInnerJoin(TableReferenceNode<DuckDBExpression, DuckDBTable> left,
