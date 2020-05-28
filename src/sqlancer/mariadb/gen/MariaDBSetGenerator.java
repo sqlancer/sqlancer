@@ -131,10 +131,9 @@ public class MariaDBSetGenerator {
         private static String getOptimizerSwitchConfiguration(Randomly r) {
             StringBuilder sb = new StringBuilder();
             sb.append("'");
-            String[] options = new String[] { /*
-                                               * ("batched_key_access", /*"block_nested_loop",
-                                               * "condition_fanout_filter",
-                                               */
+            String[] options = { /*
+                                  * ("batched_key_access", /*"block_nested_loop", "condition_fanout_filter",
+                                  */
                     "condition_pushdown_for_derived", // MariaDB
                     "condition_pushdown_for_subquery", // MariaDB
                     "derived_merge", //

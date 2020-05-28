@@ -30,7 +30,7 @@ public class MySQLBetweenOperation implements MySQLExpression {
 
     @Override
     public MySQLConstant getExpectedValue() {
-        MySQLExpression[] arr = new MySQLExpression[] { left, right, expr };
+        MySQLExpression[] arr = { left, right, expr };
         MySQLConstant convertedExpr = MySQLComputableFunction.castToMostGeneralType(expr.getExpectedValue(), arr);
         MySQLConstant convertedLeft = MySQLComputableFunction.castToMostGeneralType(left.getExpectedValue(), arr);
         MySQLConstant convertedRight = MySQLComputableFunction.castToMostGeneralType(right.getExpectedValue(), arr);

@@ -216,11 +216,11 @@ public class MySQLSetGenerator {
         private static String getOptimizerSwitchConfiguration(Randomly r) {
             StringBuilder sb = new StringBuilder();
             sb.append("'");
-            String[] options = new String[] { "batched_key_access", "block_nested_loop", "condition_fanout_filter",
-                    "derived_merge", "engine_condition_pushdown", "index_condition_pushdown", "use_index_extensions",
-                    "index_merge", "index_merge_intersection", "index_merge_sort_union", "index_merge_union",
-                    "use_invisible_indexes", "mrr", "mrr_cost_based", "skip_scan", "semijoin", "duplicateweedout",
-                    "firstmatch", "loosescan", "materialization", "subquery_materialization_cost_based" };
+            String[] options = { "batched_key_access", "block_nested_loop", "condition_fanout_filter", "derived_merge",
+                    "engine_condition_pushdown", "index_condition_pushdown", "use_index_extensions", "index_merge",
+                    "index_merge_intersection", "index_merge_sort_union", "index_merge_union", "use_invisible_indexes",
+                    "mrr", "mrr_cost_based", "skip_scan", "semijoin", "duplicateweedout", "firstmatch", "loosescan",
+                    "materialization", "subquery_materialization_cost_based" };
             List<String> optionSubset = Randomly.nonEmptySubset(options);
             sb.append(optionSubset.stream().map(s -> s + "=" + Randomly.fromOptions("on", "off"))
                     .collect(Collectors.joining(",")));

@@ -58,7 +58,6 @@
 		<exclude name="UnnecessaryLocalBeforeReturn" />
 		<exclude name="BooleanGetMethodName" />
 		<exclude name="UseDiamondOperator" />
-		<exclude name="UseShortArrayInitializer" />
 	</rule>
 	<!-- <rule ref="category/java/design.xml"> <priority>4</priority> </rule> 
 		<rule ref="category/java/performance.xml"> <priority>5</priority> <exclude 
