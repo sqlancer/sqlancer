@@ -15,7 +15,7 @@ import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresVisitor;
 import sqlancer.postgres.ast.PostgresExpression;
 
-public class PostgresUpdateGenerator {
+public final class PostgresUpdateGenerator {
 
     private PostgresUpdateGenerator() {
     }

@@ -13,7 +13,7 @@ import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
-public class SQLite3DeleteGenerator {
+public final class SQLite3DeleteGenerator {
 
     private SQLite3DeleteGenerator() {
     }

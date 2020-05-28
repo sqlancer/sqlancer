@@ -5,7 +5,7 @@ import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.postgres.PostgresGlobalState;
 
-public class PostgresNotifyGenerator {
+public final class PostgresNotifyGenerator {
 
     private PostgresNotifyGenerator() {
     }

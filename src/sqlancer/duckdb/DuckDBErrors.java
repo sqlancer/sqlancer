@@ -2,7 +2,7 @@ package sqlancer.duckdb;
 
 import java.util.Set;
 
-public class DuckDBErrors {
+public final class DuckDBErrors {
 
     private DuckDBErrors() {
     }

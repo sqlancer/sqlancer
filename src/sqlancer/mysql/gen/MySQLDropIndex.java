@@ -12,7 +12,7 @@ import sqlancer.mysql.MySQLSchema.MySQLTable;
 /**
  * @see https://dev.mysql.com/doc/refman/8.0/en/drop-index.html
  */
-public class MySQLDropIndex {
+public final class MySQLDropIndex {
 
     private MySQLDropIndex() {
     }

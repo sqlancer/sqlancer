@@ -1,7 +1,7 @@
 package sqlancer.mysql;
 
 // do not make the fields final to avoid warnings
-public class MySQLBugs {
+public final class MySQLBugs {
 
     private MySQLBugs() {
     }

@@ -9,7 +9,7 @@ import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 
-public class CockroachDBShowGenerator {
+public final class CockroachDBShowGenerator {
 
     private CockroachDBShowGenerator() {
     }

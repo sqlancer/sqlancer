@@ -11,7 +11,7 @@ import sqlancer.Randomly;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 
-public class SQLite3CreateVirtualRtreeTabelGenerator {
+public final class SQLite3CreateVirtualRtreeTabelGenerator {
 
     private SQLite3CreateVirtualRtreeTabelGenerator() {
     }

@@ -10,7 +10,7 @@ import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 
-public class CockroachDBSetClusterSettingGenerator {
+public final class CockroachDBSetClusterSettingGenerator {
 
     private CockroachDBSetClusterSettingGenerator() {
     }

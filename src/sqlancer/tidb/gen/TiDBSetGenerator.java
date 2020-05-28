@@ -8,7 +8,7 @@ import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 
-public class TiDBSetGenerator {
+public final class TiDBSetGenerator {
 
     private TiDBSetGenerator() {
     }

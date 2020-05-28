@@ -9,7 +9,7 @@ import sqlancer.cockroachdb.ast.CockroachDBExpression;
 import sqlancer.cockroachdb.ast.CockroachDBIndexReference;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 
-public class CockroachDBCommon {
+public final class CockroachDBCommon {
 
     private CockroachDBCommon() {
     }

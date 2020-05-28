@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 
 import sqlancer.sqlite3.schema.SQLite3DataType;
 
-public class SQLite3Cast {
+public final class SQLite3Cast {
 
     private SQLite3Cast() {
     }

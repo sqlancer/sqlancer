@@ -8,7 +8,7 @@ import sqlancer.Randomly;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresTable.TableType;
 
-public class PostgresDiscardGenerator {
+public final class PostgresDiscardGenerator {
 
     private PostgresDiscardGenerator() {
     }

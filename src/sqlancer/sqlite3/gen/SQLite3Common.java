@@ -19,7 +19,7 @@ import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
-public class SQLite3Common {
+public final class SQLite3Common {
 
     private SQLite3Common() {
     }

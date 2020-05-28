@@ -8,7 +8,7 @@ import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.postgres.PostgresGlobalState;
 
-public class PostgresSequenceGenerator {
+public final class PostgresSequenceGenerator {
 
     private PostgresSequenceGenerator() {
     }

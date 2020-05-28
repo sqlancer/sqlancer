@@ -7,7 +7,7 @@ import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
-public class SQLite3TransactionGenerator {
+public final class SQLite3TransactionGenerator {
 
     private SQLite3TransactionGenerator() {
     }

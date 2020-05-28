@@ -18,7 +18,7 @@ import sqlancer.sqlite3.gen.dml.SQLite3UpdateGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
-public class SQLite3CreateTriggerGenerator {
+public final class SQLite3CreateTriggerGenerator {
 
     private SQLite3CreateTriggerGenerator() {
     }

@@ -2,7 +2,7 @@ package sqlancer.sqlite3;
 
 import sqlancer.Randomly;
 
-public class SQLite3SpecialStringGenerator {
+public final class SQLite3SpecialStringGenerator {
 
     private SQLite3SpecialStringGenerator() {
     }

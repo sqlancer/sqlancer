@@ -7,7 +7,7 @@ import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 
-public class PostgresTransactionGenerator {
+public final class PostgresTransactionGenerator {
 
     private PostgresTransactionGenerator() {
     }

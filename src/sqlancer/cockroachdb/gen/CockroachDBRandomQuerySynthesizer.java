@@ -17,7 +17,7 @@ import sqlancer.cockroachdb.ast.CockroachDBSelect;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 import sqlancer.cockroachdb.test.CockroachDBNoRECTester;
 
-public class CockroachDBRandomQuerySynthesizer {
+public final class CockroachDBRandomQuerySynthesizer {
 
     private CockroachDBRandomQuerySynthesizer() {
     }

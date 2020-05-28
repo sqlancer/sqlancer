@@ -6,7 +6,7 @@ import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.mysql.MySQLGlobalState;
 
-public class MySQLTruncateTableGenerator {
+public final class MySQLTruncateTableGenerator {
 
     private MySQLTruncateTableGenerator() {
     }

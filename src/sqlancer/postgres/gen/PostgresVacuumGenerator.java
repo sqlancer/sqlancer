@@ -11,7 +11,7 @@ import sqlancer.Randomly;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 
-public class PostgresVacuumGenerator {
+public final class PostgresVacuumGenerator {
 
     private PostgresVacuumGenerator() {
     }

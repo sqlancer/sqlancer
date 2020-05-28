@@ -2,7 +2,7 @@ package sqlancer.mysql;
 
 import java.util.Set;
 
-public class MySQLErrors {
+public final class MySQLErrors {
 
     private MySQLErrors() {
     }

@@ -14,7 +14,7 @@ import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBTable;
 import sqlancer.tidb.visitor.TiDBVisitor;
 
-public class TiDBDeleteGenerator {
+public final class TiDBDeleteGenerator {
 
     private TiDBDeleteGenerator() {
     }

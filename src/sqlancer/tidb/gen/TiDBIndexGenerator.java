@@ -12,7 +12,7 @@ import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
 import sqlancer.tidb.TiDBSchema.TiDBTable;
 
-public class TiDBIndexGenerator {
+public final class TiDBIndexGenerator {
 
     private TiDBIndexGenerator() {
     }

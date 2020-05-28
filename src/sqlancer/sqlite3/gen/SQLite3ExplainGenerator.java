@@ -9,7 +9,7 @@ import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.sqlite3.SQLite3Provider.Action;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
-public class SQLite3ExplainGenerator {
+public final class SQLite3ExplainGenerator {
 
     private SQLite3ExplainGenerator() {
     }

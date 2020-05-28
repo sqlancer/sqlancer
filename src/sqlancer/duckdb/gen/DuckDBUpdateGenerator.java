@@ -15,7 +15,7 @@ import sqlancer.duckdb.DuckDBSchema.DuckDBTable;
 import sqlancer.duckdb.DuckDBToStringVisitor;
 import sqlancer.duckdb.ast.DuckDBExpression;
 
-public class DuckDBUpdateGenerator {
+public final class DuckDBUpdateGenerator {
 
     private DuckDBUpdateGenerator() {
     }

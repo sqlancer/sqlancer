@@ -1,6 +1,6 @@
 package sqlancer.mariadb;
 
-public class MariaDBBugs {
+public final class MariaDBBugs {
 
     private MariaDBBugs() {
     }

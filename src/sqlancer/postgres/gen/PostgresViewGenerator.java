@@ -11,7 +11,7 @@ import sqlancer.postgres.PostgresVisitor;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.sqlite3.gen.SQLite3Common;
 
-public class PostgresViewGenerator {
+public final class PostgresViewGenerator {
 
     private PostgresViewGenerator() {
     }

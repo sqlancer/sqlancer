@@ -6,7 +6,7 @@ import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation.UnaryOperator;
 
-public class SQLite3CollateHelper {
+public final class SQLite3CollateHelper {
 
     private SQLite3CollateHelper() {
     }

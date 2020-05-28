@@ -8,7 +8,7 @@ import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 
-public class CockroachDBCreateStatisticsGenerator {
+public final class CockroachDBCreateStatisticsGenerator {
 
     private CockroachDBCreateStatisticsGenerator() {
     }

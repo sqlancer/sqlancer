@@ -1,6 +1,6 @@
 package sqlancer;
 
-public class LikeImplementationHelper {
+public final class LikeImplementationHelper {
 
     private LikeImplementationHelper() {
     }

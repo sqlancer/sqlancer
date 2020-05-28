@@ -8,7 +8,7 @@ import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 
-public class CockroachDBTruncateGenerator {
+public final class CockroachDBTruncateGenerator {
 
     private CockroachDBTruncateGenerator() {
     }

@@ -14,7 +14,7 @@ import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.schema.TableIndex;
 
-public class CockroachDBCommentOnGenerator {
+public final class CockroachDBCommentOnGenerator {
 
     private CockroachDBCommentOnGenerator() {
     }

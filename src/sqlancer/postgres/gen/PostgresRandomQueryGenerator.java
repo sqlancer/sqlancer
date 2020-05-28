@@ -15,7 +15,7 @@ import sqlancer.postgres.ast.PostgresSelect.ForClause;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.ast.PostgresSelect.SelectType;
 
-public class PostgresRandomQueryGenerator {
+public final class PostgresRandomQueryGenerator {
 
     private PostgresRandomQueryGenerator() {
     }

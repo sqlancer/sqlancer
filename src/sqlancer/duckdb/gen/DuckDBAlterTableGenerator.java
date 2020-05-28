@@ -12,7 +12,7 @@ import sqlancer.duckdb.DuckDBSchema.DuckDBCompositeDataType;
 import sqlancer.duckdb.DuckDBSchema.DuckDBTable;
 import sqlancer.duckdb.DuckDBToStringVisitor;
 
-public class DuckDBAlterTableGenerator {
+public final class DuckDBAlterTableGenerator {
 
     private DuckDBAlterTableGenerator() {
     }

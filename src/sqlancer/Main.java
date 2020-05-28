@@ -37,7 +37,7 @@ import sqlancer.postgres.PostgresProvider;
 import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.tidb.TiDBProvider;
 
-public class Main {
+public final class Main {
 
     public static final File LOG_DIRECTORY = new File("logs");
     public static volatile AtomicLong nrQueries = new AtomicLong();

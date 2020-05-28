@@ -12,7 +12,7 @@ import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBDataType;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.CockroachDBVisitor;
 
-public class CockroachDBDeleteGenerator {
+public final class CockroachDBDeleteGenerator {
 
     private CockroachDBDeleteGenerator() {
     }

@@ -11,7 +11,7 @@ import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBTable;
 import sqlancer.duckdb.DuckDBToStringVisitor;
 
-public class DuckDBDeleteGenerator {
+public final class DuckDBDeleteGenerator {
 
     private DuckDBDeleteGenerator() {
     }

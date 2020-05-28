@@ -17,7 +17,7 @@ import sqlancer.postgres.PostgresVisitor;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.sqlite3.gen.SQLite3Common;
 
-public class PostgresIndexGenerator {
+public final class PostgresIndexGenerator {
 
     private PostgresIndexGenerator() {
     }

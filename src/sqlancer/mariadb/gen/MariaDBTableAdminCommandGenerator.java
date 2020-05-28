@@ -12,7 +12,7 @@ import sqlancer.Randomly;
 import sqlancer.mariadb.MariaDBSchema;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 
-public class MariaDBTableAdminCommandGenerator {
+public final class MariaDBTableAdminCommandGenerator {
 
     private MariaDBTableAdminCommandGenerator() {
     }

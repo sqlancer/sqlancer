@@ -15,7 +15,7 @@ import sqlancer.tidb.TiDBSchema.TiDBColumn;
 import sqlancer.tidb.TiDBSchema.TiDBTable;
 import sqlancer.tidb.visitor.TiDBVisitor;
 
-public class TiDBUpdateGenerator {
+public final class TiDBUpdateGenerator {
 
     private TiDBUpdateGenerator() {
     }

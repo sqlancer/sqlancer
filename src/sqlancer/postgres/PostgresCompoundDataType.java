@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
-public class PostgresCompoundDataType {
+public final class PostgresCompoundDataType {
 
     private final PostgresDataType dataType;
     private final PostgresCompoundDataType elemType;

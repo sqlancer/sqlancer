@@ -2,7 +2,7 @@ package sqlancer.clickhouse;
 
 import java.util.Set;
 
-public class ClickhouseErrors {
+public final class ClickhouseErrors {
 
     private ClickhouseErrors() {
     }

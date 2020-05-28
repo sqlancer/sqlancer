@@ -9,7 +9,7 @@ import sqlancer.Randomly;
 import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 
-public class TiDBViewGenerator {
+public final class TiDBViewGenerator {
 
     private TiDBViewGenerator() {
     }

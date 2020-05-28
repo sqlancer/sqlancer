@@ -24,7 +24,7 @@ import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
-public class SQLite3RandomQuerySynthesizer {
+public final class SQLite3RandomQuerySynthesizer {
 
     private SQLite3RandomQuerySynthesizer() {
     }

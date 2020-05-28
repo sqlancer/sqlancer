@@ -9,7 +9,7 @@ import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 
-public class PostgresQueryCatalogGenerator {
+public final class PostgresQueryCatalogGenerator {
 
     private PostgresQueryCatalogGenerator() {
     }

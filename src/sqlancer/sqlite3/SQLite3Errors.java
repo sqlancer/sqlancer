@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-public class SQLite3Errors {
+public final class SQLite3Errors {
 
     private SQLite3Errors() {
     }

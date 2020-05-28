@@ -8,7 +8,7 @@ import sqlancer.Randomly;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
 // see https://www.sqlite.org/lang_dropindex.html
-public class SQLite3DropIndexGenerator {
+public final class SQLite3DropIndexGenerator {
 
     private SQLite3DropIndexGenerator() {
     }

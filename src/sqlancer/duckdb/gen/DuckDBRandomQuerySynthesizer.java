@@ -15,7 +15,7 @@ import sqlancer.duckdb.ast.DuckDBExpression;
 import sqlancer.duckdb.ast.DuckDBJoin;
 import sqlancer.duckdb.ast.DuckDBSelect;
 
-public class DuckDBRandomQuerySynthesizer {
+public final class DuckDBRandomQuerySynthesizer {
 
     private DuckDBRandomQuerySynthesizer() {
     }

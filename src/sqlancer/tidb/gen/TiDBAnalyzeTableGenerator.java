@@ -9,7 +9,7 @@ import sqlancer.Randomly;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBTable;
 
-public class TiDBAnalyzeTableGenerator {
+public final class TiDBAnalyzeTableGenerator {
 
     private TiDBAnalyzeTableGenerator() {
     }

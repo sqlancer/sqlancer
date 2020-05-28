@@ -17,7 +17,7 @@ import sqlancer.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
 import sqlancer.sqlite3.queries.SQLite3RandomQuerySynthesizer;
 import sqlancer.sqlite3.schema.SQLite3Schema;
 
-public class SQLite3ViewGenerator {
+public final class SQLite3ViewGenerator {
 
     private SQLite3ViewGenerator() {
     }

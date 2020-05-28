@@ -12,7 +12,7 @@ import sqlancer.sqlite3.schema.SQLite3Schema;
 /**
  * @see https://www.sqlite.org/lang_reindex.html
  */
-public class SQLite3ReindexGenerator {
+public final class SQLite3ReindexGenerator {
 
     private SQLite3ReindexGenerator() {
     }

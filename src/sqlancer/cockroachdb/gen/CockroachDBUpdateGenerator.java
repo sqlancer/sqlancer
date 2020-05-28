@@ -14,7 +14,7 @@ import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBDataType;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.CockroachDBVisitor;
 
-public class CockroachDBUpdateGenerator {
+public final class CockroachDBUpdateGenerator {
 
     private CockroachDBUpdateGenerator() {
     }

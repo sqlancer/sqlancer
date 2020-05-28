@@ -2,7 +2,7 @@ package sqlancer.cockroachdb;
 
 import java.util.Set;
 
-public class CockroachDBErrors {
+public final class CockroachDBErrors {
 
     private CockroachDBErrors() {
     }

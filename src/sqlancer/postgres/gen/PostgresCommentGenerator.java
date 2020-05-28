@@ -10,7 +10,7 @@ import sqlancer.postgres.PostgresSchema.PostgresTable;
 /**
  * @see https://www.postgresql.org/docs/devel/sql-comment.html
  */
-public class PostgresCommentGenerator {
+public final class PostgresCommentGenerator {
 
     private PostgresCommentGenerator() {
     }

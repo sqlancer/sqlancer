@@ -2,7 +2,7 @@ package sqlancer.mariadb.gen;
 
 import sqlancer.Randomly;
 
-public class MariaDBCommon {
+public final class MariaDBCommon {
 
     private MariaDBCommon() {
     }

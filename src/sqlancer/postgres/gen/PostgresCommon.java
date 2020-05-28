@@ -17,7 +17,7 @@ import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresVisitor;
 
-public class PostgresCommon {
+public final class PostgresCommon {
 
     private PostgresCommon() {
     }

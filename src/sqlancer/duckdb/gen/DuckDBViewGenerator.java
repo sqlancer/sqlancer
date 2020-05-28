@@ -10,7 +10,7 @@ import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBToStringVisitor;
 
-public class DuckDBViewGenerator {
+public final class DuckDBViewGenerator {
 
     private DuckDBViewGenerator() {
     }

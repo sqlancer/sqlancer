@@ -2,7 +2,7 @@ package sqlancer.mariadb;
 
 import java.util.List;
 
-public class MariaDBErrors {
+public final class MariaDBErrors {
 
     private MariaDBErrors() {
     }

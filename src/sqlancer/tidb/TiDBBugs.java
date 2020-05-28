@@ -1,7 +1,7 @@
 package sqlancer.tidb;
 
 // do not make the fields final to avoid warnings
-public class TiDBBugs {
+public final class TiDBBugs {
 
     private TiDBBugs() {
     }

@@ -1,6 +1,6 @@
 package sqlancer.cockroachdb;
 
-public class CockroachDBBugs {
+public final class CockroachDBBugs {
 
     private CockroachDBBugs() {
     }

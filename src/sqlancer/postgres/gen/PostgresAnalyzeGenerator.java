@@ -9,7 +9,7 @@ import sqlancer.Randomly;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 
-public class PostgresAnalyzeGenerator {
+public final class PostgresAnalyzeGenerator {
 
     private PostgresAnalyzeGenerator() {
     }

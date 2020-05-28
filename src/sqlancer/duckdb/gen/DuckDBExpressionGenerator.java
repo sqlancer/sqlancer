@@ -27,7 +27,7 @@ import sqlancer.duckdb.ast.DuckDBConstant;
 import sqlancer.duckdb.ast.DuckDBExpression;
 import sqlancer.gen.UntypedExpressionGenerator;
 
-public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<DuckDBExpression>, DuckDBColumn> {
+public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<DuckDBExpression>, DuckDBColumn> {
 
     private final DuckDBGlobalState globalState;
 
@@ -324,7 +324,7 @@ public class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<D
 
     }
 
-    public static class DuckDBCollate implements Operator {
+    public static final class DuckDBCollate implements Operator {
 
         private String textRepr;
 

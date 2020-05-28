@@ -7,7 +7,7 @@ import java.sql.Statement;
 import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
-public class SQLite3Helper {
+public final class SQLite3Helper {
 
     private SQLite3Helper() {
     }

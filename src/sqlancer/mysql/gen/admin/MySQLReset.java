@@ -7,7 +7,7 @@ import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.mysql.MySQLGlobalState;
 
-public class MySQLReset {
+public final class MySQLReset {
 
     private MySQLReset() {
     }

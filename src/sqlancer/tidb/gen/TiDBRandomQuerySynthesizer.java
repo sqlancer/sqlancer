@@ -15,7 +15,7 @@ import sqlancer.tidb.ast.TiDBSelect;
 import sqlancer.tidb.ast.TiDBTableReference;
 import sqlancer.tidb.visitor.TiDBVisitor;
 
-public class TiDBRandomQuerySynthesizer {
+public final class TiDBRandomQuerySynthesizer {
 
     private TiDBRandomQuerySynthesizer() {
     }

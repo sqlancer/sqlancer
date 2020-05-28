@@ -11,7 +11,7 @@ import sqlancer.mariadb.MariaDBSchema;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 import sqlancer.mariadb.ast.MariaDBVisitor;
 
-public class MariaDBInsertGenerator {
+public final class MariaDBInsertGenerator {
 
     private MariaDBInsertGenerator() {
     }

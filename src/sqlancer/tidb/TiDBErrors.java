@@ -2,7 +2,7 @@ package sqlancer.tidb;
 
 import java.util.Set;
 
-public class TiDBErrors {
+public final class TiDBErrors {
 
     private TiDBErrors() {
     }

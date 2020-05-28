@@ -11,7 +11,7 @@ import sqlancer.Randomly;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresIndex;
 
-public class PostgresReindexGenerator {
+public final class PostgresReindexGenerator {
 
     private PostgresReindexGenerator() {
     }

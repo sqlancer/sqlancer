@@ -8,7 +8,7 @@ import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
-public class SQLite3DropTableGenerator {
+public final class SQLite3DropTableGenerator {
 
     private SQLite3DropTableGenerator() {
     }

@@ -11,7 +11,7 @@ import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresVisitor;
 
-public class PostgresDeleteGenerator {
+public final class PostgresDeleteGenerator {
 
     private PostgresDeleteGenerator() {
     }

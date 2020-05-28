@@ -14,7 +14,7 @@ import sqlancer.tidb.TiDBSchema.TiDBColumn;
 import sqlancer.tidb.TiDBSchema.TiDBDataType;
 import sqlancer.tidb.TiDBSchema.TiDBTable;
 
-public class TiDBAlterTableGenerator {
+public final class TiDBAlterTableGenerator {
 
     private TiDBAlterTableGenerator() {
     }

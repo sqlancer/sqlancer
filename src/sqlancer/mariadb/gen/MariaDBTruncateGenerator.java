@@ -4,7 +4,7 @@ import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.mariadb.MariaDBSchema;
 
-public class MariaDBTruncateGenerator {
+public final class MariaDBTruncateGenerator {
 
     private MariaDBTruncateGenerator() {
     }

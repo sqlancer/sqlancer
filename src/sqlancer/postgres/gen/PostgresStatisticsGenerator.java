@@ -13,7 +13,7 @@ import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresStatisticsObject;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 
-public class PostgresStatisticsGenerator {
+public final class PostgresStatisticsGenerator {
 
     private PostgresStatisticsGenerator() {
     }

@@ -14,7 +14,7 @@ import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresVisitor;
 import sqlancer.postgres.ast.PostgresExpression;
 
-public class PostgresInsertGenerator {
+public final class PostgresInsertGenerator {
 
     private PostgresInsertGenerator() {
     }

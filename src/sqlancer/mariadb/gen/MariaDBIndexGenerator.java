@@ -11,7 +11,7 @@ import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 import sqlancer.sqlite3.gen.SQLite3Common;
 
-public class MariaDBIndexGenerator {
+public final class MariaDBIndexGenerator {
 
     private MariaDBIndexGenerator() {
     }

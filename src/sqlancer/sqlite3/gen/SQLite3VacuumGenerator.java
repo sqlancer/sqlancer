@@ -10,7 +10,7 @@ import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 /**
  * @see https://www.sqlite.org/lang_vacuum.html
  */
-public class SQLite3VacuumGenerator {
+public final class SQLite3VacuumGenerator {
 
     private SQLite3VacuumGenerator() {
     }

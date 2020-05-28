@@ -5,7 +5,7 @@ import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
-public class SQLite3AnalyzeGenerator {
+public final class SQLite3AnalyzeGenerator {
 
     private SQLite3AnalyzeGenerator() {
     }
