@@ -1,21 +1,22 @@
 <?xml version="1.0"?>
 
 <ruleset name="Custom Rules"
-    xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+	xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
 
 	<description>SQLancer's PMD configuration</description>
 
 	<!-- best practices https://pmd.github.io/latest/pmd_rules_java_bestpractices.html -->
-	<!-- TODO: use a logger <rule ref="category/java/bestpractices.xml/SystemPrintln" /> -->
-	
+	<!-- TODO: use a logger <rule ref="category/java/bestpractices.xml/SystemPrintln" 
+		/> -->
+
 	<rule ref="category/java/bestpractices.xml">
 		<exclude name="AvoidPrintStackTrace" /> <!-- TODO: add a logger -->
 		<exclude name="SystemPrintln" /> <!-- TODO: add a logger -->
 		<exclude name="AvoidStringBufferField" />
 		<exclude name="PreserveStackTrace" /> <!-- TODO -->
-		<exclude name="WhileLoopWithLiteralBoolean" /> 
+		<exclude name="WhileLoopWithLiteralBoolean" />
 		<exclude name="AvoidReassigningParameters" />
 		<exclude name="PositionLiteralsFirstInComparisons" />
 		<exclude name="ForLoopCanBeForeach" />
@@ -28,25 +29,42 @@
 		<exclude name="AbstractClassWithoutAbstractMethod" />
 		<priority>2</priority>
 	</rule>
-	
 
-	<!--
-	<rule ref="category/java/design.xml">
-		<priority>4</priority>
-	</rule>
+	<rule ref="category/java/codestyle.xml">
+		<priority>2</priority>
+		<exclude name="MethodArgumentCouldBeFinal" />
+		<exclude name="LocalVariableCouldBeFinal" />
+		<exclude name="ShortVariable" />
+		<exclude name="OnlyOneReturn" />
+		<exclude name="LongVariable" />
+		<exclude name="ClassNamingConventions" />
+		<exclude name="DefaultPackage" />
+		<exclude name="CallSuperInConstructor" />
+		<exclude name="AtLeastOneConstructor" />
+		<exclude name="CommentDefaultAccessModifier" />
+		<exclude name="UseUnderscoresInNumericLiterals" />
+		<exclude name="FieldNamingConventions" />
+		<exclude name="EmptyMethodInAbstractClassShouldBeAbstract" />
 
-    <rule ref="category/java/codestyle.xml">
-		<priority>3</priority>
-		<exclude name="MethodArgumentCouldBeFinal"/>
+		<!-- TODO -->
+		<exclude name="ShortClassName" />
+		<exclude name="GenericsNaming" />
+		<exclude name="FormalParameterNamingConventions" />
+		<exclude name="UselessParentheses" />
+		<exclude name="LinguisticNaming" />
+		<exclude name="ConfusingTernary" />
+		<exclude name="FieldDeclarationsShouldBeAtStartOfClass" />
+		<exclude name="PrematureDeclaration" />
+		<exclude name="UnnecessaryLocalBeforeReturn" />
+		<exclude name="BooleanGetMethodName" />
+		<exclude name="UseDiamondOperator" />
+		<exclude name="UseShortArrayInitializer" />
 	</rule>
-	
-		<rule ref="category/java/performance.xml">
-		<priority>5</priority>
-		<exclude name="MethodArgumentCouldBeFinal"/>
-		<exclude name="LocalVariableCouldBeFinal"/>
-	</rule>
-	-->
-	
+	<!-- <rule ref="category/java/design.xml"> <priority>4</priority> </rule> 
+		<rule ref="category/java/performance.xml"> <priority>5</priority> <exclude 
+		name="MethodArgumentCouldBeFinal"/> <exclude name="LocalVariableCouldBeFinal"/> 
+		</rule> -->
+
 
 
 </ruleset>
