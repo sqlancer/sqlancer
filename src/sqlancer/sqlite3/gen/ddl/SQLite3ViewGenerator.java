@@ -12,6 +12,7 @@ import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.ast.SQLite3Expression;
 import sqlancer.sqlite3.ast.SQLite3Select;
+import sqlancer.sqlite3.ast.SQLite3Select.SelectType;
 import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
 import sqlancer.sqlite3.queries.SQLite3RandomQuerySynthesizer;
@@ -54,6 +55,9 @@ public final class SQLite3ViewGenerator {
                 // throw new IgnoreMeException();
                 // }
                 // }
+                if (!globalState.getDmbsSpecificOptions().testDistinctInView) {
+                    q.setSelectType(SelectType.ALL);
+                }
                 int size = q.getFetchColumns().size();
                 columnNamesAs(sb, size);
                 sb.append(SQLite3Visitor.asString(q));
