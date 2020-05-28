@@ -47,7 +47,7 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
         if (allowAggregates && Randomly.getBoolean()) {
             DuckDBAggregateFunction aggregate = DuckDBAggregateFunction.getRandom();
             allowAggregates = false;
-            NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> aggr = new NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction>(
+            NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> aggr = new NewFunctionNode<>(
                     generateExpressions(depth + 1, aggregate.getNrArgs()), aggregate);
             return aggr;
         }
@@ -176,7 +176,7 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
         List<Node<DuckDBExpression>> newExpr = new ArrayList<>(expr.size());
         for (Node<DuckDBExpression> curExpr : expr) {
             if (Randomly.getBoolean()) {
-                curExpr = new NewOrderingTerm<DuckDBExpression>(curExpr, Ordering.getRandom());
+                curExpr = new NewOrderingTerm<>(curExpr, Ordering.getRandom());
             }
             newExpr.add(curExpr);
         }

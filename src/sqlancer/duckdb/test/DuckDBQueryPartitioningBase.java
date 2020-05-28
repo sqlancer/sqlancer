@@ -60,16 +60,14 @@ public class DuckDBQueryPartitioningBase implements TestOracle {
         select.setFromList(tableList.stream().collect(Collectors.toList()));
         select.setWhereClause(null);
         predicate = generatePredicate();
-        negatedPredicate = new NewUnaryPrefixOperatorNode<DuckDBExpression>(predicate, DuckDBUnaryPrefixOperator.NOT);
-        isNullPredicate = new NewUnaryPostfixOperatorNode<DuckDBExpression>(predicate,
-                DuckDBUnaryPostfixOperator.IS_NULL);
+        negatedPredicate = new NewUnaryPrefixOperatorNode<>(predicate, DuckDBUnaryPrefixOperator.NOT);
+        isNullPredicate = new NewUnaryPostfixOperatorNode<>(predicate, DuckDBUnaryPostfixOperator.IS_NULL);
     }
 
     List<Node<DuckDBExpression>> generateFetchColumns() {
         List<Node<DuckDBExpression>> columns = new ArrayList<>();
         if (Randomly.getBoolean()) {
-            columns.add(new ColumnReferenceNode<DuckDBExpression, DuckDBSchema.DuckDBColumn>(
-                    new DuckDBColumn("*", null, false, false)));
+            columns.add(new ColumnReferenceNode<>(new DuckDBColumn("*", null, false, false)));
         } else {
             columns = Randomly.nonEmptySubset(targetTables.getColumns()).stream()
                     .map(c -> new ColumnReferenceNode<DuckDBExpression, DuckDBColumn>(c)).collect(Collectors.toList());

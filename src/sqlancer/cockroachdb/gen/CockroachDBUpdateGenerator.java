@@ -20,7 +20,7 @@ public final class CockroachDBUpdateGenerator {
     }
 
     public static Query gen(CockroachDBGlobalState globalState) {
-        Set<String> errors = new HashSet<String>();
+        Set<String> errors = new HashSet<>();
         CockroachDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<CockroachDBColumn> columns = table.getRandomNonEmptyColumnSubset();
         CockroachDBExpressionGenerator gen = new CockroachDBExpressionGenerator(globalState).setColumns(columns);

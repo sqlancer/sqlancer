@@ -139,7 +139,7 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
         MainOptions options = globalState.getOptions();
         globalState.setSchema(CockroachDBSchema.fromConnection(con, databaseName));
 
-        List<String> standardSettings = new ArrayList<String>();
+        List<String> standardSettings = new ArrayList<>();
         standardSettings.add("--Don't send automatic bug reports\n"
                 + "SET CLUSTER SETTING debug.panic_on_failed_assertions = true;");
         standardSettings.add("SET CLUSTER SETTING diagnostics.reporting.enabled    = false;");

@@ -26,7 +26,7 @@ public final class PostgresUpdateGenerator {
         sb.append("UPDATE ");
         sb.append(randomTable.getName());
         sb.append(" SET ");
-        Set<String> errors = new HashSet<String>(Arrays.asList("conflicting key value violates exclusion constraint",
+        Set<String> errors = new HashSet<>(Arrays.asList("conflicting key value violates exclusion constraint",
                 "reached maximum value of sequence", "violates foreign key constraint", "violates not-null constraint",
                 "violates unique constraint", "out of range", "cannot cast", "must be type boolean", "is not unique",
                 " bit string too long", "can only be updated to DEFAULT", "division by zero",

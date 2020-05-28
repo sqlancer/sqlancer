@@ -57,7 +57,6 @@
 		<exclude name="PrematureDeclaration" />
 		<exclude name="UnnecessaryLocalBeforeReturn" />
 		<exclude name="BooleanGetMethodName" />
-		<exclude name="UseDiamondOperator" />
 	</rule>
 	<!-- <rule ref="category/java/design.xml"> <priority>4</priority> </rule> 
 		<rule ref="category/java/performance.xml"> <priority>5</priority> <exclude 

@@ -81,9 +81,9 @@ public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartition
             NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> aggregate, List<Node<DuckDBExpression>> from) {
         String metamorphicQuery;
         Node<DuckDBExpression> whereClause = gen.generateExpression();
-        Node<DuckDBExpression> negatedClause = new NewUnaryPrefixOperatorNode<DuckDBExpression>(whereClause,
+        Node<DuckDBExpression> negatedClause = new NewUnaryPrefixOperatorNode<>(whereClause,
                 DuckDBUnaryPrefixOperator.NOT);
-        Node<DuckDBExpression> notNullClause = new NewUnaryPostfixOperatorNode<DuckDBExpression>(whereClause,
+        Node<DuckDBExpression> notNullClause = new NewUnaryPostfixOperatorNode<>(whereClause,
                 DuckDBUnaryPostfixOperator.IS_NULL);
         List<Node<DuckDBExpression>> mappedAggregate = mapped(aggregate);
         DuckDBSelect leftSelect = getSelect(mappedAggregate, from, whereClause, select.getJoinList());
@@ -128,24 +128,22 @@ public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartition
         case SUM:
             return aliasArgs(Arrays.asList(aggregate));
         case AVG:
-            NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> sum = new NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction>(
-                    aggregate.getArgs(), DuckDBAggregateFunction.SUM);
-            count = new DuckDBCastOperation(
-                    new NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction>(aggregate.getArgs(),
-                            DuckDBAggregateFunction.COUNT),
+            NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> sum = new NewFunctionNode<>(aggregate.getArgs(),
+                    DuckDBAggregateFunction.SUM);
+            count = new DuckDBCastOperation(new NewFunctionNode<>(aggregate.getArgs(), DuckDBAggregateFunction.COUNT),
                     new DuckDBCompositeDataType(DuckDBDataType.FLOAT, 8));
             return aliasArgs(Arrays.asList(sum, count));
         case STDDEV_POP:
-            NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> sumSquared = new NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction>(
-                    Arrays.asList(new NewBinaryOperatorNode<DuckDBExpression>(aggregate.getArgs().get(0),
-                            aggregate.getArgs().get(0), DuckDBBinaryArithmeticOperator.MULT)),
+            NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> sumSquared = new NewFunctionNode<>(
+                    Arrays.asList(new NewBinaryOperatorNode<>(aggregate.getArgs().get(0), aggregate.getArgs().get(0),
+                            DuckDBBinaryArithmeticOperator.MULT)),
                     DuckDBAggregateFunction.SUM);
             count = new DuckDBCastOperation(
                     new NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction>(aggregate.getArgs(),
                             DuckDBAggregateFunction.COUNT),
                     new DuckDBCompositeDataType(DuckDBDataType.FLOAT, 8));
-            NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> avg = new NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction>(
-                    aggregate.getArgs(), DuckDBAggregateFunction.AVG);
+            NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> avg = new NewFunctionNode<>(aggregate.getArgs(),
+                    DuckDBAggregateFunction.AVG);
             return aliasArgs(Arrays.asList(sumSquared, count, avg));
         default:
             throw new AssertionError(aggregate.getFunc());

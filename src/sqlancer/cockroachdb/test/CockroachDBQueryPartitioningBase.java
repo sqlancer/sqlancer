@@ -63,7 +63,7 @@ public class CockroachDBQueryPartitioningBase implements TestOracle {
     }
 
     List<CockroachDBExpression> generateFetchColumns() {
-        List<CockroachDBExpression> columns = new ArrayList<CockroachDBExpression>();
+        List<CockroachDBExpression> columns = new ArrayList<>();
         if (Randomly.getBoolean()) {
             columns.add(new CockroachDBColumnReference(new CockroachDBColumn("*", null, false, false)));
         } else {

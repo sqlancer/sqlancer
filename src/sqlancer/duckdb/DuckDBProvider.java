@@ -118,8 +118,8 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
         if (globalState.getSchema().getDatabaseTables().size() == 0) {
             throw new IgnoreMeException(); // TODO
         }
-        StatementExecutor<DuckDBGlobalState, Action> se = new StatementExecutor<DuckDBGlobalState, Action>(globalState,
-                Action.values(), DuckDBProvider::mapActions, (q) -> {
+        StatementExecutor<DuckDBGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
+                DuckDBProvider::mapActions, (q) -> {
                     if (q.couldAffectSchema()) {
                         globalState.setSchema(DuckDBSchema.fromConnection(globalState.getConnection(),
                                 globalState.getDatabaseName()));

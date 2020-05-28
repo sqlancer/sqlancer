@@ -24,7 +24,7 @@ public final class PostgresVacuumGenerator {
             // ...] ) ] [ table_name [ (column_name [, ...] ) ] ]
             sb.append("(");
             for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
-                ArrayList<String> opts = new ArrayList<String>(Arrays.asList("FULL", "FREEZE", "ANALYZE", "VERBOSE",
+                ArrayList<String> opts = new ArrayList<>(Arrays.asList("FULL", "FREEZE", "ANALYZE", "VERBOSE",
                         "DISABLE_PAGE_SKIPPING", "SKIP_LOCKED", "INDEX_CLEANUP", "TRUNCATE"));
                 String option = Randomly.fromList(opts);
                 if (i != 0) {

@@ -308,7 +308,7 @@ public class CockroachDBExpressionGenerator
         case TIMETZ:
             return CockroachDBConstant.createTimetz(globalState.getRandomly().getInteger());
         case ARRAY:
-            List<CockroachDBExpression> elements = new ArrayList<CockroachDBExpression>();
+            List<CockroachDBExpression> elements = new ArrayList<>();
             for (int i = 0; i < Randomly.smallNumber(); i++) {
                 elements.add(generateConstant(type.getElementType()));
             }

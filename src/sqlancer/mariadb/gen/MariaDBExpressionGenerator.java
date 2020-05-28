@@ -86,7 +86,7 @@ public class MariaDBExpressionGenerator {
                 return getRandomColumn();
             }
         }
-        List<ExpressionType> expressionTypes = new ArrayList<ExpressionType>(Arrays.asList(ExpressionType.values()));
+        List<ExpressionType> expressionTypes = new ArrayList<>(Arrays.asList(ExpressionType.values()));
         if (columns.isEmpty()) {
             expressionTypes.remove(ExpressionType.COLUMN);
         }

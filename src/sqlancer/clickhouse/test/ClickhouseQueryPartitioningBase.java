@@ -17,7 +17,6 @@ import sqlancer.ast.newast.TableReferenceNode;
 import sqlancer.clickhouse.ClickhouseErrors;
 import sqlancer.clickhouse.ClickhouseProvider.ClickhouseGlobalState;
 import sqlancer.clickhouse.ClickhouseSchema;
-import sqlancer.clickhouse.ClickhouseSchema.ClickhouseColumn;
 import sqlancer.clickhouse.ClickhouseSchema.ClickhouseTable;
 import sqlancer.clickhouse.ClickhouseSchema.ClickhouseTables;
 import sqlancer.clickhouse.ast.ClickhouseExpression;
@@ -58,15 +57,12 @@ public class ClickhouseQueryPartitioningBase implements TestOracle {
         select.setFromList(tableList);
         select.setWhereClause(null);
         predicate = generatePredicate();
-        negatedPredicate = new NewUnaryPrefixOperatorNode<ClickhouseExpression>(predicate,
-                ClickhouseUnaryPrefixOperator.NOT);
-        isNullPredicate = new NewUnaryPostfixOperatorNode<ClickhouseExpression>(predicate,
-                ClickhouseUnaryPostfixOperator.IS_NULL);
+        negatedPredicate = new NewUnaryPrefixOperatorNode<>(predicate, ClickhouseUnaryPrefixOperator.NOT);
+        isNullPredicate = new NewUnaryPostfixOperatorNode<>(predicate, ClickhouseUnaryPostfixOperator.IS_NULL);
     }
 
     List<Node<ClickhouseExpression>> generateFetchColumns() {
-        return Arrays.asList(
-                new ColumnReferenceNode<ClickhouseExpression, ClickhouseColumn>(targetTables.getColumns().get(0)));
+        return Arrays.asList(new ColumnReferenceNode<>(targetTables.getColumns().get(0)));
     }
 
     Node<ClickhouseExpression> generatePredicate() {
