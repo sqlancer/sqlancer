@@ -40,6 +40,7 @@ public class MariaDBMetamorphicQuerySynthesizer {
     private String firstQueryString;
     private String secondQueryString;
     private final List<String> errors = new ArrayList<>();
+    private static final int NOT_FOUND = -1;
 
     public MariaDBMetamorphicQuerySynthesizer(MariaDBSchema s, Randomly r, Connection con,
             MariaDBStateToReproduce state) {
@@ -146,7 +147,5 @@ public class MariaDBMetamorphicQuerySynthesizer {
         }
         return firstCount;
     }
-
-    private static final int NOT_FOUND = -1;
 
 }

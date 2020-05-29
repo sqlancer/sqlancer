@@ -3,9 +3,6 @@ package sqlancer.mysql;
 // do not make the fields final to avoid warnings
 public final class MySQLBugs {
 
-    private MySQLBugs() {
-    }
-
     // https://bugs.mysql.com/bug.php?id=99127 0.9 > t0.c0 malfunctions when c0 is
     // an INT UNSIGNED
     public static boolean bug99127 = true;
@@ -21,5 +18,8 @@ public final class MySQLBugs {
 
     // https://bugs.mysql.com/bug.php?id=99135
     public static boolean bug99135 = true;
+
+    private MySQLBugs() {
+    }
 
 }

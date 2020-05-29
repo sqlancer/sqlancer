@@ -26,6 +26,9 @@ import sqlancer.schema.TableIndex;
 
 public class PostgresSchema {
 
+    private final List<PostgresTable> databaseTables;
+    private String databaseName;
+
     public enum PostgresDataType {
         INT, BOOLEAN, TEXT, DECIMAL, FLOAT, REAL, RANGE, MONEY, BIT, INET;
 
@@ -345,9 +348,6 @@ public class PostgresSchema {
         }
         return columns;
     }
-
-    private final List<PostgresTable> databaseTables;
-    private String databaseName;
 
     public PostgresSchema(List<PostgresTable> databaseTables, String databaseName) {
         this.databaseTables = Collections.unmodifiableList(databaseTables);

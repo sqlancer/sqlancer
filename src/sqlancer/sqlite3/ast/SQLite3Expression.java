@@ -1015,6 +1015,8 @@ public abstract class SQLite3Expression {
 
             };
 
+            private final String[] textRepresentation;
+
             SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right, SQLite3CollateSequence collate) {
                 return null;
             }
@@ -1022,8 +1024,6 @@ public abstract class SQLite3Expression {
             public boolean shouldApplyAffinity() {
                 return true;
             }
-
-            private final String[] textRepresentation;
 
             BinaryComparisonOperator(String... textRepresentation) {
                 this.textRepresentation = textRepresentation;
@@ -1489,6 +1489,10 @@ public abstract class SQLite3Expression {
 
         }
 
+        private final BinaryOperator operation;
+        private final SQLite3Expression left;
+        private final SQLite3Expression right;
+
         @Override
         public SQLite3CollateSequence getExplicitCollateSequence() {
             if (left.getExplicitCollateSequence() != null) {
@@ -1497,10 +1501,6 @@ public abstract class SQLite3Expression {
                 return right.getExplicitCollateSequence();
             }
         }
-
-        private final BinaryOperator operation;
-        private final SQLite3Expression left;
-        private final SQLite3Expression right;
 
         public Sqlite3BinaryOperation(SQLite3Expression left, SQLite3Expression right, BinaryOperator operation) {
             this.left = left;

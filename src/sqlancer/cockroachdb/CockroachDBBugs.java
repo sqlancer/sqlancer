@@ -2,9 +2,6 @@ package sqlancer.cockroachdb;
 
 public final class CockroachDBBugs {
 
-    private CockroachDBBugs() {
-    }
-
     // https://github.com/cockroachdb/cockroach/issues/46915
     public static boolean bug46915 = true;
 
@@ -13,4 +10,8 @@ public final class CockroachDBBugs {
 
     // https://github.com/cockroachdb/cockroach/issues/44757
     public static boolean bug44757 = true;
+
+    private CockroachDBBugs() {
+    }
+
 }

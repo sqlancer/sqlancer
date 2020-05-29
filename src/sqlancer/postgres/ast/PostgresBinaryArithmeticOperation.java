@@ -57,6 +57,8 @@ public class PostgresBinaryArithmeticOperation extends BinaryOperatorNode<Postgr
             }
         };
 
+        private String textRepresentation;
+
         private static PostgresConstant applyBitOperation(PostgresConstant left, PostgresConstant right,
                 BinaryOperator<Long> op) {
             if (left.isNull() || right.isNull()) {
@@ -68,8 +70,6 @@ public class PostgresBinaryArithmeticOperation extends BinaryOperatorNode<Postgr
                 return PostgresConstant.createIntConstant(value);
             }
         }
-
-        private String textRepresentation;
 
         PostgresBinaryOperator(String textRepresentation) {
             this.textRepresentation = textRepresentation;

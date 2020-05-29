@@ -8,6 +8,14 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequenc
 
 public class SQLite3WindowFunctionExpression extends SQLite3Expression {
 
+    private final SQLite3Expression baseWindowFunction; // also contains the arguments to the window function
+    private List<SQLite3Expression> partitionBy = new ArrayList<>();
+    private List<SQLite3Expression> orderBy = new ArrayList<>();
+    private SQLite3Expression filterClause;
+    private SQLite3Expression frameSpec;
+    private SQLite3FrameSpecExclude exclude;
+    private SQLite3FrameSpecKind frameSpecKind;
+
     public static class SQLite3WindowFunctionFrameSpecTerm extends SQLite3Expression {
 
         public enum SQLite3WindowFunctionFrameSpecTermKind {
@@ -107,14 +115,6 @@ public class SQLite3WindowFunctionExpression extends SQLite3Expression {
             return Randomly.fromOptions(SQLite3FrameSpecKind.values());
         }
     }
-
-    private final SQLite3Expression baseWindowFunction; // also contains the arguments to the window function
-    private List<SQLite3Expression> partitionBy = new ArrayList<>();
-    private List<SQLite3Expression> orderBy = new ArrayList<>();
-    private SQLite3Expression filterClause;
-    private SQLite3Expression frameSpec;
-    private SQLite3FrameSpecExclude exclude;
-    private SQLite3FrameSpecKind frameSpecKind;
 
     public SQLite3WindowFunctionExpression(SQLite3Expression baseWindowFunction) {
         this.baseWindowFunction = baseWindowFunction;

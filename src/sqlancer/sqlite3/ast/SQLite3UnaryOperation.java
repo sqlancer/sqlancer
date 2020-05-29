@@ -10,6 +10,14 @@ import sqlancer.visitor.UnaryOperation;
 
 public class SQLite3UnaryOperation extends SQLite3Expression implements UnaryOperation<SQLite3Expression> {
 
+    private final SQLite3UnaryOperation.UnaryOperator operation;
+    private final SQLite3Expression expression;
+
+    public SQLite3UnaryOperation(SQLite3UnaryOperation.UnaryOperator operation, SQLite3Expression expression) {
+        this.operation = operation;
+        this.expression = expression;
+    }
+
     // For the purposes of the previous sentence, a column name preceded by one or
     // more unary "+" operators is still considered a column name.
     @Override
@@ -109,14 +117,6 @@ public class SQLite3UnaryOperation extends SQLite3Expression implements UnaryOpe
 
         public abstract SQLite3Constant apply(SQLite3Constant constant);
 
-    }
-
-    private final SQLite3UnaryOperation.UnaryOperator operation;
-    private final SQLite3Expression expression;
-
-    public SQLite3UnaryOperation(SQLite3UnaryOperation.UnaryOperator operation, SQLite3Expression expression) {
-        this.operation = operation;
-        this.expression = expression;
     }
 
     public SQLite3UnaryOperation.UnaryOperator getOperation() {

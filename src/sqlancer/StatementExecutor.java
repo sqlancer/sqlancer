@@ -6,6 +6,11 @@ import java.util.List;
 
 public class StatementExecutor<G extends GlobalState<?>, A extends AbstractAction<G>> {
 
+    private final G globalState;
+    private final A[] actions;
+    private final ActionMapper<G, A> mapping;
+    private final AfterQueryAction queryConsumer;
+
     @FunctionalInterface
     public interface AfterQueryAction {
         void notify(Query q) throws SQLException;
@@ -15,11 +20,6 @@ public class StatementExecutor<G extends GlobalState<?>, A extends AbstractActio
     public interface ActionMapper<T, A> {
         int map(T globalState, A action);
     }
-
-    private final G globalState;
-    private final A[] actions;
-    private final ActionMapper<G, A> mapping;
-    private final AfterQueryAction queryConsumer;
 
     public StatementExecutor(G globalState, A[] actions, ActionMapper<G, A> mapping, AfterQueryAction queryConsumer) {
         this.globalState = globalState;

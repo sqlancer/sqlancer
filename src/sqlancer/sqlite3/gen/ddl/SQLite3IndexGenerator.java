@@ -21,12 +21,12 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 // see https://www.sqlite.org/lang_createindex.html
 public class SQLite3IndexGenerator {
 
+    private final Set<String> errors = new HashSet<>();
+    private final SQLite3GlobalState globalState;
+
     public static Query insertIndex(SQLite3GlobalState globalState) throws SQLException {
         return new SQLite3IndexGenerator(globalState).create();
     }
-
-    private final Set<String> errors = new HashSet<>();
-    private final SQLite3GlobalState globalState;
 
     public SQLite3IndexGenerator(SQLite3GlobalState globalState) throws SQLException {
         this.globalState = globalState;

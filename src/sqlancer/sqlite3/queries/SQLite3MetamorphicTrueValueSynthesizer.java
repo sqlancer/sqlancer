@@ -41,6 +41,8 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
     // SELECT (SELECT COUNT(*) FROM t0 WHERE c0 IS NOT 0) = (SELECT COUNT(*) FROM
     // (SELECT c0 is NOT 0 FROM t0));
 
+    private static final int NOT_FOUND = -1;
+
     private SQLite3Schema s;
     private Connection con;
     private final List<String> queries = new ArrayList<>();
@@ -175,7 +177,5 @@ public class SQLite3MetamorphicTrueValueSynthesizer {
         // }
         return gen.generateExpression();
     }
-
-    private static final int NOT_FOUND = -1;
 
 }

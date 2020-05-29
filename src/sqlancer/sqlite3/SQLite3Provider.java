@@ -150,6 +150,12 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQL
     private SQLite3StateToReproduce state;
     private String databaseName;
 
+    private SQLite3GlobalState globalState;
+
+    // PRAGMAS to achieve good performance
+    private static final List<String> DEFAULT_PRAGMAS = Arrays.asList("PRAGMA cache_size = 50000;",
+            "PRAGMA temp_store=MEMORY;", "PRAGMA synchronous=off;");
+
     public static class SQLite3GlobalState extends GlobalState<SQLite3Options> {
 
         private SQLite3Schema schema;
@@ -172,8 +178,6 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQL
         }
 
     }
-
-    private SQLite3GlobalState globalState;
 
     private enum TableType {
         NORMAL, FTS, RTREE
@@ -408,10 +412,6 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQL
         }
         return tableQuery;
     }
-
-    // PRAGMAS to achieve good performance
-    private static final List<String> DEFAULT_PRAGMAS = Arrays.asList("PRAGMA cache_size = 50000;",
-            "PRAGMA temp_store=MEMORY;", "PRAGMA synchronous=off;");
 
     private void addSensiblePragmaDefaults(Connection con) throws SQLException {
         List<String> pragmasToExecute = new ArrayList<>();

@@ -10,11 +10,19 @@ import sqlancer.sqlite3.schema.SQLite3DataType;
 
 public final class SQLite3Cast {
 
-    private SQLite3Cast() {
-    }
-
     private static final double MAX_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED = Math.pow(2, 51 - 1) - 1;
     private static final double MIN_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED = -Math.pow(2, 51 - 1);
+
+    private static final byte FILE_SEPARATOR = 0x1c;
+    private static final byte GROUP_SEPARATOR = 0x1d;
+    private static final byte RECORD_SEPARATOR = 0x1e;
+    private static final byte UNIT_SEPARATOR = 0x1f;
+    private static final byte SYNCHRONOUS_IDLE = 0x16;
+
+    static Connection castDatabase;
+
+    private SQLite3Cast() {
+    }
 
     public static Optional<Boolean> isTrue(SQLite3Constant value) {
         SQLite3Constant numericValue;
@@ -186,12 +194,6 @@ public final class SQLite3Cast {
         }
     }
 
-    private static final byte FILE_SEPARATOR = 0x1c;
-    private static final byte GROUP_SEPARATOR = 0x1d;
-    private static final byte RECORD_SEPARATOR = 0x1e;
-    private static final byte UNIT_SEPARATOR = 0x1f;
-    private static final byte SYNCHRONOUS_IDLE = 0x16;
-
     private static boolean unprintAbleCharThatLetsBecomeNumberZero(String s) {
         // non-printable characters are ignored by Double.valueOf
         for (int i = 0; i < s.length(); i++) {
@@ -218,8 +220,6 @@ public final class SQLite3Cast {
         }
         return false;
     }
-
-    static Connection castDatabase;
 
     public static SQLite3Constant castToText(SQLite3Constant cons) {
         if (cons.getDataType() == SQLite3DataType.TEXT) {

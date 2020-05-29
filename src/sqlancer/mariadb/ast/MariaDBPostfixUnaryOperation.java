@@ -15,11 +15,11 @@ public class MariaDBPostfixUnaryOperation extends MariaDBExpression {
     public enum MariaDBPostfixUnaryOperator {
         IS_TRUE("IS TRUE"), IS_FALSE("IS FALSE"), IS_NULL("IS NULL"), IS_NOT_NULL("IS NOT NULL");
 
+        private final String textRepr;
+
         MariaDBPostfixUnaryOperator(String textRepr) {
             this.textRepr = textRepr;
         }
-
-        private final String textRepr;
 
         public String getTextRepresentation() {
             return textRepr;

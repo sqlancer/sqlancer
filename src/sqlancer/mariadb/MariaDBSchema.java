@@ -18,6 +18,7 @@ import sqlancer.mariadb.MariaDBSchema.MariaDBTable.MariaDBEngine;
 public class MariaDBSchema {
 
     private static final int NR_SCHEMA_READ_TRIES = 10;
+    private final List<MariaDBTable> databaseTables;
 
     public enum MariaDBDataType {
         INT, VARCHAR, REAL, BOOLEAN;
@@ -349,8 +350,6 @@ public class MariaDBSchema {
         }
         return columns;
     }
-
-    private final List<MariaDBTable> databaseTables;
 
     public MariaDBSchema(List<MariaDBTable> databaseTables) {
         this.databaseTables = Collections.unmodifiableList(databaseTables);

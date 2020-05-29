@@ -44,6 +44,7 @@ public final class Main {
     public static volatile AtomicLong nrDatabases = new AtomicLong();
     public static volatile AtomicLong nrSuccessfulActions = new AtomicLong();
     public static volatile AtomicLong nrUnsuccessfulActions = new AtomicLong();
+    static int threadsShutdown;
 
     static {
         if (!LOG_DIRECTORY.exists()) {
@@ -230,8 +231,6 @@ public final class Main {
         }
 
     }
-
-    static int threadsShutdown;
 
     public static class QueryManager {
 

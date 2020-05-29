@@ -213,6 +213,10 @@ public class PostgresFunction implements PostgresExpression {
 
         };
 
+        private String functionName;
+        final int nrArgs;
+        private final boolean variadic;
+
         public PostgresDataType[] getRandomTypes(int nr) {
             PostgresDataType[] types = new PostgresDataType[nr];
             for (int i = 0; i < types.length; i++) {
@@ -228,10 +232,6 @@ public class PostgresFunction implements PostgresExpression {
             }
             return types;
         }
-
-        private String functionName;
-        final int nrArgs;
-        private final boolean variadic;
 
         PostgresFunctionWithResult(int nrArgs, String functionName) {
             this.nrArgs = nrArgs;

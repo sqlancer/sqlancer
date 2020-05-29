@@ -3,9 +3,6 @@ package sqlancer.tidb;
 // do not make the fields final to avoid warnings
 public final class TiDBBugs {
 
-    private TiDBBugs() {
-    }
-
     // https://github.com/pingcap/tidb/issues/15987
     public static boolean bug15987 = true;
 
@@ -44,5 +41,8 @@ public final class TiDBBugs {
 
     // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/50
     public static boolean bug50 = true;
+
+    private TiDBBugs() {
+    }
 
 }

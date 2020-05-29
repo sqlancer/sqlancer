@@ -23,11 +23,11 @@ public class PostgresAggregate extends FunctionNode<PostgresAggregateFunction, P
         // STRING_AGG
         SUM(PostgresDataType.INT, PostgresDataType.FLOAT, PostgresDataType.REAL, PostgresDataType.DECIMAL);
 
+        private PostgresDataType[] supportedReturnTypes;
+
         PostgresAggregateFunction(PostgresDataType... supportedReturnTypes) {
             this.supportedReturnTypes = supportedReturnTypes;
         }
-
-        private PostgresDataType[] supportedReturnTypes;
 
         public static PostgresAggregateFunction getRandom() {
             return Randomly.fromOptions(values());

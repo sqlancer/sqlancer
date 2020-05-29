@@ -21,6 +21,8 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
 
         INT, BOOL, STRING, FLOAT, BYTES, BIT, VARBIT, SERIAL, INTERVAL, TIMESTAMP, TIMESTAMPTZ, DECIMAL, JSONB, TIME, TIMETZ, ARRAY;
 
+        private final boolean isPrimitive;
+
         CockroachDBDataType() {
             isPrimitive = true;
         }
@@ -28,8 +30,6 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
         CockroachDBDataType(boolean isPrimitive) {
             this.isPrimitive = isPrimitive;
         }
-
-        private final boolean isPrimitive;
 
         public static CockroachDBDataType getRandom() {
             return Randomly.fromOptions(values());

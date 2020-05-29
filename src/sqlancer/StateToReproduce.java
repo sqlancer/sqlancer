@@ -58,6 +58,12 @@ public class StateToReproduce {
 
     public static class MySQLStateToReproduce extends StateToReproduce {
 
+        public Map<MySQLColumn, MySQLConstant> randomRowValues;
+
+        public MySQLExpression whereClause;
+
+        public String queryThatSelectsRow;
+
         public MySQLStateToReproduce(String databaseName) {
             super(databaseName);
         }
@@ -65,12 +71,6 @@ public class StateToReproduce {
         public Map<MySQLColumn, MySQLConstant> getRandomRowValues() {
             return randomRowValues;
         }
-
-        public Map<MySQLColumn, MySQLConstant> randomRowValues;
-
-        public MySQLExpression whereClause;
-
-        public String queryThatSelectsRow;
 
         public MySQLExpression getWhereClause() {
             return whereClause;
@@ -95,6 +95,10 @@ public class StateToReproduce {
     }
 
     public static class SQLite3StateToReproduce extends StateToReproduce {
+        public Map<SQLite3Column, SQLite3Constant> randomRowValues;
+
+        public SQLite3Expression whereClause;
+
         public SQLite3StateToReproduce(String databaseName) {
             super(databaseName);
         }
@@ -103,10 +107,6 @@ public class StateToReproduce {
             return randomRowValues;
         }
 
-        public Map<SQLite3Column, SQLite3Constant> randomRowValues;
-
-        public SQLite3Expression whereClause;
-
         public SQLite3Expression getWhereClause() {
             return whereClause;
         }
@@ -114,6 +114,13 @@ public class StateToReproduce {
     }
 
     public static class PostgresStateToReproduce extends StateToReproduce {
+
+        public Map<PostgresColumn, PostgresConstant> randomRowValues;
+
+        public PostgresExpression whereClause;
+
+        public String queryThatSelectsRow;
+
         public PostgresStateToReproduce(String databaseName) {
             super(databaseName);
         }
@@ -121,12 +128,6 @@ public class StateToReproduce {
         public Map<PostgresColumn, PostgresConstant> getRandomRowValues() {
             return randomRowValues;
         }
-
-        public Map<PostgresColumn, PostgresConstant> randomRowValues;
-
-        public PostgresExpression whereClause;
-
-        public String queryThatSelectsRow;
 
         public PostgresExpression getWhereClause() {
             return whereClause;

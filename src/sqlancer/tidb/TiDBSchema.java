@@ -21,6 +21,8 @@ public class TiDBSchema extends AbstractSchema<TiDBTable> {
 
         INT, TEXT, BOOL, FLOATING, CHAR, DECIMAL, NUMERIC, BLOB;
 
+        private final boolean isPrimitive;
+
         TiDBDataType() {
             isPrimitive = true;
         }
@@ -28,8 +30,6 @@ public class TiDBSchema extends AbstractSchema<TiDBTable> {
         TiDBDataType(boolean isPrimitive) {
             this.isPrimitive = isPrimitive;
         }
-
-        private final boolean isPrimitive;
 
         public static TiDBDataType getRandom() {
             return Randomly.fromOptions(values());

@@ -10,6 +10,11 @@ import sqlancer.postgres.PostgresSchema.PostgresTable;
 
 public class PostgresSelect extends SelectBase<PostgresExpression> implements PostgresExpression {
 
+    private SelectType selectOption = SelectType.ALL;
+    private List<PostgresJoin> joinClauses = Collections.emptyList();
+    private PostgresExpression distinctOnClause;
+    private ForClause forClause;
+
     public enum ForClause {
         UPDATE("UPDATE"), NO_KEY_UPDATE("NO KEY UPDATE"), SHARE("SHARE"), KEY_SHARE("KEY SHARE");
 
@@ -50,11 +55,6 @@ public class PostgresSelect extends SelectBase<PostgresExpression> implements Po
             return null;
         }
     }
-
-    private SelectType selectOption = SelectType.ALL;
-    private List<PostgresJoin> joinClauses = Collections.emptyList();
-    private PostgresExpression distinctOnClause;
-    private ForClause forClause;
 
     public enum SelectType {
         DISTINCT, ALL;

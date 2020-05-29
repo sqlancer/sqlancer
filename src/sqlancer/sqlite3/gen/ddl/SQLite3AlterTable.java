@@ -16,13 +16,13 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class SQLite3AlterTable {
 
+    private final StringBuilder sb = new StringBuilder();
+    private final SQLite3GlobalState globalState;
+
     public static Query alterTable(SQLite3GlobalState globalState) throws SQLException {
         SQLite3AlterTable alterTable = new SQLite3AlterTable(globalState);
         return alterTable.getQuery(globalState.getSchema(), alterTable);
     }
-
-    private final StringBuilder sb = new StringBuilder();
-    private final SQLite3GlobalState globalState;
 
     private enum Option {
         RENAME_TABLE, RENAME_COLUMN, ADD_COLUMN

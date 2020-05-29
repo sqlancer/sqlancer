@@ -6,6 +6,14 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequenc
 
 public abstract class SQLite3Case extends SQLite3Expression {
 
+    protected final CasePair[] pairs;
+    protected final SQLite3Expression elseExpr;
+
+    public SQLite3Case(CasePair[] pairs, SQLite3Expression elseExpr) {
+        this.pairs = pairs;
+        this.elseExpr = elseExpr;
+    }
+
     public static class CasePair {
 
         private final SQLite3Expression cond;
@@ -23,14 +31,6 @@ public abstract class SQLite3Case extends SQLite3Expression {
         public SQLite3Expression getThen() {
             return then;
         }
-    }
-
-    protected final CasePair[] pairs;
-    protected final SQLite3Expression elseExpr;
-
-    public SQLite3Case(CasePair[] pairs, SQLite3Expression elseExpr) {
-        this.pairs = pairs;
-        this.elseExpr = elseExpr;
     }
 
     public CasePair[] getPairs() {

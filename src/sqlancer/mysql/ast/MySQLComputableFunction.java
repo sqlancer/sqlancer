@@ -26,6 +26,7 @@ public class MySQLComputableFunction implements MySQLExpression {
     }
 
     public enum MySQLFunction {
+
         // ABS(1, "ABS") {
         // @Override
         // public MySQLConstant apply(MySQLConstant[] args, MySQLExpression[] origArgs) {
@@ -143,6 +144,10 @@ public class MySQLComputableFunction implements MySQLExpression {
             }
         };
 
+        private String functionName;
+        final int nrArgs;
+        private final boolean variadic;
+
         private static MySQLConstant aggregate(MySQLConstant[] evaluatedArgs, BinaryOperator<MySQLConstant> op) {
             boolean containsNull = Stream.of(evaluatedArgs).anyMatch(arg -> arg.isNull());
             if (containsNull) {
@@ -156,10 +161,6 @@ public class MySQLComputableFunction implements MySQLExpression {
             }
             return castToMostGeneralType(least, evaluatedArgs);
         }
-
-        private String functionName;
-        final int nrArgs;
-        private final boolean variadic;
 
         MySQLFunction(int nrArgs, String functionName) {
             this.nrArgs = nrArgs;
