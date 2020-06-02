@@ -1,3 +1,4 @@
+![Travis](https://travis-ci.com/sqlancer/sqlancer.svg?branch=master)
 # SQLancer
 
 ![SQLancer](media/logo/png/sqlancer_logo_logo_pos.png)
