@@ -18,7 +18,7 @@ Requirements:
 
 The following commands clone SQLancer, create a JAR, and start SQLancer to fuzz SQLite using Ternary Logic Query Partitioning (TLP):
 
-```console
+```
 git clone https://github.com/sqlancer/sqlancer
 cd sqlancer
 mvn package
@@ -73,13 +73,13 @@ To improve and maintain SQLancer's code quality, we use several tools:
 
 You can run them using the following command:
 
-```console
+```
 mvn verify
 ```
 
 We plan to soon add a [CI](https://github.com/sqlancer/sqlancer/issues/2) to automatically check PRs. Subsequently, we also plan to add smoke testing for each DBMS to test that the respective testing implementation is not obviously broken, see [here](https://github.com/sqlancer/sqlancer/issues/3).
 
-SQLancer does not have a test suite. We found that bugs in SQLancer are quickly found and easy to debug when testing the DBMS. The PQS implementation had a test suite, which was removed in commit 36ede0c0c68b3856e03ef5ba802a7c2575bb3f12.
+SQLancer does currently not have a test suite. We found that bugs in SQLancer are quickly found and easy to debug when testing the DBMS. The PQS implementation had a test suite, which was removed in commit 36ede0c0c68b3856e03ef5ba802a7c2575bb3f12.
 
 # Using SQLancer
 
@@ -119,3 +119,4 @@ We have created a [Slack workspace](https://join.slack.com/t/sqlancer/shared_inv
 
 * An (older) Pivoted Query Synthesis (PQS) talk is available on [YouTube](https://www.youtube.com/watch?v=yzENTaWe7qg).
 * PingCAP has implemented PQS in a tool called [wreck-it](https://github.com/chaos-mesh/wreck-it).
+* More information on our DBMS testing efforts and the bugs we found is available [here](https://www.manuelrigger.at/dbms-bugs/).
