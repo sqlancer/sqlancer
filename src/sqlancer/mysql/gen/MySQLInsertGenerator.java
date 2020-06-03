@@ -81,7 +81,7 @@ public class MySQLInsertGenerator {
             }
             sb.append("(");
             for (int c = 0; c < columns.size(); c++) {
-                if (c++ != 0) {
+                if (c != 0) {
                     sb.append(", ");
                 }
                 sb.append(MySQLVisitor.asString(gen.generateConstant()));
