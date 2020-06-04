@@ -77,7 +77,7 @@ public class SQLite3NoRECOracle implements TestOracle {
         SQLite3Tables randomTables = s.getRandomTableNonEmptyTables();
         List<SQLite3Column> columns = randomTables.getColumns();
         gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns);
-        SQLite3Expression randomWhereCondition = getRandomWhereCondition();
+        SQLite3Expression randomWhereCondition = gen.generateExpression();
         List<SQLite3Table> tables = randomTables.getTables();
         List<Join> joinStatements = gen.getRandomJoinClauses(tables);
         List<SQLite3Expression> tableRefs = SQLite3Common.getTableRefs(tables, s);
@@ -96,14 +96,6 @@ public class SQLite3NoRECOracle implements TestOracle {
             state.queryString = firstQueryString + ";\n" + secondQueryString + ";";
             throw new AssertionError(firstCount + " " + secondCount + "\n" + firstValues + "\n" + secondValues);
         }
-    }
-
-    private SQLite3Expression getRandomWhereCondition() {
-        if (Randomly.getBoolean()) {
-            errors.add("SQL logic error");
-            gen.allowMatchClause();
-        }
-        return gen.generateExpression();
     }
 
     private int getSecondQuery(List<SQLite3Expression> fromList, SQLite3Expression randomWhereCondition,
