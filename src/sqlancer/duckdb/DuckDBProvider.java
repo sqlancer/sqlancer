@@ -161,12 +161,6 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 
     @Override
     public Connection createDatabase(GlobalState<?> globalState) throws SQLException {
-        try {
-            Class.forName("nl.cwi.da.duckdb.DuckDBDriver");
-        } catch (ClassNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
         String url = "jdbc:duckdb:";
         return DriverManager.getConnection(url, globalState.getOptions().getUserName(),
                 globalState.getOptions().getPassword());
