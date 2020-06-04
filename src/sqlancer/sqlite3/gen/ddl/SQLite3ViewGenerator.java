@@ -14,7 +14,7 @@ import sqlancer.sqlite3.ast.SQLite3Expression;
 import sqlancer.sqlite3.ast.SQLite3Select;
 import sqlancer.sqlite3.ast.SQLite3Select.SelectType;
 import sqlancer.sqlite3.gen.SQLite3Common;
-import sqlancer.sqlite3.oracle.SQLite3PivotedQuerySynthesizer;
+import sqlancer.sqlite3.oracle.SQLite3PivotedQuerySynthesisOracle;
 import sqlancer.sqlite3.oracle.SQLite3RandomQuerySynthesizer;
 import sqlancer.sqlite3.schema.SQLite3Schema;
 
@@ -46,7 +46,7 @@ public final class SQLite3ViewGenerator {
         errors.add("is circularly defined");
         errors.add("unsupported frame specification");
         if (Randomly.getBoolean()) {
-            SQLite3PivotedQuerySynthesizer queryGen = new SQLite3PivotedQuerySynthesizer(globalState);
+            SQLite3PivotedQuerySynthesisOracle queryGen = new SQLite3PivotedQuerySynthesisOracle(globalState);
             try {
                 SQLite3Select q = queryGen.getQuery(globalState);
                 // for (SQLite3Expression expr : q.getFetchColumns()) {
@@ -61,7 +61,7 @@ public final class SQLite3ViewGenerator {
                 int size = q.getFetchColumns().size();
                 columnNamesAs(sb, size);
                 sb.append(SQLite3Visitor.asString(q));
-                SQLite3PivotedQuerySynthesizer.addExpectedErrors(errors);
+                SQLite3PivotedQuerySynthesisOracle.addExpectedErrors(errors);
                 return new QueryAdapter(sb.toString(), errors, true);
             } catch (AssertionError e) {
                 throw new IgnoreMeException();
@@ -71,7 +71,7 @@ public final class SQLite3ViewGenerator {
             columnNamesAs(sb, size);
             SQLite3Expression randomQuery = SQLite3RandomQuerySynthesizer.generate(globalState, size);
             sb.append(SQLite3Visitor.asString(randomQuery));
-            SQLite3PivotedQuerySynthesizer.addExpectedErrors(errors);
+            SQLite3PivotedQuerySynthesisOracle.addExpectedErrors(errors);
             return new QueryAdapter(sb.toString(), errors, true);
         }
 

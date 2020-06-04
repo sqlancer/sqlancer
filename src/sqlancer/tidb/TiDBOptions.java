@@ -12,8 +12,8 @@ import sqlancer.CompositeTestOracle;
 import sqlancer.MainOptions.DBMSConverter;
 import sqlancer.TestOracle;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
-import sqlancer.tidb.oracle.TiDBQueryPartitioningHavingTester;
-import sqlancer.tidb.oracle.TiDBQueryPartitioningWhereTester;
+import sqlancer.tidb.oracle.TiDBTLPHavingOracle;
+import sqlancer.tidb.oracle.TiDBTLPWhereOracle;
 
 @Parameters
 public class TiDBOptions {
@@ -25,21 +25,21 @@ public class TiDBOptions {
         HAVING {
             @Override
             public TestOracle create(TiDBGlobalState globalState) throws SQLException {
-                return new TiDBQueryPartitioningHavingTester(globalState);
+                return new TiDBTLPHavingOracle(globalState);
             }
         },
         WHERE {
             @Override
             public TestOracle create(TiDBGlobalState globalState) throws SQLException {
-                return new TiDBQueryPartitioningWhereTester(globalState);
+                return new TiDBTLPWhereOracle(globalState);
             }
         },
         QUERY_PARTITIONING {
             @Override
             public TestOracle create(TiDBGlobalState globalState) throws SQLException {
                 List<TestOracle> oracles = new ArrayList<>();
-                oracles.add(new TiDBQueryPartitioningWhereTester(globalState));
-                oracles.add(new TiDBQueryPartitioningHavingTester(globalState));
+                oracles.add(new TiDBTLPWhereOracle(globalState));
+                oracles.add(new TiDBTLPHavingOracle(globalState));
                 return new CompositeTestOracle(oracles);
             }
         };
