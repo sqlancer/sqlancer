@@ -1,8 +1,12 @@
+dist: bionic
 language: java
 jdk: oraclejdk11
 script:
+- sudo apt-get update && sudo apt-get install libssl-dev libmecab2 libjson-perl mecab-ipadic-utf8
+- sudo apt-get remove mysql-* && wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar && tar -xvf mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar && yes | sudo dpkg -i *.deb
+- sudo mysql -e "CREATE USER 'sqlancer'@'localhost' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'localhost';"
 - cd src && python check_names.py
-- cd .. && mvn test
+- cd .. && MYSQL_AVAILABLE=true mvn test
 cache:
   directories:
   - target/lib
@@ -13,3 +17,4 @@ after_failure:
 branches:
   only:
   - master
+
