@@ -8,16 +8,16 @@ import com.beust.jcommander.Parameters;
 import sqlancer.MainOptions.DBMSConverter;
 import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
-import sqlancer.cockroachdb.test.CockroachDBNoRECTester;
-import sqlancer.cockroachdb.test.CockroachDBNoTableTester;
-import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningAggregateTester;
-import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningDistinctTester;
-import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningExtendedWhereTester;
-import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningGroupByTester;
-import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningHavingTester;
-import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningJoinTester;
-import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningTester;
-import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningWhereTester;
+import sqlancer.cockroachdb.oracle.CockroachDBNoRECTester;
+import sqlancer.cockroachdb.oracle.CockroachDBNoTableTester;
+import sqlancer.cockroachdb.oracle.CockroachDBQueryPartitioningAggregateTester;
+import sqlancer.cockroachdb.oracle.CockroachDBQueryPartitioningDistinctTester;
+import sqlancer.cockroachdb.oracle.CockroachDBQueryPartitioningExtendedWhereTester;
+import sqlancer.cockroachdb.oracle.CockroachDBQueryPartitioningGroupByTester;
+import sqlancer.cockroachdb.oracle.CockroachDBQueryPartitioningHavingTester;
+import sqlancer.cockroachdb.oracle.CockroachDBQueryPartitioningJoinTester;
+import sqlancer.cockroachdb.oracle.CockroachDBQueryPartitioningTester;
+import sqlancer.cockroachdb.oracle.CockroachDBQueryPartitioningWhereTester;
 
 @Parameters(separators = "=", commandDescription = "Test CockroachDB")
 public class CockroachDBOptions {

@@ -14,8 +14,8 @@ import sqlancer.sqlite3.ast.SQLite3Expression;
 import sqlancer.sqlite3.ast.SQLite3Select;
 import sqlancer.sqlite3.ast.SQLite3Select.SelectType;
 import sqlancer.sqlite3.gen.SQLite3Common;
-import sqlancer.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
-import sqlancer.sqlite3.queries.SQLite3RandomQuerySynthesizer;
+import sqlancer.sqlite3.oracle.SQLite3PivotedQuerySynthesizer;
+import sqlancer.sqlite3.oracle.SQLite3RandomQuerySynthesizer;
 import sqlancer.sqlite3.schema.SQLite3Schema;
 
 public final class SQLite3ViewGenerator {

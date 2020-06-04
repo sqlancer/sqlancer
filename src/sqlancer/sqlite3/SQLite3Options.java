@@ -12,14 +12,14 @@ import sqlancer.CompositeTestOracle;
 import sqlancer.MainOptions.DBMSConverter;
 import sqlancer.TestOracle;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
-import sqlancer.sqlite3.queries.SQLite3Fuzzer;
-import sqlancer.sqlite3.queries.SQLite3NoRECTester;
-import sqlancer.sqlite3.queries.SQLite3PivotedQuerySynthesizer;
-import sqlancer.sqlite3.queries.SQLite3QueryPartitioningAggregateTester;
-import sqlancer.sqlite3.queries.SQLite3QueryPartitioningDistinctTester;
-import sqlancer.sqlite3.queries.SQLite3QueryPartitioningGroupByTester;
-import sqlancer.sqlite3.queries.SQLite3QueryPartitioningHavingTester;
-import sqlancer.sqlite3.queries.SQLite3QueryPartitioningWhereTester;
+import sqlancer.sqlite3.oracle.SQLite3Fuzzer;
+import sqlancer.sqlite3.oracle.SQLite3NoRECTester;
+import sqlancer.sqlite3.oracle.SQLite3PivotedQuerySynthesizer;
+import sqlancer.sqlite3.oracle.SQLite3QueryPartitioningAggregateTester;
+import sqlancer.sqlite3.oracle.SQLite3QueryPartitioningDistinctTester;
+import sqlancer.sqlite3.oracle.SQLite3QueryPartitioningGroupByTester;
+import sqlancer.sqlite3.oracle.SQLite3QueryPartitioningHavingTester;
+import sqlancer.sqlite3.oracle.SQLite3QueryPartitioningWhereTester;
 
 @Parameters(separators = "=", commandDescription = "SQLite3")
 public class SQLite3Options {

@@ -21,7 +21,7 @@ import sqlancer.StatementExecutor;
 import sqlancer.clickhouse.ClickhouseProvider.ClickhouseGlobalState;
 import sqlancer.clickhouse.gen.ClickhouseInsertGenerator;
 import sqlancer.clickhouse.gen.ClickhouseTableGenerator;
-import sqlancer.clickhouse.test.ClickhouseQueryPartitioningWhereTester;
+import sqlancer.clickhouse.oracle.ClickhouseQueryPartitioningWhereTester;
 
 public class ClickhouseProvider implements DatabaseProvider<ClickhouseGlobalState, ClickhouseOptions> {
 

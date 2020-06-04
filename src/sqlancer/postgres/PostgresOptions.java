@@ -11,11 +11,11 @@ import com.beust.jcommander.Parameters;
 import sqlancer.CompositeTestOracle;
 import sqlancer.MainOptions.DBMSConverter;
 import sqlancer.TestOracle;
-import sqlancer.postgres.test.PostgresNoRECOracle;
-import sqlancer.postgres.test.PostgresPivotedQuerySynthesisGenerator;
-import sqlancer.postgres.test.PostgresQueryPartitioningAggregateTester;
-import sqlancer.postgres.test.PostgresQueryPartitioningHavingTester;
-import sqlancer.postgres.test.PostgresQueryPartitioningWhereTester;
+import sqlancer.postgres.oracle.PostgresNoRECOracle;
+import sqlancer.postgres.oracle.PostgresPivotedQuerySynthesisGenerator;
+import sqlancer.postgres.oracle.PostgresQueryPartitioningAggregateTester;
+import sqlancer.postgres.oracle.PostgresQueryPartitioningHavingTester;
+import sqlancer.postgres.oracle.PostgresQueryPartitioningWhereTester;
 
 @Parameters
 public class PostgresOptions {

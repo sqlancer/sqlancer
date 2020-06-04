@@ -12,8 +12,8 @@ import sqlancer.CompositeTestOracle;
 import sqlancer.MainOptions.DBMSConverter;
 import sqlancer.TestOracle;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
-import sqlancer.tidb.test.TiDBQueryPartitioningHavingTester;
-import sqlancer.tidb.test.TiDBQueryPartitioningWhereTester;
+import sqlancer.tidb.oracle.TiDBQueryPartitioningHavingTester;
+import sqlancer.tidb.oracle.TiDBQueryPartitioningWhereTester;
 
 @Parameters
 public class TiDBOptions {

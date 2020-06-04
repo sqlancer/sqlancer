@@ -25,6 +25,7 @@ import sqlancer.mariadb.gen.MariaDBTableAdminCommandGenerator;
 import sqlancer.mariadb.gen.MariaDBTableGenerator;
 import sqlancer.mariadb.gen.MariaDBTruncateGenerator;
 import sqlancer.mariadb.gen.MariaDBUpdateGenerator;
+import sqlancer.mariadb.oracle.MariaDBMetamorphicQuerySynthesizer;
 import sqlancer.sqlite3.gen.SQLite3Common;
 
 public class MariaDBProvider implements DatabaseProvider<GlobalState<MariaDBOptions>, MariaDBOptions> {

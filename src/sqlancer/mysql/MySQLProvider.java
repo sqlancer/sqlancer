@@ -42,7 +42,7 @@ import sqlancer.mysql.gen.tblmaintenance.MySQLCheckTable;
 import sqlancer.mysql.gen.tblmaintenance.MySQLChecksum;
 import sqlancer.mysql.gen.tblmaintenance.MySQLOptimize;
 import sqlancer.mysql.gen.tblmaintenance.MySQLRepair;
-import sqlancer.mysql.test.MySQLQueryPartitioningWhereTester;
+import sqlancer.mysql.oracle.MySQLQueryPartitioningWhereTester;
 import sqlancer.sqlite3.gen.SQLite3Common;
 
 public class MySQLProvider implements DatabaseProvider<MySQLGlobalState, MySQLOptions> {
