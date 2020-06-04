@@ -96,6 +96,7 @@ public class SQLite3NoRECOracle implements TestOracle {
                 randomWhereCondition);
         SQLite3PostfixText asText = new SQLite3PostfixText(isTrue, " as count", null);
         select.setFetchColumns(Arrays.asList(asText));
+        select.setWhereClause(null);
         secondQueryString = "SELECT SUM(count) FROM (" + SQLite3Visitor.asString(select) + ")";
         if (options.logEachSelect()) {
             logger.writeCurrent(secondQueryString);
@@ -117,9 +118,6 @@ public class SQLite3NoRECOracle implements TestOracle {
             select.setFetchColumns(Arrays.asList(aggr));
         }
         select.setWhereClause(randomWhereCondition);
-        if (useAggregate && Randomly.getBooleanWithSmallProbability()) {
-            select.setGroupByClause(gen.getRandomExpressions(Randomly.smallNumber() + 1));
-        }
         firstQueryString = SQLite3Visitor.asString(select);
         if (options.logEachSelect()) {
             logger.writeCurrent(firstQueryString);
