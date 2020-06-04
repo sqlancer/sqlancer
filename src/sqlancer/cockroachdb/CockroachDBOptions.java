@@ -9,7 +9,6 @@ import sqlancer.MainOptions.DBMSConverter;
 import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.oracle.CockroachDBNoRECOracle;
-import sqlancer.cockroachdb.oracle.CockroachDBNoTableOracle;
 import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPAggregateOracle;
 import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPDistinctOracle;
 import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPExtendedWhereOracle;
@@ -39,12 +38,6 @@ public class CockroachDBOptions {
                 return new CockroachDBTLPAggregateOracle(globalState);
             }
 
-        },
-        NOTABLE {
-            @Override
-            public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
-                return new CockroachDBNoTableOracle(globalState);
-            }
         },
         GROUP_BY {
             @Override
