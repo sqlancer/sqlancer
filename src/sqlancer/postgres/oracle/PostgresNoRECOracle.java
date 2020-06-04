@@ -72,8 +72,8 @@ public class PostgresNoRECOracle implements TestOracle {
         List<PostgresJoin> joinStatements = getJoinStatements(globalState, columns, tables);
         List<PostgresExpression> fromTables = tables.stream().map(t -> new PostgresFromTable(t, Randomly.getBoolean()))
                 .collect(Collectors.toList());
-        int secondCount = getSecondQuery(fromTables, randomWhereCondition, joinStatements);
-        int firstCount = getFirstQueryCount(con, fromTables, columns, randomWhereCondition, joinStatements);
+        int secondCount = getUnoptimizedQueryCount(fromTables, randomWhereCondition, joinStatements);
+        int firstCount = getOptimizedQueryCount(fromTables, columns, randomWhereCondition, joinStatements);
         if (firstCount == -1 || secondCount == -1) {
             throw new IgnoreMeException();
         }
@@ -104,13 +104,9 @@ public class PostgresNoRECOracle implements TestOracle {
                 .generateExpression(PostgresDataType.BOOLEAN);
     }
 
-    private int getSecondQuery(List<PostgresExpression> fromTables, PostgresExpression randomWhereCondition,
+    private int getUnoptimizedQueryCount(List<PostgresExpression> fromTables, PostgresExpression randomWhereCondition,
             List<PostgresJoin> joinStatements) throws SQLException {
         PostgresSelect select = new PostgresSelect();
-        // select.setGroupByClause(groupBys);
-        // PostgresExpression isTrue =
-        // PostgresPostfixOperation.create(randomWhereCondition,
-        // PostfixOperator.IS_TRUE);
         PostgresCastOperation isTrue = new PostgresCastOperation(randomWhereCondition,
                 PostgresCompoundDataType.create(PostgresDataType.INT));
         PostgresPostfixText asText = new PostgresPostfixText(isTrue, " as count", null, PostgresDataType.INT);
@@ -141,14 +137,10 @@ public class PostgresNoRECOracle implements TestOracle {
         return secondCount;
     }
 
-    private int getFirstQueryCount(Connection con, List<PostgresExpression> randomTables, List<PostgresColumn> columns,
+    private int getOptimizedQueryCount(List<PostgresExpression> randomTables, List<PostgresColumn> columns,
             PostgresExpression randomWhereCondition, List<PostgresJoin> joinStatements) throws SQLException {
         PostgresSelect select = new PostgresSelect();
-        // select.setGroupByClause(groupBys);
-        // PostgresAggregate aggr = new PostgresAggregate(
         PostgresColumnValue allColumns = new PostgresColumnValue(Randomly.fromList(columns), null);
-        // PostgresAggregateFunction.COUNT);
-        // select.setFetchColumns(Arrays.asList(aggr));
         select.setFetchColumns(Arrays.asList(allColumns));
         select.setFromList(randomTables);
         select.setWhereClause(randomWhereCondition);
@@ -174,39 +166,5 @@ public class PostgresNoRECOracle implements TestOracle {
         }
         return firstCount;
     }
-
-    // private int getFirstAlternativeQueryCount(Connection con,
-    // List<PostgresFromTable> randomTables,
-    // List<PostgresColumn> columns,
-    // PostgresExpression randomWhereCondition, List<PostgresExpression> groupBys,
-    // List<PostgresJoin> joinStatements) throws SQLException {
-    // PostgresSelect select = new PostgresSelect();
-    //// select.setGroupByClause(groupBys);
-    // PostgresColumnValue aggr = new PostgresColumnValue(new PostgresColumn("*",
-    // PostgresDataType.INT), null);
-    // select.setFetchColumns(Arrays.asList(aggr));
-    // select.setFromTables(randomTables);
-    // select.setWhereClause(randomWhereCondition);
-    // if (Randomly.getBooleanWithSmallProbability()) {
-    //// select.setOrderByClause(getRandomExpressions(columns));
-    // }
-    // select.setSelectType(SelectType.ALL);
-    // select.setJoinClauses(joinStatements);
-    // int firstCount = 0;
-    // try (Statement stat = con.createStatement()) {
-    // firstQueryString = PostgresVisitor.asString(select);
-    //// if (options.logEachSelect()) {
-    //// logger.writeCurrent(firstQueryString);
-    //// }
-    // try (ResultSet rs = stat.executeQuery(firstQueryString)) {
-    // while (rs.next()) {
-    // firstCount += 1;
-    // }
-    // }
-    // } catch (SQLException e) {
-    // throw new IgnoreMeException();
-    // }
-    // return firstCount;
-    // }
 
 }
