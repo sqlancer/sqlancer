@@ -37,7 +37,7 @@ import sqlancer.sqlite3.ast.SQLite3Function.ComputableFunction;
 import sqlancer.sqlite3.ast.SQLite3RowValueExpression;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation.UnaryOperator;
-import sqlancer.sqlite3.queries.SQLite3RandomQuerySynthesizer;
+import sqlancer.sqlite3.oracle.SQLite3RandomQuerySynthesizer;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3RowValue;

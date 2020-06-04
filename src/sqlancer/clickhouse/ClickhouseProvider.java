@@ -21,7 +21,7 @@ import sqlancer.StatementExecutor;
 import sqlancer.clickhouse.ClickhouseProvider.ClickhouseGlobalState;
 import sqlancer.clickhouse.gen.ClickhouseInsertGenerator;
 import sqlancer.clickhouse.gen.ClickhouseTableGenerator;
-import sqlancer.clickhouse.test.ClickhouseQueryPartitioningWhereTester;
+import sqlancer.clickhouse.oracle.ClickhouseTLPWhereOracle;
 
 public class ClickhouseProvider implements DatabaseProvider<ClickhouseGlobalState, ClickhouseOptions> {
 
@@ -102,7 +102,7 @@ public class ClickhouseProvider implements DatabaseProvider<ClickhouseGlobalStat
         se.executeStatements();
         manager.incrementCreateDatabase();
 
-        ClickhouseQueryPartitioningWhereTester oracle = new ClickhouseQueryPartitioningWhereTester(globalState);
+        ClickhouseTLPWhereOracle oracle = new ClickhouseTLPWhereOracle(globalState);
 
         for (int i = 0; i < globalState.getOptions().getNrQueries(); i++) {
             try {

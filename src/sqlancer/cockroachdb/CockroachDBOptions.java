@@ -8,16 +8,15 @@ import com.beust.jcommander.Parameters;
 import sqlancer.MainOptions.DBMSConverter;
 import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
-import sqlancer.cockroachdb.test.CockroachDBNoRECTester;
-import sqlancer.cockroachdb.test.CockroachDBNoTableTester;
-import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningAggregateTester;
-import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningDistinctTester;
-import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningExtendedWhereTester;
-import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningGroupByTester;
-import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningHavingTester;
-import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningJoinTester;
-import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningTester;
-import sqlancer.cockroachdb.test.CockroachDBQueryPartitioningWhereTester;
+import sqlancer.cockroachdb.oracle.CockroachDBNoRECOracle;
+import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPAggregateOracle;
+import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPDistinctOracle;
+import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPExtendedWhereOracle;
+import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPGroupByOracle;
+import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPHavingOracle;
+import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPJoinOracle;
+import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPOracle;
+import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPWhereOracle;
 
 @Parameters(separators = "=", commandDescription = "Test CockroachDB")
 public class CockroachDBOptions {
@@ -29,63 +28,57 @@ public class CockroachDBOptions {
         NOREC {
             @Override
             public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
-                return new CockroachDBNoRECTester(globalState);
+                return new CockroachDBNoRECOracle(globalState);
             }
         },
         AGGREGATE {
 
             @Override
             public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
-                return new CockroachDBQueryPartitioningAggregateTester(globalState);
+                return new CockroachDBTLPAggregateOracle(globalState);
             }
 
-        },
-        NOTABLE {
-            @Override
-            public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
-                return new CockroachDBNoTableTester(globalState);
-            }
         },
         GROUP_BY {
             @Override
             public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
-                return new CockroachDBQueryPartitioningGroupByTester(globalState);
+                return new CockroachDBTLPGroupByOracle(globalState);
             }
         },
         HAVING {
             @Override
             public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
-                return new CockroachDBQueryPartitioningHavingTester(globalState);
+                return new CockroachDBTLPHavingOracle(globalState);
             }
         },
         WHERE {
             @Override
             public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
-                return new CockroachDBQueryPartitioningWhereTester(globalState);
+                return new CockroachDBTLPWhereOracle(globalState);
             }
         },
         DISTINCT {
             @Override
             public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
-                return new CockroachDBQueryPartitioningDistinctTester(globalState);
+                return new CockroachDBTLPDistinctOracle(globalState);
             }
         },
         EXTENDED_WHERE {
             @Override
             public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
-                return new CockroachDBQueryPartitioningExtendedWhereTester(globalState);
+                return new CockroachDBTLPExtendedWhereOracle(globalState);
             }
         },
         JOIN {
             @Override
             public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
-                return new CockroachDBQueryPartitioningJoinTester(globalState);
+                return new CockroachDBTLPJoinOracle(globalState);
             }
         },
         QUERY_PARTITIONING {
             @Override
             public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
-                return new CockroachDBQueryPartitioningTester(globalState);
+                return new CockroachDBTLPOracle(globalState);
             }
         };
 

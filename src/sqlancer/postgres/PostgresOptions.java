@@ -11,11 +11,11 @@ import com.beust.jcommander.Parameters;
 import sqlancer.CompositeTestOracle;
 import sqlancer.MainOptions.DBMSConverter;
 import sqlancer.TestOracle;
-import sqlancer.postgres.test.PostgresNoRECOracle;
-import sqlancer.postgres.test.PostgresPivotedQuerySynthesisGenerator;
-import sqlancer.postgres.test.PostgresQueryPartitioningAggregateTester;
-import sqlancer.postgres.test.PostgresQueryPartitioningHavingTester;
-import sqlancer.postgres.test.PostgresQueryPartitioningWhereTester;
+import sqlancer.postgres.oracle.PostgresNoRECOracle;
+import sqlancer.postgres.oracle.PostgresPivotedQuerySynthesisOracle;
+import sqlancer.postgres.oracle.tlp.PostgresTLPAggregateOracle;
+import sqlancer.postgres.oracle.tlp.PostgresTLPHavingOracle;
+import sqlancer.postgres.oracle.tlp.PostgresTLPWhereOracle;
 
 @Parameters
 public class PostgresOptions {
@@ -36,14 +36,14 @@ public class PostgresOptions {
         PQS {
             @Override
             public TestOracle create(PostgresGlobalState globalState) throws SQLException {
-                return new PostgresPivotedQuerySynthesisGenerator(globalState);
+                return new PostgresPivotedQuerySynthesisOracle(globalState);
             }
         },
         HAVING {
 
             @Override
             public TestOracle create(PostgresGlobalState globalState) throws SQLException {
-                return new PostgresQueryPartitioningHavingTester(globalState);
+                return new PostgresTLPHavingOracle(globalState);
             }
 
         },
@@ -51,9 +51,9 @@ public class PostgresOptions {
             @Override
             public TestOracle create(PostgresGlobalState globalState) throws SQLException {
                 List<TestOracle> oracles = new ArrayList<>();
-                oracles.add(new PostgresQueryPartitioningWhereTester(globalState));
-                oracles.add(new PostgresQueryPartitioningHavingTester(globalState));
-                oracles.add(new PostgresQueryPartitioningAggregateTester(globalState));
+                oracles.add(new PostgresTLPWhereOracle(globalState));
+                oracles.add(new PostgresTLPHavingOracle(globalState));
+                oracles.add(new PostgresTLPAggregateOracle(globalState));
                 return new CompositeTestOracle(oracles);
             }
         };

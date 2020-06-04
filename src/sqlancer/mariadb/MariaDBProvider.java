@@ -25,6 +25,7 @@ import sqlancer.mariadb.gen.MariaDBTableAdminCommandGenerator;
 import sqlancer.mariadb.gen.MariaDBTableGenerator;
 import sqlancer.mariadb.gen.MariaDBTruncateGenerator;
 import sqlancer.mariadb.gen.MariaDBUpdateGenerator;
+import sqlancer.mariadb.oracle.MariaDBNoRECOracle;
 import sqlancer.sqlite3.gen.SQLite3Common;
 
 public class MariaDBProvider implements DatabaseProvider<GlobalState<MariaDBOptions>, MariaDBOptions> {
@@ -241,8 +242,7 @@ public class MariaDBProvider implements DatabaseProvider<GlobalState<MariaDBOpti
         //
         newSchema = MariaDBSchema.fromConnection(con, databaseName);
         //
-        MariaDBMetamorphicQuerySynthesizer queryGenerator = new MariaDBMetamorphicQuerySynthesizer(newSchema, r, con,
-                (MariaDBStateToReproduce) state);
+        MariaDBNoRECOracle queryGenerator = new MariaDBNoRECOracle(newSchema, r, con, (MariaDBStateToReproduce) state);
         for (int i = 0; i < options.getNrQueries(); i++) {
             try {
                 queryGenerator.generateAndCheck();
