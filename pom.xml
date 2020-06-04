@@ -164,6 +164,11 @@
 			<artifactId>mariadb-java-client</artifactId>
 			<version>2.6.0</version>
 		</dependency>
+		<dependency>
+			<groupId>org.duckdb</groupId>
+			<artifactId>duckdb_jdbc</artifactId>
+			<version>0.1.8</version>
+		</dependency>
 	</dependencies>
 
 	<reporting>
