@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce.MariaDBStateToReproduce;
@@ -64,15 +65,18 @@ public class MariaDBNoRECOracle {
                 .setState(state);
         MariaDBExpression randomWhereCondition = gen.getRandomExpression();
         List<MariaDBExpression> groupBys = Collections.emptyList(); // getRandomExpressions(columns);
-        int firstCount = getFirstQueryCount(con, randomTable, randomWhereCondition, groupBys);
-        int secondCount = getSecondQuery(randomTable, randomWhereCondition, groupBys);
-        if (firstCount != secondCount && firstCount != NOT_FOUND && secondCount != NOT_FOUND) {
+        int optimizedCount = getOptimizedQuery(con, randomTable, randomWhereCondition, groupBys);
+        int unoptimizedCount = getUnoptimizedQuery(randomTable, randomWhereCondition, groupBys);
+        if (optimizedCount == NOT_FOUND || unoptimizedCount == NOT_FOUND) {
+            throw new IgnoreMeException();
+        }
+        if (optimizedCount != unoptimizedCount) {
             state.queryString = firstQueryString + ";\n" + secondQueryString + ";";
-            throw new AssertionError(firstCount + " " + secondCount);
+            throw new AssertionError(optimizedCount + " " + unoptimizedCount);
         }
     }
 
-    private int getSecondQuery(MariaDBTable randomTable, MariaDBExpression randomWhereCondition,
+    private int getUnoptimizedQuery(MariaDBTable randomTable, MariaDBExpression randomWhereCondition,
             List<MariaDBExpression> groupBys) throws SQLException {
         MariaDBSelectStatement select = new MariaDBSelectStatement();
         select.setGroupByClause(groupBys);
@@ -101,7 +105,7 @@ public class MariaDBNoRECOracle {
         return secondCount;
     }
 
-    private int getFirstQueryCount(Connection con, MariaDBTable randomTable, MariaDBExpression randomWhereCondition,
+    private int getOptimizedQuery(Connection con, MariaDBTable randomTable, MariaDBExpression randomWhereCondition,
             List<MariaDBExpression> groupBys) throws SQLException {
         MariaDBSelectStatement select = new MariaDBSelectStatement();
         select.setGroupByClause(groupBys);
