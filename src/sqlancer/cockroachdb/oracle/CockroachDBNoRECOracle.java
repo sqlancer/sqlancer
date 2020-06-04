@@ -56,7 +56,7 @@ public class CockroachDBNoRECOracle implements TestOracle {
         gen = new CockroachDBExpressionGenerator(globalState).setColumns(tables.getColumns());
         List<CockroachDBExpression> joinExpressions = getJoins(tableList, globalState);
         CockroachDBExpression whereCondition = gen.generateExpression(CockroachDBDataType.BOOL.get());
-        int optimizableCount = getOptimizableResult(globalState.getConnection(), whereCondition, tableList, errors,
+        int optimizableCount = getOptimizedResult(globalState.getConnection(), whereCondition, tableList, errors,
                 joinExpressions);
         if (optimizableCount == -1) {
             throw new IgnoreMeException();
@@ -104,7 +104,7 @@ public class CockroachDBNoRECOracle implements TestOracle {
         return joinExpressions;
     }
 
-    private int getOptimizableResult(Connection con, CockroachDBExpression whereCondition,
+    private int getOptimizedResult(Connection con, CockroachDBExpression whereCondition,
             List<CockroachDBExpression> tableList, Set<String> errors, List<CockroachDBExpression> joinExpressions)
             throws SQLException {
         CockroachDBSelect select = new CockroachDBSelect();
