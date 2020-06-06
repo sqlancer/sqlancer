@@ -4,7 +4,8 @@ script:
 - cd target
 - java -jar SQLancer-0.0.1-SNAPSHOT.jar --timeout-seconds 60 sqlite3
 - java -jar SQLancer-0.0.1-SNAPSHOT.jar --timeout-seconds 60 duckdb
-
 cache:
   directories:
   - target/lib
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
