@@ -1,3 +1,6 @@
 language: java
 jdk: oraclejdk11
-script: "cd target && java -jar SQLancer-0.0.1-SNAPSHOT.jar --timeout-seconds 30 sqlite3"
+script:
+- cd target
+- java -jar SQLancer-0.0.1-SNAPSHOT.jar --timeout-seconds 60 sqlite3
+- java -jar SQLancer-0.0.1-SNAPSHOT.jar --timeout-seconds 60 duckdb
