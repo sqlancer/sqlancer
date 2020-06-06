@@ -4,3 +4,7 @@ script:
 - cd target
 - java -jar SQLancer-0.0.1-SNAPSHOT.jar --timeout-seconds 60 sqlite3
 - java -jar SQLancer-0.0.1-SNAPSHOT.jar --timeout-seconds 60 duckdb
+
+cache:
+  directories:
+  - target/lib
