@@ -39,6 +39,7 @@ import sqlancer.tidb.TiDBProvider;
 
 public final class Main {
 
+    private static final int THREADS_SHUTDOWN_EXIT_CODE = -1;
     public static final File LOG_DIRECTORY = new File("logs");
     public static volatile AtomicLong nrQueries = new AtomicLong();
     public static volatile AtomicLong nrDatabases = new AtomicLong();
@@ -270,6 +271,10 @@ public final class Main {
     }
 
     public static void main(String[] args) {
+        System.exit(executeMain(args));
+    }
+
+    public static int executeMain(String[] args) throws AssertionError {
         List<DatabaseProvider<?, ?>> providers = new ArrayList<>();
         providers.add(new SQLite3Provider());
         providers.add(new CockroachDBProvider());
@@ -300,15 +305,14 @@ public final class Main {
         jc.parse(args);
         if (jc.getParsedCommand() == null) {
             jc.usage();
-            System.exit(-1);
+            return THREADS_SHUTDOWN_EXIT_CODE;
         }
 
         if (options.printProgressInformation()) {
-            startProgressMonitor(options);
+            startProgressMonitor();
         }
 
         ExecutorService executor = Executors.newFixedThreadPool(options.getNumberConcurrentThreads());
-
         for (int i = 0; i < options.getTotalNumberTries(); i++) {
             final String databaseName = "database" + i;
 
@@ -388,18 +392,25 @@ public final class Main {
                                 e.printStackTrace();
                             }
                             if (threadsShutdown == options.getTotalNumberTries()) {
-                                System.exit(-1);
+                                System.exit(THREADS_SHUTDOWN_EXIT_CODE);
                             }
                         }
                     }
                 }
             });
         }
-
+        if (options.getTimeoutSeconds() != -1) {
+            try {
+                executor.awaitTermination(options.getTimeoutSeconds(), TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        return threadsShutdown == 0 ? 0 : THREADS_SHUTDOWN_EXIT_CODE;
     }
 
-    private static void startProgressMonitor(MainOptions options) {
-        final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
+    private static void startProgressMonitor() {
+        final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleAtFixedRate(new Runnable() {
 
             private long timeMillis = System.currentTimeMillis();
@@ -432,15 +443,6 @@ public final class Main {
                 lastNrDbs = currentNrDbs;
             }
         }, 5, 5, TimeUnit.SECONDS);
-        if (options.getTimeoutSeconds() != -1) {
-            scheduler.schedule(new Runnable() {
-
-                @Override
-                public void run() {
-                    System.exit(0);
-                }
-            }, options.getTimeoutSeconds(), TimeUnit.SECONDS);
-        }
     }
 
 }
