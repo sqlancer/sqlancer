@@ -271,10 +271,10 @@ public final class Main {
     }
 
     public static void main(String[] args) {
-        executeMain(args);
+        System.exit(executeMain(args));
     }
 
-    private static int executeMain(String[] args) throws AssertionError {
+    public static int executeMain(String[] args) throws AssertionError {
         List<DatabaseProvider<?, ?>> providers = new ArrayList<>();
         providers.add(new SQLite3Provider());
         providers.add(new CockroachDBProvider());
