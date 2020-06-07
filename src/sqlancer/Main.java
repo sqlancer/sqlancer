@@ -309,7 +309,7 @@ public final class Main {
         }
 
         if (options.printProgressInformation()) {
-            startProgressMonitor(options);
+            startProgressMonitor();
         }
 
         ExecutorService executor = Executors.newFixedThreadPool(options.getNumberConcurrentThreads());
@@ -409,8 +409,8 @@ public final class Main {
         return threadsShutdown == 0 ? 0 : THREADS_SHUTDOWN_EXIT_CODE;
     }
 
-    private static void startProgressMonitor(MainOptions options) {
-        final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
+    private static void startProgressMonitor() {
+        final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleAtFixedRate(new Runnable() {
 
             private long timeMillis = System.currentTimeMillis();
