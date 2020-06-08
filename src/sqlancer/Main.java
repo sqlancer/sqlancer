@@ -399,12 +399,14 @@ public final class Main {
                 }
             });
         }
-        if (options.getTimeoutSeconds() != -1) {
-            try {
+        try {
+            if (options.getTimeoutSeconds() == -1) {
+                executor.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+            } else {
                 executor.awaitTermination(options.getTimeoutSeconds(), TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
             }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
         return threadsShutdown == 0 ? 0 : options.getErrorExitCode();
     }
