@@ -44,6 +44,9 @@ public class MainOptions {
     @Parameter(names = "--timeout-seconds", description = "The timeout in seconds")
     private int timeoutSeconds = -1;
 
+    @Parameter(names = "--exit-code-error", description = "The exit code that should be returned when an error is encountered (or a bug is found)")
+    private int errorExitCode = -1;
+
     public int getMaxExpressionDepth() {
         return maxExpressionDepth;
     }
@@ -101,6 +104,10 @@ public class MainOptions {
 
     public int getTimeoutSeconds() {
         return timeoutSeconds;
+    }
+
+    public int getErrorExitCode() {
+        return errorExitCode;
     }
 
 }

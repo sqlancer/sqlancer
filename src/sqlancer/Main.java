@@ -39,7 +39,6 @@ import sqlancer.tidb.TiDBProvider;
 
 public final class Main {
 
-    private static final int THREADS_SHUTDOWN_EXIT_CODE = -1;
     public static final File LOG_DIRECTORY = new File("logs");
     public static volatile AtomicLong nrQueries = new AtomicLong();
     public static volatile AtomicLong nrDatabases = new AtomicLong();
@@ -305,7 +304,7 @@ public final class Main {
         jc.parse(args);
         if (jc.getParsedCommand() == null) {
             jc.usage();
-            return THREADS_SHUTDOWN_EXIT_CODE;
+            return options.getErrorExitCode();
         }
 
         if (options.printProgressInformation()) {
@@ -407,7 +406,7 @@ public final class Main {
                 e.printStackTrace();
             }
         }
-        return threadsShutdown == 0 ? 0 : THREADS_SHUTDOWN_EXIT_CODE;
+        return threadsShutdown == 0 ? 0 : options.getErrorExitCode();
     }
 
     private static void startProgressMonitor() {
