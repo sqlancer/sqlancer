@@ -332,7 +332,8 @@ public final class Main {
                     while (true) {
                         // create a new instance of the provider in case it has a global state
                         try {
-                            provider = nameToProvider.get(jc.getParsedCommand()).getClass().newInstance();
+                            provider = nameToProvider.get(jc.getParsedCommand()).getClass().getDeclaredConstructor()
+                                    .newInstance();
                         } catch (Exception e) {
                             throw new AssertionError(e);
                         }
