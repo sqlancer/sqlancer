@@ -392,7 +392,7 @@ public final class Main {
                                 e.printStackTrace();
                             }
                             if (threadsShutdown == options.getTotalNumberTries()) {
-                                System.exit(THREADS_SHUTDOWN_EXIT_CODE);
+                                executor.shutdown();
                             }
                         }
                     }
