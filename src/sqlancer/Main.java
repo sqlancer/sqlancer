@@ -274,15 +274,7 @@ public final class Main {
     }
 
     public static int executeMain(String[] args) throws AssertionError {
-        List<DatabaseProvider<?, ?>> providers = new ArrayList<>();
-        providers.add(new SQLite3Provider());
-        providers.add(new CockroachDBProvider());
-        providers.add(new MySQLProvider());
-        providers.add(new MariaDBProvider());
-        providers.add(new TiDBProvider());
-        providers.add(new PostgresProvider());
-        providers.add(new ClickhouseProvider());
-        providers.add(new DuckDBProvider());
+        List<DatabaseProvider<?, ?>> providers = getDBMSProviders();
         Map<String, DatabaseProvider<?, ?>> nameToProvider = new HashMap<>();
         Map<String, Object> nameToOptions = new HashMap<>();
         MainOptions options = new MainOptions();
@@ -302,6 +294,7 @@ public final class Main {
         }
         JCommander jc = commandBuilder.programName("SQLancer").build();
         jc.parse(args);
+
         if (jc.getParsedCommand() == null) {
             jc.usage();
             return options.getErrorExitCode();
@@ -409,6 +402,19 @@ public final class Main {
             e.printStackTrace();
         }
         return threadsShutdown == 0 ? 0 : options.getErrorExitCode();
+    }
+
+    static List<DatabaseProvider<?, ?>> getDBMSProviders() {
+        List<DatabaseProvider<?, ?>> providers = new ArrayList<>();
+        providers.add(new SQLite3Provider());
+        providers.add(new CockroachDBProvider());
+        providers.add(new MySQLProvider());
+        providers.add(new MariaDBProvider());
+        providers.add(new TiDBProvider());
+        providers.add(new PostgresProvider());
+        providers.add(new ClickhouseProvider());
+        providers.add(new DuckDBProvider());
+        return providers;
     }
 
     private static void startProgressMonitor() {
