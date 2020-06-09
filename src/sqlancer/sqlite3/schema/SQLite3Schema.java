@@ -409,18 +409,11 @@ public class SQLite3Schema {
                     SQLite3Table t = new SQLite3Table(tableName, databaseColumns,
                             tableType.contentEquals("temp_table") ? TableKind.TEMP : TableKind.MAIN, withoutRowid,
                             nrRows, isView, isVirtual, isReadOnly);
-                    try (Statement s3 = con.createStatement()) {
-                        try (ResultSet rs3 = s3.executeQuery("SELECT typeof(rowid) FROM " + tableName)) {
-                            if (rs3.next() && !isView /* TODO: can we still do something with it? */) {
-                                String dataType = rs3.getString(1);
-                                SQLite3DataType columnType = getColumnType(dataType);
-                                boolean generated = dataType.toUpperCase().contains("GENERATED AS");
-                                String rowId = Randomly.fromOptions("rowid", "_rowid_", "oid");
-                                SQLite3Column rowid = new SQLite3Column(rowId, columnType, true, null, generated);
-                                t.addRowid(rowid);
-                                rowid.setTable(t);
-                            }
-                        }
+                    if (isRowIdTable(withoutRowid, isView, isVirtual)) {
+                        String rowId = Randomly.fromOptions("rowid", "_rowid_", "oid");
+                        SQLite3Column rowid = new SQLite3Column(rowId, SQLite3DataType.INT, true, null, true);
+                        t.addRowid(rowid);
+                        rowid.setTable(t);
                     }
                     for (SQLite3Column c : databaseColumns) {
                         c.setTable(t);
@@ -443,6 +436,11 @@ public class SQLite3Schema {
         }
 
         return new SQLite3Schema(databaseTables, indexNames);
+    }
+
+    // https://www.sqlite.org/rowidtable.html
+    private static boolean isRowIdTable(boolean withoutRowid, boolean isView, boolean isVirtual) {
+        return !isView && !isVirtual && !withoutRowid;
     }
 
     private static List<SQLite3Column> getTableColumns(Connection con, String tableName, String sql, boolean isView,
