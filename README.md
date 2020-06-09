@@ -1,5 +1,5 @@
 ![Travis](https://travis-ci.com/sqlancer/sqlancer.svg?branch=master)
-![Twitter](https://img.shields.io/twitter/follow/sqlancer_dbms?style=social)
+[![Twitter](https://img.shields.io/twitter/follow/sqlancer_dbms?style=social)](https://twitter.com/sqlancer_dbms)
 # SQLancer
 
 
