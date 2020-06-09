@@ -87,14 +87,14 @@ public class CockroachDBOptions {
     }
 
     @Parameter(names = {
-            "--test_hash_indexes" }, description = "Test the USING HASH WITH BUCKET_COUNT=n_buckets option in CREATE INDEX")
+            "--test-hash-indexes" }, description = "Test the USING HASH WITH BUCKET_COUNT=n_buckets option in CREATE INDEX")
     public boolean testHashIndexes = true;
 
-    @Parameter(names = { "--test_temp_tables" }, description = "Test TEMPORARY tables")
+    @Parameter(names = { "--test-temp-tables" }, description = "Test TEMPORARY tables")
     public boolean testTempTables = true;
 
-    @Parameter(names = { "--increased_vectorization",
-            "Generate VECTORIZE=on with a higher probability (which found a number of bugs in the past)" })
+    @Parameter(names = {
+            "--increased-vectorization" }, description = "Generate VECTORIZE=on with a higher probability (which found a number of bugs in the past)")
     public boolean makeVectorizationMoreLikely = true;
 
 }

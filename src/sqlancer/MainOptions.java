@@ -8,25 +8,25 @@ import com.beust.jcommander.Parameters;
 public class MainOptions {
 
     @Parameter(names = {
-            "--num_threads" }, description = "How many threads should run concurrently to test separate databases")
+            "--num-threads" }, description = "How many threads should run concurrently to test separate databases")
     private int nrConcurrentThreads = 16;
 
-    @Parameter(names = { "--num_tries" }, description = "Specifies after how many found errors to stop testing")
+    @Parameter(names = { "--num-tries" }, description = "Specifies after how many found errors to stop testing")
     private int totalNumberTries = 100;
 
-    @Parameter(names = { "--max_num_inserts" }, description = "Specifies how many INSERT statements should be issued")
+    @Parameter(names = { "--max-num-inserts" }, description = "Specifies how many INSERT statements should be issued")
     private int maxNumberInserts = 30;
 
     @Parameter(names = {
-            "--max_expression_depth" }, description = "Specifies the maximum depth of randomly-generated expressions")
+            "--max-expression-depth" }, description = "Specifies the maximum depth of randomly-generated expressions")
     private int maxExpressionDepth = 3;
 
     @Parameter(names = {
-            "--num_queries" }, description = "Specifies the number of queries to be issued to a database before creating a new database")
+            "--num-queries" }, description = "Specifies the number of queries to be issued to a database before creating a new database")
     private int nrQueries = 100000;
 
     @Parameter(names = {
-            "--num_statement_kind_retries" }, description = "Specifies the number of times a specific statement kind (e.g., INSERT) should be retried when the DBMS indicates that it failed")
+            "--num-statement-kind-retries" }, description = "Specifies the number of times a specific statement kind (e.g., INSERT) should be retried when the DBMS indicates that it failed")
     private int nrStatementRetryCount = 1000;
 
     @Parameter(names = "--log-each-select", description = "Logs every statement issued", arity = 1)
