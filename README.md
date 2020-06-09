@@ -25,7 +25,7 @@ git clone https://github.com/sqlancer/sqlancer
 cd sqlancer
 mvn package
 cd target
-java -jar SQLancer-0.0.1-SNAPSHOT.jar --num_threads 16 --num_tries 5 --max_expression_depth 3 --num_queries 100000 --max_num_inserts 30 sqlite3 --oracle query_partitioning
+java -jar SQLancer-0.0.1-SNAPSHOT.jar --num-threads 4 sqlite3 --oracle NoREC
 ```
 
 If the execution prints progress information every five seconds, then the tool works as expected. Note that SQLancer might find bugs in SQLite. Before reporting these, be sure to check that they can still be reproduced when using the latest development version.
