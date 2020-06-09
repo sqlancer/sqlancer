@@ -38,7 +38,11 @@ public class AbstractTableColumn<T extends AbstractTable<?, ?>, U> implements Co
 
     @Override
     public String toString() {
-        return String.format("%s.%s: %s", table.getName(), getName(), getType());
+        if (table == null) {
+            return String.format("%s: %s", getName(), getType());
+        } else {
+            return String.format("%s.%s: %s", table.getName(), getName(), getType());
+        }
     }
 
     @Override
