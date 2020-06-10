@@ -106,7 +106,7 @@
 				<artifactId>maven-checkstyle-plugin</artifactId>
 				<version>3.1.1</version>
 				<configuration>
-					<configLocation>checkstyle.xml</configLocation>
+					<configLocation>configs/checkstyle.xml</configLocation>
 				</configuration>
 				<executions>
 					<execution>
@@ -136,7 +136,7 @@
 							<failurePriority>2</failurePriority>
 							<failOnViolation>true</failOnViolation>
 							<rulesets>
-								<ruleset>pmd-rules.xml</ruleset>
+								<ruleset>configs/pmd-rules.xml</ruleset>
 							</rulesets>
 						</configuration>
 					</execution>
@@ -154,7 +154,7 @@
 							<goal>check</goal>
 						</goals>
 						<configuration>
-							<excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
+							<excludeFilterFile>configs/spotbugs-exclude.xml</excludeFilterFile>
 							<threshold>High</threshold>
 						</configuration>
 					</execution>
