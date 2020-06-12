@@ -109,7 +109,7 @@ public class SQLite3WindowFunction extends SQLite3Expression {
 
     public SQLite3WindowFunction(WindowFunction func, SQLite3Expression[] args) {
         this.func = func;
-        this.args = args;
+        this.args = args.clone();
     }
 
     public WindowFunction getFunc() {

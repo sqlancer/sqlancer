@@ -10,7 +10,7 @@ public abstract class SQLite3Case extends SQLite3Expression {
     protected final SQLite3Expression elseExpr;
 
     public SQLite3Case(CasePair[] pairs, SQLite3Expression elseExpr) {
-        this.pairs = pairs;
+        this.pairs = pairs.clone();
         this.elseExpr = elseExpr;
     }
 

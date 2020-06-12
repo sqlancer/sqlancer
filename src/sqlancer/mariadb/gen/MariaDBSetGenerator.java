@@ -125,7 +125,7 @@ public class MariaDBSetGenerator {
             }
             this.name = name;
             this.prod = prod;
-            this.scopes = scopes;
+            this.scopes = scopes.clone();
         }
 
         private static String getOptimizerSwitchConfiguration(Randomly r) {

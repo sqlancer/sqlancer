@@ -157,7 +157,7 @@ public enum PostgresFunctionWithUnknownResult {
     PostgresFunctionWithUnknownResult(String functionName, PostgresDataType returnType, PostgresDataType... indexType) {
         this.functionName = functionName;
         this.returnType = returnType;
-        this.argTypes = indexType;
+        this.argTypes = indexType.clone();
 
     }
 

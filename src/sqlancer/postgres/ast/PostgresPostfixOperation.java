@@ -99,7 +99,7 @@ public class PostgresPostfixOperation implements PostgresExpression {
         private String[] textRepresentations;
 
         PostfixOperator(String... textRepresentations) {
-            this.textRepresentations = textRepresentations;
+            this.textRepresentations = textRepresentations.clone();
         }
 
         public abstract PostgresConstant apply(PostgresConstant expectedValue);

@@ -61,7 +61,7 @@ public class PostgresPrefixOperation implements PostgresExpression {
 
         PrefixOperator(String textRepresentation, PostgresDataType... dataTypes) {
             this.textRepresentation = textRepresentation;
-            this.dataTypes = dataTypes;
+            this.dataTypes = dataTypes.clone();
         }
 
         public abstract PostgresDataType getExpressionType();
