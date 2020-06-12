@@ -22,7 +22,7 @@ public class MySQLComputableFunction implements MySQLExpression {
     }
 
     public MySQLExpression[] getArguments() {
-        return args;
+        return args.clone();
     }
 
     public enum MySQLFunction {

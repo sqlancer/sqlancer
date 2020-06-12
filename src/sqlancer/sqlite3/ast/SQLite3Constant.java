@@ -428,7 +428,7 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 
         @Override
         public byte[] asBinary() {
-            return bytes;
+            return bytes.clone();
         }
 
         @Override

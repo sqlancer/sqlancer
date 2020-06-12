@@ -387,7 +387,7 @@ public abstract class SQLite3Expression {
         }
 
         public SQLite3Expression[] getArguments() {
-            return arguments;
+            return arguments.clone();
         }
 
         public String getName() {

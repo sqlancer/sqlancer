@@ -20,7 +20,6 @@
 		<exclude name="AvoidReassigningParameters" />
 		<exclude name="PositionLiteralsFirstInComparisons" />
 		<exclude name="ForLoopCanBeForeach" />
-		<exclude name="MethodReturnsInternalArray" />
 		<exclude name="CheckResultSet" />
 		<exclude name="UseVarargs" />
 		<exclude name="UseTryWithResources" />
