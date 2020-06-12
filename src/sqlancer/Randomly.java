@@ -49,7 +49,7 @@ public final class Randomly {
             return null;
         } else {
             byte[] bytes = Randomly.fromList(cachedBytes);
-            if (Randomly.getBoolean()) {
+            if (bytes.length != 0 && Randomly.getBoolean()) {
                 for (int i = 0; i < Randomly.smallNumber(); i++) {
                     bytes[getInteger(0, bytes.length)] = (byte) ThreadLocalRandom.current().nextInt();
                 }
@@ -269,13 +269,13 @@ public final class Randomly {
         if (cacheProbability()) {
             byte[] val = getFromBytesCache();
             if (val != null) {
-                addToCache(val);
                 return val;
             }
         }
         int size = Randomly.smallNumber();
         byte[] arr = new byte[size];
         ThreadLocalRandom.current().nextBytes(arr);
+        addToCache(arr);
         return arr;
     }
 
