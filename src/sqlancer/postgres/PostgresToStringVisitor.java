@@ -252,8 +252,8 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
     public void visit(PostgresBetweenOperation op) {
         sb.append("(");
         visit(op.getExpr());
-        if (PostgresProvider.generateOnlyKnown && (op.getExpr().getExpressionType() == PostgresDataType.TEXT
-                && op.getLeft().getExpressionType() == PostgresDataType.TEXT)) {
+        if (PostgresProvider.generateOnlyKnown && op.getExpr().getExpressionType() == PostgresDataType.TEXT
+                && op.getLeft().getExpressionType() == PostgresDataType.TEXT) {
             sb.append(" COLLATE \"C\"");
         }
         sb.append(") BETWEEN ");
@@ -264,8 +264,8 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
         visit(op.getLeft());
         sb.append(") AND (");
         visit(op.getRight());
-        if (PostgresProvider.generateOnlyKnown && (op.getExpr().getExpressionType() == PostgresDataType.TEXT
-                && op.getRight().getExpressionType() == PostgresDataType.TEXT)) {
+        if (PostgresProvider.generateOnlyKnown && op.getExpr().getExpressionType() == PostgresDataType.TEXT
+                && op.getRight().getExpressionType() == PostgresDataType.TEXT) {
             sb.append(" COLLATE \"C\"");
         }
         sb.append(")");

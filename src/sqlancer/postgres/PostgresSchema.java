@@ -94,7 +94,7 @@ public class PostgresSchema {
                     }
                     values.put(column, constant);
                 }
-                assert (!randomRowValues.next());
+                assert !randomRowValues.next();
                 state.randomRowValues = values;
                 return new PostgresRowValue(this, values);
             }

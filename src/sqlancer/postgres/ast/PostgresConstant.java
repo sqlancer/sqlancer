@@ -71,7 +71,7 @@ public abstract class PostgresConstant implements PostgresExpression {
             case BOOLEAN:
                 return this;
             case INT:
-                return PostgresConstant.createIntConstant((value) ? 1 : 0);
+                return PostgresConstant.createIntConstant(value ? 1 : 0);
             case TEXT:
                 return PostgresConstant.createTextConstant(value ? "true" : "false");
             default:

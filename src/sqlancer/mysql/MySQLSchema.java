@@ -133,7 +133,7 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
                     // }
                     values.put(column, constant);
                 }
-                assert (!randomRowValues.next());
+                assert !randomRowValues.next();
                 state.randomRowValues = values;
                 return new MySQLRowValue(this, values);
             }

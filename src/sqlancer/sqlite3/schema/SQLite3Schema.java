@@ -378,12 +378,12 @@ public class SQLite3Schema {
                         continue;
                     }
                     String sqlString = rs.getString("sql") == null ? "" : rs.getString("sql").toLowerCase();
-                    if ((tableName.startsWith("sqlite_") /* && !tableName.startsWith("sqlite_stat") */)
-                            || tableType.equals("index") || tableType.equals("trigger") || tableName.endsWith("_idx")
-                            || tableName.endsWith("_docsize") || tableName.endsWith("_content")
-                            || tableName.endsWith("_data") || tableName.endsWith("_config")
-                            || tableName.endsWith("_segdir") || tableName.endsWith("_stat")
-                            || tableName.endsWith("_segments") || tableName.contains("_")) {
+                    if (tableName.startsWith("sqlite_") || tableType.equals("index") || tableType.equals("trigger")
+                            || tableName.endsWith("_idx") || tableName.endsWith("_docsize")
+                            || tableName.endsWith("_content") || tableName.endsWith("_data")
+                            || tableName.endsWith("_config") || tableName.endsWith("_segdir")
+                            || tableName.endsWith("_stat") || tableName.endsWith("_segments")
+                            || tableName.contains("_")) {
                         isReadOnly = true;
                         continue; // TODO
                     } else if (sqlString.contains("using dbstat")) {
