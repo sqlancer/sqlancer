@@ -38,26 +38,6 @@ public final class Randomly {
         }
     }
 
-    private void addToCache(byte[] val) {
-        if (USE_CACHING && cachedBytes.size() < CACHE_SIZE && !cachedBytes.contains(val)) {
-            cachedBytes.add(val);
-        }
-    }
-
-    private byte[] getFromBytesCache() {
-        if (!USE_CACHING || cachedBytes.isEmpty()) {
-            return null;
-        } else {
-            byte[] bytes = Randomly.fromList(cachedBytes);
-            if (bytes.length != 0 && Randomly.getBoolean()) {
-                for (int i = 0; i < Randomly.smallNumber(); i++) {
-                    bytes[getInteger(0, bytes.length)] = (byte) ThreadLocalRandom.current().nextInt();
-                }
-            }
-            return bytes;
-        }
-    }
-
     private Long getFromLongCache() {
         if (!USE_CACHING || cachedLongs.isEmpty()) {
             return null;
@@ -266,16 +246,9 @@ public final class Randomly {
     }
 
     public byte[] getBytes() {
-        if (cacheProbability()) {
-            byte[] val = getFromBytesCache();
-            if (val != null) {
-                return val;
-            }
-        }
         int size = Randomly.smallNumber();
         byte[] arr = new byte[size];
         ThreadLocalRandom.current().nextBytes(arr);
-        addToCache(arr);
         return arr;
     }
 
