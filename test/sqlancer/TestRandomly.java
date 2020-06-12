@@ -10,12 +10,14 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 
 public class TestRandomly {
 
-    private static final int NR_CHECKS = 10000;
     private static final int NR_MIN_RUNS = 100000;
 
     @Test // test that every option is picked
@@ -162,7 +164,7 @@ public class TestRandomly {
     @Test
     public void testNonCachedInteger() {
         assertEquals(0, Randomly.getNotCachedInteger(0, 1));
-        assertThrows(Exception.class, () -> Randomly.getNotCachedInteger(0, 0));
+        assertEquals(0, Randomly.getNotCachedInteger(0, 0));
         assertThrows(Exception.class, () -> Randomly.getNotCachedInteger(5, 0));
     }
 
@@ -180,6 +182,46 @@ public class TestRandomly {
         // TODO: we should throw an exception instead
         assertEquals(0, r.getLong(0, 0));
         assertEquals(0, r.getLong(0, 1));
+    }
+
+    @Test // check that when given a seed, each thread computes a consistent result
+    public void testSeed() {
+        int seed = 123;
+        Randomly r = new Randomly(seed);
+        List<String> values = getRandomValueList(r);
+        List<String> nonSeedList = getRandomValueList(new Randomly());
+        List<List<String>> otherThreadResults = new ArrayList<>();
+        assertNotEquals(values, nonSeedList);
+        ExecutorService executor = Executors.newFixedThreadPool(10);
+        for (int i = 0; i < 1000; i++) {
+            executor.execute(new Runnable() {
+
+                @Override
+                public void run() {
+                    otherThreadResults.add(getRandomValueList(new Randomly(seed)));
+                }
+            });
+        }
+        executor.shutdown();
+        try {
+            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.HOURS);
+        } catch (InterruptedException e) {
+            throw new AssertionError(e);
+        }
+        for (List<String> otherThreadResult : otherThreadResults) {
+            assertEquals(values, otherThreadResult);
+        }
+    }
+
+    private List<String> getRandomValueList(Randomly r) {
+        List<String> values = new ArrayList<>();
+        for (int i = 0; i < 10000; i++) {
+            values.add(String.valueOf(r.getDouble()));
+            values.add(String.valueOf(r.getInteger()));
+            values.add(String.valueOf(r.getString()));
+            values.add(String.valueOf(Randomly.getBoolean()));
+        }
+        return values;
     }
 
 }

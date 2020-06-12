@@ -307,6 +307,12 @@ public final class Main {
         ExecutorService executor = Executors.newFixedThreadPool(options.getNumberConcurrentThreads());
         for (int i = 0; i < options.getTotalNumberTries(); i++) {
             final String databaseName = "database" + i;
+            final long seed;
+            if (options.getRandomSeed() == -1) {
+                seed = -1;
+            } else {
+                seed = options.getRandomSeed() + i;
+            }
 
             executor.execute(new Runnable() {
 
@@ -333,7 +339,12 @@ public final class Main {
                         stateToRepro = provider.getStateToReproduce(databaseName);
                         state.setState(stateToRepro);
                         logger = new StateLogger(databaseName, provider, options);
-                        Randomly r = new Randomly();
+                        Randomly r;
+                        if (seed == -1) {
+                            r = new Randomly();
+                        } else {
+                            r = new Randomly(seed);
+                        }
                         state.setRandomly(r);
                         state.setDatabaseName(databaseName);
                         state.setMainOptions(options);
