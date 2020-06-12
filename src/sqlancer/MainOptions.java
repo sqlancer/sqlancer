@@ -11,6 +11,10 @@ public class MainOptions {
             "--num-threads" }, description = "How many threads should run concurrently to test separate databases")
     private int nrConcurrentThreads = 16;
 
+    @Parameter(names = {
+            "--random-seed" }, description = "A seed value != -1 that can be set to make the query and database generation deterministic")
+    private long randomSeed = -1;
+
     @Parameter(names = { "--num-tries" }, description = "Specifies after how many found errors to stop testing")
     private int totalNumberTries = 100;
 
@@ -108,6 +112,10 @@ public class MainOptions {
 
     public int getErrorExitCode() {
         return errorExitCode;
+    }
+
+    public long getRandomSeed() {
+        return randomSeed;
     }
 
 }
