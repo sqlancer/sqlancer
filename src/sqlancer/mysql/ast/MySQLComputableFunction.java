@@ -182,7 +182,7 @@ public class MySQLComputableFunction implements MySQLExpression {
             return nrArgs;
         }
 
-        public abstract MySQLConstant apply(MySQLConstant[] evaluatedArgs, MySQLExpression[] args);
+        public abstract MySQLConstant apply(MySQLConstant[] evaluatedArgs, MySQLExpression... args);
 
         public static MySQLFunction getRandomFunction() {
             return Randomly.fromOptions(values());

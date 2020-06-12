@@ -253,7 +253,7 @@ public class PostgresFunction implements PostgresExpression {
             return nrArgs;
         }
 
-        public abstract PostgresConstant apply(PostgresConstant[] evaluatedArgs, PostgresExpression[] args);
+        public abstract PostgresConstant apply(PostgresConstant[] evaluatedArgs, PostgresExpression... args);
 
         public static PostgresFunctionWithResult getRandomFunction() {
             return Randomly.fromOptions(values());
@@ -276,7 +276,7 @@ public class PostgresFunction implements PostgresExpression {
 
         public abstract PostgresDataType[] getInputTypesForReturnType(PostgresDataType returnType, int nrArguments);
 
-        public boolean checkArguments(PostgresExpression[] constants) {
+        public boolean checkArguments(PostgresExpression... constants) {
             return true;
         }
 

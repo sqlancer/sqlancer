@@ -463,7 +463,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
         }
     }
 
-    private void visit(SQLite3Expression[] expressions) {
+    private void visit(SQLite3Expression... expressions) {
         visit(Arrays.asList(expressions));
     }
 

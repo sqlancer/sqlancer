@@ -21,7 +21,6 @@
 		<exclude name="PositionLiteralsFirstInComparisons" />
 		<exclude name="ForLoopCanBeForeach" />
 		<exclude name="CheckResultSet" />
-		<exclude name="UseVarargs" />
 		<exclude name="UseTryWithResources" />
 		<exclude name="AvoidReassigningLoopVariables" />
 		<exclude name="AbstractClassWithoutAbstractMethod" />
