@@ -43,7 +43,7 @@ public final class SQLite3Common {
     public static String getCheckConstraint(SQLite3GlobalState globalState, List<SQLite3Column> columns) {
         SQLite3Expression expression = new SQLite3ExpressionGenerator(globalState).setColumns(columns)
                 .generateExpression();
-        return (" CHECK ( " + SQLite3Visitor.asString(expression) + ")");
+        return " CHECK ( " + SQLite3Visitor.asString(expression) + ")";
     }
 
     public static SQLite3Expression getTrueExpression(List<SQLite3Column> columns, SQLite3GlobalState globalState) {

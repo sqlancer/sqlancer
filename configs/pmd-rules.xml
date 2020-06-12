@@ -46,7 +46,6 @@
 		<!-- TODO -->
 		<exclude name="ShortClassName" />
 		<exclude name="FormalParameterNamingConventions" />
-		<exclude name="UselessParentheses" />
 		<exclude name="LinguisticNaming" />
 		<exclude name="ConfusingTernary" />
 		<exclude name="PrematureDeclaration" />

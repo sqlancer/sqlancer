@@ -151,13 +151,13 @@ public final class SQLite3Cast {
                     BigDecimal first = new BigDecimal(substring);
                     long longValue = first.longValue();
                     BigDecimal second = BigDecimal.valueOf(longValue);
-                    boolean isWithinConvertibleRange = (longValue >= MIN_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED
-                            && longValue <= MAX_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED) && convertRealToInt;
+                    boolean isWithinConvertibleRange = longValue >= MIN_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED
+                            && longValue <= MAX_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED && convertRealToInt;
                     boolean isFloatingPointNumber = substring.contains(".") || substring.toUpperCase().contains("E");
                     boolean doubleShouldBeConvertedToInt = isFloatingPointNumber && first.compareTo(second) == 0
                             && isWithinConvertibleRange;
                     boolean isInteger = !isFloatingPointNumber && first.compareTo(second) == 0;
-                    if (doubleShouldBeConvertedToInt || (isInteger && !convertIntToReal)) {
+                    if (doubleShouldBeConvertedToInt || isInteger && !convertIntToReal) {
                         // see https://www.sqlite.org/src/tktview/afdc5a29dc
                         return SQLite3Constant.createIntConstant(first.longValue());
                     } else {
