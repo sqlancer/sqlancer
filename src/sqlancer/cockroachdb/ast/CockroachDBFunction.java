@@ -170,7 +170,7 @@ public enum CockroachDBFunction {
     }
 
     public CockroachDBDataType[] getArgumentTypes(CockroachDBCompositeDataType returnType) {
-        return argumentTypes;
+        return argumentTypes.clone();
     }
 
     public CockroachDBFunctionCall getCall(CockroachDBCompositeDataType returnType, CockroachDBExpressionGenerator gen,

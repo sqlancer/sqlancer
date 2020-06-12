@@ -117,7 +117,7 @@ public class SQLite3WindowFunction extends SQLite3Expression {
     }
 
     public SQLite3Expression[] getArgs() {
-        return args;
+        return args.clone();
     }
 
     @Override

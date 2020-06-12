@@ -34,7 +34,7 @@ public abstract class SQLite3Case extends SQLite3Expression {
     }
 
     public CasePair[] getPairs() {
-        return pairs;
+        return pairs.clone();
     }
 
     public SQLite3Expression getElseExpr() {

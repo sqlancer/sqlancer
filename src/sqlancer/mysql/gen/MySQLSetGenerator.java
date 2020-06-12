@@ -238,7 +238,7 @@ public class MySQLSetGenerator {
         }
 
         public Scope[] getScopes() {
-            return scopes;
+            return scopes.clone();
         }
     }
 

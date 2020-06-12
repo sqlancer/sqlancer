@@ -29,7 +29,7 @@ public class PostgresFunction implements PostgresExpression {
     }
 
     public PostgresExpression[] getArguments() {
-        return args;
+        return args.clone();
     }
 
     public enum PostgresFunctionWithResult {

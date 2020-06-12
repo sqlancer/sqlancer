@@ -170,7 +170,7 @@ public class MariaDBSetGenerator {
         }
 
         public Scope[] getScopes() {
-            return scopes;
+            return scopes.clone();
         }
     }
 

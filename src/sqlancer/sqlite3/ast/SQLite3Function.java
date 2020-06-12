@@ -317,7 +317,7 @@ public class SQLite3Function extends SQLite3Expression {
     }
 
     public SQLite3Expression[] getArgs() {
-        return args;
+        return args.clone();
     }
 
     public ComputableFunction getFunc() {
