@@ -60,7 +60,7 @@ public class MySQLBinaryLogicalOperation implements MySQLExpression {
         private final String[] textRepresentations;
 
         MySQLBinaryLogicalOperator(String... textRepresentations) {
-            this.textRepresentations = textRepresentations;
+            this.textRepresentations = textRepresentations.clone();
         }
 
         String getTextRepresentation() {

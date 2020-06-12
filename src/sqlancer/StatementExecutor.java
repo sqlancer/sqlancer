@@ -23,7 +23,7 @@ public class StatementExecutor<G extends GlobalState<?>, A extends AbstractActio
 
     public StatementExecutor(G globalState, A[] actions, ActionMapper<G, A> mapping, AfterQueryAction queryConsumer) {
         this.globalState = globalState;
-        this.actions = actions;
+        this.actions = actions.clone();
         this.mapping = mapping;
         this.queryConsumer = queryConsumer;
     }

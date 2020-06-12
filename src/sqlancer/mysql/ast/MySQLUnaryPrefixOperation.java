@@ -43,7 +43,7 @@ public class MySQLUnaryPrefixOperation extends UnaryOperatorNode<MySQLExpression
         private String[] textRepresentations;
 
         MySQLUnaryPrefixOperator(String... textRepresentations) {
-            this.textRepresentations = textRepresentations;
+            this.textRepresentations = textRepresentations.clone();
         }
 
         public abstract MySQLConstant applyNotNull(MySQLConstant expr);

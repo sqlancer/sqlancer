@@ -145,7 +145,7 @@ public enum CockroachDBFunction {
 
     CockroachDBFunction(CockroachDBDataType returnType, CockroachDBDataType... argumentTypes) {
         this.returnType = returnType;
-        this.argumentTypes = argumentTypes;
+        this.argumentTypes = argumentTypes.clone();
         this.functionName = toString();
     }
 
@@ -162,7 +162,7 @@ public enum CockroachDBFunction {
     CockroachDBFunction(String functionName, CockroachDBDataType returnType, CockroachDBDataType... argumentTypes) {
         this.functionName = functionName;
         this.returnType = returnType;
-        this.argumentTypes = argumentTypes;
+        this.argumentTypes = argumentTypes.clone();
     }
 
     public boolean isCompatibleWithReturnType(CockroachDBCompositeDataType returnType) {

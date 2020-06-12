@@ -75,7 +75,7 @@ public class CockroachDBAggregate implements CockroachDBExpression {
 
         //
         CockroachDBAggregateFunction(CockroachDBDataType... supportedReturnTypes) {
-            this.supportedReturnTypes = supportedReturnTypes;
+            this.supportedReturnTypes = supportedReturnTypes.clone();
         }
 
         public static CockroachDBAggregateFunction getRandom() {

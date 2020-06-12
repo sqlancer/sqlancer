@@ -14,14 +14,14 @@ public class PostgresFunction implements PostgresExpression {
         functionWithKnownResult = func;
         this.func = func.getName();
         this.returnType = returnType;
-        this.args = args;
+        this.args = args.clone();
     }
 
     public PostgresFunction(PostgresFunctionWithUnknownResult f, PostgresDataType returnType,
             PostgresExpression... args) {
         this.func = f.getName();
         this.returnType = returnType;
-        this.args = args;
+        this.args = args.clone();
     }
 
     public String getFunctionName() {

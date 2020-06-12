@@ -14,7 +14,7 @@ public class MySQLComputableFunction implements MySQLExpression {
 
     public MySQLComputableFunction(MySQLFunction func, MySQLExpression... args) {
         this.func = func;
-        this.args = args;
+        this.args = args.clone();
     }
 
     public MySQLFunction getFunction() {

@@ -383,7 +383,7 @@ public abstract class SQLite3Expression {
 
         public Function(String name, SQLite3Expression... arguments) {
             this.name = name;
-            this.arguments = arguments;
+            this.arguments = arguments.clone();
         }
 
         public SQLite3Expression[] getArguments() {
@@ -1026,7 +1026,7 @@ public abstract class SQLite3Expression {
             }
 
             BinaryComparisonOperator(String... textRepresentation) {
-                this.textRepresentation = textRepresentation;
+                this.textRepresentation = textRepresentation.clone();
             }
 
             public static BinaryComparisonOperator getRandomOperator() {
@@ -1456,7 +1456,7 @@ public abstract class SQLite3Expression {
             private final String[] textRepresentation;
 
             BinaryOperator(String... textRepresentation) {
-                this.textRepresentation = textRepresentation;
+                this.textRepresentation = textRepresentation.clone();
             }
 
             public static BinaryOperator getRandomOperator() {

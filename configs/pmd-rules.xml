@@ -20,7 +20,6 @@
 		<exclude name="AvoidReassigningParameters" />
 		<exclude name="PositionLiteralsFirstInComparisons" />
 		<exclude name="ForLoopCanBeForeach" />
-		<exclude name="ArrayIsStoredDirectly" />
 		<exclude name="MethodReturnsInternalArray" />
 		<exclude name="CheckResultSet" />
 		<exclude name="UseVarargs" />
@@ -31,7 +30,7 @@
 	</rule>
 
 	<rule ref="category/java/codestyle.xml">
-		<priority>2</priority>
+		<priority>1</priority>
 		<exclude name="MethodArgumentCouldBeFinal" />
 		<exclude name="LocalVariableCouldBeFinal" />
 		<exclude name="ShortVariable" />
