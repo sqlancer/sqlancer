@@ -504,9 +504,9 @@ public class SQLite3Schema {
     }
 
     public static SQLite3DataType getColumnType(String columnTypeString) {
-        columnTypeString = columnTypeString.toUpperCase().replace(" GENERATED ALWAYS", "");
+        String trimmedTypeString = columnTypeString.toUpperCase().replace(" GENERATED ALWAYS", "");
         SQLite3DataType columnType;
-        switch (columnTypeString) {
+        switch (trimmedTypeString) {
         case "TEXT":
             columnType = SQLite3DataType.TEXT;
             break;
@@ -531,7 +531,7 @@ public class SQLite3Schema {
             columnType = SQLite3DataType.NULL;
             break;
         default:
-            throw new AssertionError(columnTypeString);
+            throw new AssertionError(trimmedTypeString);
         }
         return columnType;
     }

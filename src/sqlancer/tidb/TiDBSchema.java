@@ -176,23 +176,23 @@ public class TiDBSchema extends AbstractSchema<TiDBTable> {
     }
 
     private static TiDBCompositeDataType getColumnType(String typeString) {
-        typeString = typeString.replace(" zerofill", "").replace(" unsigned", "");
-        if (typeString.contains("decimal")) {
+        String trimmedStringType = typeString.replace(" zerofill", "").replace(" unsigned", "");
+        if (trimmedStringType.contains("decimal")) {
             return new TiDBCompositeDataType(TiDBDataType.DECIMAL);
         }
-        if (typeString.startsWith("var_string") || typeString.contains("binary")) {
+        if (trimmedStringType.startsWith("var_string") || trimmedStringType.contains("binary")) {
             return new TiDBCompositeDataType(TiDBDataType.TEXT);
         }
-        if (typeString.startsWith("char")) {
+        if (trimmedStringType.startsWith("char")) {
             return new TiDBCompositeDataType(TiDBDataType.CHAR);
         }
         TiDBDataType primitiveType;
         int size = -1;
-        if (typeString.startsWith("bigint")) {
+        if (trimmedStringType.startsWith("bigint")) {
             primitiveType = TiDBDataType.INT;
             size = 8;
         } else {
-            switch (typeString) {
+            switch (trimmedStringType) {
             case "text":
             case "longtext":
                 primitiveType = TiDBDataType.TEXT;
@@ -224,7 +224,7 @@ public class TiDBSchema extends AbstractSchema<TiDBTable> {
                 primitiveType = TiDBDataType.BLOB;
                 break;
             default:
-                throw new AssertionError(typeString);
+                throw new AssertionError(trimmedStringType);
             }
         }
         return new TiDBCompositeDataType(primitiveType, size);

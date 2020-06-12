@@ -371,9 +371,9 @@ public class SQLite3PivotedQuerySynthesisOracle implements TestOracle {
             }
         }
         sb.append(")");
-        colName = new SQLite3PostfixText(colName, sb.toString(), colName.getExpectedValue());
+        SQLite3PostfixText windowFunction = new SQLite3PostfixText(colName, sb.toString(), colName.getExpectedValue());
         errors.add("misuse of aggregate");
-        return colName;
+        return windowFunction;
     }
 
     private void appendFilter(List<SQLite3Column> columns, StringBuilder sb) {
