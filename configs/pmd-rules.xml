@@ -48,7 +48,6 @@
 
 		<!-- TODO -->
 		<exclude name="ShortClassName" />
-		<exclude name="GenericsNaming" />
 		<exclude name="FormalParameterNamingConventions" />
 		<exclude name="UselessParentheses" />
 		<exclude name="LinguisticNaming" />
