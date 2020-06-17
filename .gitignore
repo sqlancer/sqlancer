@@ -3,3 +3,4 @@ target/
 .settings
 .project
 .checkstyle
+*.DS_Store

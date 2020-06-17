@@ -126,20 +126,20 @@
 				<artifactId>maven-pmd-plugin</artifactId>
 				<version>3.13.0</version>
 				<executions>
-					<execution>
-						<id>pmd</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>check</goal>
-						</goals>
-						<configuration>
-							<failurePriority>2</failurePriority>
-							<failOnViolation>true</failOnViolation>
-							<rulesets>
-								<ruleset>configs/pmd-rules.xml</ruleset>
-							</rulesets>
-						</configuration>
-					</execution>
+						<execution>
+								<id>pmd</id>
+								<phase>verify</phase>
+								<goals>
+										<goal>check</goal>
+								</goals>
+								<configuration>
+										<failurePriority>2</failurePriority>
+										<failOnViolation>true</failOnViolation>
+										<rulesets>
+												<ruleset>configs/pmd-rules.xml</ruleset>
+										</rulesets>
+								</configuration>
+						</execution>
 				</executions>
 			</plugin>
 			<plugin>
@@ -200,8 +200,18 @@
 			<version>5.6.2</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId> slf4j-simple</artifactId>
+			<version>1.7.30</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>ru.yandex.clickhouse</groupId>
+			<artifactId>clickhouse-jdbc</artifactId>
+			<version>0.2.4</version>
+		</dependency>
 	</dependencies>
-
 	<reporting>
 		<plugins>
 			<plugin>

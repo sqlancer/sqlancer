@@ -4,7 +4,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
@@ -166,13 +165,6 @@ public class SQLite3Options {
 
         public abstract TestOracle create(SQLite3GlobalState globalState) throws SQLException;
 
-    }
-
-    public class SQLite3OracleConverter implements IStringConverter<SQLite3Oracle> {
-        @Override
-        public SQLite3Oracle convert(String value) {
-            return SQLite3Oracle.valueOf(value);
-        }
     }
 
 }
