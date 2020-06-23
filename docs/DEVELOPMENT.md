@@ -40,3 +40,7 @@ We use [Travis-CI](https://travis-ci.com/) to automatically check PRs.
 ## Testing
 
 We found that bugs in SQLancer are quickly found and easy to debug when testing the DBMS. However, it would still be preferable to automatically check that SQLancer still executes as expected. To this end, we would like to add smoke testing for each DBMS to test that the respective testing implementation is not obviously broken, see [here](https://github.com/sqlancer/sqlancer/issues/3).
+
+## Naming Conventions
+
+Each class specific to a DBMS is prefixed by the DBMS name. For example, each class specific to SQLite is prefixed by `SQLite3`. The naming convention is [automatically checked](src/check_names.py).
