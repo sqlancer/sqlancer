@@ -24,7 +24,7 @@ The following commands clone SQLancer, create a JAR, and start SQLancer to fuzz 
 ```
 git clone https://github.com/sqlancer/sqlancer
 cd sqlancer
-mvn package
+mvn package -DskipTests
 cd target
 java -jar SQLancer-0.0.1-SNAPSHOT.jar --num-threads 4 sqlite3 --oracle NoREC
 ```
