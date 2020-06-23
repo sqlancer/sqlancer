@@ -1,7 +1,8 @@
 language: java
 jdk: oraclejdk11
 script:
-- mvn test
+- cd src && python check_names.py
+- cd .. && mvn test
 cache:
   directories:
   - target/lib
