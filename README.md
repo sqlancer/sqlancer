@@ -66,24 +66,6 @@ Since SQL dialects differ widely, each DBMS to be tested requires a separate imp
 | TDEngine    | Removed     | Untyped               | We removed the TDEngine implementation since all but one of our bug reports were still unaddressed five months after we reported them.                                                          |
 
 
-# Continuous Integration and Test Suite
-
-To improve and maintain SQLancer's code quality, we use several tools:
-* The [Eclipse code formatter](https://code.revelc.net/formatter-maven-plugin/), to ensure a consistent formatting (Run `mvn formatter:format` to format all files).
-* [Checkstyle](https://checkstyle.sourceforge.io/), to enforce a consistent coding standard.
-* [PMD](https://pmd.github.io/), which finds programming flaws using static analysis.
-* [SpotBugs](https://spotbugs.github.io/), which also uses static analysis to find bugs and programming flaws.
-
-You can run them using the following command:
-
-```
-mvn verify
-```
-
-We plan to soon add a [CI](https://github.com/sqlancer/sqlancer/issues/2) to automatically check PRs. Subsequently, we also plan to add smoke testing for each DBMS to test that the respective testing implementation is not obviously broken, see [here](https://github.com/sqlancer/sqlancer/issues/3).
-
-SQLancer does currently not have a test suite. We found that bugs in SQLancer are quickly found and easy to debug when testing the DBMS. The PQS implementation had a test suite, which was removed in commit 36ede0c0c68b3856e03ef5ba802a7c2575bb3f12.
-
 # Using SQLancer
 
 ## Logs
@@ -98,25 +80,15 @@ After finding a bug, it is useful to produce a minimal test case before reportin
 
 We would appreciate it if you mention SQLancer when you report bugs found by it. We would also be excited to know if you are using SQLancer to find bugs, or if you have extended it to test another DBMS (also if you do not plan to contribute it to this project). SQLancer has found over 400 bugs in widely-used DBMS, which are listed [here](https://www.manuelrigger.at/dbms-bugs/).
 
-# Extending and Improving SQLancer
-
-## Implementing Support for a New DBMS
-
-The DuckDB implementation provides a good template for a new implementation. The `DuckDBProvider` class is the central class that manages the creation of the databases and executes the selected test oracles. Try to copy its structure for the new DBMS that you want to implement, and start by generate databases (without implementing a test oracle). As part of this, you will also need to implement the equivalent of `DuckDBSchema`, which represents the database schema of the generated database. After you can successfully generate databases, the next step is to generate one of the test oracles. For example, you might want to implement NoREC (see `DuckDBNoRECOracle` or `DuckDBQueryPartitioningWhereTester` for TLP). As part of this, you must also implement a random expression generator (see `DuckDBExpressionGenerator`) and a visitor to derive the textual representation of an expression (see `DuckDBToStringVisitor`).
-
-## Working with Eclipse
-
-Developing SQLancer using Eclipse is expected to work well. You can import SQLancer with a single step:
-
-```
-File -> Import -> Existing Maven Projects -> Select the SQLancer directory as root directory -> Finish
-```
-If you do not find an option to import Maven projects, you might need to install the [M2Eclipse plugin](https://www.eclipse.org/m2e/).
-
 
 # Community
 
 We have created a [Slack workspace](https://join.slack.com/t/sqlancer/shared_invite/zt-eozrcao4-ieG29w1LNaBDMF7OB_~ACg) to discuss SQLancer, and DBMS testing in general. SQLancer's official Twitter handle is [@sqlancer_dbms](https://twitter.com/sqlancer_dbms).
+
+
+# Additional Documentation
+
+* [Contributing to SQLancer](docs/DEVELOPMENT.md)
 
 # Additional Resources
 
