@@ -145,7 +145,7 @@
 			<plugin>
 				<groupId>com.github.spotbugs</groupId>
 				<artifactId>spotbugs-maven-plugin</artifactId>
-				<version>4.0.0</version>
+				<version>4.0.4</version>
 				<executions>
 					<execution>
 						<id>spotbugs</id>
