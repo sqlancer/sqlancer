@@ -103,6 +103,9 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
         StateLogger logger = globalState.getLogger();
         QueryManager manager = globalState.getManager();
         globalState.setSchema(DuckDBSchema.fromConnection(globalState.getConnection(), globalState.getDatabaseName()));
+        if (globalState.getOptions().logEachSelect()) {
+            globalState.getLogger().writeCurrent(globalState.getState());
+        }
         for (int i = 0; i < Randomly.fromOptions(1, 2); i++) {
             boolean success = false;
             do {
