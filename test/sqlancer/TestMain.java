@@ -11,10 +11,11 @@ public class TestMain {
 
     @Test
     public void testDuckDB() {
-        assertEquals(0, Main.executeMain(new String[] { "--timeout-seconds", SECONDS, "--num-queries", NUM_QUERIES,
-                "duckdb", "--oracle", "NoREC" }));
-        assertEquals(0, Main.executeMain(new String[] { "--timeout-seconds", SECONDS, "--num-queries", NUM_QUERIES,
-                "duckdb", "--oracle", "QUERY_PARTITIONING" }));
+        // run with one thread due to multithreading issues, see https://github.com/sqlancer/sqlancer/pull/45
+        assertEquals(0, Main.executeMain(new String[] { "--timeout-seconds", SECONDS, "--num-threads", "1",
+                "--num-queries", NUM_QUERIES, "duckdb", "--oracle", "NoREC" }));
+        assertEquals(0, Main.executeMain(new String[] { "--timeout-seconds", SECONDS, "--num-threads", "1",
+                "--num-queries", NUM_QUERIES, "duckdb", "--oracle", "QUERY_PARTITIONING" }));
     }
 
 }
