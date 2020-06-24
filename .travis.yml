@@ -41,3 +41,24 @@ matrix:
       jdk : oraclejdk11
       script:
         - mvn '-Dtest=!sqlancer.dbms.**' test
+    - name: postgres
+      before_install:
+      - sudo apt-get update
+      - sudo apt-get --yes remove postgresql\*
+      - sudo apt-get install -y postgresql-12 postgresql-client-12
+      - sudo sed -i 's/port = 5433/port = 5432/' /etc/postgresql/12/main/postgresql.conf
+      - sudo cp /etc/postgresql/{10,12}/main/pg_hba.conf
+      - sudo service postgresql restart 12  
+      addons:
+        postgresql: "12.3"
+      env:
+        global:
+          - PGPORT=5432
+      services:
+        - postgresql
+      before_script:
+        - sudo apt-get install locales
+        - psql -c "CREATE ROLE sqlancer SUPERUSER LOGIN CREATEDB PASSWORD 'sqlancer';" -U postgres
+        - createdb test -U postgres
+      script:
+        - POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgres test

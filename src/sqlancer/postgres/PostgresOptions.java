@@ -26,6 +26,9 @@ public class PostgresOptions {
     @Parameter(names = "--oracle", converter = DBMSConverter.class)
     public List<PostgresOracle> oracle = Arrays.asList(PostgresOracle.QUERY_PARTITIONING);
 
+    @Parameter(names = "--test-collations", arity = 1)
+    public boolean testCollations = true;
+
     public enum PostgresOracle {
         NOREC {
             @Override
