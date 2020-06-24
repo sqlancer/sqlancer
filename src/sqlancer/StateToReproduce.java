@@ -23,6 +23,8 @@ public class StateToReproduce {
 
     public String databaseVersion;
 
+    protected long seedValue;
+
     public String values;
 
     String exception;
@@ -54,6 +56,10 @@ public class StateToReproduce {
 
     public String getQueryString() {
         return queryString;
+    }
+
+    public long getSeedValue() {
+        return seedValue;
     }
 
     public static class MySQLStateToReproduce extends StateToReproduce {

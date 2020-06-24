@@ -211,6 +211,7 @@ public final class Main {
             sb.append("-- Time: " + dateFormat.format(date) + "\n");
             sb.append("-- Database: " + state.getDatabaseName() + "\n");
             sb.append("-- Database version: " + state.getDatabaseVersion() + "\n");
+            sb.append("-- seed value: " + state.getSeedValue() + "\n");
             for (Query s : state.getStatements()) {
                 if (s.getQueryString().endsWith(";")) {
                     sb.append(s.getQueryString());
@@ -309,7 +310,7 @@ public final class Main {
             final String databaseName = "database" + i;
             final long seed;
             if (options.getRandomSeed() == -1) {
-                seed = -1;
+                seed = System.currentTimeMillis() + i;
             } else {
                 seed = options.getRandomSeed() + i;
             }
@@ -337,14 +338,10 @@ public final class Main {
                         }
                         GlobalState<?> state = provider.generateGlobalState();
                         stateToRepro = provider.getStateToReproduce(databaseName);
+                        stateToRepro.seedValue = seed;
                         state.setState(stateToRepro);
                         logger = new StateLogger(databaseName, provider, options);
-                        Randomly r;
-                        if (seed == -1) {
-                            r = new Randomly();
-                        } else {
-                            r = new Randomly(seed);
-                        }
+                        Randomly r = new Randomly(seed);
                         state.setRandomly(r);
                         state.setDatabaseName(databaseName);
                         state.setMainOptions(options);
