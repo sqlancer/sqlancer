@@ -70,66 +70,61 @@ public final class PostgresSetGenerator {
                 "synchronize_seqscans", (r) -> Randomly.fromOptions(0, 1)),
         // https://www.postgresql.org/docs/devel/runtime-config-query.html
         ENABLE_BITMAPSCAN("enable_bitmapscan", (r) -> Randomly.fromOptions(1, 0)), ENABLE_GATHERMERGE(
-                "enable_gathermerge",
-                (r) -> Randomly.fromOptions(1, 0)), ENABLE_GROUPINGSETS_HASH_DISK("enable_groupingsets_hash_disk",
-                        (r) -> Randomly.fromOptions(1, 0)), ENABLE_HASHAGG("enable_hashagg",
-                                (r) -> Randomly.fromOptions(1, 0)), ENABLE_HASHAGG_DISK("enable_hashagg_disk",
-                                        (r) -> Randomly.fromOptions(1, 0)), ENABLE_HASHJOIN("enable_hashjoin",
-                                                (r) -> Randomly.fromOptions(1, 0)), ENABLE_INDEXSCAN("enable_indexscan",
-                                                        (r) -> Randomly.fromOptions(1, 0)), ENABLE_INDEXONLYSCAN(
-                                                                "enable_indexonlyscan",
-                                                                (r) -> Randomly.fromOptions(1, 0)), ENABLE_MATERIAL(
-                                                                        "enable_material",
+                "enable_gathermerge", (r) -> Randomly.fromOptions(1, 0)), ENABLE_HASHAGG("enable_hashagg",
+                        (r) -> Randomly.fromOptions(1, 0)), ENABLE_HASHAGG_DISK("enable_hashagg_disk",
+                                (r) -> Randomly.fromOptions(1, 0)), ENABLE_HASHJOIN("enable_hashjoin",
+                                        (r) -> Randomly.fromOptions(1, 0)), ENABLE_INDEXSCAN("enable_indexscan",
+                                                (r) -> Randomly.fromOptions(1, 0)), ENABLE_INDEXONLYSCAN(
+                                                        "enable_indexonlyscan",
+                                                        (r) -> Randomly.fromOptions(1, 0)), ENABLE_MATERIAL(
+                                                                "enable_material",
+                                                                (r) -> Randomly.fromOptions(1, 0)), ENABLE_MERGEJOIN(
+                                                                        "enable_mergejoin",
                                                                         (r) -> Randomly.fromOptions(1,
-                                                                                0)), ENABLE_MERGEJOIN(
-                                                                                        "enable_mergejoin",
+                                                                                0)), ENABLE_NESTLOOP(
+                                                                                        "enable_nestloop",
                                                                                         (r) -> Randomly.fromOptions(1,
-                                                                                                0)), ENABLE_NESTLOOP(
-                                                                                                        "enable_nestloop",
+                                                                                                0)), ENABLE_PARALLEL_APPEND(
+                                                                                                        "enable_parallel_append",
                                                                                                         (r) -> Randomly
                                                                                                                 .fromOptions(
                                                                                                                         1,
-                                                                                                                        0)), ENABLE_PARALLEL_APPEND(
-                                                                                                                                "enable_parallel_append",
+                                                                                                                        0)), ENABLE_PARALLEL_HASH(
+                                                                                                                                "enable_parallel_hash",
                                                                                                                                 (r) -> Randomly
                                                                                                                                         .fromOptions(
                                                                                                                                                 1,
-                                                                                                                                                0)), ENABLE_PARALLEL_HASH(
-                                                                                                                                                        "enable_parallel_hash",
+                                                                                                                                                0)), ENABLE_PARTITION_PRUNING(
+                                                                                                                                                        "enable_partition_pruning",
                                                                                                                                                         (r) -> Randomly
                                                                                                                                                                 .fromOptions(
                                                                                                                                                                         1,
-                                                                                                                                                                        0)), ENABLE_PARTITION_PRUNING(
-                                                                                                                                                                                "enable_partition_pruning",
+                                                                                                                                                                        0)), ENABLE_PARTITIONWISE_JOIN(
+                                                                                                                                                                                "enable_partitionwise_join",
                                                                                                                                                                                 (r) -> Randomly
                                                                                                                                                                                         .fromOptions(
                                                                                                                                                                                                 1,
-                                                                                                                                                                                                0)), ENABLE_PARTITIONWISE_JOIN(
-                                                                                                                                                                                                        "enable_partitionwise_join",
+                                                                                                                                                                                                0)), ENABLE_PARTITIONWISE_AGGREGATE(
+                                                                                                                                                                                                        "enable_partitionwise_aggregate",
                                                                                                                                                                                                         (r) -> Randomly
                                                                                                                                                                                                                 .fromOptions(
                                                                                                                                                                                                                         1,
-                                                                                                                                                                                                                        0)), ENABLE_PARTITIONWISE_AGGREGATE(
-                                                                                                                                                                                                                                "enable_partitionwise_aggregate",
+                                                                                                                                                                                                                        0)), ENABLE_SEGSCAN(
+                                                                                                                                                                                                                                "enable_seqscan",
                                                                                                                                                                                                                                 (r) -> Randomly
                                                                                                                                                                                                                                         .fromOptions(
                                                                                                                                                                                                                                                 1,
-                                                                                                                                                                                                                                                0)), ENABLE_SEGSCAN(
-                                                                                                                                                                                                                                                        "enable_seqscan",
+                                                                                                                                                                                                                                                0)), ENABLE_SORT(
+                                                                                                                                                                                                                                                        "enable_sort",
                                                                                                                                                                                                                                                         (r) -> Randomly
                                                                                                                                                                                                                                                                 .fromOptions(
                                                                                                                                                                                                                                                                         1,
-                                                                                                                                                                                                                                                                        0)), ENABLE_SORT(
-                                                                                                                                                                                                                                                                                "enable_sort",
+                                                                                                                                                                                                                                                                        0)), ENABLE_TIDSCAN(
+                                                                                                                                                                                                                                                                                "enable_tidscan",
                                                                                                                                                                                                                                                                                 (r) -> Randomly
                                                                                                                                                                                                                                                                                         .fromOptions(
                                                                                                                                                                                                                                                                                                 1,
-                                                                                                                                                                                                                                                                                                0)), ENABLE_TIDSCAN(
-                                                                                                                                                                                                                                                                                                        "enable_tidscan",
-                                                                                                                                                                                                                                                                                                        (r) -> Randomly
-                                                                                                                                                                                                                                                                                                                .fromOptions(
-                                                                                                                                                                                                                                                                                                                        1,
-                                                                                                                                                                                                                                                                                                                        0)),
+                                                                                                                                                                                                                                                                                                0)),
         // 19.7.2. Planner Cost Constants (complete as of March 2020)
         // https://www.postgresql.org/docs/current/runtime-config-query.html#RUNTIME-CONFIG-QUERY-CONSTANTS
         SEQ_PAGE_COST("seq_page_cost",
@@ -168,21 +163,22 @@ public final class PostgresSetGenerator {
                                                                                                                                                                                 0,
                                                                                                                                                                                 r.getLong(
                                                                                                                                                                                         -1,
-                                                                                                                                                                                        Long.MAX_VALUE))), JIT_INLINE_ABOVE_COST(
-                                                                                                                                                                                                "jit_inline_above_cost",
-                                                                                                                                                                                                (r) -> Randomly
-                                                                                                                                                                                                        .fromOptions(
-                                                                                                                                                                                                                0,
-                                                                                                                                                                                                                r.getLong(
-                                                                                                                                                                                                                        -1,
-                                                                                                                                                                                                                        Long.MAX_VALUE))), JIT_OPTIMIZE_ABOVE_COST(
-                                                                                                                                                                                                                                "jit_optimize_above_cost",
-                                                                                                                                                                                                                                (r) -> Randomly
-                                                                                                                                                                                                                                        .fromOptions(
-                                                                                                                                                                                                                                                0,
-                                                                                                                                                                                                                                                r.getLong(
-                                                                                                                                                                                                                                                        -1,
-                                                                                                                                                                                                                                                        Long.MAX_VALUE))),
+                                                                                                                                                                                        Long.MAX_VALUE
+                                                                                                                                                                                                - 1))), JIT_INLINE_ABOVE_COST(
+                                                                                                                                                                                                        "jit_inline_above_cost",
+                                                                                                                                                                                                        (r) -> Randomly
+                                                                                                                                                                                                                .fromOptions(
+                                                                                                                                                                                                                        0,
+                                                                                                                                                                                                                        r.getLong(
+                                                                                                                                                                                                                                -1,
+                                                                                                                                                                                                                                Long.MAX_VALUE))), JIT_OPTIMIZE_ABOVE_COST(
+                                                                                                                                                                                                                                        "jit_optimize_above_cost",
+                                                                                                                                                                                                                                        (r) -> Randomly
+                                                                                                                                                                                                                                                .fromOptions(
+                                                                                                                                                                                                                                                        0,
+                                                                                                                                                                                                                                                        r.getLong(
+                                                                                                                                                                                                                                                                -1,
+                                                                                                                                                                                                                                                                Long.MAX_VALUE))),
         // 19.7.3. Genetic Query Optimizer (complete as of March 2020)
         // https://www.postgresql.org/docs/current/runtime-config-query.html#RUNTIME-CONFIG-QUERY-GEQO
         GEQO("geqo", (r) -> Randomly.fromOptions(1, 0)), GEQO_THRESHOLD("geqo_threshold",

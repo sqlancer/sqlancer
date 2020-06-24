@@ -271,7 +271,7 @@ public final class PostgresProvider implements DatabaseProvider<PostgresGlobalSt
                 globalState.getOptions().getPassword());
         globalState.getState().statements.add(new QueryAdapter("\\c test;"));
         globalState.getState().statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName));
-        String createDatabaseCommand = getCreateDatabaseCommand(databaseName, con);
+        String createDatabaseCommand = getCreateDatabaseCommand(databaseName, con, globalState);
         globalState.getState().statements.add(new QueryAdapter(createDatabaseCommand));
         globalState.getState().statements.add(new QueryAdapter("\\c " + databaseName));
         try (Statement s = con.createStatement()) {
@@ -297,10 +297,10 @@ public final class PostgresProvider implements DatabaseProvider<PostgresGlobalSt
         return con;
     }
 
-    private String getCreateDatabaseCommand(String databaseName, Connection con) {
+    private String getCreateDatabaseCommand(String databaseName, Connection con, GlobalState<?> state) {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE DATABASE " + databaseName + " ");
-        if (Randomly.getBoolean()) {
+        if (Randomly.getBoolean() && ((PostgresOptions) state.getDmbsSpecificOptions()).testCollations) {
             if (Randomly.getBoolean()) {
                 sb.append("WITH ENCODING '");
                 sb.append(Randomly.fromOptions("utf8"));

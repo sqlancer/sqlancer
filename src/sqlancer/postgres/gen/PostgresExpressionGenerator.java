@@ -68,6 +68,7 @@ public class PostgresExpressionGenerator {
     public PostgresExpressionGenerator(PostgresGlobalState globalState) {
         this.r = globalState.getRandomly();
         this.maxDepth = globalState.getOptions().getMaxExpressionDepth();
+        this.globalState = globalState;
     }
 
     public PostgresExpressionGenerator setColumns(List<PostgresColumn> columns) {
@@ -352,6 +353,9 @@ public class PostgresExpressionGenerator {
         TextExpression option;
         List<TextExpression> validOptions = new ArrayList<>(Arrays.asList(TextExpression.values()));
         if (expectedResult) {
+            validOptions.remove(TextExpression.COLLATE);
+        }
+        if (!globalState.getDmbsSpecificOptions().testCollations) {
             validOptions.remove(TextExpression.COLLATE);
         }
         option = Randomly.fromList(validOptions);
