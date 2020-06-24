@@ -20,6 +20,13 @@ public class TestMain {
     }
 
     @Test
+    public void testSqlite() {
+        // run with one thread due to multithreading issues, see https://github.com/sqlancer/sqlancer/pull/45
+        assertEquals(0, Main.executeMain(
+                new String[] { "--timeout-seconds", SECONDS, "--num-threads", "1", "--num-queries", "0", "sqlite3" }));
+    }
+
+    @Test
     public void testMySQL() {
         String mysqlAvailable = System.getenv("MYSQL_AVAILABLE");
         boolean mysqlIsAvailable = mysqlAvailable != null && mysqlAvailable.equalsIgnoreCase("true");
