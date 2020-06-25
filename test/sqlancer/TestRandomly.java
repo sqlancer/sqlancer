@@ -215,7 +215,7 @@ public class TestRandomly {
 
     private List<String> getRandomValueList(Randomly r) {
         List<String> values = new ArrayList<>();
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 1000; i++) {
             values.add(String.valueOf(r.getDouble()));
             values.add(String.valueOf(r.getInteger()));
             values.add(String.valueOf(r.getString()));
