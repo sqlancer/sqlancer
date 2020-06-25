@@ -201,7 +201,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
     @Override
     public Connection createDatabase(GlobalState<?> globalState) throws SQLException {
         String databaseName = globalState.getDatabaseName();
-        String url = "jdbc:mysql://127.0.0.1:4001/";
+        String url = "jdbc:mysql://127.0.0.1:4000/";
         Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
                 globalState.getOptions().getPassword());
         globalState.getState().statements.add(new QueryAdapter("USE test"));
@@ -216,7 +216,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
             s.execute(createDatabaseCommand);
         }
         con.close();
-        con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:4001/" + databaseName,
+        con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:4000/" + databaseName,
                 globalState.getOptions().getUserName(), globalState.getOptions().getPassword());
         return con;
     }

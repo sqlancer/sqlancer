@@ -20,7 +20,7 @@ public final class TiDBAlterTableGenerator {
     }
 
     private enum Action {
-        MODIFY_COLUMN, ENABLE_DISABLE_KEYS, FORCE, DROP_PRIMARY_KEY, ADD_PRIMARY_KEY, ADD, CHANGE, DROP_COLUMN, ORDER_BY
+        MODIFY_COLUMN, ENABLE_DISABLE_KEYS, FORCE, DROP_PRIMARY_KEY, ADD_PRIMARY_KEY, CHANGE, DROP_COLUMN, ORDER_BY
     }
 
     public static Query getQuery(TiDBGlobalState globalState) {
@@ -51,6 +51,8 @@ public final class TiDBAlterTableGenerator {
             errors.add("with index covered now");
             errors.add("Unsupported drop integer primary key");
             errors.add("has a generated column dependency");
+            errors.add(
+                    "references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them");
             break;
         case ENABLE_DISABLE_KEYS:
             sb.append(Randomly.fromOptions("ENABLE", "DISABLE"));
@@ -96,7 +98,7 @@ public final class TiDBAlterTableGenerator {
                     .collect(Collectors.joining(", ")));
             break;
         default:
-            throw new AssertionError();
+            throw new AssertionError(a);
         }
 
         return new QueryAdapter(sb.toString(), errors, true);
