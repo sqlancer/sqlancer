@@ -32,3 +32,8 @@ matrix:
     - name: misc
       script:
         - mvn '-Dtest=!sqlancer.dbms.**' test
+    - name: misc (java-8) 
+        jdk:
+        - openjdk8
+      script:
+        - mvn '-Dtest=!sqlancer.dbms.**' test
