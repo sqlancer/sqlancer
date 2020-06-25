@@ -25,6 +25,17 @@ matrix:
         - sudo apt-get remove mysql-* && wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar && tar -xvf mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar && yes | sudo dpkg -i *.deb
         - sudo mysql -e "CREATE USER 'sqlancer'@'localhost' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'localhost';"
         - MYSQL_AVAILABLE=true mvn -Dtest=TestMySQL test
+    - name: tidb
+      jdk : oraclejdk11
+      services:
+      - docker
+      before_install:
+      - docker pull pingcap/tidb:latest
+      - docker run --name tidb-server -d -p 4000:4000 pingcap/tidb:latest
+      - sleep 15
+      - sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+      script:
+        - TIDB_AVAILABLE=true mvn -Dtest=TestTiDB test
     - name: sqlite
       jdk : oraclejdk11
       script:
