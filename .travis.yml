@@ -25,6 +25,15 @@ matrix:
         - sudo apt-get remove mysql-* && wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar && tar -xvf mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar && yes | sudo dpkg -i *.deb
         - sudo mysql -e "CREATE USER 'sqlancer'@'localhost' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'localhost';"
         - MYSQL_AVAILABLE=true mvn -Dtest=TestMySQL test
+    - name: cockroachdb
+      jdk : oraclejdk11
+      before_install:
+      - wget -qO- https://binaries.cockroachdb.com/cockroach-v20.1.2.linux-amd64.tgz | tar  xvz
+      - cd cockroach-v20.1.2.linux-amd64/ && ./cockroach start-single-node --insecure &
+      - sleep 15
+      - cd cockroach-v20.1.2.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
+      script:
+      - COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDB test
     - name: tidb
       jdk : oraclejdk11
       services:
