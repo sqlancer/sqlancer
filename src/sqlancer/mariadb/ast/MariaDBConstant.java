@@ -63,7 +63,7 @@ public class MariaDBConstant extends MariaDBExpression {
 
         @Override
         public String toString() {
-            return "'" + value.replace("'", "''") + "'";
+            return "'" + value.replace("'", "''").replace("\\", "\\\\") + "'";
         }
 
     }
