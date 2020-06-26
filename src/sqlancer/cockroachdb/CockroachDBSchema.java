@@ -21,16 +21,6 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
 
         INT, BOOL, STRING, FLOAT, BYTES, BIT, VARBIT, SERIAL, INTERVAL, TIMESTAMP, TIMESTAMPTZ, DECIMAL, JSONB, TIME, TIMETZ, ARRAY;
 
-        private final boolean isPrimitive;
-
-        CockroachDBDataType() {
-            isPrimitive = true;
-        }
-
-        CockroachDBDataType(boolean isPrimitive) {
-            this.isPrimitive = isPrimitive;
-        }
-
         public static CockroachDBDataType getRandom() {
             return Randomly.fromOptions(values());
         }
@@ -39,9 +29,6 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
             return CockroachDBCompositeDataType.getRandomForType(this);
         }
 
-        public boolean isPrimitive() {
-            return isPrimitive;
-        }
     }
 
     public static class CockroachDBCompositeDataType {
@@ -280,10 +267,6 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
         public CockroachDBTable(String tableName, List<CockroachDBColumn> columns, List<TableIndex> indexes,
                 boolean isView) {
             super(tableName, columns, indexes, isView);
-        }
-
-        public boolean hasPrimaryKey() {
-            return getColumns().stream().anyMatch(c -> c.isPrimaryKey());
         }
 
     }
