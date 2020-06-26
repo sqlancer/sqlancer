@@ -16,6 +16,7 @@ public final class MariaDBErrors {
         errors.add("doesn't have a default value"); // no default value
         errors.add("The value specified for generated column"); // trying to insert into a generated column
         errors.add("Incorrect double value");
+        errors.add("Incorrect string value");
     }
 
 }

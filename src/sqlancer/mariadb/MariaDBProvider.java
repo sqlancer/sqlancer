@@ -187,21 +187,22 @@ public class MariaDBProvider implements DatabaseProvider<GlobalState<MariaDBOpti
 
     @Override
     public Connection createDatabase(GlobalState<?> globalState) throws SQLException {
-        globalState.getState().statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName));
-        globalState.getState().statements.add(new QueryAdapter("CREATE DATABASE " + databaseName));
-        globalState.getState().statements.add(new QueryAdapter("USE " + databaseName));
+        globalState.getState().statements
+                .add(new QueryAdapter("DROP DATABASE IF EXISTS " + globalState.getDatabaseName()));
+        globalState.getState().statements.add(new QueryAdapter("CREATE DATABASE " + globalState.getDatabaseName()));
+        globalState.getState().statements.add(new QueryAdapter("USE " + globalState.getDatabaseName()));
         // /?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
         String url = "jdbc:mariadb://localhost:3306";
         Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
                 globalState.getOptions().getPassword());
         try (Statement s = con.createStatement()) {
-            s.execute("DROP DATABASE IF EXISTS " + databaseName);
+            s.execute("DROP DATABASE IF EXISTS " + globalState.getDatabaseName());
         }
         try (Statement s = con.createStatement()) {
-            s.execute("CREATE DATABASE " + databaseName);
+            s.execute("CREATE DATABASE " + globalState.getDatabaseName());
         }
         try (Statement s = con.createStatement()) {
-            s.execute("USE " + databaseName);
+            s.execute("USE " + globalState.getDatabaseName());
         }
         return con;
     }
