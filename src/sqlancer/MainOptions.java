@@ -63,10 +63,6 @@ public class MainOptions {
         return nrConcurrentThreads;
     }
 
-    public int getTotalNumberSQLite3Threads() {
-        return nrConcurrentThreads;
-    }
-
     public boolean logEachSelect() {
         return logEachSelect;
     }
