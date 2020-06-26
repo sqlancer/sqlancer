@@ -156,7 +156,8 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
                         try {
                             globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
                         } catch (SQLException e) {
-                            if (q.getQueryString().contains("CREATE VIEW")) {
+                            if (q.getQueryString().contains("CREATE VIEW") || e.getMessage().contains(
+                                    "references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them")) {
                                 throw new IgnoreMeException(); // TODO: drop view instead
                             } else {
                                 throw new AssertionError(e);

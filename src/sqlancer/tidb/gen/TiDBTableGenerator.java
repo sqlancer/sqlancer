@@ -28,6 +28,7 @@ public class TiDBTableGenerator {
     private final Set<String> errors = new HashSet<>();
 
     public Query getQuery(TiDBGlobalState globalState) throws SQLException {
+        errors.add("Information schema is changed during the execution of the statement");
         String tableName = globalState.getSchema().getFreeTableName();
         int nrColumns = Randomly.smallNumber() + 1;
         allowPrimaryKey = Randomly.getBoolean();
