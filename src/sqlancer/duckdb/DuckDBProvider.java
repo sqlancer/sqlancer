@@ -35,17 +35,22 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
 
     public enum Action implements AbstractAction<DuckDBGlobalState> {
 
-        INSERT(DuckDBInsertGenerator::getQuery), CREATE_INDEX(DuckDBIndexGenerator::getQuery), VACUUM(
-                (g) -> new QueryAdapter("VACUUM;")), ANALYZE((g) -> new QueryAdapter("ANALYZE;")), DELETE(
-                        DuckDBDeleteGenerator::generate), UPDATE(DuckDBUpdateGenerator::getQuery), CREATE_VIEW(
-                                DuckDBViewGenerator::generate), EXPLAIN((g) -> {
-                                    Set<String> errors = new HashSet<>();
-                                    DuckDBErrors.addExpressionErrors(errors);
-                                    DuckDBErrors.addGroupByErrors(errors);
-                                    return new QueryAdapter("EXPLAIN " + DuckDBToStringVisitor.asString(
-                                            DuckDBRandomQuerySynthesizer.generateSelect(g, Randomly.smallNumber() + 1)),
-                                            errors);
-                                });
+        INSERT(DuckDBInsertGenerator::getQuery), //
+        CREATE_INDEX(DuckDBIndexGenerator::getQuery), //
+        VACUUM((g) -> new QueryAdapter("VACUUM;")), //
+        ANALYZE((g) -> new QueryAdapter("ANALYZE;")), //
+        DELETE(DuckDBDeleteGenerator::generate), //
+        UPDATE(DuckDBUpdateGenerator::getQuery), //
+        CREATE_VIEW(DuckDBViewGenerator::generate), //
+        EXPLAIN((g) -> {
+            Set<String> errors = new HashSet<>();
+            DuckDBErrors.addExpressionErrors(errors);
+            DuckDBErrors.addGroupByErrors(errors);
+            return new QueryAdapter(
+                    "EXPLAIN " + DuckDBToStringVisitor
+                            .asString(DuckDBRandomQuerySynthesizer.generateSelect(g, Randomly.smallNumber() + 1)),
+                    errors);
+        });
 
         private final QueryProvider<DuckDBGlobalState> queryProvider;
 
