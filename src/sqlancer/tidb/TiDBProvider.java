@@ -41,30 +41,24 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
 
     public enum Action implements AbstractAction<TiDBGlobalState> {
         INSERT(TiDBInsertGenerator::getQuery), //
-        ANALYZE_TABLE(TiDBAnalyzeTableGenerator::getQuery), TRUNCATE((g) -> new QueryAdapter(
-                "TRUNCATE " + g.getSchema().getRandomTable(t -> !t.isView()).getName())), CREATE_INDEX(
-                        TiDBIndexGenerator::getQuery), DELETE(TiDBDeleteGenerator::getQuery), SET(
-                                TiDBSetGenerator::getQuery), UPDATE(
-                                        TiDBUpdateGenerator::getQuery), ADMIN_CHECKSUM_TABLE(
-                                                (g) -> new QueryAdapter("ADMIN CHECKSUM TABLE "
-                                                        + g.getSchema().getRandomTable().getName())), VIEW_GENERATOR(
-                                                                TiDBViewGenerator::getQuery), ALTER_TABLE(
-                                                                        TiDBAlterTableGenerator::getQuery), EXPLAIN(
-                                                                                (g) -> {
-                                                                                    Set<String> errors = new HashSet<>();
-                                                                                    TiDBErrors.addExpressionErrors(
-                                                                                            errors);
-                                                                                    TiDBErrors
-                                                                                            .addExpressionHavingErrors(
-                                                                                                    errors);
-                                                                                    return new QueryAdapter("EXPLAIN "
-                                                                                            + TiDBRandomQuerySynthesizer
-                                                                                                    .generate(g,
-                                                                                                            Randomly.smallNumber()
-                                                                                                                    + 1)
-                                                                                                    .getQueryString(),
-                                                                                            errors);
-                                                                                });
+        ANALYZE_TABLE(TiDBAnalyzeTableGenerator::getQuery), //
+        TRUNCATE((g) -> new QueryAdapter("TRUNCATE " + g.getSchema().getRandomTable(t -> !t.isView()).getName())), //
+        CREATE_INDEX(TiDBIndexGenerator::getQuery), //
+        DELETE(TiDBDeleteGenerator::getQuery), //
+        SET(TiDBSetGenerator::getQuery), //
+        UPDATE(TiDBUpdateGenerator::getQuery), //
+        ADMIN_CHECKSUM_TABLE(
+                (g) -> new QueryAdapter("ADMIN CHECKSUM TABLE " + g.getSchema().getRandomTable().getName())), //
+        VIEW_GENERATOR(TiDBViewGenerator::getQuery), //
+        ALTER_TABLE(TiDBAlterTableGenerator::getQuery), //
+        EXPLAIN((g) -> {
+            Set<String> errors = new HashSet<>();
+            TiDBErrors.addExpressionErrors(errors);
+            TiDBErrors.addExpressionHavingErrors(errors);
+            return new QueryAdapter(
+                    "EXPLAIN " + TiDBRandomQuerySynthesizer.generate(g, Randomly.smallNumber() + 1).getQueryString(),
+                    errors);
+        });
 
         private final QueryProvider<TiDBGlobalState> queryProvider;
 
