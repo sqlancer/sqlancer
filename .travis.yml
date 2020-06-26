@@ -25,7 +25,7 @@ matrix:
         - sudo apt-get remove mysql-* && wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar && tar -xvf mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar && yes | sudo dpkg -i *.deb
         - sudo mysql -e "CREATE USER 'sqlancer'@'localhost' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'localhost';"
         - MYSQL_AVAILABLE=true mvn -Dtest=TestMySQL test
-    - name: cockroachdb
+    - name: CockroachDB
       jdk : oraclejdk11
       before_install:
       - wget -qO- https://binaries.cockroachdb.com/cockroach-v20.1.2.linux-amd64.tgz | tar  xvz
@@ -34,7 +34,7 @@ matrix:
       - cd cockroach-v20.1.2.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
       script:
       - COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDB test
-    - name: tidb
+    - name: TiDB
       jdk : oraclejdk11
       services:
       - docker
@@ -45,27 +45,28 @@ matrix:
       - sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
       script:
         - TIDB_AVAILABLE=true mvn -Dtest=TestTiDB test
-    - name: sqlite
+    - name: SQLite3
       jdk : oraclejdk11
       script:
         - mvn -Dtest=TestSQLite3 test
-    - name: duckdb
+    - name: DuckDB
       jdk : oraclejdk11
       script: 
         - mvn -Dtest=TestDuckDB test
-    - name: duckdb (java 8)
+    - name: DuckDB (Java 8)
       jdk : openjdk8
       script:
         - mvn -Dtest=TestDuckDB test
-    - name: duckdb (java 13)
+    - name: DuckDB (java 13)
       jdk : openjdk13
       script:
         - mvn -Dtest=TestDuckDB test
-    - name: misc
+    - name: Misc
       jdk : oraclejdk11
       script:
         - mvn '-Dtest=!sqlancer.dbms.**' test
-    - name: postgres
+    - name: PostgreSQL
+      jdk : oraclejdk11
       before_install:
       - sudo apt-get update
       - sudo apt-get --yes remove postgresql\*
