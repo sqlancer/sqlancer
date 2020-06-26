@@ -14,8 +14,10 @@ public class TestPostgres {
         String postgresAvailable = System.getenv("POSTGRES_AVAILABLE");
         boolean postgresIsAvailable = postgresAvailable != null && postgresAvailable.equalsIgnoreCase("true");
         assumeTrue(postgresIsAvailable);
-        assertEquals(0, Main.executeMain(new String[] { "--timeout-seconds", TestConfig.SECONDS, "--num-threads", "4",
-                "--num-queries", TestConfig.NUM_QUERIES, "postgres", "--test-collations", "false" }));
+        assertEquals(0,
+                Main.executeMain(new String[] { "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS,
+                        "--num-threads", "4", "--num-queries", TestConfig.NUM_QUERIES, "postgres", "--test-collations",
+                        "false" }));
     }
 
 }

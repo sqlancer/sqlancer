@@ -14,8 +14,8 @@ public class TestTiDB {
         String tiDB = System.getenv("TIDB_AVAILABLE");
         boolean tiDBIsAvailable = tiDB != null && tiDB.equalsIgnoreCase("true");
         assumeTrue(tiDBIsAvailable);
-        assertEquals(0, Main
-                .executeMain(new String[] { "--timeout-seconds", TestConfig.SECONDS, "--num-queries", "0", "tidb" }));
+        assertEquals(0, Main.executeMain(new String[] { "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS,
+                "--num-queries", "0", "tidb" }));
     }
 
 }

@@ -15,8 +15,9 @@ public class TestMySQL {
         boolean mysqlIsAvailable = mysqlAvailable != null && mysqlAvailable.equalsIgnoreCase("true");
         assumeTrue(mysqlIsAvailable);
         assertEquals(0,
-                Main.executeMain(new String[] { "--timeout-seconds", TestConfig.SECONDS, "--max-expression-depth", "1",
-                        "--num-threads", "1", "--num-queries", TestConfig.NUM_QUERIES, "mysql" }));
+                Main.executeMain(new String[] { "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS,
+                        "--max-expression-depth", "1", "--num-threads", "1", "--num-queries", TestConfig.NUM_QUERIES,
+                        "mysql" }));
     }
 
 }
