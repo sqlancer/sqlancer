@@ -150,68 +150,6 @@ public class MariaDBProvider implements DatabaseProvider<GlobalState<MariaDBOpti
                 case SET:
                     query = MariaDBSetGenerator.set(r, options);
                     break;
-                // case SET_VARIABLE:
-                // query = MariaDBSetGenerator.set(r, options);
-                // break;
-                // case REPAIR:
-                // query = MariaDBRepair.repair(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
-                // break;
-                // case OPTIMIZE:
-                // query = MariaDBOptimize.optimize(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
-                // break;
-                // case CHECKSUM:
-                // query = MariaDBChecksum.checksum(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
-                // break;
-                // case CHECK_TABLE:
-                // query = MariaDBCheckTable.check(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
-                // break;
-                // case ANALYZE_TABLE:
-                // query = MariaDBAnalyzeTable.analyze(newSchema.getDatabaseTablesRandomSubsetNotEmpty(), r);
-                // break;
-                // case FLUSH:
-                // query = MariaDBFlush.create(newSchema.getDatabaseTablesRandomSubsetNotEmpty());
-                // break;
-                // case RESET:
-                // query = MariaDBReset.create();
-                // break;
-                // case CREATE_INDEX:
-                // query = createIndexGenerator.create();
-                // break;
-                // case ALTER_TABLE:
-                // query = MariaDBAlterTable.create(newSchema, r);
-                // break;
-                // case SELECT_INFO:
-                // query = new QueryAdapter(
-                // "select TABLE_NAME, ENGINE from information_schema.TABLES where table_schema = '"
-                // + databaseName + "'");
-                // break;
-                // case TRUNCATE_TABLE:
-                // query = new QueryAdapter("TRUNCATE TABLE " + newSchema.getRandomTable().getName()) {
-                // @Override
-                // public void execute(Connection con) throws SQLException {
-                // try {
-                // super.execute(con);
-                // } catch (SQLException e) {
-                // if (e.getMessage().contains("doesn't have this option")) {
-                // return;
-                // } else {
-                // throw e;
-                // }
-                // }
-                // }
-                //
-                // };
-                // break;
-                // case CREATE_TABLE:
-                // String tableName = SQLite3Common.createTableName(newSchema.getDatabaseTables().size());
-                // query = MariaDBTableGenerator.generate(tableName, r, newSchema);
-                // break;
-                // case DELETE:
-                // query = MariaDBDeleteGenerator.delete(newSchema.getRandomTable(), r);
-                // break;
-                // case DROP_INDEX:
-                // query = MariaDBDropIndex.generate(newSchema.getRandomTable());
-                // break;
                 default:
                     throw new AssertionError(nextAction);
                 }
@@ -226,7 +164,6 @@ public class MariaDBProvider implements DatabaseProvider<GlobalState<MariaDBOpti
                 manager.execute(query);
                 if (query.couldAffectSchema()) {
                     newSchema = MariaDBSchema.fromConnection(con, databaseName);
-                    // createIndexGenerator.setNewSchema(newSchema);
                 }
             } catch (Throwable t) {
                 System.err.println(query.getQueryString());
@@ -234,12 +171,6 @@ public class MariaDBProvider implements DatabaseProvider<GlobalState<MariaDBOpti
             }
             total--;
         }
-        // for (MariaDBTable t : newSchema.getDatabaseTables()) {
-        // if (!ensureTableHasRows(con, t, r)) {
-        // return;
-        // }
-        // }
-        //
         newSchema = MariaDBSchema.fromConnection(con, databaseName);
         //
         MariaDBNoRECOracle queryGenerator = new MariaDBNoRECOracle(newSchema, r, con, (MariaDBStateToReproduce) state);
