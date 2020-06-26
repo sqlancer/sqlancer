@@ -48,6 +48,10 @@ matrix:
       jdk : openjdk8
       script:
         - mvn -Dtest=TestDuckDB test
+    - name: duckdb (java 13)
+      jdk : openjdk13
+      script:
+        - mvn -Dtest=TestDuckDB test
     - name: misc
       jdk : oraclejdk11
       script:
