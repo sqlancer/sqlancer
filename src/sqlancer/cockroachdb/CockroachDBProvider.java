@@ -51,57 +51,55 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
         CREATE_INDEX(CockroachDBIndexGenerator::create), //
         UPDATE(CockroachDBUpdateGenerator::gen), //
         CREATE_VIEW(CockroachDBViewGenerator::generate), //
-        SET_CLUSTER_SETTING(CockroachDBSetClusterSettingGenerator::create), DELETE(
-                CockroachDBDeleteGenerator::delete), COMMENT_ON(CockroachDBCommentOnGenerator::comment), SHOW(
-                        CockroachDBShowGenerator::show), TRANSACTION((g) -> {
-                            String s = Randomly.fromOptions("BEGIN", "ROLLBACK", "COMMIT");
-                            return new QueryAdapter(s, Arrays.asList("there is no transaction in progress",
-                                    "there is already a transaction in progress", "current transaction is aborted",
-                                    "does not exist" /* interleaved indexes */));
-                        }), EXPLAIN((g) -> {
-                            StringBuilder sb = new StringBuilder("EXPLAIN ");
-                            Set<String> errors = new HashSet<>();
-                            if (Randomly.getBoolean()) {
-                                sb.append("(");
-                                sb.append(Randomly.nonEmptySubset("VERBOSE", "TYPES", "OPT", "DISTSQL", "VEC").stream()
-                                        .collect(Collectors.joining(", ")));
-                                sb.append(") ");
-                                errors.add("cannot set EXPLAIN mode more than once");
-                                errors.add("unable to vectorize execution plan");
-                                errors.add("unsupported type");
-                                errors.add("vectorize is set to 'off'");
-                            }
-                            sb.append(CockroachDBRandomQuerySynthesizer.generate(g, Randomly.smallNumber() + 1));
-                            CockroachDBErrors.addExpressionErrors(errors);
-                            return new QueryAdapter(sb.toString(), errors);
-                        }), SCRUB((g) -> new QueryAdapter(
-                                "EXPERIMENTAL SCRUB table " + g.getSchema().getRandomTable(t -> !t.isView()).getName(),
-                                // https://github.com/cockroachdb/cockroach/issues/46401
-                                Arrays.asList("scrub-fk: column \"t.rowid\" does not exist",
-                                        "check-constraint: cannot access temporary tables of other sessions" /*
-                                                                                                              * https://
-                                                                                                              * github.
-                                                                                                              * com/
-                                                                                                              * cockroachdb
-                                                                                                              * /
-                                                                                                              * cockroach
-                                                                                                              * /issues/
-                                                                                                              * 47031
-                                                                                                              */))), SPLIT(
-                                                (g) -> {
-                                                    StringBuilder sb = new StringBuilder("ALTER INDEX ");
-                                                    CockroachDBTable randomTable = g.getSchema().getRandomTable();
-                                                    sb.append(randomTable.getName());
-                                                    sb.append("@");
-                                                    sb.append(randomTable.getRandomIndex());
-                                                    if (Randomly.getBoolean()) {
-                                                        sb.append(" SPLIT AT VALUES (true), (false);");
-                                                    } else {
-                                                        sb.append(" SPLIT AT VALUES (NULL);");
-                                                    }
-                                                    return new QueryAdapter(sb.toString(),
-                                                            Arrays.asList("must be of type"));
-                                                });
+        SET_CLUSTER_SETTING(CockroachDBSetClusterSettingGenerator::create), //
+        DELETE(CockroachDBDeleteGenerator::delete), //
+        COMMENT_ON(CockroachDBCommentOnGenerator::comment), //
+        SHOW(CockroachDBShowGenerator::show), //
+        TRANSACTION((g) -> {
+            String s = Randomly.fromOptions("BEGIN", "ROLLBACK", "COMMIT");
+            return new QueryAdapter(s,
+                    Arrays.asList("there is no transaction in progress", "there is already a transaction in progress",
+                            "current transaction is aborted", "does not exist" /* interleaved indexes */));
+        }), //
+        EXPLAIN((g) -> {
+            StringBuilder sb = new StringBuilder("EXPLAIN ");
+            Set<String> errors = new HashSet<>();
+            if (Randomly.getBoolean()) {
+                sb.append("(");
+                sb.append(Randomly.nonEmptySubset("VERBOSE", "TYPES", "OPT", "DISTSQL", "VEC").stream()
+                        .collect(Collectors.joining(", ")));
+                sb.append(") ");
+                errors.add("cannot set EXPLAIN mode more than once");
+                errors.add("unable to vectorize execution plan");
+                errors.add("unsupported type");
+                errors.add("vectorize is set to 'off'");
+            }
+            sb.append(CockroachDBRandomQuerySynthesizer.generate(g, Randomly.smallNumber() + 1));
+            CockroachDBErrors.addExpressionErrors(errors);
+            return new QueryAdapter(sb.toString(), errors);
+        }), //
+        SCRUB((g) -> new QueryAdapter(
+                "EXPERIMENTAL SCRUB table " + g.getSchema().getRandomTable(t -> !t.isView()).getName(),
+                // https://github.com/cockroachdb/cockroach/issues/46401
+                Arrays.asList("scrub-fk: column \"t.rowid\" does not exist",
+                        "check-constraint: cannot access temporary tables of other sessions" /*
+                                                                                              * https:// github. com/
+                                                                                              * cockroachdb / cockroach
+                                                                                              * /issues/ 47031
+                                                                                              */))), //
+        SPLIT((g) -> {
+            StringBuilder sb = new StringBuilder("ALTER INDEX ");
+            CockroachDBTable randomTable = g.getSchema().getRandomTable();
+            sb.append(randomTable.getName());
+            sb.append("@");
+            sb.append(randomTable.getRandomIndex());
+            if (Randomly.getBoolean()) {
+                sb.append(" SPLIT AT VALUES (true), (false);");
+            } else {
+                sb.append(" SPLIT AT VALUES (NULL);");
+            }
+            return new QueryAdapter(sb.toString(), Arrays.asList("must be of type"));
+        });
 
         private final QueryProvider<CockroachDBGlobalState> queryProvider;
 
