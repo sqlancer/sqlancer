@@ -15,7 +15,9 @@ public class TestCockroachDB {
         boolean cockroachDBIsAvailable = cockroachDB != null && cockroachDB.equalsIgnoreCase("true");
         assumeTrue(cockroachDBIsAvailable);
         assertEquals(0, Main.executeMain(new String[] { "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS,
-                "--num-queries", TestConfig.NUM_QUERIES, "cockroachdb" }));
+                "--num-queries", TestConfig.NUM_QUERIES, "cockroachdb", "--oracle", "NoREC" }));
+        assertEquals(0, Main.executeMain(new String[] { "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS,
+                "--num-queries", TestConfig.NUM_QUERIES, "cockroachdb", "--oracle", "QUERY_PARTITIONING" }));
     }
 
 }
