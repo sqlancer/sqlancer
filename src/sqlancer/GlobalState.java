@@ -5,6 +5,12 @@ import java.sql.Connection;
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
 
+/**
+ * Represents a global state that is valid for a testing session on a given database.
+ *
+ * @param <O>
+ *            the option parameter.
+ */
 public class GlobalState<O> {
 
     private Connection con;

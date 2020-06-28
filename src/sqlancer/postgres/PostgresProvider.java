@@ -12,12 +12,12 @@ import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
 import sqlancer.CompositeTestOracle;
-import sqlancer.DatabaseProvider;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
+import sqlancer.ProviderAdapter;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.QueryProvider;
@@ -54,11 +54,15 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 
 // EXISTS
 // IN
-public final class PostgresProvider implements DatabaseProvider<PostgresGlobalState, PostgresOptions> {
+public final class PostgresProvider extends ProviderAdapter<PostgresGlobalState, PostgresOptions> {
 
     public static boolean generateOnlyKnown = false;
 
     private PostgresGlobalState globalState;
+
+    public PostgresProvider() {
+        super(PostgresGlobalState.class, PostgresOptions.class);
+    }
 
     public enum Action implements AbstractAction<PostgresGlobalState> {
         ANALYZE(PostgresAnalyzeGenerator::create), //
@@ -264,7 +268,7 @@ public final class PostgresProvider implements DatabaseProvider<PostgresGlobalSt
     }
 
     @Override
-    public Connection createDatabase(GlobalState<?> globalState) throws SQLException {
+    public Connection createDatabase(PostgresGlobalState globalState) throws SQLException {
         String url = "jdbc:postgresql://localhost:5432/test";
         String databaseName = globalState.getDatabaseName();
         Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
@@ -361,16 +365,6 @@ public final class PostgresProvider implements DatabaseProvider<PostgresGlobalSt
     @Override
     public StateToReproduce getStateToReproduce(String databaseName) {
         return new PostgresStateToReproduce(databaseName);
-    }
-
-    @Override
-    public PostgresGlobalState generateGlobalState() {
-        return new PostgresGlobalState();
-    }
-
-    @Override
-    public PostgresOptions getCommand() {
-        return new PostgresOptions();
     }
 
 }

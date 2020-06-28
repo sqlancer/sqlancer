@@ -12,18 +12,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import sqlancer.DatabaseProvider;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
+import sqlancer.ProviderAdapter;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.QueryProvider;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
-import sqlancer.StateToReproduce.CockroachDBStateToReproduce;
 import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
@@ -41,7 +40,11 @@ import sqlancer.cockroachdb.gen.CockroachDBTruncateGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBUpdateGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBViewGenerator;
 
-public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalState, CockroachDBOptions> {
+public class CockroachDBProvider extends ProviderAdapter<CockroachDBGlobalState, CockroachDBOptions> {
+
+    public CockroachDBProvider() {
+        super(CockroachDBGlobalState.class, CockroachDBOptions.class);
+    }
 
     public enum Action {
         INSERT(CockroachDBInsertGenerator::insert), //
@@ -297,7 +300,7 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
     }
 
     @Override
-    public Connection createDatabase(GlobalState<?> globalState) throws SQLException {
+    public Connection createDatabase(CockroachDBGlobalState globalState) throws SQLException {
         String databaseName = globalState.getDatabaseName();
         String url = "jdbc:postgresql://localhost:26257/test";
         Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
@@ -324,18 +327,4 @@ public class CockroachDBProvider implements DatabaseProvider<CockroachDBGlobalSt
         return "cockroachdb";
     }
 
-    @Override
-    public StateToReproduce getStateToReproduce(String databaseName) {
-        return new CockroachDBStateToReproduce(databaseName);
-    }
-
-    @Override
-    public CockroachDBGlobalState generateGlobalState() {
-        return new CockroachDBGlobalState();
-    }
-
-    @Override
-    public CockroachDBOptions getCommand() {
-        return new CockroachDBOptions();
-    }
 }

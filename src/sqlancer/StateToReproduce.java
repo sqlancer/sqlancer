@@ -84,22 +84,6 @@ public class StateToReproduce {
 
     }
 
-    public static class MariaDBStateToReproduce extends StateToReproduce {
-
-        public MariaDBStateToReproduce(String databaseName) {
-            super(databaseName);
-        }
-
-    }
-
-    public static class CockroachDBStateToReproduce extends StateToReproduce {
-
-        public CockroachDBStateToReproduce(String databaseName) {
-            super(databaseName);
-        }
-
-    }
-
     public static class SQLite3StateToReproduce extends StateToReproduce {
         public Map<SQLite3Column, SQLite3Constant> randomRowValues;
 

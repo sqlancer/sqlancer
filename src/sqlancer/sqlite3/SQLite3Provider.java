@@ -12,12 +12,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import sqlancer.DatabaseProvider;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
+import sqlancer.ProviderAdapter;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.QueryProvider;
@@ -51,7 +51,23 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table.TableKind;
 
-public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQLite3Options> {
+public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3Options> {
+
+    public static boolean allowFloatingPointFp = true;
+    public static boolean mustKnowResult = false;
+
+    private SQLite3StateToReproduce state;
+    private String databaseName;
+
+    private SQLite3GlobalState globalState;
+
+    // PRAGMAS to achieve good performance
+    private static final List<String> DEFAULT_PRAGMAS = Arrays.asList("PRAGMA cache_size = 50000;",
+            "PRAGMA temp_store=MEMORY;", "PRAGMA synchronous=off;");
+
+    public SQLite3Provider() {
+        super(SQLite3GlobalState.class, SQLite3Options.class);
+    }
 
     public enum Action {
         PRAGMA(SQLite3PragmaGenerator::insertPragma), //
@@ -143,18 +159,6 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQL
             return queryProvider.getQuery(state);
         }
     }
-
-    public static boolean allowFloatingPointFp = true;
-    public static boolean mustKnowResult = false;
-
-    private SQLite3StateToReproduce state;
-    private String databaseName;
-
-    private SQLite3GlobalState globalState;
-
-    // PRAGMAS to achieve good performance
-    private static final List<String> DEFAULT_PRAGMAS = Arrays.asList("PRAGMA cache_size = 50000;",
-            "PRAGMA temp_store=MEMORY;", "PRAGMA synchronous=off;");
 
     public static class SQLite3GlobalState extends GlobalState<SQLite3Options> {
 
@@ -436,7 +440,7 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQL
     }
 
     @Override
-    public Connection createDatabase(GlobalState<?> globalState) throws SQLException {
+    public Connection createDatabase(SQLite3GlobalState globalState) throws SQLException {
         File dir = new File("." + File.separator + "databases");
         if (!dir.exists()) {
             dir.mkdir();
@@ -466,16 +470,6 @@ public class SQLite3Provider implements DatabaseProvider<SQLite3GlobalState, SQL
     @Override
     public StateToReproduce getStateToReproduce(String databaseName) {
         return new SQLite3StateToReproduce(databaseName);
-    }
-
-    @Override
-    public SQLite3GlobalState generateGlobalState() {
-        return new SQLite3GlobalState();
-    }
-
-    @Override
-    public SQLite3Options getCommand() {
-        return new SQLite3Options();
     }
 
 }

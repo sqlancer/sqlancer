@@ -10,16 +10,15 @@ import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
 import sqlancer.CompositeTestOracle;
-import sqlancer.DatabaseProvider;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
+import sqlancer.ProviderAdapter;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.QueryProvider;
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce;
 import sqlancer.StatementExecutor;
 import sqlancer.TestOracle;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
@@ -31,7 +30,11 @@ import sqlancer.duckdb.gen.DuckDBTableGenerator;
 import sqlancer.duckdb.gen.DuckDBUpdateGenerator;
 import sqlancer.duckdb.gen.DuckDBViewGenerator;
 
-public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckDBOptions> {
+public class DuckDBProvider extends ProviderAdapter<DuckDBGlobalState, DuckDBOptions> {
+
+    public DuckDBProvider() {
+        super(DuckDBGlobalState.class, DuckDBOptions.class);
+    }
 
     public enum Action implements AbstractAction<DuckDBGlobalState> {
 
@@ -168,7 +171,7 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
     }
 
     @Override
-    public Connection createDatabase(GlobalState<?> globalState) throws SQLException {
+    public Connection createDatabase(DuckDBGlobalState globalState) throws SQLException {
         String url = "jdbc:duckdb:";
         return DriverManager.getConnection(url, globalState.getOptions().getUserName(),
                 globalState.getOptions().getPassword());
@@ -179,18 +182,4 @@ public class DuckDBProvider implements DatabaseProvider<DuckDBGlobalState, DuckD
         return "duckdb";
     }
 
-    @Override
-    public StateToReproduce getStateToReproduce(String databaseName) {
-        return new StateToReproduce(databaseName);
-    }
-
-    @Override
-    public DuckDBGlobalState generateGlobalState() {
-        return new DuckDBGlobalState();
-    }
-
-    @Override
-    public DuckDBOptions getCommand() {
-        return new DuckDBOptions();
-    }
 }

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import sqlancer.DatabaseProvider;
+import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.TestOracle;
@@ -62,7 +62,7 @@ public class SQLite3TLPHavingOracle implements TestOracle {
         select.setHavingClause(null);
         String originalQueryString = SQLite3Visitor.asString(select);
 
-        List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
                 state.getConnection(), state);
 
         SQLite3Expression predicate = gen.getHavingClause();
@@ -76,7 +76,7 @@ public class SQLite3TLPHavingOracle implements TestOracle {
         if (combinedString.contains("EXIST")) {
             throw new IgnoreMeException();
         }
-        List<String> secondResultSet = DatabaseProvider.getResultSetFirstColumnAsString(combinedString, errors,
+        List<String> secondResultSet = ComparatorHelper.getResultSetFirstColumnAsString(combinedString, errors,
                 state.getConnection(), state);
         if (state.getOptions().logEachSelect()) {
             state.getLogger().writeCurrent(originalQueryString);

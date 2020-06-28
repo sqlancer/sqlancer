@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.postgresql.util.PSQLException;
 
-import sqlancer.DatabaseProvider;
+import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -67,7 +67,7 @@ public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestO
                 + "\n-- " + secondResult;
         if (firstResult == null && secondResult != null
                 || firstResult != null && (!firstResult.contentEquals(secondResult)
-                        && !DatabaseProvider.isEqualDouble(firstResult, secondResult))) {
+                        && !ComparatorHelper.isEqualDouble(firstResult, secondResult))) {
             if (secondResult.contains("Inf")) {
                 throw new IgnoreMeException(); // FIXME: average computation
             }
