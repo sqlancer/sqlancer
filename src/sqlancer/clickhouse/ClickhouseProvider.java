@@ -7,23 +7,26 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import sqlancer.AbstractAction;
-import sqlancer.DatabaseProvider;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
+import sqlancer.ProviderAdapter;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.QueryProvider;
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce;
 import sqlancer.StatementExecutor;
 import sqlancer.clickhouse.ClickhouseProvider.ClickhouseGlobalState;
 import sqlancer.clickhouse.gen.ClickhouseInsertGenerator;
 import sqlancer.clickhouse.gen.ClickhouseTableGenerator;
 import sqlancer.clickhouse.oracle.ClickhouseTLPWhereOracle;
 
-public class ClickhouseProvider implements DatabaseProvider<ClickhouseGlobalState, ClickhouseOptions> {
+public class ClickhouseProvider extends ProviderAdapter<ClickhouseGlobalState, ClickhouseOptions> {
+
+    public ClickhouseProvider() {
+        super(ClickhouseGlobalState.class, ClickhouseOptions.class);
+    }
 
     public enum Action implements AbstractAction<ClickhouseGlobalState> {
 
@@ -124,7 +127,7 @@ public class ClickhouseProvider implements DatabaseProvider<ClickhouseGlobalStat
     }
 
     @Override
-    public Connection createDatabase(GlobalState<?> globalState) throws SQLException {
+    public Connection createDatabase(ClickhouseGlobalState globalState) throws SQLException {
         String url = "jdbc:clickhouse://localhost:8123/test";
         String databaseName = globalState.getDatabaseName();
         Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
@@ -151,18 +154,4 @@ public class ClickhouseProvider implements DatabaseProvider<ClickhouseGlobalStat
         return "clickhouse";
     }
 
-    @Override
-    public StateToReproduce getStateToReproduce(String databaseName) {
-        return new StateToReproduce(databaseName);
-    }
-
-    @Override
-    public ClickhouseGlobalState generateGlobalState() {
-        return new ClickhouseGlobalState();
-    }
-
-    @Override
-    public ClickhouseOptions getCommand() {
-        return new ClickhouseOptions();
-    }
 }

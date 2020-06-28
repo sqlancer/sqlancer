@@ -5,9 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.DatabaseProvider;
+import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
-import sqlancer.TestOracle;
 import sqlancer.ast.newast.ColumnReferenceNode;
 import sqlancer.ast.newast.Node;
 import sqlancer.duckdb.DuckDBErrors;
@@ -30,7 +29,7 @@ public class DuckDBQueryPartitioningGroupByTester extends DuckDBQueryPartitionin
         select.setWhereClause(null);
         String originalQueryString = DuckDBToStringVisitor.asString(select);
 
-        List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
                 state.getConnection(), state);
 
         select.setWhereClause(predicate);
@@ -40,9 +39,10 @@ public class DuckDBQueryPartitioningGroupByTester extends DuckDBQueryPartitionin
         select.setWhereClause(isNullPredicate);
         String thirdQueryString = DuckDBToStringVisitor.asString(select);
         List<String> combinedString = new ArrayList<>();
-        List<String> secondResultSet = TestOracle.getCombinedResultSetNoDuplicates(firstQueryString, secondQueryString,
-                thirdQueryString, combinedString, true, state, errors);
-        TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
+        List<String> secondResultSet = ComparatorHelper.getCombinedResultSetNoDuplicates(firstQueryString,
+                secondQueryString, thirdQueryString, combinedString, true, state, errors);
+        ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
+                state);
     }
 
     @Override

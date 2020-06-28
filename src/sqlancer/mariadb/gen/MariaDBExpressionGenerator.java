@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce.MariaDBStateToReproduce;
+import sqlancer.StateToReproduce;
 import sqlancer.mariadb.MariaDBProvider;
 import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;
 import sqlancer.mariadb.MariaDBSchema.MariaDBDataType;
@@ -70,7 +70,7 @@ public class MariaDBExpressionGenerator {
         return this;
     }
 
-    public MariaDBExpressionGenerator setState(MariaDBStateToReproduce state) {
+    public MariaDBExpressionGenerator setState(StateToReproduce state) {
         return this;
     }
 

@@ -4,9 +4,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import sqlancer.DatabaseProvider;
+import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
-import sqlancer.TestOracle;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBToStringVisitor;
@@ -24,7 +23,7 @@ public class DuckDBQueryPartitioningWhereTester extends DuckDBQueryPartitioningB
         select.setWhereClause(null);
         String originalQueryString = DuckDBToStringVisitor.asString(select);
 
-        List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
                 state.getConnection(), state);
 
         boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
@@ -38,9 +37,10 @@ public class DuckDBQueryPartitioningWhereTester extends DuckDBQueryPartitioningB
         select.setWhereClause(isNullPredicate);
         String thirdQueryString = DuckDBToStringVisitor.asString(select);
         List<String> combinedString = new ArrayList<>();
-        List<String> secondResultSet = TestOracle.getCombinedResultSet(firstQueryString, secondQueryString,
+        List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
                 thirdQueryString, combinedString, !orderBy, state, errors);
-        TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
+        ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
+                state);
     }
 
 }

@@ -11,12 +11,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
-import sqlancer.DatabaseProvider;
-import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
+import sqlancer.ProviderAdapter;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.QueryProvider;
@@ -45,10 +44,14 @@ import sqlancer.mysql.gen.tblmaintenance.MySQLRepair;
 import sqlancer.mysql.oracle.MySQLTLPWhereOracle;
 import sqlancer.sqlite3.gen.SQLite3Common;
 
-public class MySQLProvider implements DatabaseProvider<MySQLGlobalState, MySQLOptions> {
+public class MySQLProvider extends ProviderAdapter<MySQLGlobalState, MySQLOptions> {
 
     private QueryManager manager;
     private String databaseName;
+
+    public MySQLProvider() {
+        super(MySQLGlobalState.class, MySQLOptions.class);
+    }
 
     enum Action implements AbstractAction<MySQLGlobalState> {
         SHOW_TABLES((g) -> new QueryAdapter("SHOW TABLES")), //
@@ -237,7 +240,7 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState, MySQLOp
     }
 
     @Override
-    public Connection createDatabase(GlobalState<?> globalState) throws SQLException {
+    public Connection createDatabase(MySQLGlobalState globalState) throws SQLException {
         String databaseName = globalState.getDatabaseName();
         globalState.getState().statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName));
         globalState.getState().statements.add(new QueryAdapter("CREATE DATABASE " + databaseName));
@@ -302,16 +305,6 @@ public class MySQLProvider implements DatabaseProvider<MySQLGlobalState, MySQLOp
     @Override
     public StateToReproduce getStateToReproduce(String databaseName) {
         return new MySQLStateToReproduce(databaseName);
-    }
-
-    @Override
-    public MySQLGlobalState generateGlobalState() {
-        return new MySQLGlobalState();
-    }
-
-    @Override
-    public MySQLOptions getCommand() {
-        return new MySQLOptions();
     }
 
 }

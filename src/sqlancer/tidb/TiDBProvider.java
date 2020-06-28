@@ -12,17 +12,16 @@ import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
 import sqlancer.CompositeTestOracle;
-import sqlancer.DatabaseProvider;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
+import sqlancer.ProviderAdapter;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.QueryProvider;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
-import sqlancer.StateToReproduce.MySQLStateToReproduce;
 import sqlancer.StatementExecutor;
 import sqlancer.TestOracle;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
@@ -37,7 +36,11 @@ import sqlancer.tidb.gen.TiDBTableGenerator;
 import sqlancer.tidb.gen.TiDBUpdateGenerator;
 import sqlancer.tidb.gen.TiDBViewGenerator;
 
-public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptions> {
+public class TiDBProvider extends ProviderAdapter<TiDBGlobalState, TiDBOptions> {
+
+    public TiDBProvider() {
+        super(TiDBGlobalState.class, TiDBOptions.class);
+    }
 
     public enum Action implements AbstractAction<TiDBGlobalState> {
         INSERT(TiDBInsertGenerator::getQuery), //
@@ -111,11 +114,6 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
             throw new AssertionError(a);
         }
 
-    }
-
-    @Override
-    public TiDBGlobalState generateGlobalState() {
-        return new TiDBGlobalState();
     }
 
     @Override
@@ -194,7 +192,7 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
     }
 
     @Override
-    public Connection createDatabase(GlobalState<?> globalState) throws SQLException {
+    public Connection createDatabase(TiDBGlobalState globalState) throws SQLException {
         String databaseName = globalState.getDatabaseName();
         String url = "jdbc:mysql://127.0.0.1:4000/";
         Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
@@ -219,16 +217,6 @@ public class TiDBProvider implements DatabaseProvider<TiDBGlobalState, TiDBOptio
     @Override
     public String getDBMSName() {
         return "tidb";
-    }
-
-    @Override
-    public StateToReproduce getStateToReproduce(String databaseName) {
-        return new MySQLStateToReproduce(databaseName);
-    }
-
-    @Override
-    public TiDBOptions getCommand() {
-        return new TiDBOptions();
     }
 
 }

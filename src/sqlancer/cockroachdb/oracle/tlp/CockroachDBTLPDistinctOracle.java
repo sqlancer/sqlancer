@@ -4,8 +4,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import sqlancer.DatabaseProvider;
-import sqlancer.TestOracle;
+import sqlancer.ComparatorHelper;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBDataType;
 import sqlancer.cockroachdb.CockroachDBVisitor;
@@ -27,7 +26,7 @@ public class CockroachDBTLPDistinctOracle extends CockroachDBTLPBase {
         select.setDistinct(true);
         String originalQueryString = CockroachDBVisitor.asString(select);
 
-        List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
                 state.getConnection(), state);
         select.setDistinct(false);
         CockroachDBExpression predicate = gen.generateExpression(CockroachDBDataType.BOOL.get());
@@ -38,8 +37,9 @@ public class CockroachDBTLPDistinctOracle extends CockroachDBTLPBase {
         select.setWhereClause(new CockroachDBUnaryPostfixOperation(predicate, CockroachDBUnaryPostfixOperator.IS_NULL));
         String thirdQueryString = CockroachDBVisitor.asString(select);
         List<String> combinedString = new ArrayList<>();
-        List<String> secondResultSet = TestOracle.getCombinedResultSetNoDuplicates(firstQueryString, secondQueryString,
-                thirdQueryString, combinedString, true, state, errors);
-        TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
+        List<String> secondResultSet = ComparatorHelper.getCombinedResultSetNoDuplicates(firstQueryString,
+                secondQueryString, thirdQueryString, combinedString, true, state, errors);
+        ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
+                state);
     }
 }

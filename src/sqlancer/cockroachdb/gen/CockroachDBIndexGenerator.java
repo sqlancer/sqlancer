@@ -27,6 +27,7 @@ public class CockroachDBIndexGenerator extends CockroachDBGenerator {
         errors.add("violates unique constraint");
         errors.add("schema change statement cannot follow a statement that has written in the same transaction");
         errors.add("https://github.com/cockroachdb/cockroach/issues/35730"); // some array types are not indexable
+        errors.add("cannot determine type of empty array. Consider annotating with the desired type");
         CockroachDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         sb.append("CREATE ");
         if (Randomly.getBoolean()) {

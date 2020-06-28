@@ -4,9 +4,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import sqlancer.DatabaseProvider;
+import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
-import sqlancer.TestOracle;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
 
@@ -22,7 +21,7 @@ public class SQLite3TLPWhereOracle extends SQLite3TLPBase {
         select.setWhereClause(null);
         String originalQueryString = SQLite3Visitor.asString(select);
 
-        List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
                 state.getConnection(), state);
 
         boolean orderBy = Randomly.getBooleanWithSmallProbability();
@@ -36,9 +35,10 @@ public class SQLite3TLPWhereOracle extends SQLite3TLPBase {
         select.setWhereClause(isNullPredicate);
         String thirdQueryString = SQLite3Visitor.asString(select);
         List<String> combinedString = new ArrayList<>();
-        List<String> secondResultSet = TestOracle.getCombinedResultSet(firstQueryString, secondQueryString,
+        List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
                 thirdQueryString, combinedString, !orderBy, state, errors);
-        TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
+        ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
+                state);
     }
 
 }

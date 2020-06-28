@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import sqlancer.DatabaseProvider;
+import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
 import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBErrors;
@@ -83,7 +83,7 @@ public class CockroachDBTLPJoinOracle implements TestOracle {
         String originalQueryString = originalQueryString1 + " UNION ALL " + originalQueryString2 + " UNION ALL "
                 + originalQueryString2;
 
-        List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
                 state.getConnection(), state);
 
         // boolean allowOrderBy = Randomly.getBoolean();
@@ -103,9 +103,10 @@ public class CockroachDBTLPJoinOracle implements TestOracle {
                 Arrays.asList(CockroachDBJoin.createOuterJoin(leftTable, rightTable, OuterType.LEFT, isNullPredicate)));
         String thirdQueryString = CockroachDBVisitor.asString(select);
         List<String> combinedString = new ArrayList<>();
-        List<String> secondResultSet = TestOracle.getCombinedResultSet(firstQueryString, secondQueryString,
+        List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
                 thirdQueryString, combinedString, Randomly.getBoolean(), state, errors);
-        TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
+        ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
+                state);
     }
 
     List<CockroachDBExpression> generateFetchColumns() {

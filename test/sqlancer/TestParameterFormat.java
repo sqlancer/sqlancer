@@ -20,13 +20,14 @@ public class TestParameterFormat {
     private final static String OPTION_REGEX = "--[a-z0-9-]*";
 
     @Test
-    public void testOptionFormat() {
+    public void testOptionFormat() throws Exception {
         List<DatabaseProvider<?, ?>> providers = Main.getDBMSProviders();
         MainOptions options = new MainOptions();
         Builder commandBuilder = JCommander.newBuilder().addObject(options);
         List<ParameterDescription> parameterDescriptions = new ArrayList<>();
         for (int i = 0; i < providers.size(); i++) {
-            commandBuilder = commandBuilder.addCommand(String.format("db%d", i), providers.get(i).getCommand());
+            commandBuilder = commandBuilder.addCommand(String.format("db%d", i),
+                    providers.get(i).getOptionClass().getConstructor().newInstance());
         }
         JCommander jc = commandBuilder.programName("SQLancer").build();
         jc.parse(new String[0]);

@@ -4,8 +4,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import sqlancer.DatabaseProvider;
-import sqlancer.TestOracle;
+import sqlancer.ComparatorHelper;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.ast.SQLite3Select.SelectType;
@@ -23,7 +22,7 @@ public class SQLite3TLPDistinctOracle extends SQLite3TLPBase {
         select.setWhereClause(null);
         String originalQueryString = SQLite3Visitor.asString(select);
 
-        List<String> resultSet = DatabaseProvider.getResultSetFirstColumnAsString(originalQueryString, errors,
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
                 state.getConnection(), state);
 
         select.setWhereClause(predicate);
@@ -33,9 +32,10 @@ public class SQLite3TLPDistinctOracle extends SQLite3TLPBase {
         select.setWhereClause(isNullPredicate);
         String thirdQueryString = SQLite3Visitor.asString(select);
         List<String> combinedString = new ArrayList<>();
-        List<String> secondResultSet = TestOracle.getCombinedResultSetNoDuplicates(firstQueryString, secondQueryString,
-                thirdQueryString, combinedString, true, state, errors);
-        TestOracle.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
+        List<String> secondResultSet = ComparatorHelper.getCombinedResultSetNoDuplicates(firstQueryString,
+                secondQueryString, thirdQueryString, combinedString, true, state, errors);
+        ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
+                state);
     }
 
 }

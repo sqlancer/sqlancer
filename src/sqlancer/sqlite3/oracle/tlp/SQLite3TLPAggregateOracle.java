@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import sqlancer.DatabaseProvider;
+import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -100,7 +100,7 @@ public class SQLite3TLPAggregateOracle implements TestOracle {
         if (firstResult == null && secondResult != null
                 || firstResult != null && !firstResult.contentEquals(secondResult)) {
 
-            if (!DatabaseProvider.isEqualDouble(firstResult, secondResult)) {
+            if (!ComparatorHelper.isEqualDouble(firstResult, secondResult)) {
                 throw new AssertionError();
             }
 
