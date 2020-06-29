@@ -344,10 +344,8 @@ public class MySQLTableGenerator {
             throw new AssertionError();
         }
         if (randomType.isNumeric()) {
-            if (Randomly.getBoolean()) {
-                if (randomType != MySQLDataType.INT && !MySQLBugs.bug99127) {
-                    sb.append(" UNSIGNED");
-                }
+            if (Randomly.getBoolean() && randomType != MySQLDataType.INT && !MySQLBugs.bug99127) {
+                sb.append(" UNSIGNED");
             }
             if (Randomly.getBoolean()) {
                 sb.append(" ZEROFILL");

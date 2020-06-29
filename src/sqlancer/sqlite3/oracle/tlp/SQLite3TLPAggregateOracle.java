@@ -97,12 +97,11 @@ public class SQLite3TLPAggregateOracle implements TestOracle {
         }
         state.getState().queryString = "--" + originalQuery + "\n--" + metamorphicText + "\n-- " + firstResult + "\n-- "
                 + secondResult;
-        if (firstResult == null && secondResult != null
-                || firstResult != null && !firstResult.contentEquals(secondResult)) {
+        if ((firstResult == null && secondResult != null
+                || firstResult != null && !firstResult.contentEquals(secondResult))
+                && !ComparatorHelper.isEqualDouble(firstResult, secondResult)) {
 
-            if (!ComparatorHelper.isEqualDouble(firstResult, secondResult)) {
-                throw new AssertionError();
-            }
+            throw new AssertionError();
 
         }
 

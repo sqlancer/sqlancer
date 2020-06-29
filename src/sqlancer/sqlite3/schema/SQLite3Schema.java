@@ -56,7 +56,7 @@ public class SQLite3Schema {
 
         private final boolean isInteger; // "INTEGER" type, not "INT"
         private final SQLite3CollateSequence collate;
-        private final boolean generated;
+        boolean generated;
         private final boolean isPrimaryKey;
 
         public enum SQLite3CollateSequence {
