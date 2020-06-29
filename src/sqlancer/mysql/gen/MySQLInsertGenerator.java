@@ -20,7 +20,7 @@ public class MySQLInsertGenerator {
     private final StringBuilder sb = new StringBuilder();
     boolean canFail;
     private final Set<String> errors = new HashSet<>();
-    private MySQLGlobalState globalState;
+    private final MySQLGlobalState globalState;
 
     public MySQLInsertGenerator(MySQLGlobalState globalState) {
         this.globalState = globalState;

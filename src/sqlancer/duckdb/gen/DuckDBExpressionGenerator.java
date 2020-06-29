@@ -324,7 +324,7 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
 
     public static final class DuckDBCollate implements Operator {
 
-        private String textRepr;
+        private final String textRepr;
 
         private DuckDBCollate(String textRepr) {
             this.textRepr = textRepr;

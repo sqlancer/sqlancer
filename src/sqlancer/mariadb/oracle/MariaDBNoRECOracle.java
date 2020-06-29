@@ -30,14 +30,14 @@ import sqlancer.mariadb.gen.MariaDBExpressionGenerator;
 
 public class MariaDBNoRECOracle {
 
-    private MariaDBSchema s;
-    private Randomly r;
-    private Connection con;
+    private final MariaDBSchema s;
+    private final Randomly r;
+    private final Connection con;
     private String firstQueryString;
     private String secondQueryString;
     private final List<String> errors = new ArrayList<>();
     private static final int NOT_FOUND = -1;
-    private StateToReproduce state;
+    private final StateToReproduce state;
 
     public MariaDBNoRECOracle(MariaDBSchema s, Randomly r, Connection con, StateToReproduce state) {
         this.s = s;

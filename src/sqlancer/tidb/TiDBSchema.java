@@ -141,7 +141,7 @@ public class TiDBSchema extends AbstractSchema<TiDBTable> {
     public static class TiDBColumn extends AbstractTableColumn<TiDBTable, TiDBCompositeDataType> {
 
         private final boolean isPrimaryKey;
-        private boolean isNullable;
+        private final boolean isNullable;
 
         public TiDBColumn(String name, TiDBCompositeDataType columnType, boolean isPrimaryKey, boolean isNullable) {
             super(name, null, columnType);

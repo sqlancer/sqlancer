@@ -21,7 +21,7 @@ public class CockroachDBTableGenerator extends CockroachDBGenerator {
     private final boolean primaryKey = Randomly.getBoolean();
     private final List<CockroachDBColumn> columns = new ArrayList<>();
     private boolean singleColumnPrimaryKey = primaryKey && Randomly.getBoolean();
-    private boolean compoundPrimaryKey = primaryKey && !singleColumnPrimaryKey;
+    private final boolean compoundPrimaryKey = primaryKey && !singleColumnPrimaryKey;
 
     public CockroachDBTableGenerator(CockroachDBGlobalState globalState) {
         super(globalState);

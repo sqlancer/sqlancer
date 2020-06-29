@@ -171,7 +171,7 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
     public static class CockroachDBColumn extends AbstractTableColumn<CockroachDBTable, CockroachDBCompositeDataType> {
 
         private final boolean isPrimaryKey;
-        private boolean isNullable;
+        private final boolean isNullable;
 
         public CockroachDBColumn(String name, CockroachDBCompositeDataType columnType, boolean isPrimaryKey,
                 boolean isNullable) {

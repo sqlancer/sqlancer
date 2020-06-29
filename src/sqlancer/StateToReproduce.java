@@ -19,7 +19,7 @@ public class StateToReproduce {
     public final List<Query> statements = new ArrayList<>();
     public String queryString;
 
-    private String databaseName;
+    private final String databaseName;
 
     public String databaseVersion;
 

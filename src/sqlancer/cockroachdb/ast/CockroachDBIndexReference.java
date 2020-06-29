@@ -7,8 +7,8 @@ import sqlancer.visitor.UnaryOperation;
 public class CockroachDBIndexReference extends CockroachDBTableReference
         implements UnaryOperation<CockroachDBExpression> {
 
-    private CockroachDBTableReference tableReference;
-    private TableIndex index;
+    private final CockroachDBTableReference tableReference;
+    private final TableIndex index;
 
     public CockroachDBIndexReference(CockroachDBTableReference tableReference, TableIndex index) {
         super(tableReference.getTable());

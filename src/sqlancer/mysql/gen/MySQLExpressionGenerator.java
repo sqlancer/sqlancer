@@ -33,7 +33,7 @@ import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 
 public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLExpression, MySQLColumn> {
 
-    private MySQLGlobalState state;
+    private final MySQLGlobalState state;
     private MySQLRowValue rowVal;
 
     public MySQLExpressionGenerator(MySQLGlobalState state) {

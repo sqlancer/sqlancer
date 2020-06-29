@@ -21,12 +21,12 @@ import sqlancer.postgres.ast.PostgresSimilarTo;
 public final class PostgresExpectedValueVisitor implements PostgresVisitor {
 
     private final StringBuilder sb = new StringBuilder();
-    private int nrTabs = 0;
+    private static final int NR_TABS = 0;
 
     private void print(PostgresExpression expr) {
         PostgresToStringVisitor v = new PostgresToStringVisitor();
         v.visit(expr);
-        for (int i = 0; i < nrTabs; i++) {
+        for (int i = 0; i < NR_TABS; i++) {
             sb.append("\t");
         }
         sb.append(v.get());

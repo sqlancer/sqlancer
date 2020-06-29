@@ -55,7 +55,7 @@ public class SQLite3PivotedQuerySynthesisOracle implements TestOracle {
     private List<SQLite3Column> fetchColumns;
     private final List<String> errors = new ArrayList<>();
     private List<SQLite3Expression> colExpressions;
-    private SQLite3GlobalState globalState;
+    private final SQLite3GlobalState globalState;
 
     public SQLite3PivotedQuerySynthesisOracle(SQLite3GlobalState globalState) throws SQLException {
         this.database = globalState.getConnection();

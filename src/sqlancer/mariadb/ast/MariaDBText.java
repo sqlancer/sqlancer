@@ -2,9 +2,9 @@ package sqlancer.mariadb.ast;
 
 public class MariaDBText extends MariaDBExpression {
 
-    private MariaDBExpression expr;
-    private String text;
-    private boolean prefix;
+    private final MariaDBExpression expr;
+    private final String text;
+    private final boolean prefix;
 
     public MariaDBText(MariaDBExpression expr, String text, boolean prefix) {
         this.expr = expr;

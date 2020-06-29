@@ -34,8 +34,8 @@ public class PostgresSelect extends SelectBase<PostgresExpression> implements Po
     }
 
     public static class PostgresFromTable implements PostgresExpression {
-        private PostgresTable t;
-        private boolean only;
+        private final PostgresTable t;
+        private final boolean only;
 
         public PostgresFromTable(PostgresTable t, boolean only) {
             this.t = t;

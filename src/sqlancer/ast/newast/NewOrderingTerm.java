@@ -4,8 +4,8 @@ import sqlancer.Randomly;
 
 public class NewOrderingTerm<T> implements Node<T> {
 
-    private Node<T> expr;
-    private Ordering ordering;
+    private final Node<T> expr;
+    private final Ordering ordering;
 
     public enum Ordering {
         ASC, DESC;

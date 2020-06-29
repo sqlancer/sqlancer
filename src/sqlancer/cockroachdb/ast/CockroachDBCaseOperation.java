@@ -4,9 +4,9 @@ import java.util.List;
 
 public class CockroachDBCaseOperation implements CockroachDBExpression {
 
-    private List<CockroachDBExpression> conditions;
-    private List<CockroachDBExpression> thenClauses;
-    private CockroachDBExpression elseClause;
+    private final List<CockroachDBExpression> conditions;
+    private final List<CockroachDBExpression> thenClauses;
+    private final CockroachDBExpression elseClause;
 
     public CockroachDBCaseOperation(List<CockroachDBExpression> conditions, List<CockroachDBExpression> thenClauses,
             CockroachDBExpression elseClause) {

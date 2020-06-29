@@ -4,10 +4,10 @@ import java.util.List;
 
 public class NewCaseOperatorNode<T> implements Node<T> {
 
-    private List<Node<T>> conditions;
-    private List<Node<T>> expressions;
-    private Node<T> elseExpr;
-    private Node<T> switchCondition;
+    private final List<Node<T>> conditions;
+    private final List<Node<T>> expressions;
+    private final Node<T> elseExpr;
+    private final Node<T> switchCondition;
 
     public NewCaseOperatorNode(Node<T> switchCondition, List<Node<T>> conditions, List<Node<T>> expressions,
             Node<T> elseExpr) {

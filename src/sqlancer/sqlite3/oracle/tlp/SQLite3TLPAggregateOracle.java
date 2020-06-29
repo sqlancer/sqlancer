@@ -30,7 +30,7 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
 public class SQLite3TLPAggregateOracle implements TestOracle {
 
-    private SQLite3GlobalState state;
+    private final SQLite3GlobalState state;
     private final List<String> errors = new ArrayList<>();
     private SQLite3ExpressionGenerator gen;
 

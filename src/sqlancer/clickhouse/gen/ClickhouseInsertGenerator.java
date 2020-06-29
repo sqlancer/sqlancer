@@ -16,9 +16,9 @@ import sqlancer.gen.AbstractInsertGenerator;
 
 public class ClickhouseInsertGenerator extends AbstractInsertGenerator<ClickhouseColumn> {
 
-    private ClickhouseGlobalState globalState;
-    private Set<String> errors = new HashSet<>();
-    private ClickhouseExpressionGenerator gen;
+    private final ClickhouseGlobalState globalState;
+    private final Set<String> errors = new HashSet<>();
+    private final ClickhouseExpressionGenerator gen;
 
     public ClickhouseInsertGenerator(ClickhouseGlobalState globalState) {
         this.globalState = globalState;

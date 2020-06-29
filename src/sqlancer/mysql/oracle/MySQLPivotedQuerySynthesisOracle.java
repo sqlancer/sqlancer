@@ -33,12 +33,12 @@ import sqlancer.mysql.gen.MySQLExpressionGenerator;
 
 public class MySQLPivotedQuerySynthesisOracle implements TestOracle {
 
-    private MySQLStateToReproduce state;
-    private MySQLSchema s;
+    private final MySQLStateToReproduce state;
+    private final MySQLSchema s;
     private MySQLRowValue rw;
     private List<MySQLExpression> fetchColumns;
     private List<MySQLColumn> columns;
-    private MySQLGlobalState globalState;
+    private final MySQLGlobalState globalState;
 
     public MySQLPivotedQuerySynthesisOracle(MySQLGlobalState globalState) throws SQLException {
         this.globalState = globalState;

@@ -51,6 +51,31 @@
 		<exclude name="PrematureDeclaration" />
 		<exclude name="BooleanGetMethodName" />
 	</rule>
+	<rule ref="category/java/design.xml">
+		<priority>2</priority>
+		<exclude name="LawOfDemeter" />
+		<exclude name="TooManyMethods" />
+		<exclude name="CyclomaticComplexity" />
+		<exclude name="NPathComplexity" />
+		<exclude name="NcssCount" />
+		<exclude name="AvoidCatchingGenericException" />
+		<exclude name="AvoidDeeplyNestedIfStmts" />
+		<exclude name="GodClass" />
+		<exclude name="DataClass" />
+		<exclude name="ExcessiveImports" />
+		<exclude name="ExcessivePublicCount" />
+
+
+		<exclude name="SingularField" />
+		<exclude name="ExcessiveClassLength" />
+		<exclude name="SwitchDensity" />
+		<exclude name="SingularField" />
+		<exclude name="ExcessiveMethodLength" />
+		<exclude name="CollapsibleIfStatements" />
+		<exclude name="ExcessiveMethodLength" />
+		<exclude name="TooManyFields" />
+		<exclude name="SignatureDeclareThrowsException" />
+	</rule>
 	<!-- <rule ref="category/java/design.xml"> <priority>4</priority> </rule> 
 		<rule ref="category/java/performance.xml"> <priority>5</priority> <exclude 
 		name="MethodArgumentCouldBeFinal"/> <exclude name="LocalVariableCouldBeFinal"/> 

@@ -53,7 +53,7 @@ public class PostgresExpressionGenerator {
 
     private final int maxDepth;
 
-    private Randomly r;
+    private final Randomly r;
 
     private List<PostgresColumn> columns;
 

@@ -20,17 +20,17 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 
 public class PostgresTableGenerator {
 
-    private String tableName;
+    private final String tableName;
     private boolean columnCanHavePrimaryKey;
     private boolean columnHasPrimaryKey;
     private final StringBuilder sb = new StringBuilder();
     private boolean isTemporaryTable;
-    private PostgresSchema newSchema;
+    private final PostgresSchema newSchema;
     private final List<PostgresColumn> columnsToBeAdded = new ArrayList<>();
     private final Set<String> errors = new HashSet<>();
     private final PostgresTable table;
-    private boolean generateOnlyKnown;
-    private PostgresGlobalState globalState;
+    private final boolean generateOnlyKnown;
+    private final PostgresGlobalState globalState;
 
     public PostgresTableGenerator(String tableName, PostgresSchema newSchema, boolean generateOnlyKnown,
             PostgresGlobalState globalState) {

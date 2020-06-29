@@ -52,7 +52,7 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
     public static class MySQLColumn extends AbstractTableColumn<MySQLTable, MySQLDataType> {
 
         private final boolean isPrimaryKey;
-        private int precision;
+        private final int precision;
 
         public enum CollateSequence {
             NOCASE, RTRIM, BINARY;
