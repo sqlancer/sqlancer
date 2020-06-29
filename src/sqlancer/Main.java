@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -304,7 +303,7 @@ public final class Main {
             return command;
         }
 
-        public void run() throws Exception {
+        public void run() throws SQLException {
             G state = createGlobalState();
             stateToRepro = provider.getStateToReproduce(databaseName);
             stateToRepro.seedValue = seed;
@@ -427,17 +426,6 @@ public final class Main {
                             executor.run();
                         } catch (IgnoreMeException e) {
                             continue;
-                        } catch (InvocationTargetException e) {
-                            if (e.getCause() instanceof IgnoreMeException) {
-                                continue;
-                            } else {
-                                e.getCause().printStackTrace();
-                                executor.getStateToReproduce().exception = e.getCause().getMessage();
-                                executor.getLogger().logFileWriter = null;
-                                executor.getLogger().logException(e.getCause(), executor.getStateToReproduce());
-                                threadsShutdown++;
-                                break;
-                            }
                         } catch (Throwable reduce) {
                             reduce.printStackTrace();
                             executor.getStateToReproduce().exception = reduce.getMessage();
