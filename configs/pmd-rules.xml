@@ -71,8 +71,6 @@
 		<exclude name="SwitchDensity" />
 		<exclude name="SingularField" />
 		<exclude name="ExcessiveMethodLength" />
-		<exclude name="CollapsibleIfStatements" />
-		<exclude name="ExcessiveMethodLength" />
 		<exclude name="TooManyFields" />
 		<exclude name="SignatureDeclareThrowsException" />
 	</rule>

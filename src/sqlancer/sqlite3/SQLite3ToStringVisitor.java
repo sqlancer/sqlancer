@@ -78,11 +78,9 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 
     @Override
     public void visit(SQLite3ColumnName c) {
-        if (fullyQualifiedNames) {
-            if (c.getColumn().getTable() != null) {
-                sb.append(c.getColumn().getTable().getName());
-                sb.append('.');
-            }
+        if (fullyQualifiedNames && c.getColumn().getTable() != null) {
+            sb.append(c.getColumn().getTable().getName());
+            sb.append('.');
         }
         sb.append(c.getColumn().getName());
     }

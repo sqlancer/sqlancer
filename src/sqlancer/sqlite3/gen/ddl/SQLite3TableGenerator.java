@@ -118,11 +118,10 @@ public class SQLite3TableGenerator {
         }
 
         sb.append(")");
-        if (globalState.getDmbsSpecificOptions().testWithoutRowids && containsPrimaryKey && !containsAutoIncrement) {
-            if (Randomly.getBoolean()) {
-                // see https://sqlite.org/withoutrowid.html
-                sb.append(" WITHOUT ROWID");
-            }
+        if (globalState.getDmbsSpecificOptions().testWithoutRowids && containsPrimaryKey && !containsAutoIncrement
+                && Randomly.getBoolean()) {
+            // see https://sqlite.org/withoutrowid.html
+            sb.append(" WITHOUT ROWID");
         }
     }
 

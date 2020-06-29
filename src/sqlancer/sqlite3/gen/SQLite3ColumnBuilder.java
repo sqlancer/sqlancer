@@ -79,11 +79,9 @@ public class SQLite3ColumnBuilder {
                         if (Randomly.getBoolean()) {
                             insertOnConflictClause();
                         }
-                        if (!hasOrdering && dataType.equals("INTEGER")) {
-                            if (Randomly.getBoolean()) {
-                                containsAutoIncrement = true;
-                                sb.append(" AUTOINCREMENT");
-                            }
+                        if (!hasOrdering && dataType.equals("INTEGER") && Randomly.getBoolean()) {
+                            containsAutoIncrement = true;
+                            sb.append(" AUTOINCREMENT");
                         }
                     }
                     break;
