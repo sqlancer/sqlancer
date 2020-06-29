@@ -59,7 +59,7 @@ public abstract class MySQLConstant implements MySQLExpression {
 
     public static class MySQLDoubleConstant extends MySQLNoPQSConstant {
 
-        private double val;
+        private final double val;
 
         public MySQLDoubleConstant(double val) {
             this.val = val;
@@ -79,7 +79,7 @@ public abstract class MySQLConstant implements MySQLExpression {
     public static class MySQLTextConstant extends MySQLConstant {
 
         private final String value;
-        private boolean singleQuotes;
+        private final boolean singleQuotes;
 
         public MySQLTextConstant(String value) {
             this.value = value;

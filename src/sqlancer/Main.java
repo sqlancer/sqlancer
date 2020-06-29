@@ -61,8 +61,8 @@ public final class Main {
         private FileWriter logFileWriter;
         public FileWriter currentFileWriter;
         private static final List<String> INITIALIZED_PROVIDER_NAMES = new ArrayList<>();
-        private boolean logEachSelect = true;
-        private DatabaseProvider<?, ?> provider;
+        private final boolean logEachSelect;
+        private final DatabaseProvider<?, ?> provider;
 
         private static final class AlsoWriteToConsoleFileWriter extends FileWriter {
 
@@ -275,11 +275,11 @@ public final class Main {
 
     public static class DBMSExecutor<G extends GlobalState<O>, O> {
 
-        private DatabaseProvider<G, O> provider;
-        private MainOptions options;
-        private O command;
-        private String databaseName;
-        private long seed;
+        private final DatabaseProvider<G, O> provider;
+        private final MainOptions options;
+        private final O command;
+        private final String databaseName;
+        private final long seed;
         private StateLogger logger;
         private StateToReproduce stateToRepro;
 
@@ -341,9 +341,9 @@ public final class Main {
 
     public static class DBMSExecutorFactory<G extends GlobalState<O>, O> {
 
-        private DatabaseProvider<G, O> provider;
-        private MainOptions options;
-        private O command;
+        private final DatabaseProvider<G, O> provider;
+        private final MainOptions options;
+        private final O command;
 
         public DBMSExecutorFactory(DatabaseProvider<G, O> provider, MainOptions options) {
             this.provider = provider;

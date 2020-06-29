@@ -38,14 +38,14 @@ import sqlancer.duckdb.gen.DuckDBExpressionGenerator.DuckDBCastOperation;
 
 public class DuckDBNoRECOracle implements TestOracle {
 
-    private DuckDBSchema s;
-    private Connection con;
+    private final DuckDBSchema s;
+    private final Connection con;
     private String firstQueryString;
     private String secondQueryString;
-    private StateLogger logger;
-    private MainOptions options;
+    private final StateLogger logger;
+    private final MainOptions options;
     private final Set<String> errors = new HashSet<>();
-    private DuckDBGlobalState globalState;
+    private final DuckDBGlobalState globalState;
 
     public DuckDBNoRECOracle(DuckDBGlobalState globalState) {
         this.s = globalState.getSchema();

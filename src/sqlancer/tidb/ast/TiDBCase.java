@@ -4,10 +4,10 @@ import java.util.List;
 
 public class TiDBCase implements TiDBExpression {
 
-    private List<TiDBExpression> conditions;
-    private List<TiDBExpression> expressions;
-    private TiDBExpression elseExpr;
-    private TiDBExpression switchCondition;
+    private final List<TiDBExpression> conditions;
+    private final List<TiDBExpression> expressions;
+    private final TiDBExpression elseExpr;
+    private final TiDBExpression switchCondition;
 
     public TiDBCase(TiDBExpression switchCondition, List<TiDBExpression> conditions, List<TiDBExpression> expressions,
             TiDBExpression elseExpr) {

@@ -15,8 +15,8 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequenc
  */
 public class SQLite3Aggregate extends SQLite3Expression {
 
-    private SQLite3AggregateFunction func;
-    private List<SQLite3Expression> expr;
+    private final SQLite3AggregateFunction func;
+    private final List<SQLite3Expression> expr;
 
     public enum SQLite3AggregateFunction {
         AVG() {

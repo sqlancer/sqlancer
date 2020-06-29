@@ -30,7 +30,7 @@ public class MariaDBSchema {
         private final MariaDBDataType columnType;
         private final boolean isPrimaryKey;
         private MariaDBTable table;
-        private int precision;
+        private final int precision;
 
         public enum CollateSequence {
             NOCASE, RTRIM, BINARY;

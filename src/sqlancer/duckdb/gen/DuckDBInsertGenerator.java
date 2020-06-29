@@ -17,7 +17,7 @@ import sqlancer.gen.AbstractInsertGenerator;
 
 public class DuckDBInsertGenerator extends AbstractInsertGenerator<DuckDBColumn> {
 
-    private DuckDBGlobalState globalState;
+    private final DuckDBGlobalState globalState;
     private final Set<String> errors = new HashSet<>();
 
     public DuckDBInsertGenerator(DuckDBGlobalState globalState) {

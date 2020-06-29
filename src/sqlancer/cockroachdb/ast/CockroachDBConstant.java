@@ -153,12 +153,12 @@ public class CockroachDBConstant implements CockroachDBExpression {
 
     public static class CockroachDBIntervalConstant extends CockroachDBConstant {
 
-        private long year;
-        private long month;
-        private long day;
-        private long hour;
-        private long minute;
-        private long second;
+        private final long year;
+        private final long month;
+        private final long day;
+        private final long hour;
+        private final long minute;
+        private final long second;
 
         public CockroachDBIntervalConstant(long year, long month, long day, long hour, long minute, long second) {
             this.year = year;

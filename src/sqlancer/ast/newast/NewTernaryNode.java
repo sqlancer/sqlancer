@@ -2,11 +2,11 @@ package sqlancer.ast.newast;
 
 public class NewTernaryNode<T> implements Node<T> {
 
-    protected Node<T> left;
-    protected Node<T> middle;
-    protected Node<T> right;
-    private String leftStr;
-    private String rightStr;
+    protected final Node<T> left;
+    protected final Node<T> middle;
+    protected final Node<T> right;
+    private final String leftStr;
+    private final String rightStr;
 
     public NewTernaryNode(Node<T> left, Node<T> middle, Node<T> right, String leftStr, String rightStr) {
         this.left = left;

@@ -17,8 +17,8 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 public class MariaDBTableGenerator {
 
     private final StringBuilder sb = new StringBuilder();
-    private String tableName;
-    private MariaDBSchema s;
+    private final String tableName;
+    private final MariaDBSchema s;
     private PrimaryKeyState primaryKeyState = Randomly.fromOptions(PrimaryKeyState.values());
     private final List<String> columnNames = new ArrayList<>();
     private final Randomly r;

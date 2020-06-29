@@ -56,8 +56,8 @@ public class SQLite3Schema {
 
         private final boolean isInteger; // "INTEGER" type, not "INT"
         private final SQLite3CollateSequence collate;
-        private boolean generated;
-        private boolean isPrimaryKey;
+        private final boolean generated;
+        private final boolean isPrimaryKey;
 
         public enum SQLite3CollateSequence {
             NOCASE, RTRIM, BINARY;
@@ -77,9 +77,9 @@ public class SQLite3Schema {
             assert !isInteger || columnType == SQLite3DataType.INT;
         }
 
-        public SQLite3Column(String rowId, SQLite3DataType columnType2, boolean b, SQLite3CollateSequence collate,
-                boolean generated) {
-            this(rowId, columnType2, b, generated, collate);
+        public SQLite3Column(String rowId, SQLite3DataType columnType, boolean isInteger,
+                SQLite3CollateSequence collate, boolean generated) {
+            this(rowId, columnType, isInteger, generated, collate);
             this.generated = generated;
         }
 
@@ -223,10 +223,10 @@ public class SQLite3Schema {
 
         private final TableKind tableType;
         private SQLite3Column rowid;
-        private boolean withoutRowid;
-        private int nrRows;
-        private boolean isVirtual;
-        private boolean isReadOnly;
+        private final boolean withoutRowid;
+        private final int nrRows;
+        private final boolean isVirtual;
+        private final boolean isReadOnly;
 
         public SQLite3Table(String tableName, List<SQLite3Column> columns, TableKind tableType, boolean withoutRowid,
                 int nrRows, boolean isView, boolean isVirtual, boolean isReadOnly) {

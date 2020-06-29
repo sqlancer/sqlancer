@@ -4,7 +4,7 @@ import sqlancer.tidb.TiDBSchema.TiDBTable;
 
 public class TiDBTableReference implements TiDBExpression {
 
-    private TiDBTable table;
+    private final TiDBTable table;
 
     public TiDBTableReference(TiDBTable table) {
         this.table = table;

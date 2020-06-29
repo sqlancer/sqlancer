@@ -5,7 +5,7 @@ import sqlancer.ast.BinaryOperatorNode.Operator;
 public class NewUnaryPrefixOperatorNode<T> implements Node<T> {
 
     protected final Operator op;
-    private Node<T> expr;
+    private final Node<T> expr;
 
     public NewUnaryPrefixOperatorNode(Node<T> expr, Operator op) {
         this.expr = expr;

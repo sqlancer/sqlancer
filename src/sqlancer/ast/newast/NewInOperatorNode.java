@@ -4,9 +4,9 @@ import java.util.List;
 
 public class NewInOperatorNode<T> implements Node<T> {
 
-    private Node<T> left;
-    private List<Node<T>> right;
-    private boolean isNegated;
+    private final Node<T> left;
+    private final List<Node<T>> right;
+    private final boolean isNegated;
 
     public NewInOperatorNode(Node<T> left, List<Node<T>> right, boolean isNegated) {
         this.left = left;

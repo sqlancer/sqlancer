@@ -685,8 +685,8 @@ public abstract class SQLite3Expression {
 
     public static class MatchOperation extends SQLite3Expression {
 
-        private SQLite3Expression left;
-        private SQLite3Expression right;
+        private final SQLite3Expression left;
+        private final SQLite3Expression right;
 
         public MatchOperation(SQLite3Expression left, SQLite3Expression right) {
             this.left = left;

@@ -125,7 +125,7 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
     public static class DuckDBColumn extends AbstractTableColumn<DuckDBTable, DuckDBCompositeDataType> {
 
         private final boolean isPrimaryKey;
-        private boolean isNullable;
+        private final boolean isNullable;
 
         public DuckDBColumn(String name, DuckDBCompositeDataType columnType, boolean isPrimaryKey, boolean isNullable) {
             super(name, null, columnType);

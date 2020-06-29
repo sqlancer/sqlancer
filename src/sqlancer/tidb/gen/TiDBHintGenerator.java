@@ -13,8 +13,8 @@ import sqlancer.tidb.ast.TiDBText;
 
 public class TiDBHintGenerator {
 
-    private TiDBSelect select;
-    private List<TiDBTable> tables;
+    private final TiDBSelect select;
+    private final List<TiDBTable> tables;
     private final StringBuilder sb = new StringBuilder();
 
     enum IndexHint {

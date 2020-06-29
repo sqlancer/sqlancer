@@ -4,8 +4,8 @@ import sqlancer.visitor.UnaryOperation;
 
 public class CockroachDBAlias implements UnaryOperation<CockroachDBExpression>, CockroachDBExpression {
 
-    private CockroachDBExpression expr;
-    private String alias;
+    private final CockroachDBExpression expr;
+    private final String alias;
 
     public CockroachDBAlias(CockroachDBExpression expr, String alias) {
         this.expr = expr;

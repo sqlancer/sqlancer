@@ -4,9 +4,9 @@ import java.util.List;
 
 public class MariaDBInOperation extends MariaDBExpression {
 
-    private MariaDBExpression expr;
-    private List<MariaDBExpression> list;
-    private boolean negated;
+    private final MariaDBExpression expr;
+    private final List<MariaDBExpression> list;
+    private final boolean negated;
 
     public MariaDBInOperation(MariaDBExpression expr, List<MariaDBExpression> list, boolean negated) {
         this.expr = expr;

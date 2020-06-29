@@ -19,7 +19,7 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 public class MySQLTableGenerator {
 
     private final StringBuilder sb = new StringBuilder();
-    private boolean allowPrimaryKey;
+    private final boolean allowPrimaryKey;
     private boolean setPrimaryKey;
     private final String tableName;
     private final Randomly r;
@@ -27,8 +27,8 @@ public class MySQLTableGenerator {
     private boolean tableHasNullableColumn;
     private MySQLEngine engine;
     private int keysSpecified;
-    private List<String> columns = new ArrayList<>();
-    private MySQLSchema schema;
+    private final List<String> columns = new ArrayList<>();
+    private final MySQLSchema schema;
 
     public MySQLTableGenerator(String tableName, Randomly r, MySQLSchema schema) {
         this.tableName = tableName;

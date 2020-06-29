@@ -41,15 +41,15 @@ import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
 public class PostgresNoRECOracle implements TestOracle {
 
-    private PostgresSchema s;
-    private Connection con;
-    private PostgresStateToReproduce state;
+    private final PostgresSchema s;
+    private final Connection con;
+    private final PostgresStateToReproduce state;
     private String firstQueryString;
     private String secondQueryString;
-    private StateLogger logger;
-    private MainOptions options;
+    private final StateLogger logger;
+    private final MainOptions options;
     private final Set<String> errors = new HashSet<>();
-    private PostgresGlobalState globalState;
+    private final PostgresGlobalState globalState;
 
     public PostgresNoRECOracle(PostgresGlobalState globalState) {
         this.s = globalState.getSchema();

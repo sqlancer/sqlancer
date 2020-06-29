@@ -4,8 +4,8 @@ import sqlancer.visitor.UnaryOperation;
 
 public class PostgresAlias implements UnaryOperation<PostgresExpression>, PostgresExpression {
 
-    private PostgresExpression expr;
-    private String alias;
+    private final PostgresExpression expr;
+    private final String alias;
 
     public PostgresAlias(PostgresExpression expr, String alias) {
         this.expr = expr;

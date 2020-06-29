@@ -5,8 +5,8 @@ import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
 public class PostgresCastOperation implements PostgresExpression {
 
-    private PostgresExpression expression;
-    private PostgresCompoundDataType type;
+    private final PostgresExpression expression;
+    private final PostgresCompoundDataType type;
 
     public PostgresCastOperation(PostgresExpression expression, PostgresCompoundDataType type) {
         if (expression == null) {

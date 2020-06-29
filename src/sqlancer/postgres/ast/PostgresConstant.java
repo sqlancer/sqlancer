@@ -240,7 +240,7 @@ public abstract class PostgresConstant implements PostgresExpression {
 
     public static class IntConstant extends PostgresConstant {
 
-        private long val;
+        private final long val;
 
         public IntConstant(long val) {
             this.val = val;
@@ -521,10 +521,10 @@ public abstract class PostgresConstant implements PostgresExpression {
 
     public static class RangeConstant extends PostgresConstantBase {
 
-        private long left;
-        private boolean leftIsInclusive;
-        private long right;
-        private boolean rightIsInclusive;
+        private final long left;
+        private final boolean leftIsInclusive;
+        private final long right;
+        private final boolean rightIsInclusive;
 
         public RangeConstant(long left, boolean leftIsInclusive, long right, boolean rightIsInclusive) {
             this.left = left;

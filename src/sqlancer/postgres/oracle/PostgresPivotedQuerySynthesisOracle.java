@@ -32,12 +32,12 @@ public class PostgresPivotedQuerySynthesisOracle implements TestOracle {
 
     private PostgresStateToReproduce state;
     private PostgresRowValue rw;
-    private Connection database;
+    private final Connection database;
     private List<PostgresColumn> fetchColumns;
-    private PostgresSchema s;
-    private MainOptions options;
-    private StateLogger logger;
-    private PostgresGlobalState globalState;
+    private final PostgresSchema s;
+    private final MainOptions options;
+    private final StateLogger logger;
+    private final PostgresGlobalState globalState;
 
     public PostgresPivotedQuerySynthesisOracle(PostgresGlobalState globalState) throws SQLException {
         this.globalState = globalState;

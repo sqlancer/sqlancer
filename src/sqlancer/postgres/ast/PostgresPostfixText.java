@@ -6,8 +6,8 @@ public class PostgresPostfixText implements PostgresExpression {
 
     private final PostgresExpression expr;
     private final String text;
-    private PostgresConstant expectedValue;
-    private PostgresDataType type;
+    private final PostgresConstant expectedValue;
+    private final PostgresDataType type;
 
     public PostgresPostfixText(PostgresExpression expr, String text, PostgresConstant expectedValue,
             PostgresDataType type) {

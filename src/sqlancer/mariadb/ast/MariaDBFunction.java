@@ -4,8 +4,8 @@ import java.util.List;
 
 public class MariaDBFunction extends MariaDBExpression {
 
-    private MariaDBFunctionName func;
-    private List<MariaDBExpression> args;
+    private final MariaDBFunctionName func;
+    private final List<MariaDBExpression> args;
 
     public MariaDBFunction(MariaDBFunctionName func, List<MariaDBExpression> args) {
         this.func = func;

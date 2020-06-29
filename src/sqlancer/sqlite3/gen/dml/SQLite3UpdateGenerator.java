@@ -20,7 +20,7 @@ public class SQLite3UpdateGenerator {
     private final StringBuilder sb = new StringBuilder();
     private final Randomly r;
     private final List<String> errors = new ArrayList<>();
-    private SQLite3GlobalState globalState;
+    private final SQLite3GlobalState globalState;
 
     public SQLite3UpdateGenerator(SQLite3GlobalState globalState, Randomly r) {
         this.globalState = globalState;

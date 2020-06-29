@@ -4,7 +4,7 @@ import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;
 
 public class MariaDBColumnName extends MariaDBExpression {
 
-    private MariaDBColumn column;
+    private final MariaDBColumn column;
 
     public MariaDBColumnName(MariaDBColumn column) {
         this.column = column;
