@@ -56,7 +56,7 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 // IN
 public final class PostgresProvider extends ProviderAdapter<PostgresGlobalState, PostgresOptions> {
 
-    public static boolean generateOnlyKnown = false;
+    public static boolean generateOnlyKnown;
 
     private PostgresGlobalState globalState;
 

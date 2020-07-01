@@ -80,7 +80,6 @@
 		<exclude name="AvoidInstantiatingObjectsInLoops" />
 		<exclude name="InefficientStringBuffering" />
 		<exclude name="InsufficientStringBufferDeclaration" />
-		<exclude name="RedundantFieldInitializer" />
 		<exclude name="ConsecutiveAppendsShouldReuse" />
 		<exclude name="UseStringBufferForStringAppends" />
 		<exclude name="SimplifyStartsWith" />

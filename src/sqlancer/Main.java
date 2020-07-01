@@ -482,7 +482,7 @@ public final class Main {
         scheduler.scheduleAtFixedRate(new Runnable() {
 
             private long timeMillis = System.currentTimeMillis();
-            private long lastNrQueries = 0;
+            private long lastNrQueries;
             private long lastNrDbs;
 
             {

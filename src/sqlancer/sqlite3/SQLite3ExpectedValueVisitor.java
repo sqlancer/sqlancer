@@ -38,7 +38,7 @@ import sqlancer.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctio
 public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
 
     private final StringBuilder sb = new StringBuilder();
-    private int nrTabs = 0;
+    private int nrTabs;
 
     private void print(SQLite3Expression expr) {
         SQLite3ToStringVisitor v = new SQLite3ToStringVisitor();

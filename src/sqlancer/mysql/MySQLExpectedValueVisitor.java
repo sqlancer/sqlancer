@@ -22,7 +22,7 @@ import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
 public class MySQLExpectedValueVisitor implements MySQLVisitor {
 
     private final StringBuilder sb = new StringBuilder();
-    private int nrTabs = 0;
+    private int nrTabs;
 
     private void print(MySQLExpression expr) {
         MySQLToStringVisitor v = new MySQLToStringVisitor();
