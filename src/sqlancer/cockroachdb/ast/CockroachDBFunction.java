@@ -70,58 +70,45 @@ public enum CockroachDBFunction {
                                                                                                          // string
     BTRIM2("BTRIM", CockroachDBDataType.STRING, CockroachDBDataType.STRING), // btrim(val: string) → string
     CHAR_LENGTH1("CHAR_LENGTH", CockroachDBDataType.INT, CockroachDBDataType.BYTES), // char_length(val: bytes) → int
-    CHAR_LENGTH2("CHAR_LENGTH", CockroachDBDataType.INT, CockroachDBDataType.STRING), CHARACTER_LENGTH1(
-            "CHARACTER_LENGTH", CockroachDBDataType.INT,
-            CockroachDBDataType.STRING), CHARACTER_LENGTH2("CHARACTER_LENGTH", CockroachDBDataType.INT,
-                    CockroachDBDataType.BYTES), CHR(CockroachDBDataType.STRING, CockroachDBDataType.INT), INITCAP(
-                            CockroachDBDataType.STRING, CockroachDBDataType.STRING), LEFT1("LEFT",
-                                    CockroachDBDataType.BYTES, CockroachDBDataType.BYTES,
-                                    CockroachDBDataType.INT), LEFT2("LEFT", CockroachDBDataType.STRING,
-                                            CockroachDBDataType.STRING, CockroachDBDataType.INT), LENGTH1("LENGTH",
-                                                    CockroachDBDataType.INT,
-                                                    CockroachDBDataType.BYTES), LENGTH2("LENGTH",
-                                                            CockroachDBDataType.INT, CockroachDBDataType.STRING), LOWER(
-                                                                    CockroachDBDataType.STRING,
-                                                                    CockroachDBDataType.STRING),
+    CHAR_LENGTH2("CHAR_LENGTH", CockroachDBDataType.INT, CockroachDBDataType.STRING),
+    CHARACTER_LENGTH1("CHARACTER_LENGTH", CockroachDBDataType.INT, CockroachDBDataType.STRING),
+    CHARACTER_LENGTH2("CHARACTER_LENGTH", CockroachDBDataType.INT, CockroachDBDataType.BYTES),
+    CHR(CockroachDBDataType.STRING, CockroachDBDataType.INT),
+    INITCAP(CockroachDBDataType.STRING, CockroachDBDataType.STRING),
+    LEFT1("LEFT", CockroachDBDataType.BYTES, CockroachDBDataType.BYTES, CockroachDBDataType.INT),
+    LEFT2("LEFT", CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.INT),
+    LENGTH1("LENGTH", CockroachDBDataType.INT, CockroachDBDataType.BYTES),
+    LENGTH2("LENGTH", CockroachDBDataType.INT, CockroachDBDataType.STRING),
+    LOWER(CockroachDBDataType.STRING, CockroachDBDataType.STRING),
     // LPAD(CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.INT), // TODO: can cause out of
     // memory errors
-    LTRIM(CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.STRING), OVERLAY(
-            CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.STRING,
-            CockroachDBDataType.INT), QUOTE_IDENT(CockroachDBDataType.STRING,
-                    CockroachDBDataType.STRING), QUOTE_LITERAL(CockroachDBDataType.STRING,
-                            CockroachDBDataType.STRING), QUOTE_NULLABLE(CockroachDBDataType.STRING,
-                                    CockroachDBDataType.STRING), REVERSE(CockroachDBDataType.STRING,
-                                            CockroachDBDataType.STRING), STRPOS(CockroachDBDataType.INT,
-                                                    CockroachDBDataType.STRING,
-                                                    CockroachDBDataType.STRING), SPLIT_PART(CockroachDBDataType.STRING,
-                                                            CockroachDBDataType.STRING, CockroachDBDataType.STRING,
-                                                            CockroachDBDataType.INT), SUBSTRING1("SUBSTRING",
-                                                                    CockroachDBDataType.STRING,
-                                                                    CockroachDBDataType.STRING,
-                                                                    CockroachDBDataType.STRING), SUBSTRING2("SUBSTRING",
-                                                                            CockroachDBDataType.STRING,
-                                                                            CockroachDBDataType.STRING,
-                                                                            CockroachDBDataType.STRING,
-                                                                            CockroachDBDataType.STRING), SUBSTRING3(
-                                                                                    "SUBSTRING",
-                                                                                    CockroachDBDataType.STRING,
-                                                                                    CockroachDBDataType.STRING,
-                                                                                    CockroachDBDataType.INT), SUBSTRING4(
-                                                                                            "SUBSTRING",
-                                                                                            CockroachDBDataType.STRING,
-                                                                                            CockroachDBDataType.STRING,
-                                                                                            CockroachDBDataType.INT,
-                                                                                            CockroachDBDataType.INT),
+    LTRIM(CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.STRING),
+    OVERLAY(CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.STRING,
+            CockroachDBDataType.INT),
+    QUOTE_IDENT(CockroachDBDataType.STRING, CockroachDBDataType.STRING),
+    QUOTE_LITERAL(CockroachDBDataType.STRING, CockroachDBDataType.STRING),
+    QUOTE_NULLABLE(CockroachDBDataType.STRING, CockroachDBDataType.STRING),
+    REVERSE(CockroachDBDataType.STRING, CockroachDBDataType.STRING),
+    STRPOS(CockroachDBDataType.INT, CockroachDBDataType.STRING, CockroachDBDataType.STRING),
+    SPLIT_PART(CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.STRING,
+            CockroachDBDataType.INT),
+    SUBSTRING1("SUBSTRING", CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.STRING),
+    SUBSTRING2("SUBSTRING", CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.STRING,
+            CockroachDBDataType.STRING),
+    SUBSTRING3("SUBSTRING", CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.INT),
+    SUBSTRING4("SUBSTRING", CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.INT,
+            CockroachDBDataType.INT),
     /* https://github.com/cockroachdb/cockroach/issues/44152 */
-    TO_ENGLISH(CockroachDBDataType.STRING, CockroachDBDataType.INT), TO_HEX1("TO_HEX", CockroachDBDataType.STRING,
-            CockroachDBDataType.INT), TO_HEX("TO_HEX", CockroachDBDataType.STRING, CockroachDBDataType.BYTES), TO_IP(
-                    CockroachDBDataType.BYTES, CockroachDBDataType.STRING), TO_UUID(CockroachDBDataType.BYTES,
-                            CockroachDBDataType.STRING), TRANSLATE(CockroachDBDataType.STRING,
-                                    CockroachDBDataType.STRING, CockroachDBDataType.STRING,
-                                    CockroachDBDataType.STRING), UPPER(CockroachDBDataType.STRING,
-                                            CockroachDBDataType.STRING), REGEXP_REPLACE(CockroachDBDataType.STRING,
-                                                    CockroachDBDataType.STRING, CockroachDBDataType.STRING,
-                                                    CockroachDBDataType.STRING),
+    TO_ENGLISH(CockroachDBDataType.STRING, CockroachDBDataType.INT),
+    TO_HEX1("TO_HEX", CockroachDBDataType.STRING, CockroachDBDataType.INT),
+    TO_HEX("TO_HEX", CockroachDBDataType.STRING, CockroachDBDataType.BYTES),
+    TO_IP(CockroachDBDataType.BYTES, CockroachDBDataType.STRING),
+    TO_UUID(CockroachDBDataType.BYTES, CockroachDBDataType.STRING),
+    TRANSLATE(CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.STRING,
+            CockroachDBDataType.STRING),
+    UPPER(CockroachDBDataType.STRING, CockroachDBDataType.STRING),
+    REGEXP_REPLACE(CockroachDBDataType.STRING, CockroachDBDataType.STRING, CockroachDBDataType.STRING,
+            CockroachDBDataType.STRING),
 
     MD5(CockroachDBDataType.STRING) {
         @Override
@@ -136,8 +123,8 @@ public enum CockroachDBFunction {
     },
     // System info function
     /* see https://github.com/cockroachdb/cockroach/issues/44203 */
-    CURRENT_DATABASE(CockroachDBDataType.STRING), CURRENT_SCHEMA(CockroachDBDataType.STRING), CURRENT_USER(
-            CockroachDBDataType.STRING), VERSION(CockroachDBDataType.STRING);
+    CURRENT_DATABASE(CockroachDBDataType.STRING), CURRENT_SCHEMA(CockroachDBDataType.STRING),
+    CURRENT_USER(CockroachDBDataType.STRING), VERSION(CockroachDBDataType.STRING);
 
     private CockroachDBDataType returnType;
     private CockroachDBDataType[] argumentTypes;

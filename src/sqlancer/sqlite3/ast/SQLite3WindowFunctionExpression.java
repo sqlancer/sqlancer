@@ -19,8 +19,8 @@ public class SQLite3WindowFunctionExpression extends SQLite3Expression {
     public static class SQLite3WindowFunctionFrameSpecTerm extends SQLite3Expression {
 
         public enum SQLite3WindowFunctionFrameSpecTermKind {
-            UNBOUNDED_PRECEDING("UNBOUNDED PRECEDING"), EXPR_PRECEDING("PRECEDING"), CURRENT_ROW(
-                    "CURRENT ROW"), EXPR_FOLLOWING("FOLLOWING"), UNBOUNDED_FOLLOWING("UNBOUNDED FOLLOWING");
+            UNBOUNDED_PRECEDING("UNBOUNDED PRECEDING"), EXPR_PRECEDING("PRECEDING"), CURRENT_ROW("CURRENT ROW"),
+            EXPR_FOLLOWING("FOLLOWING"), UNBOUNDED_FOLLOWING("UNBOUNDED FOLLOWING");
 
             String s;
 
@@ -90,8 +90,8 @@ public class SQLite3WindowFunctionExpression extends SQLite3Expression {
     }
 
     public enum SQLite3FrameSpecExclude {
-        EXCLUDE_NO_OTHERS("EXCLUDE NO OTHERS"), EXCLUDE_CURRENT_ROW("EXCLUDE CURRENT ROW"), EXCLUDE_GROUP(
-                "EXCLUDE GROUP"), EXCLUDE_TIES("EXCLUDE TIES");
+        EXCLUDE_NO_OTHERS("EXCLUDE NO OTHERS"), EXCLUDE_CURRENT_ROW("EXCLUDE CURRENT ROW"),
+        EXCLUDE_GROUP("EXCLUDE GROUP"), EXCLUDE_TIES("EXCLUDE TIES");
 
         private final String s;
 

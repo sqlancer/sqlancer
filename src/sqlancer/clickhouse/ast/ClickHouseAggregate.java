@@ -16,16 +16,16 @@ public class ClickHouseAggregate extends ClickHouseExpression {
     public enum ClickHouseAggregateFunction {
         AVG(ClickHouseDataType.Int8, ClickHouseDataType.Int16, ClickHouseDataType.Int32, ClickHouseDataType.Int64,
                 ClickHouseDataType.UInt8, ClickHouseDataType.UInt16, ClickHouseDataType.UInt32,
-                ClickHouseDataType.UInt64, ClickHouseDataType.Float32, ClickHouseDataType.Float64), BOOL_AND(
-                        ClickHouseDataType.UInt8), BOOL_OR(ClickHouseDataType.UInt8), COUNT(ClickHouseDataType.Int8,
-                                ClickHouseDataType.Int16, ClickHouseDataType.Int32, ClickHouseDataType.Int64,
-                                ClickHouseDataType.UInt8, ClickHouseDataType.UInt16, ClickHouseDataType.UInt32,
-                                ClickHouseDataType.UInt64, ClickHouseDataType.Float32, ClickHouseDataType.Float64,
-                                ClickHouseDataType.String), MAX, MIN, SUM(ClickHouseDataType.Int8,
-                                        ClickHouseDataType.Int16, ClickHouseDataType.Int32, ClickHouseDataType.Int64,
-                                        ClickHouseDataType.UInt8, ClickHouseDataType.UInt16, ClickHouseDataType.UInt32,
-                                        ClickHouseDataType.UInt64, ClickHouseDataType.Float32,
-                                        ClickHouseDataType.Float64);
+                ClickHouseDataType.UInt64, ClickHouseDataType.Float32, ClickHouseDataType.Float64),
+        BOOL_AND(ClickHouseDataType.UInt8), BOOL_OR(ClickHouseDataType.UInt8),
+        COUNT(ClickHouseDataType.Int8, ClickHouseDataType.Int16, ClickHouseDataType.Int32, ClickHouseDataType.Int64,
+                ClickHouseDataType.UInt8, ClickHouseDataType.UInt16, ClickHouseDataType.UInt32,
+                ClickHouseDataType.UInt64, ClickHouseDataType.Float32, ClickHouseDataType.Float64,
+                ClickHouseDataType.String),
+        MAX, MIN,
+        SUM(ClickHouseDataType.Int8, ClickHouseDataType.Int16, ClickHouseDataType.Int32, ClickHouseDataType.Int64,
+                ClickHouseDataType.UInt8, ClickHouseDataType.UInt16, ClickHouseDataType.UInt32,
+                ClickHouseDataType.UInt64, ClickHouseDataType.Float32, ClickHouseDataType.Float64);
 
         private ClickHouseDataType[] supportedReturnTypes;
 
