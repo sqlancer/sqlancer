@@ -6,20 +6,20 @@ import java.util.Set;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
-import sqlancer.clickhouse.ClickhouseProvider.ClickhouseGlobalState;
-import sqlancer.clickhouse.ClickhouseSchema.ClickhouseDataType;
+import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
+import sqlancer.clickhouse.ClickHouseSchema.ClickHouseLancerDataType;
 
-public class ClickhouseTableGenerator {
+public class ClickHouseTableGenerator {
 
-    private enum ClickhouseEngine {
-        TinyLog, StripeLog, Log, Memory/* , MergeTree */
+    private enum ClickHouseEngine {
+        TinyLog, StripeLog, Log, Memory, MergeTree
     }
 
     StringBuilder sb = new StringBuilder("CREATE TABLE ");
     Set<String> errors = new HashSet<>();
 
-    public Query getQuery(ClickhouseGlobalState globalState) {
-        ClickhouseEngine engine = Randomly.fromOptions(ClickhouseEngine.values());
+    public Query getQuery(ClickHouseGlobalState globalState) {
+        ClickHouseEngine engine = Randomly.fromOptions(ClickHouseEngine.values());
         sb.append(globalState.getSchema().getFreeTableName());
         sb.append("(");
         for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
@@ -30,30 +30,21 @@ public class ClickhouseTableGenerator {
             sb.append(i);
             sb.append(" ");
             if (Randomly.getBoolean()) {
-                sb.append(ClickhouseDataType.getRandom());
+                sb.append(ClickHouseLancerDataType.getRandom());
             } else {
-                sb.append("Nullable(");
-                sb.append(ClickhouseDataType.getRandom());
-                sb.append(")");
+                // sb.append("Nullable(");
+                sb.append(ClickHouseLancerDataType.getRandom());
+                // sb.append(")");
             }
             potentiallyAppendCodec();
         }
         sb.append(") ENGINE = ");
         sb.append(engine);
         sb.append("(");
-        switch (engine) {
-        case Log:
-        case Memory:
-        case StripeLog:
-        case TinyLog:
-            break;
-        // case MergeTree:
-        // sb.append("toDate(c0), (c0), 8192");
-        // break;
-        default:
-            throw new AssertionError(engine);
-        }
         sb.append(")");
+        if (engine == ClickHouseEngine.MergeTree) {
+            sb.append(" ORDER BY tuple()");
+        }
         sb.append(";");
         return new QueryAdapter(sb.toString(), errors);
     }
@@ -62,7 +53,7 @@ public class ClickhouseTableGenerator {
         if (Randomly.getBoolean()) {
             sb.append(" CODEC(");
             errors.add(" in memory is not of fixed size");
-            sb.append(Randomly.fromOptions("NONE", "ZSTD", "LZ4HC", "Delta"));
+            sb.append(Randomly.fromOptions("NONE", "ZSTD", "LZ4HC"));
             sb.append(")");
         }
     }

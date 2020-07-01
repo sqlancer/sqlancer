@@ -1,4 +1,4 @@
-package sqlancer.clickhouse.oracle;
+package sqlancer.clickhouse.oracle.tlp;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -6,21 +6,22 @@ import java.util.List;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
-import sqlancer.clickhouse.ClickhouseProvider.ClickhouseGlobalState;
-import sqlancer.clickhouse.ClickhouseToStringVisitor;
+import sqlancer.clickhouse.ClickHouseProvider;
+import sqlancer.clickhouse.ClickHouseVisitor;
 
-public class ClickhouseTLPWhereOracle extends ClickhouseQueryPartitioningBase {
+public class ClickHouseTLPWhereOracle extends ClickHouseTLPBase {
 
-    public ClickhouseTLPWhereOracle(ClickhouseGlobalState state) {
+    public ClickHouseTLPWhereOracle(ClickHouseProvider.ClickHouseGlobalState state) {
         super(state);
     }
 
     @Override
     public void check() throws SQLException {
         super.check();
-        select.setWhereClause(null);
-        String originalQueryString = ClickhouseToStringVisitor.asString(select);
-
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            select.setOrderByExpressions(gen.generateOrderBys());
+        }
+        String originalQueryString = ClickHouseVisitor.asString(select);
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
                 state.getConnection(), state);
 
@@ -29,16 +30,15 @@ public class ClickhouseTLPWhereOracle extends ClickhouseQueryPartitioningBase {
             select.setOrderByExpressions(gen.generateOrderBys());
         }
         select.setWhereClause(predicate);
-        String firstQueryString = ClickhouseToStringVisitor.asString(select);
+        String firstQueryString = ClickHouseVisitor.asString(select);
         select.setWhereClause(negatedPredicate);
-        String secondQueryString = ClickhouseToStringVisitor.asString(select);
+        String secondQueryString = ClickHouseVisitor.asString(select);
         select.setWhereClause(isNullPredicate);
-        String thirdQueryString = ClickhouseToStringVisitor.asString(select);
+        String thirdQueryString = ClickHouseVisitor.asString(select);
         List<String> combinedString = new ArrayList<>();
         List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
                 thirdQueryString, combinedString, !orderBy, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
     }
-
 }

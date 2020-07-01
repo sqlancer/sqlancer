@@ -2,12 +2,12 @@ package sqlancer.clickhouse;
 
 import java.util.Set;
 
-public final class ClickhouseErrors {
+public final class ClickHouseErrors {
 
-    private ClickhouseErrors() {
+    private ClickHouseErrors() {
     }
 
-    public static void addExpressionErrors(Set<String> errors) {
+    public static void addExpectedExpressionErrors(Set<String> errors) {
         // errors.add("Illegal type (String) of argument of function not");
         // errors.add("Illegal type String of column for constant filter. Must be UInt8 or Nullable(UInt8)");
         // errors.add("Illegal type Int32 of column for constant filter. Must be UInt8 or Nullable(UInt8)");
@@ -24,6 +24,24 @@ public final class ClickhouseErrors {
         // regex
         errors.add("invalid escape sequence");
         errors.add("invalid character class range");
+        errors.add("Memory limit");
+        errors.add("There is no supertype for types");
+        errors.add("Bad get: has Int64, requested UInt64");
+        errors.add("Cannot convert string");
+        errors.add("Attempt to read after eof: while converting");
+        errors.add("doesn't exist"); // TODO: consecutive test runs can lead to dropped database
+        errors.add("is not under aggregate function");
     }
 
+    public static void addExpressionHavingErrors(Set<String> errors) {
+        errors.add("Memory limit");
+    }
+
+    public static void addQueryErrors(Set<String> errors) {
+        errors.add("Memory limit");
+    }
+
+    public static void addGroupingErrors(Set<String> errors) {
+        errors.add("Memory limit");
+    }
 }

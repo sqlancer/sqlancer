@@ -80,7 +80,7 @@ public class MainOptions {
     }
 
     public enum DBMS {
-        MariaDB, SQLite3, MySQL, PostgreSQL, TDEngine, CockroachDB, TiDB
+        MariaDB, SQLite3, MySQL, PostgreSQL, TDEngine, CockroachDB, TiDB, ClickHouse
     }
 
     public String getUserName() {
