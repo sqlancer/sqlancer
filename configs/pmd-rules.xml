@@ -87,7 +87,6 @@
 		<exclude name="TooFewBranchesForASwitchStatement" />
 		<exclude name="OptimizableToArrayCall" />
 		<exclude name="AvoidFileStream" />
-		<exclude name="StringInstantiation" />
 	</rule>
 
 </ruleset>
