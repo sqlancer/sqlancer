@@ -86,7 +86,6 @@
 		<exclude name="UseStringBufferForStringAppends" />
 		<exclude name="SimplifyStartsWith" />
 		<exclude name="TooFewBranchesForASwitchStatement" />
-		<exclude name="AddEmptyString" />
 		<exclude name="OptimizableToArrayCall" />
 		<exclude name="AvoidFileStream" />
 		<exclude name="StringInstantiation" />

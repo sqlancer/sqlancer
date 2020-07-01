@@ -39,7 +39,7 @@ public final class CockroachDBCommentOnGenerator {
             if (index.getIndexName().contains("primary")) {
                 throw new IgnoreMeException();
             }
-            sb.append("INDEX " + index.getIndexName() + "");
+            sb.append("INDEX " + index.getIndexName());
             break;
         case COLUMN:
             sb.append("COLUMN ");

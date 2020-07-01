@@ -88,7 +88,7 @@ public class DuckDBNoRECOracle implements TestOracle {
         // PostfixOperator.IS_TRUE);
         Node<DuckDBExpression> asText = new NewPostfixTextNode<>(new DuckDBCastOperation(
                 new NewPostfixTextNode<DuckDBExpression>(randomWhereCondition,
-                        " IS NOT NULL AND " + DuckDBToStringVisitor.asString(randomWhereCondition) + ""),
+                        " IS NOT NULL AND " + DuckDBToStringVisitor.asString(randomWhereCondition)),
                 new DuckDBCompositeDataType(DuckDBDataType.INT, 8)), "as count");
         select.setFetchColumns(Arrays.asList(asText));
         select.setFromList(tableList);
