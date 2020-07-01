@@ -73,11 +73,23 @@
 		<exclude name="ExcessiveMethodLength" />
 		<exclude name="TooManyFields" />
 	</rule>
-	<!-- <rule ref="category/java/design.xml"> <priority>4</priority> </rule> 
-		<rule ref="category/java/performance.xml"> <priority>5</priority> <exclude 
-		name="MethodArgumentCouldBeFinal"/> <exclude name="LocalVariableCouldBeFinal"/> 
-		</rule> -->
-
-
+	<rule ref="category/java/performance.xml">
+		<priority>2</priority>
+		<exclude name="AppendCharacterWithChar" />
+		<exclude name="ConsecutiveLiteralAppends" />
+		<exclude name="AvoidInstantiatingObjectsInLoops" />
+		<exclude name="InefficientStringBuffering" />
+		<exclude name="InsufficientStringBufferDeclaration" />
+		<exclude name="RedundantFieldInitializer" />
+		<exclude name="ConsecutiveAppendsShouldReuse" />
+		<exclude name="UselessStringValueOf" />
+		<exclude name="UseStringBufferForStringAppends" />
+		<exclude name="SimplifyStartsWith" />
+		<exclude name="TooFewBranchesForASwitchStatement" />
+		<exclude name="AddEmptyString" />
+		<exclude name="OptimizableToArrayCall" />
+		<exclude name="AvoidFileStream" />
+		<exclude name="StringInstantiation" />
+	</rule>
 
 </ruleset>
