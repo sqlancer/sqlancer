@@ -82,7 +82,6 @@
 		<exclude name="InsufficientStringBufferDeclaration" />
 		<exclude name="RedundantFieldInitializer" />
 		<exclude name="ConsecutiveAppendsShouldReuse" />
-		<exclude name="UselessStringValueOf" />
 		<exclude name="UseStringBufferForStringAppends" />
 		<exclude name="SimplifyStartsWith" />
 		<exclude name="TooFewBranchesForASwitchStatement" />
