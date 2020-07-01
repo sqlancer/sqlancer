@@ -40,7 +40,8 @@ public class MySQLAlterTable {
                                                            * https://bugs.mysql.com/bug.php?id=95897
                                                            */,
                 "Field in list of fields for partition function not found in table", "in 'partition function'",
-                "has a functional index dependency and cannot be dropped or renamed."), FORCE, //
+                "has a functional index dependency and cannot be dropped or renamed."),
+        FORCE, //
         // ORDER_BY is supported, see below
         DELAY_KEY_WRITE, //
         INSERT_METHOD, //

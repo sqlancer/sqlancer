@@ -19,7 +19,9 @@ public abstract class Query {
     /**
      *
      * @param con
+     *
      * @return true if the query was successful, false otherwise
+     *
      * @throws SQLException
      */
     public abstract boolean execute(Connection con) throws SQLException;

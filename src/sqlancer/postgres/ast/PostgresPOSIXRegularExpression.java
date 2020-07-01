@@ -11,8 +11,8 @@ public class PostgresPOSIXRegularExpression implements PostgresExpression {
     private POSIXRegex op;
 
     public enum POSIXRegex implements Operator {
-        MATCH_CASE_SENSITIVE("~"), MATCH_CASE_INSENSITIVE("~*"), NOT_MATCH_CASE_SENSITIVE(
-                "!~"), NOT_MATCH_CASE_INSENSITIVE("!~*");
+        MATCH_CASE_SENSITIVE("~"), MATCH_CASE_INSENSITIVE("~*"), NOT_MATCH_CASE_SENSITIVE("!~"),
+        NOT_MATCH_CASE_INSENSITIVE("!~*");
 
         private String repr;
 

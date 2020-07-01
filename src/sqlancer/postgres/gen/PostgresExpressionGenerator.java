@@ -104,7 +104,8 @@ public class PostgresExpressionGenerator {
     }
 
     private enum BooleanExpression {
-        POSTFIX_OPERATOR, NOT, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON, FUNCTION, CAST, LIKE, BETWEEN, IN_OPERATION, SIMILAR_TO, POSIX_REGEX, BINARY_RANGE_COMPARISON;
+        POSTFIX_OPERATOR, NOT, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON, FUNCTION, CAST, LIKE, BETWEEN, IN_OPERATION,
+        SIMILAR_TO, POSIX_REGEX, BINARY_RANGE_COMPARISON;
     }
 
     private PostgresExpression generateFunctionWithUnknownResult(int depth, PostgresDataType type) {

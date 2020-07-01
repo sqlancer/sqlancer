@@ -10,8 +10,8 @@ public class CockroachDBBetweenOperation implements CockroachDBExpression {
     private CockroachDBBetweenOperatorType type;
 
     public enum CockroachDBBetweenOperatorType {
-        BETWEEN("BETWEEN"), NOT_BETWEEN("NOT BETWEEN"), BETWEEN_SYMMETRIC("BETWEEN SYMMETRIC"), NOT_BETWEEN_SYMMETRIC(
-                "NOT BETWEEN SYMMETRIC");
+        BETWEEN("BETWEEN"), NOT_BETWEEN("NOT BETWEEN"), BETWEEN_SYMMETRIC("BETWEEN SYMMETRIC"),
+        NOT_BETWEEN_SYMMETRIC("NOT BETWEEN SYMMETRIC");
 
         private String s;
 

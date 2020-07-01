@@ -158,6 +158,7 @@ public class SQLite3ExpressionGenerator {
     /**
      *
      * @see https://www.sqlite.org/syntax/literal-value.html
+     *
      * @return
      */
     private SQLite3Expression getRandomLiteralValueInternal(Randomly r) {
@@ -183,7 +184,9 @@ public class SQLite3ExpressionGenerator {
     }
 
     enum ExpressionType {
-        RANDOM_QUERY, COLUMN_NAME, LITERAL_VALUE, UNARY_OPERATOR, POSTFIX_UNARY_OPERATOR, BINARY_OPERATOR, BETWEEN_OPERATOR, CAST_EXPRESSION, BINARY_COMPARISON_OPERATOR, FUNCTION, IN_OPERATOR, COLLATE, CASE_OPERATOR, MATCH, AGGREGATE_FUNCTION, ROW_VALUE_COMPARISON, AND_OR_CHAIN
+        RANDOM_QUERY, COLUMN_NAME, LITERAL_VALUE, UNARY_OPERATOR, POSTFIX_UNARY_OPERATOR, BINARY_OPERATOR,
+        BETWEEN_OPERATOR, CAST_EXPRESSION, BINARY_COMPARISON_OPERATOR, FUNCTION, IN_OPERATOR, COLLATE, CASE_OPERATOR,
+        MATCH, AGGREGATE_FUNCTION, ROW_VALUE_COMPARISON, AND_OR_CHAIN
     }
 
     public SQLite3Expression generateExpression() {
@@ -413,8 +416,8 @@ public class SQLite3ExpressionGenerator {
         SQLITE_COMPILEOPTION_GET("SQLITE_COMPILEOPTION_GET", 1, Attribute.NONDETERMINISTIC), //
         SQLITE_COMPILEOPTION_USED("SQLITE_COMPILEOPTION_USED", 1, Attribute.NONDETERMINISTIC), //
         // SQLITE_OFFSET(1), //
-        SQLITE_SOURCE_ID("SQLITE_SOURCE_ID", 0, Attribute.NONDETERMINISTIC), SQLITE_VERSION("SQLITE_VERSION", 0,
-                Attribute.NONDETERMINISTIC), //
+        SQLITE_SOURCE_ID("SQLITE_SOURCE_ID", 0, Attribute.NONDETERMINISTIC),
+        SQLITE_VERSION("SQLITE_VERSION", 0, Attribute.NONDETERMINISTIC), //
         SUBSTR("SUBSTR", 2), //
         TOTAL_CHANGES("TOTAL_CHANGES", 0, Attribute.NONDETERMINISTIC), //
         TRIM("TRIM", 1), //
@@ -431,9 +434,9 @@ public class SQLite3ExpressionGenerator {
         JSON("json", 1), //
         JSON_ARRAY("json_array", 2, Attribute.VARIADIC), JSON_ARRAY_LENGTH("json_array_length", 1), //
         JSON_ARRAY_LENGTH2("json_array_length", 2), //
-        JSON_EXTRACT("json_extract", 2, Attribute.VARIADIC), JSON_INSERT("json_insert", 3,
-                Attribute.VARIADIC), JSON_OBJECT("json_object", 2, Attribute.VARIADIC), JSON_PATCH("json_patch",
-                        2), JSON_REMOVE("json_remove", 2, Attribute.VARIADIC), JSON_TYPE("json_type", 1), //
+        JSON_EXTRACT("json_extract", 2, Attribute.VARIADIC), JSON_INSERT("json_insert", 3, Attribute.VARIADIC),
+        JSON_OBJECT("json_object", 2, Attribute.VARIADIC), JSON_PATCH("json_patch", 2),
+        JSON_REMOVE("json_remove", 2, Attribute.VARIADIC), JSON_TYPE("json_type", 1), //
         JSON_VALID("json_valid", 1), //
         JSON_QUOTE("json_quote", 1), //
 

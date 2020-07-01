@@ -110,10 +110,10 @@ public final class PostgresProvider extends ProviderAdapter<PostgresGlobalState,
         }), //
         RESET_ROLE((g) -> new QueryAdapter("RESET ROLE")), //
         COMMENT_ON(PostgresCommentGenerator::generate), //
-        RESET((g) -> new QueryAdapter(
-                "RESET ALL") /*
-                              * https://www.postgresql.org/docs/devel/sql-reset.html TODO: also configuration parameter
-                              */), //
+        RESET((g) -> new QueryAdapter("RESET ALL") /*
+                                                    * https://www.postgresql.org/docs/devel/sql-reset.html TODO: also
+                                                    * configuration parameter
+                                                    */), //
         NOTIFY(PostgresNotifyGenerator::createNotify), //
         LISTEN((g) -> PostgresNotifyGenerator.createListen()), //
         UNLISTEN((g) -> PostgresNotifyGenerator.createUnlisten()), //

@@ -30,12 +30,15 @@ public class SQLite3PragmaGenerator {
         BUSY_TIMEOUT, //
         CACHE_SIZE, //
         CACHE_SPILL_ENABLED, //
-        CACHE_SPILL_SIZE, /* CASE_SENSITIVE_LIKE */ CELL_SIZE_CHECK, CHECKPOINT_FULLSYNC, DEFAULT_CACHE_SIZE, DEFER_FOREIGN_KEY, /*
-                                                                                                                                  * ENCODING,
-                                                                                                                                  */
-        FOREIGN_KEYS, IGNORE_CHECK_CONSTRAINTS, INCREMENTAL_VACUUM, INTEGRITY_CHECK, JOURNAL_MODE, JOURNAL_SIZE_LIMIT, /*
-                                                                                                                        * LEGACY_ALTER_TABLE
-                                                                                                                        */ OPTIMIZE, LEGACY_FORMAT, LOCKING_MODE, MMAP_SIZE, RECURSIVE_TRIGGERS, REVERSE_UNORDERED_SELECTS, SECURE_DELETE, SHRINK_MEMORY, SOFT_HEAP_LIMIT, //
+        CACHE_SPILL_SIZE, /* CASE_SENSITIVE_LIKE */ CELL_SIZE_CHECK, CHECKPOINT_FULLSYNC, DEFAULT_CACHE_SIZE,
+        DEFER_FOREIGN_KEY, /*
+                            * ENCODING,
+                            */
+        FOREIGN_KEYS, IGNORE_CHECK_CONSTRAINTS, INCREMENTAL_VACUUM, INTEGRITY_CHECK, JOURNAL_MODE, JOURNAL_SIZE_LIMIT,
+        /*
+         * LEGACY_ALTER_TABLE
+         */ OPTIMIZE, LEGACY_FORMAT, LOCKING_MODE, MMAP_SIZE, RECURSIVE_TRIGGERS, REVERSE_UNORDERED_SELECTS,
+        SECURE_DELETE, SHRINK_MEMORY, SOFT_HEAP_LIMIT, //
         STATS, //
         SHORT_COLUMN_NAMES,
         /* TEMP_STORE, */ //

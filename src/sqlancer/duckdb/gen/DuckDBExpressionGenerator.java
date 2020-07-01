@@ -36,7 +36,8 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
     }
 
     private enum Expression {
-        UNARY_POSTFIX, UNARY_PREFIX, BINARY_COMPARISON, BINARY_LOGICAL, BINARY_ARITHMETIC, CAST, FUNC, BETWEEN, CASE, IN, COLLATE, LIKE_ESCAPE
+        UNARY_POSTFIX, UNARY_PREFIX, BINARY_COMPARISON, BINARY_LOGICAL, BINARY_ARITHMETIC, CAST, FUNC, BETWEEN, CASE,
+        IN, COLLATE, LIKE_ESCAPE
     }
 
     @Override
@@ -196,8 +197,8 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
     }
 
     public enum DuckDBAggregateFunction {
-        MAX(1), MIN(1), AVG(1), COUNT(1), STRING_AGG(1), FIRST(1), SUM(1), STDDEV_SAMP(1), STDDEV_POP(1), VAR_POP(
-                1), VAR_SAMP(1), COVAR_POP(1), COVAR_SAMP(1);
+        MAX(1), MIN(1), AVG(1), COUNT(1), STRING_AGG(1), FIRST(1), SUM(1), STDDEV_SAMP(1), STDDEV_POP(1), VAR_POP(1),
+        VAR_SAMP(1), COVAR_POP(1), COVAR_SAMP(1);
 
         private int nrArgs;
 
@@ -270,8 +271,8 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
         // REPEAT(2),
         REPLACE(3), UNICODE(1),
 
-        BIT_COUNT(1), BIT_LENGTH(1), LAST_DAY(1), MONTHNAME(1), DAYNAME(1), YEARWEEK(1), DAYOFMONTH(1), WEEKDAY(
-                1), WEEKOFYEAR(1),
+        BIT_COUNT(1), BIT_LENGTH(1), LAST_DAY(1), MONTHNAME(1), DAYNAME(1), YEARWEEK(1), DAYOFMONTH(1), WEEKDAY(1),
+        WEEKOFYEAR(1),
 
         IFNULL(2), IF(3);
 
@@ -378,8 +379,8 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
     }
 
     public enum DuckDBBinaryArithmeticOperator implements Operator {
-        CONCAT("||"), ADD("+"), SUB("-"), MULT("*"), DIV("/"), MOD("%"), AND("&"), OR("|"), XOR("#"), LSHIFT(
-                "<<"), RSHIFT(">>");
+        CONCAT("||"), ADD("+"), SUB("-"), MULT("*"), DIV("/"), MOD("%"), AND("&"), OR("|"), XOR("#"), LSHIFT("<<"),
+        RSHIFT(">>");
 
         private String textRepr;
 
@@ -400,9 +401,9 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
 
     public enum DuckDBBinaryComparisonOperator implements Operator {
 
-        EQUALS("="), GREATER(">"), GREATER_EQUALS(">="), SMALLER("<"), SMALLER_EQUALS("<="), NOT_EQUALS("!="), LIKE(
-                "LIKE"), NOT_LIKE("NOT LIKE"), SIMILAR_TO(
-                        "SIMILAR TO"), NOT_SIMILAR_TO("NOT SIMILAR TO"), REGEX_POSIX("~"), REGEX_POSIT_NOT("!~");
+        EQUALS("="), GREATER(">"), GREATER_EQUALS(">="), SMALLER("<"), SMALLER_EQUALS("<="), NOT_EQUALS("!="),
+        LIKE("LIKE"), NOT_LIKE("NOT LIKE"), SIMILAR_TO("SIMILAR TO"), NOT_SIMILAR_TO("NOT SIMILAR TO"),
+        REGEX_POSIX("~"), REGEX_POSIT_NOT("!~");
 
         private String textRepr;
 
