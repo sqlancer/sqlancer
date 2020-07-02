@@ -197,7 +197,7 @@ public final class PostgresCommon {
         PARALLEL_WORKERS("parallel_workers", (r) -> r.getInteger(0, 1024)),
         AUTOVACUUM_ENABLED("autovacuum_enabled", (r) -> Randomly.fromOptions(0, 1)),
         AUTOVACUUM_VACUUM_THRESHOLD("autovacuum_vacuum_threshold", (r) -> r.getInteger(0, 2147483647)),
-        OIDS("oids", (R) -> Randomly.fromOptions(0, 1)),
+        OIDS("oids", (r) -> Randomly.fromOptions(0, 1)),
         AUTOVACUUM_VACUUM_SCALE_FACTOR("autovacuum_vacuum_scale_factor",
                 (r) -> Randomly.fromOptions(0, 0.00001, 0.01, 0.1, 0.2, 0.5, 0.8, 0.9, 1)),
         AUTOVACUUM_ANALYZE_THRESHOLD("autovacuum_analyze_threshold", (r) -> r.getLong(0, Integer.MAX_VALUE)),
