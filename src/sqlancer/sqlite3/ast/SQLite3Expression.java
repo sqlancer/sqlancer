@@ -1041,14 +1041,20 @@ public abstract class SQLite3Expression {
                 return Randomly.fromOptions(textRepresentation);
             }
 
-            public SQLite3Constant applyOperand(SQLite3Constant left, TypeAffinity leftAffinity, SQLite3Constant right,
-                    TypeAffinity rightAffinity, SQLite3Expression origLeft, SQLite3Expression origRight,
-                    boolean applyAffinity) {
+            public SQLite3Constant applyOperand(SQLite3Constant leftBeforeAffinity, TypeAffinity leftAffinity,
+                    SQLite3Constant rightBeforeAffinity, TypeAffinity rightAffinity, SQLite3Expression origLeft,
+                    SQLite3Expression origRight, boolean applyAffinity) {
 
+                SQLite3Constant left;
+                SQLite3Constant right;
                 if (applyAffinity) {
-                    ConstantTuple vals = applyAffinities(leftAffinity, rightAffinity, left, right);
+                    ConstantTuple vals = applyAffinities(leftAffinity, rightAffinity, leftBeforeAffinity,
+                            rightBeforeAffinity);
                     left = vals.left;
                     right = vals.right;
+                } else {
+                    left = leftBeforeAffinity;
+                    right = rightBeforeAffinity;
                 }
 
                 // If either operand has an explicit collating function assignment using the
@@ -1612,10 +1618,12 @@ public abstract class SQLite3Expression {
     }
 
     public static ConstantTuple applyAffinities(TypeAffinity leftAffinity, TypeAffinity rightAffinity,
-            SQLite3Constant left, SQLite3Constant right) {
+            SQLite3Constant leftBeforeAffinity, SQLite3Constant rightBeforeAffinity) {
         // If one operand has INTEGER, REAL or NUMERIC affinity and the other operand
         // has TEXT or BLOB or no affinity then NUMERIC affinity is applied to other
         // operand.
+        SQLite3Constant left = leftBeforeAffinity;
+        SQLite3Constant right = rightBeforeAffinity;
         if (leftAffinity.isNumeric() && (rightAffinity == TypeAffinity.TEXT || rightAffinity == TypeAffinity.BLOB
                 || rightAffinity == TypeAffinity.NONE)) {
             right = right.applyNumericAffinity();

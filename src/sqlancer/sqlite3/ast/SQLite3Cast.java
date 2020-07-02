@@ -47,7 +47,8 @@ public final class SQLite3Cast {
     }
 
     // SELECT CAST('-1.370998801E9' AS INTEGER) == -1
-    public static SQLite3Constant castToInt(SQLite3Constant cons) {
+    public static SQLite3Constant castToInt(SQLite3Constant originalCons) {
+        SQLite3Constant cons = originalCons;
         if (cons.getDataType() == SQLite3DataType.BINARY) {
             String text = new String(cons.asBinary());
             cons = SQLite3Constant.createTextConstant(text);
@@ -120,8 +121,9 @@ public final class SQLite3Cast {
         return convertInternal(value, true, false, false);
     }
 
-    private static SQLite3Constant convertInternal(SQLite3Constant value, boolean convertRealToInt,
+    private static SQLite3Constant convertInternal(SQLite3Constant originalValue, boolean convertRealToInt,
             boolean noNumIsRealZero, boolean convertIntToReal) throws AssertionError {
+        SQLite3Constant value = originalValue;
         if (value.getDataType() == SQLite3DataType.BINARY) {
             String text = new String(value.asBinary());
             value = SQLite3Constant.createTextConstant(text);

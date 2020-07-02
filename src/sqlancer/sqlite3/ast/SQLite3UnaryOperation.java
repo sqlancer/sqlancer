@@ -48,22 +48,25 @@ public class SQLite3UnaryOperation extends SQLite3Expression implements UnaryOpe
                 if (constant.isNull()) {
                     return SQLite3Constant.createNullConstant();
                 }
+                SQLite3Constant intConstant;
                 if (constant.getDataType() == SQLite3DataType.TEXT
                         || constant.getDataType() == SQLite3DataType.BINARY) {
-                    constant = SQLite3Cast.castToNumericFromNumOperand(constant);
+                    intConstant = SQLite3Cast.castToNumericFromNumOperand(constant);
+                } else {
+                    intConstant = constant;
                 }
-                if (constant.getDataType() == SQLite3DataType.INT) {
-                    if (constant.asInt() == Long.MIN_VALUE) {
+                if (intConstant.getDataType() == SQLite3DataType.INT) {
+                    if (intConstant.asInt() == Long.MIN_VALUE) {
                         // SELECT - -9223372036854775808; -- 9.22337203685478e+18
                         return SQLite3Constant.createRealConstant(-(double) Long.MIN_VALUE);
                     } else {
-                        return SQLite3Constant.createIntConstant(-constant.asInt());
+                        return SQLite3Constant.createIntConstant(-intConstant.asInt());
                     }
                 }
-                if (constant.getDataType() == SQLite3DataType.REAL) {
-                    return SQLite3Constant.createRealConstant(-constant.asDouble());
+                if (intConstant.getDataType() == SQLite3DataType.REAL) {
+                    return SQLite3Constant.createRealConstant(-intConstant.asDouble());
                 }
-                throw new AssertionError(constant);
+                throw new AssertionError(intConstant);
             }
         },
         PLUS("+") {
