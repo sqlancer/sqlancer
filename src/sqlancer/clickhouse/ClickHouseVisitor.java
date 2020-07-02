@@ -43,6 +43,10 @@ public interface ClickHouseVisitor {
 
     };
 
+    default void visit(ClickHouseExpression.ClickHousePostfixText op) {
+
+    }
+
     void visit(ClickHouseTableReference tableReference);
 
     void visit(ClickHouseCastOperation cast);
@@ -70,6 +74,8 @@ public interface ClickHouseVisitor {
             visit((ClickHouseCastOperation) expr);
         } else if (expr instanceof ClickHouseExpression.ClickHouseJoin) {
             visit((ClickHouseExpression.ClickHouseJoin) expr);
+        } else if (expr instanceof ClickHouseExpression.ClickHousePostfixText) {
+            visit((ClickHouseExpression.ClickHousePostfixText) expr);
         } else if (expr instanceof ClickHouseAggregate) {
             visit((ClickHouseAggregate) expr);
         } else {

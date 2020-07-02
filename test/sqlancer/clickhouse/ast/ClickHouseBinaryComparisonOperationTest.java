@@ -33,8 +33,6 @@ class ClickHouseBinaryComparisonOperationTest {
         ClickHouseConstant oneFConst = ClickHouseConstant.createFloat64Constant(1.0);
         ClickHouseConstant zeroConst = ClickHouseConstant.createFloat64Constant(0);
         ClickHouseConstant zeroFConst = ClickHouseConstant.createFloat64Constant(0.0);
-        ClickHouseConstant negativeConst = ClickHouseConstant.createFloat64Constant(-100.0);
-        ClickHouseConstant positiveConst = ClickHouseConstant.createFloat64Constant(10000.0);
 
         assertEquals(oneConst.applyEquals(oneConst).asInt(), 1);
         assertEquals(oneFConst.applyEquals(oneFConst).asInt(), 1);

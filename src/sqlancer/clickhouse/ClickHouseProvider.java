@@ -85,7 +85,7 @@ public class ClickHouseProvider extends ProviderAdapter<ClickHouseGlobalState, C
     @Override
     public void generateDatabase(ClickHouseGlobalState globalState) throws SQLException {
         for (int i = 0; i < Randomly.fromOptions(1); i++) {
-            boolean success = false;
+            boolean success;
             do {
                 Query qt = new ClickHouseTableGenerator().getQuery(globalState);
                 success = globalState.executeStatement(qt);
@@ -117,7 +117,7 @@ public class ClickHouseProvider extends ProviderAdapter<ClickHouseGlobalState, C
     public Connection createDatabase(ClickHouseGlobalState globalState) throws SQLException {
         ClickHouseOptions clickHouseOptions = globalState.getDmbsSpecificOptions();
         globalState.setClickHouseOptions(clickHouseOptions);
-        String url = "jdbc:clickhouse://localhost:8123/test";
+        String url = "jdbc:clickhouse://localhost:8123/default";
         String databaseName = globalState.getDatabaseName();
         Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
                 globalState.getOptions().getPassword());
@@ -138,7 +138,7 @@ public class ClickHouseProvider extends ProviderAdapter<ClickHouseGlobalState, C
             e.printStackTrace();
         }
         con.close();
-        con = DriverManager.getConnection("jdbc:clickhouse://localhost:18123/" + databaseName,
+        con = DriverManager.getConnection("jdbc:clickhouse://localhost:8123/" + databaseName,
                 globalState.getOptions().getUserName(), globalState.getOptions().getPassword());
         return con;
     }

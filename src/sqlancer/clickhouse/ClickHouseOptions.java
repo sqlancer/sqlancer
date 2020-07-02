@@ -4,9 +4,11 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import sqlancer.MainOptions;
 import sqlancer.TestOracle;
+import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPAggregateOracle;
+import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPDistinctOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPGroupByOracle;
-import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPWhereOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPHavingOracle;
+import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPWhereOracle;
 
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -28,10 +30,22 @@ public class ClickHouseOptions extends MainOptions {
                 return new ClickHouseTLPWhereOracle(globalState);
             }
         },
+        TLPDistinct {
+            @Override
+            public TestOracle create(ClickHouseProvider.ClickHouseGlobalState globalState) throws SQLException {
+                return new ClickHouseTLPDistinctOracle(globalState);
+            }
+        },
         TLPGroupBy {
             @Override
             public TestOracle create(ClickHouseProvider.ClickHouseGlobalState globalState) throws SQLException {
                 return new ClickHouseTLPGroupByOracle(globalState);
+            }
+        },
+        TLPAggregate {
+            @Override
+            public TestOracle create(ClickHouseProvider.ClickHouseGlobalState globalState) throws SQLException {
+                return new ClickHouseTLPAggregateOracle(globalState);
             }
         },
         TLPHaving {

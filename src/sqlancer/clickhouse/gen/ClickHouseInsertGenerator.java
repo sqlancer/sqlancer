@@ -25,7 +25,7 @@ public class ClickHouseInsertGenerator extends AbstractInsertGenerator<ClickHous
         gen = new ClickHouseExpressionGenerator(globalState);
         errors.add("Cannot insert NULL value into a column of type 'Int32'"); // TODO
         errors.add("Cannot insert NULL value into a column of type 'String'");
-
+        errors.add("Memory limit");
         errors.add("Cannot parse string");
         errors.add("Cannot parse Int32 from String, because value is too short");
     }
