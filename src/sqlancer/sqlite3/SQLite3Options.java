@@ -31,7 +31,7 @@ public class SQLite3Options {
 
     @Parameter(names = {
             "--test-dbstats" }, description = "Test the DBSTAT Virtual Table (see https://www.sqlite.org/dbstat.html)", arity = 1)
-    public boolean testDBStats = false;
+    public boolean testDBStats;
 
     @Parameter(names = { "--test-generated-columns" }, description = "Test generated columns", arity = 1)
     public boolean testGeneratedColumns = true;
@@ -61,14 +61,14 @@ public class SQLite3Options {
 
     @Parameter(names = {
             "--test-soundex" }, description = "Test the soundex function, which can be enabled using a compile-time option.", arity = 1)
-    public boolean testSoundex = false;
+    public boolean testSoundex;
 
     @Parameter(names = { "--test-match" }, description = "Allow the generation of the MATCH operator", arity = 1)
     public boolean testMatch = true;
 
     @Parameter(names = {
             "--test-distinct-in-view" }, description = "DISTINCT in views might cause occasional false positives in NoREC and TLP", arity = 1)
-    public boolean testDistinctInView = false;
+    public boolean testDistinctInView;
 
     @Parameter(names = "--oracle", converter = DBMSConverter.class)
     public SQLite3Oracle oracle = SQLite3Oracle.NoREC;
@@ -83,7 +83,7 @@ public class SQLite3Options {
 
     @Parameter(names = {
             "--print-statements" }, description = "Specifies whether to print SQL statements to stdout", arity = 1)
-    public boolean printStatements = false;
+    public boolean printStatements;
 
     @Parameter(names = {
             "--execute-queries" }, description = "Specifies whether the query in the fuzzer should be executed", arity = 1)
@@ -91,11 +91,11 @@ public class SQLite3Options {
 
     @Parameter(names = {
             "--print-successful-statements" }, description = "Specifies whether to print SQL statements to stdout", arity = 1)
-    public boolean executeStatementsAndPrintSuccessfulOnes = false;
+    public boolean executeStatementsAndPrintSuccessfulOnes;
 
     @Parameter(names = {
             "--exit-after-first-database" }, description = "Specifies whether to stop SQLancer after creating and executing the test oracle on the first database", arity = 1)
-    public boolean exitAfterFirstDatabase = false;
+    public boolean exitAfterFirstDatabase;
 
     public enum SQLite3Oracle {
         PQS {

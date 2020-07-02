@@ -21,7 +21,7 @@ import sqlancer.postgres.oracle.tlp.PostgresTLPWhereOracle;
 public class PostgresOptions {
 
     @Parameter(names = "--bulk-insert")
-    public boolean allowBulkInsert = false;
+    public boolean allowBulkInsert;
 
     @Parameter(names = "--oracle", converter = DBMSConverter.class)
     public List<PostgresOracle> oracle = Arrays.asList(PostgresOracle.QUERY_PARTITIONING);

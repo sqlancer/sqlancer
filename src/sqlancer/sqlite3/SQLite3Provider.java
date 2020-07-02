@@ -54,7 +54,7 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table.TableKind;
 public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3Options> {
 
     public static boolean allowFloatingPointFp = true;
-    public static boolean mustKnowResult = false;
+    public static boolean mustKnowResult;
 
     private SQLite3StateToReproduce state;
     private String databaseName;

@@ -464,7 +464,7 @@ public abstract class PostgresConstant implements PostgresExpression {
             if (Double.isFinite(val)) {
                 return String.valueOf(val);
             } else {
-                return "'" + String.valueOf(val) + "'";
+                return "'" + val + "'";
             }
         }
 
@@ -488,7 +488,7 @@ public abstract class PostgresConstant implements PostgresExpression {
             if (Double.isFinite(val)) {
                 return String.valueOf(val);
             } else {
-                return "'" + String.valueOf(val) + "'";
+                return "'" + val + "'";
             }
         }
 
