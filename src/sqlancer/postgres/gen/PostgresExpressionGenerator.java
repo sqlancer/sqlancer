@@ -247,7 +247,8 @@ public class PostgresExpressionGenerator {
         return new PostgresExpressionGenerator(globalState).generateExpression(0, type);
     }
 
-    public PostgresExpression generateExpression(int depth, PostgresDataType dataType) {
+    public PostgresExpression generateExpression(int depth, PostgresDataType originalType) {
+        PostgresDataType dataType = originalType;
         if (dataType == PostgresDataType.REAL && Randomly.getBoolean()) {
             dataType = Randomly.fromOptions(PostgresDataType.INT, PostgresDataType.FLOAT);
         }

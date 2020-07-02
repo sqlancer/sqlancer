@@ -13,41 +13,41 @@ public class PostgresBinaryLogicalOperation extends BinaryOperatorNode<PostgresE
         AND {
             @Override
             public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-                left = left.cast(PostgresDataType.BOOLEAN);
-                right = right.cast(PostgresDataType.BOOLEAN);
-                if (left.isNull()) {
-                    if (right.isNull()) {
+                PostgresConstant leftBool = left.cast(PostgresDataType.BOOLEAN);
+                PostgresConstant rightBool = right.cast(PostgresDataType.BOOLEAN);
+                if (leftBool.isNull()) {
+                    if (rightBool.isNull()) {
                         return PostgresConstant.createNullConstant();
                     } else {
-                        if (right.asBoolean()) {
+                        if (rightBool.asBoolean()) {
                             return PostgresConstant.createNullConstant();
                         } else {
                             return PostgresConstant.createFalse();
                         }
                     }
-                } else if (!left.asBoolean()) {
+                } else if (!leftBool.asBoolean()) {
                     return PostgresConstant.createFalse();
                 }
-                assert left.asBoolean();
-                if (right.isNull()) {
+                assert leftBool.asBoolean();
+                if (rightBool.isNull()) {
                     return PostgresConstant.createNullConstant();
                 } else {
-                    return PostgresConstant.createBooleanConstant(right.isBoolean() && right.asBoolean());
+                    return PostgresConstant.createBooleanConstant(rightBool.isBoolean() && rightBool.asBoolean());
                 }
             }
         },
         OR {
             @Override
             public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-                left = left.cast(PostgresDataType.BOOLEAN);
-                right = right.cast(PostgresDataType.BOOLEAN);
-                if (left.isBoolean() && left.asBoolean()) {
+                PostgresConstant leftBool = left.cast(PostgresDataType.BOOLEAN);
+                PostgresConstant rightBool = right.cast(PostgresDataType.BOOLEAN);
+                if (leftBool.isBoolean() && leftBool.asBoolean()) {
                     return PostgresConstant.createTrue();
                 }
-                if (right.isBoolean() && right.asBoolean()) {
+                if (rightBool.isBoolean() && rightBool.asBoolean()) {
                     return PostgresConstant.createTrue();
                 }
-                if (left.isNull() || right.isNull()) {
+                if (leftBool.isNull() || rightBool.isNull()) {
                     return PostgresConstant.createNullConstant();
                 }
                 return PostgresConstant.createFalse();

@@ -68,7 +68,8 @@ public class SQLite3Function extends SQLite3Expression {
             public SQLite3Constant apply(SQLite3Constant... args) {
                 return null;
                 // SQLite3Constant binaryValue = SQLite3Cast.castToBlob(args[0]);
-                // return SQLite3Constant.createTextConstant(binaryValue.getStringRepresentation());
+                // return
+                // SQLite3Constant.createTextConstant(binaryValue.getStringRepresentation());
             }
         },
 
@@ -139,10 +140,8 @@ public class SQLite3Function extends SQLite3Expression {
         NULLIF(2, "NULLIF") {
             @Override
             public SQLite3Constant apply(SQLite3Constant[] args, SQLite3CollateSequence collateSequence) {
-                if (collateSequence == null) {
-                    collateSequence = SQLite3CollateSequence.BINARY;
-                }
-                SQLite3Constant equals = args[0].applyEquals(args[1], collateSequence);
+                SQLite3Constant equals = args[0].applyEquals(args[1],
+                        collateSequence == null ? SQLite3CollateSequence.BINARY : collateSequence);
                 if (SQLite3Cast.isTrue(equals).isPresent() && SQLite3Cast.isTrue(equals).get()) {
                     return SQLite3Constant.createNullConstant();
                 } else {
