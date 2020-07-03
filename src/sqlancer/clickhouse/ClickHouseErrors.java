@@ -28,6 +28,8 @@ public final class ClickHouseErrors {
         errors.add("There is no supertype for types");
         errors.add("Bad get: has Int64, requested UInt64");
         errors.add("Cannot convert string");
+        errors.add("Cannot read floating point value");
+        errors.add("Cannot parse infinity.");
         errors.add("Attempt to read after eof: while converting");
         errors.add("doesn't exist"); // TODO: consecutive test runs can lead to dropped database
         errors.add("is not under aggregate function");
