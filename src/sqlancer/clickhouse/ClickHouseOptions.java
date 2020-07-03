@@ -4,6 +4,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import sqlancer.MainOptions;
 import sqlancer.TestOracle;
+import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPGroupByOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPWhereOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPHavingOracle;
 
@@ -27,7 +28,13 @@ public class ClickHouseOptions extends MainOptions {
                 return new ClickHouseTLPWhereOracle(globalState);
             }
         },
-        HAVING {
+        TLPGroupBy {
+            @Override
+            public TestOracle create(ClickHouseProvider.ClickHouseGlobalState globalState) throws SQLException {
+                return new ClickHouseTLPGroupByOracle(globalState);
+            }
+        },
+        TLPHaving {
             @Override
             public TestOracle create(ClickHouseProvider.ClickHouseGlobalState globalState) throws SQLException {
                 return new ClickHouseTLPHavingOracle(globalState);

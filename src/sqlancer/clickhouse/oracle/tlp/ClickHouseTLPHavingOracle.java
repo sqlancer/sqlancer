@@ -69,7 +69,13 @@ public class ClickHouseTLPHavingOracle extends ClickHouseTLPBase {
             state.getLogger().writeCurrent(combinedString);
         }
         if (new HashSet<>(resultSet).size() != new HashSet<>(secondResultSet).size()) {
-            throw new AssertionError(originalQueryString + ";\n" + combinedString + ";");
+            HashSet<String> diffLeft = new HashSet<>(resultSet);
+            HashSet<String> tmpLeft = new HashSet<>(resultSet);
+            HashSet<String> diffRight = new HashSet<>(secondResultSet);
+            diffLeft.removeAll(diffRight);
+            diffRight.removeAll(tmpLeft);
+            throw new AssertionError(originalQueryString + ";\n" + combinedString + ";\n" + "Left: "
+                    + diffLeft.toString() + "\nRight: " + diffRight.toString());
         }
     }
 }

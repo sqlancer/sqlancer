@@ -144,11 +144,14 @@ public final class ComparatorHelper {
     public static List<String> getCombinedResultSetNoDuplicates(String firstQueryString, String secondQueryString,
             String thirdQueryString, List<String> combinedString, boolean asUnion, GlobalState<?> state,
             Set<String> errors) throws SQLException {
-        if (!asUnion) {
-            throw new AssertionError();
+        String unionString;
+        if (asUnion) {
+            unionString = firstQueryString + " UNION " + secondQueryString + " UNION " + thirdQueryString;
+        } else {
+            unionString = "SELECT DISTINCT * FROM (" + firstQueryString + " UNION ALL " + secondQueryString
+                    + " UNION ALL " + thirdQueryString + ")";
         }
         List<String> secondResultSet;
-        String unionString = firstQueryString + " UNION " + secondQueryString + " UNION " + thirdQueryString;
         combinedString.add(unionString);
         secondResultSet = getResultSetFirstColumnAsString(unionString, errors, state.getConnection(), state);
         return secondResultSet;
