@@ -37,4 +37,20 @@ public abstract class Query {
         throw new AssertionError();
     }
 
+    public boolean executeLogged(GlobalState<?> globalState) throws SQLException {
+        logQueryString(globalState);
+        return execute(globalState.getConnection());
+    }
+
+    public ResultSet executeAndGetLogged(GlobalState<?> globalState) throws SQLException {
+        logQueryString(globalState);
+        return executeAndGet(globalState.getConnection());
+    }
+
+    private void logQueryString(GlobalState<?> globalState) {
+        if (globalState.getOptions().logEachSelect()) {
+            globalState.getLogger().writeCurrent(getQueryString());
+        }
+    }
+
 }
