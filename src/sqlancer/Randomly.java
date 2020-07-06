@@ -410,7 +410,10 @@ public final class Randomly {
         if (lower > upper) {
             throw new IllegalArgumentException(lower + " " + upper);
         }
-        return lower + ((long) (getThreadRandom().get().nextDouble() * (upper - lower)));
+        if (lower == upper) {
+            return lower;
+        }
+        return (long) (getThreadRandom().get().longs(lower, upper).findFirst().getAsLong());
     }
 
     private static int getNextInt(int lower, int upper) {
