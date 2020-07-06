@@ -28,8 +28,7 @@ public class PostgresTLPHavingOracle extends PostgresTLPBase {
         select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
         select.setHavingClause(null);
         String originalQueryString = PostgresVisitor.asString(select);
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state.getConnection(), state);
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         boolean orderBy = Randomly.getBoolean();
         if (orderBy) {

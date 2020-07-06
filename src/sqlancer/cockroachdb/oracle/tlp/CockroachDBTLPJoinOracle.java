@@ -83,8 +83,7 @@ public class CockroachDBTLPJoinOracle implements TestOracle {
         String originalQueryString = originalQueryString1 + " UNION ALL " + originalQueryString2 + " UNION ALL "
                 + originalQueryString2;
 
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state.getConnection(), state);
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         // boolean allowOrderBy = Randomly.getBoolean();
         // if (allowOrderBy) {

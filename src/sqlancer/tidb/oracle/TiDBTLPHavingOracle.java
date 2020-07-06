@@ -32,8 +32,7 @@ public class TiDBTLPHavingOracle extends TiDBTLPBase implements TestOracle {
         select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
         select.setHavingClause(null);
         String originalQueryString = TiDBVisitor.asString(select);
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state.getConnection(), state);
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         select.setHavingClause(predicate);
         String firstQueryString = TiDBVisitor.asString(select);

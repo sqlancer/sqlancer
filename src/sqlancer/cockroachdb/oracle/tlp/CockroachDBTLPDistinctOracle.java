@@ -26,8 +26,7 @@ public class CockroachDBTLPDistinctOracle extends CockroachDBTLPBase {
         select.setDistinct(true);
         String originalQueryString = CockroachDBVisitor.asString(select);
 
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state.getConnection(), state);
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
         select.setDistinct(false);
         CockroachDBExpression predicate = gen.generateExpression(CockroachDBDataType.BOOL.get());
         select.setWhereClause(predicate);

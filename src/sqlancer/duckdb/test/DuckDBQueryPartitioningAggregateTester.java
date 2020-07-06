@@ -100,7 +100,7 @@ public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartition
     private String getAggregateResult(String queryString) throws SQLException {
         String resultString;
         QueryAdapter q = new QueryAdapter(queryString, errors);
-        try (ResultSet result = q.executeAndGet(state.getConnection())) {
+        try (ResultSet result = q.executeAndGet(state)) {
             if (result == null) {
                 throw new IgnoreMeException();
             }

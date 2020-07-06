@@ -29,8 +29,7 @@ public class DuckDBQueryPartitioningGroupByTester extends DuckDBQueryPartitionin
         select.setWhereClause(null);
         String originalQueryString = DuckDBToStringVisitor.asString(select);
 
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state.getConnection(), state);
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         select.setWhereClause(predicate);
         String firstQueryString = DuckDBToStringVisitor.asString(select);

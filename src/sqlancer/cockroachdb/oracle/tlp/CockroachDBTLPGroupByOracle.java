@@ -25,8 +25,7 @@ public class CockroachDBTLPGroupByOracle extends CockroachDBTLPBase {
         select.setWhereClause(null);
         String originalQueryString = CockroachDBVisitor.asString(select);
 
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state.getConnection(), state);
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         select.setWhereClause(predicate);
         String firstQueryString = CockroachDBVisitor.asString(select);

@@ -24,8 +24,7 @@ public class DuckDBQueryPartitioningDistinctTester extends DuckDBQueryPartitioni
         select.setWhereClause(null);
         String originalQueryString = DuckDBToStringVisitor.asString(select);
 
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state.getConnection(), state);
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
         if (Randomly.getBoolean()) {
             select.setDistinct(false);
         }

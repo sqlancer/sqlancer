@@ -31,8 +31,7 @@ public class CockroachDBTLPHavingOracle extends CockroachDBTLPBase {
         select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
         select.setHavingClause(null);
         String originalQueryString = CockroachDBVisitor.asString(select);
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state.getConnection(), state);
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         select.setHavingClause(predicate);
         String firstQueryString = CockroachDBVisitor.asString(select);

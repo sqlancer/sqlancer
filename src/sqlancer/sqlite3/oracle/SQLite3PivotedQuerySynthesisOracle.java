@@ -61,7 +61,7 @@ public class SQLite3PivotedQuerySynthesisOracle implements TestOracle {
         this.database = globalState.getConnection();
         this.r = globalState.getRandomly();
         this.globalState = globalState;
-        s = SQLite3Schema.fromConnection(database);
+        s = SQLite3Schema.fromConnection(globalState);
     }
 
     @Override

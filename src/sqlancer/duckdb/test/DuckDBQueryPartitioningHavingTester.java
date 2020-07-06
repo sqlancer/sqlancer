@@ -34,8 +34,7 @@ public class DuckDBQueryPartitioningHavingTester extends DuckDBQueryPartitioning
         select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
         select.setHavingClause(null);
         String originalQueryString = DuckDBToStringVisitor.asString(select);
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state.getConnection(), state);
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         select.setHavingClause(predicate);
         String firstQueryString = DuckDBToStringVisitor.asString(select);

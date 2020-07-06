@@ -49,8 +49,7 @@ public class ClickHouseTLPHavingOracle extends ClickHouseTLPBase {
         select.setHavingClause(null);
         String originalQueryString = ClickHouseVisitor.asString(select);
 
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state.getConnection(), state);
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         ClickHouseExpression predicate = aggrGen.getHavingClause();
         select.setHavingClause(predicate);
@@ -62,8 +61,7 @@ public class ClickHouseTLPHavingOracle extends ClickHouseTLPBase {
                 ClickHouseUnaryPostfixOperation.ClickHouseUnaryPostfixOperator.IS_NULL, false));
         String thirdQueryString = ClickHouseVisitor.asString(select);
         String combinedString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL " + thirdQueryString;
-        List<String> secondResultSet = ComparatorHelper.getResultSetFirstColumnAsString(combinedString, errors,
-                state.getConnection(), state);
+        List<String> secondResultSet = ComparatorHelper.getResultSetFirstColumnAsString(combinedString, errors, state);
         if (state.getOptions().logEachSelect()) {
             state.getLogger().writeCurrent(originalQueryString);
             state.getLogger().writeCurrent(combinedString);

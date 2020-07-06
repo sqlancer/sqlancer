@@ -60,6 +60,7 @@ public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDB
         StateToReproduce state = globalState.getState();
         QueryManager manager = globalState.getManager();
         MariaDBSchema newSchema = MariaDBSchema.fromConnection(con, databaseName);
+        globalState.setSchema(newSchema);
         if (options.logEachSelect()) {
             logger.writeCurrent(state);
         }
@@ -72,6 +73,7 @@ public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDB
             }
             manager.execute(createTable);
             newSchema = MariaDBSchema.fromConnection(con, databaseName);
+            globalState.setSchema(newSchema);
         }
 
         int[] nrRemaining = new int[Action.values().length];
@@ -168,6 +170,7 @@ public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDB
                 manager.execute(query);
                 if (query.couldAffectSchema()) {
                     newSchema = MariaDBSchema.fromConnection(con, databaseName);
+                    globalState.setSchema(newSchema);
                 }
             } catch (Throwable t) {
                 System.err.println(query.getQueryString());
@@ -177,7 +180,7 @@ public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDB
         }
         newSchema = MariaDBSchema.fromConnection(con, databaseName);
         //
-        MariaDBNoRECOracle queryGenerator = new MariaDBNoRECOracle(newSchema, r, con, state);
+        MariaDBNoRECOracle queryGenerator = new MariaDBNoRECOracle(globalState);
         for (int i = 0; i < options.getNrQueries(); i++) {
             try {
                 queryGenerator.generateAndCheck();
@@ -190,6 +193,16 @@ public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDB
     }
 
     public static class MariaDBGlobalState extends GlobalState<MariaDBOptions> {
+
+        private MariaDBSchema schema;
+
+        public void setSchema(MariaDBSchema schema) {
+            this.schema = schema;
+        }
+
+        public MariaDBSchema getSchema() {
+            return schema;
+        }
 
     }
 

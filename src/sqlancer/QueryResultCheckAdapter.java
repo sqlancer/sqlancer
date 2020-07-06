@@ -1,6 +1,5 @@
 package sqlancer;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -16,8 +15,8 @@ public class QueryResultCheckAdapter extends QueryAdapter {
     }
 
     @Override
-    public boolean execute(Connection con) throws SQLException {
-        try (Statement s = con.createStatement()) {
+    public boolean execute(GlobalState<?> globalState) throws SQLException {
+        try (Statement s = globalState.getConnection().createStatement()) {
             ResultSet rs = s.executeQuery(getQueryString());
             rsChecker.accept(rs);
             return true;

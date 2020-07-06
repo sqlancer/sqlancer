@@ -23,8 +23,7 @@ public class PostgresTLPWhereOracle extends PostgresTLPBase {
             select.setOrderByExpressions(gen.generateOrderBy());
         }
         String originalQueryString = PostgresVisitor.asString(select);
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state.getConnection(), state);
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         select.setOrderByExpressions(Collections.emptyList());
         select.setWhereClause(predicate);
