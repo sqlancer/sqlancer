@@ -124,7 +124,6 @@ public class MariaDBSetGenerator {
                                   * ("batched_key_access", /*"block_nested_loop", "condition_fanout_filter",
                                   */
                     "condition_pushdown_for_derived", // MariaDB
-                    "condition_pushdown_for_subquery", // MariaDB
                     "derived_merge", //
                     "derived_with_keys", // MariaDB
                     "engine_condition_pushdown", //
