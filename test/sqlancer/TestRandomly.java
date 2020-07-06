@@ -184,6 +184,16 @@ public class TestRandomly {
         assertEquals(0, r.getLong(0, 1));
     }
 
+    @Test
+    public void testLong2() {
+        Randomly r = new Randomly();
+        for (int i = 0; i < NR_MIN_RUNS; i++) {
+            long val = r.getLong(-1, Long.MAX_VALUE);
+            assertTrue(val >= -1);
+            assertTrue(val < Long.MAX_VALUE);
+        }
+    }
+
     @Test // check that when given a seed, each thread computes a consistent result
     public void testSeed() {
         int seed = 123;
