@@ -23,8 +23,7 @@ public class DuckDBQueryPartitioningWhereTester extends DuckDBQueryPartitioningB
         select.setWhereClause(null);
         String originalQueryString = DuckDBToStringVisitor.asString(select);
 
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state.getConnection(), state);
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
         if (orderBy) {

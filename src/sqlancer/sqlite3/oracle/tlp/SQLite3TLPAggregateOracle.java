@@ -75,7 +75,7 @@ public class SQLite3TLPAggregateOracle implements TestOracle {
         String firstResult;
         String secondResult;
         QueryAdapter q = new QueryAdapter(originalQuery, errors);
-        try (ResultSet result = q.executeAndGet(state.getConnection())) {
+        try (ResultSet result = q.executeAndGet(state)) {
             if (result == null) {
                 throw new IgnoreMeException();
             }
@@ -86,7 +86,7 @@ public class SQLite3TLPAggregateOracle implements TestOracle {
         }
 
         QueryAdapter q2 = new QueryAdapter(metamorphicText, errors);
-        try (ResultSet result = q2.executeAndGet(state.getConnection())) {
+        try (ResultSet result = q2.executeAndGet(state)) {
             if (result == null) {
                 throw new IgnoreMeException();
             }

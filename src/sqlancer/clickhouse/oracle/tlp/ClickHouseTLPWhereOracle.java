@@ -22,8 +22,7 @@ public class ClickHouseTLPWhereOracle extends ClickHouseTLPBase {
             select.setOrderByExpressions(gen.generateOrderBys());
         }
         String originalQueryString = ClickHouseVisitor.asString(select);
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state.getConnection(), state);
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
         if (orderBy) {

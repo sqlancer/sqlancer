@@ -21,8 +21,7 @@ public class SQLite3TLPWhereOracle extends SQLite3TLPBase {
         select.setWhereClause(null);
         String originalQueryString = SQLite3Visitor.asString(select);
 
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state.getConnection(), state);
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         boolean orderBy = Randomly.getBooleanWithSmallProbability();
         if (orderBy) {

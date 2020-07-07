@@ -1,6 +1,5 @@
 package sqlancer;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -24,7 +23,7 @@ public abstract class Query {
      *
      * @throws SQLException
      */
-    public abstract boolean execute(Connection con) throws SQLException;
+    public abstract boolean execute(GlobalState<?> globalState) throws SQLException;
 
     public abstract Collection<String> getExpectedErrors();
 
@@ -33,8 +32,24 @@ public abstract class Query {
         return getQueryString();
     }
 
-    public ResultSet executeAndGet(Connection con) throws SQLException {
+    public ResultSet executeAndGet(GlobalState<?> globalState) throws SQLException {
         throw new AssertionError();
+    }
+
+    public boolean executeLogged(GlobalState<?> globalState) throws SQLException {
+        logQueryString(globalState);
+        return execute(globalState);
+    }
+
+    public ResultSet executeAndGetLogged(GlobalState<?> globalState) throws SQLException {
+        logQueryString(globalState);
+        return executeAndGet(globalState);
+    }
+
+    private void logQueryString(GlobalState<?> globalState) {
+        if (globalState.getOptions().logEachSelect()) {
+            globalState.getLogger().writeCurrent(getQueryString());
+        }
     }
 
 }

@@ -25,8 +25,7 @@ public class ClickHouseTLPGroupByOracle extends ClickHouseTLPBase {
         select.setWhereClause(null);
         String originalQueryString = ClickHouseVisitor.asString(select);
 
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state.getConnection(), state);
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         select.setWhereClause(predicate);
         String firstQueryString = ClickHouseVisitor.asString(select);

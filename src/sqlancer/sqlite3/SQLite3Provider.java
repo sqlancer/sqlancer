@@ -191,7 +191,6 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
     public void generateAndTestDatabase(SQLite3GlobalState globalState) throws SQLException {
         this.globalState = globalState;
         SQLite3Options sqliteOptions = globalState.getDmbsSpecificOptions();
-        Connection con = globalState.getConnection();
         QueryManager manager = globalState.getManager();
         MainOptions options = globalState.getOptions();
         this.databaseName = globalState.getDatabaseName();
@@ -203,7 +202,7 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
         globalState.setState(state);
         if (globalState.getDmbsSpecificOptions().generateDatabase) {
 
-            addSensiblePragmaDefaults(con);
+            addSensiblePragmaDefaults(globalState);
             int nrTablesToCreate = 1;
             if (Randomly.getBoolean()) {
                 nrTablesToCreate++;
@@ -213,19 +212,19 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
             }
             int i = 0;
 
-            globalState.setSchema(SQLite3Schema.fromConnection(con));
+            globalState.setSchema(SQLite3Schema.fromConnection(globalState));
             do {
                 Query tableQuery = getTableQuery(r, i++);
                 executeStatement(globalState, manager, tableQuery);
-                globalState.setSchema(SQLite3Schema.fromConnection(con));
+                globalState.setSchema(SQLite3Schema.fromConnection(globalState));
             } while (globalState.getSchema().getDatabaseTables().size() != nrTablesToCreate);
             assert globalState.getSchema().getTables().getTables().size() == nrTablesToCreate;
-            checkTablesForGeneratedColumnLoops(con, globalState.getSchema());
+            checkTablesForGeneratedColumnLoops(globalState);
             if (globalState.getDmbsSpecificOptions().testDBStats && Randomly.getBooleanWithSmallProbability()) {
                 QueryAdapter tableQuery = new QueryAdapter(
                         "CREATE VIRTUAL TABLE IF NOT EXISTS stat USING dbstat(main)");
                 executeStatement(globalState, manager, tableQuery);
-                globalState.setSchema(SQLite3Schema.fromConnection(con));
+                globalState.setSchema(SQLite3Schema.fromConnection(globalState));
             }
             int[] nrRemaining = new int[Action.values().length];
             List<Action> actions = new ArrayList<>();
@@ -316,7 +315,7 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
 
                 }
                 if (query != null && query.couldAffectSchema()) {
-                    globalState.setSchema(SQLite3Schema.fromConnection(con));
+                    globalState.setSchema(SQLite3Schema.fromConnection(globalState));
                     if (globalState.getSchema().getDatabaseTables().isEmpty()) {
                         throw new IgnoreMeException();
                     }
@@ -329,15 +328,15 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
             // also do an abort for DEFERRABLE INITIALLY DEFERRED
             query = SQLite3TransactionGenerator.generateRollbackTransaction(globalState);
             executeStatement(globalState, manager, query);
-            globalState.setSchema(SQLite3Schema.fromConnection(con));
+            globalState.setSchema(SQLite3Schema.fromConnection(globalState));
             manager.incrementCreateDatabase();
         } else {
-            globalState.setSchema(SQLite3Schema.fromConnection(con));
+            globalState.setSchema(SQLite3Schema.fromConnection(globalState));
         }
         TestOracle oracle = globalState.getSqliteOptions().oracle.create(globalState);
         if (oracle.onlyWorksForNonEmptyTables()) {
             for (SQLite3Table table : globalState.getSchema().getDatabaseTables()) {
-                int nrRows = SQLite3Schema.getNrRows(con, table.getName());
+                int nrRows = SQLite3Schema.getNrRows(globalState, table.getName());
                 if (nrRows == 0) {
                     throw new IgnoreMeException();
                 }
@@ -377,13 +376,13 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
         }
     }
 
-    private void checkTablesForGeneratedColumnLoops(Connection con, SQLite3Schema newSchema) throws SQLException {
-        for (SQLite3Table table : newSchema.getDatabaseTables()) {
+    private void checkTablesForGeneratedColumnLoops(SQLite3GlobalState globalState) throws SQLException {
+        for (SQLite3Table table : globalState.getSchema().getDatabaseTables()) {
             Query q = new QueryAdapter("SELECT * FROM " + table.getName(),
                     Arrays.asList("needs an odd number of arguments", " requires an even number of arguments",
                             "generated column loop", "integer overflow", "malformed JSON",
                             "JSON cannot hold BLOB values", "JSON path error", "labels must be TEXT"));
-            if (!q.execute(con)) {
+            if (!q.execute(globalState)) {
                 throw new IgnoreMeException();
             }
         }
@@ -417,7 +416,7 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
         return tableQuery;
     }
 
-    private void addSensiblePragmaDefaults(Connection con) throws SQLException {
+    private void addSensiblePragmaDefaults(SQLite3GlobalState globalState) throws SQLException {
         List<String> pragmasToExecute = new ArrayList<>();
         if (!Randomly.getBooleanWithSmallProbability()) {
             pragmasToExecute.addAll(DEFAULT_PRAGMAS);
@@ -435,7 +434,7 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
             }
             Query q = new QueryAdapter(s);
             state.statements.add(q);
-            q.execute(con);
+            q.execute(globalState);
         }
     }
 

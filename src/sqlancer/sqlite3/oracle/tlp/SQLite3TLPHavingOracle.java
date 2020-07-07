@@ -62,8 +62,7 @@ public class SQLite3TLPHavingOracle implements TestOracle {
         select.setHavingClause(null);
         String originalQueryString = SQLite3Visitor.asString(select);
 
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state.getConnection(), state);
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         SQLite3Expression predicate = gen.getHavingClause();
         select.setHavingClause(predicate);
@@ -76,8 +75,7 @@ public class SQLite3TLPHavingOracle implements TestOracle {
         if (combinedString.contains("EXIST")) {
             throw new IgnoreMeException();
         }
-        List<String> secondResultSet = ComparatorHelper.getResultSetFirstColumnAsString(combinedString, errors,
-                state.getConnection(), state);
+        List<String> secondResultSet = ComparatorHelper.getResultSetFirstColumnAsString(combinedString, errors, state);
         if (state.getOptions().logEachSelect()) {
             state.getLogger().writeCurrent(originalQueryString);
             state.getLogger().writeCurrent(combinedString);

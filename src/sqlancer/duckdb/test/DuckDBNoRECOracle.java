@@ -96,14 +96,11 @@ public class DuckDBNoRECOracle implements TestOracle {
         select.setJoinList(joins);
         int secondCount = 0;
         secondQueryString = "SELECT SUM(count) FROM (" + DuckDBToStringVisitor.asString(select) + ") as res";
-        if (options.logEachSelect()) {
-            logger.writeCurrent(secondQueryString);
-        }
         errors.add("canceling statement due to statement timeout");
         Query q = new QueryAdapter(secondQueryString, errors);
         ResultSet rs;
         try {
-            rs = q.executeAndGet(con);
+            rs = q.executeAndGetLogged(globalState);
         } catch (Exception e) {
             throw new AssertionError(secondQueryString, e);
         }

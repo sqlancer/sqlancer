@@ -233,21 +233,15 @@ public final class Main {
 
     public static class QueryManager {
 
-        private final Connection con;
-        private final StateToReproduce stateToRepro;
+        private final GlobalState<?> globalState;
 
-        QueryManager(Connection con, StateToReproduce state) {
-            if (con == null || state == null) {
-                throw new IllegalArgumentException();
-            }
-            this.con = con;
-            this.stateToRepro = state;
-
+        QueryManager(GlobalState<?> globalState) {
+            this.globalState = globalState;
         }
 
         public boolean execute(Query q) throws SQLException {
-            stateToRepro.statements.add(q);
-            boolean success = q.execute(con);
+            globalState.getState().statements.add(q);
+            boolean success = q.execute(globalState);
             Main.nrSuccessfulActions.addAndGet(1);
             return success;
         }
@@ -315,7 +309,7 @@ public final class Main {
             state.setMainOptions(options);
             state.setDmbsSpecificOptions(command);
             try (Connection con = provider.createDatabase(state)) {
-                QueryManager manager = new QueryManager(con, stateToRepro);
+                QueryManager manager = new QueryManager(state);
                 try {
                     java.sql.DatabaseMetaData meta = con.getMetaData();
                     stateToRepro.databaseVersion = meta.getDatabaseProductVersion();

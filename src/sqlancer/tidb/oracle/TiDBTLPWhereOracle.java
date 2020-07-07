@@ -23,8 +23,7 @@ public class TiDBTLPWhereOracle extends TiDBTLPBase {
         select.setWhereClause(null);
         String originalQueryString = TiDBVisitor.asString(select);
 
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state.getConnection(), state);
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
         if (orderBy) {

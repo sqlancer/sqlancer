@@ -25,8 +25,7 @@ public class SQLite3TLPGroupByOracle extends SQLite3TLPBase {
         select.setWhereClause(null);
         String originalQueryString = SQLite3Visitor.asString(select);
 
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state.getConnection(), state);
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         select.setWhereClause(predicate);
         String firstQueryString = SQLite3Visitor.asString(select);

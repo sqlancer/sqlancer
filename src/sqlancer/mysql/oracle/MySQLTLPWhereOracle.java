@@ -22,8 +22,7 @@ public class MySQLTLPWhereOracle extends MySQLQueryPartitioningBase {
         select.setWhereClause(null);
         String originalQueryString = MySQLVisitor.asString(select);
 
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state.getConnection(), state);
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         if (Randomly.getBoolean()) {
             select.setOrderByExpressions(gen.generateOrderBys());

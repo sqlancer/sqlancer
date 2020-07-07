@@ -1,6 +1,5 @@
 package sqlancer.sqlite3.oracle;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -38,7 +37,6 @@ public class SQLite3NoRECOracle implements TestOracle {
 
     private static final int NO_VALID_RESULT = -1;
     private final SQLite3Schema s;
-    private final Connection con;
     private final SQLite3StateToReproduce state;
     private final Set<String> errors = new HashSet<>();
     private final StateLogger logger;
@@ -50,7 +48,6 @@ public class SQLite3NoRECOracle implements TestOracle {
 
     public SQLite3NoRECOracle(SQLite3GlobalState globalState) {
         this.s = globalState.getSchema();
-        this.con = globalState.getConnection();
         this.state = (SQLite3StateToReproduce) globalState.getState();
         this.logger = globalState.getLogger();
         this.options = globalState.getOptions();
@@ -128,7 +125,7 @@ public class SQLite3NoRECOracle implements TestOracle {
 
     private int countRows(QueryAdapter q) {
         int count = 0;
-        try (ResultSet rs = q.executeAndGet(con)) {
+        try (ResultSet rs = q.executeAndGet(globalState)) {
             if (rs == null) {
                 return NO_VALID_RESULT;
             } else {
@@ -152,7 +149,7 @@ public class SQLite3NoRECOracle implements TestOracle {
 
     private int extractCounts(QueryAdapter q) {
         int count = 0;
-        try (ResultSet rs = q.executeAndGet(con)) {
+        try (ResultSet rs = q.executeAndGet(globalState)) {
             if (rs == null) {
                 return NO_VALID_RESULT;
             } else {

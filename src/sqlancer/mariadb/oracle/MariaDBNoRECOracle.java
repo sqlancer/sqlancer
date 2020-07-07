@@ -12,6 +12,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
+import sqlancer.mariadb.MariaDBProvider.MariaDBGlobalState;
 import sqlancer.mariadb.MariaDBSchema;
 import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;
 import sqlancer.mariadb.MariaDBSchema.MariaDBDataType;
@@ -38,12 +39,14 @@ public class MariaDBNoRECOracle {
     private final List<String> errors = new ArrayList<>();
     private static final int NOT_FOUND = -1;
     private final StateToReproduce state;
+    private final MariaDBGlobalState globalState;
 
-    public MariaDBNoRECOracle(MariaDBSchema s, Randomly r, Connection con, StateToReproduce state) {
-        this.s = s;
-        this.r = r;
-        this.con = con;
-        this.state = state;
+    public MariaDBNoRECOracle(MariaDBGlobalState globalState) {
+        this.s = globalState.getSchema();
+        this.r = globalState.getRandomly();
+        this.con = globalState.getConnection();
+        this.state = globalState.getState();
+        this.globalState = globalState;
         errors.add("is out of range");
         // regex
         errors.add("unmatched parentheses");
@@ -65,7 +68,7 @@ public class MariaDBNoRECOracle {
                 .setState(state);
         MariaDBExpression randomWhereCondition = gen.getRandomExpression();
         List<MariaDBExpression> groupBys = Collections.emptyList(); // getRandomExpressions(columns);
-        int optimizedCount = getOptimizedQuery(con, randomTable, randomWhereCondition, groupBys);
+        int optimizedCount = getOptimizedQuery(randomTable, randomWhereCondition, groupBys);
         int unoptimizedCount = getUnoptimizedQuery(randomTable, randomWhereCondition, groupBys);
         if (optimizedCount == NOT_FOUND || unoptimizedCount == NOT_FOUND) {
             throw new IgnoreMeException();
@@ -90,7 +93,7 @@ public class MariaDBNoRECOracle {
 
         secondQueryString = "SELECT SUM(count) FROM (" + MariaDBVisitor.asString(select) + ") as asdf";
         QueryAdapter q = new QueryAdapter(secondQueryString, errors);
-        try (ResultSet rs = q.executeAndGet(con)) {
+        try (ResultSet rs = q.executeAndGet(globalState)) {
             if (rs == null) {
                 return NOT_FOUND;
             } else {
@@ -105,7 +108,7 @@ public class MariaDBNoRECOracle {
         return secondCount;
     }
 
-    private int getOptimizedQuery(Connection con, MariaDBTable randomTable, MariaDBExpression randomWhereCondition,
+    private int getOptimizedQuery(MariaDBTable randomTable, MariaDBExpression randomWhereCondition,
             List<MariaDBExpression> groupBys) throws SQLException {
         MariaDBSelectStatement select = new MariaDBSelectStatement();
         select.setGroupByClause(groupBys);
@@ -119,7 +122,7 @@ public class MariaDBNoRECOracle {
         int firstCount = 0;
         firstQueryString = MariaDBVisitor.asString(select);
         QueryAdapter q = new QueryAdapter(firstQueryString, errors);
-        try (ResultSet rs = q.executeAndGet(con)) {
+        try (ResultSet rs = q.executeAndGet(globalState)) {
             if (rs == null) {
                 firstCount = NOT_FOUND;
             } else {

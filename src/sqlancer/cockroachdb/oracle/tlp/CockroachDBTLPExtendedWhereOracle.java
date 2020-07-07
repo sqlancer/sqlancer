@@ -32,8 +32,7 @@ public class CockroachDBTLPExtendedWhereOracle extends CockroachDBTLPBase {
         originalPredicate = generatePredicate();
         select.setWhereClause(originalPredicate);
         String originalQueryString = CockroachDBVisitor.asString(select);
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state.getConnection(), state);
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         boolean allowOrderBy = Randomly.getBoolean();
         if (allowOrderBy) {
