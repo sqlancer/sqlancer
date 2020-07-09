@@ -181,6 +181,11 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
             return sqliteOptions;
         }
 
+        @Override
+        protected void updateSchema() throws SQLException {
+            setSchema(SQLite3Schema.fromConnection(this));
+        }
+
     }
 
     private enum TableType {

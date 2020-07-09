@@ -87,6 +87,11 @@ public class TiDBProvider extends ProviderAdapter<TiDBGlobalState, TiDBOptions> 
             return schema;
         }
 
+        @Override
+        protected void updateSchema() throws SQLException {
+            setSchema(TiDBSchema.fromConnection(getConnection(), getDatabaseName()));
+        }
+
     }
 
     private static int mapActions(TiDBGlobalState globalState, Action a) {

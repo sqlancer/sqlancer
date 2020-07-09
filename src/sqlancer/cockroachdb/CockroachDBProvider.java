@@ -127,6 +127,11 @@ public class CockroachDBProvider extends ProviderAdapter<CockroachDBGlobalState,
             return schema;
         }
 
+        @Override
+        protected void updateSchema() throws SQLException {
+            setSchema(CockroachDBSchema.fromConnection(getConnection(), getDatabaseName()));
+        }
+
     }
 
     @Override

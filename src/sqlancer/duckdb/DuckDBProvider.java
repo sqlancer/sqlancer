@@ -104,6 +104,11 @@ public class DuckDBProvider extends ProviderAdapter<DuckDBGlobalState, DuckDBOpt
             return schema;
         }
 
+        @Override
+        protected void updateSchema() throws SQLException {
+            setSchema(DuckDBSchema.fromConnection(getConnection(), getDatabaseName()));
+        }
+
     }
 
     @Override

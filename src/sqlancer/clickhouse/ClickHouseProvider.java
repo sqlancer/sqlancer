@@ -87,6 +87,11 @@ public class ClickHouseProvider extends ProviderAdapter<ClickHouseGlobalState, C
         public String getDatabaseName() {
             return super.getDatabaseName() + this.getOracleName();
         }
+
+        @Override
+        protected void updateSchema() throws SQLException {
+            setSchema(ClickHouseSchema.fromConnection(getConnection(), getDatabaseName()));
+        }
     }
 
     @Override

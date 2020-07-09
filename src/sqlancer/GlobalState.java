@@ -1,6 +1,7 @@
 package sqlancer;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
@@ -11,7 +12,7 @@ import sqlancer.Main.StateLogger;
  * @param <O>
  *            the option parameter.
  */
-public class GlobalState<O> {
+public abstract class GlobalState<O> {
 
     private Connection con;
     private Randomly r;
@@ -86,5 +87,7 @@ public class GlobalState<O> {
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
+
+    protected abstract void updateSchema() throws SQLException;
 
 }

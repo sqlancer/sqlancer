@@ -98,4 +98,9 @@ public class PostgresGlobalState extends GlobalState<PostgresOptions> {
         return Randomly.fromList(opClasses);
     }
 
+    @Override
+    protected void updateSchema() throws SQLException {
+        setSchema(PostgresSchema.fromConnection(getConnection(), getDatabaseName()));
+    }
+
 }
