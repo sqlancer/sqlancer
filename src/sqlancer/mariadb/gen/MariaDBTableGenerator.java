@@ -40,7 +40,7 @@ public class MariaDBTableGenerator {
         } else {
             likeOtherTable();
         }
-        return new QueryAdapter(sb.toString(), errors);
+        return new QueryAdapter(sb.toString(), errors, true);
     }
 
     private enum PrimaryKeyState {

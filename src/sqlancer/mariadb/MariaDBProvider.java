@@ -10,13 +10,11 @@ import java.util.List;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
-import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.ProviderAdapter;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce;
 import sqlancer.mariadb.MariaDBProvider.MariaDBGlobalState;
 import sqlancer.mariadb.gen.MariaDBIndexGenerator;
 import sqlancer.mariadb.gen.MariaDBInsertGenerator;
@@ -55,25 +53,12 @@ public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDB
     public void generateAndTestDatabase(MariaDBGlobalState globalState) throws SQLException {
         this.databaseName = globalState.getDatabaseName();
         MainOptions options = globalState.getOptions();
-        Connection con = globalState.getConnection();
-        StateLogger logger = globalState.getLogger();
-        StateToReproduce state = globalState.getState();
         QueryManager manager = globalState.getManager();
-        MariaDBSchema newSchema = MariaDBSchema.fromConnection(con, databaseName);
-        globalState.setSchema(newSchema);
-        if (options.logEachSelect()) {
-            logger.writeCurrent(state);
-        }
 
-        while (newSchema.getDatabaseTables().size() < Randomly.smallNumber() + 1) {
-            String tableName = SQLite3Common.createTableName(newSchema.getDatabaseTables().size());
-            Query createTable = MariaDBTableGenerator.generate(tableName, r, newSchema);
-            if (options.logEachSelect()) {
-                logger.writeCurrent(createTable.getQueryString());
-            }
-            manager.execute(createTable);
-            newSchema = MariaDBSchema.fromConnection(con, databaseName);
-            globalState.setSchema(newSchema);
+        while (globalState.getSchema().getDatabaseTables().size() < Randomly.smallNumber() + 1) {
+            String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
+            Query createTable = MariaDBTableGenerator.generate(tableName, r, globalState.getSchema());
+            globalState.executeStatement(createTable);
         }
 
         int[] nrRemaining = new int[Action.values().length];
@@ -127,31 +112,31 @@ public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDB
             try {
                 switch (nextAction) {
                 case CHECKSUM:
-                    query = MariaDBTableAdminCommandGenerator.checksumTable(newSchema);
+                    query = MariaDBTableAdminCommandGenerator.checksumTable(globalState.getSchema());
                     break;
                 case CHECK_TABLE:
-                    query = MariaDBTableAdminCommandGenerator.checkTable(newSchema);
+                    query = MariaDBTableAdminCommandGenerator.checkTable(globalState.getSchema());
                     break;
                 case TRUNCATE:
-                    query = MariaDBTruncateGenerator.truncate(newSchema);
+                    query = MariaDBTruncateGenerator.truncate(globalState.getSchema());
                     break;
                 case REPAIR_TABLE:
-                    query = MariaDBTableAdminCommandGenerator.repairTable(newSchema);
+                    query = MariaDBTableAdminCommandGenerator.repairTable(globalState.getSchema());
                     break;
                 case INSERT:
-                    query = MariaDBInsertGenerator.insert(newSchema, r);
+                    query = MariaDBInsertGenerator.insert(globalState.getSchema(), r);
                     break;
                 case OPTIMIZE:
-                    query = MariaDBTableAdminCommandGenerator.optimizeTable(newSchema);
+                    query = MariaDBTableAdminCommandGenerator.optimizeTable(globalState.getSchema());
                     break;
                 case ANALYZE_TABLE:
-                    query = MariaDBTableAdminCommandGenerator.analyzeTable(newSchema);
+                    query = MariaDBTableAdminCommandGenerator.analyzeTable(globalState.getSchema());
                     break;
                 case UPDATE:
-                    query = MariaDBUpdateGenerator.update(newSchema, r);
+                    query = MariaDBUpdateGenerator.update(globalState.getSchema(), r);
                     break;
                 case CREATE_INDEX:
-                    query = MariaDBIndexGenerator.generate(newSchema);
+                    query = MariaDBIndexGenerator.generate(globalState.getSchema());
                     break;
                 case SET:
                     query = MariaDBSetGenerator.set(r, options);
@@ -164,21 +149,13 @@ public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDB
                 continue;
             }
             try {
-                if (options.logEachSelect()) {
-                    logger.writeCurrent(query.getQueryString());
-                }
-                manager.execute(query);
-                if (query.couldAffectSchema()) {
-                    newSchema = MariaDBSchema.fromConnection(con, databaseName);
-                    globalState.setSchema(newSchema);
-                }
+                globalState.executeStatement(query);
             } catch (Throwable t) {
                 System.err.println(query.getQueryString());
                 throw t;
             }
             total--;
         }
-        newSchema = MariaDBSchema.fromConnection(con, databaseName);
         //
         MariaDBNoRECOracle queryGenerator = new MariaDBNoRECOracle(globalState);
         for (int i = 0; i < options.getNrQueries(); i++) {
@@ -192,16 +169,11 @@ public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDB
 
     }
 
-    public static class MariaDBGlobalState extends GlobalState<MariaDBOptions> {
+    public static class MariaDBGlobalState extends GlobalState<MariaDBOptions, MariaDBSchema> {
 
-        private MariaDBSchema schema;
-
-        public void setSchema(MariaDBSchema schema) {
-            this.schema = schema;
-        }
-
-        public MariaDBSchema getSchema() {
-            return schema;
+        @Override
+        protected void updateSchema() throws SQLException {
+            setSchema(MariaDBSchema.fromConnection(getConnection(), getDatabaseName()));
         }
 
     }

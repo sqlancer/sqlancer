@@ -46,7 +46,7 @@ public class ClickHouseTableGenerator {
             sb.append(" ORDER BY tuple()");
         }
         sb.append(";");
-        return new QueryAdapter(sb.toString(), errors);
+        return new QueryAdapter(sb.toString(), errors, true);
     }
 
     private void potentiallyAppendCodec() {

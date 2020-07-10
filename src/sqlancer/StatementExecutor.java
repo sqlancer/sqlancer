@@ -4,7 +4,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StatementExecutor<G extends GlobalState<?>, A extends AbstractAction<G>> {
+public class StatementExecutor<G extends GlobalState<?, ?>, A extends AbstractAction<G>> {
 
     private final G globalState;
     private final A[] actions;
@@ -64,15 +64,13 @@ public class StatementExecutor<G extends GlobalState<?>, A extends AbstractActio
                 int nrTries = 0;
                 do {
                     query = nextAction.getQuery(globalState);
-                    if (globalState.getOptions().logEachSelect()) {
-                        globalState.getLogger().writeCurrent(query.getQueryString());
-                    }
-                    success = globalState.getManager().execute(query);
+                    success = globalState.executeStatement(query);
                 } while (!success && nrTries++ < globalState.getOptions().getNrStatementRetryCount());
             } catch (IgnoreMeException e) {
 
             }
             if (query != null && query.couldAffectSchema()) {
+                globalState.updateSchema();
                 queryConsumer.notify(query);
             }
             total--;

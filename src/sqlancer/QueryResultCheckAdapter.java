@@ -15,7 +15,7 @@ public class QueryResultCheckAdapter extends QueryAdapter {
     }
 
     @Override
-    public boolean execute(GlobalState<?> globalState) throws SQLException {
+    public boolean execute(GlobalState<?, ?> globalState) throws SQLException {
         try (Statement s = globalState.getConnection().createStatement()) {
             ResultSet rs = s.executeQuery(getQueryString());
             rsChecker.accept(rs);

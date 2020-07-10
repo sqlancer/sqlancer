@@ -23,7 +23,7 @@ public abstract class Query {
      *
      * @throws SQLException
      */
-    public abstract boolean execute(GlobalState<?> globalState) throws SQLException;
+    public abstract boolean execute(GlobalState<?, ?> globalState) throws SQLException;
 
     public abstract Collection<String> getExpectedErrors();
 
@@ -32,21 +32,21 @@ public abstract class Query {
         return getQueryString();
     }
 
-    public ResultSet executeAndGet(GlobalState<?> globalState) throws SQLException {
+    public ResultSet executeAndGet(GlobalState<?, ?> globalState) throws SQLException {
         throw new AssertionError();
     }
 
-    public boolean executeLogged(GlobalState<?> globalState) throws SQLException {
+    public boolean executeLogged(GlobalState<?, ?> globalState) throws SQLException {
         logQueryString(globalState);
         return execute(globalState);
     }
 
-    public ResultSet executeAndGetLogged(GlobalState<?> globalState) throws SQLException {
+    public ResultSet executeAndGetLogged(GlobalState<?, ?> globalState) throws SQLException {
         logQueryString(globalState);
         return executeAndGet(globalState);
     }
 
-    private void logQueryString(GlobalState<?> globalState) {
+    private void logQueryString(GlobalState<?, ?> globalState) {
         if (globalState.getOptions().logEachSelect()) {
             globalState.getLogger().writeCurrent(getQueryString());
         }

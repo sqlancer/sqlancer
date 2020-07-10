@@ -24,12 +24,20 @@ public class QueryAdapter extends Query {
         this.query = query;
         this.expectedErrors = expectedErrors;
         this.couldAffectSchema = false;
+        checkQueryString();
     }
 
     public QueryAdapter(String query, Collection<String> expectedErrors, boolean couldAffectSchema) {
         this.query = query;
         this.expectedErrors = expectedErrors;
         this.couldAffectSchema = couldAffectSchema;
+        checkQueryString();
+    }
+
+    private void checkQueryString() {
+        if (query.contains("CREATE TABLE") && !couldAffectSchema) {
+            throw new AssertionError("CREATE TABLE statements should set couldAffectSchema to true");
+        }
     }
 
     @Override
@@ -38,7 +46,7 @@ public class QueryAdapter extends Query {
     }
 
     @Override
-    public boolean execute(GlobalState<?> globalState) throws SQLException {
+    public boolean execute(GlobalState<?, ?> globalState) throws SQLException {
         try (Statement s = globalState.getConnection().createStatement()) {
             s.execute(query);
             Main.nrSuccessfulActions.addAndGet(1);
@@ -64,7 +72,7 @@ public class QueryAdapter extends Query {
     }
 
     @Override
-    public ResultSet executeAndGet(GlobalState<?> globalState) throws SQLException {
+    public ResultSet executeAndGet(GlobalState<?, ?> globalState) throws SQLException {
         Statement s = globalState.getConnection().createStatement();
         ResultSet result = null;
         try {

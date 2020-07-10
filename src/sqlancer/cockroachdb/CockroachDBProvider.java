@@ -1,6 +1,5 @@
 package sqlancer.cockroachdb;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -15,14 +14,12 @@ import java.util.stream.Collectors;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
-import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.ProviderAdapter;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.QueryProvider;
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce;
 import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
@@ -115,16 +112,11 @@ public class CockroachDBProvider extends ProviderAdapter<CockroachDBGlobalState,
         }
     }
 
-    public static class CockroachDBGlobalState extends GlobalState<CockroachDBOptions> {
+    public static class CockroachDBGlobalState extends GlobalState<CockroachDBOptions, CockroachDBSchema> {
 
-        private CockroachDBSchema schema;
-
-        public void setSchema(CockroachDBSchema schema) {
-            this.schema = schema;
-        }
-
-        public CockroachDBSchema getSchema() {
-            return schema;
+        @Override
+        protected void updateSchema() throws SQLException {
+            setSchema(CockroachDBSchema.fromConnection(getConnection(), getDatabaseName()));
         }
 
     }
@@ -132,14 +124,8 @@ public class CockroachDBProvider extends ProviderAdapter<CockroachDBGlobalState,
     @Override
     public void generateAndTestDatabase(CockroachDBGlobalState globalState) throws SQLException {
         Randomly r = new Randomly();
-        Connection con = globalState.getConnection();
-        String databaseName = globalState.getDatabaseName();
         QueryManager manager = globalState.getManager();
-        StateLogger logger = globalState.getLogger();
-        StateToReproduce state = globalState.getState();
         MainOptions options = globalState.getOptions();
-        globalState.setSchema(CockroachDBSchema.fromConnection(con, databaseName));
-
         List<String> standardSettings = new ArrayList<>();
         standardSettings.add("--Don't send automatic bug reports\n"
                 + "SET CLUSTER SETTING debug.panic_on_failed_assertions = true;");
@@ -167,22 +153,12 @@ public class CockroachDBProvider extends ProviderAdapter<CockroachDBGlobalState,
             do {
                 try {
                     Query q = CockroachDBTableGenerator.generate(globalState);
-                    success = manager.execute(q);
-                    logger.writeCurrent(state);
-                    try {
-                        logger.getCurrentFileWriter().close();
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                    logger.currentFileWriter = null;
+                    success = globalState.executeStatement(q);
                 } catch (IgnoreMeException e) {
                     // continue trying
                 }
             } while (!success);
-            globalState.setSchema(CockroachDBSchema.fromConnection(con, databaseName));
         }
-        logger.writeCurrent(state);
 
         int[] nrRemaining = new int[Action.values().length];
         List<Action> actions = new ArrayList<>();
@@ -258,19 +234,13 @@ public class CockroachDBProvider extends ProviderAdapter<CockroachDBGlobalState,
                 int nrTries = 0;
                 do {
                     query = nextAction.getQuery(globalState);
-                    if (options.logEachSelect()) {
-                        logger.writeCurrent(query.getQueryString());
-                    }
-                    success = manager.execute(query);
+                    success = globalState.executeStatement(query);
                 } while (!success && nrTries++ < 1000);
             } catch (IgnoreMeException e) {
 
             }
-            if (query != null && query.couldAffectSchema()) {
-                globalState.setSchema(CockroachDBSchema.fromConnection(con, databaseName));
-                if (globalState.getSchema().getDatabaseTables().isEmpty()) {
-                    throw new IgnoreMeException();
-                }
+            if (query != null && query.couldAffectSchema() && globalState.getSchema().getDatabaseTables().isEmpty()) {
+                throw new IgnoreMeException();
             }
             total--;
         }
@@ -287,16 +257,6 @@ public class CockroachDBProvider extends ProviderAdapter<CockroachDBGlobalState,
 
             }
         }
-        try {
-            if (options.logEachSelect()) {
-                logger.getCurrentFileWriter().close();
-                logger.currentFileWriter = null;
-            }
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
     }
 
     @Override

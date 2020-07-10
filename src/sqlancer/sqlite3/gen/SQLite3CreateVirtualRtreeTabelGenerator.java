@@ -48,7 +48,7 @@ public final class SQLite3CreateVirtualRtreeTabelGenerator {
 
         errors.add("Wrong number of columns for an rtree table");
         errors.add("Too many columns for an rtree table");
-        return new QueryAdapter(sb.toString(), errors);
+        return new QueryAdapter(sb.toString(), errors, true);
     }
 
 }
