@@ -2,7 +2,6 @@ package sqlancer.sqlite3.oracle;
 
 import java.sql.SQLException;
 
-import sqlancer.MainOptions;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.TestOracle;
@@ -22,19 +21,9 @@ public class SQLite3Fuzzer implements TestOracle {
     public void check() throws SQLException {
         String s = SQLite3Visitor
                 .asString(SQLite3RandomQuerySynthesizer.generate(globalState, Randomly.smallNumber() + 1)) + ";";
-        MainOptions options = globalState.getOptions();
         try {
-            if (options.logEachSelect()) {
-                globalState.getLogger().writeCurrent(s);
-            }
-            if (globalState.getDmbsSpecificOptions().printStatements) {
-                System.out.println(s);
-            }
             if (globalState.getDmbsSpecificOptions().executeQuery) {
-                globalState.getManager().execute(new QueryAdapter(s));
-                if (globalState.getDmbsSpecificOptions().executeStatementsAndPrintSuccessfulOnes) {
-                    System.out.println(s);
-                }
+                globalState.executeStatement(new QueryAdapter(s));
                 globalState.getManager().incrementSelectQueryCount();
             }
         } catch (Error e) {

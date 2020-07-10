@@ -82,10 +82,6 @@ public class SQLite3Options {
     public boolean generateDatabase = true;
 
     @Parameter(names = {
-            "--print-statements" }, description = "Specifies whether to print SQL statements to stdout", arity = 1)
-    public boolean printStatements;
-
-    @Parameter(names = {
             "--execute-queries" }, description = "Specifies whether the query in the fuzzer should be executed", arity = 1)
     public boolean executeQuery = true;
 

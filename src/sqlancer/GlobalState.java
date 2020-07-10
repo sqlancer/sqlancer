@@ -95,6 +95,9 @@ public abstract class GlobalState<O, S> {
         if (logExecutionTime) {
             timer = new ExecutionTimer().start();
         }
+        if (getOptions().printAllStatements()) {
+            System.out.println(q.getQueryString());
+        }
         if (getOptions().logEachSelect()) {
             if (logExecutionTime) {
                 getLogger().writeCurrentNoLineBreak(q.getQueryString());
@@ -103,6 +106,9 @@ public abstract class GlobalState<O, S> {
             }
         }
         boolean success = manager.execute(q);
+        if (success && getOptions().printSucceedingStatements()) {
+            System.out.println(q.getQueryString());
+        }
         if (logExecutionTime) {
             getLogger().writeCurrent(" -- " + timer.end().asString());
         }

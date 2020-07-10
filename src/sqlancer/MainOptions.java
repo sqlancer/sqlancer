@@ -54,6 +54,12 @@ public class MainOptions {
     @Parameter(names = "--exit-code-error", description = "The exit code that should be returned when an error is encountered (or a bug is found)")
     private int errorExitCode = -1; // NOPMD
 
+    @Parameter(names = "--print-statements", description = "Print all statements to stdout, before they are sent to the DBMS (not yet implemented for all oracles)", arity = 1)
+    private boolean printStatements; // NOPMD
+
+    @Parameter(names = "--print-succeeding-statements", description = "Print statements that are successfully processed by the DBMS to stdout (not yet implemented for all oracles)", arity = 1)
+    private boolean printSucceedingStatements; // NOPMD
+
     public int getMaxExpressionDepth() {
         return maxExpressionDepth;
     }
@@ -68,6 +74,20 @@ public class MainOptions {
 
     public boolean logEachSelect() {
         return logEachSelect;
+    }
+
+    public boolean printAllStatements() {
+        if (printSucceedingStatements && printStatements) {
+            throw new AssertionError();
+        }
+        return printStatements;
+    }
+
+    public boolean printSucceedingStatements() {
+        if (printStatements && printSucceedingStatements) {
+            throw new AssertionError();
+        }
+        return printSucceedingStatements;
     }
 
     public boolean logExecutionTime() {
