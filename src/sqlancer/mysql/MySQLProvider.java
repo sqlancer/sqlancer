@@ -168,12 +168,6 @@ public class MySQLProvider extends ProviderAdapter<MySQLGlobalState, MySQLOption
         se.executeStatements();
         manager.incrementCreateDatabase();
 
-        // for (MySQLTable t : globalState.getSchema().getDatabaseTables()) {
-        // if (!ensureTableHasRows(con, t, r)) {
-        // return;
-        // }
-        // }
-
         TestOracle oracle = new MySQLTLPWhereOracle(globalState);
         for (int i = 0; i < options.getNrQueries(); i++) {
             try {
@@ -184,34 +178,7 @@ public class MySQLProvider extends ProviderAdapter<MySQLGlobalState, MySQLOption
             }
         }
 
-        // MySQLQueryGenerator queryGenerator = new MySQLQueryGenerator(manager, r, con, databaseName);
-        // for (int i = 0; i < options.getNrQueries(); i++) {
-        // try {
-        // queryGenerator.generateAndCheckQuery((MySQLStateToReproduce) state, logger, options);
-        // } catch (IgnoreMeException e) {
-        //
-        // }
-        // manager.incrementSelectQueryCount();
-        // }
-
     }
-
-    // private boolean ensureTableHasRows(Connection con, MySQLTable randomTable, Randomly r) throws SQLException {
-    // int nrRows;
-    // int counter = 1;
-    // do {
-    // try {
-    // Query q = MySQLRowInserter.insertRow(randomTable, r);
-    // manager.execute(q);
-    // } catch (SQLException e) {
-    // if (!SQLite3PivotedQuerySynthesizer.shouldIgnoreException(e)) {
-    // throw new AssertionError(e);
-    // }
-    // }
-    // nrRows = getNrRows(con, randomTable);
-    // } while (nrRows == 0 && counter-- != 0);
-    // return nrRows != 0;
-    // }
 
     public static int getNrRows(Connection con, MySQLTable table) throws SQLException {
         try (Statement s = con.createStatement()) {
