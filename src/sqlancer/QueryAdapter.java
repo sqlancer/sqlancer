@@ -21,17 +21,28 @@ public class QueryAdapter extends Query {
     }
 
     public QueryAdapter(String query, Collection<String> expectedErrors) {
-        this.query = query;
+        this.query = canonicalizeString(query);
         this.expectedErrors = expectedErrors;
         this.couldAffectSchema = false;
         checkQueryString();
     }
 
     public QueryAdapter(String query, Collection<String> expectedErrors, boolean couldAffectSchema) {
-        this.query = query;
+        this.query = canonicalizeString(query);
         this.expectedErrors = expectedErrors;
         this.couldAffectSchema = couldAffectSchema;
         checkQueryString();
+    }
+
+    private String canonicalizeString(String s) {
+        if (s.endsWith(";")) {
+            return s;
+        } else if (!s.contains("--")) {
+            return s + ";";
+        } else {
+            // query contains a comment
+            return s;
+        }
     }
 
     private void checkQueryString() {
