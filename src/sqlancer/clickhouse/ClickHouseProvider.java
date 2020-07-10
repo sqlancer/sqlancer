@@ -11,7 +11,6 @@ import sqlancer.AbstractAction;
 import sqlancer.CompositeTestOracle;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
-import sqlancer.Main.QueryManager;
 import sqlancer.ProviderAdapter;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
@@ -84,8 +83,7 @@ public class ClickHouseProvider extends ProviderAdapter<ClickHouseGlobalState, C
     }
 
     @Override
-    public void generateAndTestDatabase(ClickHouseGlobalState globalState) throws SQLException {
-        QueryManager manager = globalState.getManager();
+    public void generateDatabase(ClickHouseGlobalState globalState) throws SQLException {
         for (int i = 0; i < Randomly.fromOptions(1); i++) {
             boolean success = false;
             do {
@@ -101,8 +99,10 @@ public class ClickHouseProvider extends ProviderAdapter<ClickHouseGlobalState, C
                     }
                 });
         se.executeStatements();
-        manager.incrementCreateDatabase();
+    }
 
+    @Override
+    protected TestOracle getTestOracle(ClickHouseGlobalState globalState) throws SQLException {
         List<TestOracle> oracles = globalState.getDmbsSpecificOptions().oracle.stream().map(o -> {
             try {
                 return o.create(globalState);
@@ -110,17 +110,7 @@ public class ClickHouseProvider extends ProviderAdapter<ClickHouseGlobalState, C
                 throw new AssertionError(e1);
             }
         }).collect(Collectors.toList());
-        CompositeTestOracle oracle = new CompositeTestOracle(oracles);
-
-        for (int i = 0; i < globalState.getOptions().getNrQueries(); i++) {
-            try {
-                oracle.check();
-            } catch (IgnoreMeException e) {
-                continue;
-            }
-            manager.incrementSelectQueryCount();
-        }
-
+        return new CompositeTestOracle(oracles);
     }
 
     @Override

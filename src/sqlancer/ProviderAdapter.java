@@ -1,6 +1,7 @@
 package sqlancer;
 
 import java.io.FileWriter;
+import java.sql.SQLException;
 
 public abstract class ProviderAdapter<G extends GlobalState<O, ?>, O> implements DatabaseProvider<G, O> {
 
@@ -31,5 +32,29 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ?>, O> implements
     public Class<O> getOptionClass() {
         return optionClass;
     }
+
+    @Override
+    public void generateAndTestDatabase(G globalState) throws SQLException {
+        try {
+            generateDatabase(globalState);
+            globalState.getManager().incrementCreateDatabase();
+
+            TestOracle oracle = getTestOracle(globalState);
+            for (int i = 0; i < globalState.getOptions().getNrQueries(); i++) {
+                try {
+                    oracle.check();
+                    globalState.getManager().incrementSelectQueryCount();
+                } catch (IgnoreMeException e) {
+
+                }
+            }
+        } finally {
+            globalState.getConnection().close();
+        }
+    }
+
+    protected abstract TestOracle getTestOracle(G globalState) throws SQLException;
+
+    public abstract void generateDatabase(G globalState) throws SQLException;
 
 }

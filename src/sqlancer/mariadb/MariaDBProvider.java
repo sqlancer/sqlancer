@@ -9,12 +9,12 @@ import java.util.List;
 
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
-import sqlancer.Main.QueryManager;
 import sqlancer.MainOptions;
 import sqlancer.ProviderAdapter;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.TestOracle;
 import sqlancer.mariadb.MariaDBProvider.MariaDBGlobalState;
 import sqlancer.mariadb.gen.MariaDBIndexGenerator;
 import sqlancer.mariadb.gen.MariaDBInsertGenerator;
@@ -29,8 +29,6 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDBOptions> {
 
     public static final int MAX_EXPRESSION_DEPTH = 3;
-    private final Randomly r = new Randomly();
-    private String databaseName;
 
     public MariaDBProvider() {
         super(MariaDBGlobalState.class, MariaDBOptions.class);
@@ -50,14 +48,13 @@ public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDB
     }
 
     @Override
-    public void generateAndTestDatabase(MariaDBGlobalState globalState) throws SQLException {
-        this.databaseName = globalState.getDatabaseName();
+    public void generateDatabase(MariaDBGlobalState globalState) throws SQLException {
         MainOptions options = globalState.getOptions();
-        QueryManager manager = globalState.getManager();
 
         while (globalState.getSchema().getDatabaseTables().size() < Randomly.smallNumber() + 1) {
             String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
-            Query createTable = MariaDBTableGenerator.generate(tableName, r, globalState.getSchema());
+            Query createTable = MariaDBTableGenerator.generate(tableName, globalState.getRandomly(),
+                    globalState.getSchema());
             globalState.executeStatement(createTable);
         }
 
@@ -76,13 +73,13 @@ public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDB
             case ANALYZE_TABLE:
             case UPDATE:
             case CREATE_INDEX:
-                nrPerformed = r.getInteger(0, 2);
+                nrPerformed = globalState.getRandomly().getInteger(0, 2);
                 break;
             case SET:
                 nrPerformed = 20;
                 break;
             case INSERT:
-                nrPerformed = r.getInteger(0, options.getMaxNumberInserts());
+                nrPerformed = globalState.getRandomly().getInteger(0, options.getMaxNumberInserts());
                 break;
             default:
                 throw new AssertionError(action);
@@ -95,7 +92,7 @@ public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDB
         }
         while (total != 0) {
             Action nextAction = null;
-            int selection = r.getInteger(0, total);
+            int selection = globalState.getRandomly().getInteger(0, total);
             int previousRange = 0;
             for (int i = 0; i < nrRemaining.length; i++) {
                 if (previousRange <= selection && selection < previousRange + nrRemaining[i]) {
@@ -124,7 +121,7 @@ public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDB
                     query = MariaDBTableAdminCommandGenerator.repairTable(globalState.getSchema());
                     break;
                 case INSERT:
-                    query = MariaDBInsertGenerator.insert(globalState.getSchema(), r);
+                    query = MariaDBInsertGenerator.insert(globalState.getSchema(), globalState.getRandomly());
                     break;
                 case OPTIMIZE:
                     query = MariaDBTableAdminCommandGenerator.optimizeTable(globalState.getSchema());
@@ -133,13 +130,13 @@ public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDB
                     query = MariaDBTableAdminCommandGenerator.analyzeTable(globalState.getSchema());
                     break;
                 case UPDATE:
-                    query = MariaDBUpdateGenerator.update(globalState.getSchema(), r);
+                    query = MariaDBUpdateGenerator.update(globalState.getSchema(), globalState.getRandomly());
                     break;
                 case CREATE_INDEX:
                     query = MariaDBIndexGenerator.generate(globalState.getSchema());
                     break;
                 case SET:
-                    query = MariaDBSetGenerator.set(r, options);
+                    query = MariaDBSetGenerator.set(globalState.getRandomly(), options);
                     break;
                 default:
                     throw new AssertionError(nextAction);
@@ -156,17 +153,11 @@ public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDB
             }
             total--;
         }
-        //
-        MariaDBNoRECOracle queryGenerator = new MariaDBNoRECOracle(globalState);
-        for (int i = 0; i < options.getNrQueries(); i++) {
-            try {
-                queryGenerator.generateAndCheck();
-            } catch (IgnoreMeException e) {
+    }
 
-            }
-            manager.incrementSelectQueryCount();
-        }
-
+    @Override
+    protected TestOracle getTestOracle(MariaDBGlobalState globalState) throws SQLException {
+        return new MariaDBNoRECOracle(globalState);
     }
 
     public static class MariaDBGlobalState extends GlobalState<MariaDBOptions, MariaDBSchema> {
@@ -203,11 +194,6 @@ public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDB
     @Override
     public String getDBMSName() {
         return "mariadb";
-    }
-
-    @Override
-    public String toString() {
-        return String.format("MariaDBProvider [database: %s]", databaseName);
     }
 
 }
