@@ -70,6 +70,17 @@ public class ClickHouseToStringVisitor extends ToStringVisitor<ClickHouseExpress
             sb.append("(");
         }
         sb.append("SELECT ");
+        switch (select.getFromOptions()) {
+        case DISTINCT:
+            sb.append("DISTINCT ");
+            break;
+        case ALL:
+            sb.append("");
+            break;
+        default:
+            throw new AssertionError(select.getFromOptions());
+        }
+
         visit(select.getFetchColumns());
         sb.append(" FROM ");
         visit(select.getFromList());

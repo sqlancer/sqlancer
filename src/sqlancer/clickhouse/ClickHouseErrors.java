@@ -33,6 +33,7 @@ public final class ClickHouseErrors {
         errors.add("Attempt to read after eof: while converting");
         errors.add("doesn't exist"); // TODO: consecutive test runs can lead to dropped database
         errors.add("is not under aggregate function");
+        errors.add("Invalid type for filter in");
     }
 
     public static void addExpressionHavingErrors(Set<String> errors) {
