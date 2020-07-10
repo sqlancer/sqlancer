@@ -58,7 +58,6 @@ public class PostgresPivotedQuerySynthesisOracle implements TestOracle {
 
         boolean isContainedIn = isContainedIn(queryString, options, logger);
         if (!isContainedIn) {
-            state.statements.add(new QueryAdapter(queryString));
             String assertionMessage = String.format("the query doesn't contain at least 1 row!\n%s", queryString);
             throw new AssertionError(assertionMessage);
         }

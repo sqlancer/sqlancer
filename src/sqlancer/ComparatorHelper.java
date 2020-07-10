@@ -89,8 +89,6 @@ public final class ComparatorHelper {
             String firstQueryString = String.format(queryFormatString, originalQueryString, resultSet.size());
             String secondQueryString = String.format(queryFormatString,
                     combinedString.stream().collect(Collectors.joining(";")), secondResultSet.size());
-            state.getState().statements.add(new QueryAdapter(firstQueryString));
-            state.getState().statements.add(new QueryAdapter(secondQueryString));
             state.getState().queryString = String.format("%s\n%s", firstQueryString, secondQueryString);
             String assertionMessage = String.format("the size of the result sets mismatch (%d and %d)!\n%s\n%s",
                     resultSet.size(), secondResultSet.size(), firstQueryString, secondQueryString);
