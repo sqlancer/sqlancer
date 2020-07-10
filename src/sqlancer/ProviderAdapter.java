@@ -2,7 +2,7 @@ package sqlancer;
 
 import java.io.FileWriter;
 
-public abstract class ProviderAdapter<G extends GlobalState<O>, O> implements DatabaseProvider<G, O> {
+public abstract class ProviderAdapter<G extends GlobalState<O, ?>, O> implements DatabaseProvider<G, O> {
 
     private final Class<G> globalClass;
     private final Class<O> optionClass;

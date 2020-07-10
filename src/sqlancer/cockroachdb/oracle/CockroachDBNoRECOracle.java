@@ -140,7 +140,7 @@ public class CockroachDBNoRECOracle implements TestOracle {
         return getCount(globalState, q);
     }
 
-    private int getCount(GlobalState<?> globalState, Query q) throws AssertionError {
+    private int getCount(GlobalState<?, ?> globalState, Query q) throws AssertionError {
         int count = 0;
         try (ResultSet rs = q.executeAndGet(globalState)) {
             if (rs == null) {

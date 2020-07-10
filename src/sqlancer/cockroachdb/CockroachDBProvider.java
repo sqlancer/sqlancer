@@ -112,24 +112,11 @@ public class CockroachDBProvider extends ProviderAdapter<CockroachDBGlobalState,
         }
     }
 
-    public static class CockroachDBGlobalState extends GlobalState<CockroachDBOptions> {
-
-        private CockroachDBSchema schema;
-
-        public CockroachDBSchema getSchema() {
-            if (schema == null) {
-                try {
-                    updateSchema();
-                } catch (SQLException e) {
-                    throw new AssertionError();
-                }
-            }
-            return schema;
-        }
+    public static class CockroachDBGlobalState extends GlobalState<CockroachDBOptions, CockroachDBSchema> {
 
         @Override
         protected void updateSchema() throws SQLException {
-            this.schema = CockroachDBSchema.fromConnection(getConnection(), getDatabaseName());
+            setSchema(CockroachDBSchema.fromConnection(getConnection(), getDatabaseName()));
         }
 
     }

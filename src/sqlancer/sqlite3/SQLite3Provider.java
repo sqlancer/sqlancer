@@ -158,21 +158,9 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
         }
     }
 
-    public static class SQLite3GlobalState extends GlobalState<SQLite3Options> {
+    public static class SQLite3GlobalState extends GlobalState<SQLite3Options, SQLite3Schema> {
 
-        private SQLite3Schema schema;
         private SQLite3Options sqliteOptions;
-
-        public SQLite3Schema getSchema() {
-            if (schema == null) {
-                try {
-                    updateSchema();
-                } catch (SQLException e) {
-                    throw new AssertionError(e);
-                }
-            }
-            return schema;
-        }
 
         public void setSqliteOptions(SQLite3Options sqliteOptions) {
             this.sqliteOptions = sqliteOptions;
@@ -184,7 +172,7 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
 
         @Override
         protected void updateSchema() throws SQLException {
-            this.schema = SQLite3Schema.fromConnection(this);
+            setSchema(SQLite3Schema.fromConnection(this));
         }
 
     }

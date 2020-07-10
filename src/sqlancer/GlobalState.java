@@ -12,12 +12,13 @@ import sqlancer.Main.StateLogger;
  * @param <O>
  *            the option parameter.
  */
-public abstract class GlobalState<O> {
+public abstract class GlobalState<O, S> {
 
     private Connection con;
     private Randomly r;
     private MainOptions options;
     private O dmbsSpecificOptions;
+    private S schema;
     private StateLogger logger;
     private StateToReproduce state;
     private QueryManager manager;
@@ -88,8 +89,6 @@ public abstract class GlobalState<O> {
         this.databaseName = databaseName;
     }
 
-    protected abstract void updateSchema() throws SQLException;
-
     public boolean executeStatement(Query q) throws SQLException {
         if (getOptions().logEachSelect()) {
             getLogger().writeCurrent(q.getQueryString());
@@ -100,4 +99,22 @@ public abstract class GlobalState<O> {
         }
         return success;
     }
+
+    public S getSchema() {
+        if (schema == null) {
+            try {
+                updateSchema();
+            } catch (SQLException e) {
+                throw new AssertionError();
+            }
+        }
+        return schema;
+    }
+
+    protected void setSchema(S schema) {
+        this.schema = schema;
+    }
+
+    protected abstract void updateSchema() throws SQLException;
+
 }

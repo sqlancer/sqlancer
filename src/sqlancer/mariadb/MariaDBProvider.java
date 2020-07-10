@@ -169,24 +169,11 @@ public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDB
 
     }
 
-    public static class MariaDBGlobalState extends GlobalState<MariaDBOptions> {
-
-        private MariaDBSchema schema;
-
-        public MariaDBSchema getSchema() {
-            if (schema == null) {
-                try {
-                    updateSchema();
-                } catch (SQLException e) {
-                    throw new AssertionError(e);
-                }
-            }
-            return schema;
-        }
+    public static class MariaDBGlobalState extends GlobalState<MariaDBOptions, MariaDBSchema> {
 
         @Override
         protected void updateSchema() throws SQLException {
-            this.schema = MariaDBSchema.fromConnection(getConnection(), getDatabaseName());
+            setSchema(MariaDBSchema.fromConnection(getConnection(), getDatabaseName()));
         }
 
     }

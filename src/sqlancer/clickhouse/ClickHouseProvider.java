@@ -55,14 +55,9 @@ public class ClickHouseProvider extends ProviderAdapter<ClickHouseGlobalState, C
         }
     }
 
-    public static class ClickHouseGlobalState extends GlobalState<ClickHouseOptions> {
+    public static class ClickHouseGlobalState extends GlobalState<ClickHouseOptions, ClickHouseSchema> {
 
-        private ClickHouseSchema schema;
         private ClickHouseOptions clickHouseOptions;
-
-        public ClickHouseSchema getSchema() {
-            return schema;
-        }
 
         public void setClickHouseOptions(ClickHouseOptions clickHouseOptions) {
             this.clickHouseOptions = clickHouseOptions;
@@ -84,7 +79,7 @@ public class ClickHouseProvider extends ProviderAdapter<ClickHouseGlobalState, C
 
         @Override
         protected void updateSchema() throws SQLException {
-            this.schema = ClickHouseSchema.fromConnection(getConnection(), getDatabaseName());
+            setSchema(ClickHouseSchema.fromConnection(getConnection(), getDatabaseName()));
         }
     }
 

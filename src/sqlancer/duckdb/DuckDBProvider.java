@@ -90,24 +90,11 @@ public class DuckDBProvider extends ProviderAdapter<DuckDBGlobalState, DuckDBOpt
         }
     }
 
-    public static class DuckDBGlobalState extends GlobalState<DuckDBOptions> {
-
-        private DuckDBSchema schema;
-
-        public DuckDBSchema getSchema() {
-            if (schema == null) {
-                try {
-                    updateSchema();
-                } catch (SQLException e) {
-                    throw new AssertionError(e);
-                }
-            }
-            return schema;
-        }
+    public static class DuckDBGlobalState extends GlobalState<DuckDBOptions, DuckDBSchema> {
 
         @Override
         protected void updateSchema() throws SQLException {
-            this.schema = DuckDBSchema.fromConnection(getConnection(), getDatabaseName());
+            setSchema(DuckDBSchema.fromConnection(getConnection(), getDatabaseName()));
         }
 
     }

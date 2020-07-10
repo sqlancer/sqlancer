@@ -234,9 +234,9 @@ public final class Main {
 
     public static class QueryManager {
 
-        private final GlobalState<?> globalState;
+        private final GlobalState<?, ?> globalState;
 
-        QueryManager(GlobalState<?> globalState) {
+        QueryManager(GlobalState<?, ?> globalState) {
             this.globalState = globalState;
         }
 
@@ -267,7 +267,7 @@ public final class Main {
         System.exit(executeMain(args));
     }
 
-    public static class DBMSExecutor<G extends GlobalState<O>, O> {
+    public static class DBMSExecutor<G extends GlobalState<O, ?>, O> {
 
         private final DatabaseProvider<G, O> provider;
         private final MainOptions options;
@@ -342,7 +342,7 @@ public final class Main {
         }
     }
 
-    public static class DBMSExecutorFactory<G extends GlobalState<O>, O> {
+    public static class DBMSExecutorFactory<G extends GlobalState<O, ?>, O> {
 
         private final DatabaseProvider<G, O> provider;
         private final MainOptions options;

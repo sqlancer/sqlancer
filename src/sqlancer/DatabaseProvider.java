@@ -4,7 +4,7 @@ import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public interface DatabaseProvider<G extends GlobalState<O>, O> {
+public interface DatabaseProvider<G extends GlobalState<O, ?>, O> {
 
     /**
      * Gets the the {@link GlobalState} class.

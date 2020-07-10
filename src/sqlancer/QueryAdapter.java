@@ -46,7 +46,7 @@ public class QueryAdapter extends Query {
     }
 
     @Override
-    public boolean execute(GlobalState<?> globalState) throws SQLException {
+    public boolean execute(GlobalState<?, ?> globalState) throws SQLException {
         try (Statement s = globalState.getConnection().createStatement()) {
             s.execute(query);
             Main.nrSuccessfulActions.addAndGet(1);
@@ -72,7 +72,7 @@ public class QueryAdapter extends Query {
     }
 
     @Override
-    public ResultSet executeAndGet(GlobalState<?> globalState) throws SQLException {
+    public ResultSet executeAndGet(GlobalState<?, ?> globalState) throws SQLException {
         Statement s = globalState.getConnection().createStatement();
         ResultSet result = null;
         try {

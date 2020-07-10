@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
 import sqlancer.CompositeTestOracle;
-import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
 import sqlancer.MainOptions;
@@ -263,7 +262,7 @@ public final class PostgresProvider extends ProviderAdapter<PostgresGlobalState,
         return con;
     }
 
-    private String getCreateDatabaseCommand(String databaseName, Connection con, GlobalState<?> state) {
+    private String getCreateDatabaseCommand(String databaseName, Connection con, PostgresGlobalState state) {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE DATABASE " + databaseName + " ");
         if (Randomly.getBoolean() && ((PostgresOptions) state.getDmbsSpecificOptions()).testCollations) {

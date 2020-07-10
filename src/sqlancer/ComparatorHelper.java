@@ -33,7 +33,7 @@ public final class ComparatorHelper {
     }
 
     public static List<String> getResultSetFirstColumnAsString(String queryString, Set<String> errors,
-            GlobalState<?> state) throws SQLException {
+            GlobalState<?, ?> state) throws SQLException {
         if (state.getOptions().logEachSelect()) {
             // TODO: refactor me
             state.getLogger().writeCurrent(queryString);
@@ -83,7 +83,7 @@ public final class ComparatorHelper {
     }
 
     public static void assumeResultSetsAreEqual(List<String> resultSet, List<String> secondResultSet,
-            String originalQueryString, List<String> combinedString, GlobalState<?> state) {
+            String originalQueryString, List<String> combinedString, GlobalState<?, ?> state) {
         if (resultSet.size() != secondResultSet.size()) {
             String queryFormatString = "%s; -- cardinality: %d";
             String firstQueryString = String.format(queryFormatString, originalQueryString, resultSet.size());
@@ -117,7 +117,7 @@ public final class ComparatorHelper {
     }
 
     public static List<String> getCombinedResultSet(String firstQueryString, String secondQueryString,
-            String thirdQueryString, List<String> combinedString, boolean asUnion, GlobalState<?> state,
+            String thirdQueryString, List<String> combinedString, boolean asUnion, GlobalState<?, ?> state,
             Set<String> errors) throws SQLException {
         List<String> secondResultSet;
         if (asUnion) {
@@ -138,7 +138,7 @@ public final class ComparatorHelper {
     }
 
     public static List<String> getCombinedResultSetNoDuplicates(String firstQueryString, String secondQueryString,
-            String thirdQueryString, List<String> combinedString, boolean asUnion, GlobalState<?> state,
+            String thirdQueryString, List<String> combinedString, boolean asUnion, GlobalState<?, ?> state,
             Set<String> errors) throws SQLException {
         String unionString;
         if (asUnion) {

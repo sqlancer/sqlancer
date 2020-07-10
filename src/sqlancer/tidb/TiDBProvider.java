@@ -72,24 +72,11 @@ public class TiDBProvider extends ProviderAdapter<TiDBGlobalState, TiDBOptions> 
         }
     }
 
-    public static class TiDBGlobalState extends GlobalState<TiDBOptions> {
-
-        private TiDBSchema schema;
-
-        public TiDBSchema getSchema() {
-            if (schema == null) {
-                try {
-                    updateSchema();
-                } catch (SQLException e) {
-                    throw new AssertionError();
-                }
-            }
-            return schema;
-        }
+    public static class TiDBGlobalState extends GlobalState<TiDBOptions, TiDBSchema> {
 
         @Override
         protected void updateSchema() throws SQLException {
-            this.schema = TiDBSchema.fromConnection(getConnection(), getDatabaseName());
+            setSchema(TiDBSchema.fromConnection(getConnection(), getDatabaseName()));
         }
 
     }
