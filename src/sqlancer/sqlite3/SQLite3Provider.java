@@ -11,9 +11,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import sqlancer.AbstractAction;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
-import sqlancer.MainOptions;
 import sqlancer.ProviderAdapter;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
@@ -21,6 +21,7 @@ import sqlancer.QueryProvider;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.SQLite3StateToReproduce;
+import sqlancer.StatementExecutor;
 import sqlancer.TestOracle;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.gen.SQLite3AnalyzeGenerator;
@@ -61,7 +62,7 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
         super(SQLite3GlobalState.class, SQLite3Options.class);
     }
 
-    public enum Action {
+    public enum Action implements AbstractAction<SQLite3GlobalState> {
         PRAGMA(SQLite3PragmaGenerator::insertPragma), //
         INDEX(SQLite3IndexGenerator::insertIndex), //
         INSERT(SQLite3InsertGenerator::insertRow), //
@@ -147,6 +148,7 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
             this.queryProvider = queryProvider;
         }
 
+        @Override
         public Query getQuery(SQLite3GlobalState state) throws SQLException {
             return queryProvider.getQuery(state);
         }
@@ -175,10 +177,61 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
         NORMAL, FTS, RTREE
     }
 
+    private static int mapActions(SQLite3GlobalState globalState, Action a) {
+        int nrPerformed = 0;
+        Randomly r = globalState.getRandomly();
+        switch (a) {
+        case CREATE_VIEW:
+            nrPerformed = r.getInteger(0, 2);
+            break;
+        case DELETE:
+        case DROP_VIEW:
+        case DROP_INDEX:
+            nrPerformed = r.getInteger(0, 0);
+            break;
+        case ALTER:
+            nrPerformed = r.getInteger(0, 0);
+            break;
+        case EXPLAIN:
+        case CREATE_TRIGGER:
+        case DROP_TABLE:
+            nrPerformed = r.getInteger(0, 0);
+            break;
+        case VACUUM:
+        case CHECK_RTREE_TABLE:
+            nrPerformed = r.getInteger(0, 3);
+            break;
+        case INSERT:
+            nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
+            break;
+        case MANIPULATE_STAT_TABLE:
+            nrPerformed = r.getInteger(0, 5);
+            break;
+        case INDEX:
+            nrPerformed = r.getInteger(0, 5);
+            break;
+        case VIRTUAL_TABLE_ACTION:
+        case UPDATE:
+            nrPerformed = r.getInteger(0, 30);
+            break;
+        case PRAGMA:
+            nrPerformed = r.getInteger(0, 20);
+            break;
+        case TRANSACTION_START:
+        case REINDEX:
+        case ANALYZE:
+        case ROLLBACK_TRANSACTION:
+        case COMMIT:
+        default:
+            nrPerformed = r.getInteger(1, 10);
+            break;
+        }
+        return nrPerformed;
+    }
+
     @Override
     public void generateDatabase(SQLite3GlobalState globalState) throws SQLException {
         SQLite3Options sqliteOptions = globalState.getDmbsSpecificOptions();
-        MainOptions options = globalState.getOptions();
         Randomly r = new Randomly(SQLite3SpecialStringGenerator::generate);
         globalState.setSqliteOptions(sqliteOptions);
         globalState.setRandomly(r);
@@ -205,92 +258,14 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
                         "CREATE VIRTUAL TABLE IF NOT EXISTS stat USING dbstat(main)");
                 globalState.executeStatement(tableQuery);
             }
-            int[] nrRemaining = new int[Action.values().length];
-            List<Action> actions = new ArrayList<>();
-            int total = 0;
-            for (i = 0; i < Action.values().length; i++) {
-                Action action = Action.values()[i];
-                int nrPerformed = 0;
-                switch (action) {
-                case CREATE_VIEW:
-                    nrPerformed = r.getInteger(0, 2);
-                    break;
-                case DELETE:
-                case DROP_VIEW:
-                case DROP_INDEX:
-                    nrPerformed = r.getInteger(0, 0);
-                    break;
-                case ALTER:
-                    nrPerformed = r.getInteger(0, 0);
-                    break;
-                case EXPLAIN:
-                case CREATE_TRIGGER:
-                case DROP_TABLE:
-                    nrPerformed = r.getInteger(0, 0);
-                    break;
-                case VACUUM:
-                case CHECK_RTREE_TABLE:
-                    nrPerformed = r.getInteger(0, 3);
-                    break;
-                case INSERT:
-                    nrPerformed = r.getInteger(0, options.getMaxNumberInserts());
-                    break;
-                case MANIPULATE_STAT_TABLE:
-                    nrPerformed = r.getInteger(0, 5);
-                    break;
-                case INDEX:
-                    nrPerformed = r.getInteger(0, 5);
-                    break;
-                case VIRTUAL_TABLE_ACTION:
-                case UPDATE:
-                    nrPerformed = r.getInteger(0, 30);
-                    break;
-                case PRAGMA:
-                    nrPerformed = r.getInteger(0, 20);
-                    break;
-                case TRANSACTION_START:
-                case REINDEX:
-                case ANALYZE:
-                case ROLLBACK_TRANSACTION:
-                case COMMIT:
-                default:
-                    nrPerformed = r.getInteger(1, 10);
-                    break;
-                }
-                if (nrPerformed != 0) {
-                    actions.add(action);
-                }
-                nrRemaining[action.ordinal()] = nrPerformed;
-                total += nrPerformed;
-            }
-            while (total != 0) {
-                Action nextAction = null;
-                int selection = r.getInteger(0, total);
-                int previousRange = 0;
-                for (i = 0; i < nrRemaining.length; i++) {
-                    if (previousRange <= selection && selection < previousRange + nrRemaining[i]) {
-                        nextAction = Action.values()[i];
-                        break;
-                    } else {
-                        previousRange += nrRemaining[i];
-                    }
-                }
-                assert nextAction != null;
-                assert nrRemaining[nextAction.ordinal()] > 0;
-                nrRemaining[nextAction.ordinal()]--;
-                Query query = null;
-                try {
-                    query = nextAction.getQuery(globalState);
-                    globalState.executeStatement(query);
-                } catch (IgnoreMeException e) {
+            StatementExecutor<SQLite3GlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
+                    SQLite3Provider::mapActions, (q) -> {
+                        if (q.couldAffectSchema() && globalState.getSchema().getDatabaseTables().isEmpty()) {
+                            throw new IgnoreMeException();
+                        }
+                    });
+            se.executeStatements();
 
-                }
-                if (query != null && query.couldAffectSchema()
-                        && globalState.getSchema().getDatabaseTables().isEmpty()) {
-                    throw new IgnoreMeException();
-                }
-                total--;
-            }
             Query query = SQLite3TransactionGenerator.generateCommit(globalState);
             globalState.executeStatement(query);
 
