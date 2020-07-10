@@ -11,7 +11,6 @@ import sqlancer.AbstractAction;
 import sqlancer.CompositeTestOracle;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
-import sqlancer.Main.QueryManager;
 import sqlancer.ProviderAdapter;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
@@ -100,8 +99,7 @@ public class DuckDBProvider extends ProviderAdapter<DuckDBGlobalState, DuckDBOpt
     }
 
     @Override
-    public void generateAndTestDatabase(DuckDBGlobalState globalState) throws SQLException {
-        QueryManager manager = globalState.getManager();
+    public void generateDatabase(DuckDBGlobalState globalState) throws SQLException {
         for (int i = 0; i < Randomly.fromOptions(1, 2); i++) {
             boolean success = false;
             do {
@@ -119,25 +117,17 @@ public class DuckDBProvider extends ProviderAdapter<DuckDBGlobalState, DuckDBOpt
                     }
                 });
         se.executeStatements();
-        manager.incrementCreateDatabase();
+    }
 
-        TestOracle oracle = new CompositeTestOracle(globalState.getDmbsSpecificOptions().oracle.stream().map(o -> {
+    @Override
+    protected TestOracle getTestOracle(DuckDBGlobalState globalState) throws SQLException {
+        return new CompositeTestOracle(globalState.getDmbsSpecificOptions().oracle.stream().map(o -> {
             try {
                 return o.create(globalState);
             } catch (SQLException e1) {
                 throw new AssertionError(e1);
             }
         }).collect(Collectors.toList()));
-
-        for (int i = 0; i < globalState.getOptions().getNrQueries(); i++) {
-            try {
-                oracle.check();
-                manager.incrementSelectQueryCount();
-            } catch (IgnoreMeException e) {
-
-            }
-        }
-        globalState.getConnection().close();
     }
 
     @Override

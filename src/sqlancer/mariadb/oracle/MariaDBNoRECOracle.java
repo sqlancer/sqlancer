@@ -12,6 +12,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
+import sqlancer.TestOracle;
 import sqlancer.mariadb.MariaDBProvider.MariaDBGlobalState;
 import sqlancer.mariadb.MariaDBSchema;
 import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;
@@ -29,7 +30,7 @@ import sqlancer.mariadb.ast.MariaDBText;
 import sqlancer.mariadb.ast.MariaDBVisitor;
 import sqlancer.mariadb.gen.MariaDBExpressionGenerator;
 
-public class MariaDBNoRECOracle {
+public class MariaDBNoRECOracle implements TestOracle {
 
     private final MariaDBSchema s;
     private final Randomly r;
@@ -61,7 +62,8 @@ public class MariaDBNoRECOracle {
         errors.add("digit expected after");
     }
 
-    public void generateAndCheck() throws SQLException {
+    @Override
+    public void check() throws SQLException {
         MariaDBTable randomTable = s.getRandomTable();
         List<MariaDBColumn> columns = randomTable.getColumns();
         MariaDBExpressionGenerator gen = new MariaDBExpressionGenerator(r).setColumns(columns).setCon(con)

@@ -13,7 +13,6 @@ import sqlancer.AbstractAction;
 import sqlancer.CompositeTestOracle;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
-import sqlancer.Main.QueryManager;
 import sqlancer.ProviderAdapter;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
@@ -109,8 +108,7 @@ public class TiDBProvider extends ProviderAdapter<TiDBGlobalState, TiDBOptions> 
     }
 
     @Override
-    public void generateAndTestDatabase(TiDBGlobalState globalState) throws SQLException {
-        QueryManager manager = globalState.getManager();
+    public void generateDatabase(TiDBGlobalState globalState) throws SQLException {
         for (int i = 0; i < Randomly.fromOptions(1, 2); i++) {
             boolean success = false;
             do {
@@ -135,7 +133,10 @@ public class TiDBProvider extends ProviderAdapter<TiDBGlobalState, TiDBOptions> 
                 throw new AssertionError(e);
             }
         }
-        manager.incrementCreateDatabase();
+    }
+
+    @Override
+    protected TestOracle getTestOracle(TiDBGlobalState globalState) throws SQLException {
         List<TestOracle> oracles = globalState.getDmbsSpecificOptions().oracle.stream().map(o -> {
             try {
                 return o.create(globalState);
@@ -143,17 +144,7 @@ public class TiDBProvider extends ProviderAdapter<TiDBGlobalState, TiDBOptions> 
                 throw new AssertionError(e1);
             }
         }).collect(Collectors.toList());
-        CompositeTestOracle oracle = new CompositeTestOracle(oracles);
-
-        for (int i = 0; i < globalState.getOptions().getNrQueries(); i++) {
-            try {
-                oracle.check();
-                manager.incrementSelectQueryCount();
-            } catch (IgnoreMeException e) {
-
-            }
-        }
-
+        return new CompositeTestOracle(oracles);
     }
 
     @Override

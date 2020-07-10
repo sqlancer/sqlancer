@@ -13,8 +13,6 @@ import java.util.stream.Collectors;
 import sqlancer.AbstractAction;
 import sqlancer.CompositeTestOracle;
 import sqlancer.IgnoreMeException;
-import sqlancer.Main.QueryManager;
-import sqlancer.MainOptions;
 import sqlancer.ProviderAdapter;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
@@ -183,9 +181,7 @@ public final class PostgresProvider extends ProviderAdapter<PostgresGlobalState,
     }
 
     @Override
-    public void generateAndTestDatabase(PostgresGlobalState globalState) throws SQLException {
-        MainOptions options = globalState.getOptions();
-        QueryManager manager = globalState.getManager();
+    public void generateDatabase(PostgresGlobalState globalState) throws SQLException {
         while (globalState.getSchema().getDatabaseTables().size() < Randomly.fromOptions(1, 2)) {
             try {
                 String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
@@ -203,22 +199,13 @@ public final class PostgresProvider extends ProviderAdapter<PostgresGlobalState,
                         throw new IgnoreMeException();
                     }
                 });
-        // TODO: transactions broke during refactoring
-        // catch (Throwable t) {
-        // if (t.getMessage().contains("current transaction is aborted")) {
-        // manager.execute(new QueryAdapter("ABORT"));
-        // globalState.setSchema(PostgresSchema.fromConnection(con, databaseName));
-        // } else {
-        // System.err.println(query.getQueryString());
-        // throw t;
-        // }
-        // }
         se.executeStatements();
-        manager.incrementCreateDatabase();
-        manager.execute(new QueryAdapter("COMMIT", true));
+        globalState.executeStatement(new QueryAdapter("COMMIT", true));
+        globalState.executeStatement(new QueryAdapter("SET SESSION statement_timeout = 5000;\n"));
+    }
 
-        manager.execute(new QueryAdapter("SET SESSION statement_timeout = 5000;\n"));
-
+    @Override
+    protected TestOracle getTestOracle(PostgresGlobalState globalState) throws SQLException {
         List<TestOracle> oracles = globalState.getDmbsSpecificOptions().oracle.stream().map(o -> {
             try {
                 return o.create(globalState);
@@ -226,17 +213,7 @@ public final class PostgresProvider extends ProviderAdapter<PostgresGlobalState,
                 throw new AssertionError(e1);
             }
         }).collect(Collectors.toList());
-        CompositeTestOracle oracle = new CompositeTestOracle(oracles);
-
-        for (int i = 0; i < options.getNrQueries(); i++) {
-            try {
-                oracle.check();
-            } catch (IgnoreMeException e) {
-                continue;
-            }
-            manager.incrementSelectQueryCount();
-        }
-
+        return new CompositeTestOracle(oracles);
     }
 
     @Override

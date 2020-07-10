@@ -122,8 +122,7 @@ public class CockroachDBProvider extends ProviderAdapter<CockroachDBGlobalState,
     }
 
     @Override
-    public void generateAndTestDatabase(CockroachDBGlobalState globalState) throws SQLException {
-        Randomly r = new Randomly();
+    public void generateDatabase(CockroachDBGlobalState globalState) throws SQLException {
         QueryManager manager = globalState.getManager();
         MainOptions options = globalState.getOptions();
         List<String> standardSettings = new ArrayList<>();
@@ -168,30 +167,30 @@ public class CockroachDBProvider extends ProviderAdapter<CockroachDBGlobalState,
             int nrPerformed = 0;
             switch (action) {
             case INSERT:
-                nrPerformed = r.getInteger(0, options.getMaxNumberInserts());
+                nrPerformed = globalState.getRandomly().getInteger(0, options.getMaxNumberInserts());
                 break;
             case UPDATE:
             case SPLIT:
-                nrPerformed = r.getInteger(0, 3);
+                nrPerformed = globalState.getRandomly().getInteger(0, 3);
                 break;
             case EXPLAIN:
-                nrPerformed = r.getInteger(0, 10);
+                nrPerformed = globalState.getRandomly().getInteger(0, 10);
                 break;
             case SHOW:
             case TRUNCATE:
             case DELETE:
             case CREATE_STATISTICS:
-                nrPerformed = r.getInteger(0, 2);
+                nrPerformed = globalState.getRandomly().getInteger(0, 2);
                 break;
             case CREATE_VIEW:
-                nrPerformed = r.getInteger(0, 2);
+                nrPerformed = globalState.getRandomly().getInteger(0, 2);
                 break;
             case SET_SESSION:
             case SET_CLUSTER_SETTING:
-                nrPerformed = r.getInteger(0, 3);
+                nrPerformed = globalState.getRandomly().getInteger(0, 3);
                 break;
             case CREATE_INDEX:
-                nrPerformed = r.getInteger(0, 10);
+                nrPerformed = globalState.getRandomly().getInteger(0, 10);
                 break;
             case COMMENT_ON:
             case SCRUB:
@@ -215,7 +214,7 @@ public class CockroachDBProvider extends ProviderAdapter<CockroachDBGlobalState,
 
         while (total != 0) {
             Action nextAction = null;
-            int selection = r.getInteger(0, total);
+            int selection = globalState.getRandomly().getInteger(0, total);
             int previousRange = 0;
             for (int i = 0; i < nrRemaining.length; i++) {
                 if (previousRange <= selection && selection < previousRange + nrRemaining[i]) {
@@ -244,19 +243,14 @@ public class CockroachDBProvider extends ProviderAdapter<CockroachDBGlobalState,
             }
             total--;
         }
-        manager.incrementCreateDatabase();
         if (globalState.getDmbsSpecificOptions().makeVectorizationMoreLikely && Randomly.getBoolean()) {
             manager.execute(new QueryAdapter("SET vectorize=on;"));
         }
-        TestOracle oracle = globalState.getDmbsSpecificOptions().oracle.create(globalState);
-        for (int i = 0; i < options.getNrQueries(); i++) {
-            try {
-                oracle.check();
-                manager.incrementSelectQueryCount();
-            } catch (IgnoreMeException e) {
+    }
 
-            }
-        }
+    @Override
+    protected TestOracle getTestOracle(CockroachDBGlobalState globalState) throws SQLException {
+        return globalState.getDmbsSpecificOptions().oracle.create(globalState);
     }
 
     @Override
