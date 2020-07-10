@@ -157,16 +157,29 @@ public final class Main {
         }
 
         public void writeCurrent(String queryString) {
+            write(queryString, "\n");
+        }
+
+        private void write(String queryString, String suffix) {
             if (!logEachSelect) {
                 throw new UnsupportedOperationException();
             }
             try {
-                getCurrentFileWriter().write(queryString + ";\n");
+                getCurrentFileWriter().write(queryString);
+                if (!queryString.endsWith(";")) {
+                    getCurrentFileWriter().write(';');
+                }
+                if (suffix != null && suffix.length() != 0) {
+                    getCurrentFileWriter().write(suffix);
+                }
                 currentFileWriter.flush();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                throw new AssertionError();
             }
+        }
+
+        public void writeCurrentNoLineBreak(String queryString) {
+            write(queryString, "");
         }
 
         public void logRowNotFound(StateToReproduce state) {
