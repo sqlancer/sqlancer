@@ -63,15 +63,21 @@ public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestO
         metamorphicQuery = createMetamorphicUnionQuery(select, aggregate, select.getFromList());
         secondResult = getAggregateResult(metamorphicQuery);
 
-        state.getState().queryString = "--" + originalQuery + ";\n--" + metamorphicQuery + "\n-- " + firstResult
-                + "\n-- " + secondResult;
+        String queryFormatString = "--%s;\n-- result: %s";
+        String firstQueryString = String.format(queryFormatString, originalQuery, firstResult);
+        String secondQueryString = String.format(queryFormatString, metamorphicQuery, secondResult);
+        state.getState().statements.add(new QueryAdapter(firstQueryString));
+        state.getState().statements.add(new QueryAdapter(secondQueryString));
+        state.getState().queryString = String.format("%s\n%s", firstQueryString, secondQueryString);
         if (firstResult == null && secondResult != null
                 || firstResult != null && (!firstResult.contentEquals(secondResult)
                         && !ComparatorHelper.isEqualDouble(firstResult, secondResult))) {
             if (secondResult.contains("Inf")) {
                 throw new IgnoreMeException(); // FIXME: average computation
             }
-            throw new AssertionError();
+            String assertionMessage = String.format("the results mismatch!\n%s\n%s",
+                    firstQueryString, secondQueryString);
+            throw new AssertionError(assertionMessage);
         }
 
     }

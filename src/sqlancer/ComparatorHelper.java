@@ -91,6 +91,7 @@ public final class ComparatorHelper {
                     combinedString.stream().collect(Collectors.joining(";")), secondResultSet.size());
             state.getState().statements.add(new QueryAdapter(firstQueryString));
             state.getState().statements.add(new QueryAdapter(secondQueryString));
+            state.getState().queryString = String.format("%s\n%s", firstQueryString, secondQueryString);
             String assertionMessage = String.format("the size of the result sets mismatch (%d and %d)!\n%s\n%s",
                     resultSet.size(), secondResultSet.size(), firstQueryString, secondQueryString);
             throw new AssertionError(assertionMessage);
@@ -104,12 +105,13 @@ public final class ComparatorHelper {
             firstResultSetMisses.removeAll(secondHashSet);
             Set<String> secondResultSetMisses = new HashSet<>(secondHashSet);
             secondResultSetMisses.removeAll(firstHashSet);
-            String queryFormatString = "%s; -- misses: %s";
+            String queryFormatString = "--%s;\n-- misses: %s";
             String firstQueryString = String.format(queryFormatString, originalQueryString, firstResultSetMisses);
             String secondQueryString = String.format(queryFormatString,
                     combinedString.stream().collect(Collectors.joining(";")), secondResultSetMisses);
             state.getState().statements.add(new QueryAdapter(firstQueryString));
             state.getState().statements.add(new QueryAdapter(secondQueryString));
+            state.getState().queryString = String.format("%s\n%s", firstQueryString, secondQueryString);
             String assertionMessage = String.format("the content of the result sets mismatch!\n%s\n%s",
                     firstQueryString, secondQueryString);
             throw new AssertionError(assertionMessage);

@@ -27,6 +27,7 @@ import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
+import sqlancer.QueryAdapter;
 
 public class PostgresPivotedQuerySynthesisOracle implements TestOracle {
 
@@ -57,7 +58,9 @@ public class PostgresPivotedQuerySynthesisOracle implements TestOracle {
 
         boolean isContainedIn = isContainedIn(queryString, options, logger);
         if (!isContainedIn) {
-            throw new AssertionError(queryString);
+            state.statements.add(new QueryAdapter(queryString));
+            String assertionMessage = String.format("the query doesn't contain at least 1 row!\n%s", queryString);
+            throw new AssertionError(assertionMessage);
         }
 
     }
