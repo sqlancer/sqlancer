@@ -156,16 +156,6 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
 
     public static class SQLite3GlobalState extends GlobalState<SQLite3Options, SQLite3Schema> {
 
-        private SQLite3Options sqliteOptions;
-
-        public void setSqliteOptions(SQLite3Options sqliteOptions) {
-            this.sqliteOptions = sqliteOptions;
-        }
-
-        public SQLite3Options getSqliteOptions() {
-            return sqliteOptions;
-        }
-
         @Override
         protected void updateSchema() throws SQLException {
             setSchema(SQLite3Schema.fromConnection(this));
@@ -231,9 +221,7 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
 
     @Override
     public void generateDatabase(SQLite3GlobalState globalState) throws SQLException {
-        SQLite3Options sqliteOptions = globalState.getDmbsSpecificOptions();
         Randomly r = new Randomly(SQLite3SpecialStringGenerator::generate);
-        globalState.setSqliteOptions(sqliteOptions);
         globalState.setRandomly(r);
         if (globalState.getDmbsSpecificOptions().generateDatabase) {
 
@@ -277,7 +265,7 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
 
     @Override
     protected TestOracle getTestOracle(SQLite3GlobalState globalState) throws SQLException {
-        TestOracle oracle = globalState.getSqliteOptions().oracle.create(globalState);
+        TestOracle oracle = globalState.getDmbsSpecificOptions().oracle.create(globalState);
         if (oracle.onlyWorksForNonEmptyTables()) {
             for (SQLite3Table table : globalState.getSchema().getDatabaseTables()) {
                 int nrRows = SQLite3Schema.getNrRows(globalState, table.getName());
@@ -304,10 +292,10 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
     private Query getTableQuery(SQLite3GlobalState globalState, int i) throws AssertionError {
         Query tableQuery;
         List<TableType> options = new ArrayList<>(Arrays.asList(TableType.values()));
-        if (!globalState.getSqliteOptions().testFts) {
+        if (!globalState.getDmbsSpecificOptions().testFts) {
             options.remove(TableType.FTS);
         }
-        if (!globalState.getSqliteOptions().testRtree) {
+        if (!globalState.getDmbsSpecificOptions().testRtree) {
             options.remove(TableType.RTREE);
         }
         switch (Randomly.fromList(options)) {
