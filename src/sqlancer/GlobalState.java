@@ -90,10 +90,22 @@ public abstract class GlobalState<O, S> {
     }
 
     public boolean executeStatement(Query q) throws SQLException {
+        boolean logExecutionTime = getOptions().logExecutionTime();
+        ExecutionTimer timer = null;
+        if (logExecutionTime) {
+            timer = new ExecutionTimer().start();
+        }
         if (getOptions().logEachSelect()) {
-            getLogger().writeCurrent(q.getQueryString());
+            if (logExecutionTime) {
+                getLogger().writeCurrentNoLineBreak(q.getQueryString());
+            } else {
+                getLogger().writeCurrent(q.getQueryString());
+            }
         }
         boolean success = manager.execute(q);
+        if (logExecutionTime) {
+            getLogger().writeCurrent(" -- " + timer.end().asString());
+        }
         if (q.couldAffectSchema()) {
             updateSchema();
         }

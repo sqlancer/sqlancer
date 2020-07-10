@@ -36,6 +36,9 @@ public class MainOptions {
     @Parameter(names = "--log-each-select", description = "Logs every statement issued", arity = 1)
     private boolean logEachSelect = true; // NOPMD
 
+    @Parameter(names = "--log-execution-time", description = "Logs the execution time of each statement (requires --log-each-select to be enabled)", arity = 1)
+    private boolean logExecutionTime = true; // NOPMD
+
     @Parameter(names = "--username", description = "The user name used to log into the DBMS")
     private String userName = "sqlancer"; // NOPMD
 
@@ -65,6 +68,13 @@ public class MainOptions {
 
     public boolean logEachSelect() {
         return logEachSelect;
+    }
+
+    public boolean logExecutionTime() {
+        if (!logEachSelect) {
+            throw new AssertionError();
+        }
+        return logExecutionTime;
     }
 
     public int getNrQueries() {
