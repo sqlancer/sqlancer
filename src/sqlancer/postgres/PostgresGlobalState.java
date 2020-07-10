@@ -29,11 +29,14 @@ public class PostgresGlobalState extends GlobalState<PostgresOptions> {
         }
     }
 
-    public void setSchema(PostgresSchema schema) {
-        this.schema = schema;
-    }
-
     public PostgresSchema getSchema() {
+        if (schema == null) {
+            try {
+                updateSchema();
+            } catch (SQLException e) {
+                throw new AssertionError();
+            }
+        }
         return schema;
     }
 
@@ -100,7 +103,7 @@ public class PostgresGlobalState extends GlobalState<PostgresOptions> {
 
     @Override
     protected void updateSchema() throws SQLException {
-        setSchema(PostgresSchema.fromConnection(getConnection(), getDatabaseName()));
+        this.schema = PostgresSchema.fromConnection(getConnection(), getDatabaseName());
     }
 
 }

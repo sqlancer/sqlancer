@@ -64,15 +64,13 @@ public class StatementExecutor<G extends GlobalState<?>, A extends AbstractActio
                 int nrTries = 0;
                 do {
                     query = nextAction.getQuery(globalState);
-                    if (globalState.getOptions().logEachSelect()) {
-                        globalState.getLogger().writeCurrent(query.getQueryString());
-                    }
-                    success = globalState.getManager().execute(query);
+                    success = globalState.executeStatement(query);
                 } while (!success && nrTries++ < globalState.getOptions().getNrStatementRetryCount());
             } catch (IgnoreMeException e) {
 
             }
             if (query != null && query.couldAffectSchema()) {
+                globalState.updateSchema();
                 queryConsumer.notify(query);
             }
             total--;

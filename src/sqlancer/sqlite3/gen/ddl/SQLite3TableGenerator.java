@@ -55,7 +55,7 @@ public class SQLite3TableGenerator {
         errors.add("parser stack overflow");
         errors.add("malformed JSON");
         errors.add("JSON cannot hold BLOB values");
-        return new QueryAdapter(sqLite3TableGenerator.sb.toString(), errors);
+        return new QueryAdapter(sqLite3TableGenerator.sb.toString(), errors, true);
     }
 
     public void start() {

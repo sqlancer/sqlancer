@@ -90,4 +90,14 @@ public abstract class GlobalState<O> {
 
     protected abstract void updateSchema() throws SQLException;
 
+    public boolean executeStatement(Query q) throws SQLException {
+        if (getOptions().logEachSelect()) {
+            getLogger().writeCurrent(q.getQueryString());
+        }
+        boolean success = manager.execute(q);
+        if (q.couldAffectSchema()) {
+            updateSchema();
+        }
+        return success;
+    }
 }

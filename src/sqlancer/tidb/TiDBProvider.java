@@ -1,6 +1,5 @@
 package sqlancer.tidb;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -15,13 +14,11 @@ import sqlancer.CompositeTestOracle;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
-import sqlancer.Main.StateLogger;
 import sqlancer.ProviderAdapter;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.QueryProvider;
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce;
 import sqlancer.StatementExecutor;
 import sqlancer.TestOracle;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
@@ -79,17 +76,20 @@ public class TiDBProvider extends ProviderAdapter<TiDBGlobalState, TiDBOptions> 
 
         private TiDBSchema schema;
 
-        public void setSchema(TiDBSchema schema) {
-            this.schema = schema;
-        }
-
         public TiDBSchema getSchema() {
+            if (schema == null) {
+                try {
+                    updateSchema();
+                } catch (SQLException e) {
+                    throw new AssertionError();
+                }
+            }
             return schema;
         }
 
         @Override
         protected void updateSchema() throws SQLException {
-            setSchema(TiDBSchema.fromConnection(getConnection(), getDatabaseName()));
+            this.schema = TiDBSchema.fromConnection(getConnection(), getDatabaseName());
         }
 
     }
@@ -124,48 +124,30 @@ public class TiDBProvider extends ProviderAdapter<TiDBGlobalState, TiDBOptions> 
     @Override
     public void generateAndTestDatabase(TiDBGlobalState globalState) throws SQLException {
         QueryManager manager = globalState.getManager();
-        Connection con = globalState.getConnection();
-        String databaseName = globalState.getDatabaseName();
-        globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
-        StateLogger logger = globalState.getLogger();
-        StateToReproduce state = globalState.getState();
         for (int i = 0; i < Randomly.fromOptions(1, 2); i++) {
             boolean success = false;
             do {
                 Query qt = new TiDBTableGenerator().getQuery(globalState);
-                success = manager.execute(qt);
-                logger.writeCurrent(state);
-                globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
-                try {
-                    logger.getCurrentFileWriter().close();
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-                logger.currentFileWriter = null;
+                success = globalState.executeStatement(qt);
             } while (!success);
         }
-        globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
 
         StatementExecutor<TiDBGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
                 TiDBProvider::mapActions, (q) -> {
-                    if (q.couldAffectSchema()) {
-                        try {
-                            globalState.setSchema(TiDBSchema.fromConnection(con, databaseName));
-                        } catch (SQLException e) {
-                            if (q.getQueryString().contains("CREATE VIEW") || e.getMessage().contains(
-                                    "references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them")) {
-                                throw new IgnoreMeException(); // TODO: drop view instead
-                            } else {
-                                throw new AssertionError(e);
-                            }
-                        }
-                    }
                     if (globalState.getSchema().getDatabaseTables().isEmpty()) {
                         throw new IgnoreMeException();
                     }
                 });
-        se.executeStatements();
+        try {
+            se.executeStatements();
+        } catch (SQLException e) {
+            if (e.getMessage().contains(
+                    "references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them")) {
+                throw new IgnoreMeException(); // TODO: drop view instead
+            } else {
+                throw new AssertionError(e);
+            }
+        }
         manager.incrementCreateDatabase();
         List<TestOracle> oracles = globalState.getDmbsSpecificOptions().oracle.stream().map(o -> {
             try {
@@ -183,15 +165,6 @@ public class TiDBProvider extends ProviderAdapter<TiDBGlobalState, TiDBOptions> 
             } catch (IgnoreMeException e) {
 
             }
-        }
-        try {
-            if (globalState.getOptions().logEachSelect()) {
-                logger.getCurrentFileWriter().close();
-                logger.currentFileWriter = null;
-            }
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
 
     }

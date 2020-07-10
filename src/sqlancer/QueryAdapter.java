@@ -24,12 +24,20 @@ public class QueryAdapter extends Query {
         this.query = query;
         this.expectedErrors = expectedErrors;
         this.couldAffectSchema = false;
+        checkQueryString();
     }
 
     public QueryAdapter(String query, Collection<String> expectedErrors, boolean couldAffectSchema) {
         this.query = query;
         this.expectedErrors = expectedErrors;
         this.couldAffectSchema = couldAffectSchema;
+        checkQueryString();
+    }
+
+    private void checkQueryString() {
+        if (query.contains("CREATE TABLE") && !couldAffectSchema) {
+            throw new AssertionError("CREATE TABLE statements should set couldAffectSchema to true");
+        }
     }
 
     @Override

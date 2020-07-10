@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 import sqlancer.AbstractAction;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
-import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.ProviderAdapter;
 import sqlancer.Query;
@@ -151,31 +150,17 @@ public class MySQLProvider extends ProviderAdapter<MySQLGlobalState, MySQLOption
     public void generateAndTestDatabase(MySQLGlobalState globalState) throws SQLException {
         this.databaseName = globalState.getDatabaseName();
         this.manager = globalState.getManager();
-        Connection con = globalState.getConnection();
         MainOptions options = globalState.getOptions();
-        StateLogger logger = globalState.getLogger();
-        StateToReproduce state = globalState.getState();
         Randomly r = globalState.getRandomly();
-        globalState.setSchema(MySQLSchema.fromConnection(con, databaseName));
-        if (options.logEachSelect()) {
-            logger.writeCurrent(state);
-        }
 
         while (globalState.getSchema().getDatabaseTables().size() < Randomly.smallNumber() + 1) {
             String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
             Query createTable = MySQLTableGenerator.generate(tableName, r, globalState.getSchema());
-            if (options.logEachSelect()) {
-                logger.writeCurrent(createTable.getQueryString());
-            }
-            manager.execute(createTable);
-            globalState.setSchema(MySQLSchema.fromConnection(con, databaseName));
+            globalState.executeStatement(createTable);
         }
 
         StatementExecutor<MySQLGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
                 MySQLProvider::mapActions, (q) -> {
-                    if (q.couldAffectSchema()) {
-                        globalState.setSchema(MySQLSchema.fromConnection(con, databaseName));
-                    }
                     if (globalState.getSchema().getDatabaseTables().isEmpty()) {
                         throw new IgnoreMeException();
                     }
@@ -188,8 +173,6 @@ public class MySQLProvider extends ProviderAdapter<MySQLGlobalState, MySQLOption
         // return;
         // }
         // }
-
-        globalState.setSchema(MySQLSchema.fromConnection(con, databaseName));
 
         TestOracle oracle = new MySQLTLPWhereOracle(globalState);
         for (int i = 0; i < options.getNrQueries(); i++) {

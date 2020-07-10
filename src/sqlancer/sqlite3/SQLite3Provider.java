@@ -2,7 +2,6 @@ package sqlancer.sqlite3;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -15,7 +14,6 @@ import java.util.List;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
-import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.ProviderAdapter;
 import sqlancer.Query;
@@ -166,11 +164,14 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
         private SQLite3Options sqliteOptions;
 
         public SQLite3Schema getSchema() {
+            if (schema == null) {
+                try {
+                    updateSchema();
+                } catch (SQLException e) {
+                    throw new AssertionError(e);
+                }
+            }
             return schema;
-        }
-
-        public void setSchema(SQLite3Schema schema) {
-            this.schema = schema;
         }
 
         public void setSqliteOptions(SQLite3Options sqliteOptions) {
@@ -183,7 +184,7 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
 
         @Override
         protected void updateSchema() throws SQLException {
-            setSchema(SQLite3Schema.fromConnection(this));
+            this.schema = SQLite3Schema.fromConnection(this);
         }
 
     }
@@ -202,7 +203,6 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
         Randomly r = new Randomly(SQLite3SpecialStringGenerator::generate);
         globalState.setSqliteOptions(sqliteOptions);
         globalState.setRandomly(r);
-        StateLogger logger = globalState.getLogger();
         this.state = (SQLite3StateToReproduce) globalState.getState();
         globalState.setState(state);
         if (globalState.getDmbsSpecificOptions().generateDatabase) {
@@ -217,19 +217,18 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
             }
             int i = 0;
 
-            globalState.setSchema(SQLite3Schema.fromConnection(globalState));
             do {
                 Query tableQuery = getTableQuery(r, i++);
-                executeStatement(globalState, manager, tableQuery);
-                globalState.setSchema(SQLite3Schema.fromConnection(globalState));
-            } while (globalState.getSchema().getDatabaseTables().size() != nrTablesToCreate);
+                globalState.executeStatement(tableQuery);
+                logStatement(globalState, tableQuery);
+            } while (globalState.getSchema().getDatabaseTables().size() < nrTablesToCreate);
             assert globalState.getSchema().getTables().getTables().size() == nrTablesToCreate;
             checkTablesForGeneratedColumnLoops(globalState);
             if (globalState.getDmbsSpecificOptions().testDBStats && Randomly.getBooleanWithSmallProbability()) {
                 QueryAdapter tableQuery = new QueryAdapter(
                         "CREATE VIRTUAL TABLE IF NOT EXISTS stat USING dbstat(main)");
-                executeStatement(globalState, manager, tableQuery);
-                globalState.setSchema(SQLite3Schema.fromConnection(globalState));
+                globalState.executeStatement(tableQuery);
+                logStatement(globalState, tableQuery);
             }
             int[] nrRemaining = new int[Action.values().length];
             List<Action> actions = new ArrayList<>();
@@ -290,10 +289,6 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
                 total += nrPerformed;
             }
 
-            if (options.logEachSelect()) {
-                logger.writeCurrent(state);
-            }
-
             while (total != 0) {
                 Action nextAction = null;
                 int selection = r.getInteger(0, total);
@@ -312,31 +307,26 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
                 Query query = null;
                 try {
                     query = nextAction.getQuery(globalState);
-                    if (options.logEachSelect()) {
-                        logger.writeCurrent(query.getQueryString());
-                    }
-                    executeStatement(globalState, manager, query);
+                    globalState.executeStatement(query);
+                    logStatement(globalState, query);
                 } catch (IgnoreMeException e) {
 
                 }
-                if (query != null && query.couldAffectSchema()) {
-                    globalState.setSchema(SQLite3Schema.fromConnection(globalState));
-                    if (globalState.getSchema().getDatabaseTables().isEmpty()) {
-                        throw new IgnoreMeException();
-                    }
+                if (query != null && query.couldAffectSchema()
+                        && globalState.getSchema().getDatabaseTables().isEmpty()) {
+                    throw new IgnoreMeException();
                 }
                 total--;
             }
             Query query = SQLite3TransactionGenerator.generateCommit(globalState);
-            executeStatement(globalState, manager, query);
+            globalState.executeStatement(query);
+            logStatement(globalState, query);
 
             // also do an abort for DEFERRABLE INITIALLY DEFERRED
             query = SQLite3TransactionGenerator.generateRollbackTransaction(globalState);
-            executeStatement(globalState, manager, query);
-            globalState.setSchema(SQLite3Schema.fromConnection(globalState));
+            globalState.executeStatement(query);
+            logStatement(globalState, query);
             manager.incrementCreateDatabase();
-        } else {
-            globalState.setSchema(SQLite3Schema.fromConnection(globalState));
         }
         TestOracle oracle = globalState.getSqliteOptions().oracle.create(globalState);
         if (oracle.onlyWorksForNonEmptyTables()) {
@@ -355,23 +345,12 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
 
             }
         }
-        try {
-            if (options.logEachSelect()) {
-                logger.getCurrentFileWriter().close();
-                logger.currentFileWriter = null;
-            }
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
         if (globalState.getDmbsSpecificOptions().exitAfterFirstDatabase) {
             System.exit(0);
         }
     }
 
-    private void executeStatement(SQLite3GlobalState globalState, QueryManager manager, Query tableQuery)
-            throws SQLException {
-        manager.execute(tableQuery);
+    private void logStatement(SQLite3GlobalState globalState, Query tableQuery) {
         if (globalState.getDmbsSpecificOptions().printStatements) {
             String s = tableQuery.getQueryString();
             if (!s.endsWith(";")) {

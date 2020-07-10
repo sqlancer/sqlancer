@@ -9,17 +9,20 @@ public class MySQLGlobalState extends GlobalState<MySQLOptions> {
 
     private MySQLSchema schema;
 
-    public void setSchema(MySQLSchema schema) {
-        this.schema = schema;
-    }
-
     public MySQLSchema getSchema() {
+        if (schema == null) {
+            try {
+                updateSchema();
+            } catch (SQLException e) {
+                throw new AssertionError();
+            }
+        }
         return schema;
     }
 
     @Override
     protected void updateSchema() throws SQLException {
-        setSchema(MySQLSchema.fromConnection(getConnection(), getDatabaseName()));
+        this.schema = MySQLSchema.fromConnection(getConnection(), getDatabaseName());
     }
 
 }

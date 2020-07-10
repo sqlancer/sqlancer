@@ -320,7 +320,16 @@ public final class Main {
                 state.setConnection(con);
                 state.setStateLogger(logger);
                 state.setManager(manager);
+                if (options.logEachSelect()) {
+                    logger.writeCurrent(state.getState());
+                }
                 provider.generateAndTestDatabase(state);
+                try {
+                    logger.getCurrentFileWriter().close();
+                    logger.currentFileWriter = null;
+                } catch (IOException e) {
+                    throw new AssertionError(e);
+                }
             }
         }
 
