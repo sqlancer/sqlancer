@@ -328,9 +328,6 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
 
             }
         }
-        if (globalState.getDmbsSpecificOptions().exitAfterFirstDatabase) {
-            System.exit(0);
-        }
     }
 
     private void checkTablesForGeneratedColumnLoops(SQLite3GlobalState globalState) throws SQLException {

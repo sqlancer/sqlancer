@@ -437,33 +437,48 @@ public final class Main {
                 }
 
                 private void runThread(final String databaseName) {
-                    while (true) {
-                        DBMSExecutor<?, ?> executor = executorFactory.getDBMSExecutor(databaseName, seed);
+                    try {
+                        if (options.getMaxGeneratedDatabases() == -1) {
+                            // run without a limit
+                            while (true) {
+                                run(options, execService, executorFactory, seed, databaseName);
+                            }
+                        } else {
+                            for (int i = 0; i < options.getMaxGeneratedDatabases(); i++) {
+                                run(options, execService, executorFactory, seed, databaseName);
+                            }
+                        }
+                    } finally {
+                        threadsShutdown++;
+                        if (threadsShutdown == options.getTotalNumberTries()) {
+                            execService.shutdown();
+                        }
+                    }
+                }
+
+                private void run(MainOptions options, ExecutorService execService,
+                        DBMSExecutorFactory<?, ?> executorFactory, final long seed, final String databaseName) {
+                    DBMSExecutor<?, ?> executor = executorFactory.getDBMSExecutor(databaseName, seed);
+                    try {
+                        executor.run();
+                    } catch (IgnoreMeException e) {
+                        return;
+                    } catch (Throwable reduce) {
+                        reduce.printStackTrace();
+                        executor.getStateToReproduce().exception = reduce.getMessage();
+                        executor.getLogger().logFileWriter = null;
+                        executor.getLogger().logException(reduce, executor.getStateToReproduce());
+                        return;
+                    } finally {
                         try {
-                            executor.run();
-                        } catch (IgnoreMeException e) {
-                            continue;
-                        } catch (Throwable reduce) {
-                            reduce.printStackTrace();
-                            executor.getStateToReproduce().exception = reduce.getMessage();
-                            executor.getLogger().logFileWriter = null;
-                            executor.getLogger().logException(reduce, executor.getStateToReproduce());
-                            threadsShutdown++;
-                            break;
-                        } finally {
-                            try {
-                                if (options.logEachSelect()) {
-                                    if (executor.getLogger().currentFileWriter != null) {
-                                        executor.getLogger().currentFileWriter.close();
-                                    }
-                                    executor.getLogger().currentFileWriter = null;
+                            if (options.logEachSelect()) {
+                                if (executor.getLogger().currentFileWriter != null) {
+                                    executor.getLogger().currentFileWriter.close();
                                 }
-                            } catch (IOException e) {
-                                e.printStackTrace();
+                                executor.getLogger().currentFileWriter = null;
                             }
-                            if (threadsShutdown == options.getTotalNumberTries()) {
-                                execService.shutdown();
-                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
                     }
                 }

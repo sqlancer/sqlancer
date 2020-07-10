@@ -85,14 +85,6 @@ public class SQLite3Options {
             "--execute-queries" }, description = "Specifies whether the query in the fuzzer should be executed", arity = 1)
     public boolean executeQuery = true;
 
-    @Parameter(names = {
-            "--print-successful-statements" }, description = "Specifies whether to print SQL statements to stdout", arity = 1)
-    public boolean executeStatementsAndPrintSuccessfulOnes;
-
-    @Parameter(names = {
-            "--exit-after-first-database" }, description = "Specifies whether to stop SQLancer after creating and executing the test oracle on the first database", arity = 1)
-    public boolean exitAfterFirstDatabase;
-
     public enum SQLite3Oracle {
         PQS {
             @Override
