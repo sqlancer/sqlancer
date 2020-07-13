@@ -440,12 +440,17 @@ public final class Main {
                     try {
                         if (options.getMaxGeneratedDatabases() == -1) {
                             // run without a limit
-                            while (true) {
-                                run(options, execService, executorFactory, seed, databaseName);
+                            boolean continueRunning = true;
+                            while (continueRunning) {
+                                continueRunning = run(options, execService, executorFactory, seed, databaseName);
                             }
                         } else {
                             for (int i = 0; i < options.getMaxGeneratedDatabases(); i++) {
-                                run(options, execService, executorFactory, seed, databaseName);
+                                boolean continueRunning = run(options, execService, executorFactory, seed,
+                                        databaseName);
+                                if (!continueRunning) {
+                                    break;
+                                }
                             }
                         }
                     } finally {
@@ -456,19 +461,20 @@ public final class Main {
                     }
                 }
 
-                private void run(MainOptions options, ExecutorService execService,
+                private boolean run(MainOptions options, ExecutorService execService,
                         DBMSExecutorFactory<?, ?> executorFactory, final long seed, final String databaseName) {
                     DBMSExecutor<?, ?> executor = executorFactory.getDBMSExecutor(databaseName, seed);
                     try {
                         executor.run();
+                        return true;
                     } catch (IgnoreMeException e) {
-                        return;
+                        return true;
                     } catch (Throwable reduce) {
                         reduce.printStackTrace();
                         executor.getStateToReproduce().exception = reduce.getMessage();
                         executor.getLogger().logFileWriter = null;
                         executor.getLogger().logException(reduce, executor.getStateToReproduce());
-                        return;
+                        return false;
                     } finally {
                         try {
                             if (options.logEachSelect()) {
