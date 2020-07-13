@@ -78,7 +78,7 @@ public class PostgresNoRECOracle implements TestOracle {
             throw new IgnoreMeException();
         }
         if (firstCount != secondCount) {
-            String queryFormatString = "%s; -- count: %d";
+            String queryFormatString = "-- %s;\n-- count: %d";
             String firstQueryStringWithCount = String.format(queryFormatString, firstQueryString, firstCount);
             String secondQueryStringWithCount = String.format(queryFormatString, secondQueryString, secondCount);
             state.queryString = String.format("%s\n%s", firstQueryStringWithCount, secondQueryStringWithCount);

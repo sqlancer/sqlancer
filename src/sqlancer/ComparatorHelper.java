@@ -85,7 +85,7 @@ public final class ComparatorHelper {
     public static void assumeResultSetsAreEqual(List<String> resultSet, List<String> secondResultSet,
             String originalQueryString, List<String> combinedString, GlobalState<?, ?> state) {
         if (resultSet.size() != secondResultSet.size()) {
-            String queryFormatString = "%s; -- cardinality: %d";
+            String queryFormatString = "-- %s;\n-- cardinality: %d";
             String firstQueryString = String.format(queryFormatString, originalQueryString, resultSet.size());
             String secondQueryString = String.format(queryFormatString,
                     combinedString.stream().collect(Collectors.joining(";")), secondResultSet.size());
@@ -103,12 +103,11 @@ public final class ComparatorHelper {
             firstResultSetMisses.removeAll(secondHashSet);
             Set<String> secondResultSetMisses = new HashSet<>(secondHashSet);
             secondResultSetMisses.removeAll(firstHashSet);
-            String queryFormatString = "--%s;\n-- misses: %s";
+            String queryFormatString = "-- %s;\n-- misses: %s";
             String firstQueryString = String.format(queryFormatString, originalQueryString, firstResultSetMisses);
             String secondQueryString = String.format(queryFormatString,
                     combinedString.stream().collect(Collectors.joining(";")), secondResultSetMisses);
-            state.getState().statements.add(new QueryAdapter(firstQueryString));
-            state.getState().statements.add(new QueryAdapter(secondQueryString));
+            // update the SELECT queries to be logged at the bottom of the error log file
             state.getState().queryString = String.format("%s\n%s", firstQueryString, secondQueryString);
             String assertionMessage = String.format("the content of the result sets mismatch!\n%s\n%s",
                     firstQueryString, secondQueryString);
