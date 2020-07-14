@@ -70,12 +70,28 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
         REINDEX(SQLite3ReindexGenerator::executeReindex), //
         ANALYZE(SQLite3AnalyzeGenerator::generateAnalyze), //
         DELETE(SQLite3DeleteGenerator::deleteContent), //
-        TRANSACTION_START(SQLite3TransactionGenerator::generateBeginTransaction), //
+        TRANSACTION_START(SQLite3TransactionGenerator::generateBeginTransaction) {
+            @Override
+            public boolean canBeRetried() {
+                return false;
+            }
+
+        }, //
         ALTER(SQLite3AlterTable::alterTable), //
         DROP_INDEX(SQLite3DropIndexGenerator::dropIndex), //
         UPDATE(SQLite3UpdateGenerator::updateRow), //
-        ROLLBACK_TRANSACTION(SQLite3TransactionGenerator::generateRollbackTransaction), //
-        COMMIT(SQLite3TransactionGenerator::generateCommit), //
+        ROLLBACK_TRANSACTION(SQLite3TransactionGenerator::generateRollbackTransaction) {
+            @Override
+            public boolean canBeRetried() {
+                return false;
+            }
+        }, //
+        COMMIT(SQLite3TransactionGenerator::generateCommit) {
+            @Override
+            public boolean canBeRetried() {
+                return false;
+            }
+        }, //
         DROP_TABLE(SQLite3DropTableGenerator::dropTable), //
         DROP_VIEW(SQLite3ViewGenerator::dropView), //
         EXPLAIN(SQLite3ExplainGenerator::explain), //
