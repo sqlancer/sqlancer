@@ -353,4 +353,9 @@ public class CockroachDBExpressionGenerator
         return new CockroachDBNotOperation(predicate);
     }
 
+    @Override
+    public CockroachDBExpression isNull(CockroachDBExpression expr) {
+        return new CockroachDBUnaryPostfixOperation(expr, CockroachDBUnaryPostfixOperator.IS_NULL);
+    }
+
 }

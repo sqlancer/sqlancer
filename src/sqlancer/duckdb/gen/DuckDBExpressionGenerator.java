@@ -438,4 +438,9 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
         return new NewUnaryPrefixOperatorNode<>(predicate, DuckDBUnaryPrefixOperator.NOT);
     }
 
+    @Override
+    public Node<DuckDBExpression> isNull(Node<DuckDBExpression> expr) {
+        return new NewUnaryPostfixOperatorNode<>(expr, DuckDBUnaryPostfixOperator.IS_NULL);
+    }
+
 }

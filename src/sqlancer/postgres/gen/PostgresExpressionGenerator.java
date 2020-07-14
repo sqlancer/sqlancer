@@ -585,4 +585,9 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         return new PostgresPrefixOperation(predicate, PostgresPrefixOperation.PrefixOperator.NOT);
     }
 
+    @Override
+    public PostgresExpression isNull(PostgresExpression expr) {
+        return new PostgresPostfixOperation(expr, PostfixOperator.IS_NULL);
+    }
+
 }

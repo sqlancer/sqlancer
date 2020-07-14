@@ -193,4 +193,9 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
         return new MySQLUnaryPrefixOperation(predicate, MySQLUnaryPrefixOperator.NOT);
     }
 
+    @Override
+    public MySQLExpression isNull(MySQLExpression expr) {
+        return new MySQLUnaryPostfixOperation(expr, MySQLUnaryPostfixOperation.UnaryPostfixOperator.IS_NULL, false);
+    }
+
 }

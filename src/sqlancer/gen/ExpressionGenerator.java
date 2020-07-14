@@ -19,4 +19,14 @@ public interface ExpressionGenerator<E> {
      */
     E negatePredicate(E predicate);
 
+    /**
+     * Checks if an expression evaluates to NULL (i.e., implements the IS NULL operator).
+     *
+     * @param expr
+     *            the expression
+     *
+     * @return an expression that checks whether the expression evaluates to NULL.
+     */
+    E isNull(E expr);
+
 }

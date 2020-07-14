@@ -18,6 +18,7 @@ import sqlancer.clickhouse.ast.ClickHouseConstant;
 import sqlancer.clickhouse.ast.ClickHouseExpression;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation;
+import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation.ClickHouseUnaryPostfixOperator;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation.ClickHouseUnaryPrefixOperator;
 import sqlancer.gen.TypedExpressionGenerator;
 
@@ -174,5 +175,10 @@ public class ClickHouseExpressionGenerator
     @Override
     public ClickHouseExpression negatePredicate(ClickHouseExpression predicate) {
         return new ClickHouseUnaryPrefixOperation(predicate, ClickHouseUnaryPrefixOperator.NOT);
+    }
+
+    @Override
+    public ClickHouseExpression isNull(ClickHouseExpression expr) {
+        return new ClickHouseUnaryPostfixOperation(expr, ClickHouseUnaryPostfixOperator.IS_NULL, false);
     }
 }

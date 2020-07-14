@@ -29,6 +29,7 @@ import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm.Ordering;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
 import sqlancer.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation.BinaryOperator;
@@ -649,6 +650,11 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
     @Override
     public SQLite3Expression negatePredicate(SQLite3Expression predicate) {
         return new SQLite3UnaryOperation(UnaryOperator.NOT, predicate);
+    }
+
+    @Override
+    public SQLite3Expression isNull(SQLite3Expression expr) {
+        return new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.ISNULL, expr);
     }
 
 }
