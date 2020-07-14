@@ -65,7 +65,8 @@ public class StatementExecutor<G extends GlobalState<?, ?>, A extends AbstractAc
                 do {
                     query = nextAction.getQuery(globalState);
                     success = globalState.executeStatement(query);
-                } while (!success && nrTries++ < globalState.getOptions().getNrStatementRetryCount());
+                } while (nextAction.canBeRetried() && !success
+                        && nrTries++ < globalState.getOptions().getNrStatementRetryCount());
             } catch (IgnoreMeException e) {
 
             }
