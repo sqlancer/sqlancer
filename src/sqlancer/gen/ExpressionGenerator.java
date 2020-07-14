@@ -9,4 +9,14 @@ public interface ExpressionGenerator<E> {
      */
     E generatePredicate();
 
+    /**
+     * Negates a predicate (i.e., uses a NOT operator).
+     *
+     * @param predicate
+     *            the boolean predicate.
+     *
+     * @return the negated predicate.
+     */
+    E negatePredicate(E predicate);
+
 }

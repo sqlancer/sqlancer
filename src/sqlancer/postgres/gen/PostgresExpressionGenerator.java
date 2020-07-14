@@ -580,4 +580,9 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         return generateExpression(0);
     }
 
+    @Override
+    public PostgresExpression negatePredicate(PostgresExpression predicate) {
+        return new PostgresPrefixOperation(predicate, PostgresPrefixOperation.PrefixOperator.NOT);
+    }
+
 }

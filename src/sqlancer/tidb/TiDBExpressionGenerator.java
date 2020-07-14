@@ -170,4 +170,9 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
         return newExpressions;
     }
 
+    @Override
+    public TiDBExpression negatePredicate(TiDBExpression predicate) {
+        return new TiDBUnaryPrefixOperation(predicate, TiDBUnaryPrefixOperator.NOT);
+    }
+
 }

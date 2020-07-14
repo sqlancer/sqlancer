@@ -188,4 +188,9 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
         return MySQLColumnReference.create(c, val);
     }
 
+    @Override
+    public MySQLExpression negatePredicate(MySQLExpression predicate) {
+        return new MySQLUnaryPrefixOperation(predicate, MySQLUnaryPrefixOperator.NOT);
+    }
+
 }

@@ -348,4 +348,9 @@ public class CockroachDBExpressionGenerator
         return generateExpression(CockroachDBDataType.BOOL.get());
     }
 
+    @Override
+    public CockroachDBExpression negatePredicate(CockroachDBExpression predicate) {
+        return new CockroachDBNotOperation(predicate);
+    }
+
 }

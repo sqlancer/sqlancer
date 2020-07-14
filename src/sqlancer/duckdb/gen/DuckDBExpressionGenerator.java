@@ -433,4 +433,9 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
         return generateArgsForAggregate(aggrFunc);
     }
 
+    @Override
+    public Node<DuckDBExpression> negatePredicate(Node<DuckDBExpression> predicate) {
+        return new NewUnaryPrefixOperatorNode<>(predicate, DuckDBUnaryPrefixOperator.NOT);
+    }
+
 }
