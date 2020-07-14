@@ -343,4 +343,9 @@ public class CockroachDBExpressionGenerator
         return columnReference;
     }
 
+    @Override
+    public CockroachDBExpression generatePredicate() {
+        return generateExpression(CockroachDBDataType.BOOL.get());
+    }
+
 }

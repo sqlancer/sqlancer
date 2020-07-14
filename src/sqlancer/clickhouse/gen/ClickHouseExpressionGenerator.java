@@ -165,4 +165,9 @@ public class ClickHouseExpressionGenerator
         ClickHouseAggregate.ClickHouseAggregateFunction agg = Randomly.fromList(aggregates);
         return generateArgsForAggregate(dataType, agg);
     }
+
+    @Override
+    public ClickHouseExpression generatePredicate() {
+        return generateExpression(new ClickHouseSchema.ClickHouseLancerDataType(ClickHouseDataType.UInt8));
+    }
 }

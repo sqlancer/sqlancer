@@ -63,4 +63,9 @@ public abstract class UntypedExpressionGenerator<E, C> implements ExpressionGene
         return expr;
     }
 
+    @Override
+    public E generatePredicate() {
+        return generateExpression();
+    }
+
 }

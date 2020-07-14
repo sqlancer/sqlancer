@@ -575,4 +575,9 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         return this;
     }
 
+    @Override
+    public PostgresExpression generatePredicate() {
+        return generateExpression(0);
+    }
+
 }

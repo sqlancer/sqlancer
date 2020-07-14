@@ -641,4 +641,9 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         return generateExpression();
     }
 
+    @Override
+    public SQLite3Expression generatePredicate() {
+        return generateExpression();
+    }
+
 }
