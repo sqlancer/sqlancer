@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.gen.ExpressionGenerator;
 import sqlancer.postgres.PostgresCompoundDataType;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresProvider;
@@ -49,7 +50,7 @@ import sqlancer.postgres.ast.PostgresPrefixOperation;
 import sqlancer.postgres.ast.PostgresPrefixOperation.PrefixOperator;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 
-public class PostgresExpressionGenerator {
+public class PostgresExpressionGenerator implements ExpressionGenerator<PostgresExpression> {
 
     private final int maxDepth;
 
