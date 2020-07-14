@@ -415,6 +415,30 @@ public final class Main {
 
         if (options.printProgressInformation()) {
             startProgressMonitor();
+            if (options.printProgressSummary()) {
+                Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        System.out.println("Overall execution statistics");
+                        System.out.println("============================");
+                        System.out.println(formatInteger(nrQueries.get()) + " queries");
+                        System.out.println(formatInteger(nrDatabases.get()) + " databases");
+                        System.out.println(
+                                formatInteger(nrSuccessfulActions.get()) + " successfully-executed statements");
+                        System.out.println(
+                                formatInteger(nrUnsuccessfulActions.get()) + " unsuccessfuly-executed statements");
+                    }
+
+                    private String formatInteger(long intValue) {
+                        if (intValue > 1000) {
+                            return String.format("%,9dk", intValue / 1000);
+                        } else {
+                            return String.format("%,10d", intValue);
+                        }
+                    }
+                }));
+            }
         }
 
         ExecutorService execService = Executors.newFixedThreadPool(options.getNumberConcurrentThreads());
@@ -499,6 +523,7 @@ public final class Main {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
         return threadsShutdown == 0 ? 0 : options.getErrorExitCode();
     }
 

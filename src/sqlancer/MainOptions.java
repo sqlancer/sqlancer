@@ -48,6 +48,9 @@ public class MainOptions {
     @Parameter(names = "--print-progress-information", description = "Whether to print progress information such as the number of databases generated or queries issued", arity = 1)
     private boolean printProgressInformation = true; // NOPMD
 
+    @Parameter(names = "--print-progress-summary", description = "Whether to print an execution summary when exiting SQLancer", arity = 1)
+    private boolean printProgressSummary; // NOPMD
+
     @Parameter(names = "--timeout-seconds", description = "The timeout in seconds")
     private int timeoutSeconds = -1; // NOPMD
 
@@ -133,6 +136,10 @@ public class MainOptions {
 
     public boolean printProgressInformation() {
         return printProgressInformation;
+    }
+
+    public boolean printProgressSummary() {
+        return printProgressSummary;
     }
 
     public int getTimeoutSeconds() {
