@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import sqlancer.TernaryLogicPartitioningOracleBase;
 import sqlancer.TestOracle;
 import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLGlobalState;
@@ -22,7 +23,8 @@ import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 import sqlancer.mysql.gen.MySQLExpressionGenerator;
 
-public abstract class MySQLQueryPartitioningBase implements TestOracle {
+public abstract class MySQLQueryPartitioningBase extends TernaryLogicPartitioningOracleBase<MySQLExpression>
+        implements TestOracle {
 
     final MySQLGlobalState state;
     final Set<String> errors = new HashSet<>();

@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.TernaryLogicPartitioningOracleBase;
 import sqlancer.TestOracle;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema;
@@ -27,7 +28,7 @@ import sqlancer.postgres.gen.PostgresCommon;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 import sqlancer.postgres.oracle.PostgresNoRECOracle;
 
-public class PostgresTLPBase implements TestOracle {
+public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<PostgresExpression> implements TestOracle {
 
     final PostgresGlobalState state;
     final Set<String> errors = new HashSet<>();

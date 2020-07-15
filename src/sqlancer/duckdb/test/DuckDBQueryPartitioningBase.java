@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.TernaryLogicPartitioningOracleBase;
 import sqlancer.TestOracle;
 import sqlancer.ast.newast.ColumnReferenceNode;
 import sqlancer.ast.newast.NewUnaryPostfixOperatorNode;
@@ -27,7 +28,8 @@ import sqlancer.duckdb.gen.DuckDBExpressionGenerator;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator.DuckDBUnaryPostfixOperator;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator.DuckDBUnaryPrefixOperator;
 
-public class DuckDBQueryPartitioningBase implements TestOracle {
+public class DuckDBQueryPartitioningBase extends TernaryLogicPartitioningOracleBase<Node<DuckDBExpression>>
+        implements TestOracle {
 
     final DuckDBGlobalState state;
     final Set<String> errors = new HashSet<>();

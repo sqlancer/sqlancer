@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.TernaryLogicPartitioningOracleBase;
 import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
@@ -26,7 +27,8 @@ import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnar
 import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 import sqlancer.cockroachdb.oracle.CockroachDBNoRECOracle;
 
-public class CockroachDBTLPBase implements TestOracle {
+public class CockroachDBTLPBase extends TernaryLogicPartitioningOracleBase<CockroachDBExpression>
+        implements TestOracle {
 
     final CockroachDBGlobalState state;
     final Set<String> errors = new HashSet<>();

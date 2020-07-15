@@ -2,6 +2,7 @@ package sqlancer.clickhouse.oracle.tlp;
 
 import ru.yandex.clickhouse.domain.ClickHouseDataType;
 import sqlancer.Randomly;
+import sqlancer.TernaryLogicPartitioningOracleBase;
 import sqlancer.TestOracle;
 import sqlancer.clickhouse.ClickHouseErrors;
 import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
@@ -26,7 +27,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ClickHouseTLPBase implements TestOracle {
+public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickHouseExpression> implements TestOracle {
 
     final ClickHouseGlobalState state;
     final Set<String> errors = new HashSet<>();

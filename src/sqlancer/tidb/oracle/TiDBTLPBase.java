@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.TernaryLogicPartitioningOracleBase;
 import sqlancer.TestOracle;
 import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBExpressionGenerator;
@@ -26,7 +27,7 @@ import sqlancer.tidb.ast.TiDBUnaryPrefixOperation;
 import sqlancer.tidb.ast.TiDBUnaryPrefixOperation.TiDBUnaryPrefixOperator;
 import sqlancer.tidb.gen.TiDBHintGenerator;
 
-public abstract class TiDBTLPBase implements TestOracle {
+public abstract class TiDBTLPBase extends TernaryLogicPartitioningOracleBase<TiDBExpression> implements TestOracle {
 
     final TiDBGlobalState state;
     final Set<String> errors = new HashSet<>();
