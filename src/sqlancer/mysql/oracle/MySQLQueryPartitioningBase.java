@@ -19,10 +19,8 @@ import sqlancer.mysql.ast.MySQLSelect;
 import sqlancer.mysql.ast.MySQLTableReference;
 import sqlancer.mysql.gen.MySQLExpressionGenerator;
 
-public abstract class MySQLQueryPartitioningBase extends TernaryLogicPartitioningOracleBase<MySQLExpression>
-        implements TestOracle {
-
-    final MySQLGlobalState state;
+public abstract class MySQLQueryPartitioningBase
+        extends TernaryLogicPartitioningOracleBase<MySQLExpression, MySQLGlobalState> implements TestOracle {
 
     MySQLSchema s;
     MySQLTables targetTables;
@@ -30,7 +28,7 @@ public abstract class MySQLQueryPartitioningBase extends TernaryLogicPartitionin
     MySQLSelect select;
 
     public MySQLQueryPartitioningBase(MySQLGlobalState state) {
-        this.state = state;
+        super(state);
         MySQLErrors.addExpressionErrors(errors);
     }
 

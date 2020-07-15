@@ -24,9 +24,8 @@ import sqlancer.postgres.gen.PostgresCommon;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 import sqlancer.postgres.oracle.PostgresNoRECOracle;
 
-public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<PostgresExpression> implements TestOracle {
-
-    final PostgresGlobalState state;
+public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<PostgresExpression, PostgresGlobalState>
+        implements TestOracle {
 
     PostgresSchema s;
     PostgresTables targetTables;
@@ -34,7 +33,7 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
     PostgresSelect select;
 
     public PostgresTLPBase(PostgresGlobalState state) {
-        this.state = state;
+        super(state);
         PostgresCommon.addCommonExpressionErrors(errors);
         PostgresCommon.addCommonFetchErrors(errors);
     }
@@ -46,6 +45,7 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
         gen = new PostgresExpressionGenerator(state).setColumns(targetTables.getColumns());
+        initializeTernaryPredicateVariants();
         select = new PostgresSelect();
         select.setFetchColumns(generateFetchColumns());
         List<PostgresTable> tables = targetTables.getTables();

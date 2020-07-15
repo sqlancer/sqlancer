@@ -22,9 +22,8 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
-public class SQLite3TLPBase extends TernaryLogicPartitioningOracleBase<SQLite3Expression> implements TestOracle {
-
-    final SQLite3GlobalState state;
+public class SQLite3TLPBase extends TernaryLogicPartitioningOracleBase<SQLite3Expression, SQLite3GlobalState>
+        implements TestOracle {
 
     SQLite3Schema s;
     SQLite3Tables targetTables;
@@ -32,7 +31,7 @@ public class SQLite3TLPBase extends TernaryLogicPartitioningOracleBase<SQLite3Ex
     SQLite3Select select;
 
     public SQLite3TLPBase(SQLite3GlobalState state) {
-        this.state = state;
+        super(state);
         SQLite3Errors.addExpectedExpressionErrors(errors);
         SQLite3Errors.addQueryErrors(errors);
     }

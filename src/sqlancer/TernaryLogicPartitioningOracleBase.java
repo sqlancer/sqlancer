@@ -13,15 +13,17 @@ import sqlancer.gen.ExpressionGenerator;
  * @param <E>
  *            the expression type
  */
-public abstract class TernaryLogicPartitioningOracleBase<E> implements TestOracle {
+public abstract class TernaryLogicPartitioningOracleBase<E, S> implements TestOracle {
 
     protected E predicate;
     protected E negatedPredicate;
     protected E isNullPredicate;
 
+    protected final S state;
     protected final Set<String> errors = new HashSet<>();
 
-    protected TernaryLogicPartitioningOracleBase() {
+    protected TernaryLogicPartitioningOracleBase(S state) {
+        this.state = state;
     }
 
     protected void initializeTernaryPredicateVariants() {

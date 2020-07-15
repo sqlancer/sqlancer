@@ -22,9 +22,8 @@ import sqlancer.tidb.ast.TiDBSelect;
 import sqlancer.tidb.ast.TiDBTableReference;
 import sqlancer.tidb.gen.TiDBHintGenerator;
 
-public abstract class TiDBTLPBase extends TernaryLogicPartitioningOracleBase<TiDBExpression> implements TestOracle {
-
-    final TiDBGlobalState state;
+public abstract class TiDBTLPBase extends TernaryLogicPartitioningOracleBase<TiDBExpression, TiDBGlobalState>
+        implements TestOracle {
 
     TiDBSchema s;
     TiDBTables targetTables;
@@ -32,7 +31,7 @@ public abstract class TiDBTLPBase extends TernaryLogicPartitioningOracleBase<TiD
     TiDBSelect select;
 
     public TiDBTLPBase(TiDBGlobalState state) {
-        this.state = state;
+        super(state);
         TiDBErrors.addExpressionErrors(errors);
     }
 

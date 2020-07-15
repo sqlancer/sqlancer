@@ -23,10 +23,8 @@ import sqlancer.duckdb.ast.DuckDBSelect;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator;
 import sqlancer.gen.ExpressionGenerator;
 
-public class DuckDBQueryPartitioningBase extends TernaryLogicPartitioningOracleBase<Node<DuckDBExpression>>
-        implements TestOracle {
-
-    final DuckDBGlobalState state;
+public class DuckDBQueryPartitioningBase
+        extends TernaryLogicPartitioningOracleBase<Node<DuckDBExpression>, DuckDBGlobalState> implements TestOracle {
 
     DuckDBSchema s;
     DuckDBTables targetTables;
@@ -34,7 +32,7 @@ public class DuckDBQueryPartitioningBase extends TernaryLogicPartitioningOracleB
     DuckDBSelect select;
 
     public DuckDBQueryPartitioningBase(DuckDBGlobalState state) {
-        this.state = state;
+        super(state);
         DuckDBErrors.addExpressionErrors(errors);
     }
 

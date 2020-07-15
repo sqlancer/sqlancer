@@ -22,9 +22,8 @@ import sqlancer.clickhouse.gen.ClickHouseCommon;
 import sqlancer.clickhouse.gen.ClickHouseExpressionGenerator;
 import sqlancer.gen.ExpressionGenerator;
 
-public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickHouseExpression> implements TestOracle {
-
-    final ClickHouseGlobalState state;
+public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickHouseExpression, ClickHouseGlobalState>
+        implements TestOracle {
 
     ClickHouseSchema s;
     ClickHouseTables targetTables;
@@ -32,7 +31,7 @@ public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickH
     ClickHouseSelect select;
 
     public ClickHouseTLPBase(ClickHouseGlobalState state) {
-        this.state = state;
+        super(state);
         ClickHouseErrors.addExpectedExpressionErrors(errors);
         ClickHouseErrors.addQueryErrors(errors);
     }

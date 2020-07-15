@@ -23,10 +23,8 @@ import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 import sqlancer.cockroachdb.oracle.CockroachDBNoRECOracle;
 import sqlancer.gen.ExpressionGenerator;
 
-public class CockroachDBTLPBase extends TernaryLogicPartitioningOracleBase<CockroachDBExpression>
-        implements TestOracle {
-
-    final CockroachDBGlobalState state;
+public class CockroachDBTLPBase extends
+        TernaryLogicPartitioningOracleBase<CockroachDBExpression, CockroachDBGlobalState> implements TestOracle {
 
     CockroachDBSchema s;
     CockroachDBTables targetTables;
@@ -34,7 +32,7 @@ public class CockroachDBTLPBase extends TernaryLogicPartitioningOracleBase<Cockr
     CockroachDBSelect select;
 
     public CockroachDBTLPBase(CockroachDBGlobalState state) {
-        this.state = state;
+        super(state);
         CockroachDBErrors.addExpressionErrors(errors);
     }
 
