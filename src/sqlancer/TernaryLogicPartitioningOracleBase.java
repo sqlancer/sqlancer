@@ -26,12 +26,16 @@ public abstract class TernaryLogicPartitioningOracleBase<E, S> implements TestOr
         this.state = state;
     }
 
+    protected E generatePredicate() {
+        return getGen().generatePredicate();
+    }
+
     protected void initializeTernaryPredicateVariants() {
         ExpressionGenerator<E> gen = getGen();
         if (gen == null) {
             throw new IllegalStateException();
         }
-        predicate = gen.generatePredicate();
+        predicate = generatePredicate();
         if (predicate == null) {
             throw new IllegalStateException();
         }

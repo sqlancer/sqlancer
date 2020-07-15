@@ -12,7 +12,6 @@ import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
-import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBDataType;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTables;
 import sqlancer.cockroachdb.ast.CockroachDBColumnReference;
@@ -62,10 +61,6 @@ public class CockroachDBTLPBase extends
                     .map(c -> new CockroachDBColumnReference(c)).collect(Collectors.toList()));
         }
         return columns;
-    }
-
-    CockroachDBExpression generatePredicate() {
-        return gen.generateExpression(CockroachDBDataType.BOOL.get());
     }
 
     @Override

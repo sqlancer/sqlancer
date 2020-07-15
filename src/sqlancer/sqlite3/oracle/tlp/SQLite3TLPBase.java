@@ -63,10 +63,6 @@ public class SQLite3TLPBase extends TernaryLogicPartitioningOracleBase<SQLite3Ex
         return columns;
     }
 
-    SQLite3Expression generatePredicate() {
-        return gen.generateExpression();
-    }
-
     @Override
     protected ExpressionGenerator<SQLite3Expression> getGen() {
         return gen;

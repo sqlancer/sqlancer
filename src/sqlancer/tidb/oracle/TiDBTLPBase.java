@@ -60,10 +60,6 @@ public abstract class TiDBTLPBase extends TernaryLogicPartitioningOracleBase<TiD
         return Arrays.asList(new TiDBColumnReference(targetTables.getColumns().get(0)));
     }
 
-    TiDBExpression generatePredicate() {
-        return gen.generateExpression();
-    }
-
     @Override
     protected ExpressionGenerator<TiDBExpression> getGen() {
         return gen;

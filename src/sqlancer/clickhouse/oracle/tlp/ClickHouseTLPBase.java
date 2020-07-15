@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import ru.yandex.clickhouse.domain.ClickHouseDataType;
 import sqlancer.Randomly;
 import sqlancer.TernaryLogicPartitioningOracleBase;
 import sqlancer.TestOracle;
@@ -57,10 +56,6 @@ public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickH
         columns = Randomly.nonEmptySubset(targetTables.getColumns()).stream()
                 .map(c -> new ClickHouseColumnReference(c, null)).collect(Collectors.toList());
         return columns;
-    }
-
-    ClickHouseExpression generatePredicate() {
-        return gen.generateExpression(new ClickHouseSchema.ClickHouseLancerDataType(ClickHouseDataType.UInt8));
     }
 
     @Override

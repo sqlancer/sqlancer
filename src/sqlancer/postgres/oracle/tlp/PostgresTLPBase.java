@@ -11,7 +11,6 @@ import sqlancer.TestOracle;
 import sqlancer.gen.ExpressionGenerator;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema;
-import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresSchema.PostgresTables;
 import sqlancer.postgres.ast.PostgresColumnValue;
@@ -63,10 +62,6 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
 
     List<PostgresExpression> generateFetchColumns() {
         return Arrays.asList(new PostgresColumnValue(targetTables.getColumns().get(0), null));
-    }
-
-    PostgresExpression generatePredicate() {
-        return gen.generateExpression(PostgresDataType.BOOLEAN);
     }
 
     @Override

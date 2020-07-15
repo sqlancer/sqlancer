@@ -48,7 +48,7 @@ public class TiDBTLPHavingOracle extends TiDBTLPBase implements TestOracle {
     }
 
     @Override
-    TiDBExpression generatePredicate() {
+    protected TiDBExpression generatePredicate() {
         return gen.generateHavingClause();
     }
 }

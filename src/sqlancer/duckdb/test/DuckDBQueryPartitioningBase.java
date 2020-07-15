@@ -64,10 +64,6 @@ public class DuckDBQueryPartitioningBase
         return columns;
     }
 
-    Node<DuckDBExpression> generatePredicate() {
-        return gen.generateExpression();
-    }
-
     @Override
     protected ExpressionGenerator<Node<DuckDBExpression>> getGen() {
         return gen;

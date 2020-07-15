@@ -53,10 +53,6 @@ public abstract class MySQLQueryPartitioningBase
         return Arrays.asList(MySQLColumnReference.create(targetTables.getColumns().get(0), null));
     }
 
-    MySQLExpression generatePredicate() {
-        return gen.generateExpression();
-    }
-
     @Override
     protected ExpressionGenerator<MySQLExpression> getGen() {
         return gen;
