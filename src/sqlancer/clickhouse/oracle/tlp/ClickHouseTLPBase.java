@@ -18,12 +18,9 @@ import sqlancer.clickhouse.ast.ClickHouseColumnReference;
 import sqlancer.clickhouse.ast.ClickHouseExpression;
 import sqlancer.clickhouse.ast.ClickHouseExpression.ClickHouseJoin;
 import sqlancer.clickhouse.ast.ClickHouseSelect;
-import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation;
-import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation.ClickHouseUnaryPostfixOperator;
-import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation;
-import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation.ClickHouseUnaryPrefixOperator;
 import sqlancer.clickhouse.gen.ClickHouseCommon;
 import sqlancer.clickhouse.gen.ClickHouseExpressionGenerator;
+import sqlancer.gen.ExpressionGenerator;
 
 public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickHouseExpression> implements TestOracle {
 
@@ -45,6 +42,7 @@ public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickH
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
         gen = new ClickHouseExpressionGenerator(state).setColumns(targetTables.getColumns());
+        initializeTernaryPredicateVariants();
         select = new ClickHouseSelect();
         select.setFetchColumns(generateFetchColumns());
         List<ClickHouseTable> tables = targetTables.getTables();
@@ -53,9 +51,6 @@ public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickH
         select.setJoinClauses(joinStatements.stream().collect(Collectors.toList()));
         select.setFromTables(tableRefs);
         select.setWhereClause(null);
-        predicate = generatePredicate();
-        negatedPredicate = new ClickHouseUnaryPrefixOperation(predicate, ClickHouseUnaryPrefixOperator.NOT);
-        isNullPredicate = new ClickHouseUnaryPostfixOperation(predicate, ClickHouseUnaryPostfixOperator.IS_NULL, false);
     }
 
     List<ClickHouseExpression> generateFetchColumns() {
@@ -67,6 +62,11 @@ public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickH
 
     ClickHouseExpression generatePredicate() {
         return gen.generateExpression(new ClickHouseSchema.ClickHouseLancerDataType(ClickHouseDataType.UInt8));
+    }
+
+    @Override
+    protected ExpressionGenerator<ClickHouseExpression> getGen() {
+        return gen;
     }
 
 }

@@ -8,16 +8,13 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.TernaryLogicPartitioningOracleBase;
 import sqlancer.TestOracle;
+import sqlancer.gen.ExpressionGenerator;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.ast.SQLite3Expression;
 import sqlancer.sqlite3.ast.SQLite3Expression.Join;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
 import sqlancer.sqlite3.ast.SQLite3Select;
-import sqlancer.sqlite3.ast.SQLite3UnaryOperation;
-import sqlancer.sqlite3.ast.SQLite3UnaryOperation.UnaryOperator;
 import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema;
@@ -45,6 +42,7 @@ public class SQLite3TLPBase extends TernaryLogicPartitioningOracleBase<SQLite3Ex
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
         gen = new SQLite3ExpressionGenerator(state).setColumns(targetTables.getColumns());
+        initializeTernaryPredicateVariants();
         select = new SQLite3Select();
         select.setFetchColumns(generateFetchColumns());
         List<SQLite3Table> tables = targetTables.getTables();
@@ -53,9 +51,6 @@ public class SQLite3TLPBase extends TernaryLogicPartitioningOracleBase<SQLite3Ex
         select.setJoinClauses(joinStatements.stream().collect(Collectors.toList()));
         select.setFromTables(tableRefs);
         select.setWhereClause(null);
-        predicate = generatePredicate();
-        negatedPredicate = new SQLite3UnaryOperation(UnaryOperator.NOT, predicate);
-        isNullPredicate = new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.ISNULL, predicate);
     }
 
     List<SQLite3Expression> generateFetchColumns() {
@@ -71,6 +66,11 @@ public class SQLite3TLPBase extends TernaryLogicPartitioningOracleBase<SQLite3Ex
 
     SQLite3Expression generatePredicate() {
         return gen.generateExpression();
+    }
+
+    @Override
+    protected ExpressionGenerator<SQLite3Expression> getGen() {
+        return gen;
     }
 
 }

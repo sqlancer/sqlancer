@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.TernaryLogicPartitioningOracleBase;
 import sqlancer.TestOracle;
+import sqlancer.gen.ExpressionGenerator;
 import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBExpressionGenerator;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
@@ -19,10 +20,6 @@ import sqlancer.tidb.ast.TiDBExpression;
 import sqlancer.tidb.ast.TiDBJoin;
 import sqlancer.tidb.ast.TiDBSelect;
 import sqlancer.tidb.ast.TiDBTableReference;
-import sqlancer.tidb.ast.TiDBUnaryPostfixOperation;
-import sqlancer.tidb.ast.TiDBUnaryPostfixOperation.TiDBUnaryPostfixOperator;
-import sqlancer.tidb.ast.TiDBUnaryPrefixOperation;
-import sqlancer.tidb.ast.TiDBUnaryPrefixOperation.TiDBUnaryPrefixOperator;
 import sqlancer.tidb.gen.TiDBHintGenerator;
 
 public abstract class TiDBTLPBase extends TernaryLogicPartitioningOracleBase<TiDBExpression> implements TestOracle {
@@ -44,6 +41,7 @@ public abstract class TiDBTLPBase extends TernaryLogicPartitioningOracleBase<TiD
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
         gen = new TiDBExpressionGenerator(state).setColumns(targetTables.getColumns());
+        initializeTernaryPredicateVariants();
         select = new TiDBSelect();
         select.setFetchColumns(generateFetchColumns());
         List<TiDBTable> tables = targetTables.getTables();
@@ -57,9 +55,6 @@ public abstract class TiDBTLPBase extends TernaryLogicPartitioningOracleBase<TiD
         select.setJoinList(joins);
         select.setFromList(tableList);
         select.setWhereClause(null);
-        predicate = generatePredicate();
-        negatedPredicate = new TiDBUnaryPrefixOperation(predicate, TiDBUnaryPrefixOperator.NOT);
-        isNullPredicate = new TiDBUnaryPostfixOperation(predicate, TiDBUnaryPostfixOperator.IS_NULL);
     }
 
     List<TiDBExpression> generateFetchColumns() {
@@ -68,6 +63,11 @@ public abstract class TiDBTLPBase extends TernaryLogicPartitioningOracleBase<TiD
 
     TiDBExpression generatePredicate() {
         return gen.generateExpression();
+    }
+
+    @Override
+    protected ExpressionGenerator<TiDBExpression> getGen() {
+        return gen;
     }
 
 }

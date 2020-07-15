@@ -9,8 +9,6 @@ import sqlancer.Randomly;
 import sqlancer.TernaryLogicPartitioningOracleBase;
 import sqlancer.TestOracle;
 import sqlancer.ast.newast.ColumnReferenceNode;
-import sqlancer.ast.newast.NewUnaryPostfixOperatorNode;
-import sqlancer.ast.newast.NewUnaryPrefixOperatorNode;
 import sqlancer.ast.newast.Node;
 import sqlancer.ast.newast.TableReferenceNode;
 import sqlancer.duckdb.DuckDBErrors;
@@ -23,8 +21,7 @@ import sqlancer.duckdb.ast.DuckDBExpression;
 import sqlancer.duckdb.ast.DuckDBJoin;
 import sqlancer.duckdb.ast.DuckDBSelect;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator;
-import sqlancer.duckdb.gen.DuckDBExpressionGenerator.DuckDBUnaryPostfixOperator;
-import sqlancer.duckdb.gen.DuckDBExpressionGenerator.DuckDBUnaryPrefixOperator;
+import sqlancer.gen.ExpressionGenerator;
 
 public class DuckDBQueryPartitioningBase extends TernaryLogicPartitioningOracleBase<Node<DuckDBExpression>>
         implements TestOracle {
@@ -46,6 +43,7 @@ public class DuckDBQueryPartitioningBase extends TernaryLogicPartitioningOracleB
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
         gen = new DuckDBExpressionGenerator(state).setColumns(targetTables.getColumns());
+        initializeTernaryPredicateVariants();
         select = new DuckDBSelect();
         select.setFetchColumns(generateFetchColumns());
         List<DuckDBTable> tables = targetTables.getTables();
@@ -55,9 +53,6 @@ public class DuckDBQueryPartitioningBase extends TernaryLogicPartitioningOracleB
         select.setJoinList(joins.stream().collect(Collectors.toList()));
         select.setFromList(tableList.stream().collect(Collectors.toList()));
         select.setWhereClause(null);
-        predicate = generatePredicate();
-        negatedPredicate = new NewUnaryPrefixOperatorNode<>(predicate, DuckDBUnaryPrefixOperator.NOT);
-        isNullPredicate = new NewUnaryPostfixOperatorNode<>(predicate, DuckDBUnaryPostfixOperator.IS_NULL);
     }
 
     List<Node<DuckDBExpression>> generateFetchColumns() {
@@ -73,6 +68,11 @@ public class DuckDBQueryPartitioningBase extends TernaryLogicPartitioningOracleB
 
     Node<DuckDBExpression> generatePredicate() {
         return gen.generateExpression();
+    }
+
+    @Override
+    protected ExpressionGenerator<Node<DuckDBExpression>> getGen() {
+        return gen;
     }
 
 }

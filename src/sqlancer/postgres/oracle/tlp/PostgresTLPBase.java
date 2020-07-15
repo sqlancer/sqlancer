@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.TernaryLogicPartitioningOracleBase;
 import sqlancer.TestOracle;
+import sqlancer.gen.ExpressionGenerator;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
@@ -16,9 +17,6 @@ import sqlancer.postgres.PostgresSchema.PostgresTables;
 import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresJoin;
-import sqlancer.postgres.ast.PostgresPostfixOperation;
-import sqlancer.postgres.ast.PostgresPostfixOperation.PostfixOperator;
-import sqlancer.postgres.ast.PostgresPrefixOperation;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.ForClause;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
@@ -58,9 +56,6 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
         select.setFromList(tableList);
         select.setWhereClause(null);
         select.setJoinClauses(joins);
-        predicate = generatePredicate();
-        negatedPredicate = new PostgresPrefixOperation(predicate, PostgresPrefixOperation.PrefixOperator.NOT);
-        isNullPredicate = new PostgresPostfixOperation(predicate, PostfixOperator.IS_NULL);
         if (Randomly.getBoolean()) {
             select.setForClause(ForClause.getRandom());
         }
@@ -72,6 +67,11 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
 
     PostgresExpression generatePredicate() {
         return gen.generateExpression(PostgresDataType.BOOLEAN);
+    }
+
+    @Override
+    protected ExpressionGenerator<PostgresExpression> getGen() {
+        return gen;
     }
 
 }

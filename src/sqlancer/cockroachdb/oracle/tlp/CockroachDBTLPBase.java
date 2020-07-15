@@ -17,13 +17,11 @@ import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTables;
 import sqlancer.cockroachdb.ast.CockroachDBColumnReference;
 import sqlancer.cockroachdb.ast.CockroachDBExpression;
-import sqlancer.cockroachdb.ast.CockroachDBNotOperation;
 import sqlancer.cockroachdb.ast.CockroachDBSelect;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
-import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation;
-import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnaryPostfixOperator;
 import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 import sqlancer.cockroachdb.oracle.CockroachDBNoRECOracle;
+import sqlancer.gen.ExpressionGenerator;
 
 public class CockroachDBTLPBase extends TernaryLogicPartitioningOracleBase<CockroachDBExpression>
         implements TestOracle {
@@ -45,6 +43,7 @@ public class CockroachDBTLPBase extends TernaryLogicPartitioningOracleBase<Cockr
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
         gen = new CockroachDBExpressionGenerator(state).setColumns(targetTables.getColumns());
+        initializeTernaryPredicateVariants();
         select = new CockroachDBSelect();
         select.setFetchColumns(generateFetchColumns());
         List<CockroachDBTable> tables = targetTables.getTables();
@@ -54,9 +53,6 @@ public class CockroachDBTLPBase extends TernaryLogicPartitioningOracleBase<Cockr
         select.setJoinList(joins);
         select.setFromList(tableList);
         select.setWhereClause(null);
-        predicate = generatePredicate();
-        negatedPredicate = new CockroachDBNotOperation(predicate);
-        isNullPredicate = new CockroachDBUnaryPostfixOperation(predicate, CockroachDBUnaryPostfixOperator.IS_NULL);
     }
 
     List<CockroachDBExpression> generateFetchColumns() {
@@ -72,6 +68,11 @@ public class CockroachDBTLPBase extends TernaryLogicPartitioningOracleBase<Cockr
 
     CockroachDBExpression generatePredicate() {
         return gen.generateExpression(CockroachDBDataType.BOOL.get());
+    }
+
+    @Override
+    protected ExpressionGenerator<CockroachDBExpression> getGen() {
+        return gen;
     }
 
 }
