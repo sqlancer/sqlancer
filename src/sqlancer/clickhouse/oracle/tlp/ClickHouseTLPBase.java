@@ -36,9 +36,6 @@ public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickH
     ClickHouseTables targetTables;
     ClickHouseExpressionGenerator gen;
     ClickHouseSelect select;
-    ClickHouseExpression predicate;
-    ClickHouseExpression negatedPredicate;
-    ClickHouseExpression isNullPredicate;
 
     public ClickHouseTLPBase(ClickHouseGlobalState state) {
         this.state = state;

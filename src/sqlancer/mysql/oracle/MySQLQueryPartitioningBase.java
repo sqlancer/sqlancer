@@ -33,9 +33,6 @@ public abstract class MySQLQueryPartitioningBase extends TernaryLogicPartitionin
     MySQLTables targetTables;
     MySQLExpressionGenerator gen;
     MySQLSelect select;
-    MySQLExpression predicate;
-    MySQLExpression negatedPredicate;
-    MySQLExpression isNullPredicate;
 
     public MySQLQueryPartitioningBase(MySQLGlobalState state) {
         this.state = state;

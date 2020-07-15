@@ -37,9 +37,6 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
     PostgresTables targetTables;
     PostgresExpressionGenerator gen;
     PostgresSelect select;
-    PostgresExpression predicate;
-    PostgresPrefixOperation negatedPredicate;
-    PostgresPostfixOperation isNullPredicate;
 
     public PostgresTLPBase(PostgresGlobalState state) {
         this.state = state;

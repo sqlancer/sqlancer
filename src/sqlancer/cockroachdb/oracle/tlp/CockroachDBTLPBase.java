@@ -37,9 +37,6 @@ public class CockroachDBTLPBase extends TernaryLogicPartitioningOracleBase<Cockr
     CockroachDBTables targetTables;
     CockroachDBExpressionGenerator gen;
     CockroachDBSelect select;
-    CockroachDBExpression predicate;
-    CockroachDBExpression negatedPredicate;
-    CockroachDBExpression isNullPredicate;
 
     public CockroachDBTLPBase(CockroachDBGlobalState state) {
         this.state = state;

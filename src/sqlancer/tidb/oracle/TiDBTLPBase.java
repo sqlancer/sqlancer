@@ -36,9 +36,6 @@ public abstract class TiDBTLPBase extends TernaryLogicPartitioningOracleBase<TiD
     TiDBTables targetTables;
     TiDBExpressionGenerator gen;
     TiDBSelect select;
-    TiDBExpression predicate;
-    TiDBExpression negatedPredicate;
-    TiDBExpression isNullPredicate;
 
     public TiDBTLPBase(TiDBGlobalState state) {
         this.state = state;

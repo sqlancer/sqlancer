@@ -36,9 +36,6 @@ public class SQLite3TLPBase extends TernaryLogicPartitioningOracleBase<SQLite3Ex
     SQLite3Tables targetTables;
     SQLite3ExpressionGenerator gen;
     SQLite3Select select;
-    SQLite3Expression predicate;
-    SQLite3Expression negatedPredicate;
-    SQLite3Expression isNullPredicate;
 
     public SQLite3TLPBase(SQLite3GlobalState state) {
         this.state = state;

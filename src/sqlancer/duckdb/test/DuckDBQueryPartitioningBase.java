@@ -38,9 +38,6 @@ public class DuckDBQueryPartitioningBase extends TernaryLogicPartitioningOracleB
     DuckDBTables targetTables;
     DuckDBExpressionGenerator gen;
     DuckDBSelect select;
-    Node<DuckDBExpression> predicate;
-    Node<DuckDBExpression> negatedPredicate;
-    Node<DuckDBExpression> isNullPredicate;
 
     public DuckDBQueryPartitioningBase(DuckDBGlobalState state) {
         this.state = state;

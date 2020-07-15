@@ -10,4 +10,11 @@ package sqlancer;
  */
 public abstract class TernaryLogicPartitioningOracleBase<E> {
 
+    protected E predicate;
+    protected E negatedPredicate;
+    protected E isNullPredicate;
+
+    protected TernaryLogicPartitioningOracleBase() {
+    }
+
 }
