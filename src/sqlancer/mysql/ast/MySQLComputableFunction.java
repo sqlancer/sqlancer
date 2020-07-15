@@ -43,7 +43,7 @@ public class MySQLComputableFunction implements MySQLExpression {
         BIT_COUNT(1, "BIT_COUNT") {
 
             @Override
-            public MySQLConstant apply(MySQLConstant[] evaluatedArgs, MySQLExpression[] args) {
+            public MySQLConstant apply(MySQLConstant[] evaluatedArgs, MySQLExpression... args) {
                 MySQLConstant arg = evaluatedArgs[0];
                 if (arg.isNull()) {
                     return MySQLConstant.createNullConstant();
@@ -74,7 +74,7 @@ public class MySQLComputableFunction implements MySQLExpression {
         COALESCE(2, "COALESCE") {
 
             @Override
-            public MySQLConstant apply(MySQLConstant[] args, MySQLExpression[] origArgs) {
+            public MySQLConstant apply(MySQLConstant[] args, MySQLExpression... origArgs) {
                 MySQLConstant result = MySQLConstant.createNullConstant();
                 for (MySQLConstant arg : args) {
                     if (!arg.isNull()) {
@@ -97,7 +97,7 @@ public class MySQLComputableFunction implements MySQLExpression {
         IF(3, "IF") {
 
             @Override
-            public MySQLConstant apply(MySQLConstant[] args, MySQLExpression[] origArgs) {
+            public MySQLConstant apply(MySQLConstant[] args, MySQLExpression... origArgs) {
                 MySQLConstant cond = args[0];
                 MySQLConstant left = args[1];
                 MySQLConstant right = args[2];
@@ -118,7 +118,7 @@ public class MySQLComputableFunction implements MySQLExpression {
         IFNULL(2, "IFNULL") {
 
             @Override
-            public MySQLConstant apply(MySQLConstant[] args, MySQLExpression[] origArgs) {
+            public MySQLConstant apply(MySQLConstant[] args, MySQLExpression... origArgs) {
                 MySQLConstant result;
                 if (args[0].isNull()) {
                     result = args[1];
@@ -132,14 +132,14 @@ public class MySQLComputableFunction implements MySQLExpression {
         LEAST(2, "LEAST", true) {
 
             @Override
-            public MySQLConstant apply(MySQLConstant[] evaluatedArgs, MySQLExpression[] args) {
+            public MySQLConstant apply(MySQLConstant[] evaluatedArgs, MySQLExpression... args) {
                 return aggregate(evaluatedArgs, (min, cur) -> cur.isLessThan(min).asBooleanNotNull() ? cur : min);
             }
 
         },
         GREATEST(2, "GREATEST", true) {
             @Override
-            public MySQLConstant apply(MySQLConstant[] evaluatedArgs, MySQLExpression[] args) {
+            public MySQLConstant apply(MySQLConstant[] evaluatedArgs, MySQLExpression... args) {
                 return aggregate(evaluatedArgs, (max, cur) -> cur.isLessThan(max).asBooleanNotNull() ? max : cur);
             }
         };
