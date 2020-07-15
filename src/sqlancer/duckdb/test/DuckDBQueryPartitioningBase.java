@@ -2,9 +2,7 @@ package sqlancer.duckdb.test;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
@@ -32,7 +30,6 @@ public class DuckDBQueryPartitioningBase extends TernaryLogicPartitioningOracleB
         implements TestOracle {
 
     final DuckDBGlobalState state;
-    final Set<String> errors = new HashSet<>();
 
     DuckDBSchema s;
     DuckDBTables targetTables;

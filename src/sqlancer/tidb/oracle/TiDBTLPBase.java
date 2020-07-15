@@ -2,9 +2,7 @@ package sqlancer.tidb.oracle;
 
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
@@ -30,7 +28,6 @@ import sqlancer.tidb.gen.TiDBHintGenerator;
 public abstract class TiDBTLPBase extends TernaryLogicPartitioningOracleBase<TiDBExpression> implements TestOracle {
 
     final TiDBGlobalState state;
-    final Set<String> errors = new HashSet<>();
 
     TiDBSchema s;
     TiDBTables targetTables;

@@ -1,11 +1,19 @@
 package sqlancer.clickhouse.oracle.tlp;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import ru.yandex.clickhouse.domain.ClickHouseDataType;
 import sqlancer.Randomly;
 import sqlancer.TernaryLogicPartitioningOracleBase;
 import sqlancer.TestOracle;
 import sqlancer.clickhouse.ClickHouseErrors;
 import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
+import sqlancer.clickhouse.ClickHouseSchema;
+import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTable;
+import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTables;
 import sqlancer.clickhouse.ast.ClickHouseColumnReference;
 import sqlancer.clickhouse.ast.ClickHouseExpression;
 import sqlancer.clickhouse.ast.ClickHouseExpression.ClickHouseJoin;
@@ -16,21 +24,10 @@ import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation.ClickHouseUnaryPrefixOperator;
 import sqlancer.clickhouse.gen.ClickHouseCommon;
 import sqlancer.clickhouse.gen.ClickHouseExpressionGenerator;
-import sqlancer.clickhouse.ClickHouseSchema;
-import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTable;
-import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTables;
-
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickHouseExpression> implements TestOracle {
 
     final ClickHouseGlobalState state;
-    final Set<String> errors = new HashSet<>();
 
     ClickHouseSchema s;
     ClickHouseTables targetTables;

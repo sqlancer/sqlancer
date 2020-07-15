@@ -2,9 +2,7 @@ package sqlancer.sqlite3.oracle.tlp;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
@@ -30,7 +28,6 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 public class SQLite3TLPBase extends TernaryLogicPartitioningOracleBase<SQLite3Expression> implements TestOracle {
 
     final SQLite3GlobalState state;
-    final Set<String> errors = new HashSet<>();
 
     SQLite3Schema s;
     SQLite3Tables targetTables;

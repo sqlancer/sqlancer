@@ -2,9 +2,7 @@ package sqlancer.mysql.oracle;
 
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.TernaryLogicPartitioningOracleBase;
@@ -27,7 +25,6 @@ public abstract class MySQLQueryPartitioningBase extends TernaryLogicPartitionin
         implements TestOracle {
 
     final MySQLGlobalState state;
-    final Set<String> errors = new HashSet<>();
 
     MySQLSchema s;
     MySQLTables targetTables;

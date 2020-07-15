@@ -1,5 +1,8 @@
 package sqlancer;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * This is the base class of the Ternary Logic Partitioning (TLP) oracles. The core idea of TLP is to partition a given
  * so-called original query to three so-called partitioning queries, each of which computes a partition of the original
@@ -13,6 +16,8 @@ public abstract class TernaryLogicPartitioningOracleBase<E> {
     protected E predicate;
     protected E negatedPredicate;
     protected E isNullPredicate;
+
+    protected final Set<String> errors = new HashSet<>();
 
     protected TernaryLogicPartitioningOracleBase() {
     }
