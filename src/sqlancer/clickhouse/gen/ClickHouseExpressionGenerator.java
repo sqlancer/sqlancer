@@ -1,12 +1,15 @@
 package sqlancer.clickhouse.gen;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import ru.yandex.clickhouse.domain.ClickHouseDataType;
 import sqlancer.Randomly;
 import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
 import sqlancer.clickhouse.ClickHouseSchema;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseColumn;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseLancerDataType;
-
 import sqlancer.clickhouse.ast.ClickHouseAggregate;
 import sqlancer.clickhouse.ast.ClickHouseBinaryComparisonOperation;
 import sqlancer.clickhouse.ast.ClickHouseBinaryLogicalOperation;
@@ -15,11 +18,9 @@ import sqlancer.clickhouse.ast.ClickHouseConstant;
 import sqlancer.clickhouse.ast.ClickHouseExpression;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation;
+import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation.ClickHouseUnaryPostfixOperator;
+import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation.ClickHouseUnaryPrefixOperator;
 import sqlancer.gen.TypedExpressionGenerator;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class ClickHouseExpressionGenerator
         extends TypedExpressionGenerator<ClickHouseExpression, ClickHouseColumn, ClickHouseLancerDataType> {
@@ -164,5 +165,20 @@ public class ClickHouseExpressionGenerator
                 .getAggregates(dataType);
         ClickHouseAggregate.ClickHouseAggregateFunction agg = Randomly.fromList(aggregates);
         return generateArgsForAggregate(dataType, agg);
+    }
+
+    @Override
+    public ClickHouseExpression generatePredicate() {
+        return generateExpression(new ClickHouseSchema.ClickHouseLancerDataType(ClickHouseDataType.UInt8));
+    }
+
+    @Override
+    public ClickHouseExpression negatePredicate(ClickHouseExpression predicate) {
+        return new ClickHouseUnaryPrefixOperation(predicate, ClickHouseUnaryPrefixOperator.NOT);
+    }
+
+    @Override
+    public ClickHouseExpression isNull(ClickHouseExpression expr) {
+        return new ClickHouseUnaryPostfixOperation(expr, ClickHouseUnaryPostfixOperator.IS_NULL, false);
     }
 }

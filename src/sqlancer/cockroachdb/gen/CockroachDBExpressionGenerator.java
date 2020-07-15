@@ -343,4 +343,19 @@ public class CockroachDBExpressionGenerator
         return columnReference;
     }
 
+    @Override
+    public CockroachDBExpression generatePredicate() {
+        return generateExpression(CockroachDBDataType.BOOL.get());
+    }
+
+    @Override
+    public CockroachDBExpression negatePredicate(CockroachDBExpression predicate) {
+        return new CockroachDBNotOperation(predicate);
+    }
+
+    @Override
+    public CockroachDBExpression isNull(CockroachDBExpression expr) {
+        return new CockroachDBUnaryPostfixOperation(expr, CockroachDBUnaryPostfixOperator.IS_NULL);
+    }
+
 }

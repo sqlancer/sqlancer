@@ -5,7 +5,7 @@ import java.util.List;
 
 import sqlancer.Randomly;
 
-public abstract class UntypedExpressionGenerator<E, C> {
+public abstract class UntypedExpressionGenerator<E, C> implements ExpressionGenerator<E> {
 
     protected List<C> columns;
     protected boolean allowAggregates;
@@ -61,6 +61,11 @@ public abstract class UntypedExpressionGenerator<E, C> {
         E expr = generateExpression();
         allowAggregates = false;
         return expr;
+    }
+
+    @Override
+    public E generatePredicate() {
+        return generateExpression();
     }
 
 }

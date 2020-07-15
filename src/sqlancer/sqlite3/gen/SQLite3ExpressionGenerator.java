@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.gen.ExpressionGenerator;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.ast.SQLite3Aggregate;
 import sqlancer.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
@@ -28,6 +29,7 @@ import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm.Ordering;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
 import sqlancer.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation.BinaryOperator;
@@ -43,7 +45,7 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequenc
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3RowValue;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
-public class SQLite3ExpressionGenerator {
+public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Expression> {
 
     private SQLite3RowValue rw;
     private final SQLite3GlobalState globalState;
@@ -638,6 +640,21 @@ public class SQLite3ExpressionGenerator {
     public SQLite3Expression getHavingClause() {
         allowAggreates = true;
         return generateExpression();
+    }
+
+    @Override
+    public SQLite3Expression generatePredicate() {
+        return generateExpression();
+    }
+
+    @Override
+    public SQLite3Expression negatePredicate(SQLite3Expression predicate) {
+        return new SQLite3UnaryOperation(UnaryOperator.NOT, predicate);
+    }
+
+    @Override
+    public SQLite3Expression isNull(SQLite3Expression expr) {
+        return new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.ISNULL, expr);
     }
 
 }

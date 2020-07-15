@@ -6,7 +6,7 @@ import java.util.List;
 
 import sqlancer.Randomly;
 
-public abstract class TypedExpressionGenerator<E, C, T> {
+public abstract class TypedExpressionGenerator<E, C, T> implements ExpressionGenerator<E> {
 
     protected List<C> columns = Collections.emptyList();
     protected boolean allowAggregates;
