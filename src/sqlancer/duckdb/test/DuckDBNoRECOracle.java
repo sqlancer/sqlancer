@@ -5,14 +5,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
-import sqlancer.Main.StateLogger;
-import sqlancer.MainOptions;
+import sqlancer.NoRECBase;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -36,38 +33,26 @@ import sqlancer.duckdb.ast.DuckDBSelect;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator.DuckDBCastOperation;
 
-public class DuckDBNoRECOracle implements TestOracle {
+public class DuckDBNoRECOracle extends NoRECBase<DuckDBGlobalState> implements TestOracle {
 
     private final DuckDBSchema s;
-    private final Connection con;
-    private String firstQueryString;
-    private String secondQueryString;
-    private final StateLogger logger;
-    private final MainOptions options;
-    private final Set<String> errors = new HashSet<>();
-    private final DuckDBGlobalState globalState;
 
     public DuckDBNoRECOracle(DuckDBGlobalState globalState) {
+        super(globalState);
         this.s = globalState.getSchema();
-        this.con = globalState.getConnection();
-        this.logger = globalState.getLogger();
-        this.options = globalState.getOptions();
-        this.globalState = globalState;
         DuckDBErrors.addExpressionErrors(errors);
     }
 
     @Override
     public void check() throws SQLException {
-        // DuckDBCommon.addCommonExpressionErrors(errors);
-        // DuckDBCommon.addCommonFetchErrors(errors);
         DuckDBTables randomTables = s.getRandomTableNonEmptyTables();
         List<DuckDBColumn> columns = randomTables.getColumns();
-        DuckDBExpressionGenerator gen = new DuckDBExpressionGenerator(globalState).setColumns(columns);
+        DuckDBExpressionGenerator gen = new DuckDBExpressionGenerator(state).setColumns(columns);
         Node<DuckDBExpression> randomWhereCondition = gen.generateExpression();
         List<DuckDBTable> tables = randomTables.getTables();
         List<TableReferenceNode<DuckDBExpression, DuckDBTable>> tableList = tables.stream()
                 .map(t -> new TableReferenceNode<DuckDBExpression, DuckDBTable>(t)).collect(Collectors.toList());
-        List<Node<DuckDBExpression>> joins = DuckDBJoin.getJoins(tableList, globalState);
+        List<Node<DuckDBExpression>> joins = DuckDBJoin.getJoins(tableList, state);
         int secondCount = getSecondQuery(tableList.stream().collect(Collectors.toList()), randomWhereCondition, joins);
         int firstCount = getFirstQueryCount(con, tableList.stream().collect(Collectors.toList()), columns,
                 randomWhereCondition, joins);
@@ -76,7 +61,7 @@ public class DuckDBNoRECOracle implements TestOracle {
         }
         if (firstCount != secondCount) {
             throw new AssertionError(
-                    firstQueryString + "; -- " + firstCount + "\n" + secondQueryString + " -- " + secondCount);
+                    optimizedQueryString + "; -- " + firstCount + "\n" + unoptimizedQueryString + " -- " + secondCount);
         }
     }
 
@@ -95,14 +80,14 @@ public class DuckDBNoRECOracle implements TestOracle {
         // select.setSelectType(SelectType.ALL);
         select.setJoinList(joins);
         int secondCount = 0;
-        secondQueryString = "SELECT SUM(count) FROM (" + DuckDBToStringVisitor.asString(select) + ") as res";
+        unoptimizedQueryString = "SELECT SUM(count) FROM (" + DuckDBToStringVisitor.asString(select) + ") as res";
         errors.add("canceling statement due to statement timeout");
-        Query q = new QueryAdapter(secondQueryString, errors);
+        Query q = new QueryAdapter(unoptimizedQueryString, errors);
         ResultSet rs;
         try {
-            rs = q.executeAndGetLogged(globalState);
+            rs = q.executeAndGetLogged(state);
         } catch (Exception e) {
-            throw new AssertionError(secondQueryString, e);
+            throw new AssertionError(unoptimizedQueryString, e);
         }
         if (rs == null) {
             return -1;
@@ -127,18 +112,17 @@ public class DuckDBNoRECOracle implements TestOracle {
         select.setFromList(tableList);
         select.setWhereClause(randomWhereCondition);
         if (Randomly.getBooleanWithSmallProbability()) {
-            select.setOrderByExpressions(
-                    new DuckDBExpressionGenerator(globalState).setColumns(columns).generateOrderBys());
+            select.setOrderByExpressions(new DuckDBExpressionGenerator(state).setColumns(columns).generateOrderBys());
         }
         // select.setSelectType(SelectType.ALL);
         select.setJoinList(joins);
         int firstCount = 0;
         try (Statement stat = con.createStatement()) {
-            firstQueryString = DuckDBToStringVisitor.asString(select);
+            optimizedQueryString = DuckDBToStringVisitor.asString(select);
             if (options.logEachSelect()) {
-                logger.writeCurrent(firstQueryString);
+                logger.writeCurrent(optimizedQueryString);
             }
-            try (ResultSet rs = stat.executeQuery(firstQueryString)) {
+            try (ResultSet rs = stat.executeQuery(optimizedQueryString)) {
                 while (rs.next()) {
                     firstCount++;
                 }

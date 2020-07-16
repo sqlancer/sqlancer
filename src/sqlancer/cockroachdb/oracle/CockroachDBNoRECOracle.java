@@ -4,13 +4,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
+import sqlancer.NoRECBase;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -30,31 +30,26 @@ import sqlancer.cockroachdb.ast.CockroachDBSelect;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 
-public class CockroachDBNoRECOracle implements TestOracle {
+public class CockroachDBNoRECOracle extends NoRECBase<CockroachDBGlobalState> implements TestOracle {
 
-    private final CockroachDBGlobalState globalState;
-    private final Set<String> errors = new HashSet<>();
-    private String optimizableQueryString;
-    private String unoptimizedQuery;
     private CockroachDBExpressionGenerator gen;
 
     public CockroachDBNoRECOracle(CockroachDBGlobalState globalState) {
-        this.globalState = globalState;
+        super(globalState);
         CockroachDBErrors.addExpressionErrors(errors);
         CockroachDBErrors.addTransactionErrors(errors);
         errors.add("unable to vectorize execution plan"); // SET vectorize=experimental_always;
         errors.add(" mismatched physical types at index"); // SET vectorize=experimental_always;
-
     }
 
     @Override
     public void check() throws SQLException {
-        CockroachDBTables tables = globalState.getSchema().getRandomTableNonEmptyTables();
+        CockroachDBTables tables = state.getSchema().getRandomTableNonEmptyTables();
         List<CockroachDBTableReference> tableL = tables.getTables().stream().map(t -> new CockroachDBTableReference(t))
                 .collect(Collectors.toList());
         List<CockroachDBExpression> tableList = CockroachDBCommon.getTableReferences(tableL);
-        gen = new CockroachDBExpressionGenerator(globalState).setColumns(tables.getColumns());
-        List<CockroachDBExpression> joinExpressions = getJoins(tableList, globalState);
+        gen = new CockroachDBExpressionGenerator(state).setColumns(tables.getColumns());
+        List<CockroachDBExpression> joinExpressions = getJoins(tableList, state);
         CockroachDBExpression whereCondition = gen.generateExpression(CockroachDBDataType.BOOL.get());
         int optimizableCount = getOptimizedResult(whereCondition, tableList, errors, joinExpressions);
         if (optimizableCount == -1) {
@@ -65,7 +60,7 @@ public class CockroachDBNoRECOracle implements TestOracle {
             throw new IgnoreMeException();
         }
         if (optimizableCount != nonOptimizableCount) {
-            globalState.getState().queryString = optimizableQueryString + ";\n" + unoptimizedQuery + ";";
+            state.getState().queryString = optimizedQueryString + ";\n" + unoptimizedQueryString + ";";
             throw new AssertionError(CockroachDBVisitor.asString(whereCondition));
         }
     }
@@ -114,12 +109,12 @@ public class CockroachDBNoRECOracle implements TestOracle {
             select.setOrderByExpressions(gen.getOrderingTerms());
         }
         String s = CockroachDBVisitor.asString(select);
-        if (globalState.getOptions().logEachSelect()) {
-            globalState.getLogger().writeCurrent(s);
+        if (state.getOptions().logEachSelect()) {
+            state.getLogger().writeCurrent(s);
         }
-        this.optimizableQueryString = s;
+        this.optimizedQueryString = s;
         Query q = new QueryAdapter(s, errors);
-        return getCount(globalState, q);
+        return getCount(state, q);
     }
 
     private int getNonOptimizedResult(CockroachDBExpression whereCondition, List<CockroachDBExpression> tableList,
@@ -132,12 +127,12 @@ public class CockroachDBNoRECOracle implements TestOracle {
         String s = "SELECT SUM(count) FROM (SELECT CAST(" + CockroachDBVisitor.asString(whereCondition)
                 + " IS TRUE AS INT) as count FROM " + fromString + " "
                 + joinList.stream().map(j -> CockroachDBVisitor.asString(j)).collect(Collectors.joining(", ")) + ")";
-        if (globalState.getOptions().logEachSelect()) {
-            globalState.getLogger().writeCurrent(s);
+        if (state.getOptions().logEachSelect()) {
+            state.getLogger().writeCurrent(s);
         }
-        this.unoptimizedQuery = s;
+        this.unoptimizedQueryString = s;
         Query q = new QueryAdapter(s, errors);
-        return getCount(globalState, q);
+        return getCount(state, q);
     }
 
     private int getCount(GlobalState<?, ?> globalState, Query q) throws AssertionError {

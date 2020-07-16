@@ -1,17 +1,14 @@
 package sqlancer.mariadb.oracle;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import sqlancer.IgnoreMeException;
+import sqlancer.NoRECBase;
 import sqlancer.QueryAdapter;
-import sqlancer.Randomly;
-import sqlancer.StateToReproduce;
 import sqlancer.TestOracle;
 import sqlancer.mariadb.MariaDBProvider.MariaDBGlobalState;
 import sqlancer.mariadb.MariaDBSchema;
@@ -30,24 +27,14 @@ import sqlancer.mariadb.ast.MariaDBText;
 import sqlancer.mariadb.ast.MariaDBVisitor;
 import sqlancer.mariadb.gen.MariaDBExpressionGenerator;
 
-public class MariaDBNoRECOracle implements TestOracle {
+public class MariaDBNoRECOracle extends NoRECBase<MariaDBGlobalState> implements TestOracle {
 
     private final MariaDBSchema s;
-    private final Randomly r;
-    private final Connection con;
-    private String firstQueryString;
-    private String secondQueryString;
-    private final List<String> errors = new ArrayList<>();
     private static final int NOT_FOUND = -1;
-    private final StateToReproduce state;
-    private final MariaDBGlobalState globalState;
 
     public MariaDBNoRECOracle(MariaDBGlobalState globalState) {
+        super(globalState);
         this.s = globalState.getSchema();
-        this.r = globalState.getRandomly();
-        this.con = globalState.getConnection();
-        this.state = globalState.getState();
-        this.globalState = globalState;
         errors.add("is out of range");
         // regex
         errors.add("unmatched parentheses");
@@ -66,8 +53,8 @@ public class MariaDBNoRECOracle implements TestOracle {
     public void check() throws SQLException {
         MariaDBTable randomTable = s.getRandomTable();
         List<MariaDBColumn> columns = randomTable.getColumns();
-        MariaDBExpressionGenerator gen = new MariaDBExpressionGenerator(r).setColumns(columns).setCon(con)
-                .setState(state);
+        MariaDBExpressionGenerator gen = new MariaDBExpressionGenerator(state.getRandomly()).setColumns(columns)
+                .setCon(con).setState(state.getState());
         MariaDBExpression randomWhereCondition = gen.getRandomExpression();
         List<MariaDBExpression> groupBys = Collections.emptyList(); // getRandomExpressions(columns);
         int optimizedCount = getOptimizedQuery(randomTable, randomWhereCondition, groupBys);
@@ -76,7 +63,7 @@ public class MariaDBNoRECOracle implements TestOracle {
             throw new IgnoreMeException();
         }
         if (optimizedCount != unoptimizedCount) {
-            state.queryString = firstQueryString + ";\n" + secondQueryString + ";";
+            state.getState().queryString = optimizedQueryString + ";\n" + unoptimizedQueryString + ";";
             throw new AssertionError(optimizedCount + " " + unoptimizedCount);
         }
     }
@@ -93,9 +80,9 @@ public class MariaDBNoRECOracle implements TestOracle {
         select.setSelectType(MariaDBSelectType.ALL);
         int secondCount = 0;
 
-        secondQueryString = "SELECT SUM(count) FROM (" + MariaDBVisitor.asString(select) + ") as asdf";
-        QueryAdapter q = new QueryAdapter(secondQueryString, errors);
-        try (ResultSet rs = q.executeAndGet(globalState)) {
+        unoptimizedQueryString = "SELECT SUM(count) FROM (" + MariaDBVisitor.asString(select) + ") as asdf";
+        QueryAdapter q = new QueryAdapter(unoptimizedQueryString, errors);
+        try (ResultSet rs = q.executeAndGet(state)) {
             if (rs == null) {
                 return NOT_FOUND;
             } else {
@@ -122,9 +109,9 @@ public class MariaDBNoRECOracle implements TestOracle {
         select.setWhereClause(randomWhereCondition);
         select.setSelectType(MariaDBSelectType.ALL);
         int firstCount = 0;
-        firstQueryString = MariaDBVisitor.asString(select);
-        QueryAdapter q = new QueryAdapter(firstQueryString, errors);
-        try (ResultSet rs = q.executeAndGet(globalState)) {
+        optimizedQueryString = MariaDBVisitor.asString(select);
+        QueryAdapter q = new QueryAdapter(optimizedQueryString, errors);
+        try (ResultSet rs = q.executeAndGet(state)) {
             if (rs == null) {
                 firstCount = NOT_FOUND;
             } else {
@@ -133,7 +120,7 @@ public class MariaDBNoRECOracle implements TestOracle {
                 rs.getStatement().close();
             }
         } catch (Exception e) {
-            throw new AssertionError(firstQueryString, e);
+            throw new AssertionError(optimizedQueryString, e);
         }
         return firstCount;
     }

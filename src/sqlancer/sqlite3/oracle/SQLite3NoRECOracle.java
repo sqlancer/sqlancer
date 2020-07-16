@@ -4,16 +4,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import sqlancer.IgnoreMeException;
-import sqlancer.Main.StateLogger;
-import sqlancer.MainOptions;
+import sqlancer.NoRECBase;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce.SQLite3StateToReproduce;
 import sqlancer.TestOracle;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
@@ -33,25 +29,15 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
-public class SQLite3NoRECOracle implements TestOracle {
+public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements TestOracle {
 
     private static final int NO_VALID_RESULT = -1;
     private final SQLite3Schema s;
-    private final SQLite3StateToReproduce state;
-    private final Set<String> errors = new HashSet<>();
-    private final StateLogger logger;
-    private final MainOptions options;
-    private final SQLite3GlobalState globalState;
     private SQLite3ExpressionGenerator gen;
-    private String firstQueryString;
-    private String secondQueryString;
 
     public SQLite3NoRECOracle(SQLite3GlobalState globalState) {
+        super(globalState);
         this.s = globalState.getSchema();
-        this.state = (SQLite3StateToReproduce) globalState.getState();
-        this.logger = globalState.getLogger();
-        this.options = globalState.getOptions();
-        this.globalState = globalState;
         SQLite3Errors.addExpectedExpressionErrors(errors);
         SQLite3Errors.addMatchQueryErrors(errors);
         SQLite3Errors.addQueryErrors(errors);
@@ -67,7 +53,7 @@ public class SQLite3NoRECOracle implements TestOracle {
     public void check() throws SQLException {
         SQLite3Tables randomTables = s.getRandomTableNonEmptyTables();
         List<SQLite3Column> columns = randomTables.getColumns();
-        gen = new SQLite3ExpressionGenerator(globalState).setColumns(columns);
+        gen = new SQLite3ExpressionGenerator(state).setColumns(columns);
         SQLite3Expression randomWhereCondition = gen.generateExpression();
         List<SQLite3Table> tables = randomTables.getTables();
         List<Join> joinStatements = gen.getRandomJoinClauses(tables);
@@ -82,7 +68,7 @@ public class SQLite3NoRECOracle implements TestOracle {
             throw new IgnoreMeException();
         }
         if (optimizedCount != unoptimizedCount) {
-            state.queryString = firstQueryString + ";\n" + secondQueryString + ";";
+            state.getState().queryString = optimizedQueryString + ";\n" + unoptimizedQueryString + ";";
             throw new AssertionError(optimizedCount + " " + unoptimizedCount);
         }
 
@@ -94,11 +80,11 @@ public class SQLite3NoRECOracle implements TestOracle {
         SQLite3PostfixText asText = new SQLite3PostfixText(isTrue, " as count", null);
         select.setFetchColumns(Arrays.asList(asText));
         select.setWhereClause(null);
-        secondQueryString = "SELECT SUM(count) FROM (" + SQLite3Visitor.asString(select) + ")";
+        unoptimizedQueryString = "SELECT SUM(count) FROM (" + SQLite3Visitor.asString(select) + ")";
         if (options.logEachSelect()) {
-            logger.writeCurrent(secondQueryString);
+            logger.writeCurrent(unoptimizedQueryString);
         }
-        QueryAdapter q = new QueryAdapter(secondQueryString, errors);
+        QueryAdapter q = new QueryAdapter(unoptimizedQueryString, errors);
         return extractCounts(q);
     }
 
@@ -115,17 +101,17 @@ public class SQLite3NoRECOracle implements TestOracle {
             select.setFetchColumns(Arrays.asList(aggr));
         }
         select.setWhereClause(randomWhereCondition);
-        firstQueryString = SQLite3Visitor.asString(select);
+        optimizedQueryString = SQLite3Visitor.asString(select);
         if (options.logEachSelect()) {
-            logger.writeCurrent(firstQueryString);
+            logger.writeCurrent(optimizedQueryString);
         }
-        QueryAdapter q = new QueryAdapter(firstQueryString, errors);
+        QueryAdapter q = new QueryAdapter(optimizedQueryString, errors);
         return useAggregate ? extractCounts(q) : countRows(q);
     }
 
     private int countRows(QueryAdapter q) {
         int count = 0;
-        try (ResultSet rs = q.executeAndGet(globalState)) {
+        try (ResultSet rs = q.executeAndGet(state)) {
             if (rs == null) {
                 return NO_VALID_RESULT;
             } else {
@@ -142,14 +128,14 @@ public class SQLite3NoRECOracle implements TestOracle {
             if (e instanceof IgnoreMeException) {
                 throw (IgnoreMeException) e;
             }
-            throw new AssertionError(secondQueryString, e);
+            throw new AssertionError(unoptimizedQueryString, e);
         }
         return count;
     }
 
     private int extractCounts(QueryAdapter q) {
         int count = 0;
-        try (ResultSet rs = q.executeAndGet(globalState)) {
+        try (ResultSet rs = q.executeAndGet(state)) {
             if (rs == null) {
                 return NO_VALID_RESULT;
             } else {
@@ -166,7 +152,7 @@ public class SQLite3NoRECOracle implements TestOracle {
             if (e instanceof IgnoreMeException) {
                 throw (IgnoreMeException) e;
             }
-            throw new AssertionError(secondQueryString, e);
+            throw new AssertionError(unoptimizedQueryString, e);
         }
         return count;
     }

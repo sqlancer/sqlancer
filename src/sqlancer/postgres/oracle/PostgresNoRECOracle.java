@@ -1,23 +1,18 @@
 package sqlancer.postgres.oracle;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
-import sqlancer.Main.StateLogger;
-import sqlancer.MainOptions;
+import sqlancer.NoRECBase;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce.PostgresStateToReproduce;
 import sqlancer.TestOracle;
 import sqlancer.postgres.PostgresCompoundDataType;
 import sqlancer.postgres.PostgresGlobalState;
@@ -39,39 +34,27 @@ import sqlancer.postgres.ast.PostgresSelect.SelectType;
 import sqlancer.postgres.gen.PostgresCommon;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
-public class PostgresNoRECOracle implements TestOracle {
+public class PostgresNoRECOracle extends NoRECBase<PostgresGlobalState> implements TestOracle {
 
     private final PostgresSchema s;
-    private final Connection con;
-    private final PostgresStateToReproduce state;
-    private String firstQueryString;
-    private String secondQueryString;
-    private final StateLogger logger;
-    private final MainOptions options;
-    private final Set<String> errors = new HashSet<>();
-    private final PostgresGlobalState globalState;
 
     public PostgresNoRECOracle(PostgresGlobalState globalState) {
+        super(globalState);
         this.s = globalState.getSchema();
-        this.con = globalState.getConnection();
-        this.state = (PostgresStateToReproduce) globalState.getState();
-        this.logger = globalState.getLogger();
-        this.options = globalState.getOptions();
-        this.globalState = globalState;
+        PostgresCommon.addCommonExpressionErrors(errors);
+        PostgresCommon.addCommonFetchErrors(errors);
     }
 
     @Override
     public void check() throws SQLException {
         // clear left-over query string from previous test
-        state.queryString = null;
-        PostgresCommon.addCommonExpressionErrors(errors);
-        PostgresCommon.addCommonFetchErrors(errors);
+        state.getState().queryString = null;
         PostgresTables randomTables = s.getRandomTableNonEmptyTables();
         List<PostgresColumn> columns = randomTables.getColumns();
         PostgresExpression randomWhereCondition = getRandomWhereCondition(columns);
         List<PostgresTable> tables = randomTables.getTables();
 
-        List<PostgresJoin> joinStatements = getJoinStatements(globalState, columns, tables);
+        List<PostgresJoin> joinStatements = getJoinStatements(state, columns, tables);
         List<PostgresExpression> fromTables = tables.stream().map(t -> new PostgresFromTable(t, Randomly.getBoolean()))
                 .collect(Collectors.toList());
         int secondCount = getUnoptimizedQueryCount(fromTables, randomWhereCondition, joinStatements);
@@ -81,9 +64,10 @@ public class PostgresNoRECOracle implements TestOracle {
         }
         if (firstCount != secondCount) {
             String queryFormatString = "-- %s;\n-- count: %d";
-            String firstQueryStringWithCount = String.format(queryFormatString, firstQueryString, firstCount);
-            String secondQueryStringWithCount = String.format(queryFormatString, secondQueryString, secondCount);
-            state.queryString = String.format("%s\n%s", firstQueryStringWithCount, secondQueryStringWithCount);
+            String firstQueryStringWithCount = String.format(queryFormatString, optimizedQueryString, firstCount);
+            String secondQueryStringWithCount = String.format(queryFormatString, unoptimizedQueryString, secondCount);
+            state.getState().queryString = String.format("%s\n%s", firstQueryStringWithCount,
+                    secondQueryStringWithCount);
             String assertionMessage = String.format("the counts mismatch (%d and %d)!\n%s\n%s", firstCount, secondCount,
                     firstQueryStringWithCount, secondQueryStringWithCount);
             throw new AssertionError(assertionMessage);
@@ -106,8 +90,7 @@ public class PostgresNoRECOracle implements TestOracle {
     }
 
     private PostgresExpression getRandomWhereCondition(List<PostgresColumn> columns) {
-        return new PostgresExpressionGenerator(globalState).setColumns(columns).setGlobalState(globalState)
-                .generateExpression(PostgresDataType.BOOLEAN);
+        return new PostgresExpressionGenerator(state).setColumns(columns).generateExpression(PostgresDataType.BOOLEAN);
     }
 
     private int getUnoptimizedQueryCount(List<PostgresExpression> fromTables, PostgresExpression randomWhereCondition,
@@ -121,17 +104,17 @@ public class PostgresNoRECOracle implements TestOracle {
         select.setSelectType(SelectType.ALL);
         select.setJoinClauses(joinStatements);
         int secondCount = 0;
-        secondQueryString = "SELECT SUM(count) FROM (" + PostgresVisitor.asString(select) + ") as res";
+        unoptimizedQueryString = "SELECT SUM(count) FROM (" + PostgresVisitor.asString(select) + ") as res";
         if (options.logEachSelect()) {
-            logger.writeCurrent(secondQueryString);
+            logger.writeCurrent(unoptimizedQueryString);
         }
         errors.add("canceling statement due to statement timeout");
-        Query q = new QueryAdapter(secondQueryString, errors);
+        Query q = new QueryAdapter(unoptimizedQueryString, errors);
         ResultSet rs;
         try {
-            rs = q.executeAndGet(globalState);
+            rs = q.executeAndGet(state);
         } catch (Exception e) {
-            throw new AssertionError(secondQueryString, e);
+            throw new AssertionError(unoptimizedQueryString, e);
         }
         if (rs == null) {
             return -1;
@@ -151,18 +134,17 @@ public class PostgresNoRECOracle implements TestOracle {
         select.setFromList(randomTables);
         select.setWhereClause(randomWhereCondition);
         if (Randomly.getBooleanWithSmallProbability()) {
-            select.setOrderByExpressions(new PostgresExpressionGenerator(globalState).setColumns(columns)
-                    .setGlobalState(globalState).generateOrderBy());
+            select.setOrderByExpressions(new PostgresExpressionGenerator(state).setColumns(columns).generateOrderBy());
         }
         select.setSelectType(SelectType.ALL);
         select.setJoinClauses(joinStatements);
         int firstCount = 0;
         try (Statement stat = con.createStatement()) {
-            firstQueryString = PostgresVisitor.asString(select);
+            optimizedQueryString = PostgresVisitor.asString(select);
             if (options.logEachSelect()) {
-                logger.writeCurrent(firstQueryString);
+                logger.writeCurrent(optimizedQueryString);
             }
-            try (ResultSet rs = stat.executeQuery(firstQueryString)) {
+            try (ResultSet rs = stat.executeQuery(optimizedQueryString)) {
                 while (rs.next()) {
                     firstCount++;
                 }
