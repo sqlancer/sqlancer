@@ -85,6 +85,9 @@ public class MainOptions {
     @Parameter(names = "--use-constant-caching", description = "Specifies whether constants should be cached and re-used with a certain probability")
     private boolean useConstantCaching = true; // NOPMD
 
+    @Parameter(names = "--use-connection-test", description = "Test whether the DBMS is accessible before trying to connect using multiple threads")
+    private boolean useConnectionTest = true; // NOPMD
+
     @Parameter(names = "--constant-cache-size", description = "Specifies the size of the constant cache. This option only takes effect when constant caching is enabled")
     private int constantCacheSize = 100; // NOPMD
 
@@ -202,6 +205,10 @@ public class MainOptions {
 
     public String getDatabasePrefix() {
         return databasePrefix;
+    }
+
+    public boolean performConnectionTest() {
+        return useConnectionTest;
     }
 
 }
