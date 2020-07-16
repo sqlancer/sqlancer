@@ -27,7 +27,6 @@ import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
-import sqlancer.QueryAdapter;
 
 public class PostgresPivotedQuerySynthesisOracle implements TestOracle {
 

@@ -74,8 +74,8 @@ public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestO
             if (secondResult.contains("Inf")) {
                 throw new IgnoreMeException(); // FIXME: average computation
             }
-            String assertionMessage = String.format("the results mismatch!\n%s\n%s",
-                    firstQueryString, secondQueryString);
+            String assertionMessage = String.format("the results mismatch!\n%s\n%s", firstQueryString,
+                    secondQueryString);
             throw new AssertionError(assertionMessage);
         }
 

@@ -84,7 +84,8 @@ public class PostgresNoRECOracle implements TestOracle {
             String firstQueryStringWithCount = String.format(queryFormatString, firstQueryString, firstCount);
             String secondQueryStringWithCount = String.format(queryFormatString, secondQueryString, secondCount);
             state.queryString = String.format("%s\n%s", firstQueryStringWithCount, secondQueryStringWithCount);
-            String assertionMessage = String.format("the counts mismatch (%d and %d)!\n%s\n%s", firstCount, secondCount, firstQueryStringWithCount, secondQueryStringWithCount);
+            String assertionMessage = String.format("the counts mismatch (%d and %d)!\n%s\n%s", firstCount, secondCount,
+                    firstQueryStringWithCount, secondQueryStringWithCount);
             throw new AssertionError(assertionMessage);
         }
     }
