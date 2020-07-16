@@ -48,7 +48,7 @@ public class PostgresTLPHavingOracle extends PostgresTLPBase {
     }
 
     @Override
-    PostgresExpression generatePredicate() {
+    protected PostgresExpression generatePredicate() {
         return gen.generateHavingClause();
     }
 

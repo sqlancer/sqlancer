@@ -47,7 +47,7 @@ public class CockroachDBTLPHavingOracle extends CockroachDBTLPBase {
     }
 
     @Override
-    CockroachDBExpression generatePredicate() {
+    protected CockroachDBExpression generatePredicate() {
         return gen.generateHavingClause();
     }
 

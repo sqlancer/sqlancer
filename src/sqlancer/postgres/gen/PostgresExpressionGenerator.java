@@ -577,7 +577,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
 
     @Override
     public PostgresExpression generatePredicate() {
-        return generateExpression(0);
+        return generateExpression(PostgresDataType.BOOLEAN);
     }
 
     @Override

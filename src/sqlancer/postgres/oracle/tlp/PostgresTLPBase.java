@@ -2,24 +2,20 @@ package sqlancer.postgres.oracle.tlp;
 
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.TernaryLogicPartitioningOracleBase;
 import sqlancer.TestOracle;
+import sqlancer.gen.ExpressionGenerator;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema;
-import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresSchema.PostgresTables;
 import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresJoin;
-import sqlancer.postgres.ast.PostgresPostfixOperation;
-import sqlancer.postgres.ast.PostgresPostfixOperation.PostfixOperator;
-import sqlancer.postgres.ast.PostgresPrefixOperation;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.ForClause;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
@@ -27,21 +23,16 @@ import sqlancer.postgres.gen.PostgresCommon;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 import sqlancer.postgres.oracle.PostgresNoRECOracle;
 
-public class PostgresTLPBase implements TestOracle {
-
-    final PostgresGlobalState state;
-    final Set<String> errors = new HashSet<>();
+public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<PostgresExpression, PostgresGlobalState>
+        implements TestOracle {
 
     PostgresSchema s;
     PostgresTables targetTables;
     PostgresExpressionGenerator gen;
     PostgresSelect select;
-    PostgresExpression predicate;
-    PostgresPrefixOperation negatedPredicate;
-    PostgresPostfixOperation isNullPredicate;
 
     public PostgresTLPBase(PostgresGlobalState state) {
-        this.state = state;
+        super(state);
         PostgresCommon.addCommonExpressionErrors(errors);
         PostgresCommon.addCommonFetchErrors(errors);
     }
@@ -53,6 +44,7 @@ public class PostgresTLPBase implements TestOracle {
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
         gen = new PostgresExpressionGenerator(state).setColumns(targetTables.getColumns());
+        initializeTernaryPredicateVariants();
         select = new PostgresSelect();
         select.setFetchColumns(generateFetchColumns());
         List<PostgresTable> tables = targetTables.getTables();
@@ -63,9 +55,6 @@ public class PostgresTLPBase implements TestOracle {
         select.setFromList(tableList);
         select.setWhereClause(null);
         select.setJoinClauses(joins);
-        predicate = generatePredicate();
-        negatedPredicate = new PostgresPrefixOperation(predicate, PostgresPrefixOperation.PrefixOperator.NOT);
-        isNullPredicate = new PostgresPostfixOperation(predicate, PostfixOperator.IS_NULL);
         if (Randomly.getBoolean()) {
             select.setForClause(ForClause.getRandom());
         }
@@ -75,8 +64,9 @@ public class PostgresTLPBase implements TestOracle {
         return Arrays.asList(new PostgresColumnValue(targetTables.getColumns().get(0), null));
     }
 
-    PostgresExpression generatePredicate() {
-        return gen.generateExpression(PostgresDataType.BOOLEAN);
+    @Override
+    protected ExpressionGenerator<PostgresExpression> getGen() {
+        return gen;
     }
 
 }
