@@ -62,6 +62,8 @@ public class PostgresNoRECOracle implements TestOracle {
 
     @Override
     public void check() throws SQLException {
+        // clear left-over query string from previous test
+        state.queryString = null;
         PostgresCommon.addCommonExpressionErrors(errors);
         PostgresCommon.addCommonFetchErrors(errors);
         PostgresTables randomTables = s.getRandomTableNonEmptyTables();
@@ -78,9 +80,13 @@ public class PostgresNoRECOracle implements TestOracle {
             throw new IgnoreMeException();
         }
         if (firstCount != secondCount) {
-            state.queryString = firstCount + " " + secondCount + " " + firstQueryString + ";\n" + secondQueryString
-                    + ";";
-            throw new AssertionError(firstQueryString + secondQueryString + firstCount + " " + secondCount);
+            String queryFormatString = "-- %s;\n-- count: %d";
+            String firstQueryStringWithCount = String.format(queryFormatString, firstQueryString, firstCount);
+            String secondQueryStringWithCount = String.format(queryFormatString, secondQueryString, secondCount);
+            state.queryString = String.format("%s\n%s", firstQueryStringWithCount, secondQueryStringWithCount);
+            String assertionMessage = String.format("the counts mismatch (%d and %d)!\n%s\n%s", firstCount, secondCount,
+                    firstQueryStringWithCount, secondQueryStringWithCount);
+            throw new AssertionError(assertionMessage);
         }
     }
 

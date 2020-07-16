@@ -20,6 +20,11 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 public class StateToReproduce {
 
     public final List<Query> statements = new ArrayList<>();
+
+    /**
+     * The string printed at the bottom of the error log file, which contains the queries that caused the test to fail
+     * and information about their results.
+     */
     public String queryString;
 
     private final String databaseName;

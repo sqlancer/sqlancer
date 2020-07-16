@@ -49,6 +49,8 @@ public class PostgresPivotedQuerySynthesisOracle implements TestOracle {
 
     @Override
     public void check() throws SQLException {
+        // clear left-over query string from previous test
+        state.queryString = null;
         String queryString = getQueryThatContainsAtLeastOneRow(state);
         state.queryString = queryString;
         if (options.logEachSelect()) {
@@ -57,7 +59,8 @@ public class PostgresPivotedQuerySynthesisOracle implements TestOracle {
 
         boolean isContainedIn = isContainedIn(queryString, options, logger);
         if (!isContainedIn) {
-            throw new AssertionError(queryString);
+            String assertionMessage = String.format("the query doesn't contain at least 1 row!\n-- %s;", queryString);
+            throw new AssertionError(assertionMessage);
         }
 
     }
@@ -173,7 +176,8 @@ public class PostgresPivotedQuerySynthesisOracle implements TestOracle {
             }
         }
         String resultingQueryString = sb.toString();
-        state.queryString = resultingQueryString;
+        // log both SELECT queries at the bottom of the error log file
+        state.queryString = String.format("-- %s;\n-- %s;", queryString, resultingQueryString);
         if (options.logEachSelect()) {
             logger.writeCurrent(resultingQueryString);
         }
