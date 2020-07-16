@@ -62,6 +62,8 @@ public class PostgresNoRECOracle implements TestOracle {
 
     @Override
     public void check() throws SQLException {
+        // clear left-over query string from previous test
+        state.queryString = null;
         PostgresCommon.addCommonExpressionErrors(errors);
         PostgresCommon.addCommonFetchErrors(errors);
         PostgresTables randomTables = s.getRandomTableNonEmptyTables();

@@ -50,6 +50,8 @@ public class PostgresPivotedQuerySynthesisOracle implements TestOracle {
 
     @Override
     public void check() throws SQLException {
+        // clear left-over query string from previous test
+        state.queryString = null;
         String queryString = getQueryThatContainsAtLeastOneRow(state);
         state.queryString = queryString;
         if (options.logEachSelect()) {
