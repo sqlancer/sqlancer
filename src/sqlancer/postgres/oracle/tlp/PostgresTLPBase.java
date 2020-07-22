@@ -13,12 +13,15 @@ import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresSchema.PostgresTables;
+import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresJoin;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.ForClause;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
+import sqlancer.postgres.ast.PostgresSelect.PostgresCTE;
+import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.gen.PostgresCommon;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 import sqlancer.postgres.oracle.PostgresNoRECOracle;
@@ -67,6 +70,36 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
     @Override
     protected ExpressionGenerator<PostgresExpression> getGen() {
         return gen;
+    }
+
+    public static PostgresCTE createCTE(PostgresGlobalState globalState, PostgresTables tables) {
+        PostgresExpressionGenerator gen = new PostgresExpressionGenerator(globalState).setColumns(tables.getColumns());
+        PostgresSelect selectCTE = new PostgresSelect();
+        selectCTE.setFromList(tables.getTables().stream().map(t -> new PostgresFromTable(t, Randomly.getBoolean()))
+                .collect(Collectors.toList()));
+        if (Randomly.getBoolean()) {
+            selectCTE.setWhereClause(gen.generateExpression(0, PostgresDataType.BOOLEAN));
+        }
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            selectCTE.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
+            if (Randomly.getBoolean()) {
+                selectCTE.setHavingClause(gen.generateHavingClause());
+            }
+        }
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            selectCTE.setOrderByExpressions(gen.generateOrderBy());
+        }
+        if (Randomly.getBoolean()) {
+            selectCTE.setLimitClause(PostgresConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
+            if (Randomly.getBoolean()) {
+                selectCTE.setOffsetClause(
+                        PostgresConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
+            }
+        }
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            selectCTE.setForClause(ForClause.getRandom());
+        }
+        return new PostgresCTE(selectCTE, "cte");
     }
 
 }
