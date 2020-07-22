@@ -8,7 +8,6 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
 import sqlancer.CompositeTestOracle;
-import sqlancer.MainOptions.DBMSConverter;
 import sqlancer.TestOracle;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.oracle.SQLite3Fuzzer;
@@ -70,7 +69,7 @@ public class SQLite3Options {
             "--test-distinct-in-view" }, description = "DISTINCT in views might cause occasional false positives in NoREC and TLP", arity = 1)
     public boolean testDistinctInView;
 
-    @Parameter(names = "--oracle", converter = DBMSConverter.class)
+    @Parameter(names = "--oracle")
     public SQLite3Oracle oracle = SQLite3Oracle.NoREC;
 
     @Parameter(names = {

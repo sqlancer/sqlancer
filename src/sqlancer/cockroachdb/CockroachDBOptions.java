@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
-import sqlancer.MainOptions.DBMSConverter;
 import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.oracle.CockroachDBNoRECOracle;
@@ -21,7 +20,7 @@ import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPWhereOracle;
 @Parameters(separators = "=", commandDescription = "Test CockroachDB")
 public class CockroachDBOptions {
 
-    @Parameter(names = "--oracle", converter = DBMSConverter.class)
+    @Parameter(names = "--oracle")
     public CockroachDBOracle oracle = CockroachDBOracle.NOREC;
 
     public enum CockroachDBOracle {
