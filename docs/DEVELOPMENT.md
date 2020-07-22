@@ -62,3 +62,12 @@ We found that bugs in SQLancer are quickly found and easy to debug when testing 
 ## Naming Conventions
 
 Each class specific to a DBMS is prefixed by the DBMS name. For example, each class specific to SQLite is prefixed by `SQLite3`. The naming convention is [automatically checked](src/check_names.py).
+
+## Commit History
+
+Please pay attention to good commit messages (in particular subject lines). As basic guidelines, we recommend a blog post on [How to Write a Git Commit Message](https://chris.beams.io/posts/git-commit/) written Chris Beams, which provides 7 useful rules. Implement at least the following of those rules:
+1. Capitalize the subject line. For example, write "**R**efactor the handling of indexes" rather than "**r**efactor the handling of indexes".
+2. Do not end the subject line with a period. For example, write "Refactor the handling of indexes" rather than "Refactor the handling of indexes.".
+3. Use the imperative mood in the subject line. For example, write "Refactor the handling of indexes" rather than "Refactoring" or "Refactor**ed** the handling of indexes".
+
+Please also pay attention to a clean commit history. Rather than merging with the main branch, use `git rebase` to rebase your commits on the main branch. Sometimes, it might happen that you discover an issue only after having already created a commit, for example, when an issue is found by `mvn verify` in the Travis CI. Do not introduce a separate commit for such issues. If the issue was introduced by the last commit, you can fix the issue, and use `git commit --amend` to change the latest commit. If the change was introduced by one of the previous commits, you can use `git rebase -i` to change the respective commit. If you already have a number of such commits, you can use `git squash` to "collapse" multiple commits into one. For more information, you might want to read [How (and Why!) to Keep Your Git Commit History Clean](https://about.gitlab.com/blog/2018/06/07/keeping-git-commit-history-clean/) written by Kushal Pandya.
