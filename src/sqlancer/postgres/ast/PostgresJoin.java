@@ -3,6 +3,7 @@ package sqlancer.postgres.ast;
 import sqlancer.Randomly;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
+import sqlancer.postgres.ast.PostgresSelect.PostgresCTE;
 
 public class PostgresJoin implements PostgresExpression {
 
@@ -18,6 +19,7 @@ public class PostgresJoin implements PostgresExpression {
     private final PostgresTable table;
     private final PostgresExpression onClause;
     private final PostgresJoinType type;
+    private PostgresCTE CTE = null;
 
     public PostgresJoin(PostgresTable table, PostgresExpression onClause, PostgresJoinType type) {
         this.table = table;
@@ -25,8 +27,23 @@ public class PostgresJoin implements PostgresExpression {
         this.type = type;
     }
 
+    public PostgresJoin(PostgresCTE CTE, PostgresExpression onClause, PostgresJoinType type) {
+        this.CTE = CTE;
+        this.onClause = onClause;
+        this.type = type;
+        this.table = null;
+    }
+
     public PostgresTable getTable() {
         return table;
+    }
+
+    public PostgresCTE getCTE() {
+        return CTE;
+    }
+
+    public boolean joinCTE() {
+        return (CTE != null);
     }
 
     public PostgresExpression getOnClause() {
