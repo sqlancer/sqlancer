@@ -71,7 +71,8 @@ public class SQLite3InsertGenerator {
             sb.append(fromOptions);
         }
         boolean defaultValues = false;
-        sb.append("INTO " + table.getName());
+        sb.append("INTO ");
+        sb.append(table.getName());
         List<SQLite3Column> cols = table.getRandomNonEmptyColumnSubset();
         if (cols.size() != table.getColumns().size() || Randomly.getBoolean()) {
             sb.append("(");

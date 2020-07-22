@@ -34,7 +34,8 @@ public class AbstractTable<C extends AbstractTableColumn<?, ?>, I extends TableI
     @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
-        sb.append(getName() + "\n");
+        sb.append(getName());
+        sb.append("\n");
         for (C c : columns) {
             sb.append("\t" + c + "\n");
         }

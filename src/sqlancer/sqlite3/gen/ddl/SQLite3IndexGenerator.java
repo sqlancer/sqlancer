@@ -72,9 +72,10 @@ public class SQLite3IndexGenerator {
         if (Randomly.getBoolean()) {
             sb.append(" IF NOT EXISTS");
         }
-        sb.append(" " + SQLite3Common.getFreeIndexName(globalState.getSchema()));
-        sb.append(" ON");
-        sb.append(" " + t.getName());
+        sb.append(" ");
+        sb.append(SQLite3Common.getFreeIndexName(globalState.getSchema()));
+        sb.append(" ON ");
+        sb.append(t.getName());
         sb.append("(");
         for (int i = 0; i < columns.size(); i++) {
             if (i != 0) {

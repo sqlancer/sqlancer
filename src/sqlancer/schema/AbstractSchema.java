@@ -19,7 +19,8 @@ public class AbstractSchema<A extends AbstractTable<?, ?>> {
     public String toString() {
         StringBuffer sb = new StringBuffer();
         for (A t : getDatabaseTables()) {
-            sb.append(t + "\n");
+            sb.append(t);
+            sb.append("\n");
         }
         return sb.toString();
     }

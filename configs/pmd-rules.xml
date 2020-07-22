@@ -76,7 +76,6 @@
 		<exclude name="AppendCharacterWithChar" />
 		<exclude name="ConsecutiveLiteralAppends" />
 		<exclude name="AvoidInstantiatingObjectsInLoops" />
-		<exclude name="InefficientStringBuffering" />
 		<exclude name="InsufficientStringBufferDeclaration" />
 		<exclude name="ConsecutiveAppendsShouldReuse" />
 		<exclude name="UseStringBufferForStringAppends" />

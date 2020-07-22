@@ -72,8 +72,8 @@ public class SQLite3TableGenerator {
         if (Randomly.getBoolean()) {
             sb.append("IF NOT EXISTS ");
         }
-        sb.append(tableName + " ");
-        sb.append("(");
+        sb.append(tableName);
+        sb.append(" (");
         boolean allowPrimaryKeyInColumn = Randomly.getBoolean();
         int nrColumns = 1 + Randomly.smallNumber();
         for (int i = 0; i < nrColumns; i++) {

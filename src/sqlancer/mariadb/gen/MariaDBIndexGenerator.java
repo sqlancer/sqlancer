@@ -26,7 +26,8 @@ public final class MariaDBIndexGenerator {
             sb.append("UNIQUE ");
         }
         sb.append("INDEX ");
-        sb.append("i" + SQLite3Common.createColumnName(Randomly.smallNumber()));
+        sb.append("i");
+        sb.append(SQLite3Common.createColumnName(Randomly.smallNumber()));
         if (Randomly.getBoolean()) {
             sb.append(" USING ");
             sb.append(Randomly.fromOptions("BTREE", "HASH")); // , "RTREE")

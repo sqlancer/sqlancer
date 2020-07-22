@@ -24,8 +24,8 @@ public final class CockroachDBShowGenerator {
         StringBuilder sb = new StringBuilder();
         switch (Randomly.fromOptions(Option.values())) {
         case EXPERIMENTAL_FINGERPRINTS:
-            sb.append("SHOW EXPERIMENTAL_FINGERPRINTS FROM TABLE "
-                    + globalState.getSchema().getRandomTable(t -> !t.isView()).getName());
+            sb.append("SHOW EXPERIMENTAL_FINGERPRINTS FROM TABLE ");
+            sb.append(globalState.getSchema().getRandomTable(t -> !t.isView()).getName());
             errors.add("as type bytes: bytea encoded value ends with incomplete escape sequence");
             errors.add("invalid bytea escape sequence");
             break;
@@ -36,7 +36,8 @@ public final class CockroachDBShowGenerator {
             sb.append("SHOW JOBS");
             break;
         case RANGES:
-            sb.append("SHOW RANGES FROM TABLE " + globalState.getSchema().getRandomTable(t -> !t.isView()).getName());
+            sb.append("SHOW RANGES FROM TABLE ");
+            sb.append(globalState.getSchema().getRandomTable(t -> !t.isView()).getName());
             break;
         case LOCALITY:
             sb.append("SHOW LOCALITY");

@@ -31,7 +31,8 @@ public class MySQLExpectedValueVisitor implements MySQLVisitor {
             sb.append("\t");
         }
         sb.append(v.get());
-        sb.append(" -- " + expr.getExpectedValue());
+        sb.append(" -- ");
+        sb.append(expr.getExpectedValue());
         sb.append("\n");
     }
 

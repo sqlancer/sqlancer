@@ -205,9 +205,12 @@ public class MariaDBSchema {
         @Override
         public String toString() {
             StringBuffer sb = new StringBuffer();
-            sb.append(tableName + "\n");
+            sb.append(tableName);
+            sb.append("\n");
             for (MariaDBColumn c : columns) {
-                sb.append("\t" + c + "\n");
+                sb.append("\t");
+                sb.append(c);
+                sb.append("\n");
             }
             return sb.toString();
         }
@@ -359,7 +362,8 @@ public class MariaDBSchema {
     public String toString() {
         StringBuffer sb = new StringBuffer();
         for (MariaDBTable t : getDatabaseTables()) {
-            sb.append(t + "\n");
+            sb.append(t);
+            sb.append("\n");
         }
         return sb.toString();
     }

@@ -344,7 +344,8 @@ public class PostgresAlterTableGenerator {
                 if (Randomly.getBoolean() || randomTable.getIndexes().isEmpty()) {
                     sb.append(Randomly.fromOptions("DEFAULT", "FULL", "NOTHING"));
                 } else {
-                    sb.append("USING INDEX " + randomTable.getRandomIndex().getIndexName());
+                    sb.append("USING INDEX ");
+                    sb.append(randomTable.getRandomIndex().getIndexName());
                     errors.add("cannot be used as replica identity");
                     errors.add("cannot use non-unique index");
                     errors.add("cannot use expression index");

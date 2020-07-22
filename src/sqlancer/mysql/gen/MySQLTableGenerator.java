@@ -50,7 +50,8 @@ public class MySQLTableGenerator {
         if (Randomly.getBoolean()) {
             sb.append(" IF NOT EXISTS");
         }
-        sb.append(" " + tableName);
+        sb.append(" ");
+        sb.append(tableName);
         if (Randomly.getBoolean() && !schema.getDatabaseTables().isEmpty()) {
             sb.append(" LIKE ");
             sb.append(schema.getRandomTable().getName());
@@ -167,10 +168,12 @@ public class MySQLTableGenerator {
             }
             switch (o) {
             case AUTO_INCREMENT:
-                sb.append("AUTO_INCREMENT = " + r.getPositiveInteger());
+                sb.append("AUTO_INCREMENT = ");
+                sb.append(r.getPositiveInteger());
                 break;
             case AVG_ROW_LENGTH:
-                sb.append("AVG_ROW_LENGTH = " + r.getPositiveInteger());
+                sb.append("AVG_ROW_LENGTH = ");
+                sb.append(r.getPositiveInteger());
                 break;
             case CHECKSUM:
                 sb.append("CHECKSUM = 1");
@@ -192,7 +195,8 @@ public class MySQLTableGenerator {
                 // "MERGE": java.sql.SQLException: Table 't0' is read only
                 String fromOptions = Randomly.fromOptions("InnoDB", "MyISAM", "MEMORY", "HEAP", "CSV", "ARCHIVE");
                 this.engine = MySQLEngine.get(fromOptions);
-                sb.append("ENGINE = " + fromOptions);
+                sb.append("ENGINE = ");
+                sb.append(fromOptions);
                 break;
             // case ENCRYPTION:
             // sb.append("ENCRYPTION = '");
@@ -208,22 +212,28 @@ public class MySQLTableGenerator {
                 sb.append(r.getPositiveInteger());
                 break;
             case MAX_ROWS:
-                sb.append("MAX_ROWS = " + r.getLong(0, Long.MAX_VALUE));
+                sb.append("MAX_ROWS = ");
+                sb.append(r.getLong(0, Long.MAX_VALUE));
                 break;
             case MIN_ROWS:
-                sb.append("MIN_ROWS = " + r.getLong(1, Long.MAX_VALUE));
+                sb.append("MIN_ROWS = ");
+                sb.append(r.getLong(1, Long.MAX_VALUE));
                 break;
             case PACK_KEYS:
-                sb.append("PACK_KEYS = " + Randomly.fromOptions("1", "0", "DEFAULT"));
+                sb.append("PACK_KEYS = ");
+                sb.append(Randomly.fromOptions("1", "0", "DEFAULT"));
                 break;
             case STATS_AUTO_RECALC:
-                sb.append("STATS_AUTO_RECALC = " + Randomly.fromOptions("1", "0", "DEFAULT"));
+                sb.append("STATS_AUTO_RECALC = ");
+                sb.append(Randomly.fromOptions("1", "0", "DEFAULT"));
                 break;
             case STATS_PERSISTENT:
-                sb.append("STATS_PERSISTENT = " + Randomly.fromOptions("1", "0", "DEFAULT"));
+                sb.append("STATS_PERSISTENT = ");
+                sb.append(Randomly.fromOptions("1", "0", "DEFAULT"));
                 break;
             case STATS_SAMPLE_PAGES:
-                sb.append("STATS_SAMPLE_PAGES = " + r.getInteger(1, Short.MAX_VALUE));
+                sb.append("STATS_SAMPLE_PAGES = ");
+                sb.append(r.getInteger(1, Short.MAX_VALUE));
                 break;
             default:
                 throw new AssertionError(o);
