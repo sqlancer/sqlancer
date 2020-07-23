@@ -13,7 +13,6 @@ import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.ProviderAdapter;
 import sqlancer.Query;
-import sqlancer.QueryAdapter;
 import sqlancer.QueryProvider;
 import sqlancer.Randomly;
 import sqlancer.StatementExecutor;
@@ -124,9 +123,9 @@ public class ClickHouseProvider extends ProviderAdapter<ClickHouseGlobalState, C
         Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
                 globalState.getOptions().getPassword());
         String dropDatabaseCommand = "DROP DATABASE IF EXISTS " + databaseName;
-        globalState.getState().statements.add(new QueryAdapter(dropDatabaseCommand));
+        globalState.getState().logStatement(dropDatabaseCommand);
         String createDatabaseCommand = "CREATE DATABASE IF NOT EXISTS " + databaseName;
-        globalState.getState().statements.add(new QueryAdapter(createDatabaseCommand));
+        globalState.getState().logStatement(createDatabaseCommand);
         try (Statement s = con.createStatement()) {
             s.execute(dropDatabaseCommand);
             Thread.sleep(1000);

@@ -259,11 +259,11 @@ public class CockroachDBProvider extends ProviderAdapter<CockroachDBGlobalState,
         String url = "jdbc:postgresql://localhost:26257/test";
         Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
                 globalState.getOptions().getPassword());
-        globalState.getState().statements.add(new QueryAdapter("USE test"));
-        globalState.getState().statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName + " CASCADE"));
+        globalState.getState().logStatement("USE test");
+        globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName + " CASCADE");
         String createDatabaseCommand = "CREATE DATABASE " + databaseName;
-        globalState.getState().statements.add(new QueryAdapter(createDatabaseCommand));
-        globalState.getState().statements.add(new QueryAdapter("USE " + databaseName));
+        globalState.getState().logStatement(createDatabaseCommand);
+        globalState.getState().logStatement("USE " + databaseName);
         try (Statement s = con.createStatement()) {
             s.execute("DROP DATABASE IF EXISTS " + databaseName);
         }

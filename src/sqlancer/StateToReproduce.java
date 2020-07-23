@@ -1,6 +1,7 @@
 package sqlancer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -19,7 +20,7 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 
 public class StateToReproduce {
 
-    public final List<Query> statements = new ArrayList<>();
+    private final List<Query> statements = new ArrayList<>();
 
     /**
      * The string printed at the bottom of the error log file, which contains the queries that caused the test to fail
@@ -57,8 +58,34 @@ public class StateToReproduce {
         return databaseVersion;
     }
 
+    /**
+     * Logs the statement string without executing the corresponding statement.
+     *
+     * @param queryString
+     *            the query string to be logged
+     */
+    public void logStatement(String queryString) {
+        if (queryString == null) {
+            throw new IllegalArgumentException();
+        }
+        logStatement(new QueryAdapter(queryString));
+    }
+
+    /**
+     * Logs the statement without executing it.
+     *
+     * @param query
+     *            the query to be logged
+     */
+    public void logStatement(Query query) {
+        if (query == null) {
+            throw new IllegalArgumentException();
+        }
+        statements.add(query);
+    }
+
     public List<Query> getStatements() {
-        return statements;
+        return Collections.unmodifiableList(statements);
     }
 
     public String getQueryString() {

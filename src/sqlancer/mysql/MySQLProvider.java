@@ -176,9 +176,9 @@ public class MySQLProvider extends ProviderAdapter<MySQLGlobalState, MySQLOption
     @Override
     public Connection createDatabase(MySQLGlobalState globalState) throws SQLException {
         String databaseName = globalState.getDatabaseName();
-        globalState.getState().statements.add(new QueryAdapter("DROP DATABASE IF EXISTS " + databaseName));
-        globalState.getState().statements.add(new QueryAdapter("CREATE DATABASE " + databaseName));
-        globalState.getState().statements.add(new QueryAdapter("USE " + databaseName));
+        globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
+        globalState.getState().logStatement("CREATE DATABASE " + databaseName);
+        globalState.getState().logStatement("USE " + databaseName);
         String url = "jdbc:mysql://localhost:3306/?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true";
         Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
                 globalState.getOptions().getPassword());

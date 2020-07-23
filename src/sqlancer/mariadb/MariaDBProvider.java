@@ -12,7 +12,6 @@ import sqlancer.IgnoreMeException;
 import sqlancer.MainOptions;
 import sqlancer.ProviderAdapter;
 import sqlancer.Query;
-import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.TestOracle;
 import sqlancer.mariadb.MariaDBProvider.MariaDBGlobalState;
@@ -171,10 +170,9 @@ public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDB
 
     @Override
     public Connection createDatabase(MariaDBGlobalState globalState) throws SQLException {
-        globalState.getState().statements
-                .add(new QueryAdapter("DROP DATABASE IF EXISTS " + globalState.getDatabaseName()));
-        globalState.getState().statements.add(new QueryAdapter("CREATE DATABASE " + globalState.getDatabaseName()));
-        globalState.getState().statements.add(new QueryAdapter("USE " + globalState.getDatabaseName()));
+        globalState.getState().logStatement("DROP DATABASE IF EXISTS " + globalState.getDatabaseName());
+        globalState.getState().logStatement("CREATE DATABASE " + globalState.getDatabaseName());
+        globalState.getState().logStatement("USE " + globalState.getDatabaseName());
         // /?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
         String url = "jdbc:mariadb://localhost:3306";
         Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
