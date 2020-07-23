@@ -19,6 +19,7 @@ import sqlancer.Randomly;
 import sqlancer.StatementExecutor;
 import sqlancer.TestOracle;
 import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
+import sqlancer.clickhouse.gen.ClickHouseCommon;
 import sqlancer.clickhouse.gen.ClickHouseInsertGenerator;
 import sqlancer.clickhouse.gen.ClickHouseTableGenerator;
 
@@ -87,7 +88,8 @@ public class ClickHouseProvider extends ProviderAdapter<ClickHouseGlobalState, C
         for (int i = 0; i < Randomly.fromOptions(1); i++) {
             boolean success;
             do {
-                Query qt = new ClickHouseTableGenerator().getQuery(globalState);
+                String tableName = ClickHouseCommon.createTableName(i);
+                Query qt = ClickHouseTableGenerator.createTableStatement(tableName, globalState);
                 success = globalState.executeStatement(qt);
             } while (!success);
         }

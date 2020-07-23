@@ -34,6 +34,7 @@ public final class ClickHouseErrors {
         errors.add("doesn't exist"); // TODO: consecutive test runs can lead to dropped database
         errors.add("is not under aggregate function");
         errors.add("Invalid type for filter in");
+        errors.add("argument of function");
     }
 
     public static void addExpressionHavingErrors(Set<String> errors) {
@@ -47,4 +48,17 @@ public final class ClickHouseErrors {
     public static void addGroupingErrors(Set<String> errors) {
         errors.add("Memory limit");
     }
+
+    public static void addTableManipulationErrors(Set<String> errors) {
+        errors.add("Memory limit");
+        errors.add("Directory for table data");
+        errors.add("Directory not empty");
+        errors.add("Partition key cannot contain constants");
+        errors.add("Cannot convert string");
+        errors.add("argument of function");
+        errors.add("Attempt to read after eof: while converting");
+        errors.add("Sorting key cannot contain constants");
+        errors.add("Sampling expression must be present in the primary key");
+    }
+
 }

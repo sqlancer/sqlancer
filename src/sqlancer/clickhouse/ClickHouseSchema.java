@@ -59,10 +59,27 @@ public class ClickHouseSchema extends AbstractSchema<ClickHouseTable> {
 
     public static class ClickHouseColumn extends AbstractTableColumn<ClickHouseTable, ClickHouseLancerDataType> {
 
-        public ClickHouseColumn(String name, ClickHouseLancerDataType columnType) {
+        private final boolean isAlias;
+        private final boolean isMaterialized;
+
+        public ClickHouseColumn(String name, ClickHouseLancerDataType columnType, boolean isAlias,
+                boolean isMaterialized) {
             super(name, null, columnType);
+            this.isAlias = isAlias;
+            this.isMaterialized = isMaterialized;
         }
 
+        public static ClickHouseSchema.ClickHouseColumn createDummy(String name) {
+            return new ClickHouseSchema.ClickHouseColumn(name, ClickHouseLancerDataType.getRandom(), false, false);
+        }
+
+        public boolean isAlias() {
+            return isAlias;
+        }
+
+        public boolean isMaterialized() {
+            return isMaterialized;
+        }
     }
 
     public static ClickHouseConstant getConstant(ResultSet randomRowValues, int columnIndex,
@@ -302,7 +319,11 @@ public class ClickHouseSchema extends AbstractSchema<ClickHouseTable> {
                 while (rs.next()) {
                     String columnName = rs.getString("name");
                     String dataType = rs.getString("type");
-                    ClickHouseColumn c = new ClickHouseColumn(columnName, getColumnType(dataType));
+                    String defaultType = rs.getString("default_type");
+                    boolean isAlias = "ALIAS".compareTo(defaultType) == 0;
+                    boolean isMaterialized = "MATERIALIZED".compareTo(defaultType) == 0;
+                    ClickHouseColumn c = new ClickHouseColumn(columnName, getColumnType(dataType), isAlias,
+                            isMaterialized);
                     columns.add(c);
                 }
             }
