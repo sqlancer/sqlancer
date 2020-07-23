@@ -254,7 +254,7 @@ public final class Main {
         }
 
         public boolean execute(Query q) throws SQLException {
-            globalState.getState().statements.add(q);
+            globalState.getState().logStatement(q);
             boolean success = q.execute(globalState);
             Main.nrSuccessfulActions.addAndGet(1);
             return success;
