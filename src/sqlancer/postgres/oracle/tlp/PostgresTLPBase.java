@@ -72,7 +72,7 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
         return gen;
     }
 
-    public static PostgresCTE createCTE(PostgresGlobalState globalState, PostgresTables tables) {
+    public static PostgresCTE createSubquery(PostgresGlobalState globalState, PostgresTables tables) {
         PostgresExpressionGenerator gen = new PostgresExpressionGenerator(globalState).setColumns(tables.getColumns());
         PostgresSelect selectCTE = new PostgresSelect();
         selectCTE.setFromList(tables.getTables().stream().map(t -> new PostgresFromTable(t, Randomly.getBoolean()))
