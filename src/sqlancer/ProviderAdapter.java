@@ -3,6 +3,8 @@ package sqlancer;
 import java.io.FileWriter;
 import java.sql.SQLException;
 
+import sqlancer.StateToReproduce.OracleRunReproductionState;
+
 public abstract class ProviderAdapter<G extends GlobalState<O, ?>, O> implements DatabaseProvider<G, O> {
 
     private final Class<G> globalClass;
@@ -41,11 +43,16 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ?>, O> implements
 
             TestOracle oracle = getTestOracle(globalState);
             for (int i = 0; i < globalState.getOptions().getNrQueries(); i++) {
-                try {
-                    oracle.check();
-                    globalState.getManager().incrementSelectQueryCount();
-                } catch (IgnoreMeException e) {
+                try (OracleRunReproductionState localState = globalState.getState().createLocalState()) {
+                    assert localState != null;
+                    try {
+                        oracle.check();
+                        globalState.getManager().incrementSelectQueryCount();
+                    } catch (IgnoreMeException e) {
 
+                    }
+                    assert localState != null;
+                    localState.executedWithoutError();
                 }
             }
         } finally {

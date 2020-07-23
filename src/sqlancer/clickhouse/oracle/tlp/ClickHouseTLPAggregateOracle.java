@@ -89,8 +89,8 @@ public class ClickHouseTLPAggregateOracle implements TestOracle {
             // TODO
             throw new IgnoreMeException();
         }
-        state.getState().queryString = "--" + originalQuery + "\n--" + metamorphicText + "\n-- " + firstResult + "\n-- "
-                + secondResult;
+        state.getState().getLocalState()
+                .log("--" + originalQuery + "\n--" + metamorphicText + "\n-- " + firstResult + "\n-- " + secondResult);
         if ((firstResult == null && secondResult != null
                 || firstResult != null && !firstResult.contentEquals(secondResult))
                 && !ComparatorHelper.isEqualDouble(firstResult, secondResult)) {

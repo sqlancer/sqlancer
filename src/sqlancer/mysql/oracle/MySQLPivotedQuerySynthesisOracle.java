@@ -219,7 +219,7 @@ public class MySQLPivotedQuerySynthesisOracle implements TestOracle {
         }
 
         String resultingQueryString = sb.toString();
-        state.queryString = resultingQueryString;
+        state.getLocalState().log(resultingQueryString);
         if (globalState.getOptions().logEachSelect()) {
             globalState.getLogger().writeCurrent(resultingQueryString);
         }
