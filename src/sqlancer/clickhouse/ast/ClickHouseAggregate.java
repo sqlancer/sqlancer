@@ -1,12 +1,12 @@
 package sqlancer.clickhouse.ast;
 
-import sqlancer.Randomly;
-import sqlancer.clickhouse.ClickHouseSchema;
-import ru.yandex.clickhouse.domain.ClickHouseDataType;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import ru.yandex.clickhouse.domain.ClickHouseDataType;
+import sqlancer.Randomly;
+import sqlancer.clickhouse.ClickHouseSchema;
 
 public class ClickHouseAggregate extends ClickHouseExpression {
 

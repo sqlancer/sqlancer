@@ -1,15 +1,14 @@
 package sqlancer.clickhouse.gen;
 
-import ru.yandex.clickhouse.domain.ClickHouseDataType;
-import sqlancer.Query;
-import sqlancer.QueryAdapter;
-import sqlancer.Randomly;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import ru.yandex.clickhouse.domain.ClickHouseDataType;
+import sqlancer.Query;
+import sqlancer.QueryAdapter;
+import sqlancer.Randomly;
 import sqlancer.clickhouse.ClickHouseErrors;
 import sqlancer.clickhouse.ClickHouseProvider;
 import sqlancer.clickhouse.ClickHouseSchema;

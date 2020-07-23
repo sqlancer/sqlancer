@@ -1,5 +1,10 @@
 package sqlancer.clickhouse.oracle.tlp;
 
+import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
 import sqlancer.clickhouse.ClickHouseErrors;
@@ -13,11 +18,6 @@ import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation;
 import sqlancer.clickhouse.gen.ClickHouseCommon;
 import sqlancer.clickhouse.gen.ClickHouseExpressionGenerator;
-
-import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class ClickHouseTLPHavingOracle extends ClickHouseTLPBase {
 

@@ -1,12 +1,12 @@
 package sqlancer.clickhouse.ast;
 
-import ru.yandex.clickhouse.domain.ClickHouseDataType;
-
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.Optional;
 import java.util.regex.Pattern;
+
+import ru.yandex.clickhouse.domain.ClickHouseDataType;
 
 public final class ClickHouseCast extends ClickHouseExpression {
 

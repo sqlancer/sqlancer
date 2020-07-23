@@ -13,7 +13,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import ru.yandex.clickhouse.domain.ClickHouseDataType;
-
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;

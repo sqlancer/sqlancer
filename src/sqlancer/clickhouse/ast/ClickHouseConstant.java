@@ -1,9 +1,9 @@
 package sqlancer.clickhouse.ast;
 
+import java.math.BigInteger;
+
 import ru.yandex.clickhouse.domain.ClickHouseDataType;
 import sqlancer.IgnoreMeException;
-
-import java.math.BigInteger;
 
 public abstract class ClickHouseConstant extends ClickHouseExpression {
 

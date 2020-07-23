@@ -1,11 +1,11 @@
 package sqlancer.clickhouse.gen;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import sqlancer.clickhouse.ClickHouseSchema;
 import sqlancer.clickhouse.ast.ClickHouseExpression;
 import sqlancer.clickhouse.ast.ClickHouseTableReference;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class ClickHouseCommon {
 
