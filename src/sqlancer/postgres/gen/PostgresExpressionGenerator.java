@@ -91,7 +91,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         return new PostgresExpressionGenerator(globalState).generateExpression(0);
     }
 
-    PostgresExpression generateExpression(int depth) {
+    public PostgresExpression generateExpression(int depth) {
         return generateExpression(depth, PostgresDataType.getRandomType());
     }
 

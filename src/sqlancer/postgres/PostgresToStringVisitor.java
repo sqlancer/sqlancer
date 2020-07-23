@@ -15,7 +15,6 @@ import sqlancer.postgres.ast.PostgresFunction;
 import sqlancer.postgres.ast.PostgresInOperation;
 import sqlancer.postgres.ast.PostgresJoin;
 import sqlancer.postgres.ast.PostgresJoin.PostgresJoinType;
-import sqlancer.postgres.ast.PostgresJoin.PostgresTableReference;
 import sqlancer.postgres.ast.PostgresOrderByTerm;
 import sqlancer.postgres.ast.PostgresPOSIXRegularExpression;
 import sqlancer.postgres.ast.PostgresPostfixOperation;
@@ -23,7 +22,7 @@ import sqlancer.postgres.ast.PostgresPostfixText;
 import sqlancer.postgres.ast.PostgresPrefixOperation;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
-import sqlancer.postgres.ast.PostgresSelect.PostgresCTE;
+import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 import sqlancer.visitor.ToStringVisitor;
 
@@ -78,16 +77,11 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
     }
 
     @Override
-    public void visit(PostgresCTE cte) {
+    public void visit(PostgresSubquery subquery) {
         sb.append("(");
-        visit(cte.getSelect());
+        visit(subquery.getSelect());
         sb.append(") AS ");
-        sb.append(cte.getName());
-    }
-
-    @Override
-    public void visit(PostgresTableReference ref) {
-        visit(ref.getTableReference());
+        sb.append(subquery.getName());
     }
 
     @Override

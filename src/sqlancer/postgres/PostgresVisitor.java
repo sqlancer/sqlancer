@@ -20,10 +20,9 @@ import sqlancer.postgres.ast.PostgresPostfixText;
 import sqlancer.postgres.ast.PostgresPrefixOperation;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
-import sqlancer.postgres.ast.PostgresSelect.PostgresCTE;
+import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
-import sqlancer.postgres.ast.PostgresJoin.PostgresTableReference;;
 
 public interface PostgresVisitor {
 
@@ -59,9 +58,7 @@ public interface PostgresVisitor {
 
     void visit(PostgresFromTable from);
 
-    void visit(PostgresCTE cte);
-
-    void visit(PostgresTableReference ref);
+    void visit(PostgresSubquery subquery);
 
     default void visit(PostgresExpression expression) {
         if (expression instanceof PostgresConstant) {
@@ -96,10 +93,8 @@ public interface PostgresVisitor {
             visit((PostgresCollate) expression);
         } else if (expression instanceof PostgresFromTable) {
             visit((PostgresFromTable) expression);
-        } else if (expression instanceof PostgresCTE) {
-            visit((PostgresCTE) expression);
-        } else if (expression instanceof PostgresTableReference) {
-            visit((PostgresTableReference) expression);
+        } else if (expression instanceof PostgresSubquery) {
+            visit((PostgresSubquery) expression);
         } else {
             throw new AssertionError(expression);
         }

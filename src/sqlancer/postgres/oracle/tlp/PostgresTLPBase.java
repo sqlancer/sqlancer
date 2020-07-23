@@ -3,6 +3,7 @@ package sqlancer.postgres.oracle.tlp;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
@@ -20,7 +21,7 @@ import sqlancer.postgres.ast.PostgresJoin;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.ForClause;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
-import sqlancer.postgres.ast.PostgresSelect.PostgresCTE;
+import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
 import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.gen.PostgresCommon;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
@@ -72,34 +73,34 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
         return gen;
     }
 
-    public static PostgresCTE createSubquery(PostgresGlobalState globalState, PostgresTables tables) {
+    public static PostgresSubquery createSubquery(PostgresGlobalState globalState, String name) {
+        List<PostgresExpression> columns = new ArrayList<>();
+        PostgresTables tables = globalState.getSchema().getRandomTableNonEmptyTables();
         PostgresExpressionGenerator gen = new PostgresExpressionGenerator(globalState).setColumns(tables.getColumns());
-        PostgresSelect selectCTE = new PostgresSelect();
-        selectCTE.setFromList(tables.getTables().stream().map(t -> new PostgresFromTable(t, Randomly.getBoolean()))
+        for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
+            columns.add(gen.generateExpression(0));
+        }
+        PostgresSelect select = new PostgresSelect();
+        select.setFromList(tables.getTables().stream().map(t -> new PostgresFromTable(t, Randomly.getBoolean()))
                 .collect(Collectors.toList()));
+        select.setFetchColumns(columns);
         if (Randomly.getBoolean()) {
-            selectCTE.setWhereClause(gen.generateExpression(0, PostgresDataType.BOOLEAN));
+            select.setWhereClause(gen.generateExpression(0, PostgresDataType.BOOLEAN));
         }
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            selectCTE.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
-            if (Randomly.getBoolean()) {
-                selectCTE.setHavingClause(gen.generateHavingClause());
-            }
-        }
-        if (Randomly.getBooleanWithRatherLowProbability()) {
-            selectCTE.setOrderByExpressions(gen.generateOrderBy());
+            select.setOrderByExpressions(gen.generateOrderBy());
         }
         if (Randomly.getBoolean()) {
-            selectCTE.setLimitClause(PostgresConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
+            select.setLimitClause(PostgresConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
             if (Randomly.getBoolean()) {
-                selectCTE.setOffsetClause(
+                select.setOffsetClause(
                         PostgresConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
             }
         }
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            selectCTE.setForClause(ForClause.getRandom());
+            select.setForClause(ForClause.getRandom());
         }
-        return new PostgresCTE(selectCTE, "cte");
+        return new PostgresSubquery(select, name);
     }
 
 }
