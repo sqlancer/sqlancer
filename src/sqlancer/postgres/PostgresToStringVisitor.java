@@ -15,6 +15,7 @@ import sqlancer.postgres.ast.PostgresFunction;
 import sqlancer.postgres.ast.PostgresInOperation;
 import sqlancer.postgres.ast.PostgresJoin;
 import sqlancer.postgres.ast.PostgresJoin.PostgresJoinType;
+import sqlancer.postgres.ast.PostgresJoin.PostgresTableReference;
 import sqlancer.postgres.ast.PostgresOrderByTerm;
 import sqlancer.postgres.ast.PostgresPOSIXRegularExpression;
 import sqlancer.postgres.ast.PostgresPostfixOperation;
@@ -85,6 +86,11 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
     }
 
     @Override
+    public void visit(PostgresTableReference ref) {
+        visit(ref.getTableReference());
+    }
+
+    @Override
     public void visit(PostgresSelect s) {
         sb.append("SELECT ");
         switch (s.getSelectOption()) {
@@ -135,11 +141,7 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
                 throw new AssertionError(j.getType());
             }
             sb.append(" ");
-            if (j.joinCTE()) {
-                visit(j.getCTE());
-            } else {
-                sb.append(j.getTable().getName());
-            }
+            visit(j.getTableReference());
             if (j.getType() != PostgresJoinType.CROSS) {
                 sb.append(" ON ");
                 visit(j.getOnClause());

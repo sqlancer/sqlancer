@@ -23,6 +23,7 @@ import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.ast.PostgresSelect.PostgresCTE;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
+import sqlancer.postgres.ast.PostgresJoin.PostgresTableReference;;
 
 public interface PostgresVisitor {
 
@@ -60,6 +61,8 @@ public interface PostgresVisitor {
 
     void visit(PostgresCTE cte);
 
+    void visit(PostgresTableReference ref);
+
     default void visit(PostgresExpression expression) {
         if (expression instanceof PostgresConstant) {
             visit((PostgresConstant) expression);
@@ -95,6 +98,8 @@ public interface PostgresVisitor {
             visit((PostgresFromTable) expression);
         } else if (expression instanceof PostgresCTE) {
             visit((PostgresCTE) expression);
+        } else if (expression instanceof PostgresTableReference) {
+            visit((PostgresTableReference) expression);
         } else {
             throw new AssertionError(expression);
         }

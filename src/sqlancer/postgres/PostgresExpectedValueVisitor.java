@@ -18,6 +18,7 @@ import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.ast.PostgresSelect.PostgresCTE;
 import sqlancer.postgres.ast.PostgresSimilarTo;
+import sqlancer.postgres.ast.PostgresJoin.PostgresTableReference;
 
 public final class PostgresExpectedValueVisitor implements PostgresVisitor {
 
@@ -159,6 +160,11 @@ public final class PostgresExpectedValueVisitor implements PostgresVisitor {
     @Override
     public void visit(PostgresCTE cte) {
         print(cte);
+    }
+
+    @Override
+    public void visit(PostgresTableReference ref) {
+        print(ref);
     }
 
 }

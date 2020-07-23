@@ -4,6 +4,7 @@ import sqlancer.Randomly;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.ast.PostgresSelect.PostgresCTE;
+import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 
 public class PostgresJoin implements PostgresExpression {
 
@@ -16,34 +17,36 @@ public class PostgresJoin implements PostgresExpression {
 
     }
 
-    private final PostgresTable table;
+    private final PostgresTableReference tableReference;
     private final PostgresExpression onClause;
     private final PostgresJoinType type;
-    private PostgresCTE CTE = null;
 
-    public PostgresJoin(PostgresTable table, PostgresExpression onClause, PostgresJoinType type) {
-        this.table = table;
+    public static class PostgresTableReference implements PostgresExpression {
+
+        private final PostgresExpression tableReference;
+
+        public PostgresTableReference(PostgresCTE cte) {
+            this.tableReference = cte;
+        }
+
+        public PostgresTableReference(PostgresTable table) {
+            this.tableReference = new PostgresFromTable(table, Randomly.getBoolean());
+        }
+
+        public PostgresExpression getTableReference() {
+            return tableReference;
+        }
+
+    }
+
+    public PostgresJoin(PostgresTableReference tableReference, PostgresExpression onClause, PostgresJoinType type) {
+        this.tableReference = tableReference;
         this.onClause = onClause;
         this.type = type;
     }
 
-    public PostgresJoin(PostgresCTE CTE, PostgresExpression onClause, PostgresJoinType type) {
-        this.CTE = CTE;
-        this.onClause = onClause;
-        this.type = type;
-        this.table = null;
-    }
-
-    public PostgresTable getTable() {
-        return table;
-    }
-
-    public PostgresCTE getCTE() {
-        return CTE;
-    }
-
-    public boolean joinCTE() {
-        return (CTE != null);
+    public PostgresTableReference getTableReference() {
+        return tableReference;
     }
 
     public PostgresExpression getOnClause() {

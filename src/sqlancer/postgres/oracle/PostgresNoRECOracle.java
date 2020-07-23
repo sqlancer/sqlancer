@@ -27,6 +27,7 @@ import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresJoin;
 import sqlancer.postgres.ast.PostgresJoin.PostgresJoinType;
+import sqlancer.postgres.ast.PostgresJoin.PostgresTableReference;
 import sqlancer.postgres.ast.PostgresPostfixText;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
@@ -83,7 +84,7 @@ public class PostgresNoRECOracle extends NoRECBase<PostgresGlobalState> implemen
             PostgresTable table = Randomly.fromList(tables);
             tables.remove(table);
             PostgresJoinType options = PostgresJoinType.getRandom();
-            PostgresJoin j = new PostgresJoin(table, joinClause, options);
+            PostgresJoin j = new PostgresJoin(new PostgresTableReference(table), joinClause, options);
             joinStatements.add(j);
         }
         return joinStatements;
