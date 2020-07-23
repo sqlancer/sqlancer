@@ -21,7 +21,8 @@ public class ClickHouseTableGenerator {
     }
 
     private enum ClickHouseEngine {
-        TinyLog, StripeLog, Log, Memory, MergeTree
+        // TinyLog, StripeLog, Log, // Disabled until https://github.com/ClickHouse/ClickHouse/pull/12426 is released
+        Memory, MergeTree
     }
 
     public Query getQuery(ClickHouseGlobalState globalState) {
