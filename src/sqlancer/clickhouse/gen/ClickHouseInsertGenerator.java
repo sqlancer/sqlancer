@@ -36,7 +36,8 @@ public class ClickHouseInsertGenerator extends AbstractInsertGenerator<ClickHous
 
     private Query get() {
         ClickHouseTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-        List<ClickHouseColumn> columns = table.getRandomNonEmptyColumnSubset();
+        List<ClickHouseColumn> columns = table.getRandomNonEmptyColumnSubset().stream()
+                .filter(c -> !c.isAlias() && !c.isMaterialized()).collect(Collectors.toList());
         sb.append("INSERT INTO ");
         sb.append(table.getName());
         sb.append("(");
