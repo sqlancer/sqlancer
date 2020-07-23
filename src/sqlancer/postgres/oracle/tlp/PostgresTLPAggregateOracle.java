@@ -1,12 +1,12 @@
 package sqlancer.postgres.oracle.tlp;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import java.io.IOException;
 import org.postgresql.util.PSQLException;
 
 import sqlancer.ComparatorHelper;
@@ -139,13 +139,16 @@ public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestO
         case MIN:
             return aliasArgs(Arrays.asList(aggregate));
         // case AVG:
-        //// List<PostgresExpression> arg = Arrays.asList(new PostgresCast(aggregate.getExpr().get(0),
+        //// List<PostgresExpression> arg = Arrays.asList(new
+        // PostgresCast(aggregate.getExpr().get(0),
         // PostgresDataType.DECIMAL.get()));
-        // PostgresAggregate sum = new PostgresAggregate(PostgresAggregateFunction.SUM, aggregate.getExpr());
+        // PostgresAggregate sum = new PostgresAggregate(PostgresAggregateFunction.SUM,
+        // aggregate.getExpr());
         // PostgresCast count = new PostgresCast(
         // new PostgresAggregate(PostgresAggregateFunction.COUNT, aggregate.getExpr()),
         // PostgresDataType.DECIMAL.get());
-        //// PostgresBinaryArithmeticOperation avg = new PostgresBinaryArithmeticOperation(sum, count,
+        //// PostgresBinaryArithmeticOperation avg = new
+        // PostgresBinaryArithmeticOperation(sum, count,
         // PostgresBinaryArithmeticOperator.DIV);
         // return aliasArgs(Arrays.asList(sum, count));
         default:

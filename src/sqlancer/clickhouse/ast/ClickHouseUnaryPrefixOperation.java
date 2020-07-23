@@ -1,9 +1,9 @@
 package sqlancer.clickhouse.ast;
 
+import ru.yandex.clickhouse.domain.ClickHouseDataType;
 import sqlancer.Randomly;
 import sqlancer.ast.BinaryOperatorNode.Operator;
 import sqlancer.visitor.UnaryOperation;
-import ru.yandex.clickhouse.domain.ClickHouseDataType;
 
 public class ClickHouseUnaryPrefixOperation extends ClickHouseExpression
         implements UnaryOperation<ClickHouseExpression> {

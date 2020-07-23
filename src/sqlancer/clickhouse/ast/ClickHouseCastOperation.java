@@ -1,7 +1,6 @@
 package sqlancer.clickhouse.ast;
 
 import ru.yandex.clickhouse.domain.ClickHouseDataType;
-
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseLancerDataType;
 
 public class ClickHouseCastOperation extends ClickHouseExpression {

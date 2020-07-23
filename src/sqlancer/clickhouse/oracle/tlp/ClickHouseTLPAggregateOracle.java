@@ -1,5 +1,10 @@
 package sqlancer.clickhouse.oracle.tlp;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
+
 import ru.yandex.clickhouse.domain.ClickHouseDataType;
 import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
@@ -16,11 +21,6 @@ import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation;
 import sqlancer.clickhouse.gen.ClickHouseCommon;
 import sqlancer.clickhouse.gen.ClickHouseExpressionGenerator;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
 
 public class ClickHouseTLPAggregateOracle implements TestOracle {
 
