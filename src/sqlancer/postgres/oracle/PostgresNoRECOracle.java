@@ -30,9 +30,11 @@ import sqlancer.postgres.ast.PostgresJoin.PostgresJoinType;
 import sqlancer.postgres.ast.PostgresPostfixText;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
+import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
 import sqlancer.postgres.ast.PostgresSelect.SelectType;
 import sqlancer.postgres.gen.PostgresCommon;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
+import sqlancer.postgres.oracle.tlp.PostgresTLPBase;
 
 public class PostgresNoRECOracle extends NoRECBase<PostgresGlobalState> implements TestOracle {
 
@@ -83,7 +85,15 @@ public class PostgresNoRECOracle extends NoRECBase<PostgresGlobalState> implemen
             PostgresTable table = Randomly.fromList(tables);
             tables.remove(table);
             PostgresJoinType options = PostgresJoinType.getRandom();
-            PostgresJoin j = new PostgresJoin(table, joinClause, options);
+            PostgresJoin j = new PostgresJoin(new PostgresFromTable(table, Randomly.getBoolean()), joinClause, options);
+            joinStatements.add(j);
+        }
+        // JOIN subqueries
+        for (int i = 0; i < Randomly.smallNumber(); i++) {
+            PostgresSubquery subquery = PostgresTLPBase.createSubquery(globalState, String.format("sub%d", i));
+            PostgresExpression joinClause = gen.generateExpression(PostgresDataType.BOOLEAN);
+            PostgresJoinType options = PostgresJoinType.getRandom();
+            PostgresJoin j = new PostgresJoin(subquery, joinClause, options);
             joinStatements.add(j);
         }
         return joinStatements;

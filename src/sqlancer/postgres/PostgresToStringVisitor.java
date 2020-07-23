@@ -22,6 +22,7 @@ import sqlancer.postgres.ast.PostgresPostfixText;
 import sqlancer.postgres.ast.PostgresPrefixOperation;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
+import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 import sqlancer.visitor.ToStringVisitor;
 
@@ -76,6 +77,14 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
     }
 
     @Override
+    public void visit(PostgresSubquery subquery) {
+        sb.append("(");
+        visit(subquery.getSelect());
+        sb.append(") AS ");
+        sb.append(subquery.getName());
+    }
+
+    @Override
     public void visit(PostgresSelect s) {
         sb.append("SELECT ");
         switch (s.getSelectOption()) {
@@ -126,7 +135,7 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
                 throw new AssertionError(j.getType());
             }
             sb.append(" ");
-            sb.append(j.getTable().getName());
+            visit(j.getTableReference());
             if (j.getType() != PostgresJoinType.CROSS) {
                 sb.append(" ON ");
                 visit(j.getOnClause());

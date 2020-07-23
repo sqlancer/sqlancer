@@ -2,7 +2,6 @@ package sqlancer.postgres.ast;
 
 import sqlancer.Randomly;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
-import sqlancer.postgres.PostgresSchema.PostgresTable;
 
 public class PostgresJoin implements PostgresExpression {
 
@@ -15,18 +14,18 @@ public class PostgresJoin implements PostgresExpression {
 
     }
 
-    private final PostgresTable table;
+    private final PostgresExpression tableReference;
     private final PostgresExpression onClause;
     private final PostgresJoinType type;
 
-    public PostgresJoin(PostgresTable table, PostgresExpression onClause, PostgresJoinType type) {
-        this.table = table;
+    public PostgresJoin(PostgresExpression tableReference, PostgresExpression onClause, PostgresJoinType type) {
+        this.tableReference = tableReference;
         this.onClause = onClause;
         this.type = type;
     }
 
-    public PostgresTable getTable() {
-        return table;
+    public PostgresExpression getTableReference() {
+        return tableReference;
     }
 
     public PostgresExpression getOnClause() {

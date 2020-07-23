@@ -56,6 +56,29 @@ public class PostgresSelect extends SelectBase<PostgresExpression> implements Po
         }
     }
 
+    public static class PostgresSubquery implements PostgresExpression {
+        private final PostgresSelect s;
+        private final String name;
+
+        public PostgresSubquery(PostgresSelect s, String name) {
+            this.s = s;
+            this.name = name;
+        }
+
+        public PostgresSelect getSelect() {
+            return s;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public PostgresDataType getExpressionType() {
+            return null;
+        }
+    }
+
     public enum SelectType {
         DISTINCT, ALL;
 
