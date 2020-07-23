@@ -152,7 +152,8 @@ public class MySQLAlterTable {
                     sb.append(Randomly.fromOptions("TO", "AS"));
                     sb.append(" ");
                 }
-                sb.append("t" + Randomly.smallNumber());
+                sb.append("t");
+                sb.append(Randomly.smallNumber());
                 couldAffectSchema = true;
                 break;
             default:

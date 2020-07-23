@@ -82,7 +82,8 @@ public class SQLite3MatchStringGenerator {
             if (i != 0) {
                 sb.append(", ");
             }
-            sb.append("c" + Randomly.smallNumber());
+            sb.append("c");
+            sb.append(Randomly.smallNumber());
         }
         if (braces) {
             sb.append("}");

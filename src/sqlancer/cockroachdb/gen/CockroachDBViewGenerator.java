@@ -24,7 +24,8 @@ public final class CockroachDBViewGenerator {
             if (i != 0) {
                 sb.append(", ");
             }
-            sb.append("c" + i);
+            sb.append("c");
+            sb.append(i);
         }
         sb.append(") AS ");
         sb.append(CockroachDBRandomQuerySynthesizer.generate(globalState, nrColumns).getQueryString());

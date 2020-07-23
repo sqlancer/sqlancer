@@ -30,7 +30,8 @@ public final class PostgresExpectedValueVisitor implements PostgresVisitor {
             sb.append("\t");
         }
         sb.append(v.get());
-        sb.append(" -- " + expr.getExpectedValue());
+        sb.append(" -- ");
+        sb.append(expr.getExpectedValue());
         sb.append("\n");
     }
 

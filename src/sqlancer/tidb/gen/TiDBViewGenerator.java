@@ -32,7 +32,8 @@ public final class TiDBViewGenerator {
             if (i != 0) {
                 sb.append(", ");
             }
-            sb.append("c" + i);
+            sb.append("c");
+            sb.append(i);
         }
         sb.append(") AS ");
         sb.append(TiDBRandomQuerySynthesizer.generate(globalState, nrColumns).getQueryString());

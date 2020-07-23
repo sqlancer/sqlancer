@@ -47,9 +47,12 @@ public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
             sb.append("\t");
         }
         sb.append(v.get());
-        sb.append(" -- " + expr.getExpectedValue());
-        sb.append(" explicit collate: " + expr.getExplicitCollateSequence());
-        sb.append(" implicit collate: " + expr.getImplicitCollateSequence());
+        sb.append(" -- ");
+        sb.append(expr.getExpectedValue());
+        sb.append(" explicit collate: ");
+        sb.append(expr.getExplicitCollateSequence());
+        sb.append(" implicit collate: ");
+        sb.append(expr.getImplicitCollateSequence());
         sb.append("\n");
     }
 

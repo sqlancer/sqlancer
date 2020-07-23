@@ -208,7 +208,8 @@ public class MySQLPivotedQuerySynthesisOracle implements TestOracle {
             if (i++ != 0) {
                 sb.append(" AND ");
             }
-            sb.append("result." + c.getTable().getName() + c.getName());
+            sb.append("result.");
+            sb.append(c.getTable().getName() + c.getName());
             if (rw.getValues().get(c).isNull()) {
                 sb.append(" IS NULL");
             } else {

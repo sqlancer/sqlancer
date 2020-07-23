@@ -42,7 +42,8 @@ public final class SQLite3CreateTriggerGenerator {
         }
         sb.append(" TRIGGER");
         sb.append(" IF NOT EXISTS ");
-        sb.append("tr" + Randomly.smallNumber());
+        sb.append("tr");
+        sb.append(Randomly.smallNumber());
         sb.append(" ");
         if (table.isView()) {
             sb.append("INSTEAD OF");

@@ -28,7 +28,8 @@ public final class CockroachDBCommentOnGenerator {
         CockroachDBTable randomTable = globalState.getSchema().getRandomTable(t -> !t.isView());
         switch (Randomly.fromOptions(Option.values())) {
         case TABLE:
-            sb.append("TABLE " + randomTable.getName());
+            sb.append("TABLE ");
+            sb.append(randomTable.getName());
             break;
         case INDEX:
             List<TableIndex> indexes = randomTable.getIndexes();
@@ -39,7 +40,8 @@ public final class CockroachDBCommentOnGenerator {
             if (index.getIndexName().contains("primary")) {
                 throw new IgnoreMeException();
             }
-            sb.append("INDEX " + index.getIndexName());
+            sb.append("INDEX ");
+            sb.append(index.getIndexName());
             break;
         case COLUMN:
             sb.append("COLUMN ");

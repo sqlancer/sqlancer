@@ -25,7 +25,8 @@ public final class DuckDBViewGenerator {
             if (i != 0) {
                 sb.append(", ");
             }
-            sb.append("c" + i);
+            sb.append("c");
+            sb.append(i);
         }
         sb.append(") AS ");
         sb.append(DuckDBToStringVisitor.asString(DuckDBRandomQuerySynthesizer.generateSelect(globalState, nrColumns)));
