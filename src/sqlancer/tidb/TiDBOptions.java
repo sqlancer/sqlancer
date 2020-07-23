@@ -9,7 +9,6 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
 import sqlancer.CompositeTestOracle;
-import sqlancer.MainOptions.DBMSConverter;
 import sqlancer.TestOracle;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.oracle.TiDBTLPHavingOracle;
@@ -18,7 +17,7 @@ import sqlancer.tidb.oracle.TiDBTLPWhereOracle;
 @Parameters
 public class TiDBOptions {
 
-    @Parameter(names = "--oracle", converter = DBMSConverter.class)
+    @Parameter(names = "--oracle")
     public List<TiDBOracle> oracle = Arrays.asList(TiDBOracle.QUERY_PARTITIONING);
 
     public enum TiDBOracle {

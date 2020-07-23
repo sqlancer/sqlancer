@@ -1,7 +1,12 @@
 package sqlancer.clickhouse;
 
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+
 import sqlancer.MainOptions;
 import sqlancer.TestOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPAggregateOracle;
@@ -10,14 +15,10 @@ import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPGroupByOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPHavingOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPWhereOracle;
 
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
-
 @Parameters(separators = "=", commandDescription = "ClickHouse")
 public class ClickHouseOptions extends MainOptions {
 
-    @Parameter(names = "--oracle", converter = MainOptions.DBMSConverter.class)
+    @Parameter(names = "--oracle")
     public List<ClickHouseOracle> oracle = Arrays.asList(ClickHouseOracle.TLPWhere);
 
     @Parameter(names = { "--test-joins" }, description = "Allow the generation of JOIN clauses", arity = 1)

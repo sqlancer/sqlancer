@@ -9,7 +9,6 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
 import sqlancer.CompositeTestOracle;
-import sqlancer.MainOptions.DBMSConverter;
 import sqlancer.TestOracle;
 import sqlancer.postgres.oracle.PostgresNoRECOracle;
 import sqlancer.postgres.oracle.PostgresPivotedQuerySynthesisOracle;
@@ -23,7 +22,7 @@ public class PostgresOptions {
     @Parameter(names = "--bulk-insert")
     public boolean allowBulkInsert;
 
-    @Parameter(names = "--oracle", converter = DBMSConverter.class)
+    @Parameter(names = "--oracle")
     public List<PostgresOracle> oracle = Arrays.asList(PostgresOracle.QUERY_PARTITIONING);
 
     @Parameter(names = "--test-collations", arity = 1)

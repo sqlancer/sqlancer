@@ -1,6 +1,5 @@
 package sqlancer;
 
-import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
@@ -115,23 +114,12 @@ public class MainOptions {
         return nrStatementRetryCount;
     }
 
-    public enum DBMS {
-        MariaDB, SQLite3, MySQL, PostgreSQL, TDEngine, CockroachDB, TiDB, ClickHouse
-    }
-
     public String getUserName() {
         return userName;
     }
 
     public String getPassword() {
         return password;
-    }
-
-    public class DBMSConverter implements IStringConverter<DBMS> {
-        @Override
-        public DBMS convert(String value) {
-            return DBMS.valueOf(value);
-        }
     }
 
     public boolean printProgressInformation() {
