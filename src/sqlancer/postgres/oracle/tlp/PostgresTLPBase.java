@@ -12,6 +12,7 @@ import sqlancer.TestOracle;
 import sqlancer.gen.ExpressionGenerator;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema;
+import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresSchema.PostgresTables;
@@ -65,7 +66,15 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
     }
 
     List<PostgresExpression> generateFetchColumns() {
-        return Arrays.asList(new PostgresColumnValue(targetTables.getColumns().get(0), null));
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            return Arrays.asList(new PostgresColumnValue(PostgresColumn.createDummy("*"), null));
+        }
+        List<PostgresExpression> fetchColumns = new ArrayList<>();
+        List<PostgresColumn> targetColumns = Randomly.nonEmptySubset(targetTables.getColumns());
+        for (PostgresColumn c : targetColumns) {
+            fetchColumns.add(new PostgresColumnValue(c, null));
+        }
+        return fetchColumns;
     }
 
     @Override

@@ -50,6 +50,10 @@ public class PostgresSchema {
             super(name, null, columnType);
         }
 
+        public static PostgresColumn createDummy(String name) {
+            return new PostgresColumn(name, PostgresDataType.INT);
+        }
+
     }
 
     public static class PostgresTables extends AbstractTables<PostgresTable, PostgresColumn> {
