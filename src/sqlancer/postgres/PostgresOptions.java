@@ -28,6 +28,9 @@ public class PostgresOptions {
     @Parameter(names = "--test-collations", arity = 1)
     public boolean testCollations = true;
 
+    @Parameter(names = "--connection-url")
+    public String connectionURL = "postgresql://localhost:5432/test";
+
     public enum PostgresOracle {
         NOREC {
             @Override
