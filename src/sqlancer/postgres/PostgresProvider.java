@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
 import sqlancer.CompositeTestOracle;
+import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.ProviderAdapter;
 import sqlancer.Query;
@@ -52,14 +53,14 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 
 // EXISTS
 // IN
-public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, PostgresOptions> {
+public class PostgresProvider<G extends PostgresGlobalState<O, ?>, O extends PostgresOptions> extends ProviderAdapter<G, O> {
 
     public static boolean generateOnlyKnown;
 
     private PostgresGlobalState globalState;
 
-    public PostgresProvider() {
-        super(PostgresGlobalState.class, PostgresOptions.class);
+    public PostgresProvider(Class<G> globalClass, Class<O> optionsClass) {
+        super(globalClass, optionsClass);
     }
 
     public enum Action implements AbstractAction<PostgresGlobalState> {

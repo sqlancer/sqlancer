@@ -10,7 +10,7 @@ import java.util.List;
 import sqlancer.GlobalState;
 import sqlancer.Randomly;
 
-public class PostgresGlobalState extends GlobalState<PostgresOptions, PostgresSchema> {
+public class PostgresGlobalState<O extends PostgresOptions, S extends PostgresSchema> extends GlobalState<O, S> {
 
     private List<String> operators;
     private List<String> collates;
@@ -91,7 +91,7 @@ public class PostgresGlobalState extends GlobalState<PostgresOptions, PostgresSc
 
     @Override
     protected void updateSchema() throws SQLException {
-        setSchema(PostgresSchema.fromConnection(getConnection(), getDatabaseName()));
+        setSchema((S) S.fromConnection(getConnection(), getDatabaseName()));
     }
 
 }

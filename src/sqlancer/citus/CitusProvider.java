@@ -23,17 +23,17 @@ import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 
-public class CitusProvider extends PostgresProvider {
+public class CitusProvider extends PostgresProvider<CitusGlobalState, CitusOptions> {
     // FIXME: 
-    protected final Set<String> errors = new HashSet<>();
+    private static final Set<String> errors = new HashSet<>();
     
     public CitusProvider() {
         // how to change the extension of the super class?
-        super();
+        super(CitusGlobalState.class, CitusOptions.class);
         CitusCommon.addCitusErrors(errors);
     }
 
-    private class WorkerNode{
+/*     private class WorkerNode{
 
         private final String host;
         private final int port;
@@ -155,10 +155,10 @@ public class CitusProvider extends PostgresProvider {
             // allow repartition joins
             globalState.executeStatement(new QueryAdapter("SET citus.enable_repartition_joins to ON;\n", errors));
         }
-    }
+    } */
 
     //FIXME: pass in Postgres or CitusGlobalState?
-    @Override
+    /* @Override
     public Connection createDatabase(PostgresGlobalState globalState) throws SQLException {
         // returns connection to coordinator node, test database
         Connection con = super.createDatabase(globalState);
@@ -247,7 +247,7 @@ public class CitusProvider extends PostgresProvider {
         con = DriverManager.getConnection(testURL, username, password);
         return con;
     }
-
+ */
     @Override
     public String getDBMSName() {
         return "citus";

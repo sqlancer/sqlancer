@@ -32,6 +32,9 @@ import sqlancer.cockroachdb.CockroachDBProvider;
 import sqlancer.duckdb.DuckDBProvider;
 import sqlancer.mariadb.MariaDBProvider;
 import sqlancer.mysql.MySQLProvider;
+import sqlancer.postgres.PostgresGlobalState;
+import sqlancer.postgres.PostgresOptions;
+import sqlancer.postgres.PostgresSchema;
 import sqlancer.postgres.PostgresProvider;
 import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.tidb.TiDBProvider;
@@ -535,6 +538,7 @@ public final class Main {
         return threadsShutdown == 0 ? 0 : options.getErrorExitCode();
     }
 
+    @SuppressWarnings("unchecked")
     static List<DatabaseProvider<?, ?>> getDBMSProviders() {
         List<DatabaseProvider<?, ?>> providers = new ArrayList<>();
         providers.add(new SQLite3Provider());
@@ -542,7 +546,7 @@ public final class Main {
         providers.add(new MySQLProvider());
         providers.add(new MariaDBProvider());
         providers.add(new TiDBProvider());
-        providers.add(new PostgresProvider());
+        providers.add(new PostgresProvider<PostgresGlobalState<PostgresOptions, PostgresSchema>, PostgresOptions>((Class<PostgresGlobalState<PostgresOptions, PostgresSchema>>)(Object)PostgresGlobalState.class, PostgresOptions.class));
         providers.add(new ClickHouseProvider());
         providers.add(new DuckDBProvider());
         providers.add(new CitusProvider());
