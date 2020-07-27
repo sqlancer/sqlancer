@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class QueryAdapter extends Query {
 
@@ -135,6 +136,43 @@ public class QueryAdapter extends Query {
     @Override
     public Collection<String> getExpectedErrors() {
         return expectedErrors;
+    }
+
+    @Override
+    public boolean fillAndExecute(GlobalState<?, ?> globalState, String template, List<String> fills)
+            throws SQLException {
+        try (PreparedStatement s = globalState.getConnection().prepareStatement(template)) {
+            for (int i = 1; i < fills.size() + 1; i++) {
+                s.setString(i, fills.get(i - 1));
+            }
+            s.execute();
+            Main.nrSuccessfulActions.addAndGet(1);
+            return true;
+        } catch (Exception e) {
+            Main.nrUnsuccessfulActions.addAndGet(1);
+            checkException(e);
+            return false;
+        }
+    }
+
+    @Override
+    public ResultSet fillAndExecuteAndGet(GlobalState<?, ?> globalState, String template, List<String> fills)
+            throws SQLException {
+        ResultSet result = null;
+        PreparedStatement s = globalState.getConnection().prepareStatement(template);
+        try {
+            for (int i = 1; i < fills.size() + 1; i++) {
+                s.setString(i, fills.get(i - 1));
+            }
+            result = s.executeQuery();
+            Main.nrSuccessfulActions.addAndGet(1);
+            return result;
+        } catch (Exception e) {
+            s.close();
+            Main.nrUnsuccessfulActions.addAndGet(1);
+            checkException(e);
+        }
+        return null;
     }
 
 }

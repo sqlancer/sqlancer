@@ -2,6 +2,7 @@ package sqlancer;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;

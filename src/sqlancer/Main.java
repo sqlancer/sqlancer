@@ -34,7 +34,6 @@ import sqlancer.mariadb.MariaDBProvider;
 import sqlancer.mysql.MySQLProvider;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresOptions;
-import sqlancer.postgres.PostgresSchema;
 import sqlancer.postgres.PostgresProvider;
 import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.tidb.TiDBProvider;
@@ -546,7 +545,7 @@ public final class Main {
         providers.add(new MySQLProvider());
         providers.add(new MariaDBProvider());
         providers.add(new TiDBProvider());
-        providers.add(new PostgresProvider<PostgresGlobalState<PostgresOptions, PostgresSchema>, PostgresOptions>((Class<PostgresGlobalState<PostgresOptions, PostgresSchema>>)(Object)PostgresGlobalState.class, PostgresOptions.class));
+        providers.add(new PostgresProvider(PostgresGlobalState.class, PostgresOptions.class));
         providers.add(new ClickHouseProvider());
         providers.add(new DuckDBProvider());
         providers.add(new CitusProvider());

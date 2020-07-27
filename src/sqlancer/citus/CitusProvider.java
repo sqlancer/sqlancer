@@ -14,26 +14,26 @@ import java.util.Set;
 
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
-import sqlancer.citus.CitusSchema.CitusTable;
 import sqlancer.citus.gen.CitusCommon;
 import sqlancer.postgres.PostgresGlobalState;
+import sqlancer.postgres.PostgresOptions;
 import sqlancer.postgres.PostgresProvider;
 import sqlancer.postgres.PostgresSchema;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
-import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 
-public class CitusProvider extends PostgresProvider<CitusGlobalState, CitusOptions> {
-    // FIXME: 
+public class CitusProvider extends PostgresProvider {
+
     private static final Set<String> errors = new HashSet<>();
     
+    
+    @SuppressWarnings("unchecked")
     public CitusProvider() {
-        // how to change the extension of the super class?
-        super(CitusGlobalState.class, CitusOptions.class);
+        super((Class<PostgresGlobalState>)(Object) CitusGlobalState.class, (Class<PostgresOptions>)(Object) CitusOptions.class);
         CitusCommon.addCitusErrors(errors);
     }
 
-/*     private class WorkerNode{
+    private class WorkerNode{
 
         private final String host;
         private final int port;
@@ -131,7 +131,8 @@ public class CitusProvider extends PostgresProvider<CitusGlobalState, CitusOptio
         distributeTable(columns, tableName, globalState, con);
     }
 
-    public void generateDatabase(CitusGlobalState globalState) throws SQLException {
+    @Override
+    public void generateDatabase(PostgresGlobalState globalState) throws SQLException {
         // TODO: function reading? add to Postgres implementation?
         createTables(globalState);
         for (PostgresTable table : globalState.getSchema().getDatabaseTables()) {
@@ -146,108 +147,111 @@ public class CitusProvider extends PostgresProvider<CitusGlobalState, CitusOptio
                 globalState.fillAndExecuteStatement(query, template, fills);
             } else {
                 // create distributed table
-                createDistributedTable(table.getName(), globalState, globalState.getConnection());
+                createDistributedTable(table.getName(), (CitusGlobalState) globalState, globalState.getConnection());
             }
         }
-        globalState.updateSchema();
+        ((CitusGlobalState) globalState).updateSchema();
         prepareTables(globalState);
-        if (globalState.getRepartition()) {
+        if (((CitusGlobalState) globalState).getRepartition()) {
             // allow repartition joins
             globalState.executeStatement(new QueryAdapter("SET citus.enable_repartition_joins to ON;\n", errors));
         }
-    } */
+    }
 
     //FIXME: pass in Postgres or CitusGlobalState?
-    /* @Override
+    @Override
     public Connection createDatabase(PostgresGlobalState globalState) throws SQLException {
-        // returns connection to coordinator node, test database
-        Connection con = super.createDatabase(globalState);
-        
-        // add citus extension to coordinator node, test database
-        globalState.getState().logStatement(new QueryAdapter("CREATE EXTENSION citus;"));
-        try (Statement s = con.createStatement()) {
-            s.execute("CREATE EXTENSION citus;");
-        }
-        con.close();
-        
-        // reconnect to coordinator node, entry database
-        globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
-        con = DriverManager.getConnection("jdbc:" + entryURL, username, password);
-        
-        // read info about worker nodes
-        globalState.getState().logStatement("SELECT * FROM master_get_active_worker_nodes()");
-        List<WorkerNode> workerNodes = new ArrayList<>();
-        try (Statement s = con.createStatement()) {
-            ResultSet rs = s.executeQuery("SELECT * FROM master_get_active_worker_nodes();");
-            while (rs.next()) {
-                String node_host = rs.getString("node_host");
-                int node_port = rs.getInt("node_port");
-                WorkerNode w = new WorkerNode(node_host, node_port);
-                workerNodes.add(w);
-            }
-        }
-        con.close();
-
-        for (WorkerNode w : workerNodes) {
-            // connect to worker node, entry database
-            int hostIndex = entryURL.indexOf(host);
-            String preHost = entryURL.substring(0, hostIndex);
-            String postHost = entryURL.substring(databaseIndex - 1);
-            String entryWorkerURL = preHost + w.get_host() + ":" + w.get_port() + postHost;
-            // TODO: better way of logging this
-            globalState.getState().logStatement("\\q");
-            globalState.getState().logStatement(entryWorkerURL);
-            globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
-            con = DriverManager.getConnection(entryWorkerURL, username, password);
-
-            // create test database at worker node
-            globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
-            globalState.getState().logStatement(createDatabaseCommand);
-            try (Statement s = con.createStatement()) {
-                s.execute("DROP DATABASE IF EXISTS " + databaseName);
-            }
-            try (Statement s = con.createStatement()) {
-                s.execute(createDatabaseCommand);
-            }
-            con.close();
-
-            // connect to worker node, test database
-            int databaseIndexWorker = entryWorkerURL.indexOf(entryPath) + 1;
-            String preDatabaseNameWorker = entryWorkerURL.substring(0, databaseIndex);
-            String postDatabaseNameWorker = entryWorkerURL.substring(databaseIndex + entryDatabaseName.length());
-            String testWorkerURL = preDatabaseNameWorker + databaseName + postDatabaseNameWorker;
-            globalState.getState().logStatement(String.format("\\c %s;", databaseName));
-            con = DriverManager.getConnection("jdbc:" + testWorkerURL, username, password);
-            
-            // add citus extension to worker node, test database
-            globalState.getState().logStatement("CREATE EXTENSION citus;");
+        synchronized(CitusProvider.class) {
+            // returns connection to coordinator node, test database
+            Connection con = super.createDatabase(globalState);
+            String entryDatabaseName = entryPath.substring(1);
+            int databaseIndex = entryURL.indexOf(entryPath) + 1;
+            // add citus extension to coordinator node, test database
+            globalState.getState().logStatement(new QueryAdapter("CREATE EXTENSION citus;"));
             try (Statement s = con.createStatement()) {
                 s.execute("CREATE EXTENSION citus;");
             }
             con.close();
-        }
-        
-        // reconnect to coordinator node, test database
-        // TODO: better way of logging this
-        globalState.getState().logStatement("\\q");
-        globalState.getState().logStatement(testURL);
-        con = DriverManager.getConnection(testURL, username, password);
             
-        // add worker nodes to coordinator node for test database
-        for (WorkerNode w : workerNodes) {
-            // TODO: protect from sql injection - is it necessary though since these are read from the system?
-            String addWorkers = "SELECT * from master_add_node('" + w.get_host() + "', " + w.get_port() + ");";
-            globalState.getState().logStatement(addWorkers);
+            // reconnect to coordinator node, entry database
+            globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
+            con = DriverManager.getConnection("jdbc:" + entryURL, username, password);
+            
+            // read info about worker nodes
+            globalState.getState().logStatement("SELECT * FROM master_get_active_worker_nodes()");
+            List<WorkerNode> workerNodes = new ArrayList<>();
             try (Statement s = con.createStatement()) {
-                s.execute(addWorkers);
+                ResultSet rs = s.executeQuery("SELECT * FROM master_get_active_worker_nodes();");
+                while (rs.next()) {
+                    String node_host = rs.getString("node_name");
+                    int node_port = rs.getInt("node_port");
+                    WorkerNode w = new WorkerNode(node_host, node_port);
+                    workerNodes.add(w);
+                }
             }
+            con.close();
+
+            for (WorkerNode w : workerNodes) {
+                // connect to worker node, entry database
+                int hostIndex = entryURL.indexOf(host);
+                String preHost = entryURL.substring(0, hostIndex);
+                String postHost = entryURL.substring(databaseIndex - 1);
+                String entryWorkerURL = preHost + w.get_host() + ":" + w.get_port() + postHost;
+                // TODO: better way of logging this
+                globalState.getState().logStatement("\\q");
+                globalState.getState().logStatement(entryWorkerURL);
+                globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
+                con = DriverManager.getConnection("jdbc:" + entryWorkerURL, username, password);
+
+                // create test database at worker node
+                globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
+                globalState.getState().logStatement(createDatabaseCommand);
+                try (Statement s = con.createStatement()) {
+                    s.execute("DROP DATABASE IF EXISTS " + databaseName);
+                }
+                try (Statement s = con.createStatement()) {
+                    s.execute(createDatabaseCommand);
+                }
+                con.close();
+
+                // connect to worker node, test database
+                int databaseIndexWorker = entryWorkerURL.indexOf(entryPath) + 1;
+                String preDatabaseNameWorker = entryWorkerURL.substring(0, databaseIndexWorker);
+                String postDatabaseNameWorker = entryWorkerURL.substring(databaseIndexWorker + entryDatabaseName.length());
+                String testWorkerURL = preDatabaseNameWorker + databaseName + postDatabaseNameWorker;
+                globalState.getState().logStatement(String.format("\\c %s;", databaseName));
+                con = DriverManager.getConnection("jdbc:" + testWorkerURL, username, password);
+                
+                // add citus extension to worker node, test database
+                globalState.getState().logStatement("CREATE EXTENSION citus;");
+                try (Statement s = con.createStatement()) {
+                    s.execute("CREATE EXTENSION citus;");
+                }
+                con.close();
+                }
+            
+            // reconnect to coordinator node, test database
+            // TODO: better way of logging this
+            globalState.getState().logStatement("\\q");
+            globalState.getState().logStatement(testURL);
+            con = DriverManager.getConnection("jdbc:" + testURL, username, password);
+                
+            // add worker nodes to coordinator node for test database
+            for (WorkerNode w : workerNodes) {
+                // TODO: protect from sql injection - is it necessary though since these are read from the system?
+                String addWorkers = "SELECT * from master_add_node('" + w.get_host() + "', " + w.get_port() + ");";
+                globalState.getState().logStatement(addWorkers);
+                try (Statement s = con.createStatement()) {
+                    s.execute(addWorkers);
+                }
+            }
+            con.close();
+            // reconnect to coordinator node, test database
+            con = DriverManager.getConnection("jdbc:" + testURL, username, password);
+            return con;
         }
-        con.close();
-        // reconnect to coordinator node, test database
-        con = DriverManager.getConnection(testURL, username, password);
-        return con;
     }
- */
+
     @Override
     public String getDBMSName() {
         return "citus";

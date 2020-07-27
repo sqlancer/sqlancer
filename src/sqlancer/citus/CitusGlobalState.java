@@ -4,7 +4,7 @@ import java.sql.SQLException;
 
 import sqlancer.postgres.PostgresGlobalState;
 
-public class CitusGlobalState extends PostgresGlobalState<CitusOptions, CitusSchema> {
+public class CitusGlobalState extends PostgresGlobalState {
 
     private boolean repartition;
     
@@ -16,10 +16,8 @@ public class CitusGlobalState extends PostgresGlobalState<CitusOptions, CitusSch
         return repartition;
     }
 
-    // TODO: What if this doesn't exist - why can't the function in PostgresGlobalState call S.fromConnection()?
     @Override
     protected void updateSchema() throws SQLException {
-        // FIXME: Will casting lose CitusSchema information?
         setSchema(CitusSchema.fromConnection(getConnection(), getDatabaseName()));
     }
 

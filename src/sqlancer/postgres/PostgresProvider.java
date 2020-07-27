@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
 import sqlancer.CompositeTestOracle;
-import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.ProviderAdapter;
 import sqlancer.Query;
@@ -53,14 +52,24 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 
 // EXISTS
 // IN
-public class PostgresProvider<G extends PostgresGlobalState<O, ?>, O extends PostgresOptions> extends ProviderAdapter<G, O> {
+public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, PostgresOptions> {
 
     public static boolean generateOnlyKnown;
 
     private PostgresGlobalState globalState;
 
-    public PostgresProvider(Class<G> globalClass, Class<O> optionsClass) {
-        super(globalClass, optionsClass);
+    protected String entryURL;
+    protected String username;
+    protected String password;
+    protected String entryPath;
+    protected String host;
+    protected int port;
+    protected String testURL;
+    protected String databaseName;
+    protected String createDatabaseCommand;
+
+    public PostgresProvider(Class<PostgresGlobalState> globalClass, Class<PostgresOptions> optionClass) {
+        super(globalClass, optionClass);
     }
 
     public enum Action implements AbstractAction<PostgresGlobalState> {
@@ -203,10 +212,10 @@ public class PostgresProvider<G extends PostgresGlobalState<O, ?>, O extends Pos
 
     @Override
     public Connection createDatabase(PostgresGlobalState globalState) throws SQLException {
-        String username = globalState.getOptions().getUserName();
-        String password = globalState.getOptions().getPassword();
-        String entryPath = "/test";
-        String entryURL = globalState.getDmbsSpecificOptions().connectionURL;
+        username = globalState.getOptions().getUserName();
+        password = globalState.getOptions().getPassword();
+        entryPath = "/test";
+        entryURL = globalState.getDmbsSpecificOptions().connectionURL;
         // trim URL to exclude "jdbc:"
         if (entryURL.startsWith("jdbc:")) {
             entryURL = entryURL.substring(5);
@@ -233,15 +242,17 @@ public class PostgresProvider<G extends PostgresGlobalState<O, ?>, O extends Pos
             if (pathURI != null) {
                 entryPath = pathURI;
             }
+            host = uri.getHost();
+            port = uri.getPort();
         } catch (URISyntaxException e) {
             throw new AssertionError(e);
         }
         String entryDatabaseName = entryPath.substring(1);
-        String databaseName = globalState.getDatabaseName();
+        databaseName = globalState.getDatabaseName();
         Connection con = DriverManager.getConnection("jdbc:" + entryURL, username, password);
         globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
         globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
-        String createDatabaseCommand = getCreateDatabaseCommand(databaseName, con, globalState);
+        createDatabaseCommand = getCreateDatabaseCommand(databaseName, con, globalState);
         globalState.getState().logStatement(createDatabaseCommand);
         try (Statement s = con.createStatement()) {
             s.execute("DROP DATABASE IF EXISTS " + databaseName);
@@ -253,7 +264,7 @@ public class PostgresProvider<G extends PostgresGlobalState<O, ?>, O extends Pos
         int databaseIndex = entryURL.indexOf(entryPath) + 1;
         String preDatabaseName = entryURL.substring(0, databaseIndex);
         String postDatabaseName = entryURL.substring(databaseIndex + entryDatabaseName.length());
-        String testURL = preDatabaseName + databaseName + postDatabaseName;
+        testURL = preDatabaseName + databaseName + postDatabaseName;
         globalState.getState().logStatement(String.format("\\c %s;", databaseName));
         con = DriverManager.getConnection("jdbc:" + testURL, username, password);
         return con;
