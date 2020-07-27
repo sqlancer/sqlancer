@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.JCommander.Builder;
 
+import sqlancer.citus.CitusProvider;
 import sqlancer.clickhouse.ClickHouseProvider;
 import sqlancer.cockroachdb.CockroachDBProvider;
 import sqlancer.duckdb.DuckDBProvider;
@@ -544,6 +545,7 @@ public final class Main {
         providers.add(new PostgresProvider());
         providers.add(new ClickHouseProvider());
         providers.add(new DuckDBProvider());
+        providers.add(new CitusProvider());
         return providers;
     }
 
