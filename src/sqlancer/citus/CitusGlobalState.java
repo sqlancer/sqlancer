@@ -18,6 +18,7 @@ public class CitusGlobalState extends PostgresGlobalState {
 
     @Override
     protected void updateSchema() throws SQLException {
+        // FIXME: Will casting lose CitusSchema information?
         setSchema(CitusSchema.fromConnection(getConnection(), getDatabaseName()));
     }
 

@@ -1,34 +1,50 @@
 package sqlancer.citus;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import sqlancer.QueryAdapter;
+import sqlancer.Randomly;
+import sqlancer.citus.CitusSchema.CitusTable;
 import sqlancer.citus.gen.CitusCommon;
+import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresProvider;
+import sqlancer.postgres.PostgresSchema;
+import sqlancer.postgres.PostgresSchema.PostgresColumn;
+import sqlancer.postgres.PostgresSchema.PostgresDataType;
+import sqlancer.postgres.PostgresSchema.PostgresTable;
 
 public class CitusProvider extends PostgresProvider {
-    
+    // FIXME: 
     protected final Set<String> errors = new HashSet<>();
     
     public CitusProvider() {
+        // how to change the extension of the super class?
         super();
         CitusCommon.addCitusErrors(errors);
     }
 
-    // FIXME: static or not?
     private class WorkerNode{
 
-        private final String name;
+        private final String host;
         private final int port;
 
-        public WorkerNode(String node_name, int node_port) {
-            this.name = node_name;
+        public WorkerNode(String node_host, int node_port) {
+            this.host = node_host;
             this.port = node_port; 
         }
 
-        public String get_name() {
-            return this.name;
+        public String get_host() {
+            return this.host;
         }
 
         public int get_port() {
@@ -37,8 +53,7 @@ public class CitusProvider extends PostgresProvider {
 
     }
 
-    // FIXME: static or not?
-    private final void distributeTable(List<PostgresColumn> columns, String tableName, PostgresGlobalState globalState, Connection con) throws SQLException {
+    private static void distributeTable(List<PostgresColumn> columns, String tableName, CitusGlobalState globalState, Connection con) throws SQLException {
         if (columns.size() != 0) {
             PostgresColumn columnToDistribute = Randomly.fromList(columns);
             QueryAdapter query = new QueryAdapter("SELECT create_distributed_table('" + tableName + "', '" + columnToDistribute.getName() + "');", errors);
@@ -52,7 +67,7 @@ public class CitusProvider extends PostgresProvider {
         }
     }
 
-    private final List<String> getTableConstraints(String tableName, PostgresGlobalState globalState, Connection con) throws SQLException {
+    private static List<String> getTableConstraints(String tableName, CitusGlobalState globalState, Connection con) throws SQLException {
         List<String> constraints = new ArrayList<>();
         QueryAdapter query = new QueryAdapter("SELECT constraint_type FROM information_schema.table_constraints WHERE table_name = '" + tableName + "' AND (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' or constraint_type = 'EXCLUDE');");
         String template = "SELECT constraint_type FROM information_schema.table_constraints WHERE table_name = ? AND (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' or constraint_type = 'EXCLUDE');";
@@ -65,8 +80,7 @@ public class CitusProvider extends PostgresProvider {
         return constraints;
     }
 
-    // FIXME: static or not?
-    private final void createDistributedTable(String tableName, PostgresGlobalState globalState, Connection con) throws SQLException {
+    private static void createDistributedTable(String tableName, CitusGlobalState globalState, Connection con) throws SQLException {
         List<PostgresColumn> columns = new ArrayList<>();
         List<String> tableConstraints = getTableConstraints(tableName, globalState, con);
         if (tableConstraints.size() == 0) {
@@ -79,7 +93,7 @@ public class CitusProvider extends PostgresProvider {
                 String dataType = rs.getString("data_type");
                 // data types money & bit varying have no default operator class for specified partition method
                 if (! (dataType.equals("money") || dataType.equals("bit varying"))) {
-                    PostgresColumn c = new PostgresColumn(columnName, getColumnType(dataType));
+                    PostgresColumn c = new PostgresColumn(columnName, PostgresSchema.getColumnType(dataType));
                     columns.add(c);
                 }
             }
@@ -98,7 +112,7 @@ public class CitusProvider extends PostgresProvider {
                 String constraintType = rs.getString("constraint_type");
                 // data types money & bit varying have no default operator class for specified partition method
                 if (! (dataType.equals("money") || dataType.equals("bit varying"))) {
-                    PostgresColumn c = new PostgresColumn(columnName, getColumnType(dataType));
+                    PostgresColumn c = new PostgresColumn(columnName, PostgresSchema.getColumnType(dataType));
                     if (columnConstraints.containsKey(c)) {
                         columnConstraints.get(c).add(constraintType);
                     } else {
@@ -117,8 +131,7 @@ public class CitusProvider extends PostgresProvider {
         distributeTable(columns, tableName, globalState, con);
     }
 
-    @Override
-    public void generateDatabase(PostgresGlobalState globalState) throws SQLException {
+    public void generateDatabase(CitusGlobalState globalState) throws SQLException {
         // TODO: function reading? add to Postgres implementation?
         createTables(globalState);
         for (PostgresTable table : globalState.getSchema().getDatabaseTables()) {
@@ -127,7 +140,7 @@ public class CitusProvider extends PostgresProvider {
                 // create local table
             } else if (Randomly.getBooleanWithRatherLowProbability()) {
                 // create reference table
-                query = new QueryAdapter("SELECT create_reference_table('" + table.getName() + "');", errors);
+                QueryAdapter query = new QueryAdapter("SELECT create_reference_table('" + table.getName() + "');", errors);
                 String template = "SELECT create_reference_table(?);";
                 List<String> fills = Arrays.asList(table.getName());
                 globalState.fillAndExecuteStatement(query, template, fills);
@@ -142,6 +155,102 @@ public class CitusProvider extends PostgresProvider {
             // allow repartition joins
             globalState.executeStatement(new QueryAdapter("SET citus.enable_repartition_joins to ON;\n", errors));
         }
+    }
+
+    //FIXME: pass in Postgres or CitusGlobalState?
+    @Override
+    public Connection createDatabase(PostgresGlobalState globalState) throws SQLException {
+        // returns connection to coordinator node, test database
+        Connection con = super.createDatabase(globalState);
+        
+        // add citus extension to coordinator node, test database
+        globalState.getState().logStatement(new QueryAdapter("CREATE EXTENSION citus;"));
+        try (Statement s = con.createStatement()) {
+            s.execute("CREATE EXTENSION citus;");
+        }
+        con.close();
+        
+        // reconnect to coordinator node, entry database
+        globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
+        con = DriverManager.getConnection("jdbc:" + entryURL, username, password);
+        
+        // read info about worker nodes
+        globalState.getState().logStatement("SELECT * FROM master_get_active_worker_nodes()");
+        List<WorkerNode> workerNodes = new ArrayList<>();
+        try (Statement s = con.createStatement()) {
+            ResultSet rs = s.executeQuery("SELECT * FROM master_get_active_worker_nodes();");
+            while (rs.next()) {
+                String node_host = rs.getString("node_host");
+                int node_port = rs.getInt("node_port");
+                WorkerNode w = new WorkerNode(node_host, node_port);
+                workerNodes.add(w);
+            }
+        }
+        con.close();
+
+        for (WorkerNode w : workerNodes) {
+            // connect to worker node, entry database
+            int hostIndex = entryURL.indexOf(host);
+            String preHost = entryURL.substring(0, hostIndex);
+            String postHost = entryURL.substring(databaseIndex - 1);
+            String entryWorkerURL = preHost + w.get_host() + ":" + w.get_port() + postHost;
+            // TODO: better way of logging this
+            globalState.getState().logStatement("\\q");
+            globalState.getState().logStatement(entryWorkerURL);
+            globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
+            con = DriverManager.getConnection(entryWorkerURL, username, password);
+
+            // create test database at worker node
+            globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
+            globalState.getState().logStatement(createDatabaseCommand);
+            try (Statement s = con.createStatement()) {
+                s.execute("DROP DATABASE IF EXISTS " + databaseName);
+            }
+            try (Statement s = con.createStatement()) {
+                s.execute(createDatabaseCommand);
+            }
+            con.close();
+
+            // connect to worker node, test database
+            int databaseIndexWorker = entryWorkerURL.indexOf(entryPath) + 1;
+            String preDatabaseNameWorker = entryWorkerURL.substring(0, databaseIndex);
+            String postDatabaseNameWorker = entryWorkerURL.substring(databaseIndex + entryDatabaseName.length());
+            String testWorkerURL = preDatabaseNameWorker + databaseName + postDatabaseNameWorker;
+            globalState.getState().logStatement(String.format("\\c %s;", databaseName));
+            con = DriverManager.getConnection("jdbc:" + testWorkerURL, username, password);
+            
+            // add citus extension to worker node, test database
+            globalState.getState().logStatement("CREATE EXTENSION citus;");
+            try (Statement s = con.createStatement()) {
+                s.execute("CREATE EXTENSION citus;");
+            }
+            con.close();
+        }
+        
+        // reconnect to coordinator node, test database
+        // TODO: better way of logging this
+        globalState.getState().logStatement("\\q");
+        globalState.getState().logStatement(testURL);
+        con = DriverManager.getConnection(testURL, username, password);
+            
+        // add worker nodes to coordinator node for test database
+        for (WorkerNode w : workerNodes) {
+            // TODO: protect from sql injection - is it necessary though since these are read from the system?
+            String addWorkers = "SELECT * from master_add_node('" + w.get_host() + "', " + w.get_port() + ");";
+            globalState.getState().logStatement(addWorkers);
+            try (Statement s = con.createStatement()) {
+                s.execute(addWorkers);
+            }
+        }
+        con.close();
+        // reconnect to coordinator node, test database
+        con = DriverManager.getConnection(testURL, username, password);
+        return con;
+    }
+
+    @Override
+    public String getDBMSName() {
+        return "citus";
     }
 
 }

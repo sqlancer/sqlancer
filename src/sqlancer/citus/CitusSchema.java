@@ -7,15 +7,17 @@ import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import sqlancer.postgres.PostgresSchema;
 
 public class CitusSchema extends PostgresSchema {
 
     public CitusSchema(List<CitusTable> databaseTables, String databaseName) {
-        super(databaseTables, databaseName);
+        // FIXME: Will casting to PostgresTable lose CitusTable features?
+        super(new ArrayList<>(databaseTables), databaseName);
     }
-    
+
     public static class CitusTable extends PostgresTable {
 
         private PostgresColumn distributionColumn = null;
@@ -44,11 +46,10 @@ public class CitusSchema extends PostgresSchema {
 
     }
 
-    // TODO: Override?
     public static CitusSchema fromConnection(Connection con, String databaseName) throws SQLException {
         Exception ex = null;
         try {
-            List<PostgresTable> databaseTables = new ArrayList<>();
+            List<CitusTable> databaseTables = new ArrayList<>();
             try (Statement s = con.createStatement()) {
                 try (ResultSet rs = s.executeQuery(
                         "SELECT table_name, table_schema, table_type, is_insertable_into, column_to_column_name(logicalrelid, partkey) AS dist_col_name, colocationid FROM information_schema.tables LEFT OUTER JOIN pg_dist_partition ON logicalrelid=table_name::regclass WHERE table_schema='public' OR table_schema LIKE 'pg_temp_%';")) {
@@ -70,7 +71,7 @@ public class CitusSchema extends PostgresSchema {
                         List<PostgresColumn> databaseColumns = getTableColumns(con, tableName);
                         List<PostgresIndex> indexes = getIndexes(con, tableName);
                         List<PostgresStatisticsObject> statistics = getStatistics(con);
-                        PostgresTable t = new PostgresTable(tableName, databaseColumns, indexes, tableType, statistics,
+                        CitusTable t = new CitusTable(tableName, databaseColumns, indexes, tableType, statistics,
                                 isView, isInsertable);
                         if (distributionColumnName != null && !distributionColumnName.equals("")) {
                             PostgresColumn distributionColumn = databaseColumns.stream().filter(c -> c.getName().equals(distributionColumnName)).collect(Collectors.toList()).get(0);
@@ -92,4 +93,5 @@ public class CitusSchema extends PostgresSchema {
         }
         throw new AssertionError(ex);
     }
+    
 }

@@ -258,8 +258,8 @@ public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, Postg
         return con;
     }
 
-    private void createTables(PostgresGlobalState globalState) throws SQLException {
-        while (globalState.getSchema().getDatabaseTables().size() < Randomly.fromOptions(1, 2)) {
+    protected void createTables(PostgresGlobalState globalState) throws SQLException {
+        while (globalState.getSchema().getDatabaseTables().size() < Randomly.fromOptions(4, 5, 6)) {
             try {
                 String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
                 Query createTable = PostgresTableGenerator.generate(tableName, globalState.getSchema(),
@@ -271,7 +271,7 @@ public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, Postg
         }
     }
 
-    private void prepareTables(PostgresGlobalState globalState) throws SQLException {
+    protected void prepareTables(PostgresGlobalState globalState) throws SQLException {
         StatementExecutor<PostgresGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
                 PostgresProvider::mapActions, (q) -> {
                     if (globalState.getSchema().getDatabaseTables().isEmpty()) {

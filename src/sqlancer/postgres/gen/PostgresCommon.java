@@ -19,7 +19,7 @@ import sqlancer.postgres.PostgresVisitor;
 
 public class PostgresCommon {
 
-    private PostgresCommon() {
+    protected PostgresCommon() {
     }
 
     public static void addCommonFetchErrors(Set<String> errors) {
