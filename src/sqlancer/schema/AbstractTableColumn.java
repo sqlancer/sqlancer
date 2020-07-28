@@ -52,7 +52,10 @@ public class AbstractTableColumn<T extends AbstractTable<?, ?>, U> implements Co
         } else {
             @SuppressWarnings("unchecked")
             AbstractTableColumn<T, U> c = (AbstractTableColumn<T, U>) obj;
-            return table.getName().contentEquals(getName()) && getName().equals(c.getName());
+            if (c.getTable() == null) {
+                return getName().equals(c.getName());
+            }
+            return table.getName().contentEquals(c.getTable().getName()) && getName().equals(c.getName());
         }
     }
 
