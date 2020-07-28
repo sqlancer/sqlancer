@@ -23,7 +23,7 @@ public abstract class Query {
      *
      * @throws SQLException
      */
-    public abstract boolean execute(GlobalState<?, ?> globalState) throws SQLException;
+    public abstract boolean execute(GlobalState<?, ?> globalState, String... fills) throws SQLException;
 
     public abstract Collection<String> getExpectedErrors();
 
@@ -32,7 +32,7 @@ public abstract class Query {
         return getQueryString();
     }
 
-    public ResultSet executeAndGet(GlobalState<?, ?> globalState) throws SQLException {
+    public ResultSet executeAndGet(GlobalState<?, ?> globalState, String... fills) throws SQLException {
         throw new AssertionError();
     }
 

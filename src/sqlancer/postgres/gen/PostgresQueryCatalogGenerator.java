@@ -33,7 +33,7 @@ public final class PostgresQueryCatalogGenerator {
                         "pg_ts_template", "pg_type", "pg_user_mapping"));
         return new QueryAdapter(sb.toString()) {
             @Override
-            public boolean execute(GlobalState<?, ?> globalState) throws SQLException {
+            public boolean execute(GlobalState<?, ?> globalState, String... fills) throws SQLException {
                 try (Statement s = globalState.getConnection().createStatement()) {
                     try (ResultSet rs = s.executeQuery(getQueryString())) {
                         // CHECKSTYLE:OFF

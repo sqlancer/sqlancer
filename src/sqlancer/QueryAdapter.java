@@ -1,5 +1,6 @@
 package sqlancer;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -57,8 +58,17 @@ public class QueryAdapter extends Query {
     }
 
     @Override
-    public boolean execute(GlobalState<?, ?> globalState) throws SQLException {
-        try (Statement s = globalState.getConnection().createStatement()) {
+    public boolean execute(GlobalState<?, ?> globalState, String... fills) throws SQLException {
+        Statement s;
+        if (fills.length > 0) {
+            s = globalState.getConnection().prepareStatement(getQueryString());
+            for (int i = 0; i < fills.length; i++) {
+                ((PreparedStatement) s).setString(i, fills[i]);
+            }
+        } else {
+            s = globalState.getConnection().createStatement();
+        }
+        try {
             s.execute(query);
             Main.nrSuccessfulActions.addAndGet(1);
             return true;
@@ -83,8 +93,16 @@ public class QueryAdapter extends Query {
     }
 
     @Override
-    public ResultSet executeAndGet(GlobalState<?, ?> globalState) throws SQLException {
-        Statement s = globalState.getConnection().createStatement();
+    public ResultSet executeAndGet(GlobalState<?, ?> globalState, String... fills) throws SQLException {
+        Statement s;
+        if (fills.length > 0) {
+            s = globalState.getConnection().prepareStatement(getQueryString());
+            for (int i = 0; i < fills.length; i++) {
+                ((PreparedStatement) s).setString(i, fills[i]);
+            }
+        } else {
+            s = globalState.getConnection().createStatement();
+        }
         ResultSet result = null;
         try {
             result = s.executeQuery(query);
@@ -92,17 +110,8 @@ public class QueryAdapter extends Query {
             return result;
         } catch (Exception e) {
             s.close();
-            boolean isExcluded = false;
             Main.nrUnsuccessfulActions.addAndGet(1);
-            for (String expectedError : expectedErrors) {
-                if (e.getMessage().contains(expectedError)) {
-                    isExcluded = true;
-                    break;
-                }
-            }
-            if (!isExcluded) {
-                throw e;
-            }
+            checkException(e);
         }
         return null;
     }
