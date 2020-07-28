@@ -537,7 +537,6 @@ public final class Main {
         return threadsShutdown == 0 ? 0 : options.getErrorExitCode();
     }
 
-    @SuppressWarnings("unchecked")
     static List<DatabaseProvider<?, ?>> getDBMSProviders() {
         List<DatabaseProvider<?, ?>> providers = new ArrayList<>();
         providers.add(new SQLite3Provider());
@@ -545,10 +544,10 @@ public final class Main {
         providers.add(new MySQLProvider());
         providers.add(new MariaDBProvider());
         providers.add(new TiDBProvider());
-        providers.add(new PostgresProvider(PostgresGlobalState.class, PostgresOptions.class));
+        providers.add(new PostgresProvider());
+        providers.add(new CitusProvider());
         providers.add(new ClickHouseProvider());
         providers.add(new DuckDBProvider());
-        providers.add(new CitusProvider());
         return providers;
     }
 

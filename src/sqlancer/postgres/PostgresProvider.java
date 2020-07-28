@@ -68,7 +68,11 @@ public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, Postg
     protected String databaseName;
     protected String createDatabaseCommand;
 
-    public PostgresProvider(Class<PostgresGlobalState> globalClass, Class<PostgresOptions> optionClass) {
+    public PostgresProvider() {
+        super(PostgresGlobalState.class, PostgresOptions.class);
+    }
+    
+    protected PostgresProvider(Class<PostgresGlobalState> globalClass, Class<PostgresOptions> optionClass) {
         super(globalClass, optionClass);
     }
 

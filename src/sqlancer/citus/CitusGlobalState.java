@@ -22,5 +22,3 @@ public class CitusGlobalState extends PostgresGlobalState {
     }
 
 }
-
- 
