@@ -64,6 +64,7 @@ public class CitusSchema extends PostgresSchema {
                         }
                         // TODO: also check insertable
                         // TODO: insert into view?
+                        // FIXME: This part looks like there will be improvements, should we be concerned that I am overwriting the method?
                         boolean isView = tableName.startsWith("v"); // tableTypeStr.contains("VIEW") ||
                                                                     // tableTypeStr.contains("LOCAL TEMPORARY") &&
                                                                     // !isInsertable;

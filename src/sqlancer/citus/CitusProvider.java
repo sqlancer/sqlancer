@@ -12,15 +12,36 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import sqlancer.AbstractAction;
+import sqlancer.IgnoreMeException;
+import sqlancer.Query;
 import sqlancer.QueryAdapter;
+import sqlancer.QueryProvider;
 import sqlancer.Randomly;
-import sqlancer.citus.gen.CitusCommon;
+import sqlancer.StatementExecutor;
+import sqlancer.citus.gen.*;
+import sqlancer.postgres.gen.PostgresAnalyzeGenerator;
+import sqlancer.postgres.gen.PostgresClusterGenerator;
+import sqlancer.postgres.gen.PostgresCommentGenerator;
+import sqlancer.postgres.gen.PostgresDiscardGenerator;
+import sqlancer.postgres.gen.PostgresDropIndexGenerator;
+import sqlancer.postgres.gen.PostgresIndexGenerator;
+import sqlancer.postgres.gen.PostgresNotifyGenerator;
+import sqlancer.postgres.gen.PostgresQueryCatalogGenerator;
+import sqlancer.postgres.gen.PostgresReindexGenerator;
+import sqlancer.postgres.gen.PostgresSequenceGenerator;
+import sqlancer.postgres.gen.PostgresStatisticsGenerator;
+import sqlancer.postgres.gen.PostgresTransactionGenerator;
+import sqlancer.postgres.gen.PostgresTruncateGenerator;
+import sqlancer.postgres.gen.PostgresVacuumGenerator;
+import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresOptions;
 import sqlancer.postgres.PostgresProvider;
 import sqlancer.postgres.PostgresSchema;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
+import sqlancer.postgres.PostgresSchema.PostgresTable.TableType;
 
 public class CitusProvider extends PostgresProvider {
 
@@ -31,6 +52,126 @@ public class CitusProvider extends PostgresProvider {
     public CitusProvider() {
         super((Class<PostgresGlobalState>)(Object) CitusGlobalState.class, (Class<PostgresOptions>)(Object) CitusOptions.class);
         CitusCommon.addCitusErrors(errors);
+    }
+
+    public enum Action implements AbstractAction<PostgresGlobalState> {
+        ANALYZE(PostgresAnalyzeGenerator::create), //
+        ALTER_TABLE(g -> CitusAlterTableGenerator.create(g.getSchema().getRandomTable(t -> !t.isView()), g,
+                generateOnlyKnown)), //
+        CLUSTER(PostgresClusterGenerator::create), //
+        COMMIT(g -> {
+            Query query;
+            if (Randomly.getBoolean()) {
+                query = new QueryAdapter("COMMIT", true);
+            } else if (Randomly.getBoolean()) {
+                query = PostgresTransactionGenerator.executeBegin();
+            } else {
+                query = new QueryAdapter("ROLLBACK", true);
+            }
+            return query;
+        }), //
+        CREATE_STATISTICS(PostgresStatisticsGenerator::insert), //
+        DROP_STATISTICS(PostgresStatisticsGenerator::remove), //
+        DELETE(CitusDeleteGenerator::create), //
+        DISCARD(PostgresDiscardGenerator::create), //
+        DROP_INDEX(PostgresDropIndexGenerator::create), //
+        INSERT(CitusInsertGenerator::insert), //
+        UPDATE(CitusUpdateGenerator::create), //
+        TRUNCATE(PostgresTruncateGenerator::create), //
+        VACUUM(PostgresVacuumGenerator::create), //
+        REINDEX(PostgresReindexGenerator::create), //
+        SET(CitusSetGenerator::create), //
+        CREATE_INDEX(PostgresIndexGenerator::generate), //
+        SET_CONSTRAINTS((g) -> {
+            StringBuilder sb = new StringBuilder();
+            sb.append("SET CONSTRAINTS ALL ");
+            sb.append(Randomly.fromOptions("DEFERRED", "IMMEDIATE"));
+            return new QueryAdapter(sb.toString());
+        }), //
+        RESET_ROLE((g) -> new QueryAdapter("RESET ROLE")), //
+        COMMENT_ON(PostgresCommentGenerator::generate), //
+        RESET((g) -> new QueryAdapter("RESET ALL") /*
+                                                    * https://www.postgresql.org/docs/devel/sql-reset.html TODO: also
+                                                    * configuration parameter
+                                                    */), //
+        NOTIFY(PostgresNotifyGenerator::createNotify), //
+        LISTEN((g) -> PostgresNotifyGenerator.createListen()), //
+        UNLISTEN((g) -> PostgresNotifyGenerator.createUnlisten()), //
+        CREATE_SEQUENCE(PostgresSequenceGenerator::createSequence), //
+        CREATE_VIEW(CitusViewGenerator::create), //
+        QUERY_CATALOG((g) -> PostgresQueryCatalogGenerator.query());
+
+        private final QueryProvider<PostgresGlobalState> queryProvider;
+
+        Action(QueryProvider<PostgresGlobalState> queryProvider) {
+            this.queryProvider = queryProvider;
+        }
+
+        @Override
+        public Query getQuery(PostgresGlobalState state) throws SQLException {
+            return queryProvider.getQuery(state);
+        }
+    }
+
+    private static int mapActions(PostgresGlobalState globalState, Action a) {
+        Randomly r = globalState.getRandomly();
+        int nrPerformed;
+        switch (a) {
+        case CREATE_INDEX:
+        case CLUSTER:
+            nrPerformed = r.getInteger(0, 3);
+            break;
+        case CREATE_STATISTICS:
+            nrPerformed = r.getInteger(0, 5);
+            break;
+        case DISCARD:
+        case DROP_INDEX:
+            nrPerformed = r.getInteger(0, 5);
+            break;
+        case COMMIT:
+            nrPerformed = r.getInteger(0, 0);
+            break;
+        case ALTER_TABLE:
+            nrPerformed = r.getInteger(0, 5);
+            break;
+        case REINDEX:
+        case RESET:
+            nrPerformed = r.getInteger(0, 3);
+            break;
+        case DELETE:
+        case RESET_ROLE:
+        case SET:
+        case QUERY_CATALOG:
+            nrPerformed = r.getInteger(0, 5);
+            break;
+        case ANALYZE:
+            nrPerformed = r.getInteger(0, 3);
+            break;
+        case VACUUM:
+        case SET_CONSTRAINTS:
+        case COMMENT_ON:
+        case NOTIFY:
+        case LISTEN:
+        case UNLISTEN:
+        case CREATE_SEQUENCE:
+        case DROP_STATISTICS:
+        case TRUNCATE:
+            nrPerformed = r.getInteger(0, 2);
+            break;
+        case CREATE_VIEW:
+            nrPerformed = r.getInteger(0, 2);
+            break;
+        case UPDATE:
+            nrPerformed = r.getInteger(0, 10);
+            break;
+        case INSERT:
+            nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
+            break;
+        default:
+            throw new AssertionError(a);
+        }
+        return nrPerformed;
+
     }
 
     private class WorkerNode{
@@ -56,10 +197,9 @@ public class CitusProvider extends PostgresProvider {
     private static void distributeTable(List<PostgresColumn> columns, String tableName, CitusGlobalState globalState, Connection con) throws SQLException {
         if (columns.size() != 0) {
             PostgresColumn columnToDistribute = Randomly.fromList(columns);
-            QueryAdapter query = new QueryAdapter("SELECT create_distributed_table('" + tableName + "', '" + columnToDistribute.getName() + "');", errors);
             String template = "SELECT create_distributed_table(?, ?);";
-            List<String> fills = Arrays.asList(tableName, columnToDistribute.getName());
-            globalState.fillAndExecuteStatement(query, template, fills);
+            QueryAdapter query = new QueryAdapter(template, errors);
+            globalState.executeStatement(query, template, tableName, columnToDistribute.getName());
             // distribution column cannot take NULL value
             // TODO: find a way to protect from SQL injection without '' around string input
             query = new QueryAdapter("ALTER TABLE " + tableName + " ALTER COLUMN " + columnToDistribute.getName() + " SET NOT NULL;", errors);
@@ -69,11 +209,9 @@ public class CitusProvider extends PostgresProvider {
 
     private static List<String> getTableConstraints(String tableName, CitusGlobalState globalState, Connection con) throws SQLException {
         List<String> constraints = new ArrayList<>();
-        QueryAdapter query = new QueryAdapter("SELECT constraint_type FROM information_schema.table_constraints WHERE table_name = '" + tableName + "' AND (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' or constraint_type = 'EXCLUDE');");
         String template = "SELECT constraint_type FROM information_schema.table_constraints WHERE table_name = ? AND (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' or constraint_type = 'EXCLUDE');";
-        List<String> fills = new ArrayList<>();
-        fills.add(tableName);
-        ResultSet rs = query.fillAndExecuteAndGet(globalState, template, fills);
+        QueryAdapter query = new QueryAdapter(template);
+        ResultSet rs = query.executeAndGet(globalState, template, tableName);
         while (rs.next()) {
             constraints.add(rs.getString("constraint_type"));
         }
@@ -84,10 +222,9 @@ public class CitusProvider extends PostgresProvider {
         List<PostgresColumn> columns = new ArrayList<>();
         List<String> tableConstraints = getTableConstraints(tableName, globalState, con);
         if (tableConstraints.size() == 0) {
-            QueryAdapter query = new QueryAdapter("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '" + tableName + "';");
             String template = "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = ?;";
-            List<String> fills = Arrays.asList(tableName);
-            ResultSet rs = query.fillAndExecuteAndGet(globalState, template, fills);
+            QueryAdapter query = new QueryAdapter(template);
+            ResultSet rs = query.executeAndGet(globalState, template, tableName);
             while (rs.next()) {
                 String columnName = rs.getString("column_name");
                 String dataType = rs.getString("data_type");
@@ -98,14 +235,10 @@ public class CitusProvider extends PostgresProvider {
                 }
             }
         } else {
-            // TODO: multiple constraints?
             HashMap<PostgresColumn, List<String>> columnConstraints = new HashMap<>();
-            QueryAdapter query = new QueryAdapter("SELECT c.column_name, c.data_type, tc.constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' OR constraint_type = 'EXCLUDE') AND c.table_name = '" + tableName + "';");
-            // TODO: decide whether to log
-            // globalState.getState().statements.add(query);
             String template = "SELECT c.column_name, c.data_type, tc.constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' OR constraint_type = 'EXCLUDE') AND c.table_name = ?;";
-            List<String> fills = Arrays.asList(tableName);
-            ResultSet rs = query.fillAndExecuteAndGet(globalState, template, fills);
+            QueryAdapter query = new QueryAdapter(template);
+            ResultSet rs = query.executeAndGet(globalState, template, tableName);
             while (rs.next()) {
                 String columnName = rs.getString("column_name");
                 String dataType = rs.getString("data_type");
@@ -136,15 +269,13 @@ public class CitusProvider extends PostgresProvider {
         // TODO: function reading? add to Postgres implementation?
         createTables(globalState);
         for (PostgresTable table : globalState.getSchema().getDatabaseTables()) {
-            // TODO: random 0-1 range double
-            if (Randomly.getBooleanWithRatherLowProbability()) {
+            if (table.getTableType() == TableType.TEMPORARY || Randomly.getBooleanWithRatherLowProbability()) {
                 // create local table
             } else if (Randomly.getBooleanWithRatherLowProbability()) {
                 // create reference table
-                QueryAdapter query = new QueryAdapter("SELECT create_reference_table('" + table.getName() + "');", errors);
                 String template = "SELECT create_reference_table(?);";
-                List<String> fills = Arrays.asList(table.getName());
-                globalState.fillAndExecuteStatement(query, template, fills);
+                QueryAdapter query = new QueryAdapter(template, errors);
+                globalState.executeStatement(query, template, table.getName());
             } else {
                 // create distributed table
                 createDistributedTable(table.getName(), (CitusGlobalState) globalState, globalState.getConnection());
@@ -158,7 +289,6 @@ public class CitusProvider extends PostgresProvider {
         }
     }
 
-    //FIXME: pass in Postgres or CitusGlobalState?
     @Override
     public Connection createDatabase(PostgresGlobalState globalState) throws SQLException {
         synchronized(CitusProvider.class) {
@@ -250,6 +380,32 @@ public class CitusProvider extends PostgresProvider {
             con = DriverManager.getConnection("jdbc:" + testURL, username, password);
             return con;
         }
+    }
+
+    @Override
+    protected void createTables(PostgresGlobalState globalState) throws SQLException {
+        while (globalState.getSchema().getDatabaseTables().size() < Randomly.fromOptions(1, 2)) {
+            try {
+                String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
+                Query createTable = CitusTableGenerator.generate(tableName, globalState.getSchema(),
+                        generateOnlyKnown, globalState);
+                globalState.executeStatement(createTable);
+            } catch (IgnoreMeException e) {
+
+            }
+        }
+    }
+    
+    @Override
+    protected void prepareTables(PostgresGlobalState globalState) throws SQLException {
+        StatementExecutor<PostgresGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(), CitusProvider::mapActions, (q) -> {
+            if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+                throw new IgnoreMeException();
+            }
+        });
+        se.executeStatements();
+        globalState.executeStatement(new QueryAdapter("COMMIT", true));
+        globalState.executeStatement(new QueryAdapter("SET SESSION statement_timeout = 5000;\n"));
     }
 
     @Override

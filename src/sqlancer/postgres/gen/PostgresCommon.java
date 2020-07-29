@@ -262,7 +262,7 @@ public class PostgresCommon {
         addTableConstraint(sb, table, globalState, Randomly.fromOptions(TableConstraints.values()), errors);
     }
 
-    private static void addTableConstraint(StringBuilder sb, PostgresTable table, PostgresGlobalState globalState,
+    protected static void addTableConstraint(StringBuilder sb, PostgresTable table, PostgresGlobalState globalState,
             TableConstraints t, Set<String> errors) {
         List<PostgresColumn> randomNonEmptyColumnSubset = table.getRandomNonEmptyColumnSubset();
         List<PostgresColumn> otherColumns;

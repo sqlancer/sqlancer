@@ -2,6 +2,9 @@ package sqlancer.citus.gen;
 
 import java.util.Set;
 
+import sqlancer.Randomly;
+import sqlancer.postgres.PostgresGlobalState;
+import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.gen.PostgresCommon;
 
 public class CitusCommon extends PostgresCommon {
@@ -47,6 +50,12 @@ public class CitusCommon extends PostgresCommon {
         // current errors to be removed once upgraded to PostgreSQL 13?
         errors.add("unrecognized configuration parameter \"enable_hashagg_disk\"");
         errors.add("unrecognized configuration parameter \"enable_groupingsets_hash_disk\"");
+    }
+
+    public static void addTableConstraint(StringBuilder sb, PostgresTable table, PostgresGlobalState globalState,
+            Set<String> errors) {
+        addTableConstraint(sb, table, globalState, Randomly.fromOptions(TableConstraints.values()), errors);
+        CitusCommon.addCitusErrors(errors);
     }
     
 }

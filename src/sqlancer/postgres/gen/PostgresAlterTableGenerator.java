@@ -23,7 +23,7 @@ public class PostgresAlterTableGenerator {
     private List<String> opClasses;
     private PostgresGlobalState globalState;
 
-    private enum Action {
+    protected enum Action {
         // ALTER_TABLE_ADD_COLUMN, // [ COLUMN ] column data_type [ COLLATE collation ] [
         // column_constraint [ ... ] ]
         ALTER_TABLE_DROP_COLUMN, // DROP [ COLUMN ] [ IF EXISTS ] column [ RESTRICT | CASCADE ]
@@ -76,8 +76,7 @@ public class PostgresAlterTableGenerator {
         }
     };
 
-    public Query generate() {
-        Set<String> errors = new HashSet<>();
+    public List<Action> getActions(Set<String> errors) {
         PostgresCommon.addCommonExpressionErrors(errors);
         PostgresCommon.addCommonInsertUpdateErrors(errors);
         PostgresCommon.addCommonTableErrors(errors);
@@ -93,16 +92,6 @@ public class PostgresAlterTableGenerator {
         errors.add("could not find cast from");
         errors.add("does not exist"); // TODO: investigate
         errors.add("constraints on permanent tables may reference only permanent tables");
-        StringBuilder sb = new StringBuilder();
-        sb.append("ALTER TABLE ");
-        if (Randomly.getBoolean()) {
-            sb.append(" ONLY");
-            errors.add("cannot use ONLY for foreign key on partitioned table");
-        }
-        sb.append(" ");
-        sb.append(randomTable.getName());
-        sb.append(" ");
-        int i = 0;
         List<Action> action;
         if (Randomly.getBoolean()) {
             action = Randomly.nonEmptySubset(Action.values());
@@ -121,6 +110,22 @@ public class PostgresAlterTableGenerator {
         if (action.isEmpty()) {
             throw new IgnoreMeException();
         }
+        return action;
+    }
+
+    public Query generate() {
+        Set<String> errors = new HashSet<>();
+        int i = 0;
+        List<Action> action = getActions(errors);
+        StringBuilder sb = new StringBuilder();
+        sb.append("ALTER TABLE ");
+        if (Randomly.getBoolean()) {
+            sb.append(" ONLY");
+            errors.add("cannot use ONLY for foreign key on partitioned table");
+        }
+        sb.append(" ");
+        sb.append(randomTable.getName());
+        sb.append(" ");
         for (Action a : action) {
             if (i++ != 0) {
                 sb.append(", ");
