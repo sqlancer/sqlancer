@@ -20,14 +20,23 @@ public class CitusSchema extends PostgresSchema {
 
     public static class CitusTable extends PostgresTable {
 
-        private PostgresColumn distributionColumn = null;
-        private Integer colocationId = null;
+        private PostgresColumn distributionColumn;
+        private Integer colocationId;
 
         public CitusTable(String tableName, List<PostgresColumn> columns, List<PostgresIndex> indexes,
-                TableType tableType, List<PostgresStatisticsObject> statistics, boolean isView, boolean isInsertable) {
+                TableType tableType, List<PostgresStatisticsObject> statistics, boolean isView, boolean isInsertable, PostgresColumn distributionColumn, Integer colocationId) {
             super(tableName, columns, indexes, tableType, statistics, isView, isInsertable);
+            this.distributionColumn = distributionColumn;
+            this.colocationId = colocationId;
         }
 
+        public CitusTable(PostgresTable table, PostgresColumn distributionColumn, Integer colocationId) {
+            super(table.getName(), table.getColumns(), table.getIndexes(), table.getTableType(), 
+                table.getStatistics(), table.isView(), table.isInsertable());
+            this.distributionColumn = distributionColumn;
+            this.colocationId = colocationId;
+        }
+ 
         public void setDistributionColumn(PostgresColumn distributionColumn) {
             this.distributionColumn = distributionColumn;
         }
@@ -47,44 +56,32 @@ public class CitusSchema extends PostgresSchema {
     }
 
     public static CitusSchema fromConnection(Connection con, String databaseName) throws SQLException {
+        PostgresSchema schema = PostgresSchema.fromConnection(con, databaseName);
         Exception ex = null;
         try {
             List<CitusTable> databaseTables = new ArrayList<>();
             try (Statement s = con.createStatement()) {
                 try (ResultSet rs = s.executeQuery(
-                        "SELECT table_name, table_schema, table_type, is_insertable_into, column_to_column_name(logicalrelid, partkey) AS dist_col_name, colocationid FROM information_schema.tables LEFT OUTER JOIN pg_dist_partition ON logicalrelid=table_name::regclass WHERE table_schema='public' OR table_schema LIKE 'pg_temp_%';")) {
+                        "SELECT table_name, column_to_column_name(logicalrelid, partkey) AS dist_col_name, colocationid FROM information_schema.tables LEFT OUTER JOIN pg_dist_partition ON logicalrelid=table_name::regclass WHERE table_schema='public' OR table_schema LIKE 'pg_temp_%';")) {
                     while (rs.next()) {
                         String tableName = rs.getString("table_name");
-                        String tableTypeSchema = rs.getString("table_schema");
-                        boolean isInsertable = rs.getBoolean("is_insertable_into");
                         String distributionColumnName = rs.getString("dist_col_name");
                         Integer colocationId = rs.getInt("colocationid");
                         if (rs.wasNull()) {
                             colocationId = null;
                         }
-                        // TODO: also check insertable
-                        // TODO: insert into view?
-                        // FIXME: This part looks like there will be improvements, should we be concerned that I am overwriting the method?
-                        boolean isView = tableName.startsWith("v"); // tableTypeStr.contains("VIEW") ||
-                                                                    // tableTypeStr.contains("LOCAL TEMPORARY") &&
-                                                                    // !isInsertable;
-                        PostgresTable.TableType tableType = getTableType(tableTypeSchema);
-                        List<PostgresColumn> databaseColumns = getTableColumns(con, tableName);
-                        List<PostgresIndex> indexes = getIndexes(con, tableName);
-                        List<PostgresStatisticsObject> statistics = getStatistics(con);
-                        CitusTable t = new CitusTable(tableName, databaseColumns, indexes, tableType, statistics,
-                                isView, isInsertable);
+                        // FIXME: Are the CitusTable-specific features I'm adding going to persist after the function call?
+                        PostgresTable t = schema.getDatabaseTable(tableName);
+                        PostgresColumn distributionColumn = null;
+                        if (t == null) {
+                            continue;
+                        }
                         if (distributionColumnName != null && !distributionColumnName.equals("")) {
-                            PostgresColumn distributionColumn = databaseColumns.stream().filter(c -> c.getName().equals(distributionColumnName)).collect(Collectors.toList()).get(0);
-                            t.setDistributionColumn(distributionColumn);
+                            distributionColumn = t.getColumns().stream().filter(c -> c.getName().
+                                equals(distributionColumnName)).collect(Collectors.toList()).get(0);
                         }
-                        if (colocationId != null) {
-                            t.setColocationId(colocationId);
-                        }
-                        for (PostgresColumn c : databaseColumns) {
-                            c.setTable(t);
-                        }
-                        databaseTables.add(t);
+                        CitusTable tCitus = new CitusTable(t, distributionColumn, colocationId);
+                        databaseTables.add(tCitus);
                     }
                 }
             }

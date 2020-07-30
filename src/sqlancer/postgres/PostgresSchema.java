@@ -380,6 +380,10 @@ public class PostgresSchema {
         return databaseTables;
     }
 
+    public PostgresTable getDatabaseTable(String name) {
+        return databaseTables.stream().filter(t -> t.getName().equals(name)).findAny().orElse(null);
+    }
+
     public List<PostgresTable> getDatabaseTablesRandomSubsetNotEmpty() {
         return Randomly.nonEmptySubset(databaseTables);
     }

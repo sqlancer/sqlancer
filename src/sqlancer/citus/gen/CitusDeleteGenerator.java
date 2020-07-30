@@ -3,7 +3,6 @@ package sqlancer.citus.gen;
 import java.util.Set;
 
 import sqlancer.Query;
-import sqlancer.citus.gen.CitusCommon;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.gen.PostgresDeleteGenerator;
 
