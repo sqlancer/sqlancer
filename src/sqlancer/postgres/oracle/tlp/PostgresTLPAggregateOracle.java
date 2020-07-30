@@ -44,6 +44,10 @@ public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestO
     @Override
     public void check() throws SQLException {
         super.check();
+        aggregateCheck();
+    }
+
+    protected void aggregateCheck() throws SQLException {
         PostgresAggregateFunction aggregateFunction = Randomly.fromOptions(PostgresAggregateFunction.MAX,
                 PostgresAggregateFunction.MIN, PostgresAggregateFunction.SUM, PostgresAggregateFunction.BIT_AND,
                 PostgresAggregateFunction.BIT_OR, PostgresAggregateFunction.BOOL_AND, PostgresAggregateFunction.BOOL_OR,
@@ -78,7 +82,6 @@ public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestO
                     secondQueryString);
             throw new AssertionError(assertionMessage);
         }
-
     }
 
     private String createMetamorphicUnionQuery(PostgresSelect select, PostgresAggregate aggregate,

@@ -19,7 +19,21 @@ import sqlancer.QueryAdapter;
 import sqlancer.QueryProvider;
 import sqlancer.Randomly;
 import sqlancer.StatementExecutor;
-import sqlancer.citus.gen.*;
+import sqlancer.citus.gen.CitusAlterTableGenerator;
+import sqlancer.citus.gen.CitusCommon;
+import sqlancer.citus.gen.CitusDeleteGenerator;
+import sqlancer.citus.gen.CitusInsertGenerator;
+import sqlancer.citus.gen.CitusSetGenerator;
+import sqlancer.citus.gen.CitusTableGenerator;
+import sqlancer.citus.gen.CitusUpdateGenerator;
+import sqlancer.citus.gen.CitusViewGenerator;
+import sqlancer.postgres.PostgresGlobalState;
+import sqlancer.postgres.PostgresOptions;
+import sqlancer.postgres.PostgresProvider;
+import sqlancer.postgres.PostgresSchema;
+import sqlancer.postgres.PostgresSchema.PostgresColumn;
+import sqlancer.postgres.PostgresSchema.PostgresTable;
+import sqlancer.postgres.PostgresSchema.PostgresTable.TableType;
 import sqlancer.postgres.gen.PostgresAnalyzeGenerator;
 import sqlancer.postgres.gen.PostgresClusterGenerator;
 import sqlancer.postgres.gen.PostgresCommentGenerator;
@@ -35,22 +49,15 @@ import sqlancer.postgres.gen.PostgresTransactionGenerator;
 import sqlancer.postgres.gen.PostgresTruncateGenerator;
 import sqlancer.postgres.gen.PostgresVacuumGenerator;
 import sqlancer.sqlite3.gen.SQLite3Common;
-import sqlancer.postgres.PostgresGlobalState;
-import sqlancer.postgres.PostgresOptions;
-import sqlancer.postgres.PostgresProvider;
-import sqlancer.postgres.PostgresSchema;
-import sqlancer.postgres.PostgresSchema.PostgresColumn;
-import sqlancer.postgres.PostgresSchema.PostgresTable;
-import sqlancer.postgres.PostgresSchema.PostgresTable.TableType;
 
 public class CitusProvider extends PostgresProvider {
 
-    private static final Set<String> errors = new HashSet<>();
-    
-    
+    private static Set<String> errors = new HashSet<>();
+
     @SuppressWarnings("unchecked")
     public CitusProvider() {
-        super((Class<PostgresGlobalState>)(Object) CitusGlobalState.class, (Class<PostgresOptions>)(Object) CitusOptions.class);
+        super((Class<PostgresGlobalState>) (Object) CitusGlobalState.class,
+                (Class<PostgresOptions>) (Object) CitusOptions.class);
         CitusCommon.addCitusErrors(errors);
     }
 
@@ -174,27 +181,28 @@ public class CitusProvider extends PostgresProvider {
 
     }
 
-    private class WorkerNode{
+    private class WorkerNode {
 
         private final String host;
         private final int port;
 
-        public WorkerNode(String node_host, int node_port) {
-            this.host = node_host;
-            this.port = node_port; 
+        WorkerNode(String nodeHost, int nodePort) {
+            this.host = nodeHost;
+            this.port = nodePort;
         }
 
-        public String get_host() {
+        public String getHost() {
             return this.host;
         }
 
-        public int get_port() {
+        public int getPort() {
             return this.port;
         }
 
     }
 
-    private static void distributeTable(List<PostgresColumn> columns, String tableName, CitusGlobalState globalState, Connection con) throws SQLException {
+    private static void distributeTable(List<PostgresColumn> columns, String tableName, CitusGlobalState globalState,
+            Connection con) throws SQLException {
         if (columns.size() != 0) {
             PostgresColumn columnToDistribute = Randomly.fromList(columns);
             String template = "SELECT create_distributed_table(?, ?);";
@@ -202,12 +210,15 @@ public class CitusProvider extends PostgresProvider {
             globalState.executeStatement(query, template, tableName, columnToDistribute.getName());
             // distribution column cannot take NULL value
             // TODO: find a way to protect from SQL injection without '' around string input
-            query = new QueryAdapter("ALTER TABLE " + tableName + " ALTER COLUMN " + columnToDistribute.getName() + " SET NOT NULL;", errors);
+            query = new QueryAdapter(
+                    "ALTER TABLE " + tableName + " ALTER COLUMN " + columnToDistribute.getName() + " SET NOT NULL;",
+                    errors);
             globalState.executeStatement(query);
         }
     }
 
-    private static List<String> getTableConstraints(String tableName, CitusGlobalState globalState, Connection con) throws SQLException {
+    private static List<String> getTableConstraints(String tableName, CitusGlobalState globalState, Connection con)
+            throws SQLException {
         List<String> constraints = new ArrayList<>();
         String template = "SELECT constraint_type FROM information_schema.table_constraints WHERE table_name = ? AND (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' or constraint_type = 'EXCLUDE');";
         QueryAdapter query = new QueryAdapter(template);
@@ -218,7 +229,8 @@ public class CitusProvider extends PostgresProvider {
         return constraints;
     }
 
-    private static void createDistributedTable(String tableName, CitusGlobalState globalState, Connection con) throws SQLException {
+    private static void createDistributedTable(String tableName, CitusGlobalState globalState, Connection con)
+            throws SQLException {
         List<PostgresColumn> columns = new ArrayList<>();
         List<String> tableConstraints = getTableConstraints(tableName, globalState, con);
         if (tableConstraints.size() == 0) {
@@ -229,7 +241,7 @@ public class CitusProvider extends PostgresProvider {
                 String columnName = rs.getString("column_name");
                 String dataType = rs.getString("data_type");
                 // data types money & bit varying have no default operator class for specified partition method
-                if (! (dataType.equals("money") || dataType.equals("bit varying"))) {
+                if (!(dataType.equals("money") || dataType.equals("bit varying"))) {
                     PostgresColumn c = new PostgresColumn(columnName, PostgresSchema.getColumnType(dataType));
                     columns.add(c);
                 }
@@ -244,14 +256,14 @@ public class CitusProvider extends PostgresProvider {
                 String dataType = rs.getString("data_type");
                 String constraintType = rs.getString("constraint_type");
                 // data types money & bit varying have no default operator class for specified partition method
-                if (! (dataType.equals("money") || dataType.equals("bit varying"))) {
+                if (!(dataType.equals("money") || dataType.equals("bit varying"))) {
                     PostgresColumn c = new PostgresColumn(columnName, PostgresSchema.getColumnType(dataType));
                     if (columnConstraints.containsKey(c)) {
                         columnConstraints.get(c).add(constraintType);
                     } else {
                         columnConstraints.put(c, new ArrayList<>(Arrays.asList(constraintType)));
                     }
-                }  
+                }
             }
             for (PostgresColumn c : columnConstraints.keySet()) {
                 // TODO: check if table and column constraint sets are equal? but then it's O(N) instead of O(1)
@@ -269,17 +281,19 @@ public class CitusProvider extends PostgresProvider {
         // TODO: function reading? add to Postgres implementation?
         createTables(globalState);
         for (PostgresTable table : globalState.getSchema().getDatabaseTables()) {
-            if (table.getTableType() == TableType.TEMPORARY || Randomly.getBooleanWithRatherLowProbability()) {
-                // create local table
-            } else if (Randomly.getBooleanWithRatherLowProbability()) {
-                // create reference table
-                String template = "SELECT create_reference_table(?);";
-                QueryAdapter query = new QueryAdapter(template, errors);
-                globalState.executeStatement(query, template, table.getName());
-            } else {
-                // create distributed table
-                createDistributedTable(table.getName(), (CitusGlobalState) globalState, globalState.getConnection());
+            if (!(table.getTableType() == TableType.TEMPORARY || Randomly.getBooleanWithRatherLowProbability())) {
+                if (Randomly.getBooleanWithRatherLowProbability()) {
+                    // create reference table
+                    String template = "SELECT create_reference_table(?);";
+                    QueryAdapter query = new QueryAdapter(template, errors);
+                    globalState.executeStatement(query, template, table.getName());
+                } else {
+                    // create distributed table
+                    createDistributedTable(table.getName(), (CitusGlobalState) globalState,
+                            globalState.getConnection());
+                }
             }
+            // else: keep local table
         }
         ((CitusGlobalState) globalState).updateSchema();
         prepareTables(globalState);
@@ -291,7 +305,7 @@ public class CitusProvider extends PostgresProvider {
 
     @Override
     public Connection createDatabase(PostgresGlobalState globalState) throws SQLException {
-        synchronized(CitusProvider.class) {
+        synchronized (CitusProvider.class) {
             // returns connection to coordinator node, test database
             Connection con = super.createDatabase(globalState);
             String entryDatabaseName = entryPath.substring(1);
@@ -302,20 +316,20 @@ public class CitusProvider extends PostgresProvider {
                 s.execute("CREATE EXTENSION citus;");
             }
             con.close();
-            
+
             // reconnect to coordinator node, entry database
             globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
             con = DriverManager.getConnection("jdbc:" + entryURL, username, password);
-            
+
             // read info about worker nodes
             globalState.getState().logStatement("SELECT * FROM master_get_active_worker_nodes()");
             List<WorkerNode> workerNodes = new ArrayList<>();
             try (Statement s = con.createStatement()) {
                 ResultSet rs = s.executeQuery("SELECT * FROM master_get_active_worker_nodes();");
                 while (rs.next()) {
-                    String node_host = rs.getString("node_name");
-                    int node_port = rs.getInt("node_port");
-                    WorkerNode w = new WorkerNode(node_host, node_port);
+                    String nodeHost = rs.getString("node_name");
+                    int nodePort = rs.getInt("node_port");
+                    WorkerNode w = new WorkerNode(nodeHost, nodePort);
                     workerNodes.add(w);
                 }
             }
@@ -326,7 +340,7 @@ public class CitusProvider extends PostgresProvider {
                 int hostIndex = entryURL.indexOf(host);
                 String preHost = entryURL.substring(0, hostIndex);
                 String postHost = entryURL.substring(databaseIndex - 1);
-                String entryWorkerURL = preHost + w.get_host() + ":" + w.get_port() + postHost;
+                String entryWorkerURL = preHost + w.getHost() + ":" + w.getPort() + postHost;
                 // TODO: better way of logging this
                 globalState.getState().logStatement("\\q");
                 globalState.getState().logStatement(entryWorkerURL);
@@ -347,29 +361,30 @@ public class CitusProvider extends PostgresProvider {
                 // connect to worker node, test database
                 int databaseIndexWorker = entryWorkerURL.indexOf(entryPath) + 1;
                 String preDatabaseNameWorker = entryWorkerURL.substring(0, databaseIndexWorker);
-                String postDatabaseNameWorker = entryWorkerURL.substring(databaseIndexWorker + entryDatabaseName.length());
+                String postDatabaseNameWorker = entryWorkerURL
+                        .substring(databaseIndexWorker + entryDatabaseName.length());
                 String testWorkerURL = preDatabaseNameWorker + databaseName + postDatabaseNameWorker;
                 globalState.getState().logStatement(String.format("\\c %s;", databaseName));
                 con = DriverManager.getConnection("jdbc:" + testWorkerURL, username, password);
-                
+
                 // add citus extension to worker node, test database
                 globalState.getState().logStatement("CREATE EXTENSION citus;");
                 try (Statement s = con.createStatement()) {
                     s.execute("CREATE EXTENSION citus;");
                 }
                 con.close();
-                }
-            
+            }
+
             // reconnect to coordinator node, test database
             // TODO: better way of logging this
             globalState.getState().logStatement("\\q");
             globalState.getState().logStatement(testURL);
             con = DriverManager.getConnection("jdbc:" + testURL, username, password);
-                
+
             // add worker nodes to coordinator node for test database
             for (WorkerNode w : workerNodes) {
                 // TODO: protect from sql injection - is it necessary though since these are read from the system?
-                String addWorkers = "SELECT * from master_add_node('" + w.get_host() + "', " + w.get_port() + ");";
+                String addWorkers = "SELECT * from master_add_node('" + w.getHost() + "', " + w.getPort() + ");";
                 globalState.getState().logStatement(addWorkers);
                 try (Statement s = con.createStatement()) {
                     s.execute(addWorkers);
@@ -387,22 +402,23 @@ public class CitusProvider extends PostgresProvider {
         while (globalState.getSchema().getDatabaseTables().size() < Randomly.fromOptions(1, 2)) {
             try {
                 String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
-                Query createTable = CitusTableGenerator.generate(tableName, globalState.getSchema(),
-                        generateOnlyKnown, globalState);
+                Query createTable = CitusTableGenerator.generate(tableName, globalState.getSchema(), generateOnlyKnown,
+                        globalState);
                 globalState.executeStatement(createTable);
             } catch (IgnoreMeException e) {
 
             }
         }
     }
-    
+
     @Override
     protected void prepareTables(PostgresGlobalState globalState) throws SQLException {
-        StatementExecutor<PostgresGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(), CitusProvider::mapActions, (q) -> {
-            if (globalState.getSchema().getDatabaseTables().isEmpty()) {
-                throw new IgnoreMeException();
-            }
-        });
+        StatementExecutor<PostgresGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
+                CitusProvider::mapActions, (q) -> {
+                    if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+                        throw new IgnoreMeException();
+                    }
+                });
         se.executeStatements();
         globalState.executeStatement(new QueryAdapter("COMMIT", true));
         globalState.executeStatement(new QueryAdapter("SET SESSION statement_timeout = 5000;\n"));

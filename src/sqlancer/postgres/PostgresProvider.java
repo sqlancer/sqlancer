@@ -71,7 +71,7 @@ public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, Postg
     public PostgresProvider() {
         super(PostgresGlobalState.class, PostgresOptions.class);
     }
-    
+
     protected PostgresProvider(Class<PostgresGlobalState> globalClass, Class<PostgresOptions> optionClass) {
         super(globalClass, optionClass);
     }

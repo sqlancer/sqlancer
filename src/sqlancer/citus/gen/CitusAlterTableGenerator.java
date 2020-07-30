@@ -8,7 +8,7 @@ import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.gen.PostgresAlterTableGenerator;
 
 public class CitusAlterTableGenerator extends PostgresAlterTableGenerator {
-    
+
     public CitusAlterTableGenerator(PostgresTable randomTable, PostgresGlobalState globalState,
             boolean generateOnlyKnown) {
         super(randomTable, globalState, generateOnlyKnown);

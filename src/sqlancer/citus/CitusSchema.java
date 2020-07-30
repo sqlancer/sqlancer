@@ -24,19 +24,20 @@ public class CitusSchema extends PostgresSchema {
         private Integer colocationId;
 
         public CitusTable(String tableName, List<PostgresColumn> columns, List<PostgresIndex> indexes,
-                TableType tableType, List<PostgresStatisticsObject> statistics, boolean isView, boolean isInsertable, PostgresColumn distributionColumn, Integer colocationId) {
+                TableType tableType, List<PostgresStatisticsObject> statistics, boolean isView, boolean isInsertable,
+                PostgresColumn distributionColumn, Integer colocationId) {
             super(tableName, columns, indexes, tableType, statistics, isView, isInsertable);
             this.distributionColumn = distributionColumn;
             this.colocationId = colocationId;
         }
 
         public CitusTable(PostgresTable table, PostgresColumn distributionColumn, Integer colocationId) {
-            super(table.getName(), table.getColumns(), table.getIndexes(), table.getTableType(), 
-                table.getStatistics(), table.isView(), table.isInsertable());
+            super(table.getName(), table.getColumns(), table.getIndexes(), table.getTableType(), table.getStatistics(),
+                    table.isView(), table.isInsertable());
             this.distributionColumn = distributionColumn;
             this.colocationId = colocationId;
         }
- 
+
         public void setDistributionColumn(PostgresColumn distributionColumn) {
             this.distributionColumn = distributionColumn;
         }
@@ -70,15 +71,17 @@ public class CitusSchema extends PostgresSchema {
                         if (rs.wasNull()) {
                             colocationId = null;
                         }
-                        // FIXME: Are the CitusTable-specific features I'm adding going to persist after the function call?
+                        // FIXME: Are the CitusTable-specific features I'm adding going to persist after the function
+                        // call?
                         PostgresTable t = schema.getDatabaseTable(tableName);
                         PostgresColumn distributionColumn = null;
                         if (t == null) {
                             continue;
                         }
                         if (distributionColumnName != null && !distributionColumnName.equals("")) {
-                            distributionColumn = t.getColumns().stream().filter(c -> c.getName().
-                                equals(distributionColumnName)).collect(Collectors.toList()).get(0);
+                            distributionColumn = t.getColumns().stream()
+                                    .filter(c -> c.getName().equals(distributionColumnName))
+                                    .collect(Collectors.toList()).get(0);
                         }
                         CitusTable tCitus = new CitusTable(t, distributionColumn, colocationId);
                         databaseTables.add(tCitus);
@@ -91,5 +94,5 @@ public class CitusSchema extends PostgresSchema {
         }
         throw new AssertionError(ex);
     }
-    
+
 }

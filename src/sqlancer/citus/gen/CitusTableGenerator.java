@@ -11,5 +11,5 @@ public class CitusTableGenerator extends PostgresTableGenerator {
         super(tableName, newSchema, generateOnlyKnown, globalState);
         CitusCommon.addCitusErrors(errors);
     }
-    
+
 }

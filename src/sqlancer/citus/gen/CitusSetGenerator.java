@@ -7,7 +7,7 @@ import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.gen.PostgresSetGenerator;
 
 public class CitusSetGenerator extends PostgresSetGenerator {
-    
+
     public static Query create(PostgresGlobalState globalState) {
         Query setQuery = PostgresSetGenerator.create(globalState);
         Set<String> errors = (Set<String>) setQuery.getExpectedErrors();

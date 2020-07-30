@@ -19,6 +19,10 @@ public class PostgresTLPWhereOracle extends PostgresTLPBase {
     @Override
     public void check() throws SQLException {
         super.check();
+        whereCheck();
+    }
+
+    protected void whereCheck() throws SQLException {
         if (Randomly.getBooleanWithRatherLowProbability()) {
             select.setOrderByExpressions(gen.generateOrderBy());
         }

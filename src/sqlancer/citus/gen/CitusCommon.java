@@ -16,24 +16,28 @@ public class CitusCommon extends PostgresCommon {
         errors.add("non-IMMUTABLE functions are not allowed in the RETURNING clause");
         errors.add("functions used in UPDATE queries on distributed tables must not be VOLATILE");
         errors.add("STABLE functions used in UPDATE queries cannot be called with column references");
-        errors.add("functions used in the WHERE clause of modification queries on distributed tables must not be VOLATILE");
+        errors.add(
+                "functions used in the WHERE clause of modification queries on distributed tables must not be VOLATILE");
         errors.add("cannot execute ADD CONSTRAINT command with other subcommands");
         errors.add("cannot execute ALTER TABLE command involving partition column");
         errors.add("could not run distributed query with FOR UPDATE/SHARE commands");
         errors.add("is not a regular, foreign or partitioned table");
         errors.add("must be a distributed table or a reference table");
         // ERROR: cannot create foreign key constraint
-        // Detail: SET NULL or SET DEFAULT is not supported in ON DELETE operation when distribution key is included in the foreign key constraint
+        // Detail: SET NULL or SET DEFAULT is not supported in ON DELETE operation when distribution key is included in
+        // the foreign key constraint
         errors.add("cannot create foreign key constraint");
-        
+
         // Citus restrictions on SELECT queries
-        errors.add("complex joins are only supported when all distributed tables are co-located and joined on their distribution columns");
-        errors.add("complex joins are only supported when all distributed tables are joined on their distribution columns with equal operator");
+        errors.add(
+                "complex joins are only supported when all distributed tables are co-located and joined on their distribution columns");
+        errors.add(
+                "complex joins are only supported when all distributed tables are joined on their distribution columns with equal operator");
         errors.add("cannot perform distributed planning on this query");
         errors.add("cannot pushdown the subquery");
         // Check for whether repartition joins are enabled is made during query generation
         // errors.add("the query contains a join that requires repartitioning");
-        
+
         // SQLancer errors
         errors.add("non-integer constant in GROUP BY");
         errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
@@ -57,5 +61,5 @@ public class CitusCommon extends PostgresCommon {
         addTableConstraint(sb, table, globalState, Randomly.fromOptions(TableConstraints.values()), errors);
         CitusCommon.addCitusErrors(errors);
     }
-    
+
 }

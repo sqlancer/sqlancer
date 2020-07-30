@@ -14,5 +14,5 @@ public class CitusViewGenerator extends PostgresViewGenerator {
         CitusCommon.addCitusErrors(errors);
         return viewQuery;
     }
-    
+
 }
