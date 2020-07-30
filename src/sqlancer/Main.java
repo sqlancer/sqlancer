@@ -8,6 +8,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.text.DateFormat;
@@ -253,11 +254,20 @@ public final class Main {
             this.globalState = globalState;
         }
 
-        public boolean execute(Query q) throws SQLException {
+        public boolean execute(Query q, String... fills) throws SQLException {
             globalState.getState().logStatement(q);
-            boolean success = q.execute(globalState);
+            boolean success;
+            success = q.execute(globalState, fills);
             Main.nrSuccessfulActions.addAndGet(1);
             return success;
+        }
+
+        public ResultSet executeAndGet(Query q, String... fills) throws SQLException {
+            globalState.getState().logStatement(q);
+            ResultSet result;
+            result = q.executeAndGet(globalState, fills);
+            Main.nrSuccessfulActions.addAndGet(1);
+            return result;
         }
 
         public void incrementSelectQueryCount() {
