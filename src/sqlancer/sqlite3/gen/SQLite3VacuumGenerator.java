@@ -21,7 +21,8 @@ public final class SQLite3VacuumGenerator {
             sb.append(" ");
             sb.append(Randomly.fromOptions("temp", "main"));
         }
-        return new QueryAdapter(sb.toString(), Arrays.asList("cannot VACUUM from within a transaction"));
+        return new QueryAdapter(sb.toString(),
+                Arrays.asList("cannot VACUUM from within a transaction", "cannot VACUUM - SQL statements in progress"));
     }
 
 }
