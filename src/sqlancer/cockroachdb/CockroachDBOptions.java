@@ -86,7 +86,7 @@ public class CockroachDBOptions {
                 oracles.add(new CockroachDBTLPGroupByOracle(globalState));
                 oracles.add(new CockroachDBTLPExtendedWhereOracle(globalState));
                 oracles.add(new CockroachDBTLPDistinctOracle(globalState));
-                return new CompositeTestOracle(oracles);
+                return new CompositeTestOracle(oracles, globalState);
             }
         };
 

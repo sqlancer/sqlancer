@@ -6,9 +6,11 @@ import java.util.List;
 public class CompositeTestOracle implements TestOracle {
 
     private final TestOracle[] oracles;
+    private final GlobalState<?, ?> globalState;
     private int i;
 
-    public CompositeTestOracle(List<TestOracle> oracles) {
+    public CompositeTestOracle(List<TestOracle> oracles, GlobalState<?, ?> globalState) {
+        this.globalState = globalState;
         this.oracles = oracles.toArray(new TestOracle[oracles.size()]);
     }
 
@@ -16,6 +18,10 @@ public class CompositeTestOracle implements TestOracle {
     public void check() throws SQLException {
         try {
             oracles[i].check();
+            boolean lastOracleIndex = i == oracles.length - 1;
+            if (!lastOracleIndex) {
+                globalState.getManager().incrementSelectQueryCount();
+            }
         } finally {
             i = (i + 1) % oracles.length;
         }

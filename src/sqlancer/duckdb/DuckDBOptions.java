@@ -140,7 +140,7 @@ public class DuckDBOptions {
                 oracles.add(new DuckDBQueryPartitioningAggregateTester(globalState));
                 oracles.add(new DuckDBQueryPartitioningDistinctTester(globalState));
                 oracles.add(new DuckDBQueryPartitioningGroupByTester(globalState));
-                return new CompositeTestOracle(oracles);
+                return new CompositeTestOracle(oracles, globalState);
             }
         };
 

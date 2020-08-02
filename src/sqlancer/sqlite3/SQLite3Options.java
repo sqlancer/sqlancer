@@ -146,7 +146,7 @@ public class SQLite3Options {
                 oracles.add(new SQLite3TLPGroupByOracle(globalState));
                 oracles.add(new SQLite3TLPHavingOracle(globalState));
                 oracles.add(new SQLite3TLPAggregateOracle(globalState));
-                return new CompositeTestOracle(oracles);
+                return new CompositeTestOracle(oracles, globalState);
             }
         };
 

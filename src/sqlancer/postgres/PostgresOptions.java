@@ -59,7 +59,7 @@ public class PostgresOptions {
                 oracles.add(new PostgresTLPWhereOracle(globalState));
                 oracles.add(new PostgresTLPHavingOracle(globalState));
                 oracles.add(new PostgresTLPAggregateOracle(globalState));
-                return new CompositeTestOracle(oracles);
+                return new CompositeTestOracle(oracles, globalState);
             }
         };
 

@@ -144,7 +144,7 @@ public class TiDBProvider extends ProviderAdapter<TiDBGlobalState, TiDBOptions> 
                 throw new AssertionError(e1);
             }
         }).collect(Collectors.toList());
-        return new CompositeTestOracle(oracles);
+        return new CompositeTestOracle(oracles, globalState);
     }
 
     @Override
