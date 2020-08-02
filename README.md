@@ -91,7 +91,7 @@ We have created a [Slack workspace](https://join.slack.com/t/sqlancer/shared_inv
 
 # Additional Documentation
 
-* [Contributing to SQLancer](docs/DEVELOPMENT.md)
+* [Contributing to SQLancer](CONTRIBUTING.md)
 * [Papers and .bib entries](docs/PAPERS.md)
 
 # Additional Resources

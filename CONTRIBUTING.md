@@ -30,8 +30,6 @@ For a permissive DBMS, implementing the expression generator is easier, since th
 
 For a strict DBMS, the better approach is typically to attempt to generate expressions of the expected type. For PostgreSQL, the expression generator thus expects an additional type argument (see [PostgreSQLExpressionGenerator](https://github.com/sqlancer/sqlancer/blob/86647df8aa2dd8d167b5c3ce3297290f5b0b2bcd/src/sqlancer/postgres/gen/PostgresExpressionGenerator.java#L251)). This type is propagated recursively. For example, if we require a predicate for the `WHERE` clause, we pass boolean as a type. The expression generator then calls a method `generateBooleanExpression` that attempts to produce a boolean expression, by, for example, generating a comparison (e.g., `<=`). For the comparison's operands, a random type is then selected and propagated. For example, if an integer type is selected, then `generateExpression` is called with this type once for the left operand, and once for the right operand. Note that this process does not guarantee that the expression will indeed have the expected type. It might happen, for example, that the expression generator attempts to produce an integer value, but that it produces a double value instead, namely when an integer overflow occurs, which, depending on the DBMS, implicitly converts the result to a floating-point value.
 
-
-
 ## Options
 
 SQLancer uses [JCommander](https://jcommander.org/) for handling options. The `MainOptions` class contains options that are expected to be supported by all DBMS-testing implementations. Furthermore, each `*Provider` class provides a method to return an additional set of supported options.
@@ -57,7 +55,27 @@ We use [Travis-CI](https://travis-ci.com/) to automatically check PRs.
 
 ## Testing
 
-We found that bugs in SQLancer are quickly found and easy to debug when testing the DBMS. However, it would still be preferable to automatically check that SQLancer still executes as expected. To this end, we would like to add smoke testing for each DBMS to test that the respective testing implementation is not obviously broken, see [here](https://github.com/sqlancer/sqlancer/issues/3).
+As part of the Travis-CI gate, we use smoke testing by running SQLancer on each supported DBMS for some minutes, to test that nothing is obviously broken. For DBMS for which all bugs have been fixed, we verify that SQLancer cannot find any further bugs (i.e., the return code is zero).
+
+In addition, we use [unit tests](https://github.com/sqlancer/sqlancer/tree/master/test/sqlancer) to test SQLancer's core functionality, such as random string and number generation as well as option passing. When fixing a bug, add a unit test, if it is easily possible.
+
+You can run the tests using the following command:
+
+```
+mvn test
+```
+
+Note that per default, the smoke testing is performed only for embedded DBMS (i.e., DuckDB and SQLite). To run smoke tests also for the other DBMS, you need to set environment variables. For example, you can run the MySQL smoke testing (and no other tests) using the following command:
+
+```
+MYSQL_AVAILABLE=true mvn -Dtest=TestMySQL test
+```
+
+For up-to-date testing commands, check out the `.travis.yml` file.
+
+## Reviewing
+
+Reviewing is an effective way of improving code quality. Everyone is welcome to review any PRs. Currently, all PRs are reviewed at least by the main contributor, @mrigger. Contributions by @mrigger are currently not (necessarily) reviewed, which is not ideal. If you are willing to regularly and timely review PRs, indicate so in the SQLancer Slack workspace.
 
 ## Naming Conventions
 
