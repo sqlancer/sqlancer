@@ -1,10 +1,13 @@
 package sqlancer.cockroachdb;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
+import sqlancer.CompositeTestOracle;
 import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.oracle.CockroachDBNoRECOracle;
@@ -14,7 +17,6 @@ import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPExtendedWhereOracle;
 import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPGroupByOracle;
 import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPHavingOracle;
 import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPJoinOracle;
-import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPOracle;
 import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPWhereOracle;
 
 @Parameters(separators = "=", commandDescription = "Test CockroachDB")
@@ -77,7 +79,14 @@ public class CockroachDBOptions {
         QUERY_PARTITIONING {
             @Override
             public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
-                return new CockroachDBTLPOracle(globalState);
+                List<TestOracle> oracles = new ArrayList<>();
+                oracles.add(new CockroachDBTLPAggregateOracle(globalState));
+                oracles.add(new CockroachDBTLPHavingOracle(globalState));
+                oracles.add(new CockroachDBTLPWhereOracle(globalState));
+                oracles.add(new CockroachDBTLPGroupByOracle(globalState));
+                oracles.add(new CockroachDBTLPExtendedWhereOracle(globalState));
+                oracles.add(new CockroachDBTLPDistinctOracle(globalState));
+                return new CompositeTestOracle(oracles);
             }
         };
 
