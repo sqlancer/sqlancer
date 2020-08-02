@@ -57,7 +57,23 @@ We use [Travis-CI](https://travis-ci.com/) to automatically check PRs.
 
 ## Testing
 
-We found that bugs in SQLancer are quickly found and easy to debug when testing the DBMS. However, it would still be preferable to automatically check that SQLancer still executes as expected. To this end, we would like to add smoke testing for each DBMS to test that the respective testing implementation is not obviously broken, see [here](https://github.com/sqlancer/sqlancer/issues/3).
+As part of the Travis-CI gate, we use smoke testing by running SQLancer on each supported DBMS for some minutes, to test that nothing is obviously broken. For DBMS for which all bugs have been fixed, we verify that SQLancer cannot find any further bugs (i.e., the return code is zero).
+
+In addition, we use [unit tests](https://github.com/sqlancer/sqlancer/tree/master/test/sqlancer) to test SQLancer's core functionality, such as random string and number generation as well as option passing. When fixing a bug, add a unit test, if it is easily possible.
+
+You can run the tests using the following command:
+
+```
+mvn test
+```
+
+Note that per default, the smoke testing is performed only for embedded DBMS (i.e., DuckDB and SQLite). To run smoke tests also for the other DBMS, you need to set environment variables. For example, you can run the MySQL smoke testing (and no other tests) using the following command:
+
+```
+MYSQL_AVAILABLE=true mvn -Dtest=TestMySQL test
+```
+
+For up-to-date testing commands, check out the `.travis.yml` file.
 
 ## Naming Conventions
 
