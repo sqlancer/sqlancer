@@ -232,7 +232,7 @@ public class SQLite3PivotedQuerySynthesisOracle implements TestOracle {
         sb.append(query.getQueryString());
         sb.append(")");
         String resultingQueryString = sb.toString();
-        state.queryString = resultingQueryString;
+        state.getLocalState().log(resultingQueryString);
         Query finalQuery = new QueryAdapter(resultingQueryString, query.getExpectedErrors());
         try (ResultSet result = createStatement.executeQuery(finalQuery.getQueryString())) {
             boolean isContainedIn = !result.isClosed();

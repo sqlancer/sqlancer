@@ -233,9 +233,6 @@ public final class Main {
                 }
                 sb.append('\n');
             }
-            if (state.getQueryString() != null) {
-                sb.append(state.getQueryString() + ";\n");
-            }
             try {
                 writer.write(sb.toString());
             } catch (IOException e) {

@@ -49,12 +49,10 @@ public class PostgresPivotedQuerySynthesisOracle implements TestOracle {
 
     @Override
     public void check() throws SQLException {
-        // clear left-over query string from previous test
-        state.queryString = null;
         String queryString = getQueryThatContainsAtLeastOneRow(state);
-        state.queryString = queryString;
+        state.getLocalState().log(queryString);
         if (options.logEachSelect()) {
-            logger.writeCurrent(state.queryString);
+            logger.writeCurrent(queryString);
         }
 
         boolean isContainedIn = isContainedIn(queryString, options, logger);
@@ -179,7 +177,7 @@ public class PostgresPivotedQuerySynthesisOracle implements TestOracle {
         }
         String resultingQueryString = sb.toString();
         // log both SELECT queries at the bottom of the error log file
-        state.queryString = String.format("-- %s;\n-- %s;", queryString, resultingQueryString);
+        state.getLocalState().log(String.format("-- %s;\n-- %s;", queryString, resultingQueryString));
         if (options.logEachSelect()) {
             logger.writeCurrent(resultingQueryString);
         }

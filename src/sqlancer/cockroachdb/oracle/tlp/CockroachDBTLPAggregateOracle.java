@@ -84,8 +84,8 @@ public class CockroachDBTLPAggregateOracle implements TestOracle {
         metamorphicQuery = createMetamorphicUnionQuery(select, aggregate, from);
         secondResult = getAggregateResult(metamorphicQuery);
 
-        state.getState().queryString = "--" + originalQuery + ";\n--" + metamorphicQuery + "\n-- " + firstResult
-                + "\n-- " + secondResult;
+        state.getState().getLocalState().log(
+                "--" + originalQuery + ";\n--" + metamorphicQuery + "\n-- " + firstResult + "\n-- " + secondResult);
         if (firstResult == null && secondResult != null
                 || firstResult != null && (!firstResult.contentEquals(secondResult)
                         && !ComparatorHelper.isEqualDouble(firstResult, secondResult))) {

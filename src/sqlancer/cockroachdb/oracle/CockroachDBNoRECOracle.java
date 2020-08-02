@@ -60,7 +60,7 @@ public class CockroachDBNoRECOracle extends NoRECBase<CockroachDBGlobalState> im
             throw new IgnoreMeException();
         }
         if (optimizableCount != nonOptimizableCount) {
-            state.getState().queryString = optimizedQueryString + ";\n" + unoptimizedQueryString + ";";
+            state.getState().getLocalState().log(optimizedQueryString + ";\n" + unoptimizedQueryString + ";");
             throw new AssertionError(CockroachDBVisitor.asString(whereCondition));
         }
     }

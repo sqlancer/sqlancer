@@ -63,7 +63,7 @@ public class MariaDBNoRECOracle extends NoRECBase<MariaDBGlobalState> implements
             throw new IgnoreMeException();
         }
         if (optimizedCount != unoptimizedCount) {
-            state.getState().queryString = optimizedQueryString + ";\n" + unoptimizedQueryString + ";";
+            state.getState().getLocalState().log(optimizedQueryString + ";\n" + unoptimizedQueryString + ";");
             throw new AssertionError(optimizedCount + " " + unoptimizedCount);
         }
     }
