@@ -44,6 +44,7 @@ public final class Main {
     public static volatile AtomicLong nrSuccessfulActions = new AtomicLong();
     public static volatile AtomicLong nrUnsuccessfulActions = new AtomicLong();
     static int threadsShutdown;
+    static boolean progressMonitorStarted;
 
     static {
         System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "ERROR");
@@ -547,7 +548,16 @@ public final class Main {
         return providers;
     }
 
-    private static void startProgressMonitor() {
+    private static synchronized void startProgressMonitor() {
+        if (progressMonitorStarted) {
+            /*
+             * it might be already started if, for example, the main method is called multiple times in a test (see
+             * https://github.com/sqlancer/sqlancer/issues/90).
+             */
+            return;
+        } else {
+            progressMonitorStarted = true;
+        }
         final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleAtFixedRate(new Runnable() {
 
