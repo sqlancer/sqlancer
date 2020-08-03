@@ -215,7 +215,7 @@ public final class PostgresProvider extends ProviderAdapter<PostgresGlobalState,
                 throw new AssertionError(e1);
             }
         }).collect(Collectors.toList());
-        return new CompositeTestOracle(oracles);
+        return new CompositeTestOracle(oracles, globalState);
     }
 
     @Override

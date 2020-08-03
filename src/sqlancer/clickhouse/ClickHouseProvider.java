@@ -111,7 +111,7 @@ public class ClickHouseProvider extends ProviderAdapter<ClickHouseGlobalState, C
                 throw new AssertionError(e1);
             }
         }).collect(Collectors.toList());
-        return new CompositeTestOracle(oracles);
+        return new CompositeTestOracle(oracles, globalState);
     }
 
     @Override

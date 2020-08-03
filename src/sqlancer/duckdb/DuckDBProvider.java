@@ -127,7 +127,7 @@ public class DuckDBProvider extends ProviderAdapter<DuckDBGlobalState, DuckDBOpt
             } catch (SQLException e1) {
                 throw new AssertionError(e1);
             }
-        }).collect(Collectors.toList()));
+        }).collect(Collectors.toList()), globalState);
     }
 
     @Override

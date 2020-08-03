@@ -39,7 +39,7 @@ public class TiDBOptions {
                 List<TestOracle> oracles = new ArrayList<>();
                 oracles.add(new TiDBTLPWhereOracle(globalState));
                 oracles.add(new TiDBTLPHavingOracle(globalState));
-                return new CompositeTestOracle(oracles);
+                return new CompositeTestOracle(oracles, globalState);
             }
         };
 
