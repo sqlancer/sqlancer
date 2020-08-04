@@ -242,7 +242,7 @@ public class SQLite3PragmaGenerator {
         }
         sb.append(";");
         String pragmaString = sb.toString();
-        // errors.add("cannot change");
+        errors.add("The database file is locked");
         return new QueryAdapter(pragmaString, errors);
     }
 

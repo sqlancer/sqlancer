@@ -435,6 +435,10 @@ public class SQLite3Schema {
                     }
                     indexNames.add(name);
                 }
+            } catch (SQLException e) {
+                if (!e.getMessage().contains("The database file is locked")) {
+                    throw new AssertionError(e);
+                }
             }
         }
 

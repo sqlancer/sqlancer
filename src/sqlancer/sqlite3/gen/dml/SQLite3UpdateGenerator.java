@@ -113,6 +113,7 @@ public class SQLite3UpdateGenerator {
         // TODO not update generated columns?
         errors.add("cannot INSERT into generated column");
         errors.add("A table in the database is locked"); // https://www.sqlite.org/src/tktview?name=56a74875be
+        errors.add("The database file is locked");
         SQLite3Errors.addInsertNowErrors(errors);
         SQLite3Errors.addExpectedExpressionErrors(errors);
         SQLite3Errors.addDeleteErrors(errors);

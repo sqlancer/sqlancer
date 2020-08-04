@@ -93,6 +93,7 @@ public class SQLite3VirtualFTSTableCommandGenerator {
         default:
             throw new AssertionError();
         }
+        errors.add("The database file is locked");
         return new QueryAdapter(sb.toString(), errors);
     }
 
