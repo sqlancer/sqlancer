@@ -1,5 +1,7 @@
 package sqlancer.sqlite3.gen;
 
+import java.util.Arrays;
+
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -35,7 +37,7 @@ public final class SQLite3AnalyzeGenerator {
                 throw new AssertionError();
             }
         }
-        return new QueryAdapter(sb.toString());
+        return new QueryAdapter(sb.toString(), Arrays.asList("The database file is locked"));
     }
 
 }

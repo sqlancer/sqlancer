@@ -18,8 +18,8 @@ public final class SQLite3TransactionGenerator {
         if (Randomly.getBoolean()) {
             sb.append(" TRANSACTION");
         }
-        return new QueryAdapter(sb.toString(),
-                Arrays.asList("no transaction is active", "FOREIGN KEY constraint failed"), true);
+        return new QueryAdapter(sb.toString(), Arrays.asList("no transaction is active", "The database file is locked",
+                "FOREIGN KEY constraint failed"), true);
     }
 
     public static Query generateBeginTransaction(SQLite3GlobalState globalState) {
@@ -29,12 +29,14 @@ public final class SQLite3TransactionGenerator {
             sb.append(Randomly.fromOptions("DEFERRED", "IMMEDIATE", "EXCLUSIVE"));
         }
         sb.append(" TRANSACTION;");
-        return new QueryAdapter(sb.toString(), Arrays.asList("cannot start a transaction within a transaction"));
+        return new QueryAdapter(sb.toString(),
+                Arrays.asList("cannot start a transaction within a transaction", "The database file is locked"));
     }
 
     public static Query generateRollbackTransaction(SQLite3GlobalState globalState) {
         // TODO: could be extended by savepoint
-        return new QueryAdapter("ROLLBACK TRANSACTION;", Arrays.asList("no transaction is active"), true);
+        return new QueryAdapter("ROLLBACK TRANSACTION;",
+                Arrays.asList("no transaction is active", "The database file is locked"), true);
     }
 
 }
