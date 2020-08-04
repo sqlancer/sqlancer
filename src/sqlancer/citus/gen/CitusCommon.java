@@ -1,5 +1,6 @@
 package sqlancer.citus.gen;
 
+import java.util.Collection;
 import java.util.Set;
 
 import sqlancer.Randomly;
@@ -9,7 +10,7 @@ import sqlancer.postgres.gen.PostgresCommon;
 
 public class CitusCommon extends PostgresCommon {
 
-    public static void addCitusErrors(Set<String> errors) {
+    public static void addCitusErrors(Collection<String> errors) {
         errors.add("recursive CTEs are not supported in distributed queries");
         errors.add("could not run distributed query with GROUPING SETS, CUBE, or ROLLUP");
         errors.add("Subqueries in HAVING cannot refer to outer query");
@@ -23,6 +24,9 @@ public class CitusCommon extends PostgresCommon {
         errors.add("could not run distributed query with FOR UPDATE/SHARE commands");
         errors.add("is not a regular, foreign or partitioned table");
         errors.add("must be a distributed table or a reference table");
+        errors.add("creating unique indexes on non-partition columns is currently unsupported");
+        errors.add("modifying the partition value of rows is not allowed");
+        errors.add("creating unique indexes on non-partition columns is currently unsupported");
         // ERROR: cannot create foreign key constraint
         // Detail: SET NULL or SET DEFAULT is not supported in ON DELETE operation when distribution key is included in
         // the foreign key constraint

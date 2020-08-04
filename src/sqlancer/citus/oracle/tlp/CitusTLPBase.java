@@ -38,8 +38,6 @@ public class CitusTLPBase extends PostgresTLPBase {
 
     @Override
     public void check() throws SQLException {
-        // clear left-over query string from previous test
-        state.getState().queryString = null;
         s = state.getSchema();
         storeCitusTableTypes();
         List<PostgresTable> tables = null;
