@@ -63,13 +63,17 @@ public class QueryAdapter extends Query {
         if (fills.length > 0) {
             s = globalState.getConnection().prepareStatement(getQueryString());
             for (int i = 0; i < fills.length; i++) {
-                ((PreparedStatement) s).setString(i, fills[i]);
+                ((PreparedStatement) s).setString(i + 1, fills[i]);
             }
         } else {
             s = globalState.getConnection().createStatement();
         }
         try {
-            s.execute(query);
+            if (fills.length > 0) {
+                ((PreparedStatement) s).execute();
+            } else {
+                s.execute(query);
+            }
             Main.nrSuccessfulActions.addAndGet(1);
             return true;
         } catch (Exception e) {
@@ -98,14 +102,18 @@ public class QueryAdapter extends Query {
         if (fills.length > 0) {
             s = globalState.getConnection().prepareStatement(getQueryString());
             for (int i = 0; i < fills.length; i++) {
-                ((PreparedStatement) s).setString(i, fills[i]);
+                ((PreparedStatement) s).setString(i + 1, fills[i]);
             }
         } else {
             s = globalState.getConnection().createStatement();
         }
         ResultSet result = null;
         try {
-            result = s.executeQuery(query);
+            if (fills.length > 0) {
+                result = ((PreparedStatement) s).executeQuery();
+            } else {
+                result = s.executeQuery(query);
+            }
             Main.nrSuccessfulActions.addAndGet(1);
             return result;
         } catch (Exception e) {
