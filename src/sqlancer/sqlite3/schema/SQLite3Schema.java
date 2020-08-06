@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import sqlancer.IgnoreMeException;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.SQLancerResultSet;
 import sqlancer.StateToReproduce.SQLite3StateToReproduce;
 import sqlancer.schema.AbstractTable;
 import sqlancer.schema.AbstractTableColumn;
@@ -354,14 +355,12 @@ public class SQLite3Schema {
                 "misuse of window function"));
         SQLite3Errors.addExpectedExpressionErrors(errors);
         QueryAdapter q = new QueryAdapter(string, errors);
-        try (ResultSet query = q.executeAndGet(globalState)) {
+        try (SQLancerResultSet query = q.executeAndGet(globalState)) {
             if (query == null) {
                 throw new IgnoreMeException();
             }
             query.next();
-            int int1 = query.getInt(1);
-            query.getStatement().close();
-            return int1;
+            return query.getInt(1);
         }
     }
 

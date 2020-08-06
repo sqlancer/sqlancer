@@ -1,7 +1,6 @@
 package sqlancer.postgres.oracle.tlp;
 
 import java.io.IOException;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,6 +12,7 @@ import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.SQLancerResultSet;
 import sqlancer.TestOracle;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
@@ -112,7 +112,7 @@ public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestO
         }
         String resultString;
         QueryAdapter q = new QueryAdapter(queryString, errors);
-        try (ResultSet result = q.executeAndGet(state)) {
+        try (SQLancerResultSet result = q.executeAndGet(state)) {
             if (result == null) {
                 throw new IgnoreMeException();
             }

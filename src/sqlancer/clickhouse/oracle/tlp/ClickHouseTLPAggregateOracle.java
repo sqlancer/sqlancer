@@ -1,6 +1,5 @@
 package sqlancer.clickhouse.oracle.tlp;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
@@ -10,6 +9,7 @@ import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.SQLancerResultSet;
 import sqlancer.TestOracle;
 import sqlancer.clickhouse.ClickHouseProvider;
 import sqlancer.clickhouse.ClickHouseSchema;
@@ -69,7 +69,7 @@ public class ClickHouseTLPAggregateOracle implements TestOracle {
         String firstResult;
         String secondResult;
         QueryAdapter q = new QueryAdapter(originalQuery);
-        try (ResultSet result = q.executeAndGet(state)) {
+        try (SQLancerResultSet result = q.executeAndGet(state)) {
             if (result == null) {
                 throw new IgnoreMeException();
             }
@@ -80,7 +80,7 @@ public class ClickHouseTLPAggregateOracle implements TestOracle {
         }
 
         QueryAdapter q2 = new QueryAdapter(metamorphicText);
-        try (ResultSet result = q2.executeAndGet(state)) {
+        try (SQLancerResultSet result = q2.executeAndGet(state)) {
             if (result == null) {
                 throw new IgnoreMeException();
             }

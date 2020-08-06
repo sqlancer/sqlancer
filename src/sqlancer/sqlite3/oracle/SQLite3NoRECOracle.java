@@ -1,6 +1,5 @@
 package sqlancer.sqlite3.oracle;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -10,6 +9,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.NoRECBase;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.SQLancerResultSet;
 import sqlancer.TestOracle;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
@@ -111,7 +111,7 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
 
     private int countRows(QueryAdapter q) {
         int count = 0;
-        try (ResultSet rs = q.executeAndGet(state)) {
+        try (SQLancerResultSet rs = q.executeAndGet(state)) {
             if (rs == null) {
                 return NO_VALID_RESULT;
             } else {
@@ -122,7 +122,6 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
                 } catch (SQLException e) {
                     count = NO_VALID_RESULT;
                 }
-                rs.getStatement().close();
             }
         } catch (Exception e) {
             if (e instanceof IgnoreMeException) {
@@ -135,7 +134,7 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
 
     private int extractCounts(QueryAdapter q) {
         int count = 0;
-        try (ResultSet rs = q.executeAndGet(state)) {
+        try (SQLancerResultSet rs = q.executeAndGet(state)) {
             if (rs == null) {
                 return NO_VALID_RESULT;
             } else {
@@ -146,7 +145,6 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
                 } catch (SQLException e) {
                     count = NO_VALID_RESULT;
                 }
-                rs.getStatement().close();
             }
         } catch (Exception e) {
             if (e instanceof IgnoreMeException) {

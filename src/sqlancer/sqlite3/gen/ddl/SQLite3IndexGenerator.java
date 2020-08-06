@@ -71,6 +71,8 @@ public class SQLite3IndexGenerator {
         sb.append(" INDEX");
         if (Randomly.getBoolean()) {
             sb.append(" IF NOT EXISTS");
+        } else {
+            errors.add("already exists");
         }
         sb.append(" ");
         sb.append(SQLite3Common.getFreeIndexName(globalState.getSchema()));

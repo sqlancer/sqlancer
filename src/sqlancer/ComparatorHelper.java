@@ -1,7 +1,6 @@
 package sqlancer;
 
 import java.io.IOException;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -46,7 +45,7 @@ public final class ComparatorHelper {
         }
         QueryAdapter q = new QueryAdapter(queryString, errors);
         List<String> resultSet = new ArrayList<>();
-        ResultSet result = null;
+        SQLancerResultSet result = null;
         try {
             result = q.executeAndGet(state);
             if (result == null) {
@@ -55,7 +54,6 @@ public final class ComparatorHelper {
             while (result.next()) {
                 resultSet.add(result.getString(1));
             }
-            result.getStatement().close();
         } catch (Exception e) {
             if (e instanceof IgnoreMeException) {
                 throw e;
@@ -75,7 +73,6 @@ public final class ComparatorHelper {
             throw new AssertionError(queryString, e);
         } finally {
             if (result != null && !result.isClosed()) {
-                result.getStatement().close();
                 result.close();
             }
         }

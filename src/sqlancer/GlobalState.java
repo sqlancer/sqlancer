@@ -1,7 +1,6 @@
 package sqlancer;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import sqlancer.Main.QueryManager;
@@ -129,11 +128,19 @@ public abstract class GlobalState<O, S> {
         return success;
     }
 
-    public ResultSet executeStatementAndGet(Query q, String... fills) throws SQLException {
+    public SQLancerResultSet executeStatementAndGet(Query q, String... fills) throws SQLException {
         ExecutionTimer timer = executePrologue(q);
-        ResultSet result = manager.executeAndGet(q, fills);
+        SQLancerResultSet result = manager.executeAndGet(q, fills);
         boolean success = result != null;
-        executeEpilogue(q, success, timer);
+        if (success) {
+            result.registerEpilogue(() -> {
+                try {
+                    executeEpilogue(q, success, timer);
+                } catch (SQLException e) {
+                    throw new AssertionError(e);
+                }
+            });
+        }
         return result;
     }
 

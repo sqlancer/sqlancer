@@ -97,7 +97,7 @@ public class QueryAdapter extends Query {
     }
 
     @Override
-    public ResultSet executeAndGet(GlobalState<?, ?> globalState, String... fills) throws SQLException {
+    public SQLancerResultSet executeAndGet(GlobalState<?, ?> globalState, String... fills) throws SQLException {
         Statement s;
         if (fills.length > 0) {
             s = globalState.getConnection().prepareStatement(getQueryString());
@@ -115,7 +115,10 @@ public class QueryAdapter extends Query {
                 result = s.executeQuery(query);
             }
             Main.nrSuccessfulActions.addAndGet(1);
-            return result;
+            if (result == null) {
+                return null;
+            }
+            return new SQLancerResultSet(result);
         } catch (Exception e) {
             s.close();
             Main.nrUnsuccessfulActions.addAndGet(1);
