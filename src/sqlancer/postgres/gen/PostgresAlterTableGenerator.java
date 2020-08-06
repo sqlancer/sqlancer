@@ -278,7 +278,7 @@ public class PostgresAlterTableGenerator {
                 break;
             case ADD_TABLE_CONSTRAINT_USING_INDEX:
                 sb.append("ADD ");
-                // sb.append("CONSTRAINT 'asdf' ");
+                sb.append("CONSTRAINT '" + r.getChar() +"' ");
                 sb.append(Randomly.fromOptions("UNIQUE", "PRIMARY KEY"));
                 errors.add("not valid");
                 sb.append(" USING INDEX ");

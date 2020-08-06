@@ -14,13 +14,16 @@ public class CitusTLPAggregateOracle extends PostgresTLPAggregateOracle {
     public CitusTLPAggregateOracle(CitusGlobalState state) {
         super(state);
         CitusCommon.addCitusErrors(errors);
-        citusTLPBase = (CitusTLPBase)(PostgresTLPBase) this;
+        citusTLPBase = new CitusTLPBase(state);
     }
 
     @Override
     public void check() throws SQLException {
-        // FIXME: does this affect "this" too?
         citusTLPBase.check();
+        s = citusTLPBase.getSchema();
+        targetTables = citusTLPBase.getTargetTables();
+        gen = citusTLPBase.getGenerator();
+        select = citusTLPBase.getSelect();
         aggregateCheck();
     }
 

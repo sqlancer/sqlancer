@@ -33,8 +33,8 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
 
     protected PostgresSchema s;
     protected PostgresTables targetTables;
-    PostgresExpressionGenerator gen;
-    PostgresSelect select;
+    protected PostgresExpressionGenerator gen;
+    protected PostgresSelect select;
 
     public PostgresTLPBase(PostgresGlobalState state) {
         super(state);

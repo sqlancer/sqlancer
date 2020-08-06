@@ -11,17 +11,21 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
+import sqlancer.CompositeTestOracle;
 import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.QueryProvider;
 import sqlancer.Randomly;
 import sqlancer.StatementExecutor;
+import sqlancer.TestOracle;
 import sqlancer.citus.gen.CitusAlterTableGenerator;
 import sqlancer.citus.gen.CitusCommon;
 import sqlancer.citus.gen.CitusDeleteGenerator;
+import sqlancer.citus.gen.CitusIndexGenerator;
 import sqlancer.citus.gen.CitusInsertGenerator;
 import sqlancer.citus.gen.CitusSetGenerator;
 import sqlancer.citus.gen.CitusTableGenerator;
@@ -39,7 +43,6 @@ import sqlancer.postgres.gen.PostgresClusterGenerator;
 import sqlancer.postgres.gen.PostgresCommentGenerator;
 import sqlancer.postgres.gen.PostgresDiscardGenerator;
 import sqlancer.postgres.gen.PostgresDropIndexGenerator;
-import sqlancer.postgres.gen.PostgresIndexGenerator;
 import sqlancer.postgres.gen.PostgresNotifyGenerator;
 import sqlancer.postgres.gen.PostgresQueryCatalogGenerator;
 import sqlancer.postgres.gen.PostgresReindexGenerator;
@@ -88,7 +91,7 @@ public class CitusProvider extends PostgresProvider {
         VACUUM(PostgresVacuumGenerator::create), //
         REINDEX(PostgresReindexGenerator::create), //
         SET(CitusSetGenerator::create), //
-        CREATE_INDEX(PostgresIndexGenerator::generate), //
+        CREATE_INDEX(CitusIndexGenerator::generate), //
         SET_CONSTRAINTS((g) -> {
             StringBuilder sb = new StringBuilder();
             sb.append("SET CONSTRAINTS ALL ");
@@ -304,6 +307,18 @@ public class CitusProvider extends PostgresProvider {
     }
 
     @Override
+    protected TestOracle getTestOracle(PostgresGlobalState globalState) throws SQLException {
+        List<TestOracle> oracles = ((CitusOptions) globalState.getDmbsSpecificOptions()).citusOracle.stream().map(o -> {
+            try {
+                return o.create(globalState);
+            } catch (SQLException e1) {
+                throw new AssertionError(e1);
+            }
+        }).collect(Collectors.toList());
+        return new CompositeTestOracle(oracles, globalState);
+    }
+
+    @Override
     public Connection createDatabase(PostgresGlobalState globalState) throws SQLException {
         synchronized (CitusProvider.class) {
             // returns connection to coordinator node, test database
@@ -393,6 +408,7 @@ public class CitusProvider extends PostgresProvider {
             con.close();
             // reconnect to coordinator node, test database
             con = DriverManager.getConnection("jdbc:" + testURL, username, password);
+            ((CitusGlobalState) globalState).setRepartition(((CitusOptions) globalState.getDmbsSpecificOptions()).repartition);
             return con;
         }
     }

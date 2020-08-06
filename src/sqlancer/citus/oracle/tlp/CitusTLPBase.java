@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
@@ -11,6 +12,7 @@ import sqlancer.citus.CitusGlobalState;
 import sqlancer.citus.CitusSchema.CitusTable;
 import sqlancer.citus.gen.CitusCommon;
 import sqlancer.postgres.PostgresGlobalState;
+import sqlancer.postgres.PostgresSchema;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
@@ -20,6 +22,7 @@ import sqlancer.postgres.ast.PostgresBinaryLogicalOperation;
 import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresJoin;
+import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresJoin.PostgresJoinType;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
@@ -36,11 +39,27 @@ public class CitusTLPBase extends PostgresTLPBase {
         CitusCommon.addCitusErrors(errors);
     }
 
+    public PostgresSchema getSchema() {
+        return s;
+    }
+
+    public PostgresTables getTargetTables() {
+        return targetTables;
+    }
+
+    public PostgresExpressionGenerator getGenerator() {
+        return gen;
+    }
+
+    public PostgresSelect getSelect() {
+        return select;
+    }
+
     @Override
     public void check() throws SQLException {
         s = state.getSchema();
         storeCitusTableTypes();
-        List<PostgresTable> tables = null;
+        List<PostgresTable> tables = new ArrayList<>();
         List<PostgresJoin> joins = generateJoins(tables);
         generateSelectBase(tables, joins);
     }
@@ -65,13 +84,13 @@ public class CitusTLPBase extends PostgresTLPBase {
                 }
                 targetTables = new PostgresTables(Randomly.nonEmptySubset(targetTableList));
             }
-            tables = new ArrayList<>(targetTables.getTables());
+            tables.addAll(targetTables.getTables());
             joins = getJoinStatements(state, targetTables.getColumns(), tables);
         } else {
             // joins between distributed tables
             // join including distribution columns
             // supports complex joins if colocated
-            tables = Randomly.nonEmptySubset(new ArrayList<>(distributedTables.keySet()));
+            tables.addAll(Randomly.nonEmptySubset(new ArrayList<>(distributedTables.keySet())));
             targetTables = new PostgresTables(tables);
             CitusTable fromTable = (CitusTable) Randomly.fromList(tables);
             joins = getCitusJoinStatements(state, tables, fromTable);

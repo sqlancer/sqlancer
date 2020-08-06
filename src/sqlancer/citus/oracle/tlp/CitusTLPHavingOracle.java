@@ -14,13 +14,16 @@ public class CitusTLPHavingOracle extends PostgresTLPHavingOracle {
     public CitusTLPHavingOracle(CitusGlobalState state) {
         super(state);
         CitusCommon.addCitusErrors(errors);
-        citusTLPBase = (CitusTLPBase)(PostgresTLPBase) this;
+        citusTLPBase = new CitusTLPBase(state);
     }
 
     @Override
     public void check() throws SQLException {
-        // FIXME: does this affect "this" too?
         citusTLPBase.check();
+        s = citusTLPBase.getSchema();
+        targetTables = citusTLPBase.getTargetTables();
+        gen = citusTLPBase.getGenerator();
+        select = citusTLPBase.getSelect();
         havingCheck();
     }
     
