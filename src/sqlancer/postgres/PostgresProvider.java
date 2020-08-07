@@ -6,6 +6,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
@@ -272,6 +273,16 @@ public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, Postg
         globalState.getState().logStatement(String.format("\\c %s;", databaseName));
         con = DriverManager.getConnection("jdbc:" + testURL, username, password);
         return con;
+    }
+
+    protected void readFunctions(PostgresGlobalState globalState) throws SQLException {
+        QueryAdapter query = new QueryAdapter("SELECT proname, provolatile FROM pg_proc;");
+        ResultSet rs = query.executeAndGet(globalState);
+        while (rs.next()) {
+            String functionName = rs.getString("proname");
+            Character functionType = rs.getString("provolatile").charAt(0);
+            globalState.addFunctionAndType(functionName, functionType);
+        }
     }
 
     protected void createTables(PostgresGlobalState globalState) throws SQLException {

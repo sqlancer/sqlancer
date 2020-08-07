@@ -3,6 +3,7 @@ package sqlancer.postgres.gen;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -66,10 +67,16 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
 
     private boolean allowAggregateFunctions;
 
+    private HashMap<String, Character> functionsAndTypes;
+
+    private List<Character> allowedFunctionTypes;
+
     public PostgresExpressionGenerator(PostgresGlobalState globalState) {
         this.r = globalState.getRandomly();
         this.maxDepth = globalState.getOptions().getMaxExpressionDepth();
         this.globalState = globalState;
+        this.functionsAndTypes = globalState.getFunctionsAndTypes();
+        this.allowedFunctionTypes = globalState.getAllowedFunctionTypes();
     }
 
     public PostgresExpressionGenerator setColumns(List<PostgresColumn> columns) {
@@ -112,6 +119,8 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     private PostgresExpression generateFunctionWithUnknownResult(int depth, PostgresDataType type) {
         List<PostgresFunctionWithUnknownResult> supportedFunctions = PostgresFunctionWithUnknownResult
                 .getSupportedFunctions(type);
+        // filters functions by allowed type (stable 's', immutable 'i', volatile 'v')
+        supportedFunctions = supportedFunctions.stream().filter(f -> allowedFunctionTypes.contains(functionsAndTypes.get(f.getName()))).collect(Collectors.toList());
         if (supportedFunctions.isEmpty()) {
             throw new IgnoreMeException();
         }
@@ -122,6 +131,8 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     private PostgresExpression generateFunctionWithKnownResult(int depth, PostgresDataType type) {
         List<PostgresFunctionWithResult> functions = Stream.of(PostgresFunction.PostgresFunctionWithResult.values())
                 .filter(f -> f.supportsReturnType(type)).collect(Collectors.toList());
+        // filters functions by allowed type (stable 's', immutable 'i', volatile 'v')
+        functions = functions.stream().filter(f -> allowedFunctionTypes.contains(functionsAndTypes.get(f.getName()))).collect(Collectors.toList());
         if (functions.isEmpty()) {
             throw new IgnoreMeException();
         }

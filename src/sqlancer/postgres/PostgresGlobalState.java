@@ -5,6 +5,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import sqlancer.GlobalState;
@@ -15,6 +17,8 @@ public class PostgresGlobalState extends GlobalState<PostgresOptions, PostgresSc
     private List<String> operators;
     private List<String> collates;
     private List<String> opClasses;
+    private HashMap<String, Character> functionsAndTypes = new HashMap<>();
+    private List<Character> allowedFunctionTypes = Arrays.asList('s', 'v', 'i');
 
     @Override
     public void setConnection(Connection con) {
@@ -92,6 +96,26 @@ public class PostgresGlobalState extends GlobalState<PostgresOptions, PostgresSc
     @Override
     protected void updateSchema() throws SQLException {
         setSchema(PostgresSchema.fromConnection(getConnection(), getDatabaseName()));
+    }
+
+    public void addFunctionAndType(String functionName, Character functionType) {
+        this.functionsAndTypes.put(functionName, functionType);
+    }
+
+    public HashMap<String, Character> getFunctionsAndTypes() {
+        return this.functionsAndTypes;
+    }
+
+    public void setAllowedFunctionTypes(List<Character> types) {
+        this.allowedFunctionTypes = types;
+    }
+
+    public void setDefaultAllowedFunctionTypes() {
+        this.allowedFunctionTypes = Arrays.asList('s', 'v', 'i');
+    }
+
+    public List<Character> getAllowedFunctionTypes() {
+        return this.allowedFunctionTypes;
     }
 
 }

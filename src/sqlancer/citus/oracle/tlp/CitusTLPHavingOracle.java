@@ -1,11 +1,11 @@
 package sqlancer.citus.oracle.tlp;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 
 import sqlancer.citus.CitusGlobalState;
 import sqlancer.citus.gen.CitusCommon;
 import sqlancer.postgres.oracle.tlp.PostgresTLPHavingOracle;
-import sqlancer.postgres.oracle.tlp.PostgresTLPBase;
 
 public class CitusTLPHavingOracle extends PostgresTLPHavingOracle {
 
@@ -19,12 +19,17 @@ public class CitusTLPHavingOracle extends PostgresTLPHavingOracle {
 
     @Override
     public void check() throws SQLException {
+        state.setAllowedFunctionTypes(Arrays.asList('i'));
         citusTLPBase.check();
         s = citusTLPBase.getSchema();
         targetTables = citusTLPBase.getTargetTables();
         gen = citusTLPBase.getGenerator();
         select = citusTLPBase.getSelect();
+        predicate = citusTLPBase.getPredicate();
+        negatedPredicate = citusTLPBase.getNegatedPredicate();
+        isNullPredicate = citusTLPBase.getIsNullPredicate();
         havingCheck();
+        state.setDefaultAllowedFunctionTypes();
     }
     
 }

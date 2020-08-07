@@ -4,7 +4,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
@@ -55,6 +54,18 @@ public class CitusTLPBase extends PostgresTLPBase {
         return select;
     }
 
+    public PostgresExpression getPredicate() {
+        return predicate;
+    }
+
+    public PostgresExpression getNegatedPredicate() {
+        return negatedPredicate;
+    }
+
+    public PostgresExpression getIsNullPredicate() {
+        return isNullPredicate;
+    }
+
     @Override
     public void check() throws SQLException {
         s = state.getSchema();
@@ -93,7 +104,7 @@ public class CitusTLPBase extends PostgresTLPBase {
             tables.addAll(Randomly.nonEmptySubset(new ArrayList<>(distributedTables.keySet())));
             targetTables = new PostgresTables(tables);
             CitusTable fromTable = (CitusTable) Randomly.fromList(tables);
-            joins = getCitusJoinStatements(state, tables, fromTable);
+            joins = getCitusJoinStatements((CitusGlobalState) state, tables, fromTable);
             if (Randomly.getBooleanWithRatherLowProbability() && !localTables.isEmpty()) {
                 addSubqueryJoinStatements(state, joins, fromTable);
             }
@@ -119,7 +130,7 @@ public class CitusTLPBase extends PostgresTLPBase {
         }
     }
 
-    List<PostgresJoin> getCitusJoinStatements(PostgresGlobalState globalState, List<PostgresTable> joinTables,
+    List<PostgresJoin> getCitusJoinStatements(CitusGlobalState globalState, List<PostgresTable> joinTables,
             CitusTable fromTable) {
         List<PostgresColumn> columns = new ArrayList<>();
         for (PostgresTable t : joinTables) {
@@ -146,7 +157,7 @@ public class CitusTLPBase extends PostgresTLPBase {
                         PostgresBinaryComparisonOperation.PostgresBinaryComparisonOperator.EQUALS);
             } else {
                 // check if repartition joins are allowed
-                if (!((CitusGlobalState) globalState).getRepartition()) {
+                if (! globalState.getRepartition()) {
                     continue;
                 }
                 PostgresExpression leftExpr = new PostgresColumnValue(fromTable.getDistributionColumn(), null);

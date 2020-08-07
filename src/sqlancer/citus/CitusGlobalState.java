@@ -7,7 +7,7 @@ import sqlancer.postgres.PostgresGlobalState;
 public class CitusGlobalState extends PostgresGlobalState {
 
     private boolean repartition;
-
+    
     public void setRepartition(boolean repartition) {
         this.repartition = repartition;
     }
