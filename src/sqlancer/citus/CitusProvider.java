@@ -209,8 +209,9 @@ public class CitusProvider extends PostgresProvider {
         if (columns.size() != 0) {
             PostgresColumn columnToDistribute = Randomly.fromList(columns);
             String template = "SELECT create_distributed_table(?, ?);";
-            QueryAdapter query = new QueryAdapter(template, errors);
-            globalState.executeStatement(query, tableName, columnToDistribute.getName());
+            String filled = "SELECT create_distributed_table('" + tableName + "', '" + columnToDistribute.getName() + "');";
+            QueryAdapter query = new QueryAdapter(filled, errors);
+            globalState.executeStatement(query, template, tableName, columnToDistribute.getName());
             // distribution column cannot take NULL value
             // TODO: find a way to protect from SQL injection without '' around string input
             query = new QueryAdapter(
@@ -224,8 +225,9 @@ public class CitusProvider extends PostgresProvider {
             throws SQLException {
         List<String> constraints = new ArrayList<>();
         String template = "SELECT constraint_type FROM information_schema.table_constraints WHERE table_name = ? AND (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' or constraint_type = 'EXCLUDE');";
-        QueryAdapter query = new QueryAdapter(template);
-        ResultSet rs = query.executeAndGet(globalState, tableName);
+        String filled = "SELECT constraint_type FROM information_schema.table_constraints WHERE table_name = '" + tableName + "' AND (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' or constraint_type = 'EXCLUDE');";
+        QueryAdapter query = new QueryAdapter(filled);
+        ResultSet rs = query.executeAndGet(globalState, template, tableName);
         while (rs.next()) {
             constraints.add(rs.getString("constraint_type"));
         }
@@ -238,8 +240,9 @@ public class CitusProvider extends PostgresProvider {
         List<String> tableConstraints = getTableConstraints(tableName, globalState, con);
         if (tableConstraints.size() == 0) {
             String template = "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = ?;";
-            QueryAdapter query = new QueryAdapter(template);
-            ResultSet rs = query.executeAndGet(globalState, tableName);
+            String filled = "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '" + tableName + "';";
+            QueryAdapter query = new QueryAdapter(filled);
+            ResultSet rs = query.executeAndGet(globalState, template, tableName);
             while (rs.next()) {
                 String columnName = rs.getString("column_name");
                 String dataType = rs.getString("data_type");
@@ -252,8 +255,9 @@ public class CitusProvider extends PostgresProvider {
         } else {
             HashMap<PostgresColumn, List<String>> columnConstraints = new HashMap<>();
             String template = "SELECT c.column_name, c.data_type, tc.constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' OR constraint_type = 'EXCLUDE') AND c.table_name = ?;";
-            QueryAdapter query = new QueryAdapter(template);
-            ResultSet rs = query.executeAndGet(globalState, tableName);
+            String filled = "SELECT c.column_name, c.data_type, tc.constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' OR constraint_type = 'EXCLUDE') AND c.table_name = '" + tableName + "';";
+            QueryAdapter query = new QueryAdapter(filled);
+            ResultSet rs = query.executeAndGet(globalState, template, tableName);
             while (rs.next()) {
                 String columnName = rs.getString("column_name");
                 String dataType = rs.getString("data_type");
@@ -282,14 +286,15 @@ public class CitusProvider extends PostgresProvider {
     @Override
     public void generateDatabase(PostgresGlobalState globalState) throws SQLException {
         // TODO: function reading? add to Postgres implementation?
-        createTables(globalState);
+        createTables(globalState, Randomly.fromOptions(4, 5, 6));
         for (PostgresTable table : globalState.getSchema().getDatabaseTables()) {
             if (!(table.getTableType() == TableType.TEMPORARY || Randomly.getBooleanWithRatherLowProbability())) {
                 if (Randomly.getBooleanWithRatherLowProbability()) {
                     // create reference table
                     String template = "SELECT create_reference_table(?);";
-                    QueryAdapter query = new QueryAdapter(template, errors);
-                    globalState.executeStatement(query, table.getName());
+                    String filled = "SELECT create_reference_table('" + table.getName() + "');";
+                    QueryAdapter query = new QueryAdapter(filled, errors);
+                    globalState.executeStatement(query, template, table.getName());
                 } else {
                     // create distributed table
                     createDistributedTable(table.getName(), (CitusGlobalState) globalState,
@@ -410,20 +415,6 @@ public class CitusProvider extends PostgresProvider {
             con = DriverManager.getConnection("jdbc:" + testURL, username, password);
             ((CitusGlobalState) globalState).setRepartition(((CitusOptions) globalState.getDmbsSpecificOptions()).repartition);
             return con;
-        }
-    }
-
-    @Override
-    protected void createTables(PostgresGlobalState globalState) throws SQLException {
-        while (globalState.getSchema().getDatabaseTables().size() < Randomly.fromOptions(4, 5, 6)) {
-            try {
-                String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
-                Query createTable = CitusTableGenerator.generate(tableName, globalState.getSchema(), generateOnlyKnown,
-                        globalState);
-                globalState.executeStatement(createTable);
-            } catch (IgnoreMeException e) {
-
-            }
         }
     }
 

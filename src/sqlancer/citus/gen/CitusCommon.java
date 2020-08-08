@@ -54,6 +54,8 @@ public class CitusCommon extends PostgresCommon {
         errors.add("failed to evaluate partition key in insert");
         errors.add("cannot perform an INSERT without a partition column value");
         errors.add("cannot perform an INSERT with NULL in the partition column");
+        errors.add("ERROR: LIMIT must not be negative");
+        errors.add("value too long for type");
 
         // current errors to be removed once upgraded to PostgreSQL 13?
         errors.add("unrecognized configuration parameter \"enable_hashagg_disk\"");
