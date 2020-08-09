@@ -1,6 +1,5 @@
 package sqlancer.cockroachdb.oracle;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +13,7 @@ import sqlancer.NoRECBase;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.SQLancerResultSet;
 import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBCommon;
 import sqlancer.cockroachdb.CockroachDBErrors;
@@ -137,7 +137,7 @@ public class CockroachDBNoRECOracle extends NoRECBase<CockroachDBGlobalState> im
 
     private int getCount(GlobalState<?, ?> globalState, Query q) throws AssertionError {
         int count = 0;
-        try (ResultSet rs = q.executeAndGet(globalState)) {
+        try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
             if (rs == null) {
                 return -1;
             }

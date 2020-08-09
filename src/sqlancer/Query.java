@@ -1,6 +1,5 @@
 package sqlancer;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 
@@ -32,7 +31,7 @@ public abstract class Query {
         return getQueryString();
     }
 
-    public ResultSet executeAndGet(GlobalState<?, ?> globalState, String... fills) throws SQLException {
+    public SQLancerResultSet executeAndGet(GlobalState<?, ?> globalState, String... fills) throws SQLException {
         throw new AssertionError();
     }
 
@@ -41,7 +40,7 @@ public abstract class Query {
         return execute(globalState);
     }
 
-    public ResultSet executeAndGetLogged(GlobalState<?, ?> globalState) throws SQLException {
+    public SQLancerResultSet executeAndGetLogged(GlobalState<?, ?> globalState) throws SQLException {
         logQueryString(globalState);
         return executeAndGet(globalState);
     }

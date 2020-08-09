@@ -1,6 +1,5 @@
 package sqlancer.sqlite3.oracle.tlp;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,6 +9,7 @@ import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.SQLancerResultSet;
 import sqlancer.TestOracle;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
@@ -75,7 +75,7 @@ public class SQLite3TLPAggregateOracle implements TestOracle {
         String firstResult;
         String secondResult;
         QueryAdapter q = new QueryAdapter(originalQuery, errors);
-        try (ResultSet result = q.executeAndGet(state)) {
+        try (SQLancerResultSet result = q.executeAndGet(state)) {
             if (result == null) {
                 throw new IgnoreMeException();
             }
@@ -86,7 +86,7 @@ public class SQLite3TLPAggregateOracle implements TestOracle {
         }
 
         QueryAdapter q2 = new QueryAdapter(metamorphicText, errors);
-        try (ResultSet result = q2.executeAndGet(state)) {
+        try (SQLancerResultSet result = q2.executeAndGet(state)) {
             if (result == null) {
                 throw new IgnoreMeException();
             }

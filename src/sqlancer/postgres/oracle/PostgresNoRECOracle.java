@@ -13,6 +13,7 @@ import sqlancer.NoRECBase;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.SQLancerResultSet;
 import sqlancer.TestOracle;
 import sqlancer.postgres.PostgresCompoundDataType;
 import sqlancer.postgres.PostgresGlobalState;
@@ -118,7 +119,7 @@ public class PostgresNoRECOracle extends NoRECBase<PostgresGlobalState> implemen
         }
         errors.add("canceling statement due to statement timeout");
         Query q = new QueryAdapter(unoptimizedQueryString, errors);
-        ResultSet rs;
+        SQLancerResultSet rs;
         try {
             rs = q.executeAndGet(state);
         } catch (Exception e) {

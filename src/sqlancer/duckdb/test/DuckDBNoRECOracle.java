@@ -13,6 +13,7 @@ import sqlancer.NoRECBase;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.SQLancerResultSet;
 import sqlancer.TestOracle;
 import sqlancer.ast.newast.ColumnReferenceNode;
 import sqlancer.ast.newast.NewPostfixTextNode;
@@ -83,7 +84,7 @@ public class DuckDBNoRECOracle extends NoRECBase<DuckDBGlobalState> implements T
         unoptimizedQueryString = "SELECT SUM(count) FROM (" + DuckDBToStringVisitor.asString(select) + ") as res";
         errors.add("canceling statement due to statement timeout");
         Query q = new QueryAdapter(unoptimizedQueryString, errors);
-        ResultSet rs;
+        SQLancerResultSet rs;
         try {
             rs = q.executeAndGetLogged(state);
         } catch (Exception e) {
