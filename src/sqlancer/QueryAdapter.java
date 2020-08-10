@@ -61,9 +61,9 @@ public class QueryAdapter extends Query {
     public boolean execute(GlobalState<?, ?> globalState, String... fills) throws SQLException {
         Statement s;
         if (fills.length > 0) {
-            s = globalState.getConnection().prepareStatement(getQueryString());
-            for (int i = 0; i < fills.length; i++) {
-                ((PreparedStatement) s).setString(i + 1, fills[i]);
+            s = globalState.getConnection().prepareStatement(fills[0]);
+            for (int i = 1; i < fills.length; i++) {
+                ((PreparedStatement) s).setString(i, fills[i]);
             }
         } else {
             s = globalState.getConnection().createStatement();
@@ -100,9 +100,9 @@ public class QueryAdapter extends Query {
     public SQLancerResultSet executeAndGet(GlobalState<?, ?> globalState, String... fills) throws SQLException {
         Statement s;
         if (fills.length > 0) {
-            s = globalState.getConnection().prepareStatement(getQueryString());
-            for (int i = 0; i < fills.length; i++) {
-                ((PreparedStatement) s).setString(i + 1, fills[i]);
+            s = globalState.getConnection().prepareStatement(fills[0]);
+            for (int i = 1; i < fills.length; i++) {
+                ((PreparedStatement) s).setString(i, fills[i]);
             }
         } else {
             s = globalState.getConnection().createStatement();
