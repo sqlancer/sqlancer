@@ -107,6 +107,9 @@ public class PostgresAlterTableGenerator {
             action.remove(Action.CLUSTER_ON);
         }
         action.remove(Action.SET_WITH_OIDS);
+        if (!randomTable.hasIndexes()) {
+            action.remove(Action.ADD_TABLE_CONSTRAINT_USING_INDEX);
+        }
         if (action.isEmpty()) {
             throw new IgnoreMeException();
         }
@@ -249,7 +252,7 @@ public class PostgresAlterTableGenerator {
                 break;
             case ADD_TABLE_CONSTRAINT:
                 sb.append("ADD ");
-                sb.append("CONSTRAINT '" + r.getChar() +"' ");
+                sb.append("CONSTRAINT " + r.getAlphabeticChar() + " ");
                 PostgresCommon.addTableConstraint(sb, randomTable, globalState, errors);
                 errors.add("multiple primary keys for table");
                 errors.add("could not create unique index");
@@ -279,13 +282,11 @@ public class PostgresAlterTableGenerator {
                 break;
             case ADD_TABLE_CONSTRAINT_USING_INDEX:
                 sb.append("ADD ");
-                sb.append("CONSTRAINT '" + r.getChar() +"' ");
+                sb.append("CONSTRAINT " + r.getAlphabeticChar() + " ");
                 sb.append(Randomly.fromOptions("UNIQUE", "PRIMARY KEY"));
                 errors.add("not valid");
-                if (randomTable.hasIndexes()) {
-                    sb.append(" USING INDEX ");
-                    sb.append(randomTable.getRandomIndex().getIndexName());
-                }
+                sb.append(" USING INDEX ");
+                sb.append(randomTable.getRandomIndex().getIndexName());
                 errors.add("is not a unique index");
                 errors.add("is already associated with a constraint");
                 errors.add("Cannot create a primary key or unique constraint using such an index");

@@ -31,5 +31,5 @@ public class CitusTLPHavingOracle extends PostgresTLPHavingOracle {
         havingCheck();
         state.setDefaultAllowedFunctionTypes();
     }
-    
+
 }

@@ -21,8 +21,8 @@ import sqlancer.postgres.ast.PostgresBinaryLogicalOperation;
 import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresJoin;
-import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresJoin.PostgresJoinType;
+import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 import sqlancer.postgres.oracle.tlp.PostgresTLPBase;
@@ -157,7 +157,7 @@ public class CitusTLPBase extends PostgresTLPBase {
                         PostgresBinaryComparisonOperation.PostgresBinaryComparisonOperator.EQUALS);
             } else {
                 // check if repartition joins are allowed
-                if (! globalState.getRepartition()) {
+                if (!globalState.getRepartition()) {
                     continue;
                 }
                 PostgresExpression leftExpr = new PostgresColumnValue(fromTable.getDistributionColumn(), null);

@@ -14,5 +14,5 @@ public class CitusIndexGenerator extends PostgresInsertGenerator {
         CitusCommon.addCitusErrors(errors);
         return createIndexQuery;
     }
-    
+
 }

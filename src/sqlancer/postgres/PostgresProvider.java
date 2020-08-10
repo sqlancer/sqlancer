@@ -6,7 +6,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
@@ -21,6 +20,7 @@ import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.QueryProvider;
 import sqlancer.Randomly;
+import sqlancer.SQLancerResultSet;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.PostgresStateToReproduce;
 import sqlancer.StatementExecutor;
@@ -277,10 +277,10 @@ public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, Postg
 
     protected void readFunctions(PostgresGlobalState globalState) throws SQLException {
         QueryAdapter query = new QueryAdapter("SELECT proname, provolatile FROM pg_proc;");
-        ResultSet rs = query.executeAndGet(globalState);
+        SQLancerResultSet rs = query.executeAndGet(globalState);
         while (rs.next()) {
-            String functionName = rs.getString("proname");
-            Character functionType = rs.getString("provolatile").charAt(0);
+            String functionName = rs.getString(1);
+            Character functionType = rs.getString(2).charAt(0);
             globalState.addFunctionAndType(functionName, functionType);
         }
     }

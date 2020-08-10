@@ -120,7 +120,9 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         List<PostgresFunctionWithUnknownResult> supportedFunctions = PostgresFunctionWithUnknownResult
                 .getSupportedFunctions(type);
         // filters functions by allowed type (stable 's', immutable 'i', volatile 'v')
-        supportedFunctions = supportedFunctions.stream().filter(f -> allowedFunctionTypes.contains(functionsAndTypes.get(f.getName()))).collect(Collectors.toList());
+        supportedFunctions = supportedFunctions.stream()
+                .filter(f -> allowedFunctionTypes.contains(functionsAndTypes.get(f.getName())))
+                .collect(Collectors.toList());
         if (supportedFunctions.isEmpty()) {
             throw new IgnoreMeException();
         }
@@ -132,7 +134,8 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         List<PostgresFunctionWithResult> functions = Stream.of(PostgresFunction.PostgresFunctionWithResult.values())
                 .filter(f -> f.supportsReturnType(type)).collect(Collectors.toList());
         // filters functions by allowed type (stable 's', immutable 'i', volatile 'v')
-        functions = functions.stream().filter(f -> allowedFunctionTypes.contains(functionsAndTypes.get(f.getName()))).collect(Collectors.toList());
+        functions = functions.stream().filter(f -> allowedFunctionTypes.contains(functionsAndTypes.get(f.getName())))
+                .collect(Collectors.toList());
         if (functions.isEmpty()) {
             throw new IgnoreMeException();
         }

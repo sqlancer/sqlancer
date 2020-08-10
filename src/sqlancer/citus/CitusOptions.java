@@ -7,21 +7,21 @@ import java.util.List;
 
 import com.beust.jcommander.Parameter;
 
-import sqlancer.postgres.PostgresGlobalState;
-import sqlancer.postgres.PostgresOptions;
-import sqlancer.postgres.oracle.PostgresPivotedQuerySynthesisOracle;
 import sqlancer.CompositeTestOracle;
 import sqlancer.TestOracle;
 import sqlancer.citus.oracle.CitusNoRECOracle;
 import sqlancer.citus.oracle.tlp.CitusTLPAggregateOracle;
 import sqlancer.citus.oracle.tlp.CitusTLPHavingOracle;
 import sqlancer.citus.oracle.tlp.CitusTLPWhereOracle;
+import sqlancer.postgres.PostgresGlobalState;
+import sqlancer.postgres.PostgresOptions;
+import sqlancer.postgres.oracle.PostgresPivotedQuerySynthesisOracle;
 
 public class CitusOptions extends PostgresOptions {
 
     @Parameter(names = "--repartition")
     public boolean repartition = true;
-    
+
     @Parameter(names = "--citusOracle")
     public List<PostgresOracle> citusOracle = Arrays.asList(PostgresOracle.QUERY_PARTITIONING);
 

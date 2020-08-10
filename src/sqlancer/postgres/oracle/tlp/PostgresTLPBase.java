@@ -53,7 +53,7 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
 
     protected List<PostgresJoin> getJoinStatements(PostgresGlobalState globalState, List<PostgresColumn> columns,
             List<PostgresTable> tables) {
-        return PostgresNoRECOracle.getJoinStatements(state, targetTables.getColumns(), tables);
+        return PostgresNoRECOracle.getJoinStatements(state, columns, tables);
         // TODO joins
     }
 

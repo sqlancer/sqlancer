@@ -20,6 +20,7 @@ import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.QueryProvider;
 import sqlancer.Randomly;
+import sqlancer.SQLancerResultSet;
 import sqlancer.StatementExecutor;
 import sqlancer.TestOracle;
 import sqlancer.citus.gen.CitusAlterTableGenerator;
@@ -28,7 +29,6 @@ import sqlancer.citus.gen.CitusDeleteGenerator;
 import sqlancer.citus.gen.CitusIndexGenerator;
 import sqlancer.citus.gen.CitusInsertGenerator;
 import sqlancer.citus.gen.CitusSetGenerator;
-import sqlancer.citus.gen.CitusTableGenerator;
 import sqlancer.citus.gen.CitusUpdateGenerator;
 import sqlancer.citus.gen.CitusViewGenerator;
 import sqlancer.postgres.PostgresGlobalState;
@@ -51,7 +51,6 @@ import sqlancer.postgres.gen.PostgresStatisticsGenerator;
 import sqlancer.postgres.gen.PostgresTransactionGenerator;
 import sqlancer.postgres.gen.PostgresTruncateGenerator;
 import sqlancer.postgres.gen.PostgresVacuumGenerator;
-import sqlancer.sqlite3.gen.SQLite3Common;
 
 public class CitusProvider extends PostgresProvider {
 
@@ -209,7 +208,8 @@ public class CitusProvider extends PostgresProvider {
         if (columns.size() != 0) {
             PostgresColumn columnToDistribute = Randomly.fromList(columns);
             String template = "SELECT create_distributed_table(?, ?);";
-            String filled = "SELECT create_distributed_table('" + tableName + "', '" + columnToDistribute.getName() + "');";
+            String filled = "SELECT create_distributed_table('" + tableName + "', '" + columnToDistribute.getName()
+                    + "');";
             QueryAdapter query = new QueryAdapter(filled, errors);
             globalState.executeStatement(query, template, tableName, columnToDistribute.getName());
             // distribution column cannot take NULL value
@@ -225,11 +225,13 @@ public class CitusProvider extends PostgresProvider {
             throws SQLException {
         List<String> constraints = new ArrayList<>();
         String template = "SELECT constraint_type FROM information_schema.table_constraints WHERE table_name = ? AND (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' or constraint_type = 'EXCLUDE');";
-        String filled = "SELECT constraint_type FROM information_schema.table_constraints WHERE table_name = '" + tableName + "' AND (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' or constraint_type = 'EXCLUDE');";
+        String filled = "SELECT constraint_type FROM information_schema.table_constraints WHERE table_name = '"
+                + tableName
+                + "' AND (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' or constraint_type = 'EXCLUDE');";
         QueryAdapter query = new QueryAdapter(filled);
-        ResultSet rs = query.executeAndGet(globalState, template, tableName);
+        SQLancerResultSet rs = query.executeAndGet(globalState, template, tableName);
         while (rs.next()) {
-            constraints.add(rs.getString("constraint_type"));
+            constraints.add(rs.getString(1));
         }
         return constraints;
     }
@@ -240,12 +242,13 @@ public class CitusProvider extends PostgresProvider {
         List<String> tableConstraints = getTableConstraints(tableName, globalState, con);
         if (tableConstraints.size() == 0) {
             String template = "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = ?;";
-            String filled = "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '" + tableName + "';";
+            String filled = "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '"
+                    + tableName + "';";
             QueryAdapter query = new QueryAdapter(filled);
-            ResultSet rs = query.executeAndGet(globalState, template, tableName);
+            SQLancerResultSet rs = query.executeAndGet(globalState, template, tableName);
             while (rs.next()) {
-                String columnName = rs.getString("column_name");
-                String dataType = rs.getString("data_type");
+                String columnName = rs.getString(1);
+                String dataType = rs.getString(2);
                 // data types money & bit varying have no default operator class for specified partition method
                 if (!(dataType.equals("money") || dataType.equals("bit varying"))) {
                     PostgresColumn c = new PostgresColumn(columnName, PostgresSchema.getColumnType(dataType));
@@ -255,13 +258,14 @@ public class CitusProvider extends PostgresProvider {
         } else {
             HashMap<PostgresColumn, List<String>> columnConstraints = new HashMap<>();
             String template = "SELECT c.column_name, c.data_type, tc.constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' OR constraint_type = 'EXCLUDE') AND c.table_name = ?;";
-            String filled = "SELECT c.column_name, c.data_type, tc.constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' OR constraint_type = 'EXCLUDE') AND c.table_name = '" + tableName + "';";
+            String filled = "SELECT c.column_name, c.data_type, tc.constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' OR constraint_type = 'EXCLUDE') AND c.table_name = '"
+                    + tableName + "';";
             QueryAdapter query = new QueryAdapter(filled);
-            ResultSet rs = query.executeAndGet(globalState, template, tableName);
+            SQLancerResultSet rs = query.executeAndGet(globalState, template, tableName);
             while (rs.next()) {
-                String columnName = rs.getString("column_name");
-                String dataType = rs.getString("data_type");
-                String constraintType = rs.getString("constraint_type");
+                String columnName = rs.getString(1);
+                String dataType = rs.getString(2);
+                String constraintType = rs.getString(3);
                 // data types money & bit varying have no default operator class for specified partition method
                 if (!(dataType.equals("money") || dataType.equals("bit varying"))) {
                     PostgresColumn c = new PostgresColumn(columnName, PostgresSchema.getColumnType(dataType));
@@ -413,7 +417,8 @@ public class CitusProvider extends PostgresProvider {
             con.close();
             // reconnect to coordinator node, test database
             con = DriverManager.getConnection("jdbc:" + testURL, username, password);
-            ((CitusGlobalState) globalState).setRepartition(((CitusOptions) globalState.getDmbsSpecificOptions()).repartition);
+            ((CitusGlobalState) globalState)
+                    .setRepartition(((CitusOptions) globalState.getDmbsSpecificOptions()).repartition);
             return con;
         }
     }

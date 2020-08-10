@@ -3,8 +3,8 @@ package sqlancer.citus.gen;
 import java.util.List;
 import java.util.Set;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Query;
-import sqlancer.Randomly;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.gen.PostgresAlterTableGenerator;
@@ -41,7 +41,7 @@ public class CitusAlterTableGenerator extends PostgresAlterTableGenerator {
         action.remove(Action.OWNER_TO);
         action.remove(Action.REPLICA_IDENTITY);
         if (action.isEmpty()) {
-            action.addAll(Randomly.nonEmptySubset(Action.ALTER_TABLE_DROP_COLUMN, Action.ALTER_COLUMN_TYPE, Action.ALTER_COLUMN_SET_DROP_DEFAULT, Action.ALTER_COLUMN_SET_DROP_NULL, Action.ADD_TABLE_CONSTRAINT, Action.ADD_TABLE_CONSTRAINT_USING_INDEX, Action.VALIDATE_CONSTRAINT));
+            throw new IgnoreMeException();
         }
         return action;
     }
