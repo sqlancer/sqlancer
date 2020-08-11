@@ -14,11 +14,16 @@ import sqlancer.Randomly;
 
 public class PostgresGlobalState extends GlobalState<PostgresOptions, PostgresSchema> {
 
+    public static final char IMMUTABLE = 'i';
+    public static final char STABLE = 's';
+    public static final char VOLATILE = 'v';
+    
     private List<String> operators;
     private List<String> collates;
     private List<String> opClasses;
+    // store and allow filtering by function volatility classifications 
     private HashMap<String, Character> functionsAndTypes = new HashMap<>();
-    private List<Character> allowedFunctionTypes = Arrays.asList('s', 'v', 'i');
+    private List<Character> allowedFunctionTypes = Arrays.asList(IMMUTABLE, STABLE, VOLATILE);
 
     @Override
     public void setConnection(Connection con) {
@@ -111,7 +116,7 @@ public class PostgresGlobalState extends GlobalState<PostgresOptions, PostgresSc
     }
 
     public void setDefaultAllowedFunctionTypes() {
-        this.allowedFunctionTypes = Arrays.asList('s', 'v', 'i');
+        this.allowedFunctionTypes = Arrays.asList(IMMUTABLE, STABLE, VOLATILE);
     }
 
     public List<Character> getAllowedFunctionTypes() {
