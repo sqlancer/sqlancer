@@ -317,6 +317,78 @@ public class CitusProvider extends PostgresProvider {
         return new CompositeTestOracle(oracles, globalState);
     }
 
+    private List<CitusWorkerNode> readCitusWorkerNodes(PostgresGlobalState globalState, Connection con) throws SQLException {
+        globalState.getState().logStatement("SELECT * FROM master_get_active_worker_nodes()");
+        List<CitusWorkerNode> citusWorkerNodes = new ArrayList<>();
+        try (Statement s = con.createStatement()) {
+            ResultSet rs = s.executeQuery("SELECT * FROM master_get_active_worker_nodes();");
+            while (rs.next()) {
+                String nodeHost = rs.getString("node_name");
+                int nodePort = rs.getInt("node_port");
+                CitusWorkerNode w = new CitusWorkerNode(nodeHost, nodePort);
+                citusWorkerNodes.add(w);
+            }
+        }
+        return citusWorkerNodes;
+    }
+
+    private void addCitusExtension(PostgresGlobalState globalState, Connection con) throws SQLException {
+        globalState.getState().logStatement("CREATE EXTENSION citus;");
+        try (Statement s = con.createStatement()) {
+            s.execute("CREATE EXTENSION citus;");
+        }
+    }
+
+    private void prepareCitusWorkerNodes(PostgresGlobalState globalState, List<CitusWorkerNode> citusWorkerNodes, int databaseIndex, String entryDatabaseName) throws SQLException {
+        for (CitusWorkerNode w : citusWorkerNodes) {
+            // connect to worker node, entry database
+            int hostIndex = entryURL.indexOf(host);
+            String preHost = entryURL.substring(0, hostIndex);
+            String postHost = entryURL.substring(databaseIndex - 1);
+            String entryWorkerURL = preHost + w.getHost() + ":" + w.getPort() + postHost;
+            // TODO: better way of logging this
+            globalState.getState().logStatement("\\q");
+            globalState.getState().logStatement(entryWorkerURL);
+            globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
+            Connection con = DriverManager.getConnection("jdbc:" + entryWorkerURL, username, password);
+
+            // create test database at worker node
+            globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
+            globalState.getState().logStatement(createDatabaseCommand);
+            try (Statement s = con.createStatement()) {
+                s.execute("DROP DATABASE IF EXISTS " + databaseName);
+            }
+            try (Statement s = con.createStatement()) {
+                s.execute(createDatabaseCommand);
+            }
+            con.close();
+
+            // connect to worker node, test database
+            int databaseIndexWorker = entryWorkerURL.indexOf(entryPath) + 1;
+            String preDatabaseNameWorker = entryWorkerURL.substring(0, databaseIndexWorker);
+            String postDatabaseNameWorker = entryWorkerURL
+                    .substring(databaseIndexWorker + entryDatabaseName.length());
+            String testWorkerURL = preDatabaseNameWorker + databaseName + postDatabaseNameWorker;
+            globalState.getState().logStatement(String.format("\\c %s;", databaseName));
+            con = DriverManager.getConnection("jdbc:" + testWorkerURL, username, password);
+
+            // add citus extension to worker node, test database
+            addCitusExtension(globalState, con);
+            con.close();
+        }
+    }
+
+    private void addCitusWorkerNodes(PostgresGlobalState globalState, Connection con, List<CitusWorkerNode> citusWorkerNodes) throws SQLException{
+        for (CitusWorkerNode w : citusWorkerNodes) {
+            // TODO: protect from sql injection - is it necessary though since these are read from the system?
+            String addWorkers = "SELECT * from master_add_node('" + w.getHost() + "', " + w.getPort() + ");";
+            globalState.getState().logStatement(addWorkers);
+            try (Statement s = con.createStatement()) {
+                s.execute(addWorkers);
+            }
+        }
+    }
+
     @Override
     public Connection createDatabase(PostgresGlobalState globalState) throws SQLException {
         synchronized (CitusProvider.class) {
@@ -325,86 +397,28 @@ public class CitusProvider extends PostgresProvider {
             String entryDatabaseName = entryPath.substring(1);
             int databaseIndex = entryURL.indexOf(entryPath) + 1;
             // add citus extension to coordinator node, test database
-            globalState.getState().logStatement(new QueryAdapter("CREATE EXTENSION citus;"));
-            try (Statement s = con.createStatement()) {
-                s.execute("CREATE EXTENSION citus;");
-            }
+            addCitusExtension(globalState, con);
             con.close();
 
             // reconnect to coordinator node, entry database
             globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
             con = DriverManager.getConnection("jdbc:" + entryURL, username, password);
-
             // read info about worker nodes
-            globalState.getState().logStatement("SELECT * FROM master_get_active_worker_nodes()");
-            List<CitusWorkerNode> citusWorkerNodes = new ArrayList<>();
-            try (Statement s = con.createStatement()) {
-                ResultSet rs = s.executeQuery("SELECT * FROM master_get_active_worker_nodes();");
-                while (rs.next()) {
-                    String nodeHost = rs.getString("node_name");
-                    int nodePort = rs.getInt("node_port");
-                    CitusWorkerNode w = new CitusWorkerNode(nodeHost, nodePort);
-                    citusWorkerNodes.add(w);
-                }
-            }
+            List<CitusWorkerNode> citusWorkerNodes = readCitusWorkerNodes(globalState, con);
             con.close();
 
-            for (CitusWorkerNode w : citusWorkerNodes) {
-                // connect to worker node, entry database
-                int hostIndex = entryURL.indexOf(host);
-                String preHost = entryURL.substring(0, hostIndex);
-                String postHost = entryURL.substring(databaseIndex - 1);
-                String entryWorkerURL = preHost + w.getHost() + ":" + w.getPort() + postHost;
-                // TODO: better way of logging this
-                globalState.getState().logStatement("\\q");
-                globalState.getState().logStatement(entryWorkerURL);
-                globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
-                con = DriverManager.getConnection("jdbc:" + entryWorkerURL, username, password);
-
-                // create test database at worker node
-                globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
-                globalState.getState().logStatement(createDatabaseCommand);
-                try (Statement s = con.createStatement()) {
-                    s.execute("DROP DATABASE IF EXISTS " + databaseName);
-                }
-                try (Statement s = con.createStatement()) {
-                    s.execute(createDatabaseCommand);
-                }
-                con.close();
-
-                // connect to worker node, test database
-                int databaseIndexWorker = entryWorkerURL.indexOf(entryPath) + 1;
-                String preDatabaseNameWorker = entryWorkerURL.substring(0, databaseIndexWorker);
-                String postDatabaseNameWorker = entryWorkerURL
-                        .substring(databaseIndexWorker + entryDatabaseName.length());
-                String testWorkerURL = preDatabaseNameWorker + databaseName + postDatabaseNameWorker;
-                globalState.getState().logStatement(String.format("\\c %s;", databaseName));
-                con = DriverManager.getConnection("jdbc:" + testWorkerURL, username, password);
-
-                // add citus extension to worker node, test database
-                globalState.getState().logStatement("CREATE EXTENSION citus;");
-                try (Statement s = con.createStatement()) {
-                    s.execute("CREATE EXTENSION citus;");
-                }
-                con.close();
-            }
+            // prepare worker nodes for test database
+            prepareCitusWorkerNodes(globalState, citusWorkerNodes, databaseIndex, entryDatabaseName);
 
             // reconnect to coordinator node, test database
             // TODO: better way of logging this
             globalState.getState().logStatement("\\q");
             globalState.getState().logStatement(testURL);
             con = DriverManager.getConnection("jdbc:" + testURL, username, password);
-
             // add worker nodes to coordinator node for test database
-            for (CitusWorkerNode w : citusWorkerNodes) {
-                // TODO: protect from sql injection - is it necessary though since these are read from the system?
-                String addWorkers = "SELECT * from master_add_node('" + w.getHost() + "', " + w.getPort() + ");";
-                globalState.getState().logStatement(addWorkers);
-                try (Statement s = con.createStatement()) {
-                    s.execute(addWorkers);
-                }
-            }
+            addCitusWorkerNodes(globalState, con, citusWorkerNodes);
             con.close();
+
             // reconnect to coordinator node, test database
             con = DriverManager.getConnection("jdbc:" + testURL, username, password);
             ((CitusGlobalState) globalState)
