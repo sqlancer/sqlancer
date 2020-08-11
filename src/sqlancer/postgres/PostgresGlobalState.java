@@ -17,11 +17,11 @@ public class PostgresGlobalState extends GlobalState<PostgresOptions, PostgresSc
     public static final char IMMUTABLE = 'i';
     public static final char STABLE = 's';
     public static final char VOLATILE = 'v';
-    
+
     private List<String> operators;
     private List<String> collates;
     private List<String> opClasses;
-    // store and allow filtering by function volatility classifications 
+    // store and allow filtering by function volatility classifications
     private HashMap<String, Character> functionsAndTypes = new HashMap<>();
     private List<Character> allowedFunctionTypes = Arrays.asList(IMMUTABLE, STABLE, VOLATILE);
 
@@ -99,7 +99,7 @@ public class PostgresGlobalState extends GlobalState<PostgresOptions, PostgresSc
     }
 
     @Override
-    protected void updateSchema() throws SQLException {
+    public void updateSchema() throws SQLException {
         setSchema(PostgresSchema.fromConnection(getConnection(), getDatabaseName()));
     }
 

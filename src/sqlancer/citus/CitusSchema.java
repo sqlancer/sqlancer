@@ -21,6 +21,7 @@ public class CitusSchema extends PostgresSchema {
     public static class CitusTable extends PostgresTable {
 
         private PostgresColumn distributionColumn;
+        // colocationId is null for local tables
         private Integer colocationId;
 
         public CitusTable(String tableName, List<PostgresColumn> columns, List<PostgresIndex> indexes,
@@ -58,7 +59,6 @@ public class CitusSchema extends PostgresSchema {
 
     public static CitusSchema fromConnection(Connection con, String databaseName) throws SQLException {
         PostgresSchema schema = PostgresSchema.fromConnection(con, databaseName);
-        Exception ex = null;
         try {
             List<CitusTable> databaseTables = new ArrayList<>();
             try (Statement s = con.createStatement()) {
@@ -90,9 +90,8 @@ public class CitusSchema extends PostgresSchema {
             }
             return new CitusSchema(databaseTables, databaseName);
         } catch (SQLIntegrityConstraintViolationException e) {
-            ex = e;
+            throw new AssertionError(e);
         }
-        throw new AssertionError(ex);
     }
 
 }

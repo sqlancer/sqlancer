@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import sqlancer.citus.CitusGlobalState;
 import sqlancer.citus.gen.CitusCommon;
+import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.oracle.tlp.PostgresTLPHavingOracle;
 
 public class CitusTLPHavingOracle extends PostgresTLPHavingOracle {

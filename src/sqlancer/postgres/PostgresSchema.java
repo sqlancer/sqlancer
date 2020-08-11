@@ -259,7 +259,6 @@ public class PostgresSchema {
     }
 
     public static PostgresSchema fromConnection(Connection con, String databaseName) throws SQLException {
-        Exception ex = null;
         try {
             List<PostgresTable> databaseTables = new ArrayList<>();
             try (Statement s = con.createStatement()) {
@@ -289,9 +288,8 @@ public class PostgresSchema {
             }
             return new PostgresSchema(databaseTables, databaseName);
         } catch (SQLIntegrityConstraintViolationException e) {
-            ex = e;
+            throw new AssertionError(e);
         }
-        throw new AssertionError(ex);
     }
 
     protected static List<PostgresStatisticsObject> getStatistics(Connection con) throws SQLException {

@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import sqlancer.citus.CitusGlobalState;
 import sqlancer.citus.gen.CitusCommon;
+import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.oracle.tlp.PostgresTLPWhereOracle;
 
 public class CitusTLPWhereOracle extends PostgresTLPWhereOracle {
@@ -19,7 +20,7 @@ public class CitusTLPWhereOracle extends PostgresTLPWhereOracle {
 
     @Override
     public void check() throws SQLException {
-        state.setAllowedFunctionTypes(Arrays.asList('i'));
+        state.setAllowedFunctionTypes(Arrays.asList(PostgresGlobalState.IMMUTABLE));
         citusTLPBase.check();
         s = citusTLPBase.getSchema();
         targetTables = citusTLPBase.getTargetTables();

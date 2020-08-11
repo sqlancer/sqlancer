@@ -204,11 +204,10 @@ public class CitusProvider extends PostgresProvider {
             Connection con) throws SQLException {
         if (columns.isEmpty()) {
             PostgresColumn columnToDistribute = Randomly.fromList(columns);
-            String template = "SELECT create_distributed_table(?, ?);";
-            String filled = "SELECT create_distributed_table('" + tableName + "', '" + columnToDistribute.getName()
+            String queryString = "SELECT create_distributed_table('" + tableName + "', '" + columnToDistribute.getName()
                     + "');";
-            QueryAdapter query = new QueryAdapter(filled, getCitusErrors());
-            globalState.executeStatement(query, template, tableName, columnToDistribute.getName());
+            QueryAdapter query = new QueryAdapter(queryString, getCitusErrors());
+            globalState.executeStatement(query, "SELECT create_distributed_table(?, ?);", tableName, columnToDistribute.getName());
             // distribution column cannot take NULL value
             // TODO: find a way to protect from SQL injection without '' around string input
             query = new QueryAdapter(
@@ -221,12 +220,11 @@ public class CitusProvider extends PostgresProvider {
     private static List<String> getTableConstraints(String tableName, CitusGlobalState globalState, Connection con)
             throws SQLException {
         List<String> constraints = new ArrayList<>();
-        String template = "SELECT constraint_type FROM information_schema.table_constraints WHERE table_name = ? AND (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' or constraint_type = 'EXCLUDE');";
-        String filled = "SELECT constraint_type FROM information_schema.table_constraints WHERE table_name = '"
+        String queryString = "SELECT constraint_type FROM information_schema.table_constraints WHERE table_name = '"
                 + tableName
                 + "' AND (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' or constraint_type = 'EXCLUDE');";
-        QueryAdapter query = new QueryAdapter(filled);
-        SQLancerResultSet rs = query.executeAndGet(globalState, template, tableName);
+        QueryAdapter query = new QueryAdapter(queryString);
+        SQLancerResultSet rs = query.executeAndGet(globalState, "SELECT constraint_type FROM information_schema.table_constraints WHERE table_name = ? AND (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' or constraint_type = 'EXCLUDE');", tableName);
         while (rs.next()) {
             constraints.add(rs.getString(1));
         }
@@ -238,11 +236,10 @@ public class CitusProvider extends PostgresProvider {
         List<PostgresColumn> columns = new ArrayList<>();
         List<String> tableConstraints = getTableConstraints(tableName, globalState, con);
         if (tableConstraints.isEmpty()) {
-            String template = "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = ?;";
-            String filled = "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '"
+            String queryString = "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '"
                     + tableName + "';";
-            QueryAdapter query = new QueryAdapter(filled);
-            SQLancerResultSet rs = query.executeAndGet(globalState, template, tableName);
+            QueryAdapter query = new QueryAdapter(queryString);
+            SQLancerResultSet rs = query.executeAndGet(globalState, "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = ?;", tableName);
             while (rs.next()) {
                 String columnName = rs.getString(1);
                 String dataType = rs.getString(2);
@@ -253,11 +250,10 @@ public class CitusProvider extends PostgresProvider {
             }
         } else {
             HashMap<PostgresColumn, List<String>> columnConstraints = new HashMap<>();
-            String template = "SELECT c.column_name, c.data_type, tc.constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' OR constraint_type = 'EXCLUDE') AND c.table_name = ?;";
-            String filled = "SELECT c.column_name, c.data_type, tc.constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' OR constraint_type = 'EXCLUDE') AND c.table_name = '"
+            String queryString = "SELECT c.column_name, c.data_type, tc.constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' OR constraint_type = 'EXCLUDE') AND c.table_name = '"
                     + tableName + "';";
-            QueryAdapter query = new QueryAdapter(filled);
-            SQLancerResultSet rs = query.executeAndGet(globalState, template, tableName);
+            QueryAdapter query = new QueryAdapter(queryString);
+            SQLancerResultSet rs = query.executeAndGet(globalState, "SELECT c.column_name, c.data_type, tc.constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' OR constraint_type = 'EXCLUDE') AND c.table_name = ?;", tableName);
             while (rs.next()) {
                 String columnName = rs.getString(1);
                 String dataType = rs.getString(2);
@@ -290,10 +286,9 @@ public class CitusProvider extends PostgresProvider {
             if (!(table.getTableType() == TableType.TEMPORARY || Randomly.getBooleanWithRatherLowProbability())) {
                 if (Randomly.getBooleanWithRatherLowProbability()) {
                     // create reference table
-                    String template = "SELECT create_reference_table(?);";
-                    String filled = "SELECT create_reference_table('" + table.getName() + "');";
-                    QueryAdapter query = new QueryAdapter(filled, getCitusErrors());
-                    globalState.executeStatement(query, template, table.getName());
+                    String queryString = "SELECT create_reference_table('" + table.getName() + "');";
+                    QueryAdapter query = new QueryAdapter(queryString, getCitusErrors());
+                    globalState.executeStatement(query, "SELECT create_reference_table(?);", table.getName());
                 } else {
                     // create distributed table
                     createDistributedTable(table.getName(), (CitusGlobalState) globalState,
@@ -302,7 +297,7 @@ public class CitusProvider extends PostgresProvider {
             }
             // else: keep local table
         }
-        ((CitusGlobalState) globalState).updateSchema();
+        globalState.updateSchema();
         prepareTables(globalState);
         if (((CitusGlobalState) globalState).getRepartition()) {
             // allow repartition joins
