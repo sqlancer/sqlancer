@@ -77,6 +77,7 @@ public class CitusTLPBase extends PostgresTLPBase {
 
     private List<PostgresJoin> generateJoins(List<PostgresTable> tables) {
         List<PostgresJoin> joins = null;
+        tables.clear();
         if (distributedTables.isEmpty()
                 || (!referenceTables.isEmpty() && !Randomly.getBooleanWithRatherLowProbability())) {
             if (!localTables.isEmpty()) {

@@ -29,6 +29,7 @@ public class CitusCommon extends PostgresCommon {
         errors.add("creating unique indexes on non-partition columns is currently unsupported");
         errors.add("Distributed relations must not use GENERATED ... AS IDENTITY");
         errors.add("cannot drop multiple distributed objects in a single command");
+        errors.add("is not distributed");
         // ERROR: cannot create foreign key constraint
         // Detail: SET NULL or SET DEFAULT is not supported in ON DELETE operation when distribution key is included in
         // the foreign key constraint
