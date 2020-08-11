@@ -6,7 +6,10 @@ import sqlancer.Query;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.gen.PostgresViewGenerator;
 
-public class CitusViewGenerator extends PostgresViewGenerator {
+public final class CitusViewGenerator {
+
+    private CitusViewGenerator() {
+    }
 
     public static Query create(PostgresGlobalState globalState) {
         Query viewQuery = PostgresViewGenerator.create(globalState);

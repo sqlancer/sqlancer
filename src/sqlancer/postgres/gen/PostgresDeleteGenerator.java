@@ -11,7 +11,10 @@ import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresVisitor;
 
-public class PostgresDeleteGenerator {
+public final class PostgresDeleteGenerator {
+
+    private PostgresDeleteGenerator() {
+    }
 
     public static Query create(PostgresGlobalState globalState) {
         PostgresTable table = globalState.getSchema().getRandomTable(t -> !t.isView());

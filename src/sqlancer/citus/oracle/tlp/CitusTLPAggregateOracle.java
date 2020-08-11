@@ -10,7 +10,7 @@ import sqlancer.postgres.oracle.tlp.PostgresTLPAggregateOracle;
 
 public class CitusTLPAggregateOracle extends PostgresTLPAggregateOracle {
 
-    private CitusTLPBase citusTLPBase;
+    private final CitusTLPBase citusTLPBase;
 
     public CitusTLPAggregateOracle(CitusGlobalState state) {
         super(state);

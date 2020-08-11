@@ -6,7 +6,10 @@ import sqlancer.Query;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.gen.PostgresDeleteGenerator;
 
-public class CitusDeleteGenerator extends PostgresDeleteGenerator {
+public final class CitusDeleteGenerator {
+
+    private CitusDeleteGenerator() {
+    }
 
     public static Query create(PostgresGlobalState globalState) {
         Query deleteQuery = PostgresDeleteGenerator.create(globalState);

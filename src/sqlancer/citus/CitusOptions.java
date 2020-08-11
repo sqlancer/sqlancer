@@ -22,7 +22,7 @@ public class CitusOptions extends PostgresOptions {
     @Parameter(names = "--repartition")
     public boolean repartition = true;
 
-    @Parameter(names = "--citusOracle")
+    @Parameter(names = "--citusoracle")
     public List<CitusOracle> citusOracle = Arrays.asList(CitusOracle.QUERY_PARTITIONING);
 
     public enum CitusOracle {

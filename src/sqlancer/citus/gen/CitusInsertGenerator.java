@@ -6,7 +6,10 @@ import sqlancer.Query;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.gen.PostgresInsertGenerator;
 
-public class CitusInsertGenerator extends PostgresInsertGenerator {
+public final class CitusInsertGenerator {
+
+    private CitusInsertGenerator() {
+    }
 
     public static Query insert(PostgresGlobalState globalState) {
         Query insertQuery = PostgresInsertGenerator.insert(globalState);

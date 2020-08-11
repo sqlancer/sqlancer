@@ -17,7 +17,10 @@ import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresVisitor;
 
-public class PostgresCommon {
+public final class PostgresCommon {
+
+    private PostgresCommon() {
+    }
 
     public static void addCommonFetchErrors(Set<String> errors) {
         errors.add("FULL JOIN is only supported with merge-joinable or hash-joinable join conditions");
@@ -259,7 +262,7 @@ public class PostgresCommon {
         addTableConstraint(sb, table, globalState, Randomly.fromOptions(TableConstraints.values()), errors);
     }
 
-    protected static void addTableConstraint(StringBuilder sb, PostgresTable table, PostgresGlobalState globalState,
+    private static void addTableConstraint(StringBuilder sb, PostgresTable table, PostgresGlobalState globalState,
             TableConstraints t, Set<String> errors) {
         List<PostgresColumn> randomNonEmptyColumnSubset = table.getRandomNonEmptyColumnSubset();
         List<PostgresColumn> otherColumns;

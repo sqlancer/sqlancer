@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import sqlancer.GlobalState;
 import sqlancer.Randomly;
@@ -22,7 +23,7 @@ public class PostgresGlobalState extends GlobalState<PostgresOptions, PostgresSc
     private List<String> collates;
     private List<String> opClasses;
     // store and allow filtering by function volatility classifications
-    private HashMap<String, Character> functionsAndTypes = new HashMap<>();
+    private final Map<String, Character> functionsAndTypes = new HashMap<>();
     private List<Character> allowedFunctionTypes = Arrays.asList(IMMUTABLE, STABLE, VOLATILE);
 
     @Override
@@ -107,7 +108,7 @@ public class PostgresGlobalState extends GlobalState<PostgresOptions, PostgresSc
         this.functionsAndTypes.put(functionName, functionType);
     }
 
-    public HashMap<String, Character> getFunctionsAndTypes() {
+    public Map<String, Character> getFunctionsAndTypes() {
         return this.functionsAndTypes;
     }
 

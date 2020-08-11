@@ -6,7 +6,10 @@ import sqlancer.Query;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.gen.PostgresInsertGenerator;
 
-public class CitusIndexGenerator extends PostgresInsertGenerator {
+public final class CitusIndexGenerator {
+
+    private CitusIndexGenerator() {
+    }
 
     public static Query generate(PostgresGlobalState globalState) {
         Query createIndexQuery = PostgresInsertGenerator.insert(globalState);

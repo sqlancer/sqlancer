@@ -200,14 +200,15 @@ public class CitusProvider extends PostgresProvider {
 
     }
 
-    private static void distributeTable(List<PostgresColumn> columns, String tableName, CitusGlobalState globalState,
-            Connection con) throws SQLException {
-        if (columns.isEmpty()) {
+    private static void distributeTable(List<PostgresColumn> columns, String tableName, CitusGlobalState globalState)
+            throws SQLException {
+        if (!columns.isEmpty()) {
             PostgresColumn columnToDistribute = Randomly.fromList(columns);
             String queryString = "SELECT create_distributed_table('" + tableName + "', '" + columnToDistribute.getName()
                     + "');";
             QueryAdapter query = new QueryAdapter(queryString, getCitusErrors());
-            globalState.executeStatement(query, "SELECT create_distributed_table(?, ?);", tableName, columnToDistribute.getName());
+            globalState.executeStatement(query, "SELECT create_distributed_table(?, ?);", tableName,
+                    columnToDistribute.getName());
             // distribution column cannot take NULL value
             // TODO: find a way to protect from SQL injection without '' around string input
             query = new QueryAdapter(
@@ -217,29 +218,31 @@ public class CitusProvider extends PostgresProvider {
         }
     }
 
-    private static List<String> getTableConstraints(String tableName, CitusGlobalState globalState, Connection con)
+    private static List<String> getTableConstraints(String tableName, CitusGlobalState globalState)
             throws SQLException {
         List<String> constraints = new ArrayList<>();
         String queryString = "SELECT constraint_type FROM information_schema.table_constraints WHERE table_name = '"
                 + tableName
                 + "' AND (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' or constraint_type = 'EXCLUDE');";
         QueryAdapter query = new QueryAdapter(queryString);
-        SQLancerResultSet rs = query.executeAndGet(globalState, "SELECT constraint_type FROM information_schema.table_constraints WHERE table_name = ? AND (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' or constraint_type = 'EXCLUDE');", tableName);
+        SQLancerResultSet rs = query.executeAndGet(globalState,
+                "SELECT constraint_type FROM information_schema.table_constraints WHERE table_name = ? AND (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' or constraint_type = 'EXCLUDE');",
+                tableName);
         while (rs.next()) {
             constraints.add(rs.getString(1));
         }
         return constraints;
     }
 
-    private static void createDistributedTable(String tableName, CitusGlobalState globalState, Connection con)
-            throws SQLException {
+    private static void createDistributedTable(String tableName, CitusGlobalState globalState) throws SQLException {
         List<PostgresColumn> columns = new ArrayList<>();
-        List<String> tableConstraints = getTableConstraints(tableName, globalState, con);
+        List<String> tableConstraints = getTableConstraints(tableName, globalState);
         if (tableConstraints.isEmpty()) {
             String queryString = "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '"
                     + tableName + "';";
             QueryAdapter query = new QueryAdapter(queryString);
-            SQLancerResultSet rs = query.executeAndGet(globalState, "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = ?;", tableName);
+            SQLancerResultSet rs = query.executeAndGet(globalState,
+                    "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = ?;", tableName);
             while (rs.next()) {
                 String columnName = rs.getString(1);
                 String dataType = rs.getString(2);
@@ -253,7 +256,9 @@ public class CitusProvider extends PostgresProvider {
             String queryString = "SELECT c.column_name, c.data_type, tc.constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' OR constraint_type = 'EXCLUDE') AND c.table_name = '"
                     + tableName + "';";
             QueryAdapter query = new QueryAdapter(queryString);
-            SQLancerResultSet rs = query.executeAndGet(globalState, "SELECT c.column_name, c.data_type, tc.constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' OR constraint_type = 'EXCLUDE') AND c.table_name = ?;", tableName);
+            SQLancerResultSet rs = query.executeAndGet(globalState,
+                    "SELECT c.column_name, c.data_type, tc.constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE (constraint_type = 'PRIMARY KEY' OR constraint_type = 'UNIQUE' OR constraint_type = 'EXCLUDE') AND c.table_name = ?;",
+                    tableName);
             while (rs.next()) {
                 String columnName = rs.getString(1);
                 String dataType = rs.getString(2);
@@ -275,7 +280,7 @@ public class CitusProvider extends PostgresProvider {
             }
             // TODO: figure out how to use EXCLUDE
         }
-        distributeTable(columns, tableName, globalState, con);
+        distributeTable(columns, tableName, globalState);
     }
 
     @Override
@@ -291,8 +296,7 @@ public class CitusProvider extends PostgresProvider {
                     globalState.executeStatement(query, "SELECT create_reference_table(?);", table.getName());
                 } else {
                     // create distributed table
-                    createDistributedTable(table.getName(), (CitusGlobalState) globalState,
-                            globalState.getConnection());
+                    createDistributedTable(table.getName(), (CitusGlobalState) globalState);
                 }
             }
             // else: keep local table
@@ -301,7 +305,8 @@ public class CitusProvider extends PostgresProvider {
         prepareTables(globalState);
         if (((CitusGlobalState) globalState).getRepartition()) {
             // allow repartition joins
-            globalState.executeStatement(new QueryAdapter("SET citus.enable_repartition_joins to ON;\n", getCitusErrors()));
+            globalState.executeStatement(
+                    new QueryAdapter("SET citus.enable_repartition_joins to ON;\n", getCitusErrors()));
         }
     }
 
@@ -317,7 +322,8 @@ public class CitusProvider extends PostgresProvider {
         return new CompositeTestOracle(oracles, globalState);
     }
 
-    private List<CitusWorkerNode> readCitusWorkerNodes(PostgresGlobalState globalState, Connection con) throws SQLException {
+    private List<CitusWorkerNode> readCitusWorkerNodes(PostgresGlobalState globalState, Connection con)
+            throws SQLException {
         globalState.getState().logStatement("SELECT * FROM master_get_active_worker_nodes()");
         List<CitusWorkerNode> citusWorkerNodes = new ArrayList<>();
         try (Statement s = con.createStatement()) {
@@ -339,7 +345,8 @@ public class CitusProvider extends PostgresProvider {
         }
     }
 
-    private void prepareCitusWorkerNodes(PostgresGlobalState globalState, List<CitusWorkerNode> citusWorkerNodes, int databaseIndex, String entryDatabaseName) throws SQLException {
+    private void prepareCitusWorkerNodes(PostgresGlobalState globalState, List<CitusWorkerNode> citusWorkerNodes,
+            int databaseIndex, String entryDatabaseName) throws SQLException {
         for (CitusWorkerNode w : citusWorkerNodes) {
             // connect to worker node, entry database
             int hostIndex = entryURL.indexOf(host);
@@ -366,8 +373,7 @@ public class CitusProvider extends PostgresProvider {
             // connect to worker node, test database
             int databaseIndexWorker = entryWorkerURL.indexOf(entryPath) + 1;
             String preDatabaseNameWorker = entryWorkerURL.substring(0, databaseIndexWorker);
-            String postDatabaseNameWorker = entryWorkerURL
-                    .substring(databaseIndexWorker + entryDatabaseName.length());
+            String postDatabaseNameWorker = entryWorkerURL.substring(databaseIndexWorker + entryDatabaseName.length());
             String testWorkerURL = preDatabaseNameWorker + databaseName + postDatabaseNameWorker;
             globalState.getState().logStatement(String.format("\\c %s;", databaseName));
             con = DriverManager.getConnection("jdbc:" + testWorkerURL, username, password);
@@ -378,7 +384,8 @@ public class CitusProvider extends PostgresProvider {
         }
     }
 
-    private void addCitusWorkerNodes(PostgresGlobalState globalState, Connection con, List<CitusWorkerNode> citusWorkerNodes) throws SQLException{
+    private void addCitusWorkerNodes(PostgresGlobalState globalState, Connection con,
+            List<CitusWorkerNode> citusWorkerNodes) throws SQLException {
         for (CitusWorkerNode w : citusWorkerNodes) {
             // TODO: protect from sql injection - is it necessary though since these are read from the system?
             String addWorkers = "SELECT * from master_add_node('" + w.getHost() + "', " + w.getPort() + ");";

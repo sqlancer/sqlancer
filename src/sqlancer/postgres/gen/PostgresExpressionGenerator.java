@@ -3,8 +3,8 @@ package sqlancer.postgres.gen;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -67,9 +67,9 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
 
     private boolean allowAggregateFunctions;
 
-    private HashMap<String, Character> functionsAndTypes;
+    private final Map<String, Character> functionsAndTypes;
 
-    private List<Character> allowedFunctionTypes;
+    private final List<Character> allowedFunctionTypes;
 
     public PostgresExpressionGenerator(PostgresGlobalState globalState) {
         this.r = globalState.getRandomly();

@@ -10,7 +10,7 @@ import sqlancer.postgres.oracle.tlp.PostgresTLPWhereOracle;
 
 public class CitusTLPWhereOracle extends PostgresTLPWhereOracle {
 
-    private CitusTLPBase citusTLPBase;
+    private final CitusTLPBase citusTLPBase;
 
     public CitusTLPWhereOracle(CitusGlobalState state) {
         super(state);

@@ -3,12 +3,14 @@ package sqlancer.citus.gen;
 import java.util.Collection;
 import java.util.Set;
 
-import sqlancer.Randomly;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.gen.PostgresCommon;
 
-public class CitusCommon extends PostgresCommon {
+public final class CitusCommon {
+
+    private CitusCommon() {
+    }
 
     public static void addCitusErrors(Collection<String> errors) {
         errors.add("recursive CTEs are not supported in distributed queries");
@@ -67,7 +69,7 @@ public class CitusCommon extends PostgresCommon {
 
     public static void addTableConstraint(StringBuilder sb, PostgresTable table, PostgresGlobalState globalState,
             Set<String> errors) {
-        addTableConstraint(sb, table, globalState, Randomly.fromOptions(TableConstraints.values()), errors);
+        PostgresCommon.addTableConstraint(sb, table, globalState, errors);
         CitusCommon.addCitusErrors(errors);
     }
 

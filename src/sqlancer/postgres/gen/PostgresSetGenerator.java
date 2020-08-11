@@ -9,7 +9,10 @@ import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.postgres.PostgresGlobalState;
 
-public class PostgresSetGenerator {
+public final class PostgresSetGenerator {
+
+    private PostgresSetGenerator() {
+    }
 
     private enum ConfigurationOption {
         // https://www.postgresql.org/docs/11/runtime-config-wal.html

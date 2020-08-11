@@ -10,7 +10,7 @@ import sqlancer.postgres.oracle.tlp.PostgresTLPHavingOracle;
 
 public class CitusTLPHavingOracle extends PostgresTLPHavingOracle {
 
-    private CitusTLPBase citusTLPBase;
+    private final CitusTLPBase citusTLPBase;
 
     public CitusTLPHavingOracle(CitusGlobalState state) {
         super(state);

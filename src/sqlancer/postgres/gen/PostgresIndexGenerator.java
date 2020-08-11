@@ -19,6 +19,9 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 
 public final class PostgresIndexGenerator {
 
+    private PostgresIndexGenerator() {
+    }
+
     public enum IndexType {
         BTREE, HASH, GIST, GIN
     }
