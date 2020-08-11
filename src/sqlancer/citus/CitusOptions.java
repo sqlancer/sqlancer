@@ -23,9 +23,9 @@ public class CitusOptions extends PostgresOptions {
     public boolean repartition = true;
 
     @Parameter(names = "--citusOracle")
-    public List<PostgresOracle> citusOracle = Arrays.asList(PostgresOracle.QUERY_PARTITIONING);
+    public List<CitusOracle> citusOracle = Arrays.asList(CitusOracle.QUERY_PARTITIONING);
 
-    public enum PostgresOracle {
+    public enum CitusOracle {
         NOREC {
             @Override
             public TestOracle create(PostgresGlobalState globalState) throws SQLException {
