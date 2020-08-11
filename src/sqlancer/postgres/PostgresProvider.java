@@ -20,6 +20,7 @@ import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.QueryProvider;
 import sqlancer.Randomly;
+import sqlancer.SQLancerResultSet;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.PostgresStateToReproduce;
 import sqlancer.StatementExecutor;
@@ -52,14 +53,28 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 
 // EXISTS
 // IN
-public final class PostgresProvider extends ProviderAdapter<PostgresGlobalState, PostgresOptions> {
+public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, PostgresOptions> {
 
     public static boolean generateOnlyKnown;
 
     private PostgresGlobalState globalState;
 
+    protected String entryURL;
+    protected String username;
+    protected String password;
+    protected String entryPath;
+    protected String host;
+    protected int port;
+    protected String testURL;
+    protected String databaseName;
+    protected String createDatabaseCommand;
+
     public PostgresProvider() {
         super(PostgresGlobalState.class, PostgresOptions.class);
+    }
+
+    protected PostgresProvider(Class<PostgresGlobalState> globalClass, Class<PostgresOptions> optionClass) {
+        super(globalClass, optionClass);
     }
 
     public enum Action implements AbstractAction<PostgresGlobalState> {
@@ -121,7 +136,7 @@ public final class PostgresProvider extends ProviderAdapter<PostgresGlobalState,
         }
     }
 
-    private static int mapActions(PostgresGlobalState globalState, Action a) {
+    protected static int mapActions(PostgresGlobalState globalState, Action a) {
         Randomly r = globalState.getRandomly();
         int nrPerformed;
         switch (a) {
@@ -184,26 +199,8 @@ public final class PostgresProvider extends ProviderAdapter<PostgresGlobalState,
 
     @Override
     public void generateDatabase(PostgresGlobalState globalState) throws SQLException {
-        while (globalState.getSchema().getDatabaseTables().size() < Randomly.fromOptions(1, 2)) {
-            try {
-                String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
-                Query createTable = PostgresTableGenerator.generate(tableName, globalState.getSchema(),
-                        generateOnlyKnown, globalState);
-                globalState.executeStatement(createTable);
-            } catch (IgnoreMeException e) {
-
-            }
-        }
-
-        StatementExecutor<PostgresGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
-                PostgresProvider::mapActions, (q) -> {
-                    if (globalState.getSchema().getDatabaseTables().isEmpty()) {
-                        throw new IgnoreMeException();
-                    }
-                });
-        se.executeStatements();
-        globalState.executeStatement(new QueryAdapter("COMMIT", true));
-        globalState.executeStatement(new QueryAdapter("SET SESSION statement_timeout = 5000;\n"));
+        createTables(globalState, Randomly.fromOptions(4, 5, 6));
+        prepareTables(globalState);
     }
 
     @Override
@@ -220,10 +217,10 @@ public final class PostgresProvider extends ProviderAdapter<PostgresGlobalState,
 
     @Override
     public Connection createDatabase(PostgresGlobalState globalState) throws SQLException {
-        String username = globalState.getOptions().getUserName();
-        String password = globalState.getOptions().getPassword();
-        String entryPath = "/test";
-        String entryURL = globalState.getDmbsSpecificOptions().connectionURL;
+        username = globalState.getOptions().getUserName();
+        password = globalState.getOptions().getPassword();
+        entryPath = "/test";
+        entryURL = globalState.getDmbsSpecificOptions().connectionURL;
         // trim URL to exclude "jdbc:"
         if (entryURL.startsWith("jdbc:")) {
             entryURL = entryURL.substring(5);
@@ -250,15 +247,17 @@ public final class PostgresProvider extends ProviderAdapter<PostgresGlobalState,
             if (pathURI != null) {
                 entryPath = pathURI;
             }
+            host = uri.getHost();
+            port = uri.getPort();
         } catch (URISyntaxException e) {
             throw new AssertionError(e);
         }
         String entryDatabaseName = entryPath.substring(1);
-        String databaseName = globalState.getDatabaseName();
+        databaseName = globalState.getDatabaseName();
         Connection con = DriverManager.getConnection("jdbc:" + entryURL, username, password);
         globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
         globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
-        String createDatabaseCommand = getCreateDatabaseCommand(databaseName, con, globalState);
+        createDatabaseCommand = getCreateDatabaseCommand(databaseName, con, globalState);
         globalState.getState().logStatement(createDatabaseCommand);
         try (Statement s = con.createStatement()) {
             s.execute("DROP DATABASE IF EXISTS " + databaseName);
@@ -270,10 +269,45 @@ public final class PostgresProvider extends ProviderAdapter<PostgresGlobalState,
         int databaseIndex = entryURL.indexOf(entryPath) + 1;
         String preDatabaseName = entryURL.substring(0, databaseIndex);
         String postDatabaseName = entryURL.substring(databaseIndex + entryDatabaseName.length());
-        String testURL = preDatabaseName + databaseName + postDatabaseName;
+        testURL = preDatabaseName + databaseName + postDatabaseName;
         globalState.getState().logStatement(String.format("\\c %s;", databaseName));
         con = DriverManager.getConnection("jdbc:" + testURL, username, password);
         return con;
+    }
+
+    protected void readFunctions(PostgresGlobalState globalState) throws SQLException {
+        QueryAdapter query = new QueryAdapter("SELECT proname, provolatile FROM pg_proc;");
+        SQLancerResultSet rs = query.executeAndGet(globalState);
+        while (rs.next()) {
+            String functionName = rs.getString(1);
+            Character functionType = rs.getString(2).charAt(0);
+            globalState.addFunctionAndType(functionName, functionType);
+        }
+    }
+
+    protected void createTables(PostgresGlobalState globalState, int numTables) throws SQLException {
+        while (globalState.getSchema().getDatabaseTables().size() < numTables) {
+            try {
+                String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
+                Query createTable = PostgresTableGenerator.generate(tableName, globalState.getSchema(),
+                        generateOnlyKnown, globalState);
+                globalState.executeStatement(createTable);
+            } catch (IgnoreMeException e) {
+
+            }
+        }
+    }
+
+    protected void prepareTables(PostgresGlobalState globalState) throws SQLException {
+        StatementExecutor<PostgresGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
+                PostgresProvider::mapActions, (q) -> {
+                    if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+                        throw new IgnoreMeException();
+                    }
+                });
+        se.executeStatements();
+        globalState.executeStatement(new QueryAdapter("COMMIT", true));
+        globalState.executeStatement(new QueryAdapter("SET SESSION statement_timeout = 5000;\n"));
     }
 
     private String getCreateDatabaseCommand(String databaseName, Connection con, PostgresGlobalState state) {

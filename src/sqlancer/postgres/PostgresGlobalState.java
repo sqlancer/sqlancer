@@ -5,16 +5,26 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import sqlancer.GlobalState;
 import sqlancer.Randomly;
 
 public class PostgresGlobalState extends GlobalState<PostgresOptions, PostgresSchema> {
 
+    public static final char IMMUTABLE = 'i';
+    public static final char STABLE = 's';
+    public static final char VOLATILE = 'v';
+
     private List<String> operators;
     private List<String> collates;
     private List<String> opClasses;
+    // store and allow filtering by function volatility classifications
+    private final Map<String, Character> functionsAndTypes = new HashMap<>();
+    private List<Character> allowedFunctionTypes = Arrays.asList(IMMUTABLE, STABLE, VOLATILE);
 
     @Override
     public void setConnection(Connection con) {
@@ -90,8 +100,28 @@ public class PostgresGlobalState extends GlobalState<PostgresOptions, PostgresSc
     }
 
     @Override
-    protected void updateSchema() throws SQLException {
+    public void updateSchema() throws SQLException {
         setSchema(PostgresSchema.fromConnection(getConnection(), getDatabaseName()));
+    }
+
+    public void addFunctionAndType(String functionName, Character functionType) {
+        this.functionsAndTypes.put(functionName, functionType);
+    }
+
+    public Map<String, Character> getFunctionsAndTypes() {
+        return this.functionsAndTypes;
+    }
+
+    public void setAllowedFunctionTypes(List<Character> types) {
+        this.allowedFunctionTypes = types;
+    }
+
+    public void setDefaultAllowedFunctionTypes() {
+        this.allowedFunctionTypes = Arrays.asList(IMMUTABLE, STABLE, VOLATILE);
+    }
+
+    public List<Character> getAllowedFunctionTypes() {
+        return this.allowedFunctionTypes;
     }
 
 }

@@ -403,6 +403,15 @@ public final class Randomly {
         }
     }
 
+    public String getAlphabeticChar() {
+        while (true) {
+            String s = getChar();
+            if (Character.isAlphabetic(s.charAt(0))) {
+                return s;
+            }
+        }
+    }
+
     // see https://stackoverflow.com/a/2546158
     // uniformity does not seem to be important for us
     // SQLancer previously used ThreadLocalRandom.current().nextLong(lower, upper)

@@ -23,7 +23,7 @@ public class PostgresAlterTableGenerator {
     private List<String> opClasses;
     private PostgresGlobalState globalState;
 
-    private enum Action {
+    protected enum Action {
         // ALTER_TABLE_ADD_COLUMN, // [ COLUMN ] column data_type [ COLLATE collation ] [
         // column_constraint [ ... ] ]
         ALTER_TABLE_DROP_COLUMN, // DROP [ COLUMN ] [ IF EXISTS ] column [ RESTRICT | CASCADE ]
@@ -76,8 +76,7 @@ public class PostgresAlterTableGenerator {
         }
     };
 
-    public Query generate() {
-        Set<String> errors = new HashSet<>();
+    public List<Action> getActions(Set<String> errors) {
         PostgresCommon.addCommonExpressionErrors(errors);
         PostgresCommon.addCommonInsertUpdateErrors(errors);
         PostgresCommon.addCommonTableErrors(errors);
@@ -93,16 +92,6 @@ public class PostgresAlterTableGenerator {
         errors.add("could not find cast from");
         errors.add("does not exist"); // TODO: investigate
         errors.add("constraints on permanent tables may reference only permanent tables");
-        StringBuilder sb = new StringBuilder();
-        sb.append("ALTER TABLE ");
-        if (Randomly.getBoolean()) {
-            sb.append(" ONLY");
-            errors.add("cannot use ONLY for foreign key on partitioned table");
-        }
-        sb.append(" ");
-        sb.append(randomTable.getName());
-        sb.append(" ");
-        int i = 0;
         List<Action> action;
         if (Randomly.getBoolean()) {
             action = Randomly.nonEmptySubset(Action.values());
@@ -118,9 +107,28 @@ public class PostgresAlterTableGenerator {
             action.remove(Action.CLUSTER_ON);
         }
         action.remove(Action.SET_WITH_OIDS);
+        if (!randomTable.hasIndexes()) {
+            action.remove(Action.ADD_TABLE_CONSTRAINT_USING_INDEX);
+        }
         if (action.isEmpty()) {
             throw new IgnoreMeException();
         }
+        return action;
+    }
+
+    public Query generate() {
+        Set<String> errors = new HashSet<>();
+        int i = 0;
+        List<Action> action = getActions(errors);
+        StringBuilder sb = new StringBuilder();
+        sb.append("ALTER TABLE ");
+        if (Randomly.getBoolean()) {
+            sb.append(" ONLY");
+            errors.add("cannot use ONLY for foreign key on partitioned table");
+        }
+        sb.append(" ");
+        sb.append(randomTable.getName());
+        sb.append(" ");
         for (Action a : action) {
             if (i++ != 0) {
                 sb.append(", ");
@@ -244,6 +252,7 @@ public class PostgresAlterTableGenerator {
                 break;
             case ADD_TABLE_CONSTRAINT:
                 sb.append("ADD ");
+                sb.append("CONSTRAINT " + r.getAlphabeticChar() + " ");
                 PostgresCommon.addTableConstraint(sb, randomTable, globalState, errors);
                 errors.add("multiple primary keys for table");
                 errors.add("could not create unique index");
@@ -273,7 +282,7 @@ public class PostgresAlterTableGenerator {
                 break;
             case ADD_TABLE_CONSTRAINT_USING_INDEX:
                 sb.append("ADD ");
-                // sb.append("CONSTRAINT 'asdf' ");
+                sb.append("CONSTRAINT " + r.getAlphabeticChar() + " ");
                 sb.append(Randomly.fromOptions("UNIQUE", "PRIMARY KEY"));
                 errors.add("not valid");
                 sb.append(" USING INDEX ");

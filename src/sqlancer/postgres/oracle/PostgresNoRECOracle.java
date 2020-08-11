@@ -89,7 +89,9 @@ public class PostgresNoRECOracle extends NoRECBase<PostgresGlobalState> implemen
         }
         // JOIN subqueries
         for (int i = 0; i < Randomly.smallNumber(); i++) {
-            PostgresSubquery subquery = PostgresTLPBase.createSubquery(globalState, String.format("sub%d", i));
+            PostgresTables subqueryTables = globalState.getSchema().getRandomTableNonEmptyTables();
+            PostgresSubquery subquery = PostgresTLPBase.createSubquery(globalState, String.format("sub%d", i),
+                    subqueryTables);
             PostgresExpression joinClause = gen.generateExpression(PostgresDataType.BOOLEAN);
             PostgresJoinType options = PostgresJoinType.getRandom();
             PostgresJoin j = new PostgresJoin(subquery, joinClause, options);

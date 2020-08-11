@@ -107,7 +107,7 @@ public class PostgresSchema {
 
     }
 
-    private static PostgresDataType getColumnType(String typeString) {
+    public static PostgresDataType getColumnType(String typeString) {
         switch (typeString) {
         case "smallint":
         case "integer":
@@ -259,7 +259,6 @@ public class PostgresSchema {
     }
 
     public static PostgresSchema fromConnection(Connection con, String databaseName) throws SQLException {
-        Exception ex = null;
         try {
             List<PostgresTable> databaseTables = new ArrayList<>();
             try (Statement s = con.createStatement()) {
@@ -289,12 +288,11 @@ public class PostgresSchema {
             }
             return new PostgresSchema(databaseTables, databaseName);
         } catch (SQLIntegrityConstraintViolationException e) {
-            ex = e;
+            throw new AssertionError(e);
         }
-        throw new AssertionError(ex);
     }
 
-    private static List<PostgresStatisticsObject> getStatistics(Connection con) throws SQLException {
+    protected static List<PostgresStatisticsObject> getStatistics(Connection con) throws SQLException {
         List<PostgresStatisticsObject> statistics = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery("SELECT stxname FROM pg_statistic_ext ORDER BY stxname;")) {
@@ -306,7 +304,7 @@ public class PostgresSchema {
         return statistics;
     }
 
-    private static PostgresTable.TableType getTableType(String tableTypeStr) throws AssertionError {
+    protected static PostgresTable.TableType getTableType(String tableTypeStr) throws AssertionError {
         PostgresTable.TableType tableType;
         if (tableTypeStr.contentEquals("public")) {
             tableType = TableType.STANDARD;
@@ -318,7 +316,7 @@ public class PostgresSchema {
         return tableType;
     }
 
-    private static List<PostgresIndex> getIndexes(Connection con, String tableName) throws SQLException {
+    protected static List<PostgresIndex> getIndexes(Connection con, String tableName) throws SQLException {
         List<PostgresIndex> indexes = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery(String
@@ -336,7 +334,7 @@ public class PostgresSchema {
         return indexes;
     }
 
-    private static List<PostgresColumn> getTableColumns(Connection con, String tableName) throws SQLException {
+    protected static List<PostgresColumn> getTableColumns(Connection con, String tableName) throws SQLException {
         List<PostgresColumn> columns = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s
@@ -378,6 +376,10 @@ public class PostgresSchema {
 
     public List<PostgresTable> getDatabaseTables() {
         return databaseTables;
+    }
+
+    public PostgresTable getDatabaseTable(String name) {
+        return databaseTables.stream().filter(t -> t.getName().equals(name)).findAny().orElse(null);
     }
 
     public List<PostgresTable> getDatabaseTablesRandomSubsetNotEmpty() {

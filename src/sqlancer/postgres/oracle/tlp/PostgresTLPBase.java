@@ -31,10 +31,10 @@ import sqlancer.postgres.oracle.PostgresNoRECOracle;
 public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<PostgresExpression, PostgresGlobalState>
         implements TestOracle {
 
-    PostgresSchema s;
-    PostgresTables targetTables;
-    PostgresExpressionGenerator gen;
-    PostgresSelect select;
+    protected PostgresSchema s;
+    protected PostgresTables targetTables;
+    protected PostgresExpressionGenerator gen;
+    protected PostgresSelect select;
 
     public PostgresTLPBase(PostgresGlobalState state) {
         super(state);
@@ -46,15 +46,24 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
     public void check() throws SQLException {
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
+        List<PostgresTable> tables = targetTables.getTables();
+        List<PostgresJoin> joins = getJoinStatements(state, targetTables.getColumns(), tables);
+        generateSelectBase(tables, joins);
+    }
+
+    protected List<PostgresJoin> getJoinStatements(PostgresGlobalState globalState, List<PostgresColumn> columns,
+            List<PostgresTable> tables) {
+        return PostgresNoRECOracle.getJoinStatements(state, columns, tables);
+        // TODO joins
+    }
+
+    protected void generateSelectBase(List<PostgresTable> tables, List<PostgresJoin> joins) {
+        List<PostgresExpression> tableList = tables.stream().map(t -> new PostgresFromTable(t, Randomly.getBoolean()))
+                .collect(Collectors.toList());
         gen = new PostgresExpressionGenerator(state).setColumns(targetTables.getColumns());
         initializeTernaryPredicateVariants();
         select = new PostgresSelect();
         select.setFetchColumns(generateFetchColumns());
-        List<PostgresTable> tables = targetTables.getTables();
-        List<PostgresJoin> joins = PostgresNoRECOracle.getJoinStatements(state, targetTables.getColumns(), tables);
-        List<PostgresExpression> tableList = tables.stream().map(t -> new PostgresFromTable(t, Randomly.getBoolean()))
-                .collect(Collectors.toList());
-        // TODO joins
         select.setFromList(tableList);
         select.setWhereClause(null);
         select.setJoinClauses(joins);
@@ -80,9 +89,8 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
         return gen;
     }
 
-    public static PostgresSubquery createSubquery(PostgresGlobalState globalState, String name) {
+    public static PostgresSubquery createSubquery(PostgresGlobalState globalState, String name, PostgresTables tables) {
         List<PostgresExpression> columns = new ArrayList<>();
-        PostgresTables tables = globalState.getSchema().getRandomTableNonEmptyTables();
         PostgresExpressionGenerator gen = new PostgresExpressionGenerator(globalState).setColumns(tables.getColumns());
         for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
             columns.add(gen.generateExpression(0));

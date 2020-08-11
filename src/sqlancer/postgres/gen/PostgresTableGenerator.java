@@ -27,7 +27,7 @@ public class PostgresTableGenerator {
     private boolean isTemporaryTable;
     private final PostgresSchema newSchema;
     private final List<PostgresColumn> columnsToBeAdded = new ArrayList<>();
-    private final Set<String> errors = new HashSet<>();
+    protected final Set<String> errors = new HashSet<>();
     private final PostgresTable table;
     private final boolean generateOnlyKnown;
     private final PostgresGlobalState globalState;
