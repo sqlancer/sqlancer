@@ -13,9 +13,6 @@ import sqlancer.postgres.PostgresVisitor;
 
 public class PostgresDeleteGenerator {
 
-    protected PostgresDeleteGenerator() {
-    }
-
     public static Query create(PostgresGlobalState globalState) {
         PostgresTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         Set<String> errors = new HashSet<>();

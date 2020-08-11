@@ -11,9 +11,6 @@ import sqlancer.postgres.PostgresGlobalState;
 
 public class PostgresSetGenerator {
 
-    protected PostgresSetGenerator() {
-    }
-
     private enum ConfigurationOption {
         // https://www.postgresql.org/docs/11/runtime-config-wal.html
         // This parameter can only be set at server start.

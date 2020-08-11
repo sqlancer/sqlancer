@@ -17,9 +17,6 @@ import sqlancer.postgres.ast.PostgresExpression;
 
 public class PostgresUpdateGenerator {
 
-    protected PostgresUpdateGenerator() {
-    }
-
     public static Query create(PostgresGlobalState globalState) {
         PostgresTable randomTable = globalState.getSchema().getRandomTable(t -> t.isInsertable());
         StringBuilder sb = new StringBuilder();

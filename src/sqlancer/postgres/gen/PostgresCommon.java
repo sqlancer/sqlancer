@@ -19,9 +19,6 @@ import sqlancer.postgres.PostgresVisitor;
 
 public class PostgresCommon {
 
-    protected PostgresCommon() {
-    }
-
     public static void addCommonFetchErrors(Set<String> errors) {
         errors.add("FULL JOIN is only supported with merge-joinable or hash-joinable join conditions");
         errors.add("but it cannot be referenced from this part of the query");
