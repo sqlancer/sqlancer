@@ -264,7 +264,7 @@ public class PostgresSchema {
             List<PostgresTable> databaseTables = new ArrayList<>();
             try (Statement s = con.createStatement()) {
                 try (ResultSet rs = s.executeQuery(
-                        "SELECT table_name, table_schema, table_type, is_insertable_into FROM information_schema.tables WHERE table_schema='public' OR table_schema LIKE 'pg_temp_%';")) {
+                        "SELECT table_name, table_schema, table_type, is_insertable_into FROM information_schema.tables WHERE table_schema='public' OR table_schema LIKE 'pg_temp_%' ORDER BY table_name;")) {
                     while (rs.next()) {
                         String tableName = rs.getString("table_name");
                         String tableTypeSchema = rs.getString("table_schema");
@@ -297,7 +297,7 @@ public class PostgresSchema {
     private static List<PostgresStatisticsObject> getStatistics(Connection con) throws SQLException {
         List<PostgresStatisticsObject> statistics = new ArrayList<>();
         try (Statement s = con.createStatement()) {
-            try (ResultSet rs = s.executeQuery("SELECT stxname FROM pg_statistic_ext;")) {
+            try (ResultSet rs = s.executeQuery("SELECT stxname FROM pg_statistic_ext ORDER BY stxname;")) {
                 while (rs.next()) {
                     statistics.add(new PostgresStatisticsObject(rs.getString("stxname")));
                 }
@@ -321,8 +321,8 @@ public class PostgresSchema {
     private static List<PostgresIndex> getIndexes(Connection con, String tableName) throws SQLException {
         List<PostgresIndex> indexes = new ArrayList<>();
         try (Statement s = con.createStatement()) {
-            try (ResultSet rs = s
-                    .executeQuery(String.format("SELECT indexname FROM pg_indexes WHERE tablename='%s';", tableName))) {
+            try (ResultSet rs = s.executeQuery(String
+                    .format("SELECT indexname FROM pg_indexes WHERE tablename='%s' ORDER BY indexname;", tableName))) {
                 while (rs.next()) {
                     String indexName = rs.getString("indexname");
                     if (indexName.length() != 2) {
@@ -341,7 +341,7 @@ public class PostgresSchema {
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s
                     .executeQuery("select column_name, data_type from INFORMATION_SCHEMA.COLUMNS where table_name = '"
-                            + tableName + "'")) {
+                            + tableName + "' ORDER BY column_name")) {
                 while (rs.next()) {
                     String columnName = rs.getString("column_name");
                     String dataType = rs.getString("data_type");
