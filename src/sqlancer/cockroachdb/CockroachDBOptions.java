@@ -8,6 +8,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
 import sqlancer.CompositeTestOracle;
+import sqlancer.DBMSSpecificOptions;
 import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.oracle.CockroachDBNoRECOracle;
@@ -20,7 +21,7 @@ import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPJoinOracle;
 import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPWhereOracle;
 
 @Parameters(separators = "=", commandDescription = "Test CockroachDB")
-public class CockroachDBOptions {
+public class CockroachDBOptions implements DBMSSpecificOptions {
 
     @Parameter(names = "--oracle")
     public CockroachDBOracle oracle = CockroachDBOracle.NOREC;

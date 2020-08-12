@@ -7,7 +7,7 @@ import java.util.List;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
-import sqlancer.MainOptions;
+import sqlancer.DBMSSpecificOptions;
 import sqlancer.TestOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPAggregateOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPDistinctOracle;
@@ -16,7 +16,7 @@ import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPHavingOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPWhereOracle;
 
 @Parameters(separators = "=", commandDescription = "ClickHouse")
-public class ClickHouseOptions extends MainOptions {
+public class ClickHouseOptions implements DBMSSpecificOptions {
 
     @Parameter(names = "--oracle")
     public List<ClickHouseOracle> oracle = Arrays.asList(ClickHouseOracle.TLPWhere);

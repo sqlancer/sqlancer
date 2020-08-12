@@ -9,13 +9,14 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
 import sqlancer.CompositeTestOracle;
+import sqlancer.DBMSSpecificOptions;
 import sqlancer.TestOracle;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.oracle.TiDBTLPHavingOracle;
 import sqlancer.tidb.oracle.TiDBTLPWhereOracle;
 
 @Parameters
-public class TiDBOptions {
+public class TiDBOptions implements DBMSSpecificOptions {
 
     @Parameter(names = "--oracle")
     public List<TiDBOracle> oracle = Arrays.asList(TiDBOracle.QUERY_PARTITIONING);

@@ -9,6 +9,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
 import sqlancer.CompositeTestOracle;
+import sqlancer.DBMSSpecificOptions;
 import sqlancer.TestOracle;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.test.DuckDBNoRECOracle;
@@ -19,7 +20,7 @@ import sqlancer.duckdb.test.DuckDBQueryPartitioningHavingTester;
 import sqlancer.duckdb.test.DuckDBQueryPartitioningWhereTester;
 
 @Parameters
-public class DuckDBOptions {
+public class DuckDBOptions implements DBMSSpecificOptions {
 
     @Parameter(names = "--test-collate", arity = 1)
     public boolean testCollate = true;

@@ -8,6 +8,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
 import sqlancer.CompositeTestOracle;
+import sqlancer.DBMSSpecificOptions;
 import sqlancer.TestOracle;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.oracle.SQLite3Fuzzer;
@@ -20,7 +21,7 @@ import sqlancer.sqlite3.oracle.tlp.SQLite3TLPHavingOracle;
 import sqlancer.sqlite3.oracle.tlp.SQLite3TLPWhereOracle;
 
 @Parameters(separators = "=", commandDescription = "SQLite3")
-public class SQLite3Options {
+public class SQLite3Options implements DBMSSpecificOptions {
 
     @Parameter(names = { "--test-fts" }, description = "Test the FTS extensions", arity = 1)
     public boolean testFts = true;

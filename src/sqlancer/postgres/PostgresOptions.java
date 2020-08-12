@@ -9,6 +9,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
 import sqlancer.CompositeTestOracle;
+import sqlancer.DBMSSpecificOptions;
 import sqlancer.TestOracle;
 import sqlancer.postgres.oracle.PostgresNoRECOracle;
 import sqlancer.postgres.oracle.PostgresPivotedQuerySynthesisOracle;
@@ -17,7 +18,7 @@ import sqlancer.postgres.oracle.tlp.PostgresTLPHavingOracle;
 import sqlancer.postgres.oracle.tlp.PostgresTLPWhereOracle;
 
 @Parameters
-public class PostgresOptions {
+public class PostgresOptions implements DBMSSpecificOptions {
 
     @Parameter(names = "--bulk-insert")
     public boolean allowBulkInsert;
