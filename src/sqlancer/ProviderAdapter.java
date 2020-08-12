@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.StateToReproduce.OracleRunReproductionState;
+import sqlancer.common.oracle.CompositeTestOracle;
+import sqlancer.common.oracle.TestOracle;
 
 public abstract class ProviderAdapter<G extends GlobalState<O, ?>, O extends DBMSSpecificOptions<? extends OracleFactory<G>>>
         implements DatabaseProvider<G, O> {

@@ -9,7 +9,7 @@ import com.beust.jcommander.Parameters;
 
 import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
-import sqlancer.TestOracle;
+import sqlancer.common.oracle.TestOracle;
 import sqlancer.mariadb.MariaDBOptions.MariaDBOracleFactory;
 import sqlancer.mariadb.MariaDBProvider.MariaDBGlobalState;
 import sqlancer.mariadb.oracle.MariaDBNoRECOracle;

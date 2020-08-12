@@ -13,7 +13,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.SQLancerResultSet;
-import sqlancer.TestOracle;
+import sqlancer.common.oracle.TestOracle;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresVisitor;

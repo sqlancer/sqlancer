@@ -14,7 +14,6 @@ import sqlancer.IgnoreMeException;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.SQLancerResultSet;
-import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBCommon;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
@@ -34,6 +33,7 @@ import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation;
 import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnaryPostfixOperator;
 import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 import sqlancer.cockroachdb.oracle.CockroachDBNoRECOracle;
+import sqlancer.common.oracle.TestOracle;
 
 public class CockroachDBTLPAggregateOracle implements TestOracle {
 

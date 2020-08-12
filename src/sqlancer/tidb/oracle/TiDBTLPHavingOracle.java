@@ -6,7 +6,7 @@ import java.util.List;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
-import sqlancer.TestOracle;
+import sqlancer.common.oracle.TestOracle;
 import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.ast.TiDBExpression;

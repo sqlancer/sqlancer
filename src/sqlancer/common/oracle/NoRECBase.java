@@ -1,8 +1,11 @@
-package sqlancer;
+package sqlancer.common.oracle;
 
 import java.sql.Connection;
 
+import sqlancer.ExpectedErrors;
+import sqlancer.GlobalState;
 import sqlancer.Main.StateLogger;
+import sqlancer.MainOptions;
 
 public abstract class NoRECBase<S extends GlobalState<?, ?>> implements TestOracle {
 

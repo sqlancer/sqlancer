@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.TernaryLogicPartitioningOracleBase;
-import sqlancer.TestOracle;
 import sqlancer.common.ast.newast.ColumnReferenceNode;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.common.gen.ExpressionGenerator;
+import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
+import sqlancer.common.oracle.TestOracle;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema;

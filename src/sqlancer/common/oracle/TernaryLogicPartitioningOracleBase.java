@@ -1,5 +1,6 @@
-package sqlancer;
+package sqlancer.common.oracle;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.common.gen.ExpressionGenerator;
 
 /**

@@ -4,7 +4,7 @@ import java.sql.SQLException;
 
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
-import sqlancer.TestOracle;
+import sqlancer.common.oracle.TestOracle;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
 

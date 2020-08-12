@@ -8,10 +8,10 @@ import java.util.List;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
-import sqlancer.CompositeTestOracle;
 import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
-import sqlancer.TestOracle;
+import sqlancer.common.oracle.CompositeTestOracle;
+import sqlancer.common.oracle.TestOracle;
 import sqlancer.postgres.PostgresOptions.PostgresOracleFactory;
 import sqlancer.postgres.oracle.PostgresNoRECOracle;
 import sqlancer.postgres.oracle.PostgresPivotedQuerySynthesisOracle;

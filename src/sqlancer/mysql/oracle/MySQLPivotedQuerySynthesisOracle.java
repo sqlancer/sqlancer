@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce.MySQLStateToReproduce;
-import sqlancer.TestOracle;
+import sqlancer.common.oracle.TestOracle;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;

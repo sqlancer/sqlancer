@@ -1,7 +1,9 @@
-package sqlancer;
+package sqlancer.common.oracle;
 
 import java.sql.SQLException;
 import java.util.List;
+
+import sqlancer.GlobalState;
 
 public class CompositeTestOracle implements TestOracle {
 

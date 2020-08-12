@@ -1,4 +1,4 @@
-package sqlancer;
+package sqlancer.common.oracle;
 
 import java.sql.SQLException;
 

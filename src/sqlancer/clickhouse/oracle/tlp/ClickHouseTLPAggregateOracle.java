@@ -10,7 +10,6 @@ import sqlancer.IgnoreMeException;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.SQLancerResultSet;
-import sqlancer.TestOracle;
 import sqlancer.clickhouse.ClickHouseProvider;
 import sqlancer.clickhouse.ClickHouseSchema;
 import sqlancer.clickhouse.ClickHouseVisitor;
@@ -21,6 +20,7 @@ import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation;
 import sqlancer.clickhouse.gen.ClickHouseCommon;
 import sqlancer.clickhouse.gen.ClickHouseExpressionGenerator;
+import sqlancer.common.oracle.TestOracle;
 
 public class ClickHouseTLPAggregateOracle implements TestOracle {
 

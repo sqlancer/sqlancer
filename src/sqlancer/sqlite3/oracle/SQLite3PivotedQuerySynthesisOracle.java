@@ -16,7 +16,7 @@ import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce.SQLite3StateToReproduce;
-import sqlancer.TestOracle;
+import sqlancer.common.oracle.TestOracle;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3ToStringVisitor;
 import sqlancer.sqlite3.SQLite3Visitor;

@@ -10,8 +10,8 @@ import sqlancer.QueryAdapter;
 import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseColumn;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTable;
-import sqlancer.common.gen.AbstractInsertGenerator;
 import sqlancer.clickhouse.ClickHouseToStringVisitor;
+import sqlancer.common.gen.AbstractInsertGenerator;
 
 public class ClickHouseInsertGenerator extends AbstractInsertGenerator<ClickHouseColumn> {
 

@@ -7,13 +7,13 @@ import java.util.List;
 
 import com.beust.jcommander.Parameter;
 
-import sqlancer.CompositeTestOracle;
 import sqlancer.OracleFactory;
-import sqlancer.TestOracle;
 import sqlancer.citus.oracle.CitusNoRECOracle;
 import sqlancer.citus.oracle.tlp.CitusTLPAggregateOracle;
 import sqlancer.citus.oracle.tlp.CitusTLPHavingOracle;
 import sqlancer.citus.oracle.tlp.CitusTLPWhereOracle;
+import sqlancer.common.oracle.CompositeTestOracle;
+import sqlancer.common.oracle.TestOracle;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresOptions;
 import sqlancer.postgres.oracle.PostgresPivotedQuerySynthesisOracle;
