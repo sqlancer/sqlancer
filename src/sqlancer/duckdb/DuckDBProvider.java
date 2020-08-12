@@ -3,10 +3,8 @@ package sqlancer.duckdb;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
-import sqlancer.CompositeTestOracle;
 import sqlancer.ExpectedErrors;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
@@ -16,7 +14,6 @@ import sqlancer.QueryAdapter;
 import sqlancer.QueryProvider;
 import sqlancer.Randomly;
 import sqlancer.StatementExecutor;
-import sqlancer.TestOracle;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.gen.DuckDBDeleteGenerator;
 import sqlancer.duckdb.gen.DuckDBIndexGenerator;
@@ -116,17 +113,6 @@ public class DuckDBProvider extends ProviderAdapter<DuckDBGlobalState, DuckDBOpt
                     }
                 });
         se.executeStatements();
-    }
-
-    @Override
-    protected TestOracle getTestOracle(DuckDBGlobalState globalState) throws SQLException {
-        return new CompositeTestOracle(globalState.getDmbsSpecificOptions().oracles.stream().map(o -> {
-            try {
-                return o.create(globalState);
-            } catch (SQLException e1) {
-                throw new AssertionError(e1);
-            }
-        }).collect(Collectors.toList()), globalState);
     }
 
     @Override

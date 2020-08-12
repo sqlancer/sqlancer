@@ -4,11 +4,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
-import sqlancer.CompositeTestOracle;
 import sqlancer.ExpectedErrors;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
@@ -18,7 +15,6 @@ import sqlancer.QueryAdapter;
 import sqlancer.QueryProvider;
 import sqlancer.Randomly;
 import sqlancer.StatementExecutor;
-import sqlancer.TestOracle;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.gen.TiDBAlterTableGenerator;
 import sqlancer.tidb.gen.TiDBAnalyzeTableGenerator;
@@ -132,18 +128,6 @@ public class TiDBProvider extends ProviderAdapter<TiDBGlobalState, TiDBOptions> 
                 throw new AssertionError(e);
             }
         }
-    }
-
-    @Override
-    protected TestOracle getTestOracle(TiDBGlobalState globalState) throws SQLException {
-        List<TestOracle> oracles = globalState.getDmbsSpecificOptions().oracle.stream().map(o -> {
-            try {
-                return o.create(globalState);
-            } catch (SQLException e1) {
-                throw new AssertionError(e1);
-            }
-        }).collect(Collectors.toList());
-        return new CompositeTestOracle(oracles, globalState);
     }
 
     @Override

@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
-import sqlancer.CompositeTestOracle;
 import sqlancer.IgnoreMeException;
 import sqlancer.ProviderAdapter;
 import sqlancer.Query;
@@ -24,7 +23,6 @@ import sqlancer.SQLancerResultSet;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.PostgresStateToReproduce;
 import sqlancer.StatementExecutor;
-import sqlancer.TestOracle;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.ast.PostgresExpression;
@@ -201,18 +199,6 @@ public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, Postg
     public void generateDatabase(PostgresGlobalState globalState) throws SQLException {
         createTables(globalState, Randomly.fromOptions(4, 5, 6));
         prepareTables(globalState);
-    }
-
-    @Override
-    protected TestOracle getTestOracle(PostgresGlobalState globalState) throws SQLException {
-        List<TestOracle> oracles = globalState.getDmbsSpecificOptions().oracle.stream().map(o -> {
-            try {
-                return o.create(globalState);
-            } catch (SQLException e1) {
-                throw new AssertionError(e1);
-            }
-        }).collect(Collectors.toList());
-        return new CompositeTestOracle(oracles, globalState);
     }
 
     @Override

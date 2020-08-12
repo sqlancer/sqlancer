@@ -13,7 +13,6 @@ import sqlancer.MainOptions;
 import sqlancer.ProviderAdapter;
 import sqlancer.Query;
 import sqlancer.Randomly;
-import sqlancer.TestOracle;
 import sqlancer.mariadb.MariaDBProvider.MariaDBGlobalState;
 import sqlancer.mariadb.gen.MariaDBIndexGenerator;
 import sqlancer.mariadb.gen.MariaDBInsertGenerator;
@@ -22,7 +21,6 @@ import sqlancer.mariadb.gen.MariaDBTableAdminCommandGenerator;
 import sqlancer.mariadb.gen.MariaDBTableGenerator;
 import sqlancer.mariadb.gen.MariaDBTruncateGenerator;
 import sqlancer.mariadb.gen.MariaDBUpdateGenerator;
-import sqlancer.mariadb.oracle.MariaDBNoRECOracle;
 import sqlancer.sqlite3.gen.SQLite3Common;
 
 public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDBOptions> {
@@ -152,11 +150,6 @@ public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDB
             }
             total--;
         }
-    }
-
-    @Override
-    protected TestOracle getTestOracle(MariaDBGlobalState globalState) throws SQLException {
-        return new MariaDBNoRECOracle(globalState);
     }
 
     public static class MariaDBGlobalState extends GlobalState<MariaDBOptions, MariaDBSchema> {

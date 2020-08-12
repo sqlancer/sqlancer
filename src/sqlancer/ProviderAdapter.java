@@ -2,10 +2,12 @@ package sqlancer;
 
 import java.io.FileWriter;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import sqlancer.StateToReproduce.OracleRunReproductionState;
 
-public abstract class ProviderAdapter<G extends GlobalState<O, ?>, O extends DBMSSpecificOptions<?>>
+public abstract class ProviderAdapter<G extends GlobalState<O, ?>, O extends DBMSSpecificOptions<? extends OracleFactory<G>>>
         implements DatabaseProvider<G, O> {
 
     private final Class<G> globalClass;
@@ -61,7 +63,21 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ?>, O extends DBM
         }
     }
 
-    protected abstract TestOracle getTestOracle(G globalState) throws SQLException;
+    protected TestOracle getTestOracle(G globalState) throws SQLException {
+        List<? extends OracleFactory<G>> testOracleFactory = globalState.getDmbsSpecificOptions()
+                .getTestOracleFactory();
+        if (testOracleFactory.size() == 1) {
+            return testOracleFactory.get(0).create(globalState);
+        } else {
+            return new CompositeTestOracle(testOracleFactory.stream().map(o -> {
+                try {
+                    return o.create(globalState);
+                } catch (SQLException e1) {
+                    throw new AssertionError(e1);
+                }
+            }).collect(Collectors.toList()), globalState);
+        }
+    }
 
     public abstract void generateDatabase(G globalState) throws SQLException;
 
