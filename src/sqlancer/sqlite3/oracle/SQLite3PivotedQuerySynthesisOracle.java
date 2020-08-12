@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
@@ -53,7 +54,7 @@ public class SQLite3PivotedQuerySynthesisOracle implements TestOracle {
     private SQLite3StateToReproduce state;
     private SQLite3RowValue rw;
     private List<SQLite3Column> fetchColumns;
-    private final List<String> errors = new ArrayList<>();
+    private final ExpectedErrors errors = new ExpectedErrors();
     private List<SQLite3Expression> colExpressions;
     private final SQLite3GlobalState globalState;
 
@@ -85,7 +86,7 @@ public class SQLite3PivotedQuerySynthesisOracle implements TestOracle {
         return new QueryAdapter(queryString, errors);
     }
 
-    public static void addExpectedErrors(List<String> errors) {
+    public static void addExpectedErrors(ExpectedErrors errors) {
         errors.add("no such index");
         errors.add("no query solution");
         errors.add(
@@ -239,12 +240,11 @@ public class SQLite3PivotedQuerySynthesisOracle implements TestOracle {
             createStatement.close();
             return isContainedIn;
         } catch (SQLException e) {
-            for (String exp : finalQuery.getExpectedErrors()) {
-                if (e.getMessage().contains(exp)) {
-                    return true;
-                }
+            if (finalQuery.getExpectedErrors().errorIsExpected(e.getMessage())) {
+                return true;
+            } else {
+                throw e;
             }
-            throw e;
         }
     }
 

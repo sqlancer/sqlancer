@@ -1,8 +1,6 @@
 package sqlancer.cockroachdb.gen;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -29,7 +27,7 @@ public final class CockroachDBViewGenerator {
         }
         sb.append(") AS ");
         sb.append(CockroachDBRandomQuerySynthesizer.generate(globalState, nrColumns).getQueryString());
-        Set<String> errors = new HashSet<>();
+        ExpectedErrors errors = new ExpectedErrors();
         CockroachDBErrors.addExpressionErrors(errors);
         CockroachDBErrors.addTransactionErrors(errors);
         errors.add("value type unknown cannot be used for table columns");

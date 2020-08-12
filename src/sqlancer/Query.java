@@ -1,7 +1,6 @@
 package sqlancer;
 
 import java.sql.SQLException;
-import java.util.Collection;
 
 public abstract class Query {
 
@@ -24,7 +23,7 @@ public abstract class Query {
      */
     public abstract boolean execute(GlobalState<?, ?> globalState, String... fills) throws SQLException;
 
-    public abstract Collection<String> getExpectedErrors();
+    public abstract ExpectedErrors getExpectedErrors();
 
     @Override
     public String toString() {

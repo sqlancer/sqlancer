@@ -1,10 +1,9 @@
 package sqlancer.sqlite3.gen.ddl;
 
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -21,7 +20,7 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 // see https://www.sqlite.org/lang_createindex.html
 public class SQLite3IndexGenerator {
 
-    private final Set<String> errors = new HashSet<>();
+    private final ExpectedErrors errors = new ExpectedErrors();
     private final SQLite3GlobalState globalState;
 
     public static Query insertIndex(SQLite3GlobalState globalState) throws SQLException {

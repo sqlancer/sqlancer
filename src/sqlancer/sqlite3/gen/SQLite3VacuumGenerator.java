@@ -1,7 +1,6 @@
 package sqlancer.sqlite3.gen;
 
-import java.util.Arrays;
-
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -21,8 +20,8 @@ public final class SQLite3VacuumGenerator {
             sb.append(" ");
             sb.append(Randomly.fromOptions("temp", "main"));
         }
-        return new QueryAdapter(sb.toString(),
-                Arrays.asList("cannot VACUUM from within a transaction", "cannot VACUUM - SQL statements in progress"));
+        return new QueryAdapter(sb.toString(), ExpectedErrors.from("cannot VACUUM from within a transaction",
+                "cannot VACUUM - SQL statements in progress"));
     }
 
 }

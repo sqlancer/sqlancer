@@ -1,7 +1,6 @@
 package sqlancer.mysql.gen;
 
-import java.util.Arrays;
-
+import sqlancer.ExpectedErrors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
@@ -45,8 +44,9 @@ public final class MySQLDropIndex {
             sb.append(Randomly.fromOptions("DEFAULT", "NONE", "SHARED", "EXCLUSIVE"));
         }
         return new QueryAdapter(sb.toString(),
-                Arrays.asList("LOCK=NONE is not supported", "ALGORITHM=INPLACE is not supported", "Data truncation",
-                        "Data truncated for functional index", "A primary key index cannot be invisible"));
+                ExpectedErrors.from("LOCK=NONE is not supported", "ALGORITHM=INPLACE is not supported",
+                        "Data truncation", "Data truncated for functional index",
+                        "A primary key index cannot be invisible"));
     }
 
 }

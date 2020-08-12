@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.AbstractAction;
+import sqlancer.ExpectedErrors;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.ProviderAdapter;
@@ -154,7 +155,7 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
                     sb.append(" noskipscan");
                 }
                 sb.append("')");
-                return new QueryAdapter(sb.toString(), Arrays.asList("no such table"));
+                return new QueryAdapter(sb.toString(), ExpectedErrors.from("no such table"));
             }
         });
 
@@ -296,7 +297,7 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
     private void checkTablesForGeneratedColumnLoops(SQLite3GlobalState globalState) throws SQLException {
         for (SQLite3Table table : globalState.getSchema().getDatabaseTables()) {
             Query q = new QueryAdapter("SELECT * FROM " + table.getName(),
-                    Arrays.asList("needs an odd number of arguments", " requires an even number of arguments",
+                    ExpectedErrors.from("needs an odd number of arguments", " requires an even number of arguments",
                             "generated column loop", "integer overflow", "malformed JSON",
                             "JSON cannot hold BLOB values", "JSON path error", "labels must be TEXT"));
             if (!q.execute(globalState)) {

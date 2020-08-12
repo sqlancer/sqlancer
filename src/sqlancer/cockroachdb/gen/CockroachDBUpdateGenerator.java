@@ -1,9 +1,8 @@
 package sqlancer.cockroachdb.gen;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -20,7 +19,7 @@ public final class CockroachDBUpdateGenerator {
     }
 
     public static Query gen(CockroachDBGlobalState globalState) {
-        Set<String> errors = new HashSet<>();
+        ExpectedErrors errors = new ExpectedErrors();
         CockroachDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<CockroachDBColumn> columns = table.getRandomNonEmptyColumnSubset();
         CockroachDBExpressionGenerator gen = new CockroachDBExpressionGenerator(globalState).setColumns(columns);

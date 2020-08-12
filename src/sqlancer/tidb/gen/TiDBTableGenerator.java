@@ -2,11 +2,10 @@ package sqlancer.tidb.gen;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
@@ -25,7 +24,7 @@ public class TiDBTableGenerator {
     private boolean allowPrimaryKey;
     private final List<TiDBColumn> columns = new ArrayList<>();
     private boolean primaryKeyAsTableConstraints;
-    private final Set<String> errors = new HashSet<>();
+    private final ExpectedErrors errors = new ExpectedErrors();
 
     public Query getQuery(TiDBGlobalState globalState) throws SQLException {
         errors.add("Information schema is changed during the execution of the statement");

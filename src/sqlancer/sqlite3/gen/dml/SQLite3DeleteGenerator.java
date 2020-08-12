@@ -1,9 +1,8 @@
 package sqlancer.sqlite3.gen.dml;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -32,7 +31,7 @@ public final class SQLite3DeleteGenerator {
             sb.append(SQLite3Visitor.asString(new SQLite3ExpressionGenerator(globalState)
                     .setColumns(tableName.getColumns()).generateExpression()));
         }
-        List<String> errors = new ArrayList<>();
+        ExpectedErrors errors = new ExpectedErrors();
         SQLite3Errors.addExpectedExpressionErrors(errors);
         errors.addAll(Arrays.asList("[SQLITE_ERROR] SQL error or missing database (foreign key mismatch",
                 "[SQLITE_CONSTRAINT]  Abort due to constraint violation ",

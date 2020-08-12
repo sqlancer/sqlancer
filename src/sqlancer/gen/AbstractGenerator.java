@@ -1,14 +1,12 @@
 package sqlancer.gen;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 
 public abstract class AbstractGenerator {
 
-    protected final Set<String> errors = new HashSet<>();
+    protected final ExpectedErrors errors = new ExpectedErrors();
     protected final StringBuilder sb = new StringBuilder();
     protected boolean canAffectSchema;
 

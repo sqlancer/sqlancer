@@ -2,9 +2,9 @@ package sqlancer.sqlite3.gen.ddl;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
@@ -110,7 +110,7 @@ public final class SQLite3CreateTriggerGenerator {
         sb.append("END");
 
         return new QueryAdapter(sb.toString(),
-                Arrays.asList("parser stack overflow", "unsupported frame specification"));
+                ExpectedErrors.from("parser stack overflow", "unsupported frame specification"));
     }
 
     private static void appendTableNameAndWhen(SQLite3GlobalState globalState, StringBuilder sb, SQLite3Table table) {

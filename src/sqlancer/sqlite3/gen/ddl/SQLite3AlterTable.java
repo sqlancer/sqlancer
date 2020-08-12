@@ -1,9 +1,8 @@
 package sqlancer.sqlite3.gen.ddl;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -33,7 +32,7 @@ public class SQLite3AlterTable {
     }
 
     private Query getQuery(SQLite3Schema s, SQLite3AlterTable alterTable) throws AssertionError {
-        List<String> errors = new ArrayList<>();
+        ExpectedErrors errors = new ExpectedErrors();
         errors.add("error in view");
         errors.add("no such column"); // trigger
         errors.add("error in trigger"); // trigger

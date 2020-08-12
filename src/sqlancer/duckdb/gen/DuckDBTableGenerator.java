@@ -1,11 +1,10 @@
 package sqlancer.duckdb.gen;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -22,7 +21,7 @@ import sqlancer.gen.UntypedExpressionGenerator;
 public class DuckDBTableGenerator {
 
     public Query getQuery(DuckDBGlobalState globalState) {
-        Set<String> errors = new HashSet<>();
+        ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder();
         String tableName = globalState.getSchema().getFreeTableName();
         sb.append("CREATE TABLE ");

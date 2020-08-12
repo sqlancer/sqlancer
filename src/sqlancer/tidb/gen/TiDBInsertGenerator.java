@@ -1,11 +1,10 @@
 package sqlancer.tidb.gen;
 
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -19,7 +18,7 @@ import sqlancer.tidb.visitor.TiDBVisitor;
 public class TiDBInsertGenerator {
 
     private final TiDBGlobalState globalState;
-    private final Set<String> errors = new HashSet<>();
+    private final ExpectedErrors errors = new ExpectedErrors();
     private TiDBExpressionGenerator gen;
 
     public TiDBInsertGenerator(TiDBGlobalState globalState) {

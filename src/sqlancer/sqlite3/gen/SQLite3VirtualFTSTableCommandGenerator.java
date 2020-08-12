@@ -1,8 +1,6 @@
 package sqlancer.sqlite3.gen;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -15,7 +13,7 @@ public class SQLite3VirtualFTSTableCommandGenerator {
     private final StringBuilder sb = new StringBuilder();
     private final SQLite3Schema s;
     private final Randomly r;
-    private final Set<String> errors = new HashSet<>();
+    private final ExpectedErrors errors = new ExpectedErrors();
 
     public static Query create(SQLite3GlobalState globalState) {
         return new SQLite3VirtualFTSTableCommandGenerator(globalState.getSchema(), globalState.getRandomly())

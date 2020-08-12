@@ -1,10 +1,9 @@
 package sqlancer.postgres.gen;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -21,7 +20,7 @@ public final class PostgresInsertGenerator {
 
     public static Query insert(PostgresGlobalState globalState) {
         PostgresTable table = globalState.getSchema().getRandomTable(t -> t.isInsertable());
-        Set<String> errors = new HashSet<>();
+        ExpectedErrors errors = new ExpectedErrors();
         errors.add("cannot insert into column");
         PostgresCommon.addCommonExpressionErrors(errors);
         PostgresCommon.addCommonInsertUpdateErrors(errors);

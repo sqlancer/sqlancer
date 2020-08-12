@@ -1,9 +1,8 @@
 package sqlancer.postgres.gen;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
@@ -76,7 +75,7 @@ public class PostgresAlterTableGenerator {
         }
     };
 
-    public List<Action> getActions(Set<String> errors) {
+    public List<Action> getActions(ExpectedErrors errors) {
         PostgresCommon.addCommonExpressionErrors(errors);
         PostgresCommon.addCommonInsertUpdateErrors(errors);
         PostgresCommon.addCommonTableErrors(errors);
@@ -117,7 +116,7 @@ public class PostgresAlterTableGenerator {
     }
 
     public Query generate() {
-        Set<String> errors = new HashSet<>();
+        ExpectedErrors errors = new ExpectedErrors();
         int i = 0;
         List<Action> action = getActions(errors);
         StringBuilder sb = new StringBuilder();

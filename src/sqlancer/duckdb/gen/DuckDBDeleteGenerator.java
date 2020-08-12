@@ -1,8 +1,6 @@
 package sqlancer.duckdb.gen;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -18,7 +16,7 @@ public final class DuckDBDeleteGenerator {
 
     public static Query generate(DuckDBGlobalState globalState) {
         StringBuilder sb = new StringBuilder("DELETE FROM ");
-        Set<String> errors = new HashSet<>();
+        ExpectedErrors errors = new ExpectedErrors();
         DuckDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         sb.append(table.getName());
         if (Randomly.getBoolean()) {

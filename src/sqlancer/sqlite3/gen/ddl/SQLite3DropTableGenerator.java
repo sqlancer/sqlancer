@@ -1,7 +1,6 @@
 package sqlancer.sqlite3.gen.ddl;
 
-import java.util.Arrays;
-
+import sqlancer.ExpectedErrors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
@@ -23,7 +22,7 @@ public final class SQLite3DropTableGenerator {
         }
         sb.append(globalState.getSchema().getRandomTableOrBailout(t -> !t.isView()).getName());
         return new QueryAdapter(sb.toString(),
-                Arrays.asList("[SQLITE_ERROR] SQL error or missing database (foreign key mismatch",
+                ExpectedErrors.from("[SQLITE_ERROR] SQL error or missing database (foreign key mismatch",
                         "Abort due to constraint violation (FOREIGN KEY constraint failed)",
                         "SQL error or missing database"),
                 true);

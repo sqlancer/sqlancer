@@ -3,12 +3,11 @@ package sqlancer.cockroachdb.oracle.tlp;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.ComparatorHelper;
+import sqlancer.ExpectedErrors;
 import sqlancer.Randomly;
 import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBErrors;
@@ -33,7 +32,7 @@ import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 public class CockroachDBTLPJoinOracle implements TestOracle {
 
     final CockroachDBGlobalState state;
-    final Set<String> errors = new HashSet<>();
+    final ExpectedErrors errors = new ExpectedErrors();
 
     CockroachDBSchema s;
     CockroachDBTables targetTables;

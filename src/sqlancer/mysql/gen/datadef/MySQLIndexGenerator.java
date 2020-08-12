@@ -1,9 +1,8 @@
 package sqlancer.mysql.gen.datadef;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -38,7 +37,7 @@ public class MySQLIndexGenerator {
     }
 
     public Query create() {
-        Set<String> errors = new HashSet<>();
+        ExpectedErrors errors = new ExpectedErrors();
         MySQLErrors.addExpressionErrors(errors);
         sb.append("CREATE ");
         if (Randomly.getBoolean()) {

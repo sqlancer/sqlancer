@@ -1,10 +1,10 @@
 package sqlancer.sqlite3.gen.dml;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -21,13 +21,13 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 public class SQLite3InsertGenerator {
 
     private final Randomly r;
-    private final List<String> errors;
+    private final ExpectedErrors errors;
     private final SQLite3GlobalState globalState;
 
     public SQLite3InsertGenerator(SQLite3GlobalState globalState, Randomly r) {
         this.globalState = globalState;
         this.r = r;
-        errors = new ArrayList<>();
+        errors = new ExpectedErrors();
     }
 
     public static Query insertRow(SQLite3GlobalState globalState) throws SQLException {

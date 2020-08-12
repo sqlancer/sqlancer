@@ -14,6 +14,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.IgnoreMeException;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -347,7 +348,7 @@ public class SQLite3Schema {
 
     public static int getNrRows(SQLite3GlobalState globalState, String table) throws SQLException {
         String string = "SELECT COUNT(*) FROM " + table;
-        List<String> errors = new ArrayList<>();
+        ExpectedErrors errors = new ExpectedErrors();
         errors.add("ORDER BY term out of range");
         errors.addAll(Arrays.asList("second argument to nth_value must be a positive integer",
                 "ON clause references tables to its right", "no such table", "no query solution", "no such index",

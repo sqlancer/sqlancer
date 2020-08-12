@@ -1,9 +1,9 @@
 package sqlancer.sqlite3.gen.dml;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -19,7 +19,7 @@ public class SQLite3UpdateGenerator {
 
     private final StringBuilder sb = new StringBuilder();
     private final Randomly r;
-    private final List<String> errors = new ArrayList<>();
+    private final ExpectedErrors errors = new ExpectedErrors();
     private final SQLite3GlobalState globalState;
 
     public SQLite3UpdateGenerator(SQLite3GlobalState globalState, Randomly r) {

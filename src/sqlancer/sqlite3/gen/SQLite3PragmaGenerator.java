@@ -1,10 +1,9 @@
 package sqlancer.sqlite3.gen;
 
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.function.Supplier;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
@@ -60,7 +59,7 @@ public class SQLite3PragmaGenerator {
     }
 
     private final StringBuilder sb = new StringBuilder();
-    private final Set<String> errors = new HashSet<>();
+    private final ExpectedErrors errors = new ExpectedErrors();
 
     public void createPragma(String pragmaName, Supplier<Object> supplier) {
         boolean setSchema = Randomly.getBoolean();
