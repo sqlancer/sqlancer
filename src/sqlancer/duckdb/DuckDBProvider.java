@@ -120,7 +120,7 @@ public class DuckDBProvider extends ProviderAdapter<DuckDBGlobalState, DuckDBOpt
 
     @Override
     protected TestOracle getTestOracle(DuckDBGlobalState globalState) throws SQLException {
-        return new CompositeTestOracle(globalState.getDmbsSpecificOptions().oracle.stream().map(o -> {
+        return new CompositeTestOracle(globalState.getDmbsSpecificOptions().oracles.stream().map(o -> {
             try {
                 return o.create(globalState);
             } catch (SQLException e1) {

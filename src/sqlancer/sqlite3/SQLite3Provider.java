@@ -282,7 +282,7 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
 
     @Override
     protected TestOracle getTestOracle(SQLite3GlobalState globalState) throws SQLException {
-        TestOracle oracle = globalState.getDmbsSpecificOptions().oracle.create(globalState);
+        TestOracle oracle = globalState.getDmbsSpecificOptions().oracles.create(globalState);
         if (oracle.onlyWorksForNonEmptyTables()) {
             for (SQLite3Table table : globalState.getSchema().getDatabaseTables()) {
                 int nrRows = SQLite3Schema.getNrRows(globalState, table.getName());

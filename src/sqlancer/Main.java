@@ -288,7 +288,7 @@ public final class Main {
         System.exit(executeMain(args));
     }
 
-    public static class DBMSExecutor<G extends GlobalState<O, ?>, O extends DBMSSpecificOptions> {
+    public static class DBMSExecutor<G extends GlobalState<O, ?>, O extends DBMSSpecificOptions<?>> {
 
         private final DatabaseProvider<G, O> provider;
         private final MainOptions options;
@@ -363,7 +363,7 @@ public final class Main {
         }
     }
 
-    public static class DBMSExecutorFactory<G extends GlobalState<O, ?>, O extends DBMSSpecificOptions> {
+    public static class DBMSExecutorFactory<G extends GlobalState<O, ?>, O extends DBMSSpecificOptions<?>> {
 
         private final DatabaseProvider<G, O> provider;
         private final MainOptions options;

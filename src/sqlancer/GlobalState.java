@@ -12,7 +12,7 @@ import sqlancer.Main.StateLogger;
  * @param <O>
  *            the option parameter.
  */
-public abstract class GlobalState<O extends DBMSSpecificOptions, S> {
+public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S> {
 
     private Connection con;
     private Randomly r;

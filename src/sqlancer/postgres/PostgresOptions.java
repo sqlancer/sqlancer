@@ -12,6 +12,7 @@ import sqlancer.CompositeTestOracle;
 import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
 import sqlancer.TestOracle;
+import sqlancer.postgres.PostgresOptions.PostgresOracleFactory;
 import sqlancer.postgres.oracle.PostgresNoRECOracle;
 import sqlancer.postgres.oracle.PostgresPivotedQuerySynthesisOracle;
 import sqlancer.postgres.oracle.tlp.PostgresTLPAggregateOracle;
@@ -19,7 +20,7 @@ import sqlancer.postgres.oracle.tlp.PostgresTLPHavingOracle;
 import sqlancer.postgres.oracle.tlp.PostgresTLPWhereOracle;
 
 @Parameters
-public class PostgresOptions implements DBMSSpecificOptions {
+public class PostgresOptions implements DBMSSpecificOptions<PostgresOracleFactory> {
 
     @Parameter(names = "--bulk-insert")
     public boolean allowBulkInsert;
@@ -65,6 +66,11 @@ public class PostgresOptions implements DBMSSpecificOptions {
             }
         };
 
+    }
+
+    @Override
+    public List<PostgresOracleFactory> getTestOracleFactory() {
+        return oracle;
     }
 
 }

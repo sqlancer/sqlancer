@@ -5,7 +5,7 @@ import java.sql.SQLException;
 
 import sqlancer.StateToReproduce.OracleRunReproductionState;
 
-public abstract class ProviderAdapter<G extends GlobalState<O, ?>, O extends DBMSSpecificOptions>
+public abstract class ProviderAdapter<G extends GlobalState<O, ?>, O extends DBMSSpecificOptions<?>>
         implements DatabaseProvider<G, O> {
 
     private final Class<G> globalClass;

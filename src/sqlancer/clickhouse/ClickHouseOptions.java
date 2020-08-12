@@ -10,6 +10,7 @@ import com.beust.jcommander.Parameters;
 import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
 import sqlancer.TestOracle;
+import sqlancer.clickhouse.ClickHouseOptions.ClickHouseOracleFactory;
 import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPAggregateOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPDistinctOracle;
@@ -18,7 +19,7 @@ import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPHavingOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPWhereOracle;
 
 @Parameters(separators = "=", commandDescription = "ClickHouse")
-public class ClickHouseOptions implements DBMSSpecificOptions {
+public class ClickHouseOptions implements DBMSSpecificOptions<ClickHouseOracleFactory> {
 
     @Parameter(names = "--oracle")
     public List<ClickHouseOracleFactory> oracle = Arrays.asList(ClickHouseOracleFactory.TLPWhere);
@@ -58,5 +59,10 @@ public class ClickHouseOptions implements DBMSSpecificOptions {
             }
         };
 
+    }
+
+    @Override
+    public List<ClickHouseOracleFactory> getTestOracleFactory() {
+        return oracle;
     }
 }

@@ -12,6 +12,7 @@ import sqlancer.CompositeTestOracle;
 import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
 import sqlancer.TestOracle;
+import sqlancer.duckdb.DuckDBOptions.DuckDBOracleFactory;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.test.DuckDBNoRECOracle;
 import sqlancer.duckdb.test.DuckDBQueryPartitioningAggregateTester;
@@ -21,7 +22,7 @@ import sqlancer.duckdb.test.DuckDBQueryPartitioningHavingTester;
 import sqlancer.duckdb.test.DuckDBQueryPartitioningWhereTester;
 
 @Parameters
-public class DuckDBOptions implements DBMSSpecificOptions {
+public class DuckDBOptions implements DBMSSpecificOptions<DuckDBOracleFactory> {
 
     @Parameter(names = "--test-collate", arity = 1)
     public boolean testCollate = true;
@@ -90,7 +91,7 @@ public class DuckDBOptions implements DBMSSpecificOptions {
     public int maxNumUpdates = 5;
 
     @Parameter(names = "--oracle")
-    public List<DuckDBOracleFactory> oracle = Arrays.asList(DuckDBOracleFactory.QUERY_PARTITIONING);
+    public List<DuckDBOracleFactory> oracles = Arrays.asList(DuckDBOracleFactory.QUERY_PARTITIONING);
 
     public enum DuckDBOracleFactory implements OracleFactory<DuckDBGlobalState> {
         NOREC {
@@ -146,6 +147,11 @@ public class DuckDBOptions implements DBMSSpecificOptions {
             }
         };
 
+    }
+
+    @Override
+    public List<DuckDBOracleFactory> getTestOracleFactory() {
+        return oracles;
     }
 
 }
