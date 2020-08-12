@@ -7,8 +7,11 @@ import java.util.List;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
-import sqlancer.MainOptions;
+import sqlancer.DBMSSpecificOptions;
+import sqlancer.OracleFactory;
 import sqlancer.TestOracle;
+import sqlancer.clickhouse.ClickHouseOptions.ClickHouseOracleFactory;
+import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPAggregateOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPDistinctOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPGroupByOracle;
@@ -16,15 +19,15 @@ import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPHavingOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPWhereOracle;
 
 @Parameters(separators = "=", commandDescription = "ClickHouse")
-public class ClickHouseOptions extends MainOptions {
+public class ClickHouseOptions implements DBMSSpecificOptions<ClickHouseOracleFactory> {
 
     @Parameter(names = "--oracle")
-    public List<ClickHouseOracle> oracle = Arrays.asList(ClickHouseOracle.TLPWhere);
+    public List<ClickHouseOracleFactory> oracle = Arrays.asList(ClickHouseOracleFactory.TLPWhere);
 
     @Parameter(names = { "--test-joins" }, description = "Allow the generation of JOIN clauses", arity = 1)
     public boolean testJoins = true;
 
-    public enum ClickHouseOracle {
+    public enum ClickHouseOracleFactory implements OracleFactory<ClickHouseGlobalState> {
         TLPWhere {
             @Override
             public TestOracle create(ClickHouseProvider.ClickHouseGlobalState globalState) throws SQLException {
@@ -56,6 +59,10 @@ public class ClickHouseOptions extends MainOptions {
             }
         };
 
-        public abstract TestOracle create(ClickHouseProvider.ClickHouseGlobalState globalState) throws SQLException;
+    }
+
+    @Override
+    public List<ClickHouseOracleFactory> getTestOracleFactory() {
+        return oracle;
     }
 }

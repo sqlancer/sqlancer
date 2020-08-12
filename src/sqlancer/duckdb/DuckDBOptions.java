@@ -9,7 +9,10 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
 import sqlancer.CompositeTestOracle;
+import sqlancer.DBMSSpecificOptions;
+import sqlancer.OracleFactory;
 import sqlancer.TestOracle;
+import sqlancer.duckdb.DuckDBOptions.DuckDBOracleFactory;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.test.DuckDBNoRECOracle;
 import sqlancer.duckdb.test.DuckDBQueryPartitioningAggregateTester;
@@ -19,7 +22,7 @@ import sqlancer.duckdb.test.DuckDBQueryPartitioningHavingTester;
 import sqlancer.duckdb.test.DuckDBQueryPartitioningWhereTester;
 
 @Parameters
-public class DuckDBOptions {
+public class DuckDBOptions implements DBMSSpecificOptions<DuckDBOracleFactory> {
 
     @Parameter(names = "--test-collate", arity = 1)
     public boolean testCollate = true;
@@ -88,9 +91,9 @@ public class DuckDBOptions {
     public int maxNumUpdates = 5;
 
     @Parameter(names = "--oracle")
-    public List<DuckDBOracle> oracle = Arrays.asList(DuckDBOracle.QUERY_PARTITIONING);
+    public List<DuckDBOracleFactory> oracles = Arrays.asList(DuckDBOracleFactory.QUERY_PARTITIONING);
 
-    public enum DuckDBOracle {
+    public enum DuckDBOracleFactory implements OracleFactory<DuckDBGlobalState> {
         NOREC {
 
             @Override
@@ -144,8 +147,11 @@ public class DuckDBOptions {
             }
         };
 
-        public abstract TestOracle create(DuckDBGlobalState globalState) throws SQLException;
+    }
 
+    @Override
+    public List<DuckDBOracleFactory> getTestOracleFactory() {
+        return oracles;
     }
 
 }

@@ -23,7 +23,6 @@ import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.SQLite3StateToReproduce;
 import sqlancer.StatementExecutor;
-import sqlancer.TestOracle;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.gen.SQLite3AnalyzeGenerator;
 import sqlancer.sqlite3.gen.SQLite3Common;
@@ -278,20 +277,6 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
             query = SQLite3TransactionGenerator.generateRollbackTransaction(globalState);
             globalState.executeStatement(query);
         }
-    }
-
-    @Override
-    protected TestOracle getTestOracle(SQLite3GlobalState globalState) throws SQLException {
-        TestOracle oracle = globalState.getDmbsSpecificOptions().oracle.create(globalState);
-        if (oracle.onlyWorksForNonEmptyTables()) {
-            for (SQLite3Table table : globalState.getSchema().getDatabaseTables()) {
-                int nrRows = SQLite3Schema.getNrRows(globalState, table.getName());
-                if (nrRows == 0) {
-                    throw new IgnoreMeException();
-                }
-            }
-        }
-        return oracle;
     }
 
     private void checkTablesForGeneratedColumnLoops(SQLite3GlobalState globalState) throws SQLException {

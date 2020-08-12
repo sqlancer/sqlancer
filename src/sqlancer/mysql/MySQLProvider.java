@@ -20,7 +20,6 @@ import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.StateToReproduce.MySQLStateToReproduce;
 import sqlancer.StatementExecutor;
-import sqlancer.TestOracle;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.gen.MySQLAlterTable;
@@ -38,7 +37,6 @@ import sqlancer.mysql.gen.tblmaintenance.MySQLCheckTable;
 import sqlancer.mysql.gen.tblmaintenance.MySQLChecksum;
 import sqlancer.mysql.gen.tblmaintenance.MySQLOptimize;
 import sqlancer.mysql.gen.tblmaintenance.MySQLRepair;
-import sqlancer.mysql.oracle.MySQLTLPWhereOracle;
 import sqlancer.sqlite3.gen.SQLite3Common;
 
 public class MySQLProvider extends ProviderAdapter<MySQLGlobalState, MySQLOptions> {
@@ -157,11 +155,6 @@ public class MySQLProvider extends ProviderAdapter<MySQLGlobalState, MySQLOption
                     }
                 });
         se.executeStatements();
-    }
-
-    @Override
-    protected TestOracle getTestOracle(MySQLGlobalState globalState) throws SQLException {
-        return new MySQLTLPWhereOracle(globalState); // FIXME: options for the other test oracles
     }
 
     public static int getNrRows(Connection con, MySQLTable table) throws SQLException {

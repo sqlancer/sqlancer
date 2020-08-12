@@ -9,7 +9,10 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
 import sqlancer.CompositeTestOracle;
+import sqlancer.DBMSSpecificOptions;
+import sqlancer.OracleFactory;
 import sqlancer.TestOracle;
+import sqlancer.postgres.PostgresOptions.PostgresOracleFactory;
 import sqlancer.postgres.oracle.PostgresNoRECOracle;
 import sqlancer.postgres.oracle.PostgresPivotedQuerySynthesisOracle;
 import sqlancer.postgres.oracle.tlp.PostgresTLPAggregateOracle;
@@ -17,13 +20,13 @@ import sqlancer.postgres.oracle.tlp.PostgresTLPHavingOracle;
 import sqlancer.postgres.oracle.tlp.PostgresTLPWhereOracle;
 
 @Parameters
-public class PostgresOptions {
+public class PostgresOptions implements DBMSSpecificOptions<PostgresOracleFactory> {
 
     @Parameter(names = "--bulk-insert")
     public boolean allowBulkInsert;
 
     @Parameter(names = "--oracle")
-    public List<PostgresOracle> oracle = Arrays.asList(PostgresOracle.QUERY_PARTITIONING);
+    public List<PostgresOracleFactory> oracle = Arrays.asList(PostgresOracleFactory.QUERY_PARTITIONING);
 
     @Parameter(names = "--test-collations", arity = 1)
     public boolean testCollations = true;
@@ -31,7 +34,7 @@ public class PostgresOptions {
     @Parameter(names = "--connection-url")
     public String connectionURL = "postgresql://localhost:5432/test";
 
-    public enum PostgresOracle {
+    public enum PostgresOracleFactory implements OracleFactory<PostgresGlobalState> {
         NOREC {
             @Override
             public TestOracle create(PostgresGlobalState globalState) throws SQLException {
@@ -63,8 +66,11 @@ public class PostgresOptions {
             }
         };
 
-        public abstract TestOracle create(PostgresGlobalState globalState) throws SQLException;
+    }
 
+    @Override
+    public List<PostgresOracleFactory> getTestOracleFactory() {
+        return oracle;
     }
 
 }

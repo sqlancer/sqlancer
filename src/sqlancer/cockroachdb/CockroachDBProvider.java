@@ -18,7 +18,6 @@ import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.QueryProvider;
 import sqlancer.Randomly;
-import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.gen.CockroachDBCommentOnGenerator;
@@ -245,11 +244,6 @@ public class CockroachDBProvider extends ProviderAdapter<CockroachDBGlobalState,
         if (globalState.getDmbsSpecificOptions().makeVectorizationMoreLikely && Randomly.getBoolean()) {
             manager.execute(new QueryAdapter("SET vectorize=on;"));
         }
-    }
-
-    @Override
-    protected TestOracle getTestOracle(CockroachDBGlobalState globalState) throws SQLException {
-        return globalState.getDmbsSpecificOptions().oracle.create(globalState);
     }
 
     @Override

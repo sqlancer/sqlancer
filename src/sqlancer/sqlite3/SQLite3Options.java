@@ -2,13 +2,17 @@ package sqlancer.sqlite3;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
 import sqlancer.CompositeTestOracle;
+import sqlancer.DBMSSpecificOptions;
+import sqlancer.OracleFactory;
 import sqlancer.TestOracle;
+import sqlancer.sqlite3.SQLite3Options.SQLite3OracleFactory;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.oracle.SQLite3Fuzzer;
 import sqlancer.sqlite3.oracle.SQLite3NoRECOracle;
@@ -20,7 +24,7 @@ import sqlancer.sqlite3.oracle.tlp.SQLite3TLPHavingOracle;
 import sqlancer.sqlite3.oracle.tlp.SQLite3TLPWhereOracle;
 
 @Parameters(separators = "=", commandDescription = "SQLite3")
-public class SQLite3Options {
+public class SQLite3Options implements DBMSSpecificOptions<SQLite3OracleFactory> {
 
     @Parameter(names = { "--test-fts" }, description = "Test the FTS extensions", arity = 1)
     public boolean testFts = true;
@@ -70,7 +74,7 @@ public class SQLite3Options {
     public boolean testDistinctInView;
 
     @Parameter(names = "--oracle")
-    public SQLite3Oracle oracle = SQLite3Oracle.NoREC;
+    public SQLite3OracleFactory oracles = SQLite3OracleFactory.NoREC;
 
     @Parameter(names = {
             "--delete-existing-databases" }, description = "Delete a database file if it already exists", arity = 1)
@@ -84,7 +88,7 @@ public class SQLite3Options {
             "--execute-queries" }, description = "Specifies whether the query in the fuzzer should be executed", arity = 1)
     public boolean executeQuery = true;
 
-    public enum SQLite3Oracle {
+    public enum SQLite3OracleFactory implements OracleFactory<SQLite3GlobalState> {
         PQS {
             @Override
             public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
@@ -150,8 +154,11 @@ public class SQLite3Options {
             }
         };
 
-        public abstract TestOracle create(SQLite3GlobalState globalState) throws SQLException;
+    }
 
+    @Override
+    public List<SQLite3OracleFactory> getTestOracleFactory() {
+        return Arrays.asList(oracles);
     }
 
 }

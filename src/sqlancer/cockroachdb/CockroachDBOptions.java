@@ -2,13 +2,17 @@ package sqlancer.cockroachdb;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
 import sqlancer.CompositeTestOracle;
+import sqlancer.DBMSSpecificOptions;
+import sqlancer.OracleFactory;
 import sqlancer.TestOracle;
+import sqlancer.cockroachdb.CockroachDBOptions.CockroachDBOracleFactory;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.oracle.CockroachDBNoRECOracle;
 import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPAggregateOracle;
@@ -20,12 +24,12 @@ import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPJoinOracle;
 import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPWhereOracle;
 
 @Parameters(separators = "=", commandDescription = "Test CockroachDB")
-public class CockroachDBOptions {
+public class CockroachDBOptions implements DBMSSpecificOptions<CockroachDBOracleFactory> {
 
     @Parameter(names = "--oracle")
-    public CockroachDBOracle oracle = CockroachDBOracle.NOREC;
+    public CockroachDBOracleFactory oracle = CockroachDBOracleFactory.NOREC;
 
-    public enum CockroachDBOracle {
+    public enum CockroachDBOracleFactory implements OracleFactory<CockroachDBGlobalState> {
         NOREC {
             @Override
             public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
@@ -90,8 +94,6 @@ public class CockroachDBOptions {
             }
         };
 
-        public abstract TestOracle create(CockroachDBGlobalState globalState) throws SQLException;
-
     }
 
     @Parameter(names = {
@@ -104,5 +106,10 @@ public class CockroachDBOptions {
     @Parameter(names = {
             "--increased-vectorization" }, description = "Generate VECTORIZE=on with a higher probability (which found a number of bugs in the past)")
     public boolean makeVectorizationMoreLikely = true;
+
+    @Override
+    public List<CockroachDBOracleFactory> getTestOracleFactory() {
+        return Arrays.asList(oracle);
+    }
 
 }
