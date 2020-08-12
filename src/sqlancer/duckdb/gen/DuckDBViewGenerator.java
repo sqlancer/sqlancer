@@ -1,8 +1,6 @@
 package sqlancer.duckdb.gen;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -30,7 +28,7 @@ public final class DuckDBViewGenerator {
         }
         sb.append(") AS ");
         sb.append(DuckDBToStringVisitor.asString(DuckDBRandomQuerySynthesizer.generateSelect(globalState, nrColumns)));
-        Set<String> errors = new HashSet<>();
+        ExpectedErrors errors = new ExpectedErrors();
         DuckDBErrors.addExpressionErrors(errors);
         DuckDBErrors.addGroupByErrors(errors);
         return new QueryAdapter(sb.toString(), errors, true);

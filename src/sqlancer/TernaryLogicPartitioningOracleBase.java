@@ -1,8 +1,5 @@
 package sqlancer;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import sqlancer.gen.ExpressionGenerator;
 
 /**
@@ -20,7 +17,7 @@ public abstract class TernaryLogicPartitioningOracleBase<E, S> implements TestOr
     protected E isNullPredicate;
 
     protected final S state;
-    protected final Set<String> errors = new HashSet<>();
+    protected final ExpectedErrors errors = new ExpectedErrors();
 
     protected TernaryLogicPartitioningOracleBase(S state) {
         this.state = state;

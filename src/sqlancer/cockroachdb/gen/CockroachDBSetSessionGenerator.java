@@ -1,9 +1,8 @@
 package sqlancer.cockroachdb.gen;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.function.Function;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -52,7 +51,7 @@ public final class CockroachDBSetSessionGenerator {
         sb.append(s);
         sb.append("=");
         sb.append(s.f.apply(globalState));
-        Set<String> errors = new HashSet<>();
+        ExpectedErrors errors = new ExpectedErrors();
         CockroachDBErrors.addTransactionErrors(errors);
         return new QueryAdapter(sb.toString(), errors);
     }

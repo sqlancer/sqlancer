@@ -1,8 +1,8 @@
 package sqlancer.mariadb.gen;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -17,7 +17,7 @@ public final class MariaDBIndexGenerator {
     }
 
     public static Query generate(MariaDBSchema s) {
-        List<String> errors = new ArrayList<>();
+        ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder("CREATE ");
         errors.add("Key/Index cannot be defined on a virtual generated column");
         if (Randomly.getBoolean()) {

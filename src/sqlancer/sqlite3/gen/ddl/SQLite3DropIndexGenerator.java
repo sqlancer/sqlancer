@@ -1,7 +1,6 @@
 package sqlancer.sqlite3.gen.ddl;
 
-import java.util.Arrays;
-
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -23,7 +22,7 @@ public final class SQLite3DropIndexGenerator {
         sb.append('"');
         sb.append(indexName);
         sb.append('"');
-        return new QueryAdapter(sb.toString(), Arrays.asList(
+        return new QueryAdapter(sb.toString(), ExpectedErrors.from(
                 "[SQLITE_ERROR] SQL error or missing database (index associated with UNIQUE or PRIMARY KEY constraint cannot be dropped)"),
                 true);
     }

@@ -1,13 +1,13 @@
 package sqlancer.cockroachdb;
 
-import java.util.Set;
+import sqlancer.ExpectedErrors;
 
 public final class CockroachDBErrors {
 
     private CockroachDBErrors() {
     }
 
-    public static void addExpressionErrors(Set<String> errors) {
+    public static void addExpressionErrors(ExpectedErrors errors) {
         errors.add(" non-streaming operator encountered when vectorize=auto");
 
         if (CockroachDBBugs.bug46915) {
@@ -182,7 +182,7 @@ public final class CockroachDBErrors {
         addArrayErrors(errors);
     }
 
-    private static void addArrayErrors(Set<String> errors) {
+    private static void addArrayErrors(ExpectedErrors errors) {
         // arrays
         errors.add("cannot determine type of empty array");
         errors.add("unknown signature: max(unknown[])");
@@ -232,16 +232,16 @@ public final class CockroachDBErrors {
         errors.add("to be of type unknown[]"); // IF with null array
     }
 
-    private static void addIntervalTypeErrors(Set<String> errors) {
+    private static void addIntervalTypeErrors(ExpectedErrors errors) {
         errors.add("overflow during Encode");
         errors.add("as type interval");
     }
 
-    private static void addJoinTypes(Set<String> errors) {
+    private static void addJoinTypes(ExpectedErrors errors) {
         errors.add("JOIN/USING types");
     }
 
-    private static void addGroupByErrors(Set<String> errors) {
+    private static void addGroupByErrors(ExpectedErrors errors) {
         errors.add("non-integer constant in GROUP BY");
 
         // https://github.com/cockroachdb/cockroach/pull/46649 -> aggregates on NULL are
@@ -265,7 +265,7 @@ public final class CockroachDBErrors {
 
     }
 
-    private static void addFunctionErrors(Set<String> errors) {
+    private static void addFunctionErrors(ExpectedErrors errors) {
         // functions
         errors.add("abs of min integer value (-9223372036854775808) not defined"); // ABS
         errors.add("the input string must not be empty"); // ASCII
@@ -284,7 +284,7 @@ public final class CockroachDBErrors {
         errors.add("must be greater than zero"); // split_part
     }
 
-    public static void addTransactionErrors(Set<String> errors) {
+    public static void addTransactionErrors(ExpectedErrors errors) {
         errors.add("current transaction is aborted");
     }
 

@@ -1,13 +1,13 @@
 package sqlancer.duckdb;
 
-import java.util.Set;
+import sqlancer.ExpectedErrors;
 
 public final class DuckDBErrors {
 
     private DuckDBErrors() {
     }
 
-    public static void addExpressionErrors(Set<String> errors) {
+    public static void addExpressionErrors(ExpectedErrors errors) {
         errors.add("Could not convert string");
         errors.add("ORDER term out of range - should be between ");
         errors.add("You might need to add explicit type casts.");
@@ -49,7 +49,7 @@ public final class DuckDBErrors {
         errors.add("Contents of view were altered: types don't match!");
     }
 
-    private static void addRegexErrors(Set<String> errors) {
+    private static void addRegexErrors(ExpectedErrors errors) {
         errors.add("missing ]");
         errors.add("missing )");
         errors.add("invalid escape sequence");
@@ -61,7 +61,7 @@ public final class DuckDBErrors {
         errors.add("width is not integer");
     }
 
-    private static void addFunctionErrors(Set<String> errors) {
+    private static void addFunctionErrors(ExpectedErrors errors) {
         errors.add("SUBSTRING cannot handle negative offsets");
         errors.add("is undefined outside [-1,1]"); // ACOS etc
         errors.add("invalid type specifier"); // PRINTF
@@ -74,7 +74,7 @@ public final class DuckDBErrors {
         errors.add("Could not choose a best candidate function for the function call"); // monthname
     }
 
-    public static void addInsertErrors(Set<String> errors) {
+    public static void addInsertErrors(ExpectedErrors errors) {
         errors.add("NOT NULL constraint failed");
         errors.add("PRIMARY KEY or UNIQUE constraint violated");
         errors.add("duplicate key value violates primary key or unique constraint");
@@ -89,7 +89,7 @@ public final class DuckDBErrors {
                                                                // the table has a primary key
     }
 
-    public static void addGroupByErrors(Set<String> errors) {
+    public static void addGroupByErrors(ExpectedErrors errors) {
         errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
         errors.add("GROUP BY term out of range");
     }

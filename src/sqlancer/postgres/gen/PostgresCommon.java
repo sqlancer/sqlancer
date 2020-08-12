@@ -3,11 +3,11 @@ package sqlancer.postgres.gen;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.postgres.PostgresGlobalState;
@@ -22,7 +22,7 @@ public final class PostgresCommon {
     private PostgresCommon() {
     }
 
-    public static void addCommonFetchErrors(Set<String> errors) {
+    public static void addCommonFetchErrors(ExpectedErrors errors) {
         errors.add("FULL JOIN is only supported with merge-joinable or hash-joinable join conditions");
         errors.add("but it cannot be referenced from this part of the query");
         errors.add("missing FROM-clause entry for table");
@@ -30,12 +30,12 @@ public final class PostgresCommon {
         errors.add("canceling statement due to statement timeout");
     }
 
-    public static void addCommonTableErrors(Set<String> errors) {
+    public static void addCommonTableErrors(ExpectedErrors errors) {
         errors.add("is not commutative"); // exclude
         errors.add("operator requires run-time type coercion"); // exclude
     }
 
-    public static void addCommonExpressionErrors(Set<String> errors) {
+    public static void addCommonExpressionErrors(ExpectedErrors errors) {
         errors.add("You might need to add explicit type casts");
         errors.add("invalid regular expression");
         errors.add("could not determine which collation to use");
@@ -66,7 +66,7 @@ public final class PostgresCommon {
         addCommonRegexExpressionErrors(errors);
     }
 
-    private static void addToCharFunctionErrors(Set<String> errors) {
+    private static void addToCharFunctionErrors(ExpectedErrors errors) {
         errors.add("multiple decimal points");
         errors.add("and decimal point together");
         errors.add("multiple decimal points");
@@ -80,14 +80,14 @@ public final class PostgresCommon {
         errors.add("is not a number");
     }
 
-    private static void addBitStringOperationErrors(Set<String> errors) {
+    private static void addBitStringOperationErrors(ExpectedErrors errors) {
         errors.add("cannot XOR bit strings of different sizes");
         errors.add("cannot AND bit strings of different sizes");
         errors.add("cannot OR bit strings of different sizes");
         errors.add("must be type boolean, not type text");
     }
 
-    private static void addFunctionErrors(Set<String> errors) {
+    private static void addFunctionErrors(ExpectedErrors errors) {
         errors.add("out of valid range"); // get_bit/get_byte
         errors.add("cannot take logarithm of a negative number");
         errors.add("cannot take logarithm of zero");
@@ -101,18 +101,18 @@ public final class PostgresCommon {
         errors.add("invalid mask length"); // set_masklen
     }
 
-    private static void addCommonRegexExpressionErrors(Set<String> errors) {
+    private static void addCommonRegexExpressionErrors(ExpectedErrors errors) {
         errors.add("is not a valid hexadecimal digit");
     }
 
-    public static void addCommonRangeExpressionErrors(Set<String> errors) {
+    public static void addCommonRangeExpressionErrors(ExpectedErrors errors) {
         errors.add("range lower bound must be less than or equal to range upper bound");
         errors.add("result of range difference would not be contiguous");
         errors.add("out of range");
         errors.add("malformed range literal");
     }
 
-    public static void addCommonInsertUpdateErrors(Set<String> errors) {
+    public static void addCommonInsertUpdateErrors(ExpectedErrors errors) {
         errors.add("value too long for type character");
         errors.add("not found in view targetlist");
     }
@@ -219,7 +219,7 @@ public final class PostgresCommon {
         }
     }
 
-    public static void generateWith(StringBuilder sb, PostgresGlobalState globalState, Set<String> errors) {
+    public static void generateWith(StringBuilder sb, PostgresGlobalState globalState, ExpectedErrors errors) {
         if (Randomly.getBoolean()) {
             sb.append(" WITH (");
             ArrayList<StorageParameters> values = new ArrayList<>(Arrays.asList(StorageParameters.values()));
@@ -241,7 +241,7 @@ public final class PostgresCommon {
     }
 
     public static void addTableConstraints(boolean excludePrimaryKey, StringBuilder sb, PostgresTable table,
-            PostgresGlobalState globalState, Set<String> errors) {
+            PostgresGlobalState globalState, ExpectedErrors errors) {
         // TODO constraint name
         List<TableConstraints> tableConstraints = Randomly.nonEmptySubset(TableConstraints.values());
         if (excludePrimaryKey) {
@@ -258,12 +258,12 @@ public final class PostgresCommon {
     }
 
     public static void addTableConstraint(StringBuilder sb, PostgresTable table, PostgresGlobalState globalState,
-            Set<String> errors) {
+            ExpectedErrors errors) {
         addTableConstraint(sb, table, globalState, Randomly.fromOptions(TableConstraints.values()), errors);
     }
 
     private static void addTableConstraint(StringBuilder sb, PostgresTable table, PostgresGlobalState globalState,
-            TableConstraints t, Set<String> errors) {
+            TableConstraints t, ExpectedErrors errors) {
         List<PostgresColumn> randomNonEmptyColumnSubset = table.getRandomNonEmptyColumnSubset();
         List<PostgresColumn> otherColumns;
         PostgresCommon.addCommonExpressionErrors(errors);
@@ -362,7 +362,8 @@ public final class PostgresCommon {
         }
     }
 
-    private static void appendIndexParameters(StringBuilder sb, PostgresGlobalState globalState, Set<String> errors) {
+    private static void appendIndexParameters(StringBuilder sb, PostgresGlobalState globalState,
+            ExpectedErrors errors) {
         if (Randomly.getBoolean()) {
             generateWith(sb, globalState, errors);
         }
@@ -403,7 +404,7 @@ public final class PostgresCommon {
         sb.append(Randomly.fromOptions("NO ACTION", "RESTRICT", "CASCADE", "SET NULL", "SET DEFAULT"));
     }
 
-    public static void addGroupingErrors(Set<String> errors) {
+    public static void addGroupingErrors(ExpectedErrors errors) {
         errors.add("non-integer constant in GROUP BY"); // TODO
         errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
         errors.add("is not in select list");

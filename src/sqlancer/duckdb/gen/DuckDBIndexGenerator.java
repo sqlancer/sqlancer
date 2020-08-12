@@ -1,9 +1,8 @@
 package sqlancer.duckdb.gen;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -20,7 +19,7 @@ public final class DuckDBIndexGenerator {
     }
 
     public static Query getQuery(DuckDBGlobalState globalState) {
-        Set<String> errors = new HashSet<>();
+        ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE ");
         if (Randomly.getBoolean()) {

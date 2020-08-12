@@ -1,8 +1,6 @@
 package sqlancer.mariadb.gen;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -34,7 +32,7 @@ public final class MariaDBInsertGenerator {
             }
         }
         sb.append(")");
-        List<String> errors = new ArrayList<>();
+        ExpectedErrors errors = new ExpectedErrors();
         MariaDBErrors.addInsertErrors(errors);
         return new QueryAdapter(sb.toString(), errors);
     }

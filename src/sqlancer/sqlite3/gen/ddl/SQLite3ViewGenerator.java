@@ -1,9 +1,8 @@
 package sqlancer.sqlite3.gen.ddl;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
@@ -42,7 +41,7 @@ public final class SQLite3ViewGenerator {
             sb.append(" IF NOT EXISTS ");
         }
         sb.append(SQLite3Common.getFreeViewName(globalState.getSchema()));
-        List<String> errors = new ArrayList<>();
+        ExpectedErrors errors = new ExpectedErrors();
         errors.add("is circularly defined");
         errors.add("unsupported frame specification");
         if (Randomly.getBoolean()) {

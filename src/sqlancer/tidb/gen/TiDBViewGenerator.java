@@ -1,8 +1,6 @@
 package sqlancer.tidb.gen;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -37,7 +35,7 @@ public final class TiDBViewGenerator {
         }
         sb.append(") AS ");
         sb.append(TiDBRandomQuerySynthesizer.generate(globalState, nrColumns).getQueryString());
-        Set<String> errors = new HashSet<>();
+        ExpectedErrors errors = new ExpectedErrors();
         TiDBErrors.addExpressionErrors(errors);
         errors.add(
                 "references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them");

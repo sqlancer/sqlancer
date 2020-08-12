@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -45,8 +46,8 @@ public class SQLite3CreateVirtualFTSTableGenerator {
         } else {
             createFts5Table();
         }
-        return new QueryAdapter(sb.toString(), Arrays.asList("unrecognized parameter", "unknown tokenizer: ascii"),
-                true);
+        return new QueryAdapter(sb.toString(),
+                ExpectedErrors.from("unrecognized parameter", "unknown tokenizer: ascii"), true);
     }
 
     private void createFts4Table() {

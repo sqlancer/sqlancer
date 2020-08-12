@@ -4,31 +4,26 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collection;
 
 public class QueryAdapter extends Query {
 
     private final String query;
-    private final Collection<String> expectedErrors;
+    private final ExpectedErrors expectedErrors;
     private final boolean couldAffectSchema;
 
     public QueryAdapter(String query) {
-        this(query, new ArrayList<>());
+        this(query, new ExpectedErrors());
     }
 
     public QueryAdapter(String query, boolean couldAffectSchema) {
-        this(query, new ArrayList<>(), couldAffectSchema);
+        this(query, new ExpectedErrors(), couldAffectSchema);
     }
 
-    public QueryAdapter(String query, Collection<String> expectedErrors) {
-        this.query = canonicalizeString(query);
-        this.expectedErrors = expectedErrors;
-        this.couldAffectSchema = false;
-        checkQueryString();
+    public QueryAdapter(String query, ExpectedErrors expectedErrors) {
+        this(query, expectedErrors, false);
     }
 
-    public QueryAdapter(String query, Collection<String> expectedErrors, boolean couldAffectSchema) {
+    public QueryAdapter(String query, ExpectedErrors expectedErrors, boolean couldAffectSchema) {
         this.query = canonicalizeString(query);
         this.expectedErrors = expectedErrors;
         this.couldAffectSchema = couldAffectSchema;
@@ -84,14 +79,7 @@ public class QueryAdapter extends Query {
     }
 
     public void checkException(Exception e) throws AssertionError {
-        boolean isExcluded = false;
-        for (String expectedError : expectedErrors) {
-            if (e.getMessage().contains(expectedError)) {
-                isExcluded = true;
-                break;
-            }
-        }
-        if (!isExcluded) {
+        if (!expectedErrors.errorIsExpected(e.getMessage())) {
             throw new AssertionError(query, e);
         }
     }
@@ -133,7 +121,7 @@ public class QueryAdapter extends Query {
     }
 
     @Override
-    public Collection<String> getExpectedErrors() {
+    public ExpectedErrors getExpectedErrors() {
         return expectedErrors;
     }
 

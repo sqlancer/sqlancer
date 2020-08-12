@@ -1,8 +1,6 @@
 package sqlancer.sqlite3.gen;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -24,7 +22,7 @@ public final class SQLite3ReindexGenerator {
     public static Query executeReindex(SQLite3GlobalState globalState) {
         SQLite3Schema s = globalState.getSchema();
         StringBuilder sb = new StringBuilder("REINDEX");
-        List<String> errors = new ArrayList<>();
+        ExpectedErrors errors = new ExpectedErrors();
         Target t = Randomly.fromOptions(Target.values());
         if (Randomly.getBoolean()) {
             sb.append(" ");

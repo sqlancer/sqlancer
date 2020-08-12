@@ -1,8 +1,8 @@
 package sqlancer.citus.gen;
 
 import java.util.List;
-import java.util.Set;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.postgres.PostgresGlobalState;
@@ -21,7 +21,7 @@ public class CitusAlterTableGenerator extends PostgresAlterTableGenerator {
     }
 
     @Override
-    public List<Action> getActions(Set<String> errors) {
+    public List<Action> getActions(ExpectedErrors errors) {
         List<Action> action = super.getActions(errors);
         CitusCommon.addCitusErrors(errors);
         action.remove(Action.ALTER_COLUMN_SET_STATISTICS);

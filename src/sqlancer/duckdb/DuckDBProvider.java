@@ -3,12 +3,11 @@ package sqlancer.duckdb;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
 import sqlancer.CompositeTestOracle;
+import sqlancer.ExpectedErrors;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.ProviderAdapter;
@@ -43,7 +42,7 @@ public class DuckDBProvider extends ProviderAdapter<DuckDBGlobalState, DuckDBOpt
         UPDATE(DuckDBUpdateGenerator::getQuery), //
         CREATE_VIEW(DuckDBViewGenerator::generate), //
         EXPLAIN((g) -> {
-            Set<String> errors = new HashSet<>();
+            ExpectedErrors errors = new ExpectedErrors();
             DuckDBErrors.addExpressionErrors(errors);
             DuckDBErrors.addGroupByErrors(errors);
             return new QueryAdapter(

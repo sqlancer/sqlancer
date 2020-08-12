@@ -1,11 +1,10 @@
 package sqlancer.clickhouse.gen;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import ru.yandex.clickhouse.domain.ClickHouseDataType;
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -37,7 +36,7 @@ public class ClickHouseTableGenerator {
     public static Query createTableStatement(String tableName, ClickHouseProvider.ClickHouseGlobalState globalState) {
         ClickHouseTableGenerator chTableGenerator = new ClickHouseTableGenerator(tableName, globalState);
         chTableGenerator.start();
-        Set<String> errors = new HashSet<>();
+        ExpectedErrors errors = new ExpectedErrors();
         ClickHouseErrors.addTableManipulationErrors(errors);
         return new QueryAdapter(chTableGenerator.sb.toString(), errors, true);
     }

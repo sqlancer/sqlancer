@@ -1,13 +1,13 @@
 package sqlancer.mariadb;
 
-import java.util.List;
+import sqlancer.ExpectedErrors;
 
 public final class MariaDBErrors {
 
     private MariaDBErrors() {
     }
 
-    public static void addInsertErrors(List<String> errors) {
+    public static void addInsertErrors(ExpectedErrors errors) {
         errors.add("Out of range");
         errors.add("Duplicate entry"); // violates UNIQUE constraint
         errors.add("cannot be null"); // violates NOT NULL constraint

@@ -5,12 +5,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
@@ -58,12 +56,13 @@ public class CockroachDBProvider extends ProviderAdapter<CockroachDBGlobalState,
         TRANSACTION((g) -> {
             String s = Randomly.fromOptions("BEGIN", "ROLLBACK", "COMMIT");
             return new QueryAdapter(s,
-                    Arrays.asList("there is no transaction in progress", "there is already a transaction in progress",
-                            "current transaction is aborted", "does not exist" /* interleaved indexes */));
+                    ExpectedErrors.from("there is no transaction in progress",
+                            "there is already a transaction in progress", "current transaction is aborted",
+                            "does not exist" /* interleaved indexes */));
         }), //
         EXPLAIN((g) -> {
             StringBuilder sb = new StringBuilder("EXPLAIN ");
-            Set<String> errors = new HashSet<>();
+            ExpectedErrors errors = new ExpectedErrors();
             if (Randomly.getBoolean()) {
                 sb.append("(");
                 sb.append(Randomly.nonEmptySubset("VERBOSE", "TYPES", "OPT", "DISTSQL", "VEC").stream()
@@ -81,7 +80,7 @@ public class CockroachDBProvider extends ProviderAdapter<CockroachDBGlobalState,
         SCRUB((g) -> new QueryAdapter(
                 "EXPERIMENTAL SCRUB table " + g.getSchema().getRandomTable(t -> !t.isView()).getName(),
                 // https://github.com/cockroachdb/cockroach/issues/46401
-                Arrays.asList("scrub-fk: column \"t.rowid\" does not exist",
+                ExpectedErrors.from("scrub-fk: column \"t.rowid\" does not exist",
                         "check-constraint: cannot access temporary tables of other sessions" /*
                                                                                               * https:// github. com/
                                                                                               * cockroachdb / cockroach
@@ -98,7 +97,7 @@ public class CockroachDBProvider extends ProviderAdapter<CockroachDBGlobalState,
             } else {
                 sb.append(" SPLIT AT VALUES (NULL);");
             }
-            return new QueryAdapter(sb.toString(), Arrays.asList("must be of type"));
+            return new QueryAdapter(sb.toString(), ExpectedErrors.from("must be of type"));
         });
 
         private final QueryProvider<CockroachDBGlobalState> queryProvider;

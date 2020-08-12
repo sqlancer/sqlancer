@@ -1,8 +1,6 @@
 package sqlancer.citus.gen;
 
-import java.util.Collection;
-import java.util.Set;
-
+import sqlancer.ExpectedErrors;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.gen.PostgresCommon;
@@ -12,7 +10,7 @@ public final class CitusCommon {
     private CitusCommon() {
     }
 
-    public static void addCitusErrors(Collection<String> errors) {
+    public static void addCitusErrors(ExpectedErrors errors) {
         errors.add("recursive CTEs are not supported in distributed queries");
         errors.add("could not run distributed query with GROUPING SETS, CUBE, or ROLLUP");
         errors.add("Subqueries in HAVING cannot refer to outer query");
@@ -68,7 +66,7 @@ public final class CitusCommon {
     }
 
     public static void addTableConstraint(StringBuilder sb, PostgresTable table, PostgresGlobalState globalState,
-            Set<String> errors) {
+            ExpectedErrors errors) {
         PostgresCommon.addTableConstraint(sb, table, globalState, errors);
         CitusCommon.addCitusErrors(errors);
     }

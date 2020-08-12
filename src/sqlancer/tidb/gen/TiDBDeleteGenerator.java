@@ -1,10 +1,9 @@
 package sqlancer.tidb.gen;
 
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.stream.Collectors;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -20,7 +19,7 @@ public final class TiDBDeleteGenerator {
     }
 
     public static Query getQuery(TiDBGlobalState globalState) throws SQLException {
-        Set<String> errors = new HashSet<>();
+        ExpectedErrors errors = new ExpectedErrors();
         TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         TiDBExpressionGenerator gen = new TiDBExpressionGenerator(globalState).setColumns(table.getColumns());
         StringBuilder sb = new StringBuilder("DELETE ");

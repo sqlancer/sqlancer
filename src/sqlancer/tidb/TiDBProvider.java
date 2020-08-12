@@ -4,13 +4,12 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
 import sqlancer.CompositeTestOracle;
+import sqlancer.ExpectedErrors;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.ProviderAdapter;
@@ -51,7 +50,7 @@ public class TiDBProvider extends ProviderAdapter<TiDBGlobalState, TiDBOptions> 
         VIEW_GENERATOR(TiDBViewGenerator::getQuery), //
         ALTER_TABLE(TiDBAlterTableGenerator::getQuery), //
         EXPLAIN((g) -> {
-            Set<String> errors = new HashSet<>();
+            ExpectedErrors errors = new ExpectedErrors();
             TiDBErrors.addExpressionErrors(errors);
             TiDBErrors.addExpressionHavingErrors(errors);
             return new QueryAdapter(

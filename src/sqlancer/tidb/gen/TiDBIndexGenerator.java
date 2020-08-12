@@ -1,10 +1,9 @@
 package sqlancer.tidb.gen;
 
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -18,7 +17,7 @@ public final class TiDBIndexGenerator {
     }
 
     public static Query getQuery(TiDBGlobalState globalState) throws SQLException {
-        Set<String> errors = new HashSet<>();
+        ExpectedErrors errors = new ExpectedErrors();
 
         TiDBTable randomTable = globalState.getSchema().getRandomTable(t -> !t.isView());
         String indexName = globalState.getSchema().getFreeIndexName();

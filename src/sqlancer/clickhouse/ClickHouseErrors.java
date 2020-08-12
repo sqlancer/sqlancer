@@ -1,13 +1,13 @@
 package sqlancer.clickhouse;
 
-import java.util.Set;
+import sqlancer.ExpectedErrors;
 
 public final class ClickHouseErrors {
 
     private ClickHouseErrors() {
     }
 
-    public static void addExpectedExpressionErrors(Set<String> errors) {
+    public static void addExpectedExpressionErrors(ExpectedErrors errors) {
         // errors.add("Illegal type (String) of argument of function not");
         // errors.add("Illegal type String of column for constant filter. Must be UInt8 or Nullable(UInt8)");
         // errors.add("Illegal type Int32 of column for constant filter. Must be UInt8 or Nullable(UInt8)");
@@ -37,19 +37,19 @@ public final class ClickHouseErrors {
         errors.add("argument of function");
     }
 
-    public static void addExpressionHavingErrors(Set<String> errors) {
+    public static void addExpressionHavingErrors(ExpectedErrors errors) {
         errors.add("Memory limit");
     }
 
-    public static void addQueryErrors(Set<String> errors) {
+    public static void addQueryErrors(ExpectedErrors errors) {
         errors.add("Memory limit");
     }
 
-    public static void addGroupingErrors(Set<String> errors) {
+    public static void addGroupingErrors(ExpectedErrors errors) {
         errors.add("Memory limit");
     }
 
-    public static void addTableManipulationErrors(Set<String> errors) {
+    public static void addTableManipulationErrors(ExpectedErrors errors) {
         errors.add("Memory limit");
         errors.add("Directory for table data");
         errors.add("Directory not empty");

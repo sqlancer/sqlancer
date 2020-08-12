@@ -1,7 +1,6 @@
 package sqlancer.postgres.gen;
 
-import java.util.Arrays;
-
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -26,7 +25,7 @@ public final class PostgresDiscardGenerator {
             what = Randomly.fromOptions("PLANS", "SEQUENCES");
         }
         sb.append(what);
-        return new QueryAdapter(sb.toString(), Arrays.asList("cannot run inside a transaction block")) {
+        return new QueryAdapter(sb.toString(), ExpectedErrors.from("cannot run inside a transaction block")) {
 
             @Override
             public boolean couldAffectSchema() {

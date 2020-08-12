@@ -1,11 +1,10 @@
 package sqlancer.clickhouse.gen;
 
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
@@ -17,7 +16,7 @@ import sqlancer.gen.AbstractInsertGenerator;
 public class ClickHouseInsertGenerator extends AbstractInsertGenerator<ClickHouseColumn> {
 
     private final ClickHouseGlobalState globalState;
-    private final Set<String> errors = new HashSet<>();
+    private final ExpectedErrors errors = new ExpectedErrors();
     private final ClickHouseExpressionGenerator gen;
 
     public ClickHouseInsertGenerator(ClickHouseGlobalState globalState) {

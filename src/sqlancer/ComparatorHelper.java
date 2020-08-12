@@ -31,7 +31,7 @@ public final class ComparatorHelper {
         return Math.abs(a - b) < 0.0001 * Math.max(Math.abs(a), Math.abs(b));
     }
 
-    public static List<String> getResultSetFirstColumnAsString(String queryString, Set<String> errors,
+    public static List<String> getResultSetFirstColumnAsString(String queryString, ExpectedErrors errors,
             GlobalState<?, ?> state) throws SQLException {
         if (state.getOptions().logEachSelect()) {
             // TODO: refactor me
@@ -65,10 +65,8 @@ public final class ComparatorHelper {
             if (e.getMessage() == null) {
                 throw new AssertionError(queryString, e);
             }
-            for (String error : errors) {
-                if (e.getMessage().contains(error)) {
-                    throw new IgnoreMeException();
-                }
+            if (errors.errorIsExpected(e.getMessage())) {
+                throw new IgnoreMeException();
             }
             throw new AssertionError(queryString, e);
         } finally {
@@ -114,7 +112,7 @@ public final class ComparatorHelper {
 
     public static List<String> getCombinedResultSet(String firstQueryString, String secondQueryString,
             String thirdQueryString, List<String> combinedString, boolean asUnion, GlobalState<?, ?> state,
-            Set<String> errors) throws SQLException {
+            ExpectedErrors errors) throws SQLException {
         List<String> secondResultSet;
         if (asUnion) {
             String unionString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL "
@@ -135,7 +133,7 @@ public final class ComparatorHelper {
 
     public static List<String> getCombinedResultSetNoDuplicates(String firstQueryString, String secondQueryString,
             String thirdQueryString, List<String> combinedString, boolean asUnion, GlobalState<?, ?> state,
-            Set<String> errors) throws SQLException {
+            ExpectedErrors errors) throws SQLException {
         String unionString;
         if (asUnion) {
             unionString = firstQueryString + " UNION " + secondQueryString + " UNION " + thirdQueryString;

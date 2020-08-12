@@ -3,10 +3,10 @@ package sqlancer.sqlite3.oracle.tlp;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.ComparatorHelper;
+import sqlancer.ExpectedErrors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.TestOracle;
@@ -32,7 +32,7 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 public class SQLite3TLPHavingOracle implements TestOracle {
 
     private final SQLite3GlobalState state;
-    private final Set<String> errors = new HashSet<>();
+    private final ExpectedErrors errors = new ExpectedErrors();
 
     public SQLite3TLPHavingOracle(SQLite3GlobalState state) {
         this.state = state;

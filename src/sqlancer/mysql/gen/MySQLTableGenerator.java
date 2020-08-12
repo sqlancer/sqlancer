@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
@@ -42,7 +43,7 @@ public class MySQLTableGenerator {
     }
 
     private Query create() {
-        List<String> errors = new ArrayList<>();
+        ExpectedErrors errors = new ExpectedErrors();
 
         sb.append("CREATE");
         // TODO support temporary tables in the schema
@@ -86,7 +87,7 @@ public class MySQLTableGenerator {
 
     }
 
-    private void addCommonErrors(List<String> list) {
+    private void addCommonErrors(ExpectedErrors list) {
         list.add("The storage engine for the table doesn't support");
         list.add("doesn't have this option");
         list.add("must include all columns");

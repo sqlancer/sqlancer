@@ -1,13 +1,13 @@
 package sqlancer.tidb;
 
-import java.util.Set;
+import sqlancer.ExpectedErrors;
 
 public final class TiDBErrors {
 
     private TiDBErrors() {
     }
 
-    public static void addExpressionErrors(Set<String> errors) {
+    public static void addExpressionErrors(ExpectedErrors errors) {
         errors.add("DECIMAL value is out of range");
         errors.add("error parsing regexp");
         errors.add("BIGINT UNSIGNED value is out of range");
@@ -46,12 +46,12 @@ public final class TiDBErrors {
         errors.add("Illegal mix of collations");
     }
 
-    public static void addExpressionHavingErrors(Set<String> errors) {
+    public static void addExpressionHavingErrors(ExpectedErrors errors) {
         errors.add("is not in GROUP BY clause and contains nonaggregated column");
         errors.add("Unknown column");
     }
 
-    public static void addInsertErrors(Set<String> errors) {
+    public static void addInsertErrors(ExpectedErrors errors) {
         errors.add("Duplicate entry");
         errors.add("cannot be null");
         errors.add("doesn't have a default value");

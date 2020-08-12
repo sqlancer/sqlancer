@@ -1,11 +1,10 @@
 package sqlancer.postgres.gen;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
+import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
@@ -27,7 +26,7 @@ public class PostgresTableGenerator {
     private boolean isTemporaryTable;
     private final PostgresSchema newSchema;
     private final List<PostgresColumn> columnsToBeAdded = new ArrayList<>();
-    protected final Set<String> errors = new HashSet<>();
+    protected final ExpectedErrors errors = new ExpectedErrors();
     private final PostgresTable table;
     private final boolean generateOnlyKnown;
     private final PostgresGlobalState globalState;
