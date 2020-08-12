@@ -6,7 +6,7 @@ import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
-import sqlancer.ast.newast.Node;
+import sqlancer.common.ast.newast.Node;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;

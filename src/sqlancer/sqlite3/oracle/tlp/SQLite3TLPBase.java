@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.TernaryLogicPartitioningOracleBase;
 import sqlancer.TestOracle;
-import sqlancer.gen.ExpressionGenerator;
+import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.ast.SQLite3Expression;

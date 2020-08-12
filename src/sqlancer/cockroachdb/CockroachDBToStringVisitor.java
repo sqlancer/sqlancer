@@ -15,7 +15,7 @@ import sqlancer.cockroachdb.ast.CockroachDBJoin;
 import sqlancer.cockroachdb.ast.CockroachDBMultiValuedComparison;
 import sqlancer.cockroachdb.ast.CockroachDBSelect;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
-import sqlancer.visitor.ToStringVisitor;
+import sqlancer.common.visitor.ToStringVisitor;
 
 public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpression> implements CockroachDBVisitor {
 

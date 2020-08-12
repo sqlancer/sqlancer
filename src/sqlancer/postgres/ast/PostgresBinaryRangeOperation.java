@@ -1,8 +1,8 @@
 package sqlancer.postgres.ast;
 
 import sqlancer.Randomly;
-import sqlancer.ast.BinaryNode;
-import sqlancer.ast.BinaryOperatorNode.Operator;
+import sqlancer.common.ast.BinaryNode;
+import sqlancer.common.ast.BinaryOperatorNode.Operator;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
 public class PostgresBinaryRangeOperation extends BinaryNode<PostgresExpression> implements PostgresExpression {

@@ -11,7 +11,7 @@ import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
-import sqlancer.schema.TableIndex;
+import sqlancer.common.schema.TableIndex;
 
 public final class CockroachDBCommentOnGenerator {
 

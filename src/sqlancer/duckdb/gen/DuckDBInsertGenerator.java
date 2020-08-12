@@ -7,12 +7,12 @@ import sqlancer.ExpectedErrors;
 import sqlancer.Query;
 import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.common.gen.AbstractInsertGenerator;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
 import sqlancer.duckdb.DuckDBSchema.DuckDBTable;
 import sqlancer.duckdb.DuckDBToStringVisitor;
-import sqlancer.gen.AbstractInsertGenerator;
 
 public class DuckDBInsertGenerator extends AbstractInsertGenerator<DuckDBColumn> {
 

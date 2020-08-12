@@ -1,7 +1,7 @@
 package sqlancer.duckdb;
 
-import sqlancer.ast.newast.NewToStringVisitor;
-import sqlancer.ast.newast.Node;
+import sqlancer.common.ast.newast.NewToStringVisitor;
+import sqlancer.common.ast.newast.Node;
 import sqlancer.duckdb.ast.DuckDBConstant;
 import sqlancer.duckdb.ast.DuckDBExpression;
 import sqlancer.duckdb.ast.DuckDBJoin;

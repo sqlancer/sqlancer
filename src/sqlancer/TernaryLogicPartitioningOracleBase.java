@@ -1,6 +1,6 @@
 package sqlancer;
 
-import sqlancer.gen.ExpressionGenerator;
+import sqlancer.common.gen.ExpressionGenerator;
 
 /**
  * This is the base class of the Ternary Logic Partitioning (TLP) oracles. The core idea of TLP is to partition a given

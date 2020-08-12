@@ -2,6 +2,7 @@ package sqlancer.tidb.visitor;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.tidb.TiDBBugs;
 import sqlancer.tidb.ast.TiDBAggregate;
 import sqlancer.tidb.ast.TiDBCase;
@@ -15,7 +16,6 @@ import sqlancer.tidb.ast.TiDBJoin.JoinType;
 import sqlancer.tidb.ast.TiDBSelect;
 import sqlancer.tidb.ast.TiDBTableReference;
 import sqlancer.tidb.ast.TiDBText;
-import sqlancer.visitor.ToStringVisitor;
 
 public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> implements TiDBVisitor {
 

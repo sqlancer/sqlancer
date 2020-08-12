@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.ast.FunctionNode;
+import sqlancer.common.ast.FunctionNode;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.ast.PostgresAggregate.PostgresAggregateFunction;
 

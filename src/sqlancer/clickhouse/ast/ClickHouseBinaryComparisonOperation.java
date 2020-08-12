@@ -3,7 +3,7 @@ package sqlancer.clickhouse.ast;
 import ru.yandex.clickhouse.domain.ClickHouseDataType;
 import sqlancer.LikeImplementationHelper;
 import sqlancer.Randomly;
-import sqlancer.visitor.BinaryOperation;
+import sqlancer.common.visitor.BinaryOperation;
 
 public class ClickHouseBinaryComparisonOperation extends ClickHouseExpression
         implements BinaryOperation<ClickHouseExpression> {

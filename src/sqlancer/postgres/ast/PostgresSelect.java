@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import sqlancer.Randomly;
-import sqlancer.ast.SelectBase;
+import sqlancer.common.ast.SelectBase;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 

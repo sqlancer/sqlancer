@@ -9,12 +9,12 @@ import java.util.Collections;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.schema.AbstractSchema;
+import sqlancer.common.schema.AbstractTable;
+import sqlancer.common.schema.AbstractTableColumn;
+import sqlancer.common.schema.AbstractTables;
+import sqlancer.common.schema.TableIndex;
 import sqlancer.duckdb.DuckDBSchema.DuckDBTable;
-import sqlancer.schema.AbstractSchema;
-import sqlancer.schema.AbstractTable;
-import sqlancer.schema.AbstractTableColumn;
-import sqlancer.schema.AbstractTables;
-import sqlancer.schema.TableIndex;
 
 public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
 

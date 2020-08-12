@@ -3,7 +3,7 @@ package sqlancer.mysql.ast;
 import java.util.Collections;
 import java.util.List;
 
-import sqlancer.ast.SelectBase;
+import sqlancer.common.ast.SelectBase;
 
 public class MySQLSelect extends SelectBase<MySQLExpression> implements MySQLExpression {
 

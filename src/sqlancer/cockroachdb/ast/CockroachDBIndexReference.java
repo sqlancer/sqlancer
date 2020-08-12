@@ -1,8 +1,8 @@
 package sqlancer.cockroachdb.ast;
 
 import sqlancer.Randomly;
-import sqlancer.schema.TableIndex;
-import sqlancer.visitor.UnaryOperation;
+import sqlancer.common.schema.TableIndex;
+import sqlancer.common.visitor.UnaryOperation;
 
 public class CockroachDBIndexReference extends CockroachDBTableReference
         implements UnaryOperation<CockroachDBExpression> {

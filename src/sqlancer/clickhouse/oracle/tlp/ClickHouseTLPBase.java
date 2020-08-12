@@ -19,7 +19,7 @@ import sqlancer.clickhouse.ast.ClickHouseExpression.ClickHouseJoin;
 import sqlancer.clickhouse.ast.ClickHouseSelect;
 import sqlancer.clickhouse.gen.ClickHouseCommon;
 import sqlancer.clickhouse.gen.ClickHouseExpressionGenerator;
-import sqlancer.gen.ExpressionGenerator;
+import sqlancer.common.gen.ExpressionGenerator;
 
 public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickHouseExpression, ClickHouseGlobalState>
         implements TestOracle {

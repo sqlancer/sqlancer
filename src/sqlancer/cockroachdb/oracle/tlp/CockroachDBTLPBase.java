@@ -20,7 +20,7 @@ import sqlancer.cockroachdb.ast.CockroachDBSelect;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 import sqlancer.cockroachdb.oracle.CockroachDBNoRECOracle;
-import sqlancer.gen.ExpressionGenerator;
+import sqlancer.common.gen.ExpressionGenerator;
 
 public class CockroachDBTLPBase extends
         TernaryLogicPartitioningOracleBase<CockroachDBExpression, CockroachDBGlobalState> implements TestOracle {

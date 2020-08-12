@@ -6,6 +6,8 @@ import java.util.Optional;
 import sqlancer.IgnoreMeException;
 import sqlancer.LikeImplementationHelper;
 import sqlancer.Randomly;
+import sqlancer.common.visitor.BinaryOperation;
+import sqlancer.common.visitor.UnaryOperation;
 import sqlancer.sqlite3.SQLite3CollateHelper;
 import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation.BinaryComparisonOperator;
@@ -15,8 +17,6 @@ import sqlancer.sqlite3.schema.SQLite3DataType;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
-import sqlancer.visitor.BinaryOperation;
-import sqlancer.visitor.UnaryOperation;
 
 public abstract class SQLite3Expression {
 

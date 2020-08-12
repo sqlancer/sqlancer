@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.ast.newast.Node;
-import sqlancer.ast.newast.TableReferenceNode;
+import sqlancer.common.ast.newast.Node;
+import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBTable;
 import sqlancer.duckdb.DuckDBSchema.DuckDBTables;

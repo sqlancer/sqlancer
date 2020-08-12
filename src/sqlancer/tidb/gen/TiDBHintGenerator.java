@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.schema.TableIndex;
+import sqlancer.common.schema.TableIndex;
 import sqlancer.tidb.TiDBBugs;
 import sqlancer.tidb.TiDBSchema.TiDBTable;
 import sqlancer.tidb.ast.TiDBSelect;

@@ -13,14 +13,14 @@ import java.util.stream.Stream;
 
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce.MySQLStateToReproduce;
+import sqlancer.common.schema.AbstractSchema;
+import sqlancer.common.schema.AbstractTable;
+import sqlancer.common.schema.AbstractTableColumn;
+import sqlancer.common.schema.AbstractTables;
+import sqlancer.common.schema.TableIndex;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.MySQLSchema.MySQLTable.MySQLEngine;
 import sqlancer.mysql.ast.MySQLConstant;
-import sqlancer.schema.AbstractSchema;
-import sqlancer.schema.AbstractTable;
-import sqlancer.schema.AbstractTableColumn;
-import sqlancer.schema.AbstractTables;
-import sqlancer.schema.TableIndex;
 
 public class MySQLSchema extends AbstractSchema<MySQLTable> {
 
