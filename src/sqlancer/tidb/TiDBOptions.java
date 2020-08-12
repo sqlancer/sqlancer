@@ -10,6 +10,7 @@ import com.beust.jcommander.Parameters;
 
 import sqlancer.CompositeTestOracle;
 import sqlancer.DBMSSpecificOptions;
+import sqlancer.OracleFactory;
 import sqlancer.TestOracle;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.oracle.TiDBTLPHavingOracle;
@@ -19,9 +20,9 @@ import sqlancer.tidb.oracle.TiDBTLPWhereOracle;
 public class TiDBOptions implements DBMSSpecificOptions {
 
     @Parameter(names = "--oracle")
-    public List<TiDBOracle> oracle = Arrays.asList(TiDBOracle.QUERY_PARTITIONING);
+    public List<TiDBOracleFactory> oracle = Arrays.asList(TiDBOracleFactory.QUERY_PARTITIONING);
 
-    public enum TiDBOracle {
+    public enum TiDBOracleFactory implements OracleFactory<TiDBGlobalState> {
         HAVING {
             @Override
             public TestOracle create(TiDBGlobalState globalState) throws SQLException {
@@ -43,8 +44,6 @@ public class TiDBOptions implements DBMSSpecificOptions {
                 return new CompositeTestOracle(oracles, globalState);
             }
         };
-
-        public abstract TestOracle create(TiDBGlobalState globalState) throws SQLException;
 
     }
 

@@ -9,6 +9,7 @@ import com.beust.jcommander.Parameters;
 
 import sqlancer.CompositeTestOracle;
 import sqlancer.DBMSSpecificOptions;
+import sqlancer.OracleFactory;
 import sqlancer.TestOracle;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.oracle.SQLite3Fuzzer;
@@ -71,7 +72,7 @@ public class SQLite3Options implements DBMSSpecificOptions {
     public boolean testDistinctInView;
 
     @Parameter(names = "--oracle")
-    public SQLite3Oracle oracle = SQLite3Oracle.NoREC;
+    public SQLite3OracleFactory oracle = SQLite3OracleFactory.NoREC;
 
     @Parameter(names = {
             "--delete-existing-databases" }, description = "Delete a database file if it already exists", arity = 1)
@@ -85,7 +86,7 @@ public class SQLite3Options implements DBMSSpecificOptions {
             "--execute-queries" }, description = "Specifies whether the query in the fuzzer should be executed", arity = 1)
     public boolean executeQuery = true;
 
-    public enum SQLite3Oracle {
+    public enum SQLite3OracleFactory implements OracleFactory<SQLite3GlobalState> {
         PQS {
             @Override
             public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
@@ -150,8 +151,6 @@ public class SQLite3Options implements DBMSSpecificOptions {
                 return new CompositeTestOracle(oracles, globalState);
             }
         };
-
-        public abstract TestOracle create(SQLite3GlobalState globalState) throws SQLException;
 
     }
 

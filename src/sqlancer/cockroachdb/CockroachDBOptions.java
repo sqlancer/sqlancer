@@ -9,6 +9,7 @@ import com.beust.jcommander.Parameters;
 
 import sqlancer.CompositeTestOracle;
 import sqlancer.DBMSSpecificOptions;
+import sqlancer.OracleFactory;
 import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.oracle.CockroachDBNoRECOracle;
@@ -24,9 +25,9 @@ import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPWhereOracle;
 public class CockroachDBOptions implements DBMSSpecificOptions {
 
     @Parameter(names = "--oracle")
-    public CockroachDBOracle oracle = CockroachDBOracle.NOREC;
+    public CockroachDBOracleFactory oracle = CockroachDBOracleFactory.NOREC;
 
-    public enum CockroachDBOracle {
+    public enum CockroachDBOracleFactory implements OracleFactory<CockroachDBGlobalState> {
         NOREC {
             @Override
             public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
@@ -90,8 +91,6 @@ public class CockroachDBOptions implements DBMSSpecificOptions {
                 return new CompositeTestOracle(oracles, globalState);
             }
         };
-
-        public abstract TestOracle create(CockroachDBGlobalState globalState) throws SQLException;
 
     }
 

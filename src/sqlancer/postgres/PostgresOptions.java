@@ -10,6 +10,7 @@ import com.beust.jcommander.Parameters;
 
 import sqlancer.CompositeTestOracle;
 import sqlancer.DBMSSpecificOptions;
+import sqlancer.OracleFactory;
 import sqlancer.TestOracle;
 import sqlancer.postgres.oracle.PostgresNoRECOracle;
 import sqlancer.postgres.oracle.PostgresPivotedQuerySynthesisOracle;
@@ -24,7 +25,7 @@ public class PostgresOptions implements DBMSSpecificOptions {
     public boolean allowBulkInsert;
 
     @Parameter(names = "--oracle")
-    public List<PostgresOracle> oracle = Arrays.asList(PostgresOracle.QUERY_PARTITIONING);
+    public List<PostgresOracleFactory> oracle = Arrays.asList(PostgresOracleFactory.QUERY_PARTITIONING);
 
     @Parameter(names = "--test-collations", arity = 1)
     public boolean testCollations = true;
@@ -32,7 +33,7 @@ public class PostgresOptions implements DBMSSpecificOptions {
     @Parameter(names = "--connection-url")
     public String connectionURL = "postgresql://localhost:5432/test";
 
-    public enum PostgresOracle {
+    public enum PostgresOracleFactory implements OracleFactory<PostgresGlobalState> {
         NOREC {
             @Override
             public TestOracle create(PostgresGlobalState globalState) throws SQLException {
@@ -63,8 +64,6 @@ public class PostgresOptions implements DBMSSpecificOptions {
                 return new CompositeTestOracle(oracles, globalState);
             }
         };
-
-        public abstract TestOracle create(PostgresGlobalState globalState) throws SQLException;
 
     }
 

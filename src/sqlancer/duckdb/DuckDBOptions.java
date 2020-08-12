@@ -10,6 +10,7 @@ import com.beust.jcommander.Parameters;
 
 import sqlancer.CompositeTestOracle;
 import sqlancer.DBMSSpecificOptions;
+import sqlancer.OracleFactory;
 import sqlancer.TestOracle;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.test.DuckDBNoRECOracle;
@@ -89,9 +90,9 @@ public class DuckDBOptions implements DBMSSpecificOptions {
     public int maxNumUpdates = 5;
 
     @Parameter(names = "--oracle")
-    public List<DuckDBOracle> oracle = Arrays.asList(DuckDBOracle.QUERY_PARTITIONING);
+    public List<DuckDBOracleFactory> oracle = Arrays.asList(DuckDBOracleFactory.QUERY_PARTITIONING);
 
-    public enum DuckDBOracle {
+    public enum DuckDBOracleFactory implements OracleFactory<DuckDBGlobalState> {
         NOREC {
 
             @Override
@@ -144,8 +145,6 @@ public class DuckDBOptions implements DBMSSpecificOptions {
                 return new CompositeTestOracle(oracles, globalState);
             }
         };
-
-        public abstract TestOracle create(DuckDBGlobalState globalState) throws SQLException;
 
     }
 

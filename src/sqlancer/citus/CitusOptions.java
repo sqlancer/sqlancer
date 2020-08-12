@@ -8,6 +8,7 @@ import java.util.List;
 import com.beust.jcommander.Parameter;
 
 import sqlancer.CompositeTestOracle;
+import sqlancer.OracleFactory;
 import sqlancer.TestOracle;
 import sqlancer.citus.oracle.CitusNoRECOracle;
 import sqlancer.citus.oracle.tlp.CitusTLPAggregateOracle;
@@ -23,9 +24,9 @@ public class CitusOptions extends PostgresOptions {
     public boolean repartition = true;
 
     @Parameter(names = "--citusoracle")
-    public List<CitusOracle> citusOracle = Arrays.asList(CitusOracle.QUERY_PARTITIONING);
+    public List<CitusOracleFactory> citusOracle = Arrays.asList(CitusOracleFactory.QUERY_PARTITIONING);
 
-    public enum CitusOracle {
+    public enum CitusOracleFactory implements OracleFactory<PostgresGlobalState> {
         NOREC {
             @Override
             public TestOracle create(PostgresGlobalState globalState) throws SQLException {
@@ -59,8 +60,6 @@ public class CitusOptions extends PostgresOptions {
                 return new CompositeTestOracle(oracles, globalState);
             }
         };
-
-        public abstract TestOracle create(PostgresGlobalState globalState) throws SQLException;
 
     }
 
