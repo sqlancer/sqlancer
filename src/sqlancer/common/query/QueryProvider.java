@@ -1,4 +1,4 @@
-package sqlancer;
+package sqlancer.common.query;
 
 import java.sql.SQLException;
 

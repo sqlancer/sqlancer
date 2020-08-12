@@ -9,11 +9,8 @@ import java.util.stream.Collectors;
 import org.postgresql.util.PSQLException;
 
 import sqlancer.ComparatorHelper;
-import sqlancer.ExpectedErrors;
 import sqlancer.IgnoreMeException;
-import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
-import sqlancer.SQLancerResultSet;
 import sqlancer.cockroachdb.CockroachDBCommon;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
@@ -34,6 +31,9 @@ import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnar
 import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 import sqlancer.cockroachdb.oracle.CockroachDBNoRECOracle;
 import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLancerResultSet;
 
 public class CockroachDBTLPAggregateOracle implements TestOracle {
 

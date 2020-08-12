@@ -7,9 +7,7 @@ import java.util.List;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
-import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
-import sqlancer.SQLancerResultSet;
 import sqlancer.common.ast.newast.NewAliasNode;
 import sqlancer.common.ast.newast.NewBinaryOperatorNode;
 import sqlancer.common.ast.newast.NewFunctionNode;
@@ -17,6 +15,8 @@ import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
 import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBCompositeDataType;

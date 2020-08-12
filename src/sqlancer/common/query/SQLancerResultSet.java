@@ -1,4 +1,4 @@
-package sqlancer;
+package sqlancer.common.query;
 
 import java.io.Closeable;
 import java.sql.ResultSet;

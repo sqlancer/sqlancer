@@ -7,9 +7,7 @@ import java.util.List;
 import ru.yandex.clickhouse.domain.ClickHouseDataType;
 import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
-import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
-import sqlancer.SQLancerResultSet;
 import sqlancer.clickhouse.ClickHouseProvider;
 import sqlancer.clickhouse.ClickHouseSchema;
 import sqlancer.clickhouse.ClickHouseVisitor;
@@ -21,6 +19,8 @@ import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation;
 import sqlancer.clickhouse.gen.ClickHouseCommon;
 import sqlancer.clickhouse.gen.ClickHouseExpressionGenerator;
 import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLancerResultSet;
 
 public class ClickHouseTLPAggregateOracle implements TestOracle {
 

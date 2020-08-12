@@ -1,9 +1,12 @@
-package sqlancer;
+package sqlancer.common.query;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import sqlancer.GlobalState;
+import sqlancer.Main;
 
 public class QueryAdapter extends Query {
 

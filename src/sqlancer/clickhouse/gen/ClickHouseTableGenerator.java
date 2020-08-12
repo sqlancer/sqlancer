@@ -4,15 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ru.yandex.clickhouse.domain.ClickHouseDataType;
-import sqlancer.ExpectedErrors;
-import sqlancer.Query;
-import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.clickhouse.ClickHouseErrors;
 import sqlancer.clickhouse.ClickHouseProvider;
 import sqlancer.clickhouse.ClickHouseSchema;
 import sqlancer.clickhouse.ClickHouseToStringVisitor;
 import sqlancer.clickhouse.ast.ClickHouseExpression;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.Query;
+import sqlancer.common.query.QueryAdapter;
 
 public class ClickHouseTableGenerator {
 

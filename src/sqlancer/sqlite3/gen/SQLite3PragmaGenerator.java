@@ -3,9 +3,9 @@ package sqlancer.sqlite3.gen;
 import java.sql.SQLException;
 import java.util.function.Supplier;
 
-import sqlancer.ExpectedErrors;
-import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.QueryAdapter;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
 public class SQLite3PragmaGenerator {

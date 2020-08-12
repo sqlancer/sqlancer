@@ -1,7 +1,7 @@
 package sqlancer.mariadb.gen;
 
-import sqlancer.Query;
-import sqlancer.QueryAdapter;
+import sqlancer.common.query.Query;
+import sqlancer.common.query.QueryAdapter;
 import sqlancer.mariadb.MariaDBSchema;
 
 public final class MariaDBTruncateGenerator {

@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Function;
 
-import sqlancer.Query;
-import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.common.query.Query;
+import sqlancer.common.query.QueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 
 public final class PostgresSetGenerator {

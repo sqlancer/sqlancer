@@ -9,6 +9,8 @@ import java.util.Map;
 import sqlancer.clickhouse.ClickHouseSchema;
 import sqlancer.clickhouse.ast.ClickHouseConstant;
 import sqlancer.clickhouse.ast.ClickHouseExpression;
+import sqlancer.common.query.Query;
+import sqlancer.common.query.QueryAdapter;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.ast.MySQLConstant;
 import sqlancer.mysql.ast.MySQLExpression;

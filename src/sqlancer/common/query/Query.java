@@ -1,6 +1,8 @@
-package sqlancer;
+package sqlancer.common.query;
 
 import java.sql.SQLException;
+
+import sqlancer.GlobalState;
 
 public abstract class Query {
 

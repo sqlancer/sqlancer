@@ -1,8 +1,8 @@
 package sqlancer.common.gen;
 
-import sqlancer.ExpectedErrors;
-import sqlancer.Query;
-import sqlancer.QueryAdapter;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.Query;
+import sqlancer.common.query.QueryAdapter;
 
 public abstract class AbstractGenerator {
 

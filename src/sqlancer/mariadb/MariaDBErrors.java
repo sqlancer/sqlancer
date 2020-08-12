@@ -1,6 +1,6 @@
 package sqlancer.mariadb;
 
-import sqlancer.ExpectedErrors;
+import sqlancer.common.query.ExpectedErrors;
 
 public final class MariaDBErrors {
 

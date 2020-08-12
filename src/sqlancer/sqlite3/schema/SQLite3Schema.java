@@ -14,12 +14,12 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import sqlancer.ExpectedErrors;
 import sqlancer.IgnoreMeException;
-import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
-import sqlancer.SQLancerResultSet;
 import sqlancer.StateToReproduce.SQLite3StateToReproduce;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.common.schema.AbstractTable;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.TableIndex;

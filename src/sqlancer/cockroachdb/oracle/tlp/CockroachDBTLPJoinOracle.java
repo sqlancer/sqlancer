@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.ComparatorHelper;
-import sqlancer.ExpectedErrors;
 import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
@@ -28,6 +27,7 @@ import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation;
 import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnaryPostfixOperator;
 import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.ExpectedErrors;
 
 public class CockroachDBTLPJoinOracle implements TestOracle {
 

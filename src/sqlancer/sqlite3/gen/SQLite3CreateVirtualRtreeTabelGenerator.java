@@ -3,10 +3,10 @@ package sqlancer.sqlite3.gen;
 import java.util.ArrayList;
 import java.util.List;
 
-import sqlancer.ExpectedErrors;
-import sqlancer.Query;
-import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.Query;
+import sqlancer.common.query.QueryAdapter;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 

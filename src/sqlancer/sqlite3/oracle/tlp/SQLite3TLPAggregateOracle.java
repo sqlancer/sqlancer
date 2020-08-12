@@ -5,12 +5,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.ComparatorHelper;
-import sqlancer.ExpectedErrors;
 import sqlancer.IgnoreMeException;
-import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
-import sqlancer.SQLancerResultSet;
 import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;

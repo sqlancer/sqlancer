@@ -3,11 +3,11 @@ package sqlancer.duckdb.gen;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.ExpectedErrors;
-import sqlancer.Query;
-import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.common.gen.AbstractInsertGenerator;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.Query;
+import sqlancer.common.query.QueryAdapter;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;

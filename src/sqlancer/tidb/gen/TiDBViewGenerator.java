@@ -1,9 +1,9 @@
 package sqlancer.tidb.gen;
 
-import sqlancer.ExpectedErrors;
-import sqlancer.Query;
-import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.Query;
+import sqlancer.common.query.QueryAdapter;
 import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 

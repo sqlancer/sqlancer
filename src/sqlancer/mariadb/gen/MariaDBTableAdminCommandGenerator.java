@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import sqlancer.Query;
-import sqlancer.QueryAdapter;
-import sqlancer.QueryResultCheckAdapter;
 import sqlancer.Randomly;
+import sqlancer.common.query.Query;
+import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.QueryResultCheckAdapter;
 import sqlancer.mariadb.MariaDBSchema;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 

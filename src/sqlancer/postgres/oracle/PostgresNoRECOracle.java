@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
-import sqlancer.Query;
-import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
-import sqlancer.SQLancerResultSet;
 import sqlancer.common.oracle.NoRECBase;
 import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.Query;
+import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.postgres.PostgresCompoundDataType;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema;
