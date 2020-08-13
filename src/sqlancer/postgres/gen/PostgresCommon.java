@@ -7,9 +7,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import sqlancer.ExpectedErrors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresProvider;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;

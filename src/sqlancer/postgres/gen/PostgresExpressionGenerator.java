@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.gen.ExpressionGenerator;
+import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.postgres.PostgresCompoundDataType;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresProvider;

@@ -6,26 +6,26 @@ import java.util.List;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.ast.BinaryOperatorNode.Operator;
-import sqlancer.ast.newast.ColumnReferenceNode;
-import sqlancer.ast.newast.NewBetweenOperatorNode;
-import sqlancer.ast.newast.NewBinaryOperatorNode;
-import sqlancer.ast.newast.NewCaseOperatorNode;
-import sqlancer.ast.newast.NewFunctionNode;
-import sqlancer.ast.newast.NewInOperatorNode;
-import sqlancer.ast.newast.NewOrderingTerm;
-import sqlancer.ast.newast.NewOrderingTerm.Ordering;
-import sqlancer.ast.newast.NewTernaryNode;
-import sqlancer.ast.newast.NewUnaryPostfixOperatorNode;
-import sqlancer.ast.newast.NewUnaryPrefixOperatorNode;
-import sqlancer.ast.newast.Node;
+import sqlancer.common.ast.BinaryOperatorNode.Operator;
+import sqlancer.common.ast.newast.ColumnReferenceNode;
+import sqlancer.common.ast.newast.NewBetweenOperatorNode;
+import sqlancer.common.ast.newast.NewBinaryOperatorNode;
+import sqlancer.common.ast.newast.NewCaseOperatorNode;
+import sqlancer.common.ast.newast.NewFunctionNode;
+import sqlancer.common.ast.newast.NewInOperatorNode;
+import sqlancer.common.ast.newast.NewOrderingTerm;
+import sqlancer.common.ast.newast.NewOrderingTerm.Ordering;
+import sqlancer.common.ast.newast.NewTernaryNode;
+import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
+import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
+import sqlancer.common.ast.newast.Node;
+import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
 import sqlancer.duckdb.DuckDBSchema.DuckDBCompositeDataType;
 import sqlancer.duckdb.DuckDBSchema.DuckDBDataType;
 import sqlancer.duckdb.ast.DuckDBConstant;
 import sqlancer.duckdb.ast.DuckDBExpression;
-import sqlancer.gen.UntypedExpressionGenerator;
 
 public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<DuckDBExpression>, DuckDBColumn> {
 

@@ -6,10 +6,10 @@ import java.util.Collections;
 import java.util.List;
 
 import sqlancer.IgnoreMeException;
-import sqlancer.NoRECBase;
-import sqlancer.QueryAdapter;
-import sqlancer.SQLancerResultSet;
-import sqlancer.TestOracle;
+import sqlancer.common.oracle.NoRECBase;
+import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.mariadb.MariaDBProvider.MariaDBGlobalState;
 import sqlancer.mariadb.MariaDBSchema;
 import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;

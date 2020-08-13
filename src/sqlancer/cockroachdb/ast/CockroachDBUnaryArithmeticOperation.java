@@ -1,9 +1,9 @@
 package sqlancer.cockroachdb.ast;
 
 import sqlancer.Randomly;
-import sqlancer.ast.BinaryOperatorNode.Operator;
-import sqlancer.ast.UnaryOperatorNode;
 import sqlancer.cockroachdb.ast.CockroachDBUnaryArithmeticOperation.CockroachDBUnaryAritmeticOperator;
+import sqlancer.common.ast.BinaryOperatorNode.Operator;
+import sqlancer.common.ast.UnaryOperatorNode;
 
 public class CockroachDBUnaryArithmeticOperation extends
         UnaryOperatorNode<CockroachDBExpression, CockroachDBUnaryAritmeticOperator> implements CockroachDBExpression {

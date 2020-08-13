@@ -1,6 +1,6 @@
 package sqlancer.postgres.ast;
 
-import sqlancer.ast.BinaryNode;
+import sqlancer.common.ast.BinaryNode;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
 public class PostgresConcatOperation extends BinaryNode<PostgresExpression> implements PostgresExpression {

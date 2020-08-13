@@ -1,7 +1,7 @@
 package sqlancer.citus.gen;
 
-import sqlancer.ExpectedErrors;
-import sqlancer.Query;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.Query;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.gen.PostgresUpdateGenerator;
 

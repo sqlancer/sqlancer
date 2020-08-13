@@ -5,9 +5,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import sqlancer.MainOptions;
-import sqlancer.Query;
-import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.common.query.Query;
+import sqlancer.common.query.QueryAdapter;
 import sqlancer.mysql.MySQLGlobalState;
 
 public class MySQLSetGenerator {

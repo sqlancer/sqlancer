@@ -3,7 +3,7 @@ package sqlancer.duckdb.ast;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
-import sqlancer.ast.newast.Node;
+import sqlancer.common.ast.newast.Node;
 
 public class DuckDBConstant implements Node<DuckDBExpression> {
 

@@ -1,7 +1,7 @@
 package sqlancer.postgres.ast;
 
 import sqlancer.LikeImplementationHelper;
-import sqlancer.ast.BinaryNode;
+import sqlancer.common.ast.BinaryNode;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
 public class PostgresLikeOperation extends BinaryNode<PostgresExpression> implements PostgresExpression {

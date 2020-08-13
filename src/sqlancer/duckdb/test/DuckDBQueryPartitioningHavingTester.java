@@ -7,8 +7,8 @@ import java.util.List;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
-import sqlancer.TestOracle;
-import sqlancer.ast.newast.Node;
+import sqlancer.common.ast.newast.Node;
+import sqlancer.common.oracle.TestOracle;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBToStringVisitor;

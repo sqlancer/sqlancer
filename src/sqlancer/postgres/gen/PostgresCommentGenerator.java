@@ -1,9 +1,9 @@
 package sqlancer.postgres.gen;
 
 import sqlancer.IgnoreMeException;
-import sqlancer.Query;
-import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.common.query.Query;
+import sqlancer.common.query.QueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 

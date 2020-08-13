@@ -8,15 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.ExpectedErrors;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
 import sqlancer.MainOptions;
 import sqlancer.ProviderAdapter;
-import sqlancer.Query;
-import sqlancer.QueryAdapter;
-import sqlancer.QueryProvider;
 import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
@@ -33,6 +29,10 @@ import sqlancer.cockroachdb.gen.CockroachDBTableGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBTruncateGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBUpdateGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBViewGenerator;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.Query;
+import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.QueryProvider;
 
 public class CockroachDBProvider extends ProviderAdapter<CockroachDBGlobalState, CockroachDBOptions> {
 

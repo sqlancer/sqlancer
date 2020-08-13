@@ -29,6 +29,8 @@ import com.beust.jcommander.JCommander.Builder;
 import sqlancer.citus.CitusProvider;
 import sqlancer.clickhouse.ClickHouseProvider;
 import sqlancer.cockroachdb.CockroachDBProvider;
+import sqlancer.common.query.Query;
+import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.duckdb.DuckDBProvider;
 import sqlancer.mariadb.MariaDBProvider;
 import sqlancer.mysql.MySQLProvider;

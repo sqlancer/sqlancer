@@ -9,7 +9,7 @@ import com.beust.jcommander.Parameters;
 
 import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
-import sqlancer.TestOracle;
+import sqlancer.common.oracle.TestOracle;
 import sqlancer.mysql.MySQLOptions.MySQLOracleFactory;
 import sqlancer.mysql.oracle.MySQLTLPWhereOracle;
 

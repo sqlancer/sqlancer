@@ -1,7 +1,7 @@
 package sqlancer.clickhouse.ast;
 
 import sqlancer.clickhouse.ClickHouseSchema;
-import sqlancer.visitor.UnaryOperation;
+import sqlancer.common.visitor.UnaryOperation;
 
 public abstract class ClickHouseExpression {
 

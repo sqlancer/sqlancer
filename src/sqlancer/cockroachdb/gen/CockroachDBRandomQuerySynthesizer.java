@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.Query;
-import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBCommon;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
@@ -16,6 +14,8 @@ import sqlancer.cockroachdb.ast.CockroachDBExpression;
 import sqlancer.cockroachdb.ast.CockroachDBSelect;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 import sqlancer.cockroachdb.oracle.CockroachDBNoRECOracle;
+import sqlancer.common.query.Query;
+import sqlancer.common.query.QueryAdapter;
 
 public final class CockroachDBRandomQuerySynthesizer {
 

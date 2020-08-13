@@ -6,11 +6,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.TernaryLogicPartitioningOracleBase;
-import sqlancer.TestOracle;
-import sqlancer.ast.newast.ColumnReferenceNode;
-import sqlancer.ast.newast.Node;
-import sqlancer.ast.newast.TableReferenceNode;
+import sqlancer.common.ast.newast.ColumnReferenceNode;
+import sqlancer.common.ast.newast.Node;
+import sqlancer.common.ast.newast.TableReferenceNode;
+import sqlancer.common.gen.ExpressionGenerator;
+import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
+import sqlancer.common.oracle.TestOracle;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema;
@@ -21,7 +22,6 @@ import sqlancer.duckdb.ast.DuckDBExpression;
 import sqlancer.duckdb.ast.DuckDBJoin;
 import sqlancer.duckdb.ast.DuckDBSelect;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator;
-import sqlancer.gen.ExpressionGenerator;
 
 public class DuckDBQueryPartitioningBase
         extends TernaryLogicPartitioningOracleBase<Node<DuckDBExpression>, DuckDBGlobalState> implements TestOracle {

@@ -1,6 +1,6 @@
 package sqlancer.tidb.ast;
 
-import sqlancer.visitor.UnaryOperation;
+import sqlancer.common.visitor.UnaryOperation;
 
 public class TiDBOrderingTerm implements UnaryOperation<TiDBExpression>, TiDBExpression {
 

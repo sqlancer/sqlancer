@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.ComparatorHelper;
-import sqlancer.ExpectedErrors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.TestOracle;
+import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;

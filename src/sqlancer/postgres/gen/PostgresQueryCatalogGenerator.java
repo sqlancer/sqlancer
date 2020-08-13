@@ -5,9 +5,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import sqlancer.GlobalState;
-import sqlancer.Query;
-import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.common.query.Query;
+import sqlancer.common.query.QueryAdapter;
 
 public final class PostgresQueryCatalogGenerator {
 

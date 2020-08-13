@@ -39,7 +39,7 @@ import sqlancer.cockroachdb.ast.CockroachDBRegexOperation.CockroachDBRegexOperat
 import sqlancer.cockroachdb.ast.CockroachDBTypeAnnotation;
 import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation;
 import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnaryPostfixOperator;
-import sqlancer.gen.TypedExpressionGenerator;
+import sqlancer.common.gen.TypedExpressionGenerator;
 
 public class CockroachDBExpressionGenerator
         extends TypedExpressionGenerator<CockroachDBExpression, CockroachDBColumn, CockroachDBCompositeDataType> {

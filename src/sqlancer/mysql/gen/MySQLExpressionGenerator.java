@@ -5,7 +5,7 @@ import java.util.List;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.gen.UntypedExpressionGenerator;
+import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.mysql.MySQLBugs;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;

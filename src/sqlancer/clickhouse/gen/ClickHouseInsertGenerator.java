@@ -4,14 +4,14 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.ExpectedErrors;
-import sqlancer.Query;
-import sqlancer.QueryAdapter;
 import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseColumn;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTable;
 import sqlancer.clickhouse.ClickHouseToStringVisitor;
-import sqlancer.gen.AbstractInsertGenerator;
+import sqlancer.common.gen.AbstractInsertGenerator;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.Query;
+import sqlancer.common.query.QueryAdapter;
 
 public class ClickHouseInsertGenerator extends AbstractInsertGenerator<ClickHouseColumn> {
 

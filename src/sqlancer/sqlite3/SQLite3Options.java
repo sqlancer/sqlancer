@@ -8,10 +8,10 @@ import java.util.List;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
-import sqlancer.CompositeTestOracle;
 import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
-import sqlancer.TestOracle;
+import sqlancer.common.oracle.CompositeTestOracle;
+import sqlancer.common.oracle.TestOracle;
 import sqlancer.sqlite3.SQLite3Options.SQLite3OracleFactory;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.oracle.SQLite3Fuzzer;

@@ -3,6 +3,7 @@ package sqlancer.postgres;
 import java.util.Optional;
 
 import sqlancer.Randomly;
+import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.ast.PostgresAggregate;
 import sqlancer.postgres.ast.PostgresBetweenOperation;
@@ -24,7 +25,6 @@ import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
 import sqlancer.postgres.ast.PostgresSimilarTo;
-import sqlancer.visitor.ToStringVisitor;
 
 public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression> implements PostgresVisitor {
 

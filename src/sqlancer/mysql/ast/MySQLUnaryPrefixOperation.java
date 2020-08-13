@@ -2,8 +2,8 @@ package sqlancer.mysql.ast;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.ast.BinaryOperatorNode.Operator;
-import sqlancer.ast.UnaryOperatorNode;
+import sqlancer.common.ast.BinaryOperatorNode.Operator;
+import sqlancer.common.ast.UnaryOperatorNode;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 
 public class MySQLUnaryPrefixOperation extends UnaryOperatorNode<MySQLExpression, MySQLUnaryPrefixOperator>

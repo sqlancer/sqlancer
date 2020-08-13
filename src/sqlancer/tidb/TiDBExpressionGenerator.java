@@ -6,7 +6,7 @@ import java.util.List;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.gen.UntypedExpressionGenerator;
+import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
 import sqlancer.tidb.TiDBSchema.TiDBDataType;

@@ -1,7 +1,7 @@
 package sqlancer.cockroachdb.ast;
 
-import sqlancer.ast.UnaryNode;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBCompositeDataType;
+import sqlancer.common.ast.UnaryNode;
 
 public class CockroachDBTypeAnnotation extends UnaryNode<CockroachDBExpression> implements CockroachDBExpression {
 

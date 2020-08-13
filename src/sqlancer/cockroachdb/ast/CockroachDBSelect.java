@@ -1,6 +1,6 @@
 package sqlancer.cockroachdb.ast;
 
-import sqlancer.ast.SelectBase;
+import sqlancer.common.ast.SelectBase;
 
 public class CockroachDBSelect extends SelectBase<CockroachDBExpression> implements CockroachDBExpression {
 

@@ -1,7 +1,7 @@
 package sqlancer.postgres.ast;
 
 import sqlancer.Randomly;
-import sqlancer.ast.BinaryOperatorNode.Operator;
+import sqlancer.common.ast.BinaryOperatorNode.Operator;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
 public class PostgresPOSIXRegularExpression implements PostgresExpression {

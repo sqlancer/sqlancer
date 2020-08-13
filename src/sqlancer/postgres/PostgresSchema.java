@@ -17,12 +17,12 @@ import java.util.stream.Collectors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce.PostgresStateToReproduce;
+import sqlancer.common.schema.AbstractTable;
+import sqlancer.common.schema.AbstractTableColumn;
+import sqlancer.common.schema.AbstractTables;
+import sqlancer.common.schema.TableIndex;
 import sqlancer.postgres.PostgresSchema.PostgresTable.TableType;
 import sqlancer.postgres.ast.PostgresConstant;
-import sqlancer.schema.AbstractTable;
-import sqlancer.schema.AbstractTableColumn;
-import sqlancer.schema.AbstractTables;
-import sqlancer.schema.TableIndex;
 
 public class PostgresSchema {
 

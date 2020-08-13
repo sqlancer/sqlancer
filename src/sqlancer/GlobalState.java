@@ -5,6 +5,8 @@ import java.sql.SQLException;
 
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
+import sqlancer.common.query.Query;
+import sqlancer.common.query.SQLancerResultSet;
 
 /**
  * Represents a global state that is valid for a testing session on a given database.

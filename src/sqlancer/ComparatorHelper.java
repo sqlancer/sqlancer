@@ -8,6 +8,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLancerResultSet;
+
 public final class ComparatorHelper {
 
     private ComparatorHelper() {

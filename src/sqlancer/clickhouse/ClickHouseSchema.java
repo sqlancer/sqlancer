@@ -18,10 +18,10 @@ import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTable;
 import sqlancer.clickhouse.ast.ClickHouseConstant;
-import sqlancer.schema.AbstractSchema;
-import sqlancer.schema.AbstractTable;
-import sqlancer.schema.AbstractTableColumn;
-import sqlancer.schema.TableIndex;
+import sqlancer.common.schema.AbstractSchema;
+import sqlancer.common.schema.AbstractTable;
+import sqlancer.common.schema.AbstractTableColumn;
+import sqlancer.common.schema.TableIndex;
 
 public class ClickHouseSchema extends AbstractSchema<ClickHouseTable> {
 

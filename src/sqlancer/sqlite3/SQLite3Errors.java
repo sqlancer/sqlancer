@@ -2,7 +2,7 @@ package sqlancer.sqlite3;
 
 import java.util.Arrays;
 
-import sqlancer.ExpectedErrors;
+import sqlancer.common.query.ExpectedErrors;
 
 public final class SQLite3Errors {
 

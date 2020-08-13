@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.TernaryLogicPartitioningOracleBase;
-import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema;
@@ -20,7 +18,9 @@ import sqlancer.cockroachdb.ast.CockroachDBSelect;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 import sqlancer.cockroachdb.oracle.CockroachDBNoRECOracle;
-import sqlancer.gen.ExpressionGenerator;
+import sqlancer.common.gen.ExpressionGenerator;
+import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
+import sqlancer.common.oracle.TestOracle;
 
 public class CockroachDBTLPBase extends
         TernaryLogicPartitioningOracleBase<CockroachDBExpression, CockroachDBGlobalState> implements TestOracle {

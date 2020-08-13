@@ -8,10 +8,8 @@ import java.util.List;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
-import sqlancer.CompositeTestOracle;
 import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
-import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBOptions.CockroachDBOracleFactory;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.oracle.CockroachDBNoRECOracle;
@@ -22,6 +20,8 @@ import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPGroupByOracle;
 import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPHavingOracle;
 import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPJoinOracle;
 import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPWhereOracle;
+import sqlancer.common.oracle.CompositeTestOracle;
+import sqlancer.common.oracle.TestOracle;
 
 @Parameters(separators = "=", commandDescription = "Test CockroachDB")
 public class CockroachDBOptions implements DBMSSpecificOptions<CockroachDBOracleFactory> {

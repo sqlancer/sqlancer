@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.TernaryLogicPartitioningOracleBase;
-import sqlancer.TestOracle;
-import sqlancer.gen.ExpressionGenerator;
+import sqlancer.common.gen.ExpressionGenerator;
+import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
+import sqlancer.common.oracle.TestOracle;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;

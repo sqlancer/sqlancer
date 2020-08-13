@@ -14,7 +14,7 @@ import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce.PostgresStateToReproduce;
-import sqlancer.TestOracle;
+import sqlancer.common.oracle.TestOracle;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;

@@ -1,6 +1,6 @@
 package sqlancer.mysql.ast;
 
-import sqlancer.ast.UnaryNode;
+import sqlancer.common.ast.UnaryNode;
 
 public class MySQLCollate extends UnaryNode<MySQLExpression> implements MySQLExpression {
 

@@ -2,11 +2,11 @@ package sqlancer.cockroachdb.gen;
 
 import java.util.List;
 
-import sqlancer.Query;
 import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
+import sqlancer.common.query.Query;
 
 // https://www.cockroachlabs.com/docs/stable/create-index.html
 public class CockroachDBIndexGenerator extends CockroachDBGenerator {

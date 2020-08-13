@@ -1,9 +1,9 @@
 package sqlancer.sqlite3.gen.ddl;
 
-import sqlancer.ExpectedErrors;
-import sqlancer.Query;
-import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.Query;
+import sqlancer.common.query.QueryAdapter;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
 // see https://www.sqlite.org/lang_dropindex.html

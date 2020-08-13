@@ -6,15 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.ExpectedErrors;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
-import sqlancer.NoRECBase;
-import sqlancer.Query;
-import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
-import sqlancer.SQLancerResultSet;
-import sqlancer.TestOracle;
 import sqlancer.cockroachdb.CockroachDBCommon;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
@@ -29,6 +23,12 @@ import sqlancer.cockroachdb.ast.CockroachDBJoin.OuterType;
 import sqlancer.cockroachdb.ast.CockroachDBSelect;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
+import sqlancer.common.oracle.NoRECBase;
+import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.Query;
+import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLancerResultSet;
 
 public class CockroachDBNoRECOracle extends NoRECBase<CockroachDBGlobalState> implements TestOracle {
 

@@ -1,6 +1,6 @@
 package sqlancer.mysql;
 
-import sqlancer.ExpectedErrors;
+import sqlancer.common.query.ExpectedErrors;
 
 public final class MySQLErrors {
 

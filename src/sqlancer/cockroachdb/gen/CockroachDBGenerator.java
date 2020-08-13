@@ -7,7 +7,7 @@ import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
-import sqlancer.gen.AbstractGenerator;
+import sqlancer.common.gen.AbstractGenerator;
 
 public abstract class CockroachDBGenerator extends AbstractGenerator {
 

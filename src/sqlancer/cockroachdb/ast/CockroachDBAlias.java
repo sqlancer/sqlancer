@@ -1,6 +1,6 @@
 package sqlancer.cockroachdb.ast;
 
-import sqlancer.visitor.UnaryOperation;
+import sqlancer.common.visitor.UnaryOperation;
 
 public class CockroachDBAlias implements UnaryOperation<CockroachDBExpression>, CockroachDBExpression {
 

@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
-import sqlancer.ast.newast.ColumnReferenceNode;
-import sqlancer.ast.newast.Node;
+import sqlancer.common.ast.newast.ColumnReferenceNode;
+import sqlancer.common.ast.newast.Node;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;

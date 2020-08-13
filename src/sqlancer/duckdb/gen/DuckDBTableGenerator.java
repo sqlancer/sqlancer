@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.ExpectedErrors;
-import sqlancer.Query;
-import sqlancer.QueryAdapter;
 import sqlancer.Randomly;
-import sqlancer.ast.newast.Node;
+import sqlancer.common.ast.newast.Node;
+import sqlancer.common.gen.UntypedExpressionGenerator;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.Query;
+import sqlancer.common.query.QueryAdapter;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
@@ -16,7 +17,6 @@ import sqlancer.duckdb.DuckDBSchema.DuckDBCompositeDataType;
 import sqlancer.duckdb.DuckDBSchema.DuckDBDataType;
 import sqlancer.duckdb.DuckDBToStringVisitor;
 import sqlancer.duckdb.ast.DuckDBExpression;
-import sqlancer.gen.UntypedExpressionGenerator;
 
 public class DuckDBTableGenerator {
 

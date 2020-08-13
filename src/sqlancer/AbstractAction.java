@@ -2,6 +2,8 @@ package sqlancer;
 
 import java.sql.SQLException;
 
+import sqlancer.common.query.Query;
+
 public interface AbstractAction<G> {
 
     Query getQuery(G globalState) throws SQLException;

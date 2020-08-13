@@ -1,7 +1,7 @@
 package sqlancer.cockroachdb.ast;
 
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBCompositeDataType;
-import sqlancer.visitor.UnaryOperation;
+import sqlancer.common.visitor.UnaryOperation;
 
 public class CockroachDBCast implements UnaryOperation<CockroachDBExpression>, CockroachDBExpression {
 
