@@ -51,6 +51,7 @@
 	</rule>
 	<rule ref="category/java/design.xml">
 		<priority>2</priority>
+		<exclude name="LoosePackageCoupling" />
 		<exclude name="LawOfDemeter" />
 		<exclude name="TooManyMethods" />
 		<exclude name="CyclomaticComplexity" />
