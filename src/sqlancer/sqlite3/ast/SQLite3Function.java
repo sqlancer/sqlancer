@@ -275,6 +275,8 @@ public class SQLite3Function extends SQLite3Expression {
         /**
          * Gets the number of arguments if the function is non-variadic. If the function is variadic, the minimum number
          * of arguments is returned.
+         *
+         * @return the number of arguments
          */
         public int getNrArgs() {
             return nrArgs;

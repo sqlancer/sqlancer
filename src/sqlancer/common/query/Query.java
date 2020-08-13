@@ -11,18 +11,10 @@ public abstract class Query {
     /**
      * Whether the query could affect the schema (i.e., by add/deleting columns or tables).
      *
-     * @return
+     * @return true if the query can affect the database's schema, false otherwise
      */
     public abstract boolean couldAffectSchema();
 
-    /**
-     *
-     * @param con
-     *
-     * @return true if the query was successful, false otherwise
-     *
-     * @throws SQLException
-     */
     public abstract boolean execute(GlobalState<?, ?> globalState, String... fills) throws SQLException;
 
     public abstract ExpectedErrors getExpectedErrors();

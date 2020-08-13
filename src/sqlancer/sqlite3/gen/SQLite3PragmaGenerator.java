@@ -46,16 +46,6 @@ public class SQLite3PragmaGenerator {
         WAL_CHECKPOINT; //
         // WRITEABLE_SCHEMA
 
-        // VDBE_ADDOPTRACE(PragmaAttribute.DEBUG); // produces too much textual output directly on the console
-        // VDBE_LISTING(PragmaAttribute.DEBUG); // produces too much textual output directly on the console
-
-        Pragma(PragmaAttribute... attrs) {
-        }
-
-        private enum PragmaAttribute {
-            DEBUG /* only available in debug mode */
-        }
-
     }
 
     private final StringBuilder sb = new StringBuilder();

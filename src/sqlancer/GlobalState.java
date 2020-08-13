@@ -12,7 +12,9 @@ import sqlancer.common.query.SQLancerResultSet;
  * Represents a global state that is valid for a testing session on a given database.
  *
  * @param <O>
- *            the option parameter.
+ *            the option parameter
+ * @param <S>
+ *            the schema parameter
  */
 public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S> {
 

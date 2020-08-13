@@ -1,5 +1,6 @@
 package sqlancer.common.oracle;
 
+import sqlancer.GlobalState;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.query.ExpectedErrors;
 
@@ -10,8 +11,10 @@ import sqlancer.common.query.ExpectedErrors;
  *
  * @param <E>
  *            the expression type
+ * @param <S>
+ *            the global state type
  */
-public abstract class TernaryLogicPartitioningOracleBase<E, S> implements TestOracle {
+public abstract class TernaryLogicPartitioningOracleBase<E, S extends GlobalState<?, ?>> implements TestOracle {
 
     protected E predicate;
     protected E negatedPredicate;

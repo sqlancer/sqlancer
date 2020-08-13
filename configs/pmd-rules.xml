@@ -51,6 +51,7 @@
 	</rule>
 	<rule ref="category/java/design.xml">
 		<priority>2</priority>
+		<exclude name="LoosePackageCoupling" />
 		<exclude name="LawOfDemeter" />
 		<exclude name="TooManyMethods" />
 		<exclude name="CyclomaticComplexity" />
@@ -84,5 +85,10 @@
 		<exclude name="OptimizableToArrayCall" />
 		<exclude name="AvoidFileStream" />
 	</rule>
-
+    <rule ref="category/java/documentation.xml">
+		<priority>2</priority>
+		<exclude name="CommentRequired" />
+		<exclude name="CommentSize" />
+		<exclude name="UncommentedEmptyMethodBody" />
+	</rule>
 </ruleset>

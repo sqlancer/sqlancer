@@ -109,7 +109,7 @@ public final class ClickHouseCast extends ClickHouseExpression {
         return convertInternal(value, false, false, false);
     }
 
-    /**
+    /*
      * Applies numeric affinity to a value.
      */
     public static ClickHouseConstant castToNumeric(ClickHouseConstant value) {

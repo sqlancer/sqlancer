@@ -98,6 +98,8 @@ public class SQLite3Schema {
         /**
          * If a table has a single column primary key and the declared type of that column is "INTEGER" and the table is
          * not a WITHOUT ROWID table, then the column is known as an INTEGER PRIMARY KEY.
+         *
+         * @return whether the column is an INTEGER PRIMARY KEY
          */
         public boolean isIntegerPrimaryKey() {
             return isInteger && isOnlyPrimaryKey() && !getTable().hasWithoutRowid();

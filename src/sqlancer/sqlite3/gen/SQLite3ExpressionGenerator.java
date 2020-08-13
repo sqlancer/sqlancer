@@ -157,11 +157,8 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         return expr;
     }
 
-    /**
-     *
-     * @see https://www.sqlite.org/syntax/literal-value.html
-     *
-     * @return
+    /*
+     * https://www.sqlite.org/syntax/literal-value.html
      */
     private SQLite3Expression getRandomLiteralValueInternal(Randomly r) {
         LiteralValueType randomLiteral = Randomly.fromOptions(LiteralValueType.values());
@@ -327,7 +324,7 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         STANDARD_COMPARISON, BETWEEN, IN
     }
 
-    /**
+    /*
      * https://www.sqlite.org/rowvalue.html
      */
     private SQLite3Expression getRowValueComparison(int depth) {
