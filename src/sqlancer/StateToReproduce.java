@@ -95,7 +95,7 @@ public class StateToReproduce {
      * Returns a local state in which a test oracle can save useful information about a single run. If the local state
      * is closed without indicating access to it, the local statements will be added to the global state.
      *
-     * @return
+     * @return the local state for logging
      */
     public OracleRunReproductionState getLocalState() {
         return localState;

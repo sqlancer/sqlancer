@@ -8,11 +8,15 @@ public interface DatabaseProvider<G extends GlobalState<O, ?>, O extends DBMSSpe
 
     /**
      * Gets the the {@link GlobalState} class.
+     *
+     * @return the class extending {@link GlobalState}
      */
     Class<G> getGlobalStateClass();
 
     /**
      * Gets the JCommander option class.
+     *
+     * @return the class representing the DBMS-specific options.
      */
     Class<O> getOptionClass();
 
@@ -29,6 +33,8 @@ public interface DatabaseProvider<G extends GlobalState<O, ?>, O extends DBMSSpe
 
     /**
      * The DBMS name is used to name the log directory and command to test the respective DBMS.
+     *
+     * @return the DBMS' name
      */
     String getDBMSName();
 

@@ -106,7 +106,7 @@ public class SQLite3IndexGenerator {
         return sb.toString();
     }
 
-    /**
+    /*
      * Appends ASC, DESC, or nothing.
      */
     private void appendPotentialOrdering(StringBuilder sb) {

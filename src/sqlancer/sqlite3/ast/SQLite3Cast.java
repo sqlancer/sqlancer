@@ -114,7 +114,7 @@ public final class SQLite3Cast {
         return convertInternal(value, false, false, false);
     }
 
-    /**
+    /*
      * Applies numeric affinity to a value.
      */
     public static SQLite3Constant castToNumeric(SQLite3Constant value) {
