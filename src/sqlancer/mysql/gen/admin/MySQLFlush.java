@@ -9,7 +9,7 @@ import sqlancer.common.query.QueryAdapter;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 
-/**
+/*
  * https://dev.mysql.com/doc/refman/8.0/en/flush.html#flush-tables-variants
  */
 public class MySQLFlush {

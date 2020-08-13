@@ -92,17 +92,16 @@ public abstract class SQLite3Expression {
         }
     }
 
-    /**
+    /*
      * See https://www.sqlite.org/datatype3.html 3.2
      */
     public TypeAffinity getAffinity() {
         return TypeAffinity.NONE;
     }
 
-    /**
+    /*
      * See https://www.sqlite.org/datatype3.html#assigning_collating_sequences_from_sql 7.1
      *
-     * @return
      */
     public abstract SQLite3CollateSequence getExplicitCollateSequence();
 

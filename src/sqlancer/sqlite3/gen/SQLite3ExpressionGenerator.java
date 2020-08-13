@@ -327,7 +327,7 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         STANDARD_COMPARISON, BETWEEN, IN
     }
 
-    /**
+    /*
      * https://www.sqlite.org/rowvalue.html
      */
     private SQLite3Expression getRowValueComparison(int depth) {
