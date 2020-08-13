@@ -84,5 +84,11 @@
 		<exclude name="OptimizableToArrayCall" />
 		<exclude name="AvoidFileStream" />
 	</rule>
-
+    <rule ref="category/java/documentation.xml">
+		<priority>2</priority>
+		<exclude name="CommentRequired" />
+		<exclude name="CommentSize" />
+		<exclude name="UncommentedEmptyMethodBody" />
+		<exclude name="UncommentedEmptyConstructor" />
+	</rule>
 </ruleset>
