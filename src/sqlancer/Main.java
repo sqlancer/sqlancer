@@ -296,17 +296,17 @@ public final class Main {
         private final MainOptions options;
         private final O command;
         private final String databaseName;
-        private final long seed;
         private StateLogger logger;
         private StateToReproduce stateToRepro;
+        private final Randomly r;
 
         public DBMSExecutor(DatabaseProvider<G, O> provider, MainOptions options, O dbmsSpecificOptions,
-                String databaseName, long seed) {
+                String databaseName, Randomly r) {
             this.provider = provider;
             this.options = options;
             this.databaseName = databaseName;
-            this.seed = seed;
             this.command = dbmsSpecificOptions;
+            this.r = r;
         }
 
         private G createGlobalState() {
@@ -324,10 +324,9 @@ public final class Main {
         public void run() throws SQLException {
             G state = createGlobalState();
             stateToRepro = provider.getStateToReproduce(databaseName);
-            stateToRepro.seedValue = seed;
+            stateToRepro.seedValue = r.getSeed();
             state.setState(stateToRepro);
             logger = new StateLogger(databaseName, provider, options);
-            Randomly r = new Randomly(seed);
             state.setRandomly(r);
             state.setDatabaseName(databaseName);
             state.setMainOptions(options);
@@ -390,10 +389,10 @@ public final class Main {
         }
 
         @SuppressWarnings("unchecked")
-        public DBMSExecutor<G, O> getDBMSExecutor(String databaseName, long seed) {
+        public DBMSExecutor<G, O> getDBMSExecutor(String databaseName, Randomly r) {
             try {
                 return new DBMSExecutor<G, O>(provider.getClass().getDeclaredConstructor().newInstance(), options,
-                        command, databaseName, seed);
+                        command, databaseName, r);
             } catch (Exception e) {
                 throw new AssertionError(e);
             }
@@ -461,7 +460,6 @@ public final class Main {
             } else {
                 seed = options.getRandomSeed() + i;
             }
-
             execService.execute(new Runnable() {
 
                 @Override
@@ -471,17 +469,17 @@ public final class Main {
                 }
 
                 private void runThread(final String databaseName) {
+                    Randomly r = new Randomly(seed);
                     try {
                         if (options.getMaxGeneratedDatabases() == -1) {
                             // run without a limit
                             boolean continueRunning = true;
                             while (continueRunning) {
-                                continueRunning = run(options, execService, executorFactory, seed, databaseName);
+                                continueRunning = run(options, execService, executorFactory, r, databaseName);
                             }
                         } else {
                             for (int i = 0; i < options.getMaxGeneratedDatabases(); i++) {
-                                boolean continueRunning = run(options, execService, executorFactory, seed,
-                                        databaseName);
+                                boolean continueRunning = run(options, execService, executorFactory, r, databaseName);
                                 if (!continueRunning) {
                                     break;
                                 }
@@ -496,8 +494,8 @@ public final class Main {
                 }
 
                 private boolean run(MainOptions options, ExecutorService execService,
-                        DBMSExecutorFactory<?, ?> executorFactory, final long seed, final String databaseName) {
-                    DBMSExecutor<?, ?> executor = executorFactory.getDBMSExecutor(databaseName, seed);
+                        DBMSExecutorFactory<?, ?> executorFactory, Randomly r, final String databaseName) {
+                    DBMSExecutor<?, ?> executor = executorFactory.getDBMSExecutor(databaseName, r);
                     try {
                         executor.run();
                         return true;

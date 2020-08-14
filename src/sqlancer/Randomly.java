@@ -20,6 +20,7 @@ public final class Randomly {
     private Supplier<String> provider;
 
     private static final ThreadLocal<Random> THREAD_RANDOM = new ThreadLocal<>();
+    private long seed;
 
     private void addToCache(long val) {
         if (USE_CACHING && cachedLongs.size() < CACHE_SIZE && !cachedLongs.contains(val)) {
@@ -383,11 +384,12 @@ public final class Randomly {
     }
 
     public Randomly() {
-        getThreadRandom().set(new Random());
+        THREAD_RANDOM.set(new Random());
     }
 
     public Randomly(long seed) {
-        getThreadRandom().set(new Random(seed));
+        this.seed = seed;
+        THREAD_RANDOM.set(new Random(seed));
     }
 
     public static double getUncachedDouble() {
@@ -427,6 +429,10 @@ public final class Randomly {
 
     private static int getNextInt(int lower, int upper) {
         return (int) getNextLong(lower, upper);
+    }
+
+    public long getSeed() {
+        return seed;
     }
 
 }
