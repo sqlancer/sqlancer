@@ -44,6 +44,7 @@ public final class SQLite3ViewGenerator {
         ExpectedErrors errors = new ExpectedErrors();
         errors.add("is circularly defined");
         errors.add("unsupported frame specification");
+        errors.add("The database file is locked");
         if (Randomly.getBoolean()) {
             SQLite3PivotedQuerySynthesisOracle queryGen = new SQLite3PivotedQuerySynthesisOracle(globalState);
             try {

@@ -23,6 +23,7 @@ public final class SQLite3ReindexGenerator {
         SQLite3Schema s = globalState.getSchema();
         StringBuilder sb = new StringBuilder("REINDEX");
         ExpectedErrors errors = new ExpectedErrors();
+        errors.add("The database file is locked");
         Target t = Randomly.fromOptions(Target.values());
         if (Randomly.getBoolean()) {
             sb.append(" ");
