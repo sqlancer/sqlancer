@@ -21,7 +21,7 @@ public final class SQLite3VacuumGenerator {
             sb.append(Randomly.fromOptions("temp", "main"));
         }
         return new QueryAdapter(sb.toString(), ExpectedErrors.from("cannot VACUUM from within a transaction",
-                "cannot VACUUM - SQL statements in progress"));
+                "cannot VACUUM - SQL statements in progress", "The database file is locked"));
     }
 
 }

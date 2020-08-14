@@ -355,7 +355,7 @@ public class SQLite3Schema {
         errors.addAll(Arrays.asList("second argument to nth_value must be a positive integer",
                 "ON clause references tables to its right", "no such table", "no query solution", "no such index",
                 "GROUP BY term", "is circularly defined", "misuse of aggregate", "no such column",
-                "misuse of window function"));
+                "misuse of window function", "table does not support scanning"));
         SQLite3Errors.addExpectedExpressionErrors(errors);
         QueryAdapter q = new QueryAdapter(string, errors);
         try (SQLancerResultSet query = q.executeAndGet(globalState)) {

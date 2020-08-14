@@ -1,5 +1,6 @@
 package sqlancer.tidb.gen;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
@@ -40,11 +41,9 @@ public final class TiDBViewGenerator {
         errors.add(
                 "references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them");
         errors.add("Unknown column ");
-        if (Randomly.getBoolean()) {
-            sb.append(" WITH ");
-            sb.append(Randomly.fromOptions("CASCADED", "LOCAL"));
-            sb.append(" ");
-            sb.append(" CHECK OPTION");
+        if (sb.toString().contains("\\\\")) {
+            // TODO: CREATE VIEW v0(c0) AS SELECT '\\' FROM t0; causes an unexpected failure
+            throw new IgnoreMeException();
         }
         return new QueryAdapter(sb.toString(), errors, true);
     }

@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
 
@@ -190,7 +191,8 @@ public class MariaDBSetGenerator {
         sb.append(a.name);
         sb.append(" = ");
         sb.append(a.prod.apply(r));
-        return new QueryAdapter(sb.toString());
+        return new QueryAdapter(sb.toString(), ExpectedErrors
+                .from("At least one of the 'in_to_exists' or 'materialization' optimizer_switch flags must be 'on'"));
     }
 
 }

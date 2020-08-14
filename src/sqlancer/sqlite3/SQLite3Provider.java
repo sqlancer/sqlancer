@@ -98,7 +98,7 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
         CHECK_RTREE_TABLE((g) -> {
             SQLite3Table table = g.getSchema().getRandomTableOrBailout(t -> t.getName().startsWith("r"));
             String format = String.format("SELECT rtreecheck('%s');", table.getName());
-            return new QueryAdapter(format);
+            return new QueryAdapter(format, ExpectedErrors.from("The database file is locked"));
         }), //
         VIRTUAL_TABLE_ACTION(SQLite3VirtualFTSTableCommandGenerator::create), //
         CREATE_VIEW(SQLite3ViewGenerator::generate), //
@@ -120,6 +120,8 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
                         }
                         indexName = rs.getString("name");
                     }
+                } catch (SQLException e) {
+                    throw new IgnoreMeException();
                 }
                 sb.append(" VALUES");
                 sb.append("('");
@@ -154,7 +156,8 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
                     sb.append(" noskipscan");
                 }
                 sb.append("')");
-                return new QueryAdapter(sb.toString(), ExpectedErrors.from("no such table"));
+                return new QueryAdapter(sb.toString(),
+                        ExpectedErrors.from("no such table", "The database file is locked"));
             }
         });
 
@@ -284,7 +287,8 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
             Query q = new QueryAdapter("SELECT * FROM " + table.getName(),
                     ExpectedErrors.from("needs an odd number of arguments", " requires an even number of arguments",
                             "generated column loop", "integer overflow", "malformed JSON",
-                            "JSON cannot hold BLOB values", "JSON path error", "labels must be TEXT"));
+                            "JSON cannot hold BLOB values", "JSON path error", "labels must be TEXT",
+                            "table does not support scanning"));
             if (!q.execute(globalState)) {
                 throw new IgnoreMeException();
             }
