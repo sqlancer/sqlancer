@@ -5,7 +5,10 @@ import java.util.Random;
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
 import sqlancer.common.ast.newast.ColumnReferenceNode;
+import sqlancer.common.ast.newast.NewBetweenOperatorNode;
 import sqlancer.common.ast.newast.NewBinaryOperatorNode;
+import sqlancer.common.ast.newast.NewCaseOperatorNode;
+import sqlancer.common.ast.newast.NewInOperatorNode;
 import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
 import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
 import sqlancer.common.ast.newast.Node;
@@ -25,7 +28,7 @@ public class H2ExpressionGenerator extends UntypedExpressionGenerator<Node<H2Exp
     }
 
     private enum Expression {
-        BINARY_COMPARISON, BINARY_LOGICAL, UNARY_POSTFIX, UNARY_PREFIX;
+        BINARY_COMPARISON, BINARY_LOGICAL, UNARY_POSTFIX, UNARY_PREFIX, IN, BETWEEN, CASE;
     }
 
     @Override
@@ -49,6 +52,17 @@ public class H2ExpressionGenerator extends UntypedExpressionGenerator<Node<H2Exp
         case UNARY_PREFIX:
             return new NewUnaryPrefixOperatorNode<H2Expression>(generateExpression(depth + 1),
                     H2UnaryPrefixOperator.getRandom());
+        case IN:
+            return new NewInOperatorNode<H2Expression>(generateExpression(depth + 1),
+                    generateExpressions(depth + 1, Randomly.smallNumber() + 1), Randomly.getBoolean());
+        case BETWEEN:
+            return new NewBetweenOperatorNode<H2Expression>(generateExpression(depth + 1),
+                    generateExpression(depth + 1), generateExpression(depth + 1), Randomly.getBoolean());
+        case CASE:
+            int nr = Randomly.smallNumber() + 1;
+            return new NewCaseOperatorNode<H2Expression>(generateExpression(depth + 1),
+                    generateExpressions(depth + 1, nr), generateExpressions(depth + 1, nr),
+                    generateExpression(depth + 1));
         default:
             throw new AssertionError();
         }
@@ -69,6 +83,10 @@ public class H2ExpressionGenerator extends UntypedExpressionGenerator<Node<H2Exp
             return H2Constant.createIntConstant(getUncachedInt());
         case BOOL:
             return H2Constant.createBoolConstant(Randomly.getBoolean());
+        case VARCHAR:
+            return H2Constant.createStringConstant(Character.toString((char) (RANDOM.nextInt('z' - 'a') + 'a')));
+        case DOUBLE:
+            return H2Constant.createDoubleConstant(getUncachedDouble());
         default:
             throw new AssertionError();
         }
@@ -76,6 +94,10 @@ public class H2ExpressionGenerator extends UntypedExpressionGenerator<Node<H2Exp
 
     public static int getUncachedInt() {
         return RANDOM.nextInt();
+    }
+
+    public static double getUncachedDouble() {
+        return RANDOM.nextDouble();
     }
 
     public enum H2UnaryPostfixOperator implements Operator {
@@ -137,7 +159,9 @@ public class H2ExpressionGenerator extends UntypedExpressionGenerator<Node<H2Exp
 
     public enum H2BinaryComparisonOperator implements Operator {
 
-        EQUALS("="), GREATER(">"), GREATER_EQUALS(">="), SMALLER("<"), SMALLER_EQUALS("<="), NOT_EQUALS("!=");
+        EQUALS("="), GREATER(">"), GREATER_EQUALS(">="), SMALLER("<"), SMALLER_EQUALS("<="), NOT_EQUALS("!="),
+        IS_DISTINCT_FROM("IS DISTINCT FROM"), IS_NOT_DISTINCT("IS NOT DISTINCT FROM"), LIKE("LIKE"),
+        NOT_LIKE("NOT LIKE"), REGEXP("REGEXP"), NOT_REGEXP("NOT REGEXP");
 
         private String textRepr;
 

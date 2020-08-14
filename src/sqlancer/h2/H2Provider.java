@@ -16,9 +16,11 @@ import sqlancer.StatementExecutor;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
+import sqlancer.common.query.QueryAdapter;
 import sqlancer.common.query.QueryProvider;
 import sqlancer.h2.H2Provider.H2GlobalState;
 import sqlancer.h2.H2Schema.H2Column;
+import sqlancer.h2.H2Schema.H2Tables;
 
 public class H2Provider extends ProviderAdapter<H2GlobalState, H2Options> {
 
@@ -28,7 +30,9 @@ public class H2Provider extends ProviderAdapter<H2GlobalState, H2Options> {
 
     public enum Action implements AbstractAction<H2GlobalState> {
 
-        INSERT(H2InsertGenerator::getQuery);
+        INSERT(H2InsertGenerator::getQuery), //
+        INDEX(H2IndexGenerator::getQuery), //
+        ANALYZE((g) -> new QueryAdapter("ANALYZE"));
 
         private final QueryProvider<H2GlobalState> queryProvider;
 
@@ -47,6 +51,10 @@ public class H2Provider extends ProviderAdapter<H2GlobalState, H2Options> {
         switch (a) {
         case INSERT:
             return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
+        case ANALYZE:
+            return r.getInteger(0, 5);
+        case INDEX:
+            return r.getInteger(0, 5);
         default:
             throw new AssertionError(a);
         }
@@ -64,10 +72,12 @@ public class H2Provider extends ProviderAdapter<H2GlobalState, H2Options> {
     @Override
     public void generateDatabase(H2GlobalState globalState) throws SQLException {
         boolean success = false;
-        do { // create exactly one table
-            Query qt = new H2TableGenerator().getQuery(globalState);
-            success = globalState.executeStatement(qt);
-        } while (!success);
+        for (int i = 0; i < Randomly.fromOptions(1, 2, 3); i++) {
+            do {
+                Query qt = new H2TableGenerator().getQuery(globalState);
+                success = globalState.executeStatement(qt);
+            } while (!success);
+        }
         StatementExecutor<H2GlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
                 H2Provider::mapActions, (q) -> {
                     if (globalState.getSchema().getDatabaseTables().isEmpty()) {
@@ -102,17 +112,19 @@ public class H2Provider extends ProviderAdapter<H2GlobalState, H2Options> {
 
         @Override
         public void check() throws SQLException {
-            List<H2Column> columns = globalState.getSchema().getRandomTableNonEmptyTables().getColumns();
+            H2Tables tables = globalState.getSchema().getRandomTableNonEmptyTables();
+            String tablesString = tables.tableNamesAsString();
+            List<H2Column> columns = tables.getColumns();
             String predicate = H2ToStringVisitor
                     .asString(new H2ExpressionGenerator(globalState).setColumns(columns).generateExpression());
-            String original = "SELECT * FROM t0;";
+            String original = "SELECT * FROM " + tablesString;
             ExpectedErrors errors = new ExpectedErrors();
             H2Errors.addExpressionErrors(errors);
             List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(original, errors, globalState);
 
-            String nonNegated = "SELECT * FROM t0 WHERE " + predicate;
-            String negated = "SELECT * FROM t0 WHERE NOT " + predicate;
-            String isNull = "SELECT * FROM t0 WHERE " + predicate + " IS NULL";
+            String nonNegated = "SELECT * FROM " + tablesString + " WHERE " + predicate;
+            String negated = "SELECT * FROM " + tablesString + " WHERE NOT " + predicate;
+            String isNull = "SELECT * FROM " + tablesString + " WHERE " + predicate + " IS NULL";
             List<String> combinedString = new ArrayList<>();
 
             List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(nonNegated, negated, isNull,

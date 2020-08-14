@@ -46,6 +46,36 @@ public class H2Constant implements Node<H2Expression> {
 
     }
 
+    public static class H2StringConstant extends H2Constant {
+
+        private final String value;
+
+        public H2StringConstant(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("'%s'", value);
+        }
+
+    }
+
+    public static class H2DoubleConstant extends H2Constant {
+
+        private final double value;
+
+        public H2DoubleConstant(double value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(value);
+        }
+
+    }
+
     public static Node<H2Expression> createIntConstant(long val) {
         return new H2IntConstant(val);
     }
@@ -56,6 +86,14 @@ public class H2Constant implements Node<H2Expression> {
 
     public static Node<H2Expression> createBoolConstant(boolean val) {
         return new H2BoolConstant(val);
+    }
+
+    public static Node<H2Expression> createStringConstant(String val) {
+        return new H2StringConstant(val);
+    }
+
+    public static Node<H2Expression> createDoubleConstant(double val) {
+        return new H2DoubleConstant(val);
     }
 
 }

@@ -20,7 +20,7 @@ public class H2Schema extends AbstractSchema<H2Table> {
 
     public enum H2DataType {
 
-        INT, BOOL;
+        INT, BOOL, VARCHAR, DOUBLE;
 
         public static H2DataType getRandom() {
             return Randomly.fromOptions(values());
@@ -41,7 +41,7 @@ public class H2Schema extends AbstractSchema<H2Table> {
         }
 
         public static H2CompositeDataType getRandom() {
-            return new H2CompositeDataType(H2DataType.getRandom());
+            return new H2CompositeDataType(Randomly.fromOptions(H2DataType.INT, H2DataType.BOOL, H2DataType.DOUBLE));
         }
 
         @Override
@@ -131,6 +131,10 @@ public class H2Schema extends AbstractSchema<H2Table> {
             return H2DataType.INT;
         } else if (columnType.startsWith("BOOLEAN")) {
             return H2DataType.BOOL;
+        } else if (columnType.startsWith("CHARACTER VARYING")) {
+            return H2DataType.VARCHAR;
+        } else if (columnType.startsWith("DOUBLE")) {
+            return H2DataType.DOUBLE;
         } else {
             throw new AssertionError(columnType);
         }
