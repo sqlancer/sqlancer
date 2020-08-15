@@ -101,25 +101,27 @@ public final class Main {
             }
         }
 
-        private synchronized void ensureExistsAndIsEmpty(File dir, DatabaseProvider<?, ?> provider) {
+        private void ensureExistsAndIsEmpty(File dir, DatabaseProvider<?, ?> provider) {
             if (INITIALIZED_PROVIDER_NAMES.contains(provider.getDBMSName())) {
                 return;
             }
-            if (!dir.exists()) {
-                try {
-                    Files.createDirectories(dir.toPath());
-                } catch (IOException e) {
-                    throw new AssertionError(e);
+            synchronized (INITIALIZED_PROVIDER_NAMES) {
+                if (!dir.exists()) {
+                    try {
+                        Files.createDirectories(dir.toPath());
+                    } catch (IOException e) {
+                        throw new AssertionError(e);
+                    }
                 }
-            }
-            File[] listFiles = dir.listFiles();
-            assert listFiles != null : "directory was just created, so it should exist";
-            for (File file : listFiles) {
-                if (!file.isDirectory()) {
-                    file.delete();
+                File[] listFiles = dir.listFiles();
+                assert listFiles != null : "directory was just created, so it should exist";
+                for (File file : listFiles) {
+                    if (!file.isDirectory()) {
+                        file.delete();
+                    }
                 }
+                INITIALIZED_PROVIDER_NAMES.add(provider.getDBMSName());
             }
-            INITIALIZED_PROVIDER_NAMES.add(provider.getDBMSName());
         }
 
         private FileWriter getLogFileWriter() {
