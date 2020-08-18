@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
@@ -11,6 +12,7 @@ import sqlancer.common.query.QueryAdapter;
 import sqlancer.h2.H2Provider.H2GlobalState;
 import sqlancer.h2.H2Schema.H2Column;
 import sqlancer.h2.H2Schema.H2CompositeDataType;
+import sqlancer.h2.H2Schema.H2Table;
 
 public class H2TableGenerator {
 
@@ -32,11 +34,15 @@ public class H2TableGenerator {
             sb.append(" ");
             sb.append(H2CompositeDataType.getRandom());
             boolean generated = Randomly.getBooleanWithRatherLowProbability();
-            if (Randomly.getBooleanWithRatherLowProbability() && !generated) {
-                sb.append(" UNIQUE");
-            }
             if (Randomly.getBooleanWithRatherLowProbability()) {
                 sb.append(" NOT NULL");
+            }
+            if (Randomly.getBooleanWithRatherLowProbability() && !generated) {
+                sb.append(" DEFAULT ");
+                sb.append(H2ToStringVisitor.asString(new H2ExpressionGenerator(globalState).generateConstant()));
+            }
+            if (Randomly.getBooleanWithRatherLowProbability() && !generated) {
+                sb.append(" UNIQUE");
             }
             if (generated) {
                 sb.append(" AS (");
@@ -48,14 +54,56 @@ public class H2TableGenerator {
                 errors.add("not found"); // generated column cycles
                 sb.append(')');
             }
+            if (Randomly.getBooleanWithRatherLowProbability()) {
+                sb.append(" CHECK ");
+                sb.append(H2ToStringVisitor.asString(new H2ExpressionGenerator(globalState)
+                        .setColumns(columnNames.stream().map(c2 -> new H2Column(c2, null)).collect(Collectors.toList()))
+                        .generateExpression()));
+                H2Errors.addExpressionErrors(errors);
+            }
         }
         if (Randomly.getBooleanWithRatherLowProbability()) {
             sb.append(", PRIMARY KEY(");
             sb.append(Randomly.nonEmptySubset(columnNames).stream().collect(Collectors.joining(", ")));
             sb.append(")");
         }
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            List<String> foreignKeyColumns = Randomly.nonEmptySubset(columnNames);
+            sb.append(", FOREIGN KEY(");
+            sb.append(foreignKeyColumns.stream().collect(Collectors.joining(", ")));
+            sb.append(')');
+            List<H2Table> foreignTableCandidates = globalState.getSchema().getDatabaseTables().stream()
+                    .filter(t -> !t.isView()).collect(Collectors.toList());
+            if (foreignTableCandidates.isEmpty()) {
+                throw new IgnoreMeException();
+            }
+            H2Table foreignKeyTable = Randomly.fromList(foreignTableCandidates);
+            sb.append(" REFERENCES ");
+            sb.append(foreignKeyTable.getName());
+            sb.append('(');
+            if (foreignKeyTable.getColumns().size() < foreignKeyColumns.size()) {
+                throw new IgnoreMeException();
+            }
+            sb.append(foreignKeyTable.getRandomNonEmptyColumnSubset(foreignKeyColumns.size()).stream()
+                    .map(c -> c.getName()).collect(Collectors.joining(", ")));
+            sb.append(')');
+            if (Randomly.getBoolean()) {
+                sb.append(" ON DELETE ");
+                addReferentialAction(sb);
+            }
+            if (Randomly.getBoolean()) {
+                sb.append(" ON UPDATE ");
+                addReferentialAction(sb);
+            }
+            errors.add("are not comparable");
+            errors.add(" cannot be updatable by a referential constraint with"); // generated columns
+        }
         sb.append(")");
         return new QueryAdapter(sb.toString(), errors, true);
+    }
+
+    private void addReferentialAction(StringBuilder sb) {
+        sb.append(Randomly.fromOptions("CASCADE", "RESTRICT", "NO ACTION", "SET DEFAULT", "SET NULL"));
     }
 
 }

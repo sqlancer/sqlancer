@@ -13,6 +13,8 @@ public class H2ToStringVisitor extends NewToStringVisitor<H2Expression> {
             visit((H2Select) expr);
         } else if (expr instanceof H2Join) {
             visit((H2Join) expr);
+        } else if (expr instanceof H2CastNode) {
+            visit((H2CastNode) expr);
         } else {
             throw new AssertionError(expr.getClass());
         }
@@ -20,6 +22,14 @@ public class H2ToStringVisitor extends NewToStringVisitor<H2Expression> {
 
     private void visit(H2Constant constant) {
         sb.append(constant.toString());
+    }
+
+    private void visit(H2CastNode cast) {
+        sb.append("CAST(");
+        visit(cast.getExpression());
+        sb.append(" AS ");
+        sb.append(cast.getType());
+        sb.append(')');
     }
 
     private void visit(H2Join join) {

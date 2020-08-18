@@ -30,10 +30,16 @@ public class H2Schema extends AbstractSchema<H2Table> {
 
     public static class H2CompositeDataType {
 
-        private final H2DataType dataType;
+        static final int NO_PRECISION = -1;
 
-        public H2CompositeDataType(H2DataType dataType) {
+        private final H2DataType dataType;
+        private final int size;
+        private final int precision;
+
+        public H2CompositeDataType(H2DataType dataType, int size, int precision) {
             this.dataType = dataType;
+            this.size = size;
+            this.precision = precision;
         }
 
         public H2DataType getPrimitiveDataType() {
@@ -41,13 +47,83 @@ public class H2Schema extends AbstractSchema<H2Table> {
         }
 
         public static H2CompositeDataType getRandom() {
-            return new H2CompositeDataType(
-                    Randomly.fromOptions(H2DataType.INT, H2DataType.BOOL, H2DataType.DOUBLE, H2DataType.BINARY));
+            H2DataType primitiveType = Randomly.fromOptions(H2DataType.INT, H2DataType.BOOL, H2DataType.DOUBLE,
+                    H2DataType.BINARY);
+            int size = -1;
+            int precision = NO_PRECISION;
+            switch (primitiveType) {
+            case INT:
+                size = Randomly.fromOptions(1, 2, 4, 8);
+                break;
+            case DOUBLE:
+                size = Randomly.fromOptions(4, 8);
+                if (Randomly.getBoolean()) {
+                    if (size == 4) {
+                        precision = (int) Randomly.getNotCachedInteger(1, 25); // TODO: documentation states 0 as lower
+                                                                               // bound
+                    } else {
+                        precision = (int) Randomly.getNotCachedInteger(25, 54);
+                    }
+                }
+                break;
+            case VARCHAR:
+            case BINARY:
+                precision = (int) Randomly.getNotCachedInteger(0, Integer.MAX_VALUE);
+                break;
+            default:
+                break;
+            }
+            return new H2CompositeDataType(primitiveType, size, precision);
         }
 
         @Override
         public String toString() {
-            return dataType.toString();
+            switch (dataType) {
+            case INT:
+                switch (size) {
+                case 1:
+                    return "TINYINT";
+                case 2:
+                    return Randomly.fromOptions("SMALLINT", "INT2");
+                case 4:
+                    return Randomly.fromOptions("INT", "INTEGER", "MEDIUMINT", "INT4", "SIGNED");
+                case 8:
+                    return Randomly.fromOptions("BIGINT", "INT8");
+                default:
+                    throw new AssertionError(size);
+                }
+            case DOUBLE:
+                switch (size) {
+                case 4:
+                    if (precision == NO_PRECISION) {
+                        return Randomly.fromOptions("REAL", "FLOAT4");
+                    } else {
+                        assert precision >= 0 && precision <= 24;
+                        return String.format("FLOAT(%d)", precision);
+                    }
+                case 8:
+                    if (precision == NO_PRECISION) {
+                        return Randomly.fromOptions("DOUBLE", "DOUBLE PRECISION", "FLOAT8", "FLOAT");
+                    } else {
+                        assert precision >= 25 && precision <= 53;
+                        return String.format("FLOAT(%d)", precision);
+                    }
+                default:
+                    throw new AssertionError(size);
+                }
+            case VARCHAR:
+                return /* String varCharType = */ Randomly.fromOptions("VARCHAR", "VARCHAR_IGNORECASE");
+            // if (precision == NO_PRECISION) {
+            // return varCharType;
+            // } else {
+            // return String.format("%s(%d)", varCharType, precision);
+            // }
+            case BINARY:
+                return "BINARY";
+            // return String.format("BINARY(%d)", precision);
+            default:
+                return dataType.toString();
+            }
         }
 
     }
@@ -119,7 +195,8 @@ public class H2Schema extends AbstractSchema<H2Table> {
                     String columnName = rs.getString("COLUMN_NAME");
                     String columnType = rs.getString("TYPE");
                     H2DataType primitiveType = getColumnType(columnType);
-                    H2Column c = new H2Column(columnName, new H2CompositeDataType(primitiveType));
+                    H2Column c = new H2Column(columnName,
+                            new H2CompositeDataType(primitiveType, -1, -1 /* TODO: read size and precision */));
                     columns.add(c);
                 }
             }
@@ -128,13 +205,15 @@ public class H2Schema extends AbstractSchema<H2Table> {
     }
 
     private static H2DataType getColumnType(String columnType) {
-        if (columnType.startsWith("INTEGER")) {
+        if (columnType.startsWith("INTEGER") || columnType.startsWith("SMALLINT") || columnType.startsWith("TINYINT")
+                || columnType.startsWith("BIGINT")) {
             return H2DataType.INT;
         } else if (columnType.startsWith("BOOLEAN")) {
             return H2DataType.BOOL;
         } else if (columnType.startsWith("CHARACTER VARYING")) {
             return H2DataType.VARCHAR;
-        } else if (columnType.startsWith("DOUBLE")) {
+        } else if (columnType.startsWith("DOUBLE") || columnType.startsWith("DECFLOAT") || columnType.startsWith("REAL")
+                || columnType.startsWith("FLOAT")) {
             return H2DataType.DOUBLE;
         } else if (columnType.startsWith("NUMERIC")) {
             return H2DataType.INT;

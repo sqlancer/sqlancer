@@ -15,6 +15,7 @@ import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.h2.H2Provider.H2GlobalState;
 import sqlancer.h2.H2Schema.H2Column;
+import sqlancer.h2.H2Schema.H2CompositeDataType;
 import sqlancer.h2.H2Schema.H2DataType;
 
 public class H2ExpressionGenerator extends UntypedExpressionGenerator<Node<H2Expression>, H2Column> {
@@ -28,7 +29,7 @@ public class H2ExpressionGenerator extends UntypedExpressionGenerator<Node<H2Exp
     }
 
     private enum Expression {
-        BINARY_COMPARISON, BINARY_LOGICAL, UNARY_POSTFIX, UNARY_PREFIX, IN, BETWEEN, CASE, BINARY_ARITHMETIC;
+        BINARY_COMPARISON, BINARY_LOGICAL, UNARY_POSTFIX, UNARY_PREFIX, IN, BETWEEN, CASE, BINARY_ARITHMETIC, CAST;
     }
 
     @Override
@@ -66,6 +67,8 @@ public class H2ExpressionGenerator extends UntypedExpressionGenerator<Node<H2Exp
         case BINARY_ARITHMETIC:
             return new NewBinaryOperatorNode<H2Expression>(generateExpression(depth + 1), generateExpression(depth + 1),
                     H2BinaryArithmeticOperator.getRandom());
+        case CAST:
+            return new H2CastNode(generateExpression(depth + 1), H2CompositeDataType.getRandom());
         default:
             throw new AssertionError();
         }
@@ -107,7 +110,8 @@ public class H2ExpressionGenerator extends UntypedExpressionGenerator<Node<H2Exp
 
     public enum H2UnaryPostfixOperator implements Operator {
 
-        IS_NULL("IS NULL"), IS_NOT_NULL("IS NOT NULL");
+        IS_NULL("IS NULL"), IS_NOT_NULL("IS NOT NULL"), IS_TRUE("IS TRUE"), IS_NOT_TRUE("IS NOT TRUE"),
+        IS_FALSE("IS FALSE"), IS_NOT_FALSE("IS NOT FALSE"), IS_UNKNOWN("IS NOT UNKNOWN");
 
         private String textRepr;
 

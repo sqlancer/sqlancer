@@ -25,7 +25,9 @@ public class H2Provider extends ProviderAdapter<H2GlobalState, H2Options> {
 
         INSERT(H2InsertGenerator::getQuery), //
         INDEX(H2IndexGenerator::getQuery), //
-        ANALYZE((g) -> new QueryAdapter("ANALYZE")), CREATE_VIEW(H2ViewGenerator::getQuery);
+        ANALYZE((g) -> new QueryAdapter("ANALYZE")), //
+        CREATE_VIEW(H2ViewGenerator::getQuery), //
+        UPDATE(H2UpdateGenerator::getQuery), DELETE(H2DeleteGenerator::getQuery);
 
         private final QueryProvider<H2GlobalState> queryProvider;
 
@@ -50,6 +52,9 @@ public class H2Provider extends ProviderAdapter<H2GlobalState, H2Options> {
             return r.getInteger(0, 5);
         case CREATE_VIEW:
             return r.getInteger(0, 2);
+        case UPDATE:
+        case DELETE:
+            return r.getInteger(0, 10);
         default:
             throw new AssertionError(a);
         }

@@ -13,6 +13,9 @@ public final class H2Errors {
         errors.add("Data conversion error");
         errors.add("Generated column");
         errors.add("Value too long for column");
+        errors.add("Referential integrity constraint violation");
+        errors.add("Check constraint invalid");
+        errors.add("Check constraint violation");
     }
 
     public static void addExpressionErrors(ExpectedErrors errors) {
@@ -30,6 +33,12 @@ public final class H2Errors {
         // regexp
         errors.add("Unclosed group near index");
         errors.add("Error in LIKE ESCAPE");
+    }
+
+    public static void addDeleteErrors(ExpectedErrors errors) {
+        errors.add("No default value is set for column"); // referential actions
+        errors.add("Referential integrity constraint violation");
+        errors.add("NULL not allowed for column");
     }
 
 }
