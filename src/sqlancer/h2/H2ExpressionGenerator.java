@@ -28,7 +28,7 @@ public class H2ExpressionGenerator extends UntypedExpressionGenerator<Node<H2Exp
     }
 
     private enum Expression {
-        BINARY_COMPARISON, BINARY_LOGICAL, UNARY_POSTFIX, UNARY_PREFIX, IN, BETWEEN, CASE;
+        BINARY_COMPARISON, BINARY_LOGICAL, UNARY_POSTFIX, UNARY_PREFIX, IN, BETWEEN, CASE, BINARY_ARITHMETIC;
     }
 
     @Override
@@ -63,6 +63,9 @@ public class H2ExpressionGenerator extends UntypedExpressionGenerator<Node<H2Exp
             return new NewCaseOperatorNode<H2Expression>(generateExpression(depth + 1),
                     generateExpressions(depth + 1, nr), generateExpressions(depth + 1, nr),
                     generateExpression(depth + 1));
+        case BINARY_ARITHMETIC:
+            return new NewBinaryOperatorNode<H2Expression>(generateExpression(depth + 1), generateExpression(depth + 1),
+                    H2BinaryArithmeticOperator.getRandom());
         default:
             throw new AssertionError();
         }
@@ -87,6 +90,8 @@ public class H2ExpressionGenerator extends UntypedExpressionGenerator<Node<H2Exp
             return H2Constant.createStringConstant(Character.toString((char) (RANDOM.nextInt('z' - 'a') + 'a')));
         case DOUBLE:
             return H2Constant.createDoubleConstant(getUncachedDouble());
+        case BINARY:
+            return H2Constant.createBinaryConstant(getUncachedInt());
         default:
             throw new AssertionError();
         }
@@ -138,6 +143,26 @@ public class H2ExpressionGenerator extends UntypedExpressionGenerator<Node<H2Exp
 
         public static H2UnaryPrefixOperator getRandom() {
             return Randomly.fromOptions(values());
+        }
+
+    }
+
+    public enum H2BinaryArithmeticOperator implements Operator {
+        CONCAT("||"), ADD("+"), SUB("-"), MULT("*"), DIV("/"), MOD("%");
+
+        private String textRepr;
+
+        H2BinaryArithmeticOperator(String textRepr) {
+            this.textRepr = textRepr;
+        }
+
+        public static Operator getRandom() {
+            return Randomly.fromOptions(values());
+        }
+
+        @Override
+        public String getTextRepresentation() {
+            return textRepr;
         }
 
     }

@@ -20,7 +20,7 @@ public class H2Schema extends AbstractSchema<H2Table> {
 
     public enum H2DataType {
 
-        INT, BOOL, VARCHAR, DOUBLE;
+        INT, BOOL, VARCHAR, DOUBLE, BINARY;
 
         public static H2DataType getRandom() {
             return Randomly.fromOptions(values());
@@ -41,7 +41,8 @@ public class H2Schema extends AbstractSchema<H2Table> {
         }
 
         public static H2CompositeDataType getRandom() {
-            return new H2CompositeDataType(Randomly.fromOptions(H2DataType.INT, H2DataType.BOOL, H2DataType.DOUBLE));
+            return new H2CompositeDataType(
+                    Randomly.fromOptions(H2DataType.INT, H2DataType.BOOL, H2DataType.DOUBLE, H2DataType.BINARY));
         }
 
         @Override
@@ -78,7 +79,7 @@ public class H2Schema extends AbstractSchema<H2Table> {
     public static class H2Table extends AbstractTable<H2Column, TableIndex> {
 
         public H2Table(String tableName, List<H2Column> columns) {
-            super(tableName, columns, Collections.emptyList(), false);
+            super(tableName, columns, Collections.emptyList(), tableName.startsWith("V"));
         }
 
     }
@@ -135,6 +136,12 @@ public class H2Schema extends AbstractSchema<H2Table> {
             return H2DataType.VARCHAR;
         } else if (columnType.startsWith("DOUBLE")) {
             return H2DataType.DOUBLE;
+        } else if (columnType.startsWith("NUMERIC")) {
+            return H2DataType.INT;
+        } else if (columnType.contentEquals("NULL")) {
+            return H2DataType.INT; // for a NULL view column
+        } else if (columnType.startsWith("BINARY")) {
+            return H2DataType.BINARY;
         } else {
             throw new AssertionError(columnType);
         }

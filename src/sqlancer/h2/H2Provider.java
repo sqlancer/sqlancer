@@ -3,24 +3,17 @@ package sqlancer.h2;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 import sqlancer.AbstractAction;
-import sqlancer.ComparatorHelper;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.ProviderAdapter;
 import sqlancer.Randomly;
 import sqlancer.StatementExecutor;
-import sqlancer.common.oracle.TestOracle;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
 import sqlancer.common.query.QueryProvider;
 import sqlancer.h2.H2Provider.H2GlobalState;
-import sqlancer.h2.H2Schema.H2Column;
-import sqlancer.h2.H2Schema.H2Tables;
 
 public class H2Provider extends ProviderAdapter<H2GlobalState, H2Options> {
 
@@ -32,7 +25,7 @@ public class H2Provider extends ProviderAdapter<H2GlobalState, H2Options> {
 
         INSERT(H2InsertGenerator::getQuery), //
         INDEX(H2IndexGenerator::getQuery), //
-        ANALYZE((g) -> new QueryAdapter("ANALYZE"));
+        ANALYZE((g) -> new QueryAdapter("ANALYZE")), CREATE_VIEW(H2ViewGenerator::getQuery);
 
         private final QueryProvider<H2GlobalState> queryProvider;
 
@@ -55,6 +48,8 @@ public class H2Provider extends ProviderAdapter<H2GlobalState, H2Options> {
             return r.getInteger(0, 5);
         case INDEX:
             return r.getInteger(0, 5);
+        case CREATE_VIEW:
+            return r.getInteger(0, 2);
         default:
             throw new AssertionError(a);
         }
@@ -100,39 +95,6 @@ public class H2Provider extends ProviderAdapter<H2GlobalState, H2Options> {
     @Override
     public String getDBMSName() {
         return "h2";
-    }
-
-    public static class H2TLPWhereOracle implements TestOracle {
-
-        private final H2GlobalState globalState;
-
-        public H2TLPWhereOracle(H2GlobalState globalState) {
-            this.globalState = globalState;
-        }
-
-        @Override
-        public void check() throws SQLException {
-            H2Tables tables = globalState.getSchema().getRandomTableNonEmptyTables();
-            String tablesString = tables.tableNamesAsString();
-            List<H2Column> columns = tables.getColumns();
-            String predicate = H2ToStringVisitor
-                    .asString(new H2ExpressionGenerator(globalState).setColumns(columns).generateExpression());
-            String original = "SELECT * FROM " + tablesString;
-            ExpectedErrors errors = new ExpectedErrors();
-            H2Errors.addExpressionErrors(errors);
-            List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(original, errors, globalState);
-
-            String nonNegated = "SELECT * FROM " + tablesString + " WHERE " + predicate;
-            String negated = "SELECT * FROM " + tablesString + " WHERE NOT " + predicate;
-            String isNull = "SELECT * FROM " + tablesString + " WHERE " + predicate + " IS NULL";
-            List<String> combinedString = new ArrayList<>();
-
-            List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(nonNegated, negated, isNull,
-                    combinedString, true, globalState, errors);
-            ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, original, combinedString,
-                    globalState);
-        }
-
     }
 
 }

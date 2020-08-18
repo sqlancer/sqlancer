@@ -9,7 +9,6 @@ import sqlancer.OracleFactory;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.h2.H2Options.H2OracleFactory;
 import sqlancer.h2.H2Provider.H2GlobalState;
-import sqlancer.h2.H2Provider.H2TLPWhereOracle;
 
 public class H2Options implements DBMSSpecificOptions<H2OracleFactory> {
 
@@ -19,7 +18,7 @@ public class H2Options implements DBMSSpecificOptions<H2OracleFactory> {
 
             @Override
             public TestOracle create(H2GlobalState globalState) throws SQLException {
-                return new H2TLPWhereOracle(globalState);
+                return new H2QueryPartitioningWhereTester(globalState);
             }
 
         };

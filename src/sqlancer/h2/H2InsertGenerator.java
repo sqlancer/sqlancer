@@ -37,6 +37,7 @@ public class H2InsertGenerator extends AbstractInsertGenerator<H2Column> {
         sb.append(" VALUES ");
         insertColumns(columns);
         H2Errors.addInsertErrors(errors);
+        H2Errors.addExpressionErrors(errors); // generated columns
         return new QueryAdapter(sb.toString(), errors);
     }
 

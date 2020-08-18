@@ -76,6 +76,28 @@ public class H2Constant implements Node<H2Expression> {
 
     }
 
+    public static class H2BinaryConstant extends H2Constant {
+
+        private String value;
+
+        public H2BinaryConstant(long value) {
+            this.value = Long.toHexString(value);
+            if (this.value.length() % 2 == 1) {
+                this.value = '0' + this.value; // pad with leading zero if needed
+            }
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return "X'" + value + "'";
+        }
+
+    }
+
     public static Node<H2Expression> createIntConstant(long val) {
         return new H2IntConstant(val);
     }
@@ -94,6 +116,10 @@ public class H2Constant implements Node<H2Expression> {
 
     public static Node<H2Expression> createDoubleConstant(double val) {
         return new H2DoubleConstant(val);
+    }
+
+    public static Node<H2Expression> createBinaryConstant(long val) {
+        return new H2BinaryConstant(val);
     }
 
 }
