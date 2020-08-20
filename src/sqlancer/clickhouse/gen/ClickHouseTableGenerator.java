@@ -103,9 +103,7 @@ public class ClickHouseTableGenerator {
 
     private void addColumnsConstraint(ClickHouseExpressionGenerator gen) {
         for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
-            if (i != 0) {
-                sb.append(", ");
-            }
+            sb.append(",");
             sb.append(" CONSTRAINT ");
             sb.append(ClickHouseCommon.createConstraintName(i));
             sb.append(" CHECK ");
