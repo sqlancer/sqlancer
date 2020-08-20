@@ -1,6 +1,7 @@
 package sqlancer.clickhouse.gen;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,7 +20,7 @@ public class ClickHouseColumnBuilder {
     private static boolean allowCodec = true;
 
     private enum Constraints {
-        DEFAULT, MATERIALIZED, ALIAS, CODEC // TTL
+        DEFAULT, MATERIALIZED, CODEC, ALIAS // TTL
     }
 
     public String createColumn(String columnName, ClickHouseProvider.ClickHouseGlobalState globalState,
@@ -44,12 +45,15 @@ public class ClickHouseColumnBuilder {
                 constraints.remove(Constraints.DEFAULT);
             } else if (constraints.contains(Constraints.ALIAS)) {
                 constraints.remove(Constraints.DEFAULT);
+                constraints.remove(Constraints.CODEC);
             }
         }
 
         if (!constraints.contains(Constraints.ALIAS)) {
             sb.append(dataType);
         }
+
+        Collections.sort(constraints);
 
         for (Constraints c : constraints) {
             switch (c) {

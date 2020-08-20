@@ -86,7 +86,6 @@ public class ClickHouseSchema extends AbstractSchema<ClickHouseTable> {
         Object value;
         ClickHouseConstant constant;
         if (randomRowValues.getString(columnIndex) == null) {
-            value = null;
             constant = ClickHouseConstant.createNullConstant();
         } else {
             switch (valueType) {

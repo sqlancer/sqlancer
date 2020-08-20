@@ -6,8 +6,8 @@ import java.util.List;
 
 import ru.yandex.clickhouse.domain.ClickHouseDataType;
 import sqlancer.ComparatorHelper;
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.clickhouse.ClickHouseErrors;
 import sqlancer.clickhouse.ClickHouseProvider;
 import sqlancer.clickhouse.ClickHouseSchema;
 import sqlancer.clickhouse.ClickHouseVisitor;
@@ -18,17 +18,15 @@ import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation;
 import sqlancer.clickhouse.gen.ClickHouseCommon;
 import sqlancer.clickhouse.gen.ClickHouseExpressionGenerator;
-import sqlancer.common.oracle.TestOracle;
-import sqlancer.common.query.QueryAdapter;
-import sqlancer.common.query.SQLancerResultSet;
 
-public class ClickHouseTLPAggregateOracle implements TestOracle {
+public class ClickHouseTLPAggregateOracle extends ClickHouseTLPBase {
 
-    private final ClickHouseProvider.ClickHouseGlobalState state;
     private ClickHouseExpressionGenerator gen;
 
     public ClickHouseTLPAggregateOracle(ClickHouseProvider.ClickHouseGlobalState state) {
-        this.state = state;
+        super(state);
+        ClickHouseErrors.addExpectedExpressionErrors(errors);
+        ClickHouseErrors.addQueryErrors(errors);
     }
 
     @Override
@@ -66,39 +64,27 @@ public class ClickHouseTLPAggregateOracle implements TestOracle {
                 + ClickHouseVisitor.asString(middleSelect) + " UNION ALL " + ClickHouseVisitor.asString(rightSelect);
         metamorphicText += ")";
 
-        String firstResult;
-        String secondResult;
-        QueryAdapter q = new QueryAdapter(originalQuery);
-        try (SQLancerResultSet result = q.executeAndGet(state)) {
-            if (result == null) {
-                throw new IgnoreMeException();
-            }
-            firstResult = result.getString(1);
-        } catch (Exception e) {
-            // TODO
-            throw new IgnoreMeException();
-        }
+        List<String> firstResult = ComparatorHelper.getResultSetFirstColumnAsString(originalQuery, errors, state);
 
-        QueryAdapter q2 = new QueryAdapter(metamorphicText);
-        try (SQLancerResultSet result = q2.executeAndGet(state)) {
-            if (result == null) {
-                throw new IgnoreMeException();
-            }
-            secondResult = result.getString(1);
-        } catch (Exception e) {
-            // TODO
-            throw new IgnoreMeException();
-        }
+        List<String> secondResult = ComparatorHelper.getResultSetFirstColumnAsString(metamorphicText, errors, state);
+
         state.getState().getLocalState()
-                .log("--" + originalQuery + "\n--" + metamorphicText + "\n-- " + firstResult + "\n-- " + secondResult);
-        if ((firstResult == null && secondResult != null
-                || firstResult != null && !firstResult.contentEquals(secondResult))
-                && !ComparatorHelper.isEqualDouble(firstResult, secondResult)) {
+                .log("--" + originalQuery + "\n--" + metamorphicText + "\n-- " + firstResult + "\n-- " + secondResult
+                        + "\n--first size " + firstResult.size() + "\n--second size " + secondResult.size());
 
+        if (firstResult.size() != secondResult.size()) {
             throw new AssertionError();
-
+        } else if (firstResult.isEmpty()) {
+            return;
+        } else if (firstResult.size() == 1) {
+            if (firstResult.get(0).equals(secondResult.get(0))) {
+                return;
+            } else if (!ComparatorHelper.isEqualDouble(firstResult.get(0), secondResult.get(0))) {
+                throw new AssertionError();
+            }
+        } else {
+            throw new AssertionError();
         }
-
     }
 
     private ClickHouseSelect getSelect(ClickHouseAggregate aggregate, List<ClickHouseExpression> from,
