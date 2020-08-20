@@ -56,7 +56,7 @@ public class H2Constant implements Node<H2Expression> {
 
         @Override
         public String toString() {
-            return String.format("'%s'", value);
+            return String.format("'%s'", value.replace("'", "''"));
         }
 
     }
@@ -71,7 +71,17 @@ public class H2Constant implements Node<H2Expression> {
 
         @Override
         public String toString() {
-            return String.valueOf(value);
+            if (value == Double.POSITIVE_INFINITY) {
+                return "POWER(0, -1)";
+            } else if (value == Double.NEGATIVE_INFINITY) {
+                return "(-POWER(0, -1))";
+            } else if (Double.compare(value, -0.0) == 0) {
+                return "(-CAST(0 AS DOUBLE))";
+            } else if (Double.isNaN(value)) {
+                return "SQRT(-1)";
+            } else {
+                return String.valueOf(value);
+            }
         }
 
     }
