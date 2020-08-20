@@ -10,22 +10,21 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce.SQLite3StateToReproduce;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.QueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
+import sqlancer.common.schema.AbstractRowValue;
 import sqlancer.common.schema.AbstractTable;
 import sqlancer.common.schema.AbstractTableColumn;
+import sqlancer.common.schema.AbstractTables;
 import sqlancer.common.schema.TableIndex;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
-import sqlancer.sqlite3.SQLite3ToStringVisitor;
 import sqlancer.sqlite3.ast.SQLite3Constant;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table.TableKind;
@@ -152,40 +151,13 @@ public class SQLite3Schema {
         return constant;
     }
 
-    public static class SQLite3Tables {
-        private final List<SQLite3Table> tables;
-        private final List<SQLite3Column> columns;
+    public static class SQLite3Tables extends AbstractTables<SQLite3Table, SQLite3Column> {
 
         public SQLite3Tables(List<SQLite3Table> tables) {
-            this.tables = tables;
-            columns = new ArrayList<>();
-            for (SQLite3Table t : tables) {
-                columns.addAll(t.getColumns());
-            }
+            super(tables);
         }
 
-        public String tableNamesAsString() {
-            return tables.stream().map(t -> t.getName()).collect(Collectors.joining(", "));
-        }
-
-        public List<SQLite3Table> getTables() {
-            return tables;
-        }
-
-        public List<SQLite3Column> getColumns() {
-            return columns;
-        }
-
-        public String columnNamesAsString() {
-            return getColumns().stream().map(t -> t.getTable().getName() + "." + t.getName())
-                    .collect(Collectors.joining(", "));
-        }
-
-        public String columnNamesAsString(Function<SQLite3Column, String> function) {
-            return getColumns().stream().map(function).collect(Collectors.joining(", "));
-        }
-
-        public SQLite3RowValue getRandomRowValue(Connection con, SQLite3StateToReproduce state) throws SQLException {
+        public SQLite3RowValue getRandomRowValue(Connection con) throws SQLException {
             String randomRow = String.format("SELECT %s, %s FROM %s ORDER BY RANDOM() LIMIT 1", columnNamesAsString(
                     c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
                     columnNamesAsString(c -> "typeof(" + c.getTable().getName() + "." + c.getName() + ")"),
@@ -199,7 +171,7 @@ public class SQLite3Schema {
                     throw new IgnoreMeException();
                 }
                 if (!randomRowValues.next()) {
-                    throw new AssertionError("could not find random row! " + randomRow + "\n" + state);
+                    throw new AssertionError("could not find random row! " + randomRow);
                 }
                 for (int i = 0; i < getColumns().size(); i++) {
                     SQLite3Column column = getColumns().get(i);
@@ -211,7 +183,6 @@ public class SQLite3Schema {
                     values.put(column, constant);
                 }
                 assert !randomRowValues.next();
-                state.randomRowValues = values;
                 return new SQLite3RowValue(this, values);
             }
 
@@ -281,54 +252,10 @@ public class SQLite3Schema {
 
     }
 
-    public static class SQLite3RowValue {
-        private final SQLite3Tables tables;
-        private final Map<SQLite3Column, SQLite3Constant> values;
+    public static class SQLite3RowValue extends AbstractRowValue<SQLite3Tables, SQLite3Column, SQLite3Constant> {
 
         SQLite3RowValue(SQLite3Tables tables, Map<SQLite3Column, SQLite3Constant> values) {
-            this.tables = tables;
-            this.values = values;
-        }
-
-        public SQLite3Tables getTable() {
-            return tables;
-        }
-
-        public Map<SQLite3Column, SQLite3Constant> getValues() {
-            return values;
-        }
-
-        @Override
-        public String toString() {
-            StringBuffer sb = new StringBuffer();
-            int i = 0;
-            for (SQLite3Column c : tables.getColumns()) {
-                if (i++ != 0) {
-                    sb.append(", ");
-                }
-                sb.append(values.get(c));
-            }
-            return sb.toString();
-        }
-
-        public String getRowValuesAsString() {
-            List<SQLite3Column> columnsToCheck = tables.getColumns();
-            return getRowValuesAsString(columnsToCheck);
-        }
-
-        public String getRowValuesAsString(List<SQLite3Column> columnsToCheck) {
-            StringBuilder sb = new StringBuilder();
-            Map<SQLite3Column, SQLite3Constant> expectedValues = getValues();
-            for (int i = 0; i < columnsToCheck.size(); i++) {
-                if (i != 0) {
-                    sb.append(", ");
-                }
-                SQLite3Constant expectedColumnValue = expectedValues.get(columnsToCheck.get(i));
-                SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
-                visitor.visit(expectedColumnValue);
-                sb.append(visitor.get());
-            }
-            return sb.toString();
+            super(tables, values);
         }
 
     }
@@ -404,13 +331,7 @@ public class SQLite3Schema {
                     boolean isDbStatsTable = sqlString.contains("using dbstat");
                     List<SQLite3Column> databaseColumns = getTableColumns(con, tableName, sqlString, isView,
                             isDbStatsTable);
-                    int nrRows;
-                    try {
-                        // FIXME
-                        nrRows = getNrRows(globalState, tableName);
-                    } catch (IgnoreMeException e) {
-                        nrRows = 0;
-                    }
+                    int nrRows = getNrRows(globalState, tableName);
                     SQLite3Table t = new SQLite3Table(tableName, databaseColumns,
                             tableType.contentEquals("temp_table") ? TableKind.TEMP : TableKind.MAIN, withoutRowid,
                             nrRows, isView, isVirtual, isReadOnly);

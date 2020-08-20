@@ -115,7 +115,7 @@ public class SQLite3PivotedQuerySynthesisOracle implements TestOracle {
                 columns.add(t.getRowid());
             }
         }
-        rw = randomFromTables.getRandomRowValue(database, (SQLite3StateToReproduce) globalState.getState());
+        rw = randomFromTables.getRandomRowValue(database);
 
         List<Join> joinStatements = new ArrayList<>();
         for (int i = 1; i < tables.size(); i++) {

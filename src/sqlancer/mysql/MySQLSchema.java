@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce.MySQLStateToReproduce;
+import sqlancer.common.schema.AbstractRowValue;
 import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractTable;
 import sqlancer.common.schema.AbstractTableColumn;
@@ -167,55 +168,10 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
         }
     }
 
-    public static class MySQLRowValue {
-
-        private final MySQLTables tables;
-        private final Map<MySQLColumn, MySQLConstant> values;
+    public static class MySQLRowValue extends AbstractRowValue<MySQLTables, MySQLColumn, MySQLConstant> {
 
         MySQLRowValue(MySQLTables tables, Map<MySQLColumn, MySQLConstant> values) {
-            this.tables = tables;
-            this.values = values;
-        }
-
-        public MySQLTables getTable() {
-            return tables;
-        }
-
-        public Map<MySQLColumn, MySQLConstant> getValues() {
-            return values;
-        }
-
-        @Override
-        public String toString() {
-            StringBuffer sb = new StringBuffer();
-            int i = 0;
-            for (MySQLColumn c : tables.getColumns()) {
-                if (i++ != 0) {
-                    sb.append(", ");
-                }
-                sb.append(values.get(c));
-            }
-            return sb.toString();
-        }
-
-        public String getRowValuesAsString() {
-            List<MySQLColumn> columnsToCheck = tables.getColumns();
-            return getRowValuesAsString(columnsToCheck);
-        }
-
-        public String getRowValuesAsString(List<MySQLColumn> columnsToCheck) {
-            StringBuilder sb = new StringBuilder();
-            Map<MySQLColumn, MySQLConstant> expectedValues = getValues();
-            for (int i = 0; i < columnsToCheck.size(); i++) {
-                if (i != 0) {
-                    sb.append(", ");
-                }
-                MySQLConstant expectedColumnValue = expectedValues.get(columnsToCheck.get(i));
-                MySQLToStringVisitor visitor = new MySQLToStringVisitor();
-                visitor.visit(expectedColumnValue);
-                sb.append(visitor.get());
-            }
-            return sb.toString();
+            super(tables, values);
         }
 
     }

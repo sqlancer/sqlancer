@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce.PostgresStateToReproduce;
+import sqlancer.common.schema.AbstractRowValue;
 import sqlancer.common.schema.AbstractTable;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.AbstractTables;
@@ -140,55 +141,10 @@ public class PostgresSchema {
         }
     }
 
-    public static class PostgresRowValue {
+    public static class PostgresRowValue extends AbstractRowValue<PostgresTables, PostgresColumn, PostgresConstant> {
 
-        private final PostgresTables tables;
-        private final Map<PostgresColumn, PostgresConstant> values;
-
-        PostgresRowValue(PostgresTables tables, Map<PostgresColumn, PostgresConstant> values) {
-            this.tables = tables;
-            this.values = values;
-        }
-
-        public PostgresTables getTable() {
-            return tables;
-        }
-
-        public Map<PostgresColumn, PostgresConstant> getValues() {
-            return values;
-        }
-
-        @Override
-        public String toString() {
-            StringBuffer sb = new StringBuffer();
-            int i = 0;
-            for (PostgresColumn c : tables.getColumns()) {
-                if (i++ != 0) {
-                    sb.append(", ");
-                }
-                sb.append(values.get(c));
-            }
-            return sb.toString();
-        }
-
-        public String getRowValuesAsString() {
-            List<PostgresColumn> columnsToCheck = tables.getColumns();
-            return getRowValuesAsString(columnsToCheck);
-        }
-
-        public String getRowValuesAsString(List<PostgresColumn> columnsToCheck) {
-            StringBuilder sb = new StringBuilder();
-            Map<PostgresColumn, PostgresConstant> expectedValues = getValues();
-            for (int i = 0; i < columnsToCheck.size(); i++) {
-                if (i != 0) {
-                    sb.append(", ");
-                }
-                PostgresConstant expectedColumnValue = expectedValues.get(columnsToCheck.get(i));
-                PostgresToStringVisitor visitor = new PostgresToStringVisitor();
-                visitor.visit(expectedColumnValue);
-                sb.append(visitor.get());
-            }
-            return sb.toString();
+        protected PostgresRowValue(PostgresTables tables, Map<PostgresColumn, PostgresConstant> values) {
+            super(tables, values);
         }
 
     }
