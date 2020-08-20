@@ -41,9 +41,6 @@ public class H2TableGenerator {
                 sb.append(" DEFAULT ");
                 sb.append(H2ToStringVisitor.asString(new H2ExpressionGenerator(globalState).generateConstant()));
             }
-            if (Randomly.getBooleanWithRatherLowProbability() && !generated) {
-                sb.append(" UNIQUE");
-            }
             if (generated) {
                 sb.append(" AS (");
                 List<H2Column> columns = columnNames.stream().filter(cName -> !cName.contentEquals(c))
@@ -53,6 +50,13 @@ public class H2TableGenerator {
                 H2Errors.addExpressionErrors(errors);
                 errors.add("not found"); // generated column cycles
                 sb.append(')');
+            }
+            if (Randomly.getBooleanWithRatherLowProbability()) {
+                sb.append(" SELECTIVITY ");
+                sb.append(Randomly.getNotCachedInteger(0, 101));
+            }
+            if (Randomly.getBooleanWithRatherLowProbability() && !generated) {
+                sb.append(" UNIQUE");
             }
             if (Randomly.getBooleanWithRatherLowProbability()) {
                 sb.append(" CHECK ");

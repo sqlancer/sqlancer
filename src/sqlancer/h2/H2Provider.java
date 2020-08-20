@@ -27,7 +27,9 @@ public class H2Provider extends ProviderAdapter<H2GlobalState, H2Options> {
         INDEX(H2IndexGenerator::getQuery), //
         ANALYZE((g) -> new QueryAdapter("ANALYZE")), //
         CREATE_VIEW(H2ViewGenerator::getQuery), //
-        UPDATE(H2UpdateGenerator::getQuery), DELETE(H2DeleteGenerator::getQuery);
+        UPDATE(H2UpdateGenerator::getQuery), //
+        DELETE(H2DeleteGenerator::getQuery), //
+        SET(H2SetGenerator::getQuery);
 
         private final QueryProvider<H2GlobalState> queryProvider;
 
@@ -49,6 +51,7 @@ public class H2Provider extends ProviderAdapter<H2GlobalState, H2Options> {
         case ANALYZE:
             return r.getInteger(0, 5);
         case INDEX:
+        case SET:
             return r.getInteger(0, 5);
         case CREATE_VIEW:
             return r.getInteger(0, 2);
@@ -71,6 +74,9 @@ public class H2Provider extends ProviderAdapter<H2GlobalState, H2Options> {
 
     @Override
     public void generateDatabase(H2GlobalState globalState) throws SQLException {
+        if (Randomly.getBoolean()) {
+            H2SetGenerator.getQuery(globalState).execute(globalState);
+        }
         boolean success = false;
         for (int i = 0; i < Randomly.fromOptions(1, 2, 3); i++) {
             do {

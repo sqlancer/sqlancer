@@ -27,12 +27,18 @@ public final class H2Errors {
         errors.add("must be in the GROUP BY list");
         errors.add("must be in the result list in this case"); // ORDER BY
         errors.add("Division by zero");
-        errors.add("for parameter \"numeric\";"); // Invalid value "CHARACTER VARYING(1)" for parameter "numeric"; SQL
-                                                  // statement:
 
         // regexp
         errors.add("Unclosed group near index");
         errors.add("Error in LIKE ESCAPE");
+
+        // functions
+        errors.add("Invalid value" /* ... for parameter */);
+
+        errors.add("String format error"); // STRINGDECODE
+        errors.add(/* precision */ "must be between"); // TRUNCATE_VALUE
+        errors.add("Cannot parse \"TIMESTAMP\" constant"); // TRUNCATE
+        errors.add("Invalid parameter count for \"TRUNC\", expected count: \"1\""); // TRUNCATE
     }
 
     public static void addDeleteErrors(ExpectedErrors errors) {
