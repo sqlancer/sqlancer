@@ -1,7 +1,5 @@
 package sqlancer.postgres;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Connection;
@@ -9,8 +7,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
 import sqlancer.IgnoreMeException;
@@ -23,9 +19,6 @@ import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
 import sqlancer.common.query.QueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
-import sqlancer.postgres.PostgresSchema.PostgresColumn;
-import sqlancer.postgres.PostgresSchema.PostgresTable;
-import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.gen.PostgresAlterTableGenerator;
 import sqlancer.postgres.gen.PostgresAnalyzeGenerator;
 import sqlancer.postgres.gen.PostgresClusterGenerator;
@@ -320,41 +313,6 @@ public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, Postg
     @Override
     public String getDBMSName() {
         return "postgres";
-    }
-
-    @Override
-    public void printDatabaseSpecificState(FileWriter writer, StateToReproduce state) {
-        StringBuilder sb = new StringBuilder();
-        PostgresStateToReproduce specificState = (PostgresStateToReproduce) state;
-        if (specificState.getRandomRowValues() != null) {
-            List<PostgresColumn> columnList = specificState.getRandomRowValues().keySet().stream()
-                    .collect(Collectors.toList());
-            List<PostgresTable> tableList = columnList.stream().map(c -> c.getTable()).distinct().sorted()
-                    .collect(Collectors.toList());
-            for (PostgresTable t : tableList) {
-                sb.append("-- " + t.getName() + "\n");
-                List<PostgresColumn> columnsForTable = columnList.stream().filter(c -> c.getTable().equals(t))
-                        .collect(Collectors.toList());
-                for (PostgresColumn c : columnsForTable) {
-                    sb.append("--\t");
-                    sb.append(c);
-                    sb.append("=");
-                    sb.append(specificState.getRandomRowValues().get(c));
-                    sb.append("\n");
-                }
-            }
-            sb.append("expected values: \n");
-            PostgresExpression whereClause = ((PostgresStateToReproduce) state).getWhereClause();
-            if (whereClause != null) {
-                sb.append(PostgresVisitor.asExpectedValues(whereClause).replace("\n", "\n-- "));
-            }
-        }
-        try {
-            writer.write(sb.toString());
-            writer.flush();
-        } catch (IOException e) {
-            throw new AssertionError();
-        }
     }
 
     @Override

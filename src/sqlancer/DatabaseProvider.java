@@ -1,6 +1,5 @@
 package sqlancer;
 
-import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -37,15 +36,6 @@ public interface DatabaseProvider<G extends GlobalState<O, ?>, O extends DBMSSpe
      * @return the DBMS' name
      */
     String getDBMSName();
-
-    // TODO: remove this
-    /**
-     * Deprecated method to print the database-specific state, previously used for PQS.
-     *
-     * @param writer
-     * @param state
-     */
-    void printDatabaseSpecificState(FileWriter writer, StateToReproduce state);
 
     StateToReproduce getStateToReproduce(String databaseName);
 

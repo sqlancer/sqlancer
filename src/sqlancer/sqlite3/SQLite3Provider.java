@@ -1,7 +1,6 @@
 package sqlancer.sqlite3;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -358,10 +357,6 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
     @Override
     public String getDBMSName() {
         return "sqlite3";
-    }
-
-    @Override
-    public void printDatabaseSpecificState(FileWriter writer, StateToReproduce state) {
     }
 
     @Override

@@ -1,6 +1,5 @@
 package sqlancer;
 
-import java.io.FileWriter;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,11 +17,6 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ?>, O extends DBM
     public ProviderAdapter(Class<G> globalClass, Class<O> optionClass) {
         this.globalClass = globalClass;
         this.optionClass = optionClass;
-    }
-
-    @Override
-    public void printDatabaseSpecificState(FileWriter writer, StateToReproduce state) {
-
     }
 
     @Override

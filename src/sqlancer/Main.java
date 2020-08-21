@@ -66,7 +66,6 @@ public final class Main {
         public FileWriter currentFileWriter;
         private static final List<String> INITIALIZED_PROVIDER_NAMES = new ArrayList<>();
         private final boolean logEachSelect;
-        private final DatabaseProvider<?, ?> provider;
 
         private static final class AlsoWriteToConsoleFileWriter extends FileWriter {
 
@@ -88,7 +87,6 @@ public final class Main {
         }
 
         public StateLogger(String databaseName, DatabaseProvider<?, ?> provider, MainOptions options) {
-            this.provider = provider;
             File dir = new File(LOG_DIRECTORY, provider.getDBMSName());
             if (dir.exists() && !dir.isDirectory()) {
                 throw new AssertionError(dir);
@@ -243,7 +241,6 @@ public final class Main {
             } catch (IOException e) {
                 throw new AssertionError(e);
             }
-            provider.printDatabaseSpecificState(writer, state);
         }
 
     }

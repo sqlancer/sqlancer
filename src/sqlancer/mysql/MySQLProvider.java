@@ -1,14 +1,10 @@
 package sqlancer.mysql;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
 import sqlancer.IgnoreMeException;
@@ -20,7 +16,6 @@ import sqlancer.StatementExecutor;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
 import sqlancer.common.query.QueryProvider;
-import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.gen.MySQLAlterTable;
 import sqlancer.mysql.gen.MySQLDeleteGenerator;
@@ -190,38 +185,6 @@ public class MySQLProvider extends ProviderAdapter<MySQLGlobalState, MySQLOption
     @Override
     public String getDBMSName() {
         return "mysql";
-    }
-
-    @Override
-    public void printDatabaseSpecificState(FileWriter writer, StateToReproduce state) {
-        StringBuilder sb = new StringBuilder();
-        MySQLStateToReproduce specificState = (MySQLStateToReproduce) state;
-        if (specificState.getRandomRowValues() != null) {
-            List<MySQLColumn> columnList = specificState.getRandomRowValues().keySet().stream()
-                    .collect(Collectors.toList());
-            List<MySQLTable> tableList = columnList.stream().map(c -> c.getTable()).distinct().sorted()
-                    .collect(Collectors.toList());
-            for (MySQLTable t : tableList) {
-                sb.append("-- " + t.getName() + "\n");
-                List<MySQLColumn> columnsForTable = columnList.stream().filter(c -> c.getTable().equals(t))
-                        .collect(Collectors.toList());
-                for (MySQLColumn c : columnsForTable) {
-                    sb.append("--\t");
-                    sb.append(c);
-                    sb.append("=");
-                    sb.append(specificState.getRandomRowValues().get(c));
-                    sb.append("\n");
-                }
-            }
-            sb.append("expected values: \n");
-            sb.append(MySQLVisitor.asExpectedValues(((MySQLStateToReproduce) state).getWhereClause()));
-        }
-        try {
-            writer.write(sb.toString());
-            writer.flush();
-        } catch (IOException e) {
-            throw new AssertionError();
-        }
     }
 
     @Override
