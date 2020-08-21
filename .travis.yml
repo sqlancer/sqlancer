@@ -95,6 +95,43 @@ matrix:
         - createdb test -U postgres
       script:
         - POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgres test
+    - name: Citus (PostgreSQL extension)
+      jdk : oraclejdk11
+      before_install:
+      - sudo apt-get update
+      - sudo apt-get install -y postgresql-server-dev-12 postgresql-12 locales
+      - git clone https://github.com/citusdata/citus.git
+      - cd citus
+      - ./configure
+      - make clean -sj9
+      - sudo make install -sj9
+      - cd ..
+      before_script:
+        - sudo chown -R $USER:$USER /var/run/postgresql
+        - export PATH=/usr/lib/postgresql/12/bin:$PATH
+        - mkdir -p citus/coordinator citus/worker1 citus/worker2
+        - initdb -D citus/coordinator
+        - initdb -D citus/worker1
+        - initdb -D citus/worker2
+        - echo "shared_preload_libraries = 'citus'" >> citus/coordinator/postgresql.conf
+        - echo "shared_preload_libraries = 'citus'" >> citus/worker1/postgresql.conf
+        - echo "shared_preload_libraries = 'citus'" >> citus/worker2/postgresql.conf
+        - pg_ctl -D citus/coordinator -o "-p 9700" -l coordinator_logfile start
+        - pg_ctl -D citus/worker1 -o "-p 9701" -l worker1_logfile start
+        - pg_ctl -D citus/worker2 -o "-p 9702" -l worker2_logfile start
+        - psql -c "CREATE ROLE sqlancer SUPERUSER LOGIN CREATEDB PASSWORD 'sqlancer';" -p 9700 -d postgres -U $USER
+        - createdb test -p 9700 -U $USER
+        - psql -c "CREATE ROLE sqlancer SUPERUSER LOGIN CREATEDB PASSWORD 'sqlancer';" -p 9701 -d postgres -U $USER
+        - createdb test -p 9701 -U $USER
+        - psql -c "CREATE ROLE sqlancer SUPERUSER LOGIN CREATEDB PASSWORD 'sqlancer';" -p 9702 -d postgres -U $USER
+        - createdb test -p 9702 -U $USER
+        - psql -c "CREATE EXTENSION citus;" -p 9700 -U $USER -d test
+        - psql -c "CREATE EXTENSION citus;" -p 9701 -U $USER -d test
+        - psql -c "CREATE EXTENSION citus;" -p 9702 -U $USER -d test
+        - psql -c "SELECT * from master_add_node('localhost', 9701);" -p 9700 -U $USER -d test
+        - psql -c "SELECT * from master_add_node('localhost', 9702);" -p 9700 -U $USER -d test
+      script:
+        - CITUS_AVAILABLE=true mvn -Dtest=TestCitus test
     - name: ClickHouse
       jdk : oraclejdk11
       services:

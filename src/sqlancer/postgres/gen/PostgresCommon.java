@@ -28,6 +28,10 @@ public final class PostgresCommon {
         errors.add("missing FROM-clause entry for table");
 
         errors.add("canceling statement due to statement timeout");
+
+        errors.add("non-integer constant in GROUP BY");
+        errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
+        errors.add("GROUP BY position");
     }
 
     public static void addCommonTableErrors(ExpectedErrors errors) {

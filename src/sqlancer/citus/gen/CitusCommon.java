@@ -1,5 +1,6 @@
 package sqlancer.citus.gen;
 
+import sqlancer.citus.CitusBugs;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
@@ -11,6 +12,10 @@ public final class CitusCommon {
     }
 
     public static void addCitusErrors(ExpectedErrors errors) {
+        // not supported by Citus
+        errors.add("failed to evaluate partition key in insert");
+        errors.add("cannot perform an INSERT without a partition column value");
+        errors.add("cannot perform an INSERT with NULL in the partition column");
         errors.add("recursive CTEs are not supported in distributed queries");
         errors.add("could not run distributed query with GROUPING SETS, CUBE, or ROLLUP");
         errors.add("Subqueries in HAVING cannot refer to outer query");
@@ -30,39 +35,41 @@ public final class CitusCommon {
         errors.add("Distributed relations must not use GENERATED ... AS IDENTITY");
         errors.add("cannot drop multiple distributed objects in a single command");
         errors.add("is not distributed");
-        // ERROR: cannot create foreign key constraint
-        // Detail: SET NULL or SET DEFAULT is not supported in ON DELETE operation when distribution key is included in
-        // the foreign key constraint
-        errors.add("cannot create foreign key constraint");
+        errors.add("cannot create foreign key constraint"); // SET NULL or SET DEFAULT is not supported in ON DELETE
+                                                            // operation when distribution key is included in the
+                                                            // foreign key constraint
 
-        // Citus restrictions on SELECT queries
+        // not supported by Citus (restrictions on SELECT queries)
         errors.add(
                 "complex joins are only supported when all distributed tables are co-located and joined on their distribution columns");
         errors.add(
                 "complex joins are only supported when all distributed tables are joined on their distribution columns with equal operator");
         errors.add("cannot perform distributed planning on this query");
         errors.add("cannot pushdown the subquery");
-        // Check for whether repartition joins are enabled is made during query generation
-        // errors.add("the query contains a join that requires repartitioning");
 
-        // SQLancer errors
-        errors.add("non-integer constant in GROUP BY");
-        errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
-        errors.add("GROUP BY position");
-        errors.add("not a foreign key or check constraint");
-
-        // current Citus errors to be removed once fixed
-        errors.add("unrecognized node type: 127");
-        errors.add("failed to find conversion function from unknown to text");
-        errors.add("failed to evaluate partition key in insert");
-        errors.add("cannot perform an INSERT without a partition column value");
-        errors.add("cannot perform an INSERT with NULL in the partition column");
-        errors.add("ERROR: LIMIT must not be negative");
-        errors.add("value too long for type");
-
-        // current errors to be removed once upgraded to PostgreSQL 13?
-        errors.add("unrecognized configuration parameter \"enable_hashagg_disk\"");
-        errors.add("unrecognized configuration parameter \"enable_groupingsets_hash_disk\"");
+        // current errors in Citus (to be removed once fixed)
+        if (CitusBugs.bug3957) {
+            errors.add("unrecognized node type: 127");
+        }
+        if (CitusBugs.bug3980 || CitusBugs.bug3987 || CitusBugs.bug4019) {
+            errors.add("syntax error at or near");
+        }
+        if (CitusBugs.bug3982) {
+            errors.add("failed to find conversion function from unknown to text");
+            errors.add("invalid input syntax for");
+        }
+        if (CitusBugs.bug4013) {
+            errors.add("ERROR: LIMIT must not be negative");
+        }
+        if (CitusBugs.bug3981) {
+            errors.add("value too long for type");
+        }
+        if (CitusBugs.bug4014) {
+            errors.add("is ambiguous");
+        }
+        if (CitusBugs.bug4079) {
+            errors.add("aggregate function calls cannot be nested");
+        }
     }
 
     public static void addTableConstraint(StringBuilder sb, PostgresTable table, PostgresGlobalState globalState,
