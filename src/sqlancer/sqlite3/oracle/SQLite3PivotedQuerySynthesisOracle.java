@@ -29,8 +29,6 @@ import sqlancer.sqlite3.ast.SQLite3Expression.Join;
 import sqlancer.sqlite3.ast.SQLite3Expression.Join.JoinType;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm.Ordering;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
@@ -117,19 +115,8 @@ public class SQLite3PivotedQuerySynthesisOracle implements TestOracle {
         }
         rw = randomFromTables.getRandomRowValue(database);
 
-        List<Join> joinStatements = new ArrayList<>();
-        for (int i = 1; i < tables.size(); i++) {
-            SQLite3Expression joinClause = generateWhereClauseThatContainsRowValue(columns, rw);
-            SQLite3Table table = Randomly.fromList(tables);
-            tables.remove(table);
-            JoinType options;
-            options = Randomly.fromOptions(JoinType.INNER, JoinType.CROSS, JoinType.OUTER);
-            if (options == JoinType.OUTER && tables.size() > 2) {
-                errors.add("ON clause references tables to its right");
-            }
-            Join j = new SQLite3Expression.Join(table, joinClause, options);
-            joinStatements.add(j);
-        }
+        List<Join> joinStatements = getJoinStatements(globalState, tables, columns);
+
         selectStatement.setJoinClauses(joinStatements);
         selectStatement.setFromTables(SQLite3Common.getTableRefs(tables, s));
 
@@ -189,7 +176,8 @@ public class SQLite3PivotedQuerySynthesisOracle implements TestOracle {
             SQLite3Expression offsetClause = generateOffset();
             selectStatement.setOffsetClause(offsetClause);
         }
-        List<SQLite3Expression> orderBy = generateOrderBy(columns);
+        List<SQLite3Expression> orderBy = new SQLite3ExpressionGenerator(globalState).setColumns(columns)
+                .generateOrderBys();
         selectStatement.setOrderByExpressions(orderBy);
         if (!groupByClause.isEmpty() && Randomly.getBoolean()) {
             SQLite3Expression randomExpression = SQLite3Common.getTrueExpression(columns, globalState);
@@ -200,6 +188,21 @@ public class SQLite3PivotedQuerySynthesisOracle implements TestOracle {
             selectStatement.setHavingClause(randomExpression);
         }
         return selectStatement;
+    }
+
+    private List<Join> getJoinStatements(SQLite3GlobalState globalState, List<SQLite3Table> tables,
+            List<SQLite3Column> columns) {
+        List<Join> joinStatements = new SQLite3ExpressionGenerator(globalState).getRandomJoinClauses(tables);
+        for (Join j : joinStatements) {
+            if (j.getType() == JoinType.NATURAL) {
+                /* NATURAL joins have no on clause and cannot be rectified */
+                j.setType(JoinType.INNER);
+            }
+            // ensure that the join does not exclude the pivot row
+            j.setOnClause(generateWhereClauseThatContainsRowValue(columns, rw));
+        }
+        errors.add("ON clause references tables to its right");
+        return joinStatements;
     }
 
     private SQLite3Expression generateOffset() {
@@ -256,20 +259,6 @@ public class SQLite3PivotedQuerySynthesisOracle implements TestOracle {
             SQLite3Constant expectedValue = colExpressions.get(i).getExpectedValue();
             sb.append(SQLite3Visitor.asString(expectedValue));
         }
-    }
-
-    public List<SQLite3Expression> generateOrderBy(List<SQLite3Column> columns) {
-        List<SQLite3Expression> orderBys = new ArrayList<>();
-        for (int i = 0; i < Randomly.smallNumber(); i++) {
-            SQLite3Expression expr;
-            expr = new SQLite3ExpressionGenerator(globalState).setColumns(columns).generateExpression();
-            Ordering order = Randomly.fromOptions(Ordering.ASC, Ordering.DESC);
-            orderBys.add(new SQLite3OrderingTerm(expr, order));
-            // TODO RANDOM()
-        }
-        // TODO collate
-        errors.add("ORDER BY term out of range");
-        return orderBys;
     }
 
     private SQLite3Expression generateLimit(long l) {
