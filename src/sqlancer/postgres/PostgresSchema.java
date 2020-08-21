@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce.PostgresStateToReproduce;
 import sqlancer.common.schema.AbstractRowValue;
 import sqlancer.common.schema.AbstractTable;
 import sqlancer.common.schema.AbstractTableColumn;
@@ -63,7 +62,7 @@ public class PostgresSchema {
             super(tables);
         }
 
-        public PostgresRowValue getRandomRowValue(Connection con, PostgresStateToReproduce state) throws SQLException {
+        public PostgresRowValue getRandomRowValue(Connection con) throws SQLException {
             String randomRow = String.format("SELECT %s FROM %s ORDER BY RANDOM() LIMIT 1", columnNamesAsString(
                     c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
                     // columnNamesAsString(c -> "typeof(" + c.getTable().getName() + "." +
@@ -73,7 +72,7 @@ public class PostgresSchema {
             try (Statement s = con.createStatement()) {
                 ResultSet randomRowValues = s.executeQuery(randomRow);
                 if (!randomRowValues.next()) {
-                    throw new AssertionError("could not find random row! " + randomRow + "\n" + state);
+                    throw new AssertionError("could not find random row! " + randomRow + "\n");
                 }
                 for (int i = 0; i < getColumns().size(); i++) {
                     PostgresColumn column = getColumns().get(i);
@@ -100,7 +99,6 @@ public class PostgresSchema {
                     values.put(column, constant);
                 }
                 assert !randomRowValues.next();
-                state.randomRowValues = values;
                 return new PostgresRowValue(this, values);
             }
 

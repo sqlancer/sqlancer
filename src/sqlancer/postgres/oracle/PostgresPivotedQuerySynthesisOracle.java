@@ -12,7 +12,6 @@ import org.postgresql.util.PSQLException;
 import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce.PostgresStateToReproduce;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
@@ -29,7 +28,6 @@ import sqlancer.postgres.gen.PostgresExpressionGenerator;
 public class PostgresPivotedQuerySynthesisOracle
         extends PivotedQuerySynthesisBase<PostgresGlobalState, PostgresRowValue, PostgresExpression> {
 
-    private PostgresStateToReproduce state;
     private List<PostgresColumn> fetchColumns;
     private final MainOptions options;
     private final StateLogger logger;
@@ -42,8 +40,8 @@ public class PostgresPivotedQuerySynthesisOracle
 
     @Override
     public void check() throws SQLException {
-        String queryString = getQueryThatContainsAtLeastOneRow(state);
-        state.getLocalState().log(queryString);
+        String queryString = getQueryThatContainsAtLeastOneRow();
+        globalState.getState().getLocalState().log(queryString);
         if (options.logEachSelect()) {
             logger.writeCurrent(queryString);
         }
@@ -56,27 +54,21 @@ public class PostgresPivotedQuerySynthesisOracle
 
     }
 
-    public String getQueryThatContainsAtLeastOneRow(PostgresStateToReproduce state) throws SQLException {
-        this.state = state;
+    public String getQueryThatContainsAtLeastOneRow() throws SQLException {
         PostgresTables randomFromTables = globalState.getSchema().getRandomTableNonEmptyTables();
-
-        state.queryTargetedTablesString = randomFromTables.tableNamesAsString();
 
         PostgresSelect selectStatement = new PostgresSelect();
         selectStatement.setSelectType(Randomly.fromOptions(PostgresSelect.SelectType.values()));
         List<PostgresColumn> columns = randomFromTables.getColumns();
-        pivotRow = randomFromTables.getRandomRowValue(globalState.getConnection(), state);
+        pivotRow = randomFromTables.getRandomRowValue(globalState.getConnection());
 
         fetchColumns = columns;
         selectStatement.setFromList(randomFromTables.getTables().stream().map(t -> new PostgresFromTable(t, false))
                 .collect(Collectors.toList()));
         selectStatement.setFetchColumns(fetchColumns.stream()
                 .map(c -> new PostgresColumnValue(c, pivotRow.getValues().get(c))).collect(Collectors.toList()));
-        state.queryTargetedColumnsString = fetchColumns.stream().map(c -> c.getFullQualifiedName())
-                .collect(Collectors.joining(", "));
         PostgresExpression whereClause = generateWhereClauseThatContainsRowValue(columns, pivotRow);
         selectStatement.setWhereClause(whereClause);
-        state.whereClause = selectStatement;
         List<PostgresExpression> groupByClause = generateGroupByClause(columns, pivotRow);
         selectStatement.setGroupByExpressions(groupByClause);
         PostgresExpression limitClause = generateLimit();
@@ -107,7 +99,6 @@ public class PostgresPivotedQuerySynthesisOracle
             }
         }
         sb2.append(") as result;");
-        state.queryThatSelectsRow = sb2.toString();
 
         PostgresToStringVisitor visitor = new PostgresToStringVisitor();
         visitor.visit(selectStatement);
@@ -170,7 +161,6 @@ public class PostgresPivotedQuerySynthesisOracle
         }
         String resultingQueryString = sb.toString();
         // log both SELECT queries at the bottom of the error log file
-        state.getLocalState().log(String.format("-- %s;\n-- %s;", queryString, resultingQueryString));
         if (options.logEachSelect()) {
             logger.writeCurrent(resultingQueryString);
         }

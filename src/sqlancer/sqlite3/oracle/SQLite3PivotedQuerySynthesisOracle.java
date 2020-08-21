@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce.SQLite3StateToReproduce;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
@@ -45,7 +44,6 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 public class SQLite3PivotedQuerySynthesisOracle
         extends PivotedQuerySynthesisBase<SQLite3GlobalState, SQLite3RowValue, SQLite3Expression> {
 
-    private SQLite3StateToReproduce state;
     private List<SQLite3Column> fetchColumns;
     private List<SQLite3Expression> colExpressions;
 
@@ -87,7 +85,6 @@ public class SQLite3PivotedQuerySynthesisOracle
     }
 
     public SQLite3Select getQuery(SQLite3GlobalState globalState) throws SQLException {
-        this.state = (SQLite3StateToReproduce) globalState.getState();
         if (globalState.getSchema().getDatabaseTables().isEmpty()) {
             throw new IgnoreMeException();
         }
@@ -156,7 +153,6 @@ public class SQLite3PivotedQuerySynthesisOracle
                 .collect(Collectors.joining(", "));
         SQLite3Expression whereClause = generateWhereClauseThatContainsRowValue(columns, pivotRow);
         selectStatement.setWhereClause(whereClause);
-        ((SQLite3StateToReproduce) globalState.getState()).whereClause = selectStatement;
         List<SQLite3Expression> groupByClause = generateGroupByClause(columns, pivotRow, allTablesContainOneRow);
         selectStatement.setGroupByClause(groupByClause);
         SQLite3Expression limitClause = generateLimit((long) (Math.pow(globalState.getOptions().getMaxNumberInserts(),
@@ -221,12 +217,10 @@ public class SQLite3PivotedQuerySynthesisOracle
         addExpectedValues(sb);
         StringBuilder sb2 = new StringBuilder();
         addExpectedValues(sb2);
-        state.values = sb2.toString();
         sb.append(" INTERSECT SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
         sb.append(query.getQueryString());
         sb.append(")");
         String resultingQueryString = sb.toString();
-        state.getLocalState().log(resultingQueryString);
         Query finalQuery = new QueryAdapter(resultingQueryString, query.getExpectedErrors());
         try (ResultSet result = createStatement.executeQuery(finalQuery.getQueryString())) {
             boolean isContainedIn = !result.isClosed();

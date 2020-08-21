@@ -10,8 +10,6 @@ import sqlancer.AbstractAction;
 import sqlancer.IgnoreMeException;
 import sqlancer.ProviderAdapter;
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce;
-import sqlancer.StateToReproduce.MySQLStateToReproduce;
 import sqlancer.StatementExecutor;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
@@ -185,11 +183,6 @@ public class MySQLProvider extends ProviderAdapter<MySQLGlobalState, MySQLOption
     @Override
     public String getDBMSName() {
         return "mysql";
-    }
-
-    @Override
-    public StateToReproduce getStateToReproduce(String databaseName) {
-        return new MySQLStateToReproduce(databaseName);
     }
 
 }

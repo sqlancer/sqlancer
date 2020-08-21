@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce.MySQLStateToReproduce;
 import sqlancer.common.schema.AbstractRowValue;
 import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractTable;
@@ -85,7 +84,7 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
             super(tables);
         }
 
-        public MySQLRowValue getRandomRowValue(Connection con, MySQLStateToReproduce state) throws SQLException {
+        public MySQLRowValue getRandomRowValue(Connection con) throws SQLException {
             String randomRow = String.format("SELECT %s FROM %s ORDER BY RAND() LIMIT 1", columnNamesAsString(
                     c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
                     // columnNamesAsString(c -> "typeof(" + c.getTable().getName() + "." +
@@ -95,7 +94,7 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
             try (Statement s = con.createStatement()) {
                 ResultSet randomRowValues = s.executeQuery(randomRow);
                 if (!randomRowValues.next()) {
-                    throw new AssertionError("could not find random row! " + randomRow + "\n" + state);
+                    throw new AssertionError("could not find random row! " + randomRow + "\n");
                 }
                 for (int i = 0; i < getColumns().size(); i++) {
                     MySQLColumn column = getColumns().get(i);
@@ -135,7 +134,6 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
                     values.put(column, constant);
                 }
                 assert !randomRowValues.next();
-                state.randomRowValues = values;
                 return new MySQLRowValue(this, values);
             }
 
