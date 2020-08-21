@@ -2,7 +2,6 @@ package sqlancer.sqlite3.ast;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
-import java.sql.Statement;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -235,54 +234,14 @@ public final class SQLite3Cast {
                 return SQLite3Constant.createTextConstant("Inf");
             } else if (cons.asDouble() == Double.NEGATIVE_INFINITY) {
                 return SQLite3Constant.createTextConstant("-Inf");
+            } else {
+                return null;
             }
-            return castRealToText(cons);
-            // if (true) {
-            // throw new IgnoreMeException();
-            // }
-            // NumberFormat fmt = NumberFormat.getInstance();
-            // fmt.setGroupingUsed(false);
-            // fmt.setMaximumIntegerDigits(10);
-            // fmt.setMinimumFractionDigits(1);
-            // fmt.setRoundingMode(RoundingMode.UNNECESSARY);
-            // int digits;
-            // if (cons.asDouble() < 0) {
-            // digits = 15;
-            // } else {
-            // digits = 15;
-            // }
-            // fmt.setMaximumFractionDigits(digits);
-            // try {
-            // String s = fmt.format(cons.asDouble());
-            // if (s.contentEquals("")) {
-            // throw new IgnoreMeException();
-            // }
-            // return SQLite3Constant.createTextConstant(s);
-            // } catch (Exception e) {
-            // throw new IgnoreMeException();
-            // }
         }
         if (cons.getDataType() == SQLite3DataType.INT) {
             return SQLite3Constant.createTextConstant(String.valueOf(cons.asInt()));
         }
-        // if (cons.getDataType() == SQLite3DataType.BINARY) {
-        // try {
-        // return SQLite3Constant.createTextConstant(new String(cons.asBinary(), "UTF-8").replaceAll("\\p{C}", ""));
-        // } catch (UnsupportedEncodingException e) {
-        // throw new AssertionError(e);
-        // }
-        // }
         return null;
-        // throw new AssertionError();
-    }
-
-    private static synchronized SQLite3Constant castRealToText(SQLite3Constant cons) throws AssertionError {
-        try (Statement s = castDatabase.createStatement()) {
-            String castResult = s.executeQuery("SELECT CAST(" + cons.asDouble() + " AS TEXT)").getString(1);
-            return SQLite3Constant.createTextConstant(castResult);
-        } catch (Exception e) {
-            throw new AssertionError(e);
-        }
     }
 
     public static SQLite3Constant asBoolean(SQLite3Constant val) {
