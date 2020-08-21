@@ -29,8 +29,6 @@ import sqlancer.sqlite3.ast.SQLite3Expression.Join;
 import sqlancer.sqlite3.ast.SQLite3Expression.Join.JoinType;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm.Ordering;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
@@ -189,7 +187,8 @@ public class SQLite3PivotedQuerySynthesisOracle implements TestOracle {
             SQLite3Expression offsetClause = generateOffset();
             selectStatement.setOffsetClause(offsetClause);
         }
-        List<SQLite3Expression> orderBy = generateOrderBy(columns);
+        List<SQLite3Expression> orderBy = new SQLite3ExpressionGenerator(globalState).setColumns(columns)
+                .generateOrderBys();
         selectStatement.setOrderByExpressions(orderBy);
         if (!groupByClause.isEmpty() && Randomly.getBoolean()) {
             SQLite3Expression randomExpression = SQLite3Common.getTrueExpression(columns, globalState);
@@ -256,20 +255,6 @@ public class SQLite3PivotedQuerySynthesisOracle implements TestOracle {
             SQLite3Constant expectedValue = colExpressions.get(i).getExpectedValue();
             sb.append(SQLite3Visitor.asString(expectedValue));
         }
-    }
-
-    public List<SQLite3Expression> generateOrderBy(List<SQLite3Column> columns) {
-        List<SQLite3Expression> orderBys = new ArrayList<>();
-        for (int i = 0; i < Randomly.smallNumber(); i++) {
-            SQLite3Expression expr;
-            expr = new SQLite3ExpressionGenerator(globalState).setColumns(columns).generateExpression();
-            Ordering order = Randomly.fromOptions(Ordering.ASC, Ordering.DESC);
-            orderBys.add(new SQLite3OrderingTerm(expr, order));
-            // TODO RANDOM()
-        }
-        // TODO collate
-        errors.add("ORDER BY term out of range");
-        return orderBys;
     }
 
     private SQLite3Expression generateLimit(long l) {

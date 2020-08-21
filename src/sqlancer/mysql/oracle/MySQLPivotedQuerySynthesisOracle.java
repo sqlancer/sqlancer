@@ -3,7 +3,6 @@ package sqlancer.mysql.oracle;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,8 +20,6 @@ import sqlancer.mysql.MySQLToStringVisitor;
 import sqlancer.mysql.ast.MySQLColumnReference;
 import sqlancer.mysql.ast.MySQLConstant;
 import sqlancer.mysql.ast.MySQLExpression;
-import sqlancer.mysql.ast.MySQLOrderByTerm;
-import sqlancer.mysql.ast.MySQLOrderByTerm.MySQLOrder;
 import sqlancer.mysql.ast.MySQLSelect;
 import sqlancer.mysql.ast.MySQLTableReference;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
@@ -119,7 +116,8 @@ public class MySQLPivotedQuerySynthesisOracle implements TestOracle {
                                                                                                                          // "HIGH_PRIORITY"
         // TODO: Incorrect usage/placement of 'SQL_BUFFER_RESULT'
         selectStatement.setModifiers(modifiers);
-        List<MySQLExpression> orderBy = generateOrderBy(columns);
+        List<MySQLExpression> orderBy = new MySQLExpressionGenerator(globalState).setColumns(columns)
+                .generateOrderBys();
         selectStatement.setOrderByExpressions(orderBy);
 
         StringBuilder sb2 = new StringBuilder();
@@ -154,15 +152,6 @@ public class MySQLPivotedQuerySynthesisOracle implements TestOracle {
         } else {
             return Collections.emptyList();
         }
-    }
-
-    public List<MySQLExpression> generateOrderBy(List<MySQLColumn> columns) {
-        List<MySQLExpression> orderBys = new ArrayList<>();
-        for (int i = 0; i < Randomly.smallNumber(); i++) {
-            orderBys.add(new MySQLOrderByTerm(MySQLColumnReference.create(Randomly.fromList(columns), null),
-                    MySQLOrder.getRandomOrder()));
-        }
-        return orderBys;
     }
 
     private MySQLConstant generateLimit() {
