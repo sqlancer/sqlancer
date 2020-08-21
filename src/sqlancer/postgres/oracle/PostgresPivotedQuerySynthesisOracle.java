@@ -1,6 +1,5 @@
 package sqlancer.postgres.oracle;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -16,7 +15,6 @@ import sqlancer.Randomly;
 import sqlancer.StateToReproduce.PostgresStateToReproduce;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.postgres.PostgresGlobalState;
-import sqlancer.postgres.PostgresSchema;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresRowValue;
 import sqlancer.postgres.PostgresSchema.PostgresTables;
@@ -32,16 +30,12 @@ public class PostgresPivotedQuerySynthesisOracle
         extends PivotedQuerySynthesisBase<PostgresGlobalState, PostgresRowValue, PostgresExpression> {
 
     private PostgresStateToReproduce state;
-    private final Connection database;
     private List<PostgresColumn> fetchColumns;
-    private final PostgresSchema s;
     private final MainOptions options;
     private final StateLogger logger;
 
     public PostgresPivotedQuerySynthesisOracle(PostgresGlobalState globalState) throws SQLException {
         super(globalState);
-        this.database = globalState.getConnection();
-        this.s = globalState.getSchema();
         options = globalState.getOptions();
         logger = globalState.getLogger();
     }
@@ -64,14 +58,14 @@ public class PostgresPivotedQuerySynthesisOracle
 
     public String getQueryThatContainsAtLeastOneRow(PostgresStateToReproduce state) throws SQLException {
         this.state = state;
-        PostgresTables randomFromTables = s.getRandomTableNonEmptyTables();
+        PostgresTables randomFromTables = globalState.getSchema().getRandomTableNonEmptyTables();
 
         state.queryTargetedTablesString = randomFromTables.tableNamesAsString();
 
         PostgresSelect selectStatement = new PostgresSelect();
         selectStatement.setSelectType(Randomly.fromOptions(PostgresSelect.SelectType.values()));
         List<PostgresColumn> columns = randomFromTables.getColumns();
-        pivotRow = randomFromTables.getRandomRowValue(database, state);
+        pivotRow = randomFromTables.getRandomRowValue(globalState.getConnection(), state);
 
         fetchColumns = columns;
         selectStatement.setFromList(randomFromTables.getTables().stream().map(t -> new PostgresFromTable(t, false))
@@ -153,7 +147,7 @@ public class PostgresPivotedQuerySynthesisOracle
 
     private boolean isContainedIn(String queryString, MainOptions options, StateLogger logger) throws SQLException {
         Statement createStatement;
-        createStatement = database.createStatement();
+        createStatement = globalState.getConnection().createStatement();
 
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions

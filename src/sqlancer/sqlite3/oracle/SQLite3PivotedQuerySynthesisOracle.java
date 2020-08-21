@@ -1,6 +1,5 @@
 package sqlancer.sqlite3.oracle;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -38,7 +37,6 @@ import sqlancer.sqlite3.ast.SQLite3UnaryOperation.UnaryOperator;
 import sqlancer.sqlite3.ast.SQLite3WindowFunction;
 import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
-import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3RowValue;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
@@ -47,18 +45,12 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 public class SQLite3PivotedQuerySynthesisOracle
         extends PivotedQuerySynthesisBase<SQLite3GlobalState, SQLite3RowValue, SQLite3Expression> {
 
-    private final Connection database;
-    private final SQLite3Schema s;
-    private final Randomly r;
     private SQLite3StateToReproduce state;
     private List<SQLite3Column> fetchColumns;
     private List<SQLite3Expression> colExpressions;
 
     public SQLite3PivotedQuerySynthesisOracle(SQLite3GlobalState globalState) throws SQLException {
         super(globalState);
-        this.database = globalState.getConnection();
-        this.r = globalState.getRandomly();
-        s = SQLite3Schema.fromConnection(globalState);
     }
 
     @Override
@@ -96,10 +88,10 @@ public class SQLite3PivotedQuerySynthesisOracle
 
     public SQLite3Select getQuery(SQLite3GlobalState globalState) throws SQLException {
         this.state = (SQLite3StateToReproduce) globalState.getState();
-        if (s.getDatabaseTables().isEmpty()) {
+        if (globalState.getSchema().getDatabaseTables().isEmpty()) {
             throw new IgnoreMeException();
         }
-        SQLite3Tables randomFromTables = s.getRandomTableNonEmptyTables();
+        SQLite3Tables randomFromTables = globalState.getSchema().getRandomTableNonEmptyTables();
         List<SQLite3Table> tables = randomFromTables.getTables();
 
         globalState.getState().queryTargetedTablesString = randomFromTables.tableNamesAsString();
@@ -111,12 +103,12 @@ public class SQLite3PivotedQuerySynthesisOracle
                 columns.add(t.getRowid());
             }
         }
-        pivotRow = randomFromTables.getRandomRowValue(database);
+        pivotRow = randomFromTables.getRandomRowValue(globalState.getConnection());
 
         List<Join> joinStatements = getJoinStatements(globalState, tables, columns);
 
         selectStatement.setJoinClauses(joinStatements);
-        selectStatement.setFromTables(SQLite3Common.getTableRefs(tables, s));
+        selectStatement.setFromTables(SQLite3Common.getTableRefs(tables, globalState.getSchema()));
 
         // TODO: also implement a wild-card check (*)
         // filter out row ids from the select because the hinder the reduction process
@@ -222,7 +214,7 @@ public class SQLite3PivotedQuerySynthesisOracle
 
     private boolean isContainedIn(Query query) throws SQLException {
         Statement createStatement;
-        createStatement = database.createStatement();
+        createStatement = globalState.getConnection().createStatement();
 
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ");
@@ -261,7 +253,7 @@ public class SQLite3PivotedQuerySynthesisOracle
 
     private SQLite3Expression generateLimit(long l) {
         if (Randomly.getBoolean()) {
-            return SQLite3Constant.createIntConstant(r.getLong(l, Long.MAX_VALUE));
+            return SQLite3Constant.createIntConstant(globalState.getRandomly().getLong(l, Long.MAX_VALUE));
         } else {
             return null;
         }

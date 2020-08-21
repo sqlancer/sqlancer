@@ -11,7 +11,6 @@ import sqlancer.Randomly;
 import sqlancer.StateToReproduce.MySQLStateToReproduce;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.mysql.MySQLGlobalState;
-import sqlancer.mysql.MySQLSchema;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLRowValue;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
@@ -32,13 +31,11 @@ public class MySQLPivotedQuerySynthesisOracle
         extends PivotedQuerySynthesisBase<MySQLGlobalState, MySQLRowValue, MySQLExpression> {
 
     private final MySQLStateToReproduce state;
-    private final MySQLSchema s;
     private List<MySQLExpression> fetchColumns;
     private List<MySQLColumn> columns;
 
     public MySQLPivotedQuerySynthesisOracle(MySQLGlobalState globalState) throws SQLException {
         super(globalState);
-        this.s = globalState.getSchema();
         this.state = (MySQLStateToReproduce) globalState.getState();
     }
 
@@ -60,7 +57,7 @@ public class MySQLPivotedQuerySynthesisOracle
     }
 
     public String getQueryThatContainsAtLeastOneRow() throws SQLException {
-        MySQLTables randomFromTables = s.getRandomTableNonEmptyTables();
+        MySQLTables randomFromTables = globalState.getSchema().getRandomTableNonEmptyTables();
         List<MySQLTable> tables = randomFromTables.getTables();
 
         state.queryTargetedTablesString = randomFromTables.tableNamesAsString();
