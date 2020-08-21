@@ -14,7 +14,7 @@ import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce.PostgresStateToReproduce;
-import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
@@ -28,19 +28,18 @@ import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
-public class PostgresPivotedQuerySynthesisOracle implements TestOracle {
+public class PostgresPivotedQuerySynthesisOracle
+        extends PivotedQuerySynthesisBase<PostgresGlobalState, PostgresRowValue, PostgresExpression> {
 
     private PostgresStateToReproduce state;
-    private PostgresRowValue rw;
     private final Connection database;
     private List<PostgresColumn> fetchColumns;
     private final PostgresSchema s;
     private final MainOptions options;
     private final StateLogger logger;
-    private final PostgresGlobalState globalState;
 
     public PostgresPivotedQuerySynthesisOracle(PostgresGlobalState globalState) throws SQLException {
-        this.globalState = globalState;
+        super(globalState);
         this.database = globalState.getConnection();
         this.s = globalState.getSchema();
         options = globalState.getOptions();
@@ -72,19 +71,19 @@ public class PostgresPivotedQuerySynthesisOracle implements TestOracle {
         PostgresSelect selectStatement = new PostgresSelect();
         selectStatement.setSelectType(Randomly.fromOptions(PostgresSelect.SelectType.values()));
         List<PostgresColumn> columns = randomFromTables.getColumns();
-        rw = randomFromTables.getRandomRowValue(database, state);
+        pivotRow = randomFromTables.getRandomRowValue(database, state);
 
         fetchColumns = columns;
         selectStatement.setFromList(randomFromTables.getTables().stream().map(t -> new PostgresFromTable(t, false))
                 .collect(Collectors.toList()));
         selectStatement.setFetchColumns(fetchColumns.stream()
-                .map(c -> new PostgresColumnValue(c, rw.getValues().get(c))).collect(Collectors.toList()));
+                .map(c -> new PostgresColumnValue(c, pivotRow.getValues().get(c))).collect(Collectors.toList()));
         state.queryTargetedColumnsString = fetchColumns.stream().map(c -> c.getFullQualifiedName())
                 .collect(Collectors.joining(", "));
-        PostgresExpression whereClause = generateWhereClauseThatContainsRowValue(columns, rw);
+        PostgresExpression whereClause = generateWhereClauseThatContainsRowValue(columns, pivotRow);
         selectStatement.setWhereClause(whereClause);
         state.whereClause = selectStatement;
-        List<PostgresExpression> groupByClause = generateGroupByClause(columns, rw);
+        List<PostgresExpression> groupByClause = generateGroupByClause(columns, pivotRow);
         selectStatement.setGroupByExpressions(groupByClause);
         PostgresExpression limitClause = generateLimit();
         selectStatement.setLimitClause(limitClause);
@@ -106,11 +105,11 @@ public class PostgresPivotedQuerySynthesisOracle implements TestOracle {
                 sb2.append(" AND ");
             }
             sb2.append(c.getFullQualifiedName());
-            if (rw.getValues().get(c).isNull()) {
+            if (pivotRow.getValues().get(c).isNull()) {
                 sb2.append(" IS NULL");
             } else {
                 sb2.append(" = ");
-                sb2.append(rw.getValues().get(c).getTextRepresentation());
+                sb2.append(pivotRow.getValues().get(c).getTextRepresentation());
             }
         }
         sb2.append(") as result;");
@@ -168,11 +167,11 @@ public class PostgresPivotedQuerySynthesisOracle implements TestOracle {
             sb.append("result.");
             sb.append(c.getTable().getName());
             sb.append(c.getName());
-            if (rw.getValues().get(c).isNull()) {
+            if (pivotRow.getValues().get(c).isNull()) {
                 sb.append(" IS NULL");
             } else {
                 sb.append(" = ");
-                sb.append(rw.getValues().get(c).getTextRepresentation());
+                sb.append(pivotRow.getValues().get(c).getTextRepresentation());
             }
         }
         String resultingQueryString = sb.toString();
