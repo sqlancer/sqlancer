@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce.MySQLStateToReproduce;
-import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
@@ -28,17 +28,16 @@ import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 import sqlancer.mysql.gen.MySQLExpressionGenerator;
 
-public class MySQLPivotedQuerySynthesisOracle implements TestOracle {
+public class MySQLPivotedQuerySynthesisOracle
+        extends PivotedQuerySynthesisBase<MySQLGlobalState, MySQLRowValue, MySQLExpression> {
 
     private final MySQLStateToReproduce state;
     private final MySQLSchema s;
-    private MySQLRowValue rw;
     private List<MySQLExpression> fetchColumns;
     private List<MySQLColumn> columns;
-    private final MySQLGlobalState globalState;
 
     public MySQLPivotedQuerySynthesisOracle(MySQLGlobalState globalState) throws SQLException {
-        this.globalState = globalState;
+        super(globalState);
         this.s = globalState.getSchema();
         this.state = (MySQLStateToReproduce) globalState.getState();
     }
@@ -75,7 +74,7 @@ public class MySQLPivotedQuerySynthesisOracle implements TestOracle {
         // columns.add(t.getRowid());
         // }
         // }
-        rw = randomFromTables.getRandomRowValue(globalState.getConnection(), state);
+        pivotRow = randomFromTables.getRandomRowValue(globalState.getConnection(), state);
 
         // List<Join> joinStatements = new ArrayList<>();
         // for (int i = 1; i < tables.size(); i++) {
@@ -100,10 +99,10 @@ public class MySQLPivotedQuerySynthesisOracle implements TestOracle {
         selectStatement.setFetchColumns(fetchColumns);
         state.queryTargetedColumnsString = columns.stream().map(c -> c.getFullQualifiedName())
                 .collect(Collectors.joining(", "));
-        MySQLExpression whereClause = generateWhereClauseThatContainsRowValue(columns, rw);
+        MySQLExpression whereClause = generateWhereClauseThatContainsRowValue(columns, pivotRow);
         selectStatement.setWhereClause(whereClause);
         state.whereClause = selectStatement;
-        List<MySQLExpression> groupByClause = generateGroupByClause(columns, rw);
+        List<MySQLExpression> groupByClause = generateGroupByClause(columns, pivotRow);
         selectStatement.setGroupByExpressions(groupByClause);
         MySQLExpression limitClause = generateLimit();
         selectStatement.setLimitClause(limitClause);
@@ -130,11 +129,11 @@ public class MySQLPivotedQuerySynthesisOracle implements TestOracle {
                 sb2.append(" AND ");
             }
             sb2.append(c.getFullQualifiedName());
-            if (rw.getValues().get(c).isNull()) {
+            if (pivotRow.getValues().get(c).isNull()) {
                 sb2.append(" IS NULL");
             } else {
                 sb2.append(" = ");
-                sb2.append(rw.getValues().get(c).getTextRepresentation());
+                sb2.append(pivotRow.getValues().get(c).getTextRepresentation());
             }
         }
         sb2.append(") as result;");
@@ -199,11 +198,11 @@ public class MySQLPivotedQuerySynthesisOracle implements TestOracle {
             }
             sb.append("result.");
             sb.append(c.getTable().getName() + c.getName());
-            if (rw.getValues().get(c).isNull()) {
+            if (pivotRow.getValues().get(c).isNull()) {
                 sb.append(" IS NULL");
             } else {
                 sb.append(" = ");
-                sb.append(rw.getValues().get(c).getTextRepresentation());
+                sb.append(pivotRow.getValues().get(c).getTextRepresentation());
             }
         }
 

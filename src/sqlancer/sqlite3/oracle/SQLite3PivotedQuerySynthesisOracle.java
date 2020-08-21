@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce.SQLite3StateToReproduce;
-import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
@@ -44,22 +44,20 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3RowValue;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
-public class SQLite3PivotedQuerySynthesisOracle implements TestOracle {
+public class SQLite3PivotedQuerySynthesisOracle
+        extends PivotedQuerySynthesisBase<SQLite3GlobalState, SQLite3RowValue, SQLite3Expression> {
 
     private final Connection database;
     private final SQLite3Schema s;
     private final Randomly r;
     private SQLite3StateToReproduce state;
-    private SQLite3RowValue rw;
     private List<SQLite3Column> fetchColumns;
-    private final ExpectedErrors errors = new ExpectedErrors();
     private List<SQLite3Expression> colExpressions;
-    private final SQLite3GlobalState globalState;
 
     public SQLite3PivotedQuerySynthesisOracle(SQLite3GlobalState globalState) throws SQLException {
+        super(globalState);
         this.database = globalState.getConnection();
         this.r = globalState.getRandomly();
-        this.globalState = globalState;
         s = SQLite3Schema.fromConnection(globalState);
     }
 
@@ -113,7 +111,7 @@ public class SQLite3PivotedQuerySynthesisOracle implements TestOracle {
                 columns.add(t.getRowid());
             }
         }
-        rw = randomFromTables.getRandomRowValue(database);
+        pivotRow = randomFromTables.getRandomRowValue(database);
 
         List<Join> joinStatements = getJoinStatements(globalState, tables, columns);
 
@@ -132,7 +130,7 @@ public class SQLite3PivotedQuerySynthesisOracle implements TestOracle {
         allTables.addAll(joinStatements.stream().map(join -> join.getTable()).collect(Collectors.toList()));
         boolean allTablesContainOneRow = allTables.stream().allMatch(t -> t.getNrRows() == 1);
         for (SQLite3Column c : fetchColumns) {
-            SQLite3Expression colName = new SQLite3ColumnName(c, rw.getValues().get(c));
+            SQLite3Expression colName = new SQLite3ColumnName(c, pivotRow.getValues().get(c));
             if (allTablesContainOneRow && Randomly.getBoolean()) {
                 boolean generateDistinct = Randomly.getBoolean();
                 if (generateDistinct) {
@@ -164,10 +162,10 @@ public class SQLite3PivotedQuerySynthesisOracle implements TestOracle {
         selectStatement.setFetchColumns(colExpressions);
         globalState.getState().queryTargetedColumnsString = fetchColumns.stream().map(c -> c.getFullQualifiedName())
                 .collect(Collectors.joining(", "));
-        SQLite3Expression whereClause = generateWhereClauseThatContainsRowValue(columns, rw);
+        SQLite3Expression whereClause = generateWhereClauseThatContainsRowValue(columns, pivotRow);
         selectStatement.setWhereClause(whereClause);
         ((SQLite3StateToReproduce) globalState.getState()).whereClause = selectStatement;
-        List<SQLite3Expression> groupByClause = generateGroupByClause(columns, rw, allTablesContainOneRow);
+        List<SQLite3Expression> groupByClause = generateGroupByClause(columns, pivotRow, allTablesContainOneRow);
         selectStatement.setGroupByClause(groupByClause);
         SQLite3Expression limitClause = generateLimit((long) (Math.pow(globalState.getOptions().getMaxNumberInserts(),
                 joinStatements.size() + randomFromTables.getTables().size())));
@@ -199,7 +197,7 @@ public class SQLite3PivotedQuerySynthesisOracle implements TestOracle {
                 j.setType(JoinType.INNER);
             }
             // ensure that the join does not exclude the pivot row
-            j.setOnClause(generateWhereClauseThatContainsRowValue(columns, rw));
+            j.setOnClause(generateWhereClauseThatContainsRowValue(columns, pivotRow));
         }
         errors.add("ON clause references tables to its right");
         return joinStatements;
@@ -367,7 +365,7 @@ public class SQLite3PivotedQuerySynthesisOracle implements TestOracle {
 
     private void appendFilter(List<SQLite3Column> columns, StringBuilder sb) {
         sb.append(" FILTER (WHERE ");
-        sb.append(SQLite3Visitor.asString(generateWhereClauseThatContainsRowValue(columns, rw)));
+        sb.append(SQLite3Visitor.asString(generateWhereClauseThatContainsRowValue(columns, pivotRow)));
         sb.append(")");
     }
 
