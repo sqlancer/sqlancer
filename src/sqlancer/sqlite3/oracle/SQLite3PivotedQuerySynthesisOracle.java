@@ -36,6 +36,7 @@ import sqlancer.sqlite3.ast.SQLite3UnaryOperation.UnaryOperator;
 import sqlancer.sqlite3.ast.SQLite3WindowFunction;
 import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
+import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3RowValue;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
@@ -87,8 +88,8 @@ public class SQLite3PivotedQuerySynthesisOracle
         // TODO: also implement a wild-card check (*)
         // filter out row ids from the select because the hinder the reduction process
         // once a bug is found
-        List<SQLite3Column> columnsWithoutRowid = columns.stream().filter(c -> !c.getName().matches("rowid"))
-                .collect(Collectors.toList());
+        List<SQLite3Column> columnsWithoutRowid = columns.stream()
+                .filter(c -> !SQLite3Schema.ROWID_STRINGS.contains(c.getName())).collect(Collectors.toList());
         fetchColumns = Randomly.nonEmptySubset(columnsWithoutRowid);
         colExpressions = new ArrayList<>();
         List<SQLite3Table> allTables = new ArrayList<>();
