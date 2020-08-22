@@ -52,19 +52,8 @@ public class SQLite3PivotedQuerySynthesisOracle
     }
 
     @Override
-    public void check() throws SQLException {
-        Query query = getQueryThatContainsAtLeastOneRow(globalState);
-        if (globalState.getOptions().logEachSelect()) {
-            globalState.getLogger().writeCurrent(query.getQueryString());
-        }
-        boolean isContainedIn = isContainedIn(query);
-        if (!isContainedIn) {
-            throw new AssertionError(query);
-        }
-    }
-
-    public Query getQueryThatContainsAtLeastOneRow(SQLite3GlobalState state) throws SQLException {
-        SQLite3Select selectStatement = getQuery(state);
+    public Query getQueryThatContainsAtLeastOneRow() throws SQLException {
+        SQLite3Select selectStatement = getQuery(globalState);
         SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
         visitor.visit(selectStatement);
         String queryString = visitor.get();
@@ -188,7 +177,8 @@ public class SQLite3PivotedQuerySynthesisOracle
         }
     }
 
-    private boolean isContainedIn(Query query) throws SQLException {
+    @Override
+    protected boolean isContainedIn(Query query) throws SQLException {
         Statement createStatement;
         createStatement = globalState.getConnection().createStatement();
 
@@ -352,6 +342,11 @@ public class SQLite3PivotedQuerySynthesisOracle
 
     private enum FrameSpec {
         BETWEEN, UNBOUNDED_PRECEDING, CURRENT_ROW
+    }
+
+    @Override
+    protected String asString(SQLite3Expression expr) {
+        return SQLite3Visitor.asString(expr);
     }
 
 }
