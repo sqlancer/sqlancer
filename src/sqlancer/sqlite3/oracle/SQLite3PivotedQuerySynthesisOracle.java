@@ -12,9 +12,9 @@ import java.util.stream.Collectors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
+import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3ToStringVisitor;
 import sqlancer.sqlite3.SQLite3Visitor;
@@ -68,20 +68,8 @@ public class SQLite3PivotedQuerySynthesisOracle
         SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
         visitor.visit(selectStatement);
         String queryString = visitor.get();
-        addExpectedErrors(errors);
+        SQLite3Errors.addExpectedExpressionErrors(errors);
         return new QueryAdapter(queryString, errors);
-    }
-
-    public static void addExpectedErrors(ExpectedErrors errors) {
-        errors.add("no such index");
-        errors.add("no query solution");
-        errors.add(
-                "[SQLITE_ERROR] SQL error or missing database (second argument to likelihood() must be a constant between 0.0 and 1.0)");
-        errors.add("[SQLITE_ERROR] SQL error or missing database (integer overflow)");
-        errors.add("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)");
-        errors.add("second argument to nth_value must be a positive integer");
-        errors.add("misuse of aggregate");
-        errors.add("GROUP BY term out of range");
     }
 
     public SQLite3Select getQuery(SQLite3GlobalState globalState) throws SQLException {
@@ -198,14 +186,6 @@ public class SQLite3PivotedQuerySynthesisOracle
         } else {
             return null;
         }
-    }
-
-    public static boolean shouldIgnoreException(SQLException e) {
-        return e.getMessage().contentEquals("[SQLITE_ERROR] SQL error or missing database (integer overflow)")
-                || e.getMessage().startsWith("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)")
-                || e.getMessage().startsWith(
-                        "[SQLITE_ERROR] SQL error or missing database (second argument to likelihood() must be a constant between 0.0 and 1.0)")
-                || e.getMessage().contains("second argument to nth_value must be a positive integer");
     }
 
     private boolean isContainedIn(Query query) throws SQLException {
