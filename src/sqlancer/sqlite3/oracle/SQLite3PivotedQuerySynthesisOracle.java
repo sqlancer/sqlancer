@@ -185,7 +185,11 @@ public class SQLite3PivotedQuerySynthesisOracle
         StringBuilder sb2 = new StringBuilder();
         addExpectedValues(sb2);
         sb.append(" INTERSECT SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
-        sb.append(query.getQueryString());
+        if (query.getQueryString().endsWith(";")) {
+            sb.append(query.getQueryString().substring(0, query.getQueryString().length() - 1));
+        } else {
+            sb.append(query.getQueryString());
+        }
         sb.append(")");
         String resultingQueryString = sb.toString();
         Query finalQuery = new QueryAdapter(resultingQueryString, query.getExpectedErrors());
