@@ -9,12 +9,16 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.Query;
+import sqlancer.common.query.QueryAdapter;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLRowValue;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.MySQLSchema.MySQLTables;
 import sqlancer.mysql.MySQLToStringVisitor;
+import sqlancer.mysql.MySQLVisitor;
 import sqlancer.mysql.ast.MySQLColumnReference;
 import sqlancer.mysql.ast.MySQLConstant;
 import sqlancer.mysql.ast.MySQLExpression;
@@ -37,23 +41,7 @@ public class MySQLPivotedQuerySynthesisOracle
     }
 
     @Override
-    public void check() throws SQLException {
-        String queryString = getQueryThatContainsAtLeastOneRow();
-
-        try {
-            boolean isContainedIn = isContainedIn(queryString);
-            if (!isContainedIn) {
-                throw new AssertionError(queryString);
-            }
-        } catch (SQLException e) {
-            if (!e.getMessage().contains("BIGINT value is out of range")) {
-                throw e;
-            }
-        }
-
-    }
-
-    public String getQueryThatContainsAtLeastOneRow() throws SQLException {
+    public Query getQueryThatContainsAtLeastOneRow() throws SQLException {
         MySQLTables randomFromTables = globalState.getSchema().getRandomTableNonEmptyTables();
         List<MySQLTable> tables = randomFromTables.getTables();
 
@@ -128,7 +116,7 @@ public class MySQLPivotedQuerySynthesisOracle
 
         MySQLToStringVisitor visitor = new MySQLToStringVisitor();
         visitor.visit(selectStatement);
-        return visitor.get();
+        return new QueryAdapter(visitor.get(), ExpectedErrors.from("BIGINT value is out of range"));
     }
 
     private List<MySQLExpression> generateGroupByClause(List<MySQLColumn> columns, MySQLRowValue rw) {
@@ -170,13 +158,14 @@ public class MySQLPivotedQuerySynthesisOracle
         }
     }
 
-    private boolean isContainedIn(String queryString) throws SQLException {
+    @Override
+    protected boolean isContainedIn(Query query) throws SQLException {
         Statement createStatement;
         createStatement = globalState.getConnection().createStatement();
 
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
-        sb.append(queryString);
+        sb.append(query.getQueryString());
         sb.append(") as result WHERE ");
         int i = 0;
         for (MySQLColumn c : columns) {
@@ -202,5 +191,10 @@ public class MySQLPivotedQuerySynthesisOracle
             createStatement.close();
             return isContainedIn;
         }
+    }
+
+    @Override
+    protected String asString(MySQLExpression expr) {
+        return MySQLVisitor.asString(expr);
     }
 }
