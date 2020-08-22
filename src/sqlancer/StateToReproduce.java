@@ -4,22 +4,9 @@ import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
-import sqlancer.clickhouse.ClickHouseSchema;
-import sqlancer.clickhouse.ast.ClickHouseConstant;
-import sqlancer.clickhouse.ast.ClickHouseExpression;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
-import sqlancer.mysql.MySQLSchema.MySQLColumn;
-import sqlancer.mysql.ast.MySQLConstant;
-import sqlancer.mysql.ast.MySQLExpression;
-import sqlancer.postgres.PostgresSchema.PostgresColumn;
-import sqlancer.postgres.ast.PostgresConstant;
-import sqlancer.postgres.ast.PostgresExpression;
-import sqlancer.sqlite3.ast.SQLite3Constant;
-import sqlancer.sqlite3.ast.SQLite3Expression;
-import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 
 public class StateToReproduce {
 
@@ -99,91 +86,6 @@ public class StateToReproduce {
      */
     public OracleRunReproductionState getLocalState() {
         return localState;
-    }
-
-    public static class MySQLStateToReproduce extends StateToReproduce {
-
-        public Map<MySQLColumn, MySQLConstant> randomRowValues;
-
-        public MySQLExpression whereClause;
-
-        public String queryThatSelectsRow;
-
-        public MySQLStateToReproduce(String databaseName) {
-            super(databaseName);
-        }
-
-        public Map<MySQLColumn, MySQLConstant> getRandomRowValues() {
-            return randomRowValues;
-        }
-
-        public MySQLExpression getWhereClause() {
-            return whereClause;
-        }
-
-    }
-
-    public static class SQLite3StateToReproduce extends StateToReproduce {
-        public Map<SQLite3Column, SQLite3Constant> randomRowValues;
-
-        public SQLite3Expression whereClause;
-
-        public SQLite3StateToReproduce(String databaseName) {
-            super(databaseName);
-        }
-
-        public Map<SQLite3Column, SQLite3Constant> getRandomRowValues() {
-            return randomRowValues;
-        }
-
-        public SQLite3Expression getWhereClause() {
-            return whereClause;
-        }
-
-    }
-
-    public static class PostgresStateToReproduce extends StateToReproduce {
-
-        public Map<PostgresColumn, PostgresConstant> randomRowValues;
-
-        public PostgresExpression whereClause;
-
-        public String queryThatSelectsRow;
-
-        public PostgresStateToReproduce(String databaseName) {
-            super(databaseName);
-        }
-
-        public Map<PostgresColumn, PostgresConstant> getRandomRowValues() {
-            return randomRowValues;
-        }
-
-        public PostgresExpression getWhereClause() {
-            return whereClause;
-        }
-
-    }
-
-    public static class ClickHouseStateToReproduce extends StateToReproduce {
-
-        public Map<ClickHouseSchema.ClickHouseColumn, ClickHouseConstant> randomRowValues;
-
-        public ClickHouseExpression whereClause;
-
-        public String queryThatSelectsRow;
-
-        public ClickHouseStateToReproduce(String databaseName) {
-            super(databaseName);
-        }
-
-        public Map<ClickHouseSchema.ClickHouseColumn, ClickHouseConstant> getRandomRowValues() {
-            return randomRowValues;
-        }
-
-        public ClickHouseExpression getWhereClause() {
-            return whereClause;
-        }
-
     }
 
     /**

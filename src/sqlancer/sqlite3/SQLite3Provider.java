@@ -15,8 +15,6 @@ import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.ProviderAdapter;
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce;
-import sqlancer.StateToReproduce.SQLite3StateToReproduce;
 import sqlancer.StatementExecutor;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
@@ -357,11 +355,6 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
     @Override
     public String getDBMSName() {
         return "sqlite3";
-    }
-
-    @Override
-    public StateToReproduce getStateToReproduce(String databaseName) {
-        return new SQLite3StateToReproduce(databaseName);
     }
 
 }

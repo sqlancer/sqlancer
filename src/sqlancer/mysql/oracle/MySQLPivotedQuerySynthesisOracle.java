@@ -8,10 +8,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce.MySQLStateToReproduce;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.mysql.MySQLGlobalState;
-import sqlancer.mysql.MySQLSchema;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLRowValue;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
@@ -31,15 +29,11 @@ import sqlancer.mysql.gen.MySQLExpressionGenerator;
 public class MySQLPivotedQuerySynthesisOracle
         extends PivotedQuerySynthesisBase<MySQLGlobalState, MySQLRowValue, MySQLExpression> {
 
-    private final MySQLStateToReproduce state;
-    private final MySQLSchema s;
     private List<MySQLExpression> fetchColumns;
     private List<MySQLColumn> columns;
 
     public MySQLPivotedQuerySynthesisOracle(MySQLGlobalState globalState) throws SQLException {
         super(globalState);
-        this.s = globalState.getSchema();
-        this.state = (MySQLStateToReproduce) globalState.getState();
     }
 
     @Override
@@ -60,21 +54,18 @@ public class MySQLPivotedQuerySynthesisOracle
     }
 
     public String getQueryThatContainsAtLeastOneRow() throws SQLException {
-        MySQLTables randomFromTables = s.getRandomTableNonEmptyTables();
+        MySQLTables randomFromTables = globalState.getSchema().getRandomTableNonEmptyTables();
         List<MySQLTable> tables = randomFromTables.getTables();
-
-        state.queryTargetedTablesString = randomFromTables.tableNamesAsString();
 
         MySQLSelect selectStatement = new MySQLSelect();
         selectStatement.setSelectType(Randomly.fromOptions(MySQLSelect.SelectType.values()));
-        state.whereClause = selectStatement;
         columns = randomFromTables.getColumns();
         // for (MySQLTable t : tables) {
         // if (t.getRowid() != null) {
         // columns.add(t.getRowid());
         // }
         // }
-        pivotRow = randomFromTables.getRandomRowValue(globalState.getConnection(), state);
+        pivotRow = randomFromTables.getRandomRowValue(globalState.getConnection());
 
         // List<Join> joinStatements = new ArrayList<>();
         // for (int i = 1; i < tables.size(); i++) {
@@ -97,11 +88,8 @@ public class MySQLPivotedQuerySynthesisOracle
 
         fetchColumns = columns.stream().map(c -> new MySQLColumnReference(c, null)).collect(Collectors.toList());
         selectStatement.setFetchColumns(fetchColumns);
-        state.queryTargetedColumnsString = columns.stream().map(c -> c.getFullQualifiedName())
-                .collect(Collectors.joining(", "));
         MySQLExpression whereClause = generateWhereClauseThatContainsRowValue(columns, pivotRow);
         selectStatement.setWhereClause(whereClause);
-        state.whereClause = selectStatement;
         List<MySQLExpression> groupByClause = generateGroupByClause(columns, pivotRow);
         selectStatement.setGroupByExpressions(groupByClause);
         MySQLExpression limitClause = generateLimit();
@@ -137,7 +125,6 @@ public class MySQLPivotedQuerySynthesisOracle
             }
         }
         sb2.append(") as result;");
-        state.queryThatSelectsRow = sb2.toString();
 
         MySQLToStringVisitor visitor = new MySQLToStringVisitor();
         visitor.visit(selectStatement);
@@ -207,7 +194,6 @@ public class MySQLPivotedQuerySynthesisOracle
         }
 
         String resultingQueryString = sb.toString();
-        state.getLocalState().log(resultingQueryString);
         if (globalState.getOptions().logEachSelect()) {
             globalState.getLogger().writeCurrent(resultingQueryString);
         }

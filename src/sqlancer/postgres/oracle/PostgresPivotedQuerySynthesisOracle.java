@@ -1,6 +1,5 @@
 package sqlancer.postgres.oracle;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -13,10 +12,8 @@ import org.postgresql.util.PSQLException;
 import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce.PostgresStateToReproduce;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.postgres.PostgresGlobalState;
-import sqlancer.postgres.PostgresSchema;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresRowValue;
 import sqlancer.postgres.PostgresSchema.PostgresTables;
@@ -31,25 +28,20 @@ import sqlancer.postgres.gen.PostgresExpressionGenerator;
 public class PostgresPivotedQuerySynthesisOracle
         extends PivotedQuerySynthesisBase<PostgresGlobalState, PostgresRowValue, PostgresExpression> {
 
-    private PostgresStateToReproduce state;
-    private final Connection database;
     private List<PostgresColumn> fetchColumns;
-    private final PostgresSchema s;
     private final MainOptions options;
     private final StateLogger logger;
 
     public PostgresPivotedQuerySynthesisOracle(PostgresGlobalState globalState) throws SQLException {
         super(globalState);
-        this.database = globalState.getConnection();
-        this.s = globalState.getSchema();
         options = globalState.getOptions();
         logger = globalState.getLogger();
     }
 
     @Override
     public void check() throws SQLException {
-        String queryString = getQueryThatContainsAtLeastOneRow(state);
-        state.getLocalState().log(queryString);
+        String queryString = getQueryThatContainsAtLeastOneRow();
+        globalState.getState().getLocalState().log(queryString);
         if (options.logEachSelect()) {
             logger.writeCurrent(queryString);
         }
@@ -62,27 +54,21 @@ public class PostgresPivotedQuerySynthesisOracle
 
     }
 
-    public String getQueryThatContainsAtLeastOneRow(PostgresStateToReproduce state) throws SQLException {
-        this.state = state;
-        PostgresTables randomFromTables = s.getRandomTableNonEmptyTables();
-
-        state.queryTargetedTablesString = randomFromTables.tableNamesAsString();
+    public String getQueryThatContainsAtLeastOneRow() throws SQLException {
+        PostgresTables randomFromTables = globalState.getSchema().getRandomTableNonEmptyTables();
 
         PostgresSelect selectStatement = new PostgresSelect();
         selectStatement.setSelectType(Randomly.fromOptions(PostgresSelect.SelectType.values()));
         List<PostgresColumn> columns = randomFromTables.getColumns();
-        pivotRow = randomFromTables.getRandomRowValue(database, state);
+        pivotRow = randomFromTables.getRandomRowValue(globalState.getConnection());
 
         fetchColumns = columns;
         selectStatement.setFromList(randomFromTables.getTables().stream().map(t -> new PostgresFromTable(t, false))
                 .collect(Collectors.toList()));
         selectStatement.setFetchColumns(fetchColumns.stream()
                 .map(c -> new PostgresColumnValue(c, pivotRow.getValues().get(c))).collect(Collectors.toList()));
-        state.queryTargetedColumnsString = fetchColumns.stream().map(c -> c.getFullQualifiedName())
-                .collect(Collectors.joining(", "));
         PostgresExpression whereClause = generateWhereClauseThatContainsRowValue(columns, pivotRow);
         selectStatement.setWhereClause(whereClause);
-        state.whereClause = selectStatement;
         List<PostgresExpression> groupByClause = generateGroupByClause(columns, pivotRow);
         selectStatement.setGroupByExpressions(groupByClause);
         PostgresExpression limitClause = generateLimit();
@@ -113,7 +99,6 @@ public class PostgresPivotedQuerySynthesisOracle
             }
         }
         sb2.append(") as result;");
-        state.queryThatSelectsRow = sb2.toString();
 
         PostgresToStringVisitor visitor = new PostgresToStringVisitor();
         visitor.visit(selectStatement);
@@ -153,7 +138,7 @@ public class PostgresPivotedQuerySynthesisOracle
 
     private boolean isContainedIn(String queryString, MainOptions options, StateLogger logger) throws SQLException {
         Statement createStatement;
-        createStatement = database.createStatement();
+        createStatement = globalState.getConnection().createStatement();
 
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
@@ -176,7 +161,6 @@ public class PostgresPivotedQuerySynthesisOracle
         }
         String resultingQueryString = sb.toString();
         // log both SELECT queries at the bottom of the error log file
-        state.getLocalState().log(String.format("-- %s;\n-- %s;", queryString, resultingQueryString));
         if (options.logEachSelect()) {
             logger.writeCurrent(resultingQueryString);
         }

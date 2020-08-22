@@ -12,8 +12,6 @@ import sqlancer.AbstractAction;
 import sqlancer.IgnoreMeException;
 import sqlancer.ProviderAdapter;
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce;
-import sqlancer.StateToReproduce.PostgresStateToReproduce;
 import sqlancer.StatementExecutor;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
@@ -313,11 +311,6 @@ public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, Postg
     @Override
     public String getDBMSName() {
         return "postgres";
-    }
-
-    @Override
-    public StateToReproduce getStateToReproduce(String databaseName) {
-        return new PostgresStateToReproduce(databaseName);
     }
 
 }
