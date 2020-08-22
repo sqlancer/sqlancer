@@ -125,7 +125,7 @@ public class SQLite3PivotedQuerySynthesisOracle
         selectStatement.setFetchColumns(colExpressions);
         globalState.getState().queryTargetedColumnsString = fetchColumns.stream().map(c -> c.getFullQualifiedName())
                 .collect(Collectors.joining(", "));
-        SQLite3Expression whereClause = generateWhereClauseThatContainsRowValue(columns, pivotRow);
+        SQLite3Expression whereClause = generateRectifiedExpression(columns, pivotRow);
         selectStatement.setWhereClause(whereClause);
         List<SQLite3Expression> groupByClause = generateGroupByClause(columns, pivotRow, allTablesContainOneRow);
         selectStatement.setGroupByClause(groupByClause);
@@ -159,7 +159,7 @@ public class SQLite3PivotedQuerySynthesisOracle
                 j.setType(JoinType.INNER);
             }
             // ensure that the join does not exclude the pivot row
-            j.setOnClause(generateWhereClauseThatContainsRowValue(columns, pivotRow));
+            j.setOnClause(generateRectifiedExpression(columns, pivotRow));
         }
         errors.add("ON clause references tables to its right");
         return joinStatements;
@@ -247,25 +247,31 @@ public class SQLite3PivotedQuerySynthesisOracle
         }
     }
 
-    private SQLite3Expression generateWhereClauseThatContainsRowValue(List<SQLite3Column> columns, SQLite3RowValue rw) {
-
-        return generateNewExpression(columns, rw);
-
-    }
-
-    private SQLite3Expression generateNewExpression(List<SQLite3Column> columns, SQLite3RowValue rw) {
-        do {
-            SQLite3Expression expr = new SQLite3ExpressionGenerator(globalState).setRowValue(rw).setColumns(columns)
-                    .generateResultKnownExpression();
-            if (expr.getExpectedValue().isNull()) {
-                return new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.ISNULL, expr);
-            }
-            if (SQLite3Cast.isTrue(expr.getExpectedValue()).get()) {
-                return expr;
-            } else {
-                return new SQLite3UnaryOperation(UnaryOperator.NOT, expr);
-            }
-        } while (true);
+    /**
+     * Generates a predicate that is guaranteed to evaluate to <code>true</code> for the given pivot row. PQS uses this
+     * method to generate predicates used in WHERE and JOIN clauses. See step 4 of the PQS paper.
+     *
+     * @param columns
+     * @param pivotRow
+     *
+     * @return an expression that evaluates to <code>true</code>.
+     */
+    private SQLite3Expression generateRectifiedExpression(List<SQLite3Column> columns, SQLite3RowValue pivotRow) {
+        SQLite3Expression expr = new SQLite3ExpressionGenerator(globalState).setRowValue(pivotRow).setColumns(columns)
+                .generateResultKnownExpression();
+        SQLite3Expression rectifiedPredicate;
+        if (expr.getExpectedValue().isNull()) {
+            // the expr evaluates to NULL => rectify to "expr IS NULL"
+            rectifiedPredicate = new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.ISNULL, expr);
+        } else if (SQLite3Cast.isTrue(expr.getExpectedValue()).get()) {
+            // the expr evaluates to TRUE => we can directly return it
+            rectifiedPredicate = expr;
+        } else {
+            // the expr evaluates to FALSE 0> rectify to "NOT expr"
+            rectifiedPredicate = new SQLite3UnaryOperation(UnaryOperator.NOT, expr);
+        }
+        rectifiedPredicates.add(rectifiedPredicate);
+        return rectifiedPredicate;
     }
 
     //
@@ -316,7 +322,7 @@ public class SQLite3PivotedQuerySynthesisOracle
 
     private void appendFilter(List<SQLite3Column> columns, StringBuilder sb) {
         sb.append(" FILTER (WHERE ");
-        sb.append(SQLite3Visitor.asString(generateWhereClauseThatContainsRowValue(columns, pivotRow)));
+        sb.append(SQLite3Visitor.asString(generateRectifiedExpression(columns, pivotRow)));
         sb.append(")");
     }
 
