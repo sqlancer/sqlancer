@@ -35,6 +35,7 @@ public final class CitusCommon {
         errors.add("Distributed relations must not use GENERATED ... AS IDENTITY");
         errors.add("cannot drop multiple distributed objects in a single command");
         errors.add("is not distributed");
+        errors.add("cannot create constraint on");
         errors.add("cannot create foreign key constraint"); // SET NULL or SET DEFAULT is not supported in ON DELETE
                                                             // operation when distribution key is included in the
                                                             // foreign key constraint
