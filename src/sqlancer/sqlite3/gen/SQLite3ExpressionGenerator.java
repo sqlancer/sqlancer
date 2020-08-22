@@ -654,4 +654,12 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         return new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.ISNULL, expr);
     }
 
+    public SQLite3Expression generateResultKnownExpression() {
+        SQLite3Expression expr;
+        do {
+            expr = generateExpression();
+        } while (expr.getExpectedValue() == null);
+        return expr;
+    }
+
 }

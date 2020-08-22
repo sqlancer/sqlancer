@@ -110,11 +110,8 @@ public class SQLite3PivotedQuerySynthesisOracle
                 errors.add("second argument to nth_value must be a positive integer");
             }
             if (Randomly.getBoolean()) {
-                SQLite3Expression randomExpression;
-                do {
-                    randomExpression = new SQLite3ExpressionGenerator(globalState).setColumns(columns)
-                            .generateExpression();
-                } while (randomExpression.getExpectedValue() == null);
+                SQLite3Expression randomExpression = new SQLite3ExpressionGenerator(globalState).setColumns(columns)
+                        .generateResultKnownExpression();
                 colExpressions.add(randomExpression);
             } else {
                 colExpressions.add(colName);
@@ -259,16 +256,14 @@ public class SQLite3PivotedQuerySynthesisOracle
     private SQLite3Expression generateNewExpression(List<SQLite3Column> columns, SQLite3RowValue rw) {
         do {
             SQLite3Expression expr = new SQLite3ExpressionGenerator(globalState).setRowValue(rw).setColumns(columns)
-                    .generateExpression();
-            if (expr.getExpectedValue() != null) {
-                if (expr.getExpectedValue().isNull()) {
-                    return new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.ISNULL, expr);
-                }
-                if (SQLite3Cast.isTrue(expr.getExpectedValue()).get()) {
-                    return expr;
-                } else {
-                    return new SQLite3UnaryOperation(UnaryOperator.NOT, expr);
-                }
+                    .generateResultKnownExpression();
+            if (expr.getExpectedValue().isNull()) {
+                return new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.ISNULL, expr);
+            }
+            if (SQLite3Cast.isTrue(expr.getExpectedValue()).get()) {
+                return expr;
+            } else {
+                return new SQLite3UnaryOperation(UnaryOperator.NOT, expr);
             }
         } while (true);
     }
