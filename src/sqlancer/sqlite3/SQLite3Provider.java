@@ -102,7 +102,7 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
         CREATE_TRIGGER(SQLite3CreateTriggerGenerator::create), //
         MANIPULATE_STAT_TABLE((g) -> {
             List<SQLite3Column> columns = new ArrayList<>();
-            SQLite3Table t = new SQLite3Table("sqlite_stat1", columns, TableKind.MAIN, false, 1, false, false, false);
+            SQLite3Table t = new SQLite3Table("sqlite_stat1", columns, TableKind.MAIN, false, false, false, false);
             if (Randomly.getBoolean()) {
                 return SQLite3DeleteGenerator.deleteContent(g, t);
             } else {

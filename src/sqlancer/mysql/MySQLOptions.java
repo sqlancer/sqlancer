@@ -11,6 +11,7 @@ import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.mysql.MySQLOptions.MySQLOracleFactory;
+import sqlancer.mysql.oracle.MySQLPivotedQuerySynthesisOracle;
 import sqlancer.mysql.oracle.MySQLTLPWhereOracle;
 
 @Parameters
@@ -26,6 +27,19 @@ public class MySQLOptions implements DBMSSpecificOptions<MySQLOracleFactory> {
             @Override
             public TestOracle create(MySQLGlobalState globalState) throws SQLException {
                 return new MySQLTLPWhereOracle(globalState);
+            }
+
+        },
+        PQS {
+
+            @Override
+            public TestOracle create(MySQLGlobalState globalState) throws SQLException {
+                return new MySQLPivotedQuerySynthesisOracle(globalState);
+            }
+
+            @Override
+            public boolean requiresAllTablesToContainRows() {
+                return true;
             }
 
         }

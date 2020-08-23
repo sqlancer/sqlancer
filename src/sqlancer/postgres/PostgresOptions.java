@@ -46,6 +46,11 @@ public class PostgresOptions implements DBMSSpecificOptions<PostgresOracleFactor
             public TestOracle create(PostgresGlobalState globalState) throws SQLException {
                 return new PostgresPivotedQuerySynthesisOracle(globalState);
             }
+
+            @Override
+            public boolean requiresAllTablesToContainRows() {
+                return true;
+            }
         },
         HAVING {
 
