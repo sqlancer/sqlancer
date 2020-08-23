@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.StateToReproduce.OracleRunReproductionState;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
@@ -46,15 +47,16 @@ public class SQLite3PivotedQuerySynthesisOracle
         extends PivotedQuerySynthesisBase<SQLite3GlobalState, SQLite3RowValue, SQLite3Expression> {
 
     private List<SQLite3Column> fetchColumns;
-    private List<SQLite3Expression> colExpressions;
+    private List<SQLite3Expression> pivotRowExpression;
+    private OracleRunReproductionState localState;
 
-    public SQLite3PivotedQuerySynthesisOracle(SQLite3GlobalState globalState) throws SQLException {
+    public SQLite3PivotedQuerySynthesisOracle(SQLite3GlobalState globalState) {
         super(globalState);
     }
 
     @Override
     public Query getQueryThatContainsAtLeastOneRow() throws SQLException {
-        SQLite3Select selectStatement = getQuery(globalState);
+        SQLite3Select selectStatement = getQuery();
         SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
         visitor.visit(selectStatement);
         String queryString = visitor.get();
@@ -62,12 +64,14 @@ public class SQLite3PivotedQuerySynthesisOracle
         return new QueryAdapter(queryString, errors);
     }
 
-    public SQLite3Select getQuery(SQLite3GlobalState globalState) throws SQLException {
-        if (globalState.getSchema().getDatabaseTables().isEmpty()) {
-            throw new IgnoreMeException();
-        }
+    public SQLite3Select getQuery() throws SQLException {
+        assert !globalState.getSchema().getDatabaseTables().isEmpty();
+        localState = globalState.getState().getLocalState();
+        assert localState != null;
         SQLite3Tables randomFromTables = globalState.getSchema().getRandomTableNonEmptyTables();
         List<SQLite3Table> tables = randomFromTables.getTables();
+
+        pivotRow = randomFromTables.getRandomRowValue(globalState.getConnection());
 
         globalState.getState().queryTargetedTablesString = randomFromTables.tableNamesAsString();
         SQLite3Select selectStatement = new SQLite3Select();
@@ -78,10 +82,8 @@ public class SQLite3PivotedQuerySynthesisOracle
                 columns.add(t.getRowid());
             }
         }
-        pivotRow = randomFromTables.getRandomRowValue(globalState.getConnection());
 
         List<Join> joinStatements = getJoinStatements(globalState, tables, columns);
-
         selectStatement.setJoinClauses(joinStatements);
         selectStatement.setFromTables(SQLite3Common.getTableRefs(tables, globalState.getSchema()));
 
@@ -91,41 +93,14 @@ public class SQLite3PivotedQuerySynthesisOracle
         List<SQLite3Column> columnsWithoutRowid = columns.stream()
                 .filter(c -> !SQLite3Schema.ROWID_STRINGS.contains(c.getName())).collect(Collectors.toList());
         fetchColumns = Randomly.nonEmptySubset(columnsWithoutRowid);
-        colExpressions = new ArrayList<>();
         List<SQLite3Table> allTables = new ArrayList<>();
         allTables.addAll(tables);
         allTables.addAll(joinStatements.stream().map(join -> join.getTable()).collect(Collectors.toList()));
         boolean allTablesContainOneRow = allTables.stream().allMatch(t -> t.getNrRows() == 1);
-        for (SQLite3Column c : fetchColumns) {
-            SQLite3Expression colName = new SQLite3ColumnName(c, pivotRow.getValues().get(c));
-            if (allTablesContainOneRow && Randomly.getBoolean()) {
-                boolean generateDistinct = Randomly.getBoolean();
-                if (generateDistinct) {
-                    colName = new SQLite3Distinct(colName);
-                }
-                SQLite3AggregateFunction aggFunc = SQLite3AggregateFunction.getRandom(c.getType());
-                colName = new SQLite3Aggregate(Arrays.asList(colName), aggFunc);
-                if (Randomly.getBoolean() && !generateDistinct) {
-                    colName = generateWindowFunction(columns, colName, true);
-                }
-                errors.add("second argument to nth_value must be a positive integer");
-            }
-            if (Randomly.getBoolean()) {
-                SQLite3Expression randomExpression = new SQLite3ExpressionGenerator(globalState).setColumns(columns)
-                        .generateResultKnownExpression();
-                colExpressions.add(randomExpression);
-            } else {
-                colExpressions.add(colName);
-            }
-        }
-        if (Randomly.getBoolean() && allTablesContainOneRow) {
-            SQLite3WindowFunction windowFunction = SQLite3WindowFunction.getRandom(columnsWithoutRowid, globalState);
-            SQLite3Expression windowExpr = generateWindowFunction(columnsWithoutRowid, windowFunction, false);
-            colExpressions.add(windowExpr);
-        }
-        selectStatement.setFetchColumns(colExpressions);
-        globalState.getState().queryTargetedColumnsString = fetchColumns.stream().map(c -> c.getFullQualifiedName())
-                .collect(Collectors.joining(", "));
+        pivotRowExpression = getColExpressions(allTablesContainOneRow, columns, columnsWithoutRowid);
+        selectStatement.setFetchColumns(pivotRowExpression);
+        localState.log("queryTargetedColumnsString: "
+                + fetchColumns.stream().map(c -> c.getFullQualifiedName()).collect(Collectors.joining(", ")));
         SQLite3Expression whereClause = generateRectifiedExpression(columns, pivotRow);
         selectStatement.setWhereClause(whereClause);
         List<SQLite3Expression> groupByClause = generateGroupByClause(columns, pivotRow, allTablesContainOneRow);
@@ -137,8 +112,8 @@ public class SQLite3PivotedQuerySynthesisOracle
             SQLite3Expression offsetClause = generateOffset();
             selectStatement.setOffsetClause(offsetClause);
         }
-        List<SQLite3Expression> orderBy = new SQLite3ExpressionGenerator(globalState).setColumns(columns)
-                .generateOrderBys();
+        /* PQS does not check for ordering, so we can generate any ORDER BY clause */
+        List<SQLite3Expression> orderBy = new SQLite3ExpressionGenerator(globalState).generateOrderBys();
         selectStatement.setOrderByExpressions(orderBy);
         if (!groupByClause.isEmpty() && Randomly.getBoolean()) {
             SQLite3Expression randomExpression = SQLite3Common.getTrueExpression(columns, globalState);
@@ -166,6 +141,52 @@ public class SQLite3PivotedQuerySynthesisOracle
         return joinStatements;
     }
 
+    private List<SQLite3Expression> getColExpressions(boolean allTablesContainOneRow, List<SQLite3Column> columns,
+            List<SQLite3Column> columnsWithoutRowid) {
+        List<SQLite3Expression> colExpressions = new ArrayList<>();
+
+        for (SQLite3Column c : fetchColumns) {
+            SQLite3Expression colName = new SQLite3ColumnName(c, pivotRow.getValues().get(c));
+            if (allTablesContainOneRow && Randomly.getBoolean()) {
+
+                /*
+                 * PQS cannot detect omitted or incorrectly-fetched duplicate rows, so we can generate DISTINCT
+                 * statements
+                 */
+                boolean generateDistinct = Randomly.getBooleanWithRatherLowProbability();
+                if (generateDistinct) {
+                    colName = new SQLite3Distinct(colName);
+                }
+
+                SQLite3AggregateFunction aggFunc = SQLite3AggregateFunction.getRandom(c.getType());
+                colName = new SQLite3Aggregate(Arrays.asList(colName), aggFunc);
+                if (Randomly.getBoolean() && !generateDistinct) {
+                    colName = generateWindowFunction(columns, colName, true);
+                }
+                errors.add("second argument to nth_value must be a positive integer");
+            }
+            if (Randomly.getBoolean()) {
+                SQLite3Expression randomExpression;
+                randomExpression = new SQLite3ExpressionGenerator(globalState).setColumns(columns)
+                        .generateResultKnownExpression();
+                colExpressions.add(randomExpression);
+            } else {
+                colExpressions.add(colName);
+            }
+        }
+        if (allTablesContainOneRow) {
+            SQLite3WindowFunction windowFunction = SQLite3WindowFunction.getRandom(columnsWithoutRowid, globalState);
+            SQLite3Expression windowExpr = generateWindowFunction(columnsWithoutRowid, windowFunction, false);
+            colExpressions.add(windowExpr);
+        }
+        for (SQLite3Expression expr : colExpressions) {
+            if (expr.getExpectedValue() == null) {
+                throw new IgnoreMeException(); // TODO: aggregates
+            }
+        }
+        return colExpressions;
+    }
+
     private SQLite3Expression generateOffset() {
         if (Randomly.getBoolean()) {
             // OFFSET 0
@@ -182,9 +203,11 @@ public class SQLite3PivotedQuerySynthesisOracle
 
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ");
-        addExpectedValues(sb);
-        StringBuilder sb2 = new StringBuilder();
-        addExpectedValues(sb2);
+        String checkForContainmentValues = getGeneralizedPivotRowValues();
+        sb.append(checkForContainmentValues);
+        globalState.getState().getLocalState()
+                .log("-- we expect the following expression to be contained in the result set: "
+                        + checkForContainmentValues);
         sb.append(" INTERSECT SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
         if (query.getQueryString().endsWith(";")) {
             sb.append(query.getQueryString().substring(0, query.getQueryString().length() - 1));
@@ -193,6 +216,7 @@ public class SQLite3PivotedQuerySynthesisOracle
         }
         sb.append(")");
         String resultingQueryString = sb.toString();
+        globalState.getState().getLocalState().log(resultingQueryString);
         Query finalQuery = new QueryAdapter(resultingQueryString, query.getExpectedErrors());
         try (ResultSet result = createStatement.executeQuery(finalQuery.getQueryString())) {
             boolean isContainedIn = !result.isClosed();
@@ -207,14 +231,16 @@ public class SQLite3PivotedQuerySynthesisOracle
         }
     }
 
-    private void addExpectedValues(StringBuilder sb) {
-        for (int i = 0; i < colExpressions.size(); i++) {
+    private String getGeneralizedPivotRowValues() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < pivotRowExpression.size(); i++) {
             if (i != 0) {
                 sb.append(", ");
             }
-            SQLite3Constant expectedValue = colExpressions.get(i).getExpectedValue();
+            SQLite3Constant expectedValue = pivotRowExpression.get(i).getExpectedValue();
             sb.append(SQLite3Visitor.asString(expectedValue));
         }
+        return sb.toString();
     }
 
     private SQLite3Expression generateLimit(long l) {
