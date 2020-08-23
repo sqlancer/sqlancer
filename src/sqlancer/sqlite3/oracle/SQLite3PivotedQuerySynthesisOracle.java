@@ -97,7 +97,8 @@ public class SQLite3PivotedQuerySynthesisOracle
         allTables.addAll(tables);
         allTables.addAll(joinStatements.stream().map(join -> join.getTable()).collect(Collectors.toList()));
         boolean allTablesContainOneRow = allTables.stream().allMatch(t -> t.getNrRows() == 1);
-        pivotRowExpression = getColExpressions(allTablesContainOneRow, columns, columnsWithoutRowid);
+        boolean testAggregateFunctions = allTablesContainOneRow && globalState.getOptions().testAggregateFunctionsPQS();
+        pivotRowExpression = getColExpressions(testAggregateFunctions, columns, columnsWithoutRowid);
         selectStatement.setFetchColumns(pivotRowExpression);
         localState.log("queryTargetedColumnsString: "
                 + fetchColumns.stream().map(c -> c.getFullQualifiedName()).collect(Collectors.joining(", ")));
@@ -141,13 +142,13 @@ public class SQLite3PivotedQuerySynthesisOracle
         return joinStatements;
     }
 
-    private List<SQLite3Expression> getColExpressions(boolean allTablesContainOneRow, List<SQLite3Column> columns,
+    private List<SQLite3Expression> getColExpressions(boolean testAggregateFunctions, List<SQLite3Column> columns,
             List<SQLite3Column> columnsWithoutRowid) {
         List<SQLite3Expression> colExpressions = new ArrayList<>();
 
         for (SQLite3Column c : fetchColumns) {
             SQLite3Expression colName = new SQLite3ColumnName(c, pivotRow.getValues().get(c));
-            if (allTablesContainOneRow && Randomly.getBoolean()) {
+            if (testAggregateFunctions && Randomly.getBoolean()) {
 
                 /*
                  * PQS cannot detect omitted or incorrectly-fetched duplicate rows, so we can generate DISTINCT
@@ -174,7 +175,7 @@ public class SQLite3PivotedQuerySynthesisOracle
                 colExpressions.add(colName);
             }
         }
-        if (allTablesContainOneRow) {
+        if (testAggregateFunctions) {
             SQLite3WindowFunction windowFunction = SQLite3WindowFunction.getRandom(columnsWithoutRowid, globalState);
             SQLite3Expression windowExpr = generateWindowFunction(columnsWithoutRowid, windowFunction, false);
             colExpressions.add(windowExpr);
