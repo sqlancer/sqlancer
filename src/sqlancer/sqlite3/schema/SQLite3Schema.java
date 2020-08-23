@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
@@ -19,6 +18,7 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.QueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.common.schema.AbstractRowValue;
+import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractTable;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.AbstractTables;
@@ -27,16 +27,16 @@ import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.ast.SQLite3Constant;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table.TableKind;
 
-public class SQLite3Schema {
+public class SQLite3Schema extends AbstractSchema<SQLite3Table> {
 
     /**
      * All possible aliases for the rowid column.
      */
     public static final List<String> ROWID_STRINGS = Collections
             .unmodifiableList(Arrays.asList("rowid", "_rowid_", "oid"));
-    private final List<SQLite3Table> databaseTables;
     private final List<String> indexNames;
 
     public List<String> getIndexNames() {
@@ -48,14 +48,6 @@ public class SQLite3Schema {
             throw new IgnoreMeException();
         } else {
             return Randomly.fromList(indexNames);
-        }
-    }
-
-    public SQLite3Table getRandomTableOrBailout() {
-        if (databaseTables.isEmpty()) {
-            throw new IgnoreMeException();
-        } else {
-            return Randomly.fromList(getDatabaseTables());
         }
     }
 
@@ -176,7 +168,8 @@ public class SQLite3Schema {
                     throw new IgnoreMeException();
                 }
                 if (!randomRowValues.next()) {
-                    throw new AssertionError("could not find random row! " + randomRow);
+                    throw new IgnoreMeException();
+                    // throw new AssertionError("could not find random row! " + randomRow);
                 }
                 for (int i = 0; i < getColumns().size(); i++) {
                     SQLite3Column column = getColumns().get(i);
@@ -243,7 +236,7 @@ public class SQLite3Schema {
             return getName().startsWith("sqlit");
         }
 
-        public int getNrRows() {
+        public long getNrRows() {
             return nrRows;
         }
 
@@ -266,8 +259,8 @@ public class SQLite3Schema {
     }
 
     public SQLite3Schema(List<SQLite3Table> databaseTables, List<String> indexNames) {
+        super(databaseTables);
         this.indexNames = indexNames;
-        this.databaseTables = Collections.unmodifiableList(databaseTables);
     }
 
     @Override
@@ -471,80 +464,27 @@ public class SQLite3Schema {
         return columnType;
     }
 
-    public SQLite3Table getRandomTable() {
-        return Randomly.fromList(getDatabaseTables());
-    }
-
-    public SQLite3Table getRandomTable(Predicate<SQLite3Table> predicate) {
-        List<SQLite3Table> collect = databaseTables.stream().filter(predicate).collect(Collectors.toList());
-        if (collect.isEmpty()) {
-            throw new IgnoreMeException();
-        }
-        return Randomly.fromList(collect);
-    }
-
-    public List<SQLite3Table> getTables(Predicate<SQLite3Table> predicate) {
-        return databaseTables.stream().filter(predicate).collect(Collectors.toList());
-    }
-
-    public SQLite3Table getRandomTableOrBailout(Predicate<SQLite3Table> predicate) {
-        List<SQLite3Table> tables = databaseTables.stream().filter(predicate).collect(Collectors.toList());
-        if (tables.isEmpty()) {
-            throw new IgnoreMeException();
-        } else {
-            return Randomly.fromList(tables);
-        }
-    }
-
     public SQLite3Table getRandomVirtualTable() {
         return getRandomTable(p -> p.isVirtual);
     }
 
-    public List<SQLite3Table> getDatabaseTables() {
-        return databaseTables;
-    }
-
     public SQLite3Tables getTables() {
-        return new SQLite3Tables(databaseTables);
+        return new SQLite3Tables(getDatabaseTables());
     }
 
     public SQLite3Tables getRandomTableNonEmptyTables() {
-        if (databaseTables.isEmpty()) {
+        if (getDatabaseTables().isEmpty()) {
             throw new IgnoreMeException();
         }
-        return new SQLite3Tables(Randomly.nonEmptySubset(databaseTables));
-    }
-
-    public SQLite3Table getRandomTableNoViewOrBailout() {
-        List<SQLite3Table> databaseTablesWithoutViews = getDatabaseTablesWithoutViews();
-        if (databaseTablesWithoutViews.isEmpty()) {
-            throw new IgnoreMeException();
-        }
-        return Randomly.fromList(databaseTablesWithoutViews);
+        return new SQLite3Tables(Randomly.nonEmptySubset(getDatabaseTables()));
     }
 
     public SQLite3Table getRandomTableNoViewNoVirtualTable() {
         return Randomly.fromList(getDatabaseTablesWithoutViewsWithoutVirtualTables());
     }
 
-    public List<SQLite3Table> getDatabaseTablesWithoutViews() {
-        return databaseTables.stream().filter(t -> !t.isView()).collect(Collectors.toList());
-    }
-
-    public List<SQLite3Table> getViews() {
-        return databaseTables.stream().filter(t -> t.isView()).collect(Collectors.toList());
-    }
-
-    public SQLite3Table getRandomViewOrBailout() {
-        if (getViews().isEmpty()) {
-            throw new IgnoreMeException();
-        } else {
-            return Randomly.fromList(getViews());
-        }
-    }
-
     public List<SQLite3Table> getDatabaseTablesWithoutViewsWithoutVirtualTables() {
-        return databaseTables.stream().filter(t -> !t.isView() && !t.isVirtual).collect(Collectors.toList());
+        return getDatabaseTables().stream().filter(t -> !t.isView() && !t.isVirtual).collect(Collectors.toList());
     }
 
 }
