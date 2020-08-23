@@ -6,6 +6,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 
@@ -136,7 +137,10 @@ public class AbstractSchema<A extends AbstractTable<?, ?>> {
                 return tableName;
             }
         } while (true);
+    }
 
+    public boolean containsTableWithZeroRows(GlobalState<?, ?> globalState) {
+        return databaseTables.stream().anyMatch(t -> t.getNrRows(globalState) == 0);
     }
 
 }
