@@ -7,26 +7,23 @@ import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.schema.AbstractRowValue;
+import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractTable;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.common.schema.TableIndex;
+import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresSchema.PostgresTable.TableType;
 import sqlancer.postgres.ast.PostgresConstant;
 
-public class PostgresSchema {
+public class PostgresSchema extends AbstractSchema<PostgresTable> {
 
-    private final List<PostgresTable> databaseTables;
     private final String databaseName;
 
     public enum PostgresDataType {
@@ -306,51 +303,16 @@ public class PostgresSchema {
     }
 
     public PostgresSchema(List<PostgresTable> databaseTables, String databaseName) {
-        this.databaseTables = Collections.unmodifiableList(databaseTables);
+        super(databaseTables);
         this.databaseName = databaseName;
     }
 
-    @Override
-    public String toString() {
-        StringBuffer sb = new StringBuffer();
-        for (PostgresTable t : getDatabaseTables()) {
-            sb.append(t);
-            sb.append("\n");
-        }
-        return sb.toString();
-    }
-
-    public PostgresTable getRandomTable() {
-        return Randomly.fromList(getDatabaseTables());
-    }
-
     public PostgresTables getRandomTableNonEmptyTables() {
-        return new PostgresTables(Randomly.nonEmptySubset(databaseTables));
-    }
-
-    public List<PostgresTable> getDatabaseTables() {
-        return databaseTables;
-    }
-
-    public PostgresTable getDatabaseTable(String name) {
-        return databaseTables.stream().filter(t -> t.getName().equals(name)).findAny().orElse(null);
-    }
-
-    public List<PostgresTable> getDatabaseTablesRandomSubsetNotEmpty() {
-        return Randomly.nonEmptySubset(databaseTables);
+        return new PostgresTables(Randomly.nonEmptySubset(getDatabaseTables()));
     }
 
     public String getDatabaseName() {
         return databaseName;
-    }
-
-    public PostgresTable getRandomTable(Function<PostgresTable, Boolean> f) {
-        List<PostgresTable> relevantTables = databaseTables.stream().filter(t -> f.apply(t))
-                .collect(Collectors.toList());
-        if (relevantTables.isEmpty()) {
-            throw new IgnoreMeException();
-        }
-        return Randomly.fromList(relevantTables);
     }
 
 }

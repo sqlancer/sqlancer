@@ -2,9 +2,11 @@ package sqlancer.common.schema;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 
 public class AbstractSchema<A extends AbstractTable<?, ?>> {
@@ -33,12 +35,24 @@ public class AbstractSchema<A extends AbstractTable<?, ?>> {
         return Randomly.fromList(getDatabaseTables().stream().filter(predicate).collect(Collectors.toList()));
     }
 
+    public A getRandomTableOrBailout(Function<A, Boolean> f) {
+        List<A> relevantTables = databaseTables.stream().filter(t -> f.apply(t)).collect(Collectors.toList());
+        if (relevantTables.isEmpty()) {
+            throw new IgnoreMeException();
+        }
+        return Randomly.fromList(relevantTables);
+    }
+
     public List<A> getDatabaseTables() {
         return databaseTables;
     }
 
     public List<A> getDatabaseTablesRandomSubsetNotEmpty() {
         return Randomly.nonEmptySubset(databaseTables);
+    }
+
+    public A getDatabaseTable(String name) {
+        return databaseTables.stream().filter(t -> t.getName().equals(name)).findAny().orElse(null);
     }
 
     public String getFreeIndexName() {
