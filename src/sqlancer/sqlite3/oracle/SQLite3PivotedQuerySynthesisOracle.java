@@ -96,7 +96,7 @@ public class SQLite3PivotedQuerySynthesisOracle
         List<SQLite3Table> allTables = new ArrayList<>();
         allTables.addAll(tables);
         allTables.addAll(joinStatements.stream().map(join -> join.getTable()).collect(Collectors.toList()));
-        boolean allTablesContainOneRow = allTables.stream().allMatch(t -> t.getNrRows() == 1);
+        boolean allTablesContainOneRow = allTables.stream().allMatch(t -> t.getNrRows(globalState) == 1);
         boolean testAggregateFunctions = allTablesContainOneRow && globalState.getOptions().testAggregateFunctionsPQS();
         pivotRowExpression = getColExpressions(testAggregateFunctions, columns, columnsWithoutRowid);
         selectStatement.setFetchColumns(pivotRowExpression);

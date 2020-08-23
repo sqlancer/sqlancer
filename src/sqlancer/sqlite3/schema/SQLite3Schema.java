@@ -14,16 +14,12 @@ import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.QueryAdapter;
-import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.common.schema.AbstractRowValue;
 import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractTable;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.common.schema.TableIndex;
-import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.ast.SQLite3Constant;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
@@ -198,18 +194,16 @@ public class SQLite3Schema extends AbstractSchema<SQLite3Table> {
         private final TableKind tableType;
         private SQLite3Column rowid;
         private final boolean withoutRowid;
-        private final int nrRows;
         private final boolean isVirtual;
         private final boolean isReadOnly;
 
         public SQLite3Table(String tableName, List<SQLite3Column> columns, TableKind tableType, boolean withoutRowid,
-                int nrRows, boolean isView, boolean isVirtual, boolean isReadOnly) {
+                boolean isView, boolean isVirtual, boolean isReadOnly) {
             super(tableName, columns, Collections.emptyList(), isView);
             this.tableType = tableType;
             this.withoutRowid = withoutRowid;
             this.isVirtual = isVirtual;
             this.isReadOnly = isReadOnly;
-            this.nrRows = nrRows;
         }
 
         public boolean hasWithoutRowid() {
@@ -234,10 +228,6 @@ public class SQLite3Schema extends AbstractSchema<SQLite3Table> {
 
         public boolean isSystemTable() {
             return getName().startsWith("sqlit");
-        }
-
-        public long getNrRows() {
-            return nrRows;
         }
 
         public boolean isTemp() {
@@ -271,25 +261,6 @@ public class SQLite3Schema extends AbstractSchema<SQLite3Table> {
             sb.append("\n");
         }
         return sb.toString();
-    }
-
-    public static int getNrRows(SQLite3GlobalState globalState, String table) throws SQLException {
-        String string = "SELECT COUNT(*) FROM " + table;
-        ExpectedErrors errors = new ExpectedErrors();
-        errors.add("ORDER BY term out of range");
-        errors.addAll(Arrays.asList("second argument to nth_value must be a positive integer",
-                "ON clause references tables to its right", "no such table", "no query solution", "no such index",
-                "GROUP BY term", "is circularly defined", "misuse of aggregate", "no such column",
-                "misuse of window function", "table does not support scanning"));
-        SQLite3Errors.addExpectedExpressionErrors(errors);
-        QueryAdapter q = new QueryAdapter(string, errors);
-        try (SQLancerResultSet query = q.executeAndGet(globalState)) {
-            if (query == null) {
-                throw new IgnoreMeException();
-            }
-            query.next();
-            return query.getInt(1);
-        }
     }
 
     public static SQLite3Schema fromConnection(SQLite3GlobalState globalState) throws SQLException {
@@ -329,10 +300,9 @@ public class SQLite3Schema extends AbstractSchema<SQLite3Table> {
                     boolean isDbStatsTable = sqlString.contains("using dbstat");
                     List<SQLite3Column> databaseColumns = getTableColumns(con, tableName, sqlString, isView,
                             isDbStatsTable);
-                    int nrRows = getNrRows(globalState, tableName);
                     SQLite3Table t = new SQLite3Table(tableName, databaseColumns,
                             tableType.contentEquals("temp_table") ? TableKind.TEMP : TableKind.MAIN, withoutRowid,
-                            nrRows, isView, isVirtual, isReadOnly);
+                            isView, isVirtual, isReadOnly);
                     if (isRowIdTable(withoutRowid, isView, isVirtual)) {
                         String rowId = Randomly.fromList(ROWID_STRINGS);
                         SQLite3Column rowid = new SQLite3Column(rowId, SQLite3DataType.INT, true, null, true);
