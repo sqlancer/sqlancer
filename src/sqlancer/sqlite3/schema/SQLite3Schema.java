@@ -31,6 +31,11 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table.TableKind;
 
 public class SQLite3Schema {
 
+    /**
+     * All possible aliases for the rowid column.
+     */
+    public static final List<String> ROWID_STRINGS = Collections
+            .unmodifiableList(Arrays.asList("rowid", "_rowid_", "oid"));
     private final List<SQLite3Table> databaseTables;
     private final List<String> indexNames;
 
@@ -336,7 +341,7 @@ public class SQLite3Schema {
                             tableType.contentEquals("temp_table") ? TableKind.TEMP : TableKind.MAIN, withoutRowid,
                             nrRows, isView, isVirtual, isReadOnly);
                     if (isRowIdTable(withoutRowid, isView, isVirtual)) {
-                        String rowId = Randomly.fromOptions("rowid", "_rowid_", "oid");
+                        String rowId = Randomly.fromList(ROWID_STRINGS);
                         SQLite3Column rowid = new SQLite3Column(rowId, SQLite3DataType.INT, true, null, true);
                         t.addRowid(rowid);
                         rowid.setTable(t);
