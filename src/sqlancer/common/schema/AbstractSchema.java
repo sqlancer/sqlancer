@@ -31,6 +31,14 @@ public class AbstractSchema<A extends AbstractTable<?, ?>> {
         return Randomly.fromList(getDatabaseTables());
     }
 
+    public A getRandomTableOrBailout() {
+        if (databaseTables.isEmpty()) {
+            throw new IgnoreMeException();
+        } else {
+            return Randomly.fromList(getDatabaseTables());
+        }
+    }
+
     public A getRandomTable(Predicate<A> predicate) {
         return Randomly.fromList(getDatabaseTables().stream().filter(predicate).collect(Collectors.toList()));
     }
@@ -47,12 +55,40 @@ public class AbstractSchema<A extends AbstractTable<?, ?>> {
         return databaseTables;
     }
 
+    public List<A> getTables(Predicate<A> predicate) {
+        return databaseTables.stream().filter(predicate).collect(Collectors.toList());
+    }
+
     public List<A> getDatabaseTablesRandomSubsetNotEmpty() {
         return Randomly.nonEmptySubset(databaseTables);
     }
 
     public A getDatabaseTable(String name) {
         return databaseTables.stream().filter(t -> t.getName().equals(name)).findAny().orElse(null);
+    }
+
+    public List<A> getViews() {
+        return databaseTables.stream().filter(t -> t.isView()).collect(Collectors.toList());
+    }
+
+    public List<A> getDatabaseTablesWithoutViews() {
+        return databaseTables.stream().filter(t -> !t.isView()).collect(Collectors.toList());
+    }
+
+    public A getRandomViewOrBailout() {
+        if (getViews().isEmpty()) {
+            throw new IgnoreMeException();
+        } else {
+            return Randomly.fromList(getViews());
+        }
+    }
+
+    public A getRandomTableNoViewOrBailout() {
+        List<A> databaseTablesWithoutViews = getDatabaseTablesWithoutViews();
+        if (databaseTablesWithoutViews.isEmpty()) {
+            throw new IgnoreMeException();
+        }
+        return Randomly.fromList(databaseTablesWithoutViews);
     }
 
     public String getFreeIndexName() {
