@@ -421,6 +421,7 @@ public final class Main {
             return options.getErrorExitCode();
         }
 
+        Randomly.initialize(options);
         if (options.printProgressInformation()) {
             startProgressMonitor();
             if (options.printProgressSummary()) {
