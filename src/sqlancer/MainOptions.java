@@ -65,6 +65,9 @@ public class MainOptions {
     @Parameter(names = "--print-succeeding-statements", description = "Print statements that are successfully processed by the DBMS to stdout (not yet implemented for all oracles)", arity = 1)
     private boolean printSucceedingStatements; // NOPMD
 
+    @Parameter(names = "--test-only-nonempty-tables", description = "Test only databases each of whose tables contain at least a single row", arity = 1)
+    private boolean testOnlyWithMoreThanZeroRows; // NOPMD
+
     @Parameter(names = "--pqs-test-aggregates", description = "Partially test aggregate functions when all tables contain only a single row.")
     private boolean testAggregateFunctions; // NOPMD
 
@@ -151,6 +154,10 @@ public class MainOptions {
 
     public boolean testAggregateFunctionsPQS() {
         return testAggregateFunctions;
+    }
+
+    public boolean testOnlyWithMoreThanZeroRows() {
+        return testOnlyWithMoreThanZeroRows;
     }
 
 }
