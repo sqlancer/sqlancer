@@ -3,6 +3,8 @@ package sqlancer;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
+import sqlancer.Randomly.StringGenerationStrategy;
+
 @Parameters(separators = "=", commandDescription = "Options applicable to all DBMS")
 public class MainOptions {
 
@@ -70,6 +72,9 @@ public class MainOptions {
 
     @Parameter(names = "--pqs-test-aggregates", description = "Partially test aggregate functions when all tables contain only a single row.")
     private boolean testAggregateFunctions; // NOPMD
+
+    @Parameter(names = "--random-string-generation", description = "Select the random-string eneration approach")
+    private StringGenerationStrategy randomStringGenerationStrategy = StringGenerationStrategy.SOPHISTICATED; // NOPMD
 
     public int getMaxExpressionDepth() {
         return maxExpressionDepth;
@@ -158,6 +163,10 @@ public class MainOptions {
 
     public boolean testOnlyWithMoreThanZeroRows() {
         return testOnlyWithMoreThanZeroRows;
+    }
+
+    public StringGenerationStrategy getRandomStringGenerationStrategy() {
+        return randomStringGenerationStrategy;
     }
 
 }
