@@ -94,6 +94,12 @@ public class SQLite3Options implements DBMSSpecificOptions<SQLite3OracleFactory>
             public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
                 return new SQLite3PivotedQuerySynthesisOracle(globalState);
             }
+
+            @Override
+            public boolean requiresAllTablesToContainRows() {
+                return true;
+            }
+
         },
         NoREC {
             @Override
