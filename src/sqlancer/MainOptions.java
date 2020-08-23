@@ -65,6 +65,9 @@ public class MainOptions {
     @Parameter(names = "--print-succeeding-statements", description = "Print statements that are successfully processed by the DBMS to stdout (not yet implemented for all oracles)", arity = 1)
     private boolean printSucceedingStatements; // NOPMD
 
+    @Parameter(names = "--pqs-test-aggregates", description = "Partially test aggregate functions when all tables contain only a single row.")
+    private boolean testAggregateFunctions; // NOPMD
+
     public int getMaxExpressionDepth() {
         return maxExpressionDepth;
     }
@@ -144,6 +147,10 @@ public class MainOptions {
 
     public long getRandomSeed() {
         return randomSeed;
+    }
+
+    public boolean testAggregateFunctionsPQS() {
+        return testAggregateFunctions;
     }
 
 }
