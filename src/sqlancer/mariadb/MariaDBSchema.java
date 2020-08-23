@@ -6,30 +6,30 @@ import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import sqlancer.Randomly;
+import sqlancer.common.schema.AbstractSchema;
+import sqlancer.common.schema.AbstractTable;
+import sqlancer.common.schema.AbstractTableColumn;
+import sqlancer.common.schema.TableIndex;
+import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable.MariaDBEngine;
 
-public class MariaDBSchema {
+public class MariaDBSchema extends AbstractSchema<MariaDBTable> {
 
     private static final int NR_SCHEMA_READ_TRIES = 10;
-    private final List<MariaDBTable> databaseTables;
 
     public enum MariaDBDataType {
         INT, VARCHAR, REAL, BOOLEAN;
     }
 
-    public static class MariaDBColumn implements Comparable<MariaDBColumn> {
+    public static class MariaDBColumn extends AbstractTableColumn<MariaDBTable, MariaDBDataType> {
 
-        private final String name;
-        private final MariaDBDataType columnType;
         private final boolean isPrimaryKey;
-        private MariaDBTable table;
         private final int precision;
 
         public enum CollateSequence {
@@ -41,42 +41,9 @@ public class MariaDBSchema {
         }
 
         public MariaDBColumn(String name, MariaDBDataType columnType, boolean isPrimaryKey, int precision) {
-            this.name = name;
-            this.columnType = columnType;
+            super(name, null, columnType);
             this.isPrimaryKey = isPrimaryKey;
             this.precision = precision;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("%s.%s: %s", table.getName(), name, columnType);
-        }
-
-        @Override
-        public int hashCode() {
-            return name.hashCode() + 11 * columnType.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof MariaDBColumn)) {
-                return false;
-            } else {
-                MariaDBColumn c = (MariaDBColumn) obj;
-                return table.getName().contentEquals(getName()) && name.equals(c.name);
-            }
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getFullQualifiedName() {
-            return table.getName() + "." + getName();
-        }
-
-        public MariaDBDataType getColumnType() {
-            return columnType;
         }
 
         public int getPrecision() {
@@ -85,23 +52,6 @@ public class MariaDBSchema {
 
         public boolean isPrimaryKey() {
             return isPrimaryKey;
-        }
-
-        public void setTable(MariaDBTable t) {
-            this.table = t;
-        }
-
-        public MariaDBTable getTable() {
-            return table;
-        }
-
-        @Override
-        public int compareTo(MariaDBColumn o) {
-            if (o.getTable().equals(this.getTable())) {
-                return name.compareTo(o.getName());
-            } else {
-                return o.getTable().compareTo(table);
-            }
         }
 
     }
@@ -163,7 +113,7 @@ public class MariaDBSchema {
         }
     }
 
-    public static class MariaDBTable implements Comparable<MariaDBTable> {
+    public static class MariaDBTable extends AbstractTable<MariaDBColumn, MariaDBIndex> {
 
         public enum MariaDBEngine {
 
@@ -189,99 +139,32 @@ public class MariaDBSchema {
 
         }
 
-        private final String tableName;
-        private final List<MariaDBColumn> columns;
-        private final List<MariaDBIndex> indexes;
         private final MariaDBEngine engine;
 
         public MariaDBTable(String tableName, List<MariaDBColumn> columns, List<MariaDBIndex> indexes,
                 MariaDBEngine engine) {
-            this.tableName = tableName;
-            this.indexes = indexes;
+            super(tableName, columns, indexes, false);
             this.engine = engine;
-            this.columns = Collections.unmodifiableList(columns);
-        }
-
-        @Override
-        public String toString() {
-            StringBuffer sb = new StringBuffer();
-            sb.append(tableName);
-            sb.append("\n");
-            for (MariaDBColumn c : columns) {
-                sb.append("\t");
-                sb.append(c);
-                sb.append("\n");
-            }
-            return sb.toString();
-        }
-
-        public List<MariaDBIndex> getIndexes() {
-            return indexes;
-        }
-
-        public String getName() {
-            return tableName;
-        }
-
-        public List<MariaDBColumn> getColumns() {
-            return columns;
-        }
-
-        public String getColumnsAsString() {
-            return columns.stream().map(c -> c.getName()).collect(Collectors.joining(", "));
-        }
-
-        public String getColumnsAsString(Function<MariaDBColumn, String> function) {
-            return columns.stream().map(function).collect(Collectors.joining(", "));
-        }
-
-        public MariaDBColumn getRandomColumn() {
-            return Randomly.fromList(columns);
-        }
-
-        public boolean hasIndexes() {
-            return !indexes.isEmpty();
-        }
-
-        public MariaDBIndex getRandomIndex() {
-            return Randomly.fromList(indexes);
-        }
-
-        @Override
-        public int compareTo(MariaDBTable o) {
-            return o.getName().compareTo(tableName);
-        }
-
-        public List<MariaDBColumn> getRandomNonEmptyColumnSubset() {
-            return Randomly.nonEmptySubset(getColumns());
         }
 
         public MariaDBEngine getEngine() {
             return engine;
         }
 
-        public boolean hasPrimaryKey() {
-            return columns.stream().anyMatch(c -> c.isPrimaryKey());
-        }
     }
 
-    public static final class MariaDBIndex {
-
-        private final String indexName;
+    public static final class MariaDBIndex extends TableIndex {
 
         private MariaDBIndex(String indexName) {
-            this.indexName = indexName;
+            super(indexName);
         }
 
-        public static MariaDBIndex create(String indexName) {
-            return new MariaDBIndex(indexName);
-        }
-
+        @Override
         public String getIndexName() {
-            if (indexName.contentEquals("PRIMARY")) {
+            if (super.getIndexName().contentEquals("PRIMARY")) {
                 return "`PRIMARY`";
             } else {
-                return indexName;
+                return super.getIndexName();
             }
         }
 
@@ -328,7 +211,7 @@ public class MariaDBSchema {
                     databaseName, tableName))) {
                 while (rs.next()) {
                     String indexName = rs.getString("INDEX_NAME");
-                    indexes.add(MariaDBIndex.create(indexName));
+                    indexes.add(new MariaDBIndex(indexName));
                 }
             }
         }
@@ -355,33 +238,7 @@ public class MariaDBSchema {
     }
 
     public MariaDBSchema(List<MariaDBTable> databaseTables) {
-        this.databaseTables = Collections.unmodifiableList(databaseTables);
-    }
-
-    @Override
-    public String toString() {
-        StringBuffer sb = new StringBuffer();
-        for (MariaDBTable t : getDatabaseTables()) {
-            sb.append(t);
-            sb.append("\n");
-        }
-        return sb.toString();
-    }
-
-    public MariaDBTable getRandomTable() {
-        return Randomly.fromList(getDatabaseTables());
-    }
-
-    public MariaDBTables getRandomTableNonEmptyTables() {
-        return new MariaDBTables(Randomly.nonEmptySubset(databaseTables));
-    }
-
-    public List<MariaDBTable> getDatabaseTables() {
-        return databaseTables;
-    }
-
-    public List<MariaDBTable> getDatabaseTablesRandomSubsetNotEmpty() {
-        return Randomly.nonEmptySubset(databaseTables);
+        super(databaseTables);
     }
 
 }

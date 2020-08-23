@@ -27,8 +27,8 @@ public final class MariaDBInsertGenerator {
             if (Randomly.getBooleanWithSmallProbability()) {
                 sb.append(MariaDBVisitor.asString(MariaDBExpressionGenerator.getRandomConstant(r)));
             } else {
-                sb.append(MariaDBVisitor.asString(MariaDBExpressionGenerator.getRandomConstant(r,
-                        randomTable.getColumns().get(i).getColumnType())));
+                sb.append(MariaDBVisitor.asString(
+                        MariaDBExpressionGenerator.getRandomConstant(r, randomTable.getColumns().get(i).getType())));
             }
         }
         sb.append(")");
