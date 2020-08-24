@@ -74,6 +74,15 @@ public class StateToReproduce {
         return Collections.unmodifiableList(statements);
     }
 
+    public void commentStatements() {
+        for (int i = 0; i < statements.size(); i++) {
+            Query statement = statements.get(i);
+            String queryString = statement.getQueryString();
+            String newQueryString = "-- " + queryString;
+            statements.set(i, new QueryAdapter(newQueryString));
+        }
+    }
+
     public long getSeedValue() {
         return seedValue;
     }

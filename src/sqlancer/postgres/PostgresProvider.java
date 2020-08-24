@@ -188,6 +188,7 @@ public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, Postg
 
     @Override
     public void generateDatabase(PostgresGlobalState globalState) throws SQLException {
+        readFunctions(globalState);
         createTables(globalState, Randomly.fromOptions(4, 5, 6));
         prepareTables(globalState);
     }

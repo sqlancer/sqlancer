@@ -208,12 +208,6 @@ public class CitusProvider extends PostgresProvider {
             QueryAdapter query = new QueryAdapter(queryString, getCitusErrors());
             globalState.executeStatement(query, "SELECT create_distributed_table(?, ?);", tableName,
                     columnToDistribute.getName());
-            // distribution column cannot take NULL value
-            // TODO: find a way to protect from SQL injection without '' around string input
-            query = new QueryAdapter(
-                    "ALTER TABLE " + tableName + " ALTER COLUMN " + columnToDistribute.getName() + " SET NOT NULL;",
-                    getCitusErrors());
-            globalState.executeStatement(query);
         }
     }
 
@@ -272,19 +266,18 @@ public class CitusProvider extends PostgresProvider {
                 }
             }
             for (PostgresColumn c : columnConstraints.keySet()) {
-                // TODO: check if table and column constraint sets are equal? but then it's O(N) instead of O(1)
+                // check if all table contraints are included in column constraints, i.e. column eligible to distribute
                 if (tableConstraints.size() == columnConstraints.get(c).size()) {
                     columns.add(c);
                 }
             }
-            // TODO: figure out how to use EXCLUDE
         }
         distributeTable(columns, tableName, globalState);
     }
 
     @Override
     public void generateDatabase(PostgresGlobalState globalState) throws SQLException {
-        // TODO: function reading? add to Postgres implementation?
+        readFunctions(globalState);
         createTables(globalState, Randomly.fromOptions(4, 5, 6));
         for (PostgresTable table : globalState.getSchema().getDatabaseTables()) {
             if (!(table.getTableType() == TableType.TEMPORARY || Randomly.getBooleanWithRatherLowProbability())) {
@@ -352,10 +345,8 @@ public class CitusProvider extends PostgresProvider {
             String preHost = entryURL.substring(0, hostIndex);
             String postHost = entryURL.substring(databaseIndex - 1);
             String entryWorkerURL = preHost + w.getHost() + ":" + w.getPort() + postHost;
-            // TODO: better way of logging this
             globalState.getState().logStatement("\\q");
             globalState.getState().logStatement(entryWorkerURL);
-            globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
             Connection con = DriverManager.getConnection("jdbc:" + entryWorkerURL, username, password);
 
             // create test database at worker node
@@ -386,7 +377,6 @@ public class CitusProvider extends PostgresProvider {
     private void addCitusWorkerNodes(PostgresGlobalState globalState, Connection con,
             List<CitusWorkerNode> citusWorkerNodes) throws SQLException {
         for (CitusWorkerNode w : citusWorkerNodes) {
-            // TODO: protect from sql injection - is it necessary though since these are read from the system?
             String addWorkers = "SELECT * from master_add_node('" + w.getHost() + "', " + w.getPort() + ");";
             globalState.getState().logStatement(addWorkers);
             try (Statement s = con.createStatement()) {
@@ -417,7 +407,6 @@ public class CitusProvider extends PostgresProvider {
             prepareCitusWorkerNodes(globalState, citusWorkerNodes, databaseIndex, entryDatabaseName);
 
             // reconnect to coordinator node, test database
-            // TODO: better way of logging this
             globalState.getState().logStatement("\\q");
             globalState.getState().logStatement(testURL);
             con = DriverManager.getConnection("jdbc:" + testURL, username, password);
@@ -429,6 +418,7 @@ public class CitusProvider extends PostgresProvider {
             con = DriverManager.getConnection("jdbc:" + testURL, username, password);
             ((CitusGlobalState) globalState)
                     .setRepartition(((CitusOptions) globalState.getDmbsSpecificOptions()).repartition);
+            globalState.getState().commentStatements();
             return con;
         }
     }
