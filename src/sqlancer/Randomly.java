@@ -9,11 +9,10 @@ import java.util.function.Supplier;
 
 public final class Randomly {
 
-    private static final boolean USE_CACHING = true;
-    private static final int CACHE_SIZE = 100;
-
     private static StringGenerationStrategy stringGenerationStrategy = StringGenerationStrategy.SOPHISTICATED;
     private static int maxStringLength = 10;
+    private static boolean useCaching = true;
+    private static int cacheSize = 100;
 
     private final List<Long> cachedLongs = new ArrayList<>();
     private final List<String> cachedStrings = new ArrayList<>();
@@ -25,25 +24,25 @@ public final class Randomly {
     private long seed;
 
     private void addToCache(long val) {
-        if (USE_CACHING && cachedLongs.size() < CACHE_SIZE && !cachedLongs.contains(val)) {
+        if (useCaching && cachedLongs.size() < cacheSize && !cachedLongs.contains(val)) {
             cachedLongs.add(val);
         }
     }
 
     private void addToCache(double val) {
-        if (USE_CACHING && cachedDoubles.size() < CACHE_SIZE && !cachedDoubles.contains(val)) {
+        if (useCaching && cachedDoubles.size() < cacheSize && !cachedDoubles.contains(val)) {
             cachedDoubles.add(val);
         }
     }
 
     private void addToCache(String val) {
-        if (USE_CACHING && cachedStrings.size() < CACHE_SIZE && !cachedStrings.contains(val)) {
+        if (useCaching && cachedStrings.size() < cacheSize && !cachedStrings.contains(val)) {
             cachedStrings.add(val);
         }
     }
 
     private Long getFromLongCache() {
-        if (!USE_CACHING || cachedLongs.isEmpty()) {
+        if (!useCaching || cachedLongs.isEmpty()) {
             return null;
         } else {
             return Randomly.fromList(cachedLongs);
@@ -51,7 +50,7 @@ public final class Randomly {
     }
 
     private Double getFromDoubleCache() {
-        if (!USE_CACHING) {
+        if (!useCaching) {
             return null;
         }
         if (Randomly.getBoolean() && !cachedLongs.isEmpty()) {
@@ -64,7 +63,7 @@ public final class Randomly {
     }
 
     private String getFromStringCache() {
-        if (!USE_CACHING) {
+        if (!useCaching) {
             return null;
         }
         if (Randomly.getBoolean() && !cachedLongs.isEmpty()) {
@@ -86,7 +85,7 @@ public final class Randomly {
     }
 
     private static boolean cacheProbability() {
-        return USE_CACHING && getNextLong(0, 3) == 1;
+        return useCaching && getNextLong(0, 3) == 1;
     }
 
     // CACHING END
@@ -508,6 +507,8 @@ public final class Randomly {
     public static void initialize(MainOptions options) {
         stringGenerationStrategy = options.getRandomStringGenerationStrategy();
         maxStringLength = options.getMaxStringConstantLength();
+        useCaching = options.useConstantCaching();
+        cacheSize = options.getConstantCacheSize();
     }
 
 }
