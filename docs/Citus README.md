@@ -23,7 +23,27 @@ cd target
 java -jar SQLancer-0.0.1-SNAPSHOT.jar --num-threads 4 citus --oracle QUERY_PARTITIONING
 ```
 
-How to configure the run and how to interpret the output is explained in [SQLancer - Using SQLancer](https://github.com/sqlancer/sqlancer#using-sqlancer).
+How to configure the run and how to find the output logs is explained in [SQLancer - Using SQLancer](https://github.com/sqlancer/sqlancer#using-sqlancer).
+
+## Interpreting output logs
+
+### Current logs
+
+If the `--log-each-select` option is enabled, each database being tested has a corresponding `-cur.log` file that is populated with all SQL statements sent to the database.
+
+### Error logs
+
+When a bug is found in a database being tested, a corresponding `.log` file is created and is populated with all SQL statements necessary to reproduce the bug. 
+
+1. At the top of the file is the (commented-out) error message, which provides information about the panic error/logic bug detected.
+2. Below that are (commented-out) lines that give more information about the specific thread being run, including the seed value (which can be passed in as a command line flag in a later run to reproduce the same thread run).
+3. Then, the steps to create the Citus database cluster are provided as commented-out lines. (Following these steps are equivalent to running `citus_dev make XXX` or following the [Citus Docs instructions](https://docs.citusdata.com/en/v9.3/installation/single_machine_debian.html) for setting up a single-machine cluster.)
+4. The rest of the file (not commented-out) contains the SQL statements that prepare the testing database. 
+5. If the bug detected is a logic bug (the error was raised by the TLP Oracle), then the pair of buggy SELECT statements whose result sets mismatch are also appended to the end of the file as commented-out lines. 
+
+It is important to note that these `.log` files are valid sources of SQL commands that can be passed in with the `-f` flag to the `psql` command. As long as the empty database that the file is being passed into is created with Citus support and the proper worker nodes as described in step 3, this will reproduce the state that the testing database was in when the error was detected. Then, the SQL statement(s) that caused the error can be executed to reproduce the error itself.
+
+Once a bug is identified, it is also possible to check whether the bug is particular to Citus or was inherited from PostgreSQL, since Citus is a PostgreSQL extension. For this, a copy of the `.log` file can be made where all Citus-specific statements (distributing a table, creating a reference table etc.) are removed. Executing this file on an empty database would produce the “vanilla” state that the database would be in without any Citus functionalities. Then, the SQL statement(s) that caused the error can be executed here to check whether the error is reproduced in “vanilla” PostgreSQL as well.
 
 # Maintaining & Contributing
 
