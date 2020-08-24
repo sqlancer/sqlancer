@@ -18,7 +18,7 @@ branches:
 matrix:
   include:
     - name: MariaDB
-      jdk : oraclejdk11
+      jdk : openjdk8
       before_install:
       - sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
       - sudo add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://sfo1.mirrors.digitalocean.com/mariadb/repo/10.3/ubuntu bionic main'
@@ -27,14 +27,14 @@ matrix:
       - sudo mysql -e "CREATE USER 'sqlancer'@'localhost' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'localhost';"
       - MARIADB_AVAILABLE=true mvn -Dtest=TestMariaDB test
     - name : MySQL
-      jdk : oraclejdk11
+      jdk : openjdk8
       script:
         - sudo apt-get update && sudo apt-get install libssl-dev libmecab2 libjson-perl mecab-ipadic-utf8
         - sudo apt-get remove mysql-* && wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar && tar -xvf mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar && yes | sudo dpkg -i *.deb
         - sudo mysql -e "CREATE USER 'sqlancer'@'localhost' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'localhost';"
         - MYSQL_AVAILABLE=true mvn -Dtest=TestMySQL test
     - name: CockroachDB
-      jdk : oraclejdk11
+      jdk : openjdk8
       before_install:
       - wget -qO- https://binaries.cockroachdb.com/cockroach-v20.1.2.linux-amd64.tgz | tar  xvz
       - cd cockroach-v20.1.2.linux-amd64/ && ./cockroach start-single-node --insecure &
@@ -43,7 +43,7 @@ matrix:
       script:
       - COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDB test
     - name: TiDB
-      jdk : oraclejdk11
+      jdk : openjdk8
       services:
       - docker
       before_install:
@@ -54,11 +54,11 @@ matrix:
       script:
         - TIDB_AVAILABLE=true mvn -Dtest=TestTiDB test
     - name: SQLite3
-      jdk : oraclejdk11
+      jdk : openjdk8
       script:
         - mvn -Dtest=TestSQLite3 test
     - name: DuckDB
-      jdk : oraclejdk11
+      jdk : openjdk8
       script: 
         - mvn -Dtest=TestDuckDB test
     - name: DuckDB (Java 8)
@@ -66,15 +66,15 @@ matrix:
       script:
         - mvn -Dtest=TestDuckDB test
     - name: DuckDB (java 13)
-      jdk : openjdk13
+      jdk : openjdk8
       script:
         - mvn -Dtest=TestDuckDB test
     - name: Misc
-      jdk : oraclejdk11
+      jdk : openjdk8
       script:
         - mvn '-Dtest=!sqlancer.dbms.**' test
     - name: PostgreSQL
-      jdk : oraclejdk11
+      jdk : openjdk8
       before_install:
       - sudo apt-get update
       - sudo apt-get --yes remove postgresql\*
@@ -96,7 +96,7 @@ matrix:
       script:
         - POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgres test
     - name: Citus (PostgreSQL extension)
-      jdk : oraclejdk11
+      jdk : openjdk8
       before_install:
       - sudo apt-get update
       - sudo apt-get install -y postgresql-server-dev-12 postgresql-12 locales
@@ -133,7 +133,7 @@ matrix:
       script:
         - CITUS_AVAILABLE=true mvn -Dtest=TestCitus test
     - name: ClickHouse
-      jdk : oraclejdk11
+      jdk : openjdk8
       services:
         - docker
       before_install:
