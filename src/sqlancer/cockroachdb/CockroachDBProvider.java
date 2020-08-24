@@ -259,6 +259,12 @@ public class CockroachDBProvider extends ProviderAdapter<CockroachDBGlobalState,
         globalState.getState().logStatement("USE " + databaseName);
         try (Statement s = con.createStatement()) {
             s.execute("DROP DATABASE IF EXISTS " + databaseName);
+        } catch (SQLException e) {
+            if (e.getMessage().contains("ERROR: invalid interleave backreference")) {
+                throw new IgnoreMeException(); // TODO: investigate
+            } else {
+                throw e;
+            }
         }
         try (Statement s = con.createStatement()) {
             s.execute(createDatabaseCommand);
