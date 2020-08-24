@@ -416,7 +416,7 @@ public final class Main {
         JCommander jc = commandBuilder.programName("SQLancer").build();
         jc.parse(args);
 
-        if (jc.getParsedCommand() == null) {
+        if (jc.getParsedCommand() == null || options.isHelp()) {
             jc.usage();
             return options.getErrorExitCode();
         }

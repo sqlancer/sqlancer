@@ -17,7 +17,7 @@ import com.beust.jcommander.ParameterDescription;
  */
 public class TestParameterFormat {
 
-    private final static String OPTION_REGEX = "--[a-z0-9-]*";
+    private final static String OPTION_REGEX = "(-)?-[a-z0-9-]*";
 
     @Test
     public void testOptionFormat() throws Exception {
@@ -38,7 +38,10 @@ public class TestParameterFormat {
             parameterDescriptions.addAll(command.getParameters());
         }
         for (ParameterDescription parameter : parameterDescriptions) {
-            assertTrue(Pattern.matches(OPTION_REGEX, parameter.getNames()), parameter.getNames());
+            String[] names = parameter.getNames().split(", ");
+            for (String name : names) {
+                assertTrue(Pattern.matches(OPTION_REGEX, name), name);
+            }
         }
     }
 
