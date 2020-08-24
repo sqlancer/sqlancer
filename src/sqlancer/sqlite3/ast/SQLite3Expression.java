@@ -1630,17 +1630,25 @@ public abstract class SQLite3Expression {
         if (leftAffinity.isNumeric() && (rightAffinity == TypeAffinity.TEXT || rightAffinity == TypeAffinity.BLOB
                 || rightAffinity == TypeAffinity.NONE)) {
             right = right.applyNumericAffinity();
+            assert right != null;
         } else if (rightAffinity.isNumeric() && (leftAffinity == TypeAffinity.TEXT || leftAffinity == TypeAffinity.BLOB
                 || leftAffinity == TypeAffinity.NONE)) {
             left = left.applyNumericAffinity();
+            assert left != null;
         }
 
         // If one operand has TEXT affinity and the other has no affinity, then TEXT
         // affinity is applied to the other operand.
         if (leftAffinity == TypeAffinity.TEXT && rightAffinity == TypeAffinity.NONE) {
             right = right.applyTextAffinity();
+            if (right == null) {
+                throw new IgnoreMeException();
+            }
         } else if (rightAffinity == TypeAffinity.TEXT && leftAffinity == TypeAffinity.NONE) {
             left = left.applyTextAffinity();
+            if (left == null) {
+                throw new IgnoreMeException();
+            }
         }
         return new ConstantTuple(left, right);
     }

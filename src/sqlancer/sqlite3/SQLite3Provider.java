@@ -20,6 +20,7 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
 import sqlancer.common.query.QueryProvider;
+import sqlancer.sqlite3.SQLite3Options.SQLite3OracleFactory;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.gen.SQLite3AnalyzeGenerator;
 import sqlancer.sqlite3.gen.SQLite3Common;
@@ -326,7 +327,8 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
         if (!Randomly.getBooleanWithSmallProbability()) {
             pragmasToExecute.addAll(DEFAULT_PRAGMAS);
         }
-        if (Randomly.getBoolean() && !mustKnowResult) {
+        if (Randomly.getBoolean() && globalState.getDmbsSpecificOptions().oracles != SQLite3OracleFactory.PQS) {
+            // the PQS implementation currently assumes the default behavior of LIKE
             pragmasToExecute.add("PRAGMA case_sensitive_like=ON;");
         }
         if (Randomly.getBoolean()) {
