@@ -1,6 +1,5 @@
 package sqlancer.common.schema;
 
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -113,7 +112,7 @@ public class AbstractTable<C extends AbstractTableColumn<?, ?>, I extends TableI
                 query.next();
                 rowCount = query.getLong(1);
                 return rowCount;
-            } catch (SQLException e) {
+            } catch (Throwable t) {
                 // an exception might be expected, for example, when invalid view is created
                 throw new IgnoreMeException();
             }
