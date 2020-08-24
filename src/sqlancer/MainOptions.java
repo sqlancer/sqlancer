@@ -79,6 +79,12 @@ public class MainOptions {
     @Parameter(names = "--string-constant-max-length", description = "Specify the maximum-length of generated string constants")
     private int maxStringConstantLength = 10; // NOPMD
 
+    @Parameter(names = "--use-constant-caching", description = "Specifies whether constants should be cached and re-used with a certain probability")
+    private boolean useConstantCaching = true; // NOPMD
+
+    @Parameter(names = "--constant-cache-size", description = "Specifies the size of the constant cache. This option only takes effect when constant caching is enabled")
+    private int constantCacheSize = 100; // NOPMD
+
     public int getMaxExpressionDepth() {
         return maxExpressionDepth;
     }
@@ -174,6 +180,14 @@ public class MainOptions {
 
     public int getMaxStringConstantLength() {
         return maxStringConstantLength;
+    }
+
+    public boolean useConstantCaching() {
+        return useConstantCaching;
+    }
+
+    public int getConstantCacheSize() {
+        return constantCacheSize;
     }
 
 }
