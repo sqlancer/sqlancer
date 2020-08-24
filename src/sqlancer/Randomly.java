@@ -195,7 +195,7 @@ public final class Randomly {
         NUMERIC {
             @Override
             public String getString(Randomly r) {
-                return getStringOfAlphabet(r, "0123456789");
+                return getStringOfAlphabet(r, NUMERIC_ALPHABET);
             }
 
         },
@@ -203,14 +203,23 @@ public final class Randomly {
 
             @Override
             public String getString(Randomly r) {
-                return getStringOfAlphabet(r, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+                return getStringOfAlphabet(r, ALPHANUMERIC_ALPHABET);
+
+            }
+
+        },
+        ALPHANUMERIC_SPECIALCHAR {
+
+            @Override
+            public String getString(Randomly r) {
+                return getStringOfAlphabet(r, ALPHANUMERIC_SPECIALCHAR_ALPHABET);
 
             }
 
         },
         SOPHISTICATED {
 
-            private static final String ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzöß!#<>/.,~-+'*()[]{} ^*?%_\t\n\r|&\\";
+            private static final String ALPHABET = ALPHANUMERIC_SPECIALCHAR_ALPHABET;
 
             @Override
             public String getString(Randomly r) {
@@ -280,6 +289,10 @@ public final class Randomly {
             }
 
         };
+
+        private static final String ALPHANUMERIC_SPECIALCHAR_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzöß!#<>/.,~-+'*()[]{} ^*?%_\t\n\r|&\\";
+        private static final String ALPHANUMERIC_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        private static final String NUMERIC_ALPHABET = "0123456789";
 
         private static int getStringLength(Randomly r) {
             int chars;
