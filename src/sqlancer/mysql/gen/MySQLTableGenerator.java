@@ -94,6 +94,7 @@ public class MySQLTableGenerator {
         list.add("not allowed type for this type of partitioning");
         list.add("doesn't support BLOB/TEXT columns");
         list.add("A BLOB field is not allowed in partition function");
+        list.add("Too many keys specified; max 1 keys allowed");
     }
 
     private enum PartitionOptions {
