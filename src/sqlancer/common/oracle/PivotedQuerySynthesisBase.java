@@ -35,10 +35,11 @@ public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?>, R e
     }
 
     protected void reportMissingPivotRow(Query query) {
+        globalState.getState().getLocalState().log("-- " + "pivot row values:\n");
         String expectedPivotRowString = pivotRow.asStringGroupedByTables();
         globalState.getState().getLocalState().log(expectedPivotRowString);
 
-        StringBuilder sb = new StringBuilder("-- rectified predicates:\n");
+        StringBuilder sb = new StringBuilder("-- rectified predicates and their expected values:\n");
         for (E rectifiedPredicate : rectifiedPredicates) {
             sb.append("--");
             sb.append(asString(rectifiedPredicate).replace("\n", "\n-- "));
