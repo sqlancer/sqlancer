@@ -271,14 +271,13 @@ public class CitusProvider extends PostgresProvider {
                     columns.add(c);
                 }
             }
-            // TODO: diffferent behavior for EXCLUDE constraint?
         }
         distributeTable(columns, tableName, globalState);
     }
 
     @Override
     public void generateDatabase(PostgresGlobalState globalState) throws SQLException {
-        // TODO: function reading? add to Postgres implementation?
+        readFunctions(globalState);
         createTables(globalState, Randomly.fromOptions(4, 5, 6));
         for (PostgresTable table : globalState.getSchema().getDatabaseTables()) {
             if (!(table.getTableType() == TableType.TEMPORARY || Randomly.getBooleanWithRatherLowProbability())) {
@@ -378,7 +377,6 @@ public class CitusProvider extends PostgresProvider {
     private void addCitusWorkerNodes(PostgresGlobalState globalState, Connection con,
             List<CitusWorkerNode> citusWorkerNodes) throws SQLException {
         for (CitusWorkerNode w : citusWorkerNodes) {
-            // TODO: protect from sql injection
             String addWorkers = "SELECT * from master_add_node('" + w.getHost() + "', " + w.getPort() + ");";
             globalState.getState().logStatement(addWorkers);
             try (Statement s = con.createStatement()) {

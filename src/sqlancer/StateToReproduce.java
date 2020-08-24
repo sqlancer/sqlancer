@@ -75,7 +75,7 @@ public class StateToReproduce {
     }
 
     public void commentStatements() {
-        for (int i = 0; i < statements.size(); i ++) {
+        for (int i = 0; i < statements.size(); i++) {
             Query statement = statements.get(i);
             String queryString = statement.getQueryString();
             String newQueryString = "-- " + queryString;
