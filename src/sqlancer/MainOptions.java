@@ -76,6 +76,9 @@ public class MainOptions {
     @Parameter(names = "--random-string-generation", description = "Select the random-string eneration approach")
     private StringGenerationStrategy randomStringGenerationStrategy = StringGenerationStrategy.SOPHISTICATED; // NOPMD
 
+    @Parameter(names = "--string-constant-max-length", description = "Specify the maximum-length of generated string constants")
+    private int maxStringConstantLength = 10; // NOPMD
+
     public int getMaxExpressionDepth() {
         return maxExpressionDepth;
     }
@@ -167,6 +170,10 @@ public class MainOptions {
 
     public StringGenerationStrategy getRandomStringGenerationStrategy() {
         return randomStringGenerationStrategy;
+    }
+
+    public int getMaxStringConstantLength() {
+        return maxStringConstantLength;
     }
 
 }

@@ -12,7 +12,9 @@ public final class Randomly {
     private static final boolean USE_CACHING = true;
     private static final int CACHE_SIZE = 100;
 
-    static StringGenerationStrategy stringGenerationStrategy = StringGenerationStrategy.SOPHISTICATED;
+    private static StringGenerationStrategy stringGenerationStrategy = StringGenerationStrategy.SOPHISTICATED;
+    private static int maxStringLength = 10;
+
     private final List<Long> cachedLongs = new ArrayList<>();
     private final List<String> cachedStrings = new ArrayList<>();
     private final List<Double> cachedDoubles = new ArrayList<>();
@@ -284,7 +286,7 @@ public final class Randomly {
             if (Randomly.getBoolean()) {
                 chars = Randomly.smallNumber();
             } else {
-                chars = r.getInteger(0, 30);
+                chars = r.getInteger(0, maxStringLength);
             }
             return chars;
         }
@@ -492,6 +494,7 @@ public final class Randomly {
 
     public static void initialize(MainOptions options) {
         stringGenerationStrategy = options.getRandomStringGenerationStrategy();
+        maxStringLength = options.getMaxStringConstantLength();
     }
 
 }
