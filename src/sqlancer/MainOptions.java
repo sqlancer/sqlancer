@@ -8,6 +8,9 @@ import sqlancer.Randomly.StringGenerationStrategy;
 @Parameters(separators = "=", commandDescription = "Options applicable to all DBMS")
 public class MainOptions {
 
+    @Parameter(names = { "--help", "-h" }, description = "Lists all supported options and commands", help = true)
+    private boolean help; // NOPMD
+
     @Parameter(names = {
             "--num-threads" }, description = "How many threads should run concurrently to test separate databases")
     private int nrConcurrentThreads = 16; // NOPMD
@@ -188,6 +191,10 @@ public class MainOptions {
 
     public int getConstantCacheSize() {
         return constantCacheSize;
+    }
+
+    public boolean isHelp() {
+        return help;
     }
 
 }
