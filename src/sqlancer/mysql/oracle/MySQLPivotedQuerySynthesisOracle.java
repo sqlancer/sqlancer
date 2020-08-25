@@ -50,30 +50,8 @@ public class MySQLPivotedQuerySynthesisOracle
         MySQLSelect selectStatement = new MySQLSelect();
         selectStatement.setSelectType(Randomly.fromOptions(MySQLSelect.SelectType.values()));
         columns = randomFromTables.getColumns();
-        // for (MySQLTable t : tables) {
-        // if (t.getRowid() != null) {
-        // columns.add(t.getRowid());
-        // }
-        // }
         pivotRow = randomFromTables.getRandomRowValue(globalState.getConnection());
 
-        // List<Join> joinStatements = new ArrayList<>();
-        // for (int i = 1; i < tables.size(); i++) {
-        // SQLite3Expression joinClause = generateWhereClauseThatContainsRowValue(columns, rw);
-        // Table table = Randomly.fromList(tables);
-        // tables.remove(table);
-        // JoinType options;
-        // if (tables.size() == 2) {
-        // // allow outer with arbitrary column order (see error: ON clause references
-        // // tables to its right)
-        // options = Randomly.fromOptions(JoinType.INNER, JoinType.CROSS, JoinType.OUTER);
-        // } else {
-        // options = Randomly.fromOptions(JoinType.INNER, JoinType.CROSS);
-        // }
-        // Join j = new SQLite3Expression.Join(table, joinClause, options);
-        // joinStatements.add(j);
-        // }
-        // selectStatement.setJoinClauses(joinStatements);
         selectStatement.setFromList(tables.stream().map(t -> new MySQLTableReference(t)).collect(Collectors.toList()));
 
         fetchColumns = columns.stream().map(c -> new MySQLColumnReference(c, null)).collect(Collectors.toList());

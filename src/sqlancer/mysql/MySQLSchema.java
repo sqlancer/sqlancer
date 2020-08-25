@@ -105,15 +105,7 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
                     Object value;
                     int columnIndex = randomRowValues.findColumn(column.getTable().getName() + column.getName());
                     assert columnIndex == i + 1;
-                    // String typeString = randomRowValues.getString(columnIndex + getColumns().size());
-                    // MySQLDataType valueType = getColumnType(typeString);
                     MySQLConstant constant;
-                    // if (randomRowValues.getString(columnIndex) == null) {
-                    // value = null;
-                    // constant = MySQLConstant.createNullConstant();
-                    // } else {
-                    // switch (valueType) {
-                    // case INT:
                     if (randomRowValues.getString(columnIndex) == null) {
                         constant = MySQLConstant.createNullConstant();
                     } else {
@@ -130,11 +122,6 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
                             throw new AssertionError(column.getType());
                         }
                     }
-                    // break;
-                    // default:
-                    // throw new AssertionError(valueType);
-                    // }
-                    // }
                     values.put(column, constant);
                 }
                 assert !randomRowValues.next();
