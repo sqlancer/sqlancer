@@ -195,6 +195,6 @@ public class MySQLPivotedQuerySynthesisOracle
 
     @Override
     protected String asString(MySQLExpression expr) {
-        return MySQLVisitor.asString(expr);
+        return MySQLVisitor.asExpectedValues(expr);
     }
 }

@@ -207,7 +207,7 @@ public class PostgresPivotedQuerySynthesisOracle
 
     @Override
     protected String asString(PostgresExpression expr) {
-        return PostgresVisitor.asString(expr);
+        return PostgresVisitor.asExpectedValues(expr);
     }
 
 }
