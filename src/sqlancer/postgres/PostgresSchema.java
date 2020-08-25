@@ -11,6 +11,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.postgresql.util.PSQLException;
+
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.schema.AbstractRowValue;
 import sqlancer.common.schema.AbstractSchema;
@@ -93,13 +96,15 @@ public class PostgresSchema extends AbstractSchema<PostgresTable> {
                             constant = PostgresConstant.createTextConstant(randomRowValues.getString(columnIndex));
                             break;
                         default:
-                            throw new AssertionError(column.getType());
+                            throw new IgnoreMeException();
                         }
                     }
                     values.put(column, constant);
                 }
                 assert !randomRowValues.next();
                 return new PostgresRowValue(this, values);
+            } catch (PSQLException e) {
+                throw new IgnoreMeException();
             }
 
         }
