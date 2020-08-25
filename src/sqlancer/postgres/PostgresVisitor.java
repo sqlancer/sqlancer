@@ -14,6 +14,7 @@ import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresFunction;
 import sqlancer.postgres.ast.PostgresInOperation;
+import sqlancer.postgres.ast.PostgresLikeOperation;
 import sqlancer.postgres.ast.PostgresOrderByTerm;
 import sqlancer.postgres.ast.PostgresPOSIXRegularExpression;
 import sqlancer.postgres.ast.PostgresPostfixOperation;
@@ -63,6 +64,8 @@ public interface PostgresVisitor {
 
     void visit(PostgresBinaryLogicalOperation op);
 
+    void visit(PostgresLikeOperation op);
+
     default void visit(PostgresExpression expression) {
         if (expression instanceof PostgresConstant) {
             visit((PostgresConstant) expression);
@@ -98,8 +101,8 @@ public interface PostgresVisitor {
             visit((PostgresFromTable) expression);
         } else if (expression instanceof PostgresSubquery) {
             visit((PostgresSubquery) expression);
-        } else if (expression instanceof PostgresBinaryLogicalOperation) {
-            visit((PostgresBinaryLogicalOperation) expression);
+        } else if (expression instanceof PostgresLikeOperation) {
+            visit((PostgresLikeOperation) expression);
         } else {
             throw new AssertionError(expression);
         }
