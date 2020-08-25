@@ -218,16 +218,10 @@ public abstract class MySQLConstant implements MySQLExpression {
         public MySQLIntConstant(long value, boolean isSigned) {
             this.value = value;
             this.isSigned = isSigned;
-            if (value == 0 && Randomly.getBoolean()) {
-                stringRepresentation = "FALSE";
-            } else if (value == 1 && Randomly.getBoolean()) {
-                stringRepresentation = "TRUE";
+            if (isSigned) {
+                stringRepresentation = String.valueOf(value);
             } else {
-                if (isSigned) {
-                    stringRepresentation = String.valueOf(value);
-                } else {
-                    stringRepresentation = Long.toUnsignedString(value);
-                }
+                stringRepresentation = Long.toUnsignedString(value);
             }
         }
 
