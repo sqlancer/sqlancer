@@ -25,6 +25,8 @@ java -jar SQLancer-0.0.1-SNAPSHOT.jar --num-threads 4 citus --oracle QUERY_PARTI
 
 How to configure the run and how to find the output logs is explained in [SQLancer - Using SQLancer](https://github.com/sqlancer/sqlancer#using-sqlancer).
 
+The `--repartition` flag is a boolean optional argument specific to the Citus implementation (and therefore should be used after `citus` on the command line) that enables [repartition joins](https://docs.citusdata.com/en/v9.3/develop/api_guc.html?highlight=repartition%20join#citus-enable-repartitioned-insert-select-boolean). It is set to `true` by default.
+
 ## Interpreting output logs
 
 ### Current logs
@@ -62,7 +64,7 @@ The `CitusBugs` class in `CitusBugs.java` is an interface between [issues](https
 ### What to do: new bug found
 
 If the bug found is a panic error, i.e. NOT a logic bug (mismatch in result sets identified by the TLP Oracle), this error should be added to the `CitusBugs` class and the `addCitusErrors()` method. 
-1. Open an issue for the bug in the [Citus GitHub repository](https://github.com/citusdata/citus/issues).
+1. Open an issue for the bug in the [Citus GitHub repository](https://github.com/citusdata/citus/issues?q=is%3Aissue+label%3Asqlancer+), and tag the issue with the `sqlancer` label.
 2. Add a boolean variable associated with this issue to the `CitusBugs` class and set it to `true`.
 3. Add the error message to the `addCitusErrors()` method wrapped inside an if-statement referring to the boolean created in the `CitusBugs` class.
 
