@@ -9,9 +9,9 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
+import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLRowValue;
@@ -38,6 +38,8 @@ public class MySQLPivotedQuerySynthesisOracle
 
     public MySQLPivotedQuerySynthesisOracle(MySQLGlobalState globalState) throws SQLException {
         super(globalState);
+        MySQLErrors.addExpressionErrors(errors);
+        errors.add("in 'order clause'"); // e.g., Unknown column '2067708013' in 'order clause'
     }
 
     @Override
@@ -104,7 +106,8 @@ public class MySQLPivotedQuerySynthesisOracle
             if (i++ != 0) {
                 sb2.append(" AND ");
             }
-            sb2.append(c.getFullQualifiedName());
+            sb2.append("ref");
+            sb2.append(i - 1);
             if (pivotRow.getValues().get(c).isNull()) {
                 sb2.append(" IS NULL");
             } else {
@@ -116,7 +119,7 @@ public class MySQLPivotedQuerySynthesisOracle
 
         MySQLToStringVisitor visitor = new MySQLToStringVisitor();
         visitor.visit(selectStatement);
-        return new QueryAdapter(visitor.get(), ExpectedErrors.from("BIGINT value is out of range"));
+        return new QueryAdapter(visitor.get(), errors);
     }
 
     private List<MySQLExpression> generateGroupByClause(List<MySQLColumn> columns, MySQLRowValue rw) {
@@ -149,13 +152,16 @@ public class MySQLPivotedQuerySynthesisOracle
         MySQLExpression expression = new MySQLExpressionGenerator(globalState).setRowVal(rw).setColumns(columns)
                 .generateExpression();
         MySQLConstant expectedValue = expression.getExpectedValue();
+        MySQLExpression result;
         if (expectedValue.isNull()) {
-            return new MySQLUnaryPostfixOperation(expression, UnaryPostfixOperator.IS_NULL, false);
+            result = new MySQLUnaryPostfixOperation(expression, UnaryPostfixOperator.IS_NULL, false);
         } else if (expectedValue.asBooleanNotNull()) {
-            return expression;
+            result = expression;
         } else {
-            return new MySQLUnaryPrefixOperation(expression, MySQLUnaryPrefixOperator.NOT);
+            result = new MySQLUnaryPrefixOperation(expression, MySQLUnaryPrefixOperator.NOT);
         }
+        rectifiedPredicates.add(result);
+        return result;
     }
 
     @Override
@@ -165,7 +171,11 @@ public class MySQLPivotedQuerySynthesisOracle
 
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
-        sb.append(query.getQueryString());
+        if (query.getQueryString().endsWith(";")) {
+            sb.append(query.getQueryString().substring(0, query.getQueryString().length() - 1));
+        } else {
+            sb.append(query.getQueryString());
+        }
         sb.append(") as result WHERE ");
         int i = 0;
         for (MySQLColumn c : columns) {
@@ -173,7 +183,8 @@ public class MySQLPivotedQuerySynthesisOracle
                 sb.append(" AND ");
             }
             sb.append("result.");
-            sb.append(c.getTable().getName() + c.getName());
+            sb.append("ref");
+            sb.append(i - 1);
             if (pivotRow.getValues().get(c).isNull()) {
                 sb.append(" IS NULL");
             } else {
@@ -186,10 +197,17 @@ public class MySQLPivotedQuerySynthesisOracle
         if (globalState.getOptions().logEachSelect()) {
             globalState.getLogger().writeCurrent(resultingQueryString);
         }
+        globalState.getState().getLocalState().log(resultingQueryString);
         try (ResultSet result = createStatement.executeQuery(resultingQueryString)) {
             boolean isContainedIn = result.next();
             createStatement.close();
             return isContainedIn;
+        } catch (SQLException e) {
+            if (query.getExpectedErrors().errorIsExpected(e.getMessage())) {
+                return true;
+            } else {
+                throw e;
+            }
         }
     }
 
