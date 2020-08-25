@@ -333,7 +333,10 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             return PostgresCompoundDataType.create(type);
         case TEXT: // TODO
         case BIT:
-            if (Randomly.getBoolean()) {
+            if (Randomly.getBoolean() || PostgresProvider.generateOnlyKnown /*
+                                                                             * The PQS implementation does not check for
+                                                                             * size specifications
+                                                                             */) {
                 return PostgresCompoundDataType.create(type);
             } else {
                 return PostgresCompoundDataType.create(type, (int) Randomly.getNotCachedInteger(1, 1000));
