@@ -30,8 +30,7 @@ public abstract class MySQLConstant implements MySQLExpression {
 
         @Override
         public MySQLConstant isEquals(MySQLConstant rightVal) {
-            throw throwException();
-
+            return null;
         }
 
         @Override
@@ -199,7 +198,9 @@ public abstract class MySQLConstant implements MySQLExpression {
                 return castAs(rightVal.isSigned() ? CastType.SIGNED : CastType.UNSIGNED).isLessThan(rightVal);
             } else if (rightVal.isString()) {
                 // unexpected result for '-' < "!";
-                // return MySQLConstant.createBoolean(value.compareToIgnoreCase(rightVal.getString()) < 0);
+                // return
+                // MySQLConstant.createBoolean(value.compareToIgnoreCase(rightVal.getString()) <
+                // 0);
                 throw new IgnoreMeException();
             } else {
                 throw new AssertionError(rightVal);
@@ -217,16 +218,10 @@ public abstract class MySQLConstant implements MySQLExpression {
         public MySQLIntConstant(long value, boolean isSigned) {
             this.value = value;
             this.isSigned = isSigned;
-            if (value == 0 && Randomly.getBoolean()) {
-                stringRepresentation = "FALSE";
-            } else if (value == 1 && Randomly.getBoolean()) {
-                stringRepresentation = "TRUE";
+            if (isSigned) {
+                stringRepresentation = String.valueOf(value);
             } else {
-                if (isSigned) {
-                    stringRepresentation = String.valueOf(value);
-                } else {
-                    stringRepresentation = Long.toUnsignedString(value);
-                }
+                stringRepresentation = Long.toUnsignedString(value);
             }
         }
 

@@ -9,9 +9,9 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
+import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLRowValue;
@@ -38,6 +38,8 @@ public class MySQLPivotedQuerySynthesisOracle
 
     public MySQLPivotedQuerySynthesisOracle(MySQLGlobalState globalState) throws SQLException {
         super(globalState);
+        MySQLErrors.addExpressionErrors(errors);
+        errors.add("in 'order clause'"); // e.g., Unknown column '2067708013' in 'order clause'
     }
 
     @Override
@@ -48,30 +50,8 @@ public class MySQLPivotedQuerySynthesisOracle
         MySQLSelect selectStatement = new MySQLSelect();
         selectStatement.setSelectType(Randomly.fromOptions(MySQLSelect.SelectType.values()));
         columns = randomFromTables.getColumns();
-        // for (MySQLTable t : tables) {
-        // if (t.getRowid() != null) {
-        // columns.add(t.getRowid());
-        // }
-        // }
         pivotRow = randomFromTables.getRandomRowValue(globalState.getConnection());
 
-        // List<Join> joinStatements = new ArrayList<>();
-        // for (int i = 1; i < tables.size(); i++) {
-        // SQLite3Expression joinClause = generateWhereClauseThatContainsRowValue(columns, rw);
-        // Table table = Randomly.fromList(tables);
-        // tables.remove(table);
-        // JoinType options;
-        // if (tables.size() == 2) {
-        // // allow outer with arbitrary column order (see error: ON clause references
-        // // tables to its right)
-        // options = Randomly.fromOptions(JoinType.INNER, JoinType.CROSS, JoinType.OUTER);
-        // } else {
-        // options = Randomly.fromOptions(JoinType.INNER, JoinType.CROSS);
-        // }
-        // Join j = new SQLite3Expression.Join(table, joinClause, options);
-        // joinStatements.add(j);
-        // }
-        // selectStatement.setJoinClauses(joinStatements);
         selectStatement.setFromList(tables.stream().map(t -> new MySQLTableReference(t)).collect(Collectors.toList()));
 
         fetchColumns = columns.stream().map(c -> new MySQLColumnReference(c, null)).collect(Collectors.toList());
@@ -104,7 +84,8 @@ public class MySQLPivotedQuerySynthesisOracle
             if (i++ != 0) {
                 sb2.append(" AND ");
             }
-            sb2.append(c.getFullQualifiedName());
+            sb2.append("ref");
+            sb2.append(i - 1);
             if (pivotRow.getValues().get(c).isNull()) {
                 sb2.append(" IS NULL");
             } else {
@@ -116,7 +97,7 @@ public class MySQLPivotedQuerySynthesisOracle
 
         MySQLToStringVisitor visitor = new MySQLToStringVisitor();
         visitor.visit(selectStatement);
-        return new QueryAdapter(visitor.get(), ExpectedErrors.from("BIGINT value is out of range"));
+        return new QueryAdapter(visitor.get(), errors);
     }
 
     private List<MySQLExpression> generateGroupByClause(List<MySQLColumn> columns, MySQLRowValue rw) {
@@ -149,13 +130,16 @@ public class MySQLPivotedQuerySynthesisOracle
         MySQLExpression expression = new MySQLExpressionGenerator(globalState).setRowVal(rw).setColumns(columns)
                 .generateExpression();
         MySQLConstant expectedValue = expression.getExpectedValue();
+        MySQLExpression result;
         if (expectedValue.isNull()) {
-            return new MySQLUnaryPostfixOperation(expression, UnaryPostfixOperator.IS_NULL, false);
+            result = new MySQLUnaryPostfixOperation(expression, UnaryPostfixOperator.IS_NULL, false);
         } else if (expectedValue.asBooleanNotNull()) {
-            return expression;
+            result = expression;
         } else {
-            return new MySQLUnaryPrefixOperation(expression, MySQLUnaryPrefixOperator.NOT);
+            result = new MySQLUnaryPrefixOperation(expression, MySQLUnaryPrefixOperator.NOT);
         }
+        rectifiedPredicates.add(result);
+        return result;
     }
 
     @Override
@@ -165,7 +149,11 @@ public class MySQLPivotedQuerySynthesisOracle
 
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
-        sb.append(query.getQueryString());
+        if (query.getQueryString().endsWith(";")) {
+            sb.append(query.getQueryString().substring(0, query.getQueryString().length() - 1));
+        } else {
+            sb.append(query.getQueryString());
+        }
         sb.append(") as result WHERE ");
         int i = 0;
         for (MySQLColumn c : columns) {
@@ -173,7 +161,8 @@ public class MySQLPivotedQuerySynthesisOracle
                 sb.append(" AND ");
             }
             sb.append("result.");
-            sb.append(c.getTable().getName() + c.getName());
+            sb.append("ref");
+            sb.append(i - 1);
             if (pivotRow.getValues().get(c).isNull()) {
                 sb.append(" IS NULL");
             } else {
@@ -186,10 +175,17 @@ public class MySQLPivotedQuerySynthesisOracle
         if (globalState.getOptions().logEachSelect()) {
             globalState.getLogger().writeCurrent(resultingQueryString);
         }
+        globalState.getState().getLocalState().log(resultingQueryString);
         try (ResultSet result = createStatement.executeQuery(resultingQueryString)) {
             boolean isContainedIn = result.next();
             createStatement.close();
             return isContainedIn;
+        } catch (SQLException e) {
+            if (query.getExpectedErrors().errorIsExpected(e.getMessage())) {
+                return true;
+            } else {
+                throw e;
+            }
         }
     }
 

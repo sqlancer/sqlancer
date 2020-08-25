@@ -101,7 +101,9 @@ public class MySQLBinaryLogicalOperation implements MySQLExpression {
     public MySQLConstant getExpectedValue() {
         MySQLConstant leftExpected = left.getExpectedValue();
         MySQLConstant rightExpected = right.getExpectedValue();
-
+        if (left.getExpectedValue() == null || right.getExpectedValue() == null) {
+            return null;
+        }
         return op.apply(leftExpected, rightExpected);
     }
 

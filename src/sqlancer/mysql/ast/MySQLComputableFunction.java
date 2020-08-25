@@ -209,6 +209,9 @@ public class MySQLComputableFunction implements MySQLExpression {
         MySQLConstant[] constants = new MySQLConstant[args.length];
         for (int i = 0; i < constants.length; i++) {
             constants[i] = args[i].getExpectedValue();
+            if (constants[i].getExpectedValue() == null) {
+                return null;
+            }
         }
         return func.apply(constants, args);
     }
