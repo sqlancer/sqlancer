@@ -57,7 +57,8 @@ public class PostgresPivotedQuerySynthesisOracle
         selectStatement.setFromList(randomFromTables.getTables().stream().map(t -> new PostgresFromTable(t, false))
                 .collect(Collectors.toList()));
         selectStatement.setFetchColumns(fetchColumns.stream()
-                .map(c -> new PostgresColumnValue(c, pivotRow.getValues().get(c))).collect(Collectors.toList()));
+                .map(c -> new PostgresColumnValue(getFetchValueAliasedColumn(c), pivotRow.getValues().get(c)))
+                .collect(Collectors.toList()));
         PostgresExpression whereClause = generateWhereClauseThatContainsRowValue(columns, pivotRow);
         selectStatement.setWhereClause(whereClause);
         List<PostgresExpression> groupByClause = generateGroupByClause(columns, pivotRow);
@@ -94,6 +95,16 @@ public class PostgresPivotedQuerySynthesisOracle
         PostgresToStringVisitor visitor = new PostgresToStringVisitor();
         visitor.visit(selectStatement);
         return new QueryAdapter(visitor.get());
+    }
+
+    /*
+     * Prevent name collisions by aliasing the column.
+     */
+    private PostgresColumn getFetchValueAliasedColumn(PostgresColumn c) {
+        PostgresColumn aliasedColumn = new PostgresColumn(c.getName() + " AS " + c.getTable().getName() + c.getName(),
+                c.getType());
+        aliasedColumn.setTable(c.getTable());
+        return aliasedColumn;
     }
 
     private List<PostgresExpression> generateGroupByClause(List<PostgresColumn> columns, PostgresRowValue rw) {
@@ -134,7 +145,11 @@ public class PostgresPivotedQuerySynthesisOracle
 
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
-        sb.append(query.getQueryString());
+        if (query.getQueryString().endsWith(";")) {
+            sb.append(query.getQueryString().substring(0, query.getQueryString().length() - 1));
+        } else {
+            sb.append(query.getQueryString());
+        }
         sb.append(") as result WHERE ");
         int i = 0;
         for (PostgresColumn c : fetchColumns) {
