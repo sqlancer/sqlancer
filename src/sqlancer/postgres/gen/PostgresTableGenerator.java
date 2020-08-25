@@ -52,6 +52,8 @@ public class PostgresTableGenerator {
         errors.add("does not accept data type");
         errors.add("but default expression is of type text");
         errors.add("has pseudo-type unknown");
+        errors.add("no collation was derived for partition key column");
+        errors.add("inherits from generated column but specifies identity");
         PostgresCommon.addCommonExpressionErrors(errors);
         PostgresCommon.addCommonTableErrors(errors);
     }

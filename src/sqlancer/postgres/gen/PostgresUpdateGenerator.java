@@ -32,6 +32,7 @@ public final class PostgresUpdateGenerator {
                 "View columns that are not columns of their base relation are not updatable");
         errors.add("multiple assignments to same column"); // view whose columns refer to a column in the referenced
                                                            // table multiple times
+        errors.add("new row violates check option for view");
         List<PostgresColumn> columns = randomTable.getRandomNonEmptyColumnSubset();
         PostgresCommon.addCommonInsertUpdateErrors(errors);
 
