@@ -26,6 +26,7 @@ import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
+import sqlancer.postgres.gen.PostgresCommon;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
 public class PostgresPivotedQuerySynthesisOracle
@@ -39,6 +40,8 @@ public class PostgresPivotedQuerySynthesisOracle
         super(globalState);
         options = globalState.getOptions();
         logger = globalState.getLogger();
+        PostgresCommon.addCommonExpressionErrors(errors);
+        PostgresCommon.addCommonFetchErrors(errors);
     }
 
     @Override
@@ -153,20 +156,14 @@ public class PostgresPivotedQuerySynthesisOracle
         if (options.logEachSelect()) {
             logger.writeCurrent(resultingQueryString);
         }
+        globalState.getState().getLocalState().log(resultingQueryString);
+        QueryAdapter finalQuery = new QueryAdapter(resultingQueryString, errors);
         try (ResultSet result = createStatement.executeQuery(resultingQueryString)) {
             boolean isContainedIn = result.next();
             createStatement.close();
             return isContainedIn;
         } catch (PSQLException e) {
-            if (e.getMessage().contains("out of range") || e.getMessage().contains("cannot cast")
-                    || e.getMessage().contains("invalid input syntax for ") || e.getMessage().contains("must be type")
-                    || e.getMessage().contains("operator does not exist")
-                    || e.getMessage().contains("Could not choose a best candidate function.")
-                    || e.getMessage().contains("division by zero")
-                    || e.getMessage().contains("zero raised to a negative power is undefined")
-                    || e.getMessage().contains("canceling statement due to statement timeout")
-                    || e.getMessage().contains("operator is not unique")
-                    || e.getMessage().contains("could not determine which collation to use for string comparison")) {
+            if (finalQuery.getExpectedErrors().errorIsExpected(e.getMessage())) {
                 return true;
             } else {
                 throw e;
