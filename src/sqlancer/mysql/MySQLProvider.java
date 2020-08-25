@@ -56,7 +56,7 @@ public class MySQLProvider extends ProviderAdapter<MySQLGlobalState, MySQLOption
         CREATE_TABLE((g) -> {
             // TODO refactor
             String tableName = SQLite3Common.createTableName(g.getSchema().getDatabaseTables().size());
-            return MySQLTableGenerator.generate(tableName, g.getRandomly(), g.getSchema());
+            return MySQLTableGenerator.generate(g, tableName);
         }), //
         DELETE(MySQLDeleteGenerator::delete), //
         DROP_INDEX(MySQLDropIndex::generate);
@@ -134,10 +134,9 @@ public class MySQLProvider extends ProviderAdapter<MySQLGlobalState, MySQLOption
 
     @Override
     public void generateDatabase(MySQLGlobalState globalState) throws SQLException {
-        Randomly r = globalState.getRandomly();
         while (globalState.getSchema().getDatabaseTables().size() < Randomly.smallNumber() + 1) {
             String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
-            Query createTable = MySQLTableGenerator.generate(tableName, r, globalState.getSchema());
+            Query createTable = MySQLTableGenerator.generate(globalState, tableName);
             globalState.executeStatement(createTable);
         }
 

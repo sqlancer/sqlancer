@@ -29,8 +29,12 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
     public enum MySQLDataType {
         INT, VARCHAR, FLOAT, DOUBLE, DECIMAL;
 
-        public static MySQLDataType getRandom() {
-            return Randomly.fromOptions(values());
+        public static MySQLDataType getRandom(MySQLGlobalState globalState) {
+            if (globalState.usesPQS()) {
+                return Randomly.fromOptions(MySQLDataType.INT, MySQLDataType.VARCHAR);
+            } else {
+                return Randomly.fromOptions(values());
+            }
         }
 
         public boolean isNumeric() {
