@@ -17,6 +17,7 @@ import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
+import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresRowValue;
 import sqlancer.postgres.PostgresSchema.PostgresTables;
 import sqlancer.postgres.PostgresToStringVisitor;
@@ -24,6 +25,8 @@ import sqlancer.postgres.PostgresVisitor;
 import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.ast.PostgresExpression;
+import sqlancer.postgres.ast.PostgresPostfixOperation;
+import sqlancer.postgres.ast.PostgresPostfixOperation.PostfixOperator;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.gen.PostgresCommon;
@@ -97,6 +100,22 @@ public class PostgresPivotedQuerySynthesisOracle
         return new QueryAdapter(visitor.get());
     }
 
+    public PostgresExpression generateTrueCondition(List<PostgresColumn> columns, PostgresRowValue rw,
+            PostgresGlobalState globalState) {
+        PostgresExpression expr = new PostgresExpressionGenerator(globalState).setColumns(columns).setRowValue(rw)
+                .generateExpressionWithExpectedResult(PostgresDataType.BOOLEAN);
+        PostgresExpression result;
+        if (expr.getExpectedValue().isNull()) {
+            result = PostgresPostfixOperation.create(expr, PostfixOperator.IS_NULL);
+        } else {
+            result = PostgresPostfixOperation.create(expr,
+                    expr.getExpectedValue().cast(PostgresDataType.BOOLEAN).asBoolean() ? PostfixOperator.IS_TRUE
+                            : PostfixOperator.IS_FALSE);
+        }
+        rectifiedPredicates.add(result);
+        return result;
+    }
+
     /*
      * Prevent name collisions by aliasing the column.
      */
@@ -135,7 +154,7 @@ public class PostgresPivotedQuerySynthesisOracle
 
     private PostgresExpression generateWhereClauseThatContainsRowValue(List<PostgresColumn> columns,
             PostgresRowValue rw) {
-        return PostgresExpressionGenerator.generateTrueCondition(columns, rw, globalState);
+        return generateTrueCondition(columns, rw, globalState);
     }
 
     @Override
@@ -188,7 +207,7 @@ public class PostgresPivotedQuerySynthesisOracle
 
     @Override
     protected String asString(PostgresExpression expr) {
-        return PostgresVisitor.asString(expr);
+        return PostgresVisitor.asExpectedValues(expr);
     }
 
 }

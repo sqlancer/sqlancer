@@ -151,7 +151,7 @@ public final class PostgresCommon {
             } else {
                 sb.append("name");
             }
-            if (Randomly.getBoolean()) {
+            if (Randomly.getBoolean() && !PostgresProvider.generateOnlyKnown) {
                 sb.append(" COLLATE ");
                 sb.append('"');
                 sb.append(Randomly.fromList(opClasses));

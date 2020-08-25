@@ -6,6 +6,7 @@ import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.ast.PostgresAggregate;
 import sqlancer.postgres.ast.PostgresBetweenOperation;
+import sqlancer.postgres.ast.PostgresBinaryLogicalOperation;
 import sqlancer.postgres.ast.PostgresCastOperation;
 import sqlancer.postgres.ast.PostgresCollate;
 import sqlancer.postgres.ast.PostgresColumnValue;
@@ -60,6 +61,8 @@ public interface PostgresVisitor {
 
     void visit(PostgresSubquery subquery);
 
+    void visit(PostgresBinaryLogicalOperation op);
+
     default void visit(PostgresExpression expression) {
         if (expression instanceof PostgresConstant) {
             visit((PostgresConstant) expression);
@@ -95,6 +98,8 @@ public interface PostgresVisitor {
             visit((PostgresFromTable) expression);
         } else if (expression instanceof PostgresSubquery) {
             visit((PostgresSubquery) expression);
+        } else if (expression instanceof PostgresBinaryLogicalOperation) {
+            visit((PostgresBinaryLogicalOperation) expression);
         } else {
             throw new AssertionError(expression);
         }

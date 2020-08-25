@@ -17,6 +17,7 @@ import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
 import sqlancer.common.query.QueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
+import sqlancer.postgres.PostgresOptions.PostgresOracleFactory;
 import sqlancer.postgres.gen.PostgresAlterTableGenerator;
 import sqlancer.postgres.gen.PostgresAnalyzeGenerator;
 import sqlancer.postgres.gen.PostgresClusterGenerator;
@@ -44,6 +45,9 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 // IN
 public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, PostgresOptions> {
 
+    /**
+     * Generate only data types and expressions that are understood by PQS.
+     */
     public static boolean generateOnlyKnown;
 
     private PostgresGlobalState globalState;
@@ -195,6 +199,11 @@ public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, Postg
 
     @Override
     public Connection createDatabase(PostgresGlobalState globalState) throws SQLException {
+        if (globalState.getDmbsSpecificOptions().getTestOracleFactory().stream()
+                .anyMatch((o) -> o == PostgresOracleFactory.PQS)) {
+            generateOnlyKnown = true;
+        }
+
         username = globalState.getOptions().getUserName();
         password = globalState.getOptions().getPassword();
         entryPath = "/test";

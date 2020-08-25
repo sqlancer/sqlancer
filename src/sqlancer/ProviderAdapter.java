@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 import sqlancer.StateToReproduce.OracleRunReproductionState;
 import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.schema.AbstractTable;
 
 public abstract class ProviderAdapter<G extends GlobalState<O, ?>, O extends DBMSSpecificOptions<? extends OracleFactory<G>>>
         implements DatabaseProvider<G, O> {
@@ -38,6 +40,7 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ?>, O extends DBM
     public void generateAndTestDatabase(G globalState) throws SQLException {
         try {
             generateDatabase(globalState);
+            checkViewsAreValid(globalState);
             globalState.getManager().incrementCreateDatabase();
 
             TestOracle oracle = getTestOracle(globalState);
@@ -56,6 +59,18 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ?>, O extends DBM
             }
         } finally {
             globalState.getConnection().close();
+        }
+    }
+
+    private void checkViewsAreValid(G globalState) {
+        List<? extends AbstractTable<?, ?>> views = globalState.getSchema().getViews();
+        for (AbstractTable<?, ?> view : views) {
+            QueryAdapter q = new QueryAdapter("SELECT 1 FROM " + view.getName() + " LIMIT 1");
+            try {
+                q.execute(globalState);
+            } catch (Throwable t) {
+                throw new IgnoreMeException();
+            }
         }
     }
 

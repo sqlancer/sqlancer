@@ -7,6 +7,7 @@ import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.ast.PostgresAggregate;
 import sqlancer.postgres.ast.PostgresBetweenOperation;
+import sqlancer.postgres.ast.PostgresBinaryLogicalOperation;
 import sqlancer.postgres.ast.PostgresCastOperation;
 import sqlancer.postgres.ast.PostgresCollate;
 import sqlancer.postgres.ast.PostgresColumnValue;
@@ -334,6 +335,17 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
         sb.append('"');
         sb.append(op.getCollate());
         sb.append('"');
+        sb.append(")");
+    }
+
+    @Override
+    public void visit(PostgresBinaryLogicalOperation op) {
+        sb.append("(");
+        visit(op.getLeft());
+        sb.append(")");
+        sb.append(op.getOperatorRepresentation());
+        sb.append("(");
+        visit(op.getRight());
         sb.append(")");
     }
 
