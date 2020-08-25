@@ -271,8 +271,21 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             dataType = PostgresDataType.INT;
         }
         if (!filterColumns(dataType).isEmpty() && Randomly.getBoolean()) {
-            return createColumnOfType(dataType);
+            return potentiallyWrapInCollate(dataType, createColumnOfType(dataType));
         }
+        PostgresExpression exprInternal = generateExpressionInternal(depth, dataType);
+        return potentiallyWrapInCollate(dataType, exprInternal);
+    }
+
+    private PostgresExpression potentiallyWrapInCollate(PostgresDataType dataType, PostgresExpression exprInternal) {
+        if (dataType == PostgresDataType.TEXT && PostgresProvider.generateOnlyKnown) {
+            return new PostgresCollate(exprInternal, "C");
+        } else {
+            return exprInternal;
+        }
+    }
+
+    private PostgresExpression generateExpressionInternal(int depth, PostgresDataType dataType) throws AssertionError {
         if (allowAggregateFunctions && Randomly.getBoolean()) {
             allowAggregateFunctions = false; // aggregate function calls cannot be nested
             return getAggregate(dataType);

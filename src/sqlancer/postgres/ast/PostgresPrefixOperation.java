@@ -51,6 +51,9 @@ public class PostgresPrefixOperation implements PostgresExpression {
                     // TODO
                     throw new IgnoreMeException();
                 }
+                if (expectedValue.isInt() && expectedValue.asInt() == Long.MIN_VALUE) {
+                    throw new IgnoreMeException();
+                }
                 try {
                     return PostgresConstant.createIntConstant(-expectedValue.asInt());
                 } catch (UnsupportedOperationException e) {

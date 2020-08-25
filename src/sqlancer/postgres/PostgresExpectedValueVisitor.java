@@ -10,6 +10,7 @@ import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresFunction;
 import sqlancer.postgres.ast.PostgresInOperation;
+import sqlancer.postgres.ast.PostgresLikeOperation;
 import sqlancer.postgres.ast.PostgresOrderByTerm;
 import sqlancer.postgres.ast.PostgresPOSIXRegularExpression;
 import sqlancer.postgres.ast.PostgresPostfixOperation;
@@ -164,6 +165,13 @@ public final class PostgresExpectedValueVisitor implements PostgresVisitor {
 
     @Override
     public void visit(PostgresBinaryLogicalOperation op) {
+        print(op);
+        visit(op.getLeft());
+        visit(op.getRight());
+    }
+
+    @Override
+    public void visit(PostgresLikeOperation op) {
         print(op);
         visit(op.getLeft());
         visit(op.getRight());

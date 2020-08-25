@@ -88,6 +88,9 @@ public class MainOptions {
     @Parameter(names = "--constant-cache-size", description = "Specifies the size of the constant cache. This option only takes effect when constant caching is enabled")
     private int constantCacheSize = 100; // NOPMD
 
+    @Parameter(names = "--database-prefix", description = "The prefix used for each database created")
+    private String databasePrefix = "database"; // NOPMD
+
     public int getMaxExpressionDepth() {
         return maxExpressionDepth;
     }
@@ -195,6 +198,10 @@ public class MainOptions {
 
     public boolean isHelp() {
         return help;
+    }
+
+    public String getDatabasePrefix() {
+        return databasePrefix;
     }
 
 }
