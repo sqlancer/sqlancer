@@ -264,11 +264,6 @@ public class MySQLTableGenerator {
         boolean isTextType = randomType == MySQLDataType.VARCHAR;
         appendTypeString(randomType);
         sb.append(" ");
-        // TODO: this was commented out since it makes the implementation of LIKE more
-        // difficult
-        // if (Randomly.getBoolean()) {
-        // sb.append(" ZEROFILL");
-        // }
         boolean isNull = false;
         boolean columnHasPrimaryKey = false;
 
@@ -363,7 +358,7 @@ public class MySQLTableGenerator {
             if (Randomly.getBoolean() && randomType != MySQLDataType.INT && !MySQLBugs.bug99127) {
                 sb.append(" UNSIGNED");
             }
-            if (Randomly.getBoolean()) {
+            if (!globalState.usesPQS() && Randomly.getBoolean()) {
                 sb.append(" ZEROFILL");
             }
         }
