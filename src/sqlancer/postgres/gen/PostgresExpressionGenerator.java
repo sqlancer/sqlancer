@@ -499,7 +499,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
                 return PostgresConstant.createIntConstant(r.getInteger());
             }
         case BOOLEAN:
-            if (Randomly.getBooleanWithSmallProbability()) {
+            if (Randomly.getBooleanWithSmallProbability() && !PostgresProvider.generateOnlyKnown) {
                 return PostgresConstant
                         .createTextConstant(Randomly.fromOptions("TR", "TRUE", "FA", "FALSE", "0", "1", "ON", "off"));
             } else {
