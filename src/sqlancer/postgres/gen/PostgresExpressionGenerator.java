@@ -462,18 +462,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         return generateConstant(r, Randomly.fromOptions(PostgresDataType.values()));
     }
 
-    public static PostgresExpression generateTrueCondition(List<PostgresColumn> columns, PostgresRowValue rw,
-            PostgresGlobalState globalState) {
-        PostgresExpression expr = new PostgresExpressionGenerator(globalState).setColumns(columns).setRowValue(rw)
-                .generateExpressionWithExpectedResult(PostgresDataType.BOOLEAN);
-        if (expr.getExpectedValue().isNull()) {
-            return PostgresPostfixOperation.create(expr, PostfixOperator.IS_NULL);
-        }
-        return PostgresPostfixOperation.create(expr, expr.getExpectedValue().cast(PostgresDataType.BOOLEAN).asBoolean()
-                ? PostfixOperator.IS_TRUE : PostfixOperator.IS_FALSE);
-    }
-
-    private PostgresExpression generateExpressionWithExpectedResult(PostgresDataType type) {
+    public PostgresExpression generateExpressionWithExpectedResult(PostgresDataType type) {
         this.expectedResult = true;
         PostgresExpressionGenerator gen = new PostgresExpressionGenerator(globalState).setColumns(columns)
                 .setRowValue(rw);
