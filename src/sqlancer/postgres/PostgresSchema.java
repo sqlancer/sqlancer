@@ -30,12 +30,15 @@ public class PostgresSchema extends AbstractSchema<PostgresTable> {
         INT, BOOLEAN, TEXT, DECIMAL, FLOAT, REAL, RANGE, MONEY, BIT, INET;
 
         public static PostgresDataType getRandomType() {
-            List<PostgresDataType> dataTypes = Arrays.asList(values());
+            List<PostgresDataType> dataTypes = new ArrayList<>(Arrays.asList(values()));
             if (PostgresProvider.generateOnlyKnown) {
                 dataTypes.remove(PostgresDataType.DECIMAL);
                 dataTypes.remove(PostgresDataType.FLOAT);
                 dataTypes.remove(PostgresDataType.REAL);
                 dataTypes.remove(PostgresDataType.INET);
+                dataTypes.remove(PostgresDataType.RANGE);
+                dataTypes.remove(PostgresDataType.MONEY);
+                dataTypes.remove(PostgresDataType.BIT);
             }
             return Randomly.fromList(dataTypes);
         }

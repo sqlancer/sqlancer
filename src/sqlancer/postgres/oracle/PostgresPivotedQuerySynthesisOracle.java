@@ -26,6 +26,7 @@ import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
+import sqlancer.postgres.gen.PostgresCommon;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
 public class PostgresPivotedQuerySynthesisOracle
@@ -39,6 +40,8 @@ public class PostgresPivotedQuerySynthesisOracle
         super(globalState);
         options = globalState.getOptions();
         logger = globalState.getLogger();
+        PostgresCommon.addCommonExpressionErrors(errors);
+        PostgresCommon.addCommonFetchErrors(errors);
     }
 
     @Override
@@ -54,7 +57,8 @@ public class PostgresPivotedQuerySynthesisOracle
         selectStatement.setFromList(randomFromTables.getTables().stream().map(t -> new PostgresFromTable(t, false))
                 .collect(Collectors.toList()));
         selectStatement.setFetchColumns(fetchColumns.stream()
-                .map(c -> new PostgresColumnValue(c, pivotRow.getValues().get(c))).collect(Collectors.toList()));
+                .map(c -> new PostgresColumnValue(getFetchValueAliasedColumn(c), pivotRow.getValues().get(c)))
+                .collect(Collectors.toList()));
         PostgresExpression whereClause = generateWhereClauseThatContainsRowValue(columns, pivotRow);
         selectStatement.setWhereClause(whereClause);
         List<PostgresExpression> groupByClause = generateGroupByClause(columns, pivotRow);
@@ -91,6 +95,16 @@ public class PostgresPivotedQuerySynthesisOracle
         PostgresToStringVisitor visitor = new PostgresToStringVisitor();
         visitor.visit(selectStatement);
         return new QueryAdapter(visitor.get());
+    }
+
+    /*
+     * Prevent name collisions by aliasing the column.
+     */
+    private PostgresColumn getFetchValueAliasedColumn(PostgresColumn c) {
+        PostgresColumn aliasedColumn = new PostgresColumn(c.getName() + " AS " + c.getTable().getName() + c.getName(),
+                c.getType());
+        aliasedColumn.setTable(c.getTable());
+        return aliasedColumn;
     }
 
     private List<PostgresExpression> generateGroupByClause(List<PostgresColumn> columns, PostgresRowValue rw) {
@@ -131,7 +145,11 @@ public class PostgresPivotedQuerySynthesisOracle
 
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
-        sb.append(query.getQueryString());
+        if (query.getQueryString().endsWith(";")) {
+            sb.append(query.getQueryString().substring(0, query.getQueryString().length() - 1));
+        } else {
+            sb.append(query.getQueryString());
+        }
         sb.append(") as result WHERE ");
         int i = 0;
         for (PostgresColumn c : fetchColumns) {
@@ -153,20 +171,14 @@ public class PostgresPivotedQuerySynthesisOracle
         if (options.logEachSelect()) {
             logger.writeCurrent(resultingQueryString);
         }
+        globalState.getState().getLocalState().log(resultingQueryString);
+        QueryAdapter finalQuery = new QueryAdapter(resultingQueryString, errors);
         try (ResultSet result = createStatement.executeQuery(resultingQueryString)) {
             boolean isContainedIn = result.next();
             createStatement.close();
             return isContainedIn;
         } catch (PSQLException e) {
-            if (e.getMessage().contains("out of range") || e.getMessage().contains("cannot cast")
-                    || e.getMessage().contains("invalid input syntax for ") || e.getMessage().contains("must be type")
-                    || e.getMessage().contains("operator does not exist")
-                    || e.getMessage().contains("Could not choose a best candidate function.")
-                    || e.getMessage().contains("division by zero")
-                    || e.getMessage().contains("zero raised to a negative power is undefined")
-                    || e.getMessage().contains("canceling statement due to statement timeout")
-                    || e.getMessage().contains("operator is not unique")
-                    || e.getMessage().contains("could not determine which collation to use for string comparison")) {
+            if (finalQuery.getExpectedErrors().errorIsExpected(e.getMessage())) {
                 return true;
             } else {
                 throw e;
