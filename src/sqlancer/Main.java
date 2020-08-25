@@ -453,7 +453,7 @@ public final class Main {
         ExecutorService execService = Executors.newFixedThreadPool(options.getNumberConcurrentThreads());
         DBMSExecutorFactory<?, ?> executorFactory = nameToProvider.get(jc.getParsedCommand());
         for (int i = 0; i < options.getTotalNumberTries(); i++) {
-            final String databaseName = "database" + i;
+            final String databaseName = options.getDatabasePrefix() + i;
             final long seed;
             if (options.getRandomSeed() == -1) {
                 seed = System.currentTimeMillis() + i;

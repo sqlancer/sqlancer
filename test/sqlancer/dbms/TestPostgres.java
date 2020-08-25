@@ -27,7 +27,9 @@ public class TestPostgres {
         assertEquals(0,
                 Main.executeMain(new String[] { "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS,
                         "--num-threads", "4", "--num-queries", TestConfig.NUM_QUERIES, "--random-string-generation",
-                        "ALPHANUMERIC_SPECIALCHAR", "postgres", "--test-collations", "false", "--oracle", "pqs" }));
+                        "ALPHANUMERIC_SPECIALCHAR", "--database-prefix",
+                        "pqsdb" /* Workaround for connections not being closed */, "postgres", "--test-collations",
+                        "false", "--oracle", "pqs" }));
     }
 
 }
