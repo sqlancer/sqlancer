@@ -26,15 +26,23 @@ public class PostgresInOperation implements PostgresExpression {
 
     @Override
     public PostgresConstant getExpectedValue() {
-        if (expr.getExpectedValue().isNull()) {
+        PostgresConstant leftValue = expr.getExpectedValue();
+        if (leftValue == null) {
+            return null;
+        }
+        if (leftValue.isNull()) {
             return PostgresConstant.createNullConstant();
         }
         boolean isNull = false;
         for (PostgresExpression expr : getListElements()) {
-            if (expr.getExpectedValue().isNull()) {
+            PostgresConstant rightExpectedValue = expr.getExpectedValue();
+            if (rightExpectedValue == null) {
+                return null;
+            }
+            if (rightExpectedValue.isNull()) {
                 isNull = true;
-            } else if (expr.getExpectedValue().isEquals(this.expr.getExpectedValue()).isBoolean()
-                    && expr.getExpectedValue().isEquals(this.expr.getExpectedValue()).asBoolean()) {
+            } else if (rightExpectedValue.isEquals(this.expr.getExpectedValue()).isBoolean()
+                    && rightExpectedValue.isEquals(this.expr.getExpectedValue()).asBoolean()) {
                 return PostgresConstant.createBooleanConstant(isTrue);
             }
         }

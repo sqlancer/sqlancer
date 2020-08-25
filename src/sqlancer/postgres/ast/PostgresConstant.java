@@ -75,7 +75,7 @@ public abstract class PostgresConstant implements PostgresExpression {
             case TEXT:
                 return PostgresConstant.createTextConstant(value ? "true" : "false");
             default:
-                throw new AssertionError();
+                return null;
             }
         }
 
@@ -212,7 +212,7 @@ public abstract class PostgresConstant implements PostgresExpression {
             case TEXT:
                 return this;
             default:
-                throw new AssertionError(this);
+                return null;
             }
         }
 
@@ -307,7 +307,7 @@ public abstract class PostgresConstant implements PostgresExpression {
             case TEXT:
                 return PostgresConstant.createTextConstant(String.valueOf(val));
             default:
-                throw new AssertionError(type);
+                return null;
             }
         }
 
@@ -406,8 +406,7 @@ public abstract class PostgresConstant implements PostgresExpression {
 
         @Override
         public PostgresConstant cast(PostgresDataType type) {
-            throw new AssertionError();
-
+            return null;
         }
     }
 

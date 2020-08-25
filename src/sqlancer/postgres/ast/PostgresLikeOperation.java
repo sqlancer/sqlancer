@@ -19,6 +19,9 @@ public class PostgresLikeOperation extends BinaryNode<PostgresExpression> implem
     public PostgresConstant getExpectedValue() {
         PostgresConstant leftVal = getLeft().getExpectedValue();
         PostgresConstant rightVal = getRight().getExpectedValue();
+        if (leftVal == null || rightVal == null) {
+            return null;
+        }
         if (leftVal.isNull() || rightVal.isNull()) {
             return PostgresConstant.createNullConstant();
         } else {

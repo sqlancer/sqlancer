@@ -129,7 +129,11 @@ public class PostgresPostfixOperation implements PostgresExpression {
 
     @Override
     public PostgresConstant getExpectedValue() {
-        return op.apply(expr.getExpectedValue());
+        PostgresConstant expectedValue = expr.getExpectedValue();
+        if (expectedValue == null) {
+            return null;
+        }
+        return op.apply(expectedValue);
     }
 
     public String getOperatorTextRepresentation() {
