@@ -286,10 +286,15 @@ public class PostgresFunction implements PostgresExpression {
 
     @Override
     public PostgresConstant getExpectedValue() {
-        assert functionWithKnownResult != null;
+        if (functionWithKnownResult == null) {
+            return null;
+        }
         PostgresConstant[] constants = new PostgresConstant[args.length];
         for (int i = 0; i < constants.length; i++) {
             constants[i] = args[i].getExpectedValue();
+            if (constants[i] == null) {
+                return null;
+            }
         }
         return functionWithKnownResult.apply(constants, args);
     }
