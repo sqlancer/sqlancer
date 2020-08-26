@@ -239,6 +239,9 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         if (!globalState.getDmbsSpecificOptions().testMatch) {
             list.remove(ExpressionType.MATCH);
         }
+        if (!globalState.getDmbsSpecificOptions().testIn) {
+            list.remove(ExpressionType.IN_OPERATOR);
+        }
         ExpressionType randomExpressionType = Randomly.fromList(list);
         switch (randomExpressionType) {
         case AND_OR_CHAIN:
