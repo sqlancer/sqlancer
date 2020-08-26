@@ -27,18 +27,18 @@ public class TestCastToBlob {
 
     @Test
     public void testString1() {
-        assertCastStringToBlob("0x12", "x'30783132'");
+        assertCastStringToBlob("0x12", "(BINARY) x'30783132'");
     }
 
     @Test
     public void testString2() {
-        assertCastStringToBlob("123", "x'313233'");
+        assertCastStringToBlob("123", "(BINARY) x'313233'");
     }
 
     void assertCastStringToBlob(String val, String expectedBlob) {
         SQLite3Constant c = SQLite3Constant.createTextConstant(val);
         SQLite3Constant binVal = SQLite3Cast.castToBlob(c);
-        assertEquals(binVal.getValue(), expectedBlob);
+        assertEquals(binVal.toString(), expectedBlob);
     }
 
 }
