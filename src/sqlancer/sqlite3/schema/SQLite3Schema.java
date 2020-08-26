@@ -115,31 +115,32 @@ public class SQLite3Schema extends AbstractSchema<SQLite3Table> {
             throws SQLException, AssertionError {
         Object value;
         SQLite3Constant constant;
-        if (randomRowValues.getString(columnIndex) == null) {
-            value = null;
-            constant = SQLite3Constant.createNullConstant();
-        } else {
-            switch (valueType) {
-            case INT:
-                value = randomRowValues.getLong(columnIndex);
-                constant = SQLite3Constant.createIntConstant((long) value);
-                break;
-            case REAL:
-                value = randomRowValues.getDouble(columnIndex);
-                constant = SQLite3Constant.createRealConstant((double) value);
-                break;
-            case TEXT:
-            case NONE:
-                value = randomRowValues.getString(columnIndex);
-                constant = SQLite3Constant.createTextConstant((String) value);
-                break;
-            case BINARY:
-                value = randomRowValues.getBytes(columnIndex);
-                constant = SQLite3Constant.createBinaryConstant((byte[]) value);
-                break;
-            default:
-                throw new AssertionError(valueType);
+        switch (valueType) {
+        case INT:
+            value = randomRowValues.getLong(columnIndex);
+            constant = SQLite3Constant.createIntConstant((long) value);
+            break;
+        case REAL:
+            value = randomRowValues.getDouble(columnIndex);
+            if (!Double.isFinite((double) value)) {
+                // TODO: the JDBC driver seems to sometimes return infinity for NULL values
+                throw new IgnoreMeException();
             }
+            constant = SQLite3Constant.createRealConstant((double) value);
+            break;
+        case TEXT:
+        case NONE:
+            value = randomRowValues.getString(columnIndex);
+            constant = SQLite3Constant.createTextConstant((String) value);
+            break;
+        case BINARY:
+            value = randomRowValues.getBytes(columnIndex);
+            constant = SQLite3Constant.createBinaryConstant((byte[]) value);
+            break;
+        case NULL:
+            return SQLite3Constant.createNullConstant();
+        default:
+            throw new AssertionError(valueType);
         }
         return constant;
     }
