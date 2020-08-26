@@ -331,7 +331,8 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
             // the PQS implementation currently assumes the default behavior of LIKE
             pragmasToExecute.add("PRAGMA case_sensitive_like=ON;");
         }
-        if (Randomly.getBoolean()) {
+        if (Randomly.getBoolean() && globalState.getDmbsSpecificOptions().oracles != SQLite3OracleFactory.PQS) {
+            // the encoding has an influence how binary strings are cast
             pragmasToExecute.add(String.format("PRAGMA encoding = '%s';",
                     Randomly.fromOptions("UTF-8", "UTF-16", "UTF-16le", "UTF-16be")));
         }

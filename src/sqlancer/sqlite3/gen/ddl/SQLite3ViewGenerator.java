@@ -76,8 +76,10 @@ public final class SQLite3ViewGenerator {
                     return false;
                 }
             }
+            return true;
+        } else {
+            return false; // the columns in UNION clauses can also have affinities
         }
-        return true;
     }
 
     private static void columnNamesAs(StringBuilder sb, int size) {

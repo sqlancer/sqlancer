@@ -120,15 +120,15 @@ public abstract class SQLite3Case extends SQLite3Expression {
                 SQLite3Constant whenComparisonValue = c.getCond().getExpectedValue();
                 if (whenComparisonValue == null) {
                     return null;
-                } // TODO collate
+                }
                 SQLite3CollateSequence seq;
                 if (baseExpr.getExplicitCollateSequence() != null) {
                     seq = baseExpr.getExplicitCollateSequence();
-                } else if (whenComparisonValue.getExplicitCollateSequence() != null) {
-                    seq = whenComparisonValue.getExplicitCollateSequence();
+                } else if (c.getCond().getExplicitCollateSequence() != null) {
+                    seq = c.getCond().getExplicitCollateSequence();
                 } else if (c.getCond().getImplicitCollateSequence() != null) {
                     seq = c.getCond().getImplicitCollateSequence();
-                } else if (whenComparisonValue.getImplicitCollateSequence() != null) {
+                } else if (c.getCond().getImplicitCollateSequence() != null) {
                     seq = c.getCond().getImplicitCollateSequence();
                 } else {
                     seq = SQLite3CollateSequence.BINARY;
