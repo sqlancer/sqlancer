@@ -13,22 +13,22 @@ public class TestMySQL {
     boolean mysqlIsAvailable = mysqlAvailable != null && mysqlAvailable.equalsIgnoreCase("true");
 
     @Test
+    public void testPQS() {
+        assumeTrue(mysqlIsAvailable);
+        assertEquals(0,
+                Main.executeMain(new String[] { "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS,
+                        "--num-threads", "4", "--random-string-generation", "ALPHANUMERIC", "--database-prefix",
+                        "pqsdb" /* Workaround for connections not being closed */, "--num-queries",
+                        TestConfig.NUM_QUERIES, "mysql", "--oracle", "PQS" }));
+    }
+
+    @Test
     public void testMySQL() {
         assumeTrue(mysqlIsAvailable);
         assertEquals(0,
                 Main.executeMain(new String[] { "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS,
                         "--max-expression-depth", "1", "--num-threads", "4", "--num-queries", TestConfig.NUM_QUERIES,
                         "mysql" }));
-    }
-
-    @Test
-    public void testPQS() {
-        assumeTrue(mysqlIsAvailable);
-        assertEquals(0,
-                Main.executeMain(new String[] { "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS,
-                        "--num-threads", "4", "--random-string-generation", "ALPHANUMERIC", "--database-prefix",
-                        "pqsdb" /* Workaround for connections not being closed */, "--num-queries", "100000", "mysql",
-                        "--oracle", "PQS" }));
     }
 
 }
