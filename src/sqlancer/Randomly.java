@@ -70,7 +70,8 @@ public final class Randomly {
             return String.valueOf(Randomly.fromList(cachedLongs));
         } else if (Randomly.getBoolean() && !cachedDoubles.isEmpty()) {
             return String.valueOf(Randomly.fromList(cachedDoubles));
-        } else if (Randomly.getBoolean() && !cachedBytes.isEmpty()) {
+        } else if (Randomly.getBoolean() && !cachedBytes.isEmpty()
+                && stringGenerationStrategy == StringGenerationStrategy.SOPHISTICATED) {
             return new String(Randomly.fromList(cachedBytes));
         } else if (!cachedStrings.isEmpty()) {
             String randomString = Randomly.fromList(cachedStrings);
