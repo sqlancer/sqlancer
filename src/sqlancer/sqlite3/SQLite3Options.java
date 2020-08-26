@@ -69,6 +69,9 @@ public class SQLite3Options implements DBMSSpecificOptions<SQLite3OracleFactory>
     @Parameter(names = { "--test-match" }, description = "Allow the generation of the MATCH operator", arity = 1)
     public boolean testMatch = true;
 
+    @Parameter(names = { "--test-in-operator" }, description = "Allow the generation of the IN operator", arity = 1)
+    public boolean testIn = true;
+
     @Parameter(names = {
             "--test-distinct-in-view" }, description = "DISTINCT in views might cause occasional false positives in NoREC and TLP", arity = 1)
     public boolean testDistinctInView;

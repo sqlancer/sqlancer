@@ -72,37 +72,31 @@ public class SQLite3PivotedQuerySynthesisOracle
         List<SQLite3Table> tables = randomFromTables.getTables();
 
         pivotRow = randomFromTables.getRandomRowValue(globalState.getConnection());
-
         globalState.getState().queryTargetedTablesString = randomFromTables.tableNamesAsString();
         SQLite3Select selectStatement = new SQLite3Select();
         selectStatement.setSelectType(Randomly.fromOptions(SQLite3Select.SelectType.values()));
         List<SQLite3Column> columns = randomFromTables.getColumns();
-        for (SQLite3Table t : tables) {
-            if (t.getRowid() != null) {
-                columns.add(t.getRowid());
-            }
-        }
-
-        List<Join> joinStatements = getJoinStatements(globalState, tables, columns);
-        selectStatement.setJoinClauses(joinStatements);
-        selectStatement.setFromTables(SQLite3Common.getTableRefs(tables, globalState.getSchema()));
-
         // TODO: also implement a wild-card check (*)
         // filter out row ids from the select because the hinder the reduction process
         // once a bug is found
         List<SQLite3Column> columnsWithoutRowid = columns.stream()
                 .filter(c -> !SQLite3Schema.ROWID_STRINGS.contains(c.getName())).collect(Collectors.toList());
+        List<Join> joinStatements = getJoinStatements(globalState, tables, columnsWithoutRowid);
+        selectStatement.setJoinClauses(joinStatements);
+        selectStatement.setFromTables(SQLite3Common.getTableRefs(tables, globalState.getSchema()));
+
         fetchColumns = Randomly.nonEmptySubset(columnsWithoutRowid);
         List<SQLite3Table> allTables = new ArrayList<>();
         allTables.addAll(tables);
         allTables.addAll(joinStatements.stream().map(join -> join.getTable()).collect(Collectors.toList()));
         boolean allTablesContainOneRow = allTables.stream().allMatch(t -> t.getNrRows(globalState) == 1);
         boolean testAggregateFunctions = allTablesContainOneRow && globalState.getOptions().testAggregateFunctionsPQS();
-        pivotRowExpression = getColExpressions(testAggregateFunctions, columns, columnsWithoutRowid);
+        pivotRowExpression = getColExpressions(testAggregateFunctions, columnsWithoutRowid, columnsWithoutRowid);
         selectStatement.setFetchColumns(pivotRowExpression);
-        SQLite3Expression whereClause = generateRectifiedExpression(columns, pivotRow, false);
+        SQLite3Expression whereClause = generateRectifiedExpression(columnsWithoutRowid, pivotRow, false);
         selectStatement.setWhereClause(whereClause);
-        List<SQLite3Expression> groupByClause = generateGroupByClause(columns, pivotRow, allTablesContainOneRow);
+        List<SQLite3Expression> groupByClause = generateGroupByClause(columnsWithoutRowid, pivotRow,
+                allTablesContainOneRow);
         selectStatement.setGroupByClause(groupByClause);
         SQLite3Expression limitClause = generateLimit((long) (Math.pow(globalState.getOptions().getMaxNumberInserts(),
                 joinStatements.size() + randomFromTables.getTables().size())));
