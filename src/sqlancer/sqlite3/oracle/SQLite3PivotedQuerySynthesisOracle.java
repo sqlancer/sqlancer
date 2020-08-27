@@ -69,7 +69,6 @@ public class SQLite3PivotedQuerySynthesisOracle
         SQLite3Select selectStatement = new SQLite3Select();
         selectStatement.setSelectType(Randomly.fromOptions(SQLite3Select.SelectType.values()));
         List<SQLite3Column> columns = randomFromTables.getColumns();
-        // TODO: also implement a wild-card check (*)
         // filter out row ids from the select because the hinder the reduction process
         // once a bug is found
         List<SQLite3Column> columnsWithoutRowid = columns.stream()
@@ -161,7 +160,7 @@ public class SQLite3PivotedQuerySynthesisOracle
         }
         for (SQLite3Expression expr : colExpressions) {
             if (expr.getExpectedValue() == null) {
-                throw new IgnoreMeException(); // TODO: aggregates
+                throw new IgnoreMeException();
             }
         }
         return colExpressions;
@@ -169,7 +168,6 @@ public class SQLite3PivotedQuerySynthesisOracle
 
     private SQLite3Expression generateOffset() {
         if (Randomly.getBoolean()) {
-            // OFFSET 0
             return SQLite3Constant.createIntConstant(0);
         } else {
             return null;
@@ -310,10 +308,8 @@ public class SQLite3PivotedQuerySynthesisOracle
             default:
                 throw new AssertionError();
             }
-            // sb.append(" BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING");
             if (Randomly.getBoolean()) {
                 sb.append(" EXCLUDE ");
-                // "CURRENT ROW", "GROUP"
                 sb.append(Randomly.fromOptions("NO OTHERS", "TIES"));
             }
         }

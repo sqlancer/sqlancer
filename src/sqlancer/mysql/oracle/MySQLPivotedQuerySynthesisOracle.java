@@ -63,10 +63,7 @@ public class MySQLPivotedQuerySynthesisOracle
             MySQLExpression offsetClause = generateOffset();
             selectStatement.setOffsetClause(offsetClause);
         }
-        List<String> modifiers = Randomly.subset("STRAIGHT_JOIN", "SQL_SMALL_RESULT", "SQL_BIG_RESULT", "SQL_NO_CACHE"); // "SQL_BUFFER_RESULT",
-                                                                                                                         // "SQL_CALC_FOUND_ROWS",
-                                                                                                                         // "HIGH_PRIORITY"
-        // TODO: Incorrect usage/placement of 'SQL_BUFFER_RESULT'
+        List<String> modifiers = Randomly.subset("STRAIGHT_JOIN", "SQL_SMALL_RESULT", "SQL_BIG_RESULT", "SQL_NO_CACHE");
         selectStatement.setModifiers(modifiers);
         List<MySQLExpression> orderBy = new MySQLExpressionGenerator(globalState).setColumns(columns)
                 .generateOrderBys();
@@ -94,7 +91,6 @@ public class MySQLPivotedQuerySynthesisOracle
 
     private MySQLExpression generateOffset() {
         if (Randomly.getBoolean()) {
-            // OFFSET 0
             return MySQLConstant.createIntConstantNotAsBoolean(0);
         } else {
             return null;

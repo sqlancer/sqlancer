@@ -112,7 +112,6 @@ public class PostgresPivotedQuerySynthesisOracle
 
     private PostgresExpression generateOffset() {
         if (Randomly.getBoolean()) {
-            // OFFSET 0
             return PostgresConstant.createIntConstant(0);
         } else {
             return null;
