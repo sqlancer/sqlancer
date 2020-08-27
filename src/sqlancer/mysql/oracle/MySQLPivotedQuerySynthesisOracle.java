@@ -124,11 +124,7 @@ public class MySQLPivotedQuerySynthesisOracle
     protected Query getContainedInQuery(Query query) throws SQLException {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
-        if (query.getQueryString().endsWith(";")) {
-            sb.append(query.getQueryString().substring(0, query.getQueryString().length() - 1));
-        } else {
-            sb.append(query.getQueryString());
-        }
+        sb.append(query.getUnterminatedQueryString());
         sb.append(") as result WHERE ");
         int i = 0;
         for (MySQLColumn c : columns) {

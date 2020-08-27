@@ -6,7 +6,19 @@ import sqlancer.GlobalState;
 
 public abstract class Query {
 
+    /**
+     * Gets the query string, which is guaranteed to be terminated with a semicolon.
+     *
+     * @return the query string.
+     */
     public abstract String getQueryString();
+
+    /**
+     * Gets the query string without trailing semicolons.
+     *
+     * @return the query string that does not end with a ";".
+     */
+    public abstract String getUnterminatedQueryString();
 
     /**
      * Whether the query could affect the schema (i.e., by add/deleting columns or tables).
