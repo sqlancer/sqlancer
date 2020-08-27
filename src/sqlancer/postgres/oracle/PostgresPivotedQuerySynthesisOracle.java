@@ -51,7 +51,7 @@ public class PostgresPivotedQuerySynthesisOracle
         selectStatement.setFetchColumns(fetchColumns.stream()
                 .map(c -> new PostgresColumnValue(getFetchValueAliasedColumn(c), pivotRow.getValues().get(c)))
                 .collect(Collectors.toList()));
-        PostgresExpression whereClause = generateWhereClauseThatContainsRowValue(columns, pivotRow);
+        PostgresExpression whereClause = generateRectifiedExpression(columns, pivotRow);
         selectStatement.setWhereClause(whereClause);
         List<PostgresExpression> groupByClause = generateGroupByClause(columns, pivotRow);
         selectStatement.setGroupByExpressions(groupByClause);
@@ -65,22 +65,6 @@ public class PostgresPivotedQuerySynthesisOracle
                 .generateOrderBy();
         selectStatement.setOrderByExpressions(orderBy);
         return new QueryAdapter(PostgresVisitor.asString(selectStatement));
-    }
-
-    public PostgresExpression generateTrueCondition(List<PostgresColumn> columns, PostgresRowValue rw,
-            PostgresGlobalState globalState) {
-        PostgresExpression expr = new PostgresExpressionGenerator(globalState).setColumns(columns).setRowValue(rw)
-                .generateExpressionWithExpectedResult(PostgresDataType.BOOLEAN);
-        PostgresExpression result;
-        if (expr.getExpectedValue().isNull()) {
-            result = PostgresPostfixOperation.create(expr, PostfixOperator.IS_NULL);
-        } else {
-            result = PostgresPostfixOperation.create(expr,
-                    expr.getExpectedValue().cast(PostgresDataType.BOOLEAN).asBoolean() ? PostfixOperator.IS_TRUE
-                            : PostfixOperator.IS_FALSE);
-        }
-        rectifiedPredicates.add(result);
-        return result;
     }
 
     /*
@@ -118,9 +102,19 @@ public class PostgresPivotedQuerySynthesisOracle
         }
     }
 
-    private PostgresExpression generateWhereClauseThatContainsRowValue(List<PostgresColumn> columns,
-            PostgresRowValue rw) {
-        return generateTrueCondition(columns, rw, globalState);
+    private PostgresExpression generateRectifiedExpression(List<PostgresColumn> columns, PostgresRowValue rw) {
+        PostgresExpression expr = new PostgresExpressionGenerator(globalState).setColumns(columns).setRowValue(rw)
+                .generateExpressionWithExpectedResult(PostgresDataType.BOOLEAN);
+        PostgresExpression result;
+        if (expr.getExpectedValue().isNull()) {
+            result = PostgresPostfixOperation.create(expr, PostfixOperator.IS_NULL);
+        } else {
+            result = PostgresPostfixOperation.create(expr,
+                    expr.getExpectedValue().cast(PostgresDataType.BOOLEAN).asBoolean() ? PostfixOperator.IS_TRUE
+                            : PostfixOperator.IS_FALSE);
+        }
+        rectifiedPredicates.add(result);
+        return result;
     }
 
     @Override

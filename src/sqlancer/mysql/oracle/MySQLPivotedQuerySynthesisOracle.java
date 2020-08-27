@@ -53,7 +53,7 @@ public class MySQLPivotedQuerySynthesisOracle
 
         fetchColumns = columns.stream().map(c -> new MySQLColumnReference(c, null)).collect(Collectors.toList());
         selectStatement.setFetchColumns(fetchColumns);
-        MySQLExpression whereClause = generateWhereClauseThatContainsRowValue(columns, pivotRow);
+        MySQLExpression whereClause = generateRectifiedExpression(columns, pivotRow);
         selectStatement.setWhereClause(whereClause);
         List<MySQLExpression> groupByClause = generateGroupByClause(columns, pivotRow);
         selectStatement.setGroupByExpressions(groupByClause);
@@ -97,7 +97,7 @@ public class MySQLPivotedQuerySynthesisOracle
         }
     }
 
-    private MySQLExpression generateWhereClauseThatContainsRowValue(List<MySQLColumn> columns, MySQLRowValue rw) {
+    private MySQLExpression generateRectifiedExpression(List<MySQLColumn> columns, MySQLRowValue rw) {
         MySQLExpression expression = new MySQLExpressionGenerator(globalState).setRowVal(rw).setColumns(columns)
                 .generateExpression();
         MySQLConstant expectedValue = expression.getExpectedValue();
