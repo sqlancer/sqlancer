@@ -1,8 +1,6 @@
 package sqlancer.sqlite3.oracle;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -15,6 +13,7 @@ import sqlancer.StateToReproduce.OracleRunReproductionState;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3ToStringVisitor;
@@ -186,8 +185,6 @@ public class SQLite3PivotedQuerySynthesisOracle
 
     @Override
     protected boolean isContainedIn(Query query) throws SQLException {
-        Statement createStatement;
-        createStatement = globalState.getConnection().createStatement();
 
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ");
@@ -206,16 +203,11 @@ public class SQLite3PivotedQuerySynthesisOracle
         String resultingQueryString = sb.toString();
         globalState.getState().getLocalState().log(resultingQueryString);
         Query finalQuery = new QueryAdapter(resultingQueryString, query.getExpectedErrors());
-        try (ResultSet result = createStatement.executeQuery(finalQuery.getQueryString())) {
-            boolean isContainedIn = !result.isClosed();
-            createStatement.close();
-            return isContainedIn;
-        } catch (SQLException e) {
-            if (finalQuery.getExpectedErrors().errorIsExpected(e.getMessage())) {
-                return true;
-            } else {
-                throw e;
+        try (SQLancerResultSet result = finalQuery.executeAndGet(globalState)) {
+            if (result == null) {
+                throw new IgnoreMeException();
             }
+            return !result.isClosed();
         }
     }
 

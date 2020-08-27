@@ -1,16 +1,16 @@
 package sqlancer.mysql.oracle;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
@@ -124,9 +124,6 @@ public class MySQLPivotedQuerySynthesisOracle
 
     @Override
     protected boolean isContainedIn(Query query) throws SQLException {
-        Statement createStatement;
-        createStatement = globalState.getConnection().createStatement();
-
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
         if (query.getQueryString().endsWith(";")) {
@@ -156,16 +153,12 @@ public class MySQLPivotedQuerySynthesisOracle
             globalState.getLogger().writeCurrent(resultingQueryString);
         }
         globalState.getState().getLocalState().log(resultingQueryString);
-        try (ResultSet result = createStatement.executeQuery(resultingQueryString)) {
-            boolean isContainedIn = result.next();
-            createStatement.close();
-            return isContainedIn;
-        } catch (SQLException e) {
-            if (query.getExpectedErrors().errorIsExpected(e.getMessage())) {
-                return true;
-            } else {
-                throw e;
+        try (SQLancerResultSet result = new QueryAdapter(resultingQueryString, query.getExpectedErrors())
+                .executeAndGet(globalState)) {
+            if (result == null) {
+                throw new IgnoreMeException();
             }
+            return result.next();
         }
     }
 

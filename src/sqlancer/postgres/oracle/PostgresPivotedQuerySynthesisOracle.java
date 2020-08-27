@@ -1,20 +1,18 @@
 package sqlancer.postgres.oracle;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.postgresql.util.PSQLException;
-
+import sqlancer.IgnoreMeException;
 import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
@@ -139,9 +137,6 @@ public class PostgresPivotedQuerySynthesisOracle
 
     @Override
     protected boolean isContainedIn(Query query) throws SQLException {
-        Statement createStatement;
-        createStatement = globalState.getConnection().createStatement();
-
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
         if (query.getQueryString().endsWith(";")) {
@@ -172,16 +167,11 @@ public class PostgresPivotedQuerySynthesisOracle
         }
         globalState.getState().getLocalState().log(resultingQueryString);
         QueryAdapter finalQuery = new QueryAdapter(resultingQueryString, errors);
-        try (ResultSet result = createStatement.executeQuery(resultingQueryString)) {
-            boolean isContainedIn = result.next();
-            createStatement.close();
-            return isContainedIn;
-        } catch (PSQLException e) {
-            if (finalQuery.getExpectedErrors().errorIsExpected(e.getMessage())) {
-                return true;
-            } else {
-                throw e;
+        try (SQLancerResultSet result = finalQuery.executeAndGet(globalState)) {
+            if (result == null) {
+                throw new IgnoreMeException();
             }
+            return result.next();
         }
     }
 
