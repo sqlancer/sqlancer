@@ -3,9 +3,7 @@ package sqlancer.sqlite3;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -41,11 +39,10 @@ import sqlancer.sqlite3.gen.ddl.SQLite3TableGenerator;
 import sqlancer.sqlite3.gen.ddl.SQLite3ViewGenerator;
 import sqlancer.sqlite3.gen.dml.SQLite3DeleteGenerator;
 import sqlancer.sqlite3.gen.dml.SQLite3InsertGenerator;
+import sqlancer.sqlite3.gen.dml.SQLite3StatTableGenerator;
 import sqlancer.sqlite3.gen.dml.SQLite3UpdateGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema;
-import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
-import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table.TableKind;
 
 public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3Options> {
 
@@ -101,63 +98,7 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
         VIRTUAL_TABLE_ACTION(SQLite3VirtualFTSTableCommandGenerator::create), //
         CREATE_VIEW(SQLite3ViewGenerator::generate), //
         CREATE_TRIGGER(SQLite3CreateTriggerGenerator::create), //
-        MANIPULATE_STAT_TABLE((g) -> {
-            List<SQLite3Column> columns = new ArrayList<>();
-            SQLite3Table t = new SQLite3Table("sqlite_stat1", columns, TableKind.MAIN, false, false, false, false);
-            if (Randomly.getBoolean()) {
-                return SQLite3DeleteGenerator.deleteContent(g, t);
-            } else {
-                StringBuilder sb = new StringBuilder();
-                sb.append("INSERT OR IGNORE INTO sqlite_stat1");
-                String indexName;
-                try (Statement stat = g.getConnection().createStatement()) {
-                    try (ResultSet rs = stat.executeQuery(
-                            "SELECT name FROM sqlite_master WHERE type='index' ORDER BY RANDOM() LIMIT 1;")) {
-                        if (rs.isClosed()) {
-                            throw new IgnoreMeException();
-                        }
-                        indexName = rs.getString("name");
-                    }
-                } catch (SQLException e) {
-                    throw new IgnoreMeException();
-                }
-                sb.append(" VALUES");
-                sb.append("('");
-                sb.append(g.getSchema().getRandomTable().getName());
-                sb.append("', ");
-                sb.append("'");
-                if (Randomly.getBoolean()) {
-                    sb.append(indexName);
-                } else {
-                    sb.append(g.getSchema().getRandomTable().getName());
-                }
-                sb.append("'");
-                sb.append(", '");
-                for (int i = 0; i < Randomly.smallNumber(); i++) {
-                    if (i != 0) {
-                        sb.append(" ");
-                    }
-                    if (Randomly.getBoolean()) {
-                        sb.append(g.getRandomly().getInteger());
-                    } else {
-                        sb.append(Randomly.smallNumber());
-                    }
-                }
-                if (Randomly.getBoolean()) {
-                    sb.append(" sz=");
-                    sb.append(g.getRandomly().getInteger());
-                }
-                if (Randomly.getBoolean()) {
-                    sb.append(" unordered");
-                }
-                if (Randomly.getBoolean()) {
-                    sb.append(" noskipscan");
-                }
-                sb.append("')");
-                return new QueryAdapter(sb.toString(),
-                        ExpectedErrors.from("no such table", "The database file is locked"));
-            }
-        });
+        MANIPULATE_STAT_TABLE(SQLite3StatTableGenerator::getQuery);
 
         private final QueryProvider<SQLite3GlobalState> queryProvider;
 
