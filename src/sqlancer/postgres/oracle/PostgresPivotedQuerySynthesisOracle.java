@@ -14,7 +14,6 @@ import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresRowValue;
 import sqlancer.postgres.PostgresSchema.PostgresTables;
-import sqlancer.postgres.PostgresToStringVisitor;
 import sqlancer.postgres.PostgresVisitor;
 import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresConstant;
@@ -38,7 +37,7 @@ public class PostgresPivotedQuerySynthesisOracle
     }
 
     @Override
-    public Query getQueryThatContainsAtLeastOneRow() throws SQLException {
+    public Query getRectifiedQuery() throws SQLException {
         PostgresTables randomFromTables = globalState.getSchema().getRandomTableNonEmptyTables();
 
         PostgresSelect selectStatement = new PostgresSelect();
@@ -52,7 +51,7 @@ public class PostgresPivotedQuerySynthesisOracle
         selectStatement.setFetchColumns(fetchColumns.stream()
                 .map(c -> new PostgresColumnValue(getFetchValueAliasedColumn(c), pivotRow.getValues().get(c)))
                 .collect(Collectors.toList()));
-        PostgresExpression whereClause = generateWhereClauseThatContainsRowValue(columns, pivotRow);
+        PostgresExpression whereClause = generateRectifiedExpression(columns, pivotRow);
         selectStatement.setWhereClause(whereClause);
         List<PostgresExpression> groupByClause = generateGroupByClause(columns, pivotRow);
         selectStatement.setGroupByExpressions(groupByClause);
@@ -65,25 +64,7 @@ public class PostgresPivotedQuerySynthesisOracle
         List<PostgresExpression> orderBy = new PostgresExpressionGenerator(globalState).setColumns(columns)
                 .generateOrderBy();
         selectStatement.setOrderByExpressions(orderBy);
-        PostgresToStringVisitor visitor = new PostgresToStringVisitor();
-        visitor.visit(selectStatement);
-        return new QueryAdapter(visitor.get());
-    }
-
-    public PostgresExpression generateTrueCondition(List<PostgresColumn> columns, PostgresRowValue rw,
-            PostgresGlobalState globalState) {
-        PostgresExpression expr = new PostgresExpressionGenerator(globalState).setColumns(columns).setRowValue(rw)
-                .generateExpressionWithExpectedResult(PostgresDataType.BOOLEAN);
-        PostgresExpression result;
-        if (expr.getExpectedValue().isNull()) {
-            result = PostgresPostfixOperation.create(expr, PostfixOperator.IS_NULL);
-        } else {
-            result = PostgresPostfixOperation.create(expr,
-                    expr.getExpectedValue().cast(PostgresDataType.BOOLEAN).asBoolean() ? PostfixOperator.IS_TRUE
-                            : PostfixOperator.IS_FALSE);
-        }
-        rectifiedPredicates.add(result);
-        return result;
+        return new QueryAdapter(PostgresVisitor.asString(selectStatement));
     }
 
     /*
@@ -115,20 +96,29 @@ public class PostgresPivotedQuerySynthesisOracle
 
     private PostgresExpression generateOffset() {
         if (Randomly.getBoolean()) {
-            // OFFSET 0
             return PostgresConstant.createIntConstant(0);
         } else {
             return null;
         }
     }
 
-    private PostgresExpression generateWhereClauseThatContainsRowValue(List<PostgresColumn> columns,
-            PostgresRowValue rw) {
-        return generateTrueCondition(columns, rw, globalState);
+    private PostgresExpression generateRectifiedExpression(List<PostgresColumn> columns, PostgresRowValue rw) {
+        PostgresExpression expr = new PostgresExpressionGenerator(globalState).setColumns(columns).setRowValue(rw)
+                .generateExpressionWithExpectedResult(PostgresDataType.BOOLEAN);
+        PostgresExpression result;
+        if (expr.getExpectedValue().isNull()) {
+            result = PostgresPostfixOperation.create(expr, PostfixOperator.IS_NULL);
+        } else {
+            result = PostgresPostfixOperation.create(expr,
+                    expr.getExpectedValue().cast(PostgresDataType.BOOLEAN).asBoolean() ? PostfixOperator.IS_TRUE
+                            : PostfixOperator.IS_FALSE);
+        }
+        rectifiedPredicates.add(result);
+        return result;
     }
 
     @Override
-    protected Query getContainedInQuery(Query query) throws SQLException {
+    protected Query getContainmentCheckQuery(Query query) throws SQLException {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
         sb.append(query.getUnterminatedQueryString());
@@ -153,7 +143,7 @@ public class PostgresPivotedQuerySynthesisOracle
     }
 
     @Override
-    protected String asString(PostgresExpression expr) {
+    protected String getExpectedValues(PostgresExpression expr) {
         return PostgresVisitor.asExpectedValues(expr);
     }
 

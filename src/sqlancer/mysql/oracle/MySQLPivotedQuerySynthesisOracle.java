@@ -15,7 +15,6 @@ import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLRowValue;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.MySQLSchema.MySQLTables;
-import sqlancer.mysql.MySQLToStringVisitor;
 import sqlancer.mysql.MySQLVisitor;
 import sqlancer.mysql.ast.MySQLColumnReference;
 import sqlancer.mysql.ast.MySQLConstant;
@@ -41,7 +40,7 @@ public class MySQLPivotedQuerySynthesisOracle
     }
 
     @Override
-    public Query getQueryThatContainsAtLeastOneRow() throws SQLException {
+    public Query getRectifiedQuery() throws SQLException {
         MySQLTables randomFromTables = globalState.getSchema().getRandomTableNonEmptyTables();
         List<MySQLTable> tables = randomFromTables.getTables();
 
@@ -54,7 +53,7 @@ public class MySQLPivotedQuerySynthesisOracle
 
         fetchColumns = columns.stream().map(c -> new MySQLColumnReference(c, null)).collect(Collectors.toList());
         selectStatement.setFetchColumns(fetchColumns);
-        MySQLExpression whereClause = generateWhereClauseThatContainsRowValue(columns, pivotRow);
+        MySQLExpression whereClause = generateRectifiedExpression(columns, pivotRow);
         selectStatement.setWhereClause(whereClause);
         List<MySQLExpression> groupByClause = generateGroupByClause(columns, pivotRow);
         selectStatement.setGroupByExpressions(groupByClause);
@@ -64,18 +63,13 @@ public class MySQLPivotedQuerySynthesisOracle
             MySQLExpression offsetClause = generateOffset();
             selectStatement.setOffsetClause(offsetClause);
         }
-        List<String> modifiers = Randomly.subset("STRAIGHT_JOIN", "SQL_SMALL_RESULT", "SQL_BIG_RESULT", "SQL_NO_CACHE"); // "SQL_BUFFER_RESULT",
-                                                                                                                         // "SQL_CALC_FOUND_ROWS",
-                                                                                                                         // "HIGH_PRIORITY"
-        // TODO: Incorrect usage/placement of 'SQL_BUFFER_RESULT'
+        List<String> modifiers = Randomly.subset("STRAIGHT_JOIN", "SQL_SMALL_RESULT", "SQL_BIG_RESULT", "SQL_NO_CACHE");
         selectStatement.setModifiers(modifiers);
         List<MySQLExpression> orderBy = new MySQLExpressionGenerator(globalState).setColumns(columns)
                 .generateOrderBys();
         selectStatement.setOrderByExpressions(orderBy);
 
-        MySQLToStringVisitor visitor = new MySQLToStringVisitor();
-        visitor.visit(selectStatement);
-        return new QueryAdapter(visitor.get(), errors);
+        return new QueryAdapter(MySQLVisitor.asString(selectStatement), errors);
     }
 
     private List<MySQLExpression> generateGroupByClause(List<MySQLColumn> columns, MySQLRowValue rw) {
@@ -97,14 +91,13 @@ public class MySQLPivotedQuerySynthesisOracle
 
     private MySQLExpression generateOffset() {
         if (Randomly.getBoolean()) {
-            // OFFSET 0
             return MySQLConstant.createIntConstantNotAsBoolean(0);
         } else {
             return null;
         }
     }
 
-    private MySQLExpression generateWhereClauseThatContainsRowValue(List<MySQLColumn> columns, MySQLRowValue rw) {
+    private MySQLExpression generateRectifiedExpression(List<MySQLColumn> columns, MySQLRowValue rw) {
         MySQLExpression expression = new MySQLExpressionGenerator(globalState).setRowVal(rw).setColumns(columns)
                 .generateExpression();
         MySQLConstant expectedValue = expression.getExpectedValue();
@@ -121,7 +114,7 @@ public class MySQLPivotedQuerySynthesisOracle
     }
 
     @Override
-    protected Query getContainedInQuery(Query query) throws SQLException {
+    protected Query getContainmentCheckQuery(Query query) throws SQLException {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
         sb.append(query.getUnterminatedQueryString());
@@ -147,7 +140,7 @@ public class MySQLPivotedQuerySynthesisOracle
     }
 
     @Override
-    protected String asString(MySQLExpression expr) {
+    protected String getExpectedValues(MySQLExpression expr) {
         return MySQLVisitor.asExpectedValues(expr);
     }
 }
