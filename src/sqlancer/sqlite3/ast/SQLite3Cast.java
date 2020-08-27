@@ -68,6 +68,7 @@ public final class SQLite3Cast {
         case INT:
             return cons;
         case REAL:
+            checkDoubleIsInsideDangerousRange(cons.asDouble());
             return SQLite3Constant.createIntConstant((long) cons.asDouble());
         case TEXT:
             String asString = cons.asString();
@@ -109,7 +110,9 @@ public final class SQLite3Cast {
     public static SQLite3Constant castToReal(SQLite3Constant cons) {
         SQLite3Constant numericValue = castToNumeric(cons);
         if (numericValue.getDataType() == SQLite3DataType.INT) {
-            return SQLite3Constant.createRealConstant(numericValue.asInt());
+            double val = numericValue.asInt();
+            checkDoubleIsInsideDangerousRange(val);
+            return SQLite3Constant.createRealConstant(val);
         } else {
             return numericValue;
         }
