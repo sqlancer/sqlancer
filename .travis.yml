@@ -17,6 +17,11 @@ branches:
 
 matrix:
   include:
+    - name: SQLite3
+      jdk : openjdk8
+      script:
+        - mvn -Dtest=TestSQLitePQS test
+        - mvn -Dtest=TestSQLite3 test
     - name: PostgreSQL
       jdk : openjdk8
       before_install:
@@ -75,10 +80,6 @@ matrix:
       - sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
       script:
         - TIDB_AVAILABLE=true mvn -Dtest=TestTiDB test
-    - name: SQLite3
-      jdk : openjdk8
-      script:
-        - mvn -Dtest=TestSQLite3 test
     - name: DuckDB
       jdk : openjdk8
       script: 
