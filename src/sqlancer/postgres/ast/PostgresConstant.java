@@ -390,18 +390,17 @@ public abstract class PostgresConstant implements PostgresExpression {
 
         @Override
         public String getUnquotedTextRepresentation() {
-            throw new AssertionError();
+            return null;
         }
 
         @Override
         public PostgresConstant isEquals(PostgresConstant rightVal) {
-            throw new AssertionError();
+            return null;
         }
 
         @Override
         protected PostgresConstant isLessThan(PostgresConstant rightVal) {
-            throw new AssertionError();
-
+            return null;
         }
 
         @Override
