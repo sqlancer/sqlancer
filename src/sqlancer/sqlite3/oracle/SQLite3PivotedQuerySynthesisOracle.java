@@ -84,7 +84,7 @@ public class SQLite3PivotedQuerySynthesisOracle
         allTables.addAll(joinStatements.stream().map(join -> join.getTable()).collect(Collectors.toList()));
         boolean allTablesContainOneRow = allTables.stream().allMatch(t -> t.getNrRows(globalState) == 1);
         boolean testAggregateFunctions = allTablesContainOneRow && globalState.getOptions().testAggregateFunctionsPQS();
-        pivotRowExpression = getColExpressions(testAggregateFunctions, columnsWithoutRowid, columnsWithoutRowid);
+        pivotRowExpression = getColExpressions(testAggregateFunctions, columnsWithoutRowid);
         selectStatement.setFetchColumns(pivotRowExpression);
         SQLite3Expression whereClause = generateRectifiedExpression(columnsWithoutRowid, pivotRow, false);
         selectStatement.setWhereClause(whereClause);
@@ -122,8 +122,7 @@ public class SQLite3PivotedQuerySynthesisOracle
         return joinStatements;
     }
 
-    private List<SQLite3Expression> getColExpressions(boolean testAggregateFunctions, List<SQLite3Column> columns,
-            List<SQLite3Column> columnsWithoutRowid) {
+    private List<SQLite3Expression> getColExpressions(boolean testAggregateFunctions, List<SQLite3Column> columns) {
         List<SQLite3Expression> colExpressions = new ArrayList<>();
 
         for (SQLite3Column c : fetchColumns) {
@@ -156,8 +155,8 @@ public class SQLite3PivotedQuerySynthesisOracle
             }
         }
         if (testAggregateFunctions) {
-            SQLite3WindowFunction windowFunction = SQLite3WindowFunction.getRandom(columnsWithoutRowid, globalState);
-            SQLite3Expression windowExpr = generateWindowFunction(columnsWithoutRowid, windowFunction, false);
+            SQLite3WindowFunction windowFunction = SQLite3WindowFunction.getRandom(columns, globalState);
+            SQLite3Expression windowExpr = generateWindowFunction(columns, windowFunction, false);
             colExpressions.add(windowExpr);
         }
         for (SQLite3Expression expr : colExpressions) {
