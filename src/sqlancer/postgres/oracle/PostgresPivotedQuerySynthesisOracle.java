@@ -14,7 +14,6 @@ import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresRowValue;
 import sqlancer.postgres.PostgresSchema.PostgresTables;
-import sqlancer.postgres.PostgresToStringVisitor;
 import sqlancer.postgres.PostgresVisitor;
 import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresConstant;
@@ -38,7 +37,7 @@ public class PostgresPivotedQuerySynthesisOracle
     }
 
     @Override
-    public Query getQueryThatContainsAtLeastOneRow() throws SQLException {
+    public Query getRectifiedQuery() throws SQLException {
         PostgresTables randomFromTables = globalState.getSchema().getRandomTableNonEmptyTables();
 
         PostgresSelect selectStatement = new PostgresSelect();
@@ -65,9 +64,7 @@ public class PostgresPivotedQuerySynthesisOracle
         List<PostgresExpression> orderBy = new PostgresExpressionGenerator(globalState).setColumns(columns)
                 .generateOrderBy();
         selectStatement.setOrderByExpressions(orderBy);
-        PostgresToStringVisitor visitor = new PostgresToStringVisitor();
-        visitor.visit(selectStatement);
-        return new QueryAdapter(visitor.get());
+        return new QueryAdapter(PostgresVisitor.asString(selectStatement));
     }
 
     public PostgresExpression generateTrueCondition(List<PostgresColumn> columns, PostgresRowValue rw,
@@ -128,7 +125,7 @@ public class PostgresPivotedQuerySynthesisOracle
     }
 
     @Override
-    protected Query getContainedInQuery(Query query) throws SQLException {
+    protected Query getContainmentCheckQuery(Query query) throws SQLException {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
         sb.append(query.getUnterminatedQueryString());
@@ -153,7 +150,7 @@ public class PostgresPivotedQuerySynthesisOracle
     }
 
     @Override
-    protected String asString(PostgresExpression expr) {
+    protected String getExpectedValues(PostgresExpression expr) {
         return PostgresVisitor.asExpectedValues(expr);
     }
 

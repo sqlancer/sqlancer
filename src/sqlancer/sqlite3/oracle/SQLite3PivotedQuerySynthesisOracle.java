@@ -15,7 +15,6 @@ import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
-import sqlancer.sqlite3.SQLite3ToStringVisitor;
 import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.ast.SQLite3Aggregate;
 import sqlancer.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
@@ -53,13 +52,10 @@ public class SQLite3PivotedQuerySynthesisOracle
     }
 
     @Override
-    public Query getQueryThatContainsAtLeastOneRow() throws SQLException {
+    public Query getRectifiedQuery() throws SQLException {
         SQLite3Select selectStatement = getQuery();
-        SQLite3ToStringVisitor visitor = new SQLite3ToStringVisitor();
-        visitor.visit(selectStatement);
-        String queryString = visitor.get();
         SQLite3Errors.addExpectedExpressionErrors(errors);
-        return new QueryAdapter(queryString, errors);
+        return new QueryAdapter(SQLite3Visitor.asString(selectStatement), errors);
     }
 
     public SQLite3Select getQuery() throws SQLException {
@@ -183,7 +179,7 @@ public class SQLite3PivotedQuerySynthesisOracle
     }
 
     @Override
-    protected Query getContainedInQuery(Query query) throws SQLException {
+    protected Query getContainmentCheckQuery(Query query) throws SQLException {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ");
         String checkForContainmentValues = getGeneralizedPivotRowValues();
@@ -355,7 +351,7 @@ public class SQLite3PivotedQuerySynthesisOracle
     }
 
     @Override
-    protected String asString(SQLite3Expression expr) {
+    protected String getExpectedValues(SQLite3Expression expr) {
         return SQLite3Visitor.asExpectedValues(expr);
     }
 
