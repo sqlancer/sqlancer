@@ -154,7 +154,8 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
         case NULL:
             return MySQLConstant.createNullConstant();
         case STRING:
-            String string = state.getRandomly().getString();
+            /* Replace characters that still trigger open bugs in MySQL */
+            String string = state.getRandomly().getString().replace("\\", "").replace("\n", "");
             if (string.startsWith("\n")) {
                 // workaround for https://bugs.mysql.com/bug.php?id=99130
                 throw new IgnoreMeException();
