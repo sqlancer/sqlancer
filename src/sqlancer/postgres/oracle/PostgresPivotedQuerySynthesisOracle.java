@@ -75,26 +75,6 @@ public class PostgresPivotedQuerySynthesisOracle
         List<PostgresExpression> orderBy = new PostgresExpressionGenerator(globalState).setColumns(columns)
                 .generateOrderBy();
         selectStatement.setOrderByExpressions(orderBy);
-
-        StringBuilder sb2 = new StringBuilder();
-        sb2.append("SELECT * FROM (SELECT 1 FROM ");
-        sb2.append(randomFromTables.tableNamesAsString());
-        sb2.append(" WHERE ");
-        int i = 0;
-        for (PostgresColumn c : fetchColumns) {
-            if (i++ != 0) {
-                sb2.append(" AND ");
-            }
-            sb2.append(c.getFullQualifiedName());
-            if (pivotRow.getValues().get(c).isNull()) {
-                sb2.append(" IS NULL");
-            } else {
-                sb2.append(" = ");
-                sb2.append(pivotRow.getValues().get(c).getTextRepresentation());
-            }
-        }
-        sb2.append(") as result;");
-
         PostgresToStringVisitor visitor = new PostgresToStringVisitor();
         visitor.visit(selectStatement);
         return new QueryAdapter(visitor.get());

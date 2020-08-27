@@ -75,26 +75,6 @@ public class MySQLPivotedQuerySynthesisOracle
                 .generateOrderBys();
         selectStatement.setOrderByExpressions(orderBy);
 
-        StringBuilder sb2 = new StringBuilder();
-        sb2.append("SELECT * FROM (SELECT 1 FROM ");
-        sb2.append(randomFromTables.tableNamesAsString());
-        sb2.append(" WHERE ");
-        int i = 0;
-        for (MySQLColumn c : columns) {
-            if (i++ != 0) {
-                sb2.append(" AND ");
-            }
-            sb2.append("ref");
-            sb2.append(i - 1);
-            if (pivotRow.getValues().get(c).isNull()) {
-                sb2.append(" IS NULL");
-            } else {
-                sb2.append(" = ");
-                sb2.append(pivotRow.getValues().get(c).getTextRepresentation());
-            }
-        }
-        sb2.append(") as result;");
-
         MySQLToStringVisitor visitor = new MySQLToStringVisitor();
         visitor.visit(selectStatement);
         return new QueryAdapter(visitor.get(), errors);
