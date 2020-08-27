@@ -229,11 +229,7 @@ public final class Main {
             sb.append("-- Database version: " + state.getDatabaseVersion() + "\n");
             sb.append("-- seed value: " + state.getSeedValue() + "\n");
             for (Query s : state.getStatements()) {
-                if (s.getQueryString().endsWith(";")) {
-                    sb.append(s.getQueryString());
-                } else {
-                    sb.append(s.getQueryString() + ";");
-                }
+                sb.append(s.getQueryString());
                 sb.append('\n');
             }
             try {

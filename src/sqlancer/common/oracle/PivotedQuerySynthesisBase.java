@@ -17,7 +17,7 @@ public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?>, R e
     protected final ExpectedErrors errors = new ExpectedErrors();
 
     /**
-     * The predicates used in WHERE and JOIN clauses, which yield TRUE for the pivot row
+     * The predicates used in WHERE and JOIN clauses, which yield TRUE for the pivot row.
      */
     protected final List<E> rectifiedPredicates = new ArrayList<>();
     protected final S globalState;
@@ -66,11 +66,11 @@ public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?>, R e
     }
 
     protected void reportMissingPivotRow(Query query) {
-        globalState.getState().getLocalState().log("-- " + "pivot row values:\n");
+        globalState.getState().getLocalState().log("-- pivot row values:");
         String expectedPivotRowString = pivotRow.asStringGroupedByTables();
         globalState.getState().getLocalState().log(expectedPivotRowString);
 
-        StringBuilder sb = new StringBuilder("-- rectified predicates and their expected values:\n");
+        StringBuilder sb = new StringBuilder("--\n-- rectified predicates and their expected values:\n");
         for (E rectifiedPredicate : rectifiedPredicates) {
             sb.append("--");
             sb.append(getExpectedValues(rectifiedPredicate).replace("\n", "\n-- "));

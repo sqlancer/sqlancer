@@ -58,16 +58,22 @@ public abstract class AbstractRowValue<T extends AbstractTables<?, C>, C extends
         List<C> columnList = getValues().keySet().stream().collect(Collectors.toList());
         List<AbstractTable<?, ?>> tableList = columnList.stream().map(c -> c.getTable()).distinct().sorted()
                 .collect(Collectors.toList());
-        for (AbstractTable<?, ?> t : tableList) {
+        for (int j = 0; j < tableList.size(); j++) {
+            if (j != 0) {
+                sb.append("\n");
+            }
+            AbstractTable<?, ?> t = tableList.get(j);
             sb.append("-- " + t.getName() + "\n");
             List<C> columnsForTable = columnList.stream().filter(c -> c.getTable().equals(t))
                     .collect(Collectors.toList());
-            for (C c : columnsForTable) {
+            for (int i = 0; i < columnsForTable.size(); i++) {
+                if (i != 0) {
+                    sb.append("\n");
+                }
                 sb.append("--\t");
-                sb.append(c);
+                sb.append(columnsForTable.get(i));
                 sb.append("=");
-                sb.append(getValues().get(c));
-                sb.append("\n");
+                sb.append(getValues().get(columnsForTable.get(i)));
             }
         }
         return sb.toString();
