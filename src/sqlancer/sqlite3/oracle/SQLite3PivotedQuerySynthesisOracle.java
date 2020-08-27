@@ -44,7 +44,6 @@ public class SQLite3PivotedQuerySynthesisOracle
         extends PivotedQuerySynthesisBase<SQLite3GlobalState, SQLite3RowValue, SQLite3Expression> {
 
     private List<SQLite3Column> fetchColumns;
-    private List<SQLite3Expression> pivotRowExpression;
     private OracleRunReproductionState localState;
 
     public SQLite3PivotedQuerySynthesisOracle(SQLite3GlobalState globalState) {

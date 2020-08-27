@@ -20,6 +20,12 @@ public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?>, R e
      * The predicates used in WHERE and JOIN clauses, which yield TRUE for the pivot row.
      */
     protected final List<E> rectifiedPredicates = new ArrayList<>();
+
+    /**
+     * The generalization of a pivot row, as explained in the "Checking arbitrary expressions" paragraph of the PQS
+     * paper.
+     */
+    protected List<E> pivotRowExpression = new ArrayList<>();
     protected final S globalState;
     protected R pivotRow;
 
@@ -70,10 +76,22 @@ public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?>, R e
         String expectedPivotRowString = pivotRow.asStringGroupedByTables();
         globalState.getState().getLocalState().log(expectedPivotRowString);
 
-        StringBuilder sb = new StringBuilder("--\n-- rectified predicates and their expected values:\n");
-        for (E rectifiedPredicate : rectifiedPredicates) {
-            sb.append("--");
-            sb.append(getExpectedValues(rectifiedPredicate).replace("\n", "\n-- "));
+        StringBuilder sb = new StringBuilder();
+        if (!rectifiedPredicates.isEmpty()) {
+            sb.append("--\n-- rectified predicates and their expected values:\n");
+            for (E rectifiedPredicate : rectifiedPredicates) {
+                sb.append("--");
+                sb.append(getExpectedValues(rectifiedPredicate).replace("\n", "\n-- "));
+            }
+            sb.append("\n");
+        }
+        if (!pivotRowExpression.isEmpty()) {
+            sb.append("-- pivot row expressions and their expected values:\n");
+            for (E pivotRowExpression : pivotRowExpression) {
+                sb.append("--");
+                sb.append(getExpectedValues(pivotRowExpression).replace("\n", "\n--"));
+                sb.append("\n");
+            }
         }
         globalState.getState().getLocalState().log(sb.toString());
         throw new AssertionError(query);
