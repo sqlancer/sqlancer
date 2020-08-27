@@ -1,16 +1,19 @@
 package sqlancer.sqlite3.ast;
 
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.sqlite3.schema.SQLite3DataType;
 
 public final class SQLite3Cast {
 
     private static final double MAX_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED = Math.pow(2, 51 - 1) - 1;
     private static final double MIN_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED = -Math.pow(2, 51 - 1);
+    public static final Charset DEFAULT_ENCODING = Charset.forName("UTF-8");
 
     private static final byte FILE_SEPARATOR = 0x1c;
     private static final byte GROUP_SEPARATOR = 0x1d;
@@ -45,11 +48,18 @@ public final class SQLite3Cast {
         }
     }
 
+    public static void checkDoubleIsInsideDangerousRange(double doubleVal) {
+        // high double-values might result in small rounding differences between Java and SQLite
+        if (Math.abs(doubleVal) > 1e15) {
+            throw new IgnoreMeException();
+        }
+    }
+
     // SELECT CAST('-1.370998801E9' AS INTEGER) == -1
     public static SQLite3Constant castToInt(SQLite3Constant originalCons) {
         SQLite3Constant cons = originalCons;
         if (cons.getDataType() == SQLite3DataType.BINARY) {
-            String text = new String(cons.asBinary());
+            String text = new String(cons.asBinary(), DEFAULT_ENCODING);
             cons = SQLite3Constant.createTextConstant(text);
         }
         switch (cons.getDataType()) {
@@ -58,6 +68,7 @@ public final class SQLite3Cast {
         case INT:
             return cons;
         case REAL:
+            checkDoubleIsInsideDangerousRange(cons.asDouble());
             return SQLite3Constant.createIntConstant((long) cons.asDouble());
         case TEXT:
             String asString = cons.asString();
@@ -99,7 +110,9 @@ public final class SQLite3Cast {
     public static SQLite3Constant castToReal(SQLite3Constant cons) {
         SQLite3Constant numericValue = castToNumeric(cons);
         if (numericValue.getDataType() == SQLite3DataType.INT) {
-            return SQLite3Constant.createRealConstant(numericValue.asInt());
+            double val = numericValue.asInt();
+            checkDoubleIsInsideDangerousRange(val);
+            return SQLite3Constant.createRealConstant(val);
         } else {
             return numericValue;
         }
@@ -124,7 +137,7 @@ public final class SQLite3Cast {
             boolean noNumIsRealZero, boolean convertIntToReal) throws AssertionError {
         SQLite3Constant value = originalValue;
         if (value.getDataType() == SQLite3DataType.BINARY) {
-            String text = new String(value.asBinary());
+            String text = new String(value.asBinary(), DEFAULT_ENCODING);
             value = SQLite3Constant.createTextConstant(text);
         }
         switch (value.getDataType()) {
@@ -261,7 +274,7 @@ public final class SQLite3Cast {
             if (stringVal == null) {
                 return null;
             } else {
-                return SQLite3Constant.createBinaryConstant(stringVal.asString().getBytes());
+                return SQLite3Constant.createBinaryConstant(stringVal.asString().getBytes(DEFAULT_ENCODING));
             }
         }
     }

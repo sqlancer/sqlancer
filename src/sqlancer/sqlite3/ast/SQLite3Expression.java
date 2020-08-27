@@ -1342,8 +1342,12 @@ public abstract class SQLite3Expression {
             if (left.getExpectedValue() == null || right.getExpectedValue() == null) {
                 return null;
             }
-            return operation.applyOperand(left.getExpectedValue(), left.getAffinity(), right.getExpectedValue(),
-                    right.getAffinity());
+            SQLite3Constant result = operation.applyOperand(left.getExpectedValue(), left.getAffinity(),
+                    right.getExpectedValue(), right.getAffinity());
+            if (result != null && result.isReal()) {
+                SQLite3Cast.checkDoubleIsInsideDangerousRange(result.asDouble());
+            }
+            return result;
         }
 
         public static Sqlite3BinaryOperation create(SQLite3Expression leftVal, SQLite3Expression rightVal,

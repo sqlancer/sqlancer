@@ -226,7 +226,12 @@ public class SQLite3PivotedQuerySynthesisOracle
                 sb.append(", ");
             }
             SQLite3Constant expectedValue = pivotRowExpression.get(i).getExpectedValue();
-            sb.append(SQLite3Visitor.asString(expectedValue));
+            String value = SQLite3Visitor.asString(expectedValue);
+            if (value.contains("�") || value.contains("\0")) {
+                // encoding issues || Java does not completely strings with \0 characters
+                throw new IgnoreMeException();
+            }
+            sb.append(value);
         }
         return sb.toString();
     }
