@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.GlobalState;
+import sqlancer.IgnoreMeException;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
+import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.common.schema.AbstractRowValue;
 
 public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?>, R extends AbstractRowValue<?, ?, ?>, E>
@@ -28,9 +30,23 @@ public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?>, R e
         if (globalState.getOptions().logEachSelect()) {
             globalState.getLogger().writeCurrent(pivotRowQuery.getQueryString());
         }
-        boolean isContainedIn = isContainedIn(pivotRowQuery);
+        Query isContainedQuery = getContainedInQuery(pivotRowQuery);
+        if (globalState.getOptions().logEachSelect()) {
+            globalState.getLogger().writeCurrent(isContainedQuery.getQueryString());
+        }
+        globalState.getState().getLocalState().log(isContainedQuery.getQueryString());
+        boolean isContainedIn = isPivotRowContainedIn(isContainedQuery);
         if (!isContainedIn) {
             reportMissingPivotRow(pivotRowQuery);
+        }
+    }
+
+    private boolean isPivotRowContainedIn(Query isContainedQuery) throws SQLException {
+        try (SQLancerResultSet result = isContainedQuery.executeAndGet(globalState)) {
+            if (result == null) {
+                throw new IgnoreMeException();
+            }
+            return !result.isClosed();
         }
     }
 
@@ -48,7 +64,7 @@ public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?>, R e
         throw new AssertionError(query);
     }
 
-    protected abstract boolean isContainedIn(Query pivotRowQuery) throws SQLException;
+    protected abstract Query getContainedInQuery(Query pivotRowQuery) throws SQLException;
 
     protected abstract Query getQueryThatContainsAtLeastOneRow() throws SQLException;
 

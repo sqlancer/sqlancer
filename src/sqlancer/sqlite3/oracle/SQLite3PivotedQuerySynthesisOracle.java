@@ -1,8 +1,6 @@
 package sqlancer.sqlite3.oracle;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -185,10 +183,7 @@ public class SQLite3PivotedQuerySynthesisOracle
     }
 
     @Override
-    protected boolean isContainedIn(Query query) throws SQLException {
-        Statement createStatement;
-        createStatement = globalState.getConnection().createStatement();
-
+    protected Query getContainedInQuery(Query query) throws SQLException {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ");
         String checkForContainmentValues = getGeneralizedPivotRowValues();
@@ -197,26 +192,10 @@ public class SQLite3PivotedQuerySynthesisOracle
                 .log("-- we expect the following expression to be contained in the result set: "
                         + checkForContainmentValues);
         sb.append(" INTERSECT SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
-        if (query.getQueryString().endsWith(";")) {
-            sb.append(query.getQueryString().substring(0, query.getQueryString().length() - 1));
-        } else {
-            sb.append(query.getQueryString());
-        }
+        sb.append(query.getUnterminatedQueryString());
         sb.append(")");
         String resultingQueryString = sb.toString();
-        globalState.getState().getLocalState().log(resultingQueryString);
-        Query finalQuery = new QueryAdapter(resultingQueryString, query.getExpectedErrors());
-        try (ResultSet result = createStatement.executeQuery(finalQuery.getQueryString())) {
-            boolean isContainedIn = !result.isClosed();
-            createStatement.close();
-            return isContainedIn;
-        } catch (SQLException e) {
-            if (finalQuery.getExpectedErrors().errorIsExpected(e.getMessage())) {
-                return true;
-            } else {
-                throw e;
-            }
-        }
+        return new QueryAdapter(resultingQueryString, query.getExpectedErrors());
     }
 
     private String getGeneralizedPivotRowValues() {

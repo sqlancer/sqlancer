@@ -56,6 +56,18 @@ public class QueryAdapter extends Query {
     }
 
     @Override
+    public String getUnterminatedQueryString() {
+        String result;
+        if (query.endsWith(";")) {
+            result = query.substring(0, query.length() - 1);
+        } else {
+            result = query;
+        }
+        assert !result.endsWith(";");
+        return result;
+    }
+
+    @Override
     public boolean execute(GlobalState<?, ?> globalState, String... fills) throws SQLException {
         Statement s;
         if (fills.length > 0) {

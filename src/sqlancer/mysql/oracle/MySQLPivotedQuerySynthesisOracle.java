@@ -1,8 +1,6 @@
 package sqlancer.mysql.oracle;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -75,26 +73,6 @@ public class MySQLPivotedQuerySynthesisOracle
                 .generateOrderBys();
         selectStatement.setOrderByExpressions(orderBy);
 
-        StringBuilder sb2 = new StringBuilder();
-        sb2.append("SELECT * FROM (SELECT 1 FROM ");
-        sb2.append(randomFromTables.tableNamesAsString());
-        sb2.append(" WHERE ");
-        int i = 0;
-        for (MySQLColumn c : columns) {
-            if (i++ != 0) {
-                sb2.append(" AND ");
-            }
-            sb2.append("ref");
-            sb2.append(i - 1);
-            if (pivotRow.getValues().get(c).isNull()) {
-                sb2.append(" IS NULL");
-            } else {
-                sb2.append(" = ");
-                sb2.append(pivotRow.getValues().get(c).getTextRepresentation());
-            }
-        }
-        sb2.append(") as result;");
-
         MySQLToStringVisitor visitor = new MySQLToStringVisitor();
         visitor.visit(selectStatement);
         return new QueryAdapter(visitor.get(), errors);
@@ -143,17 +121,10 @@ public class MySQLPivotedQuerySynthesisOracle
     }
 
     @Override
-    protected boolean isContainedIn(Query query) throws SQLException {
-        Statement createStatement;
-        createStatement = globalState.getConnection().createStatement();
-
+    protected Query getContainedInQuery(Query query) throws SQLException {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
-        if (query.getQueryString().endsWith(";")) {
-            sb.append(query.getQueryString().substring(0, query.getQueryString().length() - 1));
-        } else {
-            sb.append(query.getQueryString());
-        }
+        sb.append(query.getUnterminatedQueryString());
         sb.append(") as result WHERE ");
         int i = 0;
         for (MySQLColumn c : columns) {
@@ -172,21 +143,7 @@ public class MySQLPivotedQuerySynthesisOracle
         }
 
         String resultingQueryString = sb.toString();
-        if (globalState.getOptions().logEachSelect()) {
-            globalState.getLogger().writeCurrent(resultingQueryString);
-        }
-        globalState.getState().getLocalState().log(resultingQueryString);
-        try (ResultSet result = createStatement.executeQuery(resultingQueryString)) {
-            boolean isContainedIn = result.next();
-            createStatement.close();
-            return isContainedIn;
-        } catch (SQLException e) {
-            if (query.getExpectedErrors().errorIsExpected(e.getMessage())) {
-                return true;
-            } else {
-                throw e;
-            }
-        }
+        return new QueryAdapter(resultingQueryString, query.getExpectedErrors());
     }
 
     @Override
