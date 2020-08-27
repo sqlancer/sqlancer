@@ -5,12 +5,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
-import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
@@ -123,7 +121,7 @@ public class MySQLPivotedQuerySynthesisOracle
     }
 
     @Override
-    protected boolean isContainedIn(Query query) throws SQLException {
+    protected Query getContainedInQuery(Query query) throws SQLException {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
         if (query.getQueryString().endsWith(";")) {
@@ -149,17 +147,7 @@ public class MySQLPivotedQuerySynthesisOracle
         }
 
         String resultingQueryString = sb.toString();
-        if (globalState.getOptions().logEachSelect()) {
-            globalState.getLogger().writeCurrent(resultingQueryString);
-        }
-        globalState.getState().getLocalState().log(resultingQueryString);
-        try (SQLancerResultSet result = new QueryAdapter(resultingQueryString, query.getExpectedErrors())
-                .executeAndGet(globalState)) {
-            if (result == null) {
-                throw new IgnoreMeException();
-            }
-            return result.next();
-        }
+        return new QueryAdapter(resultingQueryString, query.getExpectedErrors());
     }
 
     @Override

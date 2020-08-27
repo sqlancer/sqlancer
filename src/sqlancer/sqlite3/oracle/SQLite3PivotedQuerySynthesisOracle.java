@@ -13,7 +13,6 @@ import sqlancer.StateToReproduce.OracleRunReproductionState;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
-import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3ToStringVisitor;
@@ -184,7 +183,7 @@ public class SQLite3PivotedQuerySynthesisOracle
     }
 
     @Override
-    protected boolean isContainedIn(Query query) throws SQLException {
+    protected Query getContainedInQuery(Query query) throws SQLException {
 
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ");
@@ -201,14 +200,7 @@ public class SQLite3PivotedQuerySynthesisOracle
         }
         sb.append(")");
         String resultingQueryString = sb.toString();
-        globalState.getState().getLocalState().log(resultingQueryString);
-        Query finalQuery = new QueryAdapter(resultingQueryString, query.getExpectedErrors());
-        try (SQLancerResultSet result = finalQuery.executeAndGet(globalState)) {
-            if (result == null) {
-                throw new IgnoreMeException();
-            }
-            return !result.isClosed();
-        }
+        return new QueryAdapter(resultingQueryString, query.getExpectedErrors());
     }
 
     private String getGeneralizedPivotRowValues() {

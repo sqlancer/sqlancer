@@ -5,14 +5,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.IgnoreMeException;
-import sqlancer.Main.StateLogger;
-import sqlancer.MainOptions;
 import sqlancer.Randomly;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
-import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
@@ -34,13 +30,9 @@ public class PostgresPivotedQuerySynthesisOracle
         extends PivotedQuerySynthesisBase<PostgresGlobalState, PostgresRowValue, PostgresExpression> {
 
     private List<PostgresColumn> fetchColumns;
-    private final MainOptions options;
-    private final StateLogger logger;
 
     public PostgresPivotedQuerySynthesisOracle(PostgresGlobalState globalState) throws SQLException {
         super(globalState);
-        options = globalState.getOptions();
-        logger = globalState.getLogger();
         PostgresCommon.addCommonExpressionErrors(errors);
         PostgresCommon.addCommonFetchErrors(errors);
     }
@@ -136,7 +128,7 @@ public class PostgresPivotedQuerySynthesisOracle
     }
 
     @Override
-    protected boolean isContainedIn(Query query) throws SQLException {
+    protected Query getContainedInQuery(Query query) throws SQLException {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
         if (query.getQueryString().endsWith(";")) {
@@ -161,18 +153,7 @@ public class PostgresPivotedQuerySynthesisOracle
             }
         }
         String resultingQueryString = sb.toString();
-        // log both SELECT queries at the bottom of the error log file
-        if (options.logEachSelect()) {
-            logger.writeCurrent(resultingQueryString);
-        }
-        globalState.getState().getLocalState().log(resultingQueryString);
-        QueryAdapter finalQuery = new QueryAdapter(resultingQueryString, errors);
-        try (SQLancerResultSet result = finalQuery.executeAndGet(globalState)) {
-            if (result == null) {
-                throw new IgnoreMeException();
-            }
-            return result.next();
-        }
+        return new QueryAdapter(resultingQueryString, errors);
     }
 
     @Override
