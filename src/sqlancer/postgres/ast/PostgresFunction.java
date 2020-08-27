@@ -1,6 +1,5 @@
 package sqlancer.postgres.ast;
 
-import sqlancer.Randomly;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
 public class PostgresFunction implements PostgresExpression {
@@ -225,24 +224,10 @@ public class PostgresFunction implements PostgresExpression {
             return types;
         }
 
-        public PostgresDataType[] getType(int nr, PostgresDataType type) {
-            PostgresDataType[] types = new PostgresDataType[nr];
-            for (int i = 0; i < types.length; i++) {
-                types[i] = type;
-            }
-            return types;
-        }
-
         PostgresFunctionWithResult(int nrArgs, String functionName) {
             this.nrArgs = nrArgs;
             this.functionName = functionName;
             this.variadic = false;
-        }
-
-        PostgresFunctionWithResult(int nrArgs, String functionName, boolean variadic) {
-            this.nrArgs = nrArgs;
-            this.functionName = functionName;
-            this.variadic = variadic;
         }
 
         /**
@@ -256,10 +241,6 @@ public class PostgresFunction implements PostgresExpression {
         }
 
         public abstract PostgresConstant apply(PostgresConstant[] evaluatedArgs, PostgresExpression... args);
-
-        public static PostgresFunctionWithResult getRandomFunction() {
-            return Randomly.fromOptions(values());
-        }
 
         @Override
         public String toString() {

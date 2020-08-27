@@ -18,13 +18,7 @@ public class StateToReproduce {
 
     protected long seedValue;
 
-    public String values;
-
     String exception;
-
-    public String queryTargetedTablesString;
-
-    public String queryTargetedColumnsString;
 
     public OracleRunReproductionState localState;
 
@@ -112,10 +106,6 @@ public class StateToReproduce {
 
         public void executedWithoutError() {
             this.success = true;
-        }
-
-        public void log(Query q) {
-            statements.add(q);
         }
 
         public void log(String s) {

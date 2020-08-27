@@ -65,7 +65,6 @@ public class SQLite3PivotedQuerySynthesisOracle
         List<SQLite3Table> tables = randomFromTables.getTables();
 
         pivotRow = randomFromTables.getRandomRowValue(globalState.getConnection());
-        globalState.getState().queryTargetedTablesString = randomFromTables.tableNamesAsString();
         SQLite3Select selectStatement = new SQLite3Select();
         selectStatement.setSelectType(Randomly.fromOptions(SQLite3Select.SelectType.values()));
         List<SQLite3Column> columns = randomFromTables.getColumns();

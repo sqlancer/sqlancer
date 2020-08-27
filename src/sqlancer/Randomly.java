@@ -437,10 +437,6 @@ public final class Randomly {
         return getThreadRandom().get().nextLong();
     }
 
-    public static long getPositiveNonCachedInteger() {
-        return getNextLong(1, Long.MAX_VALUE);
-    }
-
     public static long getPositiveOrZeroNonCachedInteger() {
         return getNextLong(0, Long.MAX_VALUE);
     }

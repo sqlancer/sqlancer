@@ -2,7 +2,6 @@ package sqlancer.mysql;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -14,7 +13,6 @@ import sqlancer.StatementExecutor;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
 import sqlancer.common.query.QueryProvider;
-import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.gen.MySQLAlterTable;
 import sqlancer.mysql.gen.MySQLDeleteGenerator;
 import sqlancer.mysql.gen.MySQLDropIndex;
@@ -147,15 +145,6 @@ public class MySQLProvider extends ProviderAdapter<MySQLGlobalState, MySQLOption
                     }
                 });
         se.executeStatements();
-    }
-
-    public static int getNrRows(Connection con, MySQLTable table) throws SQLException {
-        try (Statement s = con.createStatement()) {
-            try (ResultSet query = s.executeQuery("SELECT COUNT(*) FROM " + table.getName())) {
-                query.next();
-                return query.getInt(1);
-            }
-        }
     }
 
     @Override

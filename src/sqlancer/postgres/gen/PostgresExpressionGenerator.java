@@ -89,15 +89,6 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         return this;
     }
 
-    public PostgresExpressionGenerator expectedResult() {
-        this.expectedResult = true;
-        return this;
-    }
-
-    public static PostgresExpression generateExpression(PostgresGlobalState globalState) {
-        return new PostgresExpressionGenerator(globalState).generateExpression(0);
-    }
-
     public PostgresExpression generateExpression(int depth) {
         return generateExpression(depth, PostgresDataType.getRandomType());
     }
@@ -471,10 +462,6 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         }
     }
 
-    public static PostgresExpression generateConstant(Randomly r) {
-        return generateConstant(r, Randomly.fromOptions(PostgresDataType.values()));
-    }
-
     public PostgresExpression generateExpressionWithExpectedResult(PostgresDataType type) {
         this.expectedResult = true;
         PostgresExpressionGenerator gen = new PostgresExpressionGenerator(globalState).setColumns(columns)
@@ -544,12 +531,6 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     public static PostgresExpression generateExpression(PostgresGlobalState globalState, List<PostgresColumn> columns,
             PostgresDataType type) {
         return new PostgresExpressionGenerator(globalState).setColumns(columns).generateExpression(0, type);
-    }
-
-    public static PostgresExpression generateExpression(PostgresGlobalState globalState, List<PostgresColumn> columns,
-            PostgresDataType type, PostgresRowValue rw) {
-        return new PostgresExpressionGenerator(globalState).setColumns(columns).setRowValue(rw).generateExpression(0,
-                type);
     }
 
     public static PostgresExpression generateExpression(PostgresGlobalState globalState, List<PostgresColumn> columns) {
