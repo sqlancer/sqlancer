@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,9 +20,9 @@ public class PostgresGlobalState extends GlobalState<PostgresOptions, PostgresSc
     public static final char STABLE = 's';
     public static final char VOLATILE = 'v';
 
-    private List<String> operators;
-    private List<String> collates;
-    private List<String> opClasses;
+    private List<String> operators = Collections.emptyList();
+    private List<String> collates = Collections.emptyList();
+    private List<String> opClasses = Collections.emptyList();
     // store and allow filtering by function volatility classifications
     private final Map<String, Character> functionsAndTypes = new HashMap<>();
     private List<Character> allowedFunctionTypes = Arrays.asList(IMMUTABLE, STABLE, VOLATILE);
