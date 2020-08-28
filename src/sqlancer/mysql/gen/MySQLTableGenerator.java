@@ -80,7 +80,6 @@ public class MySQLTableGenerator {
             } else if ((tableHasNullableColumn || keysSpecified > 1) && engine == MySQLEngine.ARCHIVE) {
                 errors.add("Too many keys specified; max 1 keys allowed");
                 errors.add("Table handler doesn't support NULL in given index");
-                errors.add("Got error -1 - 'Unknown error -1' from storage engine");
                 addCommonErrors(errors);
                 return new QueryAdapter(sb.toString(), errors, true);
             }
@@ -99,6 +98,7 @@ public class MySQLTableGenerator {
         list.add("A BLOB field is not allowed in partition function");
         list.add("Too many keys specified; max 1 keys allowed");
         list.add("The total length of the partitioning fields is too large");
+        list.add("Got error -1 - 'Unknown error -1' from storage engine");
     }
 
     private enum PartitionOptions {
