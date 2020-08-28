@@ -47,6 +47,7 @@ public final class DuckDBErrors {
         errors.add("does not have a column named"); // TODO: this only happens for views whose underlying table has a
                                                     // removed column
         errors.add("Contents of view were altered: types don't match!");
+        errors.add("Not implemented: ROUND(DECIMAL, INTEGER) with non-constant precision is not supported");
     }
 
     private static void addRegexErrors(ExpectedErrors errors) {
