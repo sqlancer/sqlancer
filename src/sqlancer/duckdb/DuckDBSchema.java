@@ -162,6 +162,9 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
     private static DuckDBCompositeDataType getColumnType(String typeString) {
         DuckDBDataType primitiveType;
         int size = -1;
+        if (typeString.startsWith("DECIMAL")) { // Ugly hack
+            return new DuckDBCompositeDataType(DuckDBDataType.FLOAT, 8);
+        }
         switch (typeString) {
         case "INTEGER":
             primitiveType = DuckDBDataType.INT;
