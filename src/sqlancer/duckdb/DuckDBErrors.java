@@ -47,6 +47,7 @@ public final class DuckDBErrors {
         errors.add("does not have a column named"); // TODO: this only happens for views whose underlying table has a
                                                     // removed column
         errors.add("Contents of view were altered: types don't match!");
+        errors.add("Not implemented: ROUND(DECIMAL, INTEGER) with non-constant precision is not supported");
     }
 
     private static void addRegexErrors(ExpectedErrors errors) {
@@ -87,6 +88,7 @@ public final class DuckDBErrors {
         errors.add("Cannot explicitly insert values into rowid column"); // TODO: don't insert into rowid
         errors.add(" Column with name rowid does not exist!"); // currently, there doesn't seem to way to determine if
                                                                // the table has a primary key
+        errors.add("Out of Range: Could not cast value");
     }
 
     public static void addGroupByErrors(ExpectedErrors errors) {

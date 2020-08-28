@@ -32,7 +32,7 @@ public final class ComparatorHelper {
             return true;
         }
         // If the difference is less than epsilon, treat as equal.
-        return Math.abs(a - b) < 0.0001 * Math.max(Math.abs(a), Math.abs(b));
+        return Math.abs(a - b) < 0.001 * Math.max(Math.abs(a), Math.abs(b)) + 0.001;
     }
 
     public static List<String> getResultSetFirstColumnAsString(String queryString, ExpectedErrors errors,
