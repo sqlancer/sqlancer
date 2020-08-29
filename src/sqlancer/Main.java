@@ -186,15 +186,6 @@ public final class Main {
             write(queryString, "");
         }
 
-        public void logRowNotFound(StateToReproduce state) {
-            printState(getLogFileWriter(), state);
-            try {
-                getLogFileWriter().flush();
-            } catch (IOException e) {
-                throw new AssertionError(e);
-            }
-        }
-
         public void logException(Throwable reduce, StateToReproduce state) {
             String stackTrace = getStackTrace(reduce);
             FileWriter logFileWriter2 = getLogFileWriter();
@@ -273,12 +264,6 @@ public final class Main {
             Main.nrDatabases.addAndGet(1);
         }
 
-    }
-
-    public static void printArray(Object... arr) {
-        for (Object o : arr) {
-            System.out.println(o);
-        }
     }
 
     public static void main(String[] args) {

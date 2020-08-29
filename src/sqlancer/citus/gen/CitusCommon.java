@@ -2,9 +2,6 @@ package sqlancer.citus.gen;
 
 import sqlancer.citus.CitusBugs;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.postgres.PostgresGlobalState;
-import sqlancer.postgres.PostgresSchema.PostgresTable;
-import sqlancer.postgres.gen.PostgresCommon;
 
 public final class CitusCommon {
 
@@ -71,12 +68,6 @@ public final class CitusCommon {
         if (CitusBugs.bug4079) {
             errors.add("aggregate function calls cannot be nested");
         }
-    }
-
-    public static void addTableConstraint(StringBuilder sb, PostgresTable table, PostgresGlobalState globalState,
-            ExpectedErrors errors) {
-        PostgresCommon.addTableConstraint(sb, table, globalState, errors);
-        CitusCommon.addCitusErrors(errors);
     }
 
 }

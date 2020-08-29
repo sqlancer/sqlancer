@@ -120,13 +120,6 @@ public interface PostgresVisitor {
         return v.get();
     }
 
-    static String getExpressionAsString(PostgresGlobalState globalState, PostgresDataType type) {
-        PostgresExpression expression = PostgresExpressionGenerator.generateExpression(globalState, type);
-        PostgresToStringVisitor visitor = new PostgresToStringVisitor();
-        visitor.visit(expression);
-        return visitor.get();
-    }
-
     static String getExpressionAsString(PostgresGlobalState globalState, PostgresDataType type,
             List<PostgresColumn> columns) {
         PostgresExpression expression = PostgresExpressionGenerator.generateExpression(globalState, columns, type);

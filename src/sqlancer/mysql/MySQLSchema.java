@@ -177,10 +177,6 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
                 this.s = s;
             }
 
-            String getTextRepresentation() {
-                return s;
-            }
-
             public static MySQLEngine get(String val) {
                 return Stream.of(values()).filter(engine -> engine.s.equalsIgnoreCase(val)).findFirst().get();
             }

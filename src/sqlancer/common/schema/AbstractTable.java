@@ -2,7 +2,6 @@ package sqlancer.common.schema;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import sqlancer.GlobalState;
@@ -58,10 +57,6 @@ public class AbstractTable<C extends AbstractTableColumn<?, ?>, I extends TableI
 
     public String getColumnsAsString() {
         return columns.stream().map(c -> c.getName()).collect(Collectors.joining(", "));
-    }
-
-    public String getColumnsAsString(Function<C, String> function) {
-        return columns.stream().map(function).collect(Collectors.joining(", "));
     }
 
     public C getRandomColumn() {

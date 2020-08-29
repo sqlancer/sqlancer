@@ -91,10 +91,6 @@ public class MariaDBConstant extends MariaDBExpression {
         return new MariaDBTextConstant(text);
     }
 
-    public static MariaDBDoubleConstant createDoubleConstant(double val) {
-        return new MariaDBDoubleConstant(val);
-    }
-
     public static MariaDBIntConstant createIntConstant(long val) {
         return new MariaDBIntConstant(val);
     }

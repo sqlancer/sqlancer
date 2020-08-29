@@ -30,11 +30,6 @@ public class AbstractTables<T extends AbstractTable<C, ?>, C extends AbstractTab
         return columns;
     }
 
-    public String columnNamesAsString() {
-        return getColumns().stream().map(t -> t.getTable().getName() + "." + t.getName())
-                .collect(Collectors.joining(", "));
-    }
-
     public String columnNamesAsString(Function<C, String> function) {
         return getColumns().stream().map(function).collect(Collectors.joining(", "));
     }

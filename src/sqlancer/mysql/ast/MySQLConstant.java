@@ -441,16 +441,6 @@ public abstract class MySQLConstant implements MySQLExpression {
 
     public abstract MySQLConstant isEquals(MySQLConstant rightVal);
 
-    public MySQLConstant isEqualsNullSafe(MySQLConstant rightVal) {
-        if (isNull()) {
-            return MySQLConstant.createBoolean(rightVal.isNull());
-        } else if (rightVal.isNull()) {
-            return MySQLConstant.createFalse();
-        } else {
-            return isEquals(rightVal);
-        }
-    }
-
     public abstract MySQLConstant castAs(CastType type);
 
     public abstract String castAsString();
