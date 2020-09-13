@@ -55,7 +55,6 @@ public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, Postg
     protected String password;
     protected String entryPath;
     protected String host;
-    protected int port;
     protected String testURL;
     protected String databaseName;
     protected String createDatabaseCommand;
@@ -233,7 +232,6 @@ public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, Postg
                 entryPath = pathURI;
             }
             host = uri.getHost();
-            port = uri.getPort();
         } catch (URISyntaxException e) {
             throw new AssertionError(e);
         }
