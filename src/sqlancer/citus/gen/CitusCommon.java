@@ -44,6 +44,8 @@ public final class CitusCommon {
                 "complex joins are only supported when all distributed tables are joined on their distribution columns with equal operator");
         errors.add("cannot perform distributed planning on this query");
         errors.add("cannot pushdown the subquery");
+        // see https://github.com/sqlancer/sqlancer/issues/215
+        errors.add("direct joins between distributed and local tables are not supported");
 
         // current errors in Citus (to be removed once fixed)
         if (CitusBugs.bug3957) {
