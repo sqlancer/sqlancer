@@ -101,8 +101,8 @@ public class PostgresGlobalState extends GlobalState<PostgresOptions, PostgresSc
     }
 
     @Override
-    public void updateSchema() throws SQLException {
-        setSchema(PostgresSchema.fromConnection(getConnection(), getDatabaseName()));
+    public PostgresSchema readSchema() throws SQLException {
+        return PostgresSchema.fromConnection(getConnection(), getDatabaseName());
     }
 
     public void addFunctionAndType(String functionName, Character functionType) {

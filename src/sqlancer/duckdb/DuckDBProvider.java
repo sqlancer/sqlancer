@@ -88,8 +88,8 @@ public class DuckDBProvider extends ProviderAdapter<DuckDBGlobalState, DuckDBOpt
     public static class DuckDBGlobalState extends GlobalState<DuckDBOptions, DuckDBSchema> {
 
         @Override
-        protected void updateSchema() throws SQLException {
-            setSchema(DuckDBSchema.fromConnection(getConnection(), getDatabaseName()));
+        protected DuckDBSchema readSchema() throws SQLException {
+            return DuckDBSchema.fromConnection(getConnection(), getDatabaseName());
         }
 
     }

@@ -115,8 +115,8 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
     public static class SQLite3GlobalState extends GlobalState<SQLite3Options, SQLite3Schema> {
 
         @Override
-        protected void updateSchema() throws SQLException {
-            setSchema(SQLite3Schema.fromConnection(this));
+        protected SQLite3Schema readSchema() throws SQLException {
+            return SQLite3Schema.fromConnection(this);
         }
 
     }

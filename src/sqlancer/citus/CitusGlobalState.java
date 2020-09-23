@@ -17,8 +17,8 @@ public class CitusGlobalState extends PostgresGlobalState {
     }
 
     @Override
-    public void updateSchema() throws SQLException {
-        setSchema(CitusSchema.fromConnection(getConnection(), getDatabaseName()));
+    public CitusSchema readSchema() throws SQLException {
+        return CitusSchema.fromConnection(getConnection(), getDatabaseName());
     }
 
 }

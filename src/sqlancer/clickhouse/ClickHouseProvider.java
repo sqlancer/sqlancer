@@ -74,8 +74,8 @@ public class ClickHouseProvider extends ProviderAdapter<ClickHouseGlobalState, C
         }
 
         @Override
-        protected void updateSchema() throws SQLException {
-            setSchema(ClickHouseSchema.fromConnection(getConnection(), getDatabaseName()));
+        protected ClickHouseSchema readSchema() throws SQLException {
+            return ClickHouseSchema.fromConnection(getConnection(), getDatabaseName());
         }
     }
 
