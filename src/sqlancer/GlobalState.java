@@ -164,6 +164,10 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
         this.schema = schema;
     }
 
-    protected abstract void updateSchema() throws SQLException;
+    public void updateSchema() throws SQLException {
+        setSchema(readSchema());
+    }
+
+    protected abstract S readSchema() throws SQLException;
 
 }

@@ -155,8 +155,8 @@ public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDB
     public static class MariaDBGlobalState extends GlobalState<MariaDBOptions, MariaDBSchema> {
 
         @Override
-        protected void updateSchema() throws SQLException {
-            setSchema(MariaDBSchema.fromConnection(getConnection(), getDatabaseName()));
+        protected MariaDBSchema readSchema() throws SQLException {
+            return MariaDBSchema.fromConnection(getConnection(), getDatabaseName());
         }
 
     }

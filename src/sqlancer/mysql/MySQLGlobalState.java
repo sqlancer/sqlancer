@@ -9,8 +9,8 @@ import sqlancer.mysql.MySQLOptions.MySQLOracleFactory;
 public class MySQLGlobalState extends GlobalState<MySQLOptions, MySQLSchema> {
 
     @Override
-    protected void updateSchema() throws SQLException {
-        setSchema(MySQLSchema.fromConnection(getConnection(), getDatabaseName()));
+    protected MySQLSchema readSchema() throws SQLException {
+        return MySQLSchema.fromConnection(getConnection(), getDatabaseName());
     }
 
     public boolean usesPQS() {
