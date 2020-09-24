@@ -142,3 +142,5 @@ matrix:
         - docker pull yandex/clickhouse-server:latest
         - docker run --ulimit nofile=262144:262144 --name clickhouse-server -p8123:8123 -d yandex/clickhouse-server:latest
         - sleep 5
+      script:
+        - CLICKHOUSE_AVAILABLE=true mvn -Dtest=ClickHouseBinaryComparisonOperationTest test
