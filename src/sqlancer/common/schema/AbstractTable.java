@@ -115,4 +115,8 @@ public class AbstractTable<C extends AbstractTableColumn<?, ?>, I extends TableI
             return rowCount;
         }
     }
+
+    public void recomputeCount() {
+        rowCount = NO_ROW_COUNT_AVAILABLE;
+    }
 }
