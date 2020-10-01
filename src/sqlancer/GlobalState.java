@@ -8,6 +8,7 @@ import sqlancer.Main.StateLogger;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.common.schema.AbstractSchema;
+import sqlancer.common.schema.AbstractTable;
 
 /**
  * Represents a global state that is valid for a testing session on a given database.
@@ -166,6 +167,9 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
 
     public void updateSchema() throws SQLException {
         setSchema(readSchema());
+        for (AbstractTable<?, ?> table : schema.getDatabaseTables()) {
+            table.recomputeCount();
+        }
     }
 
     protected abstract S readSchema() throws SQLException;
