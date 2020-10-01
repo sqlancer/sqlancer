@@ -94,7 +94,7 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
         this.databaseName = databaseName;
     }
 
-    public ExecutionTimer executePrologue(Query q) throws SQLException {
+    private ExecutionTimer executePrologue(Query q) throws SQLException {
         boolean logExecutionTime = getOptions().logExecutionTime();
         ExecutionTimer timer = null;
         if (logExecutionTime) {
@@ -113,7 +113,7 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
         return timer;
     }
 
-    public void executeEpilogue(Query q, boolean success, ExecutionTimer timer) throws SQLException {
+    private void executeEpilogue(Query q, boolean success, ExecutionTimer timer) throws SQLException {
         boolean logExecutionTime = getOptions().logExecutionTime();
         if (success && getOptions().printSucceedingStatements()) {
             System.out.println(q.getQueryString());
