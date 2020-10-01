@@ -90,5 +90,6 @@
 		<exclude name="CommentRequired" />
 		<exclude name="CommentSize" />
 		<exclude name="UncommentedEmptyMethodBody" />
+		<exclude name="UncommentedEmptyConstructor" />
 	</rule>
 </ruleset>

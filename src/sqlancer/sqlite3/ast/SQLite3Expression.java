@@ -138,6 +138,12 @@ public abstract class SQLite3Expression {
         private SQLite3Expression onClause;
         private JoinType type;
 
+        public Join(Join other) {
+            this.table = other.table;
+            this.onClause = other.onClause;
+            this.type = other.type;
+        }
+
         public Join(SQLite3Table table, SQLite3Expression onClause, JoinType type) {
             this.table = table;
             this.onClause = onClause;
