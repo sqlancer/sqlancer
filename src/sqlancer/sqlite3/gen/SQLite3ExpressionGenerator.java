@@ -58,6 +58,19 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
     private boolean allowSubqueries;
     private boolean allowAggreates;
 
+    public SQLite3ExpressionGenerator(SQLite3ExpressionGenerator other) {
+        this.rw = other.rw;
+        this.globalState = other.globalState;
+        this.tryToGenerateKnownResult = other.tryToGenerateKnownResult;
+        this.columns = new ArrayList<>(other.columns);
+        this.r = other.r;
+        this.deterministicOnly = other.deterministicOnly;
+        this.allowMatchClause = other.allowMatchClause;
+        this.allowAggregateFunctions = other.allowAggregateFunctions;
+        this.allowSubqueries = other.allowSubqueries;
+        this.allowAggreates = other.allowAggreates;
+    }
+
     private enum LiteralValueType {
         INTEGER, NUMERIC, STRING, BLOB_LITERAL, NULL
     }
@@ -68,38 +81,45 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
     }
 
     public SQLite3ExpressionGenerator deterministicOnly() {
-        this.deterministicOnly = true;
-        return this;
+        SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(this);
+        gen.deterministicOnly = true;
+        return gen;
     }
 
     public SQLite3ExpressionGenerator allowAggregateFunctions() {
-        this.allowAggregateFunctions = true;
-        return this;
+        SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(this);
+        gen.allowAggregateFunctions = true;
+        return gen;
     }
 
     public SQLite3ExpressionGenerator setColumns(List<SQLite3Column> columns) {
-        this.columns = columns;
-        return this;
+        SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(this);
+        gen.columns = new ArrayList<>(columns);
+        return gen;
     }
 
     public SQLite3ExpressionGenerator setRowValue(SQLite3RowValue rw) {
-        this.rw = rw;
-        return this;
+        SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(this);
+        gen.rw = rw;
+        return gen;
     }
 
     public SQLite3ExpressionGenerator allowMatchClause() {
-        this.allowMatchClause = true;
-        return this;
+        SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(this);
+        gen.allowMatchClause = true;
+        return gen;
     }
 
     public SQLite3ExpressionGenerator allowSubqueries() {
-        this.allowSubqueries = true;
-        return this;
+        SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(this);
+        gen.allowSubqueries = true;
+        return gen;
     }
 
     public SQLite3ExpressionGenerator tryToGenerateKnownResult() {
-        this.tryToGenerateKnownResult = true;
-        return this;
+        SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(this);
+        gen.tryToGenerateKnownResult = true;
+        return gen;
     }
 
     public static SQLite3Expression getRandomLiteralValue(SQLite3GlobalState globalState) {
