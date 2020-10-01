@@ -1,5 +1,6 @@
 package sqlancer.sqlite3.ast;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -17,6 +18,25 @@ public class SQLite3Select extends SQLite3Expression {
     private List<SQLite3Expression> fetchColumns = Collections.emptyList();
     private List<Join> joinStatements = Collections.emptyList();
     private SQLite3Expression havingClause;
+
+    public SQLite3Select() {
+    }
+
+    public SQLite3Select(SQLite3Select other) {
+        fromOptions = other.fromOptions;
+        fromList = new ArrayList<>(other.fromList);
+        whereClause = other.whereClause;
+        groupByClause = other.groupByClause;
+        limitClause = other.limitClause;
+        orderByClause = new ArrayList<>(other.orderByClause);
+        offsetClause = other.offsetClause;
+        fetchColumns = new ArrayList<>(fetchColumns);
+        joinStatements = new ArrayList<>();
+        for (Join j : other.joinStatements) {
+            joinStatements.add(new Join(j));
+        }
+        havingClause = other.havingClause;
+    }
 
     public enum SelectType {
         DISTINCT, ALL;
