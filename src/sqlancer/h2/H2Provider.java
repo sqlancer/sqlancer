@@ -66,8 +66,8 @@ public class H2Provider extends ProviderAdapter<H2GlobalState, H2Options> {
     public static class H2GlobalState extends GlobalState<H2Options, H2Schema> {
 
         @Override
-        protected void updateSchema() throws SQLException {
-            setSchema(H2Schema.fromConnection(getConnection(), getDatabaseName()));
+        protected H2Schema readSchema() throws SQLException {
+            return H2Schema.fromConnection(getConnection(), getDatabaseName());
         }
 
     }
