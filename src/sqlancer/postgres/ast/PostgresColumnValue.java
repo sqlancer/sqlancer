@@ -23,10 +23,6 @@ public class PostgresColumnValue implements PostgresExpression {
         return expectedValue;
     }
 
-    public static PostgresColumnValue create(PostgresColumn c) {
-        return new PostgresColumnValue(c, null);
-    }
-
     public static PostgresColumnValue create(PostgresColumn c, PostgresConstant expected) {
         return new PostgresColumnValue(c, expected);
     }

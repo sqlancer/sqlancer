@@ -1,6 +1,5 @@
 package sqlancer.cockroachdb.ast;
 
-import sqlancer.Randomly;
 import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnaryPostfixOperator;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
 import sqlancer.common.ast.UnaryOperatorNode;
@@ -19,10 +18,6 @@ public class CockroachDBUnaryPostfixOperation extends
 
         CockroachDBUnaryPostfixOperator(String s) {
             this.s = s;
-        }
-
-        public static CockroachDBUnaryPostfixOperator getRandom() {
-            return Randomly.fromOptions(values());
         }
 
         @Override

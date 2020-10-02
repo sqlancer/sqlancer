@@ -77,7 +77,12 @@ public class PostgresBinaryLogicalOperation extends BinaryOperatorNode<PostgresE
 
     @Override
     public PostgresConstant getExpectedValue() {
-        return getOp().apply(getLeft().getExpectedValue(), getRight().getExpectedValue());
+        PostgresConstant leftExpectedValue = getLeft().getExpectedValue();
+        PostgresConstant rightExpectedValue = getRight().getExpectedValue();
+        if (leftExpectedValue == null || rightExpectedValue == null) {
+            return null;
+        }
+        return getOp().apply(leftExpectedValue, rightExpectedValue);
     }
 
 }

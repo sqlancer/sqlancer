@@ -2,6 +2,7 @@ package sqlancer.postgres;
 
 import sqlancer.postgres.ast.PostgresAggregate;
 import sqlancer.postgres.ast.PostgresBetweenOperation;
+import sqlancer.postgres.ast.PostgresBinaryLogicalOperation;
 import sqlancer.postgres.ast.PostgresCastOperation;
 import sqlancer.postgres.ast.PostgresCollate;
 import sqlancer.postgres.ast.PostgresColumnValue;
@@ -9,6 +10,7 @@ import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresFunction;
 import sqlancer.postgres.ast.PostgresInOperation;
+import sqlancer.postgres.ast.PostgresLikeOperation;
 import sqlancer.postgres.ast.PostgresOrderByTerm;
 import sqlancer.postgres.ast.PostgresPOSIXRegularExpression;
 import sqlancer.postgres.ast.PostgresPostfixOperation;
@@ -159,6 +161,20 @@ public final class PostgresExpectedValueVisitor implements PostgresVisitor {
     @Override
     public void visit(PostgresSubquery subquery) {
         print(subquery);
+    }
+
+    @Override
+    public void visit(PostgresBinaryLogicalOperation op) {
+        print(op);
+        visit(op.getLeft());
+        visit(op.getRight());
+    }
+
+    @Override
+    public void visit(PostgresLikeOperation op) {
+        print(op);
+        visit(op.getLeft());
+        visit(op.getRight());
     }
 
 }

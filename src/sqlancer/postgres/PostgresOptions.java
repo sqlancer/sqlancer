@@ -22,16 +22,16 @@ import sqlancer.postgres.oracle.tlp.PostgresTLPWhereOracle;
 @Parameters
 public class PostgresOptions implements DBMSSpecificOptions<PostgresOracleFactory> {
 
-    @Parameter(names = "--bulk-insert")
+    @Parameter(names = "--bulk-insert", description = "Specifies whether INSERT statements should be issued in bulk", arity = 1)
     public boolean allowBulkInsert;
 
-    @Parameter(names = "--oracle")
+    @Parameter(names = "--oracle", description = "Specifies which test oracle should be used for PostgreSQL")
     public List<PostgresOracleFactory> oracle = Arrays.asList(PostgresOracleFactory.QUERY_PARTITIONING);
 
-    @Parameter(names = "--test-collations", arity = 1)
+    @Parameter(names = "--test-collations", description = "Specifies whether to test different collations", arity = 1)
     public boolean testCollations = true;
 
-    @Parameter(names = "--connection-url")
+    @Parameter(names = "--connection-url", description = "Specifies the URL for connecting to the PostgreSQL server", arity = 1)
     public String connectionURL = "postgresql://localhost:5432/test";
 
     public enum PostgresOracleFactory implements OracleFactory<PostgresGlobalState> {
@@ -45,6 +45,11 @@ public class PostgresOptions implements DBMSSpecificOptions<PostgresOracleFactor
             @Override
             public TestOracle create(PostgresGlobalState globalState) throws SQLException {
                 return new PostgresPivotedQuerySynthesisOracle(globalState);
+            }
+
+            @Override
+            public boolean requiresAllTablesToContainRows() {
+                return true;
             }
         },
         HAVING {

@@ -17,7 +17,6 @@ public class MySQLInsertGenerator {
 
     private final MySQLTable table;
     private final StringBuilder sb = new StringBuilder();
-    boolean canFail;
     private final ExpectedErrors errors = new ExpectedErrors();
     private final MySQLGlobalState globalState;
 
@@ -35,7 +34,6 @@ public class MySQLInsertGenerator {
     }
 
     private Query generateReplace() {
-        canFail = true;
         sb.append("REPLACE");
         if (Randomly.getBoolean()) {
             sb.append(" ");
@@ -53,8 +51,6 @@ public class MySQLInsertGenerator {
         }
         if (Randomly.getBoolean()) {
             sb.append(" IGNORE");
-        } else {
-            canFail = true;
         }
         return generateInto();
     }

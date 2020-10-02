@@ -1,12 +1,9 @@
 package sqlancer.sqlite3;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,13 +13,12 @@ import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.ProviderAdapter;
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce;
-import sqlancer.StateToReproduce.SQLite3StateToReproduce;
 import sqlancer.StatementExecutor;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
 import sqlancer.common.query.QueryProvider;
+import sqlancer.sqlite3.SQLite3Options.SQLite3OracleFactory;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.gen.SQLite3AnalyzeGenerator;
 import sqlancer.sqlite3.gen.SQLite3Common;
@@ -43,11 +39,10 @@ import sqlancer.sqlite3.gen.ddl.SQLite3TableGenerator;
 import sqlancer.sqlite3.gen.ddl.SQLite3ViewGenerator;
 import sqlancer.sqlite3.gen.dml.SQLite3DeleteGenerator;
 import sqlancer.sqlite3.gen.dml.SQLite3InsertGenerator;
+import sqlancer.sqlite3.gen.dml.SQLite3StatTableGenerator;
 import sqlancer.sqlite3.gen.dml.SQLite3UpdateGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema;
-import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
-import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table.TableKind;
 
 public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3Options> {
 
@@ -103,63 +98,7 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
         VIRTUAL_TABLE_ACTION(SQLite3VirtualFTSTableCommandGenerator::create), //
         CREATE_VIEW(SQLite3ViewGenerator::generate), //
         CREATE_TRIGGER(SQLite3CreateTriggerGenerator::create), //
-        MANIPULATE_STAT_TABLE((g) -> {
-            List<SQLite3Column> columns = new ArrayList<>();
-            SQLite3Table t = new SQLite3Table("sqlite_stat1", columns, TableKind.MAIN, false, 1, false, false, false);
-            if (Randomly.getBoolean()) {
-                return SQLite3DeleteGenerator.deleteContent(g, t);
-            } else {
-                StringBuilder sb = new StringBuilder();
-                sb.append("INSERT OR IGNORE INTO sqlite_stat1");
-                String indexName;
-                try (Statement stat = g.getConnection().createStatement()) {
-                    try (ResultSet rs = stat.executeQuery(
-                            "SELECT name FROM sqlite_master WHERE type='index' ORDER BY RANDOM() LIMIT 1;")) {
-                        if (rs.isClosed()) {
-                            throw new IgnoreMeException();
-                        }
-                        indexName = rs.getString("name");
-                    }
-                } catch (SQLException e) {
-                    throw new IgnoreMeException();
-                }
-                sb.append(" VALUES");
-                sb.append("('");
-                sb.append(g.getSchema().getRandomTable().getName());
-                sb.append("', ");
-                sb.append("'");
-                if (Randomly.getBoolean()) {
-                    sb.append(indexName);
-                } else {
-                    sb.append(g.getSchema().getRandomTable().getName());
-                }
-                sb.append("'");
-                sb.append(", '");
-                for (int i = 0; i < Randomly.smallNumber(); i++) {
-                    if (i != 0) {
-                        sb.append(" ");
-                    }
-                    if (Randomly.getBoolean()) {
-                        sb.append(g.getRandomly().getInteger());
-                    } else {
-                        sb.append(Randomly.smallNumber());
-                    }
-                }
-                if (Randomly.getBoolean()) {
-                    sb.append(" sz=");
-                    sb.append(g.getRandomly().getInteger());
-                }
-                if (Randomly.getBoolean()) {
-                    sb.append(" unordered");
-                }
-                if (Randomly.getBoolean()) {
-                    sb.append(" noskipscan");
-                }
-                sb.append("')");
-                return new QueryAdapter(sb.toString(),
-                        ExpectedErrors.from("no such table", "The database file is locked"));
-            }
-        });
+        MANIPULATE_STAT_TABLE(SQLite3StatTableGenerator::getQuery);
 
         private final QueryProvider<SQLite3GlobalState> queryProvider;
 
@@ -176,8 +115,8 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
     public static class SQLite3GlobalState extends GlobalState<SQLite3Options, SQLite3Schema> {
 
         @Override
-        protected void updateSchema() throws SQLException {
-            setSchema(SQLite3Schema.fromConnection(this));
+        protected SQLite3Schema readSchema() throws SQLException {
+            return SQLite3Schema.fromConnection(this);
         }
 
     }
@@ -329,10 +268,12 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
         if (!Randomly.getBooleanWithSmallProbability()) {
             pragmasToExecute.addAll(DEFAULT_PRAGMAS);
         }
-        if (Randomly.getBoolean() && !mustKnowResult) {
+        if (Randomly.getBoolean() && globalState.getDmbsSpecificOptions().oracles != SQLite3OracleFactory.PQS) {
+            // the PQS implementation currently assumes the default behavior of LIKE
             pragmasToExecute.add("PRAGMA case_sensitive_like=ON;");
         }
-        if (Randomly.getBoolean()) {
+        if (Randomly.getBoolean() && globalState.getDmbsSpecificOptions().oracles != SQLite3OracleFactory.PQS) {
+            // the encoding has an influence how binary strings are cast
             pragmasToExecute.add(String.format("PRAGMA encoding = '%s';",
                     Randomly.fromOptions("UTF-8", "UTF-16", "UTF-16le", "UTF-16be")));
         }
@@ -358,15 +299,6 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
     @Override
     public String getDBMSName() {
         return "sqlite3";
-    }
-
-    @Override
-    public void printDatabaseSpecificState(FileWriter writer, StateToReproduce state) {
-    }
-
-    @Override
-    public StateToReproduce getStateToReproduce(String databaseName) {
-        return new SQLite3StateToReproduce(databaseName);
     }
 
 }

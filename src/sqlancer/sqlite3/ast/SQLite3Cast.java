@@ -1,17 +1,19 @@
 package sqlancer.sqlite3.ast;
 
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
 import java.sql.Connection;
-import java.sql.Statement;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.sqlite3.schema.SQLite3DataType;
 
 public final class SQLite3Cast {
 
     private static final double MAX_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED = Math.pow(2, 51 - 1) - 1;
     private static final double MIN_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED = -Math.pow(2, 51 - 1);
+    public static final Charset DEFAULT_ENCODING = Charset.forName("UTF-8");
 
     private static final byte FILE_SEPARATOR = 0x1c;
     private static final byte GROUP_SEPARATOR = 0x1d;
@@ -46,11 +48,18 @@ public final class SQLite3Cast {
         }
     }
 
+    public static void checkDoubleIsInsideDangerousRange(double doubleVal) {
+        // high double-values might result in small rounding differences between Java and SQLite
+        if (Math.abs(doubleVal) > 1e15) {
+            throw new IgnoreMeException();
+        }
+    }
+
     // SELECT CAST('-1.370998801E9' AS INTEGER) == -1
     public static SQLite3Constant castToInt(SQLite3Constant originalCons) {
         SQLite3Constant cons = originalCons;
         if (cons.getDataType() == SQLite3DataType.BINARY) {
-            String text = new String(cons.asBinary());
+            String text = new String(cons.asBinary(), DEFAULT_ENCODING);
             cons = SQLite3Constant.createTextConstant(text);
         }
         switch (cons.getDataType()) {
@@ -59,6 +68,7 @@ public final class SQLite3Cast {
         case INT:
             return cons;
         case REAL:
+            checkDoubleIsInsideDangerousRange(cons.asDouble());
             return SQLite3Constant.createIntConstant((long) cons.asDouble());
         case TEXT:
             String asString = cons.asString();
@@ -100,7 +110,9 @@ public final class SQLite3Cast {
     public static SQLite3Constant castToReal(SQLite3Constant cons) {
         SQLite3Constant numericValue = castToNumeric(cons);
         if (numericValue.getDataType() == SQLite3DataType.INT) {
-            return SQLite3Constant.createRealConstant(numericValue.asInt());
+            double val = numericValue.asInt();
+            checkDoubleIsInsideDangerousRange(val);
+            return SQLite3Constant.createRealConstant(val);
         } else {
             return numericValue;
         }
@@ -125,7 +137,7 @@ public final class SQLite3Cast {
             boolean noNumIsRealZero, boolean convertIntToReal) throws AssertionError {
         SQLite3Constant value = originalValue;
         if (value.getDataType() == SQLite3DataType.BINARY) {
-            String text = new String(value.asBinary());
+            String text = new String(value.asBinary(), DEFAULT_ENCODING);
             value = SQLite3Constant.createTextConstant(text);
         }
         switch (value.getDataType()) {
@@ -235,54 +247,14 @@ public final class SQLite3Cast {
                 return SQLite3Constant.createTextConstant("Inf");
             } else if (cons.asDouble() == Double.NEGATIVE_INFINITY) {
                 return SQLite3Constant.createTextConstant("-Inf");
+            } else {
+                return null;
             }
-            return castRealToText(cons);
-            // if (true) {
-            // throw new IgnoreMeException();
-            // }
-            // NumberFormat fmt = NumberFormat.getInstance();
-            // fmt.setGroupingUsed(false);
-            // fmt.setMaximumIntegerDigits(10);
-            // fmt.setMinimumFractionDigits(1);
-            // fmt.setRoundingMode(RoundingMode.UNNECESSARY);
-            // int digits;
-            // if (cons.asDouble() < 0) {
-            // digits = 15;
-            // } else {
-            // digits = 15;
-            // }
-            // fmt.setMaximumFractionDigits(digits);
-            // try {
-            // String s = fmt.format(cons.asDouble());
-            // if (s.contentEquals("")) {
-            // throw new IgnoreMeException();
-            // }
-            // return SQLite3Constant.createTextConstant(s);
-            // } catch (Exception e) {
-            // throw new IgnoreMeException();
-            // }
         }
         if (cons.getDataType() == SQLite3DataType.INT) {
             return SQLite3Constant.createTextConstant(String.valueOf(cons.asInt()));
         }
-        // if (cons.getDataType() == SQLite3DataType.BINARY) {
-        // try {
-        // return SQLite3Constant.createTextConstant(new String(cons.asBinary(), "UTF-8").replaceAll("\\p{C}", ""));
-        // } catch (UnsupportedEncodingException e) {
-        // throw new AssertionError(e);
-        // }
-        // }
         return null;
-        // throw new AssertionError();
-    }
-
-    private static synchronized SQLite3Constant castRealToText(SQLite3Constant cons) throws AssertionError {
-        try (Statement s = castDatabase.createStatement()) {
-            String castResult = s.executeQuery("SELECT CAST(" + cons.asDouble() + " AS TEXT)").getString(1);
-            return SQLite3Constant.createTextConstant(castResult);
-        } catch (Exception e) {
-            throw new AssertionError(e);
-        }
     }
 
     public static SQLite3Constant asBoolean(SQLite3Constant val) {
@@ -302,7 +274,7 @@ public final class SQLite3Cast {
             if (stringVal == null) {
                 return null;
             } else {
-                return SQLite3Constant.createBinaryConstant(stringVal.asString().getBytes());
+                return SQLite3Constant.createBinaryConstant(stringVal.asString().getBytes(DEFAULT_ENCODING));
             }
         }
     }

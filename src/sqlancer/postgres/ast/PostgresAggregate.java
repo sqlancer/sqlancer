@@ -28,14 +28,6 @@ public class PostgresAggregate extends FunctionNode<PostgresAggregateFunction, P
             this.supportedReturnTypes = supportedReturnTypes.clone();
         }
 
-        public static PostgresAggregateFunction getRandom() {
-            return Randomly.fromOptions(values());
-        }
-
-        public static PostgresAggregateFunction getRandom(PostgresDataType type) {
-            return Randomly.fromOptions(values());
-        }
-
         public List<PostgresDataType> getTypes(PostgresDataType returnType) {
             return Arrays.asList(returnType);
         }

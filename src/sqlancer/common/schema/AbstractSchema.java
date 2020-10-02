@@ -2,9 +2,12 @@ package sqlancer.common.schema;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import sqlancer.GlobalState;
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 
 public class AbstractSchema<A extends AbstractTable<?, ?>> {
@@ -29,16 +32,64 @@ public class AbstractSchema<A extends AbstractTable<?, ?>> {
         return Randomly.fromList(getDatabaseTables());
     }
 
+    public A getRandomTableOrBailout() {
+        if (databaseTables.isEmpty()) {
+            throw new IgnoreMeException();
+        } else {
+            return Randomly.fromList(getDatabaseTables());
+        }
+    }
+
     public A getRandomTable(Predicate<A> predicate) {
         return Randomly.fromList(getDatabaseTables().stream().filter(predicate).collect(Collectors.toList()));
+    }
+
+    public A getRandomTableOrBailout(Function<A, Boolean> f) {
+        List<A> relevantTables = databaseTables.stream().filter(t -> f.apply(t)).collect(Collectors.toList());
+        if (relevantTables.isEmpty()) {
+            throw new IgnoreMeException();
+        }
+        return Randomly.fromList(relevantTables);
     }
 
     public List<A> getDatabaseTables() {
         return databaseTables;
     }
 
+    public List<A> getTables(Predicate<A> predicate) {
+        return databaseTables.stream().filter(predicate).collect(Collectors.toList());
+    }
+
     public List<A> getDatabaseTablesRandomSubsetNotEmpty() {
         return Randomly.nonEmptySubset(databaseTables);
+    }
+
+    public A getDatabaseTable(String name) {
+        return databaseTables.stream().filter(t -> t.getName().equals(name)).findAny().orElse(null);
+    }
+
+    public List<A> getViews() {
+        return databaseTables.stream().filter(t -> t.isView()).collect(Collectors.toList());
+    }
+
+    public List<A> getDatabaseTablesWithoutViews() {
+        return databaseTables.stream().filter(t -> !t.isView()).collect(Collectors.toList());
+    }
+
+    public A getRandomViewOrBailout() {
+        if (getViews().isEmpty()) {
+            throw new IgnoreMeException();
+        } else {
+            return Randomly.fromList(getViews());
+        }
+    }
+
+    public A getRandomTableNoViewOrBailout() {
+        List<A> databaseTablesWithoutViews = getDatabaseTablesWithoutViews();
+        if (databaseTablesWithoutViews.isEmpty()) {
+            throw new IgnoreMeException();
+        }
+        return Randomly.fromList(databaseTablesWithoutViews);
     }
 
     public String getFreeIndexName() {
@@ -86,7 +137,10 @@ public class AbstractSchema<A extends AbstractTable<?, ?>> {
                 return tableName;
             }
         } while (true);
+    }
 
+    public boolean containsTableWithZeroRows(GlobalState<?, ?> globalState) {
+        return databaseTables.stream().anyMatch(t -> t.getNrRows(globalState) == 0);
     }
 
 }

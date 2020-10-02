@@ -6,6 +6,7 @@ import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.ast.PostgresAggregate;
 import sqlancer.postgres.ast.PostgresBetweenOperation;
+import sqlancer.postgres.ast.PostgresBinaryLogicalOperation;
 import sqlancer.postgres.ast.PostgresCastOperation;
 import sqlancer.postgres.ast.PostgresCollate;
 import sqlancer.postgres.ast.PostgresColumnValue;
@@ -13,6 +14,7 @@ import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresFunction;
 import sqlancer.postgres.ast.PostgresInOperation;
+import sqlancer.postgres.ast.PostgresLikeOperation;
 import sqlancer.postgres.ast.PostgresOrderByTerm;
 import sqlancer.postgres.ast.PostgresPOSIXRegularExpression;
 import sqlancer.postgres.ast.PostgresPostfixOperation;
@@ -60,6 +62,10 @@ public interface PostgresVisitor {
 
     void visit(PostgresSubquery subquery);
 
+    void visit(PostgresBinaryLogicalOperation op);
+
+    void visit(PostgresLikeOperation op);
+
     default void visit(PostgresExpression expression) {
         if (expression instanceof PostgresConstant) {
             visit((PostgresConstant) expression);
@@ -95,6 +101,8 @@ public interface PostgresVisitor {
             visit((PostgresFromTable) expression);
         } else if (expression instanceof PostgresSubquery) {
             visit((PostgresSubquery) expression);
+        } else if (expression instanceof PostgresLikeOperation) {
+            visit((PostgresLikeOperation) expression);
         } else {
             throw new AssertionError(expression);
         }
@@ -110,13 +118,6 @@ public interface PostgresVisitor {
         PostgresExpectedValueVisitor v = new PostgresExpectedValueVisitor();
         v.visit(expr);
         return v.get();
-    }
-
-    static String getExpressionAsString(PostgresGlobalState globalState, PostgresDataType type) {
-        PostgresExpression expression = PostgresExpressionGenerator.generateExpression(globalState, type);
-        PostgresToStringVisitor visitor = new PostgresToStringVisitor();
-        visitor.visit(expression);
-        return visitor.get();
     }
 
     static String getExpressionAsString(PostgresGlobalState globalState, PostgresDataType type,

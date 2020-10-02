@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.clickhouse.ClickHouseErrors;
 import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseColumn;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTable;
@@ -22,11 +23,12 @@ public class ClickHouseInsertGenerator extends AbstractInsertGenerator<ClickHous
     public ClickHouseInsertGenerator(ClickHouseGlobalState globalState) {
         this.globalState = globalState;
         gen = new ClickHouseExpressionGenerator(globalState);
-        errors.add("Cannot insert NULL value into a column of type 'Int32'"); // TODO
-        errors.add("Cannot insert NULL value into a column of type 'String'");
+        errors.add("Cannot insert NULL value into a column of type");
         errors.add("Memory limit");
         errors.add("Cannot parse string");
         errors.add("Cannot parse Int32 from String, because value is too short");
+        errors.add("does not return a value of type UInt8");
+        ClickHouseErrors.addExpectedExpressionErrors(errors);
     }
 
     public static Query getQuery(ClickHouseGlobalState globalState) throws SQLException {

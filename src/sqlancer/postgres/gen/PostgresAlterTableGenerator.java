@@ -253,6 +253,7 @@ public class PostgresAlterTableGenerator {
                 sb.append("ADD ");
                 sb.append("CONSTRAINT " + r.getAlphabeticChar() + " ");
                 PostgresCommon.addTableConstraint(sb, randomTable, globalState, errors);
+                errors.add("already exists");
                 errors.add("multiple primary keys for table");
                 errors.add("could not create unique index");
                 errors.add("contains null values");
@@ -283,6 +284,7 @@ public class PostgresAlterTableGenerator {
                 sb.append("ADD ");
                 sb.append("CONSTRAINT " + r.getAlphabeticChar() + " ");
                 sb.append(Randomly.fromOptions("UNIQUE", "PRIMARY KEY"));
+                errors.add("already exists");
                 errors.add("not valid");
                 sb.append(" USING INDEX ");
                 sb.append(randomTable.getRandomIndex().getIndexName());

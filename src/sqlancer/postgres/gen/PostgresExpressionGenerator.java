@@ -89,15 +89,6 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         return this;
     }
 
-    public PostgresExpressionGenerator expectedResult() {
-        this.expectedResult = true;
-        return this;
-    }
-
-    public static PostgresExpression generateExpression(PostgresGlobalState globalState) {
-        return new PostgresExpressionGenerator(globalState).generateExpression(0);
-    }
-
     public PostgresExpression generateExpression(int depth) {
         return generateExpression(depth, PostgresDataType.getRandomType());
     }
@@ -271,8 +262,21 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             dataType = PostgresDataType.INT;
         }
         if (!filterColumns(dataType).isEmpty() && Randomly.getBoolean()) {
-            return createColumnOfType(dataType);
+            return potentiallyWrapInCollate(dataType, createColumnOfType(dataType));
         }
+        PostgresExpression exprInternal = generateExpressionInternal(depth, dataType);
+        return potentiallyWrapInCollate(dataType, exprInternal);
+    }
+
+    private PostgresExpression potentiallyWrapInCollate(PostgresDataType dataType, PostgresExpression exprInternal) {
+        if (dataType == PostgresDataType.TEXT && PostgresProvider.generateOnlyKnown) {
+            return new PostgresCollate(exprInternal, "C");
+        } else {
+            return exprInternal;
+        }
+    }
+
+    private PostgresExpression generateExpressionInternal(int depth, PostgresDataType dataType) throws AssertionError {
         if (allowAggregateFunctions && Randomly.getBoolean()) {
             allowAggregateFunctions = false; // aggregate function calls cannot be nested
             return getAggregate(dataType);
@@ -333,7 +337,10 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             return PostgresCompoundDataType.create(type);
         case TEXT: // TODO
         case BIT:
-            if (Randomly.getBoolean()) {
+            if (Randomly.getBoolean() || PostgresProvider.generateOnlyKnown /*
+                                                                             * The PQS implementation does not check for
+                                                                             * size specifications
+                                                                             */) {
                 return PostgresCompoundDataType.create(type);
             } else {
                 return PostgresCompoundDataType.create(type, (int) Randomly.getNotCachedInteger(1, 1000));
@@ -455,19 +462,15 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         }
     }
 
-    public static PostgresExpression generateConstant(Randomly r) {
-        return generateConstant(r, Randomly.fromOptions(PostgresDataType.values()));
-    }
-
-    public static PostgresExpression generateTrueCondition(List<PostgresColumn> columns, PostgresRowValue rw,
-            PostgresGlobalState globalState) {
-        PostgresExpression expr = new PostgresExpressionGenerator(globalState).setColumns(columns).setRowValue(rw)
-                .expectedResult().generateExpression(0, PostgresDataType.BOOLEAN);
-        if (expr.getExpectedValue().isNull()) {
-            return PostgresPostfixOperation.create(expr, PostfixOperator.IS_NULL);
-        }
-        return PostgresPostfixOperation.create(expr, expr.getExpectedValue().cast(PostgresDataType.BOOLEAN).asBoolean()
-                ? PostfixOperator.IS_TRUE : PostfixOperator.IS_FALSE);
+    public PostgresExpression generateExpressionWithExpectedResult(PostgresDataType type) {
+        this.expectedResult = true;
+        PostgresExpressionGenerator gen = new PostgresExpressionGenerator(globalState).setColumns(columns)
+                .setRowValue(rw);
+        PostgresExpression expr;
+        do {
+            expr = gen.generateExpression(type);
+        } while (expr.getExpectedValue() == null);
+        return expr;
     }
 
     public static PostgresExpression generateConstant(Randomly r, PostgresDataType type) {
@@ -485,7 +488,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
                 return PostgresConstant.createIntConstant(r.getInteger());
             }
         case BOOLEAN:
-            if (Randomly.getBooleanWithSmallProbability()) {
+            if (Randomly.getBooleanWithSmallProbability() && !PostgresProvider.generateOnlyKnown) {
                 return PostgresConstant
                         .createTextConstant(Randomly.fromOptions("TR", "TRUE", "FA", "FALSE", "0", "1", "ON", "off"));
             } else {
@@ -528,12 +531,6 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     public static PostgresExpression generateExpression(PostgresGlobalState globalState, List<PostgresColumn> columns,
             PostgresDataType type) {
         return new PostgresExpressionGenerator(globalState).setColumns(columns).generateExpression(0, type);
-    }
-
-    public static PostgresExpression generateExpression(PostgresGlobalState globalState, List<PostgresColumn> columns,
-            PostgresDataType type, PostgresRowValue rw) {
-        return new PostgresExpressionGenerator(globalState).setColumns(columns).setRowValue(rw).generateExpression(0,
-                type);
     }
 
     public static PostgresExpression generateExpression(PostgresGlobalState globalState, List<PostgresColumn> columns) {

@@ -1,27 +1,18 @@
 package sqlancer.mysql;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
 import sqlancer.IgnoreMeException;
 import sqlancer.ProviderAdapter;
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce;
-import sqlancer.StateToReproduce.MySQLStateToReproduce;
 import sqlancer.StatementExecutor;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
 import sqlancer.common.query.QueryProvider;
-import sqlancer.mysql.MySQLSchema.MySQLColumn;
-import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.gen.MySQLAlterTable;
 import sqlancer.mysql.gen.MySQLDeleteGenerator;
 import sqlancer.mysql.gen.MySQLDropIndex;
@@ -63,7 +54,7 @@ public class MySQLProvider extends ProviderAdapter<MySQLGlobalState, MySQLOption
         CREATE_TABLE((g) -> {
             // TODO refactor
             String tableName = SQLite3Common.createTableName(g.getSchema().getDatabaseTables().size());
-            return MySQLTableGenerator.generate(tableName, g.getRandomly(), g.getSchema());
+            return MySQLTableGenerator.generate(g, tableName);
         }), //
         DELETE(MySQLDeleteGenerator::delete), //
         DROP_INDEX(MySQLDropIndex::generate);
@@ -141,10 +132,9 @@ public class MySQLProvider extends ProviderAdapter<MySQLGlobalState, MySQLOption
 
     @Override
     public void generateDatabase(MySQLGlobalState globalState) throws SQLException {
-        Randomly r = globalState.getRandomly();
         while (globalState.getSchema().getDatabaseTables().size() < Randomly.smallNumber() + 1) {
             String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
-            Query createTable = MySQLTableGenerator.generate(tableName, r, globalState.getSchema());
+            Query createTable = MySQLTableGenerator.generate(globalState, tableName);
             globalState.executeStatement(createTable);
         }
 
@@ -155,15 +145,6 @@ public class MySQLProvider extends ProviderAdapter<MySQLGlobalState, MySQLOption
                     }
                 });
         se.executeStatements();
-    }
-
-    public static int getNrRows(Connection con, MySQLTable table) throws SQLException {
-        try (Statement s = con.createStatement()) {
-            try (ResultSet query = s.executeQuery("SELECT COUNT(*) FROM " + table.getName())) {
-                query.next();
-                return query.getInt(1);
-            }
-        }
     }
 
     @Override
@@ -190,43 +171,6 @@ public class MySQLProvider extends ProviderAdapter<MySQLGlobalState, MySQLOption
     @Override
     public String getDBMSName() {
         return "mysql";
-    }
-
-    @Override
-    public void printDatabaseSpecificState(FileWriter writer, StateToReproduce state) {
-        StringBuilder sb = new StringBuilder();
-        MySQLStateToReproduce specificState = (MySQLStateToReproduce) state;
-        if (specificState.getRandomRowValues() != null) {
-            List<MySQLColumn> columnList = specificState.getRandomRowValues().keySet().stream()
-                    .collect(Collectors.toList());
-            List<MySQLTable> tableList = columnList.stream().map(c -> c.getTable()).distinct().sorted()
-                    .collect(Collectors.toList());
-            for (MySQLTable t : tableList) {
-                sb.append("-- " + t.getName() + "\n");
-                List<MySQLColumn> columnsForTable = columnList.stream().filter(c -> c.getTable().equals(t))
-                        .collect(Collectors.toList());
-                for (MySQLColumn c : columnsForTable) {
-                    sb.append("--\t");
-                    sb.append(c);
-                    sb.append("=");
-                    sb.append(specificState.getRandomRowValues().get(c));
-                    sb.append("\n");
-                }
-            }
-            sb.append("expected values: \n");
-            sb.append(MySQLVisitor.asExpectedValues(((MySQLStateToReproduce) state).getWhereClause()));
-        }
-        try {
-            writer.write(sb.toString());
-            writer.flush();
-        } catch (IOException e) {
-            throw new AssertionError();
-        }
-    }
-
-    @Override
-    public StateToReproduce getStateToReproduce(String databaseName) {
-        return new MySQLStateToReproduce(databaseName);
     }
 
 }

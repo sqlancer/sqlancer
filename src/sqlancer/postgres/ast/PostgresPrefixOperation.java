@@ -51,7 +51,14 @@ public class PostgresPrefixOperation implements PostgresExpression {
                     // TODO
                     throw new IgnoreMeException();
                 }
-                return PostgresConstant.createIntConstant(-expectedValue.asInt());
+                if (expectedValue.isInt() && expectedValue.asInt() == Long.MIN_VALUE) {
+                    throw new IgnoreMeException();
+                }
+                try {
+                    return PostgresConstant.createIntConstant(-expectedValue.asInt());
+                } catch (UnsupportedOperationException e) {
+                    return null;
+                }
             }
 
         };
@@ -90,7 +97,11 @@ public class PostgresPrefixOperation implements PostgresExpression {
 
     @Override
     public PostgresConstant getExpectedValue() {
-        return op.getExpectedValue(expr.getExpectedValue());
+        PostgresConstant expectedValue = expr.getExpectedValue();
+        if (expectedValue == null) {
+            return null;
+        }
+        return op.getExpectedValue(expectedValue);
     }
 
     public PostgresDataType[] getInputDataTypes() {

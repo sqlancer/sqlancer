@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce.MySQLStateToReproduce;
+import sqlancer.common.schema.AbstractRowValue;
 import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractTable;
 import sqlancer.common.schema.AbstractTableColumn;
@@ -29,8 +29,12 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
     public enum MySQLDataType {
         INT, VARCHAR, FLOAT, DOUBLE, DECIMAL;
 
-        public static MySQLDataType getRandom() {
-            return Randomly.fromOptions(values());
+        public static MySQLDataType getRandom(MySQLGlobalState globalState) {
+            if (globalState.usesPQS()) {
+                return Randomly.fromOptions(MySQLDataType.INT, MySQLDataType.VARCHAR);
+            } else {
+                return Randomly.fromOptions(values());
+            }
         }
 
         public boolean isNumeric() {
@@ -84,7 +88,7 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
             super(tables);
         }
 
-        public MySQLRowValue getRandomRowValue(Connection con, MySQLStateToReproduce state) throws SQLException {
+        public MySQLRowValue getRandomRowValue(Connection con) throws SQLException {
             String randomRow = String.format("SELECT %s FROM %s ORDER BY RAND() LIMIT 1", columnNamesAsString(
                     c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
                     // columnNamesAsString(c -> "typeof(" + c.getTable().getName() + "." +
@@ -94,22 +98,14 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
             try (Statement s = con.createStatement()) {
                 ResultSet randomRowValues = s.executeQuery(randomRow);
                 if (!randomRowValues.next()) {
-                    throw new AssertionError("could not find random row! " + randomRow + "\n" + state);
+                    throw new AssertionError("could not find random row! " + randomRow + "\n");
                 }
                 for (int i = 0; i < getColumns().size(); i++) {
                     MySQLColumn column = getColumns().get(i);
                     Object value;
                     int columnIndex = randomRowValues.findColumn(column.getTable().getName() + column.getName());
                     assert columnIndex == i + 1;
-                    // String typeString = randomRowValues.getString(columnIndex + getColumns().size());
-                    // MySQLDataType valueType = getColumnType(typeString);
                     MySQLConstant constant;
-                    // if (randomRowValues.getString(columnIndex) == null) {
-                    // value = null;
-                    // constant = MySQLConstant.createNullConstant();
-                    // } else {
-                    // switch (valueType) {
-                    // case INT:
                     if (randomRowValues.getString(columnIndex) == null) {
                         constant = MySQLConstant.createNullConstant();
                     } else {
@@ -126,15 +122,9 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
                             throw new AssertionError(column.getType());
                         }
                     }
-                    // break;
-                    // default:
-                    // throw new AssertionError(valueType);
-                    // }
-                    // }
                     values.put(column, constant);
                 }
                 assert !randomRowValues.next();
-                state.randomRowValues = values;
                 return new MySQLRowValue(this, values);
             }
 
@@ -167,55 +157,10 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
         }
     }
 
-    public static class MySQLRowValue {
-
-        private final MySQLTables tables;
-        private final Map<MySQLColumn, MySQLConstant> values;
+    public static class MySQLRowValue extends AbstractRowValue<MySQLTables, MySQLColumn, MySQLConstant> {
 
         MySQLRowValue(MySQLTables tables, Map<MySQLColumn, MySQLConstant> values) {
-            this.tables = tables;
-            this.values = values;
-        }
-
-        public MySQLTables getTable() {
-            return tables;
-        }
-
-        public Map<MySQLColumn, MySQLConstant> getValues() {
-            return values;
-        }
-
-        @Override
-        public String toString() {
-            StringBuffer sb = new StringBuffer();
-            int i = 0;
-            for (MySQLColumn c : tables.getColumns()) {
-                if (i++ != 0) {
-                    sb.append(", ");
-                }
-                sb.append(values.get(c));
-            }
-            return sb.toString();
-        }
-
-        public String getRowValuesAsString() {
-            List<MySQLColumn> columnsToCheck = tables.getColumns();
-            return getRowValuesAsString(columnsToCheck);
-        }
-
-        public String getRowValuesAsString(List<MySQLColumn> columnsToCheck) {
-            StringBuilder sb = new StringBuilder();
-            Map<MySQLColumn, MySQLConstant> expectedValues = getValues();
-            for (int i = 0; i < columnsToCheck.size(); i++) {
-                if (i != 0) {
-                    sb.append(", ");
-                }
-                MySQLConstant expectedColumnValue = expectedValues.get(columnsToCheck.get(i));
-                MySQLToStringVisitor visitor = new MySQLToStringVisitor();
-                visitor.visit(expectedColumnValue);
-                sb.append(visitor.get());
-            }
-            return sb.toString();
+            super(tables, values);
         }
 
     }
@@ -230,10 +175,6 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
 
             MySQLEngine(String s) {
                 this.s = s;
-            }
-
-            String getTextRepresentation() {
-                return s;
             }
 
             public static MySQLEngine get(String val) {

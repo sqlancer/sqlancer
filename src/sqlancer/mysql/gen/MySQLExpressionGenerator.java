@@ -26,6 +26,8 @@ import sqlancer.mysql.ast.MySQLConstant.MySQLDoubleConstant;
 import sqlancer.mysql.ast.MySQLExists;
 import sqlancer.mysql.ast.MySQLExpression;
 import sqlancer.mysql.ast.MySQLInOperation;
+import sqlancer.mysql.ast.MySQLOrderByTerm;
+import sqlancer.mysql.ast.MySQLOrderByTerm.MySQLOrder;
 import sqlancer.mysql.ast.MySQLStringExpression;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
@@ -132,17 +134,28 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
 
     private enum ConstantType {
         INT, NULL, STRING, DOUBLE;
+
+        public static ConstantType[] valuesPQS() {
+            return new ConstantType[] { INT, NULL, STRING };
+        }
     }
 
     @Override
     public MySQLExpression generateConstant() {
-        switch (Randomly.fromOptions(ConstantType.values())) {
+        ConstantType[] values;
+        if (state.usesPQS()) {
+            values = ConstantType.valuesPQS();
+        } else {
+            values = ConstantType.values();
+        }
+        switch (Randomly.fromOptions(values)) {
         case INT:
             return MySQLConstant.createIntConstant((int) state.getRandomly().getInteger());
         case NULL:
             return MySQLConstant.createNullConstant();
         case STRING:
-            String string = state.getRandomly().getString();
+            /* Replace characters that still trigger open bugs in MySQL */
+            String string = state.getRandomly().getString().replace("\\", "").replace("\n", "");
             if (string.startsWith("\n")) {
                 // workaround for https://bugs.mysql.com/bug.php?id=99130
                 throw new IgnoreMeException();
@@ -153,7 +166,8 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
             }
             MySQLConstant createStringConstant = MySQLConstant.createStringConstant(string);
             // if (Randomly.getBoolean()) {
-            // return new MySQLCollate(createStringConstant, Randomly.fromOptions("ascii_bin", "binary"));
+            // return new MySQLCollate(createStringConstant,
+            // Randomly.fromOptions("ascii_bin", "binary"));
             // }
             if (string.startsWith("1e")) {
                 // https://bugs.mysql.com/bug.php?id=99146
@@ -196,6 +210,21 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
     @Override
     public MySQLExpression isNull(MySQLExpression expr) {
         return new MySQLUnaryPostfixOperation(expr, MySQLUnaryPostfixOperation.UnaryPostfixOperator.IS_NULL, false);
+    }
+
+    @Override
+    public List<MySQLExpression> generateOrderBys() {
+        List<MySQLExpression> expressions = super.generateOrderBys();
+        List<MySQLExpression> newOrderBys = new ArrayList<>();
+        for (MySQLExpression expr : expressions) {
+            if (Randomly.getBoolean()) {
+                MySQLOrderByTerm newExpr = new MySQLOrderByTerm(expr, MySQLOrder.getRandomOrder());
+                newOrderBys.add(newExpr);
+            } else {
+                newOrderBys.add(expr);
+            }
+        }
+        return newOrderBys;
     }
 
 }

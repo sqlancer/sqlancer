@@ -12,6 +12,7 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
 import sqlancer.mysql.MySQLBugs;
+import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema;
 import sqlancer.mysql.MySQLSchema.MySQLDataType;
 import sqlancer.mysql.MySQLSchema.MySQLTable.MySQLEngine;
@@ -30,16 +31,18 @@ public class MySQLTableGenerator {
     private int keysSpecified;
     private final List<String> columns = new ArrayList<>();
     private final MySQLSchema schema;
+    private final MySQLGlobalState globalState;
 
-    public MySQLTableGenerator(String tableName, Randomly r, MySQLSchema schema) {
+    public MySQLTableGenerator(MySQLGlobalState globalState, String tableName) {
         this.tableName = tableName;
-        this.r = r;
-        this.schema = schema;
+        this.r = globalState.getRandomly();
+        this.schema = globalState.getSchema();
         allowPrimaryKey = Randomly.getBoolean();
+        this.globalState = globalState;
     }
 
-    public static Query generate(String tableName, Randomly r, MySQLSchema schema) {
-        return new MySQLTableGenerator(tableName, r, schema).create();
+    public static Query generate(MySQLGlobalState globalState, String tableName) {
+        return new MySQLTableGenerator(globalState, tableName).create();
     }
 
     private Query create() {
@@ -77,7 +80,6 @@ public class MySQLTableGenerator {
             } else if ((tableHasNullableColumn || keysSpecified > 1) && engine == MySQLEngine.ARCHIVE) {
                 errors.add("Too many keys specified; max 1 keys allowed");
                 errors.add("Table handler doesn't support NULL in given index");
-                errors.add("Got error -1 - 'Unknown error -1' from storage engine");
                 addCommonErrors(errors);
                 return new QueryAdapter(sb.toString(), errors, true);
             }
@@ -94,6 +96,9 @@ public class MySQLTableGenerator {
         list.add("not allowed type for this type of partitioning");
         list.add("doesn't support BLOB/TEXT columns");
         list.add("A BLOB field is not allowed in partition function");
+        list.add("Too many keys specified; max 1 keys allowed");
+        list.add("The total length of the partitioning fields is too large");
+        list.add("Got error -1 - 'Unknown error -1' from storage engine");
     }
 
     private enum PartitionOptions {
@@ -256,15 +261,10 @@ public class MySQLTableGenerator {
 
     private void appendColumnDefinition() {
         sb.append(" ");
-        MySQLDataType randomType = MySQLDataType.getRandom();
+        MySQLDataType randomType = MySQLDataType.getRandom(globalState);
         boolean isTextType = randomType == MySQLDataType.VARCHAR;
         appendTypeString(randomType);
         sb.append(" ");
-        // TODO: this was commented out since it makes the implementation of LIKE more
-        // difficult
-        // if (Randomly.getBoolean()) {
-        // sb.append(" ZEROFILL");
-        // }
         boolean isNull = false;
         boolean columnHasPrimaryKey = false;
 
@@ -359,7 +359,7 @@ public class MySQLTableGenerator {
             if (Randomly.getBoolean() && randomType != MySQLDataType.INT && !MySQLBugs.bug99127) {
                 sb.append(" UNSIGNED");
             }
-            if (Randomly.getBoolean()) {
+            if (!globalState.usesPQS() && Randomly.getBoolean()) {
                 sb.append(" ZEROFILL");
             }
         }

@@ -3,8 +3,13 @@ package sqlancer;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
+import sqlancer.Randomly.StringGenerationStrategy;
+
 @Parameters(separators = "=", commandDescription = "Options applicable to all DBMS")
 public class MainOptions {
+
+    @Parameter(names = { "--help", "-h" }, description = "Lists all supported options and commands", help = true)
+    private boolean help; // NOPMD
 
     @Parameter(names = {
             "--num-threads" }, description = "How many threads should run concurrently to test separate databases")
@@ -64,6 +69,30 @@ public class MainOptions {
 
     @Parameter(names = "--print-succeeding-statements", description = "Print statements that are successfully processed by the DBMS to stdout (not yet implemented for all oracles)", arity = 1)
     private boolean printSucceedingStatements; // NOPMD
+
+    @Parameter(names = "--test-only-nonempty-tables", description = "Test only databases each of whose tables contain at least a single row", arity = 1)
+    private boolean testOnlyWithMoreThanZeroRows; // NOPMD
+
+    @Parameter(names = "--pqs-test-aggregates", description = "Partially test aggregate functions when all tables contain only a single row.")
+    private boolean testAggregateFunctions; // NOPMD
+
+    @Parameter(names = "--random-string-generation", description = "Select the random-string eneration approach")
+    private StringGenerationStrategy randomStringGenerationStrategy = StringGenerationStrategy.SOPHISTICATED; // NOPMD
+
+    @Parameter(names = "--string-constant-max-length", description = "Specify the maximum-length of generated string constants")
+    private int maxStringConstantLength = 10; // NOPMD
+
+    @Parameter(names = "--use-constant-caching", description = "Specifies whether constants should be cached and re-used with a certain probability")
+    private boolean useConstantCaching = true; // NOPMD
+
+    @Parameter(names = "--use-connection-test", description = "Test whether the DBMS is accessible before trying to connect using multiple threads")
+    private boolean useConnectionTest = true; // NOPMD
+
+    @Parameter(names = "--constant-cache-size", description = "Specifies the size of the constant cache. This option only takes effect when constant caching is enabled")
+    private int constantCacheSize = 100; // NOPMD
+
+    @Parameter(names = "--database-prefix", description = "The prefix used for each database created")
+    private String databasePrefix = "database"; // NOPMD
 
     public int getMaxExpressionDepth() {
         return maxExpressionDepth;
@@ -144,6 +173,42 @@ public class MainOptions {
 
     public long getRandomSeed() {
         return randomSeed;
+    }
+
+    public boolean testAggregateFunctionsPQS() {
+        return testAggregateFunctions;
+    }
+
+    public boolean testOnlyWithMoreThanZeroRows() {
+        return testOnlyWithMoreThanZeroRows;
+    }
+
+    public StringGenerationStrategy getRandomStringGenerationStrategy() {
+        return randomStringGenerationStrategy;
+    }
+
+    public int getMaxStringConstantLength() {
+        return maxStringConstantLength;
+    }
+
+    public boolean useConstantCaching() {
+        return useConstantCaching;
+    }
+
+    public int getConstantCacheSize() {
+        return constantCacheSize;
+    }
+
+    public boolean isHelp() {
+        return help;
+    }
+
+    public String getDatabasePrefix() {
+        return databasePrefix;
+    }
+
+    public boolean performConnectionTest() {
+        return useConnectionTest;
     }
 
 }

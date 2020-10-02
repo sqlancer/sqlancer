@@ -34,11 +34,6 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
 
         private final int size;
 
-        public DuckDBCompositeDataType(DuckDBDataType dataType) {
-            this.dataType = dataType;
-            this.size = -1;
-        }
-
         public DuckDBCompositeDataType(DuckDBDataType dataType, int size) {
             this.dataType = dataType;
             this.size = size;
@@ -76,10 +71,6 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
             }
 
             return new DuckDBCompositeDataType(type, size);
-        }
-
-        public static DuckDBCompositeDataType getInt(int size) {
-            return new DuckDBCompositeDataType(DuckDBDataType.INT, size);
         }
 
         @Override
@@ -162,6 +153,9 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
     private static DuckDBCompositeDataType getColumnType(String typeString) {
         DuckDBDataType primitiveType;
         int size = -1;
+        if (typeString.startsWith("DECIMAL")) { // Ugly hack
+            return new DuckDBCompositeDataType(DuckDBDataType.FLOAT, 8);
+        }
         switch (typeString) {
         case "INTEGER":
             primitiveType = DuckDBDataType.INT;
@@ -209,10 +203,6 @@ public class DuckDBSchema extends AbstractSchema<DuckDBTable> {
 
         public DuckDBTable(String tableName, List<DuckDBColumn> columns, boolean isView) {
             super(tableName, columns, Collections.emptyList(), isView);
-        }
-
-        public boolean hasPrimaryKey() {
-            return getColumns().stream().anyMatch(c -> c.isPrimaryKey());
         }
 
     }

@@ -7,38 +7,41 @@ import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+
+import org.postgresql.util.PSQLException;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce.PostgresStateToReproduce;
+import sqlancer.common.schema.AbstractRowValue;
+import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractTable;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.common.schema.TableIndex;
+import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresSchema.PostgresTable.TableType;
 import sqlancer.postgres.ast.PostgresConstant;
 
-public class PostgresSchema {
+public class PostgresSchema extends AbstractSchema<PostgresTable> {
 
-    private final List<PostgresTable> databaseTables;
     private final String databaseName;
 
     public enum PostgresDataType {
         INT, BOOLEAN, TEXT, DECIMAL, FLOAT, REAL, RANGE, MONEY, BIT, INET;
 
         public static PostgresDataType getRandomType() {
-            List<PostgresDataType> dataTypes = Arrays.asList(values());
+            List<PostgresDataType> dataTypes = new ArrayList<>(Arrays.asList(values()));
             if (PostgresProvider.generateOnlyKnown) {
                 dataTypes.remove(PostgresDataType.DECIMAL);
                 dataTypes.remove(PostgresDataType.FLOAT);
                 dataTypes.remove(PostgresDataType.REAL);
                 dataTypes.remove(PostgresDataType.INET);
+                dataTypes.remove(PostgresDataType.RANGE);
+                dataTypes.remove(PostgresDataType.MONEY);
+                dataTypes.remove(PostgresDataType.BIT);
             }
             return Randomly.fromList(dataTypes);
         }
@@ -62,7 +65,7 @@ public class PostgresSchema {
             super(tables);
         }
 
-        public PostgresRowValue getRandomRowValue(Connection con, PostgresStateToReproduce state) throws SQLException {
+        public PostgresRowValue getRandomRowValue(Connection con) throws SQLException {
             String randomRow = String.format("SELECT %s FROM %s ORDER BY RANDOM() LIMIT 1", columnNamesAsString(
                     c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
                     // columnNamesAsString(c -> "typeof(" + c.getTable().getName() + "." +
@@ -72,7 +75,7 @@ public class PostgresSchema {
             try (Statement s = con.createStatement()) {
                 ResultSet randomRowValues = s.executeQuery(randomRow);
                 if (!randomRowValues.next()) {
-                    throw new AssertionError("could not find random row! " + randomRow + "\n" + state);
+                    throw new AssertionError("could not find random row! " + randomRow + "\n");
                 }
                 for (int i = 0; i < getColumns().size(); i++) {
                     PostgresColumn column = getColumns().get(i);
@@ -93,14 +96,15 @@ public class PostgresSchema {
                             constant = PostgresConstant.createTextConstant(randomRowValues.getString(columnIndex));
                             break;
                         default:
-                            throw new AssertionError(column.getType());
+                            throw new IgnoreMeException();
                         }
                     }
                     values.put(column, constant);
                 }
                 assert !randomRowValues.next();
-                state.randomRowValues = values;
                 return new PostgresRowValue(this, values);
+            } catch (PSQLException e) {
+                throw new IgnoreMeException();
             }
 
         }
@@ -140,55 +144,10 @@ public class PostgresSchema {
         }
     }
 
-    public static class PostgresRowValue {
+    public static class PostgresRowValue extends AbstractRowValue<PostgresTables, PostgresColumn, PostgresConstant> {
 
-        private final PostgresTables tables;
-        private final Map<PostgresColumn, PostgresConstant> values;
-
-        PostgresRowValue(PostgresTables tables, Map<PostgresColumn, PostgresConstant> values) {
-            this.tables = tables;
-            this.values = values;
-        }
-
-        public PostgresTables getTable() {
-            return tables;
-        }
-
-        public Map<PostgresColumn, PostgresConstant> getValues() {
-            return values;
-        }
-
-        @Override
-        public String toString() {
-            StringBuffer sb = new StringBuffer();
-            int i = 0;
-            for (PostgresColumn c : tables.getColumns()) {
-                if (i++ != 0) {
-                    sb.append(", ");
-                }
-                sb.append(values.get(c));
-            }
-            return sb.toString();
-        }
-
-        public String getRowValuesAsString() {
-            List<PostgresColumn> columnsToCheck = tables.getColumns();
-            return getRowValuesAsString(columnsToCheck);
-        }
-
-        public String getRowValuesAsString(List<PostgresColumn> columnsToCheck) {
-            StringBuilder sb = new StringBuilder();
-            Map<PostgresColumn, PostgresConstant> expectedValues = getValues();
-            for (int i = 0; i < columnsToCheck.size(); i++) {
-                if (i != 0) {
-                    sb.append(", ");
-                }
-                PostgresConstant expectedColumnValue = expectedValues.get(columnsToCheck.get(i));
-                PostgresToStringVisitor visitor = new PostgresToStringVisitor();
-                visitor.visit(expectedColumnValue);
-                sb.append(visitor.get());
-            }
-            return sb.toString();
+        protected PostgresRowValue(PostgresTables tables, Map<PostgresColumn, PostgresConstant> values) {
+            super(tables, values);
         }
 
     }
@@ -352,51 +311,16 @@ public class PostgresSchema {
     }
 
     public PostgresSchema(List<PostgresTable> databaseTables, String databaseName) {
-        this.databaseTables = Collections.unmodifiableList(databaseTables);
+        super(databaseTables);
         this.databaseName = databaseName;
     }
 
-    @Override
-    public String toString() {
-        StringBuffer sb = new StringBuffer();
-        for (PostgresTable t : getDatabaseTables()) {
-            sb.append(t);
-            sb.append("\n");
-        }
-        return sb.toString();
-    }
-
-    public PostgresTable getRandomTable() {
-        return Randomly.fromList(getDatabaseTables());
-    }
-
     public PostgresTables getRandomTableNonEmptyTables() {
-        return new PostgresTables(Randomly.nonEmptySubset(databaseTables));
-    }
-
-    public List<PostgresTable> getDatabaseTables() {
-        return databaseTables;
-    }
-
-    public PostgresTable getDatabaseTable(String name) {
-        return databaseTables.stream().filter(t -> t.getName().equals(name)).findAny().orElse(null);
-    }
-
-    public List<PostgresTable> getDatabaseTablesRandomSubsetNotEmpty() {
-        return Randomly.nonEmptySubset(databaseTables);
+        return new PostgresTables(Randomly.nonEmptySubset(getDatabaseTables()));
     }
 
     public String getDatabaseName() {
         return databaseName;
-    }
-
-    public PostgresTable getRandomTable(Function<PostgresTable, Boolean> f) {
-        List<PostgresTable> relevantTables = databaseTables.stream().filter(t -> f.apply(t))
-                .collect(Collectors.toList());
-        if (relevantTables.isEmpty()) {
-            throw new IgnoreMeException();
-        }
-        return Randomly.fromList(relevantTables);
     }
 
 }

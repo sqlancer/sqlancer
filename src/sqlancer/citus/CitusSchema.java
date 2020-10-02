@@ -14,7 +14,6 @@ import sqlancer.postgres.PostgresSchema;
 public class CitusSchema extends PostgresSchema {
 
     public CitusSchema(List<CitusTable> databaseTables, String databaseName) {
-        // FIXME: Will casting to PostgresTable lose CitusTable features?
         super(new ArrayList<>(databaseTables), databaseName);
     }
 
@@ -71,8 +70,6 @@ public class CitusSchema extends PostgresSchema {
                         if (rs.wasNull()) {
                             colocationId = null;
                         }
-                        // FIXME: Are the CitusTable-specific features I'm adding going to persist after the function
-                        // call?
                         PostgresTable t = schema.getDatabaseTable(tableName);
                         PostgresColumn distributionColumn = null;
                         if (t == null) {

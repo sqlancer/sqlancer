@@ -1,7 +1,6 @@
 package sqlancer.clickhouse.oracle.tlp;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,10 +51,8 @@ public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickH
     }
 
     List<ClickHouseExpression> generateFetchColumns() {
-        List<ClickHouseExpression> columns = new ArrayList<>();
-        columns = Randomly.nonEmptySubset(targetTables.getColumns()).stream()
+        return Randomly.nonEmptySubset(targetTables.getColumns()).stream()
                 .map(c -> new ClickHouseColumnReference(c, null)).collect(Collectors.toList());
-        return columns;
     }
 
     @Override

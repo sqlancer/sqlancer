@@ -17,71 +17,20 @@ branches:
 
 matrix:
   include:
-    - name: MariaDB
-      jdk : oraclejdk11
-      before_install:
-      - sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
-      - sudo add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://sfo1.mirrors.digitalocean.com/mariadb/repo/10.3/ubuntu bionic main'
-      - sudo apt update
-      - sudo apt install mariadb-server
-      - sudo mysql -e "CREATE USER 'sqlancer'@'localhost' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'localhost';"
-      - MARIADB_AVAILABLE=true mvn -Dtest=TestMariaDB test
-    - name : MySQL
-      jdk : oraclejdk11
-      script:
-        - sudo apt-get update && sudo apt-get install libssl-dev libmecab2 libjson-perl mecab-ipadic-utf8
-        - sudo apt-get remove mysql-* && wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar && tar -xvf mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar && yes | sudo dpkg -i *.deb
-        - sudo mysql -e "CREATE USER 'sqlancer'@'localhost' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'localhost';"
-        - MYSQL_AVAILABLE=true mvn -Dtest=TestMySQL test
-    - name: CockroachDB
-      jdk : oraclejdk11
-      before_install:
-      - wget -qO- https://binaries.cockroachdb.com/cockroach-v20.1.2.linux-amd64.tgz | tar  xvz
-      - cd cockroach-v20.1.2.linux-amd64/ && ./cockroach start-single-node --insecure &
-      - sleep 15
-      - cd cockroach-v20.1.2.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
-      script:
-      - COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDB test
-    - name: TiDB
-      jdk : oraclejdk11
-      services:
-      - docker
-      before_install:
-      - docker pull pingcap/tidb:latest
-      - docker run --name tidb-server -d -p 4000:4000 pingcap/tidb:latest
-      - sleep 15
-      - sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
-      script:
-        - TIDB_AVAILABLE=true mvn -Dtest=TestTiDB test
     - name: SQLite3
-      jdk : oraclejdk11
-      script:
-        - mvn -Dtest=TestSQLite3 test
-    - name: DuckDB
-      jdk : oraclejdk11
-      script: 
-        - mvn -Dtest=TestDuckDB test
-    - name: DuckDB (Java 8)
       jdk : openjdk8
       script:
-        - mvn -Dtest=TestDuckDB test
-    - name: DuckDB (java 13)
-      jdk : openjdk13
-      script:
-        - mvn -Dtest=TestDuckDB test
-    - name: Misc
-      jdk : oraclejdk11
-      script:
-        - mvn '-Dtest=!sqlancer.dbms.**' test
+        - mvn -Dtest=TestSQLitePQS test
+        - mvn -Dtest=TestSQLite3 test
     - name: PostgreSQL
-      jdk : oraclejdk11
+      jdk : openjdk8
       before_install:
       - sudo apt-get update
       - sudo apt-get --yes remove postgresql\*
       - sudo apt-get install -y postgresql-12 postgresql-client-12
       - sudo sed -i 's/port = 5433/port = 5432/' /etc/postgresql/12/main/postgresql.conf
       - sudo cp /etc/postgresql/{10,12}/main/pg_hba.conf
-      - sudo service postgresql restart 12  
+      - sudo service postgresql restart 12
       addons:
         postgresql: "12.3"
       env:
@@ -95,11 +44,103 @@ matrix:
         - createdb test -U postgres
       script:
         - POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgres test
+    - name: MariaDB
+      jdk : openjdk8
+      before_install:
+      - sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
+      - sudo add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://sfo1.mirrors.digitalocean.com/mariadb/repo/10.3/ubuntu bionic main'
+      - sudo apt update
+      - sudo apt install mariadb-server
+      - sudo mysql -e "CREATE USER 'sqlancer'@'localhost' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'localhost';"
+      - MARIADB_AVAILABLE=true mvn -Dtest=TestMariaDB test
+    - name : MySQL
+      jdk : openjdk8
+      script:
+        - sudo apt-get update && sudo apt-get install libssl-dev libmecab2 libjson-perl mecab-ipadic-utf8
+        - sudo apt-get remove mysql-* && wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar && tar -xvf mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar && yes | sudo dpkg -i *.deb
+        - sudo mysql -e "CREATE USER 'sqlancer'@'localhost' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'localhost';"
+        - MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLPQS
+        - MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLTLP
+    - name: CockroachDB
+      jdk : openjdk8
+      before_install:
+      - wget -qO- https://binaries.cockroachdb.com/cockroach-v20.1.2.linux-amd64.tgz | tar  xvz
+      - cd cockroach-v20.1.2.linux-amd64/ && ./cockroach start-single-node --insecure &
+      - sleep 15
+      - cd cockroach-v20.1.2.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
+      script:
+      - COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDB test
+    - name: TiDB
+      jdk : openjdk8
+      services:
+      - docker
+      before_install:
+      - docker pull pingcap/tidb:latest
+      - docker run --name tidb-server -d -p 4000:4000 pingcap/tidb:latest
+      - sleep 15
+      - sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+      script:
+        - TIDB_AVAILABLE=true mvn -Dtest=TestTiDB test
+    - name: DuckDB
+      jdk : openjdk8
+      script: 
+        - mvn -Dtest=TestDuckDB test
+    - name: DuckDB (Java 8)
+      jdk : openjdk8
+      script:
+        - mvn -Dtest=TestDuckDB test
+    - name: DuckDB (java 13)
+      jdk : openjdk8
+      script:
+        - mvn -Dtest=TestDuckDB test
+    - name: Misc
+      jdk : openjdk8
+      script:
+        - mvn '-Dtest=!sqlancer.dbms.**' test
+    - name: Citus (PostgreSQL extension)
+      jdk : openjdk8
+      before_install:
+      - sudo apt-get update
+      - sudo apt-get install -y postgresql-server-dev-12 postgresql-12 locales
+      - git clone https://github.com/citusdata/citus.git
+      - cd citus
+      - ./configure
+      - make clean -sj9
+      - sudo make install -sj9
+      - cd ..
+      before_script:
+        - sudo chown -R $USER:$USER /var/run/postgresql
+        - export PATH=/usr/lib/postgresql/12/bin:$PATH
+        - mkdir -p citus/coordinator citus/worker1 citus/worker2
+        - initdb -D citus/coordinator
+        - initdb -D citus/worker1
+        - initdb -D citus/worker2
+        - echo "shared_preload_libraries = 'citus'" >> citus/coordinator/postgresql.conf
+        - echo "shared_preload_libraries = 'citus'" >> citus/worker1/postgresql.conf
+        - echo "shared_preload_libraries = 'citus'" >> citus/worker2/postgresql.conf
+        - pg_ctl -D citus/coordinator -o "-p 9700" -l coordinator_logfile start
+        - pg_ctl -D citus/worker1 -o "-p 9701" -l worker1_logfile start
+        - pg_ctl -D citus/worker2 -o "-p 9702" -l worker2_logfile start
+        - psql -c "CREATE ROLE sqlancer SUPERUSER LOGIN CREATEDB PASSWORD 'sqlancer';" -p 9700 -d postgres -U $USER
+        - createdb test -p 9700 -U $USER
+        - psql -c "CREATE ROLE sqlancer SUPERUSER LOGIN CREATEDB PASSWORD 'sqlancer';" -p 9701 -d postgres -U $USER
+        - createdb test -p 9701 -U $USER
+        - psql -c "CREATE ROLE sqlancer SUPERUSER LOGIN CREATEDB PASSWORD 'sqlancer';" -p 9702 -d postgres -U $USER
+        - createdb test -p 9702 -U $USER
+        - psql -c "CREATE EXTENSION citus;" -p 9700 -U $USER -d test
+        - psql -c "CREATE EXTENSION citus;" -p 9701 -U $USER -d test
+        - psql -c "CREATE EXTENSION citus;" -p 9702 -U $USER -d test
+        - psql -c "SELECT * from master_add_node('localhost', 9701);" -p 9700 -U $USER -d test
+        - psql -c "SELECT * from master_add_node('localhost', 9702);" -p 9700 -U $USER -d test
+      script:
+        - CITUS_AVAILABLE=true mvn -Dtest=TestCitus test
     - name: ClickHouse
-      jdk : oraclejdk11
+      jdk : openjdk8
       services:
         - docker
       before_install:
         - docker pull yandex/clickhouse-server:latest
         - docker run --ulimit nofile=262144:262144 --name clickhouse-server -p8123:8123 -d yandex/clickhouse-server:latest
         - sleep 5
+      script:
+        - CLICKHOUSE_AVAILABLE=true mvn -Dtest=ClickHouseBinaryComparisonOperationTest test

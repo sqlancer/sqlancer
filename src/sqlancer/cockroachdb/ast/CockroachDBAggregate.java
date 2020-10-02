@@ -78,10 +78,6 @@ public class CockroachDBAggregate implements CockroachDBExpression {
             this.supportedReturnTypes = supportedReturnTypes.clone();
         }
 
-        public static CockroachDBAggregateFunction getRandom() {
-            return Randomly.fromOptions(values());
-        }
-
         public static CockroachDBAggregateFunction getRandomMetamorphicOracle() {
             // not: VARIANCE, STDDEV, SQRDIFF
             return Randomly.fromOptions(SUM, SUM_INT, MIN, MAX, XOR_AGG, BIT_AND, BIT_OR, BOOL_AND, BOOL_OR, COUNT, AVG,

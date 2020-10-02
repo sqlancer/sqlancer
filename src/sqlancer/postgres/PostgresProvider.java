@@ -1,7 +1,5 @@
 package sqlancer.postgres;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Connection;
@@ -9,23 +7,17 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
 import sqlancer.IgnoreMeException;
 import sqlancer.ProviderAdapter;
 import sqlancer.Randomly;
-import sqlancer.StateToReproduce;
-import sqlancer.StateToReproduce.PostgresStateToReproduce;
 import sqlancer.StatementExecutor;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
 import sqlancer.common.query.QueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
-import sqlancer.postgres.PostgresSchema.PostgresColumn;
-import sqlancer.postgres.PostgresSchema.PostgresTable;
-import sqlancer.postgres.ast.PostgresExpression;
+import sqlancer.postgres.PostgresOptions.PostgresOracleFactory;
 import sqlancer.postgres.gen.PostgresAlterTableGenerator;
 import sqlancer.postgres.gen.PostgresAnalyzeGenerator;
 import sqlancer.postgres.gen.PostgresClusterGenerator;
@@ -53,16 +45,16 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 // IN
 public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, PostgresOptions> {
 
+    /**
+     * Generate only data types and expressions that are understood by PQS.
+     */
     public static boolean generateOnlyKnown;
-
-    private PostgresGlobalState globalState;
 
     protected String entryURL;
     protected String username;
     protected String password;
     protected String entryPath;
     protected String host;
-    protected int port;
     protected String testURL;
     protected String databaseName;
     protected String createDatabaseCommand;
@@ -197,12 +189,18 @@ public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, Postg
 
     @Override
     public void generateDatabase(PostgresGlobalState globalState) throws SQLException {
+        readFunctions(globalState);
         createTables(globalState, Randomly.fromOptions(4, 5, 6));
         prepareTables(globalState);
     }
 
     @Override
     public Connection createDatabase(PostgresGlobalState globalState) throws SQLException {
+        if (globalState.getDmbsSpecificOptions().getTestOracleFactory().stream()
+                .anyMatch((o) -> o == PostgresOracleFactory.PQS)) {
+            generateOnlyKnown = true;
+        }
+
         username = globalState.getOptions().getUserName();
         password = globalState.getOptions().getPassword();
         entryPath = "/test";
@@ -234,7 +232,6 @@ public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, Postg
                 entryPath = pathURI;
             }
             host = uri.getHost();
-            port = uri.getPort();
         } catch (URISyntaxException e) {
             throw new AssertionError(e);
         }
@@ -243,7 +240,7 @@ public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, Postg
         Connection con = DriverManager.getConnection("jdbc:" + entryURL, username, password);
         globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
         globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
-        createDatabaseCommand = getCreateDatabaseCommand(databaseName, con, globalState);
+        createDatabaseCommand = getCreateDatabaseCommand(globalState);
         globalState.getState().logStatement(createDatabaseCommand);
         try (Statement s = con.createStatement()) {
             s.execute("DROP DATABASE IF EXISTS " + databaseName);
@@ -296,7 +293,7 @@ public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, Postg
         globalState.executeStatement(new QueryAdapter("SET SESSION statement_timeout = 5000;\n"));
     }
 
-    private String getCreateDatabaseCommand(String databaseName, Connection con, PostgresGlobalState state) {
+    private String getCreateDatabaseCommand(PostgresGlobalState state) {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE DATABASE " + databaseName + " ");
         if (Randomly.getBoolean() && ((PostgresOptions) state.getDmbsSpecificOptions()).testCollations) {
@@ -306,10 +303,8 @@ public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, Postg
                 sb.append("' ");
             }
             for (String lc : Arrays.asList("LC_COLLATE", "LC_CTYPE")) {
-                if (Randomly.getBoolean()) {
-                    globalState = new PostgresGlobalState();
-                    globalState.setConnection(con);
-                    sb.append(String.format(" %s = '%s'", lc, Randomly.fromList(globalState.getCollates())));
+                if (!state.getCollates().isEmpty() && Randomly.getBoolean()) {
+                    sb.append(String.format(" %s = '%s'", lc, Randomly.fromList(state.getCollates())));
                 }
             }
             sb.append(" TEMPLATE template0");
@@ -320,46 +315,6 @@ public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, Postg
     @Override
     public String getDBMSName() {
         return "postgres";
-    }
-
-    @Override
-    public void printDatabaseSpecificState(FileWriter writer, StateToReproduce state) {
-        StringBuilder sb = new StringBuilder();
-        PostgresStateToReproduce specificState = (PostgresStateToReproduce) state;
-        if (specificState.getRandomRowValues() != null) {
-            List<PostgresColumn> columnList = specificState.getRandomRowValues().keySet().stream()
-                    .collect(Collectors.toList());
-            List<PostgresTable> tableList = columnList.stream().map(c -> c.getTable()).distinct().sorted()
-                    .collect(Collectors.toList());
-            for (PostgresTable t : tableList) {
-                sb.append("-- " + t.getName() + "\n");
-                List<PostgresColumn> columnsForTable = columnList.stream().filter(c -> c.getTable().equals(t))
-                        .collect(Collectors.toList());
-                for (PostgresColumn c : columnsForTable) {
-                    sb.append("--\t");
-                    sb.append(c);
-                    sb.append("=");
-                    sb.append(specificState.getRandomRowValues().get(c));
-                    sb.append("\n");
-                }
-            }
-            sb.append("expected values: \n");
-            PostgresExpression whereClause = ((PostgresStateToReproduce) state).getWhereClause();
-            if (whereClause != null) {
-                sb.append(PostgresVisitor.asExpectedValues(whereClause).replace("\n", "\n-- "));
-            }
-        }
-        try {
-            writer.write(sb.toString());
-            writer.flush();
-        } catch (IOException e) {
-            throw new AssertionError();
-        }
-    }
-
-    @Override
-    public StateToReproduce getStateToReproduce(String databaseName) {
-        return new PostgresStateToReproduce(databaseName);
     }
 
 }

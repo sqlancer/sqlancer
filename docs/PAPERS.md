@@ -8,10 +8,13 @@ This paper describes PQS, a testing approach to detect various kinds of logic bu
 
 ```
 @inproceedings{Rigger2020PQS,
-	author={Manuel Rigger and Zhendong Su},
-	title={Testing Database Engines via Pivoted Query Synthesis},
-	year={2020},
-	url={https://arxiv.org/abs/2001.04174}
+	title = {Testing Database Engines via Pivoted Query Synthesis},
+	booktitle = {14th {USENIX} Symposium on Operating Systems Design and Implementation ({OSDI} 20)},
+	year = {2020},
+	address = {Banff, Alberta},
+	url = {https://www.usenix.org/conference/osdi20/presentation/rigger},
+	publisher = {{USENIX} Association},
+	month = nov,
 }
 ```
 

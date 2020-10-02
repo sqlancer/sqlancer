@@ -2,17 +2,11 @@ package sqlancer.sqlite3.gen;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
-import sqlancer.sqlite3.ast.SQLite3Cast;
-import sqlancer.sqlite3.ast.SQLite3Constant;
 import sqlancer.sqlite3.ast.SQLite3Expression;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3TableReference;
 import sqlancer.sqlite3.schema.SQLite3DataType;
 import sqlancer.sqlite3.schema.SQLite3Schema;
@@ -44,25 +38,6 @@ public final class SQLite3Common {
         SQLite3Expression expression = new SQLite3ExpressionGenerator(globalState).setColumns(columns)
                 .generateExpression();
         return " CHECK ( " + SQLite3Visitor.asString(expression) + ")";
-    }
-
-    public static SQLite3Expression getTrueExpression(List<SQLite3Column> columns, SQLite3GlobalState globalState) {
-        SQLite3Expression randomExpression = new SQLite3ExpressionGenerator(globalState).setColumns(columns)
-                .generateExpression();
-        SQLite3Constant expectedValue = randomExpression.getExpectedValue();
-        if (expectedValue == null) {
-            throw new IgnoreMeException();
-        }
-        Optional<Boolean> val = SQLite3Cast.isTrue(expectedValue);
-        if (!val.isPresent()) {
-            return new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.ISNULL, randomExpression);
-        }
-        if (val.get()) {
-            return randomExpression;
-        } else {
-            return new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.IS_FALSE, randomExpression);
-        }
-
     }
 
     // TODO: refactor others to use this method
