@@ -119,7 +119,7 @@ public class AbstractSchema<A extends AbstractTable<?, ?>> {
         }
         do {
             String tableName = String.format("t%d", i++);
-            if (databaseTables.stream().noneMatch(t -> t.getName().contentEquals(tableName))) {
+            if (databaseTables.stream().noneMatch(t -> t.getName().equalsIgnoreCase(tableName))) {
                 return tableName;
             }
         } while (true);
