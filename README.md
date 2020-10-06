@@ -34,10 +34,6 @@ If the execution prints progress information every five seconds, then the tool w
 
 If you launch SQLancer without parameters, available options and commands are displayed. Note that general options that are supported by all DBMS-testing implementations (e.g., `--num-threads`) need to precede the name of DBMS to be tested (e.g., `sqlite3`). Options that are supported only for specific DBMS (e.g., `--test-rtree` for SQLite3), or options for which each testing implementation provides different values (e.g. `--oracle NoREC`) need to go after the DBMS name.
 
-# Potential Commercialization
-
-Due to the significant interest that we have received, we are considering to commercialize our bug-finding efforts. If you represent a company and would be interested in a bug-finding service, please approach us ([Manuel Rigger](mailto:manuel.rigger@inf.ethz.ch) and [Zhendong Su](mailto:zhendong.su@inf.ethz.ch)) with your expectations and requirements for such a service.
-
 # Research Prototype
 
 This project should at this stage still be seen as a research prototype. We believe that the tool is not ready to be used. However, we have received many requests by companies, organizations, and individual developers, which is why we decided to prematurely release the tool. Expect errors, incompatibilities, lack of documentation, and insufficient code quality. That being said, we are working hard to address these issues and enhance SQLancer to become a production-quality piece of software. We welcome any issue reports, extension requests, and code contributions.
