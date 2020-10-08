@@ -44,6 +44,9 @@ This paper describes TLP, a metamorphic testing approach that can detect various
 	title={Finding Bugs in Database Systems via Query Partitioning},
         journal = {Proc. ACM Program. Lang.},
 	number = {OOPSLA},
-	year={2020}
+	year={2020},
+	doi={10.1145/3428279},
+	volume={4},
+	articleno={211}
 }
 ```
