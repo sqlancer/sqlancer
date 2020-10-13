@@ -73,7 +73,7 @@ public class MainOptions {
     @Parameter(names = "--test-only-nonempty-tables", description = "Test only databases each of whose tables contain at least a single row", arity = 1)
     private boolean testOnlyWithMoreThanZeroRows; // NOPMD
 
-    @Parameter(names = "--pqs-test-aggregates", description = "Partially test aggregate functions when all tables contain only a single row.")
+    @Parameter(names = "--pqs-test-aggregates", description = "Partially test aggregate functions when all tables contain only a single row.", arity = 1)
     private boolean testAggregateFunctions; // NOPMD
 
     @Parameter(names = "--random-string-generation", description = "Select the random-string eneration approach")
@@ -82,10 +82,10 @@ public class MainOptions {
     @Parameter(names = "--string-constant-max-length", description = "Specify the maximum-length of generated string constants")
     private int maxStringConstantLength = 10; // NOPMD
 
-    @Parameter(names = "--use-constant-caching", description = "Specifies whether constants should be cached and re-used with a certain probability")
+    @Parameter(names = "--use-constant-caching", description = "Specifies whether constants should be cached and re-used with a certain probability", arity = 1)
     private boolean useConstantCaching = true; // NOPMD
 
-    @Parameter(names = "--use-connection-test", description = "Test whether the DBMS is accessible before trying to connect using multiple threads")
+    @Parameter(names = "--use-connection-test", description = "Test whether the DBMS is accessible before trying to connect using multiple threads", arity = 1)
     private boolean useConnectionTest = true; // NOPMD
 
     @Parameter(names = "--constant-cache-size", description = "Specifies the size of the constant cache. This option only takes effect when constant caching is enabled")
