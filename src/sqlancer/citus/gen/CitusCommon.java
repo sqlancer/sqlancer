@@ -36,6 +36,7 @@ public final class CitusCommon {
         errors.add("cannot create foreign key constraint"); // SET NULL or SET DEFAULT is not supported in ON DELETE
                                                             // operation when distribution key is included in the
                                                             // foreign key constraint
+        errors.add("cannot modify views over distributed tables");
 
         // not supported by Citus (restrictions on SELECT queries)
         errors.add(
