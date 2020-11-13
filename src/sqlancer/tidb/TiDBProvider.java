@@ -8,8 +8,8 @@ import java.sql.Statement;
 import sqlancer.AbstractAction;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
-import sqlancer.ProviderAdapter;
 import sqlancer.Randomly;
+import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
@@ -27,7 +27,7 @@ import sqlancer.tidb.gen.TiDBTableGenerator;
 import sqlancer.tidb.gen.TiDBUpdateGenerator;
 import sqlancer.tidb.gen.TiDBViewGenerator;
 
-public class TiDBProvider extends ProviderAdapter<TiDBGlobalState, TiDBOptions> {
+public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOptions> {
 
     public TiDBProvider() {
         super(TiDBGlobalState.class, TiDBOptions.class);

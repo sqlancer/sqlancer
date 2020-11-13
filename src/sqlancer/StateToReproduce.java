@@ -6,13 +6,14 @@ import java.util.Collections;
 import java.util.List;
 
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
 
 public class StateToReproduce {
 
     private final List<Query> statements = new ArrayList<>();
 
     private final String databaseName;
+
+    private final DatabaseProvider<?, ?> databaseProvider;
 
     public String databaseVersion;
 
@@ -22,8 +23,9 @@ public class StateToReproduce {
 
     public OracleRunReproductionState localState;
 
-    public StateToReproduce(String databaseName) {
+    public StateToReproduce(String databaseName, DatabaseProvider<?, ?> databaseProvider) {
         this.databaseName = databaseName;
+        this.databaseProvider = databaseProvider;
     }
 
     public String getException() {
@@ -48,7 +50,7 @@ public class StateToReproduce {
         if (queryString == null) {
             throw new IllegalArgumentException();
         }
-        logStatement(new QueryAdapter(queryString));
+        logStatement(databaseProvider.getLoggableFactory().getQueryForStateToReproduce(queryString));
     }
 
     /**
@@ -68,12 +70,12 @@ public class StateToReproduce {
         return Collections.unmodifiableList(statements);
     }
 
+    @Deprecated
     public void commentStatements() {
         for (int i = 0; i < statements.size(); i++) {
             Query statement = statements.get(i);
-            String queryString = statement.getQueryString();
-            String newQueryString = "-- " + queryString;
-            statements.set(i, new QueryAdapter(newQueryString));
+            Query newQuery = databaseProvider.getLoggableFactory().commentOutQuery(statement);
+            statements.set(i, newQuery);
         }
     }
 
@@ -109,7 +111,7 @@ public class StateToReproduce {
         }
 
         public void log(String s) {
-            statements.add(new QueryAdapter(s));
+            statements.add(databaseProvider.getLoggableFactory().getQueryForStateToReproduce(s));
         }
 
         @Override

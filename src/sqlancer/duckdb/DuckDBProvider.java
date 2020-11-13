@@ -7,8 +7,8 @@ import java.sql.SQLException;
 import sqlancer.AbstractAction;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
-import sqlancer.ProviderAdapter;
 import sqlancer.Randomly;
+import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
@@ -23,7 +23,7 @@ import sqlancer.duckdb.gen.DuckDBTableGenerator;
 import sqlancer.duckdb.gen.DuckDBUpdateGenerator;
 import sqlancer.duckdb.gen.DuckDBViewGenerator;
 
-public class DuckDBProvider extends ProviderAdapter<DuckDBGlobalState, DuckDBOptions> {
+public class DuckDBProvider extends SQLProviderAdapter<DuckDBGlobalState, DuckDBOptions> {
 
     public DuckDBProvider() {
         super(DuckDBGlobalState.class, DuckDBOptions.class);

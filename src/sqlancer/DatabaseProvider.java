@@ -3,6 +3,8 @@ package sqlancer;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import sqlancer.common.log.LoggableFactory;
+
 public interface DatabaseProvider<G extends GlobalState<O, ?>, O extends DBMSSpecificOptions<?>> {
 
     /**
@@ -36,6 +38,8 @@ public interface DatabaseProvider<G extends GlobalState<O, ?>, O extends DBMSSpe
      * @return the DBMS' name
      */
     String getDBMSName();
+
+    LoggableFactory getLoggableFactory();
 
     StateToReproduce getStateToReproduce(String databaseName);
 

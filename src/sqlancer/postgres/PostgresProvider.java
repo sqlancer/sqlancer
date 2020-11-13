@@ -10,8 +10,8 @@ import java.util.Arrays;
 
 import sqlancer.AbstractAction;
 import sqlancer.IgnoreMeException;
-import sqlancer.ProviderAdapter;
 import sqlancer.Randomly;
+import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
@@ -43,7 +43,7 @@ import sqlancer.sqlite3.gen.SQLite3Common;
 
 // EXISTS
 // IN
-public class PostgresProvider extends ProviderAdapter<PostgresGlobalState, PostgresOptions> {
+public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, PostgresOptions> {
 
     /**
      * Generate only data types and expressions that are understood by PQS.

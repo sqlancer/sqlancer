@@ -3,8 +3,6 @@ package sqlancer;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.sql.Connection;
@@ -29,6 +27,7 @@ import com.beust.jcommander.JCommander.Builder;
 import sqlancer.citus.CitusProvider;
 import sqlancer.clickhouse.ClickHouseProvider;
 import sqlancer.cockroachdb.CockroachDBProvider;
+import sqlancer.common.log.Loggable;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.duckdb.DuckDBProvider;
@@ -67,6 +66,7 @@ public final class Main {
         public FileWriter currentFileWriter;
         private static final List<String> INITIALIZED_PROVIDER_NAMES = new ArrayList<>();
         private final boolean logEachSelect;
+        private final DatabaseProvider<?, ?> databaseProvider;
 
         private static final class AlsoWriteToConsoleFileWriter extends FileWriter {
 
@@ -98,6 +98,7 @@ public final class Main {
             if (logEachSelect) {
                 curFile = new File(dir, databaseName + "-cur.log");
             }
+            this.databaseProvider = provider;
         }
 
         private void ensureExistsAndIsEmpty(File dir, DatabaseProvider<?, ?> provider) {
@@ -161,37 +162,32 @@ public final class Main {
             }
         }
 
-        public void writeCurrent(String queryString) {
-            write(queryString, "\n");
+        public void writeCurrent(String input) {
+            write(databaseProvider.getLoggableFactory().createLoggable(input));
         }
 
-        private void write(String queryString, String suffix) {
+        public void writeCurrentNoLineBreak(String input) {
+            write(databaseProvider.getLoggableFactory().createLoggableWithNoLinebreak(input));
+        }
+
+        private void write(Loggable loggable) {
             if (!logEachSelect) {
                 throw new UnsupportedOperationException();
             }
             try {
-                getCurrentFileWriter().write(queryString);
-                if (!queryString.endsWith(";")) {
-                    getCurrentFileWriter().write(';');
-                }
-                if (suffix != null && suffix.length() != 0) {
-                    getCurrentFileWriter().write(suffix);
-                }
+                getCurrentFileWriter().write(loggable.getLogString());
+
                 currentFileWriter.flush();
             } catch (IOException e) {
                 throw new AssertionError();
             }
         }
 
-        public void writeCurrentNoLineBreak(String queryString) {
-            write(queryString, "");
-        }
-
         public void logException(Throwable reduce, StateToReproduce state) {
-            String stackTrace = getStackTrace(reduce);
+            Loggable stackTrace = getStackTrace(reduce);
             FileWriter logFileWriter2 = getLogFileWriter();
             try {
-                logFileWriter2.write(stackTrace);
+                logFileWriter2.write(stackTrace.getLogString());
                 printState(logFileWriter2, state);
             } catch (IOException e) {
                 throw new AssertionError(e);
@@ -205,21 +201,16 @@ public final class Main {
             }
         }
 
-        private String getStackTrace(Throwable e1) {
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            e1.printStackTrace(pw);
-            return "--" + sw.toString().replace("\n", "\n--");
+        private Loggable getStackTrace(Throwable e1) {
+            return databaseProvider.getLoggableFactory().convertStacktraceToLoggable(e1);
         }
 
         private void printState(FileWriter writer, StateToReproduce state) {
             StringBuilder sb = new StringBuilder();
-            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-            Date date = new Date();
-            sb.append("-- Time: " + dateFormat.format(date) + "\n");
-            sb.append("-- Database: " + state.getDatabaseName() + "\n");
-            sb.append("-- Database version: " + state.getDatabaseVersion() + "\n");
-            sb.append("-- seed value: " + state.getSeedValue() + "\n");
+
+            sb.append(databaseProvider.getLoggableFactory()
+                    .getInfo(state.getDatabaseName(), state.getDatabaseVersion(), state.getSeedValue()).getLogString());
+
             for (Query s : state.getStatements()) {
                 sb.append(s.getQueryString());
                 sb.append('\n');

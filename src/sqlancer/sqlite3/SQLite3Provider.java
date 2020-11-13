@@ -11,8 +11,8 @@ import java.util.List;
 import sqlancer.AbstractAction;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
-import sqlancer.ProviderAdapter;
 import sqlancer.Randomly;
+import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
@@ -44,7 +44,7 @@ import sqlancer.sqlite3.gen.dml.SQLite3UpdateGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
-public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3Options> {
+public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLite3Options> {
 
     public static boolean allowFloatingPointFp = true;
     public static boolean mustKnowResult;
@@ -300,5 +300,4 @@ public class SQLite3Provider extends ProviderAdapter<SQLite3GlobalState, SQLite3
     public String getDBMSName() {
         return "sqlite3";
     }
-
 }

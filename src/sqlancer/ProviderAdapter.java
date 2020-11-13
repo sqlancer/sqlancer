@@ -23,7 +23,7 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ?>, O extends DBM
 
     @Override
     public StateToReproduce getStateToReproduce(String databaseName) {
-        return new StateToReproduce(databaseName);
+        return new StateToReproduce(databaseName, this);
     }
 
     @Override

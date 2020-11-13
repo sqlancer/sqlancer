@@ -9,8 +9,8 @@ import java.util.stream.Collectors;
 import sqlancer.AbstractAction;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
-import sqlancer.ProviderAdapter;
 import sqlancer.Randomly;
+import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
 import sqlancer.clickhouse.gen.ClickHouseCommon;
@@ -19,7 +19,7 @@ import sqlancer.clickhouse.gen.ClickHouseTableGenerator;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryProvider;
 
-public class ClickHouseProvider extends ProviderAdapter<ClickHouseGlobalState, ClickHouseOptions> {
+public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState, ClickHouseOptions> {
 
     public ClickHouseProvider() {
         super(ClickHouseGlobalState.class, ClickHouseOptions.class);
