@@ -7,15 +7,15 @@ import java.sql.SQLException;
 import sqlancer.AbstractAction;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
-import sqlancer.ProviderAdapter;
 import sqlancer.Randomly;
+import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
 import sqlancer.common.query.QueryProvider;
 import sqlancer.h2.H2Provider.H2GlobalState;
 
-public class H2Provider extends ProviderAdapter<H2GlobalState, H2Options> {
+public class H2Provider extends SQLProviderAdapter<H2GlobalState, H2Options> {
 
     public H2Provider() {
         super(H2GlobalState.class, H2Options.class);

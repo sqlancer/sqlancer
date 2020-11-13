@@ -7,8 +7,8 @@ import java.sql.Statement;
 
 import sqlancer.AbstractAction;
 import sqlancer.IgnoreMeException;
-import sqlancer.ProviderAdapter;
 import sqlancer.Randomly;
+import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
@@ -30,7 +30,7 @@ import sqlancer.mysql.gen.tblmaintenance.MySQLOptimize;
 import sqlancer.mysql.gen.tblmaintenance.MySQLRepair;
 import sqlancer.sqlite3.gen.SQLite3Common;
 
-public class MySQLProvider extends ProviderAdapter<MySQLGlobalState, MySQLOptions> {
+public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOptions> {
 
     public MySQLProvider() {
         super(MySQLGlobalState.class, MySQLOptions.class);

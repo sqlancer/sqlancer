@@ -140,4 +140,8 @@ public class QueryAdapter extends Query {
         return expectedErrors;
     }
 
+    @Override
+    public String getLogString() {
+        return getQueryString();
+    }
 }

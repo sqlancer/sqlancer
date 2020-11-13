@@ -3,8 +3,9 @@ package sqlancer.common.query;
 import java.sql.SQLException;
 
 import sqlancer.GlobalState;
+import sqlancer.common.log.Loggable;
 
-public abstract class Query {
+public abstract class Query implements Loggable {
 
     /**
      * Gets the query string, which is guaranteed to be terminated with a semicolon.

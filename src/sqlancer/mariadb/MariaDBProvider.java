@@ -10,8 +10,8 @@ import java.util.List;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.MainOptions;
-import sqlancer.ProviderAdapter;
 import sqlancer.Randomly;
+import sqlancer.SQLProviderAdapter;
 import sqlancer.common.query.Query;
 import sqlancer.mariadb.MariaDBProvider.MariaDBGlobalState;
 import sqlancer.mariadb.gen.MariaDBIndexGenerator;
@@ -23,7 +23,7 @@ import sqlancer.mariadb.gen.MariaDBTruncateGenerator;
 import sqlancer.mariadb.gen.MariaDBUpdateGenerator;
 import sqlancer.sqlite3.gen.SQLite3Common;
 
-public class MariaDBProvider extends ProviderAdapter<MariaDBGlobalState, MariaDBOptions> {
+public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, MariaDBOptions> {
 
     public static final int MAX_EXPRESSION_DEPTH = 3;
 
