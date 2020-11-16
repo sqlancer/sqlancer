@@ -1,6 +1,5 @@
 package sqlancer;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +14,7 @@ public class StatementExecutor<G extends GlobalState<?, ?>, A extends AbstractAc
 
     @FunctionalInterface
     public interface AfterQueryAction {
-        void notify(Query q) throws SQLException;
+        void notify(Query q) throws Exception;
     }
 
     @FunctionalInterface
@@ -30,7 +29,7 @@ public class StatementExecutor<G extends GlobalState<?, ?>, A extends AbstractAc
         this.queryConsumer = queryConsumer;
     }
 
-    public void executeStatements() throws SQLException {
+    public void executeStatements() throws Exception {
         Randomly r = globalState.getRandomly();
         int[] nrRemaining = new int[actions.length];
         List<A> availableActions = new ArrayList<>();

@@ -105,7 +105,7 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             this.queryProvider = queryProvider;
         }
 
-        public Query getQuery(CockroachDBGlobalState state) throws SQLException {
+        public Query getQuery(CockroachDBGlobalState state) throws Exception {
             return queryProvider.getQuery(state);
         }
     }
@@ -120,7 +120,7 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
     }
 
     @Override
-    public void generateDatabase(CockroachDBGlobalState globalState) throws SQLException {
+    public void generateDatabase(CockroachDBGlobalState globalState) throws Exception {
         QueryManager manager = globalState.getManager();
         MainOptions options = globalState.getOptions();
         List<String> standardSettings = new ArrayList<>();

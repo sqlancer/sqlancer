@@ -1,6 +1,5 @@
 package sqlancer.common.oracle;
 
-import java.sql.SQLException;
 import java.util.List;
 
 import sqlancer.GlobalState;
@@ -17,7 +16,7 @@ public class CompositeTestOracle implements TestOracle {
     }
 
     @Override
-    public void check() throws SQLException {
+    public void check() throws Exception {
         try {
             oracles[i].check();
             boolean lastOracleIndex = i == oracles.length - 1;

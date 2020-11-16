@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -232,7 +231,7 @@ public final class Main {
             this.globalState = globalState;
         }
 
-        public boolean execute(Query q, String... fills) throws SQLException {
+        public boolean execute(Query q, String... fills) throws Exception {
             globalState.getState().logStatement(q);
             boolean success;
             success = q.execute(globalState, fills);
@@ -240,7 +239,7 @@ public final class Main {
             return success;
         }
 
-        public SQLancerResultSet executeAndGet(Query q, String... fills) throws SQLException {
+        public SQLancerResultSet executeAndGet(Query q, String... fills) throws Exception {
             globalState.getState().logStatement(q);
             SQLancerResultSet result;
             result = q.executeAndGet(globalState, fills);
@@ -293,14 +292,14 @@ public final class Main {
             return command;
         }
 
-        public void testConnection() throws SQLException {
+        public void testConnection() throws Exception {
             G state = getInitializedGlobalState(options.getRandomSeed());
             try (Connection con = provider.createDatabase(state)) {
                 return;
             }
         }
 
-        public void run() throws SQLException {
+        public void run() throws Exception {
             G state = createGlobalState();
             stateToRepro = provider.getStateToReproduce(databaseName);
             stateToRepro.seedValue = r.getSeed();
@@ -455,7 +454,7 @@ public final class Main {
             try {
                 executorFactory.getDBMSExecutor(options.getDatabasePrefix() + "connectiontest", new Randomly())
                         .testConnection();
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 System.err.println(
                         "SQLancer failed creating a test database, indicating that SQLancer might have failed connecting to the DBMS. In order to change the username and password, you can use the --username and --password options. Currently, SQLancer does not yet support passing a host and port (see https://github.com/sqlancer/sqlancer/issues/95).\n\n");
                 e.printStackTrace();

@@ -1,12 +1,10 @@
 package sqlancer;
 
-import java.sql.SQLException;
-
 import sqlancer.common.query.Query;
 
 public interface AbstractAction<G> {
 
-    Query getQuery(G globalState) throws SQLException;
+    Query getQuery(G globalState) throws Exception;
 
     /**
      * Specifies whether it makes sense to request a {@link Query}, when the previous call to {@link #getQuery(Object)}

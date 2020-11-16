@@ -1,7 +1,5 @@
 package sqlancer.sqlite3.oracle;
 
-import java.sql.SQLException;
-
 import sqlancer.Randomly;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.QueryAdapter;
@@ -18,7 +16,7 @@ public class SQLite3Fuzzer implements TestOracle {
     }
 
     @Override
-    public void check() throws SQLException {
+    public void check() throws Exception {
         String s = SQLite3Visitor
                 .asString(SQLite3RandomQuerySynthesizer.generate(globalState, Randomly.smallNumber() + 1)) + ";";
         try {

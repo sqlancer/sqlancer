@@ -1,6 +1,5 @@
 package sqlancer.common.oracle;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +33,7 @@ public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?>, R e
     }
 
     @Override
-    public final void check() throws SQLException {
+    public final void check() throws Exception {
         rectifiedPredicates.clear();
         Query pivotRowQuery = getRectifiedQuery();
         if (globalState.getOptions().logEachSelect()) {
@@ -60,9 +59,9 @@ public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?>, R e
      *
      * @return true if at least one row is contained, false otherwise
      *
-     * @throws SQLException
+     * @throws Exception
      */
-    private boolean containsRows(Query query) throws SQLException {
+    private boolean containsRows(Query query) throws Exception {
         try (SQLancerResultSet result = query.executeAndGet(globalState)) {
             if (result == null) {
                 throw new IgnoreMeException();
@@ -107,9 +106,9 @@ public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?>, R e
      *
      * @return a query that checks whether the pivot row is contained in pivotRowQuery
      *
-     * @throws SQLException
+     * @throws Exception
      */
-    protected abstract Query getContainmentCheckQuery(Query pivotRowQuery) throws SQLException;
+    protected abstract Query getContainmentCheckQuery(Query pivotRowQuery) throws Exception;
 
     /**
      * Obtains a rectified query (i.e., a query that is guaranteed to fetch the pivot row. This corresponds to steps 2-5
@@ -117,9 +116,9 @@ public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?>, R e
      *
      * @return the rectified query
      *
-     * @throws SQLException
+     * @throws Exception
      */
-    protected abstract Query getRectifiedQuery() throws SQLException;
+    protected abstract Query getRectifiedQuery() throws Exception;
 
     /**
      * Prints the value to which the expression is expected to evaluate, and then recursively prints the subexpressions'
