@@ -45,7 +45,7 @@ public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, Mari
     }
 
     @Override
-    public void generateDatabase(MariaDBGlobalState globalState) throws SQLException {
+    public void generateDatabase(MariaDBGlobalState globalState) throws Exception {
         MainOptions options = globalState.getOptions();
 
         while (globalState.getSchema().getDatabaseTables().size() < Randomly.smallNumber() + 1) {

@@ -71,6 +71,7 @@
 		<exclude name="SingularField" />
 		<exclude name="ExcessiveMethodLength" />
 		<exclude name="TooManyFields" />
+		<exclude name="SignatureDeclareThrowsException" />
 	</rule>
 	<rule ref="category/java/performance.xml">
 		<priority>2</priority>

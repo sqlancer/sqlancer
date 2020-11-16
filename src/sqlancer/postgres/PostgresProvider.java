@@ -121,7 +121,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         }
 
         @Override
-        public Query getQuery(PostgresGlobalState state) throws SQLException {
+        public Query getQuery(PostgresGlobalState state) throws Exception {
             return queryProvider.getQuery(state);
         }
     }
@@ -188,7 +188,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
     }
 
     @Override
-    public void generateDatabase(PostgresGlobalState globalState) throws SQLException {
+    public void generateDatabase(PostgresGlobalState globalState) throws Exception {
         readFunctions(globalState);
         createTables(globalState, Randomly.fromOptions(4, 5, 6));
         prepareTables(globalState);
@@ -268,7 +268,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         }
     }
 
-    protected void createTables(PostgresGlobalState globalState, int numTables) throws SQLException {
+    protected void createTables(PostgresGlobalState globalState, int numTables) throws Exception {
         while (globalState.getSchema().getDatabaseTables().size() < numTables) {
             try {
                 String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
@@ -281,7 +281,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         }
     }
 
-    protected void prepareTables(PostgresGlobalState globalState) throws SQLException {
+    protected void prepareTables(PostgresGlobalState globalState) throws Exception {
         StatementExecutor<PostgresGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
                 PostgresProvider::mapActions, (q) -> {
                     if (globalState.getSchema().getDatabaseTables().isEmpty()) {

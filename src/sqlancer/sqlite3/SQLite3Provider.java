@@ -107,7 +107,7 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
         }
 
         @Override
-        public Query getQuery(SQLite3GlobalState state) throws SQLException {
+        public Query getQuery(SQLite3GlobalState state) throws Exception {
             return queryProvider.getQuery(state);
         }
     }
@@ -178,7 +178,7 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
     }
 
     @Override
-    public void generateDatabase(SQLite3GlobalState globalState) throws SQLException {
+    public void generateDatabase(SQLite3GlobalState globalState) throws Exception {
         Randomly r = new Randomly(SQLite3SpecialStringGenerator::generate);
         globalState.setRandomly(r);
         if (globalState.getDmbsSpecificOptions().generateDatabase) {
@@ -221,7 +221,7 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
         }
     }
 
-    private void checkTablesForGeneratedColumnLoops(SQLite3GlobalState globalState) throws SQLException {
+    private void checkTablesForGeneratedColumnLoops(SQLite3GlobalState globalState) throws Exception {
         for (SQLite3Table table : globalState.getSchema().getDatabaseTables()) {
             Query q = new QueryAdapter("SELECT * FROM " + table.getName(),
                     ExpectedErrors.from("needs an odd number of arguments", " requires an even number of arguments",
@@ -263,7 +263,7 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
         return tableQuery;
     }
 
-    private void addSensiblePragmaDefaults(SQLite3GlobalState globalState) throws SQLException {
+    private void addSensiblePragmaDefaults(SQLite3GlobalState globalState) throws Exception {
         List<String> pragmasToExecute = new ArrayList<>();
         if (!Randomly.getBooleanWithSmallProbability()) {
             pragmasToExecute.addAll(DEFAULT_PRAGMAS);

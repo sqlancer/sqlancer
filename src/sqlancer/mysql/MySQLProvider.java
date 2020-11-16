@@ -66,7 +66,7 @@ public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOpt
         }
 
         @Override
-        public Query getQuery(MySQLGlobalState globalState) throws SQLException {
+        public Query getQuery(MySQLGlobalState globalState) throws Exception {
             return queryProvider.getQuery(globalState);
         }
     }
@@ -131,7 +131,7 @@ public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOpt
     }
 
     @Override
-    public void generateDatabase(MySQLGlobalState globalState) throws SQLException {
+    public void generateDatabase(MySQLGlobalState globalState) throws Exception {
         while (globalState.getSchema().getDatabaseTables().size() < Randomly.smallNumber() + 1) {
             String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
             Query createTable = MySQLTableGenerator.generate(globalState, tableName);

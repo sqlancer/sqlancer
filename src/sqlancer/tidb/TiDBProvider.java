@@ -61,7 +61,7 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
         }
 
         @Override
-        public Query getQuery(TiDBGlobalState state) throws SQLException {
+        public Query getQuery(TiDBGlobalState state) throws Exception {
             return queryProvider.getQuery(state);
         }
     }
@@ -103,7 +103,7 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
     }
 
     @Override
-    public void generateDatabase(TiDBGlobalState globalState) throws SQLException {
+    public void generateDatabase(TiDBGlobalState globalState) throws Exception {
         for (int i = 0; i < Randomly.fromOptions(1, 2); i++) {
             boolean success = false;
             do {

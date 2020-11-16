@@ -55,7 +55,7 @@ public class DuckDBProvider extends SQLProviderAdapter<DuckDBGlobalState, DuckDB
         }
 
         @Override
-        public Query getQuery(DuckDBGlobalState state) throws SQLException {
+        public Query getQuery(DuckDBGlobalState state) throws Exception {
             return queryProvider.getQuery(state);
         }
     }
@@ -95,7 +95,7 @@ public class DuckDBProvider extends SQLProviderAdapter<DuckDBGlobalState, DuckDB
     }
 
     @Override
-    public void generateDatabase(DuckDBGlobalState globalState) throws SQLException {
+    public void generateDatabase(DuckDBGlobalState globalState) throws Exception {
         for (int i = 0; i < Randomly.fromOptions(1, 2); i++) {
             boolean success = false;
             do {

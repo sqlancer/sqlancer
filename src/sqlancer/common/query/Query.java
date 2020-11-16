@@ -1,7 +1,5 @@
 package sqlancer.common.query;
 
-import java.sql.SQLException;
-
 import sqlancer.GlobalState;
 import sqlancer.common.log.Loggable;
 
@@ -28,7 +26,7 @@ public abstract class Query implements Loggable {
      */
     public abstract boolean couldAffectSchema();
 
-    public abstract boolean execute(GlobalState<?, ?> globalState, String... fills) throws SQLException;
+    public abstract boolean execute(GlobalState<?, ?> globalState, String... fills) throws Exception;
 
     public abstract ExpectedErrors getExpectedErrors();
 
@@ -37,16 +35,16 @@ public abstract class Query implements Loggable {
         return getQueryString();
     }
 
-    public SQLancerResultSet executeAndGet(GlobalState<?, ?> globalState, String... fills) throws SQLException {
+    public SQLancerResultSet executeAndGet(GlobalState<?, ?> globalState, String... fills) throws Exception {
         throw new AssertionError();
     }
 
-    public boolean executeLogged(GlobalState<?, ?> globalState) throws SQLException {
+    public boolean executeLogged(GlobalState<?, ?> globalState) throws Exception {
         logQueryString(globalState);
         return execute(globalState);
     }
 
-    public SQLancerResultSet executeAndGetLogged(GlobalState<?, ?> globalState) throws SQLException {
+    public SQLancerResultSet executeAndGetLogged(GlobalState<?, ?> globalState) throws Exception {
         logQueryString(globalState);
         return executeAndGet(globalState);
     }

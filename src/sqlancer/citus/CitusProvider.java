@@ -113,7 +113,7 @@ public class CitusProvider extends PostgresProvider {
         }
 
         @Override
-        public Query getQuery(PostgresGlobalState state) throws SQLException {
+        public Query getQuery(PostgresGlobalState state) throws Exception {
             return queryProvider.getQuery(state);
         }
     }
@@ -200,7 +200,7 @@ public class CitusProvider extends PostgresProvider {
     }
 
     private static void distributeTable(List<PostgresColumn> columns, String tableName, CitusGlobalState globalState)
-            throws SQLException {
+            throws Exception {
         if (!columns.isEmpty()) {
             PostgresColumn columnToDistribute = Randomly.fromList(columns);
             String queryString = "SELECT create_distributed_table('" + tableName + "', '" + columnToDistribute.getName()
@@ -227,7 +227,7 @@ public class CitusProvider extends PostgresProvider {
         return constraints;
     }
 
-    private static void createDistributedTable(String tableName, CitusGlobalState globalState) throws SQLException {
+    private static void createDistributedTable(String tableName, CitusGlobalState globalState) throws Exception {
         List<PostgresColumn> columns = new ArrayList<>();
         List<String> tableConstraints = getTableConstraints(tableName, globalState);
         if (tableConstraints.isEmpty()) {
@@ -276,7 +276,7 @@ public class CitusProvider extends PostgresProvider {
     }
 
     @Override
-    public void generateDatabase(PostgresGlobalState globalState) throws SQLException {
+    public void generateDatabase(PostgresGlobalState globalState) throws Exception {
         readFunctions(globalState);
         createTables(globalState, Randomly.fromOptions(4, 5, 6));
         for (PostgresTable table : globalState.getSchema().getDatabaseTables()) {
@@ -307,7 +307,7 @@ public class CitusProvider extends PostgresProvider {
         List<TestOracle> oracles = ((CitusOptions) globalState.getDmbsSpecificOptions()).citusOracle.stream().map(o -> {
             try {
                 return o.create(globalState);
-            } catch (SQLException e1) {
+            } catch (Exception e1) {
                 throw new AssertionError(e1);
             }
         }).collect(Collectors.toList());
@@ -424,7 +424,7 @@ public class CitusProvider extends PostgresProvider {
     }
 
     @Override
-    protected void prepareTables(PostgresGlobalState globalState) throws SQLException {
+    protected void prepareTables(PostgresGlobalState globalState) throws Exception {
         StatementExecutor<PostgresGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
                 CitusProvider::mapActions, (q) -> {
                     if (globalState.getSchema().getDatabaseTables().isEmpty()) {

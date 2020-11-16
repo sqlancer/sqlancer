@@ -1,7 +1,5 @@
 package sqlancer.sqlite3.gen;
 
-import java.sql.SQLException;
-
 import sqlancer.Randomly;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.QueryAdapter;
@@ -14,7 +12,7 @@ public final class SQLite3ExplainGenerator {
     private SQLite3ExplainGenerator() {
     }
 
-    public static Query explain(SQLite3GlobalState globalState) throws SQLException {
+    public static Query explain(SQLite3GlobalState globalState) throws Exception {
         StringBuilder sb = new StringBuilder();
         sb.append("EXPLAIN ");
         if (Randomly.getBoolean()) {

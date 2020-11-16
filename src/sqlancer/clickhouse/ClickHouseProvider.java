@@ -36,7 +36,7 @@ public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState
         }
 
         @Override
-        public Query getQuery(ClickHouseGlobalState state) throws SQLException {
+        public Query getQuery(ClickHouseGlobalState state) throws Exception {
             return queryProvider.getQuery(state);
         }
     }
@@ -80,7 +80,7 @@ public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState
     }
 
     @Override
-    public void generateDatabase(ClickHouseGlobalState globalState) throws SQLException {
+    public void generateDatabase(ClickHouseGlobalState globalState) throws Exception {
         for (int i = 0; i < Randomly.fromOptions(1); i++) {
             boolean success;
             do {

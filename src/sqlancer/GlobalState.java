@@ -1,7 +1,6 @@
 package sqlancer;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 
 import sqlancer.Main.QueryManager;
 import sqlancer.Main.StateLogger;
@@ -95,7 +94,7 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
         this.databaseName = databaseName;
     }
 
-    private ExecutionTimer executePrologue(Query q) throws SQLException {
+    private ExecutionTimer executePrologue(Query q) throws Exception {
         boolean logExecutionTime = getOptions().logExecutionTime();
         ExecutionTimer timer = null;
         if (logExecutionTime) {
@@ -114,7 +113,7 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
         return timer;
     }
 
-    private void executeEpilogue(Query q, boolean success, ExecutionTimer timer) throws SQLException {
+    private void executeEpilogue(Query q, boolean success, ExecutionTimer timer) throws Exception {
         boolean logExecutionTime = getOptions().logExecutionTime();
         if (success && getOptions().printSucceedingStatements()) {
             System.out.println(q.getQueryString());
@@ -127,14 +126,14 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
         }
     }
 
-    public boolean executeStatement(Query q, String... fills) throws SQLException {
+    public boolean executeStatement(Query q, String... fills) throws Exception {
         ExecutionTimer timer = executePrologue(q);
         boolean success = manager.execute(q, fills);
         executeEpilogue(q, success, timer);
         return success;
     }
 
-    public SQLancerResultSet executeStatementAndGet(Query q, String... fills) throws SQLException {
+    public SQLancerResultSet executeStatementAndGet(Query q, String... fills) throws Exception {
         ExecutionTimer timer = executePrologue(q);
         SQLancerResultSet result = manager.executeAndGet(q, fills);
         boolean success = result != null;
@@ -142,7 +141,7 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
             result.registerEpilogue(() -> {
                 try {
                     executeEpilogue(q, success, timer);
-                } catch (SQLException e) {
+                } catch (Exception e) {
                     throw new AssertionError(e);
                 }
             });
@@ -154,7 +153,7 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
         if (schema == null) {
             try {
                 updateSchema();
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 throw new AssertionError();
             }
         }
@@ -165,13 +164,13 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
         this.schema = schema;
     }
 
-    public void updateSchema() throws SQLException {
+    public void updateSchema() throws Exception {
         setSchema(readSchema());
         for (AbstractTable<?, ?> table : schema.getDatabaseTables()) {
             table.recomputeCount();
         }
     }
 
-    protected abstract S readSchema() throws SQLException;
+    protected abstract S readSchema() throws Exception;
 
 }
