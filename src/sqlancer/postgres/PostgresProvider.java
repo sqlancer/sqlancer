@@ -29,7 +29,6 @@ import sqlancer.postgres.gen.PostgresDropIndexGenerator;
 import sqlancer.postgres.gen.PostgresIndexGenerator;
 import sqlancer.postgres.gen.PostgresInsertGenerator;
 import sqlancer.postgres.gen.PostgresNotifyGenerator;
-import sqlancer.postgres.gen.PostgresQueryCatalogGenerator;
 import sqlancer.postgres.gen.PostgresReindexGenerator;
 import sqlancer.postgres.gen.PostgresSequenceGenerator;
 import sqlancer.postgres.gen.PostgresSetGenerator;
@@ -112,8 +111,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         LISTEN((g) -> PostgresNotifyGenerator.createListen()), //
         UNLISTEN((g) -> PostgresNotifyGenerator.createUnlisten()), //
         CREATE_SEQUENCE(PostgresSequenceGenerator::createSequence), //
-        CREATE_VIEW(PostgresViewGenerator::create), //
-        QUERY_CATALOG((g) -> PostgresQueryCatalogGenerator.query());
+        CREATE_VIEW(PostgresViewGenerator::create);
 
         private final QueryProvider<PostgresGlobalState> queryProvider;
 
@@ -155,7 +153,6 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         case DELETE:
         case RESET_ROLE:
         case SET:
-        case QUERY_CATALOG:
             nrPerformed = r.getInteger(0, 5);
             break;
         case ANALYZE:

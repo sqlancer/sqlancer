@@ -1,6 +1,5 @@
 package sqlancer.citus;
 
-import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -44,7 +43,6 @@ import sqlancer.postgres.gen.PostgresCommentGenerator;
 import sqlancer.postgres.gen.PostgresDiscardGenerator;
 import sqlancer.postgres.gen.PostgresDropIndexGenerator;
 import sqlancer.postgres.gen.PostgresNotifyGenerator;
-import sqlancer.postgres.gen.PostgresQueryCatalogGenerator;
 import sqlancer.postgres.gen.PostgresReindexGenerator;
 import sqlancer.postgres.gen.PostgresSequenceGenerator;
 import sqlancer.postgres.gen.PostgresStatisticsGenerator;
@@ -104,8 +102,7 @@ public class CitusProvider extends PostgresProvider {
         LISTEN((g) -> PostgresNotifyGenerator.createListen()), //
         UNLISTEN((g) -> PostgresNotifyGenerator.createUnlisten()), //
         CREATE_SEQUENCE(PostgresSequenceGenerator::createSequence), //
-        CREATE_VIEW(CitusViewGenerator::create), //
-        QUERY_CATALOG((g) -> PostgresQueryCatalogGenerator.query());
+        CREATE_VIEW(CitusViewGenerator::create);
 
         private final QueryProvider<PostgresGlobalState> queryProvider;
 
@@ -147,7 +144,6 @@ public class CitusProvider extends PostgresProvider {
         case DELETE:
         case RESET_ROLE:
         case SET:
-        case QUERY_CATALOG:
             nrPerformed = r.getInteger(0, 5);
             break;
         case ANALYZE:
