@@ -13,7 +13,7 @@ public class StateToReproduce {
 
     private final String databaseName;
 
-    private final DatabaseProvider<?, ?> databaseProvider;
+    private final DatabaseProvider<?, ?, ?> databaseProvider;
 
     public String databaseVersion;
 
@@ -23,7 +23,7 @@ public class StateToReproduce {
 
     public OracleRunReproductionState localState;
 
-    public StateToReproduce(String databaseName, DatabaseProvider<?, ?> databaseProvider) {
+    public StateToReproduce(String databaseName, DatabaseProvider<?, ?, ?> databaseProvider) {
         this.databaseName = databaseName;
         this.databaseProvider = databaseProvider;
     }

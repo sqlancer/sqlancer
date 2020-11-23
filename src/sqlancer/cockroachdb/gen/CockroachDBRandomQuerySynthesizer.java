@@ -15,7 +15,7 @@ import sqlancer.cockroachdb.ast.CockroachDBSelect;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 import sqlancer.cockroachdb.oracle.CockroachDBNoRECOracle;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 
 public final class CockroachDBRandomQuerySynthesizer {
 
@@ -24,7 +24,7 @@ public final class CockroachDBRandomQuerySynthesizer {
 
     public static Query generate(CockroachDBGlobalState globalState, int nrColumns) {
         CockroachDBSelect select = generateSelect(globalState, nrColumns);
-        return new QueryAdapter(CockroachDBVisitor.asString(select));
+        return new SQLQueryAdapter(CockroachDBVisitor.asString(select));
     }
 
     public static CockroachDBSelect generateSelect(CockroachDBGlobalState globalState, int nrColumns) {

@@ -3,14 +3,14 @@ package sqlancer.common.oracle;
 import java.util.ArrayList;
 import java.util.List;
 
-import sqlancer.GlobalState;
+import sqlancer.SQLGlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.common.schema.AbstractRowValue;
 
-public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?>, R extends AbstractRowValue<?, ?, ?>, E>
+public abstract class PivotedQuerySynthesisBase<S extends SQLGlobalState<?, ?>, R extends AbstractRowValue<?, ?, ?>, E>
         implements TestOracle {
 
     protected final ExpectedErrors errors = new ExpectedErrors();

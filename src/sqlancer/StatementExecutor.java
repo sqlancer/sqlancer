@@ -5,7 +5,7 @@ import java.util.List;
 
 import sqlancer.common.query.Query;
 
-public class StatementExecutor<G extends GlobalState<?, ?>, A extends AbstractAction<G>> {
+public class StatementExecutor<G extends GlobalState<?, ?, ?>, A extends AbstractAction<G>> {
 
     private final G globalState;
     private final A[] actions;

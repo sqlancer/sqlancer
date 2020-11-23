@@ -9,7 +9,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
@@ -74,7 +74,7 @@ public class SQLite3TLPAggregateOracle implements TestOracle {
         // state.getState().queryString = "--" + finalText;
         String firstResult;
         String secondResult;
-        QueryAdapter q = new QueryAdapter(originalQuery, errors);
+        SQLQueryAdapter q = new SQLQueryAdapter(originalQuery, errors);
         try (SQLancerResultSet result = q.executeAndGet(state)) {
             if (result == null) {
                 throw new IgnoreMeException();
@@ -85,7 +85,7 @@ public class SQLite3TLPAggregateOracle implements TestOracle {
             throw new IgnoreMeException();
         }
 
-        QueryAdapter q2 = new QueryAdapter(metamorphicText, errors);
+        SQLQueryAdapter q2 = new SQLQueryAdapter(metamorphicText, errors);
         try (SQLancerResultSet result = q2.executeAndGet(state)) {
             if (result == null) {
                 throw new IgnoreMeException();

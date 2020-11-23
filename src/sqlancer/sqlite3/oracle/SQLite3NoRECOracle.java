@@ -9,7 +9,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.oracle.NoRECBase;
 import sqlancer.common.oracle.TestOracle;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
@@ -84,7 +84,7 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
         if (options.logEachSelect()) {
             logger.writeCurrent(unoptimizedQueryString);
         }
-        QueryAdapter q = new QueryAdapter(unoptimizedQueryString, errors);
+        SQLQueryAdapter q = new SQLQueryAdapter(unoptimizedQueryString, errors);
         return extractCounts(q);
     }
 
@@ -105,11 +105,11 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
         if (options.logEachSelect()) {
             logger.writeCurrent(optimizedQueryString);
         }
-        QueryAdapter q = new QueryAdapter(optimizedQueryString, errors);
+        SQLQueryAdapter q = new SQLQueryAdapter(optimizedQueryString, errors);
         return useAggregate ? extractCounts(q) : countRows(q);
     }
 
-    private int countRows(QueryAdapter q) {
+    private int countRows(SQLQueryAdapter q) {
         int count = 0;
         try (SQLancerResultSet rs = q.executeAndGet(state)) {
             if (rs == null) {
@@ -132,7 +132,7 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
         return count;
     }
 
-    private int extractCounts(QueryAdapter q) {
+    private int extractCounts(SQLQueryAdapter q) {
         int count = 0;
         try (SQLancerResultSet rs = q.executeAndGet(state)) {
             if (rs == null) {

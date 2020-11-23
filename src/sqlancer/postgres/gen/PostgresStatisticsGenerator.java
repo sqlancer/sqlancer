@@ -7,7 +7,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresStatisticsObject;
@@ -44,7 +44,7 @@ public final class PostgresStatisticsGenerator {
         sb.append(randomColumns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
         sb.append(" FROM ");
         sb.append(randomTable.getName());
-        return new QueryAdapter(sb.toString(), ExpectedErrors.from("cannot have more than 8 columns in statistics"),
+        return new SQLQueryAdapter(sb.toString(), ExpectedErrors.from("cannot have more than 8 columns in statistics"),
                 true);
     }
 
@@ -56,7 +56,7 @@ public final class PostgresStatisticsGenerator {
             throw new IgnoreMeException();
         }
         sb.append(Randomly.fromList(statistics).getName());
-        return new QueryAdapter(sb.toString(), true);
+        return new SQLQueryAdapter(sb.toString(), true);
     }
 
     private static String getNewStatisticsName(PostgresTable randomTable) {

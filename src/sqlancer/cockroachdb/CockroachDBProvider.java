@@ -8,7 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.GlobalState;
+import sqlancer.SQLConnection;
+import sqlancer.SQLGlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
 import sqlancer.MainOptions;
@@ -31,7 +32,7 @@ import sqlancer.cockroachdb.gen.CockroachDBUpdateGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBViewGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.QueryProvider;
 
 public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalState, CockroachDBOptions> {
@@ -54,7 +55,7 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
         SHOW(CockroachDBShowGenerator::show), //
         TRANSACTION((g) -> {
             String s = Randomly.fromOptions("BEGIN", "ROLLBACK", "COMMIT");
-            return new QueryAdapter(s,
+            return new SQLQueryAdapter(s,
                     ExpectedErrors.from("there is no transaction in progress",
                             "there is already a transaction in progress", "current transaction is aborted",
                             "does not exist" /* interleaved indexes */));
@@ -74,9 +75,9 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             }
             sb.append(CockroachDBRandomQuerySynthesizer.generate(g, Randomly.smallNumber() + 1));
             CockroachDBErrors.addExpressionErrors(errors);
-            return new QueryAdapter(sb.toString(), errors);
+            return new SQLQueryAdapter(sb.toString(), errors);
         }), //
-        SCRUB((g) -> new QueryAdapter(
+        SCRUB((g) -> new SQLQueryAdapter(
                 "EXPERIMENTAL SCRUB table " + g.getSchema().getRandomTable(t -> !t.isView()).getName(),
                 // https://github.com/cockroachdb/cockroach/issues/46401
                 ExpectedErrors.from("scrub-fk: column \"t.rowid\" does not exist",
@@ -96,7 +97,7 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             } else {
                 sb.append(" SPLIT AT VALUES (NULL);");
             }
-            return new QueryAdapter(sb.toString(), ExpectedErrors.from("must be of type"));
+            return new SQLQueryAdapter(sb.toString(), ExpectedErrors.from("must be of type"));
         });
 
         private final QueryProvider<CockroachDBGlobalState> queryProvider;
@@ -110,7 +111,7 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
         }
     }
 
-    public static class CockroachDBGlobalState extends GlobalState<CockroachDBOptions, CockroachDBSchema> {
+    public static class CockroachDBGlobalState extends SQLGlobalState<CockroachDBOptions, CockroachDBSchema> {
 
         @Override
         protected CockroachDBSchema readSchema() throws SQLException {
@@ -142,7 +143,7 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             standardSettings.add("SET experimental_enable_temp_tables = 'on'");
         }
         for (String s : standardSettings) {
-            manager.execute(new QueryAdapter(s));
+            manager.execute(new SQLQueryAdapter(s));
         }
 
         for (int i = 0; i < Randomly.fromOptions(2, 3); i++) {
@@ -242,12 +243,12 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             total--;
         }
         if (globalState.getDmbsSpecificOptions().makeVectorizationMoreLikely && Randomly.getBoolean()) {
-            manager.execute(new QueryAdapter("SET vectorize=on;"));
+            manager.execute(new SQLQueryAdapter("SET vectorize=on;"));
         }
     }
 
     @Override
-    public Connection createDatabase(CockroachDBGlobalState globalState) throws SQLException {
+    public SQLConnection createDatabase(CockroachDBGlobalState globalState) throws SQLException {
         String databaseName = globalState.getDatabaseName();
         String url = "jdbc:postgresql://localhost:26257/test";
         Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
@@ -272,7 +273,7 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
         con.close();
         con = DriverManager.getConnection("jdbc:postgresql://localhost:26257/" + databaseName,
                 globalState.getOptions().getUserName(), globalState.getOptions().getPassword());
-        return con;
+        return new SQLConnection(con);
     }
 
     @Override

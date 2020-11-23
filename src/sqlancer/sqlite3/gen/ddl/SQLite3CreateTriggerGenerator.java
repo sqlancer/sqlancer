@@ -8,7 +8,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
@@ -109,7 +109,7 @@ public final class SQLite3CreateTriggerGenerator {
         }
         sb.append("END");
 
-        return new QueryAdapter(sb.toString(),
+        return new SQLQueryAdapter(sb.toString(),
                 ExpectedErrors.from("parser stack overflow", "unsupported frame specification"));
     }
 

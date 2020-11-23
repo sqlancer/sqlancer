@@ -5,7 +5,7 @@ import java.util.Arrays;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
@@ -41,7 +41,7 @@ public final class SQLite3DeleteGenerator {
                 "cannot INSERT into generated column", "A table in the database is locked",
                 "load_extension() prohibited in triggers and views", "The database file is locked"));
         SQLite3Errors.addDeleteErrors(errors);
-        return new QueryAdapter(sb.toString(), errors, true);
+        return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 
 }

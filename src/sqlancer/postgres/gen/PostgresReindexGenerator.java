@@ -7,7 +7,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresIndex;
 
@@ -62,7 +62,7 @@ public final class PostgresReindexGenerator {
         errors.add("already contains data"); // FIXME bug report
         errors.add("does not exist"); // internal index
         errors.add("REINDEX is not yet implemented for partitioned indexes");
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
 }

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.SQLConnection;
 import sqlancer.postgres.PostgresSchema;
 
 public class CitusSchema extends PostgresSchema {
@@ -56,7 +57,7 @@ public class CitusSchema extends PostgresSchema {
 
     }
 
-    public static CitusSchema fromConnection(Connection con, String databaseName) throws SQLException {
+    public static CitusSchema fromConnection(SQLConnection con, String databaseName) throws SQLException {
         PostgresSchema schema = PostgresSchema.fromConnection(con, databaseName);
         try {
             List<CitusTable> databaseTables = new ArrayList<>();

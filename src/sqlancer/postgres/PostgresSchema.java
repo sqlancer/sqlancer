@@ -1,6 +1,5 @@
 package sqlancer.postgres;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
@@ -15,9 +14,10 @@ import org.postgresql.util.PSQLException;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.SQLConnection;
 import sqlancer.common.schema.AbstractRowValue;
 import sqlancer.common.schema.AbstractSchema;
-import sqlancer.common.schema.AbstractTable;
+import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.common.schema.TableIndex;
@@ -25,7 +25,7 @@ import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresSchema.PostgresTable.TableType;
 import sqlancer.postgres.ast.PostgresConstant;
 
-public class PostgresSchema extends AbstractSchema<PostgresTable> {
+public class PostgresSchema extends AbstractSchema<PostgresGlobalState, PostgresTable> {
 
     private final String databaseName;
 
@@ -65,7 +65,7 @@ public class PostgresSchema extends AbstractSchema<PostgresTable> {
             super(tables);
         }
 
-        public PostgresRowValue getRandomRowValue(Connection con) throws SQLException {
+        public PostgresRowValue getRandomRowValue(SQLConnection con) throws SQLException {
             String randomRow = String.format("SELECT %s FROM %s ORDER BY RANDOM() LIMIT 1", columnNamesAsString(
                     c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
                     // columnNamesAsString(c -> "typeof(" + c.getTable().getName() + "." +
@@ -152,7 +152,7 @@ public class PostgresSchema extends AbstractSchema<PostgresTable> {
 
     }
 
-    public static class PostgresTable extends AbstractTable<PostgresColumn, PostgresIndex> {
+    public static class PostgresTable extends AbstractRelationalTable<PostgresColumn, PostgresIndex, PostgresGlobalState> {
 
         public enum TableType {
             STANDARD, TEMPORARY
@@ -217,7 +217,7 @@ public class PostgresSchema extends AbstractSchema<PostgresTable> {
 
     }
 
-    public static PostgresSchema fromConnection(Connection con, String databaseName) throws SQLException {
+    public static PostgresSchema fromConnection(SQLConnection con, String databaseName) throws SQLException {
         try {
             List<PostgresTable> databaseTables = new ArrayList<>();
             try (Statement s = con.createStatement()) {
@@ -251,7 +251,7 @@ public class PostgresSchema extends AbstractSchema<PostgresTable> {
         }
     }
 
-    protected static List<PostgresStatisticsObject> getStatistics(Connection con) throws SQLException {
+    protected static List<PostgresStatisticsObject> getStatistics(SQLConnection con) throws SQLException {
         List<PostgresStatisticsObject> statistics = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery("SELECT stxname FROM pg_statistic_ext ORDER BY stxname;")) {
@@ -275,7 +275,7 @@ public class PostgresSchema extends AbstractSchema<PostgresTable> {
         return tableType;
     }
 
-    protected static List<PostgresIndex> getIndexes(Connection con, String tableName) throws SQLException {
+    protected static List<PostgresIndex> getIndexes(SQLConnection con, String tableName) throws SQLException {
         List<PostgresIndex> indexes = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery(String
@@ -293,7 +293,7 @@ public class PostgresSchema extends AbstractSchema<PostgresTable> {
         return indexes;
     }
 
-    protected static List<PostgresColumn> getTableColumns(Connection con, String tableName) throws SQLException {
+    protected static List<PostgresColumn> getTableColumns(SQLConnection con, String tableName) throws SQLException {
         List<PostgresColumn> columns = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s

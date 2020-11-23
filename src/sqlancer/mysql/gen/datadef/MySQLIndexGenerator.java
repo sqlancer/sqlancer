@@ -5,7 +5,7 @@ import java.util.List;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema;
@@ -115,7 +115,7 @@ public class MySQLIndexGenerator {
         errors.add("out of range");
         errors.add("Data truncated for functional index");
         errors.add("used in key specification without a key length");
-        return new QueryAdapter(string, errors, true);
+        return new SQLQueryAdapter(string, errors, true);
     }
 
     private void algorithmOption() {

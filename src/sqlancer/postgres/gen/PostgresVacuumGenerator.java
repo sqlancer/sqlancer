@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 
@@ -61,7 +61,7 @@ public final class PostgresVacuumGenerator {
                                  */
         errors.add("ERROR: ANALYZE option must be specified when a column list is provided");
         errors.add("VACUUM option DISABLE_PAGE_SKIPPING cannot be used with FULL");
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     private static void addTableAndColumns(PostgresTable table, StringBuilder sb) {

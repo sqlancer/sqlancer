@@ -11,7 +11,7 @@ import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.CockroachDBVisitor;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 
 public final class CockroachDBInsertGenerator {
 
@@ -96,7 +96,7 @@ public final class CockroachDBInsertGenerator {
             errors.add("there is no unique or exclusion constraint matching the ON CONFLICT specification");
         }
         CockroachDBErrors.addTransactionErrors(errors);
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
 }

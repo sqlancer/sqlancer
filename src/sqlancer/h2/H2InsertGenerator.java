@@ -7,7 +7,7 @@ import sqlancer.Randomly;
 import sqlancer.common.gen.AbstractInsertGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.h2.H2Provider.H2GlobalState;
 import sqlancer.h2.H2Schema.H2Column;
 import sqlancer.h2.H2Schema.H2Table;
@@ -53,7 +53,7 @@ public class H2InsertGenerator extends AbstractInsertGenerator<H2Column> {
         insertColumns(columns);
         H2Errors.addInsertErrors(errors);
         H2Errors.addExpressionErrors(errors); // generated columns
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override

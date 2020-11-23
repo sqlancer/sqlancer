@@ -3,7 +3,7 @@ package sqlancer.duckdb.gen;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBTable;
@@ -25,7 +25,7 @@ public final class DuckDBDeleteGenerator {
                     new DuckDBExpressionGenerator(globalState).setColumns(table.getColumns()).generateExpression()));
         }
         DuckDBErrors.addExpressionErrors(errors);
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
 }

@@ -4,7 +4,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 
 public class SQLLoggableFactory extends LoggableFactory {
 
@@ -22,14 +22,14 @@ public class SQLLoggableFactory extends LoggableFactory {
 
     @Override
     public Query getQueryForStateToReproduce(String queryString) {
-        return new QueryAdapter(queryString);
+        return new SQLQueryAdapter(queryString);
     }
 
     @Override
     public Query commentOutQuery(Query query) {
         String queryString = query.getLogString();
         String newQueryString = "-- " + queryString;
-        return new QueryAdapter(newQueryString);
+        return new SQLQueryAdapter(newQueryString);
     }
 
     @Override

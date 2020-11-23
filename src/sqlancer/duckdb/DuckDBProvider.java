@@ -5,14 +5,15 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import sqlancer.AbstractAction;
-import sqlancer.GlobalState;
+import sqlancer.SQLConnection;
+import sqlancer.SQLGlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.QueryProvider;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.gen.DuckDBDeleteGenerator;
@@ -33,8 +34,8 @@ public class DuckDBProvider extends SQLProviderAdapter<DuckDBGlobalState, DuckDB
 
         INSERT(DuckDBInsertGenerator::getQuery), //
         CREATE_INDEX(DuckDBIndexGenerator::getQuery), //
-        VACUUM((g) -> new QueryAdapter("VACUUM;")), //
-        ANALYZE((g) -> new QueryAdapter("ANALYZE;")), //
+        VACUUM((g) -> new SQLQueryAdapter("VACUUM;")), //
+        ANALYZE((g) -> new SQLQueryAdapter("ANALYZE;")), //
         DELETE(DuckDBDeleteGenerator::generate), //
         UPDATE(DuckDBUpdateGenerator::getQuery), //
         CREATE_VIEW(DuckDBViewGenerator::generate), //
@@ -42,7 +43,7 @@ public class DuckDBProvider extends SQLProviderAdapter<DuckDBGlobalState, DuckDB
             ExpectedErrors errors = new ExpectedErrors();
             DuckDBErrors.addExpressionErrors(errors);
             DuckDBErrors.addGroupByErrors(errors);
-            return new QueryAdapter(
+            return new SQLQueryAdapter(
                     "EXPLAIN " + DuckDBToStringVisitor
                             .asString(DuckDBRandomQuerySynthesizer.generateSelect(g, Randomly.smallNumber() + 1)),
                     errors);
@@ -85,7 +86,7 @@ public class DuckDBProvider extends SQLProviderAdapter<DuckDBGlobalState, DuckDB
         }
     }
 
-    public static class DuckDBGlobalState extends GlobalState<DuckDBOptions, DuckDBSchema> {
+    public static class DuckDBGlobalState extends SQLGlobalState<DuckDBOptions, DuckDBSchema> {
 
         @Override
         protected DuckDBSchema readSchema() throws SQLException {
@@ -116,10 +117,10 @@ public class DuckDBProvider extends SQLProviderAdapter<DuckDBGlobalState, DuckDB
     }
 
     @Override
-    public Connection createDatabase(DuckDBGlobalState globalState) throws SQLException {
+    public SQLConnection createDatabase(DuckDBGlobalState globalState) throws SQLException {
         String url = "jdbc:duckdb:";
-        return DriverManager.getConnection(url, globalState.getOptions().getUserName(),
-                globalState.getOptions().getPassword());
+        return new SQLConnection(DriverManager.getConnection(url, globalState.getOptions().getUserName(),
+                globalState.getOptions().getPassword()));
     }
 
     @Override

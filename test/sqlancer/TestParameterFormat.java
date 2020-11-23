@@ -21,7 +21,7 @@ public class TestParameterFormat {
 
     @Test
     public void testOptionFormat() throws Exception {
-        List<DatabaseProvider<?, ?>> providers = Main.getDBMSProviders();
+        List<DatabaseProvider<?, ?, ?>> providers = Main.getDBMSProviders();
         MainOptions options = new MainOptions();
         Builder commandBuilder = JCommander.newBuilder().addObject(options);
         List<ParameterDescription> parameterDescriptions = new ArrayList<>();

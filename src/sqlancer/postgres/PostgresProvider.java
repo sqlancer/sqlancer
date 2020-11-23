@@ -11,10 +11,11 @@ import java.util.Arrays;
 import sqlancer.AbstractAction;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.SQLConnection;
 import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.QueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.postgres.PostgresOptions.PostgresOracleFactory;
@@ -75,11 +76,11 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         COMMIT(g -> {
             Query query;
             if (Randomly.getBoolean()) {
-                query = new QueryAdapter("COMMIT", true);
+                query = new SQLQueryAdapter("COMMIT", true);
             } else if (Randomly.getBoolean()) {
                 query = PostgresTransactionGenerator.executeBegin();
             } else {
-                query = new QueryAdapter("ROLLBACK", true);
+                query = new SQLQueryAdapter("ROLLBACK", true);
             }
             return query;
         }), //
@@ -99,11 +100,11 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
             StringBuilder sb = new StringBuilder();
             sb.append("SET CONSTRAINTS ALL ");
             sb.append(Randomly.fromOptions("DEFERRED", "IMMEDIATE"));
-            return new QueryAdapter(sb.toString());
+            return new SQLQueryAdapter(sb.toString());
         }), //
-        RESET_ROLE((g) -> new QueryAdapter("RESET ROLE")), //
+        RESET_ROLE((g) -> new SQLQueryAdapter("RESET ROLE")), //
         COMMENT_ON(PostgresCommentGenerator::generate), //
-        RESET((g) -> new QueryAdapter("RESET ALL") /*
+        RESET((g) -> new SQLQueryAdapter("RESET ALL") /*
                                                     * https://www.postgresql.org/docs/devel/sql-reset.html TODO: also
                                                     * configuration parameter
                                                     */), //
@@ -195,7 +196,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
     }
 
     @Override
-    public Connection createDatabase(PostgresGlobalState globalState) throws SQLException {
+    public SQLConnection createDatabase(PostgresGlobalState globalState) throws SQLException {
         if (globalState.getDmbsSpecificOptions().getTestOracleFactory().stream()
                 .anyMatch((o) -> o == PostgresOracleFactory.PQS)) {
             generateOnlyKnown = true;
@@ -255,11 +256,11 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         testURL = preDatabaseName + databaseName + postDatabaseName;
         globalState.getState().logStatement(String.format("\\c %s;", databaseName));
         con = DriverManager.getConnection("jdbc:" + testURL, username, password);
-        return con;
+        return new SQLConnection(con);
     }
 
     protected void readFunctions(PostgresGlobalState globalState) throws SQLException {
-        QueryAdapter query = new QueryAdapter("SELECT proname, provolatile FROM pg_proc;");
+        SQLQueryAdapter query = new SQLQueryAdapter("SELECT proname, provolatile FROM pg_proc;");
         SQLancerResultSet rs = query.executeAndGet(globalState);
         while (rs.next()) {
             String functionName = rs.getString(1);
@@ -289,8 +290,8 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
                     }
                 });
         se.executeStatements();
-        globalState.executeStatement(new QueryAdapter("COMMIT", true));
-        globalState.executeStatement(new QueryAdapter("SET SESSION statement_timeout = 5000;\n"));
+        globalState.executeStatement(new SQLQueryAdapter("COMMIT", true));
+        globalState.executeStatement(new SQLQueryAdapter("SET SESSION statement_timeout = 5000;\n"));
     }
 
     private String getCreateDatabaseCommand(PostgresGlobalState state) {

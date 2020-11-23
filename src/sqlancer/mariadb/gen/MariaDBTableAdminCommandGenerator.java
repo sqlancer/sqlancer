@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
-import sqlancer.common.query.QueryResultCheckAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.common.query.SQLQueryResultCheckAdapter;
 import sqlancer.mariadb.MariaDBSchema;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 
@@ -23,7 +23,7 @@ public final class MariaDBTableAdminCommandGenerator {
             sb.append(" ");
             sb.append(Randomly.fromOptions("QUICK", "EXTENDED"));
         }
-        return new QueryAdapter(sb.toString());
+        return new SQLQueryAdapter(sb.toString());
     }
 
     public static Query repairTable(MariaDBSchema newSchema) {
@@ -62,7 +62,7 @@ public final class MariaDBTableAdminCommandGenerator {
     }
 
     private static Query checkForMsgText(StringBuilder sb, Function<String, Boolean> checker) {
-        return new QueryResultCheckAdapter(sb.toString(), rs -> {
+        return new SQLQueryResultCheckAdapter<>(sb.toString(), rs -> {
             try {
                 while (rs.next()) {
                     String s = rs.getString("Msg_text");

@@ -1,10 +1,9 @@
 package sqlancer;
 
-import java.sql.Connection;
-
 import sqlancer.common.log.LoggableFactory;
 
-public interface DatabaseProvider<G extends GlobalState<O, ?>, O extends DBMSSpecificOptions<?>> {
+public interface DatabaseProvider<G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>,
+        C extends SQLancerDBConnection> {
 
     /**
      * Gets the the {@link GlobalState} class.
@@ -29,7 +28,7 @@ public interface DatabaseProvider<G extends GlobalState<O, ?>, O extends DBMSSpe
      */
     void generateAndTestDatabase(G globalState) throws Exception;
 
-    Connection createDatabase(G globalState) throws Exception;
+    C createDatabase(G globalState) throws Exception;
 
     /**
      * The DBMS name is used to name the log directory and command to test the respective DBMS.

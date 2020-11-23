@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.MySQLSchema.MySQLTable.MySQLEngine;
@@ -27,7 +27,7 @@ public class MySQLRepair {
         for (MySQLTable table : tables) {
             // see https://bugs.mysql.com/bug.php?id=95820
             if (table.getEngine() == MySQLEngine.MY_ISAM) {
-                return new QueryAdapter("SELECT 1");
+                return new SQLQueryAdapter("SELECT 1");
             }
         }
         return new MySQLRepair(tables).repair();
@@ -53,7 +53,7 @@ public class MySQLRepair {
         if (Randomly.getBoolean()) {
             sb.append(" USE_FRM");
         }
-        return new QueryAdapter(sb.toString());
+        return new SQLQueryAdapter(sb.toString());
     }
 
 }

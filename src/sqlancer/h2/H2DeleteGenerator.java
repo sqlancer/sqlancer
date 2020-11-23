@@ -3,7 +3,7 @@ package sqlancer.h2;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.h2.H2Provider.H2GlobalState;
 import sqlancer.h2.H2Schema.H2Table;
 
@@ -28,7 +28,7 @@ public final class H2DeleteGenerator {
         }
         H2Errors.addExpressionErrors(errors);
         H2Errors.addDeleteErrors(errors);
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
 }

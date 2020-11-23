@@ -8,7 +8,7 @@ import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.CockroachDBVisitor;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 
 public final class CockroachDBDeleteGenerator {
 
@@ -31,7 +31,7 @@ public final class CockroachDBDeleteGenerator {
         }
         errors.add("foreign key violation");
         CockroachDBErrors.addTransactionErrors(errors);
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
 }

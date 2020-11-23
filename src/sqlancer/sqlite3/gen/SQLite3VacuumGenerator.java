@@ -3,7 +3,7 @@ package sqlancer.sqlite3.gen;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
 /**
@@ -20,7 +20,7 @@ public final class SQLite3VacuumGenerator {
             sb.append(" ");
             sb.append(Randomly.fromOptions("temp", "main"));
         }
-        return new QueryAdapter(sb.toString(), ExpectedErrors.from("cannot VACUUM from within a transaction",
+        return new SQLQueryAdapter(sb.toString(), ExpectedErrors.from("cannot VACUUM from within a transaction",
                 "cannot VACUUM - SQL statements in progress", "The database file is locked"));
     }
 

@@ -7,7 +7,7 @@ import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 
 public final class CockroachDBSetSessionGenerator {
 
@@ -53,7 +53,7 @@ public final class CockroachDBSetSessionGenerator {
         sb.append(s.f.apply(globalState));
         ExpectedErrors errors = new ExpectedErrors();
         CockroachDBErrors.addTransactionErrors(errors);
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
 }

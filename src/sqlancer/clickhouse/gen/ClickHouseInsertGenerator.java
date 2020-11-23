@@ -12,7 +12,7 @@ import sqlancer.clickhouse.ClickHouseToStringVisitor;
 import sqlancer.common.gen.AbstractInsertGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 
 public class ClickHouseInsertGenerator extends AbstractInsertGenerator<ClickHouseColumn> {
 
@@ -46,7 +46,7 @@ public class ClickHouseInsertGenerator extends AbstractInsertGenerator<ClickHous
         sb.append(")");
         sb.append(" VALUES ");
         insertColumns(columns);
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override

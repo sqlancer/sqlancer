@@ -5,7 +5,7 @@ import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 
 public final class CockroachDBViewGenerator {
 
@@ -32,7 +32,7 @@ public final class CockroachDBViewGenerator {
         CockroachDBErrors.addTransactionErrors(errors);
         errors.add("value type unknown cannot be used for table columns");
         errors.add("already exists");
-        return new QueryAdapter(sb.toString(), errors, true);
+        return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 
 }

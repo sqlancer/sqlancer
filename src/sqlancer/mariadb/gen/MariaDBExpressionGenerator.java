@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.SQLConnection;
 import sqlancer.StateToReproduce;
 import sqlancer.mariadb.MariaDBProvider;
 import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;
@@ -66,7 +67,7 @@ public class MariaDBExpressionGenerator {
         return this;
     }
 
-    public MariaDBExpressionGenerator setCon(Connection con) {
+    public MariaDBExpressionGenerator setCon(SQLConnection con) {
         return this;
     }
 

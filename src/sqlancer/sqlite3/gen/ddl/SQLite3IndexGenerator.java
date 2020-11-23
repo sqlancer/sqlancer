@@ -6,7 +6,7 @@ import java.util.List;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
@@ -58,7 +58,7 @@ public class SQLite3IndexGenerator {
          * https://www.mail-archive.com/sqlite-users@mailinglists.sqlite.org/msg115014.html).
          */
         errors.add("[SQLITE_ERROR] SQL error or missing database (no such column:");
-        return new QueryAdapter(q, errors, true);
+        return new SQLQueryAdapter(q, errors, true);
     }
 
     private String createIndex(SQLite3Table t, List<SQLite3Column> columns) {

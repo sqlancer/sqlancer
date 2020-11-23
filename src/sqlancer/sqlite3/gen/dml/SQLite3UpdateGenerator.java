@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
@@ -117,7 +117,7 @@ public class SQLite3UpdateGenerator {
         SQLite3Errors.addInsertNowErrors(errors);
         SQLite3Errors.addExpectedExpressionErrors(errors);
         SQLite3Errors.addDeleteErrors(errors);
-        return new QueryAdapter(sb.toString(), errors, true /* column could have an ON UPDATE clause */);
+        return new SQLQueryAdapter(sb.toString(), errors, true /* column could have an ON UPDATE clause */);
 
     }
 

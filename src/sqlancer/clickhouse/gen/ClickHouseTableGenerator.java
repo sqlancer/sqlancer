@@ -12,7 +12,7 @@ import sqlancer.clickhouse.ClickHouseToStringVisitor;
 import sqlancer.clickhouse.ast.ClickHouseExpression;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 
 public class ClickHouseTableGenerator {
 
@@ -38,7 +38,7 @@ public class ClickHouseTableGenerator {
         chTableGenerator.start();
         ExpectedErrors errors = new ExpectedErrors();
         ClickHouseErrors.addTableManipulationErrors(errors);
-        return new QueryAdapter(chTableGenerator.sb.toString(), errors, true);
+        return new SQLQueryAdapter(chTableGenerator.sb.toString(), errors, true);
     }
 
     public void start() {

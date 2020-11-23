@@ -5,7 +5,7 @@ import java.util.function.Function;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 
 public final class TiDBSetGenerator {
@@ -68,7 +68,7 @@ public final class TiDBSetGenerator {
         sb.append(option.name);
         sb.append("=");
         sb.append(option.prod.apply(globalState.getRandomly()));
-        return new QueryAdapter(sb.toString());
+        return new SQLQueryAdapter(sb.toString());
     }
 
 }

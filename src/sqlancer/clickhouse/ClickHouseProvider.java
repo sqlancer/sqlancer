@@ -7,7 +7,8 @@ import java.sql.Statement;
 import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
-import sqlancer.GlobalState;
+import sqlancer.SQLConnection;
+import sqlancer.SQLGlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLProviderAdapter;
@@ -51,7 +52,7 @@ public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState
         }
     }
 
-    public static class ClickHouseGlobalState extends GlobalState<ClickHouseOptions, ClickHouseSchema> {
+    public static class ClickHouseGlobalState extends SQLGlobalState<ClickHouseOptions, ClickHouseSchema> {
 
         private ClickHouseOptions clickHouseOptions;
 
@@ -100,7 +101,7 @@ public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState
     }
 
     @Override
-    public Connection createDatabase(ClickHouseGlobalState globalState) throws SQLException {
+    public SQLConnection createDatabase(ClickHouseGlobalState globalState) throws SQLException {
         ClickHouseOptions clickHouseOptions = globalState.getDmbsSpecificOptions();
         globalState.setClickHouseOptions(clickHouseOptions);
         String url = "jdbc:clickhouse://localhost:8123/default";
@@ -126,7 +127,7 @@ public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState
         con.close();
         con = DriverManager.getConnection("jdbc:clickhouse://localhost:8123/" + databaseName,
                 globalState.getOptions().getUserName(), globalState.getOptions().getPassword());
-        return con;
+        return new SQLConnection(con);
     }
 
     @Override

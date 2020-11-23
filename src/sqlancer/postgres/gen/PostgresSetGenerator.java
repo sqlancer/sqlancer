@@ -6,7 +6,7 @@ import java.util.function.Function;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 
 public final class PostgresSetGenerator {
@@ -145,7 +145,7 @@ public final class PostgresSetGenerator {
         } else {
             sb.append(option.op.apply(globalState.getRandomly()));
         }
-        return new QueryAdapter(sb.toString());
+        return new SQLQueryAdapter(sb.toString());
     }
 
 }

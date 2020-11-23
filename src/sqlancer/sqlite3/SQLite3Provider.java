@@ -9,14 +9,15 @@ import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.AbstractAction;
-import sqlancer.GlobalState;
+import sqlancer.SQLConnection;
+import sqlancer.SQLGlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.QueryProvider;
 import sqlancer.sqlite3.SQLite3Options.SQLite3OracleFactory;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
@@ -93,7 +94,7 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
         CHECK_RTREE_TABLE((g) -> {
             SQLite3Table table = g.getSchema().getRandomTableOrBailout(t -> t.getName().startsWith("r"));
             String format = String.format("SELECT rtreecheck('%s');", table.getName());
-            return new QueryAdapter(format, ExpectedErrors.from("The database file is locked"));
+            return new SQLQueryAdapter(format, ExpectedErrors.from("The database file is locked"));
         }), //
         VIRTUAL_TABLE_ACTION(SQLite3VirtualFTSTableCommandGenerator::create), //
         CREATE_VIEW(SQLite3ViewGenerator::generate), //
@@ -112,7 +113,7 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
         }
     }
 
-    public static class SQLite3GlobalState extends GlobalState<SQLite3Options, SQLite3Schema> {
+    public static class SQLite3GlobalState extends SQLGlobalState<SQLite3Options, SQLite3Schema> {
 
         @Override
         protected SQLite3Schema readSchema() throws SQLException {
@@ -200,7 +201,7 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
             assert globalState.getSchema().getTables().getTables().size() == nrTablesToCreate;
             checkTablesForGeneratedColumnLoops(globalState);
             if (globalState.getDmbsSpecificOptions().testDBStats && Randomly.getBooleanWithSmallProbability()) {
-                QueryAdapter tableQuery = new QueryAdapter(
+                SQLQueryAdapter tableQuery = new SQLQueryAdapter(
                         "CREATE VIRTUAL TABLE IF NOT EXISTS stat USING dbstat(main)");
                 globalState.executeStatement(tableQuery);
             }
@@ -223,7 +224,7 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
 
     private void checkTablesForGeneratedColumnLoops(SQLite3GlobalState globalState) throws Exception {
         for (SQLite3Table table : globalState.getSchema().getDatabaseTables()) {
-            Query q = new QueryAdapter("SELECT * FROM " + table.getName(),
+            Query q = new SQLQueryAdapter("SELECT * FROM " + table.getName(),
                     ExpectedErrors.from("needs an odd number of arguments", " requires an even number of arguments",
                             "generated column loop", "integer overflow", "malformed JSON",
                             "JSON cannot hold BLOB values", "JSON path error", "labels must be TEXT",
@@ -278,12 +279,12 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
                     Randomly.fromOptions("UTF-8", "UTF-16", "UTF-16le", "UTF-16be")));
         }
         for (String s : pragmasToExecute) {
-            globalState.executeStatement(new QueryAdapter(s));
+            globalState.executeStatement(new SQLQueryAdapter(s));
         }
     }
 
     @Override
-    public Connection createDatabase(SQLite3GlobalState globalState) throws SQLException {
+    public SQLConnection createDatabase(SQLite3GlobalState globalState) throws SQLException {
         File dir = new File("." + File.separator + "databases");
         if (!dir.exists()) {
             dir.mkdir();
@@ -293,7 +294,7 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
             dataBase.delete();
         }
         String url = "jdbc:sqlite:" + dataBase.getAbsolutePath();
-        return DriverManager.getConnection(url);
+        return new SQLConnection(DriverManager.getConnection(url));
     }
 
     @Override

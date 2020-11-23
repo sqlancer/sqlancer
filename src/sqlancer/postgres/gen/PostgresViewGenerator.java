@@ -3,7 +3,7 @@ package sqlancer.postgres.gen;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresVisitor;
 import sqlancer.postgres.ast.PostgresSelect;
@@ -87,7 +87,7 @@ public final class PostgresViewGenerator {
         errors.add("non-integer constant in DISTINCT ON");
         errors.add("SELECT DISTINCT ON expressions must match initial ORDER BY expressions");
         PostgresCommon.addCommonExpressionErrors(errors);
-        return new QueryAdapter(sb.toString(), errors, true);
+        return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 
 }

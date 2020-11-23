@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
 public class SQLite3PragmaGenerator {
@@ -68,7 +68,7 @@ public class SQLite3PragmaGenerator {
         }
     }
 
-    public QueryAdapter insert(SQLite3GlobalState globalState) {
+    public SQLQueryAdapter insert(SQLite3GlobalState globalState) {
         Randomly r = globalState.getRandomly();
         Pragma p = Randomly.fromOptions(Pragma.values());
         switch (p) {
@@ -232,10 +232,10 @@ public class SQLite3PragmaGenerator {
         sb.append(";");
         String pragmaString = sb.toString();
         errors.add("The database file is locked");
-        return new QueryAdapter(pragmaString, errors);
+        return new SQLQueryAdapter(pragmaString, errors);
     }
 
-    public static QueryAdapter insertPragma(SQLite3GlobalState globalState) throws SQLException {
+    public static SQLQueryAdapter insertPragma(SQLite3GlobalState globalState) throws SQLException {
         return new SQLite3PragmaGenerator().insert(globalState);
     }
 

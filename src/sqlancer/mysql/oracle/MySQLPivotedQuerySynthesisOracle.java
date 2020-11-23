@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
@@ -69,7 +69,7 @@ public class MySQLPivotedQuerySynthesisOracle
                 .generateOrderBys();
         selectStatement.setOrderByExpressions(orderBy);
 
-        return new QueryAdapter(MySQLVisitor.asString(selectStatement), errors);
+        return new SQLQueryAdapter(MySQLVisitor.asString(selectStatement), errors);
     }
 
     private List<MySQLExpression> generateGroupByClause(List<MySQLColumn> columns, MySQLRowValue rw) {
@@ -136,7 +136,7 @@ public class MySQLPivotedQuerySynthesisOracle
         }
 
         String resultingQueryString = sb.toString();
-        return new QueryAdapter(resultingQueryString, query.getExpectedErrors());
+        return new SQLQueryAdapter(resultingQueryString, query.getExpectedErrors());
     }
 
     @Override

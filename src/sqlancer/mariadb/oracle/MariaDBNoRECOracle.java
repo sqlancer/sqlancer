@@ -8,7 +8,7 @@ import java.util.List;
 import sqlancer.IgnoreMeException;
 import sqlancer.common.oracle.NoRECBase;
 import sqlancer.common.oracle.TestOracle;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.mariadb.MariaDBProvider.MariaDBGlobalState;
 import sqlancer.mariadb.MariaDBSchema;
@@ -81,7 +81,7 @@ public class MariaDBNoRECOracle extends NoRECBase<MariaDBGlobalState> implements
         int secondCount = 0;
 
         unoptimizedQueryString = "SELECT SUM(count) FROM (" + MariaDBVisitor.asString(select) + ") as asdf";
-        QueryAdapter q = new QueryAdapter(unoptimizedQueryString, errors);
+        SQLQueryAdapter q = new SQLQueryAdapter(unoptimizedQueryString, errors);
         try (SQLancerResultSet rs = q.executeAndGet(state)) {
             if (rs == null) {
                 return NOT_FOUND;
@@ -108,7 +108,7 @@ public class MariaDBNoRECOracle extends NoRECBase<MariaDBGlobalState> implements
         select.setSelectType(MariaDBSelectType.ALL);
         int firstCount = 0;
         optimizedQueryString = MariaDBVisitor.asString(select);
-        QueryAdapter q = new QueryAdapter(optimizedQueryString, errors);
+        SQLQueryAdapter q = new SQLQueryAdapter(optimizedQueryString, errors);
         try (SQLancerResultSet rs = q.executeAndGet(state)) {
             if (rs == null) {
                 firstCount = NOT_FOUND;

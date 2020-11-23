@@ -5,13 +5,14 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import sqlancer.AbstractAction;
-import sqlancer.GlobalState;
+import sqlancer.SQLConnection;
+import sqlancer.SQLGlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.QueryProvider;
 import sqlancer.h2.H2Provider.H2GlobalState;
 
@@ -25,7 +26,7 @@ public class H2Provider extends SQLProviderAdapter<H2GlobalState, H2Options> {
 
         INSERT(H2InsertGenerator::getQuery), //
         INDEX(H2IndexGenerator::getQuery), //
-        ANALYZE((g) -> new QueryAdapter("ANALYZE")), //
+        ANALYZE((g) -> new SQLQueryAdapter("ANALYZE")), //
         CREATE_VIEW(H2ViewGenerator::getQuery), //
         UPDATE(H2UpdateGenerator::getQuery), //
         DELETE(H2DeleteGenerator::getQuery), //
@@ -63,7 +64,7 @@ public class H2Provider extends SQLProviderAdapter<H2GlobalState, H2Options> {
         }
     }
 
-    public static class H2GlobalState extends GlobalState<H2Options, H2Schema> {
+    public static class H2GlobalState extends SQLGlobalState<H2Options, H2Schema> {
 
         @Override
         protected H2Schema readSchema() throws SQLException {
@@ -94,13 +95,13 @@ public class H2Provider extends SQLProviderAdapter<H2GlobalState, H2Options> {
     }
 
     @Override
-    public Connection createDatabase(H2GlobalState globalState) throws SQLException {
+    public SQLConnection createDatabase(H2GlobalState globalState) throws SQLException {
         String connectionString = "jdbc:h2:~/" + globalState.getDatabaseName() + ";DB_CLOSE_ON_EXIT=FALSE";
         Connection connection = DriverManager.getConnection(connectionString, "sa", "");
         connection.createStatement().execute("DROP ALL OBJECTS DELETE FILES");
         connection.close();
         connection = DriverManager.getConnection(connectionString, "sa", "");
-        return connection;
+        return new SQLConnection(connection);
     }
 
     @Override

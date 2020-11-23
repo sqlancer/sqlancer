@@ -12,7 +12,7 @@ import sqlancer.Randomly;
 import sqlancer.StateToReproduce.OracleRunReproductionState;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
@@ -54,7 +54,7 @@ public class SQLite3PivotedQuerySynthesisOracle
     public Query getRectifiedQuery() throws SQLException {
         SQLite3Select selectStatement = getQuery();
         SQLite3Errors.addExpectedExpressionErrors(errors);
-        return new QueryAdapter(SQLite3Visitor.asString(selectStatement), errors);
+        return new SQLQueryAdapter(SQLite3Visitor.asString(selectStatement), errors);
     }
 
     public SQLite3Select getQuery() throws SQLException {
@@ -186,7 +186,7 @@ public class SQLite3PivotedQuerySynthesisOracle
         sb.append(query.getUnterminatedQueryString());
         sb.append(")");
         String resultingQueryString = sb.toString();
-        return new QueryAdapter(resultingQueryString, query.getExpectedErrors());
+        return new SQLQueryAdapter(resultingQueryString, query.getExpectedErrors());
     }
 
     private String getGeneralizedPivotRowValues() {

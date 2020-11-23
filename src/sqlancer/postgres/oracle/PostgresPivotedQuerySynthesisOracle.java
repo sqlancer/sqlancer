@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
@@ -64,7 +64,7 @@ public class PostgresPivotedQuerySynthesisOracle
         List<PostgresExpression> orderBy = new PostgresExpressionGenerator(globalState).setColumns(columns)
                 .generateOrderBy();
         selectStatement.setOrderByExpressions(orderBy);
-        return new QueryAdapter(PostgresVisitor.asString(selectStatement));
+        return new SQLQueryAdapter(PostgresVisitor.asString(selectStatement));
     }
 
     /*
@@ -139,7 +139,7 @@ public class PostgresPivotedQuerySynthesisOracle
             }
         }
         String resultingQueryString = sb.toString();
-        return new QueryAdapter(resultingQueryString, errors);
+        return new SQLQueryAdapter(resultingQueryString, errors);
     }
 
     @Override

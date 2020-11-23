@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 
@@ -37,7 +37,7 @@ public final class PostgresAnalyzeGenerator {
             }
         }
         // FIXME: bug in postgres?
-        return new QueryAdapter(sb.toString(), ExpectedErrors.from("deadlock"));
+        return new SQLQueryAdapter(sb.toString(), ExpectedErrors.from("deadlock"));
     }
 
 }

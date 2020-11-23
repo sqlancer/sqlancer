@@ -4,10 +4,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import sqlancer.GlobalState;
 import sqlancer.Randomly;
+import sqlancer.SQLConnection;
+import sqlancer.SQLGlobalState;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 
 public final class PostgresQueryCatalogGenerator {
 
@@ -31,9 +32,9 @@ public final class PostgresQueryCatalogGenerator {
                         "pg_statistic_ext_data", "pg_subscription", "pg_subscription_rel", "pg_tablespace",
                         "pg_transform", "pg_trigger", "pg_ts_config", "pg_ts_config_map", "pg_ts_dict", "pg_ts_parser",
                         "pg_ts_template", "pg_type", "pg_user_mapping"));
-        return new QueryAdapter(sb.toString()) {
+        return new SQLQueryAdapter(sb.toString()) {
             @Override
-            public boolean execute(GlobalState<?, ?> globalState, String... fills) throws SQLException {
+            public boolean execute(SQLGlobalState<?, ?> globalState, String... fills) throws SQLException {
                 try (Statement s = globalState.getConnection().createStatement()) {
                     try (ResultSet rs = s.executeQuery(getQueryString())) {
                         // CHECKSTYLE:OFF

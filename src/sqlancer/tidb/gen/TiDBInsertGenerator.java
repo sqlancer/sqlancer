@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBExpressionGenerator;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
@@ -67,7 +67,7 @@ public class TiDBInsertGenerator {
             sb.append(TiDBVisitor.asString(gen.generateExpression()));
         }
         errors.add("Illegal mix of collations");
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     private void insertColumns(StringBuilder sb, List<TiDBColumn> columns) {

@@ -1,16 +1,16 @@
 package sqlancer.common.oracle;
 
-import java.util.List;
-
 import sqlancer.GlobalState;
+
+import java.util.List;
 
 public class CompositeTestOracle implements TestOracle {
 
     private final TestOracle[] oracles;
-    private final GlobalState<?, ?> globalState;
+    private final GlobalState<?, ?, ?> globalState;
     private int i;
 
-    public CompositeTestOracle(List<TestOracle> oracles, GlobalState<?, ?> globalState) {
+    public CompositeTestOracle(List<TestOracle> oracles, GlobalState<?, ?, ?> globalState) {
         this.globalState = globalState;
         this.oracles = oracles.toArray(new TestOracle[oracles.size()]);
     }

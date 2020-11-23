@@ -10,7 +10,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mysql.MySQLBugs;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema;
@@ -59,7 +59,7 @@ public class MySQLTableGenerator {
         if (Randomly.getBoolean() && !schema.getDatabaseTables().isEmpty()) {
             sb.append(" LIKE ");
             sb.append(schema.getRandomTable().getName());
-            return new QueryAdapter(sb.toString(), true);
+            return new SQLQueryAdapter(sb.toString(), true);
         } else {
             sb.append("(");
             for (int i = 0; i < 1 + Randomly.smallNumber(); i++) {
@@ -81,10 +81,10 @@ public class MySQLTableGenerator {
                 errors.add("Too many keys specified; max 1 keys allowed");
                 errors.add("Table handler doesn't support NULL in given index");
                 addCommonErrors(errors);
-                return new QueryAdapter(sb.toString(), errors, true);
+                return new SQLQueryAdapter(sb.toString(), errors, true);
             }
             addCommonErrors(errors);
-            return new QueryAdapter(sb.toString(), errors, true);
+            return new SQLQueryAdapter(sb.toString(), errors, true);
         }
 
     }

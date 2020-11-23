@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.gen.SQLite3ColumnBuilder;
 import sqlancer.sqlite3.gen.SQLite3Common;
@@ -81,7 +81,7 @@ public class SQLite3AlterTable {
         default:
             throw new AssertionError();
         }
-        return new QueryAdapter(alterTable.sb.toString(), errors, true);
+        return new SQLQueryAdapter(alterTable.sb.toString(), errors, true);
     }
 
 }

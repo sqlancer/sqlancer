@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Options.SQLite3OracleFactory;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
@@ -25,7 +25,7 @@ public final class SQLite3ViewGenerator {
         SQLite3Schema s = globalState.getSchema();
         StringBuilder sb = new StringBuilder("DROP VIEW ");
         sb.append(s.getRandomViewOrBailout().getName());
-        return new QueryAdapter(sb.toString(), true);
+        return new SQLQueryAdapter(sb.toString(), true);
     }
 
     public static Query generate(SQLite3GlobalState globalState) throws SQLException {
@@ -53,7 +53,7 @@ public final class SQLite3ViewGenerator {
         } while (globalState.getDmbsSpecificOptions().oracles == SQLite3OracleFactory.PQS
                 && !checkAffinity(randomQuery));
         sb.append(SQLite3Visitor.asString(randomQuery));
-        return new QueryAdapter(sb.toString(), errors, true);
+        return new SQLQueryAdapter(sb.toString(), errors, true);
 
     }
 
