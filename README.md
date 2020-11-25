@@ -20,7 +20,7 @@ Requirements:
 * [Maven](https://maven.apache.org/) (`sudo apt install maven` on Ubuntu)
 * The DBMS that you want to test (SQLite is an embedded DBMS and is included)
 
-The following commands clone SQLancer, create a JAR, and start SQLancer to fuzz SQLite using Ternary Logic Query Partitioning (TLP):
+The following commands clone SQLancer, create a JAR, and start SQLancer to fuzz SQLite using Non-optimizing Reference Engine Construction (NoREC):
 
 ```
 git clone https://github.com/sqlancer/sqlancer
