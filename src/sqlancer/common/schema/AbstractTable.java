@@ -1,14 +1,14 @@
 package sqlancer.common.schema;
 
-import sqlancer.GlobalState;
-import sqlancer.Randomly;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.GlobalState;
+import sqlancer.Randomly;
+
 public abstract class AbstractTable<C extends AbstractTableColumn<?, ?>, I extends TableIndex, G extends GlobalState<?, ?, ?>>
-        implements Comparable<AbstractTable<?, ?, G>>{
+        implements Comparable<AbstractTable<?, ?, ?>> {
 
     protected static final int NO_ROW_COUNT_AVAILABLE = -1;
     protected final String name;
@@ -29,7 +29,7 @@ public abstract class AbstractTable<C extends AbstractTableColumn<?, ?>, I exten
     }
 
     @Override
-    public int compareTo(AbstractTable<?, ?, G> o) {
+    public int compareTo(AbstractTable<?, ?, ?> o) {
         return o.getName().compareTo(getName());
     }
 

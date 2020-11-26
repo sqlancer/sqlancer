@@ -2,7 +2,6 @@ package sqlancer.postgres.gen;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresVisitor;
@@ -14,7 +13,7 @@ public final class PostgresViewGenerator {
     private PostgresViewGenerator() {
     }
 
-    public static Query create(PostgresGlobalState globalState) {
+    public static SQLQueryAdapter create(PostgresGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder("CREATE");
         boolean materialized;

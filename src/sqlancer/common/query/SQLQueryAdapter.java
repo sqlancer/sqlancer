@@ -5,11 +5,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import sqlancer.SQLConnection;
-import sqlancer.SQLGlobalState;
+import sqlancer.GlobalState;
 import sqlancer.Main;
+import sqlancer.SQLConnection;
 
-public class SQLQueryAdapter<G extends SQLGlobalState<?, ?>> extends Query<G, SQLConnection> {
+public class SQLQueryAdapter extends Query<SQLConnection> {
 
     private final String query;
     private final ExpectedErrors expectedErrors;
@@ -69,7 +69,8 @@ public class SQLQueryAdapter<G extends SQLGlobalState<?, ?>> extends Query<G, SQ
     }
 
     @Override
-    public boolean execute(G globalState, String... fills) throws SQLException {
+    public <G extends GlobalState<?, ?, SQLConnection>> boolean execute(G globalState, String... fills)
+            throws SQLException {
         Statement s;
         if (fills.length > 0) {
             s = globalState.getConnection().prepareStatement(fills[0]);
@@ -101,7 +102,8 @@ public class SQLQueryAdapter<G extends SQLGlobalState<?, ?>> extends Query<G, SQ
     }
 
     @Override
-    public SQLancerResultSet executeAndGet(G globalState, String... fills) throws SQLException {
+    public <G extends GlobalState<?, ?, SQLConnection>> SQLancerResultSet executeAndGet(G globalState, String... fills)
+            throws SQLException {
         Statement s;
         if (fills.length > 0) {
             s = globalState.getConnection().prepareStatement(fills[0]);

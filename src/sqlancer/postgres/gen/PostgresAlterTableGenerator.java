@@ -5,7 +5,6 @@ import java.util.List;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
@@ -61,7 +60,8 @@ public class PostgresAlterTableGenerator {
         this.opClasses = globalState.getOpClasses();
     }
 
-    public static Query create(PostgresTable randomTable, PostgresGlobalState globalState, boolean generateOnlyKnown) {
+    public static SQLQueryAdapter create(PostgresTable randomTable, PostgresGlobalState globalState,
+            boolean generateOnlyKnown) {
         return new PostgresAlterTableGenerator(randomTable, globalState, generateOnlyKnown).generate();
     }
 
@@ -115,7 +115,7 @@ public class PostgresAlterTableGenerator {
         return action;
     }
 
-    public Query generate() {
+    public SQLQueryAdapter generate() {
         ExpectedErrors errors = new ExpectedErrors();
         int i = 0;
         List<Action> action = getActions(errors);

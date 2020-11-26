@@ -14,7 +14,7 @@ public class SQLConnection implements SQLancerDBConnection {
     }
 
     @Override
-    public String getDatabaseVersion() throws SQLException{
+    public String getDatabaseVersion() throws SQLException {
         DatabaseMetaData meta = connection.getMetaData();
         return meta.getDatabaseProductVersion();
     }
@@ -28,7 +28,7 @@ public class SQLConnection implements SQLancerDBConnection {
         return connection.prepareStatement(arg);
     }
 
-    public Statement createStatement() throws SQLException{
+    public Statement createStatement() throws SQLException {
         return connection.createStatement();
     }
 }

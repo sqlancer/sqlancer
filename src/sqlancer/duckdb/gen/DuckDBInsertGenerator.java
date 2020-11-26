@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.common.gen.AbstractInsertGenerator;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
@@ -23,11 +22,11 @@ public class DuckDBInsertGenerator extends AbstractInsertGenerator<DuckDBColumn>
         this.globalState = globalState;
     }
 
-    public static Query getQuery(DuckDBGlobalState globalState) {
+    public static SQLQueryAdapter getQuery(DuckDBGlobalState globalState) {
         return new DuckDBInsertGenerator(globalState).generate();
     }
 
-    private Query generate() {
+    private SQLQueryAdapter generate() {
         sb.append("INSERT INTO ");
         DuckDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<DuckDBColumn> columns = table.getRandomNonEmptyColumnSubset();

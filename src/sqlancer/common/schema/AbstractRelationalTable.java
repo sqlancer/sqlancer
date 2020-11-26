@@ -1,11 +1,11 @@
 package sqlancer.common.schema;
 
+import java.util.List;
+
 import sqlancer.IgnoreMeException;
 import sqlancer.SQLGlobalState;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
-
-import java.util.List;
 
 public class AbstractRelationalTable<C extends AbstractTableColumn<?, ?>, I extends TableIndex, G extends SQLGlobalState<?, ?>>
         extends AbstractTable<C, I, G> {
@@ -14,6 +14,7 @@ public class AbstractRelationalTable<C extends AbstractTableColumn<?, ?>, I exte
         super(name, columns, indexes, isView);
     }
 
+    @Override
     public long getNrRows(G globalState) {
         if (rowCount == NO_ROW_COUNT_AVAILABLE) {
             SQLQueryAdapter q = new SQLQueryAdapter("SELECT COUNT(*) FROM " + name);
@@ -32,4 +33,5 @@ public class AbstractRelationalTable<C extends AbstractTableColumn<?, ?>, I exte
             return rowCount;
         }
     }
+
 }

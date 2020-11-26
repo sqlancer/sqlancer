@@ -11,7 +11,6 @@ import sqlancer.clickhouse.ClickHouseSchema;
 import sqlancer.clickhouse.ClickHouseToStringVisitor;
 import sqlancer.clickhouse.ast.ClickHouseExpression;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 
 public class ClickHouseTableGenerator {
@@ -33,7 +32,8 @@ public class ClickHouseTableGenerator {
         this.globalState = globalState;
     }
 
-    public static Query createTableStatement(String tableName, ClickHouseProvider.ClickHouseGlobalState globalState) {
+    public static SQLQueryAdapter createTableStatement(String tableName,
+            ClickHouseProvider.ClickHouseGlobalState globalState) {
         ClickHouseTableGenerator chTableGenerator = new ClickHouseTableGenerator(tableName, globalState);
         chTableGenerator.start();
         ExpectedErrors errors = new ExpectedErrors();

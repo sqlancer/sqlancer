@@ -208,7 +208,7 @@ public final class Main {
             sb.append(databaseProvider.getLoggableFactory()
                     .getInfo(state.getDatabaseName(), state.getDatabaseVersion(), state.getSeedValue()).getLogString());
 
-            for (Query s : state.getStatements()) {
+            for (Query<?> s : state.getStatements()) {
                 sb.append(s.getQueryString());
                 sb.append('\n');
             }
@@ -221,15 +221,15 @@ public final class Main {
 
     }
 
-    public static class QueryManager {
+    public static class QueryManager<C extends SQLancerDBConnection> {
 
-        private final GlobalState<?, ?, ?> globalState;
+        private final GlobalState<?, ?, C> globalState;
 
-        QueryManager(GlobalState<?, ?, ?> globalState) {
+        QueryManager(GlobalState<?, ?, C> globalState) {
             this.globalState = globalState;
         }
 
-        public boolean execute(Query q, String... fills) throws Exception {
+        public boolean execute(Query<C> q, String... fills) throws Exception {
             globalState.getState().logStatement(q);
             boolean success;
             success = q.execute(globalState, fills);
@@ -237,7 +237,7 @@ public final class Main {
             return success;
         }
 
-        public SQLancerResultSet executeAndGet(Query q, String... fills) throws Exception {
+        public SQLancerResultSet executeAndGet(Query<C> q, String... fills) throws Exception {
             globalState.getState().logStatement(q);
             SQLancerResultSet result;
             result = q.executeAndGet(globalState, fills);
@@ -259,8 +259,7 @@ public final class Main {
         System.exit(executeMain(args));
     }
 
-    public static class DBMSExecutor<G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C
-            extends SQLancerDBConnection> {
+    public static class DBMSExecutor<G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> {
 
         private final DatabaseProvider<G, O, C> provider;
         private final MainOptions options;
@@ -309,7 +308,7 @@ public final class Main {
             state.setMainOptions(options);
             state.setDmbsSpecificOptions(command);
             try (C con = provider.createDatabase(state)) {
-                QueryManager manager = new QueryManager(state);
+                QueryManager<C> manager = new QueryManager<>(state);
                 try {
                     stateToRepro.databaseVersion = con.getDatabaseVersion();
                 } catch (Exception e) {
@@ -354,8 +353,7 @@ public final class Main {
         }
     }
 
-    public static class DBMSExecutorFactory<G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>,
-            C extends SQLancerDBConnection> {
+    public static class DBMSExecutorFactory<G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> {
 
         private final DatabaseProvider<G, O, C> provider;
         private final MainOptions options;

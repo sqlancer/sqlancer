@@ -5,7 +5,6 @@ import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider;
@@ -23,7 +22,7 @@ public class SQLite3IndexGenerator {
     private final ExpectedErrors errors = new ExpectedErrors();
     private final SQLite3GlobalState globalState;
 
-    public static Query insertIndex(SQLite3GlobalState globalState) throws SQLException {
+    public static SQLQueryAdapter insertIndex(SQLite3GlobalState globalState) throws SQLException {
         return new SQLite3IndexGenerator(globalState).create();
     }
 
@@ -31,7 +30,7 @@ public class SQLite3IndexGenerator {
         this.globalState = globalState;
     }
 
-    private Query create() throws SQLException {
+    private SQLQueryAdapter create() throws SQLException {
         SQLite3Table t = globalState.getSchema()
                 .getRandomTableOrBailout(tab -> !tab.isView() && !tab.isVirtual() && !tab.isReadOnly());
         String q = createIndex(t, t.getColumns());

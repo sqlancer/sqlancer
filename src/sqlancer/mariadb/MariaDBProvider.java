@@ -7,13 +7,13 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import sqlancer.SQLConnection;
-import sqlancer.SQLGlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
+import sqlancer.SQLConnection;
+import sqlancer.SQLGlobalState;
 import sqlancer.SQLProviderAdapter;
-import sqlancer.common.query.Query;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mariadb.MariaDBProvider.MariaDBGlobalState;
 import sqlancer.mariadb.gen.MariaDBIndexGenerator;
 import sqlancer.mariadb.gen.MariaDBInsertGenerator;
@@ -51,7 +51,7 @@ public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, Mari
 
         while (globalState.getSchema().getDatabaseTables().size() < Randomly.smallNumber() + 1) {
             String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
-            Query createTable = MariaDBTableGenerator.generate(tableName, globalState.getRandomly(),
+            SQLQueryAdapter createTable = MariaDBTableGenerator.generate(tableName, globalState.getRandomly(),
                     globalState.getSchema());
             globalState.executeStatement(createTable);
         }
@@ -103,7 +103,7 @@ public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, Mari
             assert nextAction != null;
             assert nrRemaining[nextAction.ordinal()] > 0;
             nrRemaining[nextAction.ordinal()]--;
-            Query query;
+            SQLQueryAdapter query;
             try {
                 switch (nextAction) {
                 case CHECKSUM:

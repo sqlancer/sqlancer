@@ -10,7 +10,6 @@ import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBDataType;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.CockroachDBVisitor;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 
 public final class CockroachDBUpdateGenerator {
@@ -18,7 +17,7 @@ public final class CockroachDBUpdateGenerator {
     private CockroachDBUpdateGenerator() {
     }
 
-    public static Query gen(CockroachDBGlobalState globalState) {
+    public static SQLQueryAdapter gen(CockroachDBGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         CockroachDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<CockroachDBColumn> columns = table.getRandomNonEmptyColumnSubset();

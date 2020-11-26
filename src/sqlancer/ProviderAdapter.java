@@ -6,9 +6,10 @@ import java.util.stream.Collectors;
 import sqlancer.StateToReproduce.OracleRunReproductionState;
 import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.schema.AbstractSchema;
 
-public abstract class ProviderAdapter<G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<? extends OracleFactory<G>>,
-        C extends SQLancerDBConnection> implements DatabaseProvider<G, O, C> {
+public abstract class ProviderAdapter<G extends GlobalState<O, ? extends AbstractSchema<G, ?>, C>, O extends DBMSSpecificOptions<? extends OracleFactory<G>>, C extends SQLancerDBConnection>
+        implements DatabaseProvider<G, O, C> {
 
     private final Class<G> globalClass;
     private final Class<O> optionClass;

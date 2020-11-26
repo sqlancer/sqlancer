@@ -14,7 +14,7 @@ public class StatementExecutor<G extends GlobalState<?, ?, ?>, A extends Abstrac
 
     @FunctionalInterface
     public interface AfterQueryAction {
-        void notify(Query q) throws Exception;
+        void notify(Query<?> q) throws Exception;
     }
 
     @FunctionalInterface
@@ -29,6 +29,7 @@ public class StatementExecutor<G extends GlobalState<?, ?, ?>, A extends Abstrac
         this.queryConsumer = queryConsumer;
     }
 
+    @SuppressWarnings("unchecked")
     public void executeStatements() throws Exception {
         Randomly r = globalState.getRandomly();
         int[] nrRemaining = new int[actions.length];
@@ -59,6 +60,7 @@ public class StatementExecutor<G extends GlobalState<?, ?, ?>, A extends Abstrac
             assert nextAction != null;
             assert nrRemaining[i] > 0;
             nrRemaining[i]--;
+            @SuppressWarnings("rawtypes")
             Query query = null;
             try {
                 boolean success;

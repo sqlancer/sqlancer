@@ -14,7 +14,7 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
     private S schema;
     private Main.StateLogger logger;
     private StateToReproduce state;
-    private Main.QueryManager manager;
+    private Main.QueryManager<C> manager;
     private String databaseName;
 
     public void setConnection(C con) {
@@ -33,7 +33,6 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
     public O getDmbsSpecificOptions() {
         return dmbsSpecificOptions;
     }
-
 
     public void setRandomly(Randomly r) {
         this.r = r;
@@ -67,11 +66,11 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
         return state;
     }
 
-    public Main.QueryManager getManager() {
+    public Main.QueryManager<C> getManager() {
         return manager;
     }
 
-    public void setManager(Main.QueryManager manager) {
+    public void setManager(Main.QueryManager<C> manager) {
         this.manager = manager;
     }
 
@@ -83,7 +82,7 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
         this.databaseName = databaseName;
     }
 
-    private ExecutionTimer executePrologue(Query q) throws Exception {
+    private ExecutionTimer executePrologue(Query<?> q) throws Exception {
         boolean logExecutionTime = getOptions().logExecutionTime();
         ExecutionTimer timer = null;
         if (logExecutionTime) {
@@ -102,27 +101,16 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
         return timer;
     }
 
-    private void executeEpilogue(Query q, boolean success, ExecutionTimer timer) throws Exception {
-        boolean logExecutionTime = getOptions().logExecutionTime();
-        if (success && getOptions().printSucceedingStatements()) {
-            System.out.println(q.getQueryString());
-        }
-        if (logExecutionTime) {
-            getLogger().writeCurrent(" -- " + timer.end().asString());
-        }
-        if (q.couldAffectSchema()) {
-            updateSchema();
-        }
-    }
+    protected abstract void executeEpilogue(Query<?> q, boolean success, ExecutionTimer timer) throws Exception;
 
-    public boolean executeStatement(Query q, String... fills) throws Exception {
+    public boolean executeStatement(Query<C> q, String... fills) throws Exception {
         ExecutionTimer timer = executePrologue(q);
         boolean success = manager.execute(q, fills);
         executeEpilogue(q, success, timer);
         return success;
     }
 
-    public SQLancerResultSet executeStatementAndGet(Query q, String... fills) throws Exception {
+    public SQLancerResultSet executeStatementAndGet(Query<C> q, String... fills) throws Exception {
         ExecutionTimer timer = executePrologue(q);
         SQLancerResultSet result = manager.executeAndGet(q, fills);
         boolean success = result != null;

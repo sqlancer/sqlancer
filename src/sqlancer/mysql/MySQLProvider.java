@@ -11,9 +11,8 @@ import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.common.query.QueryProvider;
+import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.mysql.gen.MySQLAlterTable;
 import sqlancer.mysql.gen.MySQLDeleteGenerator;
 import sqlancer.mysql.gen.MySQLDropIndex;
@@ -60,15 +59,15 @@ public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOpt
         DELETE(MySQLDeleteGenerator::delete), //
         DROP_INDEX(MySQLDropIndex::generate);
 
-        private final QueryProvider<MySQLGlobalState> queryProvider;
+        private final SQLQueryProvider<MySQLGlobalState> sqlQueryProvider;
 
-        Action(QueryProvider<MySQLGlobalState> queryProvider) {
-            this.queryProvider = queryProvider;
+        Action(SQLQueryProvider<MySQLGlobalState> sqlQueryProvider) {
+            this.sqlQueryProvider = sqlQueryProvider;
         }
 
         @Override
-        public Query getQuery(MySQLGlobalState globalState) throws Exception {
-            return queryProvider.getQuery(globalState);
+        public SQLQueryAdapter getQuery(MySQLGlobalState globalState) throws Exception {
+            return sqlQueryProvider.getQuery(globalState);
         }
     }
 
@@ -135,7 +134,7 @@ public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOpt
     public void generateDatabase(MySQLGlobalState globalState) throws Exception {
         while (globalState.getSchema().getDatabaseTables().size() < Randomly.smallNumber() + 1) {
             String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
-            Query createTable = MySQLTableGenerator.generate(globalState, tableName);
+            SQLQueryAdapter createTable = MySQLTableGenerator.generate(globalState, tableName);
             globalState.executeStatement(createTable);
         }
 

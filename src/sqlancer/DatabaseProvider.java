@@ -2,8 +2,7 @@ package sqlancer;
 
 import sqlancer.common.log.LoggableFactory;
 
-public interface DatabaseProvider<G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>,
-        C extends SQLancerDBConnection> {
+public interface DatabaseProvider<G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> {
 
     /**
      * Gets the the {@link GlobalState} class.

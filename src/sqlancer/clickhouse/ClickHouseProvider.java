@@ -7,18 +7,18 @@ import java.sql.Statement;
 import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
-import sqlancer.SQLConnection;
-import sqlancer.SQLGlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.SQLConnection;
+import sqlancer.SQLGlobalState;
 import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
 import sqlancer.clickhouse.gen.ClickHouseCommon;
 import sqlancer.clickhouse.gen.ClickHouseInsertGenerator;
 import sqlancer.clickhouse.gen.ClickHouseTableGenerator;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryProvider;
+import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.common.query.SQLQueryProvider;
 
 public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState, ClickHouseOptions> {
 
@@ -30,15 +30,15 @@ public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState
 
         INSERT(ClickHouseInsertGenerator::getQuery);
 
-        private final QueryProvider<ClickHouseGlobalState> queryProvider;
+        private final SQLQueryProvider<ClickHouseGlobalState> sqlQueryProvider;
 
-        Action(QueryProvider<ClickHouseGlobalState> queryProvider) {
-            this.queryProvider = queryProvider;
+        Action(SQLQueryProvider<ClickHouseGlobalState> sqlQueryProvider) {
+            this.sqlQueryProvider = sqlQueryProvider;
         }
 
         @Override
-        public Query getQuery(ClickHouseGlobalState state) throws Exception {
-            return queryProvider.getQuery(state);
+        public SQLQueryAdapter getQuery(ClickHouseGlobalState state) throws Exception {
+            return sqlQueryProvider.getQuery(state);
         }
     }
 
@@ -86,7 +86,7 @@ public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState
             boolean success;
             do {
                 String tableName = ClickHouseCommon.createTableName(i);
-                Query qt = ClickHouseTableGenerator.createTableStatement(tableName, globalState);
+                SQLQueryAdapter qt = ClickHouseTableGenerator.createTableStatement(tableName, globalState);
                 success = globalState.executeStatement(qt);
             } while (!success);
         }

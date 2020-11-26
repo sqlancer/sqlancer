@@ -4,7 +4,6 @@ import java.util.Arrays;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
@@ -17,12 +16,12 @@ public final class SQLite3DeleteGenerator {
     private SQLite3DeleteGenerator() {
     }
 
-    public static Query deleteContent(SQLite3GlobalState globalState) {
+    public static SQLQueryAdapter deleteContent(SQLite3GlobalState globalState) {
         SQLite3Table tableName = globalState.getSchema().getRandomTable(t -> !t.isView() && !t.isReadOnly());
         return deleteContent(globalState, tableName);
     }
 
-    public static Query deleteContent(SQLite3GlobalState globalState, SQLite3Table tableName) {
+    public static SQLQueryAdapter deleteContent(SQLite3GlobalState globalState, SQLite3Table tableName) {
         StringBuilder sb = new StringBuilder();
         sb.append("DELETE FROM ");
         sb.append(tableName.getName());

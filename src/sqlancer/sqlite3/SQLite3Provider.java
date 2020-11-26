@@ -1,7 +1,6 @@
 package sqlancer.sqlite3;
 
 import java.io.File;
-import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -9,16 +8,15 @@ import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.AbstractAction;
-import sqlancer.SQLConnection;
-import sqlancer.SQLGlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.SQLConnection;
+import sqlancer.SQLGlobalState;
 import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.common.query.QueryProvider;
+import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.sqlite3.SQLite3Options.SQLite3OracleFactory;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.gen.SQLite3AnalyzeGenerator;
@@ -101,15 +99,15 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
         CREATE_TRIGGER(SQLite3CreateTriggerGenerator::create), //
         MANIPULATE_STAT_TABLE(SQLite3StatTableGenerator::getQuery);
 
-        private final QueryProvider<SQLite3GlobalState> queryProvider;
+        private final SQLQueryProvider<SQLite3GlobalState> sqlQueryProvider;
 
-        Action(QueryProvider<SQLite3GlobalState> queryProvider) {
-            this.queryProvider = queryProvider;
+        Action(SQLQueryProvider<SQLite3GlobalState> sqlQueryProvider) {
+            this.sqlQueryProvider = sqlQueryProvider;
         }
 
         @Override
-        public Query getQuery(SQLite3GlobalState state) throws Exception {
-            return queryProvider.getQuery(state);
+        public SQLQueryAdapter getQuery(SQLite3GlobalState state) throws Exception {
+            return sqlQueryProvider.getQuery(state);
         }
     }
 
@@ -195,7 +193,7 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
             int i = 0;
 
             do {
-                Query tableQuery = getTableQuery(globalState, i++);
+                SQLQueryAdapter tableQuery = getTableQuery(globalState, i++);
                 globalState.executeStatement(tableQuery);
             } while (globalState.getSchema().getDatabaseTables().size() < nrTablesToCreate);
             assert globalState.getSchema().getTables().getTables().size() == nrTablesToCreate;
@@ -213,7 +211,7 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
                     });
             se.executeStatements();
 
-            Query query = SQLite3TransactionGenerator.generateCommit(globalState);
+            SQLQueryAdapter query = SQLite3TransactionGenerator.generateCommit(globalState);
             globalState.executeStatement(query);
 
             // also do an abort for DEFERRABLE INITIALLY DEFERRED
@@ -224,7 +222,7 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
 
     private void checkTablesForGeneratedColumnLoops(SQLite3GlobalState globalState) throws Exception {
         for (SQLite3Table table : globalState.getSchema().getDatabaseTables()) {
-            Query q = new SQLQueryAdapter("SELECT * FROM " + table.getName(),
+            SQLQueryAdapter q = new SQLQueryAdapter("SELECT * FROM " + table.getName(),
                     ExpectedErrors.from("needs an odd number of arguments", " requires an even number of arguments",
                             "generated column loop", "integer overflow", "malformed JSON",
                             "JSON cannot hold BLOB values", "JSON path error", "labels must be TEXT",
@@ -235,8 +233,8 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
         }
     }
 
-    private Query getTableQuery(SQLite3GlobalState globalState, int i) throws AssertionError {
-        Query tableQuery;
+    private SQLQueryAdapter getTableQuery(SQLite3GlobalState globalState, int i) throws AssertionError {
+        SQLQueryAdapter tableQuery;
         List<TableType> options = new ArrayList<>(Arrays.asList(TableType.values()));
         if (!globalState.getDmbsSpecificOptions().testFts) {
             options.remove(TableType.FTS);

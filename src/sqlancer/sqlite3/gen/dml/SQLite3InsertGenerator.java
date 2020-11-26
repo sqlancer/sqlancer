@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
@@ -30,12 +29,12 @@ public class SQLite3InsertGenerator {
         errors = new ExpectedErrors();
     }
 
-    public static Query insertRow(SQLite3GlobalState globalState) throws SQLException {
+    public static SQLQueryAdapter insertRow(SQLite3GlobalState globalState) throws SQLException {
         SQLite3Table randomTable = globalState.getSchema().getRandomTableOrBailout(t -> !t.isView() && !t.isReadOnly());
         return insertRow(globalState, randomTable);
     }
 
-    public static Query insertRow(SQLite3GlobalState globalState, SQLite3Table randomTable) {
+    public static SQLQueryAdapter insertRow(SQLite3GlobalState globalState, SQLite3Table randomTable) {
         SQLite3InsertGenerator generator = new SQLite3InsertGenerator(globalState, globalState.getRandomly());
         String query = generator.insertRow(randomTable);
         return new SQLQueryAdapter(query, generator.errors, true);

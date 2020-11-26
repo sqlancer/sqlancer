@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
@@ -21,13 +20,13 @@ public class MySQLOptimize {
         this.tables = tables;
     }
 
-    public static Query optimize(MySQLGlobalState globalState) {
+    public static SQLQueryAdapter optimize(MySQLGlobalState globalState) {
         return new MySQLOptimize(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty()).optimize();
     }
 
     // OPTIMIZE [NO_WRITE_TO_BINLOG | LOCAL]
     // TABLE tbl_name [, tbl_name] ...
-    private Query optimize() {
+    private SQLQueryAdapter optimize() {
         sb.append("OPTIMIZE");
         if (Randomly.getBoolean()) {
             sb.append(" ");

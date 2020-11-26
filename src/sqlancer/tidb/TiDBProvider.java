@@ -6,16 +6,15 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import sqlancer.AbstractAction;
-import sqlancer.SQLConnection;
-import sqlancer.SQLGlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.SQLConnection;
+import sqlancer.SQLGlobalState;
 import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.common.query.QueryProvider;
+import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.gen.TiDBAlterTableGenerator;
 import sqlancer.tidb.gen.TiDBAnalyzeTableGenerator;
@@ -55,15 +54,15 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
                     errors);
         });
 
-        private final QueryProvider<TiDBGlobalState> queryProvider;
+        private final SQLQueryProvider<TiDBGlobalState> sqlQueryProvider;
 
-        Action(QueryProvider<TiDBGlobalState> queryProvider) {
-            this.queryProvider = queryProvider;
+        Action(SQLQueryProvider<TiDBGlobalState> sqlQueryProvider) {
+            this.sqlQueryProvider = sqlQueryProvider;
         }
 
         @Override
-        public Query getQuery(TiDBGlobalState state) throws Exception {
-            return queryProvider.getQuery(state);
+        public SQLQueryAdapter getQuery(TiDBGlobalState state) throws Exception {
+            return sqlQueryProvider.getQuery(state);
         }
     }
 
@@ -108,7 +107,7 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
         for (int i = 0; i < Randomly.fromOptions(1, 2); i++) {
             boolean success = false;
             do {
-                Query qt = new TiDBTableGenerator().getQuery(globalState);
+                SQLQueryAdapter qt = new TiDBTableGenerator().getQuery(globalState);
                 success = globalState.executeStatement(qt);
             } while (!success);
         }

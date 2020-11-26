@@ -2,7 +2,6 @@ package sqlancer.sqlite3.gen;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
@@ -15,7 +14,7 @@ public final class SQLite3AnalyzeGenerator {
         SCHEMA, TABLE, INDEX, SQL_MASTER
     }
 
-    public static Query generateAnalyze(SQLite3GlobalState globalState) {
+    public static SQLQueryAdapter generateAnalyze(SQLite3GlobalState globalState) {
         final StringBuilder sb = new StringBuilder("ANALYZE");
         if (Randomly.getBoolean()) {
             sb.append(" ");

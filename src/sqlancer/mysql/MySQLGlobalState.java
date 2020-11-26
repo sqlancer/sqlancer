@@ -3,7 +3,6 @@ package sqlancer.mysql;
 
 import java.sql.SQLException;
 
-import sqlancer.SQLConnection;
 import sqlancer.SQLGlobalState;
 import sqlancer.mysql.MySQLOptions.MySQLOracleFactory;
 

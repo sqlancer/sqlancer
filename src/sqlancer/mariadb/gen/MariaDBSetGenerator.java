@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 
 public class MariaDBSetGenerator {
@@ -24,7 +23,7 @@ public class MariaDBSetGenerator {
         this.isSingleThreaded = options.getNumberConcurrentThreads() == 1;
     }
 
-    public static Query set(Randomly r, MainOptions options) {
+    public static SQLQueryAdapter set(Randomly r, MainOptions options) {
         return new MariaDBSetGenerator(r, options).get();
     }
 
@@ -163,7 +162,7 @@ public class MariaDBSetGenerator {
         }
     }
 
-    private Query get() {
+    private SQLQueryAdapter get() {
         sb.append("SET ");
         Action a;
         if (isSingleThreaded) {

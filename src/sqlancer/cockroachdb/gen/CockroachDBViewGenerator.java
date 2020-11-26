@@ -4,7 +4,6 @@ import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 
 public final class CockroachDBViewGenerator {
@@ -12,7 +11,7 @@ public final class CockroachDBViewGenerator {
     private CockroachDBViewGenerator() {
     }
 
-    public static Query generate(CockroachDBGlobalState globalState) {
+    public static SQLQueryAdapter generate(CockroachDBGlobalState globalState) {
         int nrColumns = Randomly.smallNumber() + 1;
         StringBuilder sb = new StringBuilder("CREATE ");
         sb.append("VIEW ");

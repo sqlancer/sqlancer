@@ -14,9 +14,9 @@ import sqlancer.SQLConnection;
 import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTable;
 import sqlancer.clickhouse.ast.ClickHouseConstant;
+import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractRowValue;
 import sqlancer.common.schema.AbstractSchema;
-import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.common.schema.TableIndex;
@@ -168,7 +168,8 @@ public class ClickHouseSchema extends AbstractSchema<ClickHouseGlobalState, Clic
         return new ClickHouseLancerDataType(typeString);
     }
 
-    public static class ClickHouseTable extends AbstractRelationalTable<ClickHouseColumn, TableIndex, ClickHouseGlobalState> {
+    public static class ClickHouseTable
+            extends AbstractRelationalTable<ClickHouseColumn, TableIndex, ClickHouseGlobalState> {
 
         public ClickHouseTable(String tableName, List<ClickHouseColumn> columns, List<TableIndex> indexes,
                 boolean isView) {

@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
@@ -25,7 +24,7 @@ public final class PostgresIndexGenerator {
         BTREE, HASH, GIST, GIN
     }
 
-    public static Query generate(PostgresGlobalState globalState) {
+    public static SQLQueryAdapter generate(PostgresGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE");

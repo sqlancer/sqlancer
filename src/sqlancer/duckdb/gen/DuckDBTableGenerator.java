@@ -8,7 +8,6 @@ import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
@@ -20,7 +19,7 @@ import sqlancer.duckdb.ast.DuckDBExpression;
 
 public class DuckDBTableGenerator {
 
-    public Query getQuery(DuckDBGlobalState globalState) {
+    public SQLQueryAdapter getQuery(DuckDBGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder();
         String tableName = globalState.getSchema().getFreeTableName();

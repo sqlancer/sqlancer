@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
@@ -18,7 +17,7 @@ public final class PostgresStatisticsGenerator {
     private PostgresStatisticsGenerator() {
     }
 
-    public static Query insert(PostgresGlobalState globalState) {
+    public static SQLQueryAdapter insert(PostgresGlobalState globalState) {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE STATISTICS ");
         if (Randomly.getBoolean()) {
@@ -48,7 +47,7 @@ public final class PostgresStatisticsGenerator {
                 true);
     }
 
-    public static Query remove(PostgresGlobalState globalState) {
+    public static SQLQueryAdapter remove(PostgresGlobalState globalState) {
         StringBuilder sb = new StringBuilder("DROP STATISTICS ");
         PostgresTable randomTable = globalState.getSchema().getRandomTable();
         List<PostgresStatisticsObject> statistics = randomTable.getStatistics();

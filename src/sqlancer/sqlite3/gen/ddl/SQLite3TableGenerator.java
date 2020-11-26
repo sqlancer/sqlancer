@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Options.SQLite3OracleFactory;
@@ -46,7 +45,7 @@ public class SQLite3TableGenerator {
         this.existingSchema = globalState.getSchema();
     }
 
-    public static Query createTableStatement(String tableName, SQLite3GlobalState globalState) {
+    public static SQLQueryAdapter createTableStatement(String tableName, SQLite3GlobalState globalState) {
         SQLite3TableGenerator sqLite3TableGenerator = new SQLite3TableGenerator(tableName, globalState);
         sqLite3TableGenerator.start();
         ExpectedErrors errors = new ExpectedErrors();

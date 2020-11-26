@@ -4,7 +4,6 @@ import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 
 public final class CockroachDBShowGenerator {
@@ -17,7 +16,7 @@ public final class CockroachDBShowGenerator {
         DATABASES, JOBS, RANGES, LOCALITY, SEQUENCES, TRACE_FOR_SESSION
     }
 
-    public static Query show(CockroachDBGlobalState globalState) {
+    public static SQLQueryAdapter show(CockroachDBGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder();
         switch (Randomly.fromOptions(Option.values())) {

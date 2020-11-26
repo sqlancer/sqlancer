@@ -1,6 +1,5 @@
 package sqlancer.common.oracle;
 
-import sqlancer.GlobalState;
 import sqlancer.Main.StateLogger;
 import sqlancer.MainOptions;
 import sqlancer.SQLConnection;

@@ -12,9 +12,8 @@ import java.util.stream.Stream;
 
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
-import sqlancer.SQLGlobalState;
-import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractRelationalTable;
+import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.TableIndex;
 import sqlancer.mariadb.MariaDBProvider.MariaDBGlobalState;

@@ -8,12 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.SQLConnection;
-import sqlancer.SQLGlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
+import sqlancer.SQLConnection;
+import sqlancer.SQLGlobalState;
 import sqlancer.SQLProviderAdapter;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
@@ -31,9 +31,8 @@ import sqlancer.cockroachdb.gen.CockroachDBTruncateGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBUpdateGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBViewGenerator;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.common.query.QueryProvider;
+import sqlancer.common.query.SQLQueryProvider;
 
 public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalState, CockroachDBOptions> {
 
@@ -100,14 +99,14 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             return new SQLQueryAdapter(sb.toString(), ExpectedErrors.from("must be of type"));
         });
 
-        private final QueryProvider<CockroachDBGlobalState> queryProvider;
+        private final SQLQueryProvider<CockroachDBGlobalState> sqlQueryProvider;
 
-        Action(QueryProvider<CockroachDBGlobalState> queryProvider) {
-            this.queryProvider = queryProvider;
+        Action(SQLQueryProvider<CockroachDBGlobalState> sqlQueryProvider) {
+            this.sqlQueryProvider = sqlQueryProvider;
         }
 
-        public Query getQuery(CockroachDBGlobalState state) throws Exception {
-            return queryProvider.getQuery(state);
+        public SQLQueryAdapter getQuery(CockroachDBGlobalState state) throws Exception {
+            return sqlQueryProvider.getQuery(state);
         }
     }
 
@@ -122,7 +121,7 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
 
     @Override
     public void generateDatabase(CockroachDBGlobalState globalState) throws Exception {
-        QueryManager manager = globalState.getManager();
+        QueryManager<SQLConnection> manager = globalState.getManager();
         MainOptions options = globalState.getOptions();
         List<String> standardSettings = new ArrayList<>();
         standardSettings.add("--Don't send automatic bug reports\n"
@@ -150,7 +149,7 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             boolean success = false;
             do {
                 try {
-                    Query q = CockroachDBTableGenerator.generate(globalState);
+                    SQLQueryAdapter q = CockroachDBTableGenerator.generate(globalState);
                     success = globalState.executeStatement(q);
                 } catch (IgnoreMeException e) {
                     // continue trying
@@ -226,7 +225,7 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             assert nextAction != null;
             assert nrRemaining[nextAction.ordinal()] > 0;
             nrRemaining[nextAction.ordinal()]--;
-            Query query = null;
+            SQLQueryAdapter query = null;
             try {
                 boolean success;
                 int nrTries = 0;

@@ -4,7 +4,6 @@ import java.sql.SQLException;
 import java.util.function.Function;
 
 import sqlancer.Randomly;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 
@@ -61,7 +60,7 @@ public final class TiDBSetGenerator {
 
     }
 
-    public static Query getQuery(TiDBGlobalState globalState) throws SQLException {
+    public static SQLQueryAdapter getQuery(TiDBGlobalState globalState) throws SQLException {
         StringBuilder sb = new StringBuilder();
         Action option = Randomly.fromOptions(Action.values());
         sb.append("set @@");

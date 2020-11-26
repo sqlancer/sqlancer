@@ -3,7 +3,6 @@ package sqlancer.sqlite3.gen.ddl;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
@@ -12,7 +11,7 @@ public final class SQLite3DropTableGenerator {
     private SQLite3DropTableGenerator() {
     }
 
-    public static Query dropTable(SQLite3GlobalState globalState) {
+    public static SQLQueryAdapter dropTable(SQLite3GlobalState globalState) {
         if (globalState.getSchema().getTables(t -> !t.isView()).size() == 1) {
             throw new IgnoreMeException();
         }

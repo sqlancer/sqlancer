@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.tidb.TiDBBugs;
 import sqlancer.tidb.TiDBExpressionGenerator;
@@ -26,7 +25,7 @@ public class TiDBTableGenerator {
     private boolean primaryKeyAsTableConstraints;
     private final ExpectedErrors errors = new ExpectedErrors();
 
-    public Query getQuery(TiDBGlobalState globalState) throws SQLException {
+    public SQLQueryAdapter getQuery(TiDBGlobalState globalState) throws SQLException {
         errors.add("Information schema is changed during the execution of the statement");
         String tableName = globalState.getSchema().getFreeTableName();
         int nrColumns = Randomly.smallNumber() + 1;

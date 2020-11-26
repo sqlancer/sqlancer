@@ -1,7 +1,6 @@
 package sqlancer.sqlite3.gen;
 
 import sqlancer.Randomly;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.sqlite3.SQLite3Provider.Action;
@@ -12,7 +11,7 @@ public final class SQLite3ExplainGenerator {
     private SQLite3ExplainGenerator() {
     }
 
-    public static Query explain(SQLite3GlobalState globalState) throws Exception {
+    public static SQLQueryAdapter explain(SQLite3GlobalState globalState) throws Exception {
         StringBuilder sb = new StringBuilder();
         sb.append("EXPLAIN ");
         if (Randomly.getBoolean()) {
@@ -22,7 +21,7 @@ public final class SQLite3ExplainGenerator {
         do {
             action = Randomly.fromOptions(SQLite3Provider.Action.values());
         } while (action == Action.EXPLAIN);
-        Query query = action.getQuery(globalState);
+        SQLQueryAdapter query = action.getQuery(globalState);
         sb.append(query);
         return new SQLQueryAdapter(sb.toString(), query.getExpectedErrors());
     }

@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
@@ -24,12 +23,12 @@ public class MySQLAnalyzeTable {
         this.r = r;
     }
 
-    public static Query analyze(MySQLGlobalState globalState) {
+    public static SQLQueryAdapter analyze(MySQLGlobalState globalState) {
         return new MySQLAnalyzeTable(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty(),
                 globalState.getRandomly()).generate();
     }
 
-    private Query generate() {
+    private SQLQueryAdapter generate() {
         sb.append("ANALYZE ");
         if (Randomly.getBoolean()) {
             sb.append(Randomly.fromOptions("NO_WRITE_TO_BINLOG", "LOCAL"));

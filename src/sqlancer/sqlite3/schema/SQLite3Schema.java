@@ -14,9 +14,9 @@ import java.util.stream.Collectors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
+import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractRowValue;
 import sqlancer.common.schema.AbstractSchema;
-import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.common.schema.TableIndex;
@@ -378,7 +378,8 @@ public class SQLite3Schema extends AbstractSchema<SQLite3GlobalState, SQLite3Tab
                             columnTypeString.contentEquals("INTEGER"), isPrimaryKey, collate));
                 }
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
+
         }
         if (databaseColumns.isEmpty()) {
             // only generated columns

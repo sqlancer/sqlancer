@@ -5,7 +5,6 @@ import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
@@ -16,7 +15,7 @@ public final class TiDBIndexGenerator {
     private TiDBIndexGenerator() {
     }
 
-    public static Query getQuery(TiDBGlobalState globalState) throws SQLException {
+    public static SQLQueryAdapter getQuery(TiDBGlobalState globalState) throws SQLException {
         ExpectedErrors errors = new ExpectedErrors();
 
         TiDBTable randomTable = globalState.getSchema().getRandomTable(t -> !t.isView());

@@ -6,7 +6,6 @@ import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.gen.SQLite3Common;
 
@@ -21,7 +20,7 @@ public class SQLite3CreateVirtualFTSTableGenerator {
         this.r = r;
     }
 
-    public static Query createTableStatement(String tableName, Randomly r) {
+    public static SQLQueryAdapter createTableStatement(String tableName, Randomly r) {
         return new SQLite3CreateVirtualFTSTableGenerator(tableName, r).create();
     }
 
@@ -37,7 +36,7 @@ public class SQLite3CreateVirtualFTSTableGenerator {
         MATCHINFO, TOKENIZE, PREFIX, ORDER, LANGUAGEID, COMPRESS, NOT_INDEXED
     }
 
-    public Query create() {
+    public SQLQueryAdapter create() {
         sb.append("CREATE VIRTUAL TABLE ");
         sb.append(tableName);
         sb.append(" USING ");

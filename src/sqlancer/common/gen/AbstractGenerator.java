@@ -1,7 +1,6 @@
 package sqlancer.common.gen;
 
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 
 public abstract class AbstractGenerator {
@@ -10,7 +9,7 @@ public abstract class AbstractGenerator {
     protected final StringBuilder sb = new StringBuilder();
     protected boolean canAffectSchema;
 
-    public Query getQuery() {
+    public SQLQueryAdapter getQuery() {
         buildStatement();
         return new SQLQueryAdapter(sb.toString(), errors, canAffectSchema);
     }

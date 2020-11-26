@@ -4,7 +4,6 @@ import java.util.Arrays;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLGlobalState;
@@ -20,11 +19,11 @@ public class MySQLDeleteGenerator {
         this.globalState = globalState;
     }
 
-    public static Query delete(MySQLGlobalState globalState) {
+    public static SQLQueryAdapter delete(MySQLGlobalState globalState) {
         return new MySQLDeleteGenerator(globalState).generate();
     }
 
-    private Query generate() {
+    private SQLQueryAdapter generate() {
         MySQLTable randomTable = globalState.getSchema().getRandomTable();
         MySQLExpressionGenerator gen = new MySQLExpressionGenerator(globalState).setColumns(randomTable.getColumns());
         ExpectedErrors errors = new ExpectedErrors();

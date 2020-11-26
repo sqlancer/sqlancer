@@ -10,9 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.SQLGlobalState;
-import sqlancer.Randomly;
 
 public class PostgresGlobalState extends SQLGlobalState<PostgresOptions, PostgresSchema> {
 

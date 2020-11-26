@@ -26,9 +26,8 @@ import sqlancer.citus.gen.CitusViewGenerator;
 import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.common.query.QueryProvider;
+import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresOptions;
@@ -64,7 +63,7 @@ public class CitusProvider extends PostgresProvider {
                 generateOnlyKnown)), //
         CLUSTER(PostgresClusterGenerator::create), //
         COMMIT(g -> {
-            Query query;
+            SQLQueryAdapter query;
             if (Randomly.getBoolean()) {
                 query = new SQLQueryAdapter("COMMIT", true);
             } else if (Randomly.getBoolean()) {
@@ -95,24 +94,24 @@ public class CitusProvider extends PostgresProvider {
         RESET_ROLE((g) -> new SQLQueryAdapter("RESET ROLE")), //
         COMMENT_ON(PostgresCommentGenerator::generate), //
         RESET((g) -> new SQLQueryAdapter("RESET ALL") /*
-                                                    * https://www.postgresql.org/docs/devel/sql-reset.html TODO: also
-                                                    * configuration parameter
-                                                    */), //
+                                                       * https://www.postgresql.org/docs/devel/sql-reset.html TODO: also
+                                                       * configuration parameter
+                                                       */), //
         NOTIFY(PostgresNotifyGenerator::createNotify), //
         LISTEN((g) -> PostgresNotifyGenerator.createListen()), //
         UNLISTEN((g) -> PostgresNotifyGenerator.createUnlisten()), //
         CREATE_SEQUENCE(PostgresSequenceGenerator::createSequence), //
         CREATE_VIEW(CitusViewGenerator::create);
 
-        private final QueryProvider<PostgresGlobalState> queryProvider;
+        private final SQLQueryProvider<PostgresGlobalState> sqlQueryProvider;
 
-        Action(QueryProvider<PostgresGlobalState> queryProvider) {
-            this.queryProvider = queryProvider;
+        Action(SQLQueryProvider<PostgresGlobalState> sqlQueryProvider) {
+            this.sqlQueryProvider = sqlQueryProvider;
         }
 
         @Override
-        public Query getQuery(PostgresGlobalState state) throws Exception {
-            return queryProvider.getQuery(state);
+        public SQLQueryAdapter getQuery(PostgresGlobalState state) throws Exception {
+            return sqlQueryProvider.getQuery(state);
         }
     }
 
@@ -344,7 +343,8 @@ public class CitusProvider extends PostgresProvider {
             String entryWorkerURL = preHost + w.getHost() + ":" + w.getPort() + postHost;
             globalState.getState().logStatement("\\q");
             globalState.getState().logStatement(entryWorkerURL);
-            SQLConnection con = new SQLConnection(DriverManager.getConnection("jdbc:" + entryWorkerURL, username, password));
+            SQLConnection con = new SQLConnection(
+                    DriverManager.getConnection("jdbc:" + entryWorkerURL, username, password));
 
             // create test database at worker node
             globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);

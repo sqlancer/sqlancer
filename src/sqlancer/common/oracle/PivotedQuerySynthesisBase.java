@@ -3,14 +3,15 @@ package sqlancer.common.oracle;
 import java.util.ArrayList;
 import java.util.List;
 
-import sqlancer.SQLGlobalState;
+import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
+import sqlancer.SQLancerDBConnection;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.common.schema.AbstractRowValue;
 
-public abstract class PivotedQuerySynthesisBase<S extends SQLGlobalState<?, ?>, R extends AbstractRowValue<?, ?, ?>, E>
+public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?, C>, R extends AbstractRowValue<?, ?, ?>, E, C extends SQLancerDBConnection>
         implements TestOracle {
 
     protected final ExpectedErrors errors = new ExpectedErrors();
@@ -35,11 +36,11 @@ public abstract class PivotedQuerySynthesisBase<S extends SQLGlobalState<?, ?>, 
     @Override
     public final void check() throws Exception {
         rectifiedPredicates.clear();
-        Query pivotRowQuery = getRectifiedQuery();
+        Query<C> pivotRowQuery = getRectifiedQuery();
         if (globalState.getOptions().logEachSelect()) {
             globalState.getLogger().writeCurrent(pivotRowQuery.getQueryString());
         }
-        Query isContainedQuery = getContainmentCheckQuery(pivotRowQuery);
+        Query<C> isContainedQuery = getContainmentCheckQuery(pivotRowQuery);
         if (globalState.getOptions().logEachSelect()) {
             globalState.getLogger().writeCurrent(isContainedQuery.getQueryString());
         }
@@ -61,7 +62,7 @@ public abstract class PivotedQuerySynthesisBase<S extends SQLGlobalState<?, ?>, 
      *
      * @throws Exception
      */
-    private boolean containsRows(Query query) throws Exception {
+    private boolean containsRows(Query<C> query) throws Exception {
         try (SQLancerResultSet result = query.executeAndGet(globalState)) {
             if (result == null) {
                 throw new IgnoreMeException();
@@ -70,7 +71,7 @@ public abstract class PivotedQuerySynthesisBase<S extends SQLGlobalState<?, ?>, 
         }
     }
 
-    protected void reportMissingPivotRow(Query query) {
+    protected void reportMissingPivotRow(Query<?> query) {
         globalState.getState().getLocalState().log("-- pivot row values:");
         String expectedPivotRowString = pivotRow.asStringGroupedByTables();
         globalState.getState().getLocalState().log(expectedPivotRowString);
@@ -108,7 +109,7 @@ public abstract class PivotedQuerySynthesisBase<S extends SQLGlobalState<?, ?>, 
      *
      * @throws Exception
      */
-    protected abstract Query getContainmentCheckQuery(Query pivotRowQuery) throws Exception;
+    protected abstract Query<C> getContainmentCheckQuery(Query<?> pivotRowQuery) throws Exception;
 
     /**
      * Obtains a rectified query (i.e., a query that is guaranteed to fetch the pivot row. This corresponds to steps 2-5
@@ -118,7 +119,7 @@ public abstract class PivotedQuerySynthesisBase<S extends SQLGlobalState<?, ?>, 
      *
      * @throws Exception
      */
-    protected abstract Query getRectifiedQuery() throws Exception;
+    protected abstract Query<C> getRectifiedQuery() throws Exception;
 
     /**
      * Prints the value to which the expression is expected to evaluate, and then recursively prints the subexpressions'

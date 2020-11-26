@@ -1,20 +1,18 @@
 package sqlancer.duckdb;
 
-import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import sqlancer.AbstractAction;
-import sqlancer.SQLConnection;
-import sqlancer.SQLGlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.SQLConnection;
+import sqlancer.SQLGlobalState;
 import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.common.query.QueryProvider;
+import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.gen.DuckDBDeleteGenerator;
 import sqlancer.duckdb.gen.DuckDBIndexGenerator;
@@ -49,15 +47,15 @@ public class DuckDBProvider extends SQLProviderAdapter<DuckDBGlobalState, DuckDB
                     errors);
         });
 
-        private final QueryProvider<DuckDBGlobalState> queryProvider;
+        private final SQLQueryProvider<DuckDBGlobalState> sqlQueryProvider;
 
-        Action(QueryProvider<DuckDBGlobalState> queryProvider) {
-            this.queryProvider = queryProvider;
+        Action(SQLQueryProvider<DuckDBGlobalState> sqlQueryProvider) {
+            this.sqlQueryProvider = sqlQueryProvider;
         }
 
         @Override
-        public Query getQuery(DuckDBGlobalState state) throws Exception {
-            return queryProvider.getQuery(state);
+        public SQLQueryAdapter getQuery(DuckDBGlobalState state) throws Exception {
+            return sqlQueryProvider.getQuery(state);
         }
     }
 
@@ -100,7 +98,7 @@ public class DuckDBProvider extends SQLProviderAdapter<DuckDBGlobalState, DuckDB
         for (int i = 0; i < Randomly.fromOptions(1, 2); i++) {
             boolean success = false;
             do {
-                Query qt = new DuckDBTableGenerator().getQuery(globalState);
+                SQLQueryAdapter qt = new DuckDBTableGenerator().getQuery(globalState);
                 success = globalState.executeStatement(qt);
             } while (!success);
         }

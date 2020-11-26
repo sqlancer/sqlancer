@@ -6,7 +6,6 @@ import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 
 public final class CockroachDBSetSessionGenerator {
@@ -45,7 +44,7 @@ public final class CockroachDBSetSessionGenerator {
         }
     }
 
-    public static Query create(CockroachDBGlobalState globalState) {
+    public static SQLQueryAdapter create(CockroachDBGlobalState globalState) {
         CockroachDBSetting s = Randomly.fromOptions(CockroachDBSetting.values());
         StringBuilder sb = new StringBuilder("SET SESSION ");
         sb.append(s);

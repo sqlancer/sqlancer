@@ -4,7 +4,6 @@ import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresIndex;
@@ -15,7 +14,7 @@ public final class PostgresDropIndexGenerator {
     private PostgresDropIndexGenerator() {
     }
 
-    public static Query create(PostgresGlobalState globalState) {
+    public static SQLQueryAdapter create(PostgresGlobalState globalState) {
         List<PostgresIndex> indexes = globalState.getSchema().getRandomTable().getIndexes();
         StringBuilder sb = new StringBuilder();
         sb.append("DROP INDEX ");

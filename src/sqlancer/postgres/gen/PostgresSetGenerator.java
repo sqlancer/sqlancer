@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.function.Function;
 
 import sqlancer.Randomly;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 
@@ -128,7 +127,7 @@ public final class PostgresSetGenerator {
         }
     }
 
-    public static Query create(PostgresGlobalState globalState) {
+    public static SQLQueryAdapter create(PostgresGlobalState globalState) {
         StringBuilder sb = new StringBuilder();
         ArrayList<ConfigurationOption> options = new ArrayList<>(Arrays.asList(ConfigurationOption.values()));
         options.remove(ConfigurationOption.DEFAULT_WITH_OIDS);

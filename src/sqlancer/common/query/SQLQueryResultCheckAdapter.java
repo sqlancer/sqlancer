@@ -5,10 +5,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.function.Consumer;
 
+import sqlancer.GlobalState;
 import sqlancer.SQLConnection;
-import sqlancer.SQLGlobalState;
 
-public class SQLQueryResultCheckAdapter<G extends SQLGlobalState<?, ?>> extends SQLQueryAdapter<G> {
+public class SQLQueryResultCheckAdapter extends SQLQueryAdapter {
 
     private final Consumer<ResultSet> rsChecker;
 
@@ -18,7 +18,8 @@ public class SQLQueryResultCheckAdapter<G extends SQLGlobalState<?, ?>> extends 
     }
 
     @Override
-    public boolean execute(G globalState, String... fills) throws SQLException {
+    public <G extends GlobalState<?, ?, SQLConnection>> boolean execute(G globalState, String... fills)
+            throws SQLException {
         try (Statement s = globalState.getConnection().createStatement()) {
             ResultSet rs = s.executeQuery(getQueryString());
             rsChecker.accept(rs);

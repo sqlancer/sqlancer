@@ -21,12 +21,12 @@ public class SQLLoggableFactory extends LoggableFactory {
     }
 
     @Override
-    public Query getQueryForStateToReproduce(String queryString) {
+    public SQLQueryAdapter getQueryForStateToReproduce(String queryString) {
         return new SQLQueryAdapter(queryString);
     }
 
     @Override
-    public Query commentOutQuery(Query query) {
+    public SQLQueryAdapter commentOutQuery(Query<?> query) {
         String queryString = query.getLogString();
         String newQueryString = "-- " + queryString;
         return new SQLQueryAdapter(newQueryString);

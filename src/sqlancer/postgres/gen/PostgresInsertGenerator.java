@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
@@ -18,7 +17,7 @@ public final class PostgresInsertGenerator {
     private PostgresInsertGenerator() {
     }
 
-    public static Query insert(PostgresGlobalState globalState) {
+    public static SQLQueryAdapter insert(PostgresGlobalState globalState) {
         PostgresTable table = globalState.getSchema().getRandomTable(t -> t.isInsertable());
         ExpectedErrors errors = new ExpectedErrors();
         errors.add("cannot insert into column");

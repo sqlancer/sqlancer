@@ -6,7 +6,6 @@ import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 
 public final class CockroachDBSetClusterSettingGenerator {
@@ -40,7 +39,7 @@ public final class CockroachDBSetClusterSettingGenerator {
         }
     }
 
-    public static Query create(CockroachDBGlobalState globalState) {
+    public static SQLQueryAdapter create(CockroachDBGlobalState globalState) {
         CockroachDBClusterSetting s = Randomly.fromOptions(CockroachDBClusterSetting.values());
         StringBuilder sb = new StringBuilder("SET CLUSTER SETTING ");
         sb.append(s.name);

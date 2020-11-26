@@ -3,7 +3,6 @@ package sqlancer.mysql.gen;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
@@ -25,7 +24,7 @@ public final class MySQLDropIndex {
     // lock_option:
     // LOCK [=] {DEFAULT|NONE|SHARED|EXCLUSIVE}
 
-    public static Query generate(MySQLGlobalState globalState) {
+    public static SQLQueryAdapter generate(MySQLGlobalState globalState) {
         MySQLTable table = globalState.getSchema().getRandomTable();
         if (!table.hasIndexes()) {
             throw new IgnoreMeException();

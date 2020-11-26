@@ -14,9 +14,8 @@ import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.common.query.QueryProvider;
+import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.postgres.PostgresOptions.PostgresOracleFactory;
 import sqlancer.postgres.gen.PostgresAlterTableGenerator;
@@ -73,7 +72,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
                 generateOnlyKnown)), //
         CLUSTER(PostgresClusterGenerator::create), //
         COMMIT(g -> {
-            Query query;
+            SQLQueryAdapter query;
             if (Randomly.getBoolean()) {
                 query = new SQLQueryAdapter("COMMIT", true);
             } else if (Randomly.getBoolean()) {
@@ -104,24 +103,24 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         RESET_ROLE((g) -> new SQLQueryAdapter("RESET ROLE")), //
         COMMENT_ON(PostgresCommentGenerator::generate), //
         RESET((g) -> new SQLQueryAdapter("RESET ALL") /*
-                                                    * https://www.postgresql.org/docs/devel/sql-reset.html TODO: also
-                                                    * configuration parameter
-                                                    */), //
+                                                       * https://www.postgresql.org/docs/devel/sql-reset.html TODO: also
+                                                       * configuration parameter
+                                                       */), //
         NOTIFY(PostgresNotifyGenerator::createNotify), //
         LISTEN((g) -> PostgresNotifyGenerator.createListen()), //
         UNLISTEN((g) -> PostgresNotifyGenerator.createUnlisten()), //
         CREATE_SEQUENCE(PostgresSequenceGenerator::createSequence), //
         CREATE_VIEW(PostgresViewGenerator::create);
 
-        private final QueryProvider<PostgresGlobalState> queryProvider;
+        private final SQLQueryProvider<PostgresGlobalState> sqlQueryProvider;
 
-        Action(QueryProvider<PostgresGlobalState> queryProvider) {
-            this.queryProvider = queryProvider;
+        Action(SQLQueryProvider<PostgresGlobalState> sqlQueryProvider) {
+            this.sqlQueryProvider = sqlQueryProvider;
         }
 
         @Override
-        public Query getQuery(PostgresGlobalState state) throws Exception {
-            return queryProvider.getQuery(state);
+        public SQLQueryAdapter getQuery(PostgresGlobalState state) throws Exception {
+            return sqlQueryProvider.getQuery(state);
         }
     }
 
@@ -270,7 +269,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         while (globalState.getSchema().getDatabaseTables().size() < numTables) {
             try {
                 String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
-                Query createTable = PostgresTableGenerator.generate(tableName, globalState.getSchema(),
+                SQLQueryAdapter createTable = PostgresTableGenerator.generate(tableName, globalState.getSchema(),
                         generateOnlyKnown, globalState);
                 globalState.executeStatement(createTable);
             } catch (IgnoreMeException e) {

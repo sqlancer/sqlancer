@@ -4,7 +4,6 @@ import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLGlobalState;
@@ -32,11 +31,11 @@ public class MySQLIndexGenerator {
         this.globalState = globalState;
     }
 
-    public static Query create(MySQLGlobalState globalState) {
+    public static SQLQueryAdapter create(MySQLGlobalState globalState) {
         return new MySQLIndexGenerator(globalState.getSchema(), globalState.getRandomly(), globalState).create();
     }
 
-    public Query create() {
+    public SQLQueryAdapter create() {
         ExpectedErrors errors = new ExpectedErrors();
         MySQLErrors.addExpressionErrors(errors);
         sb.append("CREATE ");

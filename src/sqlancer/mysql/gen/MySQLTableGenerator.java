@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mysql.MySQLBugs;
 import sqlancer.mysql.MySQLGlobalState;
@@ -41,11 +40,11 @@ public class MySQLTableGenerator {
         this.globalState = globalState;
     }
 
-    public static Query generate(MySQLGlobalState globalState, String tableName) {
+    public static SQLQueryAdapter generate(MySQLGlobalState globalState, String tableName) {
         return new MySQLTableGenerator(globalState, tableName).create();
     }
 
-    private Query create() {
+    private SQLQueryAdapter create() {
         ExpectedErrors errors = new ExpectedErrors();
 
         sb.append("CREATE");

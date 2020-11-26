@@ -2,7 +2,6 @@ package sqlancer.duckdb.gen;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
@@ -19,7 +18,7 @@ public final class DuckDBAlterTableGenerator {
         ADD_COLUMN, ALTER_COLUMN, DROP_COLUMN
     }
 
-    public static Query getQuery(DuckDBGlobalState globalState) {
+    public static SQLQueryAdapter getQuery(DuckDBGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         errors.add(" does not have a column with name \"rowid\"");
         errors.add("Table does not contain column rowid referenced in alter statement");

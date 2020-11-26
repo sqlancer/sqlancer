@@ -4,7 +4,6 @@ import java.util.function.Function;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.h2.H2Provider.H2GlobalState;
 
@@ -49,7 +48,7 @@ public final class H2SetGenerator {
         }
     }
 
-    public static Query getQuery(H2GlobalState globalState) {
+    public static SQLQueryAdapter getQuery(H2GlobalState globalState) {
         StringBuilder sb = new StringBuilder();
         Option o = Option.getRandom();
         sb.append("SET ");

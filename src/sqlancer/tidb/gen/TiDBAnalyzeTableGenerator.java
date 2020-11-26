@@ -4,7 +4,6 @@ import java.sql.SQLException;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBTable;
@@ -14,7 +13,7 @@ public final class TiDBAnalyzeTableGenerator {
     private TiDBAnalyzeTableGenerator() {
     }
 
-    public static Query getQuery(TiDBGlobalState globalState) throws SQLException {
+    public static SQLQueryAdapter getQuery(TiDBGlobalState globalState) throws SQLException {
         TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         boolean analyzeIndex = !table.getIndexes().isEmpty() && Randomly.getBoolean();
         StringBuilder sb = new StringBuilder("ANALYZE ");

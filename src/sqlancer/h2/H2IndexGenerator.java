@@ -2,7 +2,6 @@ package sqlancer.h2;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.h2.H2Provider.H2GlobalState;
 import sqlancer.h2.H2Schema.H2Table;
@@ -15,11 +14,11 @@ public class H2IndexGenerator {
         this.globalState = globalState;
     }
 
-    public static Query getQuery(H2GlobalState globalState) {
+    public static SQLQueryAdapter getQuery(H2GlobalState globalState) {
         return new H2IndexGenerator(globalState).generate();
     }
 
-    private Query generate() {
+    private SQLQueryAdapter generate() {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE ");

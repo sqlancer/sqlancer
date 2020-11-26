@@ -10,7 +10,6 @@ import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.CockroachDBVisitor;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 
 public final class CockroachDBInsertGenerator {
@@ -18,7 +17,7 @@ public final class CockroachDBInsertGenerator {
     private CockroachDBInsertGenerator() {
     }
 
-    public static Query insert(CockroachDBGlobalState globalState) {
+    public static SQLQueryAdapter insert(CockroachDBGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
 
         CockroachDBErrors.addExpressionErrors(errors); // e.g., caused by computed columns

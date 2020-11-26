@@ -5,7 +5,6 @@ import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
@@ -15,7 +14,7 @@ public final class SQLite3CreateVirtualRtreeTabelGenerator {
     private SQLite3CreateVirtualRtreeTabelGenerator() {
     }
 
-    public static Query createTableStatement(String rTreeTableName, SQLite3GlobalState globalState) {
+    public static SQLQueryAdapter createTableStatement(String rTreeTableName, SQLite3GlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         List<SQLite3Column> columns = new ArrayList<>();
         StringBuilder sb = new StringBuilder("CREATE VIRTUAL TABLE ");

@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.h2.H2Provider.H2GlobalState;
 import sqlancer.h2.H2Schema.H2Column;
@@ -16,7 +15,7 @@ import sqlancer.h2.H2Schema.H2Table;
 
 public class H2TableGenerator {
 
-    public Query getQuery(H2GlobalState globalState) {
+    public SQLQueryAdapter getQuery(H2GlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         errors.add("already exists");
         StringBuilder sb = new StringBuilder("CREATE TABLE " + globalState.getSchema().getFreeTableName() + "(");

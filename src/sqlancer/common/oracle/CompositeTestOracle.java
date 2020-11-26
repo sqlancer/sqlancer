@@ -1,8 +1,8 @@
 package sqlancer.common.oracle;
 
-import sqlancer.GlobalState;
-
 import java.util.List;
+
+import sqlancer.GlobalState;
 
 public class CompositeTestOracle implements TestOracle {
 

@@ -18,10 +18,10 @@ public abstract class LoggableFactory {
 
     protected abstract Loggable createLoggable(String input, String suffix);
 
-    public abstract Query getQueryForStateToReproduce(String queryString);
+    public abstract Query<?> getQueryForStateToReproduce(String queryString);
 
     @Deprecated
-    public abstract Query commentOutQuery(Query query);
+    public abstract Query<?> commentOutQuery(Query<?> query);
 
     public Loggable getInfo(String databaseName, String databaseVersion, long seedValue) {
         Date date = new Date();

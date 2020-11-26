@@ -2,7 +2,6 @@ package sqlancer.postgres.gen;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 
 public final class PostgresTransactionGenerator {
@@ -10,7 +9,7 @@ public final class PostgresTransactionGenerator {
     private PostgresTransactionGenerator() {
     }
 
-    public static Query executeBegin() {
+    public static SQLQueryAdapter executeBegin() {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder("BEGIN");
         if (Randomly.getBoolean()) {

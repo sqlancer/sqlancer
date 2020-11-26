@@ -2,7 +2,6 @@ package sqlancer.mariadb.gen;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mariadb.MariaDBErrors;
 import sqlancer.mariadb.MariaDBSchema;
@@ -14,7 +13,7 @@ public final class MariaDBInsertGenerator {
     private MariaDBInsertGenerator() {
     }
 
-    public static Query insert(MariaDBSchema s, Randomly r) {
+    public static SQLQueryAdapter insert(MariaDBSchema s, Randomly r) {
         MariaDBTable randomTable = s.getRandomTable();
         StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO ");

@@ -2,7 +2,6 @@ package sqlancer.sqlite3.gen.ddl;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
@@ -12,7 +11,7 @@ public final class SQLite3DropIndexGenerator {
     private SQLite3DropIndexGenerator() {
     }
 
-    public static Query dropIndex(SQLite3GlobalState globalState) {
+    public static SQLQueryAdapter dropIndex(SQLite3GlobalState globalState) {
         String indexName = globalState.getSchema().getRandomIndexOrBailout();
         StringBuilder sb = new StringBuilder();
         sb.append("DROP INDEX ");

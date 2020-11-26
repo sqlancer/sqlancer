@@ -3,7 +3,6 @@ package sqlancer.tidb.gen;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
@@ -13,7 +12,7 @@ public final class TiDBViewGenerator {
     private TiDBViewGenerator() {
     }
 
-    public static Query getQuery(TiDBGlobalState globalState) {
+    public static SQLQueryAdapter getQuery(TiDBGlobalState globalState) {
         int nrColumns = Randomly.smallNumber() + 1;
         StringBuilder sb = new StringBuilder("CREATE ");
         if (Randomly.getBoolean()) {

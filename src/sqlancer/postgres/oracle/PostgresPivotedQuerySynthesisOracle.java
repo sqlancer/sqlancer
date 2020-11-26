@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.SQLConnection;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -26,7 +27,7 @@ import sqlancer.postgres.gen.PostgresCommon;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
 public class PostgresPivotedQuerySynthesisOracle
-        extends PivotedQuerySynthesisBase<PostgresGlobalState, PostgresRowValue, PostgresExpression> {
+        extends PivotedQuerySynthesisBase<PostgresGlobalState, PostgresRowValue, PostgresExpression, SQLConnection> {
 
     private List<PostgresColumn> fetchColumns;
 
@@ -37,7 +38,7 @@ public class PostgresPivotedQuerySynthesisOracle
     }
 
     @Override
-    public Query getRectifiedQuery() throws SQLException {
+    public SQLQueryAdapter getRectifiedQuery() throws SQLException {
         PostgresTables randomFromTables = globalState.getSchema().getRandomTableNonEmptyTables();
 
         PostgresSelect selectStatement = new PostgresSelect();
@@ -118,7 +119,7 @@ public class PostgresPivotedQuerySynthesisOracle
     }
 
     @Override
-    protected Query getContainmentCheckQuery(Query query) throws SQLException {
+    protected Query<SQLConnection> getContainmentCheckQuery(Query<?> query) throws SQLException {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
         sb.append(query.getUnterminatedQueryString());

@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBExpressionGenerator;
@@ -18,7 +17,7 @@ public final class TiDBDeleteGenerator {
     private TiDBDeleteGenerator() {
     }
 
-    public static Query getQuery(TiDBGlobalState globalState) throws SQLException {
+    public static SQLQueryAdapter getQuery(TiDBGlobalState globalState) throws SQLException {
         ExpectedErrors errors = new ExpectedErrors();
         TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         TiDBExpressionGenerator gen = new TiDBExpressionGenerator(globalState).setColumns(table.getColumns());

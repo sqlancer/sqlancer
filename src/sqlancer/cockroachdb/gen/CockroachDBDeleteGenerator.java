@@ -7,7 +7,6 @@ import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBDataType;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.CockroachDBVisitor;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 
 public final class CockroachDBDeleteGenerator {
@@ -15,7 +14,7 @@ public final class CockroachDBDeleteGenerator {
     private CockroachDBDeleteGenerator() {
     }
 
-    public static Query delete(CockroachDBGlobalState globalState) {
+    public static SQLQueryAdapter delete(CockroachDBGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder();
         CockroachDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());

@@ -35,8 +35,8 @@ public final class ComparatorHelper {
         return Math.abs(a - b) < 0.001 * Math.max(Math.abs(a), Math.abs(b)) + 0.001;
     }
 
-    public static List<String> getResultSetFirstColumnAsString(String queryString,
-               ExpectedErrors errors, SQLGlobalState<?, ?> state) throws SQLException {
+    public static List<String> getResultSetFirstColumnAsString(String queryString, ExpectedErrors errors,
+            SQLGlobalState<?, ?> state) throws SQLException {
         if (state.getOptions().logEachSelect()) {
             // TODO: refactor me
             state.getLogger().writeCurrent(queryString);

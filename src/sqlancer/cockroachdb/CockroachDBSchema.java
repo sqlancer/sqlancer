@@ -10,8 +10,8 @@ import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
-import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractRelationalTable;
+import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.common.schema.TableIndex;
@@ -264,7 +264,8 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBGlobalState, Co
         }
     }
 
-    public static class CockroachDBTable extends AbstractRelationalTable<CockroachDBColumn, TableIndex, CockroachDBGlobalState> {
+    public static class CockroachDBTable
+            extends AbstractRelationalTable<CockroachDBColumn, TableIndex, CockroachDBGlobalState> {
 
         public CockroachDBTable(String tableName, List<CockroachDBColumn> columns, List<TableIndex> indexes,
                 boolean isView) {

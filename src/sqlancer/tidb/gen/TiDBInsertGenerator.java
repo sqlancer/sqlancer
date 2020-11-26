@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBExpressionGenerator;
@@ -26,11 +25,11 @@ public class TiDBInsertGenerator {
         TiDBErrors.addInsertErrors(errors);
     }
 
-    public static Query getQuery(TiDBGlobalState globalState) throws SQLException {
+    public static SQLQueryAdapter getQuery(TiDBGlobalState globalState) throws SQLException {
         return new TiDBInsertGenerator(globalState).get();
     }
 
-    private Query get() {
+    private SQLQueryAdapter get() {
         TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         gen = new TiDBExpressionGenerator(globalState).setColumns(table.getColumns());
         StringBuilder sb = new StringBuilder();
