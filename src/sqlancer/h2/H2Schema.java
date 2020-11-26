@@ -1,6 +1,5 @@
 package sqlancer.h2;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -9,14 +8,16 @@ import java.util.Collections;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.SQLConnection;
+import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractSchema;
-import sqlancer.common.schema.AbstractTable;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.common.schema.TableIndex;
+import sqlancer.h2.H2Provider.H2GlobalState;
 import sqlancer.h2.H2Schema.H2Table;
 
-public class H2Schema extends AbstractSchema<H2Table> {
+public class H2Schema extends AbstractSchema<H2GlobalState, H2Table> {
 
     public enum H2DataType {
 
@@ -152,7 +153,7 @@ public class H2Schema extends AbstractSchema<H2Table> {
         return new H2Tables(Randomly.nonEmptySubset(getDatabaseTables()));
     }
 
-    public static class H2Table extends AbstractTable<H2Column, TableIndex> {
+    public static class H2Table extends AbstractRelationalTable<H2Column, TableIndex, H2GlobalState> {
 
         public H2Table(String tableName, List<H2Column> columns) {
             super(tableName, columns, Collections.emptyList(), tableName.startsWith("V"));
@@ -160,7 +161,7 @@ public class H2Schema extends AbstractSchema<H2Table> {
 
     }
 
-    public static H2Schema fromConnection(Connection con, String databaseName) throws SQLException {
+    public static H2Schema fromConnection(SQLConnection con, String databaseName) throws SQLException {
         List<H2Table> databaseTables = new ArrayList<>();
         List<String> tableNames = getTableNames(con);
         for (String tableName : tableNames) {
@@ -175,7 +176,7 @@ public class H2Schema extends AbstractSchema<H2Table> {
         return new H2Schema(databaseTables);
     }
 
-    private static List<String> getTableNames(Connection con) throws SQLException {
+    private static List<String> getTableNames(SQLConnection con) throws SQLException {
         List<String> tableNames = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery("SHOW TABLES")) {
@@ -187,7 +188,7 @@ public class H2Schema extends AbstractSchema<H2Table> {
         return tableNames;
     }
 
-    private static List<H2Column> getTableColumns(Connection con, String tableName) throws SQLException {
+    private static List<H2Column> getTableColumns(SQLConnection con, String tableName) throws SQLException {
         List<H2Column> columns = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery(String.format("SHOW COLUMNS FROM %s;", tableName))) {

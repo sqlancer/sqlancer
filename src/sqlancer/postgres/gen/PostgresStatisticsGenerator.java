@@ -6,8 +6,7 @@ import java.util.stream.Collectors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresStatisticsObject;
@@ -18,7 +17,7 @@ public final class PostgresStatisticsGenerator {
     private PostgresStatisticsGenerator() {
     }
 
-    public static Query insert(PostgresGlobalState globalState) {
+    public static SQLQueryAdapter insert(PostgresGlobalState globalState) {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE STATISTICS ");
         if (Randomly.getBoolean()) {
@@ -44,11 +43,11 @@ public final class PostgresStatisticsGenerator {
         sb.append(randomColumns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
         sb.append(" FROM ");
         sb.append(randomTable.getName());
-        return new QueryAdapter(sb.toString(), ExpectedErrors.from("cannot have more than 8 columns in statistics"),
+        return new SQLQueryAdapter(sb.toString(), ExpectedErrors.from("cannot have more than 8 columns in statistics"),
                 true);
     }
 
-    public static Query remove(PostgresGlobalState globalState) {
+    public static SQLQueryAdapter remove(PostgresGlobalState globalState) {
         StringBuilder sb = new StringBuilder("DROP STATISTICS ");
         PostgresTable randomTable = globalState.getSchema().getRandomTable();
         List<PostgresStatisticsObject> statistics = randomTable.getStatistics();
@@ -56,7 +55,7 @@ public final class PostgresStatisticsGenerator {
             throw new IgnoreMeException();
         }
         sb.append(Randomly.fromList(statistics).getName());
-        return new QueryAdapter(sb.toString(), true);
+        return new SQLQueryAdapter(sb.toString(), true);
     }
 
     private static String getNewStatisticsName(PostgresTable randomTable) {

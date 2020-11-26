@@ -6,9 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.SQLGlobalState;
 import sqlancer.cockroachdb.CockroachDBCommon;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
@@ -26,8 +26,7 @@ import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 import sqlancer.common.oracle.NoRECBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
 
 public class CockroachDBNoRECOracle extends NoRECBase<CockroachDBGlobalState> implements TestOracle {
@@ -113,7 +112,7 @@ public class CockroachDBNoRECOracle extends NoRECBase<CockroachDBGlobalState> im
             state.getLogger().writeCurrent(s);
         }
         this.optimizedQueryString = s;
-        Query q = new QueryAdapter(s, errors);
+        SQLQueryAdapter q = new SQLQueryAdapter(s, errors);
         return getCount(state, q);
     }
 
@@ -131,11 +130,11 @@ public class CockroachDBNoRECOracle extends NoRECBase<CockroachDBGlobalState> im
             state.getLogger().writeCurrent(s);
         }
         this.unoptimizedQueryString = s;
-        Query q = new QueryAdapter(s, errors);
+        SQLQueryAdapter q = new SQLQueryAdapter(s, errors);
         return getCount(state, q);
     }
 
-    private int getCount(GlobalState<?, ?> globalState, Query q) throws AssertionError {
+    private int getCount(SQLGlobalState<?, ?> globalState, SQLQueryAdapter q) throws AssertionError {
         int count = 0;
         try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
             if (rs == null) {

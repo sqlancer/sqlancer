@@ -2,7 +2,7 @@ package sqlancer;
 
 import sqlancer.common.oracle.TestOracle;
 
-public interface OracleFactory<G extends GlobalState<?, ?>> {
+public interface OracleFactory<G extends GlobalState<?, ?, ?>> {
 
     TestOracle create(G globalState) throws Exception;
 

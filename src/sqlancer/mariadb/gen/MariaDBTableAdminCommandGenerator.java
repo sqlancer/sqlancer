@@ -6,9 +6,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
-import sqlancer.common.query.QueryResultCheckAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.common.query.SQLQueryResultCheckAdapter;
 import sqlancer.mariadb.MariaDBSchema;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 
@@ -17,16 +16,16 @@ public final class MariaDBTableAdminCommandGenerator {
     private MariaDBTableAdminCommandGenerator() {
     }
 
-    public static Query checksumTable(MariaDBSchema newSchema) {
+    public static SQLQueryAdapter checksumTable(MariaDBSchema newSchema) {
         StringBuilder sb = addCommandAndTables(newSchema, "CHECKSUM TABLE");
         if (Randomly.getBoolean()) {
             sb.append(" ");
             sb.append(Randomly.fromOptions("QUICK", "EXTENDED"));
         }
-        return new QueryAdapter(sb.toString());
+        return new SQLQueryAdapter(sb.toString());
     }
 
-    public static Query repairTable(MariaDBSchema newSchema) {
+    public static SQLQueryAdapter repairTable(MariaDBSchema newSchema) {
         StringBuilder sb = addCommandAndTables(newSchema, "REPAIR TABLE");
         if (Randomly.getBoolean()) {
             List<String> subset = Randomly.nonEmptySubset("QUICK", "EXTENDED"); // , "USE_FRM"
@@ -37,12 +36,12 @@ public final class MariaDBTableAdminCommandGenerator {
                 s -> s.equals("OK") || s.equals("The storage engine for the table doesn't support repair"));
     }
 
-    public static Query analyzeTable(MariaDBSchema newSchema) {
+    public static SQLQueryAdapter analyzeTable(MariaDBSchema newSchema) {
         StringBuilder sb = addCommandAndTables(newSchema, "ANALYZE TABLE");
         return checkForMsgText(sb, s -> s.equals("OK") || s.equals("Table is already up to date"));
     }
 
-    public static Query checkTable(MariaDBSchema newSchema) {
+    public static SQLQueryAdapter checkTable(MariaDBSchema newSchema) {
         StringBuilder sb = addCommandAndTables(newSchema, "CHECK TABLE");
         if (Randomly.getBoolean()) {
             List<String> subset = Randomly.nonEmptySubset("FOR UPGRADE", "QUICK", "FAST", "MEDIUM", "EXTENDED",
@@ -53,7 +52,7 @@ public final class MariaDBTableAdminCommandGenerator {
         return checkForMsgText(sb, s -> s.equals("OK") || s.equals("Table is already up to date"));
     }
 
-    public static Query optimizeTable(MariaDBSchema newSchema) {
+    public static SQLQueryAdapter optimizeTable(MariaDBSchema newSchema) {
         StringBuilder sb = addCommandAndTables(newSchema, "OPTIMIZE TABLE");
         MariaDBCommon.addWaitClause(sb);
         return checkForMsgText(sb,
@@ -61,8 +60,8 @@ public final class MariaDBTableAdminCommandGenerator {
                         || s.contentEquals("Table is already up to date"));
     }
 
-    private static Query checkForMsgText(StringBuilder sb, Function<String, Boolean> checker) {
-        return new QueryResultCheckAdapter(sb.toString(), rs -> {
+    private static SQLQueryAdapter checkForMsgText(StringBuilder sb, Function<String, Boolean> checker) {
+        return new SQLQueryResultCheckAdapter(sb.toString(), rs -> {
             try {
                 while (rs.next()) {
                     String s = rs.getString("Msg_text");

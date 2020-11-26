@@ -2,8 +2,7 @@ package sqlancer.postgres.gen;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 
 public final class PostgresSequenceGenerator {
@@ -11,7 +10,7 @@ public final class PostgresSequenceGenerator {
     private PostgresSequenceGenerator() {
     }
 
-    public static Query createSequence(PostgresGlobalState globalState) {
+    public static SQLQueryAdapter createSequence(PostgresGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder("CREATE");
         if (Randomly.getBoolean()) {
@@ -85,7 +84,7 @@ public final class PostgresSequenceGenerator {
             // sb.append(s.getRandomTable().getRandomColumn().getFullQualifiedName());
             // }
         }
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
 }

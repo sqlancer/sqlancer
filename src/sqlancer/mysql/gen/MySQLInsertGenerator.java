@@ -6,8 +6,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
@@ -25,7 +24,7 @@ public class MySQLInsertGenerator {
         table = globalState.getSchema().getRandomTable();
     }
 
-    public static Query insertRow(MySQLGlobalState globalState) throws SQLException {
+    public static SQLQueryAdapter insertRow(MySQLGlobalState globalState) throws SQLException {
         if (Randomly.getBoolean()) {
             return new MySQLInsertGenerator(globalState).generateInsert();
         } else {
@@ -33,7 +32,7 @@ public class MySQLInsertGenerator {
         }
     }
 
-    private Query generateReplace() {
+    private SQLQueryAdapter generateReplace() {
         sb.append("REPLACE");
         if (Randomly.getBoolean()) {
             sb.append(" ");
@@ -43,7 +42,7 @@ public class MySQLInsertGenerator {
 
     }
 
-    private Query generateInsert() {
+    private SQLQueryAdapter generateInsert() {
         sb.append("INSERT");
         if (Randomly.getBoolean()) {
             sb.append(" ");
@@ -55,7 +54,7 @@ public class MySQLInsertGenerator {
         return generateInto();
     }
 
-    private Query generateInto() {
+    private SQLQueryAdapter generateInto() {
         sb.append(" INTO ");
         sb.append(table.getName());
         List<MySQLColumn> columns = table.getRandomNonEmptyColumnSubset();
@@ -92,7 +91,7 @@ public class MySQLInsertGenerator {
         errors.add("Data truncated for column");
         errors.add("cannot be null");
         errors.add("Incorrect decimal value");
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
 }

@@ -5,8 +5,7 @@ import java.util.List;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
@@ -19,7 +18,7 @@ public final class DuckDBUpdateGenerator {
     private DuckDBUpdateGenerator() {
     }
 
-    public static Query getQuery(DuckDBGlobalState globalState) {
+    public static SQLQueryAdapter getQuery(DuckDBGlobalState globalState) {
         StringBuilder sb = new StringBuilder("UPDATE ");
         ExpectedErrors errors = new ExpectedErrors();
         DuckDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
@@ -43,7 +42,7 @@ public final class DuckDBUpdateGenerator {
             sb.append(DuckDBToStringVisitor.asString(expr));
         }
         DuckDBErrors.addInsertErrors(errors);
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
 }

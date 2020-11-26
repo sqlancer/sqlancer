@@ -1,6 +1,5 @@
 package sqlancer.postgres;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -11,10 +10,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import sqlancer.GlobalState;
 import sqlancer.Randomly;
+import sqlancer.SQLConnection;
+import sqlancer.SQLGlobalState;
 
-public class PostgresGlobalState extends GlobalState<PostgresOptions, PostgresSchema> {
+public class PostgresGlobalState extends SQLGlobalState<PostgresOptions, PostgresSchema> {
 
     public static final char IMMUTABLE = 'i';
     public static final char STABLE = 's';
@@ -28,7 +28,7 @@ public class PostgresGlobalState extends GlobalState<PostgresOptions, PostgresSc
     private List<Character> allowedFunctionTypes = Arrays.asList(IMMUTABLE, STABLE, VOLATILE);
 
     @Override
-    public void setConnection(Connection con) {
+    public void setConnection(SQLConnection con) {
         super.setConnection(con);
         try {
             this.opClasses = getOpclasses(getConnection());
@@ -39,7 +39,7 @@ public class PostgresGlobalState extends GlobalState<PostgresOptions, PostgresSc
         }
     }
 
-    private List<String> getCollnames(Connection con) throws SQLException {
+    private List<String> getCollnames(SQLConnection con) throws SQLException {
         List<String> opClasses = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s
@@ -52,7 +52,7 @@ public class PostgresGlobalState extends GlobalState<PostgresOptions, PostgresSc
         return opClasses;
     }
 
-    private List<String> getOpclasses(Connection con) throws SQLException {
+    private List<String> getOpclasses(SQLConnection con) throws SQLException {
         List<String> opClasses = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery("select opcname FROM pg_opclass;")) {
@@ -64,7 +64,7 @@ public class PostgresGlobalState extends GlobalState<PostgresOptions, PostgresSc
         return opClasses;
     }
 
-    private List<String> getOperators(Connection con) throws SQLException {
+    private List<String> getOperators(SQLConnection con) throws SQLException {
         List<String> opClasses = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery("SELECT oprname FROM pg_operator;")) {

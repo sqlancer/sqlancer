@@ -6,8 +6,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.common.gen.AbstractInsertGenerator;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.h2.H2Provider.H2GlobalState;
 import sqlancer.h2.H2Schema.H2Column;
 import sqlancer.h2.H2Schema.H2Table;
@@ -23,11 +22,11 @@ public class H2InsertGenerator extends AbstractInsertGenerator<H2Column> {
         gen = new H2ExpressionGenerator(globalState);
     }
 
-    public static Query getQuery(H2GlobalState globalState) {
+    public static SQLQueryAdapter getQuery(H2GlobalState globalState) {
         return new H2InsertGenerator(globalState).generate();
     }
 
-    private Query generate() {
+    private SQLQueryAdapter generate() {
         boolean mergeInto = false; // Randomly.getBooleanWithRatherLowProbability();
         if (mergeInto) {
             sb.append("MERGE INTO ");
@@ -53,7 +52,7 @@ public class H2InsertGenerator extends AbstractInsertGenerator<H2Column> {
         insertColumns(columns);
         H2Errors.addInsertErrors(errors);
         H2Errors.addExpressionErrors(errors); // generated columns
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override

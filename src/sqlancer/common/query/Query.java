@@ -1,9 +1,10 @@
 package sqlancer.common.query;
 
 import sqlancer.GlobalState;
+import sqlancer.SQLancerDBConnection;
 import sqlancer.common.log.Loggable;
 
-public abstract class Query implements Loggable {
+public abstract class Query<C extends SQLancerDBConnection> implements Loggable {
 
     /**
      * Gets the query string, which is guaranteed to be terminated with a semicolon.
@@ -26,7 +27,7 @@ public abstract class Query implements Loggable {
      */
     public abstract boolean couldAffectSchema();
 
-    public abstract boolean execute(GlobalState<?, ?> globalState, String... fills) throws Exception;
+    public abstract <G extends GlobalState<?, ?, C>> boolean execute(G globalState, String... fills) throws Exception;
 
     public abstract ExpectedErrors getExpectedErrors();
 
@@ -35,21 +36,22 @@ public abstract class Query implements Loggable {
         return getQueryString();
     }
 
-    public SQLancerResultSet executeAndGet(GlobalState<?, ?> globalState, String... fills) throws Exception {
+    public <G extends GlobalState<?, ?, C>> SQLancerResultSet executeAndGet(G globalState, String... fills)
+            throws Exception {
         throw new AssertionError();
     }
 
-    public boolean executeLogged(GlobalState<?, ?> globalState) throws Exception {
+    public <G extends GlobalState<?, ?, C>> boolean executeLogged(G globalState) throws Exception {
         logQueryString(globalState);
         return execute(globalState);
     }
 
-    public SQLancerResultSet executeAndGetLogged(GlobalState<?, ?> globalState) throws Exception {
+    public <G extends GlobalState<?, ?, C>> SQLancerResultSet executeAndGetLogged(G globalState) throws Exception {
         logQueryString(globalState);
         return executeAndGet(globalState);
     }
 
-    private void logQueryString(GlobalState<?, ?> globalState) {
+    private <G extends GlobalState<?, ?, C>> void logQueryString(G globalState) {
         if (globalState.getOptions().logEachSelect()) {
             globalState.getLogger().writeCurrent(getQueryString());
         }

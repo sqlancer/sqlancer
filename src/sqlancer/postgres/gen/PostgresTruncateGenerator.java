@@ -4,8 +4,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 
 public final class PostgresTruncateGenerator {
@@ -13,7 +12,7 @@ public final class PostgresTruncateGenerator {
     private PostgresTruncateGenerator() {
     }
 
-    public static Query create(PostgresGlobalState globalState) {
+    public static SQLQueryAdapter create(PostgresGlobalState globalState) {
         StringBuilder sb = new StringBuilder();
         sb.append("TRUNCATE");
         if (Randomly.getBoolean()) {
@@ -34,7 +33,7 @@ public final class PostgresTruncateGenerator {
             sb.append(" ");
             sb.append(Randomly.fromOptions("CASCADE", "RESTRICT"));
         }
-        return new QueryAdapter(sb.toString(), ExpectedErrors
+        return new SQLQueryAdapter(sb.toString(), ExpectedErrors
                 .from("cannot truncate a table referenced in a foreign key constraint", "is not a table"));
     }
 

@@ -1,6 +1,5 @@
 package sqlancer.clickhouse;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -11,16 +10,18 @@ import java.util.Map;
 
 import ru.yandex.clickhouse.domain.ClickHouseDataType;
 import sqlancer.Randomly;
+import sqlancer.SQLConnection;
+import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTable;
 import sqlancer.clickhouse.ast.ClickHouseConstant;
+import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractRowValue;
 import sqlancer.common.schema.AbstractSchema;
-import sqlancer.common.schema.AbstractTable;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.common.schema.TableIndex;
 
-public class ClickHouseSchema extends AbstractSchema<ClickHouseTable> {
+public class ClickHouseSchema extends AbstractSchema<ClickHouseGlobalState, ClickHouseTable> {
 
     public static class ClickHouseLancerDataType {
 
@@ -167,7 +168,8 @@ public class ClickHouseSchema extends AbstractSchema<ClickHouseTable> {
         return new ClickHouseLancerDataType(typeString);
     }
 
-    public static class ClickHouseTable extends AbstractTable<ClickHouseColumn, TableIndex> {
+    public static class ClickHouseTable
+            extends AbstractRelationalTable<ClickHouseColumn, TableIndex, ClickHouseGlobalState> {
 
         public ClickHouseTable(String tableName, List<ClickHouseColumn> columns, List<TableIndex> indexes,
                 boolean isView) {
@@ -175,7 +177,7 @@ public class ClickHouseSchema extends AbstractSchema<ClickHouseTable> {
         }
     }
 
-    public static ClickHouseSchema fromConnection(Connection con, String databaseName) throws SQLException {
+    public static ClickHouseSchema fromConnection(SQLConnection con, String databaseName) throws SQLException {
         List<ClickHouseTable> databaseTables = new ArrayList<>();
         List<String> tableNames = getTableNames(con);
         for (String tableName : tableNames) {
@@ -192,7 +194,7 @@ public class ClickHouseSchema extends AbstractSchema<ClickHouseTable> {
         return new ClickHouseSchema(databaseTables);
     }
 
-    private static List<String> getTableNames(Connection con) throws SQLException {
+    private static List<String> getTableNames(SQLConnection con) throws SQLException {
         List<String> tableNames = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             ResultSet tableRs = s.executeQuery("SHOW TABLES");
@@ -204,7 +206,7 @@ public class ClickHouseSchema extends AbstractSchema<ClickHouseTable> {
         return tableNames;
     }
 
-    private static List<ClickHouseColumn> getTableColumns(Connection con, String tableName) throws SQLException {
+    private static List<ClickHouseColumn> getTableColumns(SQLConnection con, String tableName) throws SQLException {
         List<ClickHouseColumn> columns = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery("DESCRIBE " + tableName)) {

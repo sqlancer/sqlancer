@@ -5,8 +5,7 @@ import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBExpressionGenerator;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
@@ -19,7 +18,7 @@ public final class TiDBUpdateGenerator {
     private TiDBUpdateGenerator() {
     }
 
-    public static Query getQuery(TiDBGlobalState globalState) throws SQLException {
+    public static SQLQueryAdapter getQuery(TiDBGlobalState globalState) throws SQLException {
         ExpectedErrors errors = new ExpectedErrors();
         TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         TiDBExpressionGenerator gen = new TiDBExpressionGenerator(globalState).setColumns(table.getColumns());
@@ -48,7 +47,7 @@ public final class TiDBUpdateGenerator {
         }
         TiDBErrors.addInsertErrors(errors);
 
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
 }

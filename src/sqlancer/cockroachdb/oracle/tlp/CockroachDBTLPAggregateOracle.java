@@ -32,7 +32,7 @@ import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 import sqlancer.cockroachdb.oracle.CockroachDBNoRECOracle;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
 
 public class CockroachDBTLPAggregateOracle implements TestOracle {
@@ -116,7 +116,7 @@ public class CockroachDBTLPAggregateOracle implements TestOracle {
 
     private String getAggregateResult(String queryString) throws SQLException {
         String resultString;
-        QueryAdapter q = new QueryAdapter(queryString, errors);
+        SQLQueryAdapter q = new SQLQueryAdapter(queryString, errors);
         try (SQLancerResultSet result = q.executeAndGet(state)) {
             if (result == null) {
                 throw new IgnoreMeException();

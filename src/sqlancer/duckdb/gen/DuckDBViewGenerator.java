@@ -2,8 +2,7 @@ package sqlancer.duckdb.gen;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBToStringVisitor;
@@ -13,7 +12,7 @@ public final class DuckDBViewGenerator {
     private DuckDBViewGenerator() {
     }
 
-    public static Query generate(DuckDBGlobalState globalState) {
+    public static SQLQueryAdapter generate(DuckDBGlobalState globalState) {
         int nrColumns = Randomly.smallNumber() + 1;
         StringBuilder sb = new StringBuilder("CREATE ");
         sb.append("VIEW ");
@@ -31,7 +30,7 @@ public final class DuckDBViewGenerator {
         ExpectedErrors errors = new ExpectedErrors();
         DuckDBErrors.addExpressionErrors(errors);
         DuckDBErrors.addGroupByErrors(errors);
-        return new QueryAdapter(sb.toString(), errors, true);
+        return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 
 }

@@ -5,8 +5,7 @@ import java.util.List;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
 import sqlancer.duckdb.DuckDBSchema.DuckDBTable;
@@ -18,7 +17,7 @@ public final class DuckDBIndexGenerator {
     private DuckDBIndexGenerator() {
     }
 
-    public static Query getQuery(DuckDBGlobalState globalState) {
+    public static SQLQueryAdapter getQuery(DuckDBGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE ");
@@ -54,7 +53,7 @@ public final class DuckDBIndexGenerator {
         if (globalState.getDmbsSpecificOptions().testRowid) {
             errors.add("Cannot create an index on the rowid!");
         }
-        return new QueryAdapter(sb.toString(), errors, true);
+        return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 
 }

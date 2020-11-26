@@ -7,26 +7,27 @@ import java.sql.Statement;
 
 import sqlancer.GlobalState;
 import sqlancer.Main;
+import sqlancer.SQLConnection;
 
-public class QueryAdapter extends Query {
+public class SQLQueryAdapter extends Query<SQLConnection> {
 
     private final String query;
     private final ExpectedErrors expectedErrors;
     private final boolean couldAffectSchema;
 
-    public QueryAdapter(String query) {
+    public SQLQueryAdapter(String query) {
         this(query, new ExpectedErrors());
     }
 
-    public QueryAdapter(String query, boolean couldAffectSchema) {
+    public SQLQueryAdapter(String query, boolean couldAffectSchema) {
         this(query, new ExpectedErrors(), couldAffectSchema);
     }
 
-    public QueryAdapter(String query, ExpectedErrors expectedErrors) {
+    public SQLQueryAdapter(String query, ExpectedErrors expectedErrors) {
         this(query, expectedErrors, false);
     }
 
-    public QueryAdapter(String query, ExpectedErrors expectedErrors, boolean couldAffectSchema) {
+    public SQLQueryAdapter(String query, ExpectedErrors expectedErrors, boolean couldAffectSchema) {
         this.query = canonicalizeString(query);
         this.expectedErrors = expectedErrors;
         this.couldAffectSchema = couldAffectSchema;
@@ -68,7 +69,8 @@ public class QueryAdapter extends Query {
     }
 
     @Override
-    public boolean execute(GlobalState<?, ?> globalState, String... fills) throws SQLException {
+    public <G extends GlobalState<?, ?, SQLConnection>> boolean execute(G globalState, String... fills)
+            throws SQLException {
         Statement s;
         if (fills.length > 0) {
             s = globalState.getConnection().prepareStatement(fills[0]);
@@ -100,7 +102,8 @@ public class QueryAdapter extends Query {
     }
 
     @Override
-    public SQLancerResultSet executeAndGet(GlobalState<?, ?> globalState, String... fills) throws SQLException {
+    public <G extends GlobalState<?, ?, SQLConnection>> SQLancerResultSet executeAndGet(G globalState, String... fills)
+            throws SQLException {
         Statement s;
         if (fills.length > 0) {
             s = globalState.getConnection().prepareStatement(fills[0]);

@@ -5,8 +5,7 @@ import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
 import sqlancer.tidb.TiDBSchema.TiDBTable;
@@ -16,7 +15,7 @@ public final class TiDBIndexGenerator {
     private TiDBIndexGenerator() {
     }
 
-    public static Query getQuery(TiDBGlobalState globalState) throws SQLException {
+    public static SQLQueryAdapter getQuery(TiDBGlobalState globalState) throws SQLException {
         ExpectedErrors errors = new ExpectedErrors();
 
         TiDBTable randomTable = globalState.getSchema().getRandomTable(t -> !t.isView());
@@ -58,7 +57,7 @@ public final class TiDBIndexGenerator {
         }
         errors.add("Cannot decode index value, because"); // invalid value for generated column
         errors.add("index already exist");
-        return new QueryAdapter(sb.toString(), errors, true);
+        return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 
 }

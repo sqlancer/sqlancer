@@ -7,8 +7,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Options.SQLite3OracleFactory;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
@@ -46,7 +45,7 @@ public class SQLite3TableGenerator {
         this.existingSchema = globalState.getSchema();
     }
 
-    public static Query createTableStatement(String tableName, SQLite3GlobalState globalState) {
+    public static SQLQueryAdapter createTableStatement(String tableName, SQLite3GlobalState globalState) {
         SQLite3TableGenerator sqLite3TableGenerator = new SQLite3TableGenerator(tableName, globalState);
         sqLite3TableGenerator.start();
         ExpectedErrors errors = new ExpectedErrors();
@@ -57,7 +56,7 @@ public class SQLite3TableGenerator {
         errors.add("parser stack overflow");
         errors.add("malformed JSON");
         errors.add("JSON cannot hold BLOB values");
-        return new QueryAdapter(sqLite3TableGenerator.sb.toString(), errors, true);
+        return new SQLQueryAdapter(sqLite3TableGenerator.sb.toString(), errors, true);
     }
 
     public void start() {

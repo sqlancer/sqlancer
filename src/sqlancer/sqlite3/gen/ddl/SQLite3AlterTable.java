@@ -4,8 +4,7 @@ import java.sql.SQLException;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.gen.SQLite3ColumnBuilder;
 import sqlancer.sqlite3.gen.SQLite3Common;
@@ -18,7 +17,7 @@ public class SQLite3AlterTable {
     private final StringBuilder sb = new StringBuilder();
     private final SQLite3GlobalState globalState;
 
-    public static Query alterTable(SQLite3GlobalState globalState) throws SQLException {
+    public static SQLQueryAdapter alterTable(SQLite3GlobalState globalState) throws SQLException {
         SQLite3AlterTable alterTable = new SQLite3AlterTable(globalState);
         return alterTable.getQuery(globalState.getSchema(), alterTable);
     }
@@ -31,7 +30,7 @@ public class SQLite3AlterTable {
         this.globalState = globalState;
     }
 
-    private Query getQuery(SQLite3Schema s, SQLite3AlterTable alterTable) throws AssertionError {
+    private SQLQueryAdapter getQuery(SQLite3Schema s, SQLite3AlterTable alterTable) throws AssertionError {
         ExpectedErrors errors = new ExpectedErrors();
         errors.add("error in view");
         errors.add("no such column"); // trigger
@@ -81,7 +80,7 @@ public class SQLite3AlterTable {
         default:
             throw new AssertionError();
         }
-        return new QueryAdapter(alterTable.sb.toString(), errors, true);
+        return new SQLQueryAdapter(alterTable.sb.toString(), errors, true);
     }
 
 }

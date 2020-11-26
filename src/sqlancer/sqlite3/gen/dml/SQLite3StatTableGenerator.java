@@ -9,8 +9,7 @@ import java.util.List;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
@@ -24,11 +23,11 @@ public final class SQLite3StatTableGenerator {
         this.globalState = globalState;
     }
 
-    public static Query getQuery(SQLite3GlobalState globalState) {
+    public static SQLQueryAdapter getQuery(SQLite3GlobalState globalState) {
         return new SQLite3StatTableGenerator(globalState).getQuery();
     }
 
-    private Query getQuery() {
+    private SQLQueryAdapter getQuery() {
         List<SQLite3Column> columns = new ArrayList<>();
         SQLite3Table t = new SQLite3Table("sqlite_stat1", columns, TableKind.MAIN, false, false, false, false);
         if (Randomly.getBoolean()) {
@@ -81,7 +80,8 @@ public final class SQLite3StatTableGenerator {
                 sb.append(" noskipscan");
             }
             sb.append("')");
-            return new QueryAdapter(sb.toString(), ExpectedErrors.from("no such table", "The database file is locked"));
+            return new SQLQueryAdapter(sb.toString(),
+                    ExpectedErrors.from("no such table", "The database file is locked"));
         }
     }
 

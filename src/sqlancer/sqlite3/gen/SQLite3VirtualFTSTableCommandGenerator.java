@@ -2,8 +2,7 @@ package sqlancer.sqlite3.gen;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
@@ -15,7 +14,7 @@ public class SQLite3VirtualFTSTableCommandGenerator {
     private final Randomly r;
     private final ExpectedErrors errors = new ExpectedErrors();
 
-    public static Query create(SQLite3GlobalState globalState) {
+    public static SQLQueryAdapter create(SQLite3GlobalState globalState) {
         return new SQLite3VirtualFTSTableCommandGenerator(globalState.getSchema(), globalState.getRandomly())
                 .generate();
     }
@@ -29,7 +28,7 @@ public class SQLite3VirtualFTSTableCommandGenerator {
         AUTOMERGE, CRISISMERGE, INTEGRITYCHECK, MERGE, OPTIMIZE, REBUILD, USER_MERGE, PGSZ, RANK; // TODO: delete all
     }
 
-    private Query generate() {
+    private SQLQueryAdapter generate() {
         errors.add("has no column named rank");
         SQLite3Table vTable = s.getRandomTableOrBailout(t -> t.isVirtual() && t.getName().startsWith("vt"));
         Action a = Randomly.fromOptions(Action.values());
@@ -92,7 +91,7 @@ public class SQLite3VirtualFTSTableCommandGenerator {
             throw new AssertionError();
         }
         errors.add("The database file is locked");
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
 }
