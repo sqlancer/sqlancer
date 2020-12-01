@@ -2,8 +2,7 @@ package sqlancer.postgres.gen;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresTable.TableType;
 
@@ -12,7 +11,7 @@ public final class PostgresDiscardGenerator {
     private PostgresDiscardGenerator() {
     }
 
-    public static Query create(PostgresGlobalState globalState) {
+    public static SQLQueryAdapter create(PostgresGlobalState globalState) {
         StringBuilder sb = new StringBuilder();
         sb.append("DISCARD ");
         // prevent that DISCARD discards all tables (if they are TEMP tables)
@@ -25,7 +24,7 @@ public final class PostgresDiscardGenerator {
             what = Randomly.fromOptions("PLANS", "SEQUENCES");
         }
         sb.append(what);
-        return new QueryAdapter(sb.toString(), ExpectedErrors.from("cannot run inside a transaction block")) {
+        return new SQLQueryAdapter(sb.toString(), ExpectedErrors.from("cannot run inside a transaction block")) {
 
             @Override
             public boolean couldAffectSchema() {

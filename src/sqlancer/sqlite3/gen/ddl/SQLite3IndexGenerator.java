@@ -5,8 +5,7 @@ import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
@@ -23,7 +22,7 @@ public class SQLite3IndexGenerator {
     private final ExpectedErrors errors = new ExpectedErrors();
     private final SQLite3GlobalState globalState;
 
-    public static Query insertIndex(SQLite3GlobalState globalState) throws SQLException {
+    public static SQLQueryAdapter insertIndex(SQLite3GlobalState globalState) throws SQLException {
         return new SQLite3IndexGenerator(globalState).create();
     }
 
@@ -31,7 +30,7 @@ public class SQLite3IndexGenerator {
         this.globalState = globalState;
     }
 
-    private Query create() throws SQLException {
+    private SQLQueryAdapter create() throws SQLException {
         SQLite3Table t = globalState.getSchema()
                 .getRandomTableOrBailout(tab -> !tab.isView() && !tab.isVirtual() && !tab.isReadOnly());
         String q = createIndex(t, t.getColumns());
@@ -58,7 +57,7 @@ public class SQLite3IndexGenerator {
          * https://www.mail-archive.com/sqlite-users@mailinglists.sqlite.org/msg115014.html).
          */
         errors.add("[SQLITE_ERROR] SQL error or missing database (no such column:");
-        return new QueryAdapter(q, errors, true);
+        return new SQLQueryAdapter(q, errors, true);
     }
 
     private String createIndex(SQLite3Table t, List<SQLite3Column> columns) {

@@ -5,8 +5,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
@@ -25,7 +24,7 @@ public final class PostgresIndexGenerator {
         BTREE, HASH, GIST, GIN
     }
 
-    public static Query generate(PostgresGlobalState globalState) {
+    public static SQLQueryAdapter generate(PostgresGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE");
@@ -136,7 +135,7 @@ public final class PostgresIndexGenerator {
         errors.add("functions in index expression must be marked IMMUTABLE");
         errors.add("result of range difference would not be contiguous");
         PostgresCommon.addCommonExpressionErrors(errors);
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     private static String getNewIndexName(PostgresTable randomTable) {

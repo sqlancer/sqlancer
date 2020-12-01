@@ -5,8 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.tidb.TiDBExpressionGenerator;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBTables;
@@ -20,9 +19,9 @@ public final class TiDBRandomQuerySynthesizer {
     private TiDBRandomQuerySynthesizer() {
     }
 
-    public static Query generate(TiDBGlobalState globalState, int nrColumns) {
+    public static SQLQueryAdapter generate(TiDBGlobalState globalState, int nrColumns) {
         TiDBSelect select = generateSelect(globalState, nrColumns);
-        return new QueryAdapter(TiDBVisitor.asString(select));
+        return new SQLQueryAdapter(TiDBVisitor.asString(select));
     }
 
     public static TiDBSelect generateSelect(TiDBGlobalState globalState, int nrColumns) {

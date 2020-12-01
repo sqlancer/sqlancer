@@ -11,8 +11,7 @@ import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTable;
 import sqlancer.clickhouse.ClickHouseToStringVisitor;
 import sqlancer.common.gen.AbstractInsertGenerator;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 
 public class ClickHouseInsertGenerator extends AbstractInsertGenerator<ClickHouseColumn> {
 
@@ -31,11 +30,11 @@ public class ClickHouseInsertGenerator extends AbstractInsertGenerator<ClickHous
         ClickHouseErrors.addExpectedExpressionErrors(errors);
     }
 
-    public static Query getQuery(ClickHouseGlobalState globalState) throws SQLException {
+    public static SQLQueryAdapter getQuery(ClickHouseGlobalState globalState) throws SQLException {
         return new ClickHouseInsertGenerator(globalState).get();
     }
 
-    private Query get() {
+    private SQLQueryAdapter get() {
         ClickHouseTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<ClickHouseColumn> columns = table.getRandomNonEmptyColumnSubset().stream()
                 .filter(c -> !c.isAlias() && !c.isMaterialized()).collect(Collectors.toList());
@@ -46,7 +45,7 @@ public class ClickHouseInsertGenerator extends AbstractInsertGenerator<ClickHous
         sb.append(")");
         sb.append(" VALUES ");
         insertColumns(columns);
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override

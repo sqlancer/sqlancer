@@ -6,8 +6,7 @@ import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 
 public final class CockroachDBSetClusterSettingGenerator {
 
@@ -40,7 +39,7 @@ public final class CockroachDBSetClusterSettingGenerator {
         }
     }
 
-    public static Query create(CockroachDBGlobalState globalState) {
+    public static SQLQueryAdapter create(CockroachDBGlobalState globalState) {
         CockroachDBClusterSetting s = Randomly.fromOptions(CockroachDBClusterSetting.values());
         StringBuilder sb = new StringBuilder("SET CLUSTER SETTING ");
         sb.append(s.name);
@@ -55,7 +54,7 @@ public final class CockroachDBSetClusterSettingGenerator {
         errors.add("setting updated but timed out waiting to read new value");
 
         CockroachDBErrors.addTransactionErrors(errors);
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
 }

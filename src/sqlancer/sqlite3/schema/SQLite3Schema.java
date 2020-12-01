@@ -1,6 +1,5 @@
 package sqlancer.sqlite3.schema;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -14,9 +13,10 @@ import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.SQLConnection;
+import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractRowValue;
 import sqlancer.common.schema.AbstractSchema;
-import sqlancer.common.schema.AbstractTable;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.common.schema.TableIndex;
@@ -26,7 +26,7 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequenc
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table.TableKind;
 
-public class SQLite3Schema extends AbstractSchema<SQLite3Table> {
+public class SQLite3Schema extends AbstractSchema<SQLite3GlobalState, SQLite3Table> {
 
     /**
      * All possible aliases for the rowid column.
@@ -155,7 +155,7 @@ public class SQLite3Schema extends AbstractSchema<SQLite3Table> {
             super(tables);
         }
 
-        public SQLite3RowValue getRandomRowValue(Connection con) throws SQLException {
+        public SQLite3RowValue getRandomRowValue(SQLConnection con) throws SQLException {
             String randomRow = String.format("SELECT %s, %s FROM %s ORDER BY RANDOM() LIMIT 1", columnNamesAsString(
                     c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
                     columnNamesAsString(c -> "typeof(" + c.getTable().getName() + "." + c.getName() + ")"),
@@ -189,7 +189,7 @@ public class SQLite3Schema extends AbstractSchema<SQLite3Table> {
 
     }
 
-    public static class SQLite3Table extends AbstractTable<SQLite3Column, TableIndex> {
+    public static class SQLite3Table extends AbstractRelationalTable<SQLite3Column, TableIndex, SQLite3GlobalState> {
         // TODO: why does the SQLite implementation have no table indexes?
 
         public enum TableKind {
@@ -271,7 +271,7 @@ public class SQLite3Schema extends AbstractSchema<SQLite3Table> {
     public static SQLite3Schema fromConnection(SQLite3GlobalState globalState) throws SQLException {
         List<SQLite3Table> databaseTables = new ArrayList<>();
         List<String> indexNames = new ArrayList<>();
-        Connection con = globalState.getConnection();
+        SQLConnection con = globalState.getConnection();
 
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery("SELECT name, type as category, sql FROM sqlite_master UNION "
@@ -346,7 +346,7 @@ public class SQLite3Schema extends AbstractSchema<SQLite3Table> {
         return !isView && !isVirtual && !withoutRowid;
     }
 
-    private static List<SQLite3Column> getTableColumns(Connection con, String tableName, String sql, boolean isView,
+    private static List<SQLite3Column> getTableColumns(SQLConnection con, String tableName, String sql, boolean isView,
             boolean isDbStatsTable) throws SQLException {
         List<SQLite3Column> databaseColumns = new ArrayList<>();
         try (Statement s2 = con.createStatement()) {
@@ -378,7 +378,8 @@ public class SQLite3Schema extends AbstractSchema<SQLite3Table> {
                             columnTypeString.contentEquals("INTEGER"), isPrimaryKey, collate));
                 }
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
+
         }
         if (databaseColumns.isEmpty()) {
             // only generated columns

@@ -1,6 +1,5 @@
 package sqlancer.mariadb;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
@@ -12,14 +11,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import sqlancer.Randomly;
+import sqlancer.SQLConnection;
+import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractSchema;
-import sqlancer.common.schema.AbstractTable;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.TableIndex;
+import sqlancer.mariadb.MariaDBProvider.MariaDBGlobalState;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable.MariaDBEngine;
 
-public class MariaDBSchema extends AbstractSchema<MariaDBTable> {
+public class MariaDBSchema extends AbstractSchema<MariaDBGlobalState, MariaDBTable> {
 
     private static final int NR_SCHEMA_READ_TRIES = 10;
 
@@ -113,7 +114,7 @@ public class MariaDBSchema extends AbstractSchema<MariaDBTable> {
         }
     }
 
-    public static class MariaDBTable extends AbstractTable<MariaDBColumn, MariaDBIndex> {
+    public static class MariaDBTable extends AbstractRelationalTable<MariaDBColumn, MariaDBIndex, MariaDBGlobalState> {
 
         public enum MariaDBEngine {
 
@@ -170,7 +171,7 @@ public class MariaDBSchema extends AbstractSchema<MariaDBTable> {
 
     }
 
-    public static MariaDBSchema fromConnection(Connection con, String databaseName) throws SQLException {
+    public static MariaDBSchema fromConnection(SQLConnection con, String databaseName) throws SQLException {
         Exception ex = null;
         /* the loop is a workaround for https://bugs.MariaDB.com/bug.php?id=95929 */
         for (int i = 0; i < NR_SCHEMA_READ_TRIES; i++) {
@@ -202,7 +203,7 @@ public class MariaDBSchema extends AbstractSchema<MariaDBTable> {
         throw new AssertionError(ex);
     }
 
-    private static List<MariaDBIndex> getIndexes(Connection con, String tableName, String databaseName)
+    private static List<MariaDBIndex> getIndexes(SQLConnection con, String tableName, String databaseName)
             throws SQLException {
         List<MariaDBIndex> indexes = new ArrayList<>();
         try (Statement s = con.createStatement()) {
@@ -218,7 +219,7 @@ public class MariaDBSchema extends AbstractSchema<MariaDBTable> {
         return indexes;
     }
 
-    private static List<MariaDBColumn> getTableColumns(Connection con, String tableName, String databaseName)
+    private static List<MariaDBColumn> getTableColumns(SQLConnection con, String tableName, String databaseName)
             throws SQLException {
         List<MariaDBColumn> columns = new ArrayList<>();
         try (Statement s = con.createStatement()) {

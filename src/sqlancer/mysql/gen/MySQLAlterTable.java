@@ -7,8 +7,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mysql.MySQLBugs;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema;
@@ -25,7 +24,7 @@ public class MySQLAlterTable {
         this.schema = newSchema;
     }
 
-    public static Query create(MySQLGlobalState globalState) {
+    public static SQLQueryAdapter create(MySQLGlobalState globalState) {
         return new MySQLAlterTable(globalState.getSchema()).create();
     }
 
@@ -61,7 +60,7 @@ public class MySQLAlterTable {
 
     }
 
-    private Query create() {
+    private SQLQueryAdapter create() {
         ExpectedErrors errors = ExpectedErrors.from("does not support the create option", "doesn't have this option",
                 "is not supported for this operation", "Data truncation", "Specified key was too long");
         errors.add("Data truncated for functional index ");
@@ -174,7 +173,7 @@ public class MySQLAlterTable {
                 errors.add(error);
             }
         }
-        return new QueryAdapter(sb.toString(), errors, couldAffectSchema);
+        return new SQLQueryAdapter(sb.toString(), errors, couldAffectSchema);
     }
 
 }

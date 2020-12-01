@@ -1,6 +1,5 @@
 package sqlancer.cockroachdb;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -8,14 +7,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.SQLConnection;
+import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
+import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractSchema;
-import sqlancer.common.schema.AbstractTable;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.common.schema.TableIndex;
 
-public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
+public class CockroachDBSchema extends AbstractSchema<CockroachDBGlobalState, CockroachDBTable> {
 
     public enum CockroachDBDataType {
 
@@ -263,7 +264,8 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
         }
     }
 
-    public static class CockroachDBTable extends AbstractTable<CockroachDBColumn, TableIndex> {
+    public static class CockroachDBTable
+            extends AbstractRelationalTable<CockroachDBColumn, TableIndex, CockroachDBGlobalState> {
 
         public CockroachDBTable(String tableName, List<CockroachDBColumn> columns, List<TableIndex> indexes,
                 boolean isView) {
@@ -272,7 +274,7 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
 
     }
 
-    public static CockroachDBSchema fromConnection(Connection con, String databaseName) throws SQLException {
+    public static CockroachDBSchema fromConnection(SQLConnection con, String databaseName) throws SQLException {
         List<CockroachDBTable> databaseTables = new ArrayList<>();
         List<String> tableNames = getTableNames(con);
         for (String tableName : tableNames) {
@@ -289,7 +291,7 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
         return new CockroachDBSchema(databaseTables);
     }
 
-    private static List<String> getTableNames(Connection con) throws SQLException {
+    private static List<String> getTableNames(SQLConnection con) throws SQLException {
         List<String> tableNames = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             ResultSet tableRs = s.executeQuery(
@@ -302,7 +304,7 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
         return tableNames;
     }
 
-    private static List<TableIndex> getIndexes(Connection con, String tableName) throws SQLException {
+    private static List<TableIndex> getIndexes(SQLConnection con, String tableName) throws SQLException {
         List<TableIndex> indexes = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery(String.format("SHOW INDEX FROM %s", tableName))) {
@@ -315,7 +317,7 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBTable> {
         return indexes;
     }
 
-    private static List<CockroachDBColumn> getTableColumns(Connection con, String tableName) throws SQLException {
+    private static List<CockroachDBColumn> getTableColumns(SQLConnection con, String tableName) throws SQLException {
         List<CockroachDBColumn> columns = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery("SHOW COLUMNS FROM " + tableName)) {

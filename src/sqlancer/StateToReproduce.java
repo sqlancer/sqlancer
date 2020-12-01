@@ -9,11 +9,11 @@ import sqlancer.common.query.Query;
 
 public class StateToReproduce {
 
-    private final List<Query> statements = new ArrayList<>();
+    private final List<Query<?>> statements = new ArrayList<>();
 
     private final String databaseName;
 
-    private final DatabaseProvider<?, ?> databaseProvider;
+    private final DatabaseProvider<?, ?, ?> databaseProvider;
 
     public String databaseVersion;
 
@@ -23,7 +23,7 @@ public class StateToReproduce {
 
     public OracleRunReproductionState localState;
 
-    public StateToReproduce(String databaseName, DatabaseProvider<?, ?> databaseProvider) {
+    public StateToReproduce(String databaseName, DatabaseProvider<?, ?, ?> databaseProvider) {
         this.databaseName = databaseName;
         this.databaseProvider = databaseProvider;
     }
@@ -59,22 +59,22 @@ public class StateToReproduce {
      * @param query
      *            the query to be logged
      */
-    public void logStatement(Query query) {
+    public void logStatement(Query<?> query) {
         if (query == null) {
             throw new IllegalArgumentException();
         }
         statements.add(query);
     }
 
-    public List<Query> getStatements() {
+    public List<Query<?>> getStatements() {
         return Collections.unmodifiableList(statements);
     }
 
     @Deprecated
     public void commentStatements() {
         for (int i = 0; i < statements.size(); i++) {
-            Query statement = statements.get(i);
-            Query newQuery = databaseProvider.getLoggableFactory().commentOutQuery(statement);
+            Query<?> statement = statements.get(i);
+            Query<?> newQuery = databaseProvider.getLoggableFactory().commentOutQuery(statement);
             statements.set(i, newQuery);
         }
     }
@@ -98,7 +98,7 @@ public class StateToReproduce {
      */
     public class OracleRunReproductionState implements Closeable {
 
-        private final List<Query> statements = new ArrayList<>();
+        private final List<Query<?>> statements = new ArrayList<>();
 
         public boolean success;
 

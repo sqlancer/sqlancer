@@ -1,6 +1,5 @@
 package sqlancer.mysql;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
@@ -12,9 +11,10 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import sqlancer.Randomly;
+import sqlancer.SQLConnection;
+import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractRowValue;
 import sqlancer.common.schema.AbstractSchema;
-import sqlancer.common.schema.AbstractTable;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.common.schema.TableIndex;
@@ -22,7 +22,7 @@ import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.MySQLSchema.MySQLTable.MySQLEngine;
 import sqlancer.mysql.ast.MySQLConstant;
 
-public class MySQLSchema extends AbstractSchema<MySQLTable> {
+public class MySQLSchema extends AbstractSchema<MySQLGlobalState, MySQLTable> {
 
     private static final int NR_SCHEMA_READ_TRIES = 10;
 
@@ -88,7 +88,7 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
             super(tables);
         }
 
-        public MySQLRowValue getRandomRowValue(Connection con) throws SQLException {
+        public MySQLRowValue getRandomRowValue(SQLConnection con) throws SQLException {
             String randomRow = String.format("SELECT %s FROM %s ORDER BY RAND() LIMIT 1", columnNamesAsString(
                     c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
                     // columnNamesAsString(c -> "typeof(" + c.getTable().getName() + "." +
@@ -165,7 +165,7 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
 
     }
 
-    public static class MySQLTable extends AbstractTable<MySQLColumn, MySQLIndex> {
+    public static class MySQLTable extends AbstractRelationalTable<MySQLColumn, MySQLIndex, MySQLGlobalState> {
 
         public enum MySQLEngine {
             INNO_DB("InnoDB"), MY_ISAM("MyISAM"), MEMORY("MEMORY"), HEAP("HEAP"), CSV("CSV"), MERGE("MERGE"),
@@ -221,7 +221,7 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
 
     }
 
-    public static MySQLSchema fromConnection(Connection con, String databaseName) throws SQLException {
+    public static MySQLSchema fromConnection(SQLConnection con, String databaseName) throws SQLException {
         Exception ex = null;
         /* the loop is a workaround for https://bugs.mysql.com/bug.php?id=95929 */
         for (int i = 0; i < NR_SCHEMA_READ_TRIES; i++) {
@@ -253,7 +253,7 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
         throw new AssertionError(ex);
     }
 
-    private static List<MySQLIndex> getIndexes(Connection con, String tableName, String databaseName)
+    private static List<MySQLIndex> getIndexes(SQLConnection con, String tableName, String databaseName)
             throws SQLException {
         List<MySQLIndex> indexes = new ArrayList<>();
         try (Statement s = con.createStatement()) {
@@ -269,7 +269,7 @@ public class MySQLSchema extends AbstractSchema<MySQLTable> {
         return indexes;
     }
 
-    private static List<MySQLColumn> getTableColumns(Connection con, String tableName, String databaseName)
+    private static List<MySQLColumn> getTableColumns(SQLConnection con, String tableName, String databaseName)
             throws SQLException {
         List<MySQLColumn> columns = new ArrayList<>();
         try (Statement s = con.createStatement()) {

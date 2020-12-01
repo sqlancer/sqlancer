@@ -15,7 +15,7 @@ import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
 import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.oracle.TestOracle;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
@@ -99,7 +99,7 @@ public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartition
 
     private String getAggregateResult(String queryString) throws SQLException {
         String resultString;
-        QueryAdapter q = new QueryAdapter(queryString, errors);
+        SQLQueryAdapter q = new SQLQueryAdapter(queryString, errors);
         try (SQLancerResultSet result = q.executeAndGet(state)) {
             if (result == null) {
                 throw new IgnoreMeException();

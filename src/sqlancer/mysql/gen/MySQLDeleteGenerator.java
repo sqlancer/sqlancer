@@ -4,8 +4,7 @@ import java.util.Arrays;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
@@ -20,11 +19,11 @@ public class MySQLDeleteGenerator {
         this.globalState = globalState;
     }
 
-    public static Query delete(MySQLGlobalState globalState) {
+    public static SQLQueryAdapter delete(MySQLGlobalState globalState) {
         return new MySQLDeleteGenerator(globalState).generate();
     }
 
-    private Query generate() {
+    private SQLQueryAdapter generate() {
         MySQLTable randomTable = globalState.getSchema().getRandomTable();
         MySQLExpressionGenerator gen = new MySQLExpressionGenerator(globalState).setColumns(randomTable.getColumns());
         ExpectedErrors errors = new ExpectedErrors();
@@ -52,7 +51,7 @@ public class MySQLDeleteGenerator {
                                                     */, "Truncated incorrect INTEGER value",
                 "Truncated incorrect DECIMAL value", "Data truncated for functional index"));
         // TODO: support ORDER BY
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
 }

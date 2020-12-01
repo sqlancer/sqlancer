@@ -6,8 +6,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mysql.MySQLGlobalState;
 
 public class MySQLSetGenerator {
@@ -23,7 +22,7 @@ public class MySQLSetGenerator {
         this.isSingleThreaded = options.getNumberConcurrentThreads() == 1;
     }
 
-    public static Query set(MySQLGlobalState globalState) {
+    public static SQLQueryAdapter set(MySQLGlobalState globalState) {
         return new MySQLSetGenerator(globalState.getRandomly(), globalState.getOptions()).get();
     }
 
@@ -160,7 +159,7 @@ public class MySQLSetGenerator {
         }
     }
 
-    private Query get() {
+    private SQLQueryAdapter get() {
         sb.append("SET ");
         Action a;
         if (isSingleThreaded) {
@@ -188,7 +187,7 @@ public class MySQLSetGenerator {
         sb.append(a.name);
         sb.append(" = ");
         sb.append(a.prod.apply(r));
-        return new QueryAdapter(sb.toString());
+        return new SQLQueryAdapter(sb.toString());
     }
 
 }

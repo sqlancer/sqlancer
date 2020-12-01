@@ -6,9 +6,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.SQLConnection;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
@@ -28,7 +29,7 @@ import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 import sqlancer.mysql.gen.MySQLExpressionGenerator;
 
 public class MySQLPivotedQuerySynthesisOracle
-        extends PivotedQuerySynthesisBase<MySQLGlobalState, MySQLRowValue, MySQLExpression> {
+        extends PivotedQuerySynthesisBase<MySQLGlobalState, MySQLRowValue, MySQLExpression, SQLConnection> {
 
     private List<MySQLExpression> fetchColumns;
     private List<MySQLColumn> columns;
@@ -40,7 +41,7 @@ public class MySQLPivotedQuerySynthesisOracle
     }
 
     @Override
-    public Query getRectifiedQuery() throws SQLException {
+    public Query<SQLConnection> getRectifiedQuery() throws SQLException {
         MySQLTables randomFromTables = globalState.getSchema().getRandomTableNonEmptyTables();
         List<MySQLTable> tables = randomFromTables.getTables();
 
@@ -69,7 +70,7 @@ public class MySQLPivotedQuerySynthesisOracle
                 .generateOrderBys();
         selectStatement.setOrderByExpressions(orderBy);
 
-        return new QueryAdapter(MySQLVisitor.asString(selectStatement), errors);
+        return new SQLQueryAdapter(MySQLVisitor.asString(selectStatement), errors);
     }
 
     private List<MySQLExpression> generateGroupByClause(List<MySQLColumn> columns, MySQLRowValue rw) {
@@ -114,7 +115,7 @@ public class MySQLPivotedQuerySynthesisOracle
     }
 
     @Override
-    protected Query getContainmentCheckQuery(Query query) throws SQLException {
+    protected Query<SQLConnection> getContainmentCheckQuery(Query<?> query) throws SQLException {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
         sb.append(query.getUnterminatedQueryString());
@@ -136,7 +137,7 @@ public class MySQLPivotedQuerySynthesisOracle
         }
 
         String resultingQueryString = sb.toString();
-        return new QueryAdapter(resultingQueryString, query.getExpectedErrors());
+        return new SQLQueryAdapter(resultingQueryString, query.getExpectedErrors());
     }
 
     @Override

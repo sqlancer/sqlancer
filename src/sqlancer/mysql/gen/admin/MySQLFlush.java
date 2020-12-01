@@ -4,8 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 
@@ -21,11 +20,11 @@ public class MySQLFlush {
         this.tables = tables;
     }
 
-    public static Query create(MySQLGlobalState globalState) {
+    public static SQLQueryAdapter create(MySQLGlobalState globalState) {
         return new MySQLFlush(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty()).generate();
     }
 
-    private Query generate() {
+    private SQLQueryAdapter generate() {
         sb.append("FLUSH");
         if (Randomly.getBoolean()) {
             sb.append(" ");
@@ -45,7 +44,7 @@ public class MySQLFlush {
                 // TODO implement READ LOCK and other variants
             }
         }
-        return new QueryAdapter(sb.toString());
+        return new SQLQueryAdapter(sb.toString());
     }
 
 }

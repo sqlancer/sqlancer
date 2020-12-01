@@ -4,7 +4,7 @@ import java.util.List;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.gen.PostgresAlterTableGenerator;
@@ -16,7 +16,8 @@ public class CitusAlterTableGenerator extends PostgresAlterTableGenerator {
         super(randomTable, globalState, generateOnlyKnown);
     }
 
-    public static Query create(PostgresTable randomTable, PostgresGlobalState globalState, boolean generateOnlyKnown) {
+    public static SQLQueryAdapter create(PostgresTable randomTable, PostgresGlobalState globalState,
+            boolean generateOnlyKnown) {
         return new CitusAlterTableGenerator(randomTable, globalState, generateOnlyKnown).generate();
     }
 

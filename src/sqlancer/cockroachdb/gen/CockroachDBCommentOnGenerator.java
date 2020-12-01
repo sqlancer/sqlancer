@@ -9,8 +9,7 @@ import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.schema.TableIndex;
 
 public final class CockroachDBCommentOnGenerator {
@@ -22,7 +21,7 @@ public final class CockroachDBCommentOnGenerator {
         TABLE, INDEX, COLUMN
     }
 
-    public static Query comment(CockroachDBGlobalState globalState) {
+    public static SQLQueryAdapter comment(CockroachDBGlobalState globalState) {
         StringBuilder sb = new StringBuilder("COMMENT ON ");
         CockroachDBTable randomTable = globalState.getSchema().getRandomTable(t -> !t.isView());
         switch (Randomly.fromOptions(Option.values())) {
@@ -56,7 +55,7 @@ public final class CockroachDBCommentOnGenerator {
         sb.append("'");
         ExpectedErrors errors = new ExpectedErrors();
         CockroachDBErrors.addTransactionErrors(errors);
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
 }

@@ -56,13 +56,13 @@ public abstract class AbstractRowValue<T extends AbstractTables<?, C>, C extends
     public String asStringGroupedByTables() {
         StringBuilder sb = new StringBuilder();
         List<C> columnList = getValues().keySet().stream().collect(Collectors.toList());
-        List<AbstractTable<?, ?>> tableList = columnList.stream().map(c -> c.getTable()).distinct().sorted()
+        List<AbstractTable<?, ?, ?>> tableList = columnList.stream().map(c -> c.getTable()).distinct().sorted()
                 .collect(Collectors.toList());
         for (int j = 0; j < tableList.size(); j++) {
             if (j != 0) {
                 sb.append("\n");
             }
-            AbstractTable<?, ?> t = tableList.get(j);
+            AbstractTable<?, ?, ?> t = tableList.get(j);
             sb.append("-- " + t.getName() + "\n");
             List<C> columnsForTable = columnList.stream().filter(c -> c.getTable().equals(t))
                     .collect(Collectors.toList());

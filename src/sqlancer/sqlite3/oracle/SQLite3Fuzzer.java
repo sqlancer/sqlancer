@@ -2,7 +2,7 @@ package sqlancer.sqlite3.oracle;
 
 import sqlancer.Randomly;
 import sqlancer.common.oracle.TestOracle;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
 
@@ -21,7 +21,7 @@ public class SQLite3Fuzzer implements TestOracle {
                 .asString(SQLite3RandomQuerySynthesizer.generate(globalState, Randomly.smallNumber() + 1)) + ";";
         try {
             if (globalState.getDmbsSpecificOptions().executeQuery) {
-                globalState.executeStatement(new QueryAdapter(s));
+                globalState.executeStatement(new SQLQueryAdapter(s));
                 globalState.getManager().incrementSelectQueryCount();
             }
         } catch (Error e) {

@@ -5,20 +5,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.GlobalState;
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.common.query.QueryAdapter;
-import sqlancer.common.query.SQLancerResultSet;
 
-public class AbstractTable<C extends AbstractTableColumn<?, ?>, I extends TableIndex>
-        implements Comparable<AbstractTable<?, ?>> {
+public abstract class AbstractTable<C extends AbstractTableColumn<?, ?>, I extends TableIndex, G extends GlobalState<?, ?, ?>>
+        implements Comparable<AbstractTable<?, ?, ?>> {
 
-    private static final int NO_ROW_COUNT_AVAILABLE = -1;
-    private final String name;
+    protected static final int NO_ROW_COUNT_AVAILABLE = -1;
+    protected final String name;
     private final List<C> columns;
     private final List<I> indexes;
     private final boolean isView;
-    private long rowCount = NO_ROW_COUNT_AVAILABLE;
+    protected long rowCount = NO_ROW_COUNT_AVAILABLE;
 
     public AbstractTable(String name, List<C> columns, List<I> indexes, boolean isView) {
         this.name = name;
@@ -32,7 +29,7 @@ public class AbstractTable<C extends AbstractTableColumn<?, ?>, I extends TableI
     }
 
     @Override
-    public int compareTo(AbstractTable<?, ?> o) {
+    public int compareTo(AbstractTable<?, ?, ?> o) {
         return o.getName().compareTo(getName());
     }
 
@@ -97,26 +94,9 @@ public class AbstractTable<C extends AbstractTableColumn<?, ?>, I extends TableI
 
     }
 
-    public long getNrRows(GlobalState<?, ?> globalState) {
-        if (rowCount == NO_ROW_COUNT_AVAILABLE) {
-            QueryAdapter q = new QueryAdapter("SELECT COUNT(*) FROM " + name);
-            try (SQLancerResultSet query = q.executeAndGet(globalState)) {
-                if (query == null) {
-                    throw new IgnoreMeException();
-                }
-                query.next();
-                rowCount = query.getLong(1);
-                return rowCount;
-            } catch (Throwable t) {
-                // an exception might be expected, for example, when invalid view is created
-                throw new IgnoreMeException();
-            }
-        } else {
-            return rowCount;
-        }
-    }
-
     public void recomputeCount() {
         rowCount = NO_ROW_COUNT_AVAILABLE;
     }
+
+    public abstract long getNrRows(G globalState);
 }

@@ -8,8 +8,7 @@ import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
@@ -20,7 +19,7 @@ import sqlancer.duckdb.ast.DuckDBExpression;
 
 public class DuckDBTableGenerator {
 
-    public Query getQuery(DuckDBGlobalState globalState) {
+    public SQLQueryAdapter getQuery(DuckDBGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder();
         String tableName = globalState.getSchema().getFreeTableName();
@@ -70,7 +69,7 @@ public class DuckDBTableGenerator {
             sb.append(")");
         }
         sb.append(")");
-        return new QueryAdapter(sb.toString(), errors, true);
+        return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 
     public static String getRandomCollate() {

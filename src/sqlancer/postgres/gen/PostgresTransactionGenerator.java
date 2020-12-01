@@ -2,15 +2,14 @@ package sqlancer.postgres.gen;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 
 public final class PostgresTransactionGenerator {
 
     private PostgresTransactionGenerator() {
     }
 
-    public static Query executeBegin() {
+    public static SQLQueryAdapter executeBegin() {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder("BEGIN");
         if (Randomly.getBoolean()) {
@@ -22,7 +21,7 @@ public final class PostgresTransactionGenerator {
             // sb.append(Randomly.fromOptions("READ WRITE", "READ ONLY"));
             // }
         }
-        return new QueryAdapter(sb.toString(), errors, true);
+        return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 
 }

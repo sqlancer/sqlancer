@@ -6,8 +6,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mariadb.MariaDBBugs;
 import sqlancer.mariadb.MariaDBSchema;
 import sqlancer.mariadb.MariaDBSchema.MariaDBDataType;
@@ -31,17 +30,17 @@ public class MariaDBTableGenerator {
         this.r = r;
     }
 
-    public static Query generate(String tableName, Randomly r, MariaDBSchema newSchema) {
+    public static SQLQueryAdapter generate(String tableName, Randomly r, MariaDBSchema newSchema) {
         return new MariaDBTableGenerator(tableName, r, newSchema).gen();
     }
 
-    private Query gen() {
+    private SQLQueryAdapter gen() {
         if (Randomly.getBoolean() || s.getDatabaseTables().isEmpty()) {
             newTable();
         } else {
             likeOtherTable();
         }
-        return new QueryAdapter(sb.toString(), errors, true);
+        return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 
     private enum PrimaryKeyState {

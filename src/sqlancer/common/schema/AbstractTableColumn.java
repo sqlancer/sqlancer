@@ -1,6 +1,6 @@
 package sqlancer.common.schema;
 
-public class AbstractTableColumn<T extends AbstractTable<?, ?>, U> implements Comparable<AbstractTableColumn<T, U>> {
+public class AbstractTableColumn<T extends AbstractTable<?, ?, ?>, U> implements Comparable<AbstractTableColumn<T, U>> {
 
     private final String name;
     private final U type;

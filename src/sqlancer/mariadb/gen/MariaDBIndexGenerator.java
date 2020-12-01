@@ -4,8 +4,7 @@ import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mariadb.MariaDBSchema;
 import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
@@ -16,7 +15,7 @@ public final class MariaDBIndexGenerator {
     private MariaDBIndexGenerator() {
     }
 
-    public static Query generate(MariaDBSchema s) {
+    public static SQLQueryAdapter generate(MariaDBSchema s) {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder("CREATE ");
         errors.add("Key/Index cannot be defined on a virtual generated column");
@@ -55,7 +54,7 @@ public final class MariaDBIndexGenerator {
         // errors.add("is not supported for this operation");
         // }
 
-        return new QueryAdapter(sb.toString(), errors, true);
+        return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 
 }

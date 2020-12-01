@@ -12,7 +12,7 @@ import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.oracle.TestOracle;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
@@ -114,7 +114,7 @@ public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestO
             }
         }
         String resultString;
-        QueryAdapter q = new QueryAdapter(queryString, errors);
+        SQLQueryAdapter q = new SQLQueryAdapter(queryString, errors);
         try (SQLancerResultSet result = q.executeAndGet(state)) {
             if (result == null) {
                 throw new IgnoreMeException();

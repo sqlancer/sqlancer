@@ -4,8 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 
@@ -21,19 +20,19 @@ public class MySQLChecksum {
         this.tables = tables;
     }
 
-    public static Query checksum(MySQLGlobalState globalState) {
+    public static SQLQueryAdapter checksum(MySQLGlobalState globalState) {
         return new MySQLChecksum(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty()).checksum();
     }
 
     // CHECKSUM TABLE tbl_name [, tbl_name] ... [QUICK | EXTENDED]
-    private Query checksum() {
+    private SQLQueryAdapter checksum() {
         sb.append("CHECKSUM TABLE ");
         sb.append(tables.stream().map(t -> t.getName()).collect(Collectors.joining(", ")));
         if (Randomly.getBoolean()) {
             sb.append(" ");
             sb.append(Randomly.fromOptions("QUICK", "EXTENDED"));
         }
-        return new QueryAdapter(sb.toString());
+        return new SQLQueryAdapter(sb.toString());
     }
 
 }

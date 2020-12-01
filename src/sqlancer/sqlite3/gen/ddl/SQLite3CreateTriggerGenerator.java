@@ -7,8 +7,7 @@ import java.util.List;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
@@ -31,7 +30,7 @@ public final class SQLite3CreateTriggerGenerator {
         INSERT, DELETE, UPDATE, RAISE
     }
 
-    public static Query create(SQLite3GlobalState globalState) throws SQLException {
+    public static SQLQueryAdapter create(SQLite3GlobalState globalState) throws SQLException {
         SQLite3Schema s = globalState.getSchema();
         StringBuilder sb = new StringBuilder();
         SQLite3Table table = s.getRandomTableOrBailout(t -> !t.isVirtual());
@@ -109,7 +108,7 @@ public final class SQLite3CreateTriggerGenerator {
         }
         sb.append("END");
 
-        return new QueryAdapter(sb.toString(),
+        return new SQLQueryAdapter(sb.toString(),
                 ExpectedErrors.from("parser stack overflow", "unsupported frame specification"));
     }
 

@@ -4,8 +4,7 @@ import java.util.function.Function;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.h2.H2Provider.H2GlobalState;
 
 public final class H2SetGenerator {
@@ -49,7 +48,7 @@ public final class H2SetGenerator {
         }
     }
 
-    public static Query getQuery(H2GlobalState globalState) {
+    public static SQLQueryAdapter getQuery(H2GlobalState globalState) {
         StringBuilder sb = new StringBuilder();
         Option o = Option.getRandom();
         sb.append("SET ");
@@ -58,7 +57,7 @@ public final class H2SetGenerator {
         sb.append(o.prod.apply(globalState.getRandomly()));
         ExpectedErrors errors = new ExpectedErrors();
         errors.add("Collation cannot be changed because there is a data table");
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
 }

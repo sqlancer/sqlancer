@@ -6,7 +6,7 @@ import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
-import sqlancer.common.query.Query;
+import sqlancer.common.query.SQLQueryAdapter;
 
 // https://www.cockroachlabs.com/docs/stable/create-index.html
 public class CockroachDBIndexGenerator extends CockroachDBGenerator {
@@ -15,7 +15,7 @@ public class CockroachDBIndexGenerator extends CockroachDBGenerator {
         super(globalState);
     }
 
-    public static Query create(CockroachDBGlobalState s) {
+    public static SQLQueryAdapter create(CockroachDBGlobalState s) {
         return new CockroachDBIndexGenerator(s).getQuery();
     }
 

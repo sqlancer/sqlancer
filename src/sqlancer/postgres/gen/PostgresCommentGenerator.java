@@ -2,8 +2,7 @@ package sqlancer.postgres.gen;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 
@@ -19,7 +18,7 @@ public final class PostgresCommentGenerator {
         INDEX, COLUMN, STATISTICS, TABLE
     }
 
-    public static Query generate(PostgresGlobalState globalState) {
+    public static SQLQueryAdapter generate(PostgresGlobalState globalState) {
         StringBuilder sb = new StringBuilder();
         sb.append("COMMENT ON ");
         Action type = Randomly.fromOptions(Action.values());
@@ -63,7 +62,7 @@ public final class PostgresCommentGenerator {
             sb.append(globalState.getRandomly().getString().replace("'", "''"));
             sb.append("'");
         }
-        return new QueryAdapter(sb.toString());
+        return new SQLQueryAdapter(sb.toString());
     }
 
 }

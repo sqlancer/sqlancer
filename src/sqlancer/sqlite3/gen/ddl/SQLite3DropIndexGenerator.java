@@ -2,8 +2,7 @@ package sqlancer.sqlite3.gen.ddl;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
 // see https://www.sqlite.org/lang_dropindex.html
@@ -12,7 +11,7 @@ public final class SQLite3DropIndexGenerator {
     private SQLite3DropIndexGenerator() {
     }
 
-    public static Query dropIndex(SQLite3GlobalState globalState) {
+    public static SQLQueryAdapter dropIndex(SQLite3GlobalState globalState) {
         String indexName = globalState.getSchema().getRandomIndexOrBailout();
         StringBuilder sb = new StringBuilder();
         sb.append("DROP INDEX ");
@@ -22,7 +21,7 @@ public final class SQLite3DropIndexGenerator {
         sb.append('"');
         sb.append(indexName);
         sb.append('"');
-        return new QueryAdapter(sb.toString(), ExpectedErrors.from(
+        return new SQLQueryAdapter(sb.toString(), ExpectedErrors.from(
                 "[SQLITE_ERROR] SQL error or missing database (index associated with UNIQUE or PRIMARY KEY constraint cannot be dropped)"),
                 true);
     }

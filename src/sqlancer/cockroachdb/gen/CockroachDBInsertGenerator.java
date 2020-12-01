@@ -10,15 +10,14 @@ import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.CockroachDBVisitor;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
-import sqlancer.common.query.QueryAdapter;
+import sqlancer.common.query.SQLQueryAdapter;
 
 public final class CockroachDBInsertGenerator {
 
     private CockroachDBInsertGenerator() {
     }
 
-    public static Query insert(CockroachDBGlobalState globalState) {
+    public static SQLQueryAdapter insert(CockroachDBGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
 
         CockroachDBErrors.addExpressionErrors(errors); // e.g., caused by computed columns
@@ -96,7 +95,7 @@ public final class CockroachDBInsertGenerator {
             errors.add("there is no unique or exclusion constraint matching the ON CONFLICT specification");
         }
         CockroachDBErrors.addTransactionErrors(errors);
-        return new QueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
 }
