@@ -17,12 +17,13 @@
 		<exclude name="AvoidStringBufferField" />
 		<exclude name="PreserveStackTrace" /> <!-- TODO -->
 		<exclude name="WhileLoopWithLiteralBoolean" />
-		<exclude name="PositionLiteralsFirstInComparisons" />
+		<exclude name="LiteralsFirstInComparisons" />
 		<exclude name="ForLoopCanBeForeach" />
 		<exclude name="CheckResultSet" />
 		<exclude name="UseTryWithResources" />
 		<exclude name="AvoidReassigningLoopVariables" />
 		<exclude name="AbstractClassWithoutAbstractMethod" />
+		<exclude name="UnusedAssignment" />
 		<priority>2</priority>
 	</rule>
 

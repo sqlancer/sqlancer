@@ -152,7 +152,7 @@ public class SQLite3TableGenerator {
      */
     private void addForeignKey() {
         assert globalState.getDmbsSpecificOptions().testForeignKeys;
-        List<String> foreignKeyColumns = new ArrayList<>();
+        List<String> foreignKeyColumns;
         if (Randomly.getBoolean()) {
             foreignKeyColumns = Arrays.asList(Randomly.fromList(columnNames));
         } else {

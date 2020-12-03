@@ -96,7 +96,7 @@ public class DuckDBProvider extends SQLProviderAdapter<DuckDBGlobalState, DuckDB
     @Override
     public void generateDatabase(DuckDBGlobalState globalState) throws Exception {
         for (int i = 0; i < Randomly.fromOptions(1, 2); i++) {
-            boolean success = false;
+            boolean success;
             do {
                 SQLQueryAdapter qt = new DuckDBTableGenerator().getQuery(globalState);
                 success = globalState.executeStatement(qt);

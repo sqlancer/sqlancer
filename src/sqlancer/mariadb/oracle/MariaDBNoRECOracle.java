@@ -106,7 +106,7 @@ public class MariaDBNoRECOracle extends NoRECBase<MariaDBGlobalState> implements
         select.setFromTables(Arrays.asList(randomTable));
         select.setWhereClause(randomWhereCondition);
         select.setSelectType(MariaDBSelectType.ALL);
-        int firstCount = 0;
+        int firstCount;
         optimizedQueryString = MariaDBVisitor.asString(select);
         SQLQueryAdapter q = new SQLQueryAdapter(optimizedQueryString, errors);
         try (SQLancerResultSet rs = q.executeAndGet(state)) {

@@ -290,7 +290,6 @@ public class SQLite3Schema extends AbstractSchema<SQLite3GlobalState, SQLite3Tab
                             || tableName.endsWith("_config") || tableName.endsWith("_segdir")
                             || tableName.endsWith("_stat") || tableName.endsWith("_segments")
                             || tableName.contains("_")) {
-                        isReadOnly = true;
                         continue; // TODO
                     } else if (sqlString.contains("using dbstat")) {
                         isReadOnly = true;
