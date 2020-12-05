@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 public final class DBMSCommon {
 
-    private static final Pattern sqlancerIndexPattern = Pattern.compile("i\\d+");
+    private static final Pattern sqlancerIndexPattern = Pattern.compile("^i\\d+");
 
     private DBMSCommon() {
     }
