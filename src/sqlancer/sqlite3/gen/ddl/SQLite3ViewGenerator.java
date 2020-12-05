@@ -3,6 +3,7 @@ package sqlancer.sqlite3.gen.ddl;
 import java.sql.SQLException;
 
 import sqlancer.Randomly;
+import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Errors;
@@ -87,7 +88,7 @@ public final class SQLite3ViewGenerator {
             if (i != 0) {
                 sb.append(", ");
             }
-            sb.append(SQLite3Common.createColumnName(i));
+            sb.append(DBMSCommon.createColumnName(i));
         }
         sb.append(")");
         sb.append(" AS ");

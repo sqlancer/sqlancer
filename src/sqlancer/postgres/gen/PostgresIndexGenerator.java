@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
@@ -13,7 +14,6 @@ import sqlancer.postgres.PostgresSchema.PostgresIndex;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresVisitor;
 import sqlancer.postgres.ast.PostgresExpression;
-import sqlancer.sqlite3.gen.SQLite3Common;
 
 public final class PostgresIndexGenerator {
 
@@ -142,7 +142,7 @@ public final class PostgresIndexGenerator {
         List<PostgresIndex> indexes = randomTable.getIndexes();
         int indexI = 0;
         while (true) {
-            String indexName = SQLite3Common.createIndexName(indexI++);
+            String indexName = DBMSCommon.createIndexName(indexI++);
             if (indexes.stream().noneMatch(i -> i.getIndexName().equals(indexName))) {
                 return indexName;
             }

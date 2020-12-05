@@ -15,6 +15,7 @@ import org.postgresql.util.PSQLException;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
+import sqlancer.common.DBMSCommon;
 import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractRowValue;
 import sqlancer.common.schema.AbstractSchema;
@@ -280,10 +281,12 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
         List<PostgresIndex> indexes = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery(String
-                    .format("SELECT indexname FROM pg_indexes WHERE tablename='%s' AND LENGTH(indexname)=2 ORDER BY indexname;", tableName))) {
+                    .format("SELECT indexname FROM pg_indexes WHERE tablename='%s' ORDER BY indexname;", tableName))) {
                 while (rs.next()) {
                     String indexName = rs.getString("indexname");
-                    indexes.add(PostgresIndex.create(indexName));
+                    if (DBMSCommon.matchesIndexName(indexName)) {
+                        indexes.add(PostgresIndex.create(indexName));
+                    }
                 }
             }
         }

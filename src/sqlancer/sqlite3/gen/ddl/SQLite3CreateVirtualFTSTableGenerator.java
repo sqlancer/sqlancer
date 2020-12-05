@@ -5,9 +5,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.sqlite3.gen.SQLite3Common;
 
 public class SQLite3CreateVirtualFTSTableGenerator {
 
@@ -174,7 +174,7 @@ public class SQLite3CreateVirtualFTSTableGenerator {
             if (i != 0) {
                 sb.append(", ");
             }
-            sb.append(SQLite3Common.createColumnName(i));
+            sb.append(DBMSCommon.createColumnName(i));
             columnAction.action();
         }
         tableAction.action();

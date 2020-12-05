@@ -14,6 +14,7 @@ import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
+import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
@@ -38,7 +39,6 @@ import sqlancer.postgres.gen.PostgresTruncateGenerator;
 import sqlancer.postgres.gen.PostgresUpdateGenerator;
 import sqlancer.postgres.gen.PostgresVacuumGenerator;
 import sqlancer.postgres.gen.PostgresViewGenerator;
-import sqlancer.sqlite3.gen.SQLite3Common;
 
 // EXISTS
 // IN
@@ -268,7 +268,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
     protected void createTables(PostgresGlobalState globalState, int numTables) throws Exception {
         while (globalState.getSchema().getDatabaseTables().size() < numTables) {
             try {
-                String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
+                String tableName = DBMSCommon.createTableName(globalState.getSchema().getDatabaseTables().size());
                 SQLQueryAdapter createTable = PostgresTableGenerator.generate(tableName, globalState.getSchema(),
                         generateOnlyKnown, globalState);
                 globalState.executeStatement(createTable);

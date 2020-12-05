@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.DBMSCommon;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.ast.SQLite3Expression;
@@ -20,18 +21,6 @@ public final class SQLite3Common {
 
     public static String getRandomCollate() {
         return Randomly.fromOptions(" COLLATE BINARY", " COLLATE RTRIM", " COLLATE NOCASE"/* , " COLLATE UINT" */);
-    }
-
-    public static String createTableName(int nr) {
-        return String.format("t%d", nr);
-    }
-
-    public static String createColumnName(int nr) {
-        return String.format("c%d", nr);
-    }
-
-    public static String createIndexName(int nr) {
-        return String.format("i%d", nr);
     }
 
     public static String getCheckConstraint(SQLite3GlobalState globalState, List<SQLite3Column> columns) {
@@ -75,7 +64,7 @@ public final class SQLite3Common {
         int nr = 0;
         String[] name = new String[1];
         do {
-            name[0] = SQLite3Common.createTableName(nr++);
+            name[0] = DBMSCommon.createTableName(nr++);
         } while (s.getDatabaseTables().stream().anyMatch(tab -> tab.getName().contentEquals(name[0])));
         return name[0];
     }
@@ -93,7 +82,7 @@ public final class SQLite3Common {
         List<String> indexNames = s.getIndexNames();
         String candidateName;
         do {
-            candidateName = SQLite3Common.createIndexName((int) Randomly.getNotCachedInteger(0, 100));
+            candidateName = DBMSCommon.createIndexName((int) Randomly.getNotCachedInteger(0, 100));
         } while (indexNames.contains(candidateName));
         return candidateName;
     }
@@ -102,7 +91,7 @@ public final class SQLite3Common {
         List<SQLite3Column> indexNames = t.getColumns();
         final String[] candidateName = new String[1];
         do {
-            candidateName[0] = SQLite3Common.createColumnName((int) Randomly.getNotCachedInteger(0, 100));
+            candidateName[0] = DBMSCommon.createColumnName((int) Randomly.getNotCachedInteger(0, 100));
         } while (indexNames.stream().anyMatch(c -> c.getName().contentEquals(candidateName[0])));
         return candidateName[0];
     }
@@ -131,7 +120,7 @@ public final class SQLite3Common {
     }
 
     public static SQLite3Column createColumn(int i) {
-        return new SQLite3Column(createColumnName(i), SQLite3DataType.NONE, false, false, null);
+        return new SQLite3Column(DBMSCommon.createColumnName(i), SQLite3DataType.NONE, false, false, null);
     }
 
     public static List<SQLite3Expression> getTableRefs(List<SQLite3Table> tables, SQLite3Schema s) {

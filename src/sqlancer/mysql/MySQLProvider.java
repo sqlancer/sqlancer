@@ -11,6 +11,7 @@ import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
+import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.mysql.gen.MySQLAlterTable;
@@ -28,7 +29,6 @@ import sqlancer.mysql.gen.tblmaintenance.MySQLCheckTable;
 import sqlancer.mysql.gen.tblmaintenance.MySQLChecksum;
 import sqlancer.mysql.gen.tblmaintenance.MySQLOptimize;
 import sqlancer.mysql.gen.tblmaintenance.MySQLRepair;
-import sqlancer.sqlite3.gen.SQLite3Common;
 
 public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOptions> {
 
@@ -53,7 +53,7 @@ public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOpt
                         + "'")), //
         CREATE_TABLE((g) -> {
             // TODO refactor
-            String tableName = SQLite3Common.createTableName(g.getSchema().getDatabaseTables().size());
+            String tableName = DBMSCommon.createTableName(g.getSchema().getDatabaseTables().size());
             return MySQLTableGenerator.generate(g, tableName);
         }), //
         DELETE(MySQLDeleteGenerator::delete), //
@@ -133,7 +133,7 @@ public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOpt
     @Override
     public void generateDatabase(MySQLGlobalState globalState) throws Exception {
         while (globalState.getSchema().getDatabaseTables().size() < Randomly.smallNumber() + 1) {
-            String tableName = SQLite3Common.createTableName(globalState.getSchema().getDatabaseTables().size());
+            String tableName = DBMSCommon.createTableName(globalState.getSchema().getDatabaseTables().size());
             SQLQueryAdapter createTable = MySQLTableGenerator.generate(globalState, tableName);
             globalState.executeStatement(createTable);
         }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mariadb.MariaDBBugs;
@@ -12,7 +13,6 @@ import sqlancer.mariadb.MariaDBSchema;
 import sqlancer.mariadb.MariaDBSchema.MariaDBDataType;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable.MariaDBEngine;
 import sqlancer.mariadb.ast.MariaDBVisitor;
-import sqlancer.sqlite3.gen.SQLite3Common;
 
 public class MariaDBTableGenerator {
 
@@ -54,7 +54,7 @@ public class MariaDBTableGenerator {
             if (i != 0) {
                 sb.append(", ");
             }
-            String columnName = SQLite3Common.createColumnName(i);
+            String columnName = DBMSCommon.createColumnName(i);
             columnNames.add(columnName);
             sb.append(columnName);
             sb.append(" ");
