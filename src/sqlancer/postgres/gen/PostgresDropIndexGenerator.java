@@ -3,11 +3,11 @@ package sqlancer.postgres.gen;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresIndex;
-import sqlancer.sqlite3.gen.SQLite3Common;
 
 public final class PostgresDropIndexGenerator {
 
@@ -25,7 +25,7 @@ public final class PostgresDropIndexGenerator {
                     sb.append(", ");
                 }
                 if (indexes.isEmpty() || Randomly.getBoolean()) {
-                    sb.append(SQLite3Common.createIndexName(Randomly.smallNumber()));
+                    sb.append(DBMSCommon.createIndexName(Randomly.smallNumber()));
                 } else {
                     sb.append(Randomly.fromList(indexes).getIndexName());
                 }

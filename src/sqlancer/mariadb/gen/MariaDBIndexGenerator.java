@@ -3,12 +3,12 @@ package sqlancer.mariadb.gen;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mariadb.MariaDBSchema;
 import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
-import sqlancer.sqlite3.gen.SQLite3Common;
 
 public final class MariaDBIndexGenerator {
 
@@ -26,7 +26,7 @@ public final class MariaDBIndexGenerator {
         }
         sb.append("INDEX ");
         sb.append("i");
-        sb.append(SQLite3Common.createColumnName(Randomly.smallNumber()));
+        sb.append(DBMSCommon.createColumnName(Randomly.smallNumber()));
         if (Randomly.getBoolean()) {
             sb.append(" USING ");
             sb.append(Randomly.fromOptions("BTREE", "HASH")); // , "RTREE")

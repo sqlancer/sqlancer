@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
@@ -14,7 +15,6 @@ import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresVisitor;
 import sqlancer.postgres.ast.PostgresExpression;
-import sqlancer.sqlite3.gen.SQLite3Common;
 
 public class PostgresTableGenerator {
 
@@ -93,7 +93,7 @@ public class PostgresTableGenerator {
             if (i != 0) {
                 sb.append(", ");
             }
-            String name = SQLite3Common.createColumnName(i);
+            String name = DBMSCommon.createColumnName(i);
             createColumn(name);
         }
         if (Randomly.getBoolean()) {

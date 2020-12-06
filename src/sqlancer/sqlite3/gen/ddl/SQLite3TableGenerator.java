@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Errors;
@@ -78,13 +79,13 @@ public class SQLite3TableGenerator {
         boolean allowPrimaryKeyInColumn = Randomly.getBoolean();
         int nrColumns = 1 + Randomly.smallNumber();
         for (int i = 0; i < nrColumns; i++) {
-            columns.add(SQLite3Column.createDummy(SQLite3Common.createColumnName(i)));
+            columns.add(SQLite3Column.createDummy(DBMSCommon.createColumnName(i)));
         }
         for (int i = 0; i < nrColumns; i++) {
             if (i != 0) {
                 sb.append(", ");
             }
-            String columnName = SQLite3Common.createColumnName(columnId);
+            String columnName = DBMSCommon.createColumnName(columnId);
             SQLite3ColumnBuilder columnBuilder = new SQLite3ColumnBuilder()
                     .allowPrimaryKey(allowPrimaryKeyInColumn && !containsPrimaryKey);
             sb.append(columnBuilder.createColumn(columnName, globalState, columns));

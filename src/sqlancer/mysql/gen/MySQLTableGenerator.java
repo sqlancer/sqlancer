@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mysql.MySQLBugs;
@@ -15,7 +16,6 @@ import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema;
 import sqlancer.mysql.MySQLSchema.MySQLDataType;
 import sqlancer.mysql.MySQLSchema.MySQLTable.MySQLEngine;
-import sqlancer.sqlite3.gen.SQLite3Common;
 
 public class MySQLTableGenerator {
 
@@ -247,7 +247,7 @@ public class MySQLTableGenerator {
     }
 
     private void appendColumn() {
-        String columnName = SQLite3Common.createColumnName(columnId);
+        String columnName = DBMSCommon.createColumnName(columnId);
         columns.add(columnName);
         sb.append(columnName);
         appendColumnDefinition();

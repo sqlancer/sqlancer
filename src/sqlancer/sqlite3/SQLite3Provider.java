@@ -14,13 +14,13 @@ import sqlancer.SQLConnection;
 import sqlancer.SQLGlobalState;
 import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
+import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.sqlite3.SQLite3Options.SQLite3OracleFactory;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.gen.SQLite3AnalyzeGenerator;
-import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.gen.SQLite3CreateVirtualRtreeTabelGenerator;
 import sqlancer.sqlite3.gen.SQLite3ExplainGenerator;
 import sqlancer.sqlite3.gen.SQLite3PragmaGenerator;
@@ -244,11 +244,11 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
         }
         switch (Randomly.fromList(options)) {
         case NORMAL:
-            String tableName = SQLite3Common.createTableName(i);
+            String tableName = DBMSCommon.createTableName(i);
             tableQuery = SQLite3TableGenerator.createTableStatement(tableName, globalState);
             break;
         case FTS:
-            String ftsTableName = "v" + SQLite3Common.createTableName(i);
+            String ftsTableName = "v" + DBMSCommon.createTableName(i);
             tableQuery = SQLite3CreateVirtualFTSTableGenerator.createTableStatement(ftsTableName,
                     globalState.getRandomly());
             break;
