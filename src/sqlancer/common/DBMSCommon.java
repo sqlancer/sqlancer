@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 public final class DBMSCommon {
 
-    private static final Pattern sqlancerIndexPattern = Pattern.compile("^i\\d+");
+    private static final Pattern SQLANCER_INDEX_PATTERN = Pattern.compile("^i\\d+");
 
     private DBMSCommon() {
     }
@@ -23,7 +23,7 @@ public final class DBMSCommon {
     }
 
     public static boolean matchesIndexName(String indexName) {
-        Matcher matcher = sqlancerIndexPattern.matcher(indexName);
+        Matcher matcher = SQLANCER_INDEX_PATTERN.matcher(indexName);
         return matcher.matches();
     }
 
