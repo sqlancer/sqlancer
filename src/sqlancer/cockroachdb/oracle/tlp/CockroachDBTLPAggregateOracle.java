@@ -107,7 +107,7 @@ public class CockroachDBTLPAggregateOracle implements TestOracle {
         CockroachDBSelect leftSelect = getSelect(mappedAggregate, from, whereClause, select.getJoinList());
         CockroachDBSelect middleSelect = getSelect(mappedAggregate, from, negatedClause, select.getJoinList());
         CockroachDBSelect rightSelect = getSelect(mappedAggregate, from, notNullClause, select.getJoinList());
-        metamorphicQuery = "SELECT " + getOuterAggregateFunction(aggregate).toString() + " FROM (";
+        metamorphicQuery = "SELECT " + getOuterAggregateFunction(aggregate) + " FROM (";
         metamorphicQuery += CockroachDBVisitor.asString(leftSelect) + " UNION ALL "
                 + CockroachDBVisitor.asString(middleSelect) + " UNION ALL " + CockroachDBVisitor.asString(rightSelect);
         metamorphicQuery += ")";

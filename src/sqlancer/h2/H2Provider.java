@@ -77,7 +77,7 @@ public class H2Provider extends SQLProviderAdapter<H2GlobalState, H2Options> {
         if (Randomly.getBoolean()) {
             H2SetGenerator.getQuery(globalState).execute(globalState);
         }
-        boolean success = false;
+        boolean success;
         for (int i = 0; i < Randomly.fromOptions(1, 2, 3); i++) {
             do {
                 SQLQueryAdapter qt = new H2TableGenerator().getQuery(globalState);

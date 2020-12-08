@@ -94,7 +94,7 @@ public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestO
         PostgresSelect leftSelect = getSelect(mappedAggregate, from, whereClause, select.getJoinClauses());
         PostgresSelect middleSelect = getSelect(mappedAggregate, from, negatedClause, select.getJoinClauses());
         PostgresSelect rightSelect = getSelect(mappedAggregate, from, notNullClause, select.getJoinClauses());
-        metamorphicQuery = "SELECT " + getOuterAggregateFunction(aggregate).toString() + " FROM (";
+        metamorphicQuery = "SELECT " + getOuterAggregateFunction(aggregate) + " FROM (";
         metamorphicQuery += PostgresVisitor.asString(leftSelect) + " UNION ALL "
                 + PostgresVisitor.asString(middleSelect) + " UNION ALL " + PostgresVisitor.asString(rightSelect);
         metamorphicQuery += ") as asdf";

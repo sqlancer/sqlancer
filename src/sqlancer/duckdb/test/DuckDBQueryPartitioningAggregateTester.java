@@ -89,7 +89,7 @@ public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartition
         DuckDBSelect leftSelect = getSelect(mappedAggregate, from, whereClause, select.getJoinList());
         DuckDBSelect middleSelect = getSelect(mappedAggregate, from, negatedClause, select.getJoinList());
         DuckDBSelect rightSelect = getSelect(mappedAggregate, from, notNullClause, select.getJoinList());
-        metamorphicQuery = "SELECT " + getOuterAggregateFunction(aggregate).toString() + " FROM (";
+        metamorphicQuery = "SELECT " + getOuterAggregateFunction(aggregate) + " FROM (";
         metamorphicQuery += DuckDBToStringVisitor.asString(leftSelect) + " UNION ALL "
                 + DuckDBToStringVisitor.asString(middleSelect) + " UNION ALL "
                 + DuckDBToStringVisitor.asString(rightSelect);

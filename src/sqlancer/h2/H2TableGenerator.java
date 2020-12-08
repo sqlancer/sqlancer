@@ -18,7 +18,9 @@ public class H2TableGenerator {
     public SQLQueryAdapter getQuery(H2GlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         errors.add("already exists");
-        StringBuilder sb = new StringBuilder("CREATE TABLE " + globalState.getSchema().getFreeTableName() + "(");
+        StringBuilder sb = new StringBuilder("CREATE TABLE ");
+        sb.append(globalState.getSchema().getFreeTableName());
+        sb.append("(");
         List<String> columnNames = new ArrayList<>();
         for (int i = 0; i < Randomly.fromOptions(1, 2, 3); i++) {
             columnNames.add("c" + i);

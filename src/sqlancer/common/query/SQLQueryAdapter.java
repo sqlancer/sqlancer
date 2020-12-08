@@ -113,7 +113,7 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
         } else {
             s = globalState.getConnection().createStatement();
         }
-        ResultSet result = null;
+        ResultSet result;
         try {
             if (fills.length > 0) {
                 result = ((PreparedStatement) s).executeQuery();
