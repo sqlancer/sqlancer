@@ -64,7 +64,7 @@ public class SQLite3IndexGenerator {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE");
         if (Randomly.getBoolean()) {
-            errors.add("[SQLITE_CONSTRAINT]  Abort due to constraint violation (UNIQUE constraint failed");
+            errors.add("UNIQUE constraint failed ");
             sb.append(" UNIQUE");
         }
         sb.append(" INDEX");
