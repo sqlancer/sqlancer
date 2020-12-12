@@ -21,8 +21,8 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
-      - name: Build
-        run: mvn -B package -DskipTests=true
+      - name: Build and check for warnings
+        run: mvn -B package -DskipTests 2>/dev/null | grep -vz "WARNING"
       - name: Verify
         run: mvn -B verify -DskipTests=true
       - name: Misc Tests
