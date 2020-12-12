@@ -382,6 +382,7 @@ public class CitusProvider extends PostgresProvider {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public SQLConnection createDatabase(PostgresGlobalState globalState) throws SQLException {
         synchronized (CitusProvider.class) {
