@@ -41,23 +41,13 @@ public class SQLite3InsertGenerator {
     }
 
     private String insertRow(SQLite3Table table) {
-        errors.add("cannot UPDATE generated column");
-        errors.add("[SQLITE_CONSTRAINT]");
+        SQLite3Errors.addInsertUpdateErrors(errors);
         errors.add("[SQLITE_FULL]");
-        errors.add("[SQLITE_ERROR] SQL error or missing database (foreign key mismatch");
-        errors.add("[SQLITE_CONSTRAINT]  Abort due to constraint violation (FOREIGN KEY constraint failed)");
         // // TODO: also check if the table is really missing (caused by a DROP TABLE)
-        errors.add("[SQLITE_ERROR] SQL error or missing database (no such table:");
         errors.add("ON CONFLICT clause does not match any PRIMARY KEY or UNIQUE constraint"); // trigger
-        errors.add("no such column"); // trigger
         errors.add("values were supplied"); // trigger
         errors.add("Data type mismatch (datatype mismatch)"); // trigger
-        errors.add("too many levels of trigger recursion");
-        errors.add("String or BLOB exceeds size limit");
 
-        errors.add("A table in the database is locked");
-        errors.add("cannot INSERT into generated column"); // TODO: filter out generated columns
-        errors.add("The database file is locked");
         errors.add("load_extension() prohibited in triggers and views");
         SQLite3Errors.addInsertNowErrors(errors);
         SQLite3Errors.addExpectedExpressionErrors(errors);

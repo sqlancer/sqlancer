@@ -143,18 +143,7 @@ public class SQLite3PragmaGenerator {
             }
             break;
         case INTEGRITY_CHECK:
-            // errors.add("malformed JSON");
-            // errors.add("JSON cannot hold BLOB values");
-            // errors.add("json_object() labels must be TEXT");
-            // errors.add("requires an even number of arguments");
-            // errors.add("needs an odd number of arguments");
-            // errors.add("overflow");
-            // errors.add("JSON path error");
-            if (Randomly.getBoolean()) {
-                createPragma("integrity_check", () -> null);
-            } else {
-                sb.append(String.format("PRAGMA integrity_check(%d)", r.getInteger()));
-            }
+            createPragma("integrity_check", () -> null);
             break;
         case JOURNAL_MODE:
             // OFF is no longer generated, since it might corrupt the database upon failed

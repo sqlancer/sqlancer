@@ -17,6 +17,7 @@ public final class SQLite3Errors {
     }
 
     public static void addExpectedExpressionErrors(ExpectedErrors errors) {
+        errors.add("[SQLITE_BUSY]  The database file is locked");
         errors.add("FTS expression tree is too large");
         errors.add("String or BLOB exceeds size limit");
         errors.add("[SQLITE_ERROR] SQL error or missing database (integer overflow)");
@@ -91,6 +92,23 @@ public final class SQLite3Errors {
         errors.add("non-deterministic use of datetime()");
         errors.add("non-deterministic use of julianday()");
         errors.add("non-deterministic use of date()");
+    }
+
+    public static void addInsertUpdateErrors(ExpectedErrors errors) {
+        errors.add("String or BLOB exceeds size limit");
+        errors.add("[SQLITE_CONSTRAINT_CHECK]");
+        errors.add("[SQLITE_CONSTRAINT_PRIMARYKEY]");
+        errors.add("[SQLITE_CONSTRAINT]");
+        errors.add("[SQLITE_CONSTRAINT_NOTNULL]");
+        errors.add("[SQLITE_CONSTRAINT_UNIQUE]");
+        errors.add("cannot INSERT into generated column"); // TODO: filter out generated columns
+        errors.add("A table in the database is locked"); // https://www.sqlite.org/src/tktview?name=56a74875be
+        errors.add("The database file is locked");
+        errors.add("too many levels of trigger recursion");
+        errors.add("cannot UPDATE generated column");
+        errors.add("[SQLITE_ERROR] SQL error or missing database (no such table:");
+        errors.add("[SQLITE_ERROR] SQL error or missing database (foreign key mismatch");
+        errors.add("no such column"); // trigger
     }
 
 }

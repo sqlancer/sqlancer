@@ -95,24 +95,15 @@ public class SQLite3UpdateGenerator {
         // sb.append(expressions.stream().map(e -> SQLite3Visitor.asString(e)).collect(Collectors.joining(", ")));
         // }
 
-        errors.add("[SQLITE_ERROR] SQL error or missing database (foreign key mismatch");
-        errors.add("[SQLITE_CONSTRAINT]  Abort due to constraint violation");
+        SQLite3Errors.addInsertUpdateErrors(errors);
+
         errors.add("[SQLITE_ERROR] SQL error or missing database (parser stack overflow)");
         errors.add(
                 "[SQLITE_ERROR] SQL error or missing database (second argument to likelihood() must be a constant between 0.0 and 1.0)");
-        errors.add("[SQLITE_ERROR] SQL error or missing database (no such table:");
         // for views
         errors.add("ORDER BY term out of range");
-        errors.add("no such column");
-        errors.add("(too many levels of trigger recursion");
-        errors.add("String or BLOB exceeds size limit");
-        errors.add("cannot UPDATE generated column");
         errors.add("unknown function: json_type");
 
-        // TODO not update generated columns?
-        errors.add("cannot INSERT into generated column");
-        errors.add("A table in the database is locked"); // https://www.sqlite.org/src/tktview?name=56a74875be
-        errors.add("The database file is locked");
         SQLite3Errors.addInsertNowErrors(errors);
         SQLite3Errors.addExpectedExpressionErrors(errors);
         SQLite3Errors.addDeleteErrors(errors);
