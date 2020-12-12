@@ -89,3 +89,31 @@ jobs:
         run: sudo mysql -uroot -proot -e "CREATE USER 'sqlancer'@'localhost' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'localhost';"
       - name: Run Tests
         run: MARIADB_AVAILABLE=true mvn -Dtest=TestMariaDB test
+
+  mysql:
+    name: MySQL Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Set up MySQL
+        run: |
+          sudo apt-get install libssl-dev libmecab2 libjson-perl mecab-ipadic-utf8
+          sudo apt-get remove mysql-*
+          wget -q https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar
+          tar -xvf mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar
+          sudo dpkg -i *.deb
+          sudo systemctl start mysql
+      - name: Create SQLancer user
+        run: mysql -uroot -proot -e "CREATE USER 'sqlancer'@'localhost' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'localhost';"
+      - name: Run Tests
+        run: |
+          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLPQS
+          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLTLP
