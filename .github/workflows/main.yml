@@ -141,3 +141,25 @@ jobs:
         run: cd cockroach-v20.1.2.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
       - name: Run Tests
         run: COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDB test
+
+
+  clickhouse:
+    name: ClickHouse Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Set up ClickHouse
+        run: |
+          docker pull yandex/clickhouse-server:latest
+          docker run --ulimit nofile=262144:262144 --name clickhouse-server -p8123:8123 -d yandex/clickhouse-server:latest
+          sleep 5
+      - name: Run Tests
+        run: CLICKHOUSE_AVAILABLE=true mvn -Dtest=ClickHouseBinaryComparisonOperationTest test
