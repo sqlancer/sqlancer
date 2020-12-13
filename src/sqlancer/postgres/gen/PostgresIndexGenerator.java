@@ -134,6 +134,7 @@ public final class PostgresIndexGenerator {
         errors.add("functions in index predicate must be marked IMMUTABLE");
         errors.add("functions in index expression must be marked IMMUTABLE");
         errors.add("result of range difference would not be contiguous");
+        errors.add("which is part of the partition key");
         PostgresCommon.addCommonExpressionErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors);
     }
