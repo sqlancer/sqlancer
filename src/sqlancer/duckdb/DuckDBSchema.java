@@ -7,8 +7,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
+import sqlancer.common.DBMSCommon;
 import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractTableColumn;
@@ -95,7 +97,7 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
             case FLOAT:
                 switch (size) {
                 case 8:
-                    return Randomly.fromOptions("DOUBLE", "NUMERIC");
+                    return Randomly.fromOptions("DOUBLE");
                 case 4:
                     return Randomly.fromOptions("REAL", "FLOAT4");
                 default:
@@ -167,6 +169,7 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
             size = 2;
             break;
         case "BIGINT":
+        case "HUGEINT": // TODO: 16-bit int
             primitiveType = DuckDBDataType.INT;
             size = 8;
             break;
@@ -194,6 +197,10 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
         case "TIMESTAMP":
             primitiveType = DuckDBDataType.TIMESTAMP;
             break;
+        case "INTERVAL":
+            throw new IgnoreMeException();
+        // TODO: caused when a view contains a computation like ((TIMESTAMP '1970-01-05 11:26:57')-(TIMESTAMP
+        // '1969-12-29 06:50:27'))
         default:
             throw new AssertionError(typeString);
         }
@@ -212,6 +219,9 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
         List<DuckDBTable> databaseTables = new ArrayList<>();
         List<String> tableNames = getTableNames(con);
         for (String tableName : tableNames) {
+            if (DBMSCommon.matchesIndexName(tableName)) {
+                continue; // TODO: unexpected?
+            }
             List<DuckDBColumn> databaseColumns = getTableColumns(con, tableName);
             boolean isView = tableName.startsWith("v");
             DuckDBTable t = new DuckDBTable(tableName, databaseColumns, isView);

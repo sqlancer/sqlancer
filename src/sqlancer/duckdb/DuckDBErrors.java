@@ -8,12 +8,14 @@ public final class DuckDBErrors {
     }
 
     public static void addExpressionErrors(ExpectedErrors errors) {
+        errors.add("with non-constant precision is not supported");
+        errors.add("Like pattern must not end with escape character");
         errors.add("Could not convert string");
         errors.add("ORDER term out of range - should be between ");
         errors.add("You might need to add explicit type casts.");
         errors.add("can't be cast because the value is out of range for the destination type");
         errors.add("field value out of range");
-        errors.add("Not implemented: Unimplemented type for cast");
+        errors.add("Unimplemented type for cast");
 
         errors.add("Escape string must be empty or one character.");
         errors.add("Type mismatch when combining rows"); // BETWEEN
@@ -82,7 +84,7 @@ public final class DuckDBErrors {
         errors.add("can't be cast because the value is out of range for the destination type");
         errors.add("Could not convert string");
         errors.add("timestamp field value out of range");
-        errors.add("Not implemented: Unimplemented type for cast"); // TODO: report?
+        errors.add("Unimplemented type for cast");
         errors.add("date/time field value out of range");
         errors.add("CHECK constraint failed");
         errors.add("Cannot explicitly insert values into rowid column"); // TODO: don't insert into rowid
