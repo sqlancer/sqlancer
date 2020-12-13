@@ -23,6 +23,8 @@ public final class TiDBAlterTableGenerator {
 
     public static SQLQueryAdapter getQuery(TiDBGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
+        errors.add(
+                "Information schema is changed during the execution of the statement(for example, table definition may be updated by other DDL ran in parallel)");
         StringBuilder sb = new StringBuilder("ALTER TABLE ");
         TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         TiDBColumn column = table.getRandomColumn();
