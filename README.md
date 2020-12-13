@@ -1,4 +1,4 @@
-[![Build Status](https://github.com/sqlancer/sqlancer/workflows/main/badge.svg)](https://github.com/sqlancer/sqlancer/actions)
+[![Build Status](https://github.com/sqlancer/sqlancer/workflows/ci/badge.svg)](https://github.com/sqlancer/sqlancer/actions)
 [![codecov](https://codecov.io/gh/sqlancer/sqlancer/branch/master/graph/badge.svg)](https://codecov.io/gh/sqlancer/sqlancer)
 [![Twitter](https://img.shields.io/twitter/follow/sqlancer_dbms?style=social)](https://twitter.com/sqlancer_dbms)
 # SQLancer
