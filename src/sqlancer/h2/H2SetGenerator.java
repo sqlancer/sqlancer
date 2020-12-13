@@ -25,7 +25,7 @@ public final class H2SetGenerator {
         DEFAULT_NULL_ORDERING((r) -> Randomly.fromOptions("LOW", "HIGH", "FIRST", "LAST")), //
         DEFAULT_TABLE_TYPE((r) -> Randomly.fromOptions("MEMORY", "CACHED")), //
         IGNORECASE((r) -> Randomly.fromOptions("TRUE", "FALSE")), //
-        LAZY_QUERY_EXECUTION((r) -> Randomly.fromOptions(0, 1)), LOG((r) -> Randomly.fromOptions(0, 1, 2)), //
+        LAZY_QUERY_EXECUTION((r) -> Randomly.fromOptions(0, 1)), //
         MAX_MEMORY_ROWS((r) -> Randomly.getNotCachedInteger(0, 100000)), //
         MAX_MEMORY_UNDO((r) -> Randomly.getNotCachedInteger(0, 100000)), //
         MAX_OPERATION_MEMORY((r) -> Randomly.getNotCachedInteger(0, 100000)), //
