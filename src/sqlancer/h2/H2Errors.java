@@ -19,6 +19,8 @@ public final class H2Errors {
     }
 
     public static void addExpressionErrors(ExpectedErrors errors) {
+        errors.add("java.lang.ArithmeticException: BigInteger would overflow supported range");
+        errors.add("Value too long for column");
         errors.add("Numeric value out of range");
         errors.add("are not comparable");
         errors.add("Data conversion error converting");

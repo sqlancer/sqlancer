@@ -229,6 +229,8 @@ jobs:
           git clone https://github.com/h2database/h2database
           cd h2database/h2
           ./build.sh jar
-          cp bin/h2*.jar ../../target/lib/h2*.jar
+          cp bin/h2-2.0.201.jar ../../target/lib/h2-1.4.200.jar
+          cp bin/h2-2.0.201.jar ~/.m2/repository/com/h2database/h2/1.4.200/h2-1.4.200.jar
+          ls -lh ../../target/lib
       - name: Run Tests
         run: H2_AVAILABLE=true mvn -Dtest=TestH2 test
