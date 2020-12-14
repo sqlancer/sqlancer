@@ -10,7 +10,7 @@ on:
 
 jobs:
   misc:
-    name: Misc tests
+    name: General tests
     runs-on: ubuntu-latest
 
     steps:
@@ -28,215 +28,8 @@ jobs:
       - name: Misc Tests
         run: mvn -B '-Dtest=!sqlancer.dbms.**' test
 
-  sqlite:
-    name: SQLite Tests
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 1.8
-      - name: Build
-        run: mvn -B package -DskipTests=true
-      - name: SQLite Tests
-        run:  |
-          mvn -Dtest=TestSQLitePQS test
-          mvn -Dtest=TestSQLite3 test
-
-  duckdb:
-    name: DuckDB Tests
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 1.8
-      - name: Build
-        run: mvn -B package -DskipTests=true
-      - name: DuckDB Tests
-        run: mvn -Dtest=TestDuckDB test
-
-  mariadb:
-    name: MariaDB Tests
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 1.8
-      - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
-      - name: Install MariaDB
-        run: |
-          sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
-          sudo add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://sfo1.mirrors.digitalocean.com/mariadb/repo/10.3/ubuntu bionic main'
-          sudo apt update
-          sudo apt install mariadb-server
-          sudo systemctl start mariadb
-      - name: Create SQLancer User
-        run: sudo mysql -uroot -proot -e "CREATE USER 'sqlancer'@'localhost' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'localhost';"
-      - name: Run Tests
-        run: MARIADB_AVAILABLE=true mvn -Dtest=TestMariaDB test
-
-  mysql:
-    name: MySQL Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 1.8
-      - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
-      - name: Set up MySQL
-        run: |
-          sudo apt-get install libssl-dev libmecab2 libjson-perl mecab-ipadic-utf8
-          sudo apt-get remove mysql-*
-          wget -q https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar
-          tar -xvf mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar
-          sudo dpkg -i *.deb
-          sudo systemctl start mysql
-      - name: Create SQLancer user
-        run: mysql -uroot -proot -e "CREATE USER 'sqlancer'@'localhost' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'localhost';"
-      - name: Run Tests
-        run: |
-          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLPQS
-          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLTLP
-
-
-  cockroachdb:
-    name: CockroachDB Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 1.8
-      - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
-      - name: Set up CockroachDB
-        run: |
-          wget -qO- https://binaries.cockroachdb.com/cockroach-v20.1.2.linux-amd64.tgz | tar  xvz
-          cd cockroach-v20.1.2.linux-amd64/ && ./cockroach start-single-node --insecure &
-          sleep 10
-      - name: Create SQLancer user
-        run: cd cockroach-v20.1.2.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
-      - name: Run Tests
-        run: COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDB test
-
-
-  clickhouse:
-    name: ClickHouse Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 1.8
-      - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
-      - name: Set up ClickHouse
-        run: |
-          docker pull yandex/clickhouse-server:latest
-          docker run --ulimit nofile=262144:262144 --name clickhouse-server -p8123:8123 -d yandex/clickhouse-server:latest
-          sleep 5
-      - name: Run Tests
-        run: CLICKHOUSE_AVAILABLE=true mvn -Dtest=ClickHouseBinaryComparisonOperationTest test
-
-
-  tidb:
-    name: TiDB Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 1.8
-      - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
-      - name: Set up TiDB
-        run: |
-          docker pull pingcap/tidb:latest
-          docker run --name tidb-server -d -p 4000:4000 pingcap/tidb:latest
-          sleep 10
-      - name: Create SQLancer user
-        run: sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
-      - name: Run Tests
-        run: TIDB_AVAILABLE=true mvn -Dtest=TestTiDB test
-
-  postgres:
-    name: PostgreSQL Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Set up PostgreSQL
-        uses: harmon758/postgresql-action@v1
-        with:
-          postgresql version: '12'
-          postgresql user: 'sqlancer'
-          postgresql password: 'sqlancer'
-          postgresql db: 'test'
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 1.8
-      - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
-      - name: Run Tests
-        run: POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgres test
-
-  h2:
-    name: H2 Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 1.8
-      - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
-      - name: Set up H2
-        run: |
-          git clone https://github.com/h2database/h2database
-          cd h2database/h2
-          ./build.sh jar
-          cp bin/h2-2.0.201.jar ../../target/lib/h2-1.4.200.jar
-          cp bin/h2-2.0.201.jar ~/.m2/repository/com/h2database/h2/1.4.200/h2-1.4.200.jar
-          ls -lh ../../target/lib
-      - name: Run Tests
-        run: H2_AVAILABLE=true mvn -Dtest=TestH2 test
-
   citus:
-    name: Citus Tests
+    name: DBMS Tests (Citus)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -279,3 +72,209 @@ jobs:
           psql -c "SELECT * from master_add_node('localhost', 9702);" -p 9700 -U $USER -d test
       - name: Run Tests
         run: CITUS_AVAILABLE=true mvn -Dtest=TestCitus test
+
+  clickhouse:
+    name: DBMS Tests (ClickHouse)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Set up ClickHouse
+        run: |
+          docker pull yandex/clickhouse-server:latest
+          docker run --ulimit nofile=262144:262144 --name clickhouse-server -p8123:8123 -d yandex/clickhouse-server:latest
+          sleep 5
+      - name: Run Tests
+        run: CLICKHOUSE_AVAILABLE=true mvn -Dtest=ClickHouseBinaryComparisonOperationTest test
+
+
+  cockroachdb:
+    name: DBMS Tests (CockroachDB)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Set up CockroachDB
+        run: |
+          wget -qO- https://binaries.cockroachdb.com/cockroach-v20.1.2.linux-amd64.tgz | tar  xvz
+          cd cockroach-v20.1.2.linux-amd64/ && ./cockroach start-single-node --insecure &
+          sleep 10
+      - name: Create SQLancer user
+        run: cd cockroach-v20.1.2.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
+      - name: Run Tests
+        run: COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDB test
+
+  duckdb:
+    name: DBMS Tests (DuckDB)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Build
+        run: mvn -B package -DskipTests=true
+      - name: DuckDB Tests
+        run: mvn -Dtest=TestDuckDB test
+
+  h2:
+    name: DBMS Tests (H2)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Set up H2
+        run: |
+          git clone https://github.com/h2database/h2database
+          cd h2database/h2
+          ./build.sh jar
+          cp bin/h2-2.0.201.jar ../../target/lib/h2-1.4.200.jar
+          cp bin/h2-2.0.201.jar ~/.m2/repository/com/h2database/h2/1.4.200/h2-1.4.200.jar
+          ls -lh ../../target/lib
+      - name: Run Tests
+        run: H2_AVAILABLE=true mvn -Dtest=TestH2 test
+
+  mariadb:
+    name: DBMS Tests (MariaDB)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Install MariaDB
+        run: |
+          sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
+          sudo add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://sfo1.mirrors.digitalocean.com/mariadb/repo/10.3/ubuntu bionic main'
+          sudo apt update
+          sudo apt install mariadb-server
+          sudo systemctl start mariadb
+      - name: Create SQLancer User
+        run: sudo mysql -uroot -proot -e "CREATE USER 'sqlancer'@'localhost' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'localhost';"
+      - name: Run Tests
+        run: MARIADB_AVAILABLE=true mvn -Dtest=TestMariaDB test
+
+  mysql:
+    name: DBMS Tests (MySQL)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Set up MySQL
+        run: |
+          sudo apt-get install libssl-dev libmecab2 libjson-perl mecab-ipadic-utf8
+          sudo apt-get remove mysql-*
+          wget -q https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar
+          tar -xvf mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar
+          sudo dpkg -i *.deb
+          sudo systemctl start mysql
+      - name: Create SQLancer user
+        run: mysql -uroot -proot -e "CREATE USER 'sqlancer'@'localhost' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'localhost';"
+      - name: Run Tests
+        run: |
+          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLPQS
+          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLTLP
+
+  postgres:
+    name: DBMS Tests (PostgreSQL)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up PostgreSQL
+        uses: harmon758/postgresql-action@v1
+        with:
+          postgresql version: '12'
+          postgresql user: 'sqlancer'
+          postgresql password: 'sqlancer'
+          postgresql db: 'test'
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Run Tests
+        run: POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgres test
+
+  sqlite:
+    name: DBMS Tests (SQLite)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Build
+        run: mvn -B package -DskipTests=true
+      - name: SQLite Tests
+        run:  |
+          mvn -Dtest=TestSQLitePQS test
+          mvn -Dtest=TestSQLite3 test
+
+
+  tidb:
+    name: DBMS Tests (TiDB)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Set up TiDB
+        run: |
+          docker pull pingcap/tidb:latest
+          docker run --name tidb-server -d -p 4000:4000 pingcap/tidb:latest
+          sleep 10
+      - name: Create SQLancer user
+        run: sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+      - name: Run Tests
+        run: TIDB_AVAILABLE=true mvn -Dtest=TestTiDB test
