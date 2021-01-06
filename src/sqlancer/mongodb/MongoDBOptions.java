@@ -19,6 +19,15 @@ public class MongoDBOptions implements DBMSSpecificOptions<MongoDBOptions.MongoD
     @Parameter(names = "--test-validation", description = "Enable/Disable validation of schema with Schema Validation", arity = 1)
     public boolean testValidation = true;
 
+    @Parameter(names = "--test-null-inserts", description = "Enables to test inserting with null values, validation has to be off", arity = 1)
+    public boolean testNullInserts;
+
+    @Parameter(names = "--test-random-types", description = "Insert random types instead of schema types, validation has to be off", arity = 1)
+    public boolean testRandomTypes;
+
+    @Parameter(names = "--max-number-indexes", description = "The maximum number of indexes used.", arity = 1)
+    public int maxNumberIndexes = 15;
+
     @Parameter(names = "--oracle")
     public List<MongoDBOracleFactory> oracles = Arrays.asList(QUERY_PARTITIONING);
 

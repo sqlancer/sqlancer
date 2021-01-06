@@ -7,13 +7,18 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 
+import sqlancer.AbstractAction;
 import sqlancer.ExecutionTimer;
 import sqlancer.GlobalState;
+import sqlancer.IgnoreMeException;
 import sqlancer.ProviderAdapter;
 import sqlancer.Randomly;
+import sqlancer.StatementExecutor;
 import sqlancer.common.log.LoggableFactory;
 import sqlancer.common.query.Query;
 import sqlancer.mongodb.MongoDBSchema.MongoDBTable;
+import sqlancer.mongodb.gen.MongoDBIndexGenerator;
+import sqlancer.mongodb.gen.MongoDBInsertGenerator;
 import sqlancer.mongodb.gen.MongoDBTableGenerator;
 
 public class MongoDBProvider
@@ -23,21 +28,32 @@ public class MongoDBProvider
         super(MongoDBGlobalState.class, MongoDBOptions.class);
     }
 
-    /*
-     * enum Action implements AbstractAction<MongoDBGlobalState> { ; INSERT(MongoDBInsertGenerator::getQuery);
-     * CREATE_INDEX(MongoDBIndexGenerator::getQuery);
-     *
-     * private final MongoDBQueryProvider<MongoDBGlobalState> queryProvider;
-     *
-     * Action(MongoDBQueryProvider<MongoDBGlobalState> queryProvider) { this.queryProvider = queryProvider; }
-     *
-     * @Override public Query<MongoDBConnection> getQuery(MongoDBGlobalState globalState) throws Exception { return
-     * queryProvider.getQuery(globalState); } }
-     *
-     * private static int mapActions(MongoDBGlobalState globalState, Action a) { Randomly r = globalState.getRandomly();
-     * switch (a) { case INSERT: return r.getInteger(0, globalState.getOptions().getMaxNumberInserts()); case
-     * CREATE_INDEX: return r.getInteger(0, 2); default: throw new AssertionError(a); } return -1; }
-     */
+    enum Action implements AbstractAction<MongoDBGlobalState> {
+        INSERT(MongoDBInsertGenerator::getQuery), CREATE_INDEX(MongoDBIndexGenerator::getQuery);
+
+        private final MongoDBQueryProvider<MongoDBGlobalState> queryProvider;
+
+        Action(MongoDBQueryProvider<MongoDBGlobalState> queryProvider) {
+            this.queryProvider = queryProvider;
+        }
+
+        @Override
+        public Query<MongoDBConnection> getQuery(MongoDBGlobalState globalState) throws Exception {
+            return queryProvider.getQuery(globalState);
+        }
+    }
+
+    private static int mapActions(MongoDBGlobalState globalState, Action a) {
+        Randomly r = globalState.getRandomly();
+        switch (a) {
+        case INSERT:
+            return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
+        case CREATE_INDEX:
+            return r.getInteger(0, globalState.getDmbsSpecificOptions().maxNumberIndexes);
+        default:
+            throw new AssertionError(a);
+        }
+    }
 
     public static class MongoDBGlobalState extends GlobalState<MongoDBOptions, MongoDBSchema, MongoDBConnection> {
 
@@ -76,11 +92,13 @@ public class MongoDBProvider
                 success = globalState.executeStatement(query);
             } while (!success);
         }
-        /*
-         * StatementExecutor<MongoDBGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
-         * MongoDBProvider::mapActions, (q) -> { if(globalState.getSchema().getDatabaseTables().isEmpty()) { throw new
-         * IgnoreMeException(); } }); se.executeStatements();
-         */
+        StatementExecutor<MongoDBGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
+                MongoDBProvider::mapActions, (q) -> {
+                    if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+                        throw new IgnoreMeException();
+                    }
+                });
+        se.executeStatements();
     }
 
     @Override
