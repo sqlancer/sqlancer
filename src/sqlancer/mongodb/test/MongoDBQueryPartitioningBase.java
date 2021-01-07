@@ -37,7 +37,7 @@ public class MongoDBQueryPartitioningBase
         targetTables = schema.getRandomTableNonEmptyTables();
         mainTable = targetTables.getTables().get(0);
         generateTargetColumns();
-        expressionGenerator = new MongoDBExpressionGenerator().setColumns(targetColumns);
+        expressionGenerator = new MongoDBExpressionGenerator(state).setColumns(targetColumns);
         initializeTernaryPredicateVariants();
         select = new MongoDBSelect<>(mainTable.getName(), targetColumns.get(0));
         select.setProjectionList(targetColumns);

@@ -1,8 +1,10 @@
 package sqlancer.mongodb.test;
 
+import sqlancer.common.ast.newast.Node;
 import sqlancer.mongodb.MongoDBSchema.MongoDBColumn;
+import sqlancer.mongodb.ast.MongoDBExpression;
 
-public class MongoDBColumnTestReference {
+public class MongoDBColumnTestReference implements Node<MongoDBExpression> {
 
     private final MongoDBColumn columnReference;
     private final boolean inMainTable;
@@ -30,5 +32,9 @@ public class MongoDBColumnTestReference {
 
     public String getPlainName() {
         return this.columnReference.getName();
+    }
+
+    public MongoDBColumn getColumnReference() {
+        return columnReference;
     }
 }

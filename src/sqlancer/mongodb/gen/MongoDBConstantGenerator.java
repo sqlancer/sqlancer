@@ -3,6 +3,7 @@ package sqlancer.mongodb.gen;
 import org.bson.Document;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.newast.Node;
 import sqlancer.mongodb.MongoDBProvider.MongoDBGlobalState;
 import sqlancer.mongodb.MongoDBSchema.MongoDBDataType;
 import sqlancer.mongodb.ast.MongoDBConstant;
@@ -13,12 +14,35 @@ import sqlancer.mongodb.ast.MongoDBConstant.MongoDBIntegerConstant;
 import sqlancer.mongodb.ast.MongoDBConstant.MongoDBNullConstant;
 import sqlancer.mongodb.ast.MongoDBConstant.MongoDBStringConstant;
 import sqlancer.mongodb.ast.MongoDBConstant.MongoDBTimestampConstant;
+import sqlancer.mongodb.ast.MongoDBExpression;
 
 public class MongoDBConstantGenerator {
     private final MongoDBGlobalState globalState;
 
     public MongoDBConstantGenerator(MongoDBGlobalState globalState) {
         this.globalState = globalState;
+    }
+
+    public Node<MongoDBExpression> generateConstantWithType(MongoDBDataType option) {
+        if (Randomly.getBooleanWithSmallProbability()) {
+            return MongoDBConstant.createNullConstant();
+        }
+        switch (option) {
+        case DATE_TIME:
+            return MongoDBConstant.createDateTimeConstant(globalState.getRandomly().getInteger());
+        case BOOLEAN:
+            return MongoDBConstant.createBooleanConstant(Randomly.getBoolean());
+        case DOUBLE:
+            return MongoDBConstant.createDoubleConstant(globalState.getRandomly().getDouble());
+        case STRING:
+            return MongoDBConstant.createStringConstant(globalState.getRandomly().getString());
+        case INTEGER:
+            return MongoDBConstant.createIntegerConstant((int) globalState.getRandomly().getInteger());
+        case TIMESTAMP:
+            return MongoDBConstant.createTimestampConstant(globalState.getRandomly().getInteger());
+        default:
+            throw new AssertionError(option);
+        }
     }
 
     public void addRandomConstant(Document document, String key) {

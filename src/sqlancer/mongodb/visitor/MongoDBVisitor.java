@@ -10,6 +10,7 @@ import sqlancer.mongodb.ast.MongoDBExpression;
 import sqlancer.mongodb.ast.MongoDBSelect;
 
 public abstract class MongoDBVisitor {
+
     public abstract void visit(MongoDBConstant c);
 
     public abstract void visit(MongoDBSelect<MongoDBExpression> s);

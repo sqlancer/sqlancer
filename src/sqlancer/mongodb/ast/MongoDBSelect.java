@@ -69,7 +69,7 @@ public class MongoDBSelect<E> implements Node<E> {
         return filterClause;
     }
 
-    public boolean hasWhere() {
+    public boolean hasFilter() {
         return hasFilter;
     }
 

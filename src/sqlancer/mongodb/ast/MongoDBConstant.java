@@ -14,6 +14,8 @@ public abstract class MongoDBConstant implements Node<MongoDBExpression> {
 
     public abstract String getLogValue();
 
+    public abstract Object getValue();
+
     public static class MongoDBNullConstant extends MongoDBConstant {
 
         @Override
@@ -25,6 +27,15 @@ public abstract class MongoDBConstant implements Node<MongoDBExpression> {
         public String getLogValue() {
             return "null";
         }
+
+        @Override
+        public Object getValue() {
+            return null;
+        }
+    }
+
+    public static Node<MongoDBExpression> createNullConstant() {
+        return new MongoDBNullConstant();
     }
 
     public static class MongoDBIntegerConstant extends MongoDBConstant {
@@ -42,7 +53,12 @@ public abstract class MongoDBConstant implements Node<MongoDBExpression> {
 
         @Override
         public String getLogValue() {
-            return String.valueOf(value);
+            return "NumberInt(" + value + ")";
+        }
+
+        @Override
+        public Integer getValue() {
+            return value;
         }
     }
 
@@ -69,7 +85,12 @@ public abstract class MongoDBConstant implements Node<MongoDBExpression> {
 
         @Override
         public String getLogValue() {
-            return "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
+            return "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n") + "\"";
+        }
+
+        @Override
+        public String getValue() {
+            return value;
         }
     }
 
@@ -92,10 +113,12 @@ public abstract class MongoDBConstant implements Node<MongoDBExpression> {
 
         @Override
         public String getLogValue() {
-            if (value) {
-                return "true";
-            }
-            return "false";
+            return String.valueOf(value);
+        }
+
+        @Override
+        public Boolean getValue() {
+            return value;
         }
     }
 
@@ -120,6 +143,11 @@ public abstract class MongoDBConstant implements Node<MongoDBExpression> {
         public String getLogValue() {
             return String.valueOf(value);
         }
+
+        @Override
+        public Double getValue() {
+            return value;
+        }
     }
 
     public static Node<MongoDBExpression> createDoubleConstant(double value) {
@@ -141,7 +169,12 @@ public abstract class MongoDBConstant implements Node<MongoDBExpression> {
 
         @Override
         public String getLogValue() {
-            return String.valueOf(value);
+            return "new Date(" + value.getValue() + ")";
+        }
+
+        @Override
+        public BsonDateTime getValue() {
+            return value;
         }
     }
 
@@ -164,7 +197,12 @@ public abstract class MongoDBConstant implements Node<MongoDBExpression> {
 
         @Override
         public String getLogValue() {
-            return String.valueOf(value);
+            return "Timestamp(" + value.getValue() + ",1)";
+        }
+
+        @Override
+        public BsonTimestamp getValue() {
+            return value;
         }
     }
 
