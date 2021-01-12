@@ -1,6 +1,7 @@
 package sqlancer.clickhouse.gen;
 
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,8 +37,11 @@ public class ClickHouseInsertGenerator extends AbstractInsertGenerator<ClickHous
 
     private SQLQueryAdapter get() {
         ClickHouseTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-        List<ClickHouseColumn> columns = table.getRandomNonEmptyColumnSubset().stream()
-                .filter(c -> !c.isAlias() && !c.isMaterialized()).collect(Collectors.toList());
+        List<ClickHouseColumn> columns = Collections.emptyList();
+        while (columns.isEmpty()) {
+            columns = table.getRandomNonEmptyColumnSubset().stream().filter(c -> !c.isAlias() && !c.isMaterialized())
+                    .collect(Collectors.toList());
+        }
         sb.append("INSERT INTO ");
         sb.append(table.getName());
         sb.append("(");
