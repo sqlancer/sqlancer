@@ -139,7 +139,7 @@ public final class ClickHouseCast extends ClickHouseExpression {
             for (int i = asString.length(); i >= 0; i--) {
                 try {
                     String substring = asString.substring(0, i);
-                    double d = Double.valueOf(substring);
+                    double d = Double.parseDouble(substring);
                     BigDecimal first = new BigDecimal(substring);
                     long longValue = first.longValue();
                     BigDecimal second = BigDecimal.valueOf(longValue);
