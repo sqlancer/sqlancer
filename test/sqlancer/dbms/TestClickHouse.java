@@ -14,9 +14,9 @@ public class TestClickHouse {
         boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
         assumeTrue(clickHouseIsAvailable);
         assertEquals(0,
-                Main.executeMain(new String[] { "--timeout-seconds", "60", "--num-queries", TestConfig.NUM_QUERIES,
-                        "--num-threads", "5", "--username", "default", "--password", "", "clickhouse", "--oracle",
-                        "TLPWhere", "--oracle", "TLPGroupBy" }));
+                Main.executeMain("--timeout-seconds", "60", "--num-queries", TestConfig.NUM_QUERIES, "--num-threads",
+                        "5", "--username", "default", "--password", "", "clickhouse", "--oracle", "TLPWhere",
+                        "--oracle", "TLPGroupBy"));
     }
 
     @Test
@@ -24,10 +24,8 @@ public class TestClickHouse {
         String clickHouseAvailable = System.getenv("CLICKHOUSE_AVAILABLE");
         boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
         assumeTrue(clickHouseIsAvailable);
-        assertEquals(0,
-                Main.executeMain(new String[] { "--timeout-seconds", "60", "--num-queries", TestConfig.NUM_QUERIES,
-                        "--num-threads", "5", "--username", "default", "--password", "", "clickhouse", "--oracle",
-                        "TLPWhere" }));
+        assertEquals(0, Main.executeMain("--timeout-seconds", "60", "--num-queries", TestConfig.NUM_QUERIES,
+                "--num-threads", "5", "--username", "default", "--password", "", "clickhouse", "--oracle", "TLPWhere"));
     }
 
     @Test
@@ -35,11 +33,10 @@ public class TestClickHouse {
         String clickHouseAvailable = System.getenv("CLICKHOUSE_AVAILABLE");
         boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
         assumeTrue(clickHouseIsAvailable);
-        assertEquals(0,
-                Main.executeMain(new String[] { "--timeout-seconds", "60", "--num-queries", "0", "--num-threads", "5",
-                        "--username", "default", "--password", "", "clickhouse", "--oracle", "TLPHaving" })); // Disabled
-                                                                                                              // in CI
-                                                                                                              // https://github.com/ClickHouse/ClickHouse/issues/12264
+        assertEquals(0, Main.executeMain("--timeout-seconds", "60", "--num-queries", "0", "--num-threads", "5",
+                "--username", "default", "--password", "", "clickhouse", "--oracle", "TLPHaving")); // Disabled
+                                                                                                    // in CI
+                                                                                                    // https://github.com/ClickHouse/ClickHouse/issues/12264
     }
 
     @Test
@@ -48,9 +45,8 @@ public class TestClickHouse {
         boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
         assumeTrue(clickHouseIsAvailable);
         assertEquals(0,
-                Main.executeMain(new String[] { "--timeout-seconds", "60", "--num-queries", TestConfig.NUM_QUERIES,
-                        "--num-threads", "5", "--username", "default", "--password", "", "clickhouse", "--oracle",
-                        "TLPGroupBy" }));
+                Main.executeMain("--timeout-seconds", "60", "--num-queries", TestConfig.NUM_QUERIES, "--num-threads",
+                        "5", "--username", "default", "--password", "", "clickhouse", "--oracle", "TLPGroupBy"));
     }
 
     @Test
@@ -59,9 +55,8 @@ public class TestClickHouse {
         boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
         assumeTrue(clickHouseIsAvailable);
         assertEquals(0,
-                Main.executeMain(new String[] { "--timeout-seconds", "60", "--num-queries", TestConfig.NUM_QUERIES,
-                        "--num-threads", "5", "--username", "default", "--password", "", "clickhouse", "--oracle",
-                        "TLPDistinct" }));
+                Main.executeMain("--timeout-seconds", "60", "--num-queries", TestConfig.NUM_QUERIES, "--num-threads",
+                        "5", "--username", "default", "--password", "", "clickhouse", "--oracle", "TLPDistinct"));
     }
 
     @Test
@@ -69,9 +64,9 @@ public class TestClickHouse {
         String clickHouseAvailable = System.getenv("CLICKHOUSE_AVAILABLE");
         boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
         assumeTrue(clickHouseIsAvailable);
-        assertEquals(0, Main.executeMain(new String[] { "--timeout-seconds", "0", "--num-queries", "0", "--num-threads",
-                "5", "--username", "default", "--password", "", "clickhouse", "--oracle", "TLPAggregate" })); // Disabled
-                                                                                                              // https://github.com/ClickHouse/ClickHouse/issues/13894
+        assertEquals(0,
+                Main.executeMain("--timeout-seconds", "60", "--num-queries", TestConfig.NUM_QUERIES, "--num-threads",
+                        "5", "--username", "default", "--password", "", "clickhouse", "--oracle", "TLPAggregate"));
     }
 
 }
