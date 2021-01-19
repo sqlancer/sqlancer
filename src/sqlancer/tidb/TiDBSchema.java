@@ -181,7 +181,8 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
         if (trimmedStringType.contains("decimal")) {
             return new TiDBCompositeDataType(TiDBDataType.DECIMAL);
         }
-        if (trimmedStringType.startsWith("var_string") || trimmedStringType.contains("binary")) {
+        if (trimmedStringType.startsWith("var_string") || trimmedStringType.contains("binary")
+                || trimmedStringType.startsWith("varchar")) {
             return new TiDBCompositeDataType(TiDBDataType.TEXT);
         }
         if (trimmedStringType.startsWith("char")) {
