@@ -43,7 +43,7 @@
           <source>8</source>
           <target>8</target>
           <compilerArguments>
-            <properties>.settings/org.eclipse.jdt.core.prefs</properties>
+            <properties>${project.basedir}/.settings/org.eclipse.jdt.core.prefs</properties>
           </compilerArguments>
           <compilerId>eclipse</compilerId>
           <showWarnings>true</showWarnings>
