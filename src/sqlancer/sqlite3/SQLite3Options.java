@@ -13,7 +13,6 @@ import sqlancer.OracleFactory;
 import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.sqlite3.SQLite3Options.SQLite3OracleFactory;
-import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.oracle.SQLite3Fuzzer;
 import sqlancer.sqlite3.oracle.SQLite3NoRECOracle;
 import sqlancer.sqlite3.oracle.SQLite3PivotedQuerySynthesisOracle;

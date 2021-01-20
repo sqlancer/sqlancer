@@ -15,7 +15,7 @@ import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Errors;
-import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
+import sqlancer.sqlite3.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.ast.SQLite3Aggregate;
 import sqlancer.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;

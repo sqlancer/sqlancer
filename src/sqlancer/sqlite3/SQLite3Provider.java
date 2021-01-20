@@ -11,7 +11,6 @@ import sqlancer.AbstractAction;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
-import sqlancer.SQLGlobalState;
 import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.common.DBMSCommon;
@@ -19,7 +18,6 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.sqlite3.SQLite3Options.SQLite3OracleFactory;
-import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 import sqlancer.sqlite3.gen.SQLite3AnalyzeGenerator;
 import sqlancer.sqlite3.gen.SQLite3CreateVirtualRtreeTabelGenerator;
 import sqlancer.sqlite3.gen.SQLite3ExplainGenerator;
@@ -40,7 +38,6 @@ import sqlancer.sqlite3.gen.dml.SQLite3DeleteGenerator;
 import sqlancer.sqlite3.gen.dml.SQLite3InsertGenerator;
 import sqlancer.sqlite3.gen.dml.SQLite3StatTableGenerator;
 import sqlancer.sqlite3.gen.dml.SQLite3UpdateGenerator;
-import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLite3Options> {
@@ -109,15 +106,6 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
         public SQLQueryAdapter getQuery(SQLite3GlobalState state) throws Exception {
             return sqlQueryProvider.getQuery(state);
         }
-    }
-
-    public static class SQLite3GlobalState extends SQLGlobalState<SQLite3Options, SQLite3Schema> {
-
-        @Override
-        protected SQLite3Schema readSchema() throws SQLException {
-            return SQLite3Schema.fromConnection(this);
-        }
-
     }
 
     private enum TableType {

@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
+import sqlancer.sqlite3.SQLite3GlobalState;
 import sqlancer.sqlite3.gen.SQLite3ColumnBuilder;
 import sqlancer.sqlite3.gen.SQLite3Common;
 import sqlancer.sqlite3.schema.SQLite3Schema;
