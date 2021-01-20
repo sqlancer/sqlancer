@@ -38,7 +38,8 @@ public class MySQLComputableFunction implements MySQLExpression {
         // }
         // },
         /**
-         * @see https://dev.mysql.com/doc/refman/8.0/en/bit-functions.html#function_bit-count
+         * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/bit-functions.html#function_bit-count">Bit Functions
+         *      and Operators</a>
          */
         BIT_COUNT(1, "BIT_COUNT") {
 
@@ -92,7 +93,8 @@ public class MySQLComputableFunction implements MySQLExpression {
 
         },
         /**
-         * @see https://dev.mysql.com/doc/refman/8.0/en/control-flow-functions.html#function_if
+         * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/control-flow-functions.html#function_if">Flow Control
+         *      Functions</a>
          */
         IF(3, "IF") {
 
@@ -113,7 +115,7 @@ public class MySQLComputableFunction implements MySQLExpression {
 
         },
         /**
-         * @see https://dev.mysql.com/doc/refman/8.0/en/control-flow-functions.html#function_ifnull
+         * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/control-flow-functions.html#function_ifnull">IFNULL</a>
          */
         IFNULL(2, "IFNULL") {
 

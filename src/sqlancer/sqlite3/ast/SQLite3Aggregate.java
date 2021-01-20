@@ -11,7 +11,7 @@ import sqlancer.sqlite3.schema.SQLite3DataType;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 
 /**
- * @see https://www.sqlite.org/lang_aggfunc.html
+ * @see <a href="https://www.sqlite.org/lang_aggfunc.html">Built-in Aggregate Functions</a>
  */
 public class SQLite3Aggregate extends SQLite3Expression {
 

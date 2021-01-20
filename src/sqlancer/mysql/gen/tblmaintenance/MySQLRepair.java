@@ -10,7 +10,7 @@ import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.MySQLSchema.MySQLTable.MySQLEngine;
 
 /**
- * @see https://dev.mysql.com/doc/refman/8.0/en/repair-table.html
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/repair-table.html">REPAIR TABLE Statement</a>
  */
 public class MySQLRepair {
 

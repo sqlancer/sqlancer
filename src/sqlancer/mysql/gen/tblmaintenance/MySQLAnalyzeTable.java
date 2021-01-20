@@ -10,7 +10,7 @@ import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 
 /**
- * @see https://dev.mysql.com/doc/refman/8.0/en/analyze-table.html
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/analyze-table.html">ANALYZE TABLE Statement</a>
  */
 public class MySQLAnalyzeTable {
 

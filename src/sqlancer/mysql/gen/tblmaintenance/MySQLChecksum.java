@@ -9,7 +9,7 @@ import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 
 /**
- * @see https://dev.mysql.com/doc/refman/8.0/en/checksum-table.html
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/checksum-table.html">CHECKSUM TABLE Statement</a>
  */
 public class MySQLChecksum {
 

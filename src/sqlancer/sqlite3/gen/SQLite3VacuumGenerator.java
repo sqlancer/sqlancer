@@ -6,7 +6,7 @@ import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
 
 /**
- * @see https://www.sqlite.org/lang_vacuum.html
+ * @see <a href="https://www.sqlite.org/lang_vacuum.html">VACUUM</a>
  */
 public final class SQLite3VacuumGenerator {
 
