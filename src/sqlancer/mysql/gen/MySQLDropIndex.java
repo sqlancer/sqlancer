@@ -8,7 +8,7 @@ import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 
 /**
- * @see https://dev.mysql.com/doc/refman/8.0/en/drop-index.html
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/drop-index.html">DROP INDEX Statement</a>
  */
 public final class MySQLDropIndex {
 

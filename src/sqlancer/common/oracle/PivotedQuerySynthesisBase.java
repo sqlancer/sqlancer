@@ -61,6 +61,7 @@ public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?, C>, 
      * @return true if at least one row is contained, false otherwise
      *
      * @throws Exception
+     *             if the query unexpectedly fails
      */
     private boolean containsRows(Query<C> query) throws Exception {
         try (SQLancerResultSet result = query.executeAndGet(globalState)) {
@@ -108,6 +109,7 @@ public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?, C>, 
      * @return a query that checks whether the pivot row is contained in pivotRowQuery
      *
      * @throws Exception
+     *             if an unexpected error occurs
      */
     protected abstract Query<C> getContainmentCheckQuery(Query<?> pivotRowQuery) throws Exception;
 
@@ -118,6 +120,7 @@ public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?, C>, 
      * @return the rectified query
      *
      * @throws Exception
+     *             if an unexpected error occurs
      */
     protected abstract Query<C> getRectifiedQuery() throws Exception;
 

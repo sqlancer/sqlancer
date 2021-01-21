@@ -3,11 +3,11 @@ package sqlancer.sqlite3.gen;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
+import sqlancer.sqlite3.SQLite3GlobalState;
 import sqlancer.sqlite3.schema.SQLite3Schema;
 
 /**
- * @see https://www.sqlite.org/lang_reindex.html
+ * @see <a href="https://www.sqlite.org/lang_reindex.html">REINDEX</a>
  */
 public final class SQLite3ReindexGenerator {
 

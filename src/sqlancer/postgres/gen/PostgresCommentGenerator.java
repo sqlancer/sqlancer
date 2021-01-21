@@ -7,7 +7,7 @@ import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 
 /**
- * @see https://www.postgresql.org/docs/devel/sql-comment.html
+ * @see <a href="https://www.postgresql.org/docs/devel/sql-comment.html">COMMENT</a>
  */
 public final class PostgresCommentGenerator {
 

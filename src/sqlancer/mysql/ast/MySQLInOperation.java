@@ -5,7 +5,8 @@ import java.util.List;
 import sqlancer.IgnoreMeException;
 
 /**
- * @see https://dev.mysql.com/doc/refman/8.0/en/comparison-operators.html#operator_in
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/comparison-operators.html#operator_in">Comparison Functions and
+ *      Operators</a>
  */
 public class MySQLInOperation implements MySQLExpression {
 

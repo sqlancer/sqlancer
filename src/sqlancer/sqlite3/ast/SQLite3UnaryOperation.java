@@ -36,7 +36,7 @@ public class SQLite3UnaryOperation extends SQLite3Expression implements UnaryOpe
     /**
      * Supported unary prefix operators are these: -, +, ~, and NOT.
      *
-     * @see https://www.sqlite.org/lang_expr.html
+     * @see <a href="https://www.sqlite.org/lang_expr.html">SQL Language Expressions</a>
      *
      */
     public enum UnaryOperator {

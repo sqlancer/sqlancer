@@ -5,7 +5,7 @@ import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.DBMSCommon;
-import sqlancer.sqlite3.SQLite3Provider.SQLite3GlobalState;
+import sqlancer.sqlite3.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.ast.SQLite3Expression;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3TableReference;

@@ -10,7 +10,7 @@ import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.ast.PostgresAggregate.PostgresAggregateFunction;
 
 /**
- * @see https://www.sqlite.org/lang_aggfunc.html
+ * @see <a href="https://www.sqlite.org/lang_aggfunc.html">Built-in Aggregate Functions</a>
  */
 public class PostgresAggregate extends FunctionNode<PostgresAggregateFunction, PostgresExpression>
         implements PostgresExpression {
