@@ -48,6 +48,7 @@ public class ClickHouseTLPAggregateOracle extends ClickHouseTLPBase {
             select.setOrderByExpressions(gen.generateOrderBys());
         }
         String originalQuery = ClickHouseVisitor.asString(select);
+        originalQuery += " SETTINGS aggregate_functions_null_for_empty = 1";
 
         ClickHouseExpression whereClause = gen
                 .generateExpression(new ClickHouseSchema.ClickHouseLancerDataType(ClickHouseDataType.UInt8));
