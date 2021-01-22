@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.sqlancer</groupId>
   <artifactId>sqlancer</artifactId>
-  <version>1.0</version>
+  <version>1.0.1</version>
   <name>SQLancer</name>
   <url>http://www.sqlancer.com/</url>
   <description>SQLancer finds logic bugs in Database Management Systems through automatic testing</description>
@@ -30,9 +30,9 @@
     </developer>
   </developers>
   <scm>
-    <url>git@github.com:sqlancer/sqlancer.git</url>
-    <connection>scm:git:git@github.com:sqlancer/sqlancer.git</connection>
-    <developerConnection>scm:git:git@github.com:sqlancer/sqlancer.git</developerConnection>
+    <url>https://github.com/sqlancer/sqlancer/</url>
+    <connection>scm:git:git://github.com/sqlancer/sqlancer.git</connection>
+    <developerConnection>scm:git:ssh://github.com:sqlancer/sqlancer.git</developerConnection>
   </scm>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
