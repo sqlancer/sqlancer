@@ -295,7 +295,7 @@ jobs:
       - name: Build
         run: mvn -B package -DskipTests=true
       - name: Shortly run DuckDB
-        run: cd target && java -jar $(ls | grep -P 'sqlancer-[0-9.]*.jar') --num-threads 4 --timeout-seconds 30 duckdb
+        run: cd target && java -jar $(ls | grep -P 'sqlancer-[0-9.]*.jar') --num-threads 4 --timeout-seconds 30 --num-queries 0 duckdb
 
   java13:
     name: Java 13 Compatibility (DuckDB)
@@ -312,7 +312,7 @@ jobs:
       - name: Build
         run: mvn -B package -DskipTests=true
       - name: Shortly run DuckDB
-        run: cd target && java -jar $(ls | grep -P 'sqlancer-[0-9.]*.jar') --num-threads 4 --timeout-seconds 30 duckdb
+        run: cd target && java -jar $(ls | grep -P 'sqlancer-[0-9.]*.jar') --num-threads 4 --timeout-seconds 30 --num-queries 0 duckdb
 
   java14:
     name: Java 14 Compatibility (DuckDB)
@@ -329,7 +329,7 @@ jobs:
       - name: Build
         run: mvn -B package -DskipTests=true
       - name: Shortly run DuckDB
-        run: cd target && java -jar $(ls | grep -P 'sqlancer-[0-9.]*.jar') --num-threads 4 --timeout-seconds 30 duckdb
+        run: cd target && java -jar $(ls | grep -P 'sqlancer-[0-9.]*.jar') --num-threads 4 --timeout-seconds 30 --num-queries 0 duckdb
 
 
   java15:
@@ -347,4 +347,4 @@ jobs:
       - name: Build
         run: mvn -B package -DskipTests=true
       - name: Shortly run DuckDB
-        run: cd target && java -jar $(ls | grep -P 'sqlancer-[0-9.]*.jar') --num-threads 4 --timeout-seconds 30 duckdb
+        run: cd target && java -jar $(ls | grep -P 'sqlancer-[0-9.]*.jar') --num-threads 4 --timeout-seconds 30 --num-queries 0 duckdb
