@@ -198,6 +198,7 @@ public class PostgresTableGenerator {
             errors.add("cannot inherit from partitioned table");
             errors.add("has a collation conflict");
             errors.add("inherits conflicting default values");
+            errors.add("specifies generation expression");
         }
     }
 
