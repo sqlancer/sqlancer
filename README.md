@@ -91,6 +91,13 @@ We have created a [Slack workspace](https://join.slack.com/t/sqlancer/shared_inv
 * [Contributing to SQLancer](CONTRIBUTING.md)
 * [Papers and .bib entries](docs/PAPERS.md)
 
+# Releases
+
+Official release are available on:
+* [GitHub](https://github.com/sqlancer/sqlancer/releases)
+* [Maven Central](https://search.maven.org/artifact/com.sqlancer/sqlancer)
+* [DockerHub](https://hub.docker.com/r/mrigger/sqlancer)
+
 # Additional Resources
 
 * A talk on Ternary Logic Partitioning (TLP) and SQLancer is available on [YouTube](https://www.youtube.com/watch?v=Np46NQ6lqP8).
