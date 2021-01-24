@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.sqlancer</groupId>
   <artifactId>sqlancer</artifactId>
-  <version>1.0.1</version>
+  <version>1.1.0</version>
   <name>SQLancer</name>
   <url>http://www.sqlancer.com/</url>
   <description>SQLancer finds logic bugs in Database Management Systems through automatic testing</description>
