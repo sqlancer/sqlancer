@@ -18,6 +18,7 @@ import sqlancer.mongodb.ast.MongoDBBinaryComparisonNode;
 import sqlancer.mongodb.ast.MongoDBBinaryLogicalNode;
 import sqlancer.mongodb.ast.MongoDBConstant;
 import sqlancer.mongodb.ast.MongoDBExpression;
+import sqlancer.mongodb.ast.MongoDBRegexNode;
 import sqlancer.mongodb.ast.MongoDBUnaryLogicalOperatorNode;
 import sqlancer.mongodb.ast.MongoDBUnsupportedPredicate;
 import sqlancer.mongodb.test.MongoDBColumnTestReference;
@@ -26,6 +27,11 @@ public class MongoDBMatchExpressionGenerator
         extends UntypedExpressionGenerator<Node<MongoDBExpression>, MongoDBColumnTestReference> {
 
     private final MongoDBGlobalState globalState;
+
+    private enum LeafExpression {
+        BINARY_COMPARISON, REGEX
+
+    }
 
     private enum NonLeafExpression {
         BINARY_LOGICAL, UNARY_LOGICAL
@@ -37,8 +43,21 @@ public class MongoDBMatchExpressionGenerator
 
     @Override
     public Node<MongoDBExpression> generateLeafNode() {
-        MongoDBBinaryComparisonOperator operator = MongoDBBinaryComparisonOperator.getRandom();
-        return new MongoDBBinaryComparisonNode(generateColumn(), generateConstant(), operator);
+        List<LeafExpression> possibleOptions = new ArrayList<>(Arrays.asList(LeafExpression.values()));
+        if (!globalState.getDmbsSpecificOptions().testWithRegex) {
+            possibleOptions.remove(LeafExpression.REGEX);
+        }
+        LeafExpression expr = Randomly.fromList(possibleOptions);
+        switch (expr) {
+        case BINARY_COMPARISON:
+            MongoDBBinaryComparisonOperator operator = MongoDBBinaryComparisonOperator.getRandom();
+            return new MongoDBBinaryComparisonNode(generateColumn(), generateConstant(), operator);
+        case REGEX:
+            return new MongoDBRegexNode(generateColumn(),
+                    new MongoDBConstantGenerator(globalState).generateConstantWithType(MongoDBDataType.STRING));
+        default:
+            throw new AssertionError();
+        }
     }
 
     @Override
@@ -223,5 +242,21 @@ public class MongoDBMatchExpressionGenerator
         public static MongoDBBinaryComparisonOperator getRandom() {
             return Randomly.fromOptions(values());
         }
+    }
+
+    public enum MongoDBRegexOperator implements Operator {
+        REGEX {
+            @Override
+            public Bson applyOperator(String columnName, MongoDBConstant.MongoDBStringConstant regex) {
+                return Filters.regex(columnName, regex.getStringValue(), "");
+            }
+
+            @Override
+            public String getTextRepresentation() {
+                return "$regex";
+            }
+        };
+
+        public abstract Bson applyOperator(String columnName, MongoDBConstant.MongoDBStringConstant regex);
     }
 }

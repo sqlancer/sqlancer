@@ -8,6 +8,7 @@ import sqlancer.mongodb.ast.MongoDBBinaryComparisonNode;
 import sqlancer.mongodb.ast.MongoDBBinaryLogicalNode;
 import sqlancer.mongodb.ast.MongoDBConstant;
 import sqlancer.mongodb.ast.MongoDBExpression;
+import sqlancer.mongodb.ast.MongoDBRegexNode;
 import sqlancer.mongodb.ast.MongoDBSelect;
 import sqlancer.mongodb.ast.MongoDBUnaryLogicalOperatorNode;
 import sqlancer.mongodb.test.MongoDBColumnTestReference;
@@ -27,6 +28,8 @@ public class MongoDBToLogVisitor extends MongoDBVisitor {
             return visit((MongoDBBinaryLogicalNode) expr);
         } else if (expr instanceof MongoDBBinaryComparisonNode) {
             return visit((MongoDBBinaryComparisonNode) expr);
+        } else if (expr instanceof MongoDBRegexNode) {
+            return visit((MongoDBRegexNode) expr);
         } else {
             throw new AssertionError(expr.getClass());
         }
@@ -52,6 +55,17 @@ public class MongoDBToLogVisitor extends MongoDBVisitor {
 
         return "{\"" + ((MongoDBColumnTestReference) left).getQueryString() + "\": {"
                 + expr.operator().getTextRepresentation() + ": " + ((MongoDBConstant) right).getLogValue() + "}}";
+    }
+
+    public String visit(MongoDBRegexNode expr) {
+        Node<MongoDBExpression> left = expr.getLeft();
+        Node<MongoDBExpression> right = expr.getRight();
+        assert left instanceof MongoDBColumnTestReference;
+        assert right instanceof MongoDBConstant.MongoDBStringConstant;
+
+        return "{\"" + ((MongoDBColumnTestReference) left).getQueryString() + "\": {"
+                + expr.operator().getTextRepresentation() + ": \'"
+                + ((MongoDBConstant.MongoDBStringConstant) right).getStringValue() + "\', $options: \'\'}}";
     }
 
     @Override

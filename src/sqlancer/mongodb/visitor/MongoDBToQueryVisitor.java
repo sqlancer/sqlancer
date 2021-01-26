@@ -20,7 +20,9 @@ import sqlancer.common.ast.newast.Node;
 import sqlancer.mongodb.ast.MongoDBBinaryComparisonNode;
 import sqlancer.mongodb.ast.MongoDBBinaryLogicalNode;
 import sqlancer.mongodb.ast.MongoDBConstant;
+import sqlancer.mongodb.ast.MongoDBConstant.MongoDBStringConstant;
 import sqlancer.mongodb.ast.MongoDBExpression;
+import sqlancer.mongodb.ast.MongoDBRegexNode;
 import sqlancer.mongodb.ast.MongoDBSelect;
 import sqlancer.mongodb.ast.MongoDBUnaryLogicalOperatorNode;
 import sqlancer.mongodb.gen.MongoDBComputedExpressionGenerator.ComputedFunction;
@@ -40,6 +42,8 @@ public class MongoDBToQueryVisitor extends MongoDBVisitor {
             return visit((MongoDBBinaryLogicalNode) expr);
         } else if (expr instanceof MongoDBBinaryComparisonNode) {
             return visit((MongoDBBinaryComparisonNode) expr);
+        } else if (expr instanceof MongoDBRegexNode) {
+            return visit((MongoDBRegexNode) expr);
         } else {
             throw new AssertionError(expr.getClass());
         }
@@ -87,6 +91,17 @@ public class MongoDBToQueryVisitor extends MongoDBVisitor {
         Bson left = visitBson(expr.getLeft());
         Bson right = visitBson(expr.getRight());
         return expr.operator().applyOperator(left, right);
+    }
+
+    public Bson visit(MongoDBRegexNode expr) {
+        Node<MongoDBExpression> left = expr.getLeft();
+        Node<MongoDBExpression> right = expr.getRight();
+
+        assert left instanceof MongoDBColumnTestReference;
+        assert right instanceof MongoDBStringConstant;
+
+        String columnName = ((MongoDBColumnTestReference) left).getQueryString();
+        return expr.operator().applyOperator(columnName, (MongoDBStringConstant) right);
     }
 
     public Bson visit(MongoDBBinaryComparisonNode expr) {

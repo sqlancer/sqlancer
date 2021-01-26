@@ -31,6 +31,9 @@ public class MongoDBOptions implements DBMSSpecificOptions<MongoDBOptions.MongoD
     @Parameter(names = "--test-computed-values", description = "Enable adding computed values to query", arity = 1)
     public boolean testComputedValues;
 
+    @Parameter(names = "--test-with-regex", description = "Enable Regex Leaf Nodes", arity = 1)
+    public boolean testWithRegex;
+
     @Parameter(names = "--oracle")
     public List<MongoDBOracleFactory> oracles = Arrays.asList(QUERY_PARTITIONING);
 
