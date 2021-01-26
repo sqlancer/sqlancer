@@ -13,6 +13,8 @@ public class MongoDBSelect<E> implements Node<E> {
     List<MongoDBColumnTestReference> lookupList;
     boolean hasFilter;
     Node<E> filterClause;
+    boolean hasComputed;
+    List<Node<E>> computedClauses;
 
     public MongoDBSelect(String mainTableName, MongoDBColumnTestReference joinColumn) {
         this.mainTableName = mainTableName;
@@ -73,4 +75,21 @@ public class MongoDBSelect<E> implements Node<E> {
         return hasFilter;
     }
 
+    public void setComputedClause(List<Node<E>> computedClause) {
+        if (computedClause == null) {
+            hasComputed = false;
+            this.computedClauses = null;
+            return;
+        }
+        hasComputed = true;
+        this.computedClauses = computedClause;
+    }
+
+    public List<Node<E>> getComputedClause() {
+        return computedClauses;
+    }
+
+    public boolean hasComputed() {
+        return hasComputed;
+    }
 }

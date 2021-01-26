@@ -28,6 +28,9 @@ public class MongoDBOptions implements DBMSSpecificOptions<MongoDBOptions.MongoD
     @Parameter(names = "--max-number-indexes", description = "The maximum number of indexes used.", arity = 1)
     public int maxNumberIndexes = 15;
 
+    @Parameter(names = "--test-computed-values", description = "Enable adding computed values to query", arity = 1)
+    public boolean testComputedValues;
+
     @Parameter(names = "--oracle")
     public List<MongoDBOracleFactory> oracles = Arrays.asList(QUERY_PARTITIONING);
 

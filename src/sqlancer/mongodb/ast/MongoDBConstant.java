@@ -1,5 +1,7 @@
 package sqlancer.mongodb.ast;
 
+import java.io.Serializable;
+
 import org.bson.BsonDateTime;
 import org.bson.BsonTimestamp;
 import org.bson.Document;
@@ -16,6 +18,8 @@ public abstract class MongoDBConstant implements Node<MongoDBExpression> {
 
     public abstract Object getValue();
 
+    public abstract Serializable getSerializedValue();
+
     public static class MongoDBNullConstant extends MongoDBConstant {
 
         @Override
@@ -30,6 +34,11 @@ public abstract class MongoDBConstant implements Node<MongoDBExpression> {
 
         @Override
         public Object getValue() {
+            return null;
+        }
+
+        @Override
+        public Serializable getSerializedValue() {
             return null;
         }
     }
@@ -58,6 +67,11 @@ public abstract class MongoDBConstant implements Node<MongoDBExpression> {
 
         @Override
         public Integer getValue() {
+            return value;
+        }
+
+        @Override
+        public Serializable getSerializedValue() {
             return value;
         }
     }
@@ -92,6 +106,11 @@ public abstract class MongoDBConstant implements Node<MongoDBExpression> {
         public String getValue() {
             return value;
         }
+
+        @Override
+        public Serializable getSerializedValue() {
+            return value;
+        }
     }
 
     public static Node<MongoDBExpression> createStringConstant(String value) {
@@ -118,6 +137,11 @@ public abstract class MongoDBConstant implements Node<MongoDBExpression> {
 
         @Override
         public Boolean getValue() {
+            return value;
+        }
+
+        @Override
+        public Serializable getSerializedValue() {
             return value;
         }
     }
@@ -148,6 +172,11 @@ public abstract class MongoDBConstant implements Node<MongoDBExpression> {
         public Double getValue() {
             return value;
         }
+
+        @Override
+        public Serializable getSerializedValue() {
+            return value;
+        }
     }
 
     public static Node<MongoDBExpression> createDoubleConstant(double value) {
@@ -176,6 +205,11 @@ public abstract class MongoDBConstant implements Node<MongoDBExpression> {
         public BsonDateTime getValue() {
             return value;
         }
+
+        @Override
+        public Serializable getSerializedValue() {
+            return value.getValue();
+        }
     }
 
     public static Node<MongoDBExpression> createDateTimeConstant(long value) {
@@ -203,6 +237,11 @@ public abstract class MongoDBConstant implements Node<MongoDBExpression> {
         @Override
         public BsonTimestamp getValue() {
             return value;
+        }
+
+        @Override
+        public Serializable getSerializedValue() {
+            return value.getValue();
         }
     }
 

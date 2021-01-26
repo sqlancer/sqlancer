@@ -5,13 +5,17 @@ import static com.mongodb.client.model.Aggregates.project;
 import static com.mongodb.client.model.Projections.fields;
 import static com.mongodb.client.model.Projections.include;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Projections;
 
+import sqlancer.common.ast.newast.NewFunctionNode;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.mongodb.ast.MongoDBBinaryComparisonNode;
 import sqlancer.mongodb.ast.MongoDBBinaryLogicalNode;
@@ -19,6 +23,7 @@ import sqlancer.mongodb.ast.MongoDBConstant;
 import sqlancer.mongodb.ast.MongoDBExpression;
 import sqlancer.mongodb.ast.MongoDBSelect;
 import sqlancer.mongodb.ast.MongoDBUnaryLogicalOperatorNode;
+import sqlancer.mongodb.gen.MongoDBComputedExpressionGenerator.ComputedFunction;
 import sqlancer.mongodb.test.MongoDBColumnTestReference;
 
 public class MongoDBToQueryVisitor extends MongoDBVisitor {
@@ -38,6 +43,39 @@ public class MongoDBToQueryVisitor extends MongoDBVisitor {
         } else {
             throw new AssertionError(expr.getClass());
         }
+    }
+
+    public Document visitComputed(Node<MongoDBExpression> expr) {
+        if (expr instanceof NewFunctionNode<?, ?>) {
+            return visitComputed((NewFunctionNode<?, ?>) expr);
+        } else {
+            throw new AssertionError(expr.getClass());
+        }
+    }
+
+    public Document visitComputed(NewFunctionNode<?, ?> expr) {
+        List<Serializable> visitedArgs = new ArrayList<>();
+        for (int i = 0; i < expr.getArgs().size(); i++) {
+            if (expr.getArgs().get(i) instanceof MongoDBConstant) {
+                visitedArgs.add(((MongoDBConstant) expr.getArgs().get(i)).getSerializedValue());
+                continue;
+            }
+            if (expr.getArgs().get(i) instanceof MongoDBColumnTestReference) {
+                visitedArgs.add("$" + ((MongoDBColumnTestReference) expr.getArgs().get(i)).getQueryString());
+                continue;
+            }
+            if (expr.getArgs().get(i) instanceof NewFunctionNode<?, ?>) {
+                visitedArgs.add(visitComputed((NewFunctionNode<?, ?>) expr.getArgs().get(i)));
+            } else {
+                throw new AssertionError();
+            }
+        }
+        if (expr.getFunc() instanceof ComputedFunction) {
+            return new Document(((ComputedFunction) expr.getFunc()).getOperator(), visitedArgs);
+        } else {
+            throw new AssertionError(expr.getClass());
+        }
+
     }
 
     public Bson visit(MongoDBUnaryLogicalOperatorNode expr) {
@@ -96,7 +134,17 @@ public class MongoDBToQueryVisitor extends MongoDBVisitor {
         for (MongoDBColumnTestReference ref : select.getProjectionList()) {
             stringProjects.add(ref.getQueryString());
         }
-        projection = project(fields(include(stringProjects)));
+        List<Bson> projections = new ArrayList<>();
+        projections.add(include(stringProjects));
+        if (select.hasComputed()) {
+            String name = "computed";
+            int number = 0;
+            for (Node<MongoDBExpression> expressionNode : select.getComputedClause()) {
+                projections.add(Projections.computed(name + number, visitComputed(expressionNode)));
+                number++;
+            }
+        }
+        projection = project(fields(projections));
     }
 
     public List<Bson> getPipeline() {

@@ -22,7 +22,7 @@ import sqlancer.mongodb.ast.MongoDBUnaryLogicalOperatorNode;
 import sqlancer.mongodb.ast.MongoDBUnsupportedPredicate;
 import sqlancer.mongodb.test.MongoDBColumnTestReference;
 
-public class MongoDBExpressionGenerator
+public class MongoDBMatchExpressionGenerator
         extends UntypedExpressionGenerator<Node<MongoDBExpression>, MongoDBColumnTestReference> {
 
     private final MongoDBGlobalState globalState;
@@ -31,7 +31,7 @@ public class MongoDBExpressionGenerator
         BINARY_LOGICAL, UNARY_LOGICAL
     }
 
-    public MongoDBExpressionGenerator(MongoDBGlobalState globalState) {
+    public MongoDBMatchExpressionGenerator(MongoDBGlobalState globalState) {
         this.globalState = globalState;
     }
 

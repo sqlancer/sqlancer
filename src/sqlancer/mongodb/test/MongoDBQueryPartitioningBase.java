@@ -15,7 +15,8 @@ import sqlancer.mongodb.MongoDBSchema.MongoDBTable;
 import sqlancer.mongodb.MongoDBSchema.MongoDBTables;
 import sqlancer.mongodb.ast.MongoDBExpression;
 import sqlancer.mongodb.ast.MongoDBSelect;
-import sqlancer.mongodb.gen.MongoDBExpressionGenerator;
+import sqlancer.mongodb.gen.MongoDBComputedExpressionGenerator;
+import sqlancer.mongodb.gen.MongoDBMatchExpressionGenerator;
 
 public class MongoDBQueryPartitioningBase
         extends TernaryLogicPartitioningOracleBase<Node<MongoDBExpression>, MongoDBGlobalState> implements TestOracle {
@@ -24,7 +25,7 @@ public class MongoDBQueryPartitioningBase
     protected MongoDBTables targetTables;
     protected MongoDBTable mainTable;
     protected List<MongoDBColumnTestReference> targetColumns;
-    protected MongoDBExpressionGenerator expressionGenerator;
+    protected MongoDBMatchExpressionGenerator expressionGenerator;
     protected MongoDBSelect<MongoDBExpression> select;
 
     public MongoDBQueryPartitioningBase(MongoDBGlobalState state) {
@@ -37,7 +38,7 @@ public class MongoDBQueryPartitioningBase
         targetTables = schema.getRandomTableNonEmptyTables();
         mainTable = targetTables.getTables().get(0);
         generateTargetColumns();
-        expressionGenerator = new MongoDBExpressionGenerator(state).setColumns(targetColumns);
+        expressionGenerator = new MongoDBMatchExpressionGenerator(state).setColumns(targetColumns);
         initializeTernaryPredicateVariants();
         select = new MongoDBSelect<>(mainTable.getName(), targetColumns.get(0));
         select.setProjectionList(targetColumns);
@@ -46,6 +47,20 @@ public class MongoDBQueryPartitioningBase
         } else {
             select.setLookupList(Randomly.nonEmptySubset(targetColumns));
         }
+        if (state.getDmbsSpecificOptions().testComputedValues) {
+            generateComputedColumns();
+        }
+    }
+
+    private void generateComputedColumns() {
+        List<Node<MongoDBExpression>> computedColumns = new ArrayList<>();
+        int numberComputedColumns = state.getRandomly().getInteger(1, 4);
+        MongoDBComputedExpressionGenerator generator = new MongoDBComputedExpressionGenerator(state)
+                .setColumns(targetColumns);
+        for (int i = 0; i < numberComputedColumns; i++) {
+            computedColumns.add(generator.generateExpression());
+        }
+        select.setComputedClause(computedColumns);
     }
 
     private void generateTargetColumns() {
