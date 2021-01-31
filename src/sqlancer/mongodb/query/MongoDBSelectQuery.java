@@ -43,6 +43,35 @@ public class MongoDBSelectQuery extends MongoDBQueryAdapter {
     @Override
     public ExpectedErrors getExpectedErrors() {
         ExpectedErrors errors = new ExpectedErrors();
+        // ARITHMETIC
+        errors.add("Failed to optimize pipeline :: caused by :: Can't coerce out of range value");
+        errors.add("Can't coerce out of range value");
+        errors.add("date overflow in $add");
+        errors.add("Failed to optimize pipeline :: caused by :: $sqrt only supports numeric types, not");
+        errors.add("Failed to optimize pipeline :: caused by :: $sqrt's argument must be greater than or equal to 0");
+        errors.add("Failed to optimize pipeline :: caused by :: $pow's base must be numeric, not");
+        errors.add("Failed to optimize pipeline :: caused by :: $pow cannot take a base of 0 and a negative exponent");
+        errors.add("Failed to optimize pipeline :: caused by :: $add only supports numeric or date types, not");
+        errors.add("Failed to optimize pipeline :: caused by :: $exp only supports numeric types, not");
+        errors.add("Failed to optimize pipeline :: caused by :: $log's base must be numeric, not");
+        errors.add("Failed to optimize pipeline :: caused by :: $log's base must be a positive number not equal to 1");
+        errors.add("Failed to optimize pipeline :: caused by :: $multiply only supports numeric types, not");
+        errors.add("$log's argument must be numeric, not");
+        errors.add("$log's argument must be a positive number, but");
+        errors.add("$log's base must be numeric, not");
+        errors.add("$log's base must be a positive number not equal to 1");
+        errors.add("$divide only supports numeric types, not");
+        errors.add("can't $divide by zero");
+        errors.add("$pow's exponent must be numeric, not");
+        errors.add("$pow's base must be numeric, not");
+        errors.add("$pow cannot take a base of 0 and a negative exponent");
+        errors.add("$add only supports numeric or date types, not");
+        errors.add("only one date allowed in an $add expression");
+        errors.add("$multiply only supports numeric types, not");
+        errors.add("$exp only supports numeric types, not");
+        errors.add("$sqrt's argument must be greater than or equal to 0");
+        errors.add("$sqrt only supports numeric types, not");
+
         // REGEX
         errors.add("Regular expression is invalid: nothing to repeat");
         errors.add("Regular expression is invalid: missing terminating ] for character class");

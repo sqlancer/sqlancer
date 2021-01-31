@@ -21,7 +21,6 @@ public class MongoDBQueryPartitioningWhereTester extends MongoDBQueryPartitionin
 
         select.setFilterClause(null);
         MongoDBSelectQuery q = new MongoDBSelectQuery(select);
-        q.executeAndGet(state);
         List<Document> firstResultSet = getResultSetAsDocumentList(q, state);
 
         select.setFilterClause(predicate);
