@@ -6,11 +6,39 @@ import java.util.Set;
 
 import org.bson.Document;
 
+import sqlancer.IgnoreMeException;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.mongodb.MongoDBProvider.MongoDBGlobalState;
 import sqlancer.mongodb.query.MongoDBSelectQuery;
 
 public final class MongoDBComparatorHelper {
 
     private MongoDBComparatorHelper() {
+    }
+
+    public static List<Document> getResultSetAsDocumentList(MongoDBSelectQuery adapter, MongoDBGlobalState state)
+            throws Exception {
+        ExpectedErrors errors = adapter.getExpectedErrors();
+        List<Document> result;
+        try {
+            adapter.executeAndGet(state);
+            result = adapter.getResultSet();
+            return result;
+
+        } catch (Exception e) {
+            if (e instanceof IgnoreMeException) {
+                throw e;
+            }
+
+            if (e.getMessage() == null) {
+                throw new AssertionError(adapter.getLogString(), e);
+            }
+
+            if (errors.errorIsExpected(e.getMessage())) {
+                throw new IgnoreMeException();
+            }
+            throw new AssertionError(adapter.getLogString(), e);
+        }
     }
 
     public static void assumeResultSetsAreEqual(List<Document> resultSet, List<Document> secondResultSet,

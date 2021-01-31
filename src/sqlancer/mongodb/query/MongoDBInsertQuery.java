@@ -8,6 +8,7 @@ import org.bson.types.ObjectId;
 import com.mongodb.client.result.InsertOneResult;
 
 import sqlancer.GlobalState;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.mongodb.MongoDBConnection;
 import sqlancer.mongodb.MongoDBQueryAdapter;
 import sqlancer.mongodb.MongoDBSchema.MongoDBTable;
@@ -75,5 +76,10 @@ public class MongoDBInsertQuery extends MongoDBQueryAdapter {
         InsertOneResult result = globalState.getConnection().getDatabase().getCollection(table.getName())
                 .insertOne(documentToBeInserted);
         return result.wasAcknowledged();
+    }
+
+    @Override
+    public ExpectedErrors getExpectedErrors() {
+        return new ExpectedErrors();
     }
 }

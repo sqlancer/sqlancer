@@ -97,10 +97,8 @@ public class MongoDBToQueryVisitor extends MongoDBVisitor {
         Node<MongoDBExpression> left = expr.getLeft();
         Node<MongoDBExpression> right = expr.getRight();
 
-        assert left instanceof MongoDBColumnTestReference;
-        assert right instanceof MongoDBStringConstant;
-
         String columnName = ((MongoDBColumnTestReference) left).getQueryString();
+
         return expr.operator().applyOperator(columnName, (MongoDBStringConstant) right);
     }
 

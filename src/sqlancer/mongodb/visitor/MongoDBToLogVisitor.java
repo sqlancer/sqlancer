@@ -60,8 +60,6 @@ public class MongoDBToLogVisitor extends MongoDBVisitor {
     public String visit(MongoDBRegexNode expr) {
         Node<MongoDBExpression> left = expr.getLeft();
         Node<MongoDBExpression> right = expr.getRight();
-        assert left instanceof MongoDBColumnTestReference;
-        assert right instanceof MongoDBConstant.MongoDBStringConstant;
 
         return "{\"" + ((MongoDBColumnTestReference) left).getQueryString() + "\": {"
                 + expr.operator().getTextRepresentation() + ": \'"

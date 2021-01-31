@@ -30,7 +30,6 @@ public class MongoDBMatchExpressionGenerator
 
     private enum LeafExpression {
         BINARY_COMPARISON, REGEX
-
     }
 
     private enum NonLeafExpression {
@@ -85,6 +84,9 @@ public class MongoDBMatchExpressionGenerator
     public Node<MongoDBExpression> generateConstant() {
         MongoDBDataType type = MongoDBDataType.getRandom();
         MongoDBConstantGenerator generator = new MongoDBConstantGenerator(globalState);
+        if (Randomly.getBooleanWithSmallProbability()) {
+            return MongoDBConstant.createNullConstant();
+        }
         return generator.generateConstantWithType(type);
     }
 

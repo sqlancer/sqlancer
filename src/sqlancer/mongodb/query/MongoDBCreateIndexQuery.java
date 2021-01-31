@@ -9,6 +9,7 @@ import com.mongodb.client.model.Indexes;
 
 import sqlancer.GlobalState;
 import sqlancer.Main;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.mongodb.MongoDBConnection;
 import sqlancer.mongodb.MongoDBQueryAdapter;
 import sqlancer.mongodb.MongoDBSchema.MongoDBTable;
@@ -66,6 +67,11 @@ public class MongoDBCreateIndexQuery extends MongoDBQueryAdapter {
         }
         globalState.getConnection().getDatabase().getCollection(table.getName()).createIndex(index);
         return true;
+    }
+
+    @Override
+    public ExpectedErrors getExpectedErrors() {
+        return new ExpectedErrors();
     }
 
 }

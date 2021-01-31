@@ -12,6 +12,7 @@ import com.mongodb.client.model.ValidationOptions;
 
 import sqlancer.GlobalState;
 import sqlancer.Main;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.mongodb.MongoDBConnection;
 import sqlancer.mongodb.MongoDBQueryAdapter;
 
@@ -42,6 +43,11 @@ public class MongoDBCreateTableQuery extends MongoDBQueryAdapter {
         globalState.getConnection().getDatabase().createCollection(tableName,
                 new CreateCollectionOptions().validationOptions(collOptions));
         return true;
+    }
+
+    @Override
+    public ExpectedErrors getExpectedErrors() {
+        return new ExpectedErrors();
     }
 
     @Override

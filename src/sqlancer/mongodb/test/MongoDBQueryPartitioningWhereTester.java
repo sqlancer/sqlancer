@@ -1,5 +1,7 @@
 package sqlancer.mongodb.test;
 
+import static sqlancer.mongodb.MongoDBComparatorHelper.getResultSetAsDocumentList;
+
 import java.util.List;
 
 import org.bson.Document;
@@ -20,17 +22,15 @@ public class MongoDBQueryPartitioningWhereTester extends MongoDBQueryPartitionin
         select.setFilterClause(null);
         MongoDBSelectQuery q = new MongoDBSelectQuery(select);
         q.executeAndGet(state);
+        List<Document> firstResultSet = getResultSetAsDocumentList(q, state);
 
-        List<Document> firstResultSet = q.getResultSet();
         select.setFilterClause(predicate);
         q = new MongoDBSelectQuery(select);
-        q.executeAndGet(state);
-        List<Document> secondResultSet = q.getResultSet();
+        List<Document> secondResultSet = getResultSetAsDocumentList(q, state);
 
         select.setFilterClause(negatedPredicate);
         q = new MongoDBSelectQuery(select);
-        q.executeAndGet(state);
-        List<Document> thirdResultSet = q.getResultSet();
+        List<Document> thirdResultSet = getResultSetAsDocumentList(q, state);
 
         secondResultSet.addAll(thirdResultSet);
         MongoDBComparatorHelper.assumeResultSetsAreEqual(firstResultSet, secondResultSet, q);

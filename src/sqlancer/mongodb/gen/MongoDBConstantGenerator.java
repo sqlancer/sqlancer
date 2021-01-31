@@ -24,9 +24,6 @@ public class MongoDBConstantGenerator {
     }
 
     public Node<MongoDBExpression> generateConstantWithType(MongoDBDataType option) {
-        if (Randomly.getBooleanWithSmallProbability()) {
-            return MongoDBConstant.createNullConstant();
-        }
         switch (option) {
         case DATE_TIME:
             return MongoDBConstant.createDateTimeConstant(globalState.getRandomly().getInteger());
