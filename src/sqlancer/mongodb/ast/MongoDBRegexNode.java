@@ -7,8 +7,15 @@ import sqlancer.common.ast.newast.Node;
 import sqlancer.mongodb.gen.MongoDBMatchExpressionGenerator.MongoDBRegexOperator;
 
 public class MongoDBRegexNode extends NewBinaryOperatorNode<MongoDBExpression> {
-    public MongoDBRegexNode(Node<MongoDBExpression> left, Node<MongoDBExpression> right) {
+    private final String options;
+
+    public MongoDBRegexNode(Node<MongoDBExpression> left, Node<MongoDBExpression> right, String options) {
         super(left, right, REGEX);
+        this.options = options;
+    }
+
+    public String getOptions() {
+        return options;
     }
 
     public MongoDBRegexOperator operator() {

@@ -99,7 +99,7 @@ public class MongoDBToQueryVisitor extends MongoDBVisitor {
 
         String columnName = ((MongoDBColumnTestReference) left).getQueryString();
 
-        return expr.operator().applyOperator(columnName, (MongoDBStringConstant) right);
+        return expr.operator().applyOperator(columnName, (MongoDBStringConstant) right, expr.getOptions());
     }
 
     public Bson visit(MongoDBBinaryComparisonNode expr) {

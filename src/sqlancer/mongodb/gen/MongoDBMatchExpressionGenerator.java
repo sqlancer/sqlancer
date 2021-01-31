@@ -53,7 +53,8 @@ public class MongoDBMatchExpressionGenerator
             return new MongoDBBinaryComparisonNode(generateColumn(), generateConstant(), operator);
         case REGEX:
             return new MongoDBRegexNode(generateColumn(),
-                    new MongoDBConstantGenerator(globalState).generateConstantWithType(MongoDBDataType.STRING));
+                    new MongoDBConstantGenerator(globalState).generateConstantWithType(MongoDBDataType.STRING),
+                    getRandomizedRegexOptions());
         default:
             throw new AssertionError();
         }
@@ -88,6 +89,11 @@ public class MongoDBMatchExpressionGenerator
             return MongoDBConstant.createNullConstant();
         }
         return generator.generateConstantWithType(type);
+    }
+
+    private String getRandomizedRegexOptions() {
+        List<String> s = Randomly.subset("i", "m", "x", "s");
+        return s.stream().reduce("", (current, newVal) -> current + newVal);
     }
 
     @Override
@@ -249,8 +255,8 @@ public class MongoDBMatchExpressionGenerator
     public enum MongoDBRegexOperator implements Operator {
         REGEX {
             @Override
-            public Bson applyOperator(String columnName, MongoDBConstant.MongoDBStringConstant regex) {
-                return Filters.regex(columnName, regex.getStringValue(), "");
+            public Bson applyOperator(String columnName, MongoDBConstant.MongoDBStringConstant regex, String options) {
+                return Filters.regex(columnName, regex.getStringValue(), options);
             }
 
             @Override
@@ -259,6 +265,7 @@ public class MongoDBMatchExpressionGenerator
             }
         };
 
-        public abstract Bson applyOperator(String columnName, MongoDBConstant.MongoDBStringConstant regex);
+        public abstract Bson applyOperator(String columnName, MongoDBConstant.MongoDBStringConstant regex,
+                String options);
     }
 }

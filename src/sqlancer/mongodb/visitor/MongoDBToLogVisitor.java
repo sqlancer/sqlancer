@@ -108,7 +108,8 @@ public class MongoDBToLogVisitor extends MongoDBVisitor {
 
         return "{\"" + ((MongoDBColumnTestReference) left).getQueryString() + "\": {"
                 + expr.operator().getTextRepresentation() + ": \'"
-                + ((MongoDBConstant.MongoDBStringConstant) right).getStringValue() + "\', $options: \'\'}}";
+                + ((MongoDBConstant.MongoDBStringConstant) right).getStringValue() + "\', $options: \'"
+                + expr.getOptions() + "\'}}";
     }
 
     @Override
