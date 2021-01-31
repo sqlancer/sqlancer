@@ -3,6 +3,7 @@ package sqlancer.mongodb.visitor;
 import java.util.ArrayList;
 import java.util.List;
 
+import sqlancer.common.ast.newast.NewFunctionNode;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.mongodb.ast.MongoDBBinaryComparisonNode;
 import sqlancer.mongodb.ast.MongoDBBinaryLogicalNode;
@@ -11,6 +12,7 @@ import sqlancer.mongodb.ast.MongoDBExpression;
 import sqlancer.mongodb.ast.MongoDBRegexNode;
 import sqlancer.mongodb.ast.MongoDBSelect;
 import sqlancer.mongodb.ast.MongoDBUnaryLogicalOperatorNode;
+import sqlancer.mongodb.gen.MongoDBComputedExpressionGenerator.ComputedFunction;
 import sqlancer.mongodb.test.MongoDBColumnTestReference;
 
 public class MongoDBToLogVisitor extends MongoDBVisitor {
@@ -33,6 +35,49 @@ public class MongoDBToLogVisitor extends MongoDBVisitor {
         } else {
             throw new AssertionError(expr.getClass());
         }
+    }
+
+    public String visitComputed(Node<MongoDBExpression> expr) {
+        if (expr instanceof NewFunctionNode<?, ?>) {
+            return visitComputed((NewFunctionNode<?, ?>) expr);
+        } else {
+            throw new AssertionError(expr.getClass());
+        }
+    }
+
+    public String visitComputed(NewFunctionNode<?, ?> expr) {
+        List<String> arguments = new ArrayList<>();
+        for (int i = 0; i < expr.getArgs().size(); i++) {
+            if (expr.getArgs().get(i) instanceof MongoDBConstant) {
+                arguments.add(((MongoDBConstant) expr.getArgs().get(i)).getLogValue());
+                continue;
+            }
+            if (expr.getArgs().get(i) instanceof MongoDBColumnTestReference) {
+                arguments.add("\"$" + ((MongoDBColumnTestReference) expr.getArgs().get(i)).getQueryString() + "\"");
+                continue;
+            }
+            if (expr.getArgs().get(i) instanceof NewFunctionNode<?, ?>) {
+                arguments.add(visitComputed((NewFunctionNode<?, ?>) expr.getArgs().get(i)));
+            } else {
+                throw new AssertionError();
+            }
+        }
+        if (!(expr.getFunc() instanceof ComputedFunction)) {
+            throw new AssertionError(expr.getClass());
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        sb.append(((ComputedFunction) expr.getFunc()).getOperator());
+        sb.append(": [");
+        String helper = "";
+        for (String arg : arguments) {
+            sb.append(helper);
+            helper = ", ";
+            sb.append(arg);
+        }
+        sb.append("]}");
+        return sb.toString();
     }
 
     public String visit(MongoDBUnaryLogicalOperatorNode expr) {
@@ -107,6 +152,17 @@ public class MongoDBToLogVisitor extends MongoDBVisitor {
             sb.append(helper);
             helper = ",";
             sb.append("\"").append(reference.getQueryString()).append("\"").append(": 1");
+        }
+        sb.append("\n");
+        if (select.hasComputed()) {
+            String name = "computed";
+            int number = 0;
+            for (Node<MongoDBExpression> expressionNode : select.getComputedClause()) {
+                sb.append(helper);
+                helper = ",\n";
+                sb.append("\"" + name + number + "\": " + visitComputed(expressionNode));
+                number++;
+            }
         }
         sb.append("}");
         projects = sb.toString();
