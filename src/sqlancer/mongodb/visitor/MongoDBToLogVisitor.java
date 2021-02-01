@@ -22,6 +22,7 @@ public class MongoDBToLogVisitor extends MongoDBVisitor {
     private String filter;
     private String projects;
     private boolean hasFilter;
+    private boolean withCount;
 
     public String visitLog(Node<MongoDBExpression> expr) {
         if (expr instanceof MongoDBUnaryLogicalOperatorNode) {
@@ -126,6 +127,7 @@ public class MongoDBToLogVisitor extends MongoDBVisitor {
             setFilter(select);
         }
         setProjects(select);
+        withCount = select.getWithCountClause();
     }
 
     private void setFilter(MongoDBSelect<MongoDBExpression> select) {
@@ -182,7 +184,12 @@ public class MongoDBToLogVisitor extends MongoDBVisitor {
         }
         sb.append("{ $project : ");
         sb.append(projects);
-        sb.append("}])\n");
+        sb.append("}");
+        if (withCount) {
+            sb.append(",\n");
+            sb.append(" {$count: \"count\"}\n");
+        }
+        sb.append("])\n");
         return sb.toString();
     }
 }

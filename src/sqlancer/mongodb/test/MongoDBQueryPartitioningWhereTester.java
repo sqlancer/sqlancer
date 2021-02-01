@@ -19,6 +19,8 @@ public class MongoDBQueryPartitioningWhereTester extends MongoDBQueryPartitionin
     public void check() throws Exception {
         super.check();
 
+        select.setWithCountClause(false);
+
         select.setFilterClause(null);
         MongoDBSelectQuery q = new MongoDBSelectQuery(select);
         List<Document> firstResultSet = getResultSetAsDocumentList(q, state);
@@ -30,6 +32,14 @@ public class MongoDBQueryPartitioningWhereTester extends MongoDBQueryPartitionin
         select.setFilterClause(negatedPredicate);
         q = new MongoDBSelectQuery(select);
         List<Document> thirdResultSet = getResultSetAsDocumentList(q, state);
+
+        if (state.getDmbsSpecificOptions().testWithCount) {
+            select.setWithCountClause(true);
+            select.setFilterClause(predicate);
+            q = new MongoDBSelectQuery(select);
+            List<Document> forthResultSet = getResultSetAsDocumentList(q, state);
+            MongoDBComparatorHelper.assumeCountIsEqual(secondResultSet, forthResultSet, q);
+        }
 
         secondResultSet.addAll(thirdResultSet);
         MongoDBComparatorHelper.assumeResultSetsAreEqual(firstResultSet, secondResultSet, q);

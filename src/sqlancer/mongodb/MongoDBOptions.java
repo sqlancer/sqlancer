@@ -34,6 +34,9 @@ public class MongoDBOptions implements DBMSSpecificOptions<MongoDBOptions.MongoD
     @Parameter(names = "--test-with-regex", description = "Enable Regex Leaf Nodes", arity = 1)
     public boolean testWithRegex;
 
+    @Parameter(names = "--test-with-count", description = "Count the number of documents and check with count command", arity = 1)
+    public boolean testWithCount;
+
     @Parameter(names = "--oracle")
     public List<MongoDBOracleFactory> oracles = Arrays.asList(QUERY_PARTITIONING);
 

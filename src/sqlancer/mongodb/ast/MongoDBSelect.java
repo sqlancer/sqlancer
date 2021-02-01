@@ -15,6 +15,7 @@ public class MongoDBSelect<E> implements Node<E> {
     Node<E> filterClause;
     boolean hasComputed;
     List<Node<E>> computedClauses;
+    private boolean withCountClause;
 
     public MongoDBSelect(String mainTableName, MongoDBColumnTestReference joinColumn) {
         this.mainTableName = mainTableName;
@@ -91,5 +92,13 @@ public class MongoDBSelect<E> implements Node<E> {
 
     public boolean hasComputed() {
         return hasComputed;
+    }
+
+    public boolean getWithCountClause() {
+        return withCountClause;
+    }
+
+    public void setWithCountClause(boolean withCountClause) {
+        this.withCountClause = withCountClause;
     }
 }

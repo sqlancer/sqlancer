@@ -41,6 +41,30 @@ public final class MongoDBComparatorHelper {
         }
     }
 
+    public static void assumeCountIsEqual(List<Document> resultSet, List<Document> secondResultSet,
+            MongoDBSelectQuery originalQuery) {
+        int originalSize = resultSet.size();
+        if (secondResultSet.isEmpty()) {
+            if (originalSize == 0) {
+                return;
+            } else {
+                String assertMessage = String.format("The Count of the result set mismatches!\n %s",
+                        originalQuery.getLogString());
+                throw new AssertionError(assertMessage);
+            }
+        }
+        if (secondResultSet.size() != 1) {
+            throw new AssertionError(
+                    String.format("Count query result bigger than one \n %s", originalQuery.getLogString()));
+        }
+        int withCount = (int) secondResultSet.get(0).get("count");
+        if (originalSize != withCount) {
+            String assertMessage = String.format("The Count of the result set mismatches!\n %s",
+                    originalQuery.getLogString());
+            throw new AssertionError(assertMessage);
+        }
+    }
+
     public static void assumeResultSetsAreEqual(List<Document> resultSet, List<Document> secondResultSet,
             MongoDBSelectQuery originalQuery) {
         if (resultSet.size() != secondResultSet.size()) {

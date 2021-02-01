@@ -33,7 +33,9 @@ public class MongoDBToQueryVisitor extends MongoDBVisitor {
     private List<Bson> lookup;
     private Bson filter;
     private Bson projection;
+    private Bson count;
     private boolean hasFilter;
+    private boolean hasCountClause;
 
     public Bson visitBson(Node<MongoDBExpression> expr) {
         if (expr instanceof MongoDBUnaryLogicalOperatorNode) {
@@ -125,6 +127,14 @@ public class MongoDBToQueryVisitor extends MongoDBVisitor {
             setFilter(select);
         }
         setProjection(select);
+        hasCountClause = select.getWithCountClause();
+        if (hasCountClause) {
+            setCount();
+        }
+    }
+
+    private void setCount() {
+        count = Aggregates.count("count");
     }
 
     private void setFilter(MongoDBSelect<MongoDBExpression> select) {
@@ -166,6 +176,9 @@ public class MongoDBToQueryVisitor extends MongoDBVisitor {
             result.add(filter);
         }
         result.add(projection);
+        if (hasCountClause) {
+            result.add(count);
+        }
         return result;
     }
 }
