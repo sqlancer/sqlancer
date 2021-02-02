@@ -22,6 +22,7 @@ import sqlancer.mongodb.ast.MongoDBRegexNode;
 import sqlancer.mongodb.ast.MongoDBUnaryLogicalOperatorNode;
 import sqlancer.mongodb.ast.MongoDBUnsupportedPredicate;
 import sqlancer.mongodb.test.MongoDBColumnTestReference;
+import sqlancer.mongodb.visitor.MongoDBNegateVisitor;
 
 public class MongoDBMatchExpressionGenerator
         extends UntypedExpressionGenerator<Node<MongoDBExpression>, MongoDBColumnTestReference> {
@@ -102,8 +103,16 @@ public class MongoDBMatchExpressionGenerator
     }
 
     @Override
+    public Node<MongoDBExpression> generatePredicate() {
+        Node<MongoDBExpression> result = super.generatePredicate();
+        return MongoDBNegateVisitor.cleanNegations(result);
+    }
+
+    @Override
     public Node<MongoDBExpression> negatePredicate(Node<MongoDBExpression> predicate) {
-        return new MongoDBUnaryLogicalOperatorNode(predicate, MongoDBUnaryLogicalOperator.NOT);
+        Node<MongoDBExpression> result = new MongoDBUnaryLogicalOperatorNode(predicate,
+                MongoDBUnaryLogicalOperator.NOT);
+        return MongoDBNegateVisitor.cleanNegations(result);
     }
 
     @Override
@@ -115,12 +124,13 @@ public class MongoDBMatchExpressionGenerator
         NOT {
             @Override
             public Bson applyOperator(Bson inner) {
+                // return Filters.not(inner); TODO: Patrick
                 return Filters.nor(inner, Filters.exists("_id", false));
             }
 
             @Override
             public String getTextRepresentation() {
-                return "{$nor: [{ _id: {$exists: false}}, ";
+                return "$not";
             }
         };
 

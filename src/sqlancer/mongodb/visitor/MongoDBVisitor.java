@@ -36,4 +36,10 @@ public abstract class MongoDBVisitor {
         visitor.visit(expr);
         return visitor.getStringLog();
     }
+
+    public static Node<MongoDBExpression> cleanNegations(Node<MongoDBExpression> expr) {
+        MongoDBNegateVisitor visitor = new MongoDBNegateVisitor(false);
+        visitor.visit(expr);
+        return visitor.getNegatedExpression();
+    }
 }

@@ -69,7 +69,7 @@ public final class MongoDBComparatorHelper {
             MongoDBSelectQuery originalQuery) {
         if (resultSet.size() != secondResultSet.size()) {
             String assertionMessage = String.format("The Size of the result sets mismatch (%d and %d)!\n%s",
-                    resultSet.size(), resultSet.size(), originalQuery.getLogString());
+                    resultSet.size(), secondResultSet.size(), originalQuery.getLogString());
             throw new AssertionError(assertionMessage);
         }
 

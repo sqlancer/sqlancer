@@ -83,7 +83,7 @@ public class MongoDBToLogVisitor extends MongoDBVisitor {
 
     public String visit(MongoDBUnaryLogicalOperatorNode expr) {
         String inner = visitLog(expr.getExpr());
-        return expr.operator().getTextRepresentation() + inner + "]}";
+        return "{ " + expr.operator().getTextRepresentation() + ": [" + inner + "]}";
     }
 
     public String visit(MongoDBBinaryLogicalNode expr) {
