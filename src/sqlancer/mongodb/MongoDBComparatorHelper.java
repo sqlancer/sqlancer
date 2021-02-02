@@ -7,6 +7,7 @@ import java.util.Set;
 import org.bson.Document;
 
 import sqlancer.IgnoreMeException;
+import sqlancer.Main;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.mongodb.MongoDBProvider.MongoDBGlobalState;
 import sqlancer.mongodb.query.MongoDBSelectQuery;
@@ -22,18 +23,17 @@ public final class MongoDBComparatorHelper {
         List<Document> result;
         try {
             adapter.executeAndGet(state);
+            Main.nrSuccessfulActions.addAndGet(1);
             result = adapter.getResultSet();
             return result;
-
         } catch (Exception e) {
+            Main.nrUnsuccessfulActions.addAndGet(1);
             if (e instanceof IgnoreMeException) {
                 throw e;
             }
-
             if (e.getMessage() == null) {
                 throw new AssertionError(adapter.getLogString(), e);
             }
-
             if (errors.errorIsExpected(e.getMessage())) {
                 throw new IgnoreMeException();
             }
