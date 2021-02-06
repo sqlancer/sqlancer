@@ -13,6 +13,7 @@ import sqlancer.mongodb.ast.MongoDBExpression;
 import sqlancer.mongodb.ast.MongoDBRegexNode;
 import sqlancer.mongodb.ast.MongoDBSelect;
 import sqlancer.mongodb.ast.MongoDBUnaryLogicalOperatorNode;
+import sqlancer.mongodb.gen.MongoDBMatchExpressionGenerator;
 
 public class MongoDBNegateVisitor extends MongoDBVisitor {
 
@@ -46,24 +47,34 @@ public class MongoDBNegateVisitor extends MongoDBVisitor {
 
         if (negate) {
             negatedExpression = new MongoDBUnaryLogicalOperatorNode(expr, NOT);
-            // TODO: Patrick
-            /*
-             * switch (expr.operator()) { case EQUALS: negatedExpression = new
-             * MongoDBBinaryComparisonNode(expr.getLeft(), expr.getRight(),
-             * MongoDBMatchExpressionGenerator.MongoDBBinaryComparisonOperator.NOT_EQUALS); break; case NOT_EQUALS:
-             * negatedExpression = new MongoDBBinaryComparisonNode(expr.getLeft(), expr.getRight(),
-             * MongoDBMatchExpressionGenerator.MongoDBBinaryComparisonOperator.EQUALS); break;
-             *
-             * case LESS: negatedExpression = new MongoDBBinaryComparisonNode(expr.getLeft(), expr.getRight(),
-             * MongoDBMatchExpressionGenerator.MongoDBBinaryComparisonOperator.GREATER_EQUAL); break; case LESS_EQUAL:
-             * negatedExpression = new MongoDBBinaryComparisonNode(expr.getLeft(), expr.getRight(),
-             * MongoDBMatchExpressionGenerator.MongoDBBinaryComparisonOperator.GREATER); break; case GREATER:
-             * negatedExpression = new MongoDBBinaryComparisonNode(expr.getLeft(), expr.getRight(),
-             * MongoDBMatchExpressionGenerator.MongoDBBinaryComparisonOperator.LESS_EQUAL); break; case GREATER_EQUAL:
-             * negatedExpression = new MongoDBBinaryComparisonNode(expr.getLeft(), expr.getRight(),
-             * MongoDBMatchExpressionGenerator.MongoDBBinaryComparisonOperator.LESS); break; default: throw new
-             * UnsupportedOperationException(); }
-             */
+            switch (expr.operator()) {
+            case EQUALS:
+                negatedExpression = new MongoDBBinaryComparisonNode(expr.getLeft(), expr.getRight(),
+                        MongoDBMatchExpressionGenerator.MongoDBBinaryComparisonOperator.NOT_EQUALS);
+                break;
+            case NOT_EQUALS:
+                negatedExpression = new MongoDBBinaryComparisonNode(expr.getLeft(), expr.getRight(),
+                        MongoDBMatchExpressionGenerator.MongoDBBinaryComparisonOperator.EQUALS);
+                break;
+            case LESS:
+                negatedExpression = new MongoDBBinaryComparisonNode(expr.getLeft(), expr.getRight(),
+                        MongoDBMatchExpressionGenerator.MongoDBBinaryComparisonOperator.GREATER_EQUAL);
+                break;
+            case LESS_EQUAL:
+                negatedExpression = new MongoDBBinaryComparisonNode(expr.getLeft(), expr.getRight(),
+                        MongoDBMatchExpressionGenerator.MongoDBBinaryComparisonOperator.GREATER);
+                break;
+            case GREATER:
+                negatedExpression = new MongoDBBinaryComparisonNode(expr.getLeft(), expr.getRight(),
+                        MongoDBMatchExpressionGenerator.MongoDBBinaryComparisonOperator.LESS_EQUAL);
+                break;
+            case GREATER_EQUAL:
+                negatedExpression = new MongoDBBinaryComparisonNode(expr.getLeft(), expr.getRight(),
+                        MongoDBMatchExpressionGenerator.MongoDBBinaryComparisonOperator.LESS);
+                break;
+            default:
+                throw new UnsupportedOperationException();
+            }
         } else {
             negatedExpression = expr;
         }

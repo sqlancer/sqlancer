@@ -12,7 +12,6 @@ import sqlancer.mongodb.ast.MongoDBConstant.MongoDBDateTimeConstant;
 import sqlancer.mongodb.ast.MongoDBConstant.MongoDBDoubleConstant;
 import sqlancer.mongodb.ast.MongoDBConstant.MongoDBIntegerConstant;
 import sqlancer.mongodb.ast.MongoDBConstant.MongoDBNullConstant;
-import sqlancer.mongodb.ast.MongoDBConstant.MongoDBStringConstant;
 import sqlancer.mongodb.ast.MongoDBConstant.MongoDBTimestampConstant;
 import sqlancer.mongodb.ast.MongoDBExpression;
 
@@ -68,10 +67,12 @@ public class MongoDBConstantGenerator {
             constant = new MongoDBDoubleConstant(globalState.getRandomly().getDouble());
             constant.setValueInDocument(document, key);
             return;
-        case STRING:
-            constant = new MongoDBStringConstant(globalState.getRandomly().getString());
-            constant.setValueInDocument(document, key);
-            return;
+        // TODO: If String is enabled, there are type issues. Find a way to have a cast or operation on top of the query
+        // TODO: to solve this issue.
+        // case STRING:
+        // constant = new MongoDBStringConstant(globalState.getRandomly().getString());
+        // constant.setValueInDocument(document, key);
+        // return;
         case INTEGER:
             constant = new MongoDBIntegerConstant((int) globalState.getRandomly().getInteger());
             constant.setValueInDocument(document, key);

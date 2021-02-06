@@ -42,11 +42,12 @@ public class MongoDBQueryPartitioningBase
         initializeTernaryPredicateVariants();
         select = new MongoDBSelect<>(mainTable.getName(), targetColumns.get(0));
         select.setProjectionList(targetColumns);
-        if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setLookupList(targetColumns);
-        } else {
-            select.setLookupList(Randomly.nonEmptySubset(targetColumns));
-        }
+        // TODO: Find a new way to split the query such that it can handle null fields to activate lookups
+        // if (Randomly.getBooleanWithRatherLowProbability()) {
+        select.setLookupList(targetColumns);
+        /*
+         * } else { select.setLookupList(Randomly.nonEmptySubset(targetColumns)); }
+         */
         if (state.getDmbsSpecificOptions().testComputedValues) {
             generateComputedColumns();
         }
@@ -69,12 +70,12 @@ public class MongoDBQueryPartitioningBase
             targetColumns.add(new MongoDBColumnTestReference(c, true));
         }
         List<MongoDBColumnTestReference> joinsOtherTables = new ArrayList<>();
-        for (int i = 1; i < targetTables.getTables().size(); i++) {
-            MongoDBTable procTable = targetTables.getTables().get(i);
-            for (MongoDBColumn c : procTable.getColumns()) {
-                joinsOtherTables.add(new MongoDBColumnTestReference(c, false));
-            }
-        }
+        // TODO: Find a new way to split the query such that it can handle null fields to activate lookups
+        /*
+         * for (int i = 1; i < targetTables.getTables().size(); i++) { MongoDBTable procTable =
+         * targetTables.getTables().get(i); for (MongoDBColumn c : procTable.getColumns()) { joinsOtherTables.add(new
+         * MongoDBColumnTestReference(c, false)); } }
+         */
         if (!joinsOtherTables.isEmpty()) {
             int randNumber = state.getRandomly().getInteger(1, Math.min(joinsOtherTables.size(), 4));
             List<MongoDBColumnTestReference> subsetJoinsOtherTables = Randomly.nonEmptySubset(joinsOtherTables,

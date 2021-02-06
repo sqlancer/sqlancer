@@ -56,7 +56,19 @@ public class MongoDBSchema extends AbstractSchema<MongoDBGlobalState, MongoDBSch
         };
 
         public static MongoDBDataType getRandom() {
-            return Randomly.fromOptions(values());
+            // TODO: If String is enabled, there are type issues. Find a way to have a cast or operation on top of the
+            // query
+            // TODO: to solve this issue.
+            MongoDBDataType[] valuesWithoutString = new MongoDBDataType[values().length - 1];
+            int i = 0;
+            for (MongoDBDataType type : values()) {
+                if (type.equals(STRING)) {
+                    continue;
+                }
+                valuesWithoutString[i] = type;
+                i++;
+            }
+            return Randomly.fromOptions(valuesWithoutString);
         }
     }
 

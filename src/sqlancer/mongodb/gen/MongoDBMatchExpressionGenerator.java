@@ -51,7 +51,10 @@ public class MongoDBMatchExpressionGenerator
         switch (expr) {
         case BINARY_COMPARISON:
             MongoDBBinaryComparisonOperator operator = MongoDBBinaryComparisonOperator.getRandom();
-            return new MongoDBBinaryComparisonNode(generateColumn(), generateConstant(), operator);
+            MongoDBColumnTestReference reference = (MongoDBColumnTestReference) generateColumn();
+
+            return new MongoDBBinaryComparisonNode(reference,
+                    generateConstant(reference.getColumnReference().getType()), operator);
         case REGEX:
             return new MongoDBRegexNode(generateColumn(),
                     new MongoDBConstantGenerator(globalState).generateConstantWithType(MongoDBDataType.STRING),
@@ -92,6 +95,14 @@ public class MongoDBMatchExpressionGenerator
         return generator.generateConstantWithType(type);
     }
 
+    public Node<MongoDBExpression> generateConstant(MongoDBDataType type) {
+        MongoDBConstantGenerator generator = new MongoDBConstantGenerator(globalState);
+        // if (Randomly.getBooleanWithSmallProbability()) {
+        // return MongoDBConstant.createNullConstant();
+        // }
+        return generator.generateConstantWithType(type);
+    }
+
     private String getRandomizedRegexOptions() {
         List<String> s = Randomly.subset("i", "m", "x", "s");
         return s.stream().reduce("", (current, newVal) -> current + newVal);
@@ -124,8 +135,7 @@ public class MongoDBMatchExpressionGenerator
         NOT {
             @Override
             public Bson applyOperator(Bson inner) {
-                // return Filters.not(inner); TODO: Patrick
-                return Filters.nor(inner, Filters.exists("_id", false));
+                return Filters.not(inner);
             }
 
             @Override
