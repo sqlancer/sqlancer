@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.JCommander.Builder;
 
+import sqlancer.arangodb.ArangoDBProvider;
 import sqlancer.citus.CitusProvider;
 import sqlancer.clickhouse.ClickHouseProvider;
 import sqlancer.cockroachdb.CockroachDBProvider;
@@ -556,6 +557,7 @@ public final class Main {
         providers.add(new DuckDBProvider());
         providers.add(new H2Provider());
         providers.add(new MongoDBProvider());
+        providers.add(new ArangoDBProvider());
         return providers;
     }
 

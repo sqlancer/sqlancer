@@ -271,6 +271,11 @@
       <artifactId>mongodb-driver-sync</artifactId>
       <version>4.1.1</version>
     </dependency>
+    <dependency>
+      <groupId>com.arangodb</groupId>
+      <artifactId>arangodb-java-driver</artifactId>
+      <version>6.9.0</version>
+    </dependency>
   </dependencies>
   <reporting>
     <plugins>
