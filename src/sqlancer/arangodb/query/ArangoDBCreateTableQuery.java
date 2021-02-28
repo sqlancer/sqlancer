@@ -39,7 +39,6 @@ public class ArangoDBCreateTableQuery extends ArangoDBQueryAdapter {
 
     @Override
     public String getLogString() {
-        // TODO Patrick
-        return "";
+        return "db._create(\"" + tableName + "\")";
     }
 }

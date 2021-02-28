@@ -1,5 +1,7 @@
 package sqlancer.arangodb.query;
 
+import java.util.Map;
+
 import com.arangodb.entity.BaseDocument;
 
 import sqlancer.GlobalState;
@@ -44,7 +46,21 @@ public class ArangoDBInsertQuery extends ArangoDBQueryAdapter {
 
     @Override
     public String getLogString() {
-        // TODO Patrick
-        return "";
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("db._query(\"INSERT { ");
+        String filler = "";
+        for (Map.Entry<String, Object> stringObjectEntry : documentToBeInserted.getProperties().entrySet()) {
+            stringBuilder.append(filler);
+            filler = ", ";
+            stringBuilder.append(stringObjectEntry.getKey()).append(": ");
+            Object value = stringObjectEntry.getValue();
+            if (value instanceof String) {
+                stringBuilder.append("'").append(value).append("'");
+            } else {
+                stringBuilder.append(value);
+            }
+        }
+        stringBuilder.append("} IN ").append(table.getName()).append("\")");
+        return stringBuilder.toString();
     }
 }
