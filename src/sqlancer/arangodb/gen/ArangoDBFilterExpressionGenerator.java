@@ -21,6 +21,7 @@ public class ArangoDBFilterExpressionGenerator
         extends UntypedExpressionGenerator<Node<ArangoDBExpression>, ArangoDBSchema.ArangoDBColumn> {
 
     private final ArangoDBProvider.ArangoDBGlobalState globalState;
+    private int numberOfComputedVariables;
 
     private enum Expression {
         BINARY_LOGICAL, UNARY_PREFIX, BINARY_COMPARISON
@@ -28,6 +29,10 @@ public class ArangoDBFilterExpressionGenerator
 
     public ArangoDBFilterExpressionGenerator(ArangoDBProvider.ArangoDBGlobalState globalState) {
         this.globalState = globalState;
+    }
+
+    public void setNumberOfComputedVariables(int numberOfComputedVariables) {
+        this.numberOfComputedVariables = numberOfComputedVariables;
     }
 
     @Override
@@ -71,8 +76,17 @@ public class ArangoDBFilterExpressionGenerator
 
     @Override
     protected Node<ArangoDBExpression> generateColumn() {
-        ArangoDBSchema.ArangoDBColumn column = Randomly.fromList(columns);
-        return new ColumnReferenceNode<>(column);
+        ArangoDBSchema.ArangoDBTable dummy = new ArangoDBSchema.ArangoDBTable("", new ArrayList<>(), false);
+        if (Randomly.getBoolean() || numberOfComputedVariables == 0) {
+            ArangoDBSchema.ArangoDBColumn column = Randomly.fromList(columns);
+            return new ColumnReferenceNode<>(column);
+        } else {
+            int maxNumber = globalState.getRandomly().getInteger(0, numberOfComputedVariables);
+            ArangoDBSchema.ArangoDBColumn column = new ArangoDBSchema.ArangoDBColumn("c" + maxNumber,
+                    ArangoDBSchema.ArangoDBDataType.INTEGER, false, false);
+            column.setTable(dummy);
+            return new ColumnReferenceNode<>(column);
+        }
     }
 
     @Override

@@ -23,6 +23,7 @@ public class ArangoDBQueryPartitioningBase
     protected List<ArangoDBSchema.ArangoDBColumn> targetColumns;
     protected ArangoDBFilterExpressionGenerator expressionGenerator;
     protected ArangoDBSelect<ArangoDBExpression> select;
+    protected int numberComputedColumns;
 
     protected ArangoDBQueryPartitioningBase(ArangoDBProvider.ArangoDBGlobalState state) {
         super(state);
@@ -35,9 +36,11 @@ public class ArangoDBQueryPartitioningBase
 
     @Override
     public void check() throws Exception {
+        numberComputedColumns = state.getRandomly().getInteger(0, 4);
         schema = state.getSchema();
         generateTargetColumns();
         expressionGenerator = new ArangoDBFilterExpressionGenerator(state).setColumns(targetColumns);
+        expressionGenerator.setNumberOfComputedVariables(numberComputedColumns);
         initializeTernaryPredicateVariants();
         select = new ArangoDBSelect<>();
         select.setFromColumns(targetColumns);
@@ -47,7 +50,6 @@ public class ArangoDBQueryPartitioningBase
 
     private void generateComputedClause() {
         List<Node<ArangoDBExpression>> computedColumns = new ArrayList<>();
-        int numberComputedColumns = state.getRandomly().getInteger(0, 4);
         ArangoDBComputedExpressionGenerator generator = new ArangoDBComputedExpressionGenerator(state);
         generator.setColumns(targetColumns);
         for (int i = 0; i < numberComputedColumns; i++) {

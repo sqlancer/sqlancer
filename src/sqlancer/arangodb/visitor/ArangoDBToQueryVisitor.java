@@ -55,8 +55,12 @@ public class ArangoDBToQueryVisitor extends ArangoDBVisitor<ArangoDBExpression> 
 
     @Override
     protected void visit(ColumnReferenceNode<ArangoDBExpression, ?> expression) {
-        stringBuilder.append("r").append(expression.getColumn().getTable().getName()).append(".")
-                .append(expression.getColumn().getName());
+        if (expression.getColumn().getTable().getName().equals("")) {
+            stringBuilder.append(expression.getColumn().getName());
+        } else {
+            stringBuilder.append("r").append(expression.getColumn().getTable().getName()).append(".")
+                    .append(expression.getColumn().getName());
+        }
     }
 
     @Override
