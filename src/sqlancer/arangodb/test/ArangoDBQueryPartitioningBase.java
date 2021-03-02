@@ -1,5 +1,6 @@
 package sqlancer.arangodb.test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
@@ -7,6 +8,7 @@ import sqlancer.arangodb.ArangoDBProvider;
 import sqlancer.arangodb.ArangoDBSchema;
 import sqlancer.arangodb.ast.ArangoDBExpression;
 import sqlancer.arangodb.ast.ArangoDBSelect;
+import sqlancer.arangodb.gen.ArangoDBComputedExpressionGenerator;
 import sqlancer.arangodb.gen.ArangoDBFilterExpressionGenerator;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.ExpressionGenerator;
@@ -40,6 +42,18 @@ public class ArangoDBQueryPartitioningBase
         select = new ArangoDBSelect<>();
         select.setFromColumns(targetColumns);
         select.setProjectionColumns(Randomly.nonEmptySubset(targetColumns));
+        generateComputedClause();
+    }
+
+    private void generateComputedClause() {
+        List<Node<ArangoDBExpression>> computedColumns = new ArrayList<>();
+        int numberComputedColumns = state.getRandomly().getInteger(0, 4);
+        ArangoDBComputedExpressionGenerator generator = new ArangoDBComputedExpressionGenerator(state);
+        generator.setColumns(targetColumns);
+        for (int i = 0; i < numberComputedColumns; i++) {
+            computedColumns.add(generator.generateExpression());
+        }
+        select.setComputedClause(computedColumns);
     }
 
     private void generateTargetColumns() {

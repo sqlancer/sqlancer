@@ -8,12 +8,15 @@ import sqlancer.arangodb.ArangoDBSchema;
 import sqlancer.arangodb.ast.ArangoDBConstant;
 import sqlancer.arangodb.ast.ArangoDBExpression;
 import sqlancer.arangodb.ast.ArangoDBSelect;
+import sqlancer.arangodb.gen.ArangoDBComputedExpressionGenerator;
 import sqlancer.arangodb.query.ArangoDBSelectQuery;
 import sqlancer.common.ast.newast.ColumnReferenceNode;
 import sqlancer.common.ast.newast.NewBinaryOperatorNode;
+import sqlancer.common.ast.newast.NewFunctionNode;
 import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
+import sqlancer.common.ast.newast.Node;
 
-public class ArangoDBToQueryVisitor extends ArangoDBVisitor {
+public class ArangoDBToQueryVisitor extends ArangoDBVisitor<ArangoDBExpression> {
 
     private final StringBuilder stringBuilder;
 
@@ -24,17 +27,34 @@ public class ArangoDBToQueryVisitor extends ArangoDBVisitor {
     @Override
     protected void visit(ArangoDBSelect<ArangoDBExpression> expression) {
         generateFrom(expression);
+        generateComputed(expression);
+        generateFilter(expression);
+        generateProject(expression);
+    }
+
+    private void generateFilter(ArangoDBSelect<ArangoDBExpression> expression) {
         if (expression.hasFilter()) {
             stringBuilder.append("FILTER ");
             visit(expression.getFilterClause());
             stringBuilder.append(" ");
         }
-        generateProject(expression);
+    }
 
+    private void generateComputed(ArangoDBSelect<ArangoDBExpression> expression) {
+        if (expression.hasComputed()) {
+            List<Node<ArangoDBExpression>> computedClause = expression.getComputedClause();
+            int computedNumber = 0;
+            for (Node<ArangoDBExpression> computedExpression : computedClause) {
+                stringBuilder.append("LET c").append(computedNumber).append(" = ");
+                visit(computedExpression);
+                stringBuilder.append(" ");
+                computedNumber++;
+            }
+        }
     }
 
     @Override
-    protected void visit(ColumnReferenceNode<?, ?> expression) {
+    protected void visit(ColumnReferenceNode<ArangoDBExpression, ?> expression) {
         stringBuilder.append("r").append(expression.getColumn().getTable().getName()).append(".")
                 .append(expression.getColumn().getName());
     }
@@ -57,6 +77,23 @@ public class ArangoDBToQueryVisitor extends ArangoDBVisitor {
     protected void visit(NewUnaryPrefixOperatorNode<ArangoDBExpression> expression) {
         stringBuilder.append(expression.getOperatorRepresentation()).append("(");
         visit(expression.getExpr());
+        stringBuilder.append(")");
+    }
+
+    @Override
+    protected void visit(NewFunctionNode<ArangoDBExpression, ?> expression) {
+        if (!(expression.getFunc() instanceof ArangoDBComputedExpressionGenerator.ComputedFunction)) {
+            throw new UnsupportedOperationException();
+        }
+        ArangoDBComputedExpressionGenerator.ComputedFunction function = (ArangoDBComputedExpressionGenerator.ComputedFunction) expression
+                .getFunc();
+        if (function.getNrArgs() != 2) {
+            throw new UnsupportedOperationException();
+        }
+        stringBuilder.append("(");
+        visit(expression.getArgs().get(0));
+        stringBuilder.append(" ").append(function.getOperatorName()).append(" ");
+        visit(expression.getArgs().get(1));
         stringBuilder.append(")");
     }
 

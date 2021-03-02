@@ -10,6 +10,8 @@ public class ArangoDBSelect<E> implements Node<E> {
     private List<ArangoDBSchema.ArangoDBColumn> projectionColumns;
     private boolean hasFilter;
     private Node<E> filterClause;
+    private boolean hasComputed;
+    private List<Node<E>> computedClause;
 
     public List<ArangoDBSchema.ArangoDBColumn> getFromColumns() {
         if (fromColumns == null || fromColumns.isEmpty()) {
@@ -55,5 +57,23 @@ public class ArangoDBSelect<E> implements Node<E> {
 
     public boolean hasFilter() {
         return hasFilter;
+    }
+
+    public void setComputedClause(List<Node<E>> computedColumns) {
+        if (computedColumns == null || computedColumns.isEmpty()) {
+            hasComputed = false;
+            this.computedClause = null;
+            return;
+        }
+        hasComputed = true;
+        this.computedClause = computedColumns;
+    }
+
+    public List<Node<E>> getComputedClause() {
+        return computedClause;
+    }
+
+    public boolean hasComputed() {
+        return hasComputed;
     }
 }
