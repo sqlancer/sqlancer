@@ -11,8 +11,6 @@ public abstract class ArangoDBConstant implements Node<ArangoDBExpression> {
 
     public abstract void setValueInDocument(BaseDocument document, String key);
 
-    public abstract void getLogValue();
-
     public abstract Object getValue();
 
     public static class ArangoDBIntegerConstant extends ArangoDBConstant {
@@ -26,11 +24,6 @@ public abstract class ArangoDBConstant implements Node<ArangoDBExpression> {
         @Override
         public void setValueInDocument(BaseDocument document, String key) {
             document.addAttribute(key, value);
-        }
-
-        @Override
-        public void getLogValue() {
-            throw new UnsupportedOperationException();
         }
 
         @Override
@@ -56,13 +49,8 @@ public abstract class ArangoDBConstant implements Node<ArangoDBExpression> {
         }
 
         @Override
-        public void getLogValue() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public Object getValue() {
-            return value;
+            return "'" + value.replace("\\", "\\\\").replace("'", "\\'") + "'";
         }
     }
 
@@ -83,11 +71,6 @@ public abstract class ArangoDBConstant implements Node<ArangoDBExpression> {
         }
 
         @Override
-        public void getLogValue() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public Object getValue() {
             return value;
         }
@@ -101,17 +84,16 @@ public abstract class ArangoDBConstant implements Node<ArangoDBExpression> {
         private final double value;
 
         public ArangoDBDoubleConstant(double value) {
-            this.value = value;
+            if (Double.isInfinite(value) || Double.isNaN(value)) {
+                this.value = 0.0;
+            } else {
+                this.value = value;
+            }
         }
 
         @Override
         public void setValueInDocument(BaseDocument document, String key) {
             document.addAttribute(key, value);
-        }
-
-        @Override
-        public void getLogValue() {
-            throw new UnsupportedOperationException();
         }
 
         @Override

@@ -63,4 +63,8 @@ public class ArangoDBSchema extends AbstractSchema<ArangoDBProvider.ArangoDBGlob
             throw new UnsupportedOperationException();
         }
     }
+
+    public ArangoDBTables getRandomTableNonEmptyTables() {
+        return new ArangoDBTables(Randomly.nonEmptySubset(getDatabaseTables()));
+    }
 }
