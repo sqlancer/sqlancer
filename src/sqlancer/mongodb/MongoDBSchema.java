@@ -55,14 +55,16 @@ public class MongoDBSchema extends AbstractSchema<MongoDBGlobalState, MongoDBSch
             }
         };
 
-        public static MongoDBDataType getRandom() {
-            // TODO: If String is enabled, there are type issues. Find a way to have a cast or operation on top of the
-            // query
-            // TODO: to solve this issue.
-            MongoDBDataType[] valuesWithoutString = new MongoDBDataType[values().length - 1];
+        public static MongoDBDataType getRandom(MongoDBGlobalState state) {
+            MongoDBDataType[] valuesWithoutString;
+            if (state.getDmbsSpecificOptions().nullSafety) {
+                valuesWithoutString = new MongoDBDataType[values().length - 1];
+            } else {
+                valuesWithoutString = new MongoDBDataType[values().length];
+            }
             int i = 0;
             for (MongoDBDataType type : values()) {
-                if (type.equals(STRING)) {
+                if (type.equals(STRING) && state.getDmbsSpecificOptions().nullSafety) {
                     continue;
                 }
                 valuesWithoutString[i] = type;

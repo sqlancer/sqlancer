@@ -42,7 +42,7 @@ public class MongoDBConstantGenerator {
     }
 
     public void addRandomConstant(Document document, String key) {
-        MongoDBDataType type = MongoDBDataType.getRandom();
+        MongoDBDataType type = MongoDBDataType.getRandom(globalState);
         addRandomConstantWithType(document, key, type);
     }
 
@@ -67,12 +67,10 @@ public class MongoDBConstantGenerator {
             constant = new MongoDBDoubleConstant(globalState.getRandomly().getDouble());
             constant.setValueInDocument(document, key);
             return;
-        // TODO: If String is enabled, there are type issues. Find a way to have a cast or operation on top of the query
-        // TODO: to solve this issue.
-        // case STRING:
-        // constant = new MongoDBStringConstant(globalState.getRandomly().getString());
-        // constant.setValueInDocument(document, key);
-        // return;
+        case STRING:
+            constant = new MongoDBConstant.MongoDBStringConstant(globalState.getRandomly().getString());
+            constant.setValueInDocument(document, key);
+            return;
         case INTEGER:
             constant = new MongoDBIntegerConstant((int) globalState.getRandomly().getInteger());
             constant.setValueInDocument(document, key);

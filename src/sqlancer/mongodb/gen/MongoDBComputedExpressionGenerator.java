@@ -67,7 +67,7 @@ public class MongoDBComputedExpressionGenerator
 
     @Override
     public Node<MongoDBExpression> generateConstant() {
-        MongoDBSchema.MongoDBDataType type = MongoDBSchema.MongoDBDataType.getRandom();
+        MongoDBSchema.MongoDBDataType type = MongoDBSchema.MongoDBDataType.getRandom(globalState);
         MongoDBConstantGenerator generator = new MongoDBConstantGenerator(globalState);
         return generator.generateConstantWithType(type);
     }

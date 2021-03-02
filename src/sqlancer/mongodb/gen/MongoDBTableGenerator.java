@@ -15,6 +15,11 @@ public class MongoDBTableGenerator {
 
     private MongoDBTable table;
     private final List<MongoDBColumn> columnsToBeAdded = new ArrayList<>();
+    private final MongoDBGlobalState state;
+
+    public MongoDBTableGenerator(MongoDBGlobalState state) {
+        this.state = state;
+    }
 
     public MongoDBQueryAdapter getQuery(MongoDBGlobalState globalState) {
         String tableName = globalState.getSchema().getFreeTableName();
@@ -32,7 +37,7 @@ public class MongoDBTableGenerator {
     }
 
     private MongoDBDataType createColumn(String columnName) {
-        MongoDBDataType columnType = MongoDBDataType.getRandom();
+        MongoDBDataType columnType = MongoDBDataType.getRandom(state);
         MongoDBColumn newColumn = new MongoDBColumn(columnName, columnType, false, false);
         newColumn.setTable(table);
         columnsToBeAdded.add(newColumn);

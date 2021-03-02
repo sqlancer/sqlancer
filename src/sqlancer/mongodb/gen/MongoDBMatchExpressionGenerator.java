@@ -87,7 +87,7 @@ public class MongoDBMatchExpressionGenerator
 
     @Override
     public Node<MongoDBExpression> generateConstant() {
-        MongoDBDataType type = MongoDBDataType.getRandom();
+        MongoDBDataType type = MongoDBDataType.getRandom(globalState);
         MongoDBConstantGenerator generator = new MongoDBConstantGenerator(globalState);
         if (Randomly.getBooleanWithSmallProbability()) {
             return MongoDBConstant.createNullConstant();
@@ -97,9 +97,9 @@ public class MongoDBMatchExpressionGenerator
 
     public Node<MongoDBExpression> generateConstant(MongoDBDataType type) {
         MongoDBConstantGenerator generator = new MongoDBConstantGenerator(globalState);
-        // if (Randomly.getBooleanWithSmallProbability()) {
-        // return MongoDBConstant.createNullConstant();
-        // }
+        if (Randomly.getBooleanWithSmallProbability() && !globalState.getDmbsSpecificOptions().nullSafety) {
+            return MongoDBConstant.createNullConstant();
+        }
         return generator.generateConstantWithType(type);
     }
 

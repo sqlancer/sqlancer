@@ -88,7 +88,7 @@ public class MongoDBProvider
         for (int i = 0; i < Randomly.fromOptions(4, 5, 6); i++) {
             boolean success;
             do {
-                MongoDBQueryAdapter query = new MongoDBTableGenerator().getQuery(globalState);
+                MongoDBQueryAdapter query = new MongoDBTableGenerator(globalState).getQuery(globalState);
                 success = globalState.executeStatement(query);
             } while (!success);
         }
