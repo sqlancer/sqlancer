@@ -22,6 +22,9 @@ public class ArangoDBOptions implements DBMSSpecificOptions<ArangoDBOptions.Aran
     @Parameter(names = "--test-random-type-inserts", description = "Insert random types instead of schema types.")
     public boolean testRandomTypeInserts;
 
+    @Parameter(names = "--max-number-indexes", description = "The maximum number of indexes used.", arity = 1)
+    public int maxNumberIndexes = 15;
+
     @Override
     public List<ArangoDBOracleFactory> getTestOracleFactory() {
         return oracles;

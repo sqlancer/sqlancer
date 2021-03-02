@@ -13,6 +13,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.ProviderAdapter;
 import sqlancer.Randomly;
 import sqlancer.StatementExecutor;
+import sqlancer.arangodb.gen.ArangoDBCreateIndexGenerator;
 import sqlancer.arangodb.gen.ArangoDBInsertGenerator;
 import sqlancer.arangodb.gen.ArangoDBTableGenerator;
 import sqlancer.common.log.LoggableFactory;
@@ -26,7 +27,7 @@ public class ArangoDBProvider
     }
 
     enum Action implements AbstractAction<ArangoDBGlobalState> {
-        INSERT(ArangoDBInsertGenerator::getQuery);
+        INSERT(ArangoDBInsertGenerator::getQuery), CREATE_INDEX(ArangoDBCreateIndexGenerator::getQuery);
 
         private final ArangoDBQueryProvider<ArangoDBGlobalState> queryProvider;
 
@@ -45,6 +46,8 @@ public class ArangoDBProvider
         switch (a) {
         case INSERT:
             return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
+        case CREATE_INDEX:
+            return r.getInteger(0, globalState.getDmbsSpecificOptions().maxNumberIndexes);
         default:
             throw new AssertionError(a);
         }
