@@ -1,6 +1,7 @@
 package sqlancer.mongodb;
 
 import static sqlancer.mongodb.MongoDBOptions.MongoDBOracleFactory.QUERY_PARTITIONING;
+import static sqlancer.mongodb.MongoDBOptions.MongoDBOracleFactory.REMOVE_REDUCE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,6 +14,7 @@ import sqlancer.OracleFactory;
 import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.mongodb.test.MongoDBQueryPartitioningWhereTester;
+import sqlancer.mongodb.test.MongoDBRemoveReduceTester;
 
 public class MongoDBOptions implements DBMSSpecificOptions<MongoDBOptions.MongoDBOracleFactory> {
 
@@ -41,7 +43,7 @@ public class MongoDBOptions implements DBMSSpecificOptions<MongoDBOptions.MongoD
     public boolean nullSafety;
 
     @Parameter(names = "--oracle")
-    public List<MongoDBOracleFactory> oracles = Arrays.asList(QUERY_PARTITIONING);
+    public List<MongoDBOracleFactory> oracles = Arrays.asList(QUERY_PARTITIONING, REMOVE_REDUCE);
 
     @Override
     public List<MongoDBOracleFactory> getTestOracleFactory() {
@@ -54,6 +56,14 @@ public class MongoDBOptions implements DBMSSpecificOptions<MongoDBOptions.MongoD
             public TestOracle create(MongoDBProvider.MongoDBGlobalState globalState) throws Exception {
                 List<TestOracle> oracles = new ArrayList<>();
                 oracles.add(new MongoDBQueryPartitioningWhereTester(globalState));
+                return new CompositeTestOracle(oracles, globalState);
+            }
+        },
+        REMOVE_REDUCE {
+            @Override
+            public TestOracle create(MongoDBProvider.MongoDBGlobalState globalState) throws Exception {
+                List<TestOracle> oracles = new ArrayList<>();
+                oracles.add(new MongoDBRemoveReduceTester(globalState));
                 return new CompositeTestOracle(oracles, globalState);
             }
         }
