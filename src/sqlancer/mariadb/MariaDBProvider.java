@@ -27,6 +27,10 @@ import sqlancer.mariadb.gen.MariaDBUpdateGenerator;
 public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, MariaDBOptions> {
 
     public static final int MAX_EXPRESSION_DEPTH = 3;
+    protected String username;
+    protected String password;
+    protected String host;
+    protected String port; 
 
     public MariaDBProvider() {
         super(MariaDBGlobalState.class, MariaDBOptions.class);
@@ -168,9 +172,19 @@ public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, Mari
         globalState.getState().logStatement("CREATE DATABASE " + globalState.getDatabaseName());
         globalState.getState().logStatement("USE " + globalState.getDatabaseName());
         // /?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
-        String url = "jdbc:mariadb://localhost:3306";
-        Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
-                globalState.getOptions().getPassword());
+        // String url = "jdbc:mariadb://localhost:3306";
+	username = globalState.getOptions().getUserName();
+	password = globalState.getOptions().getPassword();
+	host = globalState.getOptions().getHost();
+	port = globalState.getOptions().getPort();
+	if("sqlancer".equals(host)){
+	    host = "localhost";
+	}
+	if("sqlancer".equals(port)){
+	    port = "3306";
+	}
+	String url = "jdbc:mariadb://" + host + ":" + port;
+        Connection con = DriverManager.getConnection(url, username, password);
         try (Statement s = con.createStatement()) {
             s.execute("DROP DATABASE IF EXISTS " + globalState.getDatabaseName());
         }
