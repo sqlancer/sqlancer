@@ -55,7 +55,6 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
     protected String entryPath;
     protected String host;
     protected String port;
-    protected String Scheme;
     protected String testURL;
     protected String databaseName;
     protected String createDatabaseCommand;
