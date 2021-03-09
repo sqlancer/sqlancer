@@ -137,7 +137,7 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
         host = globalState.getOptions().getHost();
         port = globalState.getOptions().getPort();
         if ("sqlancer".equals(host)) {
-            host = "127.0.0.1";
+            host = "localhost";
         }
         if ("sqlancer".equals(port)) {
             port = "4000";
