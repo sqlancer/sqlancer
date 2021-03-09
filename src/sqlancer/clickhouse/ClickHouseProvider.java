@@ -104,19 +104,19 @@ public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState
 
     @Override
     public SQLConnection createDatabase(ClickHouseGlobalState globalState) throws SQLException {
-	host = globalState.getOptions().getHost();
-	port = globalState.getOptions().getPort();
-	if("sqlancer".equals(host)){
-	    host = "localhost";
-	}
-	if("sqlancer".equals(port)){
-	    port = "8123";
-	}
+        host = globalState.getOptions().getHost();
+        port = globalState.getOptions().getPort();
+        if ("sqlancer".equals(host)) {
+            host = "localhost";
+        }
+        if ("sqlancer".equals(port)) {
+            port = "8123";
+        }
 
         ClickHouseOptions clickHouseOptions = globalState.getDmbsSpecificOptions();
         globalState.setClickHouseOptions(clickHouseOptions);
-        //String url = "jdbc:clickhouse://localhost:8123/default";
-	String url = "jdbc:clickhouse://" + host + ":" + port + "/defult";
+        // String url = "jdbc:clickhouse://localhost:8123/default";
+        String url = "jdbc:clickhouse://" + host + ":" + port + "/defult";
         String databaseName = globalState.getDatabaseName();
         Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
                 globalState.getOptions().getPassword());

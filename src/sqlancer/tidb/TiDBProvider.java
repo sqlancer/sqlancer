@@ -134,18 +134,18 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
 
     @Override
     public SQLConnection createDatabase(TiDBGlobalState globalState) throws SQLException {
-	host = globalState.getOptions().getHost();
-	port = globalState.getOptions().getPort();
-	if("sqlancer".equals(host)){
-	    host = "127.0.0.1";
-	}
-	if("sqlancer".equals(port)){
-	    port = "4000";
-	}
+        host = globalState.getOptions().getHost();
+        port = globalState.getOptions().getPort();
+        if ("sqlancer".equals(host)) {
+            host = "127.0.0.1";
+        }
+        if ("sqlancer".equals(port)) {
+            port = "4000";
+        }
 
         String databaseName = globalState.getDatabaseName();
-        //String url = "jdbc:mysql://127.0.0.1:4000/";
-	String url = "jdbc:mysql://" + host + ":" + port + "/";
+        // String url = "jdbc:mysql://127.0.0.1:4000/";
+        String url = "jdbc:mysql://" + host + ":" + port + "/";
         Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
                 globalState.getOptions().getPassword());
         globalState.getState().logStatement("USE test");

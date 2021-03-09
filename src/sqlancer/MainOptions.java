@@ -55,7 +55,6 @@ public class MainOptions {
     @Parameter(names = "--port", description = "The port used to log into the DBMS")
     private String port = "sqlancer"; // NOPMD
 
-
     @Parameter(names = "--print-progress-information", description = "Whether to print progress information such as the number of databases generated or queries issued", arity = 1)
     private boolean printProgressInformation = true; // NOPMD
 
@@ -158,11 +157,11 @@ public class MainOptions {
         return password;
     }
 
-    public String getHost(){
+    public String getHost() {
         return host;
     }
 
-    public String getPort(){
+    public String getPort() {
         return port;
     }
 
