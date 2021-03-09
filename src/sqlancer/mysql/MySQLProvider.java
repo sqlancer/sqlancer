@@ -31,6 +31,10 @@ import sqlancer.mysql.gen.tblmaintenance.MySQLOptimize;
 import sqlancer.mysql.gen.tblmaintenance.MySQLRepair;
 
 public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOptions> {
+    protected String username;
+    protected String password;
+    protected String host;
+    protected String port;
 
     public MySQLProvider() {
         super(MySQLGlobalState.class, MySQLOptions.class);
@@ -149,12 +153,21 @@ public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOpt
 
     @Override
     public SQLConnection createDatabase(MySQLGlobalState globalState) throws SQLException {
+	host = globalState.getOptions().getHost();
+	port = globalState.getOptions().getPort();
+	if("sqlancer".equals(host)){
+	    host = "localhost";
+	}
+	if("sqlancer".equals(port)){
+	    port = "3306";
+	}
         String databaseName = globalState.getDatabaseName();
         globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
         globalState.getState().logStatement("CREATE DATABASE " + databaseName);
         globalState.getState().logStatement("USE " + databaseName);
-        String url = "jdbc:mysql://localhost:3306/?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true";
-        Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
+        String url = "jdbc:mysql://" + host + ":" + port + "?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true";
+	System.out.println("url: "+ url);
+	Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
                 globalState.getOptions().getPassword());
         try (Statement s = con.createStatement()) {
             s.execute("DROP DATABASE IF EXISTS " + databaseName);
