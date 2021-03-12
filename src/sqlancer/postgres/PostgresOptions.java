@@ -32,7 +32,7 @@ public class PostgresOptions implements DBMSSpecificOptions<PostgresOracleFactor
     public boolean testCollations = true;
 
     @Parameter(names = "--connection-url", description = "Specifies the URL for connecting to the PostgreSQL server", arity = 1)
-    public String connectionURL = "postgresql://localhost:5432/test";
+    public String connectionURL = "postgresql://localhost:5432/template1";
 
     public enum PostgresOracleFactory implements OracleFactory<PostgresGlobalState> {
         NOREC {
