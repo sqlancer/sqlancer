@@ -203,19 +203,19 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         password = globalState.getOptions().getPassword();
         host = globalState.getOptions().getHost();
         port = globalState.getOptions().getPort();
-        entryPath = "/test";
         entryURL = globalState.getDmbsSpecificOptions().connectionURL;
         // trim URL to exclude "jdbc:"
         if (entryURL.startsWith("jdbc:")) {
             entryURL = entryURL.substring(5);
         }
-        String entryDatabaseName = entryPath.substring(1);
+        String entryDatabaseName = null;
         databaseName = globalState.getDatabaseName();
 
         try {
             URI uri = new URI(entryURL);
             String userInfoURI = uri.getUserInfo();
             String pathURI = uri.getPath();
+	    entryDatabaseName = pathURI.substring(1);
             if (userInfoURI != null) {
                 // username and password specified in URL take precedence
                 if (userInfoURI.contains(":")) {
