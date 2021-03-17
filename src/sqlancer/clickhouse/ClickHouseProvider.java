@@ -116,7 +116,7 @@ public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState
         ClickHouseOptions clickHouseOptions = globalState.getDmbsSpecificOptions();
         globalState.setClickHouseOptions(clickHouseOptions);
         // String url = "jdbc:clickhouse://localhost:8123/default";
-        String url = "jdbc:clickhouse://" + host + ":" + port + "/defult";
+        String url = "jdbc:clickhouse://" + host + ":" + port + "/default";
         String databaseName = globalState.getDatabaseName();
         Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
                 globalState.getOptions().getPassword());
