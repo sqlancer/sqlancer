@@ -260,7 +260,8 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
         }
         String databaseName = globalState.getDatabaseName();
         // String url = "jdbc:postgresql://localhost:26257/test";
-        String url = "jdbc:postgresql://" + host + ":" + port + "/test";
+        // String url = "jdbc:postgresql://" + host + ":" + port + "/test";
+        String url = String.format("jdbc:postgresql://%s:%s/test", host, port);
         Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
                 globalState.getOptions().getPassword());
         globalState.getState().logStatement("USE test");

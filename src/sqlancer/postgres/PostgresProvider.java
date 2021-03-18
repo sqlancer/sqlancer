@@ -240,7 +240,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
             if ("sqlancer".equals(port)) {
                 port = Integer.toString(uri.getPort());
             }
-            entryURL = uri.getScheme() + "://" + host + ":" + port + "/" + entryDatabaseName;
+            entryURL = String.format("%s://%s:%s/%s", uri.getScheme(), host, port, entryDatabaseName);
         } catch (URISyntaxException e) {
             throw new AssertionError(e);
         }
