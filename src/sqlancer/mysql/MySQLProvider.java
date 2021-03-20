@@ -34,7 +34,7 @@ public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOpt
     protected String username;
     protected String password;
     protected String host;
-    protected String port;
+    protected int port;
 
     public MySQLProvider() {
         super(MySQLGlobalState.class, MySQLOptions.class);
@@ -157,11 +157,11 @@ public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOpt
         password = globalState.getOptions().getPassword();
         host = globalState.getOptions().getHost();
         port = globalState.getOptions().getPort();
-        if ("sqlancer".equals(host)) {
+        if (host == null) {
             host = "localhost";
         }
-        if ("sqlancer".equals(port)) {
-            port = "3306";
+        if (port == -1) {
+            port = 3306;
         }
         String databaseName = globalState.getDatabaseName();
         globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
@@ -169,7 +169,7 @@ public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOpt
         globalState.getState().logStatement("USE " + databaseName);
         // String url = "jdbc:mysql://" + host + ":" + port
         // + "?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true";
-        String url = String.format("jdbc:mysql://%s:%s?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true",
+        String url = String.format("jdbc:mysql://%s:%d?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true",
                 host, port);
         Connection con = DriverManager.getConnection(url, username, password);
         try (Statement s = con.createStatement()) {

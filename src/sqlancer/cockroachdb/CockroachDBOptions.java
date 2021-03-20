@@ -23,7 +23,7 @@ import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPWhereOracle;
 import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
 
-@Parameters(separators = "=", commandDescription = "Test CockroachDB")
+@Parameters(separators = "=", commandDescription = "CockroachDB (default port: 26257, default host: localhost)")
 public class CockroachDBOptions implements DBMSSpecificOptions<CockroachDBOracleFactory> {
 
     @Parameter(names = "--oracle")

@@ -18,7 +18,7 @@ import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPHavingOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPWhereOracle;
 import sqlancer.common.oracle.TestOracle;
 
-@Parameters(separators = "=", commandDescription = "ClickHouse")
+@Parameters(separators = "=", commandDescription = "ClickHouse (default port: 8123, default host: localhost)")
 public class ClickHouseOptions implements DBMSSpecificOptions<ClickHouseOracleFactory> {
 
     @Parameter(names = "--oracle")

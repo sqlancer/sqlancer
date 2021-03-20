@@ -30,7 +30,7 @@ public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, Mari
     protected String username;
     protected String password;
     protected String host;
-    protected String port;
+    protected int port;
 
     public MariaDBProvider() {
         super(MariaDBGlobalState.class, MariaDBOptions.class);
@@ -177,14 +177,14 @@ public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, Mari
         password = globalState.getOptions().getPassword();
         host = globalState.getOptions().getHost();
         port = globalState.getOptions().getPort();
-        if ("sqlancer".equals(host)) {
+        if (host == null) {
             host = "localhost";
         }
-        if ("sqlancer".equals(port)) {
-            port = "3306";
+        if (port == -1) {
+            port = 3306;
         }
         // String url = "jdbc:mariadb://" + host + ":" + port;
-        String url = String.format("jdbc:mariadb://%s:%s", host, port);
+        String url = String.format("jdbc:mariadb://%s:%d", host, port);
         Connection con = DriverManager.getConnection(url, username, password);
         try (Statement s = con.createStatement()) {
             s.execute("DROP DATABASE IF EXISTS " + globalState.getDatabaseName());

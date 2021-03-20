@@ -29,7 +29,7 @@ import sqlancer.tidb.gen.TiDBViewGenerator;
 
 public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOptions> {
     protected String host;
-    protected String port;
+    protected int port;
 
     public TiDBProvider() {
         super(TiDBGlobalState.class, TiDBOptions.class);
@@ -136,17 +136,17 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
     public SQLConnection createDatabase(TiDBGlobalState globalState) throws SQLException {
         host = globalState.getOptions().getHost();
         port = globalState.getOptions().getPort();
-        if ("sqlancer".equals(host)) {
+        if (host == null) {
             host = "localhost";
         }
-        if ("sqlancer".equals(port)) {
-            port = "4000";
+        if (port == -1) {
+            port = 4000;
         }
 
         String databaseName = globalState.getDatabaseName();
         // String url = "jdbc:mysql://127.0.0.1:4000/";
         // String url = "jdbc:mysql://" + host + ":" + port + "/";
-        String url = String.format("jdbc:mysql://%s:%s/", host, port);
+        String url = String.format("jdbc:mysql://%s:%d/", host, port);
         Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
                 globalState.getOptions().getPassword());
         globalState.getState().logStatement("USE test");

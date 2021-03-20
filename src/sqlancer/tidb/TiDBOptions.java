@@ -17,7 +17,7 @@ import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.oracle.TiDBTLPHavingOracle;
 import sqlancer.tidb.oracle.TiDBTLPWhereOracle;
 
-@Parameters
+@Parameters(separators = "=", commandDescription = "PostgreSQL (default port: 4000, default host: localhost)")
 public class TiDBOptions implements DBMSSpecificOptions<TiDBOracleFactory> {
 
     @Parameter(names = "--oracle")

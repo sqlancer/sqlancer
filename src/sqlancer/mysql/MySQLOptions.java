@@ -14,7 +14,7 @@ import sqlancer.mysql.MySQLOptions.MySQLOracleFactory;
 import sqlancer.mysql.oracle.MySQLPivotedQuerySynthesisOracle;
 import sqlancer.mysql.oracle.MySQLTLPWhereOracle;
 
-@Parameters
+@Parameters(separators = "=", commandDescription = "MySQL (default port: 3306, default host: localhost)")
 public class MySQLOptions implements DBMSSpecificOptions<MySQLOracleFactory> {
 
     @Parameter(names = "--oracle")

@@ -36,7 +36,7 @@ import sqlancer.common.query.SQLQueryProvider;
 
 public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalState, CockroachDBOptions> {
     protected String host;
-    protected String port;
+    protected int port;
 
     public CockroachDBProvider() {
         super(CockroachDBGlobalState.class, CockroachDBOptions.class);
@@ -252,16 +252,16 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
     public SQLConnection createDatabase(CockroachDBGlobalState globalState) throws SQLException {
         host = globalState.getOptions().getHost();
         port = globalState.getOptions().getPort();
-        if ("sqlancer".equals(host)) {
+        if (host == null) {
             host = "localhost";
         }
-        if ("sqlancer".equals(port)) {
-            port = "26257";
+        if (port == -1) {
+            port = 26257;
         }
         String databaseName = globalState.getDatabaseName();
         // String url = "jdbc:postgresql://localhost:26257/test";
         // String url = "jdbc:postgresql://" + host + ":" + port + "/test";
-        String url = String.format("jdbc:postgresql://%s:%s/test", host, port);
+        String url = String.format("jdbc:postgresql://%s:%d/test", host, port);
         Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
                 globalState.getOptions().getPassword());
         globalState.getState().logStatement("USE test");

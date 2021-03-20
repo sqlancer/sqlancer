@@ -54,7 +54,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
     protected String password;
     protected String entryPath;
     protected String host;
-    protected String port;
+    protected int port;
     protected String testURL;
     protected String databaseName;
     protected String createDatabaseCommand;
@@ -234,13 +234,13 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
             if (pathURI != null) {
                 entryPath = pathURI;
             }
-            if ("sqlancer".equals(host)) {
+            if (host == null) {
                 host = uri.getHost();
             }
-            if ("sqlancer".equals(port)) {
-                port = Integer.toString(uri.getPort());
+            if (port == -1) {
+                port = uri.getPort();
             }
-            entryURL = String.format("%s://%s:%s/%s", uri.getScheme(), host, port, entryDatabaseName);
+            entryURL = String.format("%s://%s:%d/%s", uri.getScheme(), host, port, entryDatabaseName);
         } catch (URISyntaxException e) {
             throw new AssertionError(e);
         }

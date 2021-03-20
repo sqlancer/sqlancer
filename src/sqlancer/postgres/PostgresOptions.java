@@ -19,7 +19,7 @@ import sqlancer.postgres.oracle.tlp.PostgresTLPAggregateOracle;
 import sqlancer.postgres.oracle.tlp.PostgresTLPHavingOracle;
 import sqlancer.postgres.oracle.tlp.PostgresTLPWhereOracle;
 
-@Parameters
+@Parameters(separators = "=", commandDescription = "PostgreSQL (default port: 5432, default host: localhost)")
 public class PostgresOptions implements DBMSSpecificOptions<PostgresOracleFactory> {
 
     @Parameter(names = "--bulk-insert", description = "Specifies whether INSERT statements should be issued in bulk", arity = 1)

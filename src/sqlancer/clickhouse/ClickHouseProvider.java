@@ -22,7 +22,7 @@ import sqlancer.common.query.SQLQueryProvider;
 
 public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState, ClickHouseOptions> {
     protected String host;
-    protected String port;
+    protected int port;
 
     public ClickHouseProvider() {
         super(ClickHouseGlobalState.class, ClickHouseOptions.class);
@@ -106,17 +106,17 @@ public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState
     public SQLConnection createDatabase(ClickHouseGlobalState globalState) throws SQLException {
         host = globalState.getOptions().getHost();
         port = globalState.getOptions().getPort();
-        if ("sqlancer".equals(host)) {
+        if (host == null) {
             host = "localhost";
         }
-        if ("sqlancer".equals(port)) {
-            port = "8123";
+        if (port == -1) {
+            port = 8123;
         }
 
         ClickHouseOptions clickHouseOptions = globalState.getDmbsSpecificOptions();
         globalState.setClickHouseOptions(clickHouseOptions);
         // String url = "jdbc:clickhouse://localhost:8123/default";
-        String url = String.format("jdbc:clickhouse://%s:%s/default", host, port);
+        String url = String.format("jdbc:clickhouse://%s:%d/default", host, port);
         // String url = "jdbc:clickhouse://" + host + ":" + port + "/default";
         String databaseName = globalState.getDatabaseName();
         Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
