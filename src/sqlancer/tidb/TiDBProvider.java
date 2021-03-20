@@ -145,8 +145,6 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
         }
 
         String databaseName = globalState.getDatabaseName();
-        // String url = "jdbc:mysql://127.0.0.1:4000/";
-        // String url = "jdbc:mysql://" + host + ":" + port + "/";
         String url = String.format("jdbc:mysql://%s:%d/", host, port);
         Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
                 globalState.getOptions().getPassword());

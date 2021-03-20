@@ -168,8 +168,6 @@ public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOpt
         globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
         globalState.getState().logStatement("CREATE DATABASE " + databaseName);
         globalState.getState().logStatement("USE " + databaseName);
-        // String url = "jdbc:mysql://" + host + ":" + port
-        // + "?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true";
         String url = String.format("jdbc:mysql://%s:%d?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true",
                 host, port);
         Connection con = DriverManager.getConnection(url, username, password);
