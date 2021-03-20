@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
 import sqlancer.IgnoreMeException;
+import sqlancer.MainOptions;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.SQLGlobalState;
@@ -107,10 +108,10 @@ public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState
         host = globalState.getOptions().getHost();
         port = globalState.getOptions().getPort();
         if (host == null) {
-            host = "localhost";
+            host = ClickHouseOptions.DEFAULT_HOST;
         }
-        if (port == -1) {
-            port = 8123;
+        if (port == MainOptions.NO_SET_PORT) {
+            port = ClickHouseOptions.DEFAULT_PORT;
         }
 
         ClickHouseOptions clickHouseOptions = globalState.getDmbsSpecificOptions();

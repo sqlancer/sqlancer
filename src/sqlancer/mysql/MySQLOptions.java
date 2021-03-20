@@ -16,6 +16,8 @@ import sqlancer.mysql.oracle.MySQLTLPWhereOracle;
 
 @Parameters(separators = "=", commandDescription = "MySQL (default port: 3306, default host: localhost)")
 public class MySQLOptions implements DBMSSpecificOptions<MySQLOracleFactory> {
+    public static final String DEFAULT_HOST = "localhost";
+    public static final int DEFAULT_PORT = 3306;
 
     @Parameter(names = "--oracle")
     public List<MySQLOracleFactory> oracles = Arrays.asList(MySQLOracleFactory.TLP_WHERE);

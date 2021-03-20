@@ -21,6 +21,8 @@ import sqlancer.postgres.oracle.tlp.PostgresTLPWhereOracle;
 
 @Parameters(separators = "=", commandDescription = "PostgreSQL (default port: 5432, default host: localhost)")
 public class PostgresOptions implements DBMSSpecificOptions<PostgresOracleFactory> {
+    public static final String DEFAULT_HOST = "localhost";
+    public static final int DEFAULT_PORT = 5432;
 
     @Parameter(names = "--bulk-insert", description = "Specifies whether INSERT statements should be issued in bulk", arity = 1)
     public boolean allowBulkInsert;
@@ -32,7 +34,8 @@ public class PostgresOptions implements DBMSSpecificOptions<PostgresOracleFactor
     public boolean testCollations = true;
 
     @Parameter(names = "--connection-url", description = "Specifies the URL for connecting to the PostgreSQL server", arity = 1)
-    public String connectionURL = "postgresql://localhost:5432/test";
+    public String connectionURL = String.format("postgresql://%s:%d/test", PostgresOptions.DEFAULT_HOST,
+            PostgresOptions.DEFAULT_PORT);
 
     public enum PostgresOracleFactory implements OracleFactory<PostgresGlobalState> {
         NOREC {

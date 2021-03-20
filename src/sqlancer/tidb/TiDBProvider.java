@@ -7,6 +7,7 @@ import java.sql.Statement;
 
 import sqlancer.AbstractAction;
 import sqlancer.IgnoreMeException;
+import sqlancer.MainOptions;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.SQLGlobalState;
@@ -137,10 +138,10 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
         host = globalState.getOptions().getHost();
         port = globalState.getOptions().getPort();
         if (host == null) {
-            host = "localhost";
+            host = TiDBOptions.DEFAULT_HOST;
         }
-        if (port == -1) {
-            port = 4000;
+        if (port == MainOptions.NO_SET_PORT) {
+            port = TiDBOptions.DEFAULT_PORT;
         }
 
         String databaseName = globalState.getDatabaseName();

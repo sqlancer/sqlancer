@@ -19,6 +19,8 @@ import sqlancer.tidb.oracle.TiDBTLPWhereOracle;
 
 @Parameters(separators = "=", commandDescription = "PostgreSQL (default port: 4000, default host: localhost)")
 public class TiDBOptions implements DBMSSpecificOptions<TiDBOracleFactory> {
+    public static final String DEFAULT_HOST = "localhost";
+    public static final int DEFAULT_PORT = 4000;
 
     @Parameter(names = "--oracle")
     public List<TiDBOracleFactory> oracle = Arrays.asList(TiDBOracleFactory.QUERY_PARTITIONING);

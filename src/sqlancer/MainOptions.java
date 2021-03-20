@@ -7,6 +7,7 @@ import sqlancer.Randomly.StringGenerationStrategy;
 
 @Parameters(separators = "=", commandDescription = "Options applicable to all DBMS")
 public class MainOptions {
+    public static final int NO_SET_PORT = -1;
 
     @Parameter(names = { "--help", "-h" }, description = "Lists all supported options and commands", help = true)
     private boolean help; // NOPMD
@@ -53,7 +54,7 @@ public class MainOptions {
     private String host = null; // NOPMD
 
     @Parameter(names = "--port", description = "The port used to log into the DBMS")
-    private int port = -1; // NOPMD
+    private int port = MainOptions.NO_SET_PORT; // NOPMD
 
     @Parameter(names = "--print-progress-information", description = "Whether to print progress information such as the number of databases generated or queries issued", arity = 1)
     private boolean printProgressInformation = true; // NOPMD

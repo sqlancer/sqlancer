@@ -16,6 +16,8 @@ import sqlancer.mariadb.oracle.MariaDBNoRECOracle;
 
 @Parameters(separators = "=", commandDescription = "MariaDB (default port: 3306, default host: localhost)")
 public class MariaDBOptions implements DBMSSpecificOptions<MariaDBOracleFactory> {
+    public static final String DEFAULT_HOST = "localhost";
+    public static final int DEFAULT_PORT = 3306;
 
     @Parameter(names = "--oracle")
     public List<MariaDBOracleFactory> oracles = Arrays.asList(MariaDBOracleFactory.NOREC);

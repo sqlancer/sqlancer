@@ -178,10 +178,10 @@ public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, Mari
         host = globalState.getOptions().getHost();
         port = globalState.getOptions().getPort();
         if (host == null) {
-            host = "localhost";
+            host = MariaDBOptions.DEFAULT_HOST;
         }
-        if (port == -1) {
-            port = 3306;
+        if (port == MainOptions.NO_SET_PORT) {
+            port = MariaDBOptions.DEFAULT_PORT;
         }
         // String url = "jdbc:mariadb://" + host + ":" + port;
         String url = String.format("jdbc:mariadb://%s:%d", host, port);

@@ -253,10 +253,10 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
         host = globalState.getOptions().getHost();
         port = globalState.getOptions().getPort();
         if (host == null) {
-            host = "localhost";
+            host = CockroachDBOptions.DEFAULT_HOST;
         }
-        if (port == -1) {
-            port = 26257;
+        if (port == MainOptions.NO_SET_PORT) {
+            port = CockroachDBOptions.DEFAULT_PORT;
         }
         String databaseName = globalState.getDatabaseName();
         // String url = "jdbc:postgresql://localhost:26257/test";

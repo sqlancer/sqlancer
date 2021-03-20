@@ -7,6 +7,7 @@ import java.sql.Statement;
 
 import sqlancer.AbstractAction;
 import sqlancer.IgnoreMeException;
+import sqlancer.MainOptions;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.SQLProviderAdapter;
@@ -158,10 +159,10 @@ public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOpt
         host = globalState.getOptions().getHost();
         port = globalState.getOptions().getPort();
         if (host == null) {
-            host = "localhost";
+            host = MySQLOptions.DEFAULT_HOST;
         }
-        if (port == -1) {
-            port = 3306;
+        if (port == MainOptions.NO_SET_PORT) {
+            port = MySQLOptions.DEFAULT_PORT;
         }
         String databaseName = globalState.getDatabaseName();
         globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);

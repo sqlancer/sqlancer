@@ -10,6 +10,7 @@ import java.util.Arrays;
 
 import sqlancer.AbstractAction;
 import sqlancer.IgnoreMeException;
+import sqlancer.MainOptions;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.SQLProviderAdapter;
@@ -237,7 +238,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
             if (host == null) {
                 host = uri.getHost();
             }
-            if (port == -1) {
+            if (port == MainOptions.NO_SET_PORT) {
                 port = uri.getPort();
             }
             entryURL = String.format("%s://%s:%d/%s", uri.getScheme(), host, port, entryDatabaseName);

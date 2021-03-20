@@ -25,6 +25,8 @@ import sqlancer.common.oracle.TestOracle;
 
 @Parameters(separators = "=", commandDescription = "CockroachDB (default port: 26257, default host: localhost)")
 public class CockroachDBOptions implements DBMSSpecificOptions<CockroachDBOracleFactory> {
+    public static final String DEFAULT_HOST = "localhost";
+    public static final int DEFAULT_PORT = 26257;
 
     @Parameter(names = "--oracle")
     public CockroachDBOracleFactory oracle = CockroachDBOracleFactory.NOREC;

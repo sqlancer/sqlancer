@@ -20,6 +20,8 @@ import sqlancer.common.oracle.TestOracle;
 
 @Parameters(separators = "=", commandDescription = "ClickHouse (default port: 8123, default host: localhost)")
 public class ClickHouseOptions implements DBMSSpecificOptions<ClickHouseOracleFactory> {
+    public static final String DEFAULT_HOST = "localhost";
+    public static final int DEFAULT_PORT = 8123;
 
     @Parameter(names = "--oracle")
     public List<ClickHouseOracleFactory> oracle = Arrays.asList(ClickHouseOracleFactory.TLPWhere);
