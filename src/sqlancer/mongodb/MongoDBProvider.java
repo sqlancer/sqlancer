@@ -28,7 +28,7 @@ public class MongoDBProvider
         super(MongoDBGlobalState.class, MongoDBOptions.class);
     }
 
-    enum Action implements AbstractAction<MongoDBGlobalState> {
+    public enum Action implements AbstractAction<MongoDBGlobalState> {
         INSERT(MongoDBInsertGenerator::getQuery), CREATE_INDEX(MongoDBIndexGenerator::getQuery);
 
         private final MongoDBQueryProvider<MongoDBGlobalState> queryProvider;
@@ -43,7 +43,7 @@ public class MongoDBProvider
         }
     }
 
-    private static int mapActions(MongoDBGlobalState globalState, Action a) {
+    public static int mapActions(MongoDBGlobalState globalState, Action a) {
         Randomly r = globalState.getRandomly();
         switch (a) {
         case INSERT:
