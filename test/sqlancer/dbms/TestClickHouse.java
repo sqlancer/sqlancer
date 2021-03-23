@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import org.junit.jupiter.api.Test;
+
 import sqlancer.Main;
 
 public class TestClickHouse {
@@ -33,10 +34,9 @@ public class TestClickHouse {
         String clickHouseAvailable = System.getenv("CLICKHOUSE_AVAILABLE");
         boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
         assumeTrue(clickHouseIsAvailable);
-        assertEquals(0, Main.executeMain("--timeout-seconds", "60", "--num-queries", "0", "--num-threads", "5",
-                "--username", "default", "--password", "", "clickhouse", "--oracle", "TLPHaving")); // Disabled
-                                                                                                    // in CI
-                                                                                                    // https://github.com/ClickHouse/ClickHouse/issues/12264
+        assertEquals(0,
+                Main.executeMain("--timeout-seconds", "60", "--num-queries", TestConfig.NUM_QUERIES, "--num-threads",
+                        "5", "--username", "default", "--password", "", "clickhouse", "--oracle", "TLPHaving"));
     }
 
     @Test
