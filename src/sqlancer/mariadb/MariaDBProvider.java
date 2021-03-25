@@ -167,10 +167,18 @@ public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, Mari
         globalState.getState().logStatement("DROP DATABASE IF EXISTS " + globalState.getDatabaseName());
         globalState.getState().logStatement("CREATE DATABASE " + globalState.getDatabaseName());
         globalState.getState().logStatement("USE " + globalState.getDatabaseName());
-        // /?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
-        String url = "jdbc:mariadb://localhost:3306";
-        Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
-                globalState.getOptions().getPassword());
+        String username = globalState.getOptions().getUserName();
+        String password = globalState.getOptions().getPassword();
+        String host = globalState.getOptions().getHost();
+        int port = globalState.getOptions().getPort();
+        if (host == null) {
+            host = MariaDBOptions.DEFAULT_HOST;
+        }
+        if (port == MainOptions.NO_SET_PORT) {
+            port = MariaDBOptions.DEFAULT_PORT;
+        }
+        String url = String.format("jdbc:mariadb://%s:%d", host, port);
+        Connection con = DriverManager.getConnection(url, username, password);
         try (Statement s = con.createStatement()) {
             s.execute("DROP DATABASE IF EXISTS " + globalState.getDatabaseName());
         }

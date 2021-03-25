@@ -18,8 +18,11 @@ import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPHavingOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPWhereOracle;
 import sqlancer.common.oracle.TestOracle;
 
-@Parameters(separators = "=", commandDescription = "ClickHouse")
+@Parameters(separators = "=", commandDescription = "ClickHouse (default port: " + ClickHouseOptions.DEFAULT_PORT
+        + ", default host: " + ClickHouseOptions.DEFAULT_HOST)
 public class ClickHouseOptions implements DBMSSpecificOptions<ClickHouseOracleFactory> {
+    public static final String DEFAULT_HOST = "localhost";
+    public static final int DEFAULT_PORT = 8123;
 
     @Parameter(names = "--oracle")
     public List<ClickHouseOracleFactory> oracle = Arrays.asList(ClickHouseOracleFactory.TLPWhere);

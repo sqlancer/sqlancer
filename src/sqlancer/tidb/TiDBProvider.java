@@ -7,6 +7,7 @@ import java.sql.Statement;
 
 import sqlancer.AbstractAction;
 import sqlancer.IgnoreMeException;
+import sqlancer.MainOptions;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.SQLGlobalState;
@@ -132,8 +133,17 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
 
     @Override
     public SQLConnection createDatabase(TiDBGlobalState globalState) throws SQLException {
+        String host = globalState.getOptions().getHost();
+        int port = globalState.getOptions().getPort();
+        if (host == null) {
+            host = TiDBOptions.DEFAULT_HOST;
+        }
+        if (port == MainOptions.NO_SET_PORT) {
+            port = TiDBOptions.DEFAULT_PORT;
+        }
+
         String databaseName = globalState.getDatabaseName();
-        String url = "jdbc:mysql://127.0.0.1:4000/";
+        String url = String.format("jdbc:mysql://%s:%d/", host, port);
         Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
                 globalState.getOptions().getPassword());
         globalState.getState().logStatement("USE test");

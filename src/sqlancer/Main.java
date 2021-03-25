@@ -453,7 +453,7 @@ public final class Main {
                         .testConnection();
             } catch (Exception e) {
                 System.err.println(
-                        "SQLancer failed creating a test database, indicating that SQLancer might have failed connecting to the DBMS. In order to change the username and password, you can use the --username and --password options. Currently, SQLancer does not yet support passing a host and port (see https://github.com/sqlancer/sqlancer/issues/95).\n\n");
+                        "SQLancer failed creating a test database, indicating that SQLancer might have failed connecting to the DBMS. In order to change the username, password, host and port, you can use the --username, --password, --host and --port options.\n\n");
                 e.printStackTrace();
                 return options.getErrorExitCode();
             }

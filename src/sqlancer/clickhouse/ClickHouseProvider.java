@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.AbstractAction;
 import sqlancer.IgnoreMeException;
+import sqlancer.MainOptions;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.SQLGlobalState;
@@ -102,9 +103,18 @@ public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState
 
     @Override
     public SQLConnection createDatabase(ClickHouseGlobalState globalState) throws SQLException {
+        String host = globalState.getOptions().getHost();
+        int port = globalState.getOptions().getPort();
+        if (host == null) {
+            host = ClickHouseOptions.DEFAULT_HOST;
+        }
+        if (port == MainOptions.NO_SET_PORT) {
+            port = ClickHouseOptions.DEFAULT_PORT;
+        }
+
         ClickHouseOptions clickHouseOptions = globalState.getDmbsSpecificOptions();
         globalState.setClickHouseOptions(clickHouseOptions);
-        String url = "jdbc:clickhouse://localhost:8123/default";
+        String url = String.format("jdbc:clickhouse://%s:%d/default", host, port);
         String databaseName = globalState.getDatabaseName();
         Connection con = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
                 globalState.getOptions().getPassword());

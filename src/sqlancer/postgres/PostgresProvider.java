@@ -10,6 +10,7 @@ import java.util.Arrays;
 
 import sqlancer.AbstractAction;
 import sqlancer.IgnoreMeException;
+import sqlancer.MainOptions;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.SQLProviderAdapter;
@@ -54,6 +55,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
     protected String password;
     protected String entryPath;
     protected String host;
+    protected int port;
     protected String testURL;
     protected String databaseName;
     protected String createDatabaseCommand;
@@ -200,12 +202,17 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
 
         username = globalState.getOptions().getUserName();
         password = globalState.getOptions().getPassword();
+        host = globalState.getOptions().getHost();
+        port = globalState.getOptions().getPort();
         entryPath = "/test";
         entryURL = globalState.getDmbsSpecificOptions().connectionURL;
         // trim URL to exclude "jdbc:"
         if (entryURL.startsWith("jdbc:")) {
             entryURL = entryURL.substring(5);
         }
+        String entryDatabaseName = entryPath.substring(1);
+        databaseName = globalState.getDatabaseName();
+
         try {
             URI uri = new URI(entryURL);
             String userInfoURI = uri.getUserInfo();
@@ -228,12 +235,16 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
             if (pathURI != null) {
                 entryPath = pathURI;
             }
-            host = uri.getHost();
+            if (host == null) {
+                host = uri.getHost();
+            }
+            if (port == MainOptions.NO_SET_PORT) {
+                port = uri.getPort();
+            }
+            entryURL = String.format("%s://%s:%d/%s", uri.getScheme(), host, port, entryDatabaseName);
         } catch (URISyntaxException e) {
             throw new AssertionError(e);
         }
-        String entryDatabaseName = entryPath.substring(1);
-        databaseName = globalState.getDatabaseName();
         Connection con = DriverManager.getConnection("jdbc:" + entryURL, username, password);
         globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
         globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
@@ -251,6 +262,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         String postDatabaseName = entryURL.substring(databaseIndex + entryDatabaseName.length());
         testURL = preDatabaseName + databaseName + postDatabaseName;
         globalState.getState().logStatement(String.format("\\c %s;", databaseName));
+
         con = DriverManager.getConnection("jdbc:" + testURL, username, password);
         return new SQLConnection(con);
     }
