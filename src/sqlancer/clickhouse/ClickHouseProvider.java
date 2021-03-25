@@ -22,8 +22,6 @@ import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 
 public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState, ClickHouseOptions> {
-    protected String host;
-    protected int port;
 
     public ClickHouseProvider() {
         super(ClickHouseGlobalState.class, ClickHouseOptions.class);
@@ -105,8 +103,8 @@ public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState
 
     @Override
     public SQLConnection createDatabase(ClickHouseGlobalState globalState) throws SQLException {
-        host = globalState.getOptions().getHost();
-        port = globalState.getOptions().getPort();
+        String host = globalState.getOptions().getHost();
+        int port = globalState.getOptions().getPort();
         if (host == null) {
             host = ClickHouseOptions.DEFAULT_HOST;
         }

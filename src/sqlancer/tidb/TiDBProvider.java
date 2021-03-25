@@ -29,8 +29,6 @@ import sqlancer.tidb.gen.TiDBUpdateGenerator;
 import sqlancer.tidb.gen.TiDBViewGenerator;
 
 public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOptions> {
-    protected String host;
-    protected int port;
 
     public TiDBProvider() {
         super(TiDBGlobalState.class, TiDBOptions.class);
@@ -135,8 +133,8 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
 
     @Override
     public SQLConnection createDatabase(TiDBGlobalState globalState) throws SQLException {
-        host = globalState.getOptions().getHost();
-        port = globalState.getOptions().getPort();
+        String host = globalState.getOptions().getHost();
+        int port = globalState.getOptions().getPort();
         if (host == null) {
             host = TiDBOptions.DEFAULT_HOST;
         }

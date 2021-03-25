@@ -32,10 +32,6 @@ import sqlancer.mysql.gen.tblmaintenance.MySQLOptimize;
 import sqlancer.mysql.gen.tblmaintenance.MySQLRepair;
 
 public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOptions> {
-    protected String username;
-    protected String password;
-    protected String host;
-    protected int port;
 
     public MySQLProvider() {
         super(MySQLGlobalState.class, MySQLOptions.class);
@@ -154,10 +150,10 @@ public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOpt
 
     @Override
     public SQLConnection createDatabase(MySQLGlobalState globalState) throws SQLException {
-        username = globalState.getOptions().getUserName();
-        password = globalState.getOptions().getPassword();
-        host = globalState.getOptions().getHost();
-        port = globalState.getOptions().getPort();
+        String username = globalState.getOptions().getUserName();
+        String password = globalState.getOptions().getPassword();
+        String host = globalState.getOptions().getHost();
+        int port = globalState.getOptions().getPort();
         if (host == null) {
             host = MySQLOptions.DEFAULT_HOST;
         }

@@ -27,10 +27,6 @@ import sqlancer.mariadb.gen.MariaDBUpdateGenerator;
 public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, MariaDBOptions> {
 
     public static final int MAX_EXPRESSION_DEPTH = 3;
-    protected String username;
-    protected String password;
-    protected String host;
-    protected int port;
 
     public MariaDBProvider() {
         super(MariaDBGlobalState.class, MariaDBOptions.class);
@@ -171,10 +167,10 @@ public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, Mari
         globalState.getState().logStatement("DROP DATABASE IF EXISTS " + globalState.getDatabaseName());
         globalState.getState().logStatement("CREATE DATABASE " + globalState.getDatabaseName());
         globalState.getState().logStatement("USE " + globalState.getDatabaseName());
-        username = globalState.getOptions().getUserName();
-        password = globalState.getOptions().getPassword();
-        host = globalState.getOptions().getHost();
-        port = globalState.getOptions().getPort();
+        String username = globalState.getOptions().getUserName();
+        String password = globalState.getOptions().getPassword();
+        String host = globalState.getOptions().getHost();
+        int port = globalState.getOptions().getPort();
         if (host == null) {
             host = MariaDBOptions.DEFAULT_HOST;
         }

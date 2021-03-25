@@ -35,8 +35,6 @@ import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 
 public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalState, CockroachDBOptions> {
-    protected String host;
-    protected int port;
 
     public CockroachDBProvider() {
         super(CockroachDBGlobalState.class, CockroachDBOptions.class);
@@ -250,8 +248,8 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
 
     @Override
     public SQLConnection createDatabase(CockroachDBGlobalState globalState) throws SQLException {
-        host = globalState.getOptions().getHost();
-        port = globalState.getOptions().getPort();
+        String host = globalState.getOptions().getHost();
+        int port = globalState.getOptions().getPort();
         if (host == null) {
             host = CockroachDBOptions.DEFAULT_HOST;
         }
