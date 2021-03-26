@@ -30,6 +30,8 @@ public final class ClickHouseErrors {
         errors.add(" is not under aggregate function and not in GROUP BY");
         errors.add("Expected one of: compound identifier, identifier, list of elements (version"); // VALUES ()
         errors.add("OptimizedRegularExpression: cannot compile re2");
+        errors.add("because it is constant but values of constants are different in source and result"); // https://github.com/ClickHouse/ClickHouse/issues/22119
+        errors.add("is violated at row 1. Expression:"); // TODO: check constraint on table creation
     }
 
     public static void addExpressionHavingErrors(ExpectedErrors errors) {
