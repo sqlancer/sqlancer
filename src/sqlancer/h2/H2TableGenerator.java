@@ -102,6 +102,7 @@ public class H2TableGenerator {
             }
             errors.add("are not comparable");
             errors.add(" cannot be updatable by a referential constraint with"); // generated columns
+            errors.add("not found"); // Constraint "PRIMARY KEY | UNIQUE (C0)" not found;
         }
         sb.append(")");
         return new SQLQueryAdapter(sb.toString(), errors, true);
