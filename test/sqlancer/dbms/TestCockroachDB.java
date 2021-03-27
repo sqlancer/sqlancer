@@ -14,8 +14,10 @@ public class TestCockroachDB {
         String cockroachDB = System.getenv("COCKROACHDB_AVAILABLE");
         boolean cockroachDBIsAvailable = cockroachDB != null && cockroachDB.equalsIgnoreCase("true");
         assumeTrue(cockroachDBIsAvailable);
-        assertEquals(0, Main.executeMain(new String[] { "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS,
-                "--num-queries", TestConfig.NUM_QUERIES, "cockroachdb" }));
+        assertEquals(0,
+                Main.executeMain(new String[] { "--random-seed", "0", "--num-threads", "1",
+                        /* see https://github.com/cockroachdb/cockroach/issues/62281 */ "--timeout-seconds",
+                        TestConfig.SECONDS, "--num-queries", TestConfig.NUM_QUERIES, "cockroachdb" }));
     }
 
 }
