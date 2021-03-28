@@ -91,6 +91,7 @@ public class ArangoDBToQueryVisitor extends ArangoDBVisitor<ArangoDBExpression> 
         }
         ArangoDBComputedExpressionGenerator.ComputedFunction function = (ArangoDBComputedExpressionGenerator.ComputedFunction) expression
                 .getFunc();
+        // TODO: Support functions with a different number of arguments.
         if (function.getNrArgs() != 2) {
             throw new UnsupportedOperationException();
         }

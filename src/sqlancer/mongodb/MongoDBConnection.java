@@ -1,5 +1,8 @@
 package sqlancer.mongodb;
 
+import org.bson.BsonDocument;
+import org.bson.BsonString;
+
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 
@@ -17,7 +20,8 @@ public class MongoDBConnection implements SQLancerDBConnection {
 
     @Override
     public String getDatabaseVersion() throws Exception {
-        return "4.4, Java API 4.1";
+        return client.getDatabase("dbname").runCommand(new BsonDocument("buildinfo", new BsonString(""))).get("version")
+                .toString();
     }
 
     @Override

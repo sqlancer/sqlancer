@@ -105,7 +105,7 @@ public class MongoDBMatchExpressionGenerator
 
     private String getRandomizedRegexOptions() {
         List<String> s = Randomly.subset("i", "m", "x", "s");
-        return s.stream().reduce("", (current, newVal) -> current + newVal);
+        return String.join("", s);
     }
 
     @Override

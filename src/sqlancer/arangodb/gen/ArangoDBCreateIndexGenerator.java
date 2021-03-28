@@ -11,11 +11,8 @@ public final class ArangoDBCreateIndexGenerator {
     }
 
     public static ArangoDBQueryAdapter getQuery(ArangoDBProvider.ArangoDBGlobalState globalState) {
-        ArangoDBSchema.ArangoDBColumn column = null;
-        while (column == null) {
-            ArangoDBSchema.ArangoDBTable randomTable = globalState.getSchema().getRandomTable();
-            column = randomTable.getRandomColumn();
-        }
+        ArangoDBSchema.ArangoDBTable randomTable = globalState.getSchema().getRandomTable();
+        ArangoDBSchema.ArangoDBColumn column = randomTable.getRandomColumn();
         return new ArangoDBCreateIndexQuery(column);
     }
 }

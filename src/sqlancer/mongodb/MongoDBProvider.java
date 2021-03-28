@@ -59,7 +59,7 @@ public class MongoDBProvider
 
         private final List<MongoDBTable> schemaTables = new ArrayList<>();
 
-        public synchronized void addTable(MongoDBTable table) {
+        public void addTable(MongoDBTable table) {
             schemaTables.add(table);
         }
 

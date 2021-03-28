@@ -27,10 +27,10 @@ public final class ArangoDBComparatorHelper {
             result = query.getResultSet();
             return result;
         } catch (Exception e) {
-            Main.nrUnsuccessfulActions.addAndGet(1);
             if (e instanceof IgnoreMeException) {
                 throw e;
             }
+            Main.nrUnsuccessfulActions.addAndGet(1);
             if (e.getMessage() == null) {
                 throw new AssertionError(query.getLogString(), e);
             }

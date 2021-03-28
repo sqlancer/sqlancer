@@ -57,7 +57,7 @@ public class ArangoDBProvider
 
         private final List<ArangoDBSchema.ArangoDBTable> schemaTables = new ArrayList<>();
 
-        public synchronized void addTable(ArangoDBSchema.ArangoDBTable table) {
+        public void addTable(ArangoDBSchema.ArangoDBTable table) {
             schemaTables.add(table);
         }
 
@@ -111,6 +111,9 @@ public class ArangoDBProvider
         ArangoDatabase database = arangoDB.db(globalState.getDatabaseName());
         try {
             database.drop();
+            // When the database does not exist, an ArangoDB exception is thrown. Since we are not sure
+            // if this is the first time the database is used, the simplest is dropping it and ignoring
+            // the exception.
         } catch (Exception ignored) {
 
         }

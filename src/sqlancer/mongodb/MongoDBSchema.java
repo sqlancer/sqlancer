@@ -1,7 +1,10 @@
 package sqlancer.mongodb;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.bson.BsonType;
 
@@ -17,65 +20,28 @@ import sqlancer.mongodb.MongoDBProvider.MongoDBGlobalState;
 
 public class MongoDBSchema extends AbstractSchema<MongoDBGlobalState, MongoDBSchema.MongoDBTable> {
 
-    public enum MongoDBDataType implements HasBsonType {
-        INTEGER {
-            @Override
-            public BsonType getBsonType() {
-                return BsonType.INT32;
-            }
-        },
-        STRING {
-            @Override
-            public BsonType getBsonType() {
-                return BsonType.STRING;
-            }
-        },
-        BOOLEAN {
-            @Override
-            public BsonType getBsonType() {
-                return BsonType.BOOLEAN;
-            }
-        },
-        DOUBLE {
-            @Override
-            public BsonType getBsonType() {
-                return BsonType.DOUBLE;
-            }
-        },
-        DATE_TIME {
-            @Override
-            public BsonType getBsonType() {
-                return BsonType.DATE_TIME;
-            }
-        },
-        TIMESTAMP {
-            @Override
-            public BsonType getBsonType() {
-                return BsonType.TIMESTAMP;
-            }
-        };
+    public enum MongoDBDataType {
+        INTEGER(BsonType.INT32), STRING(BsonType.STRING), BOOLEAN(BsonType.BOOLEAN), DOUBLE(BsonType.DOUBLE),
+        DATE_TIME(BsonType.DATE_TIME), TIMESTAMP(BsonType.TIMESTAMP);
+
+        private final BsonType bsonType;
+
+        MongoDBDataType(BsonType type) {
+            this.bsonType = type;
+        }
+
+        public BsonType getBsonType() {
+            return bsonType;
+        }
 
         public static MongoDBDataType getRandom(MongoDBGlobalState state) {
-            MongoDBDataType[] valuesWithoutString;
+            Set<MongoDBDataType> valueSet = new HashSet<>(Arrays.asList(values()));
             if (state.getDmbsSpecificOptions().nullSafety) {
-                valuesWithoutString = new MongoDBDataType[values().length - 1];
-            } else {
-                valuesWithoutString = new MongoDBDataType[values().length];
+                valueSet.remove(STRING);
             }
-            int i = 0;
-            for (MongoDBDataType type : values()) {
-                if (type.equals(STRING) && state.getDmbsSpecificOptions().nullSafety) {
-                    continue;
-                }
-                valuesWithoutString[i] = type;
-                i++;
-            }
-            return Randomly.fromOptions(valuesWithoutString);
+            MongoDBDataType[] configuredValues = new MongoDBDataType[valueSet.size()];
+            return Randomly.fromOptions(valueSet.toArray(configuredValues));
         }
-    }
-
-    public interface HasBsonType {
-        BsonType getBsonType();
     }
 
     public static class MongoDBColumn extends AbstractTableColumn<MongoDBTable, MongoDBDataType> {
