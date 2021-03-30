@@ -58,6 +58,7 @@ public class DuckDBTableGenerator {
             if (Randomly.getBoolean() && globalState.getDmbsSpecificOptions().testDefaultValues) {
                 sb.append(" DEFAULT(");
                 sb.append(DuckDBToStringVisitor.asString(gen.generateConstant()));
+                DuckDBErrors.addExpressionErrors(errors);
                 sb.append(")");
             }
         }

@@ -50,6 +50,7 @@ public final class DuckDBErrors {
                                                     // removed column
         errors.add("Contents of view were altered: types don't match!");
         errors.add("Not implemented: ROUND(DECIMAL, INTEGER) with non-constant precision is not supported");
+        errors.add("Could not convert string"); // Could not convert string '1.7976931348623157E308' to DOUBLE
     }
 
     private static void addRegexErrors(ExpectedErrors errors) {
