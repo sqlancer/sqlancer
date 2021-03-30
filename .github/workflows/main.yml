@@ -115,8 +115,6 @@ jobs:
           sleep 10
       - name: Create SQLancer user
         run: cd cockroach-v20.2.6.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
-      - name: Run Tests
-        run: COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDB test
 
   duckdb:
     name: DBMS Tests (DuckDB)
