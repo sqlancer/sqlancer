@@ -89,13 +89,13 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
             timer = new ExecutionTimer().start();
         }
         if (getOptions().printAllStatements()) {
-            System.out.println(q.getQueryString());
+            System.out.println(q.getLogString());
         }
         if (getOptions().logEachSelect()) {
             if (logExecutionTime) {
-                getLogger().writeCurrentNoLineBreak(q.getQueryString());
+                getLogger().writeCurrentNoLineBreak(q.getLogString());
             } else {
-                getLogger().writeCurrent(q.getQueryString());
+                getLogger().writeCurrent(q.getLogString());
             }
         }
         return timer;

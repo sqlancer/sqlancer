@@ -21,15 +21,18 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.JCommander.Builder;
 
+import sqlancer.arangodb.ArangoDBProvider;
 import sqlancer.citus.CitusProvider;
 import sqlancer.clickhouse.ClickHouseProvider;
 import sqlancer.cockroachdb.CockroachDBProvider;
 import sqlancer.common.log.Loggable;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLancerResultSet;
+import sqlancer.cosmos.CosmosProvider;
 import sqlancer.duckdb.DuckDBProvider;
 import sqlancer.h2.H2Provider;
 import sqlancer.mariadb.MariaDBProvider;
+import sqlancer.mongodb.MongoDBProvider;
 import sqlancer.mysql.MySQLProvider;
 import sqlancer.postgres.PostgresProvider;
 import sqlancer.sqlite3.SQLite3Provider;
@@ -209,7 +212,7 @@ public final class Main {
                     .getInfo(state.getDatabaseName(), state.getDatabaseVersion(), state.getSeedValue()).getLogString());
 
             for (Query<?> s : state.getStatements()) {
-                sb.append(s.getQueryString());
+                sb.append(s.getLogString());
                 sb.append('\n');
             }
             try {
@@ -554,6 +557,9 @@ public final class Main {
         providers.add(new ClickHouseProvider());
         providers.add(new DuckDBProvider());
         providers.add(new H2Provider());
+        providers.add(new MongoDBProvider());
+        providers.add(new CosmosProvider());
+        providers.add(new ArangoDBProvider());
         return providers;
     }
 
