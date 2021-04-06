@@ -11,8 +11,6 @@ public final class ClickHouseErrors {
         errors.add("Illegal type");
         errors.add("Argument at index 1 for function like must be constant");
         errors.add("Argument at index 1 for function notLike must be constant");
-        errors.add(
-                "is violated, because it is a constant expression returning 0. It is most likely an error in table definition");
         errors.add("does not return a value of type UInt8");
         errors.add("invalid escape sequence");
         errors.add("invalid character class range");
@@ -23,6 +21,8 @@ public final class ClickHouseErrors {
         errors.add("Cannot read floating point value");
         errors.add("Cannot parse infinity.");
         errors.add("Attempt to read after eof: while converting");
+        errors.add(
+                "is violated, because it is a constant expression returning 0. It is most likely an error in table definition");
         errors.add("doesn't exist"); // TODO: consecutive test runs can lead to dropped database
         errors.add("is not under aggregate function");
         errors.add("Invalid type for filter in");
@@ -32,6 +32,7 @@ public final class ClickHouseErrors {
         errors.add("OptimizedRegularExpression: cannot compile re2");
         errors.add("because it is constant but values of constants are different in source and result"); // https://github.com/ClickHouse/ClickHouse/issues/22119
         errors.add("is violated at row 1. Expression:"); // TODO: check constraint on table creation
+        errors.add("Cannot parse NaN.: while converting 'N' to Float64"); // https://github.com/ClickHouse/ClickHouse/issues/22710
     }
 
     public static void addExpressionHavingErrors(ExpectedErrors errors) {

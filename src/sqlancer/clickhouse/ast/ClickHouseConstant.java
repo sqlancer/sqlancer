@@ -128,6 +128,14 @@ public abstract class ClickHouseConstant extends ClickHouseExpression {
                 return ClickHouseConstant.createUInt64Constant(BigInteger.valueOf(value));
             case Int64:
                 return ClickHouseConstant.createInt64Constant(BigInteger.valueOf(value));
+            case UInt128:
+                return ClickHouseConstant.createUInt128Constant(BigInteger.valueOf(value));
+            case Int128:
+                return ClickHouseConstant.createInt128Constant(BigInteger.valueOf(value));
+            case UInt256:
+                return ClickHouseConstant.createUInt256Constant(BigInteger.valueOf(value));
+            case Int256:
+                return ClickHouseConstant.createInt256Constant(BigInteger.valueOf(value));
             case Float32:
                 return ClickHouseConstant.createFloat32Constant((float) value);
             case Float64:
@@ -921,6 +929,474 @@ public abstract class ClickHouseConstant extends ClickHouseExpression {
         }
     }
 
+    public static class ClickHouseUInt128Constant extends ClickHouseConstant {
+
+        private final BigInteger value;
+
+        public ClickHouseUInt128Constant(BigInteger value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(value);
+        }
+
+        @Override
+        public boolean isNull() {
+            return false;
+        }
+
+        @Override
+        public boolean asBooleanNotNull() {
+            return value != BigInteger.ZERO;
+        }
+
+        @Override
+        public ClickHouseDataType getDataType() {
+            return ClickHouseDataType.UInt128;
+        }
+
+        @Override
+        public boolean compareInternal(Object val) {
+            return value.compareTo((BigInteger) val) == 0;
+        }
+
+        @Override
+        public ClickHouseConstant applyLess(ClickHouseConstant right) {
+            if (this.getDataType() == right.getDataType()) {
+                return this.asInt() < right.asInt() ? ClickHouseConstant.createTrue()
+                        : ClickHouseConstant.createFalse();
+            }
+            throw new IgnoreMeException();
+        }
+
+        @Override
+        public long asInt() {
+            return value.longValueExact();
+        }
+
+        @Override
+        public Object getValue() {
+            return value;
+        }
+
+        @Override
+        public ClickHouseConstant cast(ClickHouseDataType type) {
+            long val = value.longValueExact();
+            switch (type) {
+            case String:
+                return ClickHouseConstant.createStringConstant(this.toString());
+            case UInt8:
+                return ClickHouseConstant.createUInt8Constant(val);
+            case Int8:
+                return ClickHouseConstant.createInt8Constant(val);
+            case UInt16:
+                return ClickHouseConstant.createUInt16Constant(val);
+            case Int16:
+                return ClickHouseConstant.createInt16Constant(val);
+            case UInt32:
+                return ClickHouseConstant.createUInt32Constant(val);
+            case Int32:
+                return ClickHouseConstant.createInt32Constant(val);
+            case UInt64:
+                return ClickHouseConstant.createUInt64Constant(value);
+            case Int64:
+                return ClickHouseConstant.createInt64Constant(value);
+            case UInt128:
+                return ClickHouseConstant.createUInt128Constant(value);
+            case Int128:
+                return ClickHouseConstant.createInt128Constant(value);
+            case UInt256:
+                return ClickHouseConstant.createUInt256Constant(value);
+            case Int256:
+                return ClickHouseConstant.createInt256Constant(value);
+            case Float32:
+                return ClickHouseConstant.createFloat32Constant(value.floatValue());
+            case Float64:
+                return ClickHouseConstant.createFloat64Constant(value.doubleValue());
+            case Nothing:
+                return ClickHouseConstant.createNullConstant();
+            case IntervalYear:
+            case IntervalQuarter:
+            case IntervalMonth:
+            case IntervalWeek:
+            case IntervalDay:
+            case IntervalHour:
+            case IntervalMinute:
+            case IntervalSecond:
+            case Date:
+            case DateTime:
+            case Enum8:
+            case Enum16:
+            case Decimal32:
+            case Decimal64:
+            case Decimal128:
+            case Decimal:
+            case UUID:
+            case FixedString:
+            case Nested:
+            case Tuple:
+            case Array:
+            case AggregateFunction:
+            case Unknown:
+            default:
+                throw new AssertionError(type);
+            }
+        }
+    }
+
+    public static class ClickHouseInt128Constant extends ClickHouseConstant {
+
+        private final BigInteger value;
+
+        public ClickHouseInt128Constant(BigInteger value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(value);
+        }
+
+        @Override
+        public boolean isNull() {
+            return false;
+        }
+
+        @Override
+        public boolean asBooleanNotNull() {
+            return value != BigInteger.ZERO;
+        }
+
+        @Override
+        public ClickHouseDataType getDataType() {
+            return ClickHouseDataType.Int128;
+        }
+
+        @Override
+        public boolean compareInternal(Object val) {
+            return value.compareTo((BigInteger) val) == 0;
+        }
+
+        @Override
+        public ClickHouseConstant applyLess(ClickHouseConstant right) {
+            if (this.getDataType() == right.getDataType()) {
+                return this.asInt() < right.asInt() ? ClickHouseConstant.createTrue()
+                        : ClickHouseConstant.createFalse();
+            }
+            throw new IgnoreMeException();
+        }
+
+        @Override
+        public long asInt() {
+            return value.longValueExact();
+        }
+
+        @Override
+        public Object getValue() {
+            return value;
+        }
+
+        @Override
+        public ClickHouseConstant cast(ClickHouseDataType type) {
+            long val = value.longValueExact();
+            switch (type) {
+            case String:
+                return ClickHouseConstant.createStringConstant(this.toString());
+            case UInt8:
+                return ClickHouseConstant.createUInt8Constant(val);
+            case Int8:
+                return ClickHouseConstant.createInt8Constant(val);
+            case UInt16:
+                return ClickHouseConstant.createUInt16Constant(val);
+            case Int16:
+                return ClickHouseConstant.createInt16Constant(val);
+            case UInt32:
+                return ClickHouseConstant.createUInt32Constant(val);
+            case Int32:
+                return ClickHouseConstant.createInt32Constant(val);
+            case UInt64:
+                return ClickHouseConstant.createUInt64Constant(value);
+            case Int64:
+                return ClickHouseConstant.createInt64Constant(value);
+            case UInt128:
+                return ClickHouseConstant.createUInt128Constant(value);
+            case Int128:
+                return ClickHouseConstant.createInt128Constant(value);
+            case UInt256:
+                return ClickHouseConstant.createUInt256Constant(value);
+            case Int256:
+                return ClickHouseConstant.createInt256Constant(value);
+            case Float32:
+                return ClickHouseConstant.createFloat32Constant(value.floatValue());
+            case Float64:
+                return ClickHouseConstant.createFloat64Constant(value.doubleValue());
+            case Nothing:
+                return ClickHouseConstant.createNullConstant();
+            case IntervalYear:
+            case IntervalQuarter:
+            case IntervalMonth:
+            case IntervalWeek:
+            case IntervalDay:
+            case IntervalHour:
+            case IntervalMinute:
+            case IntervalSecond:
+            case Date:
+            case DateTime:
+            case Enum8:
+            case Enum16:
+            case Decimal32:
+            case Decimal64:
+            case Decimal128:
+            case Decimal:
+            case UUID:
+            case FixedString:
+            case Nested:
+            case Tuple:
+            case Array:
+            case AggregateFunction:
+            case Unknown:
+            default:
+                throw new AssertionError(type);
+            }
+        }
+    }
+
+    public static class ClickHouseUInt256Constant extends ClickHouseConstant {
+
+        private final BigInteger value;
+
+        public ClickHouseUInt256Constant(BigInteger value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(value);
+        }
+
+        @Override
+        public boolean isNull() {
+            return false;
+        }
+
+        @Override
+        public boolean asBooleanNotNull() {
+            return value != BigInteger.ZERO;
+        }
+
+        @Override
+        public ClickHouseDataType getDataType() {
+            return ClickHouseDataType.UInt256;
+        }
+
+        @Override
+        public boolean compareInternal(Object val) {
+            return value.compareTo((BigInteger) val) == 0;
+        }
+
+        @Override
+        public ClickHouseConstant applyLess(ClickHouseConstant right) {
+            if (this.getDataType() == right.getDataType()) {
+                return this.asInt() < right.asInt() ? ClickHouseConstant.createTrue()
+                        : ClickHouseConstant.createFalse();
+            }
+            throw new IgnoreMeException();
+        }
+
+        @Override
+        public long asInt() {
+            return value.longValueExact();
+        }
+
+        @Override
+        public Object getValue() {
+            return value;
+        }
+
+        @Override
+        public ClickHouseConstant cast(ClickHouseDataType type) {
+            long val = value.longValueExact();
+            switch (type) {
+            case String:
+                return ClickHouseConstant.createStringConstant(this.toString());
+            case UInt8:
+                return ClickHouseConstant.createUInt8Constant(val);
+            case Int8:
+                return ClickHouseConstant.createInt8Constant(val);
+            case UInt16:
+                return ClickHouseConstant.createUInt16Constant(val);
+            case Int16:
+                return ClickHouseConstant.createInt16Constant(val);
+            case UInt32:
+                return ClickHouseConstant.createUInt32Constant(val);
+            case Int32:
+                return ClickHouseConstant.createInt32Constant(val);
+            case UInt64:
+                return ClickHouseConstant.createUInt64Constant(value);
+            case Int64:
+                return ClickHouseConstant.createInt64Constant(value);
+            case UInt128:
+                return ClickHouseConstant.createUInt128Constant(value);
+            case Int128:
+                return ClickHouseConstant.createInt128Constant(value);
+            case UInt256:
+                return ClickHouseConstant.createUInt256Constant(value);
+            case Int256:
+                return ClickHouseConstant.createInt256Constant(value);
+            case Float32:
+                return ClickHouseConstant.createFloat32Constant(value.floatValue());
+            case Float64:
+                return ClickHouseConstant.createFloat64Constant(value.doubleValue());
+            case Nothing:
+                return ClickHouseConstant.createNullConstant();
+            case IntervalYear:
+            case IntervalQuarter:
+            case IntervalMonth:
+            case IntervalWeek:
+            case IntervalDay:
+            case IntervalHour:
+            case IntervalMinute:
+            case IntervalSecond:
+            case Date:
+            case DateTime:
+            case Enum8:
+            case Enum16:
+            case Decimal32:
+            case Decimal64:
+            case Decimal128:
+            case Decimal:
+            case UUID:
+            case FixedString:
+            case Nested:
+            case Tuple:
+            case Array:
+            case AggregateFunction:
+            case Unknown:
+            default:
+                throw new AssertionError(type);
+            }
+        }
+    }
+
+    public static class ClickHouseInt256Constant extends ClickHouseConstant {
+
+        private final BigInteger value;
+
+        public ClickHouseInt256Constant(BigInteger value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(value);
+        }
+
+        @Override
+        public boolean isNull() {
+            return false;
+        }
+
+        @Override
+        public boolean asBooleanNotNull() {
+            return value != BigInteger.ZERO;
+        }
+
+        @Override
+        public ClickHouseDataType getDataType() {
+            return ClickHouseDataType.Int256;
+        }
+
+        @Override
+        public boolean compareInternal(Object val) {
+            return value.compareTo((BigInteger) val) == 0;
+        }
+
+        @Override
+        public ClickHouseConstant applyLess(ClickHouseConstant right) {
+            if (this.getDataType() == right.getDataType()) {
+                return this.asInt() < right.asInt() ? ClickHouseConstant.createTrue()
+                        : ClickHouseConstant.createFalse();
+            }
+            throw new IgnoreMeException();
+        }
+
+        @Override
+        public long asInt() {
+            return value.longValueExact();
+        }
+
+        @Override
+        public Object getValue() {
+            return value;
+        }
+
+        @Override
+        public ClickHouseConstant cast(ClickHouseDataType type) {
+            long val = value.longValueExact();
+            switch (type) {
+            case String:
+                return ClickHouseConstant.createStringConstant(this.toString());
+            case UInt8:
+                return ClickHouseConstant.createUInt8Constant(val);
+            case Int8:
+                return ClickHouseConstant.createInt8Constant(val);
+            case UInt16:
+                return ClickHouseConstant.createUInt16Constant(val);
+            case Int16:
+                return ClickHouseConstant.createInt16Constant(val);
+            case UInt32:
+                return ClickHouseConstant.createUInt32Constant(val);
+            case Int32:
+                return ClickHouseConstant.createInt32Constant(val);
+            case UInt64:
+                return ClickHouseConstant.createUInt64Constant(value);
+            case Int64:
+                return ClickHouseConstant.createInt64Constant(value);
+            case UInt128:
+                return ClickHouseConstant.createUInt128Constant(value);
+            case Int128:
+                return ClickHouseConstant.createInt128Constant(value);
+            case UInt256:
+                return ClickHouseConstant.createUInt256Constant(value);
+            case Int256:
+                return ClickHouseConstant.createInt256Constant(value);
+            case Float32:
+                return ClickHouseConstant.createFloat32Constant(value.floatValue());
+            case Float64:
+                return ClickHouseConstant.createFloat64Constant(value.doubleValue());
+            case Nothing:
+                return ClickHouseConstant.createNullConstant();
+            case IntervalYear:
+            case IntervalQuarter:
+            case IntervalMonth:
+            case IntervalWeek:
+            case IntervalDay:
+            case IntervalHour:
+            case IntervalMinute:
+            case IntervalSecond:
+            case Date:
+            case DateTime:
+            case Enum8:
+            case Enum16:
+            case Decimal32:
+            case Decimal64:
+            case Decimal128:
+            case Decimal:
+            case UUID:
+            case FixedString:
+            case Nested:
+            case Tuple:
+            case Array:
+            case AggregateFunction:
+            case Unknown:
+            default:
+                throw new AssertionError(type);
+            }
+        }
+    }
+
     public static class ClickHouseFloat32Constant extends ClickHouseConstant {
 
         private final float value;
@@ -1284,6 +1760,10 @@ public abstract class ClickHouseConstant extends ClickHouseExpression {
             break;
         case IntervalSecond:
             break;
+        case UInt256:
+            return createUInt256Constant(BigInteger.valueOf(val));
+        case UInt128:
+            return createUInt128Constant(BigInteger.valueOf(val));
         case UInt64:
             return createUInt64Constant(BigInteger.valueOf(val));
         case UInt32:
@@ -1292,6 +1772,10 @@ public abstract class ClickHouseConstant extends ClickHouseExpression {
             return createUInt16Constant(val);
         case UInt8:
             return createUInt8Constant(val);
+        case Int256:
+            return createInt256Constant(BigInteger.valueOf(val));
+        case Int128:
+            return createInt256Constant(BigInteger.valueOf(val));
         case Int64:
             return createInt64Constant(BigInteger.valueOf(val));
         case Int32:
@@ -1342,6 +1826,22 @@ public abstract class ClickHouseConstant extends ClickHouseExpression {
             break;
         }
         throw new AssertionError(type);
+    }
+
+    public static ClickHouseConstant createInt256Constant(BigInteger val) {
+        return new ClickHouseInt256Constant(val);
+    }
+
+    public static ClickHouseConstant createUInt256Constant(BigInteger val) {
+        return new ClickHouseUInt256Constant(val);
+    }
+
+    public static ClickHouseConstant createInt128Constant(BigInteger val) {
+        return new ClickHouseInt128Constant(val);
+    }
+
+    public static ClickHouseConstant createUInt128Constant(BigInteger val) {
+        return new ClickHouseUInt128Constant(val);
     }
 
     public static ClickHouseConstant createInt64Constant(BigInteger val) {
