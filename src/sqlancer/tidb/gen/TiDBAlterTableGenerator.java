@@ -71,8 +71,13 @@ public final class TiDBAlterTableGenerator {
             break;
         case ADD_PRIMARY_KEY:
             sb.append("ADD PRIMARY KEY(");
-            sb.append(table.getRandomNonEmptyColumnSubset().stream().map(c -> c.getName())
-                    .collect(Collectors.joining(", ")));
+            sb.append(table.getRandomNonEmptyColumnSubset().stream().map(c -> {
+                StringBuilder colName = new StringBuilder(c.getName());
+                if (c.getType().getPrimitiveDataType() == TiDBDataType.TEXT || c.getType().getPrimitiveDataType() == TiDBDataType.BLOB ) {
+                    TiDBTableGenerator.appendSpecifiers(colName, c.getType().getPrimitiveDataType());
+                }
+                return colName;
+            }).collect(Collectors.joining(", ")));
             sb.append(")");
             errors.add("Unsupported add primary key, alter-primary-key is false");
             errors.add("Information schema is changed during the execution of the statement");
