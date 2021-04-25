@@ -48,7 +48,7 @@ public final class TiDBAlterTableGenerator {
                 throw new IgnoreMeException();
             }
             sb.append(column.getName());
-            errors.add("with index covered now");
+            errors.add("with composite index covered or Primary Key covered now");
             errors.add("Unsupported drop integer primary key");
             errors.add("has a generated column dependency");
             errors.add(
