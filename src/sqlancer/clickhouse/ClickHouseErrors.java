@@ -32,7 +32,7 @@ public final class ClickHouseErrors {
         errors.add("OptimizedRegularExpression: cannot compile re2");
         errors.add("because it is constant but values of constants are different in source and result"); // https://github.com/ClickHouse/ClickHouse/issues/22119
         errors.add("is violated at row 1. Expression:"); // TODO: check constraint on table creation
-        errors.add("Cannot parse NaN.: while converting 'N' to Float64"); // https://github.com/ClickHouse/ClickHouse/issues/22710
+        errors.add("Cannot parse NaN.: while converting"); // https://github.com/ClickHouse/ClickHouse/issues/22710
     }
 
     public static void addExpressionHavingErrors(ExpectedErrors errors) {
