@@ -76,6 +76,8 @@ public final class TiDBAlterTableGenerator {
             sb.append(")");
             errors.add("Unsupported add primary key, alter-primary-key is false");
             errors.add("Information schema is changed during the execution of the statement");
+            errors.add("Multiple primary key defined");
+            errors.add("Invalid use of NULL value");
             break;
         case CHANGE:
             if (TiDBBugs.bug10) {
