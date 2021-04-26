@@ -196,7 +196,9 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
         } else {
             switch (trimmedStringType) {
             case "text":
+            case "mediumtext":
             case "longtext":
+            case "tinytext":
                 primitiveType = TiDBDataType.TEXT;
                 break;
             case "float":
@@ -223,6 +225,7 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
                 break;
             case "blob":
             case "longblob":
+            case "tinyblob":
                 primitiveType = TiDBDataType.BLOB;
                 break;
             default:

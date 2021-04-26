@@ -48,7 +48,7 @@ public final class TiDBAlterTableGenerator {
                 throw new IgnoreMeException();
             }
             sb.append(column.getName());
-            errors.add("with index covered now");
+            errors.add("with composite index covered or Primary Key covered now");
             errors.add("Unsupported drop integer primary key");
             errors.add("has a generated column dependency");
             errors.add(
@@ -67,15 +67,27 @@ public final class TiDBAlterTableGenerator {
             }
             errors.add("Unsupported drop integer primary key");
             errors.add("Unsupported drop primary key when alter-primary-key is false");
+            errors.add("Unsupported drop primary key when the table's pkIsHandle is true");
+            errors.add("Incorrect table definition; there can be only one auto column and it must be defined as a key");
             sb.append(" DROP PRIMARY KEY");
             break;
         case ADD_PRIMARY_KEY:
             sb.append("ADD PRIMARY KEY(");
-            sb.append(table.getRandomNonEmptyColumnSubset().stream().map(c -> c.getName())
-                    .collect(Collectors.joining(", ")));
+            sb.append(table.getRandomNonEmptyColumnSubset().stream().map(c -> {
+                StringBuilder colName = new StringBuilder(c.getName());
+                if (c.getType().getPrimitiveDataType() == TiDBDataType.TEXT
+                        || c.getType().getPrimitiveDataType() == TiDBDataType.BLOB) {
+                    TiDBTableGenerator.appendSpecifiers(colName, c.getType().getPrimitiveDataType());
+                }
+                return colName;
+            }).collect(Collectors.joining(", ")));
             sb.append(")");
             errors.add("Unsupported add primary key, alter-primary-key is false");
             errors.add("Information schema is changed during the execution of the statement");
+            errors.add("Multiple primary key defined");
+            errors.add("Invalid use of NULL value");
+            errors.add("Duplicate entry");
+            errors.add("'Defining a virtual generated column as primary key' is not supported for generated columns");
             break;
         case CHANGE:
             if (TiDBBugs.bug10) {
@@ -101,7 +113,6 @@ public final class TiDBAlterTableGenerator {
         default:
             throw new AssertionError(a);
         }
-
         return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 
