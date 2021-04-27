@@ -22,6 +22,8 @@ public final class TiDBErrors {
         errors.add("BIGINT value is out of range");
         errors.add("doesn't have a default value"); // default
 
+        errors.add("is not valid for CHARACTER SET");
+
         // known issue: https://github.com/pingcap/tidb/issues/14819
         errors.add("Wrong plan type for dataReaderBuilder");
 
@@ -69,6 +71,7 @@ public final class TiDBErrors {
         errors.add("Incorrect bigint value");
         errors.add("Incorrect decimal value");
         errors.add("error parsing regexp");
+        errors.add("is not valid for CHARACTER SET");
 
         if (true) {
             // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/54

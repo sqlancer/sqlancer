@@ -51,6 +51,8 @@ public final class TiDBDeleteGenerator {
             sb.append(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE));
         }
         errors.add("Bad Number");
+        errors.add("Truncated incorrect"); // https://github.com/pingcap/tidb/issues/24292
+        errors.add("is not valid for CHARACTER SET");
         errors.add("Division by 0");
         errors.add("error parsing regexp");
         return new SQLQueryAdapter(sb.toString(), errors);
