@@ -1,0 +1,23 @@
+version: 2
+updates:
+- package-ecosystem: maven
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: com.arangodb:arangodb-java-driver
+    versions:
+    - 6.10.0
+    - 6.11.0
+    - 6.11.1
+  - dependency-name: org.mongodb:mongodb-driver-sync
+    versions:
+    - 4.2.2
+  - dependency-name: ru.yandex.clickhouse:clickhouse-jdbc
+    versions:
+    - 0.2.6
+    - 0.3.0
+  - dependency-name: org.postgresql:postgresql
+    versions:
+    - 42.2.19
