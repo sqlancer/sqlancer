@@ -6,7 +6,7 @@ import java.util.List;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.ExpressionGenerator;
-import sqlancer.common.oracle.RemoveReduceOracleBase;
+import sqlancer.common.oracle.DocumentRemovalOracleBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.mongodb.MongoDBProvider;
 import sqlancer.mongodb.MongoDBSchema;
@@ -15,8 +15,8 @@ import sqlancer.mongodb.ast.MongoDBSelect;
 import sqlancer.mongodb.gen.MongoDBComputedExpressionGenerator;
 import sqlancer.mongodb.gen.MongoDBMatchExpressionGenerator;
 
-public class MongoDBRemoveReduceBase extends
-        RemoveReduceOracleBase<Node<MongoDBExpression>, MongoDBProvider.MongoDBGlobalState> implements TestOracle {
+public class MongoDBDocumentRemovalBase extends
+        DocumentRemovalOracleBase<Node<MongoDBExpression>, MongoDBProvider.MongoDBGlobalState> implements TestOracle {
 
     protected MongoDBSchema schema;
     protected MongoDBSchema.MongoDBTables targetTables;
@@ -25,7 +25,7 @@ public class MongoDBRemoveReduceBase extends
     protected MongoDBMatchExpressionGenerator expressionGenerator;
     protected MongoDBSelect<MongoDBExpression> select;
 
-    protected MongoDBRemoveReduceBase(MongoDBProvider.MongoDBGlobalState state) {
+    protected MongoDBDocumentRemovalBase(MongoDBProvider.MongoDBGlobalState state) {
         super(state);
     }
 
@@ -36,7 +36,7 @@ public class MongoDBRemoveReduceBase extends
         mainTable = targetTables.getTables().get(0);
         generateTargetColumns();
         expressionGenerator = new MongoDBMatchExpressionGenerator(state).setColumns(targetColumns);
-        initializeRemoveReduceOracle();
+        initializeDocumentRemovalOracle();
         select = new MongoDBSelect<>(mainTable.getName(), targetColumns.get(0));
         select.setProjectionList(targetColumns);
         if (Randomly.getBooleanWithRatherLowProbability()) {
