@@ -1,10 +1,13 @@
 package sqlancer.arangodb.query;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.arangodb.ArangoCursor;
 import com.arangodb.entity.BaseDocument;
+import com.arangodb.model.AqlQueryOptions;
 
 import sqlancer.GlobalState;
 import sqlancer.arangodb.ArangoDBConnection;
@@ -16,10 +19,13 @@ public class ArangoDBSelectQuery extends ArangoDBQueryAdapter {
 
     private final String query;
 
+    private List<String> optimizerRules;
+
     private List<BaseDocument> resultSet;
 
     public ArangoDBSelectQuery(String query) {
         this.query = query;
+        optimizerRules = new ArrayList<>();
     }
 
     @Override
@@ -40,7 +46,12 @@ public class ArangoDBSelectQuery extends ArangoDBQueryAdapter {
 
     @Override
     public String getLogString() {
-        return "db._query(\"" + query + "\")";
+        if (optimizerRules.isEmpty()) {
+            return "db._query(\"" + query + "\")";
+        } else {
+            String rules = optimizerRules.stream().map(Object::toString).collect(Collectors.joining("\",\""));
+            return "db._query(\"" + query + "\", null, { optimizer: { rules: [\"" + rules + "\"] } } )";
+        }
     }
 
     @Override
@@ -54,12 +65,24 @@ public class ArangoDBSelectQuery extends ArangoDBQueryAdapter {
                 e.printStackTrace();
             }
         }
-        ArangoCursor<BaseDocument> cursor = globalState.getConnection().getDatabase().query(query, BaseDocument.class);
+
+        ArangoCursor<BaseDocument> cursor;
+        if (optimizerRules.isEmpty()) {
+            cursor = globalState.getConnection().getDatabase().query(query, BaseDocument.class);
+        } else {
+            AqlQueryOptions options = new AqlQueryOptions();
+            cursor = globalState.getConnection().getDatabase().query(query, options.rules(optimizerRules),
+                    BaseDocument.class);
+        }
         resultSet = cursor.asListRemaining();
         return null;
     }
 
     public List<BaseDocument> getResultSet() {
         return resultSet;
+    }
+
+    public void excludeRandomOptRules() {
+        optimizerRules = new ArangoDBOptimizerRules().getRandomRules();
     }
 }
