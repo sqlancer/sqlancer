@@ -25,6 +25,10 @@ public class ArangoDBOptions implements DBMSSpecificOptions<ArangoDBOptions.Aran
     @Parameter(names = "--max-number-indexes", description = "The maximum number of indexes used.", arity = 1)
     public int maxNumberIndexes = 15;
 
+    @Parameter(names = "--with-optimizer-rule-tests", description = "Adds an additional query, where a random set"
+            + "of optimizer rules are disabled.", arity = 1)
+    public boolean withOptimizerRuleTests;
+
     @Override
     public List<ArangoDBOracleFactory> getTestOracleFactory() {
         return oracles;
@@ -39,6 +43,5 @@ public class ArangoDBOptions implements DBMSSpecificOptions<ArangoDBOptions.Aran
                 return new CompositeTestOracle(oracles, globalState);
             }
         }
-
     }
 }
