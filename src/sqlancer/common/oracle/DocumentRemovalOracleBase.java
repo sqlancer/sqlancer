@@ -3,17 +3,17 @@ package sqlancer.common.oracle;
 import sqlancer.GlobalState;
 import sqlancer.common.gen.ExpressionGenerator;
 
-public abstract class RemoveReduceOracleBase<E, S extends GlobalState<?, ?, ?>> implements TestOracle {
+public abstract class DocumentRemovalOracleBase<E, S extends GlobalState<?, ?, ?>> implements TestOracle {
 
     protected E predicate;
 
     protected final S state;
 
-    protected RemoveReduceOracleBase(S state) {
+    protected DocumentRemovalOracleBase(S state) {
         this.state = state;
     }
 
-    protected void initializeRemoveReduceOracle() {
+    protected void initializeDocumentRemovalOracle() {
         ExpressionGenerator<E> gen = getGen();
         if (gen == null) {
             throw new IllegalStateException();

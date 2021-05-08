@@ -13,8 +13,8 @@ import sqlancer.mongodb.gen.MongoDBInsertGenerator;
 import sqlancer.mongodb.query.MongoDBRemoveQuery;
 import sqlancer.mongodb.query.MongoDBSelectQuery;
 
-public class MongoDBRemoveReduceTester extends MongoDBRemoveReduceBase {
-    public MongoDBRemoveReduceTester(MongoDBProvider.MongoDBGlobalState state) {
+public class MongoDBDocumentRemovalTester extends MongoDBDocumentRemovalBase {
+    public MongoDBDocumentRemovalTester(MongoDBProvider.MongoDBGlobalState state) {
         super(state);
     }
 
