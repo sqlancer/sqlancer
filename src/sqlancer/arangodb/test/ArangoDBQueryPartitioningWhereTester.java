@@ -32,7 +32,15 @@ public class ArangoDBQueryPartitioningWhereTester extends ArangoDBQueryPartition
         query = ArangoDBVisitor.asSelectQuery(select);
         List<BaseDocument> thirdResultSet = getResultSetAsDocumentList(query, state);
 
-        secondResultSet.addAll(thirdResultSet);
-        assumeResultSetsAreEqual(firstResultSet, secondResultSet, query);
+        thirdResultSet.addAll(secondResultSet);
+        assumeResultSetsAreEqual(firstResultSet, thirdResultSet, query);
+
+        if (state.getDmbsSpecificOptions().withOptimizerRuleTests) {
+            select.setFilterClause(predicate);
+            query = ArangoDBVisitor.asSelectQuery(select);
+            query.excludeRandomOptRules();
+            List<BaseDocument> forthResultSet = getResultSetAsDocumentList(query, state);
+            assumeResultSetsAreEqual(secondResultSet, forthResultSet, query);
+        }
     }
 }
