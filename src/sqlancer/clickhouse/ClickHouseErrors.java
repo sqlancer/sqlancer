@@ -33,6 +33,8 @@ public final class ClickHouseErrors {
         errors.add("because it is constant but values of constants are different in source and result"); // https://github.com/ClickHouse/ClickHouse/issues/22119
         errors.add("is violated at row 1. Expression:"); // TODO: check constraint on table creation
         errors.add("Cannot parse NaN.: while converting"); // https://github.com/ClickHouse/ClickHouse/issues/22710
+        errors.add("Cannot parse number with a sign character but without any numeric character");
+        errors.add("Cannot parse number with multiple sign (+/-) characters or intermediate sign character");
     }
 
     public static void addExpressionHavingErrors(ExpectedErrors errors) {
@@ -57,6 +59,7 @@ public final class ClickHouseErrors {
         errors.add("Attempt to read after eof: while converting");
         errors.add("Sorting key cannot contain constants");
         errors.add("Sampling expression must be present in the primary key");
+        errors.add("Cyclic aliases: default expression and column type are incompatible");
     }
 
 }
