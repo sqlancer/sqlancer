@@ -49,7 +49,9 @@ public class ClickHouseTableGenerator {
         if (Randomly.getBoolean()) {
             sb.append("IF NOT EXISTS ");
         }
-        sb.append(tableName);
+        sb.append(this.globalState.getDatabaseName());
+        sb.append(".");
+        sb.append(this.tableName);
         sb.append(" (");
         int nrColumns = 1 + Randomly.smallNumber();
         for (int i = 0; i < nrColumns; i++) {
