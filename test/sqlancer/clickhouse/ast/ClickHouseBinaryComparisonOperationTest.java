@@ -1,10 +1,11 @@
 package sqlancer.clickhouse.ast;
 
 import org.junit.jupiter.api.Test;
-import ru.yandex.clickhouse.domain.ClickHouseDataType;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
+
+import ru.yandex.clickhouse.domain.ClickHouseDataType;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
