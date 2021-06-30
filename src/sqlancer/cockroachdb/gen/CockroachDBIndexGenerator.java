@@ -53,9 +53,6 @@ public class CockroachDBIndexGenerator extends CockroachDBGenerator {
             sb.append(" ");
             addColumns(sb, table.getRandomNonEmptyColumnSubset(), false);
         }
-        if (!hashSharded /* interleaved indexes cannot also be hash sharded */ && Randomly.getBoolean()) {
-            generateInterleave();
-        }
     }
 
 }

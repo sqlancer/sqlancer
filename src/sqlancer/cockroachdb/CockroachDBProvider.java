@@ -54,12 +54,9 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
         SHOW(CockroachDBShowGenerator::show), //
         TRANSACTION((g) -> {
             String s = Randomly.fromOptions("BEGIN", "ROLLBACK", "COMMIT");
-            return new SQLQueryAdapter(s,
-                    ExpectedErrors.from("there is no transaction in progress",
-                            "there is already a transaction in progress", "current transaction is aborted",
-                            "does not exist" /* interleaved indexes */));
-        }), //
-        EXPLAIN((g) -> {
+            return new SQLQueryAdapter(s, ExpectedErrors.from("there is no transaction in progress",
+                    "there is already a transaction in progress", "current transaction is aborted"));
+        }), EXPLAIN((g) -> {
             StringBuilder sb = new StringBuilder("EXPLAIN ");
             ExpectedErrors errors = new ExpectedErrors();
             if (Randomly.getBoolean()) {
@@ -267,12 +264,6 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
         globalState.getState().logStatement("USE " + databaseName);
         try (Statement s = con.createStatement()) {
             s.execute("DROP DATABASE IF EXISTS " + databaseName);
-        } catch (SQLException e) {
-            if (e.getMessage().contains("ERROR: invalid interleave backreference")) {
-                throw new IgnoreMeException(); // TODO: investigate
-            } else {
-                throw e;
-            }
         }
         try (Statement s = con.createStatement()) {
             s.execute(createDatabaseCommand);
