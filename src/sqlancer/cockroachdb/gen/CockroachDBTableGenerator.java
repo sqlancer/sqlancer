@@ -167,9 +167,6 @@ public class CockroachDBTableGenerator extends CockroachDBGenerator {
             errors.add("there is no unique constraint matching given keys for referenced table");
         }
         sb.append(")");
-        if (Randomly.getBooleanWithRatherLowProbability() && !globalState.getSchema().getDatabaseTables().isEmpty()) {
-            generateInterleave();
-        }
         errors.add("collatedstring");
         CockroachDBErrors.addExpressionErrors(errors);
     }
