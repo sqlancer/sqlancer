@@ -11,6 +11,7 @@ import com.beust.jcommander.Parameter;
 import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
 import sqlancer.arangodb.test.ArangoDBQueryPartitioningWhereTester;
+import sqlancer.arangodb.ArangoDBProvider.ArangoDBGlobalState;
 import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
 
@@ -34,10 +35,10 @@ public class ArangoDBOptions implements DBMSSpecificOptions<ArangoDBOptions.Aran
         return oracles;
     }
 
-    public enum ArangoDBOracleFactory implements OracleFactory<ArangoDBProvider.ArangoDBGlobalState> {
+    public enum ArangoDBOracleFactory implements OracleFactory<ArangoDBGlobalState> {
         QUERY_PARTITIONING {
             @Override
-            public TestOracle create(ArangoDBProvider.ArangoDBGlobalState globalState) throws Exception {
+            public TestOracle create(ArangoDBGlobalState globalState) throws Exception {
                 List<TestOracle> oracles = new ArrayList<>();
                 oracles.add(new ArangoDBQueryPartitioningWhereTester(globalState));
                 return new CompositeTestOracle(oracles, globalState);

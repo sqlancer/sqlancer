@@ -13,6 +13,7 @@ import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
 import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
+import sqlancer.mongodb.MongoDBProvider.MongoDBGlobalState;
 import sqlancer.mongodb.test.MongoDBDocumentRemovalTester;
 import sqlancer.mongodb.test.MongoDBQueryPartitioningWhereTester;
 
@@ -50,10 +51,10 @@ public class MongoDBOptions implements DBMSSpecificOptions<MongoDBOptions.MongoD
         return oracles;
     }
 
-    public enum MongoDBOracleFactory implements OracleFactory<MongoDBProvider.MongoDBGlobalState> {
+    public enum MongoDBOracleFactory implements OracleFactory<MongoDBGlobalState> {
         QUERY_PARTITIONING {
             @Override
-            public TestOracle create(MongoDBProvider.MongoDBGlobalState globalState) throws Exception {
+            public TestOracle create(MongoDBGlobalState globalState) throws Exception {
                 List<TestOracle> oracles = new ArrayList<>();
                 oracles.add(new MongoDBQueryPartitioningWhereTester(globalState));
                 return new CompositeTestOracle(oracles, globalState);
@@ -61,7 +62,7 @@ public class MongoDBOptions implements DBMSSpecificOptions<MongoDBOptions.MongoD
         },
         DOCUMENT_REMOVAL {
             @Override
-            public TestOracle create(MongoDBProvider.MongoDBGlobalState globalState) throws Exception {
+            public TestOracle create(MongoDBGlobalState globalState) throws Exception {
                 List<TestOracle> oracles = new ArrayList<>();
                 oracles.add(new MongoDBDocumentRemovalTester(globalState));
                 return new CompositeTestOracle(oracles, globalState);
