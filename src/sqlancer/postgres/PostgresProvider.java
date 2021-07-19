@@ -257,7 +257,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
             s.execute(createDatabaseCommand);
         }
         con.close();
-        int databaseIndex = entryURL.indexOf(entryPath) + 1;
+        int databaseIndex = entryURL.indexOf(entryDatabaseName);
         String preDatabaseName = entryURL.substring(0, databaseIndex);
         String postDatabaseName = entryURL.substring(databaseIndex + entryDatabaseName.length());
         testURL = preDatabaseName + databaseName + postDatabaseName;
