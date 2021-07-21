@@ -47,7 +47,7 @@ public class MongoDBQueryPartitioningBase
         } else {
             select.setLookupList(Randomly.nonEmptySubset(targetColumns));
         }
-        if (state.getDmbsSpecificOptions().testComputedValues) {
+        if (state.getDbmsSpecificOptions().testComputedValues) {
             generateComputedColumns();
         }
     }
@@ -69,7 +69,7 @@ public class MongoDBQueryPartitioningBase
             targetColumns.add(new MongoDBColumnTestReference(c, true));
         }
         List<MongoDBColumnTestReference> joinsOtherTables = new ArrayList<>();
-        if (!state.getDmbsSpecificOptions().nullSafety) {
+        if (!state.getDbmsSpecificOptions().nullSafety) {
             for (int i = 1; i < targetTables.getTables().size(); i++) {
                 MongoDBTable procTable = targetTables.getTables().get(i);
                 for (MongoDBColumn c : procTable.getColumns()) {

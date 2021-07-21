@@ -379,7 +379,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         if (expectedResult) {
             validOptions.remove(TextExpression.COLLATE);
         }
-        if (!globalState.getDmbsSpecificOptions().testCollations) {
+        if (!globalState.getDbmsSpecificOptions().testCollations) {
             validOptions.remove(TextExpression.COLLATE);
         }
         option = Randomly.fromList(validOptions);

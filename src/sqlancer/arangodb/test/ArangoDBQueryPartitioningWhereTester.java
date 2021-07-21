@@ -35,7 +35,7 @@ public class ArangoDBQueryPartitioningWhereTester extends ArangoDBQueryPartition
         thirdResultSet.addAll(secondResultSet);
         assumeResultSetsAreEqual(firstResultSet, thirdResultSet, query);
 
-        if (state.getDmbsSpecificOptions().withOptimizerRuleTests) {
+        if (state.getDbmsSpecificOptions().withOptimizerRuleTests) {
             select.setFilterClause(predicate);
             query = ArangoDBVisitor.asSelectQuery(select);
             query.excludeRandomOptRules();

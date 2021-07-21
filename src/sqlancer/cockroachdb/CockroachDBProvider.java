@@ -135,10 +135,10 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
         standardSettings.add("SET CLUSTER SETTING sql.stats.automatic_collection.enabled = 'off'");
         standardSettings.add("SET CLUSTER SETTING timeseries.storage.enabled = 'off'");
 
-        if (globalState.getDmbsSpecificOptions().testHashIndexes) {
+        if (globalState.getDbmsSpecificOptions().testHashIndexes) {
             standardSettings.add("set experimental_enable_hash_sharded_indexes='on';");
         }
-        if (globalState.getDmbsSpecificOptions().testTempTables) {
+        if (globalState.getDbmsSpecificOptions().testTempTables) {
             standardSettings.add("SET experimental_enable_temp_tables = 'on'");
         }
         for (String s : standardSettings) {
@@ -241,7 +241,7 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             }
             total--;
         }
-        if (globalState.getDmbsSpecificOptions().makeVectorizationMoreLikely && Randomly.getBoolean()) {
+        if (globalState.getDbmsSpecificOptions().makeVectorizationMoreLikely && Randomly.getBoolean()) {
             manager.execute(new SQLQueryAdapter("SET vectorize=on;"));
         }
     }

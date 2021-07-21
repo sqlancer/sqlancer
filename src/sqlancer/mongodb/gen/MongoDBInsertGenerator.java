@@ -25,7 +25,7 @@ public final class MongoDBInsertGenerator {
         MongoDBConstantGenerator constantGenerator = new MongoDBConstantGenerator(globalState);
 
         for (int i = 0; i < table.getColumns().size(); i++) {
-            if (!globalState.getDmbsSpecificOptions().testRandomTypes) {
+            if (!globalState.getDbmsSpecificOptions().testRandomTypes) {
                 constantGenerator.addRandomConstantWithType(result, table.getColumns().get(i).getName(),
                         table.getColumns().get(i).getType());
             } else {
