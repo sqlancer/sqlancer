@@ -44,7 +44,7 @@ public class MongoDBMatchExpressionGenerator
     @Override
     public Node<MongoDBExpression> generateLeafNode() {
         List<LeafExpression> possibleOptions = new ArrayList<>(Arrays.asList(LeafExpression.values()));
-        if (!globalState.getDmbsSpecificOptions().testWithRegex) {
+        if (!globalState.getDbmsSpecificOptions().testWithRegex) {
             possibleOptions.remove(LeafExpression.REGEX);
         }
         LeafExpression expr = Randomly.fromList(possibleOptions);
@@ -97,7 +97,7 @@ public class MongoDBMatchExpressionGenerator
 
     public Node<MongoDBExpression> generateConstant(MongoDBDataType type) {
         MongoDBConstantGenerator generator = new MongoDBConstantGenerator(globalState);
-        if (Randomly.getBooleanWithSmallProbability() && !globalState.getDmbsSpecificOptions().nullSafety) {
+        if (Randomly.getBooleanWithSmallProbability() && !globalState.getDbmsSpecificOptions().nullSafety) {
             return MongoDBConstant.createNullConstant();
         }
         return generator.generateConstantWithType(type);

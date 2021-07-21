@@ -28,7 +28,7 @@ public class MongoDBTableGenerator {
         for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
             String columnName = String.format("c%d", i);
             MongoDBDataType type = createColumn(columnName);
-            if (globalState.getDmbsSpecificOptions().testValidation) {
+            if (globalState.getDbmsSpecificOptions().testValidation) {
                 createTableQuery.addValidation(columnName, type.getBsonType());
             }
         }

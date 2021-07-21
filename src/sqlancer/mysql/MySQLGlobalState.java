@@ -14,7 +14,7 @@ public class MySQLGlobalState extends SQLGlobalState<MySQLOptions, MySQLSchema> 
     }
 
     public boolean usesPQS() {
-        return getDmbsSpecificOptions().oracles.stream().anyMatch(o -> o == MySQLOracleFactory.PQS);
+        return getDbmsSpecificOptions().oracles.stream().anyMatch(o -> o == MySQLOracleFactory.PQS);
     }
 
 }

@@ -33,7 +33,7 @@ public class MongoDBQueryPartitioningWhereTester extends MongoDBQueryPartitionin
         q = new MongoDBSelectQuery(select);
         List<Document> thirdResultSet = getResultSetAsDocumentList(q, state);
 
-        if (state.getDmbsSpecificOptions().testWithCount) {
+        if (state.getDbmsSpecificOptions().testWithCount) {
             select.setWithCountClause(true);
             select.setFilterClause(predicate);
             q = new MongoDBSelectQuery(select);

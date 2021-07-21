@@ -309,7 +309,7 @@ public final class Main {
             state.setRandomly(r);
             state.setDatabaseName(databaseName);
             state.setMainOptions(options);
-            state.setDmbsSpecificOptions(command);
+            state.setDbmsSpecificOptions(command);
             try (C con = provider.createDatabase(state)) {
                 QueryManager<C> manager = new QueryManager<>(state);
                 try {
@@ -343,7 +343,7 @@ public final class Main {
             state.setRandomly(r);
             state.setDatabaseName(databaseName);
             state.setMainOptions(options);
-            state.setDmbsSpecificOptions(command);
+            state.setDbmsSpecificOptions(command);
             return state;
         }
 

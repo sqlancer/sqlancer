@@ -26,7 +26,7 @@ public final class ArangoDBInsertGenerator {
         ArangoDBConstantGenerator constantGenerator = new ArangoDBConstantGenerator(globalState);
 
         for (int i = 0; i < table.getColumns().size(); i++) {
-            if (!globalState.getDmbsSpecificOptions().testRandomTypeInserts) {
+            if (!globalState.getDbmsSpecificOptions().testRandomTypeInserts) {
                 constantGenerator.addRandomConstantWithType(result, table.getColumns().get(i).getName(),
                         table.getColumns().get(i).getType());
             } else {

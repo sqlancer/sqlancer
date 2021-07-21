@@ -168,7 +168,7 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
     public void generateDatabase(SQLite3GlobalState globalState) throws Exception {
         Randomly r = new Randomly(SQLite3SpecialStringGenerator::generate);
         globalState.setRandomly(r);
-        if (globalState.getDmbsSpecificOptions().generateDatabase) {
+        if (globalState.getDbmsSpecificOptions().generateDatabase) {
 
             addSensiblePragmaDefaults(globalState);
             int nrTablesToCreate = 1;
@@ -186,7 +186,7 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
             } while (globalState.getSchema().getDatabaseTables().size() < nrTablesToCreate);
             assert globalState.getSchema().getTables().getTables().size() == nrTablesToCreate;
             checkTablesForGeneratedColumnLoops(globalState);
-            if (globalState.getDmbsSpecificOptions().testDBStats && Randomly.getBooleanWithSmallProbability()) {
+            if (globalState.getDbmsSpecificOptions().testDBStats && Randomly.getBooleanWithSmallProbability()) {
                 SQLQueryAdapter tableQuery = new SQLQueryAdapter(
                         "CREATE VIRTUAL TABLE IF NOT EXISTS stat USING dbstat(main)");
                 globalState.executeStatement(tableQuery);
@@ -224,10 +224,10 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
     private SQLQueryAdapter getTableQuery(SQLite3GlobalState globalState, int i) throws AssertionError {
         SQLQueryAdapter tableQuery;
         List<TableType> options = new ArrayList<>(Arrays.asList(TableType.values()));
-        if (!globalState.getDmbsSpecificOptions().testFts) {
+        if (!globalState.getDbmsSpecificOptions().testFts) {
             options.remove(TableType.FTS);
         }
-        if (!globalState.getDmbsSpecificOptions().testRtree) {
+        if (!globalState.getDbmsSpecificOptions().testRtree) {
             options.remove(TableType.RTREE);
         }
         switch (Randomly.fromList(options)) {
@@ -255,11 +255,11 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
         if (!Randomly.getBooleanWithSmallProbability()) {
             pragmasToExecute.addAll(DEFAULT_PRAGMAS);
         }
-        if (Randomly.getBoolean() && globalState.getDmbsSpecificOptions().oracles != SQLite3OracleFactory.PQS) {
+        if (Randomly.getBoolean() && globalState.getDbmsSpecificOptions().oracles != SQLite3OracleFactory.PQS) {
             // the PQS implementation currently assumes the default behavior of LIKE
             pragmasToExecute.add("PRAGMA case_sensitive_like=ON;");
         }
-        if (Randomly.getBoolean() && globalState.getDmbsSpecificOptions().oracles != SQLite3OracleFactory.PQS) {
+        if (Randomly.getBoolean() && globalState.getDbmsSpecificOptions().oracles != SQLite3OracleFactory.PQS) {
             // the encoding has an influence how binary strings are cast
             pragmasToExecute.add(String.format("PRAGMA encoding = '%s';",
                     Randomly.fromOptions("UTF-8", "UTF-16", "UTF-16le", "UTF-16be")));
@@ -276,7 +276,7 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
             dir.mkdir();
         }
         File dataBase = new File(dir, globalState.getDatabaseName() + ".db");
-        if (dataBase.exists() && ((SQLite3GlobalState) globalState).getDmbsSpecificOptions().deleteIfExists) {
+        if (dataBase.exists() && ((SQLite3GlobalState) globalState).getDbmsSpecificOptions().deleteIfExists) {
             dataBase.delete();
         }
         String url = "jdbc:sqlite:" + dataBase.getAbsolutePath();

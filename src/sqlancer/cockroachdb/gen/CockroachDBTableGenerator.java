@@ -35,13 +35,13 @@ public class CockroachDBTableGenerator extends CockroachDBGenerator {
     @Override
     public void buildStatement() {
         errors.add("and thus is not indexable"); // array types are not indexable
-        if (globalState.getDmbsSpecificOptions().testTempTables) {
+        if (globalState.getDbmsSpecificOptions().testTempTables) {
             errors.add("constraints on temporary tables may reference only temporary tables");
             errors.add("constraints on permanent tables may reference only permanent tables");
         }
         String tableName = globalState.getSchema().getFreeTableName();
         sb.append("CREATE ");
-        if (Randomly.getBoolean() && globalState.getDmbsSpecificOptions().testTempTables) {
+        if (Randomly.getBoolean() && globalState.getDbmsSpecificOptions().testTempTables) {
             sb.append("TEMP ");
         }
         sb.append("TABLE ");

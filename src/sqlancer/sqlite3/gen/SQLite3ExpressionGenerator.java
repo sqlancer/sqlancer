@@ -136,7 +136,7 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
 
     public List<Join> getRandomJoinClauses(List<SQLite3Table> tables) {
         List<Join> joinStatements = new ArrayList<>();
-        if (!globalState.getDmbsSpecificOptions().testJoins) {
+        if (!globalState.getDbmsSpecificOptions().testJoins) {
             return joinStatements;
         }
         if (Randomly.getBoolean() && tables.size() > 1) {
@@ -165,7 +165,7 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         if (Randomly.getBoolean()) {
             expr = new SQLite3OrderingTerm(expr, Ordering.getRandomValue());
         }
-        if (globalState.getDmbsSpecificOptions().testNullsFirstLast && Randomly.getBoolean()) {
+        if (globalState.getDbmsSpecificOptions().testNullsFirstLast && Randomly.getBoolean()) {
             expr = new SQLite3PostfixText(expr, Randomly.fromOptions(" NULLS FIRST", " NULLS LAST"),
                     null /* expr.getExpectedValue() */) {
                 @Override
@@ -253,13 +253,13 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         if (!allowSubqueries) {
             list.remove(ExpressionType.RANDOM_QUERY);
         }
-        if (!globalState.getDmbsSpecificOptions().testFunctions) {
+        if (!globalState.getDbmsSpecificOptions().testFunctions) {
             list.remove(ExpressionType.FUNCTION);
         }
-        if (!globalState.getDmbsSpecificOptions().testMatch) {
+        if (!globalState.getDbmsSpecificOptions().testMatch) {
             list.remove(ExpressionType.MATCH);
         }
-        if (!globalState.getDmbsSpecificOptions().testIn) {
+        if (!globalState.getDbmsSpecificOptions().testIn) {
             list.remove(ExpressionType.IN_OPERATOR);
         }
         ExpressionType randomExpressionType = Randomly.fromList(list);
@@ -504,7 +504,7 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
 
         private static List<AnyFunction> getAllFunctions(SQLite3GlobalState globalState) {
             List<AnyFunction> functions = new ArrayList<>(Arrays.asList(AnyFunction.values()));
-            if (!globalState.getDmbsSpecificOptions().testSoundex) {
+            if (!globalState.getDbmsSpecificOptions().testSoundex) {
                 boolean removed = functions.removeIf(f -> f.name.equals("soundex"));
                 if (!removed) {
                     throw new IllegalStateException();

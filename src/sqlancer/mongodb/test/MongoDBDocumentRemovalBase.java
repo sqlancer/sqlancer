@@ -44,7 +44,7 @@ public class MongoDBDocumentRemovalBase extends
         } else {
             select.setLookupList(Randomly.nonEmptySubset(targetColumns));
         }
-        if (state.getDmbsSpecificOptions().testComputedValues) {
+        if (state.getDbmsSpecificOptions().testComputedValues) {
             generateComputedColumns();
         }
     }
@@ -55,7 +55,7 @@ public class MongoDBDocumentRemovalBase extends
             targetColumns.add(new MongoDBColumnTestReference(c, true));
         }
         List<MongoDBColumnTestReference> joinsOtherTables = new ArrayList<>();
-        if (!state.getDmbsSpecificOptions().nullSafety) {
+        if (!state.getDbmsSpecificOptions().nullSafety) {
             for (int i = 1; i < targetTables.getTables().size(); i++) {
                 MongoDBSchema.MongoDBTable procTable = targetTables.getTables().get(i);
                 for (MongoDBSchema.MongoDBColumn c : procTable.getColumns()) {

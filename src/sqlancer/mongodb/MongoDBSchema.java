@@ -36,7 +36,7 @@ public class MongoDBSchema extends AbstractSchema<MongoDBGlobalState, MongoDBSch
 
         public static MongoDBDataType getRandom(MongoDBGlobalState state) {
             Set<MongoDBDataType> valueSet = new HashSet<>(Arrays.asList(values()));
-            if (state.getDmbsSpecificOptions().nullSafety) {
+            if (state.getDbmsSpecificOptions().nullSafety) {
                 valueSet.remove(STRING);
             }
             MongoDBDataType[] configuredValues = new MongoDBDataType[valueSet.size()];

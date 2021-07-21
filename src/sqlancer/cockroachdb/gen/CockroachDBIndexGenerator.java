@@ -38,7 +38,7 @@ public class CockroachDBIndexGenerator extends CockroachDBGenerator {
         sb.append(table.getName());
         List<CockroachDBColumn> columns = table.getRandomNonEmptyColumnSubset();
         addColumns(sb, columns, true);
-        boolean hashSharded = globalState.getDmbsSpecificOptions().testHashIndexes
+        boolean hashSharded = globalState.getDbmsSpecificOptions().testHashIndexes
                 && Randomly.getBooleanWithSmallProbability();
         if (hashSharded) {
             sb.append(" USING HASH WITH BUCKET_COUNT=");

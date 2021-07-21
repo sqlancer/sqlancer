@@ -47,7 +47,7 @@ public class ArangoDBProvider
         case INSERT:
             return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
         case CREATE_INDEX:
-            return r.getInteger(0, globalState.getDmbsSpecificOptions().maxNumberIndexes);
+            return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumberIndexes);
         default:
             throw new AssertionError(a);
         }

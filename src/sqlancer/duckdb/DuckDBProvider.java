@@ -65,20 +65,20 @@ public class DuckDBProvider extends SQLProviderAdapter<DuckDBGlobalState, DuckDB
         case INSERT:
             return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
         case CREATE_INDEX:
-            if (!globalState.getDmbsSpecificOptions().testIndexes) {
+            if (!globalState.getDbmsSpecificOptions().testIndexes) {
                 return 0;
             }
             // fall through
         case UPDATE:
-            return r.getInteger(0, globalState.getDmbsSpecificOptions().maxNumUpdates + 1);
+            return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumUpdates + 1);
         case VACUUM: // seems to be ignored
         case ANALYZE: // seems to be ignored
         case EXPLAIN:
             return r.getInteger(0, 2);
         case DELETE:
-            return r.getInteger(0, globalState.getDmbsSpecificOptions().maxNumDeletes + 1);
+            return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumDeletes + 1);
         case CREATE_VIEW:
-            return r.getInteger(0, globalState.getDmbsSpecificOptions().maxNumViews + 1);
+            return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumViews + 1);
         default:
             throw new AssertionError(a);
         }

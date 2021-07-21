@@ -49,7 +49,7 @@ public final class PostgresInsertGenerator {
         }
         sb.append(" VALUES");
 
-        if (globalState.getDmbsSpecificOptions().allowBulkInsert && Randomly.getBooleanWithSmallProbability()) {
+        if (globalState.getDbmsSpecificOptions().allowBulkInsert && Randomly.getBooleanWithSmallProbability()) {
             StringBuilder sbRowValue = new StringBuilder();
             sbRowValue.append("(");
             for (int i = 0; i < columns.size(); i++) {

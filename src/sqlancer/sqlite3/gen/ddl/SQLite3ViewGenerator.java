@@ -50,7 +50,7 @@ public final class SQLite3ViewGenerator {
         SQLite3Expression randomQuery;
         do {
             randomQuery = SQLite3RandomQuerySynthesizer.generate(globalState, size);
-        } while (globalState.getDmbsSpecificOptions().oracles == SQLite3OracleFactory.PQS
+        } while (globalState.getDbmsSpecificOptions().oracles == SQLite3OracleFactory.PQS
                 && !checkAffinity(randomQuery));
         sb.append(SQLite3Visitor.asString(randomQuery));
         return new SQLQueryAdapter(sb.toString(), errors, true);

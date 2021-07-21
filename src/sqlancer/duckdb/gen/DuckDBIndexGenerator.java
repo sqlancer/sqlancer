@@ -50,7 +50,7 @@ public final class DuckDBIndexGenerator {
             sb.append(DuckDBToStringVisitor.asString(expr));
         }
         errors.add("already exists!");
-        if (globalState.getDmbsSpecificOptions().testRowid) {
+        if (globalState.getDbmsSpecificOptions().testRowid) {
             errors.add("Cannot create an index on the rowid!");
         }
         return new SQLQueryAdapter(sb.toString(), errors, true);
