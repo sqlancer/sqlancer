@@ -51,28 +51,28 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
             return new NewFunctionNode<>(generateExpressions(depth + 1, aggregate.getNrArgs()), aggregate);
         }
         List<Expression> possibleOptions = new ArrayList<>(Arrays.asList(Expression.values()));
-        if (!globalState.getDmbsSpecificOptions().testCollate) {
+        if (!globalState.getDbmsSpecificOptions().testCollate) {
             possibleOptions.remove(Expression.COLLATE);
         }
-        if (!globalState.getDmbsSpecificOptions().testFunctions) {
+        if (!globalState.getDbmsSpecificOptions().testFunctions) {
             possibleOptions.remove(Expression.FUNC);
         }
-        if (!globalState.getDmbsSpecificOptions().testCasts) {
+        if (!globalState.getDbmsSpecificOptions().testCasts) {
             possibleOptions.remove(Expression.CAST);
         }
-        if (!globalState.getDmbsSpecificOptions().testBetween) {
+        if (!globalState.getDbmsSpecificOptions().testBetween) {
             possibleOptions.remove(Expression.BETWEEN);
         }
-        if (!globalState.getDmbsSpecificOptions().testIn) {
+        if (!globalState.getDbmsSpecificOptions().testIn) {
             possibleOptions.remove(Expression.IN);
         }
-        if (!globalState.getDmbsSpecificOptions().testCase) {
+        if (!globalState.getDbmsSpecificOptions().testCase) {
             possibleOptions.remove(Expression.CASE);
         }
-        if (!globalState.getDmbsSpecificOptions().testBinaryComparisons) {
+        if (!globalState.getDbmsSpecificOptions().testBinaryComparisons) {
             possibleOptions.remove(Expression.BINARY_COMPARISON);
         }
-        if (!globalState.getDmbsSpecificOptions().testBinaryLogicals) {
+        if (!globalState.getDbmsSpecificOptions().testBinaryLogicals) {
             possibleOptions.remove(Expression.BINARY_LOGICAL);
         }
         Expression expr = Randomly.fromList(possibleOptions);
@@ -135,32 +135,32 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
         DuckDBDataType type = DuckDBDataType.getRandom();
         switch (type) {
         case INT:
-            if (!globalState.getDmbsSpecificOptions().testIntConstants) {
+            if (!globalState.getDbmsSpecificOptions().testIntConstants) {
                 throw new IgnoreMeException();
             }
             return DuckDBConstant.createIntConstant(globalState.getRandomly().getInteger());
         case DATE:
-            if (!globalState.getDmbsSpecificOptions().testDateConstants) {
+            if (!globalState.getDbmsSpecificOptions().testDateConstants) {
                 throw new IgnoreMeException();
             }
             return DuckDBConstant.createDateConstant(globalState.getRandomly().getInteger());
         case TIMESTAMP:
-            if (!globalState.getDmbsSpecificOptions().testTimestampConstants) {
+            if (!globalState.getDbmsSpecificOptions().testTimestampConstants) {
                 throw new IgnoreMeException();
             }
             return DuckDBConstant.createTimestampConstant(globalState.getRandomly().getInteger());
         case VARCHAR:
-            if (!globalState.getDmbsSpecificOptions().testStringConstants) {
+            if (!globalState.getDbmsSpecificOptions().testStringConstants) {
                 throw new IgnoreMeException();
             }
             return DuckDBConstant.createStringConstant(globalState.getRandomly().getString());
         case BOOLEAN:
-            if (!globalState.getDmbsSpecificOptions().testBooleanConstants) {
+            if (!globalState.getDbmsSpecificOptions().testBooleanConstants) {
                 throw new IgnoreMeException();
             }
             return DuckDBConstant.createBooleanConstant(Randomly.getBoolean());
         case FLOAT:
-            if (!globalState.getDmbsSpecificOptions().testFloatConstants) {
+            if (!globalState.getDbmsSpecificOptions().testFloatConstants) {
                 throw new IgnoreMeException();
             }
             return DuckDBConstant.createFloatConstant(globalState.getRandomly().getDouble());

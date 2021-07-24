@@ -91,7 +91,7 @@ public class ClickHouseExpressionGenerator
     public List<ClickHouseExpression.ClickHouseJoin> getRandomJoinClauses(
             List<ClickHouseSchema.ClickHouseTable> tables) {
         List<ClickHouseExpression.ClickHouseJoin> joinStatements = new ArrayList<>();
-        if (!globalState.getDmbsSpecificOptions().testJoins) {
+        if (!globalState.getDbmsSpecificOptions().testJoins) {
             return joinStatements;
         }
         if (Randomly.getBoolean() && tables.size() > 1) {

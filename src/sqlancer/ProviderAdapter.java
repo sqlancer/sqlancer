@@ -63,7 +63,7 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
     protected abstract void checkViewsAreValid(G globalState);
 
     protected TestOracle getTestOracle(G globalState) throws Exception {
-        List<? extends OracleFactory<G>> testOracleFactory = globalState.getDmbsSpecificOptions()
+        List<? extends OracleFactory<G>> testOracleFactory = globalState.getDbmsSpecificOptions()
                 .getTestOracleFactory();
         boolean testOracleRequiresMoreThanZeroRows = testOracleFactory.stream()
                 .anyMatch(p -> p.requiresAllTablesToContainRows());

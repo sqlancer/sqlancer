@@ -300,7 +300,7 @@ public class CitusProvider extends PostgresProvider {
 
     @Override
     protected TestOracle getTestOracle(PostgresGlobalState globalState) throws SQLException {
-        List<TestOracle> oracles = ((CitusOptions) globalState.getDmbsSpecificOptions()).citusOracle.stream().map(o -> {
+        List<TestOracle> oracles = ((CitusOptions) globalState.getDbmsSpecificOptions()).citusOracle.stream().map(o -> {
             try {
                 return o.create(globalState);
             } catch (Exception e1) {
@@ -415,7 +415,7 @@ public class CitusProvider extends PostgresProvider {
             // reconnect to coordinator node, test database
             con = new SQLConnection(DriverManager.getConnection("jdbc:" + testURL, username, password));
             ((CitusGlobalState) globalState)
-                    .setRepartition(((CitusOptions) globalState.getDmbsSpecificOptions()).repartition);
+                    .setRepartition(((CitusOptions) globalState.getDbmsSpecificOptions()).repartition);
             globalState.getState().commentStatements();
             return con;
         }

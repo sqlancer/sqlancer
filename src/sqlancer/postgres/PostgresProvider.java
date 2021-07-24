@@ -195,7 +195,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
 
     @Override
     public SQLConnection createDatabase(PostgresGlobalState globalState) throws SQLException {
-        if (globalState.getDmbsSpecificOptions().getTestOracleFactory().stream()
+        if (globalState.getDbmsSpecificOptions().getTestOracleFactory().stream()
                 .anyMatch((o) -> o == PostgresOracleFactory.PQS)) {
             generateOnlyKnown = true;
         }
@@ -205,7 +205,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         host = globalState.getOptions().getHost();
         port = globalState.getOptions().getPort();
         entryPath = "/test";
-        entryURL = globalState.getDmbsSpecificOptions().connectionURL;
+        entryURL = globalState.getDbmsSpecificOptions().connectionURL;
         // trim URL to exclude "jdbc:"
         if (entryURL.startsWith("jdbc:")) {
             entryURL = entryURL.substring(5);
@@ -305,7 +305,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
     private String getCreateDatabaseCommand(PostgresGlobalState state) {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE DATABASE " + databaseName + " ");
-        if (Randomly.getBoolean() && ((PostgresOptions) state.getDmbsSpecificOptions()).testCollations) {
+        if (Randomly.getBoolean() && ((PostgresOptions) state.getDbmsSpecificOptions()).testCollations) {
             if (Randomly.getBoolean()) {
                 sb.append("WITH ENCODING '");
                 sb.append(Randomly.fromOptions("utf8"));

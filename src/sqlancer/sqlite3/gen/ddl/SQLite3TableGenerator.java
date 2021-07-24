@@ -62,7 +62,7 @@ public class SQLite3TableGenerator {
 
     public void start() {
         sb.append("CREATE ");
-        if (globalState.getDmbsSpecificOptions().testTempTables && Randomly.getBoolean()) {
+        if (globalState.getDbmsSpecificOptions().testTempTables && Randomly.getBoolean()) {
             tempTable = true;
             if (Randomly.getBoolean()) {
                 sb.append("TEMP ");
@@ -110,12 +110,12 @@ public class SQLite3TableGenerator {
             }
         }
 
-        if (globalState.getDmbsSpecificOptions().testForeignKeys && Randomly.getBooleanWithSmallProbability()) {
+        if (globalState.getDbmsSpecificOptions().testForeignKeys && Randomly.getBooleanWithSmallProbability()) {
             addForeignKey();
         }
 
-        if (globalState.getDmbsSpecificOptions().testCheckConstraints && globalState
-                .getDmbsSpecificOptions().oracles != SQLite3OracleFactory.PQS /*
+        if (globalState.getDbmsSpecificOptions().testCheckConstraints && globalState
+                .getDbmsSpecificOptions().oracles != SQLite3OracleFactory.PQS /*
                                                                                * we are currently lacking a parser to
                                                                                * read column definitions, and would
                                                                                * interpret a COLLATE in the check
@@ -126,7 +126,7 @@ public class SQLite3TableGenerator {
         }
 
         sb.append(")");
-        if (globalState.getDmbsSpecificOptions().testWithoutRowids && containsPrimaryKey && !containsAutoIncrement
+        if (globalState.getDbmsSpecificOptions().testWithoutRowids && containsPrimaryKey && !containsAutoIncrement
                 && Randomly.getBoolean()) {
             // see https://sqlite.org/withoutrowid.html
             sb.append(" WITHOUT ROWID");
@@ -151,7 +151,7 @@ public class SQLite3TableGenerator {
      * @see https://www.sqlite.org/foreignkeys.html
      */
     private void addForeignKey() {
-        assert globalState.getDmbsSpecificOptions().testForeignKeys;
+        assert globalState.getDbmsSpecificOptions().testForeignKeys;
         List<String> foreignKeyColumns;
         if (Randomly.getBoolean()) {
             foreignKeyColumns = Arrays.asList(Randomly.fromList(columnNames));

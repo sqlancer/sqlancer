@@ -48,7 +48,7 @@ public class MongoDBConstantGenerator {
 
     public void addRandomConstantWithType(Document document, String key, MongoDBDataType option) {
         MongoDBConstant constant;
-        if (globalState.getDmbsSpecificOptions().testNullInserts && Randomly.getBooleanWithSmallProbability()) {
+        if (globalState.getDbmsSpecificOptions().testNullInserts && Randomly.getBooleanWithSmallProbability()) {
             constant = new MongoDBNullConstant();
             constant.setValueInDocument(document, key);
             return;

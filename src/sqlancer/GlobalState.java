@@ -10,7 +10,7 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
     protected C databaseConnection;
     private Randomly r;
     private MainOptions options;
-    private O dmbsSpecificOptions;
+    private O dbmsSpecificOptions;
     private S schema;
     private Main.StateLogger logger;
     private StateToReproduce state;
@@ -26,12 +26,12 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
     }
 
     @SuppressWarnings("unchecked")
-    public void setDmbsSpecificOptions(Object dmbsSpecificOptions) {
-        this.dmbsSpecificOptions = (O) dmbsSpecificOptions;
+    public void setDbmsSpecificOptions(Object dbmsSpecificOptions) {
+        this.dbmsSpecificOptions = (O) dbmsSpecificOptions;
     }
 
-    public O getDmbsSpecificOptions() {
-        return dmbsSpecificOptions;
+    public O getDbmsSpecificOptions() {
+        return dbmsSpecificOptions;
     }
 
     public void setRandomly(Randomly r) {
