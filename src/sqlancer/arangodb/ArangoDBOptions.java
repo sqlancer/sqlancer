@@ -10,8 +10,8 @@ import com.beust.jcommander.Parameter;
 
 import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
-import sqlancer.arangodb.test.ArangoDBQueryPartitioningWhereTester;
 import sqlancer.arangodb.ArangoDBProvider.ArangoDBGlobalState;
+import sqlancer.arangodb.test.ArangoDBQueryPartitioningWhereTester;
 import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
 
