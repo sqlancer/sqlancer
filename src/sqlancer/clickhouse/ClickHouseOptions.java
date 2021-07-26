@@ -33,31 +33,31 @@ public class ClickHouseOptions implements DBMSSpecificOptions<ClickHouseOracleFa
     public enum ClickHouseOracleFactory implements OracleFactory<ClickHouseGlobalState> {
         TLPWhere {
             @Override
-            public TestOracle create(ClickHouseProvider.ClickHouseGlobalState globalState) throws SQLException {
+            public TestOracle create(ClickHouseGlobalState globalState) throws SQLException {
                 return new ClickHouseTLPWhereOracle(globalState);
             }
         },
         TLPDistinct {
             @Override
-            public TestOracle create(ClickHouseProvider.ClickHouseGlobalState globalState) throws SQLException {
+            public TestOracle create(ClickHouseGlobalState globalState) throws SQLException {
                 return new ClickHouseTLPDistinctOracle(globalState);
             }
         },
         TLPGroupBy {
             @Override
-            public TestOracle create(ClickHouseProvider.ClickHouseGlobalState globalState) throws SQLException {
+            public TestOracle create(ClickHouseGlobalState globalState) throws SQLException {
                 return new ClickHouseTLPGroupByOracle(globalState);
             }
         },
         TLPAggregate {
             @Override
-            public TestOracle create(ClickHouseProvider.ClickHouseGlobalState globalState) throws SQLException {
+            public TestOracle create(ClickHouseGlobalState globalState) throws SQLException {
                 return new ClickHouseTLPAggregateOracle(globalState);
             }
         },
         TLPHaving {
             @Override
-            public TestOracle create(ClickHouseProvider.ClickHouseGlobalState globalState) throws SQLException {
+            public TestOracle create(ClickHouseGlobalState globalState) throws SQLException {
                 return new ClickHouseTLPHavingOracle(globalState);
             }
         };
