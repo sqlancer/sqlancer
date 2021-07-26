@@ -21,7 +21,6 @@ public final class H2SetGenerator {
         BUILTIN_ALIAS_OVERRIDE((r) -> Randomly.fromOptions("TRUE", "FALSE")), //
         COLLATION((r) -> Randomly.fromOptions("OFF", "ENGLISH", "ENGLISH STRENGTH PRIMARY",
                 "ENGLISH STRENGTH SECONDARY", "ENGLISH STRENGTH TERTIARY", "ENGLISH STRENGTH IDENTICAL")), //
-        COMPRESS_LOB((r) -> Randomly.fromOptions("NO", "LZF", "DEFLATE")), //
         DEFAULT_NULL_ORDERING((r) -> Randomly.fromOptions("LOW", "HIGH", "FIRST", "LAST")), //
         DEFAULT_TABLE_TYPE((r) -> Randomly.fromOptions("MEMORY", "CACHED")), //
         IGNORECASE((r) -> Randomly.fromOptions("TRUE", "FALSE")), //
