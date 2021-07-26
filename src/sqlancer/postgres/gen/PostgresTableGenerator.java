@@ -235,6 +235,7 @@ public class PostgresTableGenerator {
             switch (c) {
             case NULL_OR_NOT_NULL:
                 sb.append(Randomly.fromOptions("NOT NULL", "NULL"));
+                errors.add("conflicting NULL/NOT NULL declarations");
                 break;
             case UNIQUE:
                 sb.append("UNIQUE");
