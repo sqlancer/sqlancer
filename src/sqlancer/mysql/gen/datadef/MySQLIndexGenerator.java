@@ -114,6 +114,7 @@ public class MySQLIndexGenerator {
         errors.add("out of range");
         errors.add("Data truncated for functional index");
         errors.add("used in key specification without a key length");
+        errors.add("Row size too large"); // seems to happen together with MIN_ROWS in the table declaration
         return new SQLQueryAdapter(string, errors, true);
     }
 
