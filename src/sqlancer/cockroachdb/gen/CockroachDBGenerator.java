@@ -1,12 +1,10 @@
 package sqlancer.cockroachdb.gen;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
-import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.common.gen.AbstractGenerator;
 
 public abstract class CockroachDBGenerator extends AbstractGenerator {
@@ -30,23 +28,6 @@ public abstract class CockroachDBGenerator extends AbstractGenerator {
             }
         }
         sb.append(")");
-    }
-
-    void generateInterleave() {
-        // TODO make this more likely to succeed
-        CockroachDBTable parentTable = globalState.getSchema().getRandomTable(t -> !t.isView());
-        List<CockroachDBColumn> parentColumns = parentTable.getRandomNonEmptyColumnSubset();
-        sb.append(" INTERLEAVE IN PARENT ");
-        sb.append(parentTable.getName());
-        sb.append("(");
-        sb.append(parentColumns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
-        sb.append(")");
-        errors.add("must refer to a prefix of the primary key column names being interleaved");
-        errors.add("must refer to a prefix of the index column names being interleaved");
-        errors.add("must match the parent's primary index");
-        errors.add("must match type and sort direction of the parent's primary index");
-        errors.add("must be a prefix of the index columns being interleaved");
-        errors.add("must be a prefix of the primary key columns being interleaved");
     }
 
 }
