@@ -17,16 +17,20 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.JCommander.Builder;
 
+import sqlancer.FoundBugException.Reproducer;
 import sqlancer.arangodb.ArangoDBProvider;
 import sqlancer.citus.CitusProvider;
 import sqlancer.clickhouse.ClickHouseProvider;
 import sqlancer.cockroachdb.CockroachDBProvider;
 import sqlancer.common.log.Loggable;
 import sqlancer.common.query.Query;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.cosmos.CosmosProvider;
 import sqlancer.duckdb.DuckDBProvider;
@@ -35,6 +39,7 @@ import sqlancer.mariadb.MariaDBProvider;
 import sqlancer.mongodb.MongoDBProvider;
 import sqlancer.mysql.MySQLProvider;
 import sqlancer.postgres.PostgresProvider;
+import sqlancer.sqlite3.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.tidb.TiDBProvider;
 
@@ -61,6 +66,8 @@ public final class Main {
     public static final class StateLogger {
 
         private final File loggerFile;
+        private final File reducedFile;
+
         private File curFile;
         private FileWriter logFileWriter;
         public FileWriter currentFileWriter;
@@ -94,6 +101,7 @@ public final class Main {
             }
             ensureExistsAndIsEmpty(dir, provider);
             loggerFile = new File(dir, databaseName + ".log");
+            reducedFile = new File(dir, databaseName + "-reduced.log");
             logEachSelect = options.logEachSelect();
             if (logEachSelect) {
                 curFile = new File(dir, databaseName + "-cur.log");
@@ -132,6 +140,17 @@ public final class Main {
                     throw new AssertionError(e);
                 }
             }
+            return logFileWriter;
+        }
+
+        private FileWriter getReducedWriter() {
+            // if (logFileWriter == null) {
+            try {
+                logFileWriter = new FileWriter(reducedFile);
+            } catch (IOException e) {
+                throw new AssertionError(e);
+            }
+            // }
             return logFileWriter;
         }
 
@@ -180,6 +199,17 @@ public final class Main {
                 currentFileWriter.flush();
             } catch (IOException e) {
                 throw new AssertionError();
+            }
+        }
+
+        public void logReduced(StateToReproduce state) {
+            FileWriter logFileWriter = getReducedWriter();
+            printState(logFileWriter, state);
+            try {
+                logFileWriter.close();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
         }
 
@@ -300,6 +330,8 @@ public final class Main {
             }
         }
 
+        boolean observedChange;
+
         public void run() throws Exception {
             G state = createGlobalState();
             stateToRepro = provider.getStateToReproduce(databaseName);
@@ -323,14 +355,103 @@ public final class Main {
                 if (options.logEachSelect()) {
                     logger.writeCurrent(state.getState());
                 }
-                provider.generateAndTestDatabase(state);
                 try {
-                    logger.getCurrentFileWriter().close();
-                    logger.currentFileWriter = null;
-                } catch (IOException e) {
-                    throw new AssertionError(e);
+                    provider.generateAndTestDatabase(state);
+
+                } catch (FoundBugException e) {
+                    try {
+                        logger.getCurrentFileWriter().close();
+                        logger.currentFileWriter = null;
+                    } catch (IOException e2) {
+                        throw new AssertionError(e2);
+                    }
+                    Reproducer reproducer = e.getReproducer();
+
+                    G newGlobalState = createGlobalState();
+                    QueryManager<C> newManager = new QueryManager<>(newGlobalState);
+                    newGlobalState.setDatabaseName(databaseName);
+                    newGlobalState.setMainOptions(options);
+                    newGlobalState.setDmbsSpecificOptions(command);
+                    newGlobalState.setStateLogger(new StateLogger(databaseName, provider, options));
+                    newGlobalState.setManager(newManager);
+                    newGlobalState.setState(stateToRepro);
+
+                    List<Query<C>> knownToReproduceBugStatements = new ArrayList<Query<C>>();
+                    for (Query<?> stat : state.getState().getStatements()) {
+                        knownToReproduceBugStatements.add((Query<C>) stat);
+                    }
+                    // iterate until fixpoint
+                    do {
+                        observedChange = false;
+                        knownToReproduceBugStatements = tryReduction(state, reproducer, newGlobalState,
+                                knownToReproduceBugStatements, (candidateStatements, i) -> {
+                                    candidateStatements.remove((int) i);
+                                    return true;
+                                });
+                    } while (observedChange);
+
+                    for (String s : new String[] { "OR IGNORE", "OR ABORT", "OR ROLLBACK", "OR FAIL", "TEMP",
+                            "TEMPORARY", "UNIQUE", "NOT NULL", "COLLATE BINARY", "COLLATE NOCASE", "COLLATE RTRIM",
+                            "INT", "REAL", "TEXT", "IF NOT EXISTS", "UNINDEXED" }) {
+                        knownToReproduceBugStatements = tryReplaceToken(state, reproducer, newGlobalState,
+                                knownToReproduceBugStatements, " " + s, "");
+                    }
+                    throw e;
                 }
             }
+        }
+
+        private List<Query<C>> tryReplaceToken(G state, Reproducer reproducer, G newGlobalState,
+                List<Query<C>> knownToReproduceBugStatements, String target, String replaceBy) throws Exception {
+            do {
+                observedChange = false;
+                knownToReproduceBugStatements = tryReduction(state, reproducer, newGlobalState,
+                        knownToReproduceBugStatements, (candidateStatements, i) -> {
+                            Query<C> statement = candidateStatements.get(i);
+                            if (statement.getQueryString().contains(target)) {
+                                candidateStatements.set(i, (Query<C>) new SQLQueryAdapter(
+                                        statement.getQueryString().replace(target, replaceBy), true));
+                                return true;
+                            }
+                            return false;
+                        }
+
+                );
+            } while (observedChange);
+            return knownToReproduceBugStatements;
+        }
+
+        private List<Query<C>> tryReduction(G state, Reproducer reproducer, G newGlobalState,
+                List<Query<C>> knownToReproduceBugStatements,
+                BiFunction<List<Query<C>>, Integer, Boolean> reductionOperation) throws Exception {
+            for (int i = 0; i < knownToReproduceBugStatements.size(); i++) {
+                try (C con2 = provider.createDatabase(newGlobalState)) {
+                    newGlobalState.setConnection(con2);
+                    List<Query<C>> candidateStatements = new ArrayList<>(knownToReproduceBugStatements);
+                    if (!reductionOperation.apply(candidateStatements, i)) {
+                        continue;
+                    }
+                    newGlobalState.getState().setStatements(candidateStatements.stream().collect(Collectors.toList()));
+                    for (Query<C> s : candidateStatements) {
+                        try {
+                            s.execute(newGlobalState);
+                        } catch (Throwable ignoredException) {
+                            // ignore
+                        }
+                    }
+                    try {
+                        if (reproducer.bugStillTriggers((SQLite3GlobalState) newGlobalState)) {
+                            observedChange = true;
+                            knownToReproduceBugStatements = candidateStatements;
+                            reproducer.outputHook((SQLite3GlobalState) newGlobalState);
+                            state.getLogger().logReduced(newGlobalState.getState());
+                        }
+                    } catch (Throwable ignoredException) {
+
+                    }
+                }
+            }
+            return knownToReproduceBugStatements;
         }
 
         private G getInitializedGlobalState(long seed) {
