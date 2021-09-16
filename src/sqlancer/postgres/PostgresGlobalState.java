@@ -40,16 +40,16 @@ public class PostgresGlobalState extends SQLGlobalState<PostgresOptions, Postgre
     }
 
     private List<String> getCollnames(SQLConnection con) throws SQLException {
-        List<String> opClasses = new ArrayList<>();
+        List<String> collNames = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s
                     .executeQuery("SELECT collname FROM pg_collation WHERE collname LIKE '%utf8' or collname = 'C';")) {
                 while (rs.next()) {
-                    opClasses.add(rs.getString(1));
+                    collNames.add(rs.getString(1));
                 }
             }
         }
-        return opClasses;
+        return collNames;
     }
 
     private List<String> getOpclasses(SQLConnection con) throws SQLException {
@@ -65,15 +65,15 @@ public class PostgresGlobalState extends SQLGlobalState<PostgresOptions, Postgre
     }
 
     private List<String> getOperators(SQLConnection con) throws SQLException {
-        List<String> opClasses = new ArrayList<>();
+        List<String> operators = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery("SELECT oprname FROM pg_operator;")) {
                 while (rs.next()) {
-                    opClasses.add(rs.getString(1));
+                    operators.add(rs.getString(1));
                 }
             }
         }
-        return opClasses;
+        return operators;
     }
 
     public List<String> getOperators() {
