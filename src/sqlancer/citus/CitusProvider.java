@@ -21,8 +21,10 @@ import sqlancer.citus.gen.CitusDeleteGenerator;
 import sqlancer.citus.gen.CitusIndexGenerator;
 import sqlancer.citus.gen.CitusInsertGenerator;
 import sqlancer.citus.gen.CitusSetGenerator;
+import sqlancer.citus.gen.CitusTableGenerator;
 import sqlancer.citus.gen.CitusUpdateGenerator;
 import sqlancer.citus.gen.CitusViewGenerator;
+import sqlancer.common.DBMSCommon;
 import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.ExpectedErrors;
@@ -269,6 +271,20 @@ public class CitusProvider extends PostgresProvider {
             }
         }
         distributeTable(columns, tableName, globalState);
+    }
+
+    @Override
+    protected void createTables(PostgresGlobalState globalState, int numTables) throws Exception {
+        while (globalState.getSchema().getDatabaseTables().size() < numTables) {
+            try {
+                String tableName = DBMSCommon.createTableName(globalState.getSchema().getDatabaseTables().size());
+                SQLQueryAdapter createTable = CitusTableGenerator.generate(tableName, globalState.getSchema(),
+                        generateOnlyKnown, globalState);
+                globalState.executeStatement(createTable);
+            } catch (IgnoreMeException e) {
+
+            }
+        }
     }
 
     @Override
