@@ -312,10 +312,10 @@ public class CitusProvider extends PostgresProvider {
 
     private List<CitusWorkerNode> readCitusWorkerNodes(PostgresGlobalState globalState, SQLConnection con)
             throws SQLException {
-        globalState.getState().logStatement("SELECT * FROM master_get_active_worker_nodes()");
+        globalState.getState().logStatement("SELECT * FROM citus_get_active_worker_nodes()");
         List<CitusWorkerNode> citusWorkerNodes = new ArrayList<>();
         try (Statement s = con.createStatement()) {
-            ResultSet rs = s.executeQuery("SELECT * FROM master_get_active_worker_nodes();");
+            ResultSet rs = s.executeQuery("SELECT * FROM citus_get_active_worker_nodes();");
             while (rs.next()) {
                 String nodeHost = rs.getString("node_name");
                 int nodePort = rs.getInt("node_port");
@@ -374,7 +374,7 @@ public class CitusProvider extends PostgresProvider {
     private void addCitusWorkerNodes(PostgresGlobalState globalState, SQLConnection con,
             List<CitusWorkerNode> citusWorkerNodes) throws SQLException {
         for (CitusWorkerNode w : citusWorkerNodes) {
-            String addWorkers = "SELECT * from master_add_node('" + w.getHost() + "', " + w.getPort() + ");";
+            String addWorkers = "SELECT * from citus_add_node('" + w.getHost() + "', " + w.getPort() + ");";
             globalState.getState().logStatement(addWorkers);
             try (Statement s = con.createStatement()) {
                 s.execute(addWorkers);
