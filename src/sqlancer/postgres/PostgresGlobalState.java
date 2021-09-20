@@ -23,6 +23,7 @@ public class PostgresGlobalState extends SQLGlobalState<PostgresOptions, Postgre
     private List<String> operators = Collections.emptyList();
     private List<String> collates = Collections.emptyList();
     private List<String> opClasses = Collections.emptyList();
+    private List<String> tableAccessMethods = Collections.emptyList();
     // store and allow filtering by function volatility classifications
     private final Map<String, Character> functionsAndTypes = new HashMap<>();
     private List<Character> allowedFunctionTypes = Arrays.asList(IMMUTABLE, STABLE, VOLATILE);
@@ -34,6 +35,7 @@ public class PostgresGlobalState extends SQLGlobalState<PostgresOptions, Postgre
             this.opClasses = getOpclasses(getConnection());
             this.operators = getOperators(getConnection());
             this.collates = getCollnames(getConnection());
+            this.tableAccessMethods = getTableAccessMethods(getConnection());
         } catch (SQLException e) {
             throw new AssertionError(e);
         }
@@ -76,6 +78,21 @@ public class PostgresGlobalState extends SQLGlobalState<PostgresOptions, Postgre
         return operators;
     }
 
+    private List<String> getTableAccessMethods(SQLConnection con) throws SQLException {
+        List<String> tableAccessMethods = new ArrayList<>();
+        try (Statement s = con.createStatement()) {
+            /*
+             * pg_am includes both index and table access methods so we need to filter with amtype = 't'
+             */
+            try (ResultSet rs = s.executeQuery("SELECT amname FROM pg_am WHERE amtype = 't';")) {
+                while (rs.next()) {
+                    tableAccessMethods.add(rs.getString(1));
+                }
+            }
+        }
+        return tableAccessMethods;
+    }
+
     public List<String> getOperators() {
         return operators;
     }
@@ -98,6 +115,14 @@ public class PostgresGlobalState extends SQLGlobalState<PostgresOptions, Postgre
 
     public String getRandomOpclass() {
         return Randomly.fromList(opClasses);
+    }
+
+    public List<String> getTableAccessMethods() {
+        return tableAccessMethods;
+    }
+
+    public String getRandomTableAccessMethod() {
+        return Randomly.fromList(tableAccessMethods);
     }
 
     @Override

@@ -47,6 +47,9 @@ public final class CitusCommon {
         errors.add("cannot pushdown the subquery");
         // see https://github.com/sqlancer/sqlancer/issues/215
         errors.add("direct joins between distributed and local tables are not supported");
+        errors.add("unlogged columnar tables are not supported");
+        errors.add("UPDATE and CTID scans not supported for ColumnarScan");
+        errors.add("indexes not supported for columnar tables");
 
         // current errors in Citus (to be removed once fixed)
         if (CitusBugs.bug3957) {

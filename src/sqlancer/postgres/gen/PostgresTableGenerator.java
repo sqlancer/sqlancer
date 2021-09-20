@@ -23,6 +23,7 @@ public class PostgresTableGenerator {
     private boolean columnHasPrimaryKey;
     private final StringBuilder sb = new StringBuilder();
     private boolean isTemporaryTable;
+    private boolean isPartitionedTable;
     private final PostgresSchema newSchema;
     private final List<PostgresColumn> columnsToBeAdded = new ArrayList<>();
     protected final ExpectedErrors errors = new ExpectedErrors();
@@ -63,7 +64,7 @@ public class PostgresTableGenerator {
         return new PostgresTableGenerator(tableName, newSchema, generateOnlyKnown, globalState).generate();
     }
 
-    private SQLQueryAdapter generate() {
+    protected SQLQueryAdapter generate() {
         columnCanHavePrimaryKey = true;
         sb.append("CREATE");
         if (Randomly.getBoolean()) {
@@ -111,6 +112,7 @@ public class PostgresTableGenerator {
         sb.append(")");
         generateInherits();
         generatePartitionBy();
+        generateUsing();
         PostgresCommon.generateWith(sb, globalState, errors);
         if (Randomly.getBoolean() && isTemporaryTable) {
             sb.append(" ON COMMIT ");
@@ -152,8 +154,10 @@ public class PostgresTableGenerator {
 
     private void generatePartitionBy() {
         if (Randomly.getBoolean()) {
+            isPartitionedTable = false;
             return;
         }
+        isPartitionedTable = true;
         sb.append(" PARTITION BY ");
         // TODO "RANGE",
         String partitionOption = Randomly.fromOptions("RANGE", "LIST", "HASH");
@@ -183,6 +187,21 @@ public class PostgresTableGenerator {
             }
         }
         sb.append(")");
+    }
+
+    private void generateUsing() {
+        /*
+         * Postgres does not allow specifying USING clause for partitioned tables since they don't have any storage
+         * associated with them
+         */
+        if (isPartitionedTable) {
+            return;
+        }
+        if (Randomly.getBoolean()) {
+            return;
+        }
+        sb.append(" USING ");
+        sb.append(globalState.getRandomTableAccessMethod());
     }
 
     private void generateInherits() {
