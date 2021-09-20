@@ -18,7 +18,6 @@ import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPDistinctOracle;
 import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPExtendedWhereOracle;
 import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPGroupByOracle;
 import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPHavingOracle;
-import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPJoinOracle;
 import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPWhereOracle;
 import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
@@ -75,12 +74,6 @@ public class CockroachDBOptions implements DBMSSpecificOptions<CockroachDBOracle
             @Override
             public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
                 return new CockroachDBTLPExtendedWhereOracle(globalState);
-            }
-        },
-        JOIN {
-            @Override
-            public TestOracle create(CockroachDBGlobalState globalState) throws SQLException {
-                return new CockroachDBTLPJoinOracle(globalState);
             }
         },
         QUERY_PARTITIONING {
