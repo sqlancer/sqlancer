@@ -44,6 +44,7 @@ public class SQLite3IndexGenerator {
         errors.add("non-deterministic use of date() in an index");
         errors.add("non-deterministic use of datetime() in an index");
         errors.add("The database file is locked");
+        errors.add("Abort due to constraint violation");
         SQLite3Errors.addExpectedExpressionErrors(errors);
         if (!SQLite3Provider.mustKnowResult) {
             // can only happen when PRAGMA case_sensitive_like=ON;

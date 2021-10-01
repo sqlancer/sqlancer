@@ -60,6 +60,10 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
         }
     }
 
+    public void reduceDatabase(FoundBugException e, G stateToReduce, G newGlobalState) throws Exception {
+        // Used only in SQLProviderAdapter.
+    }
+
     protected abstract void checkViewsAreValid(G globalState);
 
     protected TestOracle getTestOracle(G globalState) throws Exception {

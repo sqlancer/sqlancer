@@ -30,6 +30,21 @@ public interface DatabaseProvider<G extends GlobalState<O, ?, C>, O extends DBMS
      */
     void generateAndTestDatabase(G globalState) throws Exception;
 
+    /**
+     * Reduce a state which triggers an error in a test oracle.
+     *
+     * @param e
+     *          the exception carrying on the error.
+     * @param stateToReduce
+     *          the state to be reduced.
+     * @param newGlobalState
+     *          a copy state where to apply reduction.
+     *          At the end of the reduction it contains a possibly reduced list of statements.
+     * @throws Exception
+     *          if creating the reduced database fails.
+     */
+    void reduceDatabase(FoundBugException e, G stateToReduce, G newGlobalState) throws Exception;
+
     C createDatabase(G globalState) throws Exception;
 
     /**

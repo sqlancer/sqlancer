@@ -61,6 +61,8 @@ public final class Main {
     public static final class StateLogger {
 
         private final File loggerFile;
+        private final File reducedFile;
+
         private File curFile;
         private FileWriter logFileWriter;
         public FileWriter currentFileWriter;
@@ -94,6 +96,7 @@ public final class Main {
             }
             ensureExistsAndIsEmpty(dir, provider);
             loggerFile = new File(dir, databaseName + ".log");
+            reducedFile = new File(dir, databaseName + "-reduced.log");
             logEachSelect = options.logEachSelect();
             if (logEachSelect) {
                 curFile = new File(dir, databaseName + "-cur.log");
@@ -132,6 +135,17 @@ public final class Main {
                     throw new AssertionError(e);
                 }
             }
+            return logFileWriter;
+        }
+
+        private FileWriter getReducedWriter() {
+            // if (logFileWriter == null) {
+            try {
+                logFileWriter = new FileWriter(reducedFile);
+            } catch (IOException e) {
+                throw new AssertionError(e);
+            }
+            // }
             return logFileWriter;
         }
 
@@ -180,6 +194,17 @@ public final class Main {
                 currentFileWriter.flush();
             } catch (IOException e) {
                 throw new AssertionError();
+            }
+        }
+
+        public void logReduced(StateToReproduce state) {
+            FileWriter logFileWriter = getReducedWriter();
+            printState(logFileWriter, state);
+            try {
+                logFileWriter.close();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
         }
 
@@ -300,6 +325,8 @@ public final class Main {
             }
         }
 
+        boolean observedChange;
+
         public void run() throws Exception {
             G state = createGlobalState();
             stateToRepro = provider.getStateToReproduce(databaseName);
@@ -323,15 +350,34 @@ public final class Main {
                 if (options.logEachSelect()) {
                     logger.writeCurrent(state.getState());
                 }
-                provider.generateAndTestDatabase(state);
                 try {
-                    logger.getCurrentFileWriter().close();
-                    logger.currentFileWriter = null;
-                } catch (IOException e) {
-                    throw new AssertionError(e);
+                    provider.generateAndTestDatabase(state);
+
+                } catch (FoundBugException e) {
+                    try {
+                        logger.getCurrentFileWriter().close();
+                        logger.currentFileWriter = null;
+                    } catch (IOException e2) {
+                        throw new AssertionError(e2);
+                    }
+
+                    G newGlobalState = createGlobalState();
+                    Main.QueryManager<C> newManager = new Main.QueryManager<>(newGlobalState);
+                    newGlobalState.setDatabaseName(databaseName);
+                    newGlobalState.setMainOptions(options);
+                    newGlobalState.setDbmsSpecificOptions(command);
+                    newGlobalState.setStateLogger(new Main.StateLogger(databaseName, provider, options));
+                    newGlobalState.setManager(newManager);
+                    newGlobalState.setState(stateToRepro);
+                    // Try to reduce state and store the statements in newGlobalState.
+                    provider.reduceDatabase(e, state, newGlobalState);
+                    // newGlobalState now contains the reduced test.
+                    state.getLogger().logReduced(newGlobalState.getState());
+                    throw e;
                 }
             }
         }
+
 
         private G getInitializedGlobalState(long seed) {
             G state = createGlobalState();
