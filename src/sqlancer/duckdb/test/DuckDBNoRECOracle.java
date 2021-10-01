@@ -1,12 +1,13 @@
 package sqlancer.duckdb.test;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import sqlancer.FoundBugException;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
@@ -19,6 +20,7 @@ import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.duckdb.DuckDBErrors;
+import sqlancer.duckdb.DuckDBOptions;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema;
 import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
@@ -35,6 +37,7 @@ import sqlancer.duckdb.gen.DuckDBExpressionGenerator.DuckDBCastOperation;
 
 public class DuckDBNoRECOracle extends NoRECBase<DuckDBGlobalState> implements TestOracle {
 
+    private final int NO_VALID_RESULT = -1;
     private final DuckDBSchema s;
 
     public DuckDBNoRECOracle(DuckDBGlobalState globalState) {
@@ -53,20 +56,36 @@ public class DuckDBNoRECOracle extends NoRECBase<DuckDBGlobalState> implements T
         List<TableReferenceNode<DuckDBExpression, DuckDBTable>> tableList = tables.stream()
                 .map(t -> new TableReferenceNode<DuckDBExpression, DuckDBTable>(t)).collect(Collectors.toList());
         List<Node<DuckDBExpression>> joins = DuckDBJoin.getJoins(tableList, state);
-        int secondCount = getSecondQuery(tableList.stream().collect(Collectors.toList()), randomWhereCondition, joins);
-        int firstCount = getFirstQueryCount(con, tableList.stream().collect(Collectors.toList()), columns,
+        Function<DuckDBGlobalState, Integer> unoptimizedQuery = getUnoptimizedQuery(new ArrayList<>(tableList), randomWhereCondition, joins);
+        int unoptimizedCount = unoptimizedQuery.apply(state);
+        Function<DuckDBGlobalState, Integer> optimizedQuery = getOptimizedQuery(con, new ArrayList<>(tableList), columns,
                 randomWhereCondition, joins);
-        if (firstCount == -1 || secondCount == -1) {
+        int optimizedCount = optimizedQuery.apply(state);
+        if (optimizedCount == NO_VALID_RESULT || unoptimizedCount == NO_VALID_RESULT) {
             throw new IgnoreMeException();
         }
-        if (firstCount != secondCount) {
-            throw new AssertionError(
-                    optimizedQueryString + "; -- " + firstCount + "\n" + unoptimizedQueryString + " -- " + secondCount);
+        if (optimizedCount != unoptimizedCount) {
+            state.getState().getLocalState().log(optimizedQueryString + ";\n" + unoptimizedQueryString + ";");
+            throw new FoundBugException((optimizedCount + " " + unoptimizedCount),
+                    new FoundBugException.Reproducer<DuckDBGlobalState, DuckDBOptions>() {
+
+                        @Override
+                        public boolean bugStillTriggers(DuckDBGlobalState globalState) {
+                            return optimizedQuery.apply(globalState) != unoptimizedQuery.apply(globalState);
+                        }
+
+                        @Override
+                        public void outputHook(DuckDBGlobalState globalState) {
+                            globalState.getState().logStatement(new SQLQueryAdapter(optimizedQueryString));
+                            globalState.getState().logStatement(new SQLQueryAdapter(unoptimizedQueryString));
+                        }
+                    });
         }
+
     }
 
-    private int getSecondQuery(List<Node<DuckDBExpression>> tableList, Node<DuckDBExpression> randomWhereCondition,
-            List<Node<DuckDBExpression>> joins) throws SQLException {
+    private Function<DuckDBGlobalState, Integer> getUnoptimizedQuery(List<Node<DuckDBExpression>> tableList,
+             Node<DuckDBExpression> randomWhereCondition, List<Node<DuckDBExpression>> joins) throws SQLException {
         DuckDBSelect select = new DuckDBSelect();
         // select.setGroupByClause(groupBys);
         // DuckDBExpression isTrue = DuckDBPostfixOperation.create(randomWhereCondition,
@@ -79,27 +98,18 @@ public class DuckDBNoRECOracle extends NoRECBase<DuckDBGlobalState> implements T
         select.setFromList(tableList);
         // select.setSelectType(SelectType.ALL);
         select.setJoinList(joins);
-        int secondCount = 0;
         unoptimizedQueryString = "SELECT SUM(count) FROM (" + DuckDBToStringVisitor.asString(select) + ") as res";
         errors.add("canceling statement due to statement timeout");
         SQLQueryAdapter q = new SQLQueryAdapter(unoptimizedQueryString, errors);
-        SQLancerResultSet rs;
-        try {
-            rs = q.executeAndGetLogged(state);
-        } catch (Exception e) {
-            throw new AssertionError(unoptimizedQueryString, e);
-        }
-        if (rs == null) {
-            return -1;
-        }
-        if (rs.next()) {
-            secondCount += rs.getLong(1);
-        }
-        rs.close();
-        return secondCount;
+        return new Function<DuckDBGlobalState, Integer>() {
+            @Override
+            public Integer apply(DuckDBGlobalState state) {
+                return countRows(q, state);
+            }
+        };
     }
 
-    private int getFirstQueryCount(SQLConnection con, List<Node<DuckDBExpression>> tableList,
+    private Function<DuckDBGlobalState, Integer> getOptimizedQuery(SQLConnection con, List<Node<DuckDBExpression>> tableList,
             List<DuckDBColumn> columns, Node<DuckDBExpression> randomWhereCondition, List<Node<DuckDBExpression>> joins)
             throws SQLException {
         DuckDBSelect select = new DuckDBSelect();
@@ -117,21 +127,39 @@ public class DuckDBNoRECOracle extends NoRECBase<DuckDBGlobalState> implements T
         }
         // select.setSelectType(SelectType.ALL);
         select.setJoinList(joins);
-        int firstCount = 0;
-        try (Statement stat = con.createStatement()) {
-            optimizedQueryString = DuckDBToStringVisitor.asString(select);
-            if (options.logEachSelect()) {
-                logger.writeCurrent(optimizedQueryString);
-            }
-            try (ResultSet rs = stat.executeQuery(optimizedQueryString)) {
-                while (rs.next()) {
-                    firstCount++;
-                }
-            }
-        } catch (SQLException e) {
-            throw new IgnoreMeException();
+        optimizedQueryString = DuckDBToStringVisitor.asString(select);
+        if (options.logEachSelect()) {
+            logger.writeCurrent(optimizedQueryString);
         }
-        return firstCount;
+        SQLQueryAdapter q = new SQLQueryAdapter(optimizedQueryString, errors);
+        return new Function<DuckDBGlobalState, Integer>() {
+            @Override
+            public Integer apply(DuckDBGlobalState state) {
+                return countRows(q, state);
+            }
+        };
     }
 
+    private int countRows(SQLQueryAdapter q, DuckDBGlobalState globalState) {
+        int count = 0;
+        try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
+            if (rs == null) {
+                return NO_VALID_RESULT;
+            } else {
+                try {
+                    while (rs.next()) {
+                        count++;
+                    }
+                } catch (SQLException e) {
+                    count = NO_VALID_RESULT;
+                }
+            }
+        } catch (Exception e) {
+            if (e instanceof IgnoreMeException) {
+                throw (IgnoreMeException) e;
+            }
+            throw new AssertionError(unoptimizedQueryString, e);
+        }
+        return count;
+    }
 }
