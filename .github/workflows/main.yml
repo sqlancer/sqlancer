@@ -17,10 +17,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Set up JDK 1.8
+      - name: Set up JDK 11
         uses: actions/setup-java@v1
         with:
-          java-version: 1.8
+          java-version: 11
       - name: Verify
         run: mvn -B verify -DskipTests=true
       - name: Misc Tests
@@ -33,10 +33,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Set up JDK 1.8
+      - name: Set up JDK 11
         uses: actions/setup-java@v1
         with:
-          java-version: 1.8
+          java-version: 11
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Set up Citus
@@ -79,10 +79,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Set up JDK 1.8
+      - name: Set up JDK 11
         uses: actions/setup-java@v1
         with:
-          java-version: 1.8
+          java-version: 11
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Set up ClickHouse
@@ -101,10 +101,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Set up JDK 1.8
+      - name: Set up JDK 11
         uses: actions/setup-java@v1
         with:
-          java-version: 1.8
+          java-version: 11
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Set up CockroachDB
@@ -125,10 +125,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Set up JDK 1.8
+      - name: Set up JDK 11
         uses: actions/setup-java@v1
         with:
-          java-version: 1.8
+          java-version: 11
       - name: Build
         run: mvn -B package -DskipTests=true
       - name: DuckDB Tests
@@ -141,10 +141,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Set up JDK 1.8
+      - name: Set up JDK 11
         uses: actions/setup-java@v1
         with:
-          java-version: 1.8
+          java-version: 11
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Set up H2
@@ -166,10 +166,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Set up JDK 1.8
+      - name: Set up JDK 11
         uses: actions/setup-java@v1
         with:
-          java-version: 1.8
+          java-version: 11
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Install MariaDB
@@ -191,10 +191,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Set up JDK 1.8
+      - name: Set up JDK 11
         uses: actions/setup-java@v1
         with:
-          java-version: 1.8
+          java-version: 11
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Set up MySQL
@@ -226,10 +226,10 @@ jobs:
           postgresql user: 'sqlancer'
           postgresql password: 'sqlancer'
           postgresql db: 'test'
-      - name: Set up JDK 1.8
+      - name: Set up JDK 11
         uses: actions/setup-java@v1
         with:
-          java-version: 1.8
+          java-version: 11
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Run Tests
@@ -243,10 +243,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Set up JDK 1.8
+      - name: Set up JDK 11
         uses: actions/setup-java@v1
         with:
-          java-version: 1.8
+          java-version: 11
       - name: Build
         run: mvn -B package -DskipTests=true
       - name: SQLite Tests
@@ -262,10 +262,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Set up JDK 1.8
+      - name: Set up JDK 11
         uses: actions/setup-java@v1
         with:
-          java-version: 1.8
+          java-version: 11
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Set up TiDB
@@ -277,24 +277,6 @@ jobs:
         run: sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
       - name: Run Tests
         run: TIDB_AVAILABLE=true mvn -Dtest=TestTiDB test
-
-
-  java8:
-    name: Java 8 Compatibility (DuckDB)
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 1.8
-      - name: Build
-        run: mvn -B package -DskipTests=true
-      - name: Shortly run DuckDB
-        run: cd target && java -jar $(ls | grep -P 'sqlancer-[0-9.]*.jar') --num-threads 4 --timeout-seconds 30 --num-queries 0 duckdb
 
   java13:
     name: Java 13 Compatibility (DuckDB)
