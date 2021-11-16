@@ -55,8 +55,6 @@ public final class PostgresSetGenerator {
                 (r) -> Randomly.fromOptions(0, 5, 10, 100, 500, 2000000000)),
         VACUUM_MULTIXACT_FREEZE_MIN_AGE("vacuum_multixact_freeze_min_age",
                 (r) -> Randomly.fromOptions(0, 5, 10, 100, 500, 1000000000)),
-        VACUUM_CLEANUP_INDEX_SCALE_FACTOR("vacuum_cleanup_index_scale_factor",
-                (r) -> Randomly.fromOptions(0.0, 0.0000001, 0.00001, 0.01, 0.1, 1, 10, 100, 100000, 10000000000.0)),
         // TODO others
         GIN_FUZZY_SEARCH_LIMIT("gin_fuzzy_search_limit", (r) -> r.getInteger(0, 2147483647)),
         // 19.13. Version and Platform Compatibility
