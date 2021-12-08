@@ -10,7 +10,7 @@ public class PostgresBinaryRangeOperation extends BinaryNode<PostgresExpression>
     private final String op;
 
     public enum PostgresBinaryRangeOperator implements Operator {
-        UNION("*"), INTERSECTION("*"), DIFFERENCE("-");
+        UNION("+"), INTERSECTION("*"), DIFFERENCE("-");
 
         private final String textRepresentation;
 
