@@ -114,6 +114,7 @@ public final class PostgresCommon {
         errors.add("result of range difference would not be contiguous");
         errors.add("out of range");
         errors.add("malformed range literal");
+        errors.add("result of range union would not be contiguous");
     }
 
     public static void addCommonInsertUpdateErrors(ExpectedErrors errors) {
