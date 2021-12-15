@@ -37,6 +37,7 @@ import sqlancer.mysql.MySQLProvider;
 import sqlancer.postgres.PostgresProvider;
 import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.tidb.TiDBProvider;
+import sqlancer.oceanbase.OceanBaseProvider;
 
 public final class Main {
 
@@ -560,6 +561,7 @@ public final class Main {
         providers.add(new MongoDBProvider());
         providers.add(new CosmosProvider());
         providers.add(new ArangoDBProvider());
+        providers.add(new OceanBaseProvider());
         return providers;
     }
 
