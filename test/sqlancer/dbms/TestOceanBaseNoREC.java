@@ -22,7 +22,7 @@ public class TestOceanBaseNoREC {
                         TestConfig.NUM_QUERIES, 
                          "--username","sqlancer@test", "--password", "sqlancer",
                          //after deploy oceanbase,if you don't create tenant to test,firstly create tenant test,then  create user sqlancer:
-                        //mysql -h127.1 -uroot@test -P2883 -Doceanbase -A -e"create user sqlancer identified by 'sqlancer';grant all on *.* to sqlancer;"
+                         //mysql -h127.1 -uroot@test -P2881 -Doceanbase -A -e"create user sqlancer identified by 'sqlancer';grant all on *.* to sqlancer;"
                         "oceanbase", "--oracle", "NoREC" }));
     }
 

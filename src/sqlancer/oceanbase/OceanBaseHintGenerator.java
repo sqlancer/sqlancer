@@ -18,22 +18,24 @@ public class OceanBaseHintGenerator {
     private Randomly r = new Randomly();
 
     enum IndexHint {
-        MERGE_JOIN, 
-        INL_JOIN, 
-        INL_HASH_JOIN, 
-        INL_MERGE_JOIN, 
-        HASH_JOIN,
-        HASH_AGG, 
-        STREAM_AGG, 
-        USE_INDEX, 
-        IGNORE_INDEX, 
-        AGG_TO_COP, 
-        USE_INDEX_MERGE, 
-        NO_INDEX_MERGE, 
-        LEADING,
-        PredDeduce,
         PDML,
-        USE_TOJA;
+        NO_PRED_DEDUCE,
+        MERGE_JOIN, 
+        HASH_JOIN, 
+        NL_JOIN,
+        BNL_JOIN,
+        NO_MERGE_JOIN,
+        NO_HASH_JOIN, 
+        NO_NL_JOIN,
+        NO_BNL_JOIN,
+        HASH_AGG,
+        NL_MATERIALIZATION,
+        LATE_MATERIALIZATION,
+        USE_INDEX,
+        TOPK,
+        LEADING,
+        ORDERED,
+        NO_REWRITE;
     }
 
     public OceanBaseHintGenerator(OceanBaseSelect select, List<OceanBaseTable> tables) {
@@ -52,50 +54,56 @@ public class OceanBaseHintGenerator {
             case PDML:
                 sb.append(" parallel(" + r.getInteger(0, 10) + "),enable_parallel_dml ");
                 break;
-            case PredDeduce:
-                sb.append("no_pred_deduce");
+            case NO_PRED_DEDUCE:
+                sb.append("NO_PRED_DEDUCE");
                 break;
             case MERGE_JOIN:
                 tablesHint("USE_MERGE ");
                 break;
-            case INL_JOIN:
-                tablesHint("USE_NL ");
-                break;
-            case LEADING:
-                tablesHint(" LEADING ");
-                break;
-            case INL_HASH_JOIN:
+            case HASH_JOIN:
                 tablesHint("USE_HASH ");
                 break;
-            case INL_MERGE_JOIN:
+            case NL_JOIN:
+                tablesHint("USE_NL ");
+                break;
+            case BNL_JOIN:
                 tablesHint("USE_BNL ");
                 break;
-            case HASH_JOIN:
-                sb.append(" parallel(1) ");
+            case NO_MERGE_JOIN:
+                sb.append(" NO_USE_MERGE ");
+                break;
+            case NO_HASH_JOIN:
+                sb.append(" NO_USE_HASH ");
+                break;
+            case NO_NL_JOIN:
+                sb.append(" NO_USE_NL ");
+                break;
+            case NO_BNL_JOIN:
+                sb.append(" NO_USE_BNL ");
                 break;
             case HASH_AGG:
                 sb.append("USE_HASH_AGGREGATION ");
                 break;
-            case STREAM_AGG:
+            case NL_MATERIALIZATION:
                 sb.append("USE_NL_MATERIALIZATION ");
+                break;
+            case LATE_MATERIALIZATION:
+                sb.append("USE_LATE_MATERIALIZATION ");
                 break;
             case USE_INDEX:
                 indexesHint("INDEX_HINT ");
                 break;
-            case IGNORE_INDEX:
+            case TOPK:
                 sb.append("TOPK (50 50) ");
                 break;
-            case AGG_TO_COP:
-                sb.append("USE_LATE_MATERIALIZATION ");
+            case LEADING:
+                tablesHint(" LEADING ");
                 break;
-            case USE_INDEX_MERGE:
+            case ORDERED:
                 sb.append("ORDERED ");
                 break;
-            case NO_INDEX_MERGE:
-                tablesHint("NO_MERGE ");
-                break;
-            case USE_TOJA:
-                sb.append("no_rewrite " );
+            case NO_REWRITE:
+                sb.append("NO_REWRITE " );
                 break;
             default:
                 throw new AssertionError();

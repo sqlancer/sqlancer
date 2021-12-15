@@ -140,6 +140,12 @@ public class OceanBaseProvider extends SQLProviderAdapter<OceanBaseGlobalState, 
         String url = String.format("jdbc:mysql://%s:%d?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true",
                 host, port);
         Connection con = DriverManager.getConnection(url, username, password);
+        try(Statement s = con.createStatement()){
+            s.execute("set ob_query_timeout=" + globalState.getDbmsSpecificOptions().queryTimeout);
+        }
+        try(Statement s = con.createStatement()){
+            s.execute("set ob_trx_timeout=" + globalState.getDbmsSpecificOptions().trxTimeout);
+        }
 
         try (Statement s = con.createStatement()) {
             s.execute("DROP DATABASE IF EXISTS " + databaseName);

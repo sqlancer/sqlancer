@@ -19,7 +19,7 @@ import sqlancer.oceanbase.oracle.OceanBaseNoRECOracle;
         + ", default host: " + OceanBaseOptions.DEFAULT_HOST)
 public class OceanBaseOptions implements DBMSSpecificOptions<OceanBaseOracleFactory> {
     public static final String DEFAULT_HOST = "localhost";
-    public static final int DEFAULT_PORT = 2883;
+    public static final int DEFAULT_PORT = 2881;
 
     @Parameter(names = "--oracle")
     public List<OceanBaseOracleFactory> oracles = Arrays.asList(OceanBaseOracleFactory.TLP_WHERE);
@@ -51,6 +51,10 @@ public class OceanBaseOptions implements DBMSSpecificOptions<OceanBaseOracleFact
             }
         }
     }
+    @Parameter(names = { "--query-timeout" }, description = "Query timeout")
+    public int queryTimeout = 1000000000;
+    @Parameter(names = { "--transaction-timeout" }, description = "Transaction timeout")
+    public int trxTimeout = 1000000000;
 
     @Override
     public List<OceanBaseOracleFactory> getTestOracleFactory() {
