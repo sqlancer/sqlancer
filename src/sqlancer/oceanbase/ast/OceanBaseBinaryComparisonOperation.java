@@ -1,6 +1,5 @@
 package sqlancer.oceanbase.ast;
 
-import sqlancer.LikeImplementationHelper;
 import sqlancer.Randomly;
 import sqlancer.oceanbase.OceanBaseSchema.OceanBaseDataType;
 import sqlancer.oceanbase.ast.OceanBaseUnaryPrefixOperation.OceanBaseUnaryPrefixOperator;
@@ -75,6 +74,7 @@ public class OceanBaseBinaryComparisonOperation implements OceanBaseExpression {
                 }
             }
         };
+
         private final String textRepresentation;
 
         public String getTextRepresentation() {
@@ -96,7 +96,8 @@ public class OceanBaseBinaryComparisonOperation implements OceanBaseExpression {
     private final OceanBaseExpression right;
     private final BinaryComparisonOperator op;
 
-    public OceanBaseBinaryComparisonOperation(OceanBaseExpression left, OceanBaseExpression right, BinaryComparisonOperator op) {
+    public OceanBaseBinaryComparisonOperation(OceanBaseExpression left, OceanBaseExpression right,
+            BinaryComparisonOperator op) {
         this.left = left;
         this.right = right;
         this.op = op;

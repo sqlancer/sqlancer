@@ -14,7 +14,7 @@ public class OceanBaseComputableFunction implements OceanBaseExpression {
 
     public OceanBaseComputableFunction(OceanBaseFunction func, OceanBaseExpression... args) {
         this.func = func;
-        this.args = args;
+        this.args = args.clone();
     }
 
     public OceanBaseFunction getFunction() {
@@ -22,7 +22,7 @@ public class OceanBaseComputableFunction implements OceanBaseExpression {
     }
 
     public OceanBaseExpression[] getArguments() {
-        return args;
+        return args.clone();
     }
 
     public enum OceanBaseFunction {
@@ -77,7 +77,7 @@ public class OceanBaseComputableFunction implements OceanBaseExpression {
                 return castToMostGeneralType(result, new OceanBaseExpression[] { origArgs[1], origArgs[2] });
             }
         },
-      
+
         IFNULL(2, "IFNULL") {
 
             @Override
@@ -87,7 +87,7 @@ public class OceanBaseComputableFunction implements OceanBaseExpression {
                     result = args[1];
                 } else {
                     result = args[0];
-                }//args[0] and args[1] both null, if type is varchar, return null of varchar
+                } // args[0] and args[1] both null, if type is varchar, return null of varchar
                 return castToMostGeneralType(result, origArgs);
             }
 
@@ -111,11 +111,12 @@ public class OceanBaseComputableFunction implements OceanBaseExpression {
         final int nrArgs;
         private final boolean variadic;
 
-        private static OceanBaseConstant aggregate(OceanBaseConstant[] evaluatedArgs, OceanBaseExpression[] typeExpressions, BinaryOperator<OceanBaseConstant> op) {
+        private static OceanBaseConstant aggregate(OceanBaseConstant[] evaluatedArgs,
+                OceanBaseExpression[] typeExpressions, BinaryOperator<OceanBaseConstant> op) {
             boolean containsNull = Stream.of(evaluatedArgs).anyMatch(arg -> arg.isNull());
             if (containsNull) {
-                //IFNULL(GREATEST('aa',NULL), 0) -> '0' 
-                // case1:c1 is float，value is NULL;select COALESCE(GREATEST(NULL, concat(t1.c1)), 1)  from t1;->'1'
+                // IFNULL(GREATEST('aa',NULL), 0) -> '0'
+                // case1:c1 is float，value is NULL;select COALESCE(GREATEST(NULL, concat(t1.c1)), 1) from t1;->'1'
                 // select COALESCE(GREATEST(1, concat(t1.c1)), 1) from t1;->1
                 // select COALESCE(GREATEST('0', 1, concat(t1.c1)), 1) from t1;->1
                 // select COALESCE(GREATEST('0', concat(t1.c1)), 1) from t1;->'1'
@@ -125,31 +126,35 @@ public class OceanBaseComputableFunction implements OceanBaseExpression {
                 // select IFNULL(GREATEST("iffI|2&nBJLQQ", NULL, '0'), 1) from t0;->'1'
                 OceanBaseDataType type;
                 boolean allVarchar = true;
-                for (OceanBaseExpression  expr : typeExpressions) {
-                    if (expr instanceof OceanBaseColumnReference){
+                for (OceanBaseExpression expr : typeExpressions) {
+                    if (expr instanceof OceanBaseColumnReference) {
                         type = ((OceanBaseColumnReference) expr).getColumn().getType();
-                        if(type == OceanBaseDataType.FLOAT)
+                        if (type == OceanBaseDataType.FLOAT) {
                             type = OceanBaseDataType.VARCHAR;
-                    }else
+                        }
+                    } else {
                         type = expr.getExpectedValue().getType();
-                    if(type != null && type.isNumeric()){
+                    }
+                    if (type != null && type.isNumeric()) {
                         allVarchar = false;
                         break;
                     }
                 }
-                if (allVarchar)
+                if (allVarchar) {
                     return OceanBaseConstant.createStringConstant("null");
-                else
+                } else {
                     return OceanBaseConstant.createNullConstant();
+                }
             }
             OceanBaseConstant least = evaluatedArgs[1];
-            /*select least(1,'H8*GPLuBjDj#Xem]W'); -> 0
-            select least('1','H8*GPLuBjDj#Xem]W'); ->1
-            select LEAST('000000000001', 'b',  1);->0*/
+            /*
+             * select least(1,'H8*GPLuBjDj#Xem]W'); -> 0 select least('1','H8*GPLuBjDj#Xem]W'); ->1 select
+             * LEAST('000000000001', 'b', 1);->0
+             */
             OceanBaseDataType dataType = evaluatedArgs[0].getType();
             boolean sameDataType = true;
             for (OceanBaseConstant arg : evaluatedArgs) {
-                if (arg.getType() != dataType){
+                if (arg.getType() != dataType) {
                     sameDataType = false;
                     break;
                 }
@@ -157,19 +162,21 @@ public class OceanBaseComputableFunction implements OceanBaseExpression {
             for (OceanBaseConstant arg : evaluatedArgs) {
                 OceanBaseConstant left;
                 OceanBaseConstant right;
-                if(sameDataType){
+                if (sameDataType) {
                     left = least;
                     right = arg;
-                }else{
-                    //select GREATEST('1.47529e18', -1188315266);->1.47529e18
-                    if(least.getType() == OceanBaseDataType.VARCHAR)
+                } else {
+                    // select GREATEST('1.47529e18', -1188315266);->1.47529e18
+                    if (least.getType() == OceanBaseDataType.VARCHAR) {
                         left = least.castAsDouble();
-                    else 
+                    } else {
                         left = least;
-                    if(arg.getType() == OceanBaseDataType.VARCHAR)
+                    }
+                    if (arg.getType() == OceanBaseDataType.VARCHAR) {
                         right = arg.castAsDouble();
-                    else 
+                    } else {
                         right = arg;
+                    }
                 }
                 least = op.apply(right, left);
             }
@@ -192,7 +199,7 @@ public class OceanBaseComputableFunction implements OceanBaseExpression {
             return nrArgs;
         }
 
-        public abstract OceanBaseConstant apply(OceanBaseConstant[] evaluatedArgs, OceanBaseExpression[] args);
+        public abstract OceanBaseConstant apply(OceanBaseConstant[] evaluatedArgs, OceanBaseExpression... args);
 
         public static OceanBaseFunction getRandomFunction() {
             return Randomly.fromOptions(values());
@@ -221,27 +228,29 @@ public class OceanBaseComputableFunction implements OceanBaseExpression {
         return func.apply(constants, args);
     }
 
-    public static OceanBaseConstant castToMostGeneralType(OceanBaseConstant cons, OceanBaseExpression... typeExpressions) {
+    public static OceanBaseConstant castToMostGeneralType(OceanBaseConstant cons,
+            OceanBaseExpression... typeExpressions) {
         OceanBaseDataType type = getMostGeneralType(typeExpressions);
         if (cons.isNull()) {
-            if (type == OceanBaseDataType.FLOAT || type == OceanBaseDataType.VARCHAR)
+            if (type == OceanBaseDataType.FLOAT || type == OceanBaseDataType.VARCHAR) {
                 return OceanBaseConstant.createStringConstant("null");
-            else
-                return cons;
-        }else{
-        switch (type) {
-        case INT:
-            if (cons.isInt()) {
-                return cons;
             } else {
-                return OceanBaseConstant.createIntConstant(cons.castAs(CastType.SIGNED).getInt());
+                return cons;
             }
-        case VARCHAR:
-            return OceanBaseConstant.createStringConstant(cons.castAsString());
-        default:
-            return cons;
+        } else {
+            switch (type) {
+            case INT:
+                if (cons.isInt()) {
+                    return cons;
+                } else {
+                    return OceanBaseConstant.createIntConstant(cons.castAs(CastType.SIGNED).getInt());
+                }
+            case VARCHAR:
+                return OceanBaseConstant.createStringConstant(cons.castAsString());
+            default:
+                return cons;
+            }
         }
-      }
     }
 
     public static OceanBaseDataType getMostGeneralType(OceanBaseExpression... expressions) {
@@ -250,15 +259,17 @@ public class OceanBaseComputableFunction implements OceanBaseExpression {
             OceanBaseDataType exprType;
             if (expr instanceof OceanBaseColumnReference) {
                 exprType = ((OceanBaseColumnReference) expr).getColumn().getType();
-                if(((OceanBaseColumnReference) expr).getColumn().isZeroFill())
+                if (((OceanBaseColumnReference) expr).getColumn().isZeroFill()) {
                     exprType = OceanBaseDataType.VARCHAR;
+                }
             } else {
                 exprType = expr.getExpectedValue().getType();
             }
             if (type == null) {
                 type = exprType;
-                if (exprType == OceanBaseDataType.FLOAT)
+                if (exprType == OceanBaseDataType.FLOAT) {
                     type = OceanBaseDataType.VARCHAR;
+                }
             } else if (exprType == OceanBaseDataType.VARCHAR || exprType == OceanBaseDataType.FLOAT) {
                 type = OceanBaseDataType.VARCHAR;
             }

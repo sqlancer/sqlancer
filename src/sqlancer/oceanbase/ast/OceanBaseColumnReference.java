@@ -6,7 +6,7 @@ public class OceanBaseColumnReference implements OceanBaseExpression {
 
     private final OceanBaseColumn column;
     private final OceanBaseConstant value;
-    private boolean isRef = false;
+    private boolean isRef;
 
     public OceanBaseColumnReference(OceanBaseColumn column, OceanBaseConstant value) {
         this.column = column;
@@ -30,12 +30,13 @@ public class OceanBaseColumnReference implements OceanBaseExpression {
         return value;
     }
 
-    public OceanBaseColumnReference setRef(boolean isRef){
-       this.isRef = isRef;
-       return this;
-    } 
-    public boolean getRef(){
-       return isRef;
+    public OceanBaseColumnReference setRef(boolean isRef) {
+        this.isRef = isRef;
+        return this;
+    }
+
+    public boolean getRef() {
+        return isRef;
     }
 
 }

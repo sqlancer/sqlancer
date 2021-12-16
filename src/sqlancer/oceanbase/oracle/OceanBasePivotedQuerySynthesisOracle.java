@@ -1,9 +1,9 @@
 package sqlancer.oceanbase.oracle;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
@@ -21,14 +21,14 @@ import sqlancer.oceanbase.OceanBaseVisitor;
 import sqlancer.oceanbase.ast.OceanBaseColumnReference;
 import sqlancer.oceanbase.ast.OceanBaseConstant;
 import sqlancer.oceanbase.ast.OceanBaseExpression;
+import sqlancer.oceanbase.ast.OceanBaseOrderByTerm;
+import sqlancer.oceanbase.ast.OceanBaseOrderByTerm.OceanBaseOrder;
 import sqlancer.oceanbase.ast.OceanBaseSelect;
 import sqlancer.oceanbase.ast.OceanBaseTableReference;
 import sqlancer.oceanbase.ast.OceanBaseUnaryPostfixOperation;
 import sqlancer.oceanbase.ast.OceanBaseUnaryPostfixOperation.UnaryPostfixOperator;
 import sqlancer.oceanbase.ast.OceanBaseUnaryPrefixOperation;
 import sqlancer.oceanbase.ast.OceanBaseUnaryPrefixOperation.OceanBaseUnaryPrefixOperator;
-import sqlancer.oceanbase.ast.OceanBaseOrderByTerm;
-import sqlancer.oceanbase.ast.OceanBaseOrderByTerm.OceanBaseOrder;
 import sqlancer.oceanbase.gen.OceanBaseExpressionGenerator;
 
 public class OceanBasePivotedQuerySynthesisOracle
@@ -40,7 +40,7 @@ public class OceanBasePivotedQuerySynthesisOracle
     public OceanBasePivotedQuerySynthesisOracle(OceanBaseGlobalState globalState) throws SQLException {
         super(globalState);
         OceanBaseErrors.addExpressionErrors(errors);
-        errors.add("in 'order clause'"); 
+        errors.add("in 'order clause'");
         errors.add("value is out of range");
     }
 
@@ -54,9 +54,11 @@ public class OceanBasePivotedQuerySynthesisOracle
         columns = randomFromTables.getColumns();
         pivotRow = randomFromTables.getRandomRowValue(globalState.getConnection());
 
-        selectStatement.setFromList(tables.stream().map(t -> new OceanBaseTableReference(t)).collect(Collectors.toList()));
+        selectStatement
+                .setFromList(tables.stream().map(t -> new OceanBaseTableReference(t)).collect(Collectors.toList()));
 
-        fetchColumns = columns.stream().map(c -> new OceanBaseColumnReference(c, null)).map(d -> d.setRef(true)).collect(Collectors.toList());
+        fetchColumns = columns.stream().map(c -> new OceanBaseColumnReference(c, null)).map(d -> d.setRef(true))
+                .collect(Collectors.toList());
         selectStatement.setFetchColumns(fetchColumns);
         OceanBaseExpression whereClause = generateRectifiedExpression(columns, pivotRow);
         selectStatement.setWhereClause(whereClause);
@@ -135,11 +137,13 @@ public class OceanBasePivotedQuerySynthesisOracle
             if (i++ != 0) {
                 sb.append(" AND ");
             }
-            if(pivotRow.getValues().get(c) instanceof OceanBaseConstant.OceanBaseTextConstant)
-               sb.append("concat(");
+            if (pivotRow.getValues().get(c) instanceof OceanBaseConstant.OceanBaseTextConstant) {
+                sb.append("concat(");
+            }
             sb.append("result." + c.getTable().getName() + c.getName());
-            if(pivotRow.getValues().get(c) instanceof OceanBaseConstant.OceanBaseTextConstant)
-               sb.append(",'')");
+            if (pivotRow.getValues().get(c) instanceof OceanBaseConstant.OceanBaseTextConstant) {
+                sb.append(",'')");
+            }
             if (pivotRow.getValues().get(c).isNull()) {
                 sb.append(" IS NULL");
             } else {

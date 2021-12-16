@@ -16,6 +16,7 @@ public final class OceanBaseErrors {
         errors.add("Invalid numeric");
         errors.add("Data truncated for argument");
     }
+
     public static void addInsertErrors(ExpectedErrors errors) {
         errors.add("Duplicate entry");
         errors.add("cannot be null");
@@ -39,10 +40,7 @@ public final class OceanBaseErrors {
         errors.add("Truncated incorrect DOUBLE value");
         errors.add("Data truncated for argument");
         errors.add("Invalid numeric");
+        errors.add("Miss column");
 
-
-        if (true) {
-           errors.add("Miss column");
-        }
     }
 }

@@ -2,26 +2,26 @@ package sqlancer.oceanbase.oracle;
 
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-import sqlancer.Randomly;
+import sqlancer.common.gen.ExpressionGenerator;
+import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
+import sqlancer.common.oracle.TestOracle;
 import sqlancer.oceanbase.OceanBaseErrors;
 import sqlancer.oceanbase.OceanBaseGlobalState;
 import sqlancer.oceanbase.OceanBaseSchema;
 import sqlancer.oceanbase.OceanBaseSchema.OceanBaseTable;
 import sqlancer.oceanbase.OceanBaseSchema.OceanBaseTables;
-import sqlancer.oceanbase.ast.*;
-import sqlancer.oceanbase.ast.OceanBaseUnaryPrefixOperation.OceanBaseUnaryPrefixOperator;
+import sqlancer.oceanbase.ast.OceanBaseColumnReference;
+import sqlancer.oceanbase.ast.OceanBaseExpression;
+import sqlancer.oceanbase.ast.OceanBaseSelect;
+import sqlancer.oceanbase.ast.OceanBaseTableReference;
 import sqlancer.oceanbase.gen.OceanBaseExpressionGenerator;
 import sqlancer.oceanbase.gen.OceanBaseHintGenerator;
-import sqlancer.common.gen.ExpressionGenerator;
-import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
-import sqlancer.common.oracle.TestOracle;
 
-public abstract class OceanBaseTLPBase extends TernaryLogicPartitioningOracleBase<OceanBaseExpression, OceanBaseGlobalState> implements TestOracle {
+public abstract class OceanBaseTLPBase
+        extends TernaryLogicPartitioningOracleBase<OceanBaseExpression, OceanBaseGlobalState> implements TestOracle {
 
     OceanBaseSchema s;
     OceanBaseTables targetTables;
@@ -53,7 +53,7 @@ public abstract class OceanBaseTLPBase extends TernaryLogicPartitioningOracleBas
     List<OceanBaseExpression> generateFetchColumns() {
         return Arrays.asList(OceanBaseColumnReference.create(targetTables.getColumns().get(0), null));
     }
-    
+
     @Override
     protected ExpressionGenerator<OceanBaseExpression> getGen() {
         return gen;

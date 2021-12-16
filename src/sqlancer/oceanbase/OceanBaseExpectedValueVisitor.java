@@ -1,9 +1,11 @@
 package sqlancer.oceanbase;
 
 import sqlancer.IgnoreMeException;
+import sqlancer.oceanbase.ast.OceanBaseAggregate;
 import sqlancer.oceanbase.ast.OceanBaseBinaryComparisonOperation;
 import sqlancer.oceanbase.ast.OceanBaseBinaryLogicalOperation;
 import sqlancer.oceanbase.ast.OceanBaseCastOperation;
+import sqlancer.oceanbase.ast.OceanBaseColumnName;
 import sqlancer.oceanbase.ast.OceanBaseColumnReference;
 import sqlancer.oceanbase.ast.OceanBaseComputableFunction;
 import sqlancer.oceanbase.ast.OceanBaseConstant;
@@ -14,10 +16,8 @@ import sqlancer.oceanbase.ast.OceanBaseOrderByTerm;
 import sqlancer.oceanbase.ast.OceanBaseSelect;
 import sqlancer.oceanbase.ast.OceanBaseStringExpression;
 import sqlancer.oceanbase.ast.OceanBaseTableReference;
-import sqlancer.oceanbase.ast.OceanBaseUnaryPostfixOperation;
-import sqlancer.oceanbase.ast.OceanBaseAggregate;
-import sqlancer.oceanbase.ast.OceanBaseColumnName;
 import sqlancer.oceanbase.ast.OceanBaseText;
+import sqlancer.oceanbase.ast.OceanBaseUnaryPostfixOperation;
 import sqlancer.oceanbase.ast.OceanBaseUnaryPrefixOperation;
 
 public class OceanBaseExpectedValueVisitor implements OceanBaseVisitor {
@@ -147,7 +147,7 @@ public class OceanBaseExpectedValueVisitor implements OceanBaseVisitor {
     }
 
     @Override
-    public void visit(OceanBaseUnaryPrefixOperation op){
+    public void visit(OceanBaseUnaryPrefixOperation op) {
         print(op);
         visit(op.getExpr());
     }

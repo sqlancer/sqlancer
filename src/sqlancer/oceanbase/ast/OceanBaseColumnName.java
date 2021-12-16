@@ -4,7 +4,7 @@ import sqlancer.oceanbase.OceanBaseSchema;
 
 public class OceanBaseColumnName implements OceanBaseExpression {
 
-    private OceanBaseSchema.OceanBaseColumn column;
+    private final OceanBaseSchema.OceanBaseColumn column;
 
     public OceanBaseColumnName(OceanBaseSchema.OceanBaseColumn column) {
         this.column = column;

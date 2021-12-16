@@ -34,10 +34,10 @@ import sqlancer.h2.H2Provider;
 import sqlancer.mariadb.MariaDBProvider;
 import sqlancer.mongodb.MongoDBProvider;
 import sqlancer.mysql.MySQLProvider;
+import sqlancer.oceanbase.OceanBaseProvider;
 import sqlancer.postgres.PostgresProvider;
 import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.tidb.TiDBProvider;
-import sqlancer.oceanbase.OceanBaseProvider;
 
 public final class Main {
 

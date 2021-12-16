@@ -1,7 +1,6 @@
 package sqlancer.oceanbase.gen;
 
 import sqlancer.IgnoreMeException;
-import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.oceanbase.OceanBaseGlobalState;
@@ -22,9 +21,8 @@ public final class OceanBaseDropIndex {
         sb.append(table.getRandomIndex().getIndexName());
         sb.append(" ON ");
         sb.append(table.getName());
-        return new SQLQueryAdapter(sb.toString(),
-                ExpectedErrors.from("LOCK=NONE is not supported", "ALGORITHM=INPLACE is not supported",
-                        "Data truncation", "Data truncated for functional index"));
+        return new SQLQueryAdapter(sb.toString(), ExpectedErrors.from("LOCK=NONE is not supported",
+                "ALGORITHM=INPLACE is not supported", "Data truncation", "Data truncated for functional index"));
     }
 
 }

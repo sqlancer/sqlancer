@@ -1,10 +1,9 @@
 package sqlancer.oceanbase.ast;
 
-
 public class OceanBaseAggregate implements OceanBaseExpression {
 
-    private OceanBaseExpression expr;
-    private OceanBaseAggregateFunction aggr;
+    private final OceanBaseExpression expr;
+    private final OceanBaseAggregateFunction aggr;
 
     public OceanBaseAggregate(OceanBaseExpression expr, OceanBaseAggregateFunction aggr) {
         this.expr = expr;

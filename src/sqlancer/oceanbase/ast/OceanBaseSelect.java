@@ -1,7 +1,7 @@
 package sqlancer.oceanbase.ast;
 
-import java.util.Collections;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import sqlancer.common.ast.SelectBase;
@@ -28,12 +28,15 @@ public class OceanBaseSelect extends SelectBase<OceanBaseExpression> implements 
     public void setFromOptions(SelectType fromOptions) {
         this.fromOptions = fromOptions;
     }
-    public void setGroupByClause(List<OceanBaseExpression> groupBys){
+
+    public void setGroupByClause(List<OceanBaseExpression> groupBys) {
         this.groupBys = groupBys;
     }
-    public List<OceanBaseExpression> getGroupByClause(){
+
+    public List<OceanBaseExpression> getGroupByClause() {
         return this.groupBys;
     }
+
     public void setModifiers(List<String> modifiers) {
         this.modifiers = modifiers;
     }

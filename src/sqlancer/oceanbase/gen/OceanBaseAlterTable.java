@@ -3,7 +3,6 @@ package sqlancer.oceanbase.gen;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
@@ -29,6 +28,7 @@ public class OceanBaseAlterTable {
 
     private enum Action {
         COMPRESSION;
+
         private String[] potentialErrors;
 
         Action(String... couldCauseErrors) {
@@ -58,6 +58,8 @@ public class OceanBaseAlterTable {
                 sb.append("'");
                 sb.append(Randomly.fromOptions("ZLIB_1.0", "LZ4_1.0", "NONE"));
                 sb.append("'");
+                break;
+            default:
                 break;
             }
         }

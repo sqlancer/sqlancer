@@ -144,9 +144,3 @@ matrix:
         - sleep 5
       script:
         - CLICKHOUSE_AVAILABLE=true mvn -Dtest=ClickHouseBinaryComparisonOperationTest test
-    - name: OceanBase
-      jdk : openjdk8
-      script:
-        - OCEANBASE_AVAILABLE=true mvn -Dtest=TestOceanBaseTLP test
-        - OCEANBASE_AVAILABLE=true mvn -Dtest=TestOceanBasePQS test
-        - OCEANBASE_AVAILABLE=true mvn -Dtest=TestOceanBaseNoREC test

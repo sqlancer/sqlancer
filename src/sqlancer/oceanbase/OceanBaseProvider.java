@@ -31,21 +31,17 @@ public class OceanBaseProvider extends SQLProviderAdapter<OceanBaseGlobalState, 
     }
 
     enum Action implements AbstractAction<OceanBaseGlobalState> {
-        SHOW_TABLES((g) -> new SQLQueryAdapter("SHOW TABLES")), 
-        INSERT(OceanBaseInsertGenerator::insertRow), 
-        CREATE_INDEX(OceanBaseIndexGenerator::create), 
-        ALTER_TABLE(OceanBaseAlterTable::create), 
-        TRUNCATE_TABLE(OceanBaseTruncateTableGenerator::generate), 
+        SHOW_TABLES((g) -> new SQLQueryAdapter("SHOW TABLES")), INSERT(OceanBaseInsertGenerator::insertRow),
+        CREATE_INDEX(OceanBaseIndexGenerator::create), ALTER_TABLE(OceanBaseAlterTable::create),
+        TRUNCATE_TABLE(OceanBaseTruncateTableGenerator::generate),
         SELECT_INFO((g) -> new SQLQueryAdapter(
                 "select TABLE_NAME, ENGINE from information_schema.TABLES where table_schema = '" + g.getDatabaseName()
-                        + "'")), 
+                        + "'")),
         CREATE_TABLE((g) -> {
             String tableName = DBMSCommon.createTableName(g.getSchema().getDatabaseTables().size());
-            
+
             return OceanBaseTableGenerator.generate(g, tableName);
-        }), 
-        DELETE(OceanBaseDeleteGenerator::delete), 
-        UPDATE(OceanBaseUpdateGenerator::getQuery),
+        }), DELETE(OceanBaseDeleteGenerator::delete), UPDATE(OceanBaseUpdateGenerator::update),
         DROP_INDEX(OceanBaseDropIndex::generate);
 
         private final SQLQueryProvider<OceanBaseGlobalState> sqlQueryProvider;
@@ -118,7 +114,7 @@ public class OceanBaseProvider extends SQLProviderAdapter<OceanBaseGlobalState, 
     }
 
     @Override
-    public SQLConnection createDatabase(OceanBaseGlobalState globalState) throws Exception,SQLException {
+    public SQLConnection createDatabase(OceanBaseGlobalState globalState) throws Exception, SQLException {
         String username = globalState.getOptions().getUserName();
         String password = globalState.getOptions().getPassword();
         String host = globalState.getOptions().getHost();
@@ -129,9 +125,9 @@ public class OceanBaseProvider extends SQLProviderAdapter<OceanBaseGlobalState, 
         if (port == MainOptions.NO_SET_PORT) {
             port = OceanBaseOptions.DEFAULT_PORT;
         }
-        if(username.endsWith("sys")||username.equals("root"))
-        {
-            throw new Exception("please don't use sys tenant to test! Firstly create tenant then test");
+        if (username.endsWith("sys") || username.equals("root")) {
+            throw new OceanBaseUserCheckException(
+                    "please don't use sys tenant to test! Firstly create tenant then test");
         }
         String databaseName = globalState.getDatabaseName();
         globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
@@ -140,13 +136,13 @@ public class OceanBaseProvider extends SQLProviderAdapter<OceanBaseGlobalState, 
         String url = String.format("jdbc:mysql://%s:%d?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true",
                 host, port);
         Connection con = DriverManager.getConnection(url, username, password);
-        try(Statement s = con.createStatement()){
+
+        try (Statement s = con.createStatement()) {
             s.execute("set ob_query_timeout=" + globalState.getDbmsSpecificOptions().queryTimeout);
         }
-        try(Statement s = con.createStatement()){
+        try (Statement s = con.createStatement()) {
             s.execute("set ob_trx_timeout=" + globalState.getDbmsSpecificOptions().trxTimeout);
         }
-
         try (Statement s = con.createStatement()) {
             s.execute("DROP DATABASE IF EXISTS " + databaseName);
         }

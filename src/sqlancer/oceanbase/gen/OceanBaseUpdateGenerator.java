@@ -1,28 +1,37 @@
 package sqlancer.oceanbase.gen;
 
+import java.util.List;
+
+import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.Randomly;
-import sqlancer.oceanbase.*;
-
-
-import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import sqlancer.oceanbase.OceanBaseErrors;
+import sqlancer.oceanbase.OceanBaseGlobalState;
+import sqlancer.oceanbase.OceanBaseSchema;
+import sqlancer.oceanbase.OceanBaseVisitor;
 
 public class OceanBaseUpdateGenerator {
-    private OceanBaseUpdateGenerator() {
+
+    private final StringBuilder sb = new StringBuilder();
+    private final OceanBaseGlobalState globalState;
+    private final Randomly r;
+
+    public OceanBaseUpdateGenerator(OceanBaseGlobalState globalState) {
+        this.globalState = globalState;
+        this.r = globalState.getRandomly();
     }
 
-    public static SQLQueryAdapter getQuery(OceanBaseGlobalState globalState) throws SQLException {
-        Randomly r = globalState.getRandomly();
+    public static SQLQueryAdapter update(OceanBaseGlobalState globalState) {
+        return new OceanBaseUpdateGenerator(globalState).generate();
+    }
+
+    private SQLQueryAdapter generate() {
         ExpectedErrors errors = new ExpectedErrors();
         OceanBaseSchema.OceanBaseTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         OceanBaseExpressionGenerator gen = new OceanBaseExpressionGenerator(globalState).setColumns(table.getColumns());
-        StringBuilder sb = new StringBuilder("UPDATE ");
+        sb.append("UPDATE ");
         if (Randomly.getBoolean()) {
-            sb.append(" /*+parallel("+r.getInteger(0, 10)+") enable_parallel_dml*/ ");
+            sb.append(" /*+parallel(" + r.getInteger(0, 10) + ") enable_parallel_dml*/ ");
         }
         sb.append(table.getName());
         sb.append(" SET ");
@@ -44,7 +53,7 @@ public class OceanBaseUpdateGenerator {
             sb.append(" WHERE ");
             OceanBaseErrors.addExpressionErrors(errors);
             sb.append(OceanBaseVisitor.asString(gen.generateExpression()));
-            errors.add("Data Too Long"); 
+            errors.add("Data Too Long");
         }
         errors.add("Duplicated primary key");
         OceanBaseErrors.addInsertErrors(errors);

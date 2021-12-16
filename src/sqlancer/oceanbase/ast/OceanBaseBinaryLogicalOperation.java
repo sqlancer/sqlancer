@@ -22,7 +22,7 @@ public class OceanBaseBinaryLogicalOperation implements OceanBaseExpression {
                         return OceanBaseConstant.createFalse();
                     }
                 } else if (right.isNull()) {
-                   if (left.asBooleanNotNull()) {
+                    if (left.asBooleanNotNull()) {
                         return OceanBaseConstant.createNullConstant();
                     } else {
                         return OceanBaseConstant.createFalse();
@@ -74,7 +74,8 @@ public class OceanBaseBinaryLogicalOperation implements OceanBaseExpression {
         }
     }
 
-    public OceanBaseBinaryLogicalOperation(OceanBaseExpression left, OceanBaseExpression right, OceanBaseBinaryLogicalOperator op) {
+    public OceanBaseBinaryLogicalOperation(OceanBaseExpression left, OceanBaseExpression right,
+            OceanBaseBinaryLogicalOperator op) {
         this.left = left;
         this.right = right;
         this.op = op;

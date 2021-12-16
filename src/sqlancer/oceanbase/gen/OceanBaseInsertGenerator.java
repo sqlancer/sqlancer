@@ -20,7 +20,7 @@ public class OceanBaseInsertGenerator {
     private final ExpectedErrors errors = new ExpectedErrors();
     private final OceanBaseGlobalState globalState;
     private final Randomly r;
-    private int type = 0;
+    private int type;
 
     public OceanBaseInsertGenerator(OceanBaseGlobalState globalState) {
         this.globalState = globalState;
@@ -46,7 +46,7 @@ public class OceanBaseInsertGenerator {
     private SQLQueryAdapter generateInsert() {
         sb.append("INSERT");
         if (Randomly.getBoolean()) {
-            sb.append(" /*+parallel("+r.getLong(0, 10)+") enable_parallel_dml*/ ");
+            sb.append(" /*+parallel(" + r.getLong(0, 10) + ") enable_parallel_dml*/ ");
         }
         if (Randomly.getBoolean()) {
             sb.append(" ");
@@ -62,7 +62,7 @@ public class OceanBaseInsertGenerator {
         sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
         sb.append(") ");
         sb.append("VALUES");
-        OceanBaseExpressionGenerator gen = new OceanBaseExpressionGenerator(globalState);
+        OceanBaseExpressionGenerator gen = new OceanBaseExpressionGenerator(globalState).setColumns(table.getColumns());
         int nrRows;
         if (Randomly.getBoolean()) {
             nrRows = 1;
@@ -84,12 +84,10 @@ public class OceanBaseInsertGenerator {
             }
             sb.append(")");
         }
-        if(Randomly.getBoolean() && type == 0){
-
+        if (Randomly.getBoolean() && type == 0) {
             List<OceanBaseSchema.OceanBaseColumn> upcolumns = table.getRandomNonEmptyColumnSubset();
-            if (upcolumns.size() > 0 ){
+            if (!upcolumns.isEmpty()) {
                 sb.append(" ON DUPLICATE KEY UPDATE ");
-
                 sb.append(upcolumns.get(0).getName());
                 sb.append("=");
                 sb.append(gen.generateConstant(upcolumns.get(0)));
@@ -106,5 +104,4 @@ public class OceanBaseInsertGenerator {
         errors.add("Duplicated primary key");
         return new SQLQueryAdapter(sb.toString(), errors);
     }
-
 }

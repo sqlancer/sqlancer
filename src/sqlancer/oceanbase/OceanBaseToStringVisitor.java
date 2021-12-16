@@ -5,9 +5,12 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.visitor.ToStringVisitor;
+import sqlancer.oceanbase.OceanBaseSchema.OceanBaseDataType;
+import sqlancer.oceanbase.ast.OceanBaseAggregate;
 import sqlancer.oceanbase.ast.OceanBaseBinaryComparisonOperation;
 import sqlancer.oceanbase.ast.OceanBaseBinaryLogicalOperation;
 import sqlancer.oceanbase.ast.OceanBaseCastOperation;
+import sqlancer.oceanbase.ast.OceanBaseColumnName;
 import sqlancer.oceanbase.ast.OceanBaseColumnReference;
 import sqlancer.oceanbase.ast.OceanBaseComputableFunction;
 import sqlancer.oceanbase.ast.OceanBaseConstant;
@@ -19,17 +22,14 @@ import sqlancer.oceanbase.ast.OceanBaseOrderByTerm.OceanBaseOrder;
 import sqlancer.oceanbase.ast.OceanBaseSelect;
 import sqlancer.oceanbase.ast.OceanBaseStringExpression;
 import sqlancer.oceanbase.ast.OceanBaseTableReference;
-import sqlancer.oceanbase.ast.OceanBaseUnaryPostfixOperation;
-import sqlancer.oceanbase.ast.OceanBaseAggregate;
-import sqlancer.oceanbase.ast.OceanBaseColumnName;
 import sqlancer.oceanbase.ast.OceanBaseText;
+import sqlancer.oceanbase.ast.OceanBaseUnaryPostfixOperation;
 import sqlancer.oceanbase.ast.OceanBaseUnaryPrefixOperation;
-import sqlancer.oceanbase.OceanBaseSchema.OceanBaseDataType;
 
 public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpression> implements OceanBaseVisitor {
 
     int ref;
-    private Randomly r = new Randomly();
+    private final Randomly r = new Randomly();
 
     @Override
     public void visitSpecific(OceanBaseExpression expr) {
@@ -41,7 +41,7 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
         sb.append("SELECT ");
         if (s.getHint() != null) {
             sb.append("/*+ ");
-            visit(s.getHint(),0);
+            visit(s.getHint(), 0);
             sb.append(" */ ");
         }
 
@@ -133,12 +133,14 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
 
     @Override
     public void visit(OceanBaseColumnReference column) {
-        if (column.getColumn().getType() == OceanBaseDataType.FLOAT || column.getColumn().isZeroFill())
-        {sb.append("concat(");}
+        if (column.getColumn().getType() == OceanBaseDataType.FLOAT || column.getColumn().isZeroFill()) {
+            sb.append("concat(");
+        }
         sb.append(column.getColumn().getFullQualifiedName());
-        if (column.getColumn().getType() == OceanBaseDataType.FLOAT || column.getColumn().isZeroFill())
-        {sb.append(",'')");}
-        if (column.getRef()){
+        if (column.getColumn().getType() == OceanBaseDataType.FLOAT || column.getColumn().isZeroFill()) {
+            sb.append(",'')");
+        }
+        if (column.getRef()) {
             sb.append(" AS ");
             sb.append(column.getColumn().getTable().getName());
             sb.append(column.getColumn().getName());
@@ -254,21 +256,19 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
 
     @Override
     public void visit(OceanBaseStringExpression op) {
-        if(op.getStr().contains("SELECT")){
-                sb.append(op.getStr());
-        }
-        else{
+        if (op.getStr().contains("SELECT")) {
+            sb.append(op.getStr());
+        } else {
             String str = op.getStr();
-            if(str.length() > 0){
+            if (str.length() > 0) {
                 sb.append(r.getInteger(0, 100000));
-            }
-            else{
+            } else {
                 sb.append(r.getInteger(0, 1000000));
             }
         }
     }
 
-    public void visit(OceanBaseStringExpression op,int type) {
+    public void visit(OceanBaseStringExpression op, int type) {
         sb.append(op.getStr());
     }
 
@@ -283,11 +283,13 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
         sb.append("(");
         visit(aggr.getExpr());
         sb.append(")");
-    } 
+    }
+
     @Override
     public void visit(OceanBaseColumnName c) {
         sb.append(c.getColumn().getName());
     }
+
     @Override
     public void visit(OceanBaseText func) {
         visit(func.getExpr());

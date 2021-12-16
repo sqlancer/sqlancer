@@ -11,9 +11,9 @@ import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.oceanbase.OceanBaseOptions.OceanBaseOracleFactory;
+import sqlancer.oceanbase.oracle.OceanBaseNoRECOracle;
 import sqlancer.oceanbase.oracle.OceanBasePivotedQuerySynthesisOracle;
 import sqlancer.oceanbase.oracle.OceanBaseTLPWhereOracle;
-import sqlancer.oceanbase.oracle.OceanBaseNoRECOracle;
 
 @Parameters(separators = "=", commandDescription = "OceanBase (default port: " + OceanBaseOptions.DEFAULT_PORT
         + ", default host: " + OceanBaseOptions.DEFAULT_HOST)
@@ -51,6 +51,7 @@ public class OceanBaseOptions implements DBMSSpecificOptions<OceanBaseOracleFact
             }
         }
     }
+
     @Parameter(names = { "--query-timeout" }, description = "Query timeout")
     public int queryTimeout = 1000000000;
     @Parameter(names = { "--transaction-timeout" }, description = "Transaction timeout")

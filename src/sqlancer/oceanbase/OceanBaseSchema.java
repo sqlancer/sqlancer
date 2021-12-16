@@ -8,11 +8,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
-import sqlancer.IgnoreMeException;
 import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractRowValue;
 import sqlancer.common.schema.AbstractSchema;
@@ -65,11 +64,12 @@ public class OceanBaseSchema extends AbstractSchema<OceanBaseGlobalState, OceanB
 
             public static CollateSequence random() {
                 return Randomly.fromOptions(values());
-                
+
             }
         }
 
-        public OceanBaseColumn(String name, OceanBaseDataType columnType, boolean isPrimaryKey, int precision, boolean isZeroFill) {
+        public OceanBaseColumn(String name, OceanBaseDataType columnType, boolean isPrimaryKey, int precision,
+                boolean isZeroFill) {
             super(name, null, columnType);
             this.isPrimaryKey = isPrimaryKey;
             this.precision = precision;
@@ -84,7 +84,7 @@ public class OceanBaseSchema extends AbstractSchema<OceanBaseGlobalState, OceanB
         public boolean isPrimaryKey() {
             return isPrimaryKey;
         }
-     
+
         public boolean isZeroFill() {
             return isZeroFill;
         }
@@ -98,10 +98,14 @@ public class OceanBaseSchema extends AbstractSchema<OceanBaseGlobalState, OceanB
         }
 
         public OceanBaseRowValue getRandomRowValue(SQLConnection con) throws SQLException {
-            String randomRow = String.format("SELECT %s FROM %s ORDER BY RAND() LIMIT 1", columnNamesAsString(
-                    c -> c.getType()==OceanBaseDataType.FLOAT || c.isZeroFill() ? ("concat(" + c.getTable().getName() + "." + c.getName() + ",'')" + " AS " + c.getTable().getName() + c.getName()) : (c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName())),
+            String randomRow = String.format("SELECT %s FROM %s ORDER BY RAND() LIMIT 1",
+                    columnNamesAsString(c -> c.getType() == OceanBaseDataType.FLOAT || c.isZeroFill()
+                            ? "concat(" + c.getTable().getName() + "." + c.getName() + ",'')" + " AS "
+                                    + c.getTable().getName() + c.getName()
+                            : c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName()
+                                    + c.getName()),
                     tableNamesAsString());
-                    //cast float and zerofill as varchar
+            // cast float and zerofill as varchar
             Map<OceanBaseColumn, OceanBaseConstant> values = new HashMap<>();
             try (Statement s = con.createStatement()) {
                 ResultSet randomRowValues = s.executeQuery(randomRow);
@@ -114,20 +118,20 @@ public class OceanBaseSchema extends AbstractSchema<OceanBaseGlobalState, OceanB
                     int columnIndex = randomRowValues.findColumn(column.getTable().getName() + column.getName());
                     assert columnIndex == i + 1;
                     OceanBaseConstant constant;
-                     if (randomRowValues.getString(columnIndex) == null) {
-                         if(column.isZeroFill())
-                             constant= OceanBaseConstant.createStringConstant("null");
-                         else
-                             constant = OceanBaseConstant.createNullConstant();
-
+                    if (randomRowValues.getString(columnIndex) == null) {
+                        if (column.isZeroFill()) {
+                            constant = OceanBaseConstant.createStringConstant("null");
+                        } else {
+                            constant = OceanBaseConstant.createNullConstant();
+                        }
                     } else {
                         switch (column.getType()) {
                         case INT:
-                            //cast zerofill as varchar
-                            if (column.isZeroFill()){
+                            // cast zerofill as varchar
+                            if (column.isZeroFill()) {
                                 value = randomRowValues.getString(columnIndex);
                                 constant = OceanBaseConstant.createStringConstant((String) value);
-                            }else{
+                            } else {
                                 value = randomRowValues.getLong(columnIndex);
                                 constant = OceanBaseConstant.createIntConstant((long) value);
                             }
@@ -175,7 +179,8 @@ public class OceanBaseSchema extends AbstractSchema<OceanBaseGlobalState, OceanB
         }
     }
 
-    public static class OceanBaseRowValue extends AbstractRowValue<OceanBaseTables, OceanBaseColumn, OceanBaseConstant> {
+    public static class OceanBaseRowValue
+            extends AbstractRowValue<OceanBaseTables, OceanBaseColumn, OceanBaseConstant> {
 
         OceanBaseRowValue(OceanBaseTables tables, Map<OceanBaseColumn, OceanBaseConstant> values) {
             super(tables, values);
@@ -183,7 +188,8 @@ public class OceanBaseSchema extends AbstractSchema<OceanBaseGlobalState, OceanB
 
     }
 
-    public static class OceanBaseTable extends AbstractRelationalTable<OceanBaseColumn, OceanBaseIndex, OceanBaseGlobalState> {
+    public static class OceanBaseTable
+            extends AbstractRelationalTable<OceanBaseColumn, OceanBaseIndex, OceanBaseGlobalState> {
 
         public OceanBaseTable(String tableName, List<OceanBaseColumn> columns, List<OceanBaseIndex> indexes) {
             super(tableName, columns, indexes, false);
@@ -204,13 +210,6 @@ public class OceanBaseSchema extends AbstractSchema<OceanBaseGlobalState, OceanB
         public static OceanBaseIndex create(String indexName) {
             return new OceanBaseIndex(indexName);
         }
-
-        @Override
-        public String getIndexName() {
-            return super.getIndexName();
-           
-        }
-
     }
 
     public static OceanBaseSchema fromConnection(SQLConnection con, String databaseName) throws SQLException {
@@ -219,8 +218,8 @@ public class OceanBaseSchema extends AbstractSchema<OceanBaseGlobalState, OceanB
             try {
                 List<OceanBaseTable> databaseTables = new ArrayList<>();
                 try (Statement s = con.createStatement()) {
-                    try (ResultSet rs = s.executeQuery(
-                            "select TABLE_NAME from information_schema.TABLES where table_schema = '"
+                    try (ResultSet rs = s
+                            .executeQuery("select TABLE_NAME from information_schema.TABLES where table_schema = '"
                                     + databaseName + "';")) {
                         while (rs.next()) {
                             String tableName = rs.getString("TABLE_NAME");
@@ -251,8 +250,9 @@ public class OceanBaseSchema extends AbstractSchema<OceanBaseGlobalState, OceanB
                     databaseName, tableName))) {
                 while (rs.next()) {
                     String indexName = rs.getString("INDEX_NAME");
-                    if(!indexName.equals("PRIMARY"))
+                    if (!indexName.equals("PRIMARY")) {
                         indexes.add(OceanBaseIndex.create(indexName));
+                    }
                 }
             }
         }
@@ -272,7 +272,8 @@ public class OceanBaseSchema extends AbstractSchema<OceanBaseGlobalState, OceanB
                     boolean isPrimaryKey = rs.getString("COLUMN_KEY").equals("PRI");
                     boolean isZeroFill = rs.getString("COLUMN_TYPE").contains("zerofill");
 
-                    OceanBaseColumn c = new OceanBaseColumn(columnName, getColumnType(dataType), isPrimaryKey, precision, isZeroFill);
+                    OceanBaseColumn c = new OceanBaseColumn(columnName, getColumnType(dataType), isPrimaryKey,
+                            precision, isZeroFill);
                     columns.add(c);
                 }
             }

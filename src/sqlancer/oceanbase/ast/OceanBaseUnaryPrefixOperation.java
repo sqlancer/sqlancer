@@ -65,11 +65,12 @@ public class OceanBaseUnaryPrefixOperation extends UnaryOperatorNode<OceanBaseEx
     @Override
     public OceanBaseConstant getExpectedValue() {
         OceanBaseConstant subExprVal = expr.getExpectedValue();
-        if (op == OceanBaseUnaryPrefixOperator.PLUS){
-            if (subExprVal.isNull() && subExprVal.getType() == null)
+        if (op == OceanBaseUnaryPrefixOperator.PLUS) {
+            if (subExprVal.isNull() && subExprVal.getType() == null) {
                 return OceanBaseConstant.createNullConstant();
-            else
+            } else {
                 return subExprVal;
+            }
         }
         if (subExprVal.isNull()) {
             return OceanBaseConstant.createNullConstant();
@@ -82,9 +83,11 @@ public class OceanBaseUnaryPrefixOperation extends UnaryOperatorNode<OceanBaseEx
     public OperatorKind getOperatorKind() {
         return OperatorKind.PREFIX;
     }
+
     public OceanBaseExpression getExpr() {
         return expr;
     }
+
     public OceanBaseUnaryPrefixOperator getOp() {
         return op;
     }

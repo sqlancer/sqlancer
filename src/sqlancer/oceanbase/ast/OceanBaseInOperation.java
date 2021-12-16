@@ -2,8 +2,6 @@ package sqlancer.oceanbase.ast;
 
 import java.util.List;
 
-import sqlancer.IgnoreMeException;
-
 public class OceanBaseInOperation implements OceanBaseExpression {
 
     private final OceanBaseExpression expr;

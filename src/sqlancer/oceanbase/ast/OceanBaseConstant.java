@@ -1,7 +1,7 @@
 package sqlancer.oceanbase.ast;
 
-import java.math.BigInteger;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
@@ -17,7 +17,7 @@ public abstract class OceanBaseConstant implements OceanBaseExpression {
     public boolean isNull() {
         return false;
     }
-   
+
     public boolean isDouble() {
         return false;
     }
@@ -85,7 +85,7 @@ public abstract class OceanBaseConstant implements OceanBaseExpression {
         public String getTextRepresentation() {
             return String.valueOf(val);
         }
-      
+
         @Override
         public double getDouble() {
             return this.val;
@@ -105,22 +105,24 @@ public abstract class OceanBaseConstant implements OceanBaseExpression {
         public OceanBaseConstant castAs(CastType type) {
             if (type == CastType.SIGNED) {
                 long value = new Double(val).longValue();
-                if (val - value >=0.5)
-                    value = value +1;
+                if (val - value >= 0.5) {
+                    value = value + 1;
+                }
                 return new OceanBaseIntConstant(value, true);
             } else if (type == CastType.UNSIGNED) {
                 long value = new Double(val).longValue();
-                if (val - value >=0.5)
-                    value = value +1;
+                if (val - value >= 0.5) {
+                    value = value + 1;
+                }
                 return new OceanBaseIntConstant(value, false);
             } else {
                 throw new AssertionError();
             }
-        } 
+        }
 
         @Override
         public String castAsString() {
-            return String.valueOf(new BigDecimal(val));//select IFNULL(1.713591018E9, '11') -> 1713591018
+            return String.valueOf(new BigDecimal(val)); // select IFNULL(1.713591018E9, '11') -> 1713591018
         }
 
         @Override
@@ -132,31 +134,32 @@ public abstract class OceanBaseConstant implements OceanBaseExpression {
         protected OceanBaseConstant isLessThan(OceanBaseConstant rightVal) {
             if (rightVal.isNull()) {
                 return OceanBaseConstant.createNullConstant();
-            } else if (rightVal instanceof OceanBaseIntConstant){
+            } else if (rightVal instanceof OceanBaseIntConstant) {
                 return OceanBaseConstant.createBoolean(val < rightVal.getInt());
-            } else if (rightVal instanceof OceanBaseDoubleConstant){
+            } else if (rightVal instanceof OceanBaseDoubleConstant) {
                 return OceanBaseConstant.createBoolean(val < rightVal.getDouble());
-            } else if (rightVal instanceof OceanBaseTextConstant){
+            } else if (rightVal instanceof OceanBaseTextConstant) {
                 return isLessThan(rightVal.castAsDouble());
-            } else{
+            } else {
                 throw new AssertionError(rightVal);
-            } 
+            }
         }
 
         @Override
         public OceanBaseConstant isEquals(OceanBaseConstant rightVal) {
             if (rightVal.isNull()) {
                 return OceanBaseConstant.createNullConstant();
-            } else if (rightVal instanceof OceanBaseIntConstant){
+            } else if (rightVal instanceof OceanBaseIntConstant) {
                 return OceanBaseConstant.createBoolean(val == rightVal.getInt());
-            } else if (rightVal instanceof OceanBaseDoubleConstant){
+            } else if (rightVal instanceof OceanBaseDoubleConstant) {
                 return OceanBaseConstant.createBoolean(val == rightVal.getDouble());
-            } else if (rightVal instanceof OceanBaseTextConstant){
+            } else if (rightVal instanceof OceanBaseTextConstant) {
                 return isEquals(rightVal.castAsDouble());
             } else {
                 throw new AssertionError(rightVal);
             }
         }
+
         @Override
         public OceanBaseDataType getType() {
             return OceanBaseDataType.DOUBLE;
@@ -182,37 +185,32 @@ public abstract class OceanBaseConstant implements OceanBaseExpression {
                 throw new IgnoreMeException();
             }
         }
+
         @Override
         public boolean isNull() {
-            if(value.equalsIgnoreCase("NULL"))
-                return true;
-            else
-                return false;
+            return value.equalsIgnoreCase("NULL");
         }
 
         @Override
-        public boolean isEmpty(){
-            //"" "    " 
-            if (value.length() ==0 ){
+        public boolean isEmpty() {
+            // "" " "
+            if (value.length() == 0) {
                 return true;
-            }else{
-                for(int i =0;i< value.length(); i++){
-                   String sub =value.substring(i, i+1);
-                   if(!sub.equals(" "))
-                      return false;
+            } else {
+                for (int i = 0; i < value.length(); i++) {
+                    String sub = value.substring(i, i + 1);
+                    if (!sub.equals(" ")) {
+                        return false;
+                    }
                 }
                 return true;
-            }    
+            }
         }
 
         @Override
         public boolean asBooleanNotNull() {
             for (int i = value.length(); i >= 1; i--) {
                 try {
-                    char currentChar = value.charAt(i-1);
-                    int currentVal= Integer.valueOf(currentChar);
-                    if (currentVal < 48||currentVal > 57)
-                        continue;
                     String substring = value.substring(0, i);
                     Double val = Double.valueOf(substring);
                     return val != 0 && !Double.isNaN(val);
@@ -247,10 +245,11 @@ public abstract class OceanBaseConstant implements OceanBaseExpression {
             } else if (rightVal instanceof OceanBaseDoubleConstant) {
                 return castAsDouble().isEquals(rightVal);
             } else if (rightVal.isString()) {
-                if (isEmpty() && rightVal.isEmpty())
+                if (isEmpty() && rightVal.isEmpty()) {
                     return OceanBaseConstant.createBoolean(true);
-                else
+                } else {
                     return OceanBaseConstant.createBoolean(value.equalsIgnoreCase(rightVal.getString()));
+                }
             } else {
                 throw new AssertionError(rightVal);
             }
@@ -268,8 +267,9 @@ public abstract class OceanBaseConstant implements OceanBaseExpression {
 
         @Override
         public OceanBaseConstant castAs(CastType type) {
-            if(isNull())
+            if (isNull()) {
                 return OceanBaseConstant.createNullConstant();
+            }
             if (type == CastType.SIGNED || type == CastType.UNSIGNED) {
                 String value = this.value;
                 while (value.startsWith(" ") || value.startsWith("\t") || value.startsWith("\n")) {
@@ -280,11 +280,6 @@ public abstract class OceanBaseConstant implements OceanBaseExpression {
                 }
                 for (int i = value.length(); i >= 1; i--) {
                     try {
-                        //select CAST("꯵z)" AS SIGNED); ->0
-                        char currentChar = value.charAt(i-1);
-                        int currentVal= Integer.valueOf(currentChar);
-                        if (currentVal < 48||currentVal > 57)
-                           throw new IgnoreMeException();
                         String substring = value.substring(0, i);
                         long val = Long.parseLong(substring);
                         return OceanBaseConstant.createIntConstant(val, type == CastType.SIGNED ? true : false);
@@ -309,11 +304,6 @@ public abstract class OceanBaseConstant implements OceanBaseExpression {
             }
             for (int i = value.length(); i >= 1; i--) {
                 try {
-                    char currentChar = value.charAt(i-1);
-                    int currentVal= Integer.valueOf(currentChar);
-                    if (currentVal < 48||currentVal > 57)
-                        //ignore special char
-                        throw new IgnoreMeException();
                     String substring = value.substring(0, i);
                     double val = Double.parseDouble(substring);
                     return OceanBaseConstant.createDoubleConstant(val);
@@ -414,7 +404,7 @@ public abstract class OceanBaseConstant implements OceanBaseExpression {
                     throw new IgnoreMeException();
                 }
                 return isEquals(rightVal.castAs(CastType.SIGNED));
-            } else if (rightVal instanceof OceanBaseDoubleConstant){
+            } else if (rightVal instanceof OceanBaseDoubleConstant) {
                 return OceanBaseConstant.createBoolean(value == rightVal.getDouble());
             } else {
                 throw new AssertionError(rightVal);
@@ -440,7 +430,7 @@ public abstract class OceanBaseConstant implements OceanBaseExpression {
                 return Long.toUnsignedString(value);
             }
         }
-       
+
         @Override
         public OceanBaseConstant castAsDouble() {
             return this;
@@ -481,7 +471,7 @@ public abstract class OceanBaseConstant implements OceanBaseExpression {
                     throw new IgnoreMeException();
                 }
                 return isLessThan(rightVal.castAs(isSigned ? CastType.SIGNED : CastType.UNSIGNED));
-            } else if (rightVal instanceof OceanBaseDoubleConstant){
+            } else if (rightVal instanceof OceanBaseDoubleConstant) {
                 return OceanBaseConstant.createBoolean(value < rightVal.getDouble());
             } else {
                 throw new AssertionError(rightVal);

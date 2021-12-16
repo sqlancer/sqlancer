@@ -1,11 +1,9 @@
 package sqlancer.oceanbase.gen;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
-import java.sql.Connection;
-
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.oceanbase.OceanBaseGlobalState;
@@ -25,8 +23,6 @@ import sqlancer.oceanbase.ast.OceanBaseConstant.OceanBaseDoubleConstant;
 import sqlancer.oceanbase.ast.OceanBaseExists;
 import sqlancer.oceanbase.ast.OceanBaseExpression;
 import sqlancer.oceanbase.ast.OceanBaseInOperation;
-import sqlancer.oceanbase.ast.OceanBaseOrderByTerm;
-import sqlancer.oceanbase.ast.OceanBaseOrderByTerm.OceanBaseOrder;
 import sqlancer.oceanbase.ast.OceanBaseStringExpression;
 import sqlancer.oceanbase.ast.OceanBaseUnaryPostfixOperation;
 import sqlancer.oceanbase.ast.OceanBaseUnaryPrefixOperation;
@@ -36,26 +32,22 @@ public class OceanBaseExpressionGenerator extends UntypedExpressionGenerator<Oce
 
     private OceanBaseGlobalState state;
     private OceanBaseRowValue rowVal;
-    private Randomly r;
-    private List<OceanBaseSchema.OceanBaseColumn> OceanBaseColumns = new ArrayList<>();
 
     public OceanBaseExpressionGenerator(OceanBaseGlobalState state) {
         this.state = state;
     }
+
     public OceanBaseExpressionGenerator setCon(Connection con) {
         return this;
     }
+
     public OceanBaseExpressionGenerator setState(OceanBaseGlobalState state) {
         this.state = state;
         return this;
     }
 
     public OceanBaseExpressionGenerator setOceanBaseColumns(List<OceanBaseSchema.OceanBaseColumn> columns) {
-        this.OceanBaseColumns = columns;
         return this;
-    }
-    public OceanBaseExpressionGenerator(Randomly r) {
-        this.r = r;
     }
 
     public OceanBaseExpressionGenerator setRowVal(OceanBaseRowValue rowVal) {
@@ -64,7 +56,7 @@ public class OceanBaseExpressionGenerator extends UntypedExpressionGenerator<Oce
     }
 
     private enum Actions {
-        COLUMN, LITERAL, UNARY_PREFIX_OPERATION, UNARY_POSTFIX, COMPUTABLE_FUNCTION, BINARY_LOGICAL_OPERATOR, 
+        COLUMN, LITERAL, UNARY_PREFIX_OPERATION, UNARY_POSTFIX, COMPUTABLE_FUNCTION, BINARY_LOGICAL_OPERATOR,
         BINARY_COMPARISON_OPERATION, CAST, IN_OPERATION, EXISTS;
     }
 
@@ -95,7 +87,8 @@ public class OceanBaseExpressionGenerator extends UntypedExpressionGenerator<Oce
             return new OceanBaseBinaryComparisonOperation(generateExpression(depth + 1), generateExpression(depth + 1),
                     BinaryComparisonOperator.getRandom());
         case CAST:
-            return new OceanBaseCastOperation(generateExpression(depth + 1), OceanBaseCastOperation.CastType.getRandom());
+            return new OceanBaseCastOperation(generateExpression(depth + 1),
+                    OceanBaseCastOperation.CastType.getRandom());
         case IN_OPERATION:
             OceanBaseExpression expr = generateExpression(depth + 1);
             List<OceanBaseExpression> rightList = new ArrayList<>();
@@ -114,7 +107,8 @@ public class OceanBaseExpressionGenerator extends UntypedExpressionGenerator<Oce
         if (Randomly.getBoolean()) {
             return new OceanBaseExists(new OceanBaseStringExpression("SELECT 1", OceanBaseConstant.createTrue()));
         } else {
-            return new OceanBaseExists(new OceanBaseStringExpression("SELECT 1 from dual wHERE FALSE", OceanBaseConstant.createFalse()));
+            return new OceanBaseExists(
+                    new OceanBaseStringExpression("SELECT 1 from dual wHERE FALSE", OceanBaseConstant.createFalse()));
         }
     }
 
@@ -133,11 +127,12 @@ public class OceanBaseExpressionGenerator extends UntypedExpressionGenerator<Oce
 
     private enum ConstantType {
         INT, NULL, STRING, DOUBLE;
+
         public static ConstantType[] valuesPQS() {
             return new ConstantType[] { INT, NULL, STRING };
         }
     }
-    
+
     @Override
     public OceanBaseExpression generateConstant() {
         ConstantType[] values;
@@ -146,6 +141,7 @@ public class OceanBaseExpressionGenerator extends UntypedExpressionGenerator<Oce
         } else {
             values = ConstantType.values();
         }
+        OceanBaseConstant constant;
         switch (Randomly.fromOptions(values)) {
         case INT:
             return OceanBaseConstant.createIntConstant((int) state.getRandomly().getInteger());
@@ -153,11 +149,12 @@ public class OceanBaseExpressionGenerator extends UntypedExpressionGenerator<Oce
             return OceanBaseConstant.createNullConstant();
         case STRING:
             String string = state.getRandomly().getString().replace("\\", "").replace("\n", "").replace("\t", "");
-            OceanBaseConstant createStringConstant = OceanBaseConstant.createStringConstant(string);
-            return createStringConstant;
+            constant = OceanBaseConstant.createStringConstant(string);
+            return constant;
         case DOUBLE:
             double val = state.getRandomly().getDouble();
-            return new OceanBaseDoubleConstant(val);
+            constant = new OceanBaseDoubleConstant(val);
+            return constant;
         default:
             throw new AssertionError();
         }
@@ -176,6 +173,7 @@ public class OceanBaseExpressionGenerator extends UntypedExpressionGenerator<Oce
     }
 
     public OceanBaseExpression generateConstant(OceanBaseColumn col) {
+        OceanBaseConstant constant;
         switch (col.getType().name()) {
         case "INT":
             return OceanBaseConstant.createIntConstant((int) state.getRandomly().getInteger());
@@ -183,22 +181,24 @@ public class OceanBaseExpressionGenerator extends UntypedExpressionGenerator<Oce
             return OceanBaseConstant.createNullConstant();
         case "VARCHAR":
             String string = state.getRandomly().getString().replace("\\", "").replace("\n", "").replace("\t", "");
-            OceanBaseConstant createStringConstant = OceanBaseConstant.createStringConstant(string);
-            return createStringConstant;
+            constant = OceanBaseConstant.createStringConstant(string);
+            return constant;
         case "DOUBLE":
             double val = state.getRandomly().getDouble();
-            return new OceanBaseDoubleConstant(val);
+            constant = new OceanBaseDoubleConstant(val);
+            return constant;
         case "FLOAT":
-	        val = state.getRandomly().getDouble(); 
-            return new OceanBaseDoubleConstant(val);
+            val = state.getRandomly().getDouble();
+            constant = new OceanBaseDoubleConstant(val);
+            return constant;
         case "DECIMAL":
-	        val = state.getRandomly().getDouble();
+            val = state.getRandomly().getDouble();
             return new OceanBaseDoubleConstant(val);
         default:
             throw new AssertionError();
         }
     }
-    
+
     @Override
     public OceanBaseExpression negatePredicate(OceanBaseExpression predicate) {
         return new OceanBaseUnaryPrefixOperation(predicate, OceanBaseUnaryPrefixOperator.NOT);
@@ -206,7 +206,7 @@ public class OceanBaseExpressionGenerator extends UntypedExpressionGenerator<Oce
 
     @Override
     public OceanBaseExpression isNull(OceanBaseExpression expr) {
-        return new OceanBaseUnaryPostfixOperation(expr, OceanBaseUnaryPostfixOperation.UnaryPostfixOperator.IS_NULL, false);
+        return new OceanBaseUnaryPostfixOperation(expr, OceanBaseUnaryPostfixOperation.UnaryPostfixOperator.IS_NULL,
+                false);
     }
 }
-                

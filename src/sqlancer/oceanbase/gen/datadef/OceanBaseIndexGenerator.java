@@ -1,9 +1,7 @@
 package sqlancer.oceanbase.gen.datadef;
 
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.ArrayList;
+import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
@@ -14,18 +12,13 @@ import sqlancer.oceanbase.OceanBaseSchema;
 import sqlancer.oceanbase.OceanBaseSchema.OceanBaseColumn;
 import sqlancer.oceanbase.OceanBaseSchema.OceanBaseDataType;
 import sqlancer.oceanbase.OceanBaseSchema.OceanBaseTable;
-import sqlancer.oceanbase.OceanBaseVisitor;
-import sqlancer.oceanbase.ast.OceanBaseExpression;
-import sqlancer.oceanbase.gen.OceanBaseExpressionGenerator;
 
 public class OceanBaseIndexGenerator {
 
     private final Randomly r;
     private StringBuilder sb = new StringBuilder();
-    private boolean columnIsPrimaryKey;
-    private boolean containsInPlace;
     private OceanBaseSchema schema;
-    private List<OceanBaseColumn> columns = new ArrayList<>();
+    private final List<OceanBaseColumn> columns = new ArrayList<>();
     private final OceanBaseGlobalState globalState;
 
     public OceanBaseIndexGenerator(OceanBaseSchema schema, Randomly r, OceanBaseGlobalState globalState) {
@@ -47,17 +40,13 @@ public class OceanBaseIndexGenerator {
         indexType();
         sb.append(" ON ");
         OceanBaseTable table = schema.getRandomTable();
-        OceanBaseExpressionGenerator gen = new OceanBaseExpressionGenerator(globalState).setColumns(table.getColumns());
         sb.append(table.getName());
         sb.append("(");
         List<OceanBaseColumn> randomColumn = table.getRandomNonEmptyColumnSubset();
         int i = 0;
         for (OceanBaseColumn c : randomColumn) {
             if (i++ != 0) {
-               sb.append(", ");
-            }
-            if (c.isPrimaryKey()) {
-               columnIsPrimaryKey = true;
+                sb.append(", ");
             }
             c.isPartioned = true;
             columns.add(c);
@@ -96,6 +85,7 @@ public class OceanBaseIndexGenerator {
     private enum PartitionOptions {
         HASH
     }
+
     private void appendPartitionOptions() {
         if (Randomly.getBoolean()) {
             return;
@@ -103,11 +93,11 @@ public class OceanBaseIndexGenerator {
 
         OceanBaseColumn colIndex = Randomly.fromList(columns);
 
-        if(colIndex.isPartioned == false){
+        if (!colIndex.isPartioned) {
             return;
         }
 
-        if(colIndex.getType() == OceanBaseDataType.VARCHAR){
+        if (colIndex.getType() == OceanBaseDataType.VARCHAR) {
             sb.append(" PARTITION BY");
             sb.append(" KEY");
             sb.append(" (");
@@ -116,8 +106,7 @@ public class OceanBaseIndexGenerator {
             sb.append(")");
             sb.append(" partitions ");
             sb.append(r.getInteger(1, 20));
-        }
-        else if(OceanBaseDataType.INT == colIndex.getType()){
+        } else if (OceanBaseDataType.INT == colIndex.getType()) {
             sb.append(" PARTITION BY");
             sb.append(" HASH(");
             String name = colIndex.getName();
@@ -125,8 +114,7 @@ public class OceanBaseIndexGenerator {
             sb.append(") ");
             sb.append(" partitions ");
             sb.append(r.getInteger(1, 20));
-        }
-        else{
+        } else {
             return;
         }
     }
