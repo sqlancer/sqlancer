@@ -64,6 +64,7 @@ Since SQL dialects differ widely, each DBMS to be tested requires a separate imp
 | DuckDB      | Working     | Untyped, Generic      |                                                                                                                                                                                                 |
 | ClickHouse  | Preliminary | Untyped, Generic      | Implementing the different table engines was not convenient, which is why only a very preliminary implementation exists.                                                                        |
 | TDEngine    | Removed     | Untyped               | We removed the TDEngine implementation since all but one of our bug reports were still unaddressed five months after we reported them.                                                          |
+| OceanBase   | Working     | Untyped               |                                                                                                                                                                                                 |
 
 
 # Using SQLancer
