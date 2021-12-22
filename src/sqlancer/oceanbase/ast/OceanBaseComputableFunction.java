@@ -30,7 +30,7 @@ public class OceanBaseComputableFunction implements OceanBaseExpression {
         BIT_COUNT(1, "BIT_COUNT") {
 
             @Override
-            public OceanBaseConstant apply(OceanBaseConstant[] evaluatedArgs, OceanBaseExpression[] args) {
+            public OceanBaseConstant apply(OceanBaseConstant[] evaluatedArgs, OceanBaseExpression... args) {
                 OceanBaseConstant arg = evaluatedArgs[0];
                 if (arg.isNull()) {
                     return OceanBaseConstant.createNullConstant();
@@ -44,7 +44,7 @@ public class OceanBaseComputableFunction implements OceanBaseExpression {
         COALESCE(2, "COALESCE") {
 
             @Override
-            public OceanBaseConstant apply(OceanBaseConstant[] args, OceanBaseExpression[] origArgs) {
+            public OceanBaseConstant apply(OceanBaseConstant[] args, OceanBaseExpression... origArgs) {
                 OceanBaseConstant result = OceanBaseConstant.createNullConstant();
                 for (OceanBaseConstant arg : args) {
                     if (!arg.isNull()) {
@@ -64,7 +64,7 @@ public class OceanBaseComputableFunction implements OceanBaseExpression {
         IF(3, "IF") {
 
             @Override
-            public OceanBaseConstant apply(OceanBaseConstant[] args, OceanBaseExpression[] origArgs) {
+            public OceanBaseConstant apply(OceanBaseConstant[] args, OceanBaseExpression... origArgs) {
                 OceanBaseConstant cond = args[0];
                 OceanBaseConstant left = args[1];
                 OceanBaseConstant right = args[2];
@@ -81,7 +81,7 @@ public class OceanBaseComputableFunction implements OceanBaseExpression {
         IFNULL(2, "IFNULL") {
 
             @Override
-            public OceanBaseConstant apply(OceanBaseConstant[] args, OceanBaseExpression[] origArgs) {
+            public OceanBaseConstant apply(OceanBaseConstant[] args, OceanBaseExpression... origArgs) {
                 OceanBaseConstant result;
                 if (args[0].isNull()) {
                     result = args[1];
@@ -95,14 +95,14 @@ public class OceanBaseComputableFunction implements OceanBaseExpression {
         LEAST(2, "LEAST", true) {
 
             @Override
-            public OceanBaseConstant apply(OceanBaseConstant[] evaluatedArgs, OceanBaseExpression[] args) {
+            public OceanBaseConstant apply(OceanBaseConstant[] evaluatedArgs, OceanBaseExpression... args) {
                 return aggregate(evaluatedArgs, args, (min, cur) -> cur.isLessThan(min).asBooleanNotNull() ? cur : min);
             }
 
         },
         GREATEST(2, "GREATEST", true) {
             @Override
-            public OceanBaseConstant apply(OceanBaseConstant[] evaluatedArgs, OceanBaseExpression[] args) {
+            public OceanBaseConstant apply(OceanBaseConstant[] evaluatedArgs, OceanBaseExpression... args) {
                 return aggregate(evaluatedArgs, args, (max, cur) -> cur.isLessThan(max).asBooleanNotNull() ? max : cur);
             }
         };

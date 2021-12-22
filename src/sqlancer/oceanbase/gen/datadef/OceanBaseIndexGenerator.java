@@ -82,10 +82,6 @@ public class OceanBaseIndexGenerator {
         return new SQLQueryAdapter(string, errors, true);
     }
 
-    private enum PartitionOptions {
-        HASH
-    }
-
     private void appendPartitionOptions() {
         if (Randomly.getBoolean()) {
             return;
