@@ -93,7 +93,7 @@ public abstract class OceanBaseConstant implements OceanBaseExpression {
 
         @Override
         public long getInt() {
-            return new Double(val).longValue();
+            return (long) val;
         }
 
         @Override
@@ -104,13 +104,13 @@ public abstract class OceanBaseConstant implements OceanBaseExpression {
         @Override
         public OceanBaseConstant castAs(CastType type) {
             if (type == CastType.SIGNED) {
-                long value = new Double(val).longValue();
+                long value = (long) val;
                 if (val - value >= 0.5) {
                     value = value + 1;
                 }
                 return new OceanBaseIntConstant(value, true);
             } else if (type == CastType.UNSIGNED) {
-                long value = new Double(val).longValue();
+                long value = (long) val;
                 if (val - value >= 0.5) {
                     value = value + 1;
                 }
@@ -284,7 +284,6 @@ public abstract class OceanBaseConstant implements OceanBaseExpression {
                         long val = Long.parseLong(substring);
                         return OceanBaseConstant.createIntConstant(val, type == CastType.SIGNED ? true : false);
                     } catch (NumberFormatException e) {
-                        throw new IgnoreMeException();
                     }
                 }
                 return OceanBaseConstant.createIntConstant(0, type == CastType.SIGNED ? true : false);
@@ -308,7 +307,6 @@ public abstract class OceanBaseConstant implements OceanBaseExpression {
                     double val = Double.parseDouble(substring);
                     return OceanBaseConstant.createDoubleConstant(val);
                 } catch (NumberFormatException e) {
-                    throw new IgnoreMeException();
                 }
             }
             return OceanBaseConstant.createIntConstant(0);
