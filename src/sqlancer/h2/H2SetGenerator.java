@@ -33,8 +33,7 @@ public final class H2SetGenerator {
         OPTIMIZE_REUSE_RESULTS((r) -> Randomly.fromOptions(0, 1)), //
         QUERY_STATISTICS((r) -> Randomly.fromOptions("TRUE", "FALSE")), //
         QUERY_STATISTICS_MAX_ENTRIES((r) -> Randomly.getNotCachedInteger(0, 100000)), //
-        REFERENTIAL_INTEGRITY((r) -> Randomly.fromOptions("TRUE", "FALSE")), //
-        UNDO_LOG((r) -> Randomly.fromOptions("TRUE", "FALSE"));
+        REFERENTIAL_INTEGRITY((r) -> Randomly.fromOptions("TRUE", "FALSE")); //
 
         private Function<Randomly, Object> prod;
 
