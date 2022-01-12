@@ -2,6 +2,7 @@ name: Publish package to the Maven Central Repository and Docker Hub
 on:
   release:
     types: [created]
+  workflow_dispatch:
 jobs:
   publish:
     runs-on: ubuntu-latest
