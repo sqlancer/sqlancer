@@ -155,6 +155,7 @@
         <artifactId>maven-jar-plugin</artifactId>
         <version>3.2.2</version>
         <configuration>
+          <forceCreation>true</forceCreation>
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
