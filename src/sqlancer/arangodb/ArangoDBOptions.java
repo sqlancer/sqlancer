@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 
 import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
@@ -15,6 +16,7 @@ import sqlancer.arangodb.test.ArangoDBQueryPartitioningWhereTester;
 import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
 
+@Parameters(commandDescription = "ArangoDB (experimental)")
 public class ArangoDBOptions implements DBMSSpecificOptions<ArangoDBOptions.ArangoDBOracleFactory> {
 
     @Parameter(names = "--oracle")

@@ -404,9 +404,6 @@ public final class Main {
         Builder commandBuilder = JCommander.newBuilder().addObject(options);
         for (DatabaseProvider<?, ?, ?> provider : providers) {
             String name = provider.getDBMSName();
-            if (!name.toLowerCase().equals(name)) {
-                throw new AssertionError(name + " should be in lowercase!");
-            }
             DBMSExecutorFactory<?, ?, ?> executorFactory = new DBMSExecutorFactory<>(provider, options);
             commandBuilder = commandBuilder.addCommand(name, executorFactory.getCommand());
             nameToProvider.put(name, executorFactory);

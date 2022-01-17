@@ -15,7 +15,7 @@ import sqlancer.mariadb.MariaDBProvider.MariaDBGlobalState;
 import sqlancer.mariadb.oracle.MariaDBNoRECOracle;
 
 @Parameters(separators = "=", commandDescription = "MariaDB (default port: " + MariaDBOptions.DEFAULT_PORT
-        + ", default host: " + MariaDBOptions.DEFAULT_HOST)
+        + ", default host: " + MariaDBOptions.DEFAULT_HOST + ")")
 public class MariaDBOptions implements DBMSSpecificOptions<MariaDBOracleFactory> {
     public static final String DEFAULT_HOST = "localhost";
     public static final int DEFAULT_PORT = 3306;

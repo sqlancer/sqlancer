@@ -18,7 +18,7 @@ import sqlancer.tidb.oracle.TiDBTLPHavingOracle;
 import sqlancer.tidb.oracle.TiDBTLPWhereOracle;
 
 @Parameters(separators = "=", commandDescription = "TiDB (default port: " + TiDBOptions.DEFAULT_PORT
-        + ", default host: " + TiDBOptions.DEFAULT_HOST)
+        + ", default host: " + TiDBOptions.DEFAULT_HOST + ")")
 public class TiDBOptions implements DBMSSpecificOptions<TiDBOracleFactory> {
     public static final String DEFAULT_HOST = "localhost";
     public static final int DEFAULT_PORT = 4000;

@@ -23,7 +23,7 @@ import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
 
 @Parameters(separators = "=", commandDescription = "CockroachDB (default port: " + CockroachDBOptions.DEFAULT_PORT
-        + " default host: " + CockroachDBOptions.DEFAULT_HOST)
+        + " default host: " + CockroachDBOptions.DEFAULT_HOST + ")")
 public class CockroachDBOptions implements DBMSSpecificOptions<CockroachDBOracleFactory> {
     public static final String DEFAULT_HOST = "localhost";
     public static final int DEFAULT_PORT = 26257;

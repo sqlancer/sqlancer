@@ -21,7 +21,7 @@ import sqlancer.duckdb.test.DuckDBQueryPartitioningGroupByTester;
 import sqlancer.duckdb.test.DuckDBQueryPartitioningHavingTester;
 import sqlancer.duckdb.test.DuckDBQueryPartitioningWhereTester;
 
-@Parameters
+@Parameters(commandDescription = "DuckDB")
 public class DuckDBOptions implements DBMSSpecificOptions<DuckDBOracleFactory> {
 
     @Parameter(names = "--test-collate", arity = 1)
