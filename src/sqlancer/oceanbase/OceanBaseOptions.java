@@ -16,7 +16,7 @@ import sqlancer.oceanbase.oracle.OceanBasePivotedQuerySynthesisOracle;
 import sqlancer.oceanbase.oracle.OceanBaseTLPWhereOracle;
 
 @Parameters(separators = "=", commandDescription = "OceanBase (default port: " + OceanBaseOptions.DEFAULT_PORT
-        + ", default host: " + OceanBaseOptions.DEFAULT_HOST)
+        + ", default host: " + OceanBaseOptions.DEFAULT_HOST + ")")
 public class OceanBaseOptions implements DBMSSpecificOptions<OceanBaseOracleFactory> {
     public static final String DEFAULT_HOST = "localhost";
     public static final int DEFAULT_PORT = 2881;

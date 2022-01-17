@@ -20,7 +20,7 @@ import sqlancer.postgres.oracle.tlp.PostgresTLPHavingOracle;
 import sqlancer.postgres.oracle.tlp.PostgresTLPWhereOracle;
 
 @Parameters(separators = "=", commandDescription = "PostgreSQL (default port: " + PostgresOptions.DEFAULT_PORT
-        + ", default host: " + PostgresOptions.DEFAULT_HOST)
+        + ", default host: " + PostgresOptions.DEFAULT_HOST + ")")
 public class PostgresOptions implements DBMSSpecificOptions<PostgresOracleFactory> {
     public static final String DEFAULT_HOST = "localhost";
     public static final int DEFAULT_PORT = 5432;
