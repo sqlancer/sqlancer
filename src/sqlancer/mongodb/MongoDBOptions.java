@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 
 import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
@@ -17,6 +18,7 @@ import sqlancer.mongodb.MongoDBProvider.MongoDBGlobalState;
 import sqlancer.mongodb.test.MongoDBDocumentRemovalTester;
 import sqlancer.mongodb.test.MongoDBQueryPartitioningWhereTester;
 
+@Parameters(commandDescription = "MongoDB (experimental)")
 public class MongoDBOptions implements DBMSSpecificOptions<MongoDBOptions.MongoDBOracleFactory> {
 
     @Parameter(names = "--test-validation", description = "Enable/Disable validation of schema with Schema Validation", arity = 1)
