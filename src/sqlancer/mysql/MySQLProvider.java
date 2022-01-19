@@ -5,7 +5,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import com.google.auto.service.AutoService;
+
 import sqlancer.AbstractAction;
+import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
@@ -31,6 +34,7 @@ import sqlancer.mysql.gen.tblmaintenance.MySQLChecksum;
 import sqlancer.mysql.gen.tblmaintenance.MySQLOptimize;
 import sqlancer.mysql.gen.tblmaintenance.MySQLRepair;
 
+@AutoService(DatabaseProvider.class)
 public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOptions> {
 
     public MySQLProvider() {

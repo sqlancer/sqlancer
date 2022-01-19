@@ -7,7 +7,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.google.auto.service.AutoService;
+
 import sqlancer.AbstractAction;
+import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
@@ -40,6 +43,7 @@ import sqlancer.sqlite3.gen.dml.SQLite3StatTableGenerator;
 import sqlancer.sqlite3.gen.dml.SQLite3UpdateGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
+@AutoService(DatabaseProvider.class)
 public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLite3Options> {
 
     public static boolean allowFloatingPointFp = true;

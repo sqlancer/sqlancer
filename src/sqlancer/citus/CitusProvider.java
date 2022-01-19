@@ -10,7 +10,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.google.auto.service.AutoService;
+
 import sqlancer.AbstractAction;
+import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
@@ -51,6 +54,7 @@ import sqlancer.postgres.gen.PostgresTransactionGenerator;
 import sqlancer.postgres.gen.PostgresTruncateGenerator;
 import sqlancer.postgres.gen.PostgresVacuumGenerator;
 
+@AutoService(DatabaseProvider.class)
 public class CitusProvider extends PostgresProvider {
 
     @SuppressWarnings("unchecked")

@@ -4,7 +4,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import com.google.auto.service.AutoService;
+
 import sqlancer.AbstractAction;
+import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
@@ -15,6 +18,7 @@ import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.h2.H2Provider.H2GlobalState;
 
+@AutoService(DatabaseProvider.class)
 public class H2Provider extends SQLProviderAdapter<H2GlobalState, H2Options> {
 
     public H2Provider() {

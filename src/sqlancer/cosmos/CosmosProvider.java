@@ -1,11 +1,13 @@
 package sqlancer.cosmos;
 
+import com.google.auto.service.AutoService;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 
+import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.ProviderAdapter;
 import sqlancer.Randomly;
@@ -17,6 +19,7 @@ import sqlancer.mongodb.MongoDBOptions;
 import sqlancer.mongodb.MongoDBQueryAdapter;
 import sqlancer.mongodb.gen.MongoDBTableGenerator;
 
+@AutoService(DatabaseProvider.class)
 public class CosmosProvider extends
         ProviderAdapter<sqlancer.mongodb.MongoDBProvider.MongoDBGlobalState, MongoDBOptions, MongoDBConnection> {
 

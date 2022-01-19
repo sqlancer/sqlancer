@@ -8,7 +8,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 
+import com.google.auto.service.AutoService;
+
 import sqlancer.AbstractAction;
+import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
@@ -43,6 +46,7 @@ import sqlancer.postgres.gen.PostgresViewGenerator;
 
 // EXISTS
 // IN
+@AutoService(DatabaseProvider.class)
 public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, PostgresOptions> {
 
     /**
