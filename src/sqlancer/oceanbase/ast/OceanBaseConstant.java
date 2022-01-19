@@ -282,11 +282,11 @@ public abstract class OceanBaseConstant implements OceanBaseExpression {
                     try {
                         String substring = value.substring(0, i);
                         long val = Long.parseLong(substring);
-                        return OceanBaseConstant.createIntConstant(val, type == CastType.SIGNED ? true : false);
+                        return OceanBaseConstant.createIntConstant(val, type == CastType.SIGNED);
                     } catch (NumberFormatException e) {
                     }
                 }
-                return OceanBaseConstant.createIntConstant(0, type == CastType.SIGNED ? true : false);
+                return OceanBaseConstant.createIntConstant(0, type == CastType.SIGNED);
             } else {
                 throw new AssertionError();
             }
