@@ -15,9 +15,9 @@ SQLancer operates in the following two phases:
 # Getting Started
 
 Requirements:
-* Java 8 or above
+* Java 11 or above
 * [Maven](https://maven.apache.org/) (`sudo apt install maven` on Ubuntu)
-* The DBMS that you want to test (SQLite is an embedded DBMS and is included)
+* The DBMS that you want to test (embedded DBMSs such as DuckDB, H2, and SQLite do not require a setup)
 
 The following commands clone SQLancer, create a JAR, and start SQLancer to test SQLite using Non-optimizing Reference Engine Construction (NoREC):
 
