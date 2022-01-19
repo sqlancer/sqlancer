@@ -1,5 +1,4 @@
 [![Build Status](https://github.com/sqlancer/sqlancer/workflows/ci/badge.svg)](https://github.com/sqlancer/sqlancer/actions)
-[![codecov](https://codecov.io/gh/sqlancer/sqlancer/branch/master/graph/badge.svg)](https://codecov.io/gh/sqlancer/sqlancer)
 [![Twitter](https://img.shields.io/twitter/follow/sqlancer_dbms?style=social)](https://twitter.com/sqlancer_dbms)
 # SQLancer
 
@@ -16,9 +15,9 @@ SQLancer operates in the following two phases:
 # Getting Started
 
 Requirements:
-* Java 8 or above
+* Java 11 or above
 * [Maven](https://maven.apache.org/) (`sudo apt install maven` on Ubuntu)
-* The DBMS that you want to test (SQLite is an embedded DBMS and is included)
+* The DBMS that you want to test (embedded DBMSs such as DuckDB, H2, and SQLite do not require a setup)
 
 The following commands clone SQLancer, create a JAR, and start SQLancer to test SQLite using Non-optimizing Reference Engine Construction (NoREC):
 
@@ -33,10 +32,6 @@ java -jar sqlancer-*.jar --num-threads 4 sqlite3 --oracle NoREC
 If the execution prints progress information every five seconds, then the tool works as expected. Note that SQLancer might find bugs in SQLite. Before reporting these, be sure to check that they can still be reproduced when using the latest development version. The shortcut CTRL+C can be used to terminate SQLancer manually. If SQLancer does not find any bugs, it executes infinitely. The option `--num-tries` can be used to control after how many bugs SQLancer terminates. Alternatively, the option `--timeout-seconds` can be used to specify the maximum duration that SQLancer is allowed to run.
 
 If you launch SQLancer without parameters, available options and commands are displayed. Note that general options that are supported by all DBMS-testing implementations (e.g., `--num-threads`) need to precede the name of DBMS to be tested (e.g., `sqlite3`). Options that are supported only for specific DBMS (e.g., `--test-rtree` for SQLite3), or options for which each testing implementation provides different values (e.g. `--oracle NoREC`) need to go after the DBMS name.
-
-# Research Prototype
-
-This project should at this stage still be seen as a research prototype. We believe that the tool is not ready to be used. However, we have received many requests by companies, organizations, and individual developers, which is why we decided to prematurely release the tool. Expect errors, incompatibilities, lack of documentation, and insufficient code quality. That being said, we are working hard to address these issues and enhance SQLancer to become a production-quality piece of software. We welcome any issue reports, extension requests, and code contributions.
 
 # Testing Approaches
 
