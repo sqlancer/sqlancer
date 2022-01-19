@@ -3,7 +3,10 @@ package sqlancer.duckdb;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import com.google.auto.service.AutoService;
+
 import sqlancer.AbstractAction;
+import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
@@ -22,6 +25,7 @@ import sqlancer.duckdb.gen.DuckDBTableGenerator;
 import sqlancer.duckdb.gen.DuckDBUpdateGenerator;
 import sqlancer.duckdb.gen.DuckDBViewGenerator;
 
+@AutoService(DatabaseProvider.class)
 public class DuckDBProvider extends SQLProviderAdapter<DuckDBGlobalState, DuckDBOptions> {
 
     public DuckDBProvider() {

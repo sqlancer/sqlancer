@@ -5,7 +5,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import com.google.auto.service.AutoService;
+
 import sqlancer.AbstractAction;
+import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
@@ -24,6 +27,7 @@ import sqlancer.oceanbase.gen.OceanBaseTruncateTableGenerator;
 import sqlancer.oceanbase.gen.OceanBaseUpdateGenerator;
 import sqlancer.oceanbase.gen.datadef.OceanBaseIndexGenerator;
 
+@AutoService(DatabaseProvider.class)
 public class OceanBaseProvider extends SQLProviderAdapter<OceanBaseGlobalState, OceanBaseOptions> {
 
     public OceanBaseProvider() {

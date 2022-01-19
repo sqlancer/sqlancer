@@ -263,6 +263,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>com.google.auto.service</groupId>
+      <artifactId>auto-service</artifactId>
+      <version>1.0.1</version>
+    </dependency>
+    <dependency>
       <groupId>com.beust</groupId>
       <artifactId>jcommander</artifactId>
       <version>1.82</version>

@@ -5,8 +5,10 @@ import java.util.List;
 
 import com.arangodb.ArangoDB;
 import com.arangodb.ArangoDatabase;
+import com.google.auto.service.AutoService;
 
 import sqlancer.AbstractAction;
+import sqlancer.DatabaseProvider;
 import sqlancer.ExecutionTimer;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
@@ -19,6 +21,7 @@ import sqlancer.arangodb.gen.ArangoDBTableGenerator;
 import sqlancer.common.log.LoggableFactory;
 import sqlancer.common.query.Query;
 
+@AutoService(DatabaseProvider.class)
 public class ArangoDBProvider
         extends ProviderAdapter<ArangoDBProvider.ArangoDBGlobalState, ArangoDBOptions, ArangoDBConnection> {
 

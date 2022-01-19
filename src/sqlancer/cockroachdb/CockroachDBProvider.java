@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.google.auto.service.AutoService;
+
+import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.Main.QueryManager;
 import sqlancer.MainOptions;
@@ -34,6 +37,7 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 
+@AutoService(DatabaseProvider.class)
 public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalState, CockroachDBOptions> {
 
     public CockroachDBProvider() {

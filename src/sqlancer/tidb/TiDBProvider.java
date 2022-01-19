@@ -5,7 +5,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import com.google.auto.service.AutoService;
+
 import sqlancer.AbstractAction;
+import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
@@ -28,6 +31,7 @@ import sqlancer.tidb.gen.TiDBTableGenerator;
 import sqlancer.tidb.gen.TiDBUpdateGenerator;
 import sqlancer.tidb.gen.TiDBViewGenerator;
 
+@AutoService(DatabaseProvider.class)
 public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOptions> {
 
     public TiDBProvider() {

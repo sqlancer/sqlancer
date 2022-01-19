@@ -3,11 +3,13 @@ package sqlancer.mongodb;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.auto.service.AutoService;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 
 import sqlancer.AbstractAction;
+import sqlancer.DatabaseProvider;
 import sqlancer.ExecutionTimer;
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
@@ -21,6 +23,7 @@ import sqlancer.mongodb.gen.MongoDBIndexGenerator;
 import sqlancer.mongodb.gen.MongoDBInsertGenerator;
 import sqlancer.mongodb.gen.MongoDBTableGenerator;
 
+@AutoService(DatabaseProvider.class)
 public class MongoDBProvider
         extends ProviderAdapter<MongoDBProvider.MongoDBGlobalState, MongoDBOptions, MongoDBConnection> {
 

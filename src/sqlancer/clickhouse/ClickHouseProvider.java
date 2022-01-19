@@ -6,7 +6,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.stream.Collectors;
 
+import com.google.auto.service.AutoService;
+
 import sqlancer.AbstractAction;
+import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
@@ -21,6 +24,7 @@ import sqlancer.clickhouse.gen.ClickHouseTableGenerator;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 
+@AutoService(DatabaseProvider.class)
 public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState, ClickHouseOptions> {
 
     public ClickHouseProvider() {

@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -21,23 +22,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.JCommander.Builder;
 
-import sqlancer.arangodb.ArangoDBProvider;
-import sqlancer.citus.CitusProvider;
-import sqlancer.clickhouse.ClickHouseProvider;
-import sqlancer.cockroachdb.CockroachDBProvider;
 import sqlancer.common.log.Loggable;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLancerResultSet;
-import sqlancer.cosmos.CosmosProvider;
-import sqlancer.duckdb.DuckDBProvider;
-import sqlancer.h2.H2Provider;
-import sqlancer.mariadb.MariaDBProvider;
-import sqlancer.mongodb.MongoDBProvider;
-import sqlancer.mysql.MySQLProvider;
-import sqlancer.oceanbase.OceanBaseProvider;
-import sqlancer.postgres.PostgresProvider;
-import sqlancer.sqlite3.SQLite3Provider;
-import sqlancer.tidb.TiDBProvider;
 
 public final class Main {
 
@@ -543,22 +530,21 @@ public final class Main {
         return threadsShutdown == 0 ? 0 : options.getErrorExitCode();
     }
 
+    /**
+     * To register a new provider, it is necessary to implement the DatabaseProvider interface and add an additional
+     * configuration file, see https://docs.oracle.com/javase/9/docs/api/java/util/ServiceLoader.html. Currently, we use
+     * an @AutoService annotation to create the configuration file automatically. This allows SQLancer to pick up
+     * providers in other JARs on the classpath.
+     *
+     * @return The list of service providers on the classpath
+     */
     static List<DatabaseProvider<?, ?, ?>> getDBMSProviders() {
         List<DatabaseProvider<?, ?, ?>> providers = new ArrayList<>();
-        providers.add(new SQLite3Provider());
-        providers.add(new CockroachDBProvider());
-        providers.add(new MySQLProvider());
-        providers.add(new MariaDBProvider());
-        providers.add(new TiDBProvider());
-        providers.add(new PostgresProvider());
-        providers.add(new CitusProvider());
-        providers.add(new ClickHouseProvider());
-        providers.add(new DuckDBProvider());
-        providers.add(new H2Provider());
-        providers.add(new MongoDBProvider());
-        providers.add(new CosmosProvider());
-        providers.add(new ArangoDBProvider());
-        providers.add(new OceanBaseProvider());
+        @SuppressWarnings("rawtypes")
+        ServiceLoader<DatabaseProvider> loader = ServiceLoader.load(DatabaseProvider.class);
+        for (DatabaseProvider<?, ?, ?> provider : loader) {
+            providers.add(provider);
+        }
         return providers;
     }
 

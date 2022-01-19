@@ -7,6 +7,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.auto.service.AutoService;
+
+import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
@@ -24,6 +27,7 @@ import sqlancer.mariadb.gen.MariaDBTableGenerator;
 import sqlancer.mariadb.gen.MariaDBTruncateGenerator;
 import sqlancer.mariadb.gen.MariaDBUpdateGenerator;
 
+@AutoService(DatabaseProvider.class)
 public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, MariaDBOptions> {
 
     public static final int MAX_EXPRESSION_DEPTH = 3;
