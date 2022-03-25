@@ -6,7 +6,7 @@ public class MariaDBBinaryOperator extends MariaDBExpression {
 
     private MariaDBExpression left;
     private MariaDBExpression right;
-    private MariaDBBinaryComparisonOperator op;
+    private MariaDBBinaryComparisonOperator operator;
 
     public enum MariaDBBinaryComparisonOperator {
         NOT_EQUAL("!="), LESS_THAN("<"), /* NULL_SAFE_EQUAL("<=>"), EQUALS("="), */ GREATER_THAN(">"),
@@ -19,14 +19,14 @@ public class MariaDBBinaryOperator extends MariaDBExpression {
 
         BITWISE_AND("&"), LEFT_SHIFT("<<"), RIGHT_SHIFT(">>"), BITWISE_XOR("^"), BITWISE_OR("|");
 
-        private String op;
+        private String operator;
 
-        MariaDBBinaryComparisonOperator(String op) {
-            this.op = op;
+        MariaDBBinaryComparisonOperator(String operator) {
+            this.operator = operator;
         }
 
         public String getTextRepresentation() {
-            return op;
+            return operator;
         }
 
         public static MariaDBBinaryComparisonOperator getRandom() {
@@ -35,10 +35,10 @@ public class MariaDBBinaryOperator extends MariaDBExpression {
 
     };
 
-    public MariaDBBinaryOperator(MariaDBExpression left, MariaDBExpression right, MariaDBBinaryComparisonOperator op) {
+    public MariaDBBinaryOperator(MariaDBExpression left, MariaDBExpression right, MariaDBBinaryComparisonOperator operator) {
         this.left = left;
         this.right = right;
-        this.op = op;
+        this.operator = operator;
     }
 
     public MariaDBExpression getLeft() {
@@ -50,7 +50,7 @@ public class MariaDBBinaryOperator extends MariaDBExpression {
     };
 
     public MariaDBBinaryComparisonOperator getOp() {
-        return op;
+        return operator;
     }
 
 }

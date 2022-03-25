@@ -158,74 +158,74 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             } while (!success);
         }
 
-        int[] nrRemaining = new int[Action.values().length];
+        int[] rowsRemaining = new int[Action.values().length];
         List<Action> actions = new ArrayList<>();
         int total = 0;
         for (int i = 0; i < Action.values().length; i++) {
             Action action = Action.values()[i];
-            int nrPerformed = 0;
+            int rowsPerformed = 0;
             switch (action) {
             case INSERT:
-                nrPerformed = globalState.getRandomly().getInteger(0, options.getMaxNumberInserts());
+                rowsPerformed = globalState.getRandomly().getInteger(0, options.getMaxNumberInserts());
                 break;
             case UPDATE:
             case SPLIT:
-                nrPerformed = globalState.getRandomly().getInteger(0, 3);
+                rowsPerformed = globalState.getRandomly().getInteger(0, 3);
                 break;
             case EXPLAIN:
-                nrPerformed = globalState.getRandomly().getInteger(0, 10);
+                rowsPerformed = globalState.getRandomly().getInteger(0, 10);
                 break;
             case SHOW:
             case TRUNCATE:
             case DELETE:
             case CREATE_STATISTICS:
-                nrPerformed = globalState.getRandomly().getInteger(0, 2);
+                rowsPerformed = globalState.getRandomly().getInteger(0, 2);
                 break;
             case CREATE_VIEW:
-                nrPerformed = globalState.getRandomly().getInteger(0, 2);
+                rowsPerformed = globalState.getRandomly().getInteger(0, 2);
                 break;
             case SET_SESSION:
             case SET_CLUSTER_SETTING:
-                nrPerformed = globalState.getRandomly().getInteger(0, 3);
+                rowsPerformed = globalState.getRandomly().getInteger(0, 3);
                 break;
             case CREATE_INDEX:
-                nrPerformed = globalState.getRandomly().getInteger(0, 10);
+                rowsPerformed = globalState.getRandomly().getInteger(0, 10);
                 break;
             case COMMENT_ON:
             case SCRUB:
-                nrPerformed = 0; /*
+                rowsPerformed = 0; /*
                                   * there are a number of open SCRUB bugs, of which
                                   * https://github.com/cockroachdb/cockroach/issues/47116 crashes the server
                                   */
                 break;
             case TRANSACTION:
-                nrPerformed = 0; // r.getInteger(0, 0);
+                rowsPerformed = 0; // r.getInteger(0, 0);
                 break;
             default:
                 throw new AssertionError(action);
             }
-            if (nrPerformed != 0) {
+            if (rowsPerformed != 0) {
                 actions.add(action);
             }
-            nrRemaining[action.ordinal()] = nrPerformed;
-            total += nrPerformed;
+            rowsRemaining[action.ordinal()] = rowsPerformed;
+            total += rowsPerformed;
         }
 
         while (total != 0) {
             Action nextAction = null;
             int selection = globalState.getRandomly().getInteger(0, total);
             int previousRange = 0;
-            for (int i = 0; i < nrRemaining.length; i++) {
-                if (previousRange <= selection && selection < previousRange + nrRemaining[i]) {
+            for (int i = 0; i < rowsRemaining.length; i++) {
+                if (previousRange <= selection && selection < previousRange + rowsRemaining[i]) {
                     nextAction = Action.values()[i];
                     break;
                 } else {
-                    previousRange += nrRemaining[i];
+                    previousRange += rowsRemaining[i];
                 }
             }
             assert nextAction != null;
-            assert nrRemaining[nextAction.ordinal()] > 0;
-            nrRemaining[nextAction.ordinal()]--;
+            assert rowsRemaining[nextAction.ordinal()] > 0;
+            rowsRemaining[nextAction.ordinal()]--;
             SQLQueryAdapter query = null;
             try {
                 boolean success;
