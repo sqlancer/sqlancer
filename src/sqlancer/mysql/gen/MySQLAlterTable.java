@@ -16,7 +16,7 @@ import sqlancer.mysql.MySQLSchema.MySQLTable;
 public class MySQLAlterTable {
 
     private final MySQLSchema schema;
-    private final StringBuilder sb = new StringBuilder();
+    private StringBuilder sb = new StringBuilder();
     boolean couldAffectSchema;
     private List<Action> selectedActions;
 
@@ -60,6 +60,103 @@ public class MySQLAlterTable {
 
     }
 
+    private StringBuilder buildQueryString(List<Action> actions, MySQLTable table){
+        selectedActions = Randomly.subset(actions);
+        int i = 0;
+        for (Action a : selectedActions) {
+            if (i++ != 0) {
+                sb.append(", ");
+            }
+            switch (a) {
+                case ALGORITHM:
+                    sb.append("ALGORITHM ");
+                    sb.append(Randomly.fromOptions("INSTANT", "INPLACE", "COPY", "DEFAULT"));
+                    break;
+                case CHECKSUM:
+                    sb.append("CHECKSUM ");
+                    sb.append(Randomly.fromOptions(0, 1));
+                    break;
+                case COMPRESSION:
+                    sb.append("COMPRESSION ");
+                    sb.append("'");
+                    sb.append(Randomly.fromOptions("ZLIB", "LZ4", "NONE"));
+                    sb.append("'");
+                    break;
+                case DELAY_KEY_WRITE:
+                    sb.append("DELAY_KEY_WRITE ");
+                    sb.append(Randomly.fromOptions(0, 1));
+                    break;
+                case DROP_COLUMN:
+                    sb.append("DROP ");
+                    if (Randomly.getBoolean()) {
+                        sb.append("COLUMN ");
+                    }
+                    sb.append(table.getRandomColumn().getName());
+                    couldAffectSchema = true;
+                    break;
+                case DISABLE_ENABLE_KEYS:
+                    sb.append(Randomly.fromOptions("DISABLE", "ENABLE"));
+                    sb.append(" KEYS");
+                    break;
+                case DROP_PRIMARY_KEY:
+                    assert table.hasPrimaryKey();
+                    sb.append("DROP PRIMARY KEY");
+                    couldAffectSchema = true;
+                    break;
+                case FORCE:
+                    sb.append("FORCE");
+                    break;
+                case INSERT_METHOD:
+                    sb.append("INSERT_METHOD ");
+                    sb.append(Randomly.fromOptions("NO", "FIRST", "LAST"));
+                    break;
+                case ROW_FORMAT:
+                    sb.append("ROW_FORMAT ");
+                    sb.append(Randomly.fromOptions("DEFAULT", "DYNAMIC", "FIXED", "COMPRESSED", "REDUNDANT", "COMPACT"));
+                    break;
+                case STATS_AUTO_RECALC:
+                    sb.append("STATS_AUTO_RECALC ");
+                    sb.append(Randomly.fromOptions(0, 1, "DEFAULT"));
+                    break;
+                case STATS_PERSISTENT:
+                    sb.append("STATS_PERSISTENT ");
+                    sb.append(Randomly.fromOptions(0, 1, "DEFAULT"));
+                    break;
+                case PACK_KEYS:
+                    sb.append("PACK_KEYS ");
+                    sb.append(Randomly.fromOptions(0, 1, "DEFAULT"));
+                    break;
+                // not relevant:
+                // case WITH_WITHOUT_VALIDATION:
+                // sb.append(Randomly.fromOptions("WITHOUT", "WITH"));
+                // sb.append(" VALIDATION");
+                // break;
+                case RENAME:
+                    sb.append("RENAME ");
+                    if (Randomly.getBoolean()) {
+                        sb.append(Randomly.fromOptions("TO", "AS"));
+                        sb.append(" ");
+                    }
+                    sb.append("t");
+                    sb.append(Randomly.smallNumber());
+                    couldAffectSchema = true;
+                    break;
+                default:
+                    throw new AssertionError(a);
+            }
+        }
+        if (Randomly.getBooleanWithSmallProbability()) {
+            if (i != 0) {
+                sb.append(", ");
+            }
+            // should be given as last option
+            sb.append(" ORDER BY ");
+            sb.append(table.getRandomNonEmptyColumnSubset().stream().map(c -> c.getName())
+                    .collect(Collectors.joining(", ")));
+        }
+        return sb;
+    }
+
     private SQLQueryAdapter create() {
         ExpectedErrors errors = ExpectedErrors.from("does not support the create option", "doesn't have this option",
                 "is not supported for this operation", "Data truncation", "Specified key was too long");
@@ -75,99 +172,7 @@ public class MySQLAlterTable {
         if (table.getColumns().size() == 1) {
             list.remove(Action.DROP_COLUMN);
         }
-        selectedActions = Randomly.subset(list);
-        int i = 0;
-        for (Action a : selectedActions) {
-            if (i++ != 0) {
-                sb.append(", ");
-            }
-            switch (a) {
-            case ALGORITHM:
-                sb.append("ALGORITHM ");
-                sb.append(Randomly.fromOptions("INSTANT", "INPLACE", "COPY", "DEFAULT"));
-                break;
-            case CHECKSUM:
-                sb.append("CHECKSUM ");
-                sb.append(Randomly.fromOptions(0, 1));
-                break;
-            case COMPRESSION:
-                sb.append("COMPRESSION ");
-                sb.append("'");
-                sb.append(Randomly.fromOptions("ZLIB", "LZ4", "NONE"));
-                sb.append("'");
-                break;
-            case DELAY_KEY_WRITE:
-                sb.append("DELAY_KEY_WRITE ");
-                sb.append(Randomly.fromOptions(0, 1));
-                break;
-            case DROP_COLUMN:
-                sb.append("DROP ");
-                if (Randomly.getBoolean()) {
-                    sb.append("COLUMN ");
-                }
-                sb.append(table.getRandomColumn().getName());
-                couldAffectSchema = true;
-                break;
-            case DISABLE_ENABLE_KEYS:
-                sb.append(Randomly.fromOptions("DISABLE", "ENABLE"));
-                sb.append(" KEYS");
-                break;
-            case DROP_PRIMARY_KEY:
-                assert table.hasPrimaryKey();
-                sb.append("DROP PRIMARY KEY");
-                couldAffectSchema = true;
-                break;
-            case FORCE:
-                sb.append("FORCE");
-                break;
-            case INSERT_METHOD:
-                sb.append("INSERT_METHOD ");
-                sb.append(Randomly.fromOptions("NO", "FIRST", "LAST"));
-                break;
-            case ROW_FORMAT:
-                sb.append("ROW_FORMAT ");
-                sb.append(Randomly.fromOptions("DEFAULT", "DYNAMIC", "FIXED", "COMPRESSED", "REDUNDANT", "COMPACT"));
-                break;
-            case STATS_AUTO_RECALC:
-                sb.append("STATS_AUTO_RECALC ");
-                sb.append(Randomly.fromOptions(0, 1, "DEFAULT"));
-                break;
-            case STATS_PERSISTENT:
-                sb.append("STATS_PERSISTENT ");
-                sb.append(Randomly.fromOptions(0, 1, "DEFAULT"));
-                break;
-            case PACK_KEYS:
-                sb.append("PACK_KEYS ");
-                sb.append(Randomly.fromOptions(0, 1, "DEFAULT"));
-                break;
-            // not relevant:
-            // case WITH_WITHOUT_VALIDATION:
-            // sb.append(Randomly.fromOptions("WITHOUT", "WITH"));
-            // sb.append(" VALIDATION");
-            // break;
-            case RENAME:
-                sb.append("RENAME ");
-                if (Randomly.getBoolean()) {
-                    sb.append(Randomly.fromOptions("TO", "AS"));
-                    sb.append(" ");
-                }
-                sb.append("t");
-                sb.append(Randomly.smallNumber());
-                couldAffectSchema = true;
-                break;
-            default:
-                throw new AssertionError(a);
-            }
-        }
-        if (Randomly.getBooleanWithSmallProbability()) {
-            if (i != 0) {
-                sb.append(", ");
-            }
-            // should be given as last option
-            sb.append(" ORDER BY ");
-            sb.append(table.getRandomNonEmptyColumnSubset().stream().map(c -> c.getName())
-                    .collect(Collectors.joining(", ")));
-        }
+        sb = buildQueryString(list,table);
         for (Action a : selectedActions) {
             for (String error : a.potentialErrors) {
                 errors.add(error);
