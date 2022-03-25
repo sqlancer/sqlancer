@@ -1,9 +1,12 @@
 package sqlancer.sqlite3.ast;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import sqlancer.Randomly;
+import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 
 public class SQLite3Select extends SQLite3Expression {
@@ -18,6 +21,7 @@ public class SQLite3Select extends SQLite3Expression {
     private List<SQLite3Expression> fetchColumns = Collections.emptyList();
     private List<Join> joinStatements = Collections.emptyList();
     private SQLite3Expression havingClause;
+    private SQLite3ExpressionGenerator gen;
 
     public SQLite3Select() {
     }
@@ -40,6 +44,21 @@ public class SQLite3Select extends SQLite3Expression {
 
     public enum SelectType {
         DISTINCT, ALL;
+    }
+
+    public SQLite3Select getSelect(SQLite3Aggregate aggregate, List<SQLite3Expression> from,
+                                   SQLite3Expression whereClause) {
+        SQLite3Select leftSelect = new SQLite3Select();
+        leftSelect.setFetchColumns(Arrays.asList(new SQLite3PostfixText(aggregate, " as aggr", null)));
+        leftSelect.setFromList(from);
+        leftSelect.setWhereClause(whereClause);
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            leftSelect.setGroupByClause(gen.getRandomExpressions(Randomly.smallNumber() + 1));
+        }
+        if (Randomly.getBoolean()) {
+            leftSelect.setOrderByExpressions(gen.generateOrderBys());
+        }
+        return leftSelect;
     }
 
     public void setSelectType(SelectType fromOptions) {

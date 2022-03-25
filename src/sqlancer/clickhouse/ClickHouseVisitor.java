@@ -1,16 +1,6 @@
 package sqlancer.clickhouse;
 
-import sqlancer.clickhouse.ast.ClickHouseAggregate;
-import sqlancer.clickhouse.ast.ClickHouseBinaryComparisonOperation;
-import sqlancer.clickhouse.ast.ClickHouseBinaryLogicalOperation;
-import sqlancer.clickhouse.ast.ClickHouseCastOperation;
-import sqlancer.clickhouse.ast.ClickHouseColumnReference;
-import sqlancer.clickhouse.ast.ClickHouseConstant;
-import sqlancer.clickhouse.ast.ClickHouseExpression;
-import sqlancer.clickhouse.ast.ClickHouseSelect;
-import sqlancer.clickhouse.ast.ClickHouseTableReference;
-import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation;
-import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation;
+import sqlancer.clickhouse.ast.*;
 
 public interface ClickHouseVisitor {
     // TODO remove these default methods
@@ -43,7 +33,7 @@ public interface ClickHouseVisitor {
 
     };
 
-    default void visit(ClickHouseExpression.ClickHousePostfixText op) {
+    default void visit(ClickHousePostfixText op) {
 
     }
 
@@ -74,8 +64,8 @@ public interface ClickHouseVisitor {
             visit((ClickHouseCastOperation) expr);
         } else if (expr instanceof ClickHouseExpression.ClickHouseJoin) {
             visit((ClickHouseExpression.ClickHouseJoin) expr);
-        } else if (expr instanceof ClickHouseExpression.ClickHousePostfixText) {
-            visit((ClickHouseExpression.ClickHousePostfixText) expr);
+        } else if (expr instanceof ClickHousePostfixText) {
+            visit((ClickHousePostfixText) expr);
         } else if (expr instanceof ClickHouseAggregate) {
             visit((ClickHouseAggregate) expr);
         } else {

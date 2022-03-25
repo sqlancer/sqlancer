@@ -11,11 +11,7 @@ import sqlancer.clickhouse.ClickHouseErrors;
 import sqlancer.clickhouse.ClickHouseProvider;
 import sqlancer.clickhouse.ClickHouseSchema;
 import sqlancer.clickhouse.ClickHouseVisitor;
-import sqlancer.clickhouse.ast.ClickHouseAggregate;
-import sqlancer.clickhouse.ast.ClickHouseExpression;
-import sqlancer.clickhouse.ast.ClickHouseSelect;
-import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation;
-import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation;
+import sqlancer.clickhouse.ast.*;
 import sqlancer.clickhouse.gen.ClickHouseCommon;
 import sqlancer.clickhouse.gen.ClickHouseExpressionGenerator;
 
@@ -92,7 +88,7 @@ public class ClickHouseTLPAggregateOracle extends ClickHouseTLPBase {
             ClickHouseExpression whereClause) {
         ClickHouseSelect leftSelect = new ClickHouseSelect();
         leftSelect.setFetchColumns(
-                Arrays.asList(new ClickHouseExpression.ClickHousePostfixText(aggregate, " as aggr", null)));
+                Arrays.asList(new ClickHousePostfixText(aggregate, " as aggr", null)));
         leftSelect.setFromList(from);
         leftSelect.setWhereClause(whereClause);
         if (Randomly.getBooleanWithRatherLowProbability()) {

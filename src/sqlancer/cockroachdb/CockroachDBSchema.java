@@ -33,13 +33,7 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBGlobalState, Co
 
     }
 
-    public static class CockroachDBCompositeDataType {
-
-        private final CockroachDBDataType dataType;
-
-        private final int size;
-
-        private CockroachDBCompositeDataType elementType;
+    public static class CockroachDBCompositeDataType extends sqlancer.cockroachdb.CockroachDBCompositeDataType {
 
         public CockroachDBCompositeDataType(CockroachDBDataType dataType) {
             this.dataType = dataType;
@@ -58,114 +52,6 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBGlobalState, Co
             this.dataType = dataType;
             this.size = -1;
             this.elementType = elementType;
-        }
-
-        public CockroachDBDataType getPrimitiveDataType() {
-            return dataType;
-        }
-
-        public int getSize() {
-            if (size == -1) {
-                throw new AssertionError(this);
-            }
-            return size;
-        }
-
-        public boolean isString() {
-            return dataType == CockroachDBDataType.STRING;
-        }
-
-        public static CockroachDBCompositeDataType getInt(int size) {
-            return new CockroachDBCompositeDataType(CockroachDBDataType.INT, size);
-        }
-
-        public static CockroachDBCompositeDataType getBit(int size) {
-            return new CockroachDBCompositeDataType(CockroachDBDataType.BIT, size);
-        }
-
-        @Override
-        public String toString() {
-            switch (dataType) {
-            case INT:
-                switch (size) {
-                case 2:
-                    return Randomly.fromOptions("INT2", "SMALLINT");
-                case 4:
-                    return "INT4";
-                case 8:
-                    // "INTEGER": can be affected by a session variable
-                    return Randomly.fromOptions("INT8", "INT64", "BIGINT");
-                default:
-                    return "INT";
-                }
-            case SERIAL:
-                switch (size) {
-                case 2:
-                    return Randomly.fromOptions("SERIAL2", "SMALLSERIAL");
-                case 4:
-                    return "SERIAL4";
-                case 8:
-                    return Randomly.fromOptions("SERIAL8", "BIGSERIAL");
-                default:
-                    throw new AssertionError();
-                }
-            case BIT:
-                if (size == 1 && Randomly.getBoolean()) {
-                    return "BIT";
-                } else {
-                    return String.format("BIT(%d)", size);
-                }
-            case VARBIT:
-                if (size == -1) {
-                    return String.format("VARBIT");
-                } else {
-                    return String.format("VARBIT(%d)", size);
-                }
-            case ARRAY:
-                return String.format("%s[]", elementType.toString());
-            default:
-                return dataType.toString();
-            }
-        }
-
-        public static CockroachDBCompositeDataType getRandom() {
-            CockroachDBDataType randomDataType = CockroachDBDataType.getRandom();
-            return getRandomForType(randomDataType);
-        }
-
-        private static CockroachDBCompositeDataType getRandomForType(CockroachDBDataType randomDataType) {
-            if (randomDataType == CockroachDBDataType.INT || randomDataType == CockroachDBDataType.SERIAL) {
-                return new CockroachDBCompositeDataType(randomDataType, Randomly.fromOptions(2, 4, 8));
-            } else if (randomDataType == CockroachDBDataType.BIT) {
-                return new CockroachDBCompositeDataType(randomDataType, (int) Randomly.getNotCachedInteger(1, 200));
-            } else if (randomDataType == CockroachDBDataType.VARBIT) {
-                return new CockroachDBCompositeDataType(randomDataType, (int) Randomly.getNotCachedInteger(1, 200));
-            } else if (randomDataType == CockroachDBDataType.ARRAY) {
-                return new CockroachDBCompositeDataType(randomDataType, getRandomForType(getArrayElementType()));
-            } else {
-                return new CockroachDBCompositeDataType(randomDataType);
-            }
-        }
-
-        private static CockroachDBDataType getArrayElementType() {
-            while (true) {
-                CockroachDBDataType type = CockroachDBDataType.getRandom();
-                if (type != CockroachDBDataType.ARRAY && type != CockroachDBDataType.JSONB) {
-                    // nested arrays are not supported:
-                    // https://github.com/cockroachdb/cockroach/issues/32552
-                    // JSONB arrays are not supported as well:
-                    // https://github.com/cockroachdb/cockroach/issues/23468
-                    return type;
-                }
-            }
-        }
-
-        public static CockroachDBCompositeDataType getVarBit(int maxSize) {
-            return new CockroachDBCompositeDataType(CockroachDBDataType.VARBIT, maxSize);
-        }
-
-        public CockroachDBCompositeDataType getElementType() {
-            return elementType;
         }
 
     }

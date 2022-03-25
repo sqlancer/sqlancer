@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.sqlite3.SQLite3GlobalState;
-import sqlancer.sqlite3.SQLite3Options.SQLite3OracleFactory;
+import sqlancer.sqlite3.SQLite3OracleFactory;
 import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 

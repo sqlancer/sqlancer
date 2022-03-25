@@ -61,10 +61,10 @@ public class SQLite3TLPAggregateOracle implements TestOracle {
         SQLite3UnaryOperation negatedClause = new SQLite3UnaryOperation(UnaryOperator.NOT, whereClause);
         SQLite3PostfixUnaryOperation notNullClause = new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.ISNULL,
                 whereClause);
-
-        SQLite3Select leftSelect = getSelect(aggregate, from, whereClause);
-        SQLite3Select middleSelect = getSelect(aggregate, from, negatedClause);
-        SQLite3Select rightSelect = getSelect(aggregate, from, notNullClause);
+        SQLite3Select sqLite3Select = new SQLite3Select();
+        SQLite3Select leftSelect = sqLite3Select.getSelect(aggregate, from, whereClause);
+        SQLite3Select middleSelect = sqLite3Select.getSelect(aggregate, from, negatedClause);
+        SQLite3Select rightSelect = sqLite3Select.getSelect(aggregate, from, notNullClause);
         String metamorphicText = "SELECT " + aggregate.getFunc().toString() + "(aggr) FROM (";
         metamorphicText += SQLite3Visitor.asString(leftSelect) + " UNION ALL " + SQLite3Visitor.asString(middleSelect)
                 + " UNION ALL " + SQLite3Visitor.asString(rightSelect);
@@ -107,19 +107,19 @@ public class SQLite3TLPAggregateOracle implements TestOracle {
 
     }
 
-    private SQLite3Select getSelect(SQLite3Aggregate aggregate, List<SQLite3Expression> from,
-            SQLite3Expression whereClause) {
-        SQLite3Select leftSelect = new SQLite3Select();
-        leftSelect.setFetchColumns(Arrays.asList(new SQLite3PostfixText(aggregate, " as aggr", null)));
-        leftSelect.setFromList(from);
-        leftSelect.setWhereClause(whereClause);
-        if (Randomly.getBooleanWithRatherLowProbability()) {
-            leftSelect.setGroupByClause(gen.getRandomExpressions(Randomly.smallNumber() + 1));
-        }
-        if (Randomly.getBoolean()) {
-            leftSelect.setOrderByExpressions(gen.generateOrderBys());
-        }
-        return leftSelect;
-    }
+//    private SQLite3Select getSelect(SQLite3Aggregate aggregate, List<SQLite3Expression> from,
+//            SQLite3Expression whereClause) {
+//        SQLite3Select leftSelect = new SQLite3Select();
+//        leftSelect.setFetchColumns(Arrays.asList(new SQLite3PostfixText(aggregate, " as aggr", null)));
+//        leftSelect.setFromList(from);
+//        leftSelect.setWhereClause(whereClause);
+//        if (Randomly.getBooleanWithRatherLowProbability()) {
+//            leftSelect.setGroupByClause(gen.getRandomExpressions(Randomly.smallNumber() + 1));
+//        }
+//        if (Randomly.getBoolean()) {
+//            leftSelect.setOrderByExpressions(gen.generateOrderBys());
+//        }
+//        return leftSelect;
+//    }
 
 }
