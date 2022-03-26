@@ -106,20 +106,4 @@ public class SQLite3TLPAggregateOracle implements TestOracle {
         }
 
     }
-
-//    private SQLite3Select getSelect(SQLite3Aggregate aggregate, List<SQLite3Expression> from,
-//            SQLite3Expression whereClause) {
-//        SQLite3Select leftSelect = new SQLite3Select();
-//        leftSelect.setFetchColumns(Arrays.asList(new SQLite3PostfixText(aggregate, " as aggr", null)));
-//        leftSelect.setFromList(from);
-//        leftSelect.setWhereClause(whereClause);
-//        if (Randomly.getBooleanWithRatherLowProbability()) {
-//            leftSelect.setGroupByClause(gen.getRandomExpressions(Randomly.smallNumber() + 1));
-//        }
-//        if (Randomly.getBoolean()) {
-//            leftSelect.setOrderByExpressions(gen.generateOrderBys());
-//        }
-//        return leftSelect;
-//    }
-
 }
