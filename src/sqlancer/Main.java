@@ -17,6 +17,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.beust.jcommander.JCommander;
@@ -33,7 +34,7 @@ public final class Main {
     public static volatile AtomicLong nrDatabases = new AtomicLong();
     public static volatile AtomicLong nrSuccessfulActions = new AtomicLong();
     public static volatile AtomicLong nrUnsuccessfulActions = new AtomicLong();
-    static int threadsShutdown;
+    public static volatile AtomicLong threadsShutdown = new AtomicLong();
     static boolean progressMonitorStarted;
 
     static {
@@ -446,6 +447,7 @@ public final class Main {
                 return options.getErrorExitCode();
             }
         }
+        final AtomicBoolean someOneFails = new AtomicBoolean(false);
 
         for (int i = 0; i < options.getTotalNumberTries(); i++) {
             final String databaseName = options.getDatabasePrefix() + i;
@@ -466,23 +468,18 @@ public final class Main {
                 private void runThread(final String databaseName) {
                     Randomly r = new Randomly(seed);
                     try {
-                        if (options.getMaxGeneratedDatabases() == -1) {
-                            // run without a limit
-                            boolean continueRunning = true;
-                            while (continueRunning) {
-                                continueRunning = run(options, execService, executorFactory, r, databaseName);
-                            }
-                        } else {
-                            for (int i = 0; i < options.getMaxGeneratedDatabases(); i++) {
-                                boolean continueRunning = run(options, execService, executorFactory, r, databaseName);
-                                if (!continueRunning) {
-                                    break;
-                                }
+                        int maxNrDbs = options.getMaxGeneratedDatabases();
+                        // run without a limit if maxNrDbs == -1
+                        for (int i = 0; i < maxNrDbs || maxNrDbs == -1; i++) {
+                            Boolean continueRunning = run(options, execService, executorFactory, r, databaseName);
+                            if (!continueRunning) {
+                                someOneFails.set(true);
+                                break;
                             }
                         }
                     } finally {
-                        threadsShutdown++;
-                        if (threadsShutdown == options.getTotalNumberTries()) {
+                        threadsShutdown.addAndGet(1);
+                        if (threadsShutdown.get() == options.getTotalNumberTries()) {
                             execService.shutdown();
                         }
                     }
@@ -527,7 +524,7 @@ public final class Main {
             e.printStackTrace();
         }
 
-        return threadsShutdown == 0 ? 0 : options.getErrorExitCode();
+        return someOneFails.get() ? options.getErrorExitCode() : 0;
     }
 
     /**
@@ -585,7 +582,7 @@ public final class Main {
                 System.out.println(String.format(
                         "[%s] Executed %d queries (%d queries/s; %.2f/s dbs, successful statements: %2d%%). Threads shut down: %d.",
                         dateFormat.format(date), currentNrQueries, (int) throughput, throughputDbs,
-                        successfulStatementsRatio, threadsShutdown));
+                        successfulStatementsRatio, threadsShutdown.get()));
                 timeMillis = System.currentTimeMillis();
                 lastNrQueries = currentNrQueries;
                 lastNrDbs = currentNrDbs;
