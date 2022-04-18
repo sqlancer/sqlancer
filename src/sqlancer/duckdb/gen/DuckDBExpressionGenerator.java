@@ -243,6 +243,7 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
         DEGREES(1), //
         RADIANS(1), //
         MOD(2), //
+        XOR(2), //
         // string functions
         LENGTH(1), //
         LOWER(1), //
@@ -379,8 +380,7 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
     }
 
     public enum DuckDBBinaryArithmeticOperator implements Operator {
-        CONCAT("||"), ADD("+"), SUB("-"), MULT("*"), DIV("/"), MOD("%"), AND("&"), OR("|"), XOR("#"), LSHIFT("<<"),
-        RSHIFT(">>");
+        CONCAT("||"), ADD("+"), SUB("-"), MULT("*"), DIV("/"), MOD("%"), AND("&"), OR("|"), LSHIFT("<<"), RSHIFT(">>");
 
         private String textRepr;
 
@@ -400,7 +400,6 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
     }
 
     public enum DuckDBBinaryComparisonOperator implements Operator {
-
         EQUALS("="), GREATER(">"), GREATER_EQUALS(">="), SMALLER("<"), SMALLER_EQUALS("<="), NOT_EQUALS("!="),
         LIKE("LIKE"), NOT_LIKE("NOT LIKE"), SIMILAR_TO("SIMILAR TO"), NOT_SIMILAR_TO("NOT SIMILAR TO"),
         REGEX_POSIX("~"), REGEX_POSIT_NOT("!~");

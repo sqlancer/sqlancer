@@ -237,7 +237,7 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
     private static List<String> getTableNames(SQLConnection con) throws SQLException {
         List<String> tableNames = new ArrayList<>();
         try (Statement s = con.createStatement()) {
-            try (ResultSet rs = s.executeQuery("SELECT * FROM sqlite_master()")) {
+            try (ResultSet rs = s.executeQuery("SELECT * FROM sqlite_master WHERE type='table' or type='view'")) {
                 while (rs.next()) {
                     tableNames.add(rs.getString("name"));
                 }
