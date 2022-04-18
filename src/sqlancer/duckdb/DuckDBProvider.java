@@ -1,10 +1,10 @@
 package sqlancer.duckdb;
 
+import java.io.File;
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Connection;
 import java.sql.Statement;
-import java.io.File;
 
 import com.google.auto.service.AutoService;
 
@@ -125,7 +125,7 @@ public class DuckDBProvider extends SQLProviderAdapter<DuckDBGlobalState, DuckDB
         try {
             File f = new File(fname);
             f.delete();
-        } catch(Exception e) {
+        } catch (Exception e) {
         }
     }
 
@@ -139,9 +139,9 @@ public class DuckDBProvider extends SQLProviderAdapter<DuckDBGlobalState, DuckDB
 
     @Override
     public SQLConnection createDatabase(DuckDBGlobalState globalState) throws SQLException {
-        String database_file = System.getProperty("duckdb.database.file", "");
-        String url = "jdbc:duckdb:" + database_file;
-        tryDeleteDatabase(database_file);
+        String databaseFile = System.getProperty("duckdb.database.file", "");
+        String url = "jdbc:duckdb:" + databaseFile;
+        tryDeleteDatabase(databaseFile);
 
         Connection conn = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
                 globalState.getOptions().getPassword());
