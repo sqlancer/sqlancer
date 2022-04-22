@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import sqlancer.common.query.ExpectedErrors;
@@ -112,6 +113,18 @@ public final class ComparatorHelper {
                     firstQueryString, secondQueryString);
             throw new AssertionError(assertionMessage);
         }
+    }
+
+    public static void assumeResultSetsAreEqual(List<String> resultSet, List<String> secondResultSet,
+            String originalQueryString, List<String> combinedString, SQLGlobalState<?, ?> state,
+            UnaryOperator<String> canonicalizationRule) {
+        // Overloaded version of assumeResultSetsAreEqual that takes a canonicalization function which is applied to
+        // both result sets before their comparison.
+        List<String> canonicalizedResultSet = resultSet.stream().map(canonicalizationRule).collect(Collectors.toList());
+        List<String> canonicalizedSecondResultSet = secondResultSet.stream().map(canonicalizationRule)
+                .collect(Collectors.toList());
+        assumeResultSetsAreEqual(canonicalizedResultSet, canonicalizedSecondResultSet, originalQueryString,
+                combinedString, state);
     }
 
     public static List<String> getCombinedResultSet(String firstQueryString, String secondQueryString,
