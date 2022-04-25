@@ -25,8 +25,12 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
 
         INT, VARCHAR, BOOLEAN, FLOAT, DATE, TIMESTAMP, NULL;
 
-        public static DuckDBDataType getRandom() {
-            return Randomly.fromOptions(values());
+        public static DuckDBDataType getRandomWithoutNull() {
+            DuckDBDataType dt;
+            do {
+                dt = Randomly.fromOptions(values());
+            } while (dt == DuckDBDataType.NULL);
+            return dt;
         }
 
     }
@@ -53,8 +57,8 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
             return size;
         }
 
-        public static DuckDBCompositeDataType getRandom() {
-            DuckDBDataType type = DuckDBDataType.getRandom();
+        public static DuckDBCompositeDataType getRandomWithoutNull() {
+            DuckDBDataType type = DuckDBDataType.getRandomWithoutNull();
             int size = -1;
             switch (type) {
             case INT:

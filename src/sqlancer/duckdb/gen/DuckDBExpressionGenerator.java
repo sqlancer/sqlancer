@@ -98,7 +98,8 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
             return new NewBinaryOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
                     generateExpression(depth + 1), DuckDBBinaryArithmeticOperator.getRandom());
         case CAST:
-            return new DuckDBCastOperation(generateExpression(depth + 1), DuckDBCompositeDataType.getRandom());
+            return new DuckDBCastOperation(generateExpression(depth + 1),
+                    DuckDBCompositeDataType.getRandomWithoutNull());
         case FUNC:
             DBFunction func = DBFunction.getRandom();
             return new NewFunctionNode<DuckDBExpression, DBFunction>(generateExpressions(func.getNrArgs()), func);
@@ -132,7 +133,7 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
         if (Randomly.getBooleanWithSmallProbability()) {
             return DuckDBConstant.createNullConstant();
         }
-        DuckDBDataType type = DuckDBDataType.getRandom();
+        DuckDBDataType type = DuckDBDataType.getRandomWithoutNull();
         switch (type) {
         case INT:
             if (!globalState.getDbmsSpecificOptions().testIntConstants) {
