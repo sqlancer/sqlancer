@@ -58,7 +58,6 @@ public class DuckDBTableGenerator {
             if (Randomly.getBoolean() && globalState.getDbmsSpecificOptions().testDefaultValues) {
                 sb.append(" DEFAULT(");
                 sb.append(DuckDBToStringVisitor.asString(gen.generateConstant()));
-                DuckDBErrors.addExpressionErrors(errors);
                 sb.append(")");
             }
         }
@@ -81,7 +80,7 @@ public class DuckDBTableGenerator {
         List<DuckDBColumn> columns = new ArrayList<>();
         for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
             String columnName = String.format("c%d", i);
-            DuckDBCompositeDataType columnType = DuckDBCompositeDataType.getRandom();
+            DuckDBCompositeDataType columnType = DuckDBCompositeDataType.getRandomWithoutNull();
             columns.add(new DuckDBColumn(columnName, columnType, false, false));
         }
         return columns;

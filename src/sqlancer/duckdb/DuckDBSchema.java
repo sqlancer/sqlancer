@@ -23,10 +23,14 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
 
     public enum DuckDBDataType {
 
-        INT, VARCHAR, BOOLEAN, FLOAT, DATE, TIMESTAMP;
+        INT, VARCHAR, BOOLEAN, FLOAT, DATE, TIMESTAMP, NULL;
 
-        public static DuckDBDataType getRandom() {
-            return Randomly.fromOptions(values());
+        public static DuckDBDataType getRandomWithoutNull() {
+            DuckDBDataType dt;
+            do {
+                dt = Randomly.fromOptions(values());
+            } while (dt == DuckDBDataType.NULL);
+            return dt;
         }
 
     }
@@ -53,8 +57,8 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
             return size;
         }
 
-        public static DuckDBCompositeDataType getRandom() {
-            DuckDBDataType type = DuckDBDataType.getRandom();
+        public static DuckDBCompositeDataType getRandomWithoutNull() {
+            DuckDBDataType type = DuckDBDataType.getRandomWithoutNull();
             int size = -1;
             switch (type) {
             case INT:
@@ -109,6 +113,8 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
                 return Randomly.fromOptions("TIMESTAMP", "DATETIME");
             case DATE:
                 return Randomly.fromOptions("DATE");
+            case NULL:
+                return Randomly.fromOptions("NULL");
             default:
                 throw new AssertionError(getPrimitiveDataType());
             }
@@ -197,6 +203,9 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
         case "TIMESTAMP":
             primitiveType = DuckDBDataType.TIMESTAMP;
             break;
+        case "NULL":
+            primitiveType = DuckDBDataType.NULL;
+            break;
         case "INTERVAL":
             throw new IgnoreMeException();
         // TODO: caused when a view contains a computation like ((TIMESTAMP '1970-01-05 11:26:57')-(TIMESTAMP
@@ -237,7 +246,7 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
     private static List<String> getTableNames(SQLConnection con) throws SQLException {
         List<String> tableNames = new ArrayList<>();
         try (Statement s = con.createStatement()) {
-            try (ResultSet rs = s.executeQuery("SELECT * FROM sqlite_master()")) {
+            try (ResultSet rs = s.executeQuery("SELECT * FROM sqlite_master WHERE type='table' or type='view'")) {
                 while (rs.next()) {
                     tableNames.add(rs.getString("name"));
                 }

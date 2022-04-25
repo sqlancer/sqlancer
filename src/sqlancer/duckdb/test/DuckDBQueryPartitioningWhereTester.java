@@ -39,7 +39,7 @@ public class DuckDBQueryPartitioningWhereTester extends DuckDBQueryPartitioningB
         List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
                 thirdQueryString, combinedString, !orderBy, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
-                state);
+                state, DuckDBQueryPartitioningBase::canonicalizeResultValue);
     }
 
 }

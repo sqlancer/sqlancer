@@ -34,13 +34,13 @@ public final class DuckDBAlterTableGenerator {
             String columnName = table.getFreeColumnName();
             sb.append(columnName);
             sb.append(" ");
-            sb.append(DuckDBCompositeDataType.getRandom().toString());
+            sb.append(DuckDBCompositeDataType.getRandomWithoutNull().toString());
             break;
         case ALTER_COLUMN:
             sb.append("ALTER COLUMN ");
             sb.append(table.getRandomColumn().getName());
             sb.append(" SET DATA TYPE ");
-            sb.append(DuckDBCompositeDataType.getRandom().toString());
+            sb.append(DuckDBCompositeDataType.getRandomWithoutNull().toString());
             if (Randomly.getBoolean()) {
                 sb.append(" USING ");
                 DuckDBErrors.addExpressionErrors(errors);

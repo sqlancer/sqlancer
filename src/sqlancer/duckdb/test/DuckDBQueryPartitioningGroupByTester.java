@@ -41,7 +41,7 @@ public class DuckDBQueryPartitioningGroupByTester extends DuckDBQueryPartitionin
         List<String> secondResultSet = ComparatorHelper.getCombinedResultSetNoDuplicates(firstQueryString,
                 secondQueryString, thirdQueryString, combinedString, true, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
-                state);
+                state, DuckDBQueryPartitioningBase::canonicalizeResultValue);
     }
 
     @Override
