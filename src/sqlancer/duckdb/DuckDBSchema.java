@@ -23,7 +23,7 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
 
     public enum DuckDBDataType {
 
-        INT, VARCHAR, BOOLEAN, FLOAT, DATE, TIMESTAMP;
+        INT, VARCHAR, BOOLEAN, FLOAT, DATE, TIMESTAMP, NULL;
 
         public static DuckDBDataType getRandom() {
             return Randomly.fromOptions(values());
@@ -109,6 +109,8 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
                 return Randomly.fromOptions("TIMESTAMP", "DATETIME");
             case DATE:
                 return Randomly.fromOptions("DATE");
+            case NULL:
+                return Randomly.fromOptions("NULL");
             default:
                 throw new AssertionError(getPrimitiveDataType());
             }
@@ -196,6 +198,9 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
             break;
         case "TIMESTAMP":
             primitiveType = DuckDBDataType.TIMESTAMP;
+            break;
+        case "NULL":
+            primitiveType = DuckDBDataType.NULL;
             break;
         case "INTERVAL":
             throw new IgnoreMeException();
