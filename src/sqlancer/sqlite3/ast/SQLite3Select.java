@@ -30,7 +30,7 @@ public class SQLite3Select extends SQLite3Expression {
         limitClause = other.limitClause;
         orderByClause = new ArrayList<>(other.orderByClause);
         offsetClause = other.offsetClause;
-        fetchColumns = new ArrayList<>(fetchColumns);
+        fetchColumns = new ArrayList<>(other.fetchColumns);
         joinStatements = new ArrayList<>();
         for (Join j : other.joinStatements) {
             joinStatements.add(new Join(j));
