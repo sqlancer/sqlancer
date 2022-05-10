@@ -100,11 +100,11 @@ public final class SQLite3CreateTriggerGenerator {
                     sb.append(", 'asdf'");
                 }
                 sb.append(")");
+                sb.append(";");
                 break;
             default:
                 throw new AssertionError();
             }
-            sb.append(";");
         }
         sb.append("END");
 
