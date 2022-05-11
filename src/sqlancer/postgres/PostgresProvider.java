@@ -63,6 +63,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
     protected String testURL;
     protected String databaseName;
     protected String createDatabaseCommand;
+    protected String extensionsList;
 
     public PostgresProvider() {
         super(PostgresGlobalState.class, PostgresOptions.class);
@@ -195,6 +196,21 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         readFunctions(globalState);
         createTables(globalState, Randomly.fromOptions(4, 5, 6));
         prepareTables(globalState);
+
+        extensionsList = globalState.getDbmsSpecificOptions().extensions;
+        if (!extensionsList.isEmpty()) {
+            String[] extensionNames = extensionsList.split(",");
+
+            /*
+             * To avoid of a test interference with an extension objects, create them in a separate schema. Of course,
+             * they must be truly relocatable.
+             */
+            globalState.executeStatement(new SQLQueryAdapter("CREATE SCHEMA extensions;", true));
+            for (int i = 0; i < extensionNames.length; i++) {
+                globalState.executeStatement(new SQLQueryAdapter(
+                        "CREATE EXTENSION " + extensionNames[i] + " WITH SCHEMA extensions;", true));
+            }
+        }
     }
 
     @Override

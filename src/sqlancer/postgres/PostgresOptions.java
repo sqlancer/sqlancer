@@ -38,6 +38,9 @@ public class PostgresOptions implements DBMSSpecificOptions<PostgresOracleFactor
     public String connectionURL = String.format("postgresql://%s:%d/test", PostgresOptions.DEFAULT_HOST,
             PostgresOptions.DEFAULT_PORT);
 
+    @Parameter(names = "--extensions", description = "Specifies a comma-separated list of extension names to be created in each test database", arity = 1)
+    public String extensions = "";
+
     public enum PostgresOracleFactory implements OracleFactory<PostgresGlobalState> {
         NOREC {
             @Override
