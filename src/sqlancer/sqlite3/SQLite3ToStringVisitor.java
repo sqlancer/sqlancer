@@ -177,7 +177,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
                 // sb.append(c.asInt() == 1 ? "TRUE" : "FALSE");
                 // } else {
                 // - 0X8000000000000000 results in an error message otherwise
-                if (Randomly.getBoolean() || c.asInt() == Long.MIN_VALUE) {
+                if (!c.isHex() || c.asInt() == Long.MIN_VALUE) {
                     sb.append(c.asInt());
                 } else {
                     long intVal = c.asInt();

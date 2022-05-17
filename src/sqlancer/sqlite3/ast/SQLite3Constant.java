@@ -63,9 +63,21 @@ public abstract class SQLite3Constant extends SQLite3Expression {
     public static class SQLite3IntConstant extends SQLite3Constant {
 
         private final long value;
+        private final boolean isHex;
+
+        public SQLite3IntConstant(long value, boolean isHex) {
+            this.value = value;
+            this.isHex = isHex;
+        }
 
         public SQLite3IntConstant(long value) {
             this.value = value;
+            this.isHex = false;
+        }
+
+        @Override
+        public boolean isHex() {
+            return isHex;
         }
 
         @Override
@@ -511,6 +523,10 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 
     public abstract Object getValue();
 
+    public boolean isHex() {
+        throw new UnsupportedOperationException(this.getDataType().toString());
+    }
+
     public long asInt() {
         throw new UnsupportedOperationException(this.getDataType().toString());
     }
@@ -531,6 +547,10 @@ public abstract class SQLite3Constant extends SQLite3Expression {
 
     public static SQLite3Constant createIntConstant(long val) {
         return new SQLite3IntConstant(val);
+    }
+
+    public static SQLite3Constant createIntConstant(long val, boolean isHex) {
+        return new SQLite3IntConstant(val, isHex);
     }
 
     public static SQLite3Constant createBinaryConstant(byte[] val) {

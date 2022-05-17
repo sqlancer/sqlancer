@@ -185,7 +185,7 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         switch (randomLiteral) {
         case INTEGER:
             if (Randomly.getBoolean()) {
-                return SQLite3Constant.createIntConstant(r.getInteger());
+                return SQLite3Constant.createIntConstant(r.getInteger(), Randomly.getBoolean());
             } else {
                 return SQLite3Constant.createTextConstant(String.valueOf(r.getInteger()));
             }
