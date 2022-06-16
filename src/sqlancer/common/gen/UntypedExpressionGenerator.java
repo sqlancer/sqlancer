@@ -42,7 +42,7 @@ public abstract class UntypedExpressionGenerator<E, C> implements ExpressionGene
         return expressions;
     }
 
-    public List<E> generateExpressions(int depth, int nr) {
+    public List<E> generateExpressions(int nr, int depth) {
         List<E> expressions = new ArrayList<>();
         for (int i = 0; i < nr; i++) {
             expressions.add(generateExpression(depth));

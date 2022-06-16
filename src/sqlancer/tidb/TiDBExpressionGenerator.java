@@ -91,7 +91,7 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
                     Randomly.fromOptions("utf8mb4_bin", "latin1_bin", "binary", "ascii_bin", "utf8_bin"));
         case FUNCTION:
             TiDBFunction func = TiDBFunction.getRandom();
-            return new TiDBFunctionCall(func, generateExpressions(depth, func.getNrArgs()));
+            return new TiDBFunctionCall(func, generateExpressions(func.getNrArgs(), depth));
         case BINARY_BIT:
             return new TiDBBinaryBitOperation(generateExpression(depth + 1), generateExpression(depth + 1),
                     TiDBBinaryBitOperator.getRandom());
@@ -117,8 +117,8 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
                 throw new IgnoreMeException();
             }
             int nr = Randomly.fromOptions(1, 2);
-            return new TiDBCase(generateExpression(depth + 1), generateExpressions(depth + 1, nr),
-                    generateExpressions(depth + 1, nr), generateExpression(depth + 1));
+            return new TiDBCase(generateExpression(depth + 1), generateExpressions(nr, depth + 1),
+                    generateExpressions(nr, depth + 1), generateExpression(depth + 1));
         default:
             throw new AssertionError();
         }

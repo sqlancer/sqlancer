@@ -65,7 +65,7 @@ public class ArangoDBComputedExpressionGenerator
             return generateLeafNode();
         }
         ComputedFunction function = ComputedFunction.getRandom();
-        return new NewFunctionNode<>(generateExpressions(depth + 1, function.getNrArgs()), function);
+        return new NewFunctionNode<>(generateExpressions(function.getNrArgs(), depth + 1), function);
     }
 
     @Override

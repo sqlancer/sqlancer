@@ -33,7 +33,7 @@ public class MongoDBComputedExpressionGenerator
             return generateLeafNode();
         }
         ComputedFunction func = ComputedFunction.getRandom();
-        return new NewFunctionNode<>(generateExpressions(depth + 1, func.getNrArgs()), func);
+        return new NewFunctionNode<>(generateExpressions(func.getNrArgs(), depth + 1), func);
     }
 
     public MongoDBComputedExpressionGenerator(MongoDBGlobalState globalState) {

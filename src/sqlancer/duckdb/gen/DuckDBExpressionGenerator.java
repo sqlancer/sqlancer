@@ -48,7 +48,7 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
         if (allowAggregates && Randomly.getBoolean()) {
             DuckDBAggregateFunction aggregate = DuckDBAggregateFunction.getRandom();
             allowAggregates = false;
-            return new NewFunctionNode<>(generateExpressions(depth + 1, aggregate.getNrArgs()), aggregate);
+            return new NewFunctionNode<>(generateExpressions(aggregate.getNrArgs(), depth + 1), aggregate);
         }
         List<Expression> possibleOptions = new ArrayList<>(Arrays.asList(Expression.values()));
         if (!globalState.getDbmsSpecificOptions().testCollate) {
@@ -108,11 +108,11 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
                     generateExpression(depth + 1), generateExpression(depth + 1), Randomly.getBoolean());
         case IN:
             return new NewInOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
-                    generateExpressions(depth + 1, Randomly.smallNumber() + 1), Randomly.getBoolean());
+                    generateExpressions(Randomly.smallNumber() + 1, depth + 1), Randomly.getBoolean());
         case CASE:
             int nr = Randomly.smallNumber() + 1;
             return new NewCaseOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
-                    generateExpressions(depth + 1, nr), generateExpressions(depth + 1, nr),
+                    generateExpressions(nr, depth + 1), generateExpressions(nr, depth + 1),
                     generateExpression(depth + 1));
         case LIKE_ESCAPE:
             return new NewTernaryNode<DuckDBExpression>(generateExpression(depth + 1), generateExpression(depth + 1),
