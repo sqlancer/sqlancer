@@ -53,14 +53,14 @@ public class H2ExpressionGenerator extends UntypedExpressionGenerator<Node<H2Exp
                     H2UnaryPrefixOperator.getRandom());
         case IN:
             return new NewInOperatorNode<H2Expression>(generateExpression(depth + 1),
-                    generateExpressions(depth + 1, Randomly.smallNumber() + 1), Randomly.getBoolean());
+                    generateExpressions(Randomly.smallNumber() + 1, depth + 1), Randomly.getBoolean());
         case BETWEEN:
             return new NewBetweenOperatorNode<H2Expression>(generateExpression(depth + 1),
                     generateExpression(depth + 1), generateExpression(depth + 1), Randomly.getBoolean());
         case CASE:
             int nr = Randomly.smallNumber() + 1;
             return new NewCaseOperatorNode<H2Expression>(generateExpression(depth + 1),
-                    generateExpressions(depth + 1, nr), generateExpressions(depth + 1, nr),
+                    generateExpressions(nr, depth + 1), generateExpressions(nr, depth + 1),
                     generateExpression(depth + 1));
         case BINARY_ARITHMETIC:
             return new NewBinaryOperatorNode<H2Expression>(generateExpression(depth + 1), generateExpression(depth + 1),
