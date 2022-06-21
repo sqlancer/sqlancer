@@ -162,8 +162,8 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
             s.execute(createDatabaseCommand);
         }
         con.close();
-        con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:4000/" + databaseName,
-                globalState.getOptions().getUserName(), globalState.getOptions().getPassword());
+        con = DriverManager.getConnection(url + databaseName, globalState.getOptions().getUserName(),
+                globalState.getOptions().getPassword());
         return new SQLConnection(con);
     }
 
