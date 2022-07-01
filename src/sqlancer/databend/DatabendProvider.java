@@ -7,7 +7,6 @@ import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.databend.gen.*;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
-import sqlancer.mysql.MySQLOptions;
 
 import java.io.File;
 import java.sql.Connection;
@@ -131,24 +130,35 @@ public class DatabendProvider extends SQLProviderAdapter<DatabendGlobalState, Da
         String host = globalState.getOptions().getHost();
         int port = globalState.getOptions().getPort();
         if (host == null) {
-            host = MySQLOptions.DEFAULT_HOST;
+            host = DatabendOptions.DEFAULT_HOST;
         }
         if (port == MainOptions.NO_SET_PORT) {
-            port = MySQLOptions.DEFAULT_PORT;
+            port = DatabendOptions.DEFAULT_PORT;
         }
+        String databaseName = globalState.getDatabaseName();
+        //记录日志和执行语句处放一起或许比较合适？ TODO
+        globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
+        globalState.getState().logStatement("CREATE DATABASE " + databaseName);
+        globalState.getState().logStatement("USE " + databaseName);
+        //--------------------------------------------
         String url = String.format("jdbc:mysql://%s:%d?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true",
                 host, port);
-        Connection conn = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
-                globalState.getOptions().getPassword());
-        Statement stmt = conn.createStatement();
-        stmt.execute("PRAGMA checkpoint_threshold='1 byte';");
-        stmt.close();
-        return new SQLConnection(conn);
+        Connection con = DriverManager.getConnection(url, username, password);
+        try (Statement s = con.createStatement()) {
+            s.execute("DROP DATABASE IF EXISTS " + databaseName);
+        }
+        try (Statement s = con.createStatement()) {
+            s.execute("CREATE DATABASE " + databaseName);
+        }
+        try (Statement s = con.createStatement()) {
+            s.execute("USE " + databaseName);
+        }
+        return new SQLConnection(con);
     }
 
     @Override
     public String getDBMSName() {
-        return "Databend";
+        return "databend";
     }
 
 }

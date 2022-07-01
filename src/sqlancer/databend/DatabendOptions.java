@@ -17,6 +17,8 @@ import java.util.List;
 
 @Parameters(commandDescription = "Databend")
 public class DatabendOptions implements DBMSSpecificOptions<DatabendOracleFactory> {
+    public static final String DEFAULT_HOST = "localhost";
+    public static final int DEFAULT_PORT = 3307;
 
     @Parameter(names = "--test-collate", arity = 1)
     public boolean testCollate = true;

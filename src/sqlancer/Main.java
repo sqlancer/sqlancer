@@ -440,6 +440,12 @@ public final class Main {
             try {
                 executorFactory.getDBMSExecutor(options.getDatabasePrefix() + "connectiontest", new Randomly())
                         .testConnection();
+                //临时测试databend connection TODO
+                if(executorFactory.provider.getDBMSName() == "databend"){
+                    System.out.println("Databend连接成功！");
+                    return 0; //正常退出
+                }
+                //-----------------
             } catch (Exception e) {
                 System.err.println(
                         "SQLancer failed creating a test database, indicating that SQLancer might have failed connecting to the DBMS. In order to change the username, password, host and port, you can use the --username, --password, --host and --port options.\n\n");
