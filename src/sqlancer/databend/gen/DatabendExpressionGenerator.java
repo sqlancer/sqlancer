@@ -123,7 +123,9 @@ public final class DatabendExpressionGenerator extends UntypedExpressionGenerato
         if (Randomly.getBooleanWithSmallProbability()) {
             return DatabendConstant.createNullConstant();
         }
-        DatabendDataType type = DatabendDataType.getRandomWithoutNull();
+//        DatabendDataType type = DatabendDataType.getRandomWithoutNull();
+        //TODO 先跳过varchar等待databend对其更好的支持，或自己改写case VARCHAR的代码
+        DatabendDataType type = DatabendDataType.getRandomWithoutNullAndVarchar();
         switch (type) {
         case INT:
             if (!globalState.getDbmsSpecificOptions().testIntConstants) {

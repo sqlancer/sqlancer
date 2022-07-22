@@ -42,12 +42,16 @@ public class DatabendInsertGenerator extends AbstractInsertGenerator<DatabendCol
 
     @Override
     protected void insertValue(DatabendColumn tiDBColumn) {
-        // TODO: select a more meaningful value
-        if (Randomly.getBooleanWithRatherLowProbability()) {
-            sb.append("DEFAULT");
-        } else {
-            sb.append(DatabendToStringVisitor.asString(new DatabendExpressionGenerator(globalState).generateConstant()));
-        }
+        // TODO: 等Databend实现NULL 和 DEFAULT ,暂时注入普通的value
+//        if (Randomly.getBooleanWithRatherLowProbability()) {
+//            sb.append("DEFAULT");
+//        } else {
+//            sb.append(DatabendToStringVisitor.asString(new DatabendExpressionGenerator(globalState).generateConstant()));
+//        }
+
+        String value = DatabendToStringVisitor.asString(new DatabendExpressionGenerator(globalState).generateConstant());
+        sb.append(value);
+
     }
 
 }

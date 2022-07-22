@@ -5,6 +5,8 @@ import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractTable;
 
+import java.sql.SQLException;
+
 public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends AbstractSchema<?, ?>, C extends SQLancerDBConnection> {
 
     protected C databaseConnection;
@@ -142,7 +144,12 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
     }
 
     public void updateSchema() throws Exception {
-        setSchema(readSchema());
+        try{
+            setSchema(readSchema());
+        } catch (SQLException sqlException) {
+            System.out.println(String.format("%s readSchema SQLException",databaseName));
+            sqlException.printStackTrace();
+        }
         for (AbstractTable<?, ?, ?> table : schema.getDatabaseTables()) {
             table.recomputeCount();
         }

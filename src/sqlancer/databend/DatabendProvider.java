@@ -24,11 +24,9 @@ public class DatabendProvider extends SQLProviderAdapter<DatabendGlobalState, Da
     public enum Action implements AbstractAction<DatabendGlobalState> {
 
         INSERT(DatabendInsertGenerator::getQuery), //
-        CREATE_INDEX(DatabendIndexGenerator::getQuery), //
-        VACUUM((g) -> new SQLQueryAdapter("VACUUM;")), //
-        ANALYZE((g) -> new SQLQueryAdapter("ANALYZE;")), //
-        DELETE(DatabendDeleteGenerator::generate), //
-        UPDATE(DatabendUpdateGenerator::getQuery), //
+        //TODO 等待databend实现update && delete
+//        DELETE(DatabendDeleteGenerator::generate), //
+//        UPDATE(DatabendUpdateGenerator::getQuery), //
         CREATE_VIEW(DatabendViewGenerator::generate), //
         EXPLAIN((g) -> {
             ExpectedErrors errors = new ExpectedErrors();
@@ -57,19 +55,13 @@ public class DatabendProvider extends SQLProviderAdapter<DatabendGlobalState, Da
         switch (a) {
         case INSERT:
             return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
-        case CREATE_INDEX:
-            if (!globalState.getDbmsSpecificOptions().testIndexes) {
-                return 0;
-            }
-            // fall through
-        case UPDATE:
-            return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumUpdates + 1);
-        case VACUUM: // seems to be ignored
-        case ANALYZE: // seems to be ignored
         case EXPLAIN:
             return r.getInteger(0, 2);
-        case DELETE:
-            return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumDeletes + 1);
+        //TODO 等待databend实现update && delete
+//        case UPDATE:
+//            return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumUpdates + 1);
+//        case DELETE:
+//            return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumDeletes + 1);
         case CREATE_VIEW:
             return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumViews + 1);
         default:
@@ -136,29 +128,27 @@ public class DatabendProvider extends SQLProviderAdapter<DatabendGlobalState, Da
             port = DatabendOptions.DEFAULT_PORT;
         }
         String databaseName = globalState.getDatabaseName();
-        //记录日志和执行语句处放一起或许比较合适？ TODO
-        globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
-        globalState.getState().logStatement("CREATE DATABASE " + databaseName);
-        globalState.getState().logStatement("USE " + databaseName);
-        //--------------------------------------------
         String url = String.format("jdbc:mysql://%s:%d?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true",
                 host, port);
         Connection con = DriverManager.getConnection(url, username, password);
         try (Statement s = con.createStatement()) {
             s.execute("DROP DATABASE IF EXISTS " + databaseName);
+            globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
         }
         try (Statement s = con.createStatement()) {
             s.execute("CREATE DATABASE " + databaseName);
+            globalState.getState().logStatement("CREATE DATABASE " + databaseName);
         }
         try (Statement s = con.createStatement()) {
             s.execute("USE " + databaseName);
+            globalState.getState().logStatement("USE " + databaseName);
         }
         return new SQLConnection(con);
     }
 
     @Override
     public String getDBMSName() {
-        return "databend";
+        return "databend";  //用于DatabendOptions
     }
 
 }

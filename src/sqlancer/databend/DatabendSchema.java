@@ -29,6 +29,14 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
             return dt;
         }
 
+        public static DatabendDataType getRandomWithoutNullAndVarchar() {
+            DatabendDataType dt;
+            do {
+                dt = Randomly.fromOptions(values());
+            } while (dt == DatabendDataType.NULL || dt == DatabendDataType.VARCHAR);
+            return dt;
+        }
+
     }
 
     public static class DatabendCompositeDataType {
@@ -82,24 +90,24 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
             case INT:
                 switch (size) {
                 case 8:
-                    return Randomly.fromOptions("BIGINT", "INT8");
+                    return Randomly.fromOptions("BIGINT", "INT64");
                 case 4:
-                    return Randomly.fromOptions("INTEGER", "INT", "INT4", "SIGNED");
+                    return Randomly.fromOptions("INT", "INT32");
                 case 2:
-                    return Randomly.fromOptions("SMALLINT", "INT2");
+                    return Randomly.fromOptions("SMALLINT", "INT16");
                 case 1:
-                    return Randomly.fromOptions("TINYINT", "INT1");
+                    return Randomly.fromOptions("TINYINT", "INT8");
                 default:
                     throw new AssertionError(size);
                 }
             case VARCHAR:
-                return "VARCHAR";
+                return Randomly.fromOptions("VARCHAR");
             case FLOAT:
                 switch (size) {
                 case 8:
                     return Randomly.fromOptions("DOUBLE");
                 case 4:
-                    return Randomly.fromOptions("REAL", "FLOAT4");
+                    return Randomly.fromOptions("FLOAT");
                 default:
                     throw new AssertionError(size);
                 }
@@ -162,7 +170,7 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
             return new DatabendCompositeDataType(DatabendDataType.FLOAT, 8);
         }
         switch (typeString) {
-        case "INTEGER":
+        case "INT":
             primitiveType = DatabendDataType.INT;
             size = 4;
             break;
@@ -171,7 +179,6 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
             size = 2;
             break;
         case "BIGINT":
-        case "HUGEINT": // TODO: 16-bit int
             primitiveType = DatabendDataType.INT;
             size = 8;
             break;
@@ -222,12 +229,12 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
 
     public static DatabendSchema fromConnection(SQLConnection con, String databaseName) throws SQLException {
         List<DatabendTable> databaseTables = new ArrayList<>();
-        List<String> tableNames = getTableNames(con);
+        List<String> tableNames = getTableNames(con,databaseName);
         for (String tableName : tableNames) {
             if (DBMSCommon.matchesIndexName(tableName)) {
                 continue; // TODO: unexpected?
             }
-            List<DatabendColumn> databaseColumns = getTableColumns(con, tableName);
+            List<DatabendColumn> databaseColumns = getTableColumns(con, tableName,databaseName);
             boolean isView = tableName.startsWith("v");
             DatabendTable t = new DatabendTable(tableName, databaseColumns, isView);
             for (DatabendColumn c : databaseColumns) {
@@ -239,37 +246,52 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
         return new DatabendSchema(databaseTables);
     }
 
-    private static List<String> getTableNames(SQLConnection con) throws SQLException {
-        List<String> tableNames = new ArrayList<>();
+    private static List<String> getTableNames(SQLConnection con, String databaseName) throws SQLException {
+        List<String> tableNames = null;
+        tableNames = new ArrayList<>();
+        //SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE table_schema != 'system' and table_schema != 'INFORMATION_SCHEMA' and table_type='BASE TABLE'
+        //"SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = '%s' and table_type='BASE TABLE' ",databaseName
+        final String sqlStatement = String.format(
+                "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = '%s' and table_type='BASE TABLE' ",databaseName);
         try (Statement s = con.createStatement()) {
-            try (ResultSet rs = s.executeQuery("SELECT * FROM sqlite_master WHERE type='table' or type='view'")) {
-                while (rs.next()) {
-                    tableNames.add(rs.getString("name"));
+            try (ResultSet rs = s.executeQuery(sqlStatement)) {
+                try{  //没有catch的话rs.next()会报SQLException：Not a navigable ResultSet
+                    while (rs.next()) {
+                        tableNames.add(rs.getString("table_name"));
+                    }
+                } catch (Exception e){
+//                    e.printStackTrace();
+                    System.out.println("TableNames->SQLException：Not a navigable ResultSet");
                 }
             }
         }
         return tableNames;
     }
 
-    private static List<DatabendColumn> getTableColumns(SQLConnection con, String tableName) throws SQLException {
+    private static List<DatabendColumn> getTableColumns(SQLConnection con, String tableName, String databaseName) throws SQLException {
         List<DatabendColumn> columns = new ArrayList<>();
         try (Statement s = con.createStatement()) {
-            try (ResultSet rs = s.executeQuery(String.format("SELECT * FROM pragma_table_info('%s');", tableName))) {
-                while (rs.next()) {
-                    String columnName = rs.getString("name");
-                    String dataType = rs.getString("type");
-                    boolean isNullable = rs.getString("notnull").contentEquals("false");
-                    boolean isPrimaryKey = rs.getString("pk").contains("true");
-                    DatabendColumn c = new DatabendColumn(columnName, getColumnType(dataType), isPrimaryKey, isNullable);
-                    columns.add(c);
+            try (ResultSet rs = s.executeQuery(String.format(
+                    "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = '%s' and table_name ='%s'",
+                    databaseName,tableName))) {
+                try{ //没有catch的话rs.next()会报SQLException：Not a navigable ResultSet
+                    while (rs.next()) {
+                        String columnName = rs.getString("column_name");
+                        String dataType = rs.getString("data_type");
+                        boolean isNullable = rs.getBoolean("is_nullable");
+//                    boolean isPrimaryKey = rs.getString("pk").contains("true");
+                        boolean isPrimaryKey = false; //没找到主键元数据
+                        DatabendColumn c = new DatabendColumn(columnName, getColumnType(dataType), isPrimaryKey, isNullable);
+                        columns.add(c);
+                    }
+                } catch (Exception e) {
+                    System.out.println("TableColumns->SQLException：Not a navigable ResultSet");
                 }
             }
         }
         if (columns.stream().noneMatch(c -> c.isPrimaryKey())) {
-            // https://github.com/cwida/Databend/issues/589
-            // https://github.com/cwida/Databend/issues/588
             // TODO: implement an option to enable/disable rowids
-            columns.add(new DatabendColumn("rowid", new DatabendCompositeDataType(DatabendDataType.INT, 4), false, false));
+//            columns.add(new DatabendColumn("rowid", new DatabendCompositeDataType(DatabendDataType.INT, 4), false, false));
         }
         return columns;
     }
