@@ -26,39 +26,49 @@ public final class DatabendExpressionGenerator extends UntypedExpressionGenerato
     }
 
     private enum Expression {
-        UNARY_POSTFIX, UNARY_PREFIX, BINARY_COMPARISON, BINARY_LOGICAL, BINARY_ARITHMETIC, CAST, FUNC, BETWEEN, CASE,
-        IN, COLLATE, LIKE_ESCAPE
+        UNARY_POSTFIX, UNARY_PREFIX, BINARY_COMPARISON, BINARY_LOGICAL, BETWEEN, IN
+        // COLLATE, LIKE_ESCAPE, CAST, CASE
+        //TODO 数学运算时去掉Boolean，或等待databend允许boolean参与数学运算
+        //FUNC(数学函数不支持boolean),BINARY_ARITHMETIC(不支持boolean参与二元运算
+
+    }
+
+    private enum BooleanExpression {
+        UNARY_POSTFIX, BINARY_COMPARISON,BINARY_LOGICAL
     }
 
     @Override
     protected Node<DatabendExpression> generateExpression(int depth) {
-        if (depth >= globalState.getOptions().getMaxExpressionDepth() || Randomly.getBoolean()) {
+//        if (depth >= globalState.getOptions().getMaxExpressionDepth() || Randomly.getBoolean()) {
+//            return generateLeafNode();
+//        }
+        if (depth >= 1) {
             return generateLeafNode();
         }
-        if (allowAggregates && Randomly.getBoolean()) {
-            DatabendAggregateFunction aggregate = DatabendAggregateFunction.getRandom();
-            allowAggregates = false;
-            return new NewFunctionNode<>(generateExpressions(aggregate.getNrArgs(), depth + 1), aggregate);
-        }
+//        if (allowAggregates && Randomly.getBoolean()) {
+//            DatabendAggregateFunction aggregate = DatabendAggregateFunction.getRandom();
+//            allowAggregates = false;
+//            return new NewFunctionNode<>(generateExpressions(aggregate.getNrArgs(), depth + 1), aggregate);
+//        }
         List<Expression> possibleOptions = new ArrayList<>(Arrays.asList(Expression.values()));
-        if (!globalState.getDbmsSpecificOptions().testCollate) {
-            possibleOptions.remove(Expression.COLLATE);
-        }
-        if (!globalState.getDbmsSpecificOptions().testFunctions) {
-            possibleOptions.remove(Expression.FUNC);
-        }
-        if (!globalState.getDbmsSpecificOptions().testCasts) {
-            possibleOptions.remove(Expression.CAST);
-        }
+//        if (!globalState.getDbmsSpecificOptions().testCollate) {
+//            possibleOptions.remove(Expression.COLLATE);
+//        }
+//        if (!globalState.getDbmsSpecificOptions().testFunctions) {
+//            possibleOptions.remove(Expression.FUNC);
+//        }
+//        if (!globalState.getDbmsSpecificOptions().testCasts) {
+//            possibleOptions.remove(Expression.CAST);
+//        }
         if (!globalState.getDbmsSpecificOptions().testBetween) {
             possibleOptions.remove(Expression.BETWEEN);
         }
         if (!globalState.getDbmsSpecificOptions().testIn) {
             possibleOptions.remove(Expression.IN);
         }
-        if (!globalState.getDbmsSpecificOptions().testCase) {
-            possibleOptions.remove(Expression.CASE);
-        }
+//        if (!globalState.getDbmsSpecificOptions().testCase) {
+//            possibleOptions.remove(Expression.CASE);
+//        }
         if (!globalState.getDbmsSpecificOptions().testBinaryComparisons) {
             possibleOptions.remove(Expression.BINARY_COMPARISON);
         }
@@ -67,9 +77,9 @@ public final class DatabendExpressionGenerator extends UntypedExpressionGenerato
         }
         Expression expr = Randomly.fromList(possibleOptions);
         switch (expr) {
-        case COLLATE:
-            return new NewUnaryPostfixOperatorNode<DatabendExpression>(generateExpression(depth + 1),
-                    DatabendCollate.getRandom());
+//        case COLLATE:
+//            return new NewUnaryPostfixOperatorNode<DatabendExpression>(generateExpression(depth + 1),
+//                    DatabendCollate.getRandom());
         case UNARY_PREFIX:
             return new NewUnaryPrefixOperatorNode<DatabendExpression>(generateExpression(depth + 1),
                     DatabendUnaryPrefixOperator.getRandom());
@@ -84,30 +94,31 @@ public final class DatabendExpressionGenerator extends UntypedExpressionGenerato
             op = DatabendBinaryLogicalOperator.getRandom();
             return new NewBinaryOperatorNode<DatabendExpression>(generateExpression(depth + 1),
                     generateExpression(depth + 1), op);
-        case BINARY_ARITHMETIC:
-            return new NewBinaryOperatorNode<DatabendExpression>(generateExpression(depth + 1),
-                    generateExpression(depth + 1), DatabendBinaryArithmeticOperator.getRandom());
-        case CAST:
-            return new DatabendCastOperation(generateExpression(depth + 1),
-                    DatabendCompositeDataType.getRandomWithoutNull());
-        case FUNC:
-            DBFunction func = DBFunction.getRandom();
-            return new NewFunctionNode<DatabendExpression, DBFunction>(generateExpressions(func.getNrArgs()), func);
+//        case BINARY_ARITHMETIC:
+//            return new NewBinaryOperatorNode<DatabendExpression>(generateExpression(depth + 1),
+//                    generateExpression(depth + 1), DatabendBinaryArithmeticOperator.getRandom());
+//        case CAST:
+//            return new DatabendCastOperation(generateExpression(depth + 1),
+//                    DatabendCompositeDataType.getRandomWithoutNull());
+//        case FUNC:
+//            DBFunction func = DBFunction.getRandom();
+//            return new NewFunctionNode<DatabendExpression, DBFunction>(generateExpressions(func.getNrArgs()), func);
         case BETWEEN:
             return new NewBetweenOperatorNode<DatabendExpression>(generateExpression(depth + 1),
                     generateExpression(depth + 1), generateExpression(depth + 1), Randomly.getBoolean());
         case IN:
             return new NewInOperatorNode<DatabendExpression>(generateExpression(depth + 1),
                     generateExpressions(Randomly.smallNumber() + 1, depth + 1), Randomly.getBoolean());
-        case CASE:
-            int nr = Randomly.smallNumber() + 1;
-            return new NewCaseOperatorNode<DatabendExpression>(generateExpression(depth + 1),
-                    generateExpressions(nr, depth + 1), generateExpressions(nr, depth + 1),
-                    generateExpression(depth + 1));
-        case LIKE_ESCAPE:
-            return new NewTernaryNode<DatabendExpression>(generateExpression(depth + 1), generateExpression(depth + 1),
-                    generateExpression(depth + 1), "LIKE", "ESCAPE");
+//        case CASE:
+//            int nr = Randomly.smallNumber() + 1;
+//            return new NewCaseOperatorNode<DatabendExpression>(generateExpression(depth + 1),
+//                    generateExpressions(nr, depth + 1), generateExpressions(nr, depth + 1),
+//                    generateExpression(depth + 1));
+//        case LIKE_ESCAPE:
+//            return new NewTernaryNode<DatabendExpression>(generateExpression(depth + 1), generateExpression(depth + 1),
+//                    generateExpression(depth + 1), "LIKE", "ESCAPE");
         default:
+            System.out.println(expr.toString());
             throw new AssertionError();
         }
     }
@@ -132,16 +143,16 @@ public final class DatabendExpressionGenerator extends UntypedExpressionGenerato
                 throw new IgnoreMeException();
             }
             return DatabendConstant.createIntConstant(globalState.getRandomly().getInteger());
-        case DATE:
-            if (!globalState.getDbmsSpecificOptions().testDateConstants) {
-                throw new IgnoreMeException();
-            }
-            return DatabendConstant.createDateConstant(globalState.getRandomly().getInteger());
-        case TIMESTAMP:
-            if (!globalState.getDbmsSpecificOptions().testTimestampConstants) {
-                throw new IgnoreMeException();
-            }
-            return DatabendConstant.createTimestampConstant(globalState.getRandomly().getInteger());
+//        case DATE:
+//            if (!globalState.getDbmsSpecificOptions().testDateConstants) {
+//                throw new IgnoreMeException();
+//            }
+//            return DatabendConstant.createDateConstant(globalState.getRandomly().getInteger());
+//        case TIMESTAMP:
+//            if (!globalState.getDbmsSpecificOptions().testTimestampConstants) {
+//                throw new IgnoreMeException();
+//            }
+//            return DatabendConstant.createTimestampConstant(globalState.getRandomly().getInteger());
         case VARCHAR:
             if (!globalState.getDbmsSpecificOptions().testStringConstants) {
                 throw new IgnoreMeException();
@@ -190,8 +201,9 @@ public final class DatabendExpressionGenerator extends UntypedExpressionGenerato
     }
 
     public enum DatabendAggregateFunction {
-        MAX(1), MIN(1), AVG(1), COUNT(1), STRING_AGG(1), FIRST(1), SUM(1), STDDEV_SAMP(1), STDDEV_POP(1), VAR_POP(1),
-        VAR_SAMP(1), COVAR_POP(1), COVAR_SAMP(1);
+        MAX(1), MIN(1), AVG(1), COUNT(1),SUM(1), STDDEV_POP(1),
+         COVAR_POP(1), COVAR_SAMP(2);
+        //, STRING_AGG(1), STDDEV_SAMP(1),VAR_SAMP(1), VAR_POP(1)
 
         private int nrArgs;
 
@@ -210,7 +222,7 @@ public final class DatabendExpressionGenerator extends UntypedExpressionGenerato
     }
 
     public enum DBFunction {
-        // trigonometric functions
+        // trigonometric functions, nrArgs表示参数个数
         ACOS(1), //
         ASIN(1), //
         ATAN(1), //
@@ -218,7 +230,7 @@ public final class DatabendExpressionGenerator extends UntypedExpressionGenerato
         SIN(1), //
         TAN(1), //
         COT(1), //
-        ATAN2(1), //
+        ATAN2(2), //
         // math functions
         ABS(1), //
         CEIL(1), //
@@ -265,8 +277,9 @@ public final class DatabendExpressionGenerator extends UntypedExpressionGenerato
         // REPEAT(2),
         REPLACE(3), UNICODE(1),
 
-        BIT_COUNT(1), BIT_LENGTH(1), LAST_DAY(1), MONTHNAME(1), DAYNAME(1), YEARWEEK(1), DAYOFMONTH(1), WEEKDAY(1),
+        BIT_COUNT(1), BIT_LENGTH(1), MONTHNAME(1), DAYNAME(1), YEARWEEK(1), DAYOFMONTH(1), WEEKDAY(1),
         WEEKOFYEAR(1),
+        //, LAST_DAY(1)
 
         IFNULL(2), IF(3);
 
@@ -338,7 +351,8 @@ public final class DatabendExpressionGenerator extends UntypedExpressionGenerato
 
     public enum DatabendUnaryPrefixOperator implements Operator {
 
-        NOT("NOT"), PLUS("+"), MINUS("-");
+        NOT("NOT");
+        //PLUS("+"), MINUS("-"); //等待boolean支持数学运算
 
         private String textRepr;
 
@@ -373,7 +387,7 @@ public final class DatabendExpressionGenerator extends UntypedExpressionGenerato
     }
 
     public enum DatabendBinaryArithmeticOperator implements Operator {
-        CONCAT("||"), ADD("+"), SUB("-"), MULT("*"), DIV("/"), MOD("%"), AND("&"), OR("|"), LSHIFT("<<"), RSHIFT(">>");
+        ADD("+"), SUB("-"), MULT("*"), DIV("/"), MOD("%");
 
         private String textRepr;
 
@@ -393,9 +407,8 @@ public final class DatabendExpressionGenerator extends UntypedExpressionGenerato
     }
 
     public enum DatabendBinaryComparisonOperator implements Operator {
-        EQUALS("="), GREATER(">"), GREATER_EQUALS(">="), SMALLER("<"), SMALLER_EQUALS("<="), NOT_EQUALS("!="),
-        LIKE("LIKE"), NOT_LIKE("NOT LIKE"), SIMILAR_TO("SIMILAR TO"), NOT_SIMILAR_TO("NOT SIMILAR TO"),
-        REGEX_POSIX("~"), REGEX_POSIT_NOT("!~");
+        EQUALS("="), GREATER(">"), GREATER_EQUALS(">="), SMALLER("<"), SMALLER_EQUALS("<="), NOT_EQUALS("!=");
+        //LIKE("LIKE"), NOT_LIKE("NOT LIKE");
 
         private String textRepr;
 

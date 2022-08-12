@@ -25,7 +25,7 @@ public final class DatabendRandomQuerySynthesizer {
         DatabendExpressionGenerator gen = new DatabendExpressionGenerator(globalState)
                 .setColumns(targetTables.getColumns());
         DatabendSelect select = new DatabendSelect();
-        // TODO: distinct
+        // TODO distinct
         // select.setDistinct(Randomly.getBoolean());
         // boolean allowAggregates = Randomly.getBooleanWithSmallProbability();
         List<Node<DatabendExpression>> columns = new ArrayList<>();

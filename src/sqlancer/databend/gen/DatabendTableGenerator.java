@@ -36,38 +36,41 @@ public class DatabendTableGenerator {
             sb.append(columns.get(i).getName());
             sb.append(" ");
             sb.append(columns.get(i).getType());
-            if (globalState.getDbmsSpecificOptions().testCollate && Randomly.getBooleanWithRatherLowProbability()
-                    && columns.get(i).getType().getPrimitiveDataType() == DatabendDataType.VARCHAR) {
-                sb.append(" COLLATE ");
-                sb.append(getRandomCollate());
-            }
-            if (globalState.getDbmsSpecificOptions().testIndexes && Randomly.getBooleanWithRatherLowProbability()) {
-                sb.append(" UNIQUE");
-            }
+//            if (globalState.getDbmsSpecificOptions().testCollate && Randomly.getBooleanWithRatherLowProbability()
+//                    && columns.get(i).getType().getPrimitiveDataType() == DatabendDataType.VARCHAR) {
+//                sb.append(" COLLATE ");
+//                sb.append(getRandomCollate());
+//            }
+//            if (globalState.getDbmsSpecificOptions().testIndexes && Randomly.getBooleanWithRatherLowProbability()) {
+//                sb.append(" UNIQUE");
+//            }
             if (globalState.getDbmsSpecificOptions().testNotNullConstraints
                     && Randomly.getBooleanWithRatherLowProbability()) {
                 sb.append(" NOT NULL");
+            } else {
+                sb.append(" NULL"); //Databend 默认字段为非空，这个将它默认设置为允许空
             }
-            if (globalState.getDbmsSpecificOptions().testCheckConstraints
-                    && Randomly.getBooleanWithRatherLowProbability()) {
-                sb.append(" CHECK(");
-                sb.append(DatabendToStringVisitor.asString(gen.generateExpression()));
-                DatabendErrors.addExpressionErrors(errors);
-                sb.append(")");
-            }
+//            if (globalState.getDbmsSpecificOptions().testCheckConstraints //databend 无check约束
+//                    && Randomly.getBooleanWithRatherLowProbability()) {
+//                sb.append(" CHECK(");
+//                sb.append(DatabendToStringVisitor.asString(gen.generateExpression()));
+//                DatabendErrors.addExpressionErrors(errors);
+//                sb.append(")");
+//            }
             if (Randomly.getBoolean() && globalState.getDbmsSpecificOptions().testDefaultValues) {
                 sb.append(" DEFAULT(");
                 sb.append(DatabendToStringVisitor.asString(gen.generateConstant()));
                 sb.append(")");
             }
         }
-        if (globalState.getDbmsSpecificOptions().testIndexes && Randomly.getBoolean()) {
-            errors.add("Invalid type for index");
-            List<DatabendColumn> primaryKeyColumns = Randomly.nonEmptySubset(columns);
-            sb.append(", PRIMARY KEY(");
-            sb.append(primaryKeyColumns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
-            sb.append(")");
-        }
+        //databend并没有索引
+//        if (globalState.getDbmsSpecificOptions().testIndexes && Randomly.getBoolean()) {
+//            errors.add("Invalid type for index");
+//            List<DatabendColumn> primaryKeyColumns = Randomly.nonEmptySubset(columns);
+//            sb.append(", PRIMARY KEY(");
+//            sb.append(primaryKeyColumns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
+//            sb.append(")");
+//        }
         sb.append(")");
         return new SQLQueryAdapter(sb.toString(), errors, true);
     }

@@ -27,7 +27,7 @@ public class DatabendProvider extends SQLProviderAdapter<DatabendGlobalState, Da
         //TODO 等待databend实现update && delete
 //        DELETE(DatabendDeleteGenerator::generate), //
 //        UPDATE(DatabendUpdateGenerator::getQuery), //
-        CREATE_VIEW(DatabendViewGenerator::generate), //
+//        CREATE_VIEW(DatabendViewGenerator::generate), // TODO 等待databend的create view语法 更加贴近mysql
         EXPLAIN((g) -> {
             ExpectedErrors errors = new ExpectedErrors();
             DatabendErrors.addExpressionErrors(errors);
@@ -62,8 +62,8 @@ public class DatabendProvider extends SQLProviderAdapter<DatabendGlobalState, Da
 //            return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumUpdates + 1);
 //        case DELETE:
 //            return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumDeletes + 1);
-        case CREATE_VIEW:
-            return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumViews + 1);
+//        case CREATE_VIEW:
+//            return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumViews + 1);
         default:
             throw new AssertionError(a);
         }
@@ -96,7 +96,7 @@ public class DatabendProvider extends SQLProviderAdapter<DatabendGlobalState, Da
                         throw new IgnoreMeException();
                     }
                 });
-        se.executeStatements();
+        se.executeStatements(); //在已有的表格中插入数据，原先是增删改一些数据，除了insert和explan我都去掉了
     }
 
     public void tryDeleteFile(String fname) {

@@ -19,7 +19,8 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
 
     public enum DatabendDataType {
 
-        INT, VARCHAR, BOOLEAN, FLOAT, DATE, TIMESTAMP, NULL;
+        INT, VARCHAR, BOOLEAN, FLOAT, NULL;
+        //, DATE, TIMESTAMP
 
         public static DatabendDataType getRandomWithoutNull() {
             DatabendDataType dt;
@@ -73,8 +74,8 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
                 break;
             case BOOLEAN:
             case VARCHAR:
-            case DATE:
-            case TIMESTAMP:
+//            case DATE:
+//            case TIMESTAMP:
                 size = 0;
                 break;
             default:
@@ -113,10 +114,10 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
                 }
             case BOOLEAN:
                 return Randomly.fromOptions("BOOLEAN", "BOOL");
-            case TIMESTAMP:
-                return Randomly.fromOptions("TIMESTAMP", "DATETIME");
-            case DATE:
-                return Randomly.fromOptions("DATE");
+//            case TIMESTAMP:
+//                return Randomly.fromOptions("TIMESTAMP", "DATETIME");
+//            case DATE:
+//                return Randomly.fromOptions("DATE");
             case NULL:
                 return Randomly.fromOptions("NULL");
             default:
@@ -200,12 +201,12 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
         case "BOOLEAN":
             primitiveType = DatabendDataType.BOOLEAN;
             break;
-        case "DATE":
-            primitiveType = DatabendDataType.DATE;
-            break;
-        case "TIMESTAMP":
-            primitiveType = DatabendDataType.TIMESTAMP;
-            break;
+//        case "DATE":
+//            primitiveType = DatabendDataType.DATE;
+//            break;
+//        case "TIMESTAMP":
+//            primitiveType = DatabendDataType.TIMESTAMP;
+//            break;
         case "NULL":
             primitiveType = DatabendDataType.NULL;
             break;

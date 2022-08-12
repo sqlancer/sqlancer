@@ -41,15 +41,15 @@ public class DatabendNoRECOracle extends NoRECBase<DatabendGlobalState> implemen
 
     @Override
     public void check() throws SQLException {
-        DatabendTables randomTables = s.getRandomTableNonEmptyTables();
+        DatabendTables randomTables = s.getRandomTableNonEmptyTables(); //随机获得nr张表
         List<DatabendColumn> columns = randomTables.getColumns();
         DatabendExpressionGenerator gen = new DatabendExpressionGenerator(state).setColumns(columns);
-        Node<DatabendExpression> randomWhereCondition = gen.generateExpression();
+        Node<DatabendExpression> randomWhereCondition = gen.generateExpression(); //生成随机where条件，形式为ast
         List<DatabendTable> tables = randomTables.getTables();
         List<TableReferenceNode<DatabendExpression, DatabendTable>> tableList = tables.stream()
                 .map(t -> new TableReferenceNode<DatabendExpression, DatabendTable>(t)).collect(Collectors.toList());
         List<Node<DatabendExpression>> joins = DatabendJoin.getJoins(tableList, state);
-        int secondCount = getSecondQuery(tableList.stream().collect(Collectors.toList()), randomWhereCondition, joins);
+        int secondCount = getSecondQuery(tableList.stream().collect(Collectors.toList()), randomWhereCondition, joins); //禁用优化
         int firstCount = getFirstQueryCount(con, tableList.stream().collect(Collectors.toList()), columns,
                 randomWhereCondition, joins);
         if (firstCount == -1 || secondCount == -1) {
@@ -71,7 +71,7 @@ public class DatabendNoRECOracle extends NoRECBase<DatabendGlobalState> implemen
                 new NewPostfixTextNode<DatabendExpression>(randomWhereCondition,
                         " IS NOT NULL AND " + DatabendToStringVisitor.asString(randomWhereCondition)),
                 new DatabendCompositeDataType(DatabendDataType.INT, 8)), "as count");
-        select.setFetchColumns(Arrays.asList(asText));
+        select.setFetchColumns(Arrays.asList(asText)); // ?
         select.setFromList(tableList);
         // select.setSelectType(SelectType.ALL);
         select.setJoinList(joins);
