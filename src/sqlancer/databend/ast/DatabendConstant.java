@@ -59,11 +59,7 @@ public class DatabendConstant implements Node<DatabendExpression> {
             }
 
 
-//            DecimalFormat doubleFormat = new DecimalFormat();
-//            doubleFormat.setMaximumFractionDigits(2);  //小数点后2位
-//            System.out.println(String.valueOf(doubleFormat.format(value)));
-            //TODO value先返回0.3来取消指数形式表达，等待Databend支持指数形式表达
-            return String.valueOf(0.3);
+            return String.valueOf(value).toLowerCase(); // TODO 待databend支持大写E再去掉小写转换
         }
 
     }
