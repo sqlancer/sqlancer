@@ -3,10 +3,11 @@ package sqlancer.databend.ast;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.ast.newast.TableReferenceNode;
-import sqlancer.databend.gen.DatabendExpressionGenerator;
+import sqlancer.databend.DatabendSchema;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema.DatabendColumn;
 import sqlancer.databend.DatabendSchema.DatabendTable;
+import sqlancer.databend.gen.DatabendNoRECExpressionGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,7 @@ public class DatabendJoin implements Node<DatabendExpression> {
     }
 
     public enum OuterType {
-        FULL, LEFT, RIGHT;
+        LEFT, RIGHT;
 
         public static OuterType getRandom() {
             return Randomly.fromOptions(values());
@@ -76,21 +77,24 @@ public class DatabendJoin implements Node<DatabendExpression> {
             TableReferenceNode<DatabendExpression, DatabendTable> rightTable = tableList.remove(0);
             List<DatabendColumn> columns = new ArrayList<>(leftTable.getTable().getColumns());
             columns.addAll(rightTable.getTable().getColumns());
-            DatabendExpressionGenerator joinGen = new DatabendExpressionGenerator(globalState).setColumns(columns);
+//            DatabendExpressionGenerator joinGen = new DatabendExpressionGenerator(globalState).setColumns(columns);
+            DatabendNoRECExpressionGenerator joinGen = new DatabendNoRECExpressionGenerator(globalState).setColumns(columns);
+
             switch (JoinType.getRandom()) {
             case INNER:
-                joinExpressions.add(DatabendJoin.createInnerJoin(leftTable, rightTable, joinGen.generateExpression()));
+                joinExpressions.add(DatabendJoin.createInnerJoin(leftTable, rightTable,
+                        joinGen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN)));
                 break;
             case NATURAL:
                 joinExpressions.add(DatabendJoin.createNaturalJoin(leftTable, rightTable, OuterType.getRandom()));
                 break;
             case LEFT:
-                joinExpressions
-                        .add(DatabendJoin.createLeftOuterJoin(leftTable, rightTable, joinGen.generateExpression()));
+                joinExpressions.add(DatabendJoin.createLeftOuterJoin(leftTable, rightTable,
+                                joinGen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN)));
                 break;
             case RIGHT:
-                joinExpressions
-                        .add(DatabendJoin.createRightOuterJoin(leftTable, rightTable, joinGen.generateExpression()));
+                joinExpressions.add(DatabendJoin.createRightOuterJoin(leftTable, rightTable,
+                                joinGen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN)));
                 break;
             default:
                 throw new AssertionError();

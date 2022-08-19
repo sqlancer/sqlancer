@@ -3,6 +3,7 @@ package sqlancer.databend.gen;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.ast.newast.TableReferenceNode;
+import sqlancer.databend.DatabendSchema;
 import sqlancer.databend.ast.DatabendConstant;
 import sqlancer.databend.ast.DatabendExpression;
 import sqlancer.databend.ast.DatabendJoin;
@@ -22,7 +23,9 @@ public final class DatabendRandomQuerySynthesizer {
 
     public static DatabendSelect generateSelect(DatabendGlobalState globalState, int nrColumns) {
         DatabendTables targetTables = globalState.getSchema().getRandomTableNonEmptyTables();
-        DatabendExpressionGenerator gen = new DatabendExpressionGenerator(globalState)
+//        DatabendExpressionGenerator gen = new DatabendExpressionGenerator(globalState)
+//                .setColumns(targetTables.getColumns());
+        DatabendNoRECExpressionGenerator gen = new DatabendNoRECExpressionGenerator(globalState)
                 .setColumns(targetTables.getColumns());
         DatabendSelect select = new DatabendSelect();
         // TODO distinct
@@ -31,7 +34,7 @@ public final class DatabendRandomQuerySynthesizer {
         List<Node<DatabendExpression>> columns = new ArrayList<>();
         for (int i = 0; i < nrColumns; i++) {
             // if (allowAggregates && Randomly.getBoolean()) {
-            Node<DatabendExpression> expression = gen.generateExpression();
+            Node<DatabendExpression> expression = gen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN);
             columns.add(expression);
             // } else {
             // columns.add(gen());
@@ -45,7 +48,7 @@ public final class DatabendRandomQuerySynthesizer {
         select.setJoinList(joins.stream().collect(Collectors.toList()));
         select.setFromList(tableList.stream().collect(Collectors.toList()));
         if (Randomly.getBoolean()) {
-            select.setWhereClause(gen.generateExpression());
+            select.setWhereClause(gen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN));
         }
         if (Randomly.getBoolean()) {
             select.setOrderByExpressions(gen.generateOrderBys());
@@ -61,9 +64,10 @@ public final class DatabendRandomQuerySynthesizer {
             select.setOffsetClause(
                     DatabendConstant.createIntConstant(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)));
         }
-        if (Randomly.getBoolean()) {
-            select.setHavingClause(gen.generateHavingClause());
-        }
+        // TODO 待添加HavingClause
+//        if (Randomly.getBoolean()) {
+//            select.setHavingClause(gen.generateHavingClause());
+//        }
         return select;
     }
 
