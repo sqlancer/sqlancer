@@ -1,5 +1,6 @@
 package sqlancer.databend.gen;
 
+import com.google.common.collect.RangeMap;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.NewBetweenOperatorNode;
 import sqlancer.common.ast.newast.NewInOperatorNode;
@@ -162,6 +163,15 @@ public class DatabendNoRECExpressionGenerator extends
     @Override
     public Node<DatabendExpression> isNull(Node<DatabendExpression> expr) {
         return null;
+    }
+
+    public Node<DatabendExpression> generateConstant(boolean isNullable) {
+        DatabendDataType type;
+        do {
+            type = Randomly.fromOptions(DatabendDataType.values());
+        } while(!isNullable && type.equals(DatabendDataType.NULL));
+
+        return generateConstant(type);
     }
 
     @Override

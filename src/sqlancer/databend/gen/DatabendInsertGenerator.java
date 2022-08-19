@@ -5,6 +5,7 @@ import sqlancer.common.gen.AbstractInsertGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.databend.DatabendErrors;
+import sqlancer.databend.DatabendSchema;
 import sqlancer.databend.DatabendToStringVisitor;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema.DatabendColumn;
@@ -41,15 +42,16 @@ public class DatabendInsertGenerator extends AbstractInsertGenerator<DatabendCol
     }
 
     @Override
-    protected void insertValue(DatabendColumn tiDBColumn) {
-        // TODO: 等Databend实现NULL 和 DEFAULT ,暂时注入普通的value
+    protected void insertValue(DatabendColumn column) {
+        // TODO: 等Databend实现DEFAULT ,暂时注入普通的value
 //        if (Randomly.getBooleanWithRatherLowProbability()) {
 //            sb.append("DEFAULT");
 //        } else {
 //            sb.append(DatabendToStringVisitor.asString(new DatabendExpressionGenerator(globalState).generateConstant()));
 //        }
-
-        String value = DatabendToStringVisitor.asString(new DatabendExpressionGenerator(globalState).generateConstant());
+        String value = DatabendToStringVisitor.asString(
+                new DatabendNoRECExpressionGenerator(globalState).
+                        generateConstant(column.isNullable()));
         sb.append(value);
 
     }
