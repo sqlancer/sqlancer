@@ -183,18 +183,11 @@ public class DatabendNoRECExpressionGenerator extends
 
         switch (type) {
             case INT:
-                if (Randomly.getBooleanWithSmallProbability()) {
-                    return DatabendConstant.createStringConstant(String.valueOf(r.getInteger()));
-                } else {
-                    return DatabendConstant.createIntConstant(r.getInteger());
-                }
+                //不支持string转化故直接返回int constant
+                return DatabendConstant.createIntConstant(r.getInteger());
             case BOOLEAN:
-                if (Randomly.getBooleanWithSmallProbability()) {
-                    return DatabendConstant
-                            .createStringConstant(Randomly.fromOptions("TRUE", "FALSE")); //TODO databend中非0为false，0为false
-                } else {
-                    return DatabendConstant.createBooleanConstant(Randomly.getBoolean());
-                }
+                //不支持string转化故直接返回boolean constant
+                return DatabendConstant.createBooleanConstant(Randomly.getBoolean());
             case FLOAT:
                 return DatabendConstant.createFloatConstant((float) r.getDouble());
             case VARCHAR:
