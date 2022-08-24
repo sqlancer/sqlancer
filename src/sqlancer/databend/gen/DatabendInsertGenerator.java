@@ -43,7 +43,7 @@ public class DatabendInsertGenerator extends AbstractInsertGenerator<DatabendCol
 
     @Override
     protected void insertValue(DatabendColumn column) {
-        // TODO: 等Databend实现DEFAULT ,暂时注入普通的value
+        // TODO: 等Databend实现DEFAULT关键字,暂时注入普通的value
 //        if (Randomly.getBooleanWithRatherLowProbability()) {
 //            sb.append("DEFAULT");
 //        } else {
@@ -51,7 +51,7 @@ public class DatabendInsertGenerator extends AbstractInsertGenerator<DatabendCol
 //        }
         String value = DatabendToStringVisitor.asString(
                 new DatabendNoRECExpressionGenerator(globalState).
-                        generateConstant(column.isNullable()));
+                        generateConstant(column.getType().getPrimitiveDataType())); //生成一个与column相同的常量类型
         sb.append(value);
 
     }

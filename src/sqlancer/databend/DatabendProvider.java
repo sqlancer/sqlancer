@@ -143,6 +143,12 @@ public class DatabendProvider extends SQLProviderAdapter<DatabendGlobalState, Da
             s.execute("USE " + databaseName);
             globalState.getState().logStatement("USE " + databaseName);
         }
+
+//        try (Statement s = con.createStatement()) {
+//            s.execute("set enable_planner_v2 = 0;");
+//            globalState.getState().logStatement("set enable_planner_v2 = 0;");
+//        }
+
         return new SQLConnection(con);
     }
 

@@ -2,6 +2,7 @@ package sqlancer.databend.gen;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
+import sqlancer.common.gen.TypedExpressionGenerator;
 import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -12,6 +13,7 @@ import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema.DatabendColumn;
 import sqlancer.databend.DatabendSchema.DatabendCompositeDataType;
 import sqlancer.databend.DatabendSchema.DatabendDataType;
+import sqlancer.databend.test.DatabendNoRECOracle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,8 +29,8 @@ public class DatabendTableGenerator {
         sb.append(tableName);
         sb.append("(");
         List<DatabendColumn> columns = getNewColumns();
-        UntypedExpressionGenerator<Node<DatabendExpression>, DatabendColumn> gen = new DatabendExpressionGenerator(
-                globalState).setColumns(columns);
+        TypedExpressionGenerator<Node<DatabendExpression>, DatabendColumn, DatabendDataType> gen =
+                new DatabendNoRECExpressionGenerator(globalState).setColumns(columns);
         for (int i = 0; i < columns.size(); i++) {
             if (i != 0) {
                 sb.append(", ");
@@ -59,7 +61,8 @@ public class DatabendTableGenerator {
 //            }
             if (Randomly.getBoolean() && globalState.getDbmsSpecificOptions().testDefaultValues) {
                 sb.append(" DEFAULT(");
-                sb.append(DatabendToStringVisitor.asString(gen.generateConstant()));
+                sb.append(DatabendToStringVisitor.asString( //常量类型于字段类型等同
+                        gen.generateConstant(columns.get(i).getType().getPrimitiveDataType())));
                 sb.append(")");
             }
         }

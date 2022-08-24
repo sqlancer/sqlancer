@@ -165,14 +165,14 @@ public class DatabendNoRECExpressionGenerator extends
         return null;
     }
 
-    public Node<DatabendExpression> generateConstant(boolean isNullable) {
-        DatabendDataType type;
-        do {
-            type = Randomly.fromOptions(DatabendDataType.values());
-        } while(!isNullable && type.equals(DatabendDataType.NULL));
-
-        return generateConstant(type);
-    }
+//    public Node<DatabendExpression> generateConstant(boolean isNullable) { //TODO 极小概率生成NULL值
+//        DatabendDataType type;
+//        do {
+//            type = Randomly.fromOptions(DatabendDataType.values());
+//        } while(!isNullable && type.equals(DatabendDataType.NULL)); //isNullable为假，同时获得NULL就重新获取
+//
+//        return generateConstant(type);
+//    }
 
     @Override
     public Node<DatabendExpression> generateConstant(DatabendDataType type) {
