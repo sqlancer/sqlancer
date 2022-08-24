@@ -53,13 +53,12 @@ public class DatabendConstant implements Node<DatabendExpression> {
         @Override
         public String toString() {
             if (value == Double.POSITIVE_INFINITY) {
-                return "'+Inf'";
+                return "3.40282347e+38";
             } else if (value == Double.NEGATIVE_INFINITY) {
-                return "'-Inf'";
+                return "-3.40282347e+38";
             }
 
-
-            return String.valueOf(value).toLowerCase(); // TODO 待databend支持大写E再去掉小写转换
+            return String.valueOf(value);
         }
 
     }
