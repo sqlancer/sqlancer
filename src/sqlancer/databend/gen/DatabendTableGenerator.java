@@ -85,8 +85,8 @@ public class DatabendTableGenerator {
     private static List<DatabendColumn> getNewColumns() {
         List<DatabendColumn> columns = new ArrayList<>();
         for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
-            String columnName = String.format("c%d", i);
             DatabendCompositeDataType columnType = DatabendCompositeDataType.getRandomWithoutNull();
+            String columnName = String.format("c%d%s", i,columnType.getPrimitiveDataType().toString());
             columns.add(new DatabendColumn(columnName, columnType, false, false));
         }
         return columns;
