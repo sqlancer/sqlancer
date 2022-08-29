@@ -18,6 +18,10 @@ public class DatabendUnaryPostfixOperation extends NewUnaryPostfixOperatorNode<D
         setNegate(negate);
     }
 
+    public DatabendUnaryPostfixOperation(Node<DatabendExpression> expr, DatabendUnaryPostfixOperator op) {
+        super(expr,op);
+    }
+
     public enum DatabendUnaryPostfixOperator implements BinaryOperatorNode.Operator {
         IS_NULL("IS NULL"){
             @Override

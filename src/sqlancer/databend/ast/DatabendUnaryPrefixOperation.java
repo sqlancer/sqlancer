@@ -17,6 +17,10 @@ public class DatabendUnaryPrefixOperation extends NewUnaryPrefixOperatorNode<Dat
         setNegate(negate);
     }
 
+    public DatabendUnaryPrefixOperation(Node<DatabendExpression> expr, DatabendUnaryPrefixOperator op) {
+        super(expr,op);
+    }
+
     void setNegate(boolean negate){
         this.negate = negate;
     }
@@ -26,17 +30,10 @@ public class DatabendUnaryPrefixOperation extends NewUnaryPrefixOperatorNode<Dat
         return getExpr();
     }
 
-    @Override
-    public String getOperatorRepresentation() {
-        return null;
-    }
-
 //    @Override
 //    public OperatorKind getOperatorKind() {
 //        return OperatorKind.PREFIX;
 //    }
-
-
 
     public enum DatabendUnaryPrefixOperator implements BinaryOperatorNode.Operator {
         NOT("NOT", DatabendDataType.BOOLEAN, DatabendDataType.INT) {

@@ -17,6 +17,7 @@ import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema.DatabendColumn;
 import sqlancer.databend.DatabendSchema.DatabendTable;
 import sqlancer.databend.DatabendSchema.DatabendTables;
+import sqlancer.databend.gen.DatabendNoRECExpressionGenerator;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ public class DatabendQueryPartitioningBase
 
     DatabendSchema s;
     DatabendTables targetTables;
-    DatabendExpressionGenerator gen;
+    DatabendNoRECExpressionGenerator gen;
     DatabendSelect select;
 
     public DatabendQueryPartitioningBase(DatabendGlobalState state) {
@@ -50,7 +51,7 @@ public class DatabendQueryPartitioningBase
     public void check() throws SQLException {
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
-        gen = new DatabendExpressionGenerator(state).setColumns(targetTables.getColumns());
+        gen = new DatabendNoRECExpressionGenerator(state).setColumns(targetTables.getColumns());
         initializeTernaryPredicateVariants();
         select = new DatabendSelect();
         select.setFetchColumns(generateFetchColumns());

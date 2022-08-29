@@ -1,8 +1,8 @@
 package sqlancer.databend.gen;
 
-import com.google.common.collect.RangeMap;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.NewBetweenOperatorNode;
+import sqlancer.common.ast.newast.NewFunctionNode;
 import sqlancer.common.ast.newast.NewInOperatorNode;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.TypedExpressionGenerator;
@@ -14,7 +14,6 @@ import sqlancer.databend.ast.DatabendUnaryPostfixOperation.DatabendUnaryPostfixO
 import sqlancer.databend.ast.DatabendUnaryPrefixOperation.DatabendUnaryPrefixOperator;
 import sqlancer.databend.ast.DatabendBinaryLogicalOperation.DatabendBinaryLogicalOperator;
 import sqlancer.databend.ast.DatabendBinaryComparisonOperation.DatabendBinaryComparisonOperator;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -24,6 +23,7 @@ public class DatabendNoRECExpressionGenerator extends
         TypedExpressionGenerator<Node<DatabendExpression>, DatabendColumn, DatabendDataType> {
 
     private final DatabendGlobalState globalState;
+    private boolean allowAggregateFunctions;
 
     public DatabendNoRECExpressionGenerator(DatabendGlobalState globalState) {
         this.globalState = globalState;
@@ -89,7 +89,6 @@ public class DatabendNoRECExpressionGenerator extends
 
     Node<DatabendExpression> getPostfix(int depth) {
         DatabendUnaryPostfixOperator randomOp = DatabendUnaryPostfixOperator.getRandom();
-//        System.out.println("getPostfix:" + generateExpression(Randomly.fromOptions(randomOp.getInputDataTypes()), depth));
         return new DatabendUnaryPostfixOperation(
                 generateExpression(Randomly.fromOptions(randomOp.getInputDataTypes()), depth),
                 randomOp,Randomly.getBoolean());
@@ -152,17 +151,17 @@ public class DatabendNoRECExpressionGenerator extends
 
     @Override
     public Node<DatabendExpression> generatePredicate() {
-        return null;
+        return generateExpression(DatabendDataType.BOOLEAN);
     }
 
     @Override
     public Node<DatabendExpression> negatePredicate(Node<DatabendExpression> predicate) {
-        return null;
+        return new DatabendUnaryPrefixOperation(predicate,DatabendUnaryPrefixOperator.NOT);
     }
 
     @Override
-    public Node<DatabendExpression> isNull(Node<DatabendExpression> expr) {
-        return null;
+    public Node<DatabendExpression> isNull(Node<DatabendExpression> predicate) {
+        return new DatabendUnaryPostfixOperation(predicate,DatabendUnaryPostfixOperator.IS_NULL);
     }
 
 //    public Node<DatabendExpression> generateConstant(boolean isNullable) { //TODO 极小概率生成NULL值
@@ -213,4 +212,44 @@ public class DatabendNoRECExpressionGenerator extends
     protected boolean canGenerateColumnOfType(DatabendDataType type) {
         return false;
     }
+
+    public enum DatabendAggregateFunction {
+        MAX(1), MIN(1), AVG(1), COUNT(1),SUM(1), STDDEV_POP(1),
+        COVAR_POP(1), COVAR_SAMP(2);
+        //, STRING_AGG(1), STDDEV_SAMP(1),VAR_SAMP(1), VAR_POP(1)
+
+        private int nrArgs;
+
+        DatabendAggregateFunction(int nrArgs) {
+            this.nrArgs = nrArgs;
+        }
+
+        public static DatabendAggregateFunction getRandom() {
+            return Randomly.fromOptions(values());
+        }
+
+        public int getNrArgs() {
+            return nrArgs;
+        }
+
+    }
+
+    public NewFunctionNode<DatabendExpression, DatabendAggregateFunction> generateArgsForAggregate(
+            DatabendAggregateFunction aggregateFunction) {
+        return new NewFunctionNode<DatabendExpression, DatabendAggregateFunction>(
+                generateExpressions(aggregateFunction.getNrArgs()), aggregateFunction);
+    }
+
+    public Node<DatabendExpression> generateAggregate() {
+        DatabendAggregateFunction aggrFunc = DatabendAggregateFunction.getRandom();
+        return generateArgsForAggregate(aggrFunc);
+    }
+
+    public Node<DatabendExpression> generateHavingClause() {
+        this.allowAggregateFunctions = true;
+        Node<DatabendExpression> expression = generateExpression(DatabendDataType.BOOLEAN);
+        this.allowAggregateFunctions = false;
+        return expression;
+    }
+
 }

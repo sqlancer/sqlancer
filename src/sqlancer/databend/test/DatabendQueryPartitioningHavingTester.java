@@ -5,6 +5,7 @@ import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.databend.DatabendErrors;
+import sqlancer.databend.DatabendSchema;
 import sqlancer.databend.DatabendToStringVisitor;
 import sqlancer.databend.ast.DatabendExpression;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
@@ -25,7 +26,7 @@ public class DatabendQueryPartitioningHavingTester extends DatabendQueryPartitio
     public void check() throws SQLException {
         super.check();
         if (Randomly.getBoolean()) {
-            select.setWhereClause(gen.generateExpression());
+            select.setWhereClause(gen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN));
         }
         boolean orderBy = Randomly.getBoolean();
         if (orderBy) {
