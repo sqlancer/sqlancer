@@ -23,12 +23,11 @@ import sqlancer.databend.ast.DatabendExpression;
 import sqlancer.databend.ast.DatabendSelect;
 import sqlancer.databend.DatabendSchema.DatabendDataType;
 import sqlancer.databend.DatabendSchema.DatabendCompositeDataType;
-import sqlancer.databend.gen.DatabendExpressionGenerator;
-import sqlancer.databend.gen.DatabendExpressionGenerator.DatabendAggregateFunction;
+import sqlancer.databend.ast.DatabendUnaryPostfixOperation.DatabendUnaryPostfixOperator;
+import sqlancer.databend.gen.DatabendNewExpressionGenerator.DatabendAggregateFunction;
 import sqlancer.databend.gen.DatabendExpressionGenerator.DatabendBinaryArithmeticOperator;
 import sqlancer.databend.gen.DatabendExpressionGenerator.DatabendCastOperation;
 import sqlancer.databend.gen.DatabendExpressionGenerator.DatabendUnaryPrefixOperator;
-import sqlancer.databend.gen.DatabendExpressionGenerator.DatabendUnaryPostfixOperator;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 public class DatabendQueryPartitioningAggregateTester extends DatabendQueryPartitioningBase implements TestOracle {
 
@@ -56,9 +55,9 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
             fetchColumns.add(gen.generateAggregate());
         }
         select.setFetchColumns(Arrays.asList(aggregate));
-        if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByExpressions(gen.generateOrderBys());
-        }
+//        if (Randomly.getBooleanWithRatherLowProbability()) {
+//            select.setOrderByExpressions(gen.generateOrderBys());
+//        }
         originalQuery = DatabendToStringVisitor.asString(select);
         firstResult = getAggregateResult(originalQuery);
         metamorphicQuery = createMetamorphicUnionQuery(select, aggregate, select.getFromList());
@@ -80,7 +79,7 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
     private String createMetamorphicUnionQuery(DatabendSelect select,
                                                NewFunctionNode<DatabendExpression, DatabendAggregateFunction> aggregate, List<Node<DatabendExpression>> from) {
         String metamorphicQuery;
-        Node<DatabendExpression> whereClause = gen.generateExpression();
+        Node<DatabendExpression> whereClause = gen.generateExpression(DatabendDataType.BOOLEAN);
         Node<DatabendExpression> negatedClause = new NewUnaryPrefixOperatorNode<>(whereClause,
                 DatabendUnaryPrefixOperator.NOT);
         Node<DatabendExpression> notNullClause = new NewUnaryPostfixOperatorNode<>(whereClause,
@@ -98,7 +97,7 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
     }
 
     private String getAggregateResult(String queryString) throws SQLException {
-        String resultString;
+        String resultString = null;
         SQLQueryAdapter q = new SQLQueryAdapter(queryString, errors);
         try (SQLancerResultSet result = q.executeAndGet(state)) {
             if (result == null) {
@@ -107,7 +106,11 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
             if (!result.next()) {
                 resultString = null;
             } else {
-                resultString = result.getString(1);
+                try {
+                    resultString = result.getString(1);
+                } catch (Exception e) {
+                    System.out.println("Invalid integer format for value"); //TODO 超过integer范围无法格式化异常，还未有解决方案
+                }
             }
             return resultString;
         } catch (SQLException e) {
@@ -180,7 +183,8 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
         leftSelect.setWhereClause(whereClause);
         leftSelect.setJoinList(joinList);
         if (Randomly.getBooleanWithSmallProbability()) {
-            leftSelect.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
+//            leftSelect.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
+            leftSelect.setGroupByExpressions(select.getFetchColumns());
         }
         return leftSelect;
     }

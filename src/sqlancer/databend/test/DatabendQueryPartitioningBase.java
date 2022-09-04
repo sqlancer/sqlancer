@@ -12,12 +12,11 @@ import sqlancer.databend.DatabendSchema;
 import sqlancer.databend.ast.DatabendExpression;
 import sqlancer.databend.ast.DatabendJoin;
 import sqlancer.databend.ast.DatabendSelect;
-import sqlancer.databend.gen.DatabendExpressionGenerator;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema.DatabendColumn;
 import sqlancer.databend.DatabendSchema.DatabendTable;
 import sqlancer.databend.DatabendSchema.DatabendTables;
-import sqlancer.databend.gen.DatabendNoRECExpressionGenerator;
+import sqlancer.databend.gen.DatabendNewExpressionGenerator;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -30,7 +29,7 @@ public class DatabendQueryPartitioningBase
 
     DatabendSchema s;
     DatabendTables targetTables;
-    DatabendNoRECExpressionGenerator gen;
+    DatabendNewExpressionGenerator gen;
     DatabendSelect select;
 
     public DatabendQueryPartitioningBase(DatabendGlobalState state) {
@@ -51,10 +50,10 @@ public class DatabendQueryPartitioningBase
     public void check() throws SQLException {
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
-        gen = new DatabendNoRECExpressionGenerator(state).setColumns(targetTables.getColumns());
+        gen = new DatabendNewExpressionGenerator(state).setColumns(targetTables.getColumns());
         initializeTernaryPredicateVariants();
         select = new DatabendSelect();
-        select.setFetchColumns(generateFetchColumns());
+        select.setFetchColumns(generateRandomColumns());
         List<DatabendTable> tables = targetTables.getTables();
         List<TableReferenceNode<DatabendExpression, DatabendTable>> tableList = tables.stream()
                 .map(t -> new TableReferenceNode<DatabendExpression, DatabendTable>(t)).collect(Collectors.toList());
@@ -66,12 +65,18 @@ public class DatabendQueryPartitioningBase
 
     List<Node<DatabendExpression>> generateFetchColumns() {
         List<Node<DatabendExpression>> columns = new ArrayList<>();
-        if (Randomly.getBoolean()) {
+        if (Randomly.getBoolean()) { //TODO 为什么会返回 false 或 true 字段
             columns.add(new ColumnReferenceNode<>(new DatabendColumn("*", null, false, false)));
         } else {
-            columns = Randomly.nonEmptySubset(targetTables.getColumns()).stream()
-                    .map(c -> new ColumnReferenceNode<DatabendExpression, DatabendColumn>(c)).collect(Collectors.toList());
+            columns = generateRandomColumns();
         }
+        return columns;
+    }
+
+    List<Node<DatabendExpression>> generateRandomColumns() {
+        List<Node<DatabendExpression>> columns;
+        columns = Randomly.nonEmptySubset(targetTables.getColumns()).stream()
+                .map(c -> new ColumnReferenceNode<DatabendExpression, DatabendColumn>(c)).collect(Collectors.toList());
         return columns;
     }
 

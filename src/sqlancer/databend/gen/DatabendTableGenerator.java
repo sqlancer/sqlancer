@@ -3,21 +3,17 @@ package sqlancer.databend.gen;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.TypedExpressionGenerator;
-import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.databend.DatabendErrors;
 import sqlancer.databend.DatabendToStringVisitor;
 import sqlancer.databend.ast.DatabendExpression;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema.DatabendColumn;
 import sqlancer.databend.DatabendSchema.DatabendCompositeDataType;
 import sqlancer.databend.DatabendSchema.DatabendDataType;
-import sqlancer.databend.test.DatabendNoRECOracle;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class DatabendTableGenerator {
 
@@ -30,7 +26,7 @@ public class DatabendTableGenerator {
         sb.append("(");
         List<DatabendColumn> columns = getNewColumns();
         TypedExpressionGenerator<Node<DatabendExpression>, DatabendColumn, DatabendDataType> gen =
-                new DatabendNoRECExpressionGenerator(globalState).setColumns(columns);
+                new DatabendNewExpressionGenerator(globalState).setColumns(columns);
         for (int i = 0; i < columns.size(); i++) {
             if (i != 0) {
                 sb.append(", ");

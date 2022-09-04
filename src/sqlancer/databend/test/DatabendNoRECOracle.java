@@ -21,7 +21,7 @@ import sqlancer.databend.gen.DatabendExpressionGenerator;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema.*;
 import sqlancer.databend.gen.DatabendExpressionGenerator.DatabendCastOperation;
-import sqlancer.databend.gen.DatabendNoRECExpressionGenerator;
+import sqlancer.databend.gen.DatabendNewExpressionGenerator;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -45,7 +45,7 @@ public class DatabendNoRECOracle extends NoRECBase<DatabendGlobalState> implemen
         DatabendTables randomTables = s.getRandomTableNonEmptyTables(); //随机获得nr张表
         List<DatabendColumn> columns = randomTables.getColumns();
 //        DatabendExpressionGenerator gen = new DatabendExpressionGenerator(state).setColumns(columns);
-        DatabendNoRECExpressionGenerator gen = new DatabendNoRECExpressionGenerator(state).setColumns(columns);
+        DatabendNewExpressionGenerator gen = new DatabendNewExpressionGenerator(state).setColumns(columns);
 
         Node<DatabendExpression> randomWhereCondition = gen.generateExpression(DatabendDataType.BOOLEAN); //生成随机where条件，形式为ast
 

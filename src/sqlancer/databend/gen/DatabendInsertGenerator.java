@@ -1,11 +1,9 @@
 package sqlancer.databend.gen;
 
-import sqlancer.Randomly;
 import sqlancer.common.gen.AbstractInsertGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.databend.DatabendErrors;
-import sqlancer.databend.DatabendSchema;
 import sqlancer.databend.DatabendToStringVisitor;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema.DatabendColumn;
@@ -50,7 +48,7 @@ public class DatabendInsertGenerator extends AbstractInsertGenerator<DatabendCol
 //            sb.append(DatabendToStringVisitor.asString(new DatabendExpressionGenerator(globalState).generateConstant()));
 //        }
         String value = DatabendToStringVisitor.asString(
-                new DatabendNoRECExpressionGenerator(globalState).
+                new DatabendNewExpressionGenerator(globalState).
                         generateConstant(column.getType().getPrimitiveDataType())); //生成一个与column相同的常量类型
         sb.append(value);
 

@@ -19,13 +19,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class DatabendNoRECExpressionGenerator extends
+public class DatabendNewExpressionGenerator extends
         TypedExpressionGenerator<Node<DatabendExpression>, DatabendColumn, DatabendDataType> {
 
     private final DatabendGlobalState globalState;
     private boolean allowAggregateFunctions;
 
-    public DatabendNoRECExpressionGenerator(DatabendGlobalState globalState) {
+    public DatabendNewExpressionGenerator(DatabendGlobalState globalState) {
         this.globalState = globalState;
     }
 
@@ -58,6 +58,14 @@ public class DatabendNoRECExpressionGenerator extends
         }
     }
 
+    public List<Node<DatabendExpression>> generateExpressions(int nr, DatabendDataType type) {
+        List<Node<DatabendExpression>> expressions = new ArrayList<>();
+        for (int i = 0; i < nr; i++) {
+            expressions.add(generateExpression(type));
+        }
+        return expressions;
+    }
+
     private Node<DatabendExpression> generateIntExpression(int depth) {
 
         return null;
@@ -71,7 +79,7 @@ public class DatabendNoRECExpressionGenerator extends
                 getPostfix(depth + 1);
             case NOT:
                 getNOT(depth + 1);
-            case BETWEEN:
+            case BETWEEN: //TODO (NULL BETWEEN NULL AND NULL) 返回的是 NULL 需要注意
                 return getBetween(depth + 1);
             case IN_OPERATION:
                 return getIn(depth + 1);
@@ -214,18 +222,33 @@ public class DatabendNoRECExpressionGenerator extends
     }
 
     public enum DatabendAggregateFunction {
-        MAX(1), MIN(1), AVG(1), COUNT(1),SUM(1), STDDEV_POP(1),
+        MAX(1),
+        MIN(1),
+        AVG(1,DatabendDataType.INT,DatabendDataType.FLOAT),
+        COUNT(1),
+        SUM(1,DatabendDataType.INT,DatabendDataType.FLOAT),
+        STDDEV_POP(1),
         COVAR_POP(1), COVAR_SAMP(2);
         //, STRING_AGG(1), STDDEV_SAMP(1),VAR_SAMP(1), VAR_POP(1)
 
         private int nrArgs;
+        private DatabendDataType[] dataTypes;
 
-        DatabendAggregateFunction(int nrArgs) {
+        DatabendAggregateFunction(int nrArgs, DatabendDataType ...dataTypes) {
             this.nrArgs = nrArgs;
+            this.dataTypes = dataTypes;
         }
 
         public static DatabendAggregateFunction getRandom() {
             return Randomly.fromOptions(values());
+        }
+
+        public DatabendDataType getRandomType() {
+            if(dataTypes.length == 0) {
+                return Randomly.fromOptions(DatabendDataType.values());
+            } else {
+                return Randomly.fromOptions(dataTypes);
+            }
         }
 
         public int getNrArgs() {
@@ -237,7 +260,8 @@ public class DatabendNoRECExpressionGenerator extends
     public NewFunctionNode<DatabendExpression, DatabendAggregateFunction> generateArgsForAggregate(
             DatabendAggregateFunction aggregateFunction) {
         return new NewFunctionNode<DatabendExpression, DatabendAggregateFunction>(
-                generateExpressions(aggregateFunction.getNrArgs()), aggregateFunction);
+                generateExpressions(aggregateFunction.getNrArgs(),aggregateFunction.getRandomType()),
+                aggregateFunction);
     }
 
     public Node<DatabendExpression> generateAggregate() {

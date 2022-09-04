@@ -2,6 +2,7 @@ package sqlancer.databend;
 
 import sqlancer.common.ast.newast.NewToStringVisitor;
 import sqlancer.common.ast.newast.Node;
+import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.databend.ast.DatabendConstant;
 import sqlancer.databend.ast.DatabendExpression;
 import sqlancer.databend.ast.DatabendJoin;
@@ -41,6 +42,15 @@ public class DatabendToStringVisitor extends NewToStringVisitor<DatabendExpressi
     private void visit(DatabendConstant constant) {
         sb.append(constant.toString());
     }
+
+//    private void visitFromList(List<Node<DatabendExpression>> fromList) {
+//        for (int i = 0; i < fromList.size(); i++) {
+//            if (i != 0) {
+//                sb.append(" INNER JOIN ");
+//            }
+//            visit(fromList.get(i));
+//        }
+//    }
 
     private void visit(DatabendSelect select) {
         sb.append("SELECT ");

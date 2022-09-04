@@ -7,7 +7,7 @@ import sqlancer.databend.DatabendSchema;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema.DatabendColumn;
 import sqlancer.databend.DatabendSchema.DatabendTable;
-import sqlancer.databend.gen.DatabendNoRECExpressionGenerator;
+import sqlancer.databend.gen.DatabendNewExpressionGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +78,7 @@ public class DatabendJoin implements Node<DatabendExpression> {
             List<DatabendColumn> columns = new ArrayList<>(leftTable.getTable().getColumns());
             columns.addAll(rightTable.getTable().getColumns());
 //            DatabendExpressionGenerator joinGen = new DatabendExpressionGenerator(globalState).setColumns(columns);
-            DatabendNoRECExpressionGenerator joinGen = new DatabendNoRECExpressionGenerator(globalState).setColumns(columns);
+            DatabendNewExpressionGenerator joinGen = new DatabendNewExpressionGenerator(globalState).setColumns(columns);
 
             switch (JoinType.getRandom()) {
             case INNER:
