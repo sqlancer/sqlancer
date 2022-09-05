@@ -14,6 +14,7 @@ import sqlancer.databend.ast.DatabendUnaryPostfixOperation.DatabendUnaryPostfixO
 import sqlancer.databend.ast.DatabendUnaryPrefixOperation.DatabendUnaryPrefixOperator;
 import sqlancer.databend.ast.DatabendBinaryLogicalOperation.DatabendBinaryLogicalOperator;
 import sqlancer.databend.ast.DatabendBinaryComparisonOperation.DatabendBinaryComparisonOperator;
+import sqlancer.databend.ast.DatabendBinaryArithmeticOperation.DatabendBinaryArithmeticOperator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,11 +28,6 @@ public class DatabendNewExpressionGenerator extends
 
     public DatabendNewExpressionGenerator(DatabendGlobalState globalState) {
         this.globalState = globalState;
-    }
-
-    private enum BooleanExpression {
-        POSTFIX_OPERATOR, NOT, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON, LIKE, BETWEEN, IN_OPERATION;
-//        SIMILAR_TO, POSIX_REGEX, BINARY_RANGE_COMPARISON,FUNCTION, CAST,;
     }
 
     public Node<DatabendExpression> generateLeafNode(DatabendDataType dataType) {
@@ -49,6 +45,7 @@ public class DatabendNewExpressionGenerator extends
             case BOOLEAN:
                 return generateBooleanExpression(depth);
             case INT:
+                return generateIntExpression(depth);
             case FLOAT:
             case VARCHAR:
             case NULL:
@@ -66,9 +63,28 @@ public class DatabendNewExpressionGenerator extends
         return expressions;
     }
 
-    private Node<DatabendExpression> generateIntExpression(int depth) {
+    private enum IntExpression{
+        UNARY_OPERATION, BINARY_ARITHMETIC_OPERATION
+    }
 
-        return null;
+    private Node<DatabendExpression> generateIntExpression(int depth) {
+        IntExpression intExpression = Randomly.fromOptions(IntExpression.values());
+        switch (intExpression) {
+            case UNARY_OPERATION:
+                return new DatabendUnaryPrefixOperation(generateExpression(DatabendDataType.INT,depth+1),
+                        Randomly.getBoolean()? DatabendUnaryPrefixOperator.UNARY_PLUS : DatabendUnaryPrefixOperator.UNARY_MINUS);
+            case BINARY_ARITHMETIC_OPERATION:
+                return new DatabendBinaryArithmeticOperation(generateExpression(DatabendDataType.INT,depth+1),
+                        generateExpression(DatabendDataType.INT,depth+1),
+                        Randomly.fromOptions(DatabendBinaryArithmeticOperator.values()));
+            default:
+                throw new AssertionError();
+        }
+    }
+
+    private enum BooleanExpression {
+        POSTFIX_OPERATOR, NOT, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON, LIKE, BETWEEN, IN_OPERATION;
+//        SIMILAR_TO, POSIX_REGEX, BINARY_RANGE_COMPARISON,FUNCTION, CAST,;
     }
 
     Node<DatabendExpression> generateBooleanExpression(int depth) {
@@ -172,28 +188,29 @@ public class DatabendNewExpressionGenerator extends
         return new DatabendUnaryPostfixOperation(predicate,DatabendUnaryPostfixOperator.IS_NULL);
     }
 
-//    public Node<DatabendExpression> generateConstant(boolean isNullable) { //TODO 极小概率生成NULL值
-//        DatabendDataType type;
-//        do {
-//            type = Randomly.fromOptions(DatabendDataType.values());
-//        } while(!isNullable && type.equals(DatabendDataType.NULL)); //isNullable为假，同时获得NULL就重新获取
-//
-//        return generateConstant(type);
-//    }
+    public Node<DatabendExpression> generateConstant(DatabendDataType type,boolean isNullable) {
+        if(isNullable && Randomly.getBooleanWithSmallProbability()) {
+            createConstant(DatabendDataType.NULL);
+        }
+        return createConstant(type);
+    }
 
     @Override
     public Node<DatabendExpression> generateConstant(DatabendDataType type) {
-        Randomly r = globalState.getRandomly();
         if (Randomly.getBooleanWithSmallProbability()) {
             return DatabendConstant.createNullConstant();
         }
+        return createConstant(type);
+    }
 
+    public Node<DatabendExpression> createConstant(DatabendDataType type) {
+        Randomly r = globalState.getRandomly();
         switch (type) {
             case INT:
-                //不支持string转化故直接返回int constant
+                //TODO 已支持数值型string转化，待添加
                 return DatabendConstant.createIntConstant(r.getInteger());
             case BOOLEAN:
-                //不支持string转化故直接返回boolean constant
+                //TODO 已支持boolean型string转化，待添加
                 return DatabendConstant.createBooleanConstant(Randomly.getBoolean());
             case FLOAT:
                 return DatabendConstant.createFloatConstant((float) r.getDouble());

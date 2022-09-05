@@ -49,7 +49,7 @@ public class DatabendInsertGenerator extends AbstractInsertGenerator<DatabendCol
 //        }
         String value = DatabendToStringVisitor.asString(
                 new DatabendNewExpressionGenerator(globalState).
-                        generateConstant(column.getType().getPrimitiveDataType())); //生成一个与column相同的常量类型
+                        generateConstant(column.getType().getPrimitiveDataType(),column.isNullable())); //生成一个与column相同的常量类型
         sb.append(value);
 
     }

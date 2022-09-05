@@ -46,6 +46,29 @@ public class DatabendUnaryPrefixOperation extends NewUnaryPrefixOperatorNode<Dat
             protected DatabendConstant getExpectedValue(DatabendConstant expectedValue) {
                 return null; // TODO
             }
+        },
+
+        UNARY_PLUS("+",DatabendDataType.INT) {
+            @Override
+            public DatabendDataType getExpressionType() {
+                return DatabendDataType.INT;
+            }
+
+            @Override
+            protected DatabendConstant getExpectedValue(DatabendConstant expectedValue) {
+                return expectedValue;
+            }
+        },
+        UNARY_MINUS("-", DatabendDataType.INT) {
+            @Override
+            public DatabendDataType getExpressionType() {
+                return DatabendDataType.INT;
+            }
+
+            @Override
+            protected DatabendConstant getExpectedValue(DatabendConstant expectedValue) {
+                return null;
+            }
         };
 
 
