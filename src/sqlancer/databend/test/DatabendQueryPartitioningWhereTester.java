@@ -1,14 +1,13 @@
 package sqlancer.databend.test;
 
-import sqlancer.ComparatorHelper;
-import sqlancer.Randomly;
-import sqlancer.databend.DatabendErrors;
-import sqlancer.databend.DatabendToStringVisitor;
-import sqlancer.databend.DatabendProvider.DatabendGlobalState;
-
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import sqlancer.ComparatorHelper;
+import sqlancer.databend.DatabendErrors;
+import sqlancer.databend.DatabendProvider.DatabendGlobalState;
+import sqlancer.databend.DatabendToStringVisitor;
 
 public class DatabendQueryPartitioningWhereTester extends DatabendQueryPartitioningBase {
 
@@ -25,10 +24,11 @@ public class DatabendQueryPartitioningWhereTester extends DatabendQueryPartition
 
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
-        boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
-        if (orderBy) {
-            select.setOrderByExpressions(gen.generateOrderBys());
-        }
+        // boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
+        boolean orderBy = false;
+        // if (orderBy) { //TODO 待开启
+        // select.setOrderByExpressions(gen.generateOrderBys());
+        // }
         select.setWhereClause(predicate);
         String firstQueryString = DatabendToStringVisitor.asString(select);
         select.setWhereClause(negatedPredicate);

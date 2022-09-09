@@ -18,17 +18,18 @@ import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.databend.DatabendErrors;
+import sqlancer.databend.DatabendProvider.DatabendGlobalState;
+import sqlancer.databend.DatabendSchema.DatabendCompositeDataType;
+import sqlancer.databend.DatabendSchema.DatabendDataType;
 import sqlancer.databend.DatabendToStringVisitor;
+import sqlancer.databend.ast.DatabendBinaryArithmeticOperation.DatabendBinaryArithmeticOperator;
+import sqlancer.databend.ast.DatabendCastOperation;
 import sqlancer.databend.ast.DatabendExpression;
 import sqlancer.databend.ast.DatabendSelect;
-import sqlancer.databend.DatabendSchema.DatabendDataType;
-import sqlancer.databend.DatabendSchema.DatabendCompositeDataType;
 import sqlancer.databend.ast.DatabendUnaryPostfixOperation.DatabendUnaryPostfixOperator;
+import sqlancer.databend.ast.DatabendUnaryPrefixOperation.DatabendUnaryPrefixOperator;
 import sqlancer.databend.gen.DatabendNewExpressionGenerator.DatabendAggregateFunction;
-import sqlancer.databend.gen.DatabendExpressionGenerator.DatabendBinaryArithmeticOperator;
-import sqlancer.databend.gen.DatabendExpressionGenerator.DatabendCastOperation;
-import sqlancer.databend.gen.DatabendExpressionGenerator.DatabendUnaryPrefixOperator;
-import sqlancer.databend.DatabendProvider.DatabendGlobalState;
+
 public class DatabendQueryPartitioningAggregateTester extends DatabendQueryPartitioningBase implements TestOracle {
 
     private String firstResult;
@@ -55,9 +56,9 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
             fetchColumns.add(gen.generateAggregate());
         }
         select.setFetchColumns(Arrays.asList(aggregate));
-//        if (Randomly.getBooleanWithRatherLowProbability()) {
-//            select.setOrderByExpressions(gen.generateOrderBys());
-//        }
+        // if (Randomly.getBooleanWithRatherLowProbability()) {
+        // select.setOrderByExpressions(gen.generateOrderBys());
+        // }
         originalQuery = DatabendToStringVisitor.asString(select);
         firstResult = getAggregateResult(originalQuery);
         metamorphicQuery = createMetamorphicUnionQuery(select, aggregate, select.getFromList());
@@ -77,7 +78,8 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
     }
 
     private String createMetamorphicUnionQuery(DatabendSelect select,
-                                               NewFunctionNode<DatabendExpression, DatabendAggregateFunction> aggregate, List<Node<DatabendExpression>> from) {
+            NewFunctionNode<DatabendExpression, DatabendAggregateFunction> aggregate,
+            List<Node<DatabendExpression>> from) {
         String metamorphicQuery;
         Node<DatabendExpression> whereClause = gen.generateExpression(DatabendDataType.BOOLEAN);
         Node<DatabendExpression> negatedClause = new NewUnaryPrefixOperatorNode<>(whereClause,
@@ -109,7 +111,7 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
                 try {
                     resultString = result.getString(1);
                 } catch (Exception e) {
-                    System.out.println("Invalid integer format for value"); //TODO 超过integer范围无法格式化异常，还未有解决方案
+                    System.out.println("Invalid integer format for value"); // TODO 超过integer范围无法格式化异常，还未有解决方案
                 }
             }
             return resultString;
@@ -122,7 +124,8 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
         }
     }
 
-    private List<Node<DatabendExpression>> mapped(NewFunctionNode<DatabendExpression, DatabendAggregateFunction> aggregate) {
+    private List<Node<DatabendExpression>> mapped(
+            NewFunctionNode<DatabendExpression, DatabendAggregateFunction> aggregate) {
         DatabendCastOperation count;
         switch (aggregate.getFunc()) {
         case COUNT:
@@ -131,22 +134,23 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
         case SUM:
             return aliasArgs(Arrays.asList(aggregate));
         case AVG:
-            NewFunctionNode<DatabendExpression, DatabendAggregateFunction> sum = new NewFunctionNode<>(aggregate.getArgs(),
-                    DatabendAggregateFunction.SUM);
-            count = new DatabendCastOperation(new NewFunctionNode<>(aggregate.getArgs(), DatabendAggregateFunction.COUNT),
+            NewFunctionNode<DatabendExpression, DatabendAggregateFunction> sum = new NewFunctionNode<>(
+                    aggregate.getArgs(), DatabendAggregateFunction.SUM);
+            count = new DatabendCastOperation(
+                    new NewFunctionNode<>(aggregate.getArgs(), DatabendAggregateFunction.COUNT),
                     new DatabendCompositeDataType(DatabendDataType.FLOAT, 8));
             return aliasArgs(Arrays.asList(sum, count));
         case STDDEV_POP:
             NewFunctionNode<DatabendExpression, DatabendAggregateFunction> sumSquared = new NewFunctionNode<>(
                     Arrays.asList(new NewBinaryOperatorNode<>(aggregate.getArgs().get(0), aggregate.getArgs().get(0),
-                            DatabendBinaryArithmeticOperator.MULT)),
+                            DatabendBinaryArithmeticOperator.MULTIPLICATION)),
                     DatabendAggregateFunction.SUM);
             count = new DatabendCastOperation(
                     new NewFunctionNode<DatabendExpression, DatabendAggregateFunction>(aggregate.getArgs(),
                             DatabendAggregateFunction.COUNT),
                     new DatabendCompositeDataType(DatabendDataType.FLOAT, 8));
-            NewFunctionNode<DatabendExpression, DatabendAggregateFunction> avg = new NewFunctionNode<>(aggregate.getArgs(),
-                    DatabendAggregateFunction.AVG);
+            NewFunctionNode<DatabendExpression, DatabendAggregateFunction> avg = new NewFunctionNode<>(
+                    aggregate.getArgs(), DatabendAggregateFunction.AVG);
             return aliasArgs(Arrays.asList(sumSquared, count, avg));
         default:
             throw new AssertionError(aggregate.getFunc());
@@ -183,7 +187,7 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
         leftSelect.setWhereClause(whereClause);
         leftSelect.setJoinList(joinList);
         if (Randomly.getBooleanWithSmallProbability()) {
-//            leftSelect.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
+            leftSelect.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
             leftSelect.setGroupByExpressions(select.getFetchColumns());
         }
         return leftSelect;

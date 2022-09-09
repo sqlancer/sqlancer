@@ -1,5 +1,11 @@
 package sqlancer.databend.test;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.ColumnReferenceNode;
 import sqlancer.common.ast.newast.Node;
@@ -8,24 +14,18 @@ import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.databend.DatabendErrors;
-import sqlancer.databend.DatabendSchema;
-import sqlancer.databend.ast.DatabendExpression;
-import sqlancer.databend.ast.DatabendJoin;
-import sqlancer.databend.ast.DatabendSelect;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
+import sqlancer.databend.DatabendSchema;
 import sqlancer.databend.DatabendSchema.DatabendColumn;
 import sqlancer.databend.DatabendSchema.DatabendTable;
 import sqlancer.databend.DatabendSchema.DatabendTables;
+import sqlancer.databend.ast.DatabendExpression;
+import sqlancer.databend.ast.DatabendJoin;
+import sqlancer.databend.ast.DatabendSelect;
 import sqlancer.databend.gen.DatabendNewExpressionGenerator;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-public class DatabendQueryPartitioningBase
-        extends TernaryLogicPartitioningOracleBase<Node<DatabendExpression>, DatabendGlobalState> implements TestOracle {
+public class DatabendQueryPartitioningBase extends
+        TernaryLogicPartitioningOracleBase<Node<DatabendExpression>, DatabendGlobalState> implements TestOracle {
 
     DatabendSchema s;
     DatabendTables targetTables;
@@ -65,7 +65,7 @@ public class DatabendQueryPartitioningBase
 
     List<Node<DatabendExpression>> generateFetchColumns() {
         List<Node<DatabendExpression>> columns = new ArrayList<>();
-        if (Randomly.getBoolean()) { //TODO 为什么会返回 false 或 true 字段
+        if (Randomly.getBoolean()) { // TODO 为什么会返回 false 或 true 字段
             columns.add(new ColumnReferenceNode<>(new DatabendColumn("*", null, false, false)));
         } else {
             columns = generateRandomColumns();

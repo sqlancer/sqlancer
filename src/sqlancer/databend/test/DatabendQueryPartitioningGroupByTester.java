@@ -1,19 +1,19 @@
 package sqlancer.databend.test;
 
-import sqlancer.ComparatorHelper;
-import sqlancer.Randomly;
-import sqlancer.common.ast.newast.ColumnReferenceNode;
-import sqlancer.common.ast.newast.Node;
-import sqlancer.databend.ast.DatabendExpression;
-import sqlancer.databend.DatabendErrors;
-import sqlancer.databend.DatabendToStringVisitor;
-import sqlancer.databend.DatabendProvider.DatabendGlobalState;
-import sqlancer.databend.DatabendSchema.DatabendColumn;
-
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import sqlancer.ComparatorHelper;
+import sqlancer.Randomly;
+import sqlancer.common.ast.newast.ColumnReferenceNode;
+import sqlancer.common.ast.newast.Node;
+import sqlancer.databend.DatabendErrors;
+import sqlancer.databend.DatabendProvider.DatabendGlobalState;
+import sqlancer.databend.DatabendSchema.DatabendColumn;
+import sqlancer.databend.DatabendToStringVisitor;
+import sqlancer.databend.ast.DatabendExpression;
 
 public class DatabendQueryPartitioningGroupByTester extends DatabendQueryPartitioningBase {
 

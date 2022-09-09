@@ -1,19 +1,25 @@
 package sqlancer.databend;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
-import sqlancer.DBMSSpecificOptions;
-import sqlancer.OracleFactory;
-import sqlancer.common.oracle.CompositeTestOracle;
-import sqlancer.common.oracle.TestOracle;
-import sqlancer.databend.test.*;
-import sqlancer.databend.DatabendOptions.DatabendOracleFactory;
-import sqlancer.databend.test.DatabendQueryPartitioningAggregateTester;
-import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
+
+import sqlancer.DBMSSpecificOptions;
+import sqlancer.OracleFactory;
+import sqlancer.common.oracle.CompositeTestOracle;
+import sqlancer.common.oracle.TestOracle;
+import sqlancer.databend.DatabendOptions.DatabendOracleFactory;
+import sqlancer.databend.DatabendProvider.DatabendGlobalState;
+import sqlancer.databend.test.DatabendNoRECOracle;
+import sqlancer.databend.test.DatabendQueryPartitioningAggregateTester;
+import sqlancer.databend.test.DatabendQueryPartitioningDistinctTester;
+import sqlancer.databend.test.DatabendQueryPartitioningGroupByTester;
+import sqlancer.databend.test.DatabendQueryPartitioningHavingTester;
+import sqlancer.databend.test.DatabendQueryPartitioningWhereTester;
 
 @Parameters(commandDescription = "Databend")
 public class DatabendOptions implements DBMSSpecificOptions<DatabendOracleFactory> {

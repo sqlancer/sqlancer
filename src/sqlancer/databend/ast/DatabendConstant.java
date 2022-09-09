@@ -1,9 +1,9 @@
 package sqlancer.databend.ast;
 
-import sqlancer.common.ast.newast.Node;
-
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+
+import sqlancer.common.ast.newast.Node;
 
 public class DatabendConstant implements Node<DatabendExpression> {
 

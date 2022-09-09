@@ -6,21 +6,19 @@ import sqlancer.common.ast.newast.Node;
 
 public class DatabendBinaryArithmeticOperation extends NewBinaryOperatorNode<DatabendExpression> {
 
-    public DatabendBinaryArithmeticOperation(Node<DatabendExpression> left, Node<DatabendExpression> right, BinaryOperatorNode.Operator op) {
+    public DatabendBinaryArithmeticOperation(Node<DatabendExpression> left, Node<DatabendExpression> right,
+            BinaryOperatorNode.Operator op) {
         super(left, right, op);
     }
 
-    public enum DatabendBinaryArithmeticOperator implements BinaryOperatorNode.Operator{
-        ADDITION("+"),
-        SUBTRACTION("-"),
-        MULTIPLICATION("*"),
-        DIVISION("/"),
-        MODULO("%");
+    public enum DatabendBinaryArithmeticOperator implements BinaryOperatorNode.Operator {
+        ADDITION("+"), SUBTRACTION("-"), MULTIPLICATION("*"), DIVISION("/"), MODULO("%");
+
+        private final String textRepresentation;
 
         DatabendBinaryArithmeticOperator(String text) {
             textRepresentation = text;
         }
-        private String textRepresentation;
 
         @Override
         public String getTextRepresentation() {

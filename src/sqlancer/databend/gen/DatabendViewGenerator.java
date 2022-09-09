@@ -1,12 +1,11 @@
 package sqlancer.databend.gen;
 
-import sqlancer.GlobalState;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.databend.DatabendErrors;
-import sqlancer.databend.DatabendToStringVisitor;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
+import sqlancer.databend.DatabendToStringVisitor;
 
 public final class DatabendViewGenerator {
 
@@ -27,7 +26,8 @@ public final class DatabendViewGenerator {
             sb.append(i);
         }
         sb.append(") AS ");
-        sb.append(DatabendToStringVisitor.asString(DatabendRandomQuerySynthesizer.generateSelect(globalState, nrColumns)));
+        sb.append(DatabendToStringVisitor
+                .asString(DatabendRandomQuerySynthesizer.generateSelect(globalState, nrColumns)));
         ExpectedErrors errors = new ExpectedErrors();
         DatabendErrors.addExpressionErrors(errors);
         DatabendErrors.addGroupByErrors(errors);

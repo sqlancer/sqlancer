@@ -1,13 +1,5 @@
 package sqlancer.databend;
 
-import sqlancer.IgnoreMeException;
-import sqlancer.Randomly;
-import sqlancer.SQLConnection;
-import sqlancer.common.DBMSCommon;
-import sqlancer.common.schema.*;
-import sqlancer.databend.DatabendProvider.DatabendGlobalState;
-import sqlancer.databend.DatabendSchema.DatabendTable;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -15,12 +7,24 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import sqlancer.IgnoreMeException;
+import sqlancer.Randomly;
+import sqlancer.SQLConnection;
+import sqlancer.common.DBMSCommon;
+import sqlancer.common.schema.AbstractRelationalTable;
+import sqlancer.common.schema.AbstractSchema;
+import sqlancer.common.schema.AbstractTableColumn;
+import sqlancer.common.schema.AbstractTables;
+import sqlancer.common.schema.TableIndex;
+import sqlancer.databend.DatabendProvider.DatabendGlobalState;
+import sqlancer.databend.DatabendSchema.DatabendTable;
+
 public class DatabendSchema extends AbstractSchema<DatabendGlobalState, DatabendTable> {
 
     public enum DatabendDataType {
 
         INT, VARCHAR, BOOLEAN, FLOAT, NULL;
-        //, DATE, TIMESTAMP
+        // , DATE, TIMESTAMP
 
         public static DatabendDataType getRandomWithoutNull() {
             DatabendDataType dt;
@@ -74,8 +78,8 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
                 break;
             case BOOLEAN:
             case VARCHAR:
-//            case DATE:
-//            case TIMESTAMP:
+                // case DATE:
+                // case TIMESTAMP:
                 size = 0;
                 break;
             default:
@@ -114,10 +118,10 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
                 }
             case BOOLEAN:
                 return Randomly.fromOptions("BOOLEAN", "BOOL");
-//            case TIMESTAMP:
-//                return Randomly.fromOptions("TIMESTAMP", "DATETIME");
-//            case DATE:
-//                return Randomly.fromOptions("DATE");
+            // case TIMESTAMP:
+            // return Randomly.fromOptions("TIMESTAMP", "DATETIME");
+            // case DATE:
+            // return Randomly.fromOptions("DATE");
             case NULL:
                 return Randomly.fromOptions("NULL");
             default:
@@ -132,7 +136,8 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
         private final boolean isPrimaryKey;
         private final boolean isNullable;
 
-        public DatabendColumn(String name, DatabendCompositeDataType columnType, boolean isPrimaryKey, boolean isNullable) {
+        public DatabendColumn(String name, DatabendCompositeDataType columnType, boolean isPrimaryKey,
+                boolean isNullable) {
             super(name, null, columnType);
             this.isPrimaryKey = isPrimaryKey;
             this.isNullable = isNullable;
@@ -201,12 +206,12 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
         case "BOOLEAN":
             primitiveType = DatabendDataType.BOOLEAN;
             break;
-//        case "DATE":
-//            primitiveType = DatabendDataType.DATE;
-//            break;
-//        case "TIMESTAMP":
-//            primitiveType = DatabendDataType.TIMESTAMP;
-//            break;
+        // case "DATE":
+        // primitiveType = DatabendDataType.DATE;
+        // break;
+        // case "TIMESTAMP":
+        // primitiveType = DatabendDataType.TIMESTAMP;
+        // break;
         case "NULL":
             primitiveType = DatabendDataType.NULL;
             break;
@@ -230,12 +235,12 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
 
     public static DatabendSchema fromConnection(SQLConnection con, String databaseName) throws SQLException {
         List<DatabendTable> databaseTables = new ArrayList<>();
-        List<String> tableNames = getTableNames(con,databaseName);
+        List<String> tableNames = getTableNames(con, databaseName);
         for (String tableName : tableNames) {
             if (DBMSCommon.matchesIndexName(tableName)) {
                 continue; // TODO: unexpected?
             }
-            List<DatabendColumn> databaseColumns = getTableColumns(con, tableName,databaseName);
+            List<DatabendColumn> databaseColumns = getTableColumns(con, tableName, databaseName);
             boolean isView = tableName.startsWith("v");
             DatabendTable t = new DatabendTable(tableName, databaseColumns, isView);
             for (DatabendColumn c : databaseColumns) {
@@ -250,18 +255,20 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
     private static List<String> getTableNames(SQLConnection con, String databaseName) throws SQLException {
         List<String> tableNames = null;
         tableNames = new ArrayList<>();
-        //SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE table_schema != 'system' and table_schema != 'INFORMATION_SCHEMA' and table_type='BASE TABLE'
-        //"SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = '%s' and table_type='BASE TABLE' ",databaseName
+        // SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE table_schema != 'system' and table_schema !=
+        // 'INFORMATION_SCHEMA' and table_type='BASE TABLE'
+        // "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = '%s' and table_type='BASE TABLE' ",databaseName
         final String sqlStatement = String.format(
-                "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = '%s' and table_type='BASE TABLE' ",databaseName);
+                "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = '%s' and table_type='BASE TABLE' ",
+                databaseName);
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery(sqlStatement)) {
-                try{  //没有catch的话rs.next()会报SQLException：Not a navigable ResultSet
+                try { // 没有catch的话rs.next()会报SQLException：Not a navigable ResultSet
                     while (rs.next()) {
                         tableNames.add(rs.getString("table_name"));
                     }
-                } catch (Exception e){
-//                    e.printStackTrace();
+                } catch (Exception e) {
+                    // e.printStackTrace();
                     System.out.println("TableNames->SQLException：Not a navigable ResultSet");
                 }
             }
@@ -269,20 +276,22 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
         return tableNames;
     }
 
-    private static List<DatabendColumn> getTableColumns(SQLConnection con, String tableName, String databaseName) throws SQLException {
+    private static List<DatabendColumn> getTableColumns(SQLConnection con, String tableName, String databaseName)
+            throws SQLException {
         List<DatabendColumn> columns = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery(String.format(
                     "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = '%s' and table_name ='%s'",
-                    databaseName,tableName))) {
-                try{ //没有catch的话rs.next()会报SQLException：Not a navigable ResultSet
+                    databaseName, tableName))) {
+                try { // 没有catch的话rs.next()会报SQLException：Not a navigable ResultSet
                     while (rs.next()) {
                         String columnName = rs.getString("column_name");
                         String dataType = rs.getString("data_type");
                         boolean isNullable = rs.getBoolean("is_nullable");
-//                    boolean isPrimaryKey = rs.getString("pk").contains("true");
-                        boolean isPrimaryKey = false; //没找到主键元数据
-                        DatabendColumn c = new DatabendColumn(columnName, getColumnType(dataType), isPrimaryKey, isNullable);
+                        // boolean isPrimaryKey = rs.getString("pk").contains("true");
+                        boolean isPrimaryKey = false; // 没找到主键元数据
+                        DatabendColumn c = new DatabendColumn(columnName, getColumnType(dataType), isPrimaryKey,
+                                isNullable);
                         columns.add(c);
                     }
                 } catch (Exception e) {
@@ -290,10 +299,11 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
                 }
             }
         }
-        if (columns.stream().noneMatch(c -> c.isPrimaryKey())) {
-            // TODO: implement an option to enable/disable rowids
-//            columns.add(new DatabendColumn("rowid", new DatabendCompositeDataType(DatabendDataType.INT, 4), false, false));
-        }
+        // if (columns.stream().noneMatch(c -> c.isPrimaryKey())) {
+        // TODO: implement an option to enable/disable rowids
+        // columns.add(new DatabendColumn("rowid", new DatabendCompositeDataType(DatabendDataType.INT, 4), false,
+        // false));
+        // }
         return columns;
     }
 

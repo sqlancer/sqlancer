@@ -6,36 +6,36 @@ import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.databend.DatabendSchema.DatabendDataType;
 
-
 public class DatabendUnaryPostfixOperation extends NewUnaryPostfixOperatorNode<DatabendExpression> {
 
-//    private final Node<DatabendExpression> expr;
-//    private final DatabendUnaryPostfixOperator op;
+    // private final Node<DatabendExpression> expr;
+    // private final DatabendUnaryPostfixOperator op;
     private boolean negate;
 
-    public DatabendUnaryPostfixOperation(Node<DatabendExpression> expr, DatabendUnaryPostfixOperator op, boolean negate) {
-        super(expr,op);
+    public DatabendUnaryPostfixOperation(Node<DatabendExpression> expr, DatabendUnaryPostfixOperator op,
+            boolean negate) {
+        super(expr, op);
         setNegate(negate);
     }
 
     public DatabendUnaryPostfixOperation(Node<DatabendExpression> expr, DatabendUnaryPostfixOperator op) {
-        super(expr,op);
+        super(expr, op);
     }
 
     public enum DatabendUnaryPostfixOperator implements BinaryOperatorNode.Operator {
-        IS_NULL("IS NULL"){
+        IS_NULL("IS NULL") {
             @Override
             public DatabendDataType[] getInputDataTypes() {
                 return DatabendDataType.values();
             }
         },
-        IS_NOT_NULL("IS NOT NULL"){
+        IS_NOT_NULL("IS NOT NULL") {
             @Override
             public DatabendDataType[] getInputDataTypes() {
                 return DatabendDataType.values();
             }
         };
-        //IS
+        // IS
 
         private final String textRepresentations;
 
@@ -64,7 +64,7 @@ public class DatabendUnaryPostfixOperation extends NewUnaryPostfixOperatorNode<D
         this.negate = negate;
     }
 
-//    @Override
+    // @Override
     public Node<DatabendExpression> getExpression() {
         return getExpr();
     }
@@ -74,8 +74,8 @@ public class DatabendUnaryPostfixOperation extends NewUnaryPostfixOperatorNode<D
         return this.op.getTextRepresentation();
     }
 
-//    @Override
-//    public OperatorKind getOperatorKind() {
-//        return OperatorKind.POSTFIX;
-//    }
+    // @Override
+    // public OperatorKind getOperatorKind() {
+    // return OperatorKind.POSTFIX;
+    // }
 }

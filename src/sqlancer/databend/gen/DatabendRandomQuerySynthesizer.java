@@ -1,20 +1,20 @@
 package sqlancer.databend.gen;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.ast.newast.TableReferenceNode;
+import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema;
+import sqlancer.databend.DatabendSchema.DatabendTable;
+import sqlancer.databend.DatabendSchema.DatabendTables;
 import sqlancer.databend.ast.DatabendConstant;
 import sqlancer.databend.ast.DatabendExpression;
 import sqlancer.databend.ast.DatabendJoin;
 import sqlancer.databend.ast.DatabendSelect;
-import sqlancer.databend.DatabendProvider.DatabendGlobalState;
-import sqlancer.databend.DatabendSchema.DatabendTable;
-import sqlancer.databend.DatabendSchema.DatabendTables;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public final class DatabendRandomQuerySynthesizer {
 
@@ -23,8 +23,8 @@ public final class DatabendRandomQuerySynthesizer {
 
     public static DatabendSelect generateSelect(DatabendGlobalState globalState, int nrColumns) {
         DatabendTables targetTables = globalState.getSchema().getRandomTableNonEmptyTables();
-//        DatabendExpressionGenerator gen = new DatabendExpressionGenerator(globalState)
-//                .setColumns(targetTables.getColumns());
+        // DatabendExpressionGenerator gen = new DatabendExpressionGenerator(globalState)
+        // .setColumns(targetTables.getColumns());
         DatabendNewExpressionGenerator gen = new DatabendNewExpressionGenerator(globalState)
                 .setColumns(targetTables.getColumns());
         DatabendSelect select = new DatabendSelect();
@@ -58,16 +58,17 @@ public final class DatabendRandomQuerySynthesizer {
         }
 
         if (Randomly.getBoolean()) {
-            select.setLimitClause(DatabendConstant.createIntConstant(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)));
+            select.setLimitClause(
+                    DatabendConstant.createIntConstant(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)));
         }
         if (Randomly.getBoolean()) {
             select.setOffsetClause(
                     DatabendConstant.createIntConstant(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)));
         }
         // TODO 待添加HavingClause
-//        if (Randomly.getBoolean()) {
-//            select.setHavingClause(gen.generateHavingClause());
-//        }
+        // if (Randomly.getBoolean()) {
+        // select.setHavingClause(gen.generateHavingClause());
+        // }
         return select;
     }
 
