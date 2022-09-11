@@ -13,43 +13,7 @@ public class DatabendBinaryLogicalOperation extends NewBinaryOperatorNode<Databe
     }
 
     public enum DatabendBinaryLogicalOperator implements BinaryOperatorNode.Operator {
-        AND("AND", "and") {
-            // @Override
-            // public DatabendNoRECConstant apply(DatabendNoRECConstant left, DatabendNoRECConstant right) {
-            // if (left.isNull() && right.isNull()) {
-            // return DatabendNoRECConstant.createNullConstant();
-            // } else if (left.isNull()) {
-            // if (right.asBooleanNotNull()) {
-            // return DatabendNoRECConstant.createNullConstant();
-            // } else {
-            // return DatabendNoRECConstant.createFalse();
-            // }
-            // } else if (right.isNull()) {
-            // if (left.asBooleanNotNull()) {
-            // return DatabendNoRECConstant.createNullConstant();
-            // } else {
-            // return DatabendNoRECConstant.createFalse();
-            // }
-            // } else {
-            // return left.asBooleanNotNull() && right.asBooleanNotNull() ? DatabendNoRECConstant.createTrue()
-            // : DatabendNoRECConstant.createFalse();
-            // }
-            // }
-        },
-        OR("OR", "or") {
-            // @Override
-            // public ClickHouseConstant apply(ClickHouseConstant left, ClickHouseConstant right) {
-            // if (!left.isNull() && left.asBooleanNotNull()) {
-            // return ClickHouseConstant.createTrue();
-            // } else if (!right.isNull() && right.asBooleanNotNull()) {
-            // return ClickHouseConstant.createTrue();
-            // } else if (left.isNull() || right.isNull()) {
-            // return ClickHouseConstant.createNullConstant();
-            // } else {
-            // return ClickHouseConstant.createFalse();
-            // }
-            // }
-        };
+        AND("AND", "and"), OR("OR", "or");
 
         private final String[] textRepresentations;
 
@@ -65,8 +29,6 @@ public class DatabendBinaryLogicalOperation extends NewBinaryOperatorNode<Databe
         public DatabendBinaryLogicalOperator getRandomOp() {
             return Randomly.fromOptions(values());
         }
-
-        // public abstract DatabendNoRECConstant apply(DatabendNoRECConstant left, DatabendNoRECConstant right);
 
         public static DatabendBinaryLogicalOperator getRandom() {
             return Randomly.fromOptions(values());

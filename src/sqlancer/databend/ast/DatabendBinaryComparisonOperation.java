@@ -12,10 +12,8 @@ public class DatabendBinaryComparisonOperation extends NewBinaryOperatorNode<Dat
     }
 
     public enum DatabendBinaryComparisonOperator implements BinaryOperatorNode.Operator {
-        EQUALS("="),
-        // IS_DISTINCT("IS DISTINCT FROM"),
-        // IS_NOT_DISTINCT("IS NOT DISTINCT FROM"),
-        NOT_EQUALS("!="), LESS("<"), LESS_EQUALS("<="), GREATER(">"), GREATER_EQUALS(">=");
+        EQUALS("="), IS_DISTINCT("IS DISTINCT FROM"), IS_NOT_DISTINCT("IS NOT DISTINCT FROM"), NOT_EQUALS("!="),
+        LESS("<"), LESS_EQUALS("<="), GREATER(">"), GREATER_EQUALS(">=");
 
         private final String textRepresentation;
 

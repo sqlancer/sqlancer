@@ -23,8 +23,6 @@ public final class DatabendRandomQuerySynthesizer {
 
     public static DatabendSelect generateSelect(DatabendGlobalState globalState, int nrColumns) {
         DatabendTables targetTables = globalState.getSchema().getRandomTableNonEmptyTables();
-        // DatabendExpressionGenerator gen = new DatabendExpressionGenerator(globalState)
-        // .setColumns(targetTables.getColumns());
         DatabendNewExpressionGenerator gen = new DatabendNewExpressionGenerator(globalState)
                 .setColumns(targetTables.getColumns());
         DatabendSelect select = new DatabendSelect();
@@ -50,12 +48,13 @@ public final class DatabendRandomQuerySynthesizer {
         if (Randomly.getBoolean()) {
             select.setWhereClause(gen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN));
         }
-        if (Randomly.getBoolean()) {
-            select.setOrderByExpressions(gen.generateOrderBys());
-        }
-        if (Randomly.getBoolean()) {
-            select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
-        }
+        // if (Randomly.getBoolean()) {//TODO order by超过实际行数
+        // select.setOrderByExpressions(gen.generateOrderBys());
+        // }
+
+        // if (Randomly.getBoolean()) { //TODO group by超过实际行数
+        // select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
+        // }
 
         if (Randomly.getBoolean()) {
             select.setLimitClause(

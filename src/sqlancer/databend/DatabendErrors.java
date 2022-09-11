@@ -51,6 +51,8 @@ public final class DatabendErrors {
                                                     // removed column
         errors.add("Contents of view were altered: types don't match!");
         errors.add("Not implemented: ROUND(DECIMAL, INTEGER) with non-constant precision is not supported");
+        // TODO Databend待修复的bug（union schema error mismatch）
+        errors.add("unexpected end of file (failed to fill whole buffer)");
     }
 
     private static void addRegexErrors(ExpectedErrors errors) {

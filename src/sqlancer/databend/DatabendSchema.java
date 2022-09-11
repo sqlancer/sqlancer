@@ -255,21 +255,14 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
     private static List<String> getTableNames(SQLConnection con, String databaseName) throws SQLException {
         List<String> tableNames = null;
         tableNames = new ArrayList<>();
-        // SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE table_schema != 'system' and table_schema !=
-        // 'INFORMATION_SCHEMA' and table_type='BASE TABLE'
-        // "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = '%s' and table_type='BASE TABLE' ",databaseName
+
         final String sqlStatement = String.format(
                 "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = '%s' and table_type='BASE TABLE' ",
                 databaseName);
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery(sqlStatement)) {
-                try { // 没有catch的话rs.next()会报SQLException：Not a navigable ResultSet
-                    while (rs.next()) {
-                        tableNames.add(rs.getString("table_name"));
-                    }
-                } catch (Exception e) {
-                    // e.printStackTrace();
-                    System.out.println("TableNames->SQLException：Not a navigable ResultSet");
+                while (rs.next()) {
+                    tableNames.add(rs.getString("table_name"));
                 }
             }
         }

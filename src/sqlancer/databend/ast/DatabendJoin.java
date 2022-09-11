@@ -77,7 +77,6 @@ public class DatabendJoin implements Node<DatabendExpression> {
             TableReferenceNode<DatabendExpression, DatabendTable> rightTable = tableList.remove(0);
             List<DatabendColumn> columns = new ArrayList<>(leftTable.getTable().getColumns());
             columns.addAll(rightTable.getTable().getColumns());
-            // DatabendExpressionGenerator joinGen = new DatabendExpressionGenerator(globalState).setColumns(columns);
             DatabendNewExpressionGenerator joinGen = new DatabendNewExpressionGenerator(globalState)
                     .setColumns(columns);
 

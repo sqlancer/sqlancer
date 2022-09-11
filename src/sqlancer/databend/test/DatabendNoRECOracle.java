@@ -47,12 +47,9 @@ public class DatabendNoRECOracle extends NoRECBase<DatabendGlobalState> implemen
     public void check() throws SQLException {
         DatabendTables randomTables = s.getRandomTableNonEmptyTables(); // 随机获得nr张表
         List<DatabendColumn> columns = randomTables.getColumns();
-        // DatabendExpressionGenerator gen = new DatabendExpressionGenerator(state).setColumns(columns);
         DatabendNewExpressionGenerator gen = new DatabendNewExpressionGenerator(state).setColumns(columns);
 
         Node<DatabendExpression> randomWhereCondition = gen.generateExpression(DatabendDataType.BOOLEAN); // 生成随机where条件，形式为ast
-
-        // System.out.println(DatabendToStringVisitor.asString(randomWhereCondition));
 
         List<DatabendTable> tables = randomTables.getTables();
         List<TableReferenceNode<DatabendExpression, DatabendTable>> tableList = tables.stream()
@@ -87,7 +84,6 @@ public class DatabendNoRECOracle extends NoRECBase<DatabendGlobalState> implemen
         int secondCount = 0;
         unoptimizedQueryString = "SELECT SUM(count) FROM (" + DatabendToStringVisitor.asString(select) + ") as res";
         errors.add("canceling statement due to statement timeout");
-        // System.out.println("Second: " + unoptimizedQueryString);
         SQLQueryAdapter q = new SQLQueryAdapter(unoptimizedQueryString, errors);
         SQLancerResultSet rs;
         try {
@@ -130,7 +126,6 @@ public class DatabendNoRECOracle extends NoRECBase<DatabendGlobalState> implemen
             if (options.logEachSelect()) {
                 logger.writeCurrent(optimizedQueryString);
             }
-            // System.out.println("First: " + optimizedQueryString);
             try (ResultSet rs = stat.executeQuery(optimizedQueryString)) {
                 while (rs.next()) {
                     firstCount++;

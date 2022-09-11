@@ -107,9 +107,9 @@ public class DatabendNewExpressionGenerator
         BooleanExpression option = Randomly.fromList(validOptions);
         switch (option) {
         case POSTFIX_OPERATOR:
-            getPostfix(depth + 1);
+            return getPostfix(depth + 1);
         case NOT:
-            getNOT(depth + 1);
+            return getNOT(depth + 1);
         case BETWEEN: // TODO (NULL BETWEEN NULL AND NULL) 返回的是 NULL 需要注意
             return getBetween(depth + 1);
         case IN_OPERATION:

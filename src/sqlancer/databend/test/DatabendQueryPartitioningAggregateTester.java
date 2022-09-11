@@ -111,7 +111,7 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
                 try {
                     resultString = result.getString(1);
                 } catch (Exception e) {
-                    System.out.println("Invalid integer format for value"); // TODO 超过integer范围无法格式化异常，还未有解决方案
+                    throw new IgnoreMeException(); // TODO 超过integer范围无法格式化异常，还未有解决方案
                 }
             }
             return resultString;
@@ -171,7 +171,7 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
         case STDDEV_POP:
             return "sqrt(SUM(agg0)/SUM(agg1)-SUM(agg2)*SUM(agg2))";
         case AVG:
-            return "SUM(agg0::FLOAT)/SUM(agg1)::FLOAT";
+            return "SUM(agg0)/SUM(agg1)";
         case COUNT:
             return DatabendAggregateFunction.SUM.toString() + "(agg0)";
         default:
@@ -186,10 +186,10 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
         leftSelect.setFromList(from);
         leftSelect.setWhereClause(whereClause);
         leftSelect.setJoinList(joinList);
-        if (Randomly.getBooleanWithSmallProbability()) {
-            leftSelect.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
-            leftSelect.setGroupByExpressions(select.getFetchColumns());
-        }
+        // if (Randomly.getBooleanWithSmallProbability()) {
+        // leftSelect.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1)); //TODO group by超过实际行数
+        // leftSelect.setGroupByExpressions(select.getFetchColumns());// TODO group by不能放入聚合函数
+        // }
         return leftSelect;
     }
 

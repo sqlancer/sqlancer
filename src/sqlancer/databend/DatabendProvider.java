@@ -1,6 +1,5 @@
 package sqlancer.databend;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -74,7 +73,7 @@ public class DatabendProvider extends SQLProviderAdapter<DatabendGlobalState, Da
         // return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumUpdates + 1);
         // case DELETE:
         // return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumDeletes + 1);
-        // case CREATE_VIEW:
+        // case CREATE_VIEW: //TODO 暂时关闭create view
         // return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumViews + 1);
         default:
             throw new AssertionError(a);
@@ -111,22 +110,6 @@ public class DatabendProvider extends SQLProviderAdapter<DatabendGlobalState, Da
         se.executeStatements(); // 在已有的表格中插入数据，原先是增删改一些数据，除了insert和explan我都去掉了
     }
 
-    public void tryDeleteFile(String fname) {
-        try {
-            File f = new File(fname);
-            f.delete();
-        } catch (Exception e) {
-        }
-    }
-
-    public void tryDeleteDatabase(String dbpath) {
-        if (dbpath.equals("") || dbpath.equals(":memory:")) {
-            return;
-        }
-        tryDeleteFile(dbpath);
-        tryDeleteFile(dbpath + ".wal");
-    }
-
     @Override
     public SQLConnection createDatabase(DatabendGlobalState globalState) throws SQLException {
         String username = globalState.getOptions().getUserName();
@@ -155,11 +138,6 @@ public class DatabendProvider extends SQLProviderAdapter<DatabendGlobalState, Da
             s.execute("USE " + databaseName);
             globalState.getState().logStatement("USE " + databaseName);
         }
-
-        // try (Statement s = con.createStatement()) {
-        // s.execute("set enable_planner_v2 = 0;");
-        // globalState.getState().logStatement("set enable_planner_v2 = 0;");
-        // }
 
         return new SQLConnection(con);
     }
