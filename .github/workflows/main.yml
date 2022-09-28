@@ -117,6 +117,33 @@ jobs:
       - name: Run Tests
         run: COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDB test
 
+  databend:
+    name: DBMS Tests (Databend)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Set up Databend
+        run: |
+          sudo apt update
+          sudo apt install mysql-client
+          LASTEST_TAG=$(curl -s GET https://api.github.com/repos/datafuselabs/databend/tags\?per_page\=1 | jq -r '.[].name')
+          curl -LJO https://github.com/datafuselabs/databend/releases/download/${LASTEST_TAG}/databend-${LASTEST_TAG}-x86_64-unknown-linux-musl.tar.gz
+          mkdir ./databend && tar xzvf databend-${LASTEST_TAG}-x86_64-unknown-linux-musl.tar.gz -C ./databend
+          ./databend/bin/databend-query &
+      - name: Create SQLancer user
+        run: mysql -uroot -h127.0.0.1 -P3307 -e "CREATE USER 'sqlancer' IDENTIFIED BY 'sqlancer'; GRANT ALL ON *.* TO sqlancer;"
+      - name: Run Tests
+        run: |
+          DATABEND_AVAILABLE=true mvn -Dtest=TestDatabend test
+
   duckdb:
     name: DBMS Tests (DuckDB)
     runs-on: ubuntu-latest
