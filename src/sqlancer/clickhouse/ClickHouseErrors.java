@@ -35,6 +35,8 @@ public final class ClickHouseErrors {
         errors.add("Cannot parse NaN.: while converting"); // https://github.com/ClickHouse/ClickHouse/issues/22710
         errors.add("Cannot parse number with a sign character but without any numeric character");
         errors.add("Cannot parse number with multiple sign (+/-) characters or intermediate sign character");
+        errors.add("Function 'like' doesn't support search with non-constant needles in constant haystack");
+        errors.add("Positional argument out of bounds");
     }
 
     public static void addExpressionHavingErrors(ExpectedErrors errors) {
