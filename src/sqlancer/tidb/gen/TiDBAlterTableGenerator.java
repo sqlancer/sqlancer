@@ -30,6 +30,7 @@ public final class TiDBAlterTableGenerator {
         errors.add("without a key length");
         errors.add("charset");
         errors.add("not supported");
+        errors.add("SQL syntax");
         StringBuilder sb = new StringBuilder("ALTER TABLE ");
         TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         TiDBColumn column = table.getRandomColumn();
