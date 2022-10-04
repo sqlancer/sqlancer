@@ -20,7 +20,7 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
 
     public enum TiDBDataType {
 
-        INT, TEXT, BOOL, FLOATING, CHAR, DECIMAL, NUMERIC, BLOB;
+        INT, TEXT, BOOL, CHAR, DECIMAL, NUMERIC, BLOB;
 
         private final boolean isPrimitive;
 
