@@ -1,6 +1,5 @@
 package sqlancer;
 
-import java.sql.SQLException;
 import java.util.List;
 
 import sqlancer.common.log.LoggableFactory;
