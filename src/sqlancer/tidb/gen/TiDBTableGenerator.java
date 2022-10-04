@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -155,10 +154,6 @@ public class TiDBTableGenerator {
         sb.append(type.toString());
         appendSpecifiers(sb, type.getPrimitiveDataType());
         appendSizeSpecifiers(sb, type.getPrimitiveDataType());
-    }
-
-    private enum Action {
-        AUTO_INCREMENT, PRE_SPLIT_REGIONS, SHARD_ROW_ID_BITS
     }
 
     private void appendSizeSpecifiers(StringBuilder sb, TiDBDataType type) {
