@@ -139,7 +139,7 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
             return TiDBConstant.createStringConstant(globalState.getRandomly().getString());
         case BOOL:
             return TiDBConstant.createBooleanConstant(Randomly.getBoolean());
-        case FLOATING:
+        case DOUBLE:
             return TiDBConstant.createFloatConstant(globalState.getRandomly().getDouble());
         case CHAR:
             return TiDBConstant.createStringConstant(globalState.getRandomly().getChar());
@@ -187,7 +187,7 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
             return TiDBConstant.createStringConstant(globalState.getRandomly().getString());
         case BOOL:
             return TiDBConstant.createBooleanConstant(Randomly.getBoolean());
-        case FLOATING:
+        case DOUBLE:
             return TiDBConstant.createFloatConstant(globalState.getRandomly().getDouble());
         case CHAR:
             return TiDBConstant.createStringConstant(globalState.getRandomly().getChar());
