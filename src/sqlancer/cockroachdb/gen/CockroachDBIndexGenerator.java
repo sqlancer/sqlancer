@@ -2,7 +2,10 @@ package sqlancer.cockroachdb.gen;
 
 import java.util.List;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.cockroachdb.CockroachDBBugs;
+import sqlancer.cockroachdb.CockroachDBProvider;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
@@ -30,6 +33,10 @@ public class CockroachDBIndexGenerator extends CockroachDBGenerator {
         errors.add("the following columns are not indexable due to their type"); // array types are not indexable
         errors.add("cannot determine type of empty array. Consider annotating with the desired type");
         errors.add("incompatible IF expression"); // TODO: investigate; seems to be a bug
+        if (CockroachDBBugs.bug84154) {
+            errors.add("overflow during Encode");
+            errors.add("of type interval");
+        }
         CockroachDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         sb.append("CREATE ");
         if (Randomly.getBoolean()) {
@@ -43,15 +50,19 @@ public class CockroachDBIndexGenerator extends CockroachDBGenerator {
                 && Randomly.getBooleanWithSmallProbability();
         if (hashSharded) {
             sb.append(" USING HASH WITH BUCKET_COUNT=");
-            sb.append(Randomly.getNotCachedInteger(2, Short.MAX_VALUE));
+            sb.append(Randomly.getNotCachedInteger(2, 2048));
             errors.add("null value in column");
             errors.add("cannot create a sharded index on a computed column");
         }
         if (Randomly.getBoolean()) {
-            sb.append(" ");
-            sb.append(Randomly.fromOptions("STORING", "COVERING"));
-            sb.append(" ");
-            addColumns(sb, table.getRandomNonEmptyColumnSubset(), false);
+            List<CockroachDBColumn> columns2 = table.getRandomNonEmptyColumnSubset();
+            columns2.removeAll(columns);
+            if (columns2.size() > 0) {
+                sb.append(" ");
+                sb.append(Randomly.fromOptions("STORING", "COVERING"));
+                sb.append(" ");
+                addColumns(sb, columns2, false);
+            }
         }
     }
 

@@ -14,8 +14,8 @@ public class TiDBBinaryComparisonOperation extends BinaryOperatorNode<TiDBExpres
         GREATER_EQUALS(">="), //
         SMALLER("<"), //
         SMALLER_EQUALS("<="), //
-        NOT_EQUALS("!="); //
-        // NULL_SAFE_EQUALS("<=>"); https://github.com/tidb-challenge-program/bug-hunting-issue/issues/5
+        NOT_EQUALS("!="), //
+        NULL_SAFE_EQUALS("<=>"); // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/5
 
         private String textRepr;
 

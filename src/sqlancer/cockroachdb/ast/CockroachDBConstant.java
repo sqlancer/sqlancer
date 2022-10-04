@@ -230,20 +230,22 @@ public class CockroachDBConstant implements CockroachDBExpression {
     }
 
     public static CockroachDBExpression createTimestampConstant(long integer) {
-        return new CockroachDBTimeRelatedConstant("TIMESTAMP", integer, "yyyy-MM-dd");
+        return new CockroachDBTimeRelatedConstant("TIMESTAMP", integer, "yyyy-MM-dd'T'HH:mm:ss");
     }
 
     public static CockroachDBExpression createTimeConstant(long integer) {
-        return new CockroachDBTimeRelatedConstant("TIME", integer, "HH:mm:ss");
+        return new CockroachDBTimeRelatedConstant("TIME", integer, "yyyy-MM-dd'T'HH:mm:ss");
     }
 
     public static CockroachDBExpression createTimetz(long integer) {
-        return new CockroachDBTimeRelatedConstant("TIMETZ", integer, "HH:mm:ss"); // TODO: support the complete format
+        return new CockroachDBTimeRelatedConstant("TIMETZ", integer, "yyyy-MM-dd'T'HH:mm:ss"); // TODO: support the
+                                                                                               // complete format
     }
 
     public static CockroachDBExpression createTimestamptzConstant(long integer) {
-        return new CockroachDBTimeRelatedConstant("TIMESTAMPTZ", integer, "HH:mm:ss"); // TODO: support the complete
-                                                                                       // format
+        return new CockroachDBTimeRelatedConstant("TIMESTAMPTZ", integer, "yyyy-MM-dd'T'HH:mm:ss"); // TODO: support the
+                                                                                                    // complete
+        // format
     }
 
     public static CockroachDBExpression createIntervalConstant(long year, long month, long day, long hour, long minute,

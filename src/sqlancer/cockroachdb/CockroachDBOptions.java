@@ -97,7 +97,7 @@ public class CockroachDBOptions implements DBMSSpecificOptions<CockroachDBOracle
     public boolean testHashIndexes = true;
 
     @Parameter(names = { "--test-temp-tables" }, description = "Test TEMPORARY tables")
-    public boolean testTempTables = true;
+    public boolean testTempTables = false; // https://github.com/cockroachdb/cockroach/issues/85388
 
     @Parameter(names = {
             "--increased-vectorization" }, description = "Generate VECTORIZE=on with a higher probability (which found a number of bugs in the past)")

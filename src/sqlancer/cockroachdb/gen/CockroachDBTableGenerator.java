@@ -72,7 +72,13 @@ public class CockroachDBTableGenerator extends CockroachDBGenerator {
                     && cockroachDBColumn.getType().getPrimitiveDataType() != CockroachDBDataType.SERIAL;
             if (generatedColumn) {
                 sb.append(" AS (");
-                sb.append(CockroachDBVisitor.asString(gen.generateExpression(cockroachDBColumn.getType())));
+                // To generate an expression exclude of the current column
+                List<CockroachDBColumn> generatedColumns = new ArrayList<>(columns);
+                generatedColumns.remove(i);
+                CockroachDBExpressionGenerator genGeneratedColumn = new CockroachDBExpressionGenerator(globalState)
+                        .setColumns(generatedColumns);
+                sb.append(CockroachDBVisitor
+                        .asString(genGeneratedColumn.generateExpression(cockroachDBColumn.getType())));
                 sb.append(") STORED");
                 errors.add("computed columns cannot reference other computed columns");
                 errors.add("context-dependent operators are not allowed in computed column");
@@ -143,28 +149,6 @@ public class CockroachDBTableGenerator extends CockroachDBGenerator {
             sb.append(", FAMILY \"primary\" (");
             sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
             sb.append(")");
-        }
-        if (Randomly.getBoolean() && !globalState.getSchema().getDatabaseTables().isEmpty()) {
-            sb.append(", ");
-            // TODO: also allow referencing itself
-            List<CockroachDBColumn> subset = Randomly.nonEmptySubset(columns);
-            sb.append(" FOREIGN KEY (");
-            sb.append(subset.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
-            sb.append(") REFERENCES ");
-            CockroachDBTable otherTable = globalState.getSchema().getRandomTable();
-            sb.append(otherTable.getName());
-            sb.append("(");
-            for (int i = 0; i < subset.size(); i++) {
-                if (i != 0) {
-                    sb.append(", ");
-                }
-                sb.append(otherTable.getRandomColumn().getName());
-            }
-            sb.append(")");
-            // TODO: ensure that the column types match
-            errors.add("does not match foreign key");
-            errors.add("computed column");
-            errors.add("there is no unique constraint matching given keys for referenced table");
         }
         sb.append(")");
         errors.add("collatedstring");
