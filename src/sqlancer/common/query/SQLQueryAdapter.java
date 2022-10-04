@@ -96,17 +96,9 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
     }
 
     public void checkException(Exception e) throws AssertionError {
-        Throwable ex = e;
-
-        while (ex != null) {
-            if (expectedErrors.errorIsExpected(ex.getMessage())) {
-                return;
-            } else {
-                ex = ex.getCause();
-            }
+        if (!expectedErrors.errorIsExpected(e.getMessage())) {
+            throw new AssertionError(query, e);
         }
-
-        throw new AssertionError(query, e);
     }
 
     @Override

@@ -33,9 +33,9 @@ public final class CockroachDBErrors {
         errors.add("expected -9223372036854775809 to be of type int, found type decimal");
         errors.add("to be of type int4, found type decimal");
 
-        errors.add("as type bool: invalid bool value");
-        errors.add("as type int: strconv.ParseInt");
-        errors.add("as type float: strconv.ParseFloat: parsing");
+        errors.add("as type bool");
+        errors.add("as type int");
+        errors.add("as type float");
 
         errors.add("is not in select list");
         errors.add("non-integer constant in ORDER BY");
@@ -68,9 +68,7 @@ public final class CockroachDBErrors {
         errors.add("unsupported comparison operator: <string> = <bytes>");
         errors.add("unsupported comparison operator: <string> <= <bytes>");
         errors.add("to be of type string, found type bytes");
-        errors.add("unknown signature: left(string, int) (desired <bytes>)");
         errors.add("unknown signature: bit_length(collatedstring");
-        errors.add("ERROR: unknown signature: left(collatedstring");
         errors.add("unsupported comparison operator: <string> !~ <collatedstring{");
         errors.add("unsupported comparison operator: <collatedstring");
         errors.add(" unsupported comparison operator: <string> NOT LIKE <collatedstring{");
@@ -109,11 +107,10 @@ public final class CockroachDBErrors {
         errors.add("as int4, found type: decimal");
         errors.add("to be of type int2, found type decimal");
         errors.add("to be of type int, found type decimal"); // arithmetic overflows
-        errors.add("unknown signature: left(string, decimal)");
-        errors.add("unknown signature: left(bytes, decimal) (desired <bytes>)");
+        errors.add("unknown signature: left");
         errors.add("numeric constant out of int64 range");
-        errors.add("unknown signature: overlay(string, string, decimal)");
-        errors.add("unknown signature: substring(string, int, decimal)");
+        errors.add("unknown signature: overlay");
+        errors.add("unknown signature: substring");
         errors.add("unsupported binary operator: <unknown> + <decimal> (desired <int>)");
         errors.add("unsupported comparison operator");
         errors.add("unknown signature: chr(decimal) (desired <string>)");
@@ -122,16 +119,13 @@ public final class CockroachDBErrors {
         errors.add("incompatible value type: expected rowid to be of type decimal, found type int");
         errors.add("unknown signature: to_english(decimal)");
         errors.add("unknown signature: chr(decimal)");
-        errors.add(" unknown signature: left(string, int2) (desired <bytes>)");
-        errors.add("unknown signature: split_part(string, string, decimal) (desired <string>)");
-        errors.add(" unknown signature: substring(string, ");
+        errors.add("unknown signature: split_part");
         errors.add("division by zero");
         errors.add("as int, found type: decimal");
         errors.add("value type decimal doesn't match type int2 ");
         errors.add("has type decimal");
         errors.add("to be of type decimal, found type int");
         errors.add("value type decimal doesn't match type int");
-        errors.add("unknown signature: substring(string, decimal, int)");
         errors.add("unsupported binary operator: <int> / <int> (desired <int4>)");
         errors.add("(desired <int>)");
         errors.add("(desired <int2>)");
@@ -139,8 +133,6 @@ public final class CockroachDBErrors {
         errors.add("found type: decimal");
         errors.add("(desired <decimal>)");
         errors.add("unknown signature: to_hex(decimal)");
-        errors.add("unknown signature: split_part(string, string, decimal)");
-        errors.add("unknown signature: left(bytes, decimal)");
         errors.add("division undefined");
         errors.add("decimal out of range");
         errors.add("unknown signature: xor_agg(decimal)");
@@ -155,13 +147,44 @@ public final class CockroachDBErrors {
         errors.add("could not parse JSON: unable to decode JSON: EOF");
         errors.add("could not parse JSON: unable to decode JSON: unexpected EOF");
         errors.add("can't order by column type jsonb");
+        errors.add("odd length hex string");
 
         // TODO: better control what is generated in a view
         errors.add("aggregate functions are not allowed in GROUP BY");
         errors.add(" must appear in the GROUP BY clause or be used in an aggregate function");
 
-        if (CockroachDBBugs.bug44757) {
+        if (CockroachDBBugs.bug83874) {
             errors.add("no builtin aggregate");
+        }
+        if (CockroachDBBugs.bug83792) {
+            errors.add("comparison overload not found");
+        }
+        if (CockroachDBBugs.bug83973) {
+            errors.add("invalid memory address");
+        }
+        if (CockroachDBBugs.bug83976) {
+            errors.add("cannot execute distinct on no columns");
+        }
+        if (CockroachDBBugs.bug85356) {
+            errors.add("inconsistent Case return types");
+        }
+        if (CockroachDBBugs.bug85371) {
+            errors.add("index out of range");
+        }
+        if (CockroachDBBugs.bug85389) {
+            errors.add("no volatility for cast decimal");
+        }
+        if (CockroachDBBugs.bug85390) {
+            errors.add("lookup for ComparisonExpr");
+        }
+        if (CockroachDBBugs.bug85393) {
+            errors.add("no output column equivalent to");
+        }
+        if (CockroachDBBugs.bug85441) {
+            errors.add("cannot cast jsonb numeric to type bool");
+        }
+        if (CockroachDBBugs.bug85499) {
+            errors.add("estimated row count must be non-zero");
         }
 
         errors.add("unable to vectorize execution plan"); // SET vectorize=experimental_always;
@@ -223,7 +246,7 @@ public final class CockroachDBErrors {
         errors.add("unimplemented: nested arrays not supported"); // e.g., casting a string {{1}} to an array
         errors.add("malformed array");
 
-        errors.add("https://github.com/cockroachdb/cockroach/issues/35707"); // arrays don't support ORDER BY
+        // errors.add("https://github.com/cockroachdb/cockroach/issues/35707"); // arrays don't support ORDER BY
 
         errors.add("as bytes[], found type: varbit[]");
         errors.add("to be of type decimal[], found type float[]");
@@ -234,7 +257,7 @@ public final class CockroachDBErrors {
 
     private static void addIntervalTypeErrors(ExpectedErrors errors) {
         errors.add("overflow during Encode");
-        errors.add("as type interval");
+        errors.add("type interval");
     }
 
     private static void addJoinTypes(ExpectedErrors errors) {
@@ -269,7 +292,6 @@ public final class CockroachDBErrors {
         // functions
         errors.add("abs of min integer value (-9223372036854775808) not defined"); // ABS
         errors.add("the input string must not be empty"); // ASCII
-        errors.add("unknown signature: substring(string, decimal)"); // overflow
         errors.add("overlay(): non-positive substring length not allowed"); // overlay
         errors.add("non-positive substring length not allowed"); // overlay
         errors.add("lpad(): requested length too large"); // lpad

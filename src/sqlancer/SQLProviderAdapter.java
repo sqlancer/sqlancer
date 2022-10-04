@@ -25,9 +25,15 @@ public abstract class SQLProviderAdapter<G extends SQLGlobalState<O, ? extends A
         for (AbstractTable<?, ?, ?> view : views) {
             SQLQueryAdapter q = new SQLQueryAdapter("SELECT 1 FROM " + view.getName() + " LIMIT 1");
             try {
-                q.execute(globalState);
+                if (!q.execute(globalState)) {
+                    throw new AssertionError();
+                }
             } catch (Throwable t) {
-                throw new IgnoreMeException();
+                try {
+                    globalState.executeStatement(new SQLQueryAdapter("DROP VIEW " + view.getName(), true));
+                } catch (Throwable t2) {
+                    throw new IgnoreMeException();
+                }
             }
         }
     }

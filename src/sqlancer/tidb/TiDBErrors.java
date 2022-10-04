@@ -25,13 +25,14 @@ public final class TiDBErrors {
         errors.add("is not valid for CHARACTER SET");
 
         // known issue: https://github.com/pingcap/tidb/issues/14819
-        errors.add("Wrong plan type for dataReaderBuilder");
+        // errors.add("Wrong plan type for dataReaderBuilder");
 
         errors.add("DOUBLE value is out of range");
 
-        errors.add("index out of range"); // https://github.com/pingcap/tidb/issues/15810
-        errors.add("baseBuiltinFunc.evalString() should never be called, please contact the TiDB team for help"); // https://github.com/pingcap/tidb/issues/15847
-        errors.add("unsupport column type for encode 6"); // https://github.com/pingcap/tidb/issues/15850
+        // errors.add("index out of range"); // https://github.com/pingcap/tidb/issues/15810
+        // errors.add("baseBuiltinFunc.evalString() should never be called, please contact the TiDB team for help"); //
+        // https://github.com/pingcap/tidb/issues/15847
+        // errors.add("unsupport column type for encode 6"); // https://github.com/pingcap/tidb/issues/15850
 
         errors.add("Data truncation: %s value is out of range in '%s'");
         errors.add("Truncated incorrect FLOAT value");
@@ -39,13 +40,32 @@ public final class TiDBErrors {
 
         // regex
         errors.add("error parsing regexp");
+        errors.add("from regexp");
+
+        // To avoid bugs
+        errors.add("Unknown column"); // https://github.com/pingcap/tidb/issues/35522
+        errors.add("Can\'t find column"); // https://github.com/pingcap/tidb/issues/35527
+        errors.add("Cannot convert"); // https://github.com/pingcap/tidb/issues/35652
 
         // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/57
-        errors.add("For input string: \"+Inf\"");
+        // errors.add("For input string: \"+Inf\"");
 
-        errors.add("inconsistent index"); // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/58
+        // errors.add("inconsistent index"); // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/58
 
-        errors.add("Illegal mix of collations");
+        // errors.add("Illegal mix of collations");
+
+        if (TiDBBugs.bug35677) {
+            errors.add("for function inet_aton");
+        }
+        if (TiDBBugs.bug35522) {
+            errors.add("ERROR 1054 (42S22)");
+        }
+        if (TiDBBugs.bug35652) {
+            errors.add("from binary to utf8");
+        }
+        if (TiDBBugs.bug38295) {
+            errors.add("assertion failed");
+        }
     }
 
     public static void addExpressionHavingErrors(ExpectedErrors errors) {
@@ -73,10 +93,10 @@ public final class TiDBErrors {
         errors.add("error parsing regexp");
         errors.add("is not valid for CHARACTER SET");
 
-        if (true) {
-            // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/54
-            errors.add("Miss column");
-        }
+        // if (true) {
+        // // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/54
+        // errors.add("Miss column");
+        // }
     }
 
 }
