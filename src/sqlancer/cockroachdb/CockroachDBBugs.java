@@ -3,13 +3,13 @@ package sqlancer.cockroachdb;
 public final class CockroachDBBugs {
 
     // https://github.com/cockroachdb/cockroach/issues/46915
-    public static boolean bug46915 = false;
+    public static boolean bug46915;
 
     // https://github.com/cockroachdb/cockroach/issues/45703
-    public static boolean bug45703 = false;
+    public static boolean bug45703;
 
     // https://github.com/cockroachdb/cockroach/issues/44757
-    public static boolean bug44757 = false;
+    public static boolean bug44757;
 
     // https://github.com/cockroachdb/cockroach/issues/83792
     public static boolean bug83792 = true;

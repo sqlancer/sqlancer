@@ -347,10 +347,8 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBGlobalState, Co
                     columns.add(c);
                 }
             } catch (SQLException e) {
-                if (CockroachDBBugs.bug85394) {
-                    if (e.getMessage().contains("incompatible type annotation for ARRAY")) {
-                        return columns;
-                    }
+                if (CockroachDBBugs.bug85394 && e.getMessage().contains("incompatible type annotation for ARRAY")) {
+                    return columns;
                 }
                 throw e;
             }

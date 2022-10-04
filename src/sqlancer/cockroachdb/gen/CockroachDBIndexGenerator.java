@@ -55,7 +55,7 @@ public class CockroachDBIndexGenerator extends CockroachDBGenerator {
         if (Randomly.getBoolean()) {
             List<CockroachDBColumn> columns2 = table.getRandomNonEmptyColumnSubset();
             columns2.removeAll(columns);
-            if (columns2.size() > 0) {
+            if (!columns2.isEmpty()) {
                 sb.append(" ");
                 sb.append(Randomly.fromOptions("STORING", "COVERING"));
                 sb.append(" ");
