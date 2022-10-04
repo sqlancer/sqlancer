@@ -57,11 +57,11 @@ public final class ComparatorHelper {
                 throw new IgnoreMeException();
             }
             while (result.next()) {
-                String result_temp = result.getString(1);
-                if (result_temp != null) {
-                    result_temp = result_temp.replaceAll("[\\.]0+$", "");
+                String resultTemp = result.getString(1);
+                if (resultTemp != null) {
+                    resultTemp = resultTemp.replaceAll("[\\.]0+$", "");
                 }
-                resultSet.add(result_temp); // Remove the trailing zeros as many DBMS treat it as non-bugs
+                resultSet.add(resultTemp); // Remove the trailing zeros as many DBMS treat it as non-bugs
             }
         } catch (Exception e) {
             if (e instanceof IgnoreMeException) {
