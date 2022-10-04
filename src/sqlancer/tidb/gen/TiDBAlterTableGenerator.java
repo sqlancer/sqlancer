@@ -29,6 +29,7 @@ public final class TiDBAlterTableGenerator {
         errors.add("Data truncation");
         errors.add("without a key length");
         errors.add("charset");
+        errors.add("not supported");
         StringBuilder sb = new StringBuilder("ALTER TABLE ");
         TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         TiDBColumn column = table.getRandomColumn();

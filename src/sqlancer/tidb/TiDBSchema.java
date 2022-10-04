@@ -20,7 +20,7 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
 
     public enum TiDBDataType {
 
-        INT, TEXT, BOOL, DOUBLE, CHAR, DECIMAL, NUMERIC, BLOB;
+        INT, TEXT, BOOL, FLOATING, CHAR, DECIMAL, NUMERIC, BLOB;
 
         private final boolean isPrimitive;
 
@@ -44,7 +44,7 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
             switch (this) {
             case INT:
             case DECIMAL:
-            case DOUBLE:
+            case FLOATING:
             case BOOL:
             case NUMERIC:
                 return true;
@@ -61,7 +61,7 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
             switch (this) {
             case INT:
             case DECIMAL:
-            case DOUBLE:
+            case FLOATING:
             case BOOL:
             case CHAR:
                 return true;
@@ -113,7 +113,7 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
             case INT:
                 size = Randomly.fromOptions(1, 2, 4, 8);
                 break;
-            case DOUBLE:
+            case FLOATING:
                 size = Randomly.fromOptions(4, 8);
                 break;
             default:
@@ -140,7 +140,7 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
                 default:
                     throw new AssertionError(size);
                 }
-            case DOUBLE:
+            case FLOATING:
                 switch (size) {
                 case 4:
                     return "FLOAT";
@@ -228,7 +228,7 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
                 break;
             case "float":
             case "double":
-                primitiveType = TiDBDataType.DOUBLE;
+                primitiveType = TiDBDataType.FLOATING;
                 break;
             case "tinyint(1)":
                 primitiveType = TiDBDataType.BOOL;
