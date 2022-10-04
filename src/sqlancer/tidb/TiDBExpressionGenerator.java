@@ -20,7 +20,6 @@ import sqlancer.tidb.ast.TiDBBinaryLogicalOperation;
 import sqlancer.tidb.ast.TiDBBinaryLogicalOperation.TiDBBinaryLogicalOperator;
 import sqlancer.tidb.ast.TiDBCase;
 import sqlancer.tidb.ast.TiDBCastOperation;
-import sqlancer.tidb.ast.TiDBCollate;
 import sqlancer.tidb.ast.TiDBColumnReference;
 import sqlancer.tidb.ast.TiDBConstant;
 import sqlancer.tidb.ast.TiDBExpression;
@@ -47,7 +46,7 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
         UNARY_POSTFIX, //
         CONSTANT, //
         COLUMN, //
-        COMPARISON, REGEX, COLLATE, FUNCTION, BINARY_LOGICAL, BINARY_BIT, CAST, DEFAULT, CASE
+        COMPARISON, REGEX, FUNCTION, BINARY_LOGICAL, BINARY_BIT, CAST, DEFAULT, CASE
         // BINARY_ARITHMETIC
     }
 
@@ -86,9 +85,9 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
         case REGEX:
             return new TiDBRegexOperation(generateExpression(depth + 1), generateExpression(depth + 1),
                     TiDBRegexOperator.getRandom());
-        case COLLATE:
-            return new TiDBCollate(generateExpression(depth + 1),
-                    Randomly.fromOptions("utf8mb4_bin", "latin1_bin", "binary", "ascii_bin", "utf8_bin"));
+        // case COLLATE:
+        // return new TiDBCollate(generateExpression(depth + 1),
+        // Randomly.fromOptions("utf8mb4_bin", "latin1_bin", "binary", "ascii_bin", "utf8_bin"));
         case FUNCTION:
             TiDBFunction func = TiDBFunction.getRandom();
             return new TiDBFunctionCall(func, generateExpressions(func.getNrArgs(), depth));
@@ -105,13 +104,9 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
         // return new TiDBBinaryArithmeticOperation(generateExpression(depth + 1), generateExpression(depth + 1),
         // TiDBBinaryArithmeticOperator.getRandom());
         case CAST:
-            return new TiDBCastOperation(generateExpression(depth + 1), Randomly.fromOptions(
-                    /*
-                     * "BINARY" https://github.com/tidb-challenge-program/bug-hunting-issue/issues/52
-                     */ "CHAR",
-                    /*
-                     * "DATE", "DATETIME", "TIME", https://github.com/tidb-challenge-program/bug-hunting-issue/issues/13
-                     */ "DECIMAL", "SIGNED"/* , "UNSIGNED" https://github.com/pingcap/tidb/issues/16028 */));
+            return new TiDBCastOperation(generateExpression(depth + 1), Randomly.fromOptions("BINARY", // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/52
+                    "CHAR", "DATE", "DATETIME", "TIME", // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/13
+                    "DECIMAL", "SIGNED", "UNSIGNED" /* https://github.com/pingcap/tidb/issues/16028 */));
         case CASE:
             if (TiDBBugs.bug19) {
                 throw new IgnoreMeException();
@@ -178,6 +173,30 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
     @Override
     public TiDBExpression isNull(TiDBExpression expr) {
         return new TiDBUnaryPostfixOperation(expr, TiDBUnaryPostfixOperator.IS_NULL);
+    }
+
+    public TiDBExpression generateConstant(TiDBDataType type) {
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            return TiDBConstant.createNullConstant();
+        }
+        switch (type) {
+        case INT:
+            return TiDBConstant.createIntConstant(globalState.getRandomly().getInteger());
+        case BLOB:
+        case TEXT:
+            return TiDBConstant.createStringConstant(globalState.getRandomly().getString());
+        case BOOL:
+            return TiDBConstant.createBooleanConstant(Randomly.getBoolean());
+        case FLOATING:
+            return TiDBConstant.createFloatConstant(globalState.getRandomly().getDouble());
+        case CHAR:
+            return TiDBConstant.createStringConstant(globalState.getRandomly().getChar());
+        case DECIMAL:
+        case NUMERIC:
+            return TiDBConstant.createIntConstant(globalState.getRandomly().getInteger());
+        default:
+            throw new AssertionError();
+        }
     }
 
 }
