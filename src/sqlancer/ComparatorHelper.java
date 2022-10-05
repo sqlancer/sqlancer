@@ -57,16 +57,18 @@ public final class ComparatorHelper {
                 throw new IgnoreMeException();
             }
             while (result.next()) {
-                resultSet.add(result.getString(1));
+                String resultTemp = result.getString(1);
+                if (resultTemp != null) {
+                    resultTemp = resultTemp.replaceAll("[\\.]0+$", ""); // Remove the trailing zeros as many DBMS treat
+                                                                        // it as non-bugs
+                }
+                resultSet.add(resultTemp);
             }
         } catch (Exception e) {
             if (e instanceof IgnoreMeException) {
                 throw e;
             }
-            if (e instanceof NumberFormatException) {
-                // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/57
-                throw new IgnoreMeException();
-            }
+
             if (e.getMessage() == null) {
                 throw new AssertionError(queryString, e);
             }
