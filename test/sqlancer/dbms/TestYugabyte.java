@@ -14,9 +14,10 @@ public class TestYugabyte {
     @Test
     public void testYCQL() {
         assumeTrue(yugabyteIsAvailable);
-        assertEquals(0, Main.executeMain("--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS, "--username",
-                "cassandra", "--password", "cassandra", "--num-threads",
-                "4", "--num-queries", TestConfig.NUM_QUERIES, "ycql"));
+        assertEquals(0,
+                Main.executeMain("--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS, "--username",
+                        "cassandra", "--password", "cassandra", "--num-threads", "4", "--num-queries",
+                        TestConfig.NUM_QUERIES, "ycql"));
     }
 
     @Test
