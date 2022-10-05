@@ -1,5 +1,7 @@
 package sqlancer.yugabyte.ycql.gen;
 
+import static sqlancer.yugabyte.YugabyteBugs.bug14330;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,8 +25,6 @@ import sqlancer.yugabyte.ycql.YCQLSchema.YCQLColumn;
 import sqlancer.yugabyte.ycql.YCQLSchema.YCQLDataType;
 import sqlancer.yugabyte.ycql.ast.YCQLConstant;
 import sqlancer.yugabyte.ycql.ast.YCQLExpression;
-
-import static sqlancer.yugabyte.YugabyteBugs.bug14330;
 
 public final class YCQLExpressionGenerator extends UntypedExpressionGenerator<Node<YCQLExpression>, YCQLColumn> {
 
