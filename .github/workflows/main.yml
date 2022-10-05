@@ -298,7 +298,7 @@ jobs:
         run: TIDB_AVAILABLE=true mvn -Dtest=TestTiDB test
 
   yugabyte:
-    name: DBMS Tests (Yugabyte)
+    name: DBMS Tests (YugabyteDB)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
