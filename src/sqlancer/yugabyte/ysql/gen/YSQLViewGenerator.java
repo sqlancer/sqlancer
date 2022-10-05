@@ -16,11 +16,8 @@ public final class YSQLViewGenerator {
     public static SQLQueryAdapter create(YSQLGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder("CREATE");
-        // boolean materialized;
-        // boolean recursive = false;
         if (Randomly.getBoolean()) {
             sb.append(" MATERIALIZED");
-            // materialized = true;
         } else {
             if (Randomly.getBoolean()) {
                 sb.append(" OR REPLACE");
@@ -28,11 +25,6 @@ public final class YSQLViewGenerator {
             if (Randomly.getBoolean()) {
                 sb.append(Randomly.fromOptions(" TEMP", " TEMPORARY"));
             }
-            // if (Randomly.getBoolean()) {
-            // sb.append(" RECURSIVE");
-            // recursive = true;
-            // }
-            // materialized = false;
         }
         sb.append(" VIEW ");
         int i = 0;
@@ -54,12 +46,6 @@ public final class YSQLViewGenerator {
             sb.append(DBMSCommon.createColumnName(i));
         }
         sb.append(")");
-        // if (Randomly.getBoolean() && !materialized && !recursive) {
-        // sb.append(" WITH ");
-        // sb.append(Randomly.fromOptions("CASCADED", "LOCAL"));
-        // sb.append(" CHECK OPTION");
-        // errors.add("WITH CHECK OPTION is supported only on automatically updatable views");
-        // }
         sb.append(" AS (");
         YSQLSelect select = YSQLRandomQueryGenerator.createRandomQuery(nrColumns, globalState);
         sb.append(YSQLVisitor.asString(select));

@@ -1,6 +1,6 @@
 package sqlancer.yugabyte.ysql.oracle;
 
-import static sqlancer.yugabyte.ysql.YSQLProvider.CREATION_LOCK;
+import static sqlancer.yugabyte.ysql.YSQLProvider.DDL_LOCK;
 
 import java.util.Arrays;
 import java.util.List;
@@ -49,12 +49,14 @@ public class YSQLCatalog implements TestOracle {
     }
 
     protected void createTables(YSQLGlobalState globalState, int numTables) throws Exception {
-        synchronized (CREATION_LOCK) {
+        synchronized (DDL_LOCK) {
             while (globalState.getSchema().getDatabaseTables().size() < numTables) {
+                // TODO concurrent DDLs may produce a lot of noise in test logs so its disabled right now
+                // added timeout to avoid possible catalog collisions
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    throw new AssertionError();
                 }
 
                 try {

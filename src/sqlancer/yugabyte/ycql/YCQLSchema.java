@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.common.DBMSCommon;
@@ -195,12 +194,8 @@ public class YCQLSchema extends AbstractSchema<YCQLGlobalState, YCQLTable> {
         case "TIMESTAMP":
             primitiveType = YCQLDataType.TIMESTAMP;
             break;
-        case "INTERVAL":
-            throw new IgnoreMeException();
-        // TODO: caused when a view contains a computation like ((TIMESTAMP '1970-01-05 11:26:57')-(TIMESTAMP
-        // '1969-12-29 06:50:27'))
         default:
-            throw new IgnoreMeException();
+            throw new AssertionError();
         }
         return new YCQLCompositeDataType(primitiveType, size);
     }

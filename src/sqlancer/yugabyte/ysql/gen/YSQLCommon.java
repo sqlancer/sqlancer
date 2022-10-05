@@ -8,6 +8,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.schema.AbstractTableColumn;
+import sqlancer.yugabyte.YugabyteBugs;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLProvider;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLColumn;
@@ -213,27 +214,7 @@ public final class YSQLCommon {
     public static void generateWith(StringBuilder sb, YSQLGlobalState globalState, ExpectedErrors errors,
             List<YSQLColumn> columnsToBeAdded, boolean isTemporaryTable) {
         if (Randomly.getBoolean()) {
-            if (Randomly.getBoolean()) {
-                sb.append(" ");
-                // disabled https://github.com/yugabyte/yugabyte-db/issues/11357
-                // sb.append(" WITH (");
-                // ArrayList<StorageParameters> values = new ArrayList<>(Arrays.asList(StorageParameters.values()));
-                // errors.add("unrecognized parameter");
-                // errors.add("ALTER TABLE / ADD CONSTRAINT USING INDEX is not supported on partitioned tables");
-                // List<StorageParameters> subset = Randomly.nonEmptySubset(values);
-                // int i = 0;
-                // for (StorageParameters parameter : subset) {
-                // if (i++ != 0) {
-                // sb.append(", ");
-                // }
-                // sb.append(parameter.parameter);
-                // sb.append("=");
-                // sb.append(parameter.op.apply(globalState.getRandomly()));
-                // }
-                // sb.append(")");
-            } else {
-                sb.append(" WITHOUT OIDS ");
-            }
+            sb.append(" WITHOUT OIDS ");
         } else if (Randomly.getBoolean() && !isTemporaryTable) {
             if (Randomly.getBoolean()) {
                 sb.append(" SPLIT INTO ");

@@ -22,7 +22,7 @@ import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
-import sqlancer.yugabyte.ysql.YSQLOptions.YSQLOracleFactory;
+import sqlancer.yugabyte.YugabyteBugs;
 import sqlancer.yugabyte.ysql.gen.YSQLAlterTableGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLAnalyzeGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLCommentGenerator;
@@ -45,7 +45,8 @@ import sqlancer.yugabyte.ysql.gen.YSQLViewGenerator;
 @AutoService(DatabaseProvider.class)
 public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOptions> {
 
-    public static final Object CREATION_LOCK = new Object();
+    // TODO Due to yugabyte problems with parallel DDL we need this lock object
+    public static final Object DDL_LOCK = new Object();
     /**
      * Generate only data types and expressions that are understood by PQS.
      */
@@ -132,11 +133,6 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
 
     @Override
     public SQLConnection createDatabase(YSQLGlobalState globalState) throws SQLException {
-        if (globalState.getDbmsSpecificOptions().getTestOracleFactory().stream()
-                .anyMatch((o) -> o == YSQLOracleFactory.PQS)) {
-            generateOnlyKnown = true;
-        }
-
         username = globalState.getOptions().getUserName();
         password = globalState.getOptions().getPassword();
         host = globalState.getOptions().getHost();
@@ -197,7 +193,7 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
 
     // for some reason yugabyte unable to create few databases simultaneously
     private void createDatabaseSync(YSQLGlobalState globalState, String entryDatabaseName) throws SQLException {
-        synchronized (CREATION_LOCK) {
+        synchronized (DDL_LOCK) {
             exceptionLessSleep(5000);
 
             Connection con = createConnectionSafely(entryURL, username, password);
@@ -246,7 +242,7 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
     }
 
     protected void createTables(YSQLGlobalState globalState, int numTables) throws Exception {
-        synchronized (CREATION_LOCK) {
+        synchronized (DDL_LOCK) {
             boolean prevCreationFailed = false; // small optimization - wait only after failed requests
             while (globalState.getSchema().getDatabaseTables().size() < numTables) {
                 if (!prevCreationFailed) {
@@ -270,7 +266,7 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
         try {
             Thread.sleep(timeout);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            throw new AssertionError();
         }
     }
 
@@ -296,10 +292,15 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
                 sb.append(Randomly.fromOptions("utf8"));
                 sb.append("' ");
             }
-            // disabled due to https://github.com/yugabyte/yugabyte-db/issues/11357
-            // if (Randomly.getBoolean()) {
-            // sb.append("COLOCATED = true ");
-            // }
+
+            if (Randomly.getBoolean()) {
+                if (YugabyteBugs.bug11357) {
+                    throw new IgnoreMeException();
+                }
+
+                sb.append("COLOCATED = true ");
+            }
+
             for (String lc : Arrays.asList("LC_COLLATE", "LC_CTYPE")) {
                 if (!state.getCollates().isEmpty() && Randomly.getBoolean()) {
                     sb.append(String.format(" %s = '%s'", lc, Randomly.fromList(state.getCollates())));

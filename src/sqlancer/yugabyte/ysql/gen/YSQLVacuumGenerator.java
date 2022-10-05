@@ -10,10 +10,7 @@ public final class YSQLVacuumGenerator {
     }
 
     public static SQLQueryAdapter create(YSQLGlobalState globalState) {
-        String sb = "VACUUM";
-        ExpectedErrors errors = new ExpectedErrors();
-        errors.add("VACUUM cannot run inside a transaction block");
-        return new SQLQueryAdapter(sb, errors);
+        return new SQLQueryAdapter("VACUUM", ExpectedErrors.from("VACUUM cannot run inside a transaction block"));
     }
 
 }
