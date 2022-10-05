@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
 import sqlancer.common.ast.newast.ColumnReferenceNode;
@@ -22,6 +23,8 @@ import sqlancer.yugabyte.ycql.YCQLSchema.YCQLColumn;
 import sqlancer.yugabyte.ycql.YCQLSchema.YCQLDataType;
 import sqlancer.yugabyte.ycql.ast.YCQLConstant;
 import sqlancer.yugabyte.ycql.ast.YCQLExpression;
+
+import static sqlancer.yugabyte.YugabyteBugs.bug14330;
 
 public final class YCQLExpressionGenerator extends UntypedExpressionGenerator<Node<YCQLExpression>, YCQLColumn> {
 
@@ -82,6 +85,10 @@ public final class YCQLExpressionGenerator extends UntypedExpressionGenerator<No
     @Override
     public Node<YCQLExpression> generateConstant() {
         if (Randomly.getBooleanWithSmallProbability()) {
+            if (bug14330) {
+                throw new IgnoreMeException();
+            }
+
             return YCQLConstant.createNullConstant();
         }
         YCQLDataType type = YCQLDataType.getRandom();
