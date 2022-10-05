@@ -25,12 +25,9 @@ public final class CockroachDBSetSessionGenerator {
         ENABLE_IMPLICIT_SELECT_FOR_UPDATE(CockroachDBSetSessionGenerator::onOff),
         ENABLE_INSERT_FAST_PATH(CockroachDBSetSessionGenerator::onOff),
         ENABLE_ZIGZAG_JOIN(CockroachDBSetSessionGenerator::onOff),
-        // EXPERIMENTAL_ENABLE_HASH_SHARDED_INDEXES(CockroachDBSetSessionGenerator::onOff),
         SERIAL_NORMALIZATION((g) -> Randomly.fromOptions("'rowid'", "'virtual_sequence'")),
-        // EXTRA_FLOAT_DIGITS((g) -> g.getRandomly().getInteger(-15, 3)),
         REORDER_JOINS_LIMIT((g) -> g.getRandomly().getInteger(0, Integer.MAX_VALUE)), //
-        SQL_SAFE_UPDATES((g) -> "off"),
-        // TRACING(CockroachDBSetSessionGenerator::onOff)
+        SQL_SAFE_UPDATES((g) -> "off"), TRACING(CockroachDBSetSessionGenerator::onOff),
         /*
          * CockroachDB enables vectorized (column-oriented) execution by default. Row-oriented execution can be enforced
          * by setting vectorized to "off". Some examples of bugs found in the vectorized execution engine are:

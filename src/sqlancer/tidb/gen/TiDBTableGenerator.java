@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -59,10 +58,7 @@ public class TiDBTableGenerator {
             sb.append(columns.get(i).getName());
             sb.append(" ");
             TiDBCompositeDataType type;
-            do {
-                type = TiDBCompositeDataType.getRandom();
-            } while (type.getPrimitiveDataType() == TiDBDataType.INT && type.getSize() < 4
-                    || type.getPrimitiveDataType() == TiDBDataType.BOOL); // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/49
+            type = TiDBCompositeDataType.getRandom();
             appendType(sb, type);
             sb.append(" ");
             boolean isGeneratedColumn = Randomly.getBooleanWithRatherLowProbability();
@@ -72,7 +68,6 @@ public class TiDBTableGenerator {
                 sb.append(") ");
                 sb.append(Randomly.fromOptions("STORED", "VIRTUAL"));
                 sb.append(" ");
-                errors.add("You have an error in your SQL syntax"); // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/53
                 errors.add("Generated column can refer only to generated columns defined prior to it");
                 errors.add(
                         "'Defining a virtual generated column as primary key' is not supported for generated columns.");
@@ -87,10 +82,9 @@ public class TiDBTableGenerator {
             if (Randomly.getBooleanWithRatherLowProbability()) {
                 sb.append("NOT NULL ");
             }
-            if (Randomly.getBoolean() && type.getPrimitiveDataType() != TiDBDataType.TEXT
-                    && type.getPrimitiveDataType() != TiDBDataType.BLOB && !isGeneratedColumn) {
+            if (Randomly.getBoolean() && type.getPrimitiveDataType().canHaveDefault() && !isGeneratedColumn) {
                 sb.append("DEFAULT ");
-                sb.append(TiDBVisitor.asString(gen.generateConstant()));
+                sb.append(TiDBVisitor.asString(gen.generateConstant(type.getPrimitiveDataType())));
                 sb.append(" ");
                 errors.add("Invalid default value");
                 errors.add(
@@ -137,27 +131,6 @@ public class TiDBTableGenerator {
                 errors.add("UnknownType: *ast.WhenClause");
             }
         }
-        List<Action> actions = Randomly.nonEmptySubset(Action.values());
-        for (Action a : actions) {
-            sb.append(" ");
-            switch (a) {
-            case AUTO_INCREMENT:
-                sb.append("AUTO_INCREMENT=");
-                sb.append(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE));
-                break;
-            case PRE_SPLIT_REGIONS:
-                sb.append("PRE_SPLIT_REGIONS=");
-                sb.append(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE));
-                break;
-            case SHARD_ROW_ID_BITS:
-                sb.append("SHARD_ROW_ID_BITS=");
-                sb.append(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE));
-                errors.add("Unsupported shard_row_id_bits for table with primary key as row id");
-                break;
-            default:
-                throw new AssertionError(a);
-            }
-        }
     }
 
     private boolean canUseAsUnique(TiDBCompositeDataType type) {
@@ -165,16 +138,9 @@ public class TiDBTableGenerator {
     }
 
     private void appendType(StringBuilder sb, TiDBCompositeDataType type) {
-        if (type.getPrimitiveDataType() == TiDBDataType.CHAR) {
-            throw new IgnoreMeException();
-        }
         sb.append(type.toString());
         appendSpecifiers(sb, type.getPrimitiveDataType());
         appendSizeSpecifiers(sb, type.getPrimitiveDataType());
-    }
-
-    private enum Action {
-        AUTO_INCREMENT, PRE_SPLIT_REGIONS, SHARD_ROW_ID_BITS
     }
 
     private void appendSizeSpecifiers(StringBuilder sb, TiDBDataType type) {
