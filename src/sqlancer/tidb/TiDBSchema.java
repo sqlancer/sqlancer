@@ -56,6 +56,23 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
                 throw new AssertionError(this);
             }
         }
+
+        public boolean canHaveDefault() {
+            switch (this) {
+            case INT:
+            case DECIMAL:
+            case FLOATING:
+            case BOOL:
+            case CHAR:
+                return true;
+            case NUMERIC:
+            case TEXT:
+            case BLOB:
+                return false;
+            default:
+                throw new AssertionError(this);
+            }
+        }
     }
 
     public static class TiDBCompositeDataType {
@@ -176,6 +193,14 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
         return new TiDBTables(Randomly.nonEmptySubset(getDatabaseTables()));
     }
 
+    public int getIndexCount() {
+        int count = 0;
+        for (TiDBTable table : getDatabaseTables()) {
+            count += table.getIndexes().size();
+        }
+        return count;
+    }
+
     private static TiDBCompositeDataType getColumnType(String typeString) {
         String trimmedStringType = typeString.replace(" zerofill", "").replace(" unsigned", "");
         if (trimmedStringType.contains("decimal")) {
@@ -211,14 +236,17 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
             case "null":
                 primitiveType = TiDBDataType.INT;
                 break;
+            case "tinyint(3)":
             case "tinyint(4)":
                 primitiveType = TiDBDataType.INT;
                 size = 1;
                 break;
+            case "smallint(5)":
             case "smallint(6)":
                 primitiveType = TiDBDataType.INT;
                 size = 2;
                 break;
+            case "int(10)":
             case "int(11)":
                 primitiveType = TiDBDataType.INT;
                 size = 4;
@@ -227,6 +255,13 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
             case "longblob":
             case "tinyblob":
                 primitiveType = TiDBDataType.BLOB;
+                break;
+            case "date":
+            case "datetime":
+            case "timestamp":
+            case "time":
+            case "year":
+                primitiveType = TiDBDataType.NUMERIC;
                 break;
             default:
                 throw new AssertionError(trimmedStringType);
@@ -252,6 +287,10 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
         List<String> tableNames = getTableNames(con);
         for (String tableName : tableNames) {
             List<TiDBColumn> databaseColumns = getTableColumns(con, tableName);
+            // Ignore invalid views
+            if (databaseColumns.isEmpty()) {
+                continue;
+            }
             List<TableIndex> indexes = getIndexes(con, tableName);
             boolean isView = tableName.startsWith("v");
             TiDBTable t = new TiDBTable(tableName, databaseColumns, indexes, isView);
@@ -302,6 +341,7 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
                     columns.add(c);
                 }
             }
+        } catch (SQLException e) { // Happens when
         }
         return columns;
     }

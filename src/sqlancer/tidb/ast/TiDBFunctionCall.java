@@ -95,8 +95,7 @@ public class TiDBFunctionCall implements TiDBExpression {
         RIGHT(2), //
         // RPAD TODO
         RTRIM(1), //
-        // SPACE(1),
-        // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/6
+        SPACE(1), // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/6
         STRCMP(2), //
         SUBSTRING(2), // TODO: support other versions
         SUBSTRING_INDEX(3), //

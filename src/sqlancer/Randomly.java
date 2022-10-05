@@ -159,11 +159,15 @@ public final class Randomly {
 
     public static int smallNumber() {
         // no need to cache for small numbers
-        return (int) (Math.abs(getThreadRandom().get().nextGaussian()) * 2);
+        return (int) (Math.abs(getThreadRandom().get().nextGaussian())) * 2;
     }
 
     public static boolean getBoolean() {
         return getThreadRandom().get().nextBoolean();
+    }
+
+    public static double getPercentage() {
+        return getThreadRandom().get().nextDouble();
     }
 
     private static ThreadLocal<Random> getThreadRandom() {
