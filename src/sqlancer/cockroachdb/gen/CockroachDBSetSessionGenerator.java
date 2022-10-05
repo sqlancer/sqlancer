@@ -25,9 +25,7 @@ public final class CockroachDBSetSessionGenerator {
         ENABLE_IMPLICIT_SELECT_FOR_UPDATE(CockroachDBSetSessionGenerator::onOff),
         ENABLE_INSERT_FAST_PATH(CockroachDBSetSessionGenerator::onOff),
         ENABLE_ZIGZAG_JOIN(CockroachDBSetSessionGenerator::onOff),
-        // EXPERIMENTAL_ENABLE_HASH_SHARDED_INDEXES(CockroachDBSetSessionGenerator::onOff),
         SERIAL_NORMALIZATION((g) -> Randomly.fromOptions("'rowid'", "'virtual_sequence'")),
-        // EXTRA_FLOAT_DIGITS((g) -> g.getRandomly().getInteger(-15, 3)),
         REORDER_JOINS_LIMIT((g) -> g.getRandomly().getInteger(0, Integer.MAX_VALUE)), //
         SQL_SAFE_UPDATES((g) -> "off"), TRACING(CockroachDBSetSessionGenerator::onOff),
         /*

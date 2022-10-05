@@ -59,9 +59,10 @@ public final class ComparatorHelper {
             while (result.next()) {
                 String resultTemp = result.getString(1);
                 if (resultTemp != null) {
-                    resultTemp = resultTemp.replaceAll("[\\.]0+$", "");
+                    resultTemp = resultTemp.replaceAll("[\\.]0+$", ""); // Remove the trailing zeros as many DBMS treat
+                                                                        // it as non-bugs
                 }
-                resultSet.add(resultTemp); // Remove the trailing zeros as many DBMS treat it as non-bugs
+                resultSet.add(resultTemp);
             }
         } catch (Exception e) {
             if (e instanceof IgnoreMeException) {

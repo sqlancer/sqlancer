@@ -293,7 +293,7 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBGlobalState, Co
             for (CockroachDBColumn c : databaseColumns) {
                 c.setTable(t);
             }
-            // To avoid some situations that columns can not be got.
+            // To avoid some situations that columns can not be retrieved.
             if (databaseColumns.isEmpty()) {
                 continue;
             }

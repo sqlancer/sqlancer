@@ -9,9 +9,8 @@ public class TiDBRegexOperation extends BinaryOperatorNode<TiDBExpression, TiDBR
         implements TiDBExpression {
 
     public enum TiDBRegexOperator implements Operator {
-        /*
-         * https://github.com/pingcap/tidb/issues/35623 LIKE("LIKE"), // NOT_LIKE("NOT LIKE"), //
-         */
+        LIKE("LIKE"), //
+        NOT_LIKE("NOT LIKE"), //
         ILIKE("REGEXP"), //
         NOT_REGEXP("NOT REGEXP");
 

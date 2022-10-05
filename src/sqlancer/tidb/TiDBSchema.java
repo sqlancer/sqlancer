@@ -334,8 +334,7 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
                     columns.add(c);
                 }
             }
-        } catch (SQLException e) {
-
+        } catch (SQLException e) { // Happens when
         }
         return columns;
     }

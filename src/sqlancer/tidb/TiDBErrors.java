@@ -21,18 +21,8 @@ public final class TiDBErrors {
         // functions
         errors.add("BIGINT value is out of range");
         errors.add("doesn't have a default value"); // default
-
         errors.add("is not valid for CHARACTER SET");
-
-        // known issue: https://github.com/pingcap/tidb/issues/14819
-        // errors.add("Wrong plan type for dataReaderBuilder");
-
         errors.add("DOUBLE value is out of range");
-
-        // errors.add("index out of range"); // https://github.com/pingcap/tidb/issues/15810
-        // errors.add("baseBuiltinFunc.evalString() should never be called, please contact the TiDB team for help"); //
-        // https://github.com/pingcap/tidb/issues/15847
-        // errors.add("unsupport column type for encode 6"); // https://github.com/pingcap/tidb/issues/15850
 
         errors.add("Data truncation: %s value is out of range in '%s'");
         errors.add("Truncated incorrect FLOAT value");
@@ -46,13 +36,6 @@ public final class TiDBErrors {
         errors.add("Unknown column"); // https://github.com/pingcap/tidb/issues/35522
         errors.add("Can\'t find column"); // https://github.com/pingcap/tidb/issues/35527
         errors.add("Cannot convert"); // https://github.com/pingcap/tidb/issues/35652
-
-        // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/57
-        // errors.add("For input string: \"+Inf\"");
-
-        // errors.add("inconsistent index"); // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/58
-
-        // errors.add("Illegal mix of collations");
 
         if (TiDBBugs.bug35677) {
             errors.add("for function inet_aton");
@@ -92,11 +75,6 @@ public final class TiDBErrors {
         errors.add("Incorrect decimal value");
         errors.add("error parsing regexp");
         errors.add("is not valid for CHARACTER SET");
-
-        // if (true) {
-        // // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/54
-        // errors.add("Miss column");
-        // }
     }
 
 }

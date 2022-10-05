@@ -15,8 +15,6 @@ public final class CockroachDBTruncateGenerator {
         ExpectedErrors errors = new ExpectedErrors();
         errors.add("is referenced by foreign key");
 
-        // https://github.com/cockroachdb/cockroach/issues/47030
-        // errors.add("unexpected value: <nil>");
         StringBuilder sb = new StringBuilder();
         sb.append("TRUNCATE");
         if (Randomly.getBoolean()) {

@@ -246,8 +246,6 @@ public final class CockroachDBErrors {
         errors.add("unimplemented: nested arrays not supported"); // e.g., casting a string {{1}} to an array
         errors.add("malformed array");
 
-        // errors.add("https://github.com/cockroachdb/cockroach/issues/35707"); // arrays don't support ORDER BY
-
         errors.add("as bytes[], found type: varbit[]");
         errors.add("to be of type decimal[], found type float[]");
         errors.add("to be of type int[], found type decimal[]");

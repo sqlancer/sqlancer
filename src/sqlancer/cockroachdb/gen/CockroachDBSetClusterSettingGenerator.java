@@ -15,14 +15,9 @@ public final class CockroachDBSetClusterSettingGenerator {
 
     // https://www.cockroachlabs.com/docs/stable/set-vars.html
     private enum CockroachDBClusterSetting {
-        // BUFFER_INCREMENT("kv.bulk_ingest.buffer_increment", (g) -> "'" + Randomly.getUncachedDouble() + "'"),
         BACKPRESSURE_RANGE_SIZE_MULTIPLIER(" kv.range.backpressure_range_size_multiplier",
                 (g) -> Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)),
         RANGE_DESCRIPTOR_CACHE_SIZE("kv.range_descriptor_cache.size", (g) -> Randomly.getNonCachedInteger()),
-        // SQL_DEFAULTS_VECTORIZE_ROW_COUNT_THRESHOLD("sql.defaults.vectorize_row_count_threshold",
-        // (g) -> Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)),
-        // SQL_DEFAULTS_EXPERIMENTAL_OPTIMIZER_FOREIGN_KEYS_ENABLED("sql.defaults.experimental_optimizer_foreign_keys.enabled",
-        // CockroachDBSetSessionGenerator::onOff),
         SQL_QUERY_CACHE_ENABLED("sql.query_cache.enabled", CockroachDBSetSessionGenerator::onOff),
         SQL_STATS_HISTOGRAM_COLLECTION_ENABLED("sql.stats.histogram_collection.enabled",
                 CockroachDBSetSessionGenerator::onOff);

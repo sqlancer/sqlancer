@@ -92,7 +92,7 @@ public class TiDBFunctionCall implements TiDBExpression {
         // [...]
         REPLACE(3), //
         REVERSE(1), //
-        // RIGHT(2), // https://github.com/pingcap/tidb/issues/35623
+        RIGHT(2), //
         // RPAD TODO
         RTRIM(1), //
         SPACE(1), // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/6
