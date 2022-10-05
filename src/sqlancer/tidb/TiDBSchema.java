@@ -256,6 +256,13 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
             case "tinyblob":
                 primitiveType = TiDBDataType.BLOB;
                 break;
+            case "date":
+            case "datetime":
+            case "timestamp":
+            case "time":
+            case "year":
+                primitiveType = TiDBDataType.NUMERIC;
+                break;
             default:
                 throw new AssertionError(trimmedStringType);
             }
