@@ -1,6 +1,7 @@
 package sqlancer.yugabyte.ycql;
 
 import static sqlancer.yugabyte.ycql.YCQLSchema.getTableNames;
+import static sqlancer.yugabyte.ysql.YSQLProvider.DDL_LOCK;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -137,22 +138,24 @@ public class YCQLProvider extends SQLProviderAdapter<YCQLGlobalState, YCQLOption
         final Connection connection = DriverManager.getConnection(
                 String.format(url, host, port, "system_schema", globalState.getDbmsSpecificOptions().datacenter));
 
-        try (Statement stmt = connection.createStatement()) {
-            try {
-                stmt.execute("DROP KEYSPACE IF EXISTS " + globalState.getDatabaseName());
-            } catch (Exception se) {
-                // try again
-                List<String> tableNames = getTableNames(
-                        new SQLConnection(DriverManager.getConnection(String.format(url, host, port,
-                                globalState.getDatabaseName(), globalState.getDbmsSpecificOptions().datacenter))),
-                        globalState.getDatabaseName());
-                for (String tableName : tableNames) {
-                    stmt.execute("DROP TABLE " + globalState.getDatabaseName() + "." + tableName);
+        synchronized (DDL_LOCK) {
+            try (Statement stmt = connection.createStatement()) {
+                try {
+                    stmt.execute("DROP KEYSPACE IF EXISTS " + globalState.getDatabaseName());
+                } catch (Exception se) {
+                    // try again
+                    List<String> tableNames = getTableNames(
+                            new SQLConnection(DriverManager.getConnection(String.format(url, host, port,
+                                    globalState.getDatabaseName(), globalState.getDbmsSpecificOptions().datacenter))),
+                            globalState.getDatabaseName());
+                    for (String tableName : tableNames) {
+                        stmt.execute("DROP TABLE " + globalState.getDatabaseName() + "." + tableName);
+                    }
+                    stmt.execute("DROP KEYSPACE IF EXISTS " + globalState.getDatabaseName());
                 }
-                stmt.execute("DROP KEYSPACE IF EXISTS " + globalState.getDatabaseName());
-            }
 
-            stmt.execute("CREATE KEYSPACE IF NOT EXISTS " + globalState.getDatabaseName());
+                stmt.execute("CREATE KEYSPACE IF NOT EXISTS " + globalState.getDatabaseName());
+            }
         }
 
         return new SQLConnection(DriverManager.getConnection(String.format(url, host, port,

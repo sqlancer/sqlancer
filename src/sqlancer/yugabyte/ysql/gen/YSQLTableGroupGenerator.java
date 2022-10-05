@@ -19,6 +19,7 @@ public final class YSQLTableGroupGenerator {
         StringBuilder sb = new StringBuilder("CREATE TABLEGROUP ");
         String tableGroupName = "tg" + UNIQUE_TABLEGROUP_COUNTER.incrementAndGet();
         sb.append(tableGroupName);
+        errors.add("cannot use tablegroups in a colocated database");
         return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 }
