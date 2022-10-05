@@ -6,17 +6,17 @@ import java.util.List;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
+import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLDataType;
 import sqlancer.yugabyte.ysql.YSQLVisitor;
 import sqlancer.yugabyte.ysql.ast.YSQLExpression;
-import sqlancer.yugabyte.ysql.gen.YSQLCommon;
 
 public class YSQLTLPHavingOracle extends YSQLTLPBase {
 
     public YSQLTLPHavingOracle(YSQLGlobalState state) {
         super(state);
-        YSQLCommon.addGroupingErrors(errors);
+        YSQLErrors.addGroupingErrors(errors);
     }
 
     @Override

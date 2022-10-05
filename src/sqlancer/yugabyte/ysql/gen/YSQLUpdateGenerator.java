@@ -5,6 +5,7 @@ import java.util.List;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLColumn;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLDataType;
@@ -33,7 +34,7 @@ public final class YSQLUpdateGenerator {
         // table multiple times
         errors.add("new row violates check option for view");
         List<YSQLColumn> columns = randomTable.getRandomNonEmptyColumnSubset();
-        YSQLCommon.addCommonInsertUpdateErrors(errors);
+        YSQLErrors.addCommonInsertUpdateErrors(errors);
 
         for (int i = 0; i < columns.size(); i++) {
             if (i != 0) {
@@ -62,7 +63,7 @@ public final class YSQLUpdateGenerator {
         errors.add("violates check constraint");
         errors.add("could not determine which collation to use for string comparison");
         errors.add("but expression is of type");
-        YSQLCommon.addCommonExpressionErrors(errors);
+        YSQLErrors.addCommonExpressionErrors(errors);
         if (!Randomly.getBooleanWithSmallProbability()) {
             sb.append(" WHERE ");
             YSQLExpression where = YSQLExpressionGenerator.generateExpression(globalState, randomTable.getColumns(),

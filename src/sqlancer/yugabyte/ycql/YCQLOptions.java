@@ -14,8 +14,13 @@ import sqlancer.yugabyte.ycql.YCQLOptions.YCQLOracleFactory;
 import sqlancer.yugabyte.ycql.YCQLProvider.YCQLGlobalState;
 import sqlancer.yugabyte.ycql.test.YCQLFuzzer;
 
-@Parameters(commandDescription = "YCQL")
+@Parameters(separators = "=", commandDescription = "YCQL (default port: " + YCQLOptions.DEFAULT_PORT
+        + ", default host: " + YCQLOptions.DEFAULT_HOST)
 public class YCQLOptions implements DBMSSpecificOptions<YCQLOracleFactory> {
+
+    public static final String DEFAULT_HOST = "localhost";
+    public static final int DEFAULT_PORT = 9042;
+    public static final String DEFAULT_DATACENTER = "datacenter1";
 
     @Parameter(names = "--max-num-deletes", description = "The maximum number of DELETE statements that are issued for a database", arity = 1)
     public int maxNumDeletes = 1;
@@ -24,7 +29,7 @@ public class YCQLOptions implements DBMSSpecificOptions<YCQLOracleFactory> {
     public int maxNumUpdates = 5;
 
     @Parameter(names = "--datacenter", description = "YCQL datacenter, can be found in system.local table", arity = 1)
-    public String datacenter = "datacenter1";
+    public String datacenter = DEFAULT_DATACENTER;
 
     @Parameter(names = "--oracle")
     public List<YCQLOracleFactory> oracles = Arrays.asList(YCQLOracleFactory.FUZZER);

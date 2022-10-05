@@ -13,9 +13,9 @@ import sqlancer.common.DBMSCommon;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLProvider;
-import sqlancer.yugabyte.ysql.gen.YSQLCommon;
 import sqlancer.yugabyte.ysql.gen.YSQLTableGenerator;
 
 public class YSQLCatalog implements TestOracle {
@@ -40,8 +40,8 @@ public class YSQLCatalog implements TestOracle {
         this.con = state.getConnection();
         this.logger = state.getLogger();
         this.options = state.getOptions();
-        YSQLCommon.addCommonExpressionErrors(errors);
-        YSQLCommon.addCommonFetchErrors(errors);
+        YSQLErrors.addCommonExpressionErrors(errors);
+        YSQLErrors.addCommonFetchErrors(errors);
     }
 
     private YSQLProvider.Action getRandomAction(List<YSQLProvider.Action> actions) {

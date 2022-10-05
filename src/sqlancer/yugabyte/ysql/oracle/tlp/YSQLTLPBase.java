@@ -10,6 +10,7 @@ import sqlancer.Randomly;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
 import sqlancer.common.oracle.TestOracle;
+import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLSchema;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLColumn;
@@ -21,7 +22,6 @@ import sqlancer.yugabyte.ysql.ast.YSQLConstant;
 import sqlancer.yugabyte.ysql.ast.YSQLExpression;
 import sqlancer.yugabyte.ysql.ast.YSQLJoin;
 import sqlancer.yugabyte.ysql.ast.YSQLSelect;
-import sqlancer.yugabyte.ysql.gen.YSQLCommon;
 import sqlancer.yugabyte.ysql.gen.YSQLExpressionGenerator;
 import sqlancer.yugabyte.ysql.oracle.YSQLNoRECOracle;
 
@@ -35,8 +35,8 @@ public class YSQLTLPBase extends TernaryLogicPartitioningOracleBase<YSQLExpressi
 
     public YSQLTLPBase(YSQLGlobalState state) {
         super(state);
-        YSQLCommon.addCommonExpressionErrors(errors);
-        YSQLCommon.addCommonFetchErrors(errors);
+        YSQLErrors.addCommonExpressionErrors(errors);
+        YSQLErrors.addCommonFetchErrors(errors);
     }
 
     public static YSQLSelect.YSQLSubquery createSubquery(YSQLGlobalState globalState, String name, YSQLTables tables) {

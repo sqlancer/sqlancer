@@ -7,6 +7,7 @@ import sqlancer.Randomly;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLColumn;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLDataType;
@@ -57,8 +58,8 @@ public class YSQLTableGenerator {
         errors.add("Cannot split table that does not have primary key");
         errors.add("inherits from generated column but specifies identity");
         errors.add("inherits from generated column but specifies default");
-        YSQLCommon.addCommonExpressionErrors(errors);
-        YSQLCommon.addCommonTableErrors(errors);
+        YSQLErrors.addCommonExpressionErrors(errors);
+        YSQLErrors.addCommonTableErrors(errors);
     }
 
     public static SQLQueryAdapter generate(String tableName, boolean generateOnlyKnown, YSQLGlobalState globalState) {
@@ -148,7 +149,7 @@ public class YSQLTableGenerator {
         errors.add("unsupported UNIQUE constraint with partition key definition");
         errors.add("does not accept data type");
         int n = partitionOption.contentEquals("LIST") ? 1 : Randomly.smallNumber() + 1;
-        YSQLCommon.addCommonExpressionErrors(errors);
+        YSQLErrors.addCommonExpressionErrors(errors);
         for (int i = 0; i < n; i++) {
             if (i != 0) {
                 sb.append(", ");

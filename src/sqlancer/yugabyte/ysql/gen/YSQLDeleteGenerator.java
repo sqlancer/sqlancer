@@ -3,6 +3,7 @@ package sqlancer.yugabyte.ysql.gen;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLDataType;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTable;
@@ -35,7 +36,7 @@ public final class YSQLDeleteGenerator {
             sb.append(
                     YSQLVisitor.asString(YSQLExpressionGenerator.generateExpression(globalState, table.getColumns())));
         }
-        YSQLCommon.addCommonExpressionErrors(errors);
+        YSQLErrors.addCommonExpressionErrors(errors);
         errors.add("out of range");
         errors.add("cannot cast");
         errors.add("invalid input syntax for");

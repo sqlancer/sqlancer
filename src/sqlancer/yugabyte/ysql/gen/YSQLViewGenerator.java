@@ -4,6 +4,7 @@ import sqlancer.Randomly;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLVisitor;
 import sqlancer.yugabyte.ysql.ast.YSQLSelect;
@@ -50,9 +51,9 @@ public final class YSQLViewGenerator {
         YSQLSelect select = YSQLRandomQueryGenerator.createRandomQuery(nrColumns, globalState);
         sb.append(YSQLVisitor.asString(select));
         sb.append(")");
-        YSQLCommon.addGroupingErrors(errors);
-        YSQLCommon.addViewErrors(errors);
-        YSQLCommon.addCommonExpressionErrors(errors);
+        YSQLErrors.addGroupingErrors(errors);
+        YSQLErrors.addViewErrors(errors);
+        YSQLErrors.addCommonExpressionErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 

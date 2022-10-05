@@ -16,6 +16,7 @@ import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.yugabyte.ysql.YSQLCompoundDataType;
+import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLSchema;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLColumn;
@@ -29,7 +30,6 @@ import sqlancer.yugabyte.ysql.ast.YSQLExpression;
 import sqlancer.yugabyte.ysql.ast.YSQLJoin;
 import sqlancer.yugabyte.ysql.ast.YSQLPostfixText;
 import sqlancer.yugabyte.ysql.ast.YSQLSelect;
-import sqlancer.yugabyte.ysql.gen.YSQLCommon;
 import sqlancer.yugabyte.ysql.gen.YSQLExpressionGenerator;
 import sqlancer.yugabyte.ysql.oracle.tlp.YSQLTLPBase;
 
@@ -40,8 +40,8 @@ public class YSQLNoRECOracle extends NoRECBase<YSQLGlobalState> implements TestO
     public YSQLNoRECOracle(YSQLGlobalState globalState) {
         super(globalState);
         this.s = globalState.getSchema();
-        YSQLCommon.addCommonExpressionErrors(errors);
-        YSQLCommon.addCommonFetchErrors(errors);
+        YSQLErrors.addCommonExpressionErrors(errors);
+        YSQLErrors.addCommonFetchErrors(errors);
     }
 
     public static List<YSQLJoin> getJoinStatements(YSQLGlobalState globalState, List<YSQLColumn> columns,

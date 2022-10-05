@@ -13,6 +13,7 @@ import com.google.auto.service.AutoService;
 import sqlancer.AbstractAction;
 import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
+import sqlancer.MainOptions;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.SQLGlobalState;
@@ -119,10 +120,19 @@ public class YCQLProvider extends SQLProviderAdapter<YCQLGlobalState, YCQLOption
         try {
             Class.forName("com.ing.data.cassandra.jdbc.CassandraDriver");
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            throw new AssertionError();
         }
-        final String host = globalState.getOptions().getHost();
-        final int port = globalState.getOptions().getPort();
+
+        String host = globalState.getOptions().getHost();
+        int port = globalState.getOptions().getPort();
+
+        if (host == null) {
+            host = YCQLOptions.DEFAULT_HOST;
+        }
+        if (port == MainOptions.NO_SET_PORT) {
+            port = YCQLOptions.DEFAULT_PORT;
+        }
+
         final String url = "jdbc:cassandra://%s:%s/%s?localdatacenter=%s";
         final Connection connection = DriverManager.getConnection(
                 String.format(url, host, port, "system_schema", globalState.getDbmsSpecificOptions().datacenter));

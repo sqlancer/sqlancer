@@ -8,6 +8,7 @@ import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.schema.AbstractTableColumn;
+import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLColumn;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLDataType;
@@ -120,7 +121,7 @@ public final class YSQLIndexGenerator {
         errors.add("functions in index expression must be marked IMMUTABLE");
         errors.add("result of range difference would not be contiguous");
         errors.add("which is part of the partition key");
-        YSQLCommon.addCommonExpressionErrors(errors);
+        YSQLErrors.addCommonExpressionErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors);
     }
 

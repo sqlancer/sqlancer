@@ -10,6 +10,7 @@ import sqlancer.SQLConnection;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLColumn;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLDataType;
@@ -21,7 +22,6 @@ import sqlancer.yugabyte.ysql.ast.YSQLConstant;
 import sqlancer.yugabyte.ysql.ast.YSQLExpression;
 import sqlancer.yugabyte.ysql.ast.YSQLPostfixOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLSelect;
-import sqlancer.yugabyte.ysql.gen.YSQLCommon;
 import sqlancer.yugabyte.ysql.gen.YSQLExpressionGenerator;
 
 public class YSQLPivotedQuerySynthesisOracle
@@ -31,8 +31,8 @@ public class YSQLPivotedQuerySynthesisOracle
 
     public YSQLPivotedQuerySynthesisOracle(YSQLGlobalState globalState) throws SQLException {
         super(globalState);
-        YSQLCommon.addCommonExpressionErrors(errors);
-        YSQLCommon.addCommonFetchErrors(errors);
+        YSQLErrors.addCommonExpressionErrors(errors);
+        YSQLErrors.addCommonFetchErrors(errors);
     }
 
     /*

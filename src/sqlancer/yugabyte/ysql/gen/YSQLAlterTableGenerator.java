@@ -6,6 +6,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTable;
 
@@ -26,9 +27,9 @@ public class YSQLAlterTableGenerator {
     }
 
     public List<Action> getActions(ExpectedErrors errors) {
-        YSQLCommon.addCommonExpressionErrors(errors);
-        YSQLCommon.addCommonInsertUpdateErrors(errors);
-        YSQLCommon.addCommonTableErrors(errors);
+        YSQLErrors.addCommonExpressionErrors(errors);
+        YSQLErrors.addCommonInsertUpdateErrors(errors);
+        YSQLErrors.addCommonTableErrors(errors);
         errors.add("duplicate key value violates unique constraint");
         errors.add("cannot drop key column");
         errors.add("cannot drop desired object(s) because other objects depend on them");

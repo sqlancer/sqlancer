@@ -7,10 +7,10 @@ import sqlancer.Randomly;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLProvider;
 import sqlancer.yugabyte.ysql.YSQLVisitor;
-import sqlancer.yugabyte.ysql.gen.YSQLCommon;
 import sqlancer.yugabyte.ysql.gen.YSQLRandomQueryGenerator;
 
 public class YSQLFuzzer implements TestOracle {
@@ -21,10 +21,10 @@ public class YSQLFuzzer implements TestOracle {
     public YSQLFuzzer(YSQLGlobalState globalState) {
         this.globalState = globalState;
 
-        YSQLCommon.addCommonExpressionErrors(errors);
-        YSQLCommon.addCommonFetchErrors(errors);
-        YSQLCommon.addGroupingErrors(errors);
-        YSQLCommon.addViewErrors(errors);
+        YSQLErrors.addCommonExpressionErrors(errors);
+        YSQLErrors.addCommonFetchErrors(errors);
+        YSQLErrors.addGroupingErrors(errors);
+        YSQLErrors.addViewErrors(errors);
 
         // remove timeout error from scope
         errors.add("canceling statement due to statement timeout");

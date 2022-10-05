@@ -14,6 +14,7 @@ import sqlancer.Randomly;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
+import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLDataType;
 import sqlancer.yugabyte.ysql.YSQLVisitor;
@@ -27,7 +28,6 @@ import sqlancer.yugabyte.ysql.ast.YSQLPostfixOperation.PostfixOperator;
 import sqlancer.yugabyte.ysql.ast.YSQLPrefixOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLPrefixOperation.PrefixOperator;
 import sqlancer.yugabyte.ysql.ast.YSQLSelect;
-import sqlancer.yugabyte.ysql.gen.YSQLCommon;
 
 public class YSQLTLPAggregateOracle extends YSQLTLPBase implements TestOracle {
 
@@ -38,7 +38,7 @@ public class YSQLTLPAggregateOracle extends YSQLTLPBase implements TestOracle {
 
     public YSQLTLPAggregateOracle(YSQLGlobalState state) {
         super(state);
-        YSQLCommon.addGroupingErrors(errors);
+        YSQLErrors.addGroupingErrors(errors);
     }
 
     @Override

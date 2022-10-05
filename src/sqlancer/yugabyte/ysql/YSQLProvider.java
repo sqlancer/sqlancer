@@ -22,7 +22,6 @@ import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
-import sqlancer.yugabyte.YugabyteBugs;
 import sqlancer.yugabyte.ysql.gen.YSQLAlterTableGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLAnalyzeGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLCommentGenerator;
@@ -141,6 +140,13 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
         entryURL = globalState.getDbmsSpecificOptions().connectionURL;
         String entryDatabaseName = entryPath.substring(1);
         databaseName = globalState.getDatabaseName();
+
+        if (host == null) {
+            host = YSQLOptions.DEFAULT_HOST;
+        }
+        if (port == MainOptions.NO_SET_PORT) {
+            port = YSQLOptions.DEFAULT_PORT;
+        }
 
         try {
             URI uri = new URI(entryURL);
@@ -294,9 +300,9 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
             }
 
             if (Randomly.getBoolean()) {
-                if (YugabyteBugs.bug11357) {
-                    throw new IgnoreMeException();
-                }
+                // if (YugabyteBugs.bug11357) {
+                // throw new IgnoreMeException();
+                // }
 
                 sb.append("COLOCATED = true ");
             }
