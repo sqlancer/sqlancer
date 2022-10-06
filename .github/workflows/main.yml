@@ -297,6 +297,27 @@ jobs:
       - name: Run Tests
         run: TIDB_AVAILABLE=true mvn -Dtest=TestTiDB test
 
+  yugabyte:
+    name: DBMS Tests (YugabyteDB)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Setup Yugabyte
+        run: |
+          docker pull yugabytedb/yugabyte:latest
+          docker run -d --name yugabyte -p7000:7000 -p9000:9000 -p5433:5433 -p9042:9042 yugabytedb/yugabyte:latest bin/yugabyted start --daemon=false 
+          sleep 5
+      - name: Run Tests
+        run: YUGABYTE_AVAILABLE=true mvn -Dtest=TestYugabyte test
+
   java13:
     name: Java 13 Compatibility (DuckDB)
     runs-on: ubuntu-latest
