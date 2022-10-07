@@ -85,9 +85,6 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
         case REGEX:
             return new TiDBRegexOperation(generateExpression(depth + 1), generateExpression(depth + 1),
                     TiDBRegexOperator.getRandom());
-        // case COLLATE:
-        // return new TiDBCollate(generateExpression(depth + 1),
-        // Randomly.fromOptions("utf8mb4_bin", "latin1_bin", "binary", "ascii_bin", "utf8_bin"));
         case FUNCTION:
             TiDBFunction func = TiDBFunction.getRandom();
             return new TiDBFunctionCall(func, generateExpressions(func.getNrArgs(), depth));
@@ -100,9 +97,6 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
             }
             return new TiDBBinaryLogicalOperation(generateExpression(depth + 1), generateExpression(depth + 1),
                     TiDBBinaryLogicalOperator.getRandom());
-        // case BINARY_ARITHMETIC:
-        // return new TiDBBinaryArithmeticOperation(generateExpression(depth + 1), generateExpression(depth + 1),
-        // TiDBBinaryArithmeticOperator.getRandom());
         case CAST:
             return new TiDBCastOperation(generateExpression(depth + 1), Randomly.fromOptions("BINARY", // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/52
                     "CHAR", "DATE", "DATETIME", "TIME", // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/13
