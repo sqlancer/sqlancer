@@ -1,0 +1,46 @@
+name: Build SQLancer for Yugabyte internal testing
+
+on:
+  workflow_dispatch:
+    inputs:
+      sqlancer_version:
+        description: Preferred SQLancer version title
+        default: ''
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: maven
+      - name: Build with Maven
+        run: mvn package -DskipTests --file pom.xml
+      - run: cd target && mv -n sqlancer-2.0.0.jar sqlancer-${{ github.event.inputs.sqlancer_version }}.jar && cd ../
+      - run: cd target && tar -cvzf sqlancer.tar.gz sqlancer-${{ github.event.inputs.sqlancer_version }}.jar lib/
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: sqlancer_${{ github.event.inputs.sqlancer_version }}
+          release_name: SQLancer ${{ github.event.inputs.sqlancer_version }}
+          draft: false
+          prerelease: false
+      - name: Upload Release Assets
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: target/sqlancer.tar.gz
+          asset_name: sqlancer-${{ github.event.inputs.sqlancer_version }}.tar.gz
+          asset_content_type: application/zip
