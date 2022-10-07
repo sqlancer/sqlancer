@@ -227,14 +227,20 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
                 primitiveType = TiDBDataType.TEXT;
                 break;
             case "float":
+                size = 4;
+                primitiveType = TiDBDataType.FLOATING;
+                break;
             case "double":
+                size = 8;
                 primitiveType = TiDBDataType.FLOATING;
                 break;
             case "tinyint(1)":
                 primitiveType = TiDBDataType.BOOL;
+                size = 1;
                 break;
             case "null":
                 primitiveType = TiDBDataType.INT;
+                size = 1;
                 break;
             case "tinyint(3)":
             case "tinyint(4)":

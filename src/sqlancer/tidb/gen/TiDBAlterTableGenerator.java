@@ -9,6 +9,7 @@ import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.tidb.TiDBBugs;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
+import sqlancer.tidb.TiDBSchema.TiDBCompositeDataType;
 import sqlancer.tidb.TiDBSchema.TiDBDataType;
 import sqlancer.tidb.TiDBSchema.TiDBTable;
 
@@ -25,11 +26,9 @@ public final class TiDBAlterTableGenerator {
         ExpectedErrors errors = new ExpectedErrors();
         errors.add(
                 "Information schema is changed during the execution of the statement(for example, table definition may be updated by other DDL ran in parallel)");
-        errors.add("Data truncated");
-        errors.add("Data truncation");
+        errors.add("Data truncat");
         errors.add("without a key length");
-        errors.add("charset");
-        errors.add("not supported");
+        errors.add("supported");
         errors.add("SQL syntax");
         errors.add("can't drop");
         StringBuilder sb = new StringBuilder("ALTER TABLE ");
@@ -46,8 +45,7 @@ public final class TiDBAlterTableGenerator {
             sb.append("MODIFY ");
             sb.append(column.getName());
             sb.append(" ");
-            sb.append(TiDBDataType.getRandom());
-            errors.add("Unsupported modify column");
+            sb.append(TiDBCompositeDataType.getRandom().toString());
             break;
         case DROP_COLUMN:
             sb.append(" DROP ");
@@ -102,7 +100,7 @@ public final class TiDBAlterTableGenerator {
             sb.append(" ");
             sb.append(column.getName());
             sb.append(" ");
-            sb.append(column.getType().getPrimitiveDataType());
+            sb.append(column.getType().toString());
             sb.append(" NOT NULL ");
             errors.add("Invalid use of NULL value");
             errors.add("Unsupported modify column:");
