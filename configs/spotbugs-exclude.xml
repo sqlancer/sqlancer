@@ -11,5 +11,10 @@
 		<Class name="sqlancer.postgres.PostgresProvider" />
 		<Method name="createDatabase" />
 		<Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" />
-</Match>
+	</Match>
+	<Match>
+		<Class name="sqlancer.yugabyte.ysql.YSQLProvider" />
+		<Method name="createDatabase" />
+		<Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" />
+	</Match>
 </FindBugsFilter>
