@@ -21,7 +21,6 @@ public class TestDatabend {
                         "--host", "127.0.0.1", "--port", "3307", "databend", "--oracle", "NOREC"));
     }
 
-    // TODO Databend待修复的bug（union schema error mismatch）https://github.com/datafuselabs/databend/issues/7463
     @Test
     public void testDatabendTLPQueryPartitioning() {
         String databendAvailable = System.getenv("DATABEND_AVAILABLE");
