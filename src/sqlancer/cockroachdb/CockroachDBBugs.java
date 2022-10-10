@@ -50,6 +50,10 @@ public final class CockroachDBBugs {
     // https://github.com/cockroachdb/cockroach/issues/85499
     public static boolean bug85499 = true;
 
+    // https://github.com/cockroachdb/cockroach/issues/88037
+    // TODO: This should be fixed in v22.2.1.
+    public static boolean bug88037 = true;
+
     private CockroachDBBugs() {
     }
 

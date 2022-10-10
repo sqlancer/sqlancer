@@ -186,6 +186,9 @@ public final class CockroachDBErrors {
         if (CockroachDBBugs.bug85499) {
             errors.add("estimated row count must be non-zero");
         }
+        if (CockroachDBBugs.bug88037) {
+            errors.add("expected required columns to be a subset of output columns");
+        }
 
         errors.add("unable to vectorize execution plan"); // SET vectorize=experimental_always;
         errors.add(" mismatched physical types at index"); // SET vectorize=experimental_always;
@@ -203,6 +206,7 @@ public final class CockroachDBErrors {
         errors.add("ERROR: for SELECT DISTINCT, ORDER BY expressions must appear in select list");
 
         addArrayErrors(errors);
+        addComputedColumnErrors(errors);
     }
 
     private static void addArrayErrors(ExpectedErrors errors) {
@@ -306,6 +310,11 @@ public final class CockroachDBErrors {
 
     public static void addTransactionErrors(ExpectedErrors errors) {
         errors.add("current transaction is aborted");
+    }
+
+    private static void addComputedColumnErrors(ExpectedErrors errors) {
+        // computed columns
+        errors.add("computed column expressions cannot reference computed columns");
     }
 
 }
