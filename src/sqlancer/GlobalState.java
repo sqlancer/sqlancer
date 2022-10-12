@@ -131,7 +131,7 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
             try {
                 updateSchema();
             } catch (Exception e) {
-                throw new AssertionError();
+                throw new AssertionError(e.getMessage());
             }
         }
         return schema;

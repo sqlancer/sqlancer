@@ -347,6 +347,11 @@
       <artifactId>arangodb-java-driver</artifactId>
       <version>6.9.0</version>
     </dependency>
+    <dependency>
+      <groupId>org.questdb</groupId>
+      <artifactId>questdb</artifactId>
+      <version>6.5.3</version>
+    </dependency>
   </dependencies>
   <reporting>
     <plugins>
