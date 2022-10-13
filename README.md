@@ -61,7 +61,7 @@ Since SQL dialects differ widely, each DBMS to be tested requires a separate imp
 | TDEngine                     | Removed     | Untyped                      | We removed the TDEngine implementation since all but one of our bug reports were still unaddressed five months after we reported them.                                                          |
 | OceanBase                    | Working     | Untyped                      |                                                                                                                                                                                                 |
 | YugabyteDB                   | Working     | Typed (YSQL), Untyped (YCQL) | YSQL implementation based on Postgres code. YCQL implementation is primitive for now and uses Cassandra JDBC driver as a proxy interface.                                                       |
-
+| Databend                    | Working     | Typed                      |  |
 
 # Using SQLancer
 

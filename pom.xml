@@ -44,7 +44,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.3.0</version>
+        <version>3.4.0</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -154,7 +154,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.2.0</version>
+        <version>3.3.0</version>
         <executions>
           <execution>
             <id>copy-dependencies</id>
@@ -175,7 +175,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.2.2</version>
+        <version>3.3.0</version>
         <configuration>
           <forceCreation>true</forceCreation>
           <archive>
@@ -209,7 +209,7 @@
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>10.3.3</version>
+            <version>10.3.4</version>
           </dependency>
         </dependencies>
         <configuration>
@@ -252,7 +252,7 @@
       <plugin>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-maven-plugin</artifactId>
-        <version>4.7.1.1</version>
+        <version>4.7.2.1</version>
         <executions>
           <execution>
             <id>spotbugs</id>
@@ -309,17 +309,17 @@
     <dependency>
       <groupId>org.mariadb.jdbc</groupId>
       <artifactId>mariadb-java-client</artifactId>
-      <version>3.0.7</version>
+      <version>3.0.8</version>
     </dependency>
     <dependency>
       <groupId>org.duckdb</groupId>
       <artifactId>duckdb_jdbc</artifactId>
-      <version>0.4.0</version>
+      <version>0.5.1</version>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
-      <version>5.9.0</version>
+      <version>5.9.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
