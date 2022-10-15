@@ -134,10 +134,8 @@ jobs:
         run: |
           sudo apt update
           sudo apt install mysql-client
-          LASTEST_TAG=$(curl -s GET https://api.github.com/repos/datafuselabs/databend/tags\?per_page\=1 | jq -r '.[].name')
-          curl -LJO https://github.com/datafuselabs/databend/releases/download/${LASTEST_TAG}/databend-${LASTEST_TAG}-x86_64-unknown-linux-musl.tar.gz
-          mkdir ./databend && tar xzvf databend-${LASTEST_TAG}-x86_64-unknown-linux-musl.tar.gz -C ./databend
-          ./databend/bin/databend-query &
+          docker pull datafuselabs/databend-query
+          docker run --net=host datafuselabs/databend-query &
       - name: Create SQLancer user
         run: mysql -uroot -h127.0.0.1 -P3307 -e "CREATE USER 'sqlancer' IDENTIFIED BY 'sqlancer'; GRANT ALL ON *.* TO sqlancer;"
       - name: Run Tests
