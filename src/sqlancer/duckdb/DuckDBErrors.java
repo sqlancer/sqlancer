@@ -39,9 +39,6 @@ public final class DuckDBErrors {
         errors.add("Cannot combine types with different collation!");
         errors.add("collations are only supported for type varchar");
 
-        // // https://github.com/cwida/duckdb/issues/532
-        errors.add("Not implemented type: DATE");
-        errors.add("Not implemented type: TIMESTAMP");
         errors.add("Like pattern must not end with escape character!"); // LIKE
 
         errors.add("does not have a column named \"rowid\""); // TODO: this can be removed if we can query whether a
