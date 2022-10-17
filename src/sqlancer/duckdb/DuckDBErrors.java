@@ -39,9 +39,6 @@ public final class DuckDBErrors {
         errors.add("Cannot combine types with different collation!");
         errors.add("collations are only supported for type varchar");
 
-        // // https://github.com/cwida/duckdb/issues/532
-        errors.add("Not implemented type: DATE");
-        errors.add("Not implemented type: TIMESTAMP");
         errors.add("Like pattern must not end with escape character!"); // LIKE
 
         errors.add("does not have a column named \"rowid\""); // TODO: this can be removed if we can query whether a
@@ -51,6 +48,10 @@ public final class DuckDBErrors {
                                                     // removed column
         errors.add("Contents of view were altered: types don't match!");
         errors.add("Not implemented: ROUND(DECIMAL, INTEGER) with non-constant precision is not supported");
+
+        // timestamp
+        errors.add("Cannot subtract infinite timestamps");
+        errors.add("Timestamp difference is out of bounds");
     }
 
     private static void addRegexErrors(ExpectedErrors errors) {
