@@ -48,6 +48,10 @@ public final class DuckDBErrors {
                                                     // removed column
         errors.add("Contents of view were altered: types don't match!");
         errors.add("Not implemented: ROUND(DECIMAL, INTEGER) with non-constant precision is not supported");
+
+        // timestamp
+        errors.add("Cannot subtract infinite timestamps");
+        errors.add("Timestamp difference is out of bounds");
     }
 
     private static void addRegexErrors(ExpectedErrors errors) {
