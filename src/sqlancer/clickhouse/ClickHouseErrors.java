@@ -37,10 +37,13 @@ public final class ClickHouseErrors {
         errors.add("Cannot parse number with multiple sign (+/-) characters or intermediate sign character");
         errors.add("Function 'like' doesn't support search with non-constant needles in constant haystack");
         errors.add("Positional argument out of bounds");
+        errors.add("Illegal value (aggregate function) for positional argument in GROUP BY");
+        errors.add("Invalid escape sequence at the end of LIKE pattern");
     }
 
     public static void addExpressionHavingErrors(ExpectedErrors errors) {
         errors.add("Memory limit");
+        errors.add("in block. There are only columns:"); // https://github.com/ClickHouse/ClickHouse/issues/42399
     }
 
     public static void addQueryErrors(ExpectedErrors errors) {
@@ -62,6 +65,7 @@ public final class ClickHouseErrors {
         errors.add("Sorting key cannot contain constants");
         errors.add("Sampling expression must be present in the primary key");
         errors.add("Cyclic aliases: default expression and column type are incompatible");
+        errors.add("Positional argument out of bounds");
     }
 
 }
