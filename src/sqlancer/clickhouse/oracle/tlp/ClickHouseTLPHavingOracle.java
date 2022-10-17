@@ -25,6 +25,7 @@ public class ClickHouseTLPHavingOracle extends ClickHouseTLPBase {
         super(state);
         ClickHouseErrors.addExpectedExpressionErrors(errors);
         ClickHouseErrors.addGroupingErrors(errors);
+        ClickHouseErrors.addExpressionHavingErrors(errors);
     }
 
     @Override
