@@ -289,7 +289,7 @@
     <dependency>
       <groupId>com.ing.data</groupId>
       <artifactId>cassandra-jdbc-wrapper</artifactId>
-      <version>4.6.0</version>
+      <version>4.7.0</version>
     </dependency>
     <dependency>
       <groupId>com.yugabyte</groupId>
