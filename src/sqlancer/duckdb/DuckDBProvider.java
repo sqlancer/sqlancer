@@ -11,6 +11,7 @@ import com.google.auto.service.AutoService;
 import sqlancer.AbstractAction;
 import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
+import sqlancer.MainOptions;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.SQLGlobalState;
@@ -142,6 +143,11 @@ public class DuckDBProvider extends SQLProviderAdapter<DuckDBGlobalState, DuckDB
         String databaseFile = System.getProperty("duckdb.database.file", "");
         String url = "jdbc:duckdb:" + databaseFile;
         tryDeleteDatabase(databaseFile);
+
+        MainOptions options = globalState.getOptions();
+        if (!(options.isDefaultUsername() && options.isDefaultPassword())) {
+            throw new AssertionError("DuckDB doesn't support credentials (username/password)");
+        }
 
         Connection conn = DriverManager.getConnection(url);
         Statement stmt = conn.createStatement();
