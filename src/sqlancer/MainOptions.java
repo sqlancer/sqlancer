@@ -1,11 +1,11 @@
 package sqlancer;
 
+import java.util.Objects;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
 import sqlancer.Randomly.StringGenerationStrategy;
-
-import java.util.Objects;
 
 @Parameters(separators = "=", commandDescription = "Options applicable to all DBMS")
 public class MainOptions {
