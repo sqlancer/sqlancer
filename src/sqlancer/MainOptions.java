@@ -1,5 +1,7 @@
 package sqlancer;
 
+import java.util.Objects;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
@@ -8,6 +10,7 @@ import sqlancer.Randomly.StringGenerationStrategy;
 @Parameters(separators = "=", commandDescription = "Options applicable to all DBMS")
 public class MainOptions {
     public static final int NO_SET_PORT = -1;
+    public static final MainOptions DEFAULT_OPTIONS = new MainOptions();
 
     @Parameter(names = { "--help", "-h" }, description = "Lists all supported options and commands", help = true)
     private boolean help; // NOPMD
@@ -216,6 +219,14 @@ public class MainOptions {
 
     public boolean isHelp() {
         return help;
+    }
+
+    public boolean isDefaultPassword() {
+        return Objects.equals(password, DEFAULT_OPTIONS.password);
+    }
+
+    public boolean isDefaultUsername() {
+        return Objects.equals(userName, DEFAULT_OPTIONS.userName);
     }
 
     public String getDatabasePrefix() {
