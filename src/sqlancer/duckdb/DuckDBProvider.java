@@ -143,8 +143,7 @@ public class DuckDBProvider extends SQLProviderAdapter<DuckDBGlobalState, DuckDB
         String url = "jdbc:duckdb:" + databaseFile;
         tryDeleteDatabase(databaseFile);
 
-        Connection conn = DriverManager.getConnection(url, globalState.getOptions().getUserName(),
-                globalState.getOptions().getPassword());
+        Connection conn = DriverManager.getConnection(url);
         Statement stmt = conn.createStatement();
         stmt.execute("PRAGMA checkpoint_threshold='1 byte';");
         stmt.close();
