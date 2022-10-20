@@ -17,6 +17,8 @@ import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTable;
 import sqlancer.yugabyte.ysql.YSQLVisitor;
 import sqlancer.yugabyte.ysql.ast.YSQLConstant;
 
+import static sqlancer.yugabyte.YugabyteBugs.bug11357;
+
 public final class YSQLCommon {
 
     private YSQLCommon() {
@@ -158,6 +160,8 @@ public final class YSQLCommon {
                 sb.append(")");
             }
         } else if (Randomly.getBoolean()) {
+            if (bug11357) throw new IgnoreMeException();
+
             errors.add("Cannot use TABLEGROUP with TEMP table");
             sb.append(" TABLEGROUP tg").append(
                     Randomly.getNotCachedInteger(1, (int) YSQLTableGroupGenerator.UNIQUE_TABLEGROUP_COUNTER.get()));

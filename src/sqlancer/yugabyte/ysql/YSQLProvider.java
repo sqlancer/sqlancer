@@ -41,6 +41,8 @@ import sqlancer.yugabyte.ysql.gen.YSQLUpdateGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLVacuumGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLViewGenerator;
 
+import static sqlancer.yugabyte.YugabyteBugs.bug11357;
+
 @AutoService(DatabaseProvider.class)
 public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOptions> {
 
@@ -92,6 +94,7 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
             nrPerformed = r.getInteger(0, 3);
             break;
         case TABLEGROUP:
+            if (bug11357) throw new IgnoreMeException();
             nrPerformed = r.getInteger(0, 3);
             break;
         case DELETE:
