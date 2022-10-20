@@ -31,7 +31,6 @@ public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickH
     public ClickHouseTLPBase(ClickHouseGlobalState state) {
         super(state);
         ClickHouseErrors.addExpectedExpressionErrors(errors);
-        ClickHouseErrors.addQueryErrors(errors);
     }
 
     @Override

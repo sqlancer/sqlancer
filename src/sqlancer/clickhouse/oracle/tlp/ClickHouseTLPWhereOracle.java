@@ -15,7 +15,6 @@ public class ClickHouseTLPWhereOracle extends ClickHouseTLPBase {
     public ClickHouseTLPWhereOracle(ClickHouseProvider.ClickHouseGlobalState state) {
         super(state);
         ClickHouseErrors.addExpectedExpressionErrors(errors);
-        ClickHouseErrors.addExpressionHavingErrors(errors);
     }
 
     @Override

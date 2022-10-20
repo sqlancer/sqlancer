@@ -37,7 +37,7 @@ public class ClickHouseTableGenerator {
         ClickHouseTableGenerator chTableGenerator = new ClickHouseTableGenerator(tableName, globalState);
         chTableGenerator.start();
         ExpectedErrors errors = new ExpectedErrors();
-        ClickHouseErrors.addTableManipulationErrors(errors);
+        ClickHouseErrors.addExpectedExpressionErrors(errors);
         return new SQLQueryAdapter(chTableGenerator.sb.toString(), errors, true);
     }
 
