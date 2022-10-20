@@ -26,7 +26,6 @@ public class ClickHouseTLPAggregateOracle extends ClickHouseTLPBase {
     public ClickHouseTLPAggregateOracle(ClickHouseProvider.ClickHouseGlobalState state) {
         super(state);
         ClickHouseErrors.addExpectedExpressionErrors(errors);
-        ClickHouseErrors.addQueryErrors(errors);
     }
 
     @Override
