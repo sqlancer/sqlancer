@@ -41,7 +41,8 @@ public final class ClickHouseErrors {
         errors.add("Invalid type for filter in");
         errors.add("is not under aggregate function");
         errors.add("is violated at row 1. Expression:"); // TODO: check constraint on table creation
-        errors.add("is violated, because it is a constant expression returning 0. It is most likely an error in table definition");
+        errors.add(
+                "is violated, because it is a constant expression returning 0. It is most likely an error in table definition");
         errors.add("Memory limit");
         errors.add("OptimizedRegularExpression: cannot compile re2");
         errors.add("Partition key cannot contain constants");
