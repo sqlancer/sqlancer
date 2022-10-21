@@ -47,6 +47,9 @@ public class MainOptions {
     @Parameter(names = "--log-execution-time", description = "Logs the execution time of each statement (requires --log-each-select to be enabled)", arity = 1)
     private boolean logExecutionTime = true; // NOPMD
 
+    @Parameter(names = "--print-failed", description = "Logs failed insert, create and other statements without results", arity = 1)
+    private boolean loggerPrintFailed = false; // NOPMD
+
     @Parameter(names = "--username", description = "The user name used to log into the DBMS")
     private String userName = "sqlancer"; // NOPMD
 
@@ -139,6 +142,10 @@ public class MainOptions {
             throw new AssertionError();
         }
         return logExecutionTime;
+    }
+
+    public boolean loggerPrintFailed() {
+        return loggerPrintFailed;
     }
 
     public int getNrQueries() {
