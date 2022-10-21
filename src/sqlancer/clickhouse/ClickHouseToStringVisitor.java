@@ -1,16 +1,6 @@
 package sqlancer.clickhouse;
 
-import sqlancer.clickhouse.ast.ClickHouseAggregate;
-import sqlancer.clickhouse.ast.ClickHouseBinaryComparisonOperation;
-import sqlancer.clickhouse.ast.ClickHouseBinaryLogicalOperation;
-import sqlancer.clickhouse.ast.ClickHouseCastOperation;
-import sqlancer.clickhouse.ast.ClickHouseColumnReference;
-import sqlancer.clickhouse.ast.ClickHouseConstant;
-import sqlancer.clickhouse.ast.ClickHouseExpression;
-import sqlancer.clickhouse.ast.ClickHouseSelect;
-import sqlancer.clickhouse.ast.ClickHouseTableReference;
-import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation;
-import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation;
+import sqlancer.clickhouse.ast.*;
 import sqlancer.common.visitor.ToStringVisitor;
 
 public class ClickHouseToStringVisitor extends ToStringVisitor<ClickHouseExpression> implements ClickHouseVisitor {
@@ -129,7 +119,8 @@ public class ClickHouseToStringVisitor extends ToStringVisitor<ClickHouseExpress
 
     @Override
     public void visit(ClickHouseExpression.ClickHouseJoin join) {
-
+        sb.append("ON ");
+        visit(join.getOnClause());
     }
 
     @Override
@@ -139,6 +130,13 @@ public class ClickHouseToStringVisitor extends ToStringVisitor<ClickHouseExpress
         } else {
             sb.append(c.getColumn().getFullQualifiedName());
         }
+    }
+
+    @Override
+    public void visit(ClickHouseAliasOperation alias) {
+        visit(alias.getExpression());
+        sb.append(" AS ");
+        sb.append(alias.getAlias());
     }
 
     public static String asString(ClickHouseExpression expr) {

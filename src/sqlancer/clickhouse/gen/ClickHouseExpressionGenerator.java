@@ -10,15 +10,8 @@ import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
 import sqlancer.clickhouse.ClickHouseSchema;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseColumn;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseLancerDataType;
-import sqlancer.clickhouse.ast.ClickHouseAggregate;
-import sqlancer.clickhouse.ast.ClickHouseBinaryComparisonOperation;
-import sqlancer.clickhouse.ast.ClickHouseBinaryLogicalOperation;
-import sqlancer.clickhouse.ast.ClickHouseColumnReference;
-import sqlancer.clickhouse.ast.ClickHouseConstant;
-import sqlancer.clickhouse.ast.ClickHouseExpression;
-import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation;
+import sqlancer.clickhouse.ast.*;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation.ClickHouseUnaryPostfixOperator;
-import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation.ClickHouseUnaryPrefixOperator;
 import sqlancer.common.gen.TypedExpressionGenerator;
 
@@ -71,6 +64,14 @@ public class ClickHouseExpressionGenerator
         }
     }
 
+    protected ClickHouseExpression generateJoinClause(ClickHouseSchema.ClickHouseTable leftTable,
+            ClickHouseSchema.ClickHouseTable rightTable) {
+        ClickHouseExpression leftExpr = getColumnNameFromTable(leftTable);
+        ClickHouseExpression rightExpr = getColumnNameFromTable(rightTable);
+        return new ClickHouseBinaryComparisonOperation(leftExpr, rightExpr,
+                ClickHouseBinaryComparisonOperation.ClickHouseBinaryComparisonOperator.EQUALS);
+    }
+
     @Override
     protected ClickHouseExpression generateColumn(ClickHouseLancerDataType type) {
         if (columns.isEmpty()) {
@@ -80,7 +81,20 @@ public class ClickHouseExpressionGenerator
                 .filter(c -> c.getType().getType().name().equals(type.getType().name())).collect(Collectors.toList());
         ClickHouseColumn column = filteredColumns.isEmpty() ? Randomly.fromList(columns)
                 : Randomly.fromList(filteredColumns);
-        return new ClickHouseColumnReference(column, null);
+        return new ClickHouseColumnReference(column);
+    }
+
+    protected ClickHouseExpression getColumnNameFromTable(ClickHouseSchema.ClickHouseTable table) {
+        if (columns.isEmpty()) {
+            return generateConstant(ClickHouseLancerDataType.getRandom());
+        }
+        List<ClickHouseColumn> filteredColumns = columns.stream().filter(c -> c.getTable() == table)
+                .collect(Collectors.toList());
+        if (filteredColumns.isEmpty()) {
+            return generateConstant(ClickHouseLancerDataType.getRandom());
+        }
+        ClickHouseColumn column = Randomly.fromList(filteredColumns);
+        return new ClickHouseColumnReference(column);
     }
 
     @Override
@@ -97,17 +111,17 @@ public class ClickHouseExpressionGenerator
         if (Randomly.getBoolean() && tables.size() > 1) {
             int nrJoinClauses = (int) Randomly.getNotCachedInteger(0, tables.size());
             for (int i = 0; i < nrJoinClauses; i++) {
-                ClickHouseExpression joinClause = generateExpression(ClickHouseLancerDataType.getRandom());
-                ClickHouseSchema.ClickHouseTable table = Randomly.fromList(tables);
-                tables.remove(table);
+                ClickHouseSchema.ClickHouseTable leftTable = Randomly.fromList(tables);
+                ClickHouseSchema.ClickHouseTable rightTable = Randomly.fromList(tables);
+                ClickHouseExpression joinClause = generateJoinClause(leftTable, rightTable);
                 ClickHouseExpression.ClickHouseJoin.JoinType options;
                 options = Randomly.fromOptions(ClickHouseExpression.ClickHouseJoin.JoinType.values());
                 if (options == ClickHouseExpression.ClickHouseJoin.JoinType.NATURAL) {
                     // NATURAL joins do not have an ON clause
                     joinClause = null;
                 }
-                ClickHouseExpression.ClickHouseJoin j = new ClickHouseExpression.ClickHouseJoin(table, joinClause,
-                        options);
+                ClickHouseExpression.ClickHouseJoin j = new ClickHouseExpression.ClickHouseJoin(leftTable, rightTable,
+                        options, joinClause);
                 joinStatements.add(j);
             }
 
