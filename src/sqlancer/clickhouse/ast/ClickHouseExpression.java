@@ -65,6 +65,10 @@ public abstract class ClickHouseExpression {
             this.type = type;
         }
 
+        public ClickHouseSchema.ClickHouseTable getLeftTable() {
+            return leftTable;
+        }
+
         public ClickHouseSchema.ClickHouseTable getTable() {
             return rightTable;
         }
