@@ -50,6 +50,8 @@ public final class Main {
     public static final class StateLogger {
 
         private final File loggerFile;
+        private final File reducedFile;
+
         private File curFile;
         private FileWriter logFileWriter;
         public FileWriter currentFileWriter;
@@ -83,6 +85,7 @@ public final class Main {
             }
             ensureExistsAndIsEmpty(dir, provider);
             loggerFile = new File(dir, databaseName + ".log");
+            reducedFile = new File(dir, databaseName + "-reduced.log");
             logEachSelect = options.logEachSelect();
             if (logEachSelect) {
                 curFile = new File(dir, databaseName + "-cur.log");
@@ -121,6 +124,17 @@ public final class Main {
                     throw new AssertionError(e);
                 }
             }
+            return logFileWriter;
+        }
+
+        private FileWriter getReducedWriter() {
+            // if (logFileWriter == null) {
+            try {
+                logFileWriter = new FileWriter(reducedFile);
+            } catch (IOException e) {
+                throw new AssertionError(e);
+            }
+            // }
             return logFileWriter;
         }
 
@@ -169,6 +183,17 @@ public final class Main {
                 currentFileWriter.flush();
             } catch (IOException e) {
                 throw new AssertionError();
+            }
+        }
+
+        public void logReduced(StateToReproduce state) {
+            FileWriter logFileWriter = getReducedWriter();
+            printState(logFileWriter, state);
+            try {
+                logFileWriter.close();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
         }
 
@@ -280,27 +305,35 @@ public final class Main {
             }
         }
 
+        private G createAndConfigureGlobalState() {
+            G state = createGlobalState();
+            state.setState(stateToRepro);
+            state.setRandomly(r);
+            state.setDatabaseName(databaseName);
+            state.setMainOptions(options);
+            state.setDbmsSpecificOptions(command);
+            return state;
+        }
+
         public O getCommand() {
             return command;
         }
 
         public void testConnection() throws Exception {
-            G state = getInitializedGlobalState(options.getRandomSeed());
+            stateToRepro = provider.getStateToReproduce(databaseName);
+            stateToRepro.seedValue = options.getRandomSeed();
+            logger = new StateLogger(databaseName, provider, options);
+            G state = createAndConfigureGlobalState();
             try (SQLancerDBConnection con = provider.createDatabase(state)) {
                 return;
             }
         }
 
         public void run() throws Exception {
-            G state = createGlobalState();
             stateToRepro = provider.getStateToReproduce(databaseName);
             stateToRepro.seedValue = r.getSeed();
-            state.setState(stateToRepro);
+            G state = createAndConfigureGlobalState();
             logger = new StateLogger(databaseName, provider, options);
-            state.setRandomly(r);
-            state.setDatabaseName(databaseName);
-            state.setMainOptions(options);
-            state.setDbmsSpecificOptions(command);
             try (C con = provider.createDatabase(state)) {
                 QueryManager<C> manager = new QueryManager<>(state);
                 try {
@@ -314,28 +347,28 @@ public final class Main {
                 if (options.logEachSelect()) {
                     logger.writeCurrent(state.getState());
                 }
-                provider.generateAndTestDatabase(state);
                 try {
-                    logger.getCurrentFileWriter().close();
-                    logger.currentFileWriter = null;
-                } catch (IOException e) {
-                    throw new AssertionError(e);
+                    provider.generateAndTestDatabase(state);
+
+                } catch (FoundBugException e) {
+                    try {
+                        logger.getCurrentFileWriter().close();
+                        logger.currentFileWriter = null;
+                    } catch (IOException e2) {
+                        throw new AssertionError(e2);
+                    }
+
+                    G newGlobalState = createAndConfigureGlobalState();
+                    QueryManager<C> newManager = new QueryManager<>(newGlobalState);
+                    newGlobalState.setStateLogger(new StateLogger(databaseName, provider, options));
+                    newGlobalState.setManager(newManager);
+
+                    Reducer<G, O, C> reducer = new ReducerExample<>(provider);
+                    reducer.reduce(state, e.getReproducer(), newGlobalState); 
+
+                    throw e;
                 }
             }
-        }
-
-        private G getInitializedGlobalState(long seed) {
-            G state = createGlobalState();
-            stateToRepro = provider.getStateToReproduce(databaseName);
-            stateToRepro.seedValue = seed;
-            state.setState(stateToRepro);
-            logger = new StateLogger(databaseName, provider, options);
-            Randomly r = new Randomly(seed);
-            state.setRandomly(r);
-            state.setDatabaseName(databaseName);
-            state.setMainOptions(options);
-            state.setDbmsSpecificOptions(command);
-            return state;
         }
 
         public StateLogger getLogger() {
@@ -492,6 +525,7 @@ public final class Main {
                     DBMSExecutor<?, ?, ?> executor = executorFactory.getDBMSExecutor(databaseName, r);
                     try {
                         executor.run();
+                        System.out.println("Executor completed!");
                         return true;
                     } catch (IgnoreMeException e) {
                         return true;
