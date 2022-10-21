@@ -72,17 +72,11 @@ public class ClickHouseTLPAggregateOracle extends ClickHouseTLPBase {
                 .log("--" + originalQuery + "\n--" + metamorphicText + "\n-- " + firstResult + "\n-- " + secondResult
                         + "\n--first size " + firstResult.size() + "\n--second size " + secondResult.size());
 
-        if (firstResult == null) {
-            if (secondResult == null) {
-                return;
-            }
-        } else if (secondResult == null) {
-            throw new AssertionError();
-        } else if (firstResult.size() != secondResult.size()) {
+        if (firstResult.size() != secondResult.size()) {
             throw new AssertionError();
         } else if (firstResult.isEmpty()) {
             return;
-        } else if (firstResult.size() == 1) {
+        } else if (firstResult.size() == 1 && secondResult.size() == 1) {
             if (firstResult.get(0).equals(secondResult.get(0))) {
                 return;
             } else if (!ComparatorHelper.isEqualDouble(firstResult.get(0), secondResult.get(0))) {

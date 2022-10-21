@@ -14,7 +14,6 @@ import sqlancer.SQLConnection;
 import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTable;
 import sqlancer.clickhouse.ast.ClickHouseConstant;
-import sqlancer.clickhouse.ast.ClickHouseTableReference;
 import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractRowValue;
 import sqlancer.common.schema.AbstractSchema;
