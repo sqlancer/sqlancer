@@ -1,14 +1,9 @@
 package sqlancer.clickhouse.oracle.norec;
 
-import ru.yandex.clickhouse.domain.ClickHouseDataType;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.clickhouse.ast.*;
-import sqlancer.common.ast.newast.ColumnReferenceNode;
-import sqlancer.common.ast.newast.NewPostfixTextNode;
-import sqlancer.common.ast.newast.Node;
-import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.common.oracle.NoRECBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;

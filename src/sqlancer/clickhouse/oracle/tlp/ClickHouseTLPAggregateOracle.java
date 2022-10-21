@@ -76,6 +76,8 @@ public class ClickHouseTLPAggregateOracle extends ClickHouseTLPBase {
             if (secondResult == null) {
                 return;
             }
+        } else if (secondResult == null) {
+            throw new AssertionError();
         } else if (firstResult.size() != secondResult.size()) {
             throw new AssertionError();
         } else if (firstResult.isEmpty()) {

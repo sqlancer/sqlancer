@@ -53,6 +53,7 @@ public final class ClickHouseErrors {
                 "is violated, because it is a constant expression returning 0. It is most likely an error in table definition");
         errors.add("there are only columns");
         errors.add("there are columns");
+        errors.add("in block. (NOT_FOUND_COLUMN_IN_BLOCK)");
     }
 
 }
