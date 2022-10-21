@@ -31,7 +31,7 @@ public class ClickHouseTLPHavingOracle extends ClickHouseTLPBase {
         ClickHouseSchema s = state.getSchema();
         ClickHouseSchema.ClickHouseTables targetTables = s.getRandomTableNonEmptyTables();
         List<ClickHouseExpression> groupByColumns = Randomly.nonEmptySubset(targetTables.getColumns()).stream()
-                .map(c -> new ClickHouseColumnReference(c, null)).collect(Collectors.toList());
+                .map(c -> new ClickHouseColumnReference(c)).collect(Collectors.toList());
         List<ClickHouseSchema.ClickHouseColumn> columns = targetTables.getColumns();
         ClickHouseExpressionGenerator gen = new ClickHouseExpressionGenerator(state).setColumns(columns);
         ClickHouseExpressionGenerator aggrGen = new ClickHouseExpressionGenerator(state).allowAggregates(true)
