@@ -43,8 +43,8 @@ public class ReducerExample<G extends GlobalState<O, ?, C>, O extends DBMSSpecif
         printQueries(knownToReproduceBugStatements);
     }
 
-    private List<Query<C>> tryReduction(G state, Reproducer reproducer, G newGlobalState,
-            List<Query<C>> knownToReproduceBugStatements,
+    private List<Query<C>> tryReduction(G state, // NOPMD
+            Reproducer reproducer, G newGlobalState, List<Query<C>> knownToReproduceBugStatements,
             BiFunction<List<Query<C>>, Integer, Boolean> reductionOperation) throws Exception {
 
         List<Query<C>> statements = knownToReproduceBugStatements;
@@ -68,7 +68,7 @@ public class ReducerExample<G extends GlobalState<O, ?, C>, O extends DBMSSpecif
                         observedChange = true;
                         statements = candidateStatements;
                         reproducer.outputHook((SQLite3GlobalState) newGlobalState);
-                        state.getLogger().logReduced(newGlobalState.getState());
+                        // state.getLogger().logReduced(newGlobalState.getState());
                     }
                 } catch (Throwable ignoredException) {
 
