@@ -128,13 +128,11 @@ public final class Main {
         }
 
         private FileWriter getReducedWriter() {
-            // if (logFileWriter == null) {
             try {
                 logFileWriter = new FileWriter(reducedFile);
             } catch (IOException e) {
                 throw new AssertionError(e);
             }
-            // }
             return logFileWriter;
         }
 
@@ -192,8 +190,7 @@ public final class Main {
             try {
                 logFileWriter.close();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                throw new AssertionError(e);
             }
         }
 
@@ -525,7 +522,6 @@ public final class Main {
                     DBMSExecutor<?, ?, ?> executor = executorFactory.getDBMSExecutor(databaseName, r);
                     try {
                         executor.run();
-                        System.out.println("Executor completed!");
                         return true;
                     } catch (IgnoreMeException e) {
                         return true;
