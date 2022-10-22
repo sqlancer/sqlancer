@@ -15,18 +15,19 @@ public class ReducerExample<G extends GlobalState<O, ?, C>, O extends DBMSSpecif
     private final DatabaseProvider<G, O, C> provider;
     private boolean observedChange;
 
-    private static final String[] TOKENS = new String[] { "OR IGNORE", "OR ABORT", "OR ROLLBACK", "OR FAIL", "TEMP",
-            "TEMPORARY", "UNIQUE", "NOT NULL", "COLLATE BINARY", "COLLATE NOCASE", "COLLATE RTRIM", "INT", "REAL",
-            "TEXT", "IF NOT EXISTS", "UNINDEXED" };
+    private static final String[] TOKENS = { "OR IGNORE", "OR ABORT", "OR ROLLBACK", "OR FAIL", "TEMP", "TEMPORARY",
+            "UNIQUE", "NOT NULL", "COLLATE BINARY", "COLLATE NOCASE", "COLLATE RTRIM", "INT", "REAL", "TEXT",
+            "IF NOT EXISTS", "UNINDEXED" };
 
     public ReducerExample(DatabaseProvider<G, O, C> provider) {
         this.provider = provider;
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public void reduce(G state, Reproducer reproducer, G newGlobalState) throws Exception {
 
-        List<Query<C>> knownToReproduceBugStatements = new ArrayList<Query<C>>();
+        List<Query<C>> knownToReproduceBugStatements = new ArrayList<>();
         for (Query<?> stat : state.getState().getStatements()) {
             knownToReproduceBugStatements.add((Query<C>) stat);
         }
@@ -55,32 +56,34 @@ public class ReducerExample<G extends GlobalState<O, ?, C>, O extends DBMSSpecif
     @SuppressWarnings("unchecked")
     private List<Query<C>> tryReplaceToken(G state, Reproducer reproducer, G newGlobalState,
             List<Query<C>> knownToReproduceBugStatements, String target, String replaceBy) throws Exception {
+        List<Query<C>> statements = knownToReproduceBugStatements;
         do {
             observedChange = false;
-            knownToReproduceBugStatements = tryReduction(state, reproducer, newGlobalState,
-                    knownToReproduceBugStatements, (candidateStatements, i) -> {
-                        Query<C> statement = candidateStatements.get(i);
-                        if (statement.getQueryString().contains(target)) {
-                            candidateStatements.set(i, (Query<C>) new SQLQueryAdapter(
-                                    statement.getQueryString().replace(target, replaceBy), true));
-                            return true;
-                        }
-                        return false;
-                    }
+            statements = tryReduction(state, reproducer, newGlobalState, statements, (candidateStatements, i) -> {
+                Query<C> statement = candidateStatements.get(i);
+                if (statement.getQueryString().contains(target)) {
+                    candidateStatements.set(i,
+                            (Query<C>) new SQLQueryAdapter(statement.getQueryString().replace(target, replaceBy),
+                                    true));
+                    return true;
+                }
+                return false;
+            }
 
             );
         } while (observedChange);
-        return knownToReproduceBugStatements;
+        return statements;
     }
 
     private List<Query<C>> tryReduction(G state, Reproducer reproducer, G newGlobalState,
             List<Query<C>> knownToReproduceBugStatements,
             BiFunction<List<Query<C>>, Integer, Boolean> reductionOperation) throws Exception {
 
-        for (int i = 0; i < knownToReproduceBugStatements.size(); i++) {
+        List<Query<C>> statements = knownToReproduceBugStatements;
+        for (int i = 0; i < statements.size(); i++) {
             try (C con2 = provider.createDatabase(newGlobalState)) {
                 newGlobalState.setConnection(con2);
-                List<Query<C>> candidateStatements = new ArrayList<>(knownToReproduceBugStatements);
+                List<Query<C>> candidateStatements = new ArrayList<>(statements);
                 if (!reductionOperation.apply(candidateStatements, i)) {
                     continue;
                 }
@@ -95,7 +98,7 @@ public class ReducerExample<G extends GlobalState<O, ?, C>, O extends DBMSSpecif
                 try {
                     if (reproducer.bugStillTriggers((SQLite3GlobalState) newGlobalState)) {
                         observedChange = true;
-                        knownToReproduceBugStatements = candidateStatements;
+                        statements = candidateStatements;
                         reproducer.outputHook((SQLite3GlobalState) newGlobalState);
                         state.getLogger().logReduced(newGlobalState.getState());
                     }
@@ -104,7 +107,7 @@ public class ReducerExample<G extends GlobalState<O, ?, C>, O extends DBMSSpecif
                 }
             }
         }
-        return knownToReproduceBugStatements;
+        return statements;
     }
 
     private void printQueries(List<Query<C>> statements) {

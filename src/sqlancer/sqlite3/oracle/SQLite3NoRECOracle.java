@@ -74,7 +74,7 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
         }
         if (optimizedCount != unoptimizedCount) {
             state.getState().getLocalState().log(optimizedQueryString + ";\n" + unoptimizedQueryString + ";");
-            throw new FoundBugException((optimizedCount + " " + unoptimizedCount), new Reproducer() {
+            throw new FoundBugException(optimizedCount + " " + unoptimizedCount, new Reproducer() {
 
                 @Override
                 public boolean bugStillTriggers(SQLite3GlobalState globalState) {
