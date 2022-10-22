@@ -364,7 +364,7 @@ public final class Main {
                     newGlobalState.setManager(newManager);
 
                     Reducer<G, O, C> reducer = new ReducerExample<>(provider);
-                    reducer.reduce(state, e.getReproducer(), newGlobalState); 
+                    reducer.reduce(state, e.getReproducer(), newGlobalState);
 
                     throw e;
                 }

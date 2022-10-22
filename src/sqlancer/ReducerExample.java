@@ -10,16 +10,14 @@ import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3GlobalState;
 
-public class ReducerExample<G extends GlobalState<O, ?, C>,
-        O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection>
-        implements Reducer <G, O, C> {
+public class ReducerExample<G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection>
+        implements Reducer<G, O, C> {
     private final DatabaseProvider<G, O, C> provider;
     private boolean observedChange;
 
-    private static final String[] TOKENS = new String[] {
-        "OR IGNORE", "OR ABORT", "OR ROLLBACK", "OR FAIL", "TEMP", "TEMPORARY",
-        "UNIQUE", "NOT NULL", "COLLATE BINARY", "COLLATE NOCASE",
-        "COLLATE RTRIM", "INT", "REAL", "TEXT", "IF NOT EXISTS", "UNINDEXED"};
+    private static final String[] TOKENS = new String[] { "OR IGNORE", "OR ABORT", "OR ROLLBACK", "OR FAIL", "TEMP",
+            "TEMPORARY", "UNIQUE", "NOT NULL", "COLLATE BINARY", "COLLATE NOCASE", "COLLATE RTRIM", "INT", "REAL",
+            "TEXT", "IF NOT EXISTS", "UNINDEXED" };
 
     public ReducerExample(DatabaseProvider<G, O, C> provider) {
         this.provider = provider;
@@ -27,7 +25,7 @@ public class ReducerExample<G extends GlobalState<O, ?, C>,
 
     @SuppressWarnings("unchecked")
     public void reduce(G state, Reproducer reproducer, G newGlobalState) throws Exception {
-        
+
         List<Query<C>> knownToReproduceBugStatements = new ArrayList<Query<C>>();
         for (Query<?> stat : state.getState().getStatements()) {
             knownToReproduceBugStatements.add((Query<C>) stat);
@@ -39,10 +37,10 @@ public class ReducerExample<G extends GlobalState<O, ?, C>,
         do {
             observedChange = false;
             knownToReproduceBugStatements = tryReduction(state, reproducer, newGlobalState,
-            knownToReproduceBugStatements, (candidateStatements, i) -> {
-                candidateStatements.remove((int) i);
-                return true;
-            });
+                    knownToReproduceBugStatements, (candidateStatements, i) -> {
+                        candidateStatements.remove((int) i);
+                        return true;
+                    });
         } while (observedChange);
 
         for (String s : TOKENS) {
