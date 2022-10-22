@@ -50,12 +50,12 @@ You can run them using the following command:
 mvn verify
 ```
 
-We use [Travis-CI](https://travis-ci.com/) to automatically check PRs.
+We use [GitHub Actions](https://github.com/sqlancer/sqlancer/blob/master/.github/workflows/main.yml) to automatically check PRs.
 
 
 ## Testing
 
-As part of the Travis-CI gate, we use smoke testing by running SQLancer on each supported DBMS for some minutes, to test that nothing is obviously broken. For DBMS for which all bugs have been fixed, we verify that SQLancer cannot find any further bugs (i.e., the return code is zero).
+As part of the GitHub Actions check, we use smoke testing by running SQLancer on each supported DBMS for some minutes, to test that nothing is obviously broken. For DBMS for which all bugs have been fixed, we verify that SQLancer cannot find any further bugs (i.e., the return code is zero).
 
 In addition, we use [unit tests](https://github.com/sqlancer/sqlancer/tree/master/test/sqlancer) to test SQLancer's core functionality, such as random string and number generation as well as option passing. When fixing a bug, add a unit test, if it is easily possible.
 
@@ -65,13 +65,13 @@ You can run the tests using the following command:
 mvn test
 ```
 
-Note that per default, the smoke testing is performed only for embedded DBMS (i.e., DuckDB and SQLite). To run smoke tests also for the other DBMS, you need to set environment variables. For example, you can run the MySQL smoke testing (and no other tests) using the following command:
+Note that per default, the smoke testing is performed only for embedded DBMS (e.g., DuckDB and SQLite). To run smoke tests also for the other DBMS, you need to set environment variables. For example, you can run the MySQL smoke testing (and no other tests) using the following command:
 
 ```
 MYSQL_AVAILABLE=true mvn -Dtest=TestMySQL test
 ```
 
-For up-to-date testing commands, check out the `.travis.yml` file.
+For up-to-date testing commands, check out the `.github/workflows/main.yml` file.
 
 ## Reviewing
 
@@ -88,4 +88,4 @@ Please pay attention to good commit messages (in particular subject lines). As b
 2. Do not end the subject line with a period. For example, write "Refactor the handling of indexes" rather than "Refactor the handling of indexes.".
 3. Use the imperative mood in the subject line. For example, write "Refactor the handling of indexes" rather than "Refactoring" or "Refactor**ed** the handling of indexes".
 
-Please also pay attention to a clean commit history. Rather than merging with the main branch, use `git rebase` to rebase your commits on the main branch. Sometimes, it might happen that you discover an issue only after having already created a commit, for example, when an issue is found by `mvn verify` in the Travis CI. Do not introduce a separate commit for such issues. If the issue was introduced by the last commit, you can fix the issue, and use `git commit --amend` to change the latest commit. If the change was introduced by one of the previous commits, you can use `git rebase -i` to change the respective commit. If you already have a number of such commits, you can use `git squash` to "collapse" multiple commits into one. For more information, you might want to read [How (and Why!) to Keep Your Git Commit History Clean](https://about.gitlab.com/blog/2018/06/07/keeping-git-commit-history-clean/) written by Kushal Pandya.
+Please also pay attention to a clean commit history. Rather than merging with the main branch, use `git rebase` to rebase your commits on the main branch. Sometimes, it might happen that you discover an issue only after having already created a commit, for example, when an issue is found by `mvn verify` in the CI checks. Do not introduce a separate commit for such issues. If the issue was introduced by the last commit, you can fix the issue, and use `git commit --amend` to change the latest commit. If the change was introduced by one of the previous commits, you can use `git rebase -i` to change the respective commit. If you already have a number of such commits, you can use `git squash` to "collapse" multiple commits into one. For more information, you might want to read [How (and Why!) to Keep Your Git Commit History Clean](https://about.gitlab.com/blog/2018/06/07/keeping-git-commit-history-clean/) written by Kushal Pandya.
