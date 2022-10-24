@@ -1,26 +1,33 @@
 package sqlancer.clickhouse.oracle.norec;
 
-import sqlancer.IgnoreMeException;
-import sqlancer.Randomly;
-import sqlancer.SQLConnection;
-import sqlancer.clickhouse.ast.*;
-import sqlancer.common.oracle.NoRECBase;
-import sqlancer.common.oracle.TestOracle;
-import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.common.query.SQLancerResultSet;
-import sqlancer.clickhouse.ClickHouseErrors;
-import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
-import sqlancer.clickhouse.ClickHouseSchema;
-import sqlancer.clickhouse.ClickHouseSchema.*;
-import sqlancer.clickhouse.ClickHouseToStringVisitor;
-import sqlancer.clickhouse.gen.ClickHouseExpressionGenerator;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import sqlancer.IgnoreMeException;
+import sqlancer.Randomly;
+import sqlancer.SQLConnection;
+import sqlancer.clickhouse.ClickHouseErrors;
+import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
+import sqlancer.clickhouse.ClickHouseSchema;
+import sqlancer.clickhouse.ClickHouseSchema.ClickHouseColumn;
+import sqlancer.clickhouse.ClickHouseSchema.ClickHouseLancerDataType;
+import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTable;
+import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTables;
+import sqlancer.clickhouse.ClickHouseToStringVisitor;
+import sqlancer.clickhouse.ast.ClickHouseAliasOperation;
+import sqlancer.clickhouse.ast.ClickHouseColumnReference;
+import sqlancer.clickhouse.ast.ClickHouseExpression;
+import sqlancer.clickhouse.ast.ClickHouseSelect;
+import sqlancer.clickhouse.ast.ClickHouseTableReference;
+import sqlancer.clickhouse.gen.ClickHouseExpressionGenerator;
+import sqlancer.common.oracle.NoRECBase;
+import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.common.query.SQLancerResultSet;
 
 public class ClickHouseNoRECOracle extends NoRECBase<ClickHouseGlobalState> implements TestOracle {
 
