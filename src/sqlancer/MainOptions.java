@@ -48,7 +48,7 @@ public class MainOptions {
     private boolean logExecutionTime = true; // NOPMD
 
     @Parameter(names = "--print-failed", description = "Logs failed insert, create and other statements without results", arity = 1)
-    private boolean loggerPrintFailed = false; // NOPMD
+    private boolean loggerPrintFailed = true; // NOPMD
 
     @Parameter(names = "--username", description = "The user name used to log into the DBMS")
     private String userName = "sqlancer"; // NOPMD

@@ -35,9 +35,9 @@ public class TestClickHouse {
         boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
         assumeTrue(clickHouseIsAvailable);
         assertEquals(0,
-                Main.executeMain("--log-each-select", "true", "--timeout-seconds", "60", "--num-queries",
-                        TestConfig.NUM_QUERIES, "--num-threads", "1", "--username", "default", "--password", "",
-                        "clickhouse", "--oracle", "TLPHaving"));
+                Main.executeMain("--log-each-select", "true", "--print-failed", "false", "--timeout-seconds", "60",
+                        "--num-queries", TestConfig.NUM_QUERIES, "--num-threads", "1", "--username", "default",
+                        "--password", "", "clickhouse", "--oracle", "TLPHaving"));
     }
 
     @Test
@@ -46,8 +46,9 @@ public class TestClickHouse {
         boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
         assumeTrue(clickHouseIsAvailable);
         assertEquals(0,
-                Main.executeMain("--timeout-seconds", "60", "--num-queries", TestConfig.NUM_QUERIES, "--num-threads",
-                        "5", "--username", "default", "--password", "", "clickhouse", "--oracle", "TLPGroupBy"));
+                Main.executeMain("--log-each-select", "true", "--print-failed", "false", "--timeout-seconds", "60",
+                        "--num-queries", TestConfig.NUM_QUERIES, "--num-threads", "5", "--username", "default",
+                        "--password", "", "clickhouse", "--oracle", "TLPGroupBy"));
     }
 
     @Test
@@ -56,8 +57,9 @@ public class TestClickHouse {
         boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
         assumeTrue(clickHouseIsAvailable);
         assertEquals(0,
-                Main.executeMain("--timeout-seconds", "60", "--num-queries", TestConfig.NUM_QUERIES, "--num-threads",
-                        "5", "--username", "default", "--password", "", "clickhouse", "--oracle", "TLPDistinct"));
+                Main.executeMain("--log-each-select", "true", "--print-failed", "false", "--timeout-seconds", "60",
+                        "--num-queries", TestConfig.NUM_QUERIES, "--num-threads", "5", "--username", "default",
+                        "--password", "", "clickhouse", "--oracle", "TLPDistinct"));
     }
 
     @Test
@@ -66,8 +68,9 @@ public class TestClickHouse {
         boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
         assumeTrue(clickHouseIsAvailable);
         assertEquals(0,
-                Main.executeMain("--timeout-seconds", "60", "--num-queries", TestConfig.NUM_QUERIES, "--num-threads",
-                        "5", "--username", "default", "--password", "", "clickhouse", "--oracle", "TLPAggregate"));
+                Main.executeMain("--log-each-select", "true", "--print-failed", "false", "--timeout-seconds", "60",
+                        "--num-queries", TestConfig.NUM_QUERIES, "--num-threads", "5", "--username", "default",
+                        "--password", "", "clickhouse", "--oracle", "TLPAggregate"));
     }
 
     @Test
@@ -75,8 +78,10 @@ public class TestClickHouse {
         String clickHouseAvailable = System.getenv("CLICKHOUSE_AVAILABLE");
         boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
         assumeTrue(clickHouseIsAvailable);
-        assertEquals(0, Main.executeMain("--timeout-seconds", "60", "--num-queries", TestConfig.NUM_QUERIES,
-                "--num-threads", "1", "--username", "default", "--password", "", "clickhouse", "--oracle", "NoREC"));
+        assertEquals(0,
+                Main.executeMain("--log-each-select", "true", "--print-failed", "false", "--timeout-seconds", "60",
+                        "--num-queries", TestConfig.NUM_QUERIES, "--num-threads", "1", "--username", "default",
+                        "--password", "", "clickhouse", "--oracle", "NoREC"));
     }
 
 }
