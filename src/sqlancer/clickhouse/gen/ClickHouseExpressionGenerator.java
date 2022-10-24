@@ -7,12 +7,20 @@ import java.util.stream.Collectors;
 import ru.yandex.clickhouse.domain.ClickHouseDataType;
 import sqlancer.Randomly;
 import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
-import sqlancer.clickhouse.ClickHouseSchema;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseColumn;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseLancerDataType;
-import sqlancer.clickhouse.ast.*;
+import sqlancer.clickhouse.ClickHouseSchema;
+import sqlancer.clickhouse.ast.ClickHouseAggregate;
+import sqlancer.clickhouse.ast.ClickHouseBinaryComparisonOperation;
+import sqlancer.clickhouse.ast.ClickHouseBinaryLogicalOperation;
+import sqlancer.clickhouse.ast.ClickHouseColumnReference;
+import sqlancer.clickhouse.ast.ClickHouseConstant;
+import sqlancer.clickhouse.ast.ClickHouseExpression;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation.ClickHouseUnaryPostfixOperator;
+import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation.ClickHouseUnaryPrefixOperator;
+import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation;
+
 import sqlancer.common.gen.TypedExpressionGenerator;
 
 public class ClickHouseExpressionGenerator
