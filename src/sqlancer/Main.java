@@ -222,10 +222,12 @@ public final class Main {
         }
 
         public boolean execute(Query<C> q, String... fills) throws Exception {
-            globalState.getState().logStatement(q);
             boolean success;
             success = q.execute(globalState, fills);
             Main.nrSuccessfulActions.addAndGet(1);
+            if (globalState.getOptions().loggerPrintFailed() || success) {
+                globalState.getState().logStatement(q);
+            }
             return success;
         }
 

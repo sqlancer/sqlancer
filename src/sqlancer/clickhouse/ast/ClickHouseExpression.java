@@ -36,25 +36,28 @@ public abstract class ClickHouseExpression {
     }
 
     public static class ClickHouseJoin extends ClickHouseExpression {
-
         // TODO: support ANY, ALL, ASOF modifiers
         public enum JoinType {
             INNER, CROSS, LEFT_OUTER, RIGHT_OUTER, FULL_OUTER, NATURAL, LEFT_SEMI, RIGHT_SEMI, LEFT_ANTI, RIGHT_ANTI;
         }
 
-        private final ClickHouseSchema.ClickHouseTable table;
+        private final ClickHouseSchema.ClickHouseTable leftTable;
+        private final ClickHouseSchema.ClickHouseTable rightTable;
         private ClickHouseExpression onClause;
         private final ClickHouseJoin.JoinType type;
 
-        public ClickHouseJoin(ClickHouseSchema.ClickHouseTable table, ClickHouseExpression onClause,
-                ClickHouseJoin.JoinType type) {
-            this.table = table;
+        public ClickHouseJoin(ClickHouseSchema.ClickHouseTable leftTable, ClickHouseSchema.ClickHouseTable rightTable,
+                ClickHouseJoin.JoinType type, ClickHouseExpression onClause) {
+            this.leftTable = leftTable;
+            this.rightTable = rightTable;
             this.onClause = onClause;
             this.type = type;
         }
 
-        public ClickHouseJoin(ClickHouseSchema.ClickHouseTable table, ClickHouseJoin.JoinType type) {
-            this.table = table;
+        public ClickHouseJoin(ClickHouseSchema.ClickHouseTable leftTable, ClickHouseSchema.ClickHouseTable rightTable,
+                ClickHouseJoin.JoinType type) {
+            this.leftTable = leftTable;
+            this.rightTable = rightTable;
             if (type != ClickHouseJoin.JoinType.NATURAL) {
                 throw new AssertionError();
             }
@@ -62,8 +65,12 @@ public abstract class ClickHouseExpression {
             this.type = type;
         }
 
+        public ClickHouseSchema.ClickHouseTable getLeftTable() {
+            return leftTable;
+        }
+
         public ClickHouseSchema.ClickHouseTable getTable() {
-            return table;
+            return rightTable;
         }
 
         public ClickHouseExpression getOnClause() {

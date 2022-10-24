@@ -55,7 +55,7 @@ public class ClickHouseTableGenerator {
         sb.append(" (");
         int nrColumns = 1 + Randomly.smallNumber();
         for (int i = 0; i < nrColumns; i++) {
-            columns.add(ClickHouseSchema.ClickHouseColumn.createDummy(ClickHouseCommon.createColumnName(i)));
+            columns.add(ClickHouseSchema.ClickHouseColumn.createDummy(ClickHouseCommon.createColumnName(i), null));
         }
         for (int i = 0; i < nrColumns; i++) {
             if (i != 0) {

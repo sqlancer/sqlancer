@@ -18,7 +18,7 @@ def verify_prefix(prefix, files):
 			print('The class name of ' + f + ' does not start with ' + prefix)
 			exit(-1)
 
-# TODO: ClickHouse (wait for https://github.com/sqlancer/sqlancer/pull/39)
+verify_prefix('ClickHouse', get_java_files("sqlancer/clickhouse/"))
 verify_prefix('CockroachDB', get_java_files("sqlancer/cockroachdb/"))
 verify_prefix('DuckDB', get_java_files("sqlancer/duckdb"))
 verify_prefix('MariaDB', get_java_files("sqlancer/mariadb/"))

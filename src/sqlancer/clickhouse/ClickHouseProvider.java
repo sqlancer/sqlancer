@@ -87,7 +87,7 @@ public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState
 
     @Override
     public void generateDatabase(ClickHouseGlobalState globalState) throws Exception {
-        for (int i = 0; i < Randomly.fromOptions(1); i++) {
+        for (int i = 0; i < Randomly.fromOptions(5); i++) {
             boolean success;
             do {
                 String tableName = ClickHouseCommon.createTableName(i);
@@ -96,6 +96,7 @@ public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState
             } while (!success);
         }
 
+        // TODO: add more Actions to populate table
         StatementExecutor<ClickHouseGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
                 ClickHouseProvider::mapActions, (q) -> {
                     if (globalState.getSchema().getDatabaseTables().isEmpty()) {
@@ -126,6 +127,8 @@ public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState
         globalState.getState().logStatement(dropDatabaseCommand);
         String createDatabaseCommand = "CREATE DATABASE IF NOT EXISTS " + databaseName;
         globalState.getState().logStatement(createDatabaseCommand);
+        String useDatabaseCommand = "USE " + databaseName; // Noop. To reproduce easier.
+        globalState.getState().logStatement(useDatabaseCommand);
         try (Statement s = con.createStatement()) {
             s.execute(dropDatabaseCommand);
             Thread.sleep(1000);

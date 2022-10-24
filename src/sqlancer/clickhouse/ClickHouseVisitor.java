@@ -1,6 +1,7 @@
 package sqlancer.clickhouse;
 
 import sqlancer.clickhouse.ast.ClickHouseAggregate;
+import sqlancer.clickhouse.ast.ClickHouseAliasOperation;
 import sqlancer.clickhouse.ast.ClickHouseBinaryComparisonOperation;
 import sqlancer.clickhouse.ast.ClickHouseBinaryLogicalOperation;
 import sqlancer.clickhouse.ast.ClickHouseCastOperation;
@@ -51,6 +52,8 @@ public interface ClickHouseVisitor {
 
     void visit(ClickHouseCastOperation cast);
 
+    void visit(ClickHouseAliasOperation alias);
+
     void visit(ClickHouseExpression.ClickHouseJoin join);
 
     void visit(ClickHouseAggregate aggregate);
@@ -78,6 +81,8 @@ public interface ClickHouseVisitor {
             visit((ClickHouseExpression.ClickHousePostfixText) expr);
         } else if (expr instanceof ClickHouseAggregate) {
             visit((ClickHouseAggregate) expr);
+        } else if (expr instanceof ClickHouseAliasOperation) {
+            visit((ClickHouseAliasOperation) expr);
         } else {
             throw new AssertionError(expr);
         }

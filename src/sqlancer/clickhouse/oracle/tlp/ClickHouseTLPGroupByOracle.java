@@ -43,8 +43,8 @@ public class ClickHouseTLPGroupByOracle extends ClickHouseTLPBase {
     @Override
     List<ClickHouseExpression> generateFetchColumns() {
         List<ClickHouseExpression> columns;
-        columns = Randomly.nonEmptySubset(targetTables.getColumns()).stream()
-                .map(c -> new ClickHouseColumnReference(c, null)).collect(Collectors.toList());
+        columns = Randomly.nonEmptySubset(targetTables.getColumns()).stream().map(c -> new ClickHouseColumnReference(c))
+                .collect(Collectors.toList());
         return columns;
     }
 

@@ -50,8 +50,8 @@ public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickH
     }
 
     List<ClickHouseExpression> generateFetchColumns() {
-        return Randomly.nonEmptySubset(targetTables.getColumns()).stream()
-                .map(c -> new ClickHouseColumnReference(c, null)).collect(Collectors.toList());
+        return Randomly.nonEmptySubset(targetTables.getColumns()).stream().map(c -> new ClickHouseColumnReference(c))
+                .collect(Collectors.toList());
     }
 
     @Override

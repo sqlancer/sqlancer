@@ -11,6 +11,7 @@ import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
 import sqlancer.clickhouse.ClickHouseOptions.ClickHouseOracleFactory;
 import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
+import sqlancer.clickhouse.oracle.norec.ClickHouseNoRECOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPAggregateOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPDistinctOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPGroupByOracle;
@@ -59,6 +60,12 @@ public class ClickHouseOptions implements DBMSSpecificOptions<ClickHouseOracleFa
             @Override
             public TestOracle create(ClickHouseGlobalState globalState) throws SQLException {
                 return new ClickHouseTLPHavingOracle(globalState);
+            }
+        },
+        NoREC {
+            @Override
+            public TestOracle create(ClickHouseGlobalState globalState) throws SQLException {
+                return new ClickHouseNoRECOracle(globalState);
             }
         };
 
