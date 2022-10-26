@@ -12,6 +12,7 @@ import sqlancer.OracleFactory;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.questdb.QuestDBOptions.QuestDBOracleFactory;
 import sqlancer.questdb.QuestDBProvider.QuestDBGlobalState;
+import sqlancer.questdb.test.QuestDBQueryPartitioningWhereTester;
 
 @Parameters(separators = "=", commandDescription = "QuestDB (default port: " + QuestDBOptions.DEFAULT_PORT
         + " default host: " + QuestDBOptions.DEFAULT_HOST + ")")
@@ -20,17 +21,16 @@ public class QuestDBOptions implements DBMSSpecificOptions<QuestDBOracleFactory>
     public static final int DEFAULT_PORT = 8812;
 
     @Parameter(names = "--oracle")
-    public QuestDBOracleFactory oracle = QuestDBOracleFactory.WHERE;
+    public List<QuestDBOracleFactory> oracle = Arrays.asList(QuestDBOracleFactory.WHERE);
 
     public enum QuestDBOracleFactory implements OracleFactory<QuestDBGlobalState> {
-        // TODO: implement test oracles
+        // TODO (anxing): implement test oracles
         WHERE {
             @Override
             public TestOracle create(QuestDBGlobalState globalState) throws SQLException {
-                return null;
+                return new QuestDBQueryPartitioningWhereTester(globalState);
             }
-        };
-
+        }
     }
 
     @Parameter(names = "--username", description = "The user name used to log into QuestDB")
@@ -41,7 +41,7 @@ public class QuestDBOptions implements DBMSSpecificOptions<QuestDBOracleFactory>
 
     @Override
     public List<QuestDBOracleFactory> getTestOracleFactory() {
-        return Arrays.asList(oracle);
+        return oracle;
     }
 
     public String getUserName() {

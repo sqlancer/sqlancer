@@ -10,16 +10,19 @@ import com.google.auto.service.AutoService;
 
 import sqlancer.AbstractAction;
 import sqlancer.DatabaseProvider;
+import sqlancer.IgnoreMeException;
+import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.SQLGlobalState;
 import sqlancer.SQLProviderAdapter;
+import sqlancer.StatementExecutor;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.questdb.QuestDBProvider.QuestDBGlobalState;
-import sqlancer.questdb.gen.QuestDBDeleteGenerator;
-import sqlancer.questdb.gen.QuestDBIndexGenerator;
+import sqlancer.questdb.gen.QuestDBAlterIndexGenerator;
 import sqlancer.questdb.gen.QuestDBInsertGenerator;
 import sqlancer.questdb.gen.QuestDBTableGenerator;
+import sqlancer.questdb.gen.QuestDBTruncateGenerator;
 
 @AutoService(DatabaseProvider.class)
 public class QuestDBProvider extends SQLProviderAdapter<QuestDBGlobalState, QuestDBOptions> {
@@ -29,9 +32,9 @@ public class QuestDBProvider extends SQLProviderAdapter<QuestDBGlobalState, Ques
 
     public enum Action implements AbstractAction<QuestDBGlobalState> {
         INSERT(QuestDBInsertGenerator::getQuery), //
-        CREATE_INDEX(QuestDBIndexGenerator::getQuery), //
-        DELETE(QuestDBDeleteGenerator::generate); //
-        // TODO: maybe implement these later
+        ALTER_INDEX(QuestDBAlterIndexGenerator::getQuery), //
+        TRUNCATE(QuestDBTruncateGenerator::generate); //
+        // TODO (anxing): maybe implement these later
         // UPDATE(QuestDBUpdateGenerator::getQuery), //
         // CREATE_VIEW(QuestDBViewGenerator::generate), //
 
@@ -47,6 +50,20 @@ public class QuestDBProvider extends SQLProviderAdapter<QuestDBGlobalState, Ques
         }
     }
 
+    private static int mapActions(QuestDBGlobalState globalState, Action a) {
+        Randomly r = globalState.getRandomly();
+        switch (a) {
+        case INSERT:
+            return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
+        case ALTER_INDEX:
+            return r.getInteger(0, 3);
+        case TRUNCATE:
+            return r.getInteger(0, 5);
+        default:
+            throw new AssertionError("Unknown action: " + a);
+        }
+    }
+
     public static class QuestDBGlobalState extends SQLGlobalState<QuestDBOptions, QuestDBSchema> {
 
         @Override
@@ -58,7 +75,23 @@ public class QuestDBProvider extends SQLProviderAdapter<QuestDBGlobalState, Ques
 
     @Override
     public void generateDatabase(QuestDBGlobalState globalState) throws Exception {
-        // TODO: should follow duckdb or cockrachdb? what's the difference between generate and create db?
+        for (int i = 0; i < Randomly.fromOptions(1, 2); i++) {
+            boolean success;
+            do {
+                SQLQueryAdapter qt = new QuestDBTableGenerator().getQuery(globalState, null);
+                success = globalState.executeStatement(qt);
+            } while (!success);
+        }
+        if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+            throw new IgnoreMeException();
+        }
+        StatementExecutor<QuestDBGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
+                QuestDBProvider::mapActions, (q) -> {
+                    if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+                        throw new IgnoreMeException();
+                    }
+                });
+        se.executeStatements();
     }
 
     @Override
@@ -84,14 +117,29 @@ public class QuestDBProvider extends SQLProviderAdapter<QuestDBGlobalState, Ques
         Connection con = DriverManager.getConnection(url, properties);
         // QuestDB cannot create or drop `DATABASE`, can only create or drop `TABLE`
         globalState.getState().logStatement("DROP TABLE IF EXISTS " + tableName + " CASCADE");
-        SQLQueryAdapter createTableCommand = new QuestDBTableGenerator().getQuery(globalState);
+        SQLQueryAdapter createTableCommand = new QuestDBTableGenerator().getQuery(globalState, tableName);
         globalState.getState().logStatement(createTableCommand);
+        globalState.getState().logStatement("DROP TABLE IF EXISTS " + tableName);
 
         try (Statement s = con.createStatement()) {
             s.execute("DROP TABLE IF EXISTS " + tableName);
         }
+        // TODO(anxing): Drop all previous tables in db
+        // List<String> tableNames =
+        // globalState.getSchema().getDatabaseTables().stream().map(AbstractTable::getName).collect(Collectors.toList());
+        // for (String tName : tableNames) {
+        // try (Statement s = con.createStatement()) {
+        // String query = "DROP TABLE IF EXISTS " + tName;
+        // globalState.getState().logStatement(query);
+        // s.execute(query);
+        // }
+        // }
         try (Statement s = con.createStatement()) {
             s.execute(createTableCommand.getQueryString());
+        }
+        // drop test table
+        try (Statement s = con.createStatement()) {
+            s.execute("DROP TABLE IF EXISTS " + tableName);
         }
         con.close();
         con = DriverManager.getConnection(url, properties);
