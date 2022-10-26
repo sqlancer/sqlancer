@@ -30,6 +30,10 @@ For a permissive DBMS, implementing the expression generator is easier, since th
 
 For a strict DBMS, the better approach is typically to attempt to generate expressions of the expected type. For PostgreSQL, the expression generator thus expects an additional type argument (see [PostgreSQLExpressionGenerator](https://github.com/sqlancer/sqlancer/blob/86647df8aa2dd8d167b5c3ce3297290f5b0b2bcd/src/sqlancer/postgres/gen/PostgresExpressionGenerator.java#L251)). This type is propagated recursively. For example, if we require a predicate for the `WHERE` clause, we pass boolean as a type. The expression generator then calls a method `generateBooleanExpression` that attempts to produce a boolean expression, by, for example, generating a comparison (e.g., `<=`). For the comparison's operands, a random type is then selected and propagated. For example, if an integer type is selected, then `generateExpression` is called with this type once for the left operand, and once for the right operand. Note that this process does not guarantee that the expression will indeed have the expected type. It might happen, for example, that the expression generator attempts to produce an integer value, but that it produces a double value instead, namely when an integer overflow occurs, which, depending on the DBMS, implicitly converts the result to a floating-point value.
 
+### Unfixed Bugs
+
+Often, some bugs are fixed only after an extended period, meaning that SQLancer will repeatedly report the same bug. In such cases, it might be possible to avoid generating the problematic pattern, or adding an expected error with the internal error message. Rather than, for example, commenting out the code with the bug-inducing pattern, a pattern implemented by the [TiDBBugs class](https://github.com/sqlancer/sqlancer/blob/4c20a94b3ad2c037e1a66c0b637184f8c20faa7e/src/sqlancer/tidb/TiDBBugs.java) should be applied. The core idea is to use a public, static flag for each issue, which is set to true as long as the issue persists (e.g., see [bug35652](https://github.com/sqlancer/sqlancer/blob/4c20a94b3ad2c037e1a66c0b637184f8c20faa7e/src/sqlancer/tidb/TiDBBugs.java#L55)). The work-around code is then executed—or the problematic pattern should not be generated—if the flag is set to true (e.g., [an expected error is added for bug35652](https://github.com/sqlancer/sqlancer/blob/59564d818d991d54b32fa5a79c9f733799c090f2/src/sqlancer/tidb/TiDBErrors.java#L47)). This makes it easy to later on identify and remove all such work-around code once the issue has been fixed.
+
 ## Options
 
 SQLancer uses [JCommander](https://jcommander.org/) for handling options. The `MainOptions` class contains options that are expected to be supported by all DBMS-testing implementations. Furthermore, each `*Provider` class provides a method to return an additional set of supported options.
@@ -50,12 +54,12 @@ You can run them using the following command:
 mvn verify
 ```
 
-We use [Travis-CI](https://travis-ci.com/) to automatically check PRs.
+We use [GitHub Actions](https://github.com/sqlancer/sqlancer/blob/master/.github/workflows/main.yml) to automatically check PRs.
 
 
 ## Testing
 
-As part of the Travis-CI gate, we use smoke testing by running SQLancer on each supported DBMS for some minutes, to test that nothing is obviously broken. For DBMS for which all bugs have been fixed, we verify that SQLancer cannot find any further bugs (i.e., the return code is zero).
+As part of the GitHub Actions check, we use smoke testing by running SQLancer on each supported DBMS for some minutes, to test that nothing is obviously broken. For DBMS for which all bugs have been fixed, we verify that SQLancer cannot find any further bugs (i.e., the return code is zero).
 
 In addition, we use [unit tests](https://github.com/sqlancer/sqlancer/tree/master/test/sqlancer) to test SQLancer's core functionality, such as random string and number generation as well as option passing. When fixing a bug, add a unit test, if it is easily possible.
 
@@ -65,13 +69,13 @@ You can run the tests using the following command:
 mvn test
 ```
 
-Note that per default, the smoke testing is performed only for embedded DBMS (i.e., DuckDB and SQLite). To run smoke tests also for the other DBMS, you need to set environment variables. For example, you can run the MySQL smoke testing (and no other tests) using the following command:
+Note that per default, the smoke testing is performed only for embedded DBMS (e.g., DuckDB and SQLite). To run smoke tests also for the other DBMS, you need to set environment variables. For example, you can run the MySQL smoke testing (and no other tests) using the following command:
 
 ```
 MYSQL_AVAILABLE=true mvn -Dtest=TestMySQL test
 ```
 
-For up-to-date testing commands, check out the `.travis.yml` file.
+For up-to-date testing commands, check out the `.github/workflows/main.yml` file.
 
 ## Reviewing
 
@@ -88,4 +92,4 @@ Please pay attention to good commit messages (in particular subject lines). As b
 2. Do not end the subject line with a period. For example, write "Refactor the handling of indexes" rather than "Refactor the handling of indexes.".
 3. Use the imperative mood in the subject line. For example, write "Refactor the handling of indexes" rather than "Refactoring" or "Refactor**ed** the handling of indexes".
 
-Please also pay attention to a clean commit history. Rather than merging with the main branch, use `git rebase` to rebase your commits on the main branch. Sometimes, it might happen that you discover an issue only after having already created a commit, for example, when an issue is found by `mvn verify` in the Travis CI. Do not introduce a separate commit for such issues. If the issue was introduced by the last commit, you can fix the issue, and use `git commit --amend` to change the latest commit. If the change was introduced by one of the previous commits, you can use `git rebase -i` to change the respective commit. If you already have a number of such commits, you can use `git squash` to "collapse" multiple commits into one. For more information, you might want to read [How (and Why!) to Keep Your Git Commit History Clean](https://about.gitlab.com/blog/2018/06/07/keeping-git-commit-history-clean/) written by Kushal Pandya.
+Please also pay attention to a clean commit history. Rather than merging with the main branch, use `git rebase` to rebase your commits on the main branch. Sometimes, it might happen that you discover an issue only after having already created a commit, for example, when an issue is found by `mvn verify` in the CI checks. Do not introduce a separate commit for such issues. If the issue was introduced by the last commit, you can fix the issue, and use `git commit --amend` to change the latest commit. If the change was introduced by one of the previous commits, you can use `git rebase -i` to change the respective commit. If you already have a number of such commits, you can use `git squash` to "collapse" multiple commits into one. For more information, you might want to read [How (and Why!) to Keep Your Git Commit History Clean](https://about.gitlab.com/blog/2018/06/07/keeping-git-commit-history-clean/) written by Kushal Pandya.

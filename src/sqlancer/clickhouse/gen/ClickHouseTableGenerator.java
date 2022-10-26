@@ -37,7 +37,7 @@ public class ClickHouseTableGenerator {
         ClickHouseTableGenerator chTableGenerator = new ClickHouseTableGenerator(tableName, globalState);
         chTableGenerator.start();
         ExpectedErrors errors = new ExpectedErrors();
-        ClickHouseErrors.addTableManipulationErrors(errors);
+        ClickHouseErrors.addExpectedExpressionErrors(errors);
         return new SQLQueryAdapter(chTableGenerator.sb.toString(), errors, true);
     }
 
@@ -55,7 +55,7 @@ public class ClickHouseTableGenerator {
         sb.append(" (");
         int nrColumns = 1 + Randomly.smallNumber();
         for (int i = 0; i < nrColumns; i++) {
-            columns.add(ClickHouseSchema.ClickHouseColumn.createDummy(ClickHouseCommon.createColumnName(i)));
+            columns.add(ClickHouseSchema.ClickHouseColumn.createDummy(ClickHouseCommon.createColumnName(i), null));
         }
         for (int i = 0; i < nrColumns; i++) {
             if (i != 0) {

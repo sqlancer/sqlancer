@@ -38,7 +38,7 @@ public final class Main {
     static boolean progressMonitorStarted;
 
     static {
-        System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "ERROR");
+        System.setProperty(org.slf4j.simple.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "ERROR");
         if (!LOG_DIRECTORY.exists()) {
             LOG_DIRECTORY.mkdir();
         }
@@ -222,10 +222,12 @@ public final class Main {
         }
 
         public boolean execute(Query<C> q, String... fills) throws Exception {
-            globalState.getState().logStatement(q);
             boolean success;
             success = q.execute(globalState, fills);
             Main.nrSuccessfulActions.addAndGet(1);
+            if (globalState.getOptions().loggerPrintFailed() || success) {
+                globalState.getState().logStatement(q);
+            }
             return success;
         }
 

@@ -26,7 +26,6 @@ public class ClickHouseTLPAggregateOracle extends ClickHouseTLPBase {
     public ClickHouseTLPAggregateOracle(ClickHouseProvider.ClickHouseGlobalState state) {
         super(state);
         ClickHouseErrors.addExpectedExpressionErrors(errors);
-        ClickHouseErrors.addQueryErrors(errors);
     }
 
     @Override
@@ -75,9 +74,9 @@ public class ClickHouseTLPAggregateOracle extends ClickHouseTLPBase {
 
         if (firstResult.size() != secondResult.size()) {
             throw new AssertionError();
-        } else if (firstResult.isEmpty()) {
+        } else if (firstResult.isEmpty() || firstResult.equals(secondResult)) {
             return;
-        } else if (firstResult.size() == 1) {
+        } else if (firstResult.size() == 1 && secondResult.size() == 1) {
             if (firstResult.get(0).equals(secondResult.get(0))) {
                 return;
             } else if (!ComparatorHelper.isEqualDouble(firstResult.get(0), secondResult.get(0))) {

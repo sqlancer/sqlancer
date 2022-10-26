@@ -60,14 +60,15 @@ public class ClickHouseSchema extends AbstractSchema<ClickHouseGlobalState, Clic
         private final boolean isMaterialized;
 
         public ClickHouseColumn(String name, ClickHouseLancerDataType columnType, boolean isAlias,
-                boolean isMaterialized) {
-            super(name, null, columnType);
+                boolean isMaterialized, ClickHouseTable table) {
+            super(name, table, columnType);
             this.isAlias = isAlias;
             this.isMaterialized = isMaterialized;
         }
 
-        public static ClickHouseSchema.ClickHouseColumn createDummy(String name) {
-            return new ClickHouseSchema.ClickHouseColumn(name, ClickHouseLancerDataType.getRandom(), false, false);
+        public static ClickHouseSchema.ClickHouseColumn createDummy(String name, ClickHouseTable table) {
+            return new ClickHouseSchema.ClickHouseColumn(name, ClickHouseLancerDataType.getRandom(), false, false,
+                    table);
         }
 
         public boolean isAlias() {
@@ -99,38 +100,62 @@ public class ClickHouseSchema extends AbstractSchema<ClickHouseGlobalState, Clic
                 value = randomRowValues.getString(columnIndex);
                 constant = ClickHouseConstant.createStringConstant((String) value);
                 break;
+            case AggregateFunction:
+            case Array:
+                // case Bool:
+            case Date:
+                // case Date32:
+            case DateTime:
+            case DateTime32:
+            case DateTime64:
+            case Decimal:
+            case Decimal128:
+            case Decimal256:
             case Decimal32:
             case Decimal64:
-            case Decimal128:
-            case Decimal:
-            case UUID:
-            case FixedString:
-            case Nothing:
-            case Nested:
-            case Tuple:
-            case Int16:
-            case Int8:
-            case Date:
-            case DateTime:
-            case Enum8:
+                // case Enum:
             case Enum16:
+            case Enum8:
+            case FixedString:
             case Float32:
-            case Array:
-            case AggregateFunction:
-            case Unknown:
-            case IntervalYear:
-            case IntervalQuarter:
-            case IntervalMonth:
-            case IntervalWeek:
+            case IPv4:
+            case IPv6:
+            case Int128:
+            case Int16:
+            case Int256:
+            case Int64:
+            case Int8:
             case IntervalDay:
             case IntervalHour:
+                // case IntervalMicrosecond:
+                // case IntervalMillisecond:
             case IntervalMinute:
+            case IntervalMonth:
+                // case IntervalNanosecond:
+            case IntervalQuarter:
             case IntervalSecond:
-            case UInt64:
-            case UInt32:
+            case IntervalWeek:
+            case IntervalYear:
+                // case JSON:
+                // case LowCardinality:
+            case Map:
+                // case MultiPolygon:
+            case Nested:
+            case Nothing:
+                // case Nullable:
+                // case Object:
+                // case Point:
+                // case Polygon:
+                // case Ring:
+                // case SimpleAggregateFunction:
+            case Tuple:
+            case UInt128:
             case UInt16:
+            case UInt256:
+            case UInt32:
+            case UInt64:
             case UInt8:
-            case Int64:
+            case UUID:
             default:
                 throw new AssertionError(valueType);
             }
@@ -217,7 +242,7 @@ public class ClickHouseSchema extends AbstractSchema<ClickHouseGlobalState, Clic
                     boolean isAlias = "ALIAS".compareTo(defaultType) == 0;
                     boolean isMaterialized = "MATERIALIZED".compareTo(defaultType) == 0;
                     ClickHouseColumn c = new ClickHouseColumn(columnName, getColumnType(dataType), isAlias,
-                            isMaterialized);
+                            isMaterialized, null);
                     columns.add(c);
                 }
             }
