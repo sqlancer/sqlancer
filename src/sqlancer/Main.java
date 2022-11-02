@@ -338,7 +338,7 @@ public final class Main {
                         newGlobalState.setStateLogger(new StateLogger(databaseName, provider, options));
                         newGlobalState.setManager(newManager);
 
-                        Reducer<G, O, C> reducer = new ReducerExample<>(provider);
+                        Reducer<G, O, C> reducer = new StatementReducer<>(provider);
                         reducer.reduce(state, e.getReproducer(), newGlobalState);
                     }
 

@@ -9,12 +9,12 @@ import sqlancer.FoundBugException.Reproducer;
 import sqlancer.common.query.Query;
 import sqlancer.sqlite3.SQLite3GlobalState;
 
-public class ReducerExample<G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection>
+public class StatementReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection>
         implements Reducer<G, O, C> {
     private final DatabaseProvider<G, O, C> provider;
     private boolean observedChange;
 
-    public ReducerExample(DatabaseProvider<G, O, C> provider) {
+    public StatementReducer(DatabaseProvider<G, O, C> provider) {
         this.provider = provider;
     }
 
