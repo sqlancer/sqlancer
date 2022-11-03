@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.questdb.QuestDBBugs;
 import sqlancer.questdb.QuestDBProvider.QuestDBGlobalState;
 import sqlancer.questdb.QuestDBSchema.QuestDBColumn;
 import sqlancer.questdb.QuestDBSchema.QuestDBCompositeDataType;
@@ -37,18 +36,6 @@ public class QuestDBTableGenerator {
             sb.append(columns.get(i).getType());
         }
         sb.append(")");
-        // test index at Create Table
-        if (Randomly.getBooleanWithRatherLowProbability()) {
-            errors.add("cannot create index");
-            // QuestDB does not support index for non-SYMBOL typed columns
-            errors.add("Index flag is only supported for SYMBOL");
-            sb.append(",");
-            String index = String.format(" INDEX (%s)", Randomly.fromList(columns).getName());
-            sb.append(index);
-        }
-        if (QuestDBBugs.bug2689) {
-            errors.add("Invalid metadata");
-        }
         sb.append(";");
         errors.add("table already exists");
         return new SQLQueryAdapter(sb.toString(), errors, true);
