@@ -66,9 +66,9 @@ public class QuestDBConstant implements Node<QuestDBExpression> {
         @Override
         public String toString() {
             if (value == Double.POSITIVE_INFINITY) {
-                return "'+Inf'";
+                return "cast('Infinity' as double)";
             } else if (value == Double.NEGATIVE_INFINITY) {
-                return "'-Inf'";
+                return "cast('-Infinity' as double)";
             }
             return String.valueOf(value);
         }
