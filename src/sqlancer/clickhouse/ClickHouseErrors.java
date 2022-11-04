@@ -54,6 +54,15 @@ public final class ClickHouseErrors {
         errors.add("there are only columns");
         errors.add("there are columns");
         errors.add("in block. (NOT_FOUND_COLUMN_IN_BLOCK)");
+        errors.add("Missing columns");
+        errors.add("Ambiguous column");
+        errors.add("Must be one unsigned integer type. (ILLEGAL_TYPE_OF_COLUMN_FOR_FILTER)");
+        errors.add("Floating point partition key is not supported");
+        errors.add("Cannot get JOIN keys from JOIN ON section");
+        errors.add("ILLEGAL_DIVISION");
+        errors.add("DECIMAL_OVERFLOW");
+        errors.add("Cannot convert out of range floating point value to integer type");
+        errors.add("EMPTY_LIST_OF_COLUMNS_QUERIED"); // https://github.com/ClickHouse/ClickHouse/issues/42768
     }
 
 }

@@ -3,14 +3,10 @@ package sqlancer.clickhouse.oracle.tlp;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import sqlancer.ComparatorHelper;
-import sqlancer.Randomly;
 import sqlancer.clickhouse.ClickHouseProvider;
 import sqlancer.clickhouse.ClickHouseVisitor;
-import sqlancer.clickhouse.ast.ClickHouseColumnReference;
-import sqlancer.clickhouse.ast.ClickHouseExpression;
 
 public class ClickHouseTLPGroupByOracle extends ClickHouseTLPBase {
 
@@ -39,13 +35,4 @@ public class ClickHouseTLPGroupByOracle extends ClickHouseTLPBase {
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
     }
-
-    @Override
-    List<ClickHouseExpression> generateFetchColumns() {
-        List<ClickHouseExpression> columns;
-        columns = Randomly.nonEmptySubset(targetTables.getColumns()).stream().map(c -> new ClickHouseColumnReference(c))
-                .collect(Collectors.toList());
-        return columns;
-    }
-
 }

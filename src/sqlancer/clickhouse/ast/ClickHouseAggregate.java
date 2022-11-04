@@ -4,7 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import ru.yandex.clickhouse.domain.ClickHouseDataType;
+import com.clickhouse.client.ClickHouseDataType;
+
 import sqlancer.Randomly;
 import sqlancer.clickhouse.ClickHouseSchema;
 
