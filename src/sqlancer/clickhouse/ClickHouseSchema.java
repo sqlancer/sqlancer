@@ -8,12 +8,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import ru.yandex.clickhouse.domain.ClickHouseDataType;
+import com.clickhouse.client.ClickHouseDataType;
+
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTable;
+import sqlancer.clickhouse.ast.ClickHouseColumnReference;
 import sqlancer.clickhouse.ast.ClickHouseConstant;
+import sqlancer.clickhouse.ast.constant.ClickHouseCreateConstant;
 import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractRowValue;
 import sqlancer.common.schema.AbstractSchema;
@@ -34,7 +37,7 @@ public class ClickHouseSchema extends AbstractSchema<ClickHouseGlobalState, Clic
         }
 
         public ClickHouseLancerDataType(String textRepr) {
-            this.clickHouseType = ClickHouseDataType.fromTypeString(textRepr);
+            this.clickHouseType = ClickHouseDataType.of(textRepr);
             this.textRepr = textRepr;
         }
 
@@ -78,6 +81,11 @@ public class ClickHouseSchema extends AbstractSchema<ClickHouseGlobalState, Clic
         public boolean isMaterialized() {
             return isMaterialized;
         }
+
+        public ClickHouseColumnReference asColumnReference(String tableAlias) {
+            return new ClickHouseColumnReference(this, null, tableAlias);
+        }
+
     }
 
     public static ClickHouseConstant getConstant(ResultSet randomRowValues, int columnIndex,
@@ -85,20 +93,20 @@ public class ClickHouseSchema extends AbstractSchema<ClickHouseGlobalState, Clic
         Object value;
         ClickHouseConstant constant;
         if (randomRowValues.getString(columnIndex) == null) {
-            constant = ClickHouseConstant.createNullConstant();
+            constant = ClickHouseCreateConstant.createNullConstant();
         } else {
             switch (valueType) {
             case Int32:
                 value = randomRowValues.getLong(columnIndex);
-                constant = ClickHouseConstant.createInt32Constant((long) value);
+                constant = ClickHouseCreateConstant.createInt32Constant((long) value);
                 break;
             case Float64:
                 value = randomRowValues.getDouble(columnIndex);
-                constant = ClickHouseConstant.createFloat64Constant((double) value);
+                constant = ClickHouseCreateConstant.createFloat64Constant((double) value);
                 break;
             case String:
                 value = randomRowValues.getString(columnIndex);
-                constant = ClickHouseConstant.createStringConstant((String) value);
+                constant = ClickHouseCreateConstant.createStringConstant((String) value);
                 break;
             case AggregateFunction:
             case Array:

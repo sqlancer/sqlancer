@@ -1,8 +1,10 @@
 package sqlancer.clickhouse.ast;
 
-import ru.yandex.clickhouse.domain.ClickHouseDataType;
+import com.clickhouse.client.ClickHouseDataType;
+
 import sqlancer.LikeImplementationHelper;
 import sqlancer.Randomly;
+import sqlancer.clickhouse.ast.constant.ClickHouseCreateConstant;
 import sqlancer.common.visitor.BinaryOperation;
 
 public class ClickHouseBinaryComparisonOperation extends ClickHouseExpression
@@ -75,7 +77,7 @@ public class ClickHouseBinaryComparisonOperation extends ClickHouseExpression
                     } else if (lessThan.asInt() >= 1) {
                         return lessThan;
                     } else {
-                        return ClickHouseConstant.createFalse();
+                        return ClickHouseCreateConstant.createFalse();
                     }
                 }
             }
@@ -95,7 +97,7 @@ public class ClickHouseBinaryComparisonOperation extends ClickHouseExpression
                         && equals.getDataType() == ClickHouseDataType.UInt32
                         && equals.getDataType() == ClickHouseDataType.Int64
                         && equals.getDataType() == ClickHouseDataType.UInt64 && equals.asInt() == 1) {
-                    return ClickHouseConstant.createFalse();
+                    return ClickHouseCreateConstant.createFalse();
                 } else {
                     ClickHouseConstant applyLess = left.applyLess(right);
                     if (applyLess == null) {
@@ -121,7 +123,7 @@ public class ClickHouseBinaryComparisonOperation extends ClickHouseExpression
                         && lessThan.getDataType() == ClickHouseDataType.UInt32
                         && lessThan.getDataType() == ClickHouseDataType.Int64
                         && lessThan.getDataType() == ClickHouseDataType.UInt64 && lessThan.asInt() >= 1) {
-                    return ClickHouseConstant.createTrue();
+                    return ClickHouseCreateConstant.createTrue();
                 } else {
                     ClickHouseConstant applyLess = left.applyLess(right);
                     if (applyLess == null) {
@@ -146,14 +148,14 @@ public class ClickHouseBinaryComparisonOperation extends ClickHouseExpression
                     return null;
                 }
                 if (left.isNull() || right.isNull()) {
-                    return ClickHouseConstant.createNullConstant();
+                    return ClickHouseCreateConstant.createNullConstant();
                 } else {
                     ClickHouseConstant applyEquals = left.applyEquals(right);
                     if (applyEquals == null) {
                         return null;
                     }
                     boolean equals = applyEquals.asInt() == 1;
-                    return ClickHouseConstant.createBoolean(!equals);
+                    return ClickHouseCreateConstant.createBoolean(!equals);
                 }
             }
 
@@ -165,7 +167,7 @@ public class ClickHouseBinaryComparisonOperation extends ClickHouseExpression
                     return null;
                 }
                 if (left.isNull() || right.isNull()) {
-                    return ClickHouseConstant.createNullConstant();
+                    return ClickHouseCreateConstant.createNullConstant();
                 }
                 ClickHouseConstant leftStr = ClickHouseCast.castToText(left);
                 ClickHouseConstant rightStr = ClickHouseCast.castToText(right);
@@ -173,7 +175,7 @@ public class ClickHouseBinaryComparisonOperation extends ClickHouseExpression
                     return null;
                 }
                 boolean val = LikeImplementationHelper.match(leftStr.asString(), rightStr.asString(), 0, 0, false);
-                return ClickHouseConstant.createBoolean(val);
+                return ClickHouseCreateConstant.createBoolean(val);
             }
 
         };

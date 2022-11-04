@@ -1,7 +1,9 @@
 package sqlancer.clickhouse.ast;
 
-import ru.yandex.clickhouse.domain.ClickHouseDataType;
+import com.clickhouse.client.ClickHouseDataType;
+
 import sqlancer.Randomly;
+import sqlancer.clickhouse.ast.constant.ClickHouseCreateConstant;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
 import sqlancer.common.visitor.UnaryOperation;
 
@@ -20,10 +22,10 @@ public class ClickHouseUnaryPrefixOperation extends ClickHouseExpression
             @Override
             public ClickHouseConstant apply(ClickHouseConstant constant) {
                 if (constant.getDataType() == ClickHouseDataType.Nothing) {
-                    return ClickHouseConstant.createNullConstant();
+                    return ClickHouseCreateConstant.createNullConstant();
                 } else {
-                    return constant.asBooleanNotNull() ? ClickHouseConstant.createFalse()
-                            : ClickHouseConstant.createTrue();
+                    return constant.asBooleanNotNull() ? ClickHouseCreateConstant.createFalse()
+                            : ClickHouseCreateConstant.createTrue();
                 }
             }
         },
@@ -31,7 +33,7 @@ public class ClickHouseUnaryPrefixOperation extends ClickHouseExpression
             @Override
             public ClickHouseConstant apply(ClickHouseConstant constant) {
                 if (constant.getDataType() == ClickHouseDataType.Int32) {
-                    return ClickHouseConstant.createInt32Constant(-constant.asInt());
+                    return ClickHouseCreateConstant.createInt32Constant(-constant.asInt());
                 }
                 throw new AssertionError(constant);
             }

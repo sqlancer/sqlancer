@@ -19,7 +19,6 @@ import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTable;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTables;
 import sqlancer.clickhouse.ClickHouseToStringVisitor;
 import sqlancer.clickhouse.ast.ClickHouseAliasOperation;
-import sqlancer.clickhouse.ast.ClickHouseColumnReference;
 import sqlancer.clickhouse.ast.ClickHouseExpression;
 import sqlancer.clickhouse.ast.ClickHouseSelect;
 import sqlancer.clickhouse.ast.ClickHouseTableReference;
@@ -41,17 +40,17 @@ public class ClickHouseNoRECOracle extends NoRECBase<ClickHouseGlobalState> impl
 
     @Override
     public void check() throws SQLException {
+
         ClickHouseTables randomTables = s.getRandomTableNonEmptyTables();
+        ClickHouseTable leftTable = randomTables.getTables().remove(0);
+        ClickHouseTableReference table = new ClickHouseTableReference(leftTable, "left");
         List<ClickHouseColumn> columns = randomTables.getColumns();
+        columns.addAll(leftTable.getColumns());
         ClickHouseExpressionGenerator gen = new ClickHouseExpressionGenerator(state).setColumns(columns);
         ClickHouseExpression randomWhereCondition = gen.generateExpression(ClickHouseLancerDataType.getRandom());
-        List<ClickHouseTable> tables = randomTables.getTables();
-        List<ClickHouseTableReference> tableList = tables.stream().map(t -> new ClickHouseTableReference(t))
-                .collect(Collectors.toList());
-        List<ClickHouseExpression.ClickHouseJoin> joins = gen.getRandomJoinClauses(tables);
-        int secondCount = getSecondQuery(tableList.stream().collect(Collectors.toList()), randomWhereCondition, joins);
-        int firstCount = getFirstQueryCount(con, tableList.stream().collect(Collectors.toList()), columns,
-                randomWhereCondition, joins);
+        List<ClickHouseExpression.ClickHouseJoin> joins = gen.getRandomJoinClauses(table, randomTables.getTables());
+        int secondCount = getSecondQuery(table, randomWhereCondition, joins);
+        int firstCount = getFirstQueryCount(con, table, columns, randomWhereCondition, joins);
         if (firstCount == -1 || secondCount == -1) {
             throw new IgnoreMeException();
         }
@@ -61,14 +60,14 @@ public class ClickHouseNoRECOracle extends NoRECBase<ClickHouseGlobalState> impl
         }
     }
 
-    private int getSecondQuery(List<ClickHouseExpression> tableList, ClickHouseExpression whereClause,
+    private int getSecondQuery(ClickHouseExpression table, ClickHouseExpression whereClause,
             List<ClickHouseExpression.ClickHouseJoin> joins) throws SQLException {
         ClickHouseSelect select = new ClickHouseSelect();
 
         ClickHouseExpression inner = new ClickHouseAliasOperation(whereClause, "check");
 
         select.setFetchColumns(Arrays.asList(inner));
-        select.setFromList(tableList);
+        select.setFromClause(table);
         select.setJoinClauses(joins);
         int secondCount = 0;
         unoptimizedQueryString = "SELECT SUM(check <> 0) FROM (" + ClickHouseToStringVisitor.asString(select)
@@ -91,14 +90,14 @@ public class ClickHouseNoRECOracle extends NoRECBase<ClickHouseGlobalState> impl
         return secondCount;
     }
 
-    private int getFirstQueryCount(SQLConnection con, List<ClickHouseExpression> tableList,
-            List<ClickHouseColumn> columns, ClickHouseExpression randomWhereCondition,
-            List<ClickHouseExpression.ClickHouseJoin> joins) throws SQLException {
+    private int getFirstQueryCount(SQLConnection con, ClickHouseExpression tableList, List<ClickHouseColumn> columns,
+            ClickHouseExpression randomWhereCondition, List<ClickHouseExpression.ClickHouseJoin> joins)
+            throws SQLException {
         ClickHouseSelect select = new ClickHouseSelect();
-        List<ClickHouseExpression> allColumns = columns.stream().map((c) -> new ClickHouseColumnReference(c))
+        List<ClickHouseExpression> allColumns = columns.stream().map(c -> c.asColumnReference(null))
                 .collect(Collectors.toList());
         select.setFetchColumns(allColumns);
-        select.setFromList(tableList);
+        select.setFromClause(tableList);
         select.setWhereClause(randomWhereCondition);
         if (Randomly.getBooleanWithSmallProbability()) {
             select.setOrderByExpressions(
