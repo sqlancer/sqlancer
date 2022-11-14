@@ -8,6 +8,8 @@ public final class YSQLErrors {
     }
 
     public static void addCommonFetchErrors(ExpectedErrors errors) {
+        errors.add("Operation failed. Try again");
+
         errors.add("An I/O error occurred while sending to the backend");
         errors.add("Conflicts with committed transaction");
         errors.add("cannot be changed");
@@ -38,8 +40,10 @@ public final class YSQLErrors {
 
     public static void addCommonExpressionErrors(ExpectedErrors errors) {
         errors.add("syntax error at or near \"(\"");
+        errors.add("encoding conversion from");
         errors.add("does not exist");
         errors.add("is not unique");
+        errors.add("is not supported");
         errors.add("cannot be changed");
         errors.add("invalid reference to FROM-clause entry for table");
 

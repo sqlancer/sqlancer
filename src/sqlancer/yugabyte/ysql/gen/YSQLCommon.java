@@ -1,7 +1,10 @@
 package sqlancer.yugabyte.ysql.gen;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
@@ -16,8 +19,6 @@ import sqlancer.yugabyte.ysql.YSQLSchema.YSQLDataType;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTable;
 import sqlancer.yugabyte.ysql.YSQLVisitor;
 import sqlancer.yugabyte.ysql.ast.YSQLConstant;
-
-import static sqlancer.yugabyte.YugabyteBugs.bug11357;
 
 public final class YSQLCommon {
 
@@ -96,7 +97,25 @@ public final class YSQLCommon {
     public static void generateWith(StringBuilder sb, YSQLGlobalState globalState, ExpectedErrors errors,
             List<YSQLColumn> columnsToBeAdded, boolean isTemporaryTable) {
         if (Randomly.getBoolean()) {
-            sb.append(" WITHOUT OIDS ");
+            if (Randomly.getBoolean()) {
+                sb.append(" WITHOUT OIDS ");
+            } else {
+                sb.append(" WITH (");
+                ArrayList<StorageParameters> values = new ArrayList<>(Arrays.asList(StorageParameters.values()));
+                errors.add("unrecognized parameter");
+                errors.add("ALTER TABLE / ADD CONSTRAINT USING INDEX is not supported on partitioned tables");
+                List<StorageParameters> subset = Randomly.nonEmptySubset(values);
+                int i = 0;
+                for (StorageParameters parameter : subset) {
+                    if (i++ != 0) {
+                        sb.append(", ");
+                    }
+                    sb.append(parameter.parameter);
+                    sb.append("=");
+                    sb.append(parameter.op.apply(globalState.getRandomly()));
+                }
+                sb.append(")");
+            }
         } else if (Randomly.getBoolean() && !isTemporaryTable) {
             if (Randomly.getBoolean()) {
                 sb.append(" SPLIT INTO ");
@@ -159,12 +178,6 @@ public final class YSQLCommon {
                 }
                 sb.append(")");
             }
-        } else if (Randomly.getBoolean()) {
-            if (bug11357) throw new IgnoreMeException();
-
-            errors.add("Cannot use TABLEGROUP with TEMP table");
-            sb.append(" TABLEGROUP tg").append(
-                    Randomly.getNotCachedInteger(1, (int) YSQLTableGroupGenerator.UNIQUE_TABLEGROUP_COUNTER.get()));
         }
     }
 
@@ -269,17 +282,16 @@ public final class YSQLCommon {
         CHECK, UNIQUE, PRIMARY_KEY, FOREIGN_KEY
     }
 
-    // private enum StorageParameters {
-    // COLOCATED("COLOCATED", (r) -> Randomly.getBoolean());
-    // // TODO
-    //
-    // private final String parameter;
-    // private final Function<Randomly, Object> op;
-    //
-    // StorageParameters(String parameter, Function<Randomly, Object> op) {
-    // this.parameter = parameter;
-    // this.op = op;
-    // }
-    // }
+    private enum StorageParameters {
+        COLOCATED("COLOCATED", (r) -> Randomly.getBoolean());
+
+        private final String parameter;
+        private final Function<Randomly, Object> op;
+
+        StorageParameters(String parameter, Function<Randomly, Object> op) {
+            this.parameter = parameter;
+            this.op = op;
+        }
+    }
 
 }

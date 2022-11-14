@@ -34,14 +34,11 @@ import sqlancer.yugabyte.ysql.gen.YSQLNotifyGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLSequenceGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLSetGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLTableGenerator;
-import sqlancer.yugabyte.ysql.gen.YSQLTableGroupGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLTransactionGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLTruncateGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLUpdateGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLVacuumGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLViewGenerator;
-
-import static sqlancer.yugabyte.YugabyteBugs.bug11357;
 
 @AutoService(DatabaseProvider.class)
 public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOptions> {
@@ -91,10 +88,6 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
             nrPerformed = r.getInteger(0, 3);
             break;
         case ANALYZE:
-            nrPerformed = r.getInteger(0, 3);
-            break;
-        case TABLEGROUP:
-            if (bug11357) throw new IgnoreMeException();
             nrPerformed = r.getInteger(0, 3);
             break;
         case DELETE:
@@ -303,10 +296,6 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
             }
 
             if (Randomly.getBoolean()) {
-                // if (YugabyteBugs.bug11357) {
-                // throw new IgnoreMeException();
-                // }
-
                 sb.append("COLOCATED = true ");
             }
 
@@ -342,7 +331,6 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
         INSERT(YSQLInsertGenerator::insert), //
         UPDATE(YSQLUpdateGenerator::create), //
         TRUNCATE(YSQLTruncateGenerator::create), //
-        TABLEGROUP(YSQLTableGroupGenerator::create), //
         VACUUM(YSQLVacuumGenerator::create), //
         SET(YSQLSetGenerator::create), // TODO insert yugabyte sets
         SET_CONSTRAINTS((g) -> {
