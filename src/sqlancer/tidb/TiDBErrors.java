@@ -31,6 +31,7 @@ public final class TiDBErrors {
         // regex
         errors.add("error parsing regexp");
         errors.add("from regexp");
+        errors.add("Empty pattern is invalid");
 
         // To avoid bugs
         errors.add("Unknown column"); // https://github.com/pingcap/tidb/issues/35522
