@@ -104,6 +104,8 @@ public final class YSQLCommon {
                 ArrayList<StorageParameters> values = new ArrayList<>(Arrays.asList(StorageParameters.values()));
                 errors.add("unrecognized parameter");
                 errors.add("ALTER TABLE / ADD CONSTRAINT USING INDEX is not supported on partitioned tables");
+                errors.add("no collation was derived for partition key column");
+                errors.add("cannot set colocated true on a non-colocated database");
                 List<StorageParameters> subset = Randomly.nonEmptySubset(values);
                 int i = 0;
                 for (StorageParameters parameter : subset) {
