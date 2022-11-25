@@ -85,7 +85,7 @@ public class HSQLDBProvider extends SQLProviderAdapter<HSQLDBProvider.HSQLDBGlob
             case INSERT:
                 return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
             case UPDATE:
-                return r.getInteger(0, 1);
+                return r.getInteger(0, 10);
             default:
                 throw new AssertionError(a);
         }
