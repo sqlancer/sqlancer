@@ -3,7 +3,6 @@ import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.AbstractInsertGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.hsqldb.HSQLDBErrors;
 import sqlancer.hsqldb.HSQLDBProvider;
 import sqlancer.hsqldb.HSQLDBSchema;
 import sqlancer.hsqldb.HSQLDBToStringVisitor;
@@ -35,7 +34,7 @@ public class HSQLDBInsertGenerator extends AbstractInsertGenerator<HSQLDBSchema.
         sb.append(")");
         sb.append(" VALUES ");
         insertColumns(columns);
-        HSQLDBErrors.addInsertErrors(errors);
+        //HSQLDBErrors.addInsertErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors);
     }
 
