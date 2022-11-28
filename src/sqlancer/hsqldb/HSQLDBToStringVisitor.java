@@ -9,7 +9,6 @@ import sqlancer.hsqldb.ast.HSQLDBSelect;
 
 public class HSQLDBToStringVisitor extends NewToStringVisitor<HSQLDBExpression> {
 
-
     @Override
     public void visitSpecific(Node<HSQLDBExpression> expr) {
         if (expr instanceof HSQLDBConstant) {
@@ -44,7 +43,7 @@ public class HSQLDBToStringVisitor extends NewToStringVisitor<HSQLDBExpression> 
             visit(join.getOnCondition());
         }
     }
-    
+
     private void visit(HSQLDBConstant constant) {
         sb.append(constant.toString());
     }

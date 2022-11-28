@@ -1,17 +1,26 @@
 package sqlancer.hsqldb;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import com.google.auto.service.AutoService;
-import sqlancer.*;
+
+import sqlancer.AbstractAction;
+import sqlancer.DatabaseProvider;
+import sqlancer.IgnoreMeException;
+import sqlancer.MainOptions;
+import sqlancer.Randomly;
+import sqlancer.SQLConnection;
+import sqlancer.SQLGlobalState;
+import sqlancer.SQLProviderAdapter;
+import sqlancer.StatementExecutor;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.hsqldb.gen.HSQLDBInsertGenerator;
 import sqlancer.hsqldb.gen.HSQLDBTableGenerator;
 import sqlancer.hsqldb.gen.HSQLDBUpdateGenerator;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
 
 @AutoService(DatabaseProvider.class)
 public class HSQLDBProvider extends SQLProviderAdapter<HSQLDBProvider.HSQLDBGlobalState, HSQLDBOptions> {
@@ -22,9 +31,8 @@ public class HSQLDBProvider extends SQLProviderAdapter<HSQLDBProvider.HSQLDBGlob
         super(HSQLDBGlobalState.class, HSQLDBOptions.class);
     }
 
-    public enum Action implements AbstractAction<HSQLDBProvider.HSQLDBGlobalState> {
-        INSERT(HSQLDBInsertGenerator::getQuery),
-        UPDATE(HSQLDBUpdateGenerator::getQuery);
+    public enum Action implements AbstractAction<HSQLDBGlobalState> {
+        INSERT(HSQLDBInsertGenerator::getQuery), UPDATE(HSQLDBUpdateGenerator::getQuery);
 
         private final SQLQueryProvider<HSQLDBProvider.HSQLDBGlobalState> sqlQueryProvider;
 
@@ -44,7 +52,7 @@ public class HSQLDBProvider extends SQLProviderAdapter<HSQLDBProvider.HSQLDBGlob
         String url = "jdbc:hsqldb:file:" + databaseName;
         MainOptions options = globalState.getOptions();
         Connection connection = DriverManager.getConnection(url, options.getUserName(), options.getPassword());
-        //When a server instance is started, or when a connection is made to an in-process database,
+        // When a server instance is started, or when a connection is made to an in-process database,
         // a new, empty database is created if no database exists at the given path.
         try (Statement s = connection.createStatement()) {
             s.execute("DROP SCHEMA PUBLIC CASCADE");
@@ -70,24 +78,24 @@ public class HSQLDBProvider extends SQLProviderAdapter<HSQLDBProvider.HSQLDBGlob
         if (globalState.getSchema().getDatabaseTables().isEmpty()) {
             throw new IgnoreMeException();
         }
-        StatementExecutor<HSQLDBProvider.HSQLDBGlobalState, HSQLDBProvider.Action> se = new StatementExecutor<>(globalState, HSQLDBProvider.Action.values(),
-                HSQLDBProvider::mapActions, (q) -> {
-            if (globalState.getSchema().getDatabaseTables().isEmpty()) {
-                throw new IgnoreMeException();
-            }
-        });
+        StatementExecutor<HSQLDBGlobalState, Action> se = new StatementExecutor<>(globalState,
+                HSQLDBProvider.Action.values(), HSQLDBProvider::mapActions, (q) -> {
+                    if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+                        throw new IgnoreMeException();
+                    }
+                });
         se.executeStatements();
     }
 
     private static int mapActions(HSQLDBProvider.HSQLDBGlobalState globalState, HSQLDBProvider.Action a) {
         Randomly r = globalState.getRandomly();
         switch (a) {
-            case INSERT:
-                return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
-            case UPDATE:
-                return r.getInteger(0, 10);
-            default:
-                throw new AssertionError(a);
+        case INSERT:
+            return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
+        case UPDATE:
+            return r.getInteger(0, 10);
+        default:
+            throw new AssertionError(a);
         }
     }
 
@@ -100,5 +108,3 @@ public class HSQLDBProvider extends SQLProviderAdapter<HSQLDBProvider.HSQLDBGlob
 
     }
 }
-
-

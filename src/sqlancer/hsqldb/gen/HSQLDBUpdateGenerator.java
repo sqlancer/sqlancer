@@ -1,5 +1,7 @@
 package sqlancer.hsqldb.gen;
 
+import java.util.List;
+
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -8,12 +10,11 @@ import sqlancer.hsqldb.HSQLDBSchema;
 import sqlancer.hsqldb.HSQLDBToStringVisitor;
 import sqlancer.hsqldb.ast.HSQLDBExpression;
 
-import java.util.List;
-
 public final class HSQLDBUpdateGenerator {
 
-    private final static ExpectedErrors errors = new ExpectedErrors();
+    private static final ExpectedErrors EXPECTED_ERRORS = new ExpectedErrors();
     private final HSQLDBProvider.HSQLDBGlobalState globalState;
+
     private HSQLDBUpdateGenerator(HSQLDBProvider.HSQLDBGlobalState globalState) {
         this.globalState = globalState;
     }
@@ -36,15 +37,15 @@ public final class HSQLDBUpdateGenerator {
             sb.append(columns.get(i).getName());
             sb.append("=");
             Node<HSQLDBExpression> expr;
-//            if (Randomly.getBooleanWithSmallProbability()) {
-//                expr = gen.generateExpression(columns.get(i).getType());
-//                HSQLDBErrors.addExpressionErrors(errors);
-//            } else {
-                expr = gen.generateConstant(columns.get(i).getType());
-            //}
+            // if (Randomly.getBooleanWithSmallProbability()) {
+            // expr = gen.generateExpression(columns.get(i).getType());
+            // HSQLDBErrors.addExpressionErrors(errors);
+            // } else {
+            expr = gen.generateConstant(columns.get(i).getType());
+            // }
             sb.append(HSQLDBToStringVisitor.asString(expr));
         }
-        return new SQLQueryAdapter(sb.toString(), errors);
+        return new SQLQueryAdapter(sb.toString(), EXPECTED_ERRORS);
     }
 
 }
