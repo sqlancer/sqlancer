@@ -1,6 +1,8 @@
 package sqlancer.common.oracle;
 
-public interface TestOracle {
+import sqlancer.GlobalState;
+
+public interface TestOracle<G extends GlobalState<?, ?, ?>> {
 
     void check() throws Exception;
 

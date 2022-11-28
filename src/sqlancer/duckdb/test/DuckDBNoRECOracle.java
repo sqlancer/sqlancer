@@ -33,7 +33,7 @@ import sqlancer.duckdb.ast.DuckDBSelect;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator.DuckDBCastOperation;
 
-public class DuckDBNoRECOracle extends NoRECBase<DuckDBGlobalState> implements TestOracle {
+public class DuckDBNoRECOracle extends NoRECBase<DuckDBGlobalState> implements TestOracle<DuckDBGlobalState> {
 
     private final DuckDBSchema s;
 

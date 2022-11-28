@@ -30,7 +30,7 @@ import sqlancer.databend.ast.DatabendUnaryPostfixOperation.DatabendUnaryPostfixO
 import sqlancer.databend.ast.DatabendUnaryPrefixOperation.DatabendUnaryPrefixOperator;
 import sqlancer.databend.gen.DatabendNewExpressionGenerator.DatabendAggregateFunction;
 
-public class DatabendQueryPartitioningAggregateTester extends DatabendQueryPartitioningBase implements TestOracle {
+public class DatabendQueryPartitioningAggregateTester extends DatabendQueryPartitioningBase implements TestOracle<DatabendGlobalState> {
 
     private String firstResult;
     private String secondResult;

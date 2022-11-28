@@ -18,7 +18,7 @@ import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLProvider;
 import sqlancer.yugabyte.ysql.gen.YSQLTableGenerator;
 
-public class YSQLCatalog implements TestOracle {
+public class YSQLCatalog implements TestOracle<YSQLGlobalState> {
     protected final YSQLGlobalState state;
 
     protected final ExpectedErrors errors = new ExpectedErrors();

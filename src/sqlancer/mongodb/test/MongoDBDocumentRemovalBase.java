@@ -16,7 +16,7 @@ import sqlancer.mongodb.gen.MongoDBComputedExpressionGenerator;
 import sqlancer.mongodb.gen.MongoDBMatchExpressionGenerator;
 
 public class MongoDBDocumentRemovalBase extends
-        DocumentRemovalOracleBase<Node<MongoDBExpression>, MongoDBProvider.MongoDBGlobalState> implements TestOracle {
+        DocumentRemovalOracleBase<Node<MongoDBExpression>, MongoDBProvider.MongoDBGlobalState> implements TestOracle<MongoDBProvider.MongoDBGlobalState> {
 
     protected MongoDBSchema schema;
     protected MongoDBSchema.MongoDBTables targetTables;

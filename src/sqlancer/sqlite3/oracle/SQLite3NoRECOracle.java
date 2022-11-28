@@ -29,7 +29,7 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
-public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements TestOracle {
+public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements TestOracle<SQLite3GlobalState> {
 
     private static final int NO_VALID_RESULT = -1;
     private final SQLite3Schema s;

@@ -24,7 +24,7 @@ import sqlancer.questdb.ast.QuestDBSelect;
 import sqlancer.questdb.gen.QuestDBExpressionGenerator;
 
 public class QuestDBQueryPartitioningBase
-        extends TernaryLogicPartitioningOracleBase<Node<QuestDBExpression>, QuestDBGlobalState> implements TestOracle {
+        extends TernaryLogicPartitioningOracleBase<Node<QuestDBExpression>, QuestDBGlobalState> implements TestOracle<QuestDBGlobalState> {
 
     QuestDBSchema s;
     QuestDBTables targetTables;

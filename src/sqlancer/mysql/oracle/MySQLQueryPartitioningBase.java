@@ -20,7 +20,7 @@ import sqlancer.mysql.ast.MySQLTableReference;
 import sqlancer.mysql.gen.MySQLExpressionGenerator;
 
 public abstract class MySQLQueryPartitioningBase
-        extends TernaryLogicPartitioningOracleBase<MySQLExpression, MySQLGlobalState> implements TestOracle {
+        extends TernaryLogicPartitioningOracleBase<MySQLExpression, MySQLGlobalState> implements TestOracle<MySQLGlobalState> {
 
     MySQLSchema s;
     MySQLTables targetTables;

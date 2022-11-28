@@ -36,7 +36,7 @@ import sqlancer.postgres.gen.PostgresCommon;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 import sqlancer.postgres.oracle.tlp.PostgresTLPBase;
 
-public class PostgresNoRECOracle extends NoRECBase<PostgresGlobalState> implements TestOracle {
+public class PostgresNoRECOracle extends NoRECBase<PostgresGlobalState> implements TestOracle<PostgresGlobalState> {
 
     private final PostgresSchema s;
 

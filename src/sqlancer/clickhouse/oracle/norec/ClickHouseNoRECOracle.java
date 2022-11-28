@@ -28,7 +28,7 @@ import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
 
-public class ClickHouseNoRECOracle extends NoRECBase<ClickHouseGlobalState> implements TestOracle {
+public class ClickHouseNoRECOracle extends NoRECBase<ClickHouseGlobalState> implements TestOracle<ClickHouseGlobalState> {
 
     private final ClickHouseSchema s;
 

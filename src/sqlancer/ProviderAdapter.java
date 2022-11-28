@@ -41,7 +41,7 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
             checkViewsAreValid(globalState);
             globalState.getManager().incrementCreateDatabase();
 
-            TestOracle oracle = getTestOracle(globalState);
+            TestOracle<G> oracle = getTestOracle(globalState);
             for (int i = 0; i < globalState.getOptions().getNrQueries(); i++) {
                 try (OracleRunReproductionState localState = globalState.getState().createLocalState()) {
                     assert localState != null;
@@ -62,7 +62,7 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
 
     protected abstract void checkViewsAreValid(G globalState);
 
-    protected TestOracle getTestOracle(G globalState) throws Exception {
+    protected TestOracle<G> getTestOracle(G globalState) throws Exception {
         List<? extends OracleFactory<G>> testOracleFactory = globalState.getDbmsSpecificOptions()
                 .getTestOracleFactory();
         boolean testOracleRequiresMoreThanZeroRows = testOracleFactory.stream()
@@ -75,7 +75,7 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
         if (testOracleFactory.size() == 1) {
             return testOracleFactory.get(0).create(globalState);
         } else {
-            return new CompositeTestOracle(testOracleFactory.stream().map(o -> {
+            return new CompositeTestOracle<G>(testOracleFactory.stream().map(o -> {
                 try {
                     return o.create(globalState);
                 } catch (Exception e1) {

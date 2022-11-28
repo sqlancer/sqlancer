@@ -23,7 +23,7 @@ import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
 import sqlancer.common.oracle.TestOracle;
 
 public class CockroachDBTLPBase extends
-        TernaryLogicPartitioningOracleBase<CockroachDBExpression, CockroachDBGlobalState> implements TestOracle {
+        TernaryLogicPartitioningOracleBase<CockroachDBExpression, CockroachDBGlobalState> implements TestOracle<CockroachDBGlobalState> {
 
     CockroachDBSchema s;
     CockroachDBTables targetTables;

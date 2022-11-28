@@ -29,7 +29,7 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
 
-public class CockroachDBNoRECOracle extends NoRECBase<CockroachDBGlobalState> implements TestOracle {
+public class CockroachDBNoRECOracle extends NoRECBase<CockroachDBGlobalState> implements TestOracle<CockroachDBGlobalState> {
 
     private CockroachDBExpressionGenerator gen;
 
