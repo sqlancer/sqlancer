@@ -8,12 +8,15 @@ public final class HSQLDBErrors {
     }
 
     public static void addExpressionErrors(ExpectedErrors errors) {
+        errors.add("");
     }
 
     private static void addRegexErrors(ExpectedErrors errors) {
+        errors.add("");
     }
 
     private static void addFunctionErrors(ExpectedErrors errors) {
+        errors.add("");
     }
 
     public static void addInsertErrors(ExpectedErrors errors) {

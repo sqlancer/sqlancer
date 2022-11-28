@@ -1,13 +1,14 @@
 package sqlancer.hsqldb;
 
+import java.sql.SQLException;
+import java.util.List;
+
 import com.beust.jcommander.Parameter;
+
 import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
 import sqlancer.common.oracle.TestOracle;
-import sqlancer.hsqldb.test.HSQLDBQueryPartitioningBase;
-
-import java.sql.SQLException;
-import java.util.List;
+import sqlancer.hsqldb.test.HSQLDBQueryPartitioningWhereTester;
 
 public class HSQLDBOptions implements DBMSSpecificOptions<HSQLDBOptions.HSQLDBOracleFactory> {
 
@@ -18,7 +19,7 @@ public class HSQLDBOptions implements DBMSSpecificOptions<HSQLDBOptions.HSQLDBOr
         WHERE {
             @Override
             public TestOracle create(HSQLDBProvider.HSQLDBGlobalState globalState) throws SQLException {
-                return new HSQLDBQueryPartitioningBase(globalState);
+                return new HSQLDBQueryPartitioningWhereTester(globalState);
             }
         }
     }

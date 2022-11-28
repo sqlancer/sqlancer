@@ -1,13 +1,15 @@
 package sqlancer.hsqldb.ast;
-import sqlancer.common.ast.newast.Node;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+
+import sqlancer.common.ast.newast.Node;
 
 public class HSQLDBConstant implements Node<HSQLDBExpression> {
 
     private HSQLDBConstant() {
     }
+
     public static class HSQLDBNullConstant extends HSQLDBConstant {
 
         @Override
@@ -22,7 +24,7 @@ public class HSQLDBConstant implements Node<HSQLDBExpression> {
         private final int value;
 
         public HSQLDBIntConstant(long value) {
-            this.value = (int)value;
+            this.value = (int) value;
         }
 
         @Override
@@ -83,14 +85,13 @@ public class HSQLDBConstant implements Node<HSQLDBExpression> {
 
     }
 
-
     public static class HSQLDBBinaryConstant extends HSQLDBConstant {
 
         private final String value;
 
         public HSQLDBBinaryConstant(long value, int size) {
             StringBuilder hex = new StringBuilder(Long.toHexString(value));
-            if(hex.length() < 2) {
+            if (hex.length() < 2) {
                 hex.append('0');
             }
             this.value = hex.substring(0, Math.min(hex.length(), size));
@@ -224,6 +225,5 @@ public class HSQLDBConstant implements Node<HSQLDBExpression> {
     public static Node<HSQLDBExpression> createBinaryConstant(long nonCachedInteger, int size) {
         return new HSQLDBBinaryConstant(nonCachedInteger, size);
     }
-
 
 }

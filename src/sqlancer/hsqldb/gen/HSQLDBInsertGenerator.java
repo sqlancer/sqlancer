@@ -1,4 +1,8 @@
 package sqlancer.hsqldb.gen;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.AbstractInsertGenerator;
 import sqlancer.common.query.ExpectedErrors;
@@ -7,9 +11,6 @@ import sqlancer.hsqldb.HSQLDBProvider;
 import sqlancer.hsqldb.HSQLDBSchema;
 import sqlancer.hsqldb.HSQLDBToStringVisitor;
 import sqlancer.hsqldb.ast.HSQLDBExpression;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class HSQLDBInsertGenerator extends AbstractInsertGenerator<HSQLDBSchema.HSQLDBColumn> {
 
@@ -34,13 +35,14 @@ public class HSQLDBInsertGenerator extends AbstractInsertGenerator<HSQLDBSchema.
         sb.append(")");
         sb.append(" VALUES ");
         insertColumns(columns);
-        //HSQLDBErrors.addInsertErrors(errors);
+        // HSQLDBErrors.addInsertErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override
     protected void insertValue(HSQLDBSchema.HSQLDBColumn column) {
-        Node<HSQLDBExpression> expression = new HSQLDBExpressionGenerator(globalState).generateConstant(column.getType());
+        Node<HSQLDBExpression> expression = new HSQLDBExpressionGenerator(globalState)
+                .generateConstant(column.getType());
         String s = HSQLDBToStringVisitor.asString(expression);
         sb.append(s);
     }
