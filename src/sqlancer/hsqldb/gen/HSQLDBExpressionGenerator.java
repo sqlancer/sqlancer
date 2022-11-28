@@ -94,8 +94,8 @@ public final class HSQLDBExpressionGenerator extends
         switch (expr) {
         case BINARY_LOGICAL:
             op = HSQLDBExpressionGenerator.HSQLDBBinaryLogicalOperator.getRandom();
-            break; 
-        case BINARY_COMPARISON: 
+            break;
+        case BINARY_COMPARISON:
             op = HSQLDBDBBinaryComparisonOperator.getRandom();
             break;
         case BINARY_ARITHMETIC:
