@@ -20,7 +20,7 @@ public final class HSQLDBExpressionGenerator extends
         TypedExpressionGenerator<Node<HSQLDBExpression>, HSQLDBSchema.HSQLDBColumn, HSQLDBSchema.HSQLDBCompositeDataType> {
 
     private enum Expression {
-        BINARY_LOGICAL;
+        BINARY_LOGICAL, BINARY_COMPARISON, BINARY_ARITHMETIC;
     }
 
     HSQLDBProvider.HSQLDBGlobalState hsqldbGlobalState;
@@ -90,13 +90,23 @@ public final class HSQLDBExpressionGenerator extends
                 Arrays.asList(HSQLDBExpressionGenerator.Expression.values()));
 
         HSQLDBExpressionGenerator.Expression expr = Randomly.fromList(possibleOptions);
+        BinaryOperatorNode.Operator op;
         switch (expr) {
         case BINARY_LOGICAL:
-            BinaryOperatorNode.Operator op = HSQLDBExpressionGenerator.HSQLDBBinaryLogicalOperator.getRandom();
-            return new NewBinaryOperatorNode<>(generateExpression(type), generateExpression(type), op);
+            op = HSQLDBExpressionGenerator.HSQLDBBinaryLogicalOperator.getRandom();
+            break; 
+        case BINARY_COMPARISON: 
+            op = HSQLDBDBBinaryComparisonOperator.getRandom();
+            break;
+        case BINARY_ARITHMETIC:
+            op = HSQLDBDBBinaryArithmeticOperator.getRandom();
+            break;
         default:
             throw new AssertionError();
         }
+
+        return new NewBinaryOperatorNode<>(generateExpression(type), generateExpression(type), op);
+
     }
 
     @Override
@@ -125,6 +135,48 @@ public final class HSQLDBExpressionGenerator extends
 
         public static BinaryOperatorNode.Operator getRandom() {
             return Randomly.fromOptions(values());
+        }
+
+    }
+
+    public enum HSQLDBDBBinaryComparisonOperator implements BinaryOperatorNode.Operator {
+        EQUALS("="), GREATER(">"), GREATER_EQUALS(">="), SMALLER("<"), SMALLER_EQUALS("<="), NOT_EQUALS("!="),
+        LIKE("LIKE"), NOT_LIKE("NOT LIKE"), SIMILAR_TO("SIMILAR TO"), NOT_SIMILAR_TO("NOT SIMILAR TO"),
+        REGEX_POSIX("~"), REGEX_POSIT_NOT("!~");
+
+        private String textRepr;
+
+        HSQLDBDBBinaryComparisonOperator(String textRepr) {
+            this.textRepr = textRepr;
+        }
+
+        public static BinaryOperatorNode.Operator getRandom() {
+            return Randomly.fromOptions(values());
+        }
+
+        @Override
+        public String getTextRepresentation() {
+            return textRepr;
+        }
+
+    }
+
+    public enum HSQLDBDBBinaryArithmeticOperator implements BinaryOperatorNode.Operator {
+        CONCAT("||"), ADD("+"), SUB("-"), MULT("*"), DIV("/"), MOD("%"), AND("&"), OR("|"), LSHIFT("<<"), RSHIFT(">>");
+
+        private String textRepr;
+
+        HSQLDBDBBinaryArithmeticOperator(String textRepr) {
+            this.textRepr = textRepr;
+        }
+
+        public static BinaryOperatorNode.Operator getRandom() {
+            return Randomly.fromOptions(values());
+        }
+
+        @Override
+        public String getTextRepresentation() {
+            return textRepr;
         }
 
     }
