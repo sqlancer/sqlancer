@@ -4,12 +4,14 @@ import java.sql.SQLException;
 import java.util.List;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 
 import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.hsqldb.test.HSQLDBQueryPartitioningWhereTester;
 
+@Parameters(commandDescription = "hsqldb")
 public class HSQLDBOptions implements DBMSSpecificOptions<HSQLDBOptions.HSQLDBOracleFactory> {
 
     @Parameter(names = "--oracle")
