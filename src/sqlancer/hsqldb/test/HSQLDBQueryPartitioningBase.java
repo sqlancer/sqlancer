@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.ColumnReferenceNode;
 import sqlancer.common.ast.newast.Node;
@@ -13,8 +14,9 @@ import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.hsqldb.HSQLDBProvider;
 import sqlancer.hsqldb.HSQLDBSchema;
+import sqlancer.hsqldb.HSQLDBToStringVisitor;
 import sqlancer.hsqldb.ast.HSQLDBExpression;
-import sqlancer.hsqldb.ast.HSQLDBJoin;
+//import sqlancer.hsqldb.ast.HSQLDBJoin;
 import sqlancer.hsqldb.ast.HSQLDBSelect;
 import sqlancer.hsqldb.gen.HSQLDBExpressionGenerator;
 
@@ -50,10 +52,13 @@ public class HSQLDBQueryPartitioningBase
         List<TableReferenceNode<HSQLDBExpression, HSQLDBSchema.HSQLDBTable>> tableList = targetTables.stream()
                 .map(t -> new TableReferenceNode<HSQLDBExpression, HSQLDBSchema.HSQLDBTable>(t))
                 .collect(Collectors.toList());
-        List<Node<HSQLDBExpression>> joins = HSQLDBJoin.getJoins(tableList, state);
-        select.setJoinList(joins.stream().collect(Collectors.toList()));
+        // List<Node<HSQLDBExpression>> joins = HSQLDBJoin.getJoins(tableList, state);
+        // select.setJoinList(joins.stream().collect(Collectors.toList()));
         select.setFromList(tableList.stream().collect(Collectors.toList()));
         select.setWhereClause(null);
+
+        ComparatorHelper.getResultSetFirstColumnAsString(HSQLDBToStringVisitor.asString(select), errors, state);
+
     }
 
     List<Node<HSQLDBExpression>> generateFetchColumns() {

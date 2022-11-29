@@ -3,6 +3,7 @@ package sqlancer.hsqldb.gen;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode;
@@ -11,6 +12,7 @@ import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.TypedExpressionGenerator;
 import sqlancer.hsqldb.HSQLDBProvider;
 import sqlancer.hsqldb.HSQLDBSchema;
+import sqlancer.hsqldb.ast.HSQLDBColumnReference;
 import sqlancer.hsqldb.ast.HSQLDBConstant;
 import sqlancer.hsqldb.ast.HSQLDBExpression;
 import sqlancer.hsqldb.ast.HSQLDBUnaryPostfixOperation;
@@ -47,10 +49,9 @@ public final class HSQLDBExpressionGenerator extends
 
     @Override
     public Node<HSQLDBExpression> generateConstant(HSQLDBSchema.HSQLDBCompositeDataType type) {
-        if (type.getType() == HSQLDBSchema.HSQLDBDataType.NULL || Randomly.getBooleanWithSmallProbability()) {
-            return HSQLDBConstant.createNullConstant();
-        }
         switch (type.getType()) {
+        case NULL:
+            return HSQLDBConstant.createNullConstant();
         case CHAR:
             return HSQLDBConstant.HSQLDBTextConstant
                     .createStringConstant(hsqldbGlobalState.getRandomly().getAlphabeticChar(), type.getSize());
@@ -82,7 +83,8 @@ public final class HSQLDBExpressionGenerator extends
 
     @Override
     protected Node<HSQLDBExpression> generateExpression(HSQLDBSchema.HSQLDBCompositeDataType type, int depth) {
-        if (depth >= hsqldbGlobalState.getOptions().getMaxExpressionDepth() || Randomly.getBoolean()) {
+        if (depth >= hsqldbGlobalState.getOptions().getMaxExpressionDepth()
+                || Randomly.getBooleanWithSmallProbability()) {
             return generateLeafNode(type);
         }
 
@@ -93,25 +95,26 @@ public final class HSQLDBExpressionGenerator extends
         BinaryOperatorNode.Operator op;
         switch (expr) {
         case BINARY_LOGICAL:
+        case BINARY_ARITHMETIC:
             op = HSQLDBExpressionGenerator.HSQLDBBinaryLogicalOperator.getRandom();
             break;
         case BINARY_COMPARISON:
             op = HSQLDBDBBinaryComparisonOperator.getRandom();
             break;
-        case BINARY_ARITHMETIC:
-            op = HSQLDBDBBinaryArithmeticOperator.getRandom();
-            break;
         default:
             throw new AssertionError();
         }
 
-        return new NewBinaryOperatorNode<>(generateExpression(type), generateExpression(type), op);
+        return new NewBinaryOperatorNode<>(generateExpression(type, depth + 1), generateExpression(type, depth + 1),
+                op);
 
     }
 
     @Override
     protected Node<HSQLDBExpression> generateColumn(HSQLDBSchema.HSQLDBCompositeDataType type) {
-        return null;
+        HSQLDBSchema.HSQLDBColumn column = Randomly
+                .fromList(columns.stream().filter(c -> c.getType() == type).collect(Collectors.toList()));
+        return new HSQLDBColumnReference(column);
     }
 
     @Override
@@ -140,9 +143,7 @@ public final class HSQLDBExpressionGenerator extends
     }
 
     public enum HSQLDBDBBinaryComparisonOperator implements BinaryOperatorNode.Operator {
-        EQUALS("="), GREATER(">"), GREATER_EQUALS(">="), SMALLER("<"), SMALLER_EQUALS("<="), NOT_EQUALS("!="),
-        LIKE("LIKE"), NOT_LIKE("NOT LIKE"), SIMILAR_TO("SIMILAR TO"), NOT_SIMILAR_TO("NOT SIMILAR TO"),
-        REGEX_POSIX("~"), REGEX_POSIT_NOT("!~");
+        EQUALS("="), GREATER(">"), GREATER_EQUALS(">="), SMALLER("<"), SMALLER_EQUALS("<="), NOT_EQUALS("!=");
 
         private String textRepr;
 
@@ -179,5 +180,19 @@ public final class HSQLDBExpressionGenerator extends
             return textRepr;
         }
 
+    }
+
+    @Override
+    public List<Node<HSQLDBExpression>> generateOrderBys() {
+        List<Node<HSQLDBExpression>> expressions = new ArrayList<>();
+        int nr = Randomly.smallNumber() + 1;
+        ArrayList<HSQLDBSchema.HSQLDBColumn> hsqldbColumns = new ArrayList<>(columns);
+        for (int i = 0; i < nr && !hsqldbColumns.isEmpty(); i++) {
+            HSQLDBSchema.HSQLDBColumn randomColumn = Randomly.fromList(hsqldbColumns);
+            HSQLDBColumnReference columnReference = new HSQLDBColumnReference(randomColumn);
+            hsqldbColumns.remove(randomColumn);
+            expressions.add(columnReference);
+        }
+        return expressions;
     }
 }
