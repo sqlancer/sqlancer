@@ -8,21 +8,8 @@ import sqlancer.hsqldb.HSQLDBSchema;
 
 public class HSQLDBUnaryPostfixOperation extends NewUnaryPostfixOperatorNode<HSQLDBExpression> {
 
-    // private final Node<HSQLDBExpression> expr;
-    // private final HSQLDBUnaryPostfixOperator op;
-    private boolean negate;
-
-    public HSQLDBUnaryPostfixOperation(Node<HSQLDBExpression> expr, HSQLDBUnaryPostfixOperator op, boolean negate) {
-        super(expr, op);
-        // this.expr = expr;
-        // this.op = op;
-        setNegate(negate);
-    }
-
     public HSQLDBUnaryPostfixOperation(Node<HSQLDBExpression> expr, HSQLDBUnaryPostfixOperator op) {
         super(expr, op);
-        // this.expr = expr;
-        // this.op = op;
     }
 
     public enum HSQLDBUnaryPostfixOperator implements BinaryOperatorNode.Operator {
@@ -56,14 +43,6 @@ public class HSQLDBUnaryPostfixOperation extends NewUnaryPostfixOperatorNode<HSQ
 
         public abstract HSQLDBSchema.HSQLDBDataType[] getInputDataTypes();
 
-    }
-
-    public boolean isNegated() {
-        return negate;
-    }
-
-    public void setNegate(boolean negate) {
-        this.negate = negate;
     }
 
     public Node<HSQLDBExpression> getExpression() {

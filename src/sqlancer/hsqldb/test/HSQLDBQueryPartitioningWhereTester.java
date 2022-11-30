@@ -5,7 +5,6 @@ import java.util.List;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
-import sqlancer.duckdb.test.DuckDBQueryPartitioningBase;
 import sqlancer.hsqldb.HSQLDBProvider.HSQLDBGlobalState;
 import sqlancer.hsqldb.HSQLDBToStringVisitor;
 
@@ -18,7 +17,6 @@ public class HSQLDBQueryPartitioningWhereTester extends HSQLDBQueryPartitioningB
     @Override
     public void check() throws Exception {
         super.check();
-        select.setWhereClause(null);
         String originalQueryString = HSQLDBToStringVisitor.asString(select);
 
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
@@ -37,7 +35,7 @@ public class HSQLDBQueryPartitioningWhereTester extends HSQLDBQueryPartitioningB
         List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
                 thirdQueryString, combinedString, !orderBy, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
-                state, DuckDBQueryPartitioningBase::canonicalizeResultValue);
+                state);
     }
 
 }

@@ -2,6 +2,7 @@ package sqlancer.hsqldb.gen;
 
 import java.util.List;
 
+import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -37,12 +38,13 @@ public final class HSQLDBUpdateGenerator {
             sb.append(columns.get(i).getName());
             sb.append("=");
             Node<HSQLDBExpression> expr;
-            // if (Randomly.getBooleanWithSmallProbability()) {
-            // expr = gen.generateExpression(columns.get(i).getType());
-            // HSQLDBErrors.addExpressionErrors(errors);
-            // } else {
-            expr = gen.generateConstant(columns.get(i).getType());
-            // }
+            if (Randomly.getBooleanWithSmallProbability()) {
+                sb.append(" WHERE ");
+                expr = gen.generateExpression(columns.get(i).getType());
+                // HSQLDBErrors.addExpressionErrors(errors);
+            } else {
+                expr = gen.generateConstant(columns.get(i).getType());
+            }
             sb.append(HSQLDBToStringVisitor.asString(expr));
         }
         return new SQLQueryAdapter(sb.toString(), EXPECTED_ERRORS);
