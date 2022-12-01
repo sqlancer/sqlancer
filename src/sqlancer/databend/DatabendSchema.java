@@ -10,7 +10,6 @@ import java.util.List;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
-import sqlancer.common.DBMSCommon;
 import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractTableColumn;
@@ -237,9 +236,6 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
         List<DatabendTable> databaseTables = new ArrayList<>();
         List<String> tableNames = getTableNames(con, databaseName);
         for (String tableName : tableNames) {
-            if (DBMSCommon.matchesIndexName(tableName)) {
-                continue; // TODO: unexpected?
-            }
             List<DatabendColumn> databaseColumns = getTableColumns(con, tableName, databaseName);
             boolean isView = tableName.startsWith("v");
             DatabendTable t = new DatabendTable(tableName, databaseColumns, isView);
@@ -292,11 +288,7 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
                 }
             }
         }
-        // if (columns.stream().noneMatch(c -> c.isPrimaryKey())) {
-        // TODO: implement an option to enable/disable rowids
-        // columns.add(new DatabendColumn("rowid", new DatabendCompositeDataType(DatabendDataType.INT, 4), false,
-        // false));
-        // }
+
         return columns;
     }
 

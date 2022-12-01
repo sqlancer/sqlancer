@@ -23,6 +23,7 @@ import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.gen.DatabendInsertGenerator;
 import sqlancer.databend.gen.DatabendRandomQuerySynthesizer;
 import sqlancer.databend.gen.DatabendTableGenerator;
+import sqlancer.databend.gen.DatabendViewGenerator;
 
 @AutoService(DatabaseProvider.class)
 public class DatabendProvider extends SQLProviderAdapter<DatabendGlobalState, DatabendOptions> {
@@ -38,8 +39,7 @@ public class DatabendProvider extends SQLProviderAdapter<DatabendGlobalState, Da
         // DELETE(DatabendDeleteGenerator::generate), //
         // UPDATE(DatabendUpdateGenerator::getQuery), //
 
-        // CREATE_VIEW(DatabendViewGenerator::generate), //TODO 等待databend的create view语法 更加贴近mysql
-        EXPLAIN((g) -> {
+        CREATE_VIEW(DatabendViewGenerator::generate), EXPLAIN((g) -> {
             ExpectedErrors errors = new ExpectedErrors();
             DatabendErrors.addExpressionErrors(errors);
             DatabendErrors.addGroupByErrors(errors);
@@ -73,8 +73,8 @@ public class DatabendProvider extends SQLProviderAdapter<DatabendGlobalState, Da
         // return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumUpdates + 1);
         // case DELETE:
         // return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumDeletes + 1);
-        // case CREATE_VIEW: //TODO 暂时关闭create view
-        // return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumViews + 1);
+        case CREATE_VIEW:
+            return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumViews + 1);
         default:
             throw new AssertionError(a);
         }

@@ -17,7 +17,7 @@ public class TestDatabend {
         assertEquals(0,
                 Main.executeMain("--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS, "--num-threads", "4",
                         "--num-queries", TestConfig.NUM_QUERIES, "--database-prefix", "databend",
-                        "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.NUMERIC),
+                        "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.ALPHANUMERIC),
                         "--host", "127.0.0.1", "--port", "3307", "databend", "--oracle", "NOREC"));
     }
 
@@ -29,7 +29,7 @@ public class TestDatabend {
         assertEquals(0,
                 Main.executeMain("--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS, "--num-threads", "4",
                         "--num-queries", TestConfig.NUM_QUERIES, "--database-prefix", "databend",
-                        "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.NUMERIC),
+                        "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.ALPHANUMERIC),
                         "--host", "127.0.0.1", "--port", "3307", "databend", "--oracle", "QUERY_PARTITIONING"));
     }
 
