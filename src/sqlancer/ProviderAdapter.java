@@ -35,7 +35,7 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
     }
 
     @Override
-    public void generateAndTestDatabase(G globalState) throws Exception {
+    public Reproducer<G> generateAndTestDatabase(G globalState) throws Exception {
         try {
             generateDatabase(globalState);
             checkViewsAreValid(globalState);
@@ -50,6 +50,12 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
                         globalState.getManager().incrementSelectQueryCount();
                     } catch (IgnoreMeException e) {
 
+                    } catch (AssertionError e) {
+                        Reproducer<G> reproducer = oracle.getLastReproducer();
+                        if (reproducer != null) {
+                            return reproducer;
+                        }
+                        throw e;
                     }
                     assert localState != null;
                     localState.executedWithoutError();
@@ -58,6 +64,7 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
         } finally {
             globalState.getConnection().close();
         }
+        return null;
     }
 
     protected abstract void checkViewsAreValid(G globalState);

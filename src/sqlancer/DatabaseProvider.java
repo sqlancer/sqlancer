@@ -28,7 +28,7 @@ public interface DatabaseProvider<G extends GlobalState<O, ?, C>, O extends DBMS
      *             if creating the database fails.
      *
      */
-    void generateAndTestDatabase(G globalState) throws Exception;
+    Reproducer<G> generateAndTestDatabase(G globalState) throws Exception;
 
     C createDatabase(G globalState) throws Exception;
 
