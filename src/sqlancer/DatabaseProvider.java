@@ -24,6 +24,8 @@ public interface DatabaseProvider<G extends GlobalState<O, ?, C>, O extends DBMS
      * @param globalState
      *            the state created and is valid for this method call.
      *
+     * @return Reproducer if a bug is found and a reproducer is available.
+     *
      * @throws Exception
      *             if creating the database fails.
      *

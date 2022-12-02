@@ -42,7 +42,7 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
         private final Function<SQLite3GlobalState, Integer> optimizedQuery;
         private final Function<SQLite3GlobalState, Integer> unoptimizedQuery;
 
-        public SQLite3NoRECReproducer(Function<SQLite3GlobalState, Integer> optimizedQuery,
+        SQLite3NoRECReproducer(Function<SQLite3GlobalState, Integer> optimizedQuery,
                 Function<SQLite3GlobalState, Integer> unoptimizedQuery) {
             this.optimizedQuery = optimizedQuery;
             this.unoptimizedQuery = unoptimizedQuery;
