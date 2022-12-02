@@ -320,13 +320,14 @@ public class CitusProvider extends PostgresProvider {
 
     @Override
     protected TestOracle<PostgresGlobalState> getTestOracle(PostgresGlobalState globalState) throws SQLException {
-        List<TestOracle<PostgresGlobalState>> oracles = ((CitusOptions) globalState.getDbmsSpecificOptions()).citusOracle.stream().map(o -> {
-            try {
-                return o.create(globalState);
-            } catch (Exception e1) {
-                throw new AssertionError(e1);
-            }
-        }).collect(Collectors.toList());
+        List<TestOracle<PostgresGlobalState>> oracles = ((CitusOptions) globalState
+                .getDbmsSpecificOptions()).citusOracle.stream().map(o -> {
+                    try {
+                        return o.create(globalState);
+                    } catch (Exception e1) {
+                        throw new AssertionError(e1);
+                    }
+                }).collect(Collectors.toList());
         return new CompositeTestOracle<PostgresGlobalState>(oracles, globalState);
     }
 

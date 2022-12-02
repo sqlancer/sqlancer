@@ -16,7 +16,8 @@ import sqlancer.databend.DatabendToStringVisitor;
 import sqlancer.databend.ast.DatabendConstant;
 import sqlancer.databend.ast.DatabendExpression;
 
-public class DatabendQueryPartitioningHavingTester extends DatabendQueryPartitioningBase implements TestOracle<DatabendGlobalState> {
+public class DatabendQueryPartitioningHavingTester extends DatabendQueryPartitioningBase
+        implements TestOracle<DatabendGlobalState> {
 
     public DatabendQueryPartitioningHavingTester(DatabendGlobalState state) {
         super(state);
