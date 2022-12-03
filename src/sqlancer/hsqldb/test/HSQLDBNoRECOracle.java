@@ -31,7 +31,7 @@ import sqlancer.hsqldb.ast.HSQLDBJoin;
 import sqlancer.hsqldb.ast.HSQLDBSelect;
 import sqlancer.hsqldb.gen.HSQLDBExpressionGenerator;
 
-public class HSQLDBNoRECOracle extends NoRECBase<HSQLDBGlobalState> implements TestOracle {
+public class HSQLDBNoRECOracle extends NoRECBase<HSQLDBGlobalState> implements TestOracle<HSQLDBGlobalState> {
 
     private final HSQLDBSchema s;
 

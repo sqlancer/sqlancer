@@ -29,7 +29,8 @@ public class HSQLDBOptions implements DBMSSpecificOptions<HSQLDBOptions.HSQLDBOr
         },
         NOREC {
             @Override
-            public TestOracle create(HSQLDBProvider.HSQLDBGlobalState globalState) throws Exception {
+            public TestOracle<HSQLDBProvider.HSQLDBGlobalState> create(HSQLDBProvider.HSQLDBGlobalState globalState)
+                    throws Exception {
                 return new HSQLDBNoRECOracle(globalState);
             }
         }
