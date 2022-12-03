@@ -6,6 +6,7 @@ import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.hsqldb.HSQLDBErrors;
 import sqlancer.hsqldb.HSQLDBProvider;
 import sqlancer.hsqldb.HSQLDBSchema;
 import sqlancer.hsqldb.HSQLDBToStringVisitor;
@@ -30,6 +31,7 @@ public final class HSQLDBUpdateGenerator {
         sb.append(table.getName());
         HSQLDBExpressionGenerator gen = new HSQLDBExpressionGenerator(globalState).setColumns(table.getColumns());
         sb.append(" SET ");
+        ExpectedErrors errors = new ExpectedErrors();
         List<HSQLDBSchema.HSQLDBColumn> columns = table.getRandomNonEmptyColumnSubset();
         for (int i = 0; i < columns.size(); i++) {
             if (i != 0) {
@@ -38,14 +40,16 @@ public final class HSQLDBUpdateGenerator {
             sb.append(columns.get(i).getName());
             sb.append("=");
             Node<HSQLDBExpression> expr;
+            expr = gen.generateConstant(columns.get(i).getType());
+            sb.append(HSQLDBToStringVisitor.asString(expr));
             if (Randomly.getBooleanWithSmallProbability()) {
                 sb.append(" WHERE ");
                 expr = gen.generateExpression(columns.get(i).getType());
-                // HSQLDBErrors.addExpressionErrors(errors);
-            } else {
-                expr = gen.generateConstant(columns.get(i).getType());
+                sb.append(HSQLDBToStringVisitor.asString(expr));
+                errors.add("data type of expression is not boolean");
+                HSQLDBErrors.addExpressionErrors(errors);
             }
-            sb.append(HSQLDBToStringVisitor.asString(expr));
+
         }
         return new SQLQueryAdapter(sb.toString(), EXPECTED_ERRORS);
     }
