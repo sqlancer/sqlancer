@@ -29,7 +29,7 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
-public class SQLite3TLPHavingOracle implements TestOracle {
+public class SQLite3TLPHavingOracle implements TestOracle<SQLite3GlobalState> {
 
     private final SQLite3GlobalState state;
     private final ExpectedErrors errors = new ExpectedErrors();

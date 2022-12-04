@@ -314,12 +314,29 @@ public final class Main {
                 if (options.logEachSelect()) {
                     logger.writeCurrent(state.getState());
                 }
-                provider.generateAndTestDatabase(state);
+                Reproducer<G> reproducer = provider.generateAndTestDatabase(state);
                 try {
                     logger.getCurrentFileWriter().close();
                     logger.currentFileWriter = null;
                 } catch (IOException e) {
                     throw new AssertionError(e);
+                }
+                if (reproducer != null && options.useReducer()) {
+                    System.out.println("EXPERIMENTAL: Trying to reduce queries using a simple reducer.");
+                    System.out.println("Reduced query will be output to stdout but not logs.");
+                    G newGlobalState = createGlobalState();
+                    newGlobalState.setState(stateToRepro);
+                    newGlobalState.setRandomly(r);
+                    newGlobalState.setDatabaseName(databaseName);
+                    newGlobalState.setMainOptions(options);
+                    newGlobalState.setDbmsSpecificOptions(command);
+                    QueryManager<C> newManager = new QueryManager<>(newGlobalState);
+                    newGlobalState.setStateLogger(new StateLogger(databaseName, provider, options));
+                    newGlobalState.setManager(newManager);
+
+                    Reducer<G> reducer = new StatementReducer<>(provider);
+                    reducer.reduce(state, reproducer, newGlobalState);
+                    throw new AssertionError("Found a potential bug");
                 }
             }
         }

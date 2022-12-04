@@ -24,7 +24,8 @@ import sqlancer.duckdb.ast.DuckDBSelect;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator;
 
 public class DuckDBQueryPartitioningBase
-        extends TernaryLogicPartitioningOracleBase<Node<DuckDBExpression>, DuckDBGlobalState> implements TestOracle {
+        extends TernaryLogicPartitioningOracleBase<Node<DuckDBExpression>, DuckDBGlobalState>
+        implements TestOracle<DuckDBGlobalState> {
 
     DuckDBSchema s;
     DuckDBTables targetTables;

@@ -7,7 +7,7 @@ import sqlancer.sqlite3.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
 
 // tries to trigger a crash
-public class SQLite3Fuzzer implements TestOracle {
+public class SQLite3Fuzzer implements TestOracle<SQLite3GlobalState> {
 
     private final SQLite3GlobalState globalState;
 

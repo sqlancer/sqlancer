@@ -22,7 +22,7 @@ import sqlancer.hsqldb.gen.HSQLDBExpressionGenerator;
 
 public class HSQLDBQueryPartitioningBase
         extends TernaryLogicPartitioningOracleBase<Node<HSQLDBExpression>, HSQLDBProvider.HSQLDBGlobalState>
-        implements TestOracle {
+        implements TestOracle<HSQLDBProvider.HSQLDBGlobalState> {
 
     HSQLDBSelect select;
     HSQLDBExpressionGenerator expressionGenerator;

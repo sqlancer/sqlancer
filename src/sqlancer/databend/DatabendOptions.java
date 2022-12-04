@@ -99,53 +99,53 @@ public class DatabendOptions implements DBMSSpecificOptions<DatabendOracleFactor
         NOREC {
 
             @Override
-            public TestOracle create(DatabendGlobalState globalState) throws SQLException {
+            public TestOracle<DatabendGlobalState> create(DatabendGlobalState globalState) throws SQLException {
                 return new DatabendNoRECOracle(globalState);
             }
 
         },
         HAVING {
             @Override
-            public TestOracle create(DatabendGlobalState globalState) throws SQLException {
+            public TestOracle<DatabendGlobalState> create(DatabendGlobalState globalState) throws SQLException {
                 return new DatabendQueryPartitioningHavingTester(globalState);
             }
         },
         WHERE {
             @Override
-            public TestOracle create(DatabendGlobalState globalState) throws SQLException {
+            public TestOracle<DatabendGlobalState> create(DatabendGlobalState globalState) throws SQLException {
                 return new DatabendQueryPartitioningWhereTester(globalState);
             }
         },
         GROUP_BY {
             @Override
-            public TestOracle create(DatabendGlobalState globalState) throws SQLException {
+            public TestOracle<DatabendGlobalState> create(DatabendGlobalState globalState) throws SQLException {
                 return new DatabendQueryPartitioningGroupByTester(globalState);
             }
         },
         AGGREGATE {
 
             @Override
-            public TestOracle create(DatabendGlobalState globalState) throws SQLException {
+            public TestOracle<DatabendGlobalState> create(DatabendGlobalState globalState) throws SQLException {
                 return new DatabendQueryPartitioningAggregateTester(globalState);
             }
 
         },
         DISTINCT {
             @Override
-            public TestOracle create(DatabendGlobalState globalState) throws SQLException {
+            public TestOracle<DatabendGlobalState> create(DatabendGlobalState globalState) throws SQLException {
                 return new DatabendQueryPartitioningDistinctTester(globalState);
             }
         },
         QUERY_PARTITIONING {
             @Override
-            public TestOracle create(DatabendGlobalState globalState) throws SQLException {
-                List<TestOracle> oracles = new ArrayList<>();
+            public TestOracle<DatabendGlobalState> create(DatabendGlobalState globalState) throws SQLException {
+                List<TestOracle<DatabendGlobalState>> oracles = new ArrayList<>();
                 oracles.add(new DatabendQueryPartitioningWhereTester(globalState));
                 oracles.add(new DatabendQueryPartitioningHavingTester(globalState));
                 oracles.add(new DatabendQueryPartitioningAggregateTester(globalState));
                 oracles.add(new DatabendQueryPartitioningDistinctTester(globalState));
                 oracles.add(new DatabendQueryPartitioningGroupByTester(globalState));
-                return new CompositeTestOracle(oracles, globalState);
+                return new CompositeTestOracle<DatabendGlobalState>(oracles, globalState);
             }
         };
 

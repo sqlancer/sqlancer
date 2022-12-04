@@ -26,7 +26,7 @@ import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
 import sqlancer.common.oracle.TestOracle;
 
 public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickHouseExpression, ClickHouseGlobalState>
-        implements TestOracle {
+        implements TestOracle<ClickHouseGlobalState> {
 
     ClickHouseSchema schema;
     ClickHouseTables targetTables;

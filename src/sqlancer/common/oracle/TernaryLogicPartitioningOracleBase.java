@@ -14,7 +14,7 @@ import sqlancer.common.query.ExpectedErrors;
  * @param <S>
  *            the global state type
  */
-public abstract class TernaryLogicPartitioningOracleBase<E, S extends GlobalState<?, ?, ?>> implements TestOracle {
+public abstract class TernaryLogicPartitioningOracleBase<E, S extends GlobalState<?, ?, ?>> implements TestOracle<S> {
 
     protected E predicate;
     protected E negatedPredicate;

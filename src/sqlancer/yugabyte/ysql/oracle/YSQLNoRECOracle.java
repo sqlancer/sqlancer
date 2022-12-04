@@ -33,7 +33,7 @@ import sqlancer.yugabyte.ysql.ast.YSQLSelect;
 import sqlancer.yugabyte.ysql.gen.YSQLExpressionGenerator;
 import sqlancer.yugabyte.ysql.oracle.tlp.YSQLTLPBase;
 
-public class YSQLNoRECOracle extends NoRECBase<YSQLGlobalState> implements TestOracle {
+public class YSQLNoRECOracle extends NoRECBase<YSQLGlobalState> implements TestOracle<YSQLGlobalState> {
 
     private final YSQLSchema s;
 

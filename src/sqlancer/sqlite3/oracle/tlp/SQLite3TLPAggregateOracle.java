@@ -28,7 +28,7 @@ import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
-public class SQLite3TLPAggregateOracle implements TestOracle {
+public class SQLite3TLPAggregateOracle implements TestOracle<SQLite3GlobalState> {
 
     private final SQLite3GlobalState state;
     private final ExpectedErrors errors = new ExpectedErrors();

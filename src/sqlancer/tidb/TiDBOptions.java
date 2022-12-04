@@ -29,23 +29,23 @@ public class TiDBOptions implements DBMSSpecificOptions<TiDBOracleFactory> {
     public enum TiDBOracleFactory implements OracleFactory<TiDBGlobalState> {
         HAVING {
             @Override
-            public TestOracle create(TiDBGlobalState globalState) throws SQLException {
+            public TestOracle<TiDBGlobalState> create(TiDBGlobalState globalState) throws SQLException {
                 return new TiDBTLPHavingOracle(globalState);
             }
         },
         WHERE {
             @Override
-            public TestOracle create(TiDBGlobalState globalState) throws SQLException {
+            public TestOracle<TiDBGlobalState> create(TiDBGlobalState globalState) throws SQLException {
                 return new TiDBTLPWhereOracle(globalState);
             }
         },
         QUERY_PARTITIONING {
             @Override
-            public TestOracle create(TiDBGlobalState globalState) throws SQLException {
-                List<TestOracle> oracles = new ArrayList<>();
+            public TestOracle<TiDBGlobalState> create(TiDBGlobalState globalState) throws SQLException {
+                List<TestOracle<TiDBGlobalState>> oracles = new ArrayList<>();
                 oracles.add(new TiDBTLPWhereOracle(globalState));
                 oracles.add(new TiDBTLPHavingOracle(globalState));
-                return new CompositeTestOracle(oracles, globalState);
+                return new CompositeTestOracle<TiDBGlobalState>(oracles, globalState);
             }
         };
 

@@ -107,6 +107,9 @@ public class MainOptions {
     @Parameter(names = "--database-prefix", description = "The prefix used for each database created")
     private String databasePrefix = "database"; // NOPMD
 
+    @Parameter(names = "--use-reducer", description = "EXPERIMENTAL Attempt to reduce queries using a simple reducer")
+    private boolean useReducer = false; // NOPMD
+
     public int getMaxExpressionDepth() {
         return maxExpressionDepth;
     }
@@ -244,4 +247,7 @@ public class MainOptions {
         return useConnectionTest;
     }
 
+    public boolean useReducer() {
+        return useReducer;
+    }
 }
