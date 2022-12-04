@@ -53,7 +53,7 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
         List<Node<DatabendExpression>> fetchColumns = new ArrayList<>();
         fetchColumns.add(aggregate);
         while (Randomly.getBooleanWithRatherLowProbability()) {
-            fetchColumns.add(gen.generateAggregate());
+            fetchColumns.add(gen.generateAggregate()); // TODO 更换成非聚合函数
         }
         select.setFetchColumns(Arrays.asList(aggregate));
         // if (Randomly.getBooleanWithRatherLowProbability()) {
@@ -181,16 +181,15 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
 
     private DatabendSelect getSelect(List<Node<DatabendExpression>> aggregates, List<Node<DatabendExpression>> from,
             Node<DatabendExpression> whereClause, List<Node<DatabendExpression>> joinList) {
-        DatabendSelect leftSelect = new DatabendSelect();
-        leftSelect.setFetchColumns(aggregates);
-        leftSelect.setFromList(from);
-        leftSelect.setWhereClause(whereClause);
-        leftSelect.setJoinList(joinList);
-        // if (Randomly.getBooleanWithSmallProbability()) {
-        // leftSelect.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1)); //TODO group by超过实际行数
-        // leftSelect.setGroupByExpressions(select.getFetchColumns());// TODO group by不能放入聚合函数
-        // }
-        return leftSelect;
+        DatabendSelect select = new DatabendSelect();
+        select.setFetchColumns(aggregates);
+        select.setFromList(from);
+        select.setWhereClause(whereClause);
+        select.setJoinList(joinList);
+         if (Randomly.getBooleanWithSmallProbability()) {
+             select.setGroupByExpressions(List.of(gen.generateConstant(DatabendDataType.INT))); // TODO 仍可加强
+         }
+        return select;
     }
 
 }

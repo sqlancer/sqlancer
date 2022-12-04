@@ -251,7 +251,7 @@ public class DatabendNewExpressionGenerator
     public enum DatabendAggregateFunction {
         MAX(1), MIN(1), AVG(1, DatabendDataType.INT, DatabendDataType.FLOAT), COUNT(1),
         SUM(1, DatabendDataType.INT, DatabendDataType.FLOAT), STDDEV_POP(1), COVAR_POP(1), COVAR_SAMP(2);
-        // , STRING_AGG(1), STDDEV_SAMP(1),VAR_SAMP(1), VAR_POP(1)
+        //, *_IF, *_DISTINCT
 
         private int nrArgs;
         private DatabendDataType[] dataTypes;
