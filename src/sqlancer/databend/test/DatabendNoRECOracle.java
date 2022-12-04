@@ -33,7 +33,7 @@ import sqlancer.databend.ast.DatabendJoin;
 import sqlancer.databend.ast.DatabendSelect;
 import sqlancer.databend.gen.DatabendNewExpressionGenerator;
 
-public class DatabendNoRECOracle extends NoRECBase<DatabendGlobalState> implements TestOracle {
+public class DatabendNoRECOracle extends NoRECBase<DatabendGlobalState> implements TestOracle<DatabendGlobalState> {
 
     private final DatabendSchema s;
 

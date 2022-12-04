@@ -35,7 +35,7 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
 
-public class CockroachDBTLPAggregateOracle implements TestOracle {
+public class CockroachDBTLPAggregateOracle implements TestOracle<CockroachDBGlobalState> {
 
     private final CockroachDBGlobalState state;
     private final ExpectedErrors errors = new ExpectedErrors();

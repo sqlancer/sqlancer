@@ -9,6 +9,7 @@ public final class DatabendErrors {
 
     public static void addExpressionErrors(ExpectedErrors errors) {
         errors.add("Division by zero");
+        errors.add("/ by zero");
 
         /*
          * TODO column为not null 时，注意default不能为null DROP DATABASE IF EXISTS databend2; CREATE DATABASE databend2; USE
@@ -21,11 +22,13 @@ public final class DatabendErrors {
 
     public static void addInsertErrors(ExpectedErrors errors) {
         errors.add("Division by zero");
+        errors.add("/ by zero");
         errors.add("Can't cast column from null into non-nullable type");
     }
 
     public static void addGroupByErrors(ExpectedErrors errors) {
         errors.add("Division by zero");
+        errors.add("/ by zero");
         errors.add("Can't cast column from null into non-nullable type");
     }
 

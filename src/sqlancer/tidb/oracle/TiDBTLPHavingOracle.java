@@ -12,7 +12,7 @@ import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.ast.TiDBExpression;
 import sqlancer.tidb.visitor.TiDBVisitor;
 
-public class TiDBTLPHavingOracle extends TiDBTLPBase implements TestOracle {
+public class TiDBTLPHavingOracle extends TiDBTLPBase implements TestOracle<TiDBGlobalState> {
 
     public TiDBTLPHavingOracle(TiDBGlobalState state) {
         super(state);

@@ -209,7 +209,7 @@
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>10.3.4</version>
+            <version>10.5.0</version>
           </dependency>
         </dependencies>
         <configuration>
@@ -351,6 +351,12 @@
       <groupId>org.questdb</groupId>
       <artifactId>questdb</artifactId>
       <version>6.5.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.hsqldb</groupId>
+      <artifactId>hsqldb</artifactId>
+      <version>2.7.1</version>
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
   <reporting>

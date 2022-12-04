@@ -56,18 +56,18 @@ public class MongoDBOptions implements DBMSSpecificOptions<MongoDBOptions.MongoD
     public enum MongoDBOracleFactory implements OracleFactory<MongoDBGlobalState> {
         QUERY_PARTITIONING {
             @Override
-            public TestOracle create(MongoDBGlobalState globalState) throws Exception {
-                List<TestOracle> oracles = new ArrayList<>();
+            public TestOracle<MongoDBGlobalState> create(MongoDBGlobalState globalState) throws Exception {
+                List<TestOracle<MongoDBGlobalState>> oracles = new ArrayList<>();
                 oracles.add(new MongoDBQueryPartitioningWhereTester(globalState));
-                return new CompositeTestOracle(oracles, globalState);
+                return new CompositeTestOracle<MongoDBGlobalState>(oracles, globalState);
             }
         },
         DOCUMENT_REMOVAL {
             @Override
-            public TestOracle create(MongoDBGlobalState globalState) throws Exception {
-                List<TestOracle> oracles = new ArrayList<>();
+            public TestOracle<MongoDBGlobalState> create(MongoDBGlobalState globalState) throws Exception {
+                List<TestOracle<MongoDBGlobalState>> oracles = new ArrayList<>();
                 oracles.add(new MongoDBDocumentRemovalTester(globalState));
-                return new CompositeTestOracle(oracles, globalState);
+                return new CompositeTestOracle<MongoDBGlobalState>(oracles, globalState);
             }
         }
     }

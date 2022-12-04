@@ -97,53 +97,53 @@ public class DuckDBOptions implements DBMSSpecificOptions<DuckDBOracleFactory> {
         NOREC {
 
             @Override
-            public TestOracle create(DuckDBGlobalState globalState) throws SQLException {
+            public TestOracle<DuckDBGlobalState> create(DuckDBGlobalState globalState) throws SQLException {
                 return new DuckDBNoRECOracle(globalState);
             }
 
         },
         HAVING {
             @Override
-            public TestOracle create(DuckDBGlobalState globalState) throws SQLException {
+            public TestOracle<DuckDBGlobalState> create(DuckDBGlobalState globalState) throws SQLException {
                 return new DuckDBQueryPartitioningHavingTester(globalState);
             }
         },
         WHERE {
             @Override
-            public TestOracle create(DuckDBGlobalState globalState) throws SQLException {
+            public TestOracle<DuckDBGlobalState> create(DuckDBGlobalState globalState) throws SQLException {
                 return new DuckDBQueryPartitioningWhereTester(globalState);
             }
         },
         GROUP_BY {
             @Override
-            public TestOracle create(DuckDBGlobalState globalState) throws SQLException {
+            public TestOracle<DuckDBGlobalState> create(DuckDBGlobalState globalState) throws SQLException {
                 return new DuckDBQueryPartitioningGroupByTester(globalState);
             }
         },
         AGGREGATE {
 
             @Override
-            public TestOracle create(DuckDBGlobalState globalState) throws SQLException {
+            public TestOracle<DuckDBGlobalState> create(DuckDBGlobalState globalState) throws SQLException {
                 return new DuckDBQueryPartitioningAggregateTester(globalState);
             }
 
         },
         DISTINCT {
             @Override
-            public TestOracle create(DuckDBGlobalState globalState) throws SQLException {
+            public TestOracle<DuckDBGlobalState> create(DuckDBGlobalState globalState) throws SQLException {
                 return new DuckDBQueryPartitioningDistinctTester(globalState);
             }
         },
         QUERY_PARTITIONING {
             @Override
-            public TestOracle create(DuckDBGlobalState globalState) throws SQLException {
-                List<TestOracle> oracles = new ArrayList<>();
+            public TestOracle<DuckDBGlobalState> create(DuckDBGlobalState globalState) throws SQLException {
+                List<TestOracle<DuckDBGlobalState>> oracles = new ArrayList<>();
                 oracles.add(new DuckDBQueryPartitioningWhereTester(globalState));
                 oracles.add(new DuckDBQueryPartitioningHavingTester(globalState));
                 oracles.add(new DuckDBQueryPartitioningAggregateTester(globalState));
                 oracles.add(new DuckDBQueryPartitioningDistinctTester(globalState));
                 oracles.add(new DuckDBQueryPartitioningGroupByTester(globalState));
-                return new CompositeTestOracle(oracles, globalState);
+                return new CompositeTestOracle<DuckDBGlobalState>(oracles, globalState);
             }
         };
 

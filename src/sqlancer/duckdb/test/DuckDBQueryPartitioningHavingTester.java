@@ -14,7 +14,8 @@ import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBToStringVisitor;
 import sqlancer.duckdb.ast.DuckDBExpression;
 
-public class DuckDBQueryPartitioningHavingTester extends DuckDBQueryPartitioningBase implements TestOracle {
+public class DuckDBQueryPartitioningHavingTester extends DuckDBQueryPartitioningBase
+        implements TestOracle<DuckDBGlobalState> {
 
     public DuckDBQueryPartitioningHavingTester(DuckDBGlobalState state) {
         super(state);

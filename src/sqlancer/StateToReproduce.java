@@ -9,7 +9,7 @@ import sqlancer.common.query.Query;
 
 public class StateToReproduce {
 
-    private final List<Query<?>> statements = new ArrayList<>();
+    private List<Query<?>> statements = new ArrayList<>();
 
     private final String databaseName;
 
@@ -126,6 +126,10 @@ public class StateToReproduce {
 
     public OracleRunReproductionState createLocalState() {
         return new OracleRunReproductionState();
+    }
+
+    public void setStatements(List<Query<?>> statements) {
+        this.statements = statements;
     }
 
 }

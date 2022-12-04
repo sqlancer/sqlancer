@@ -17,7 +17,7 @@ import sqlancer.common.oracle.TestOracle;
 
 public class ArangoDBQueryPartitioningBase
         extends TernaryLogicPartitioningOracleBase<Node<ArangoDBExpression>, ArangoDBProvider.ArangoDBGlobalState>
-        implements TestOracle {
+        implements TestOracle<ArangoDBProvider.ArangoDBGlobalState> {
 
     protected ArangoDBSchema schema;
     protected List<ArangoDBSchema.ArangoDBColumn> targetColumns;

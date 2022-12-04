@@ -40,10 +40,10 @@ public class ArangoDBOptions implements DBMSSpecificOptions<ArangoDBOptions.Aran
     public enum ArangoDBOracleFactory implements OracleFactory<ArangoDBGlobalState> {
         QUERY_PARTITIONING {
             @Override
-            public TestOracle create(ArangoDBGlobalState globalState) throws Exception {
-                List<TestOracle> oracles = new ArrayList<>();
+            public TestOracle<ArangoDBGlobalState> create(ArangoDBGlobalState globalState) throws Exception {
+                List<TestOracle<ArangoDBGlobalState>> oracles = new ArrayList<>();
                 oracles.add(new ArangoDBQueryPartitioningWhereTester(globalState));
-                return new CompositeTestOracle(oracles, globalState);
+                return new CompositeTestOracle<ArangoDBGlobalState>(oracles, globalState);
             }
         }
     }

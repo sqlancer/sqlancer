@@ -120,6 +120,15 @@ jobs:
   databend:
     name: DBMS Tests (Databend)
     runs-on: ubuntu-latest
+    services:
+      databend:
+        image: datafuselabs/databend
+        env:
+          DATABEND_DEFAULT_USER: sqlancer
+          DATABEND_DEFAULT_PASSWORD: sqlancer
+        ports:
+          - 8000:8000
+          - 3307:3307
     steps:
       - uses: actions/checkout@v2
         with:
@@ -130,14 +139,6 @@ jobs:
           java-version: 11
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
-      - name: Set up Databend
-        run: |
-          sudo apt update
-          sudo apt install mysql-client
-          docker pull datafuselabs/databend-query
-          docker run --net=host datafuselabs/databend-query &
-      - name: Create SQLancer user
-        run: mysql -uroot -h127.0.0.1 -P3307 -e "CREATE USER 'sqlancer' IDENTIFIED BY 'sqlancer'; GRANT ALL ON *.* TO sqlancer;"
       - name: Run Tests
         run: |
           DATABEND_AVAILABLE=true mvn -Dtest=TestDatabend test

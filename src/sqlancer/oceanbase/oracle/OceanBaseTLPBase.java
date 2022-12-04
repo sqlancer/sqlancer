@@ -21,7 +21,8 @@ import sqlancer.oceanbase.gen.OceanBaseExpressionGenerator;
 import sqlancer.oceanbase.gen.OceanBaseHintGenerator;
 
 public abstract class OceanBaseTLPBase
-        extends TernaryLogicPartitioningOracleBase<OceanBaseExpression, OceanBaseGlobalState> implements TestOracle {
+        extends TernaryLogicPartitioningOracleBase<OceanBaseExpression, OceanBaseGlobalState>
+        implements TestOracle<OceanBaseGlobalState> {
 
     OceanBaseSchema s;
     OceanBaseTables targetTables;
