@@ -45,7 +45,7 @@ public class StatementExecutor<G extends GlobalState<?, ?, ?>, A extends Abstrac
             total += nrPerformed;
         }
         while (total != 0) {
-            A nextAction = null;
+            A nextAction = actions[0];
             int selection = r.getInteger(0, total);
             int previousRange = 0;
             int i;
@@ -57,7 +57,6 @@ public class StatementExecutor<G extends GlobalState<?, ?, ?>, A extends Abstrac
                     previousRange += nrRemaining[i];
                 }
             }
-            assert nextAction != null;
             assert nrRemaining[i] > 0;
             nrRemaining[i]--;
             @SuppressWarnings("rawtypes")

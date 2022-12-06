@@ -244,7 +244,7 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
         }
 
         while (total != 0) {
-            Action nextAction = null;
+            Action nextAction = Action.values()[0];
             int selection = globalState.getRandomly().getInteger(0, total);
             int previousRange = 0;
             for (int i = 0; i < nrRemaining.length; i++) {
@@ -255,7 +255,6 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
                     previousRange += nrRemaining[i];
                 }
             }
-            assert nextAction != null;
             assert nrRemaining[nextAction.ordinal()] > 0;
             nrRemaining[nextAction.ordinal()]--;
             SQLQueryAdapter query = null;

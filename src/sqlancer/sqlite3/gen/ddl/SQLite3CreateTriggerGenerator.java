@@ -32,8 +32,8 @@ public final class SQLite3CreateTriggerGenerator {
     }
 
     public static SQLQueryAdapter create(SQLite3GlobalState globalState) throws SQLException {
-        SQLite3Provider.cur_triggers++;
-        if (SQLite3Provider.cur_triggers >= SQLite3Provider.MAX_TRIGGERS) {
+        SQLite3Provider.curTriggers++;
+        if (SQLite3Provider.curTriggers >= SQLite3Provider.MAX_TRIGGERS) {
             throw new IgnoreMeException();
         }
         SQLite3Schema s = globalState.getSchema();
