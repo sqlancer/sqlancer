@@ -19,7 +19,7 @@ public class MongoDBDocumentRemovalTester extends MongoDBDocumentRemovalBase {
     }
 
     @Override
-    public void check() throws Exception {
+    public String check() throws Exception {
         super.check();
 
         select.setWithCountClause(false);
@@ -28,7 +28,7 @@ public class MongoDBDocumentRemovalTester extends MongoDBDocumentRemovalBase {
         MongoDBSelectQuery selectQuery = new MongoDBSelectQuery(select);
         List<Document> firstResultSet = getResultSetAsDocumentList(selectQuery, state);
         if (firstResultSet == null || firstResultSet.isEmpty()) {
-            return;
+            return "Not implemented";
         }
 
         Document documentToRemove = Randomly.fromList(firstResultSet);
@@ -45,5 +45,6 @@ public class MongoDBDocumentRemovalTester extends MongoDBDocumentRemovalBase {
             String assertMessage = "The Result Sizes mismatches!";
             throw new AssertionError(assertMessage);
         }
+        return "Not implemented!";
     }
 }

@@ -42,7 +42,7 @@ public class HSQLDBNoRECOracle extends NoRECBase<HSQLDBGlobalState> implements T
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         List<HSQLDBTable> tables = s.getDatabaseTablesRandomSubsetNotEmpty();
         List<HSQLDBColumn> columns = tables.stream().flatMap(t -> t.getColumns().stream()).collect(Collectors.toList());
         HSQLDBExpressionGenerator gen = new HSQLDBExpressionGenerator(state).setColumns(columns);
@@ -62,6 +62,7 @@ public class HSQLDBNoRECOracle extends NoRECBase<HSQLDBGlobalState> implements T
             throw new AssertionError(
                     optimizedQueryString + "; -- " + firstCount + "\n" + unoptimizedQueryString + " -- " + secondCount);
         }
+        return "Not implemented!";
     }
 
     private int getSecondQuery(List<Node<HSQLDBExpression>> tableList, Node<HSQLDBExpression> randomWhereCondition,

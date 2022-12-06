@@ -25,7 +25,7 @@ public class DatabendQueryPartitioningHavingTester extends DatabendQueryPartitio
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         if (Randomly.getBoolean()) {
             select.setWhereClause(gen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN));
@@ -57,6 +57,7 @@ public class DatabendQueryPartitioningHavingTester extends DatabendQueryPartitio
                 thirdQueryString, combinedString, !orderBy, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state, DatabendQueryPartitioningBase::canonicalizeResultValue);
+        return "Not implemented!";
     }
 
     @Override

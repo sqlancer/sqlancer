@@ -15,7 +15,7 @@ public class HSQLDBQueryPartitioningWhereTester extends HSQLDBQueryPartitioningB
     }
 
     @Override
-    public void check() throws Exception {
+    public String check() throws Exception {
         super.check();
         String originalQueryString = HSQLDBToStringVisitor.asString(select);
 
@@ -36,6 +36,7 @@ public class HSQLDBQueryPartitioningWhereTester extends HSQLDBQueryPartitioningB
                 thirdQueryString, combinedString, !orderBy, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
+        return "Not implemented!";
     }
 
 }

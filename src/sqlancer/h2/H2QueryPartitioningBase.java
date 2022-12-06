@@ -30,7 +30,7 @@ public class H2QueryPartitioningBase extends TernaryLogicPartitioningOracleBase<
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
         gen = new H2ExpressionGenerator(state).setColumns(targetTables.getColumns());
@@ -44,6 +44,7 @@ public class H2QueryPartitioningBase extends TernaryLogicPartitioningOracleBase<
         select.setJoinList(joins.stream().collect(Collectors.toList()));
         select.setFromList(tableList.stream().collect(Collectors.toList()));
         select.setWhereClause(null);
+        return "Not implemented!";
     }
 
     List<Node<H2Expression>> generateFetchColumns() {

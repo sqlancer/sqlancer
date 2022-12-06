@@ -44,7 +44,7 @@ public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartition
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         DuckDBAggregateFunction aggregateFunction = Randomly.fromOptions(DuckDBAggregateFunction.MAX,
                 DuckDBAggregateFunction.MIN, DuckDBAggregateFunction.SUM, DuckDBAggregateFunction.COUNT,
@@ -75,6 +75,7 @@ public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartition
             }
             throw new AssertionError();
         }
+        return "Not implemented!";
 
     }
 

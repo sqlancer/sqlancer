@@ -41,7 +41,7 @@ public class HSQLDBQueryPartitioningBase
     }
 
     @Override
-    public void check() throws Exception {
+    public String check() throws Exception {
         schema = state.getSchema();
         targetTables = schema.getDatabaseTablesRandomSubsetNotEmpty();
         expressionGenerator = new HSQLDBExpressionGenerator(state)
@@ -58,6 +58,7 @@ public class HSQLDBQueryPartitioningBase
         select.setWhereClause(null);
 
         ComparatorHelper.getResultSetFirstColumnAsString(HSQLDBToStringVisitor.asString(select), errors, state);
+        return "Not implemented!";
 
     }
 

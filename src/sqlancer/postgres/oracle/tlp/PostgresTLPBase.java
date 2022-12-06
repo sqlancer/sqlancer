@@ -43,12 +43,13 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
         List<PostgresTable> tables = targetTables.getTables();
         List<PostgresJoin> joins = getJoinStatements(state, targetTables.getColumns(), tables);
         generateSelectBase(tables, joins);
+        return "Not implemented!";
     }
 
     protected List<PostgresJoin> getJoinStatements(PostgresGlobalState globalState, List<PostgresColumn> columns,

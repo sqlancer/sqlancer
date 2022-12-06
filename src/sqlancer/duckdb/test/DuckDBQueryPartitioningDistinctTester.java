@@ -18,7 +18,7 @@ public class DuckDBQueryPartitioningDistinctTester extends DuckDBQueryPartitioni
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         select.setDistinct(true);
         select.setWhereClause(null);
@@ -39,6 +39,7 @@ public class DuckDBQueryPartitioningDistinctTester extends DuckDBQueryPartitioni
                 secondQueryString, thirdQueryString, combinedString, true, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state, DuckDBQueryPartitioningBase::canonicalizeResultValue);
+        return "Not implemented!";
     }
 
 }

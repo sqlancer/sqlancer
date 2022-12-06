@@ -42,9 +42,10 @@ public class YSQLTLPAggregateOracle extends YSQLTLPBase implements TestOracle<YS
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         aggregateCheck();
+        return "Not implemented!";
     }
 
     protected void aggregateCheck() throws SQLException {

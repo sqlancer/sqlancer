@@ -33,7 +33,7 @@ public abstract class MySQLQueryPartitioningBase extends
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
         gen = new MySQLExpressionGenerator(state).setColumns(targetTables.getColumns());
@@ -47,6 +47,7 @@ public abstract class MySQLQueryPartitioningBase extends
         select.setFromList(tableList);
         select.setWhereClause(null);
         // select.setJoins(joins);
+        return "Not implemented!";
     }
 
     List<MySQLExpression> generateFetchColumns() {

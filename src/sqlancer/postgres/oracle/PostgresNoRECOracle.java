@@ -48,7 +48,7 @@ public class PostgresNoRECOracle extends NoRECBase<PostgresGlobalState> implemen
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         PostgresTables randomTables = s.getRandomTableNonEmptyTables();
         List<PostgresColumn> columns = randomTables.getColumns();
         PostgresExpression randomWhereCondition = getRandomWhereCondition(columns);
@@ -72,6 +72,7 @@ public class PostgresNoRECOracle extends NoRECBase<PostgresGlobalState> implemen
                     firstQueryStringWithCount, secondQueryStringWithCount);
             throw new AssertionError(assertionMessage);
         }
+        return "Not implemented!";
     }
 
     public static List<PostgresJoin> getJoinStatements(PostgresGlobalState globalState, List<PostgresColumn> columns,

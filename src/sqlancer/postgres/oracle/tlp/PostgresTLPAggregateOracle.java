@@ -42,9 +42,10 @@ public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestO
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         aggregateCheck();
+        return "Not implemented!";
     }
 
     protected void aggregateCheck() throws SQLException {

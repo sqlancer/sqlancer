@@ -17,7 +17,7 @@ public class ArangoDBQueryPartitioningWhereTester extends ArangoDBQueryPartition
     }
 
     @Override
-    public void check() throws Exception {
+    public String check() throws Exception {
         super.check();
         select.setFilterClause(null);
 
@@ -42,5 +42,6 @@ public class ArangoDBQueryPartitioningWhereTester extends ArangoDBQueryPartition
             List<BaseDocument> forthResultSet = getResultSetAsDocumentList(query, state);
             assumeResultSetsAreEqual(secondResultSet, forthResultSet, query);
         }
+        return "Not implemented!";
     }
 }

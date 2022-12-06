@@ -17,7 +17,7 @@ public class OceanBaseTLPWhereOracle extends OceanBaseTLPBase {
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         select.setWhereClause(null);
         String originalQueryString = OceanBaseVisitor.asString(select);
@@ -39,6 +39,7 @@ public class OceanBaseTLPWhereOracle extends OceanBaseTLPBase {
                 thirdQueryString, combinedString, Randomly.getBoolean(), state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
+        return "Not implemented!";
     }
 
 }

@@ -16,7 +16,7 @@ public class ClickHouseTLPDistinctOracle extends ClickHouseTLPBase {
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         select.setSelectType(ClickHouseSelect.SelectType.DISTINCT);
         select.setWhereClause(null);
@@ -35,6 +35,7 @@ public class ClickHouseTLPDistinctOracle extends ClickHouseTLPBase {
                 secondQueryString, thirdQueryString, combinedString, false, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
+        return "Not implemented!";
     }
 
 }

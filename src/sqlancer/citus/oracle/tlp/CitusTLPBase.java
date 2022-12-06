@@ -68,12 +68,13 @@ public class CitusTLPBase extends PostgresTLPBase {
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         s = state.getSchema();
         storeCitusTableTypes();
         List<PostgresTable> tables = new ArrayList<>();
         List<PostgresJoin> joins = generateJoins(tables);
         generateSelectBase(tables, joins);
+        return "Not implemented!";
     }
 
     private List<PostgresJoin> generateJoins(List<PostgresTable> tables) {

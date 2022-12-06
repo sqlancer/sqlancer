@@ -40,7 +40,7 @@ public class ClickHouseNoRECOracle extends NoRECBase<ClickHouseGlobalState>
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
 
         ClickHouseTables randomTables = s.getRandomTableNonEmptyTables();
         ClickHouseTable leftTable = randomTables.getTables().remove(0);
@@ -59,6 +59,7 @@ public class ClickHouseNoRECOracle extends NoRECBase<ClickHouseGlobalState>
             throw new AssertionError(
                     optimizedQueryString + "; -- " + firstCount + "\n" + unoptimizedQueryString + " -- " + secondCount);
         }
+        return "Not implemented!";
     }
 
     private int getSecondQuery(ClickHouseExpression table, ClickHouseExpression whereClause,

@@ -44,10 +44,11 @@ public class YSQLFuzzer implements TestOracle<YSQLGlobalState> {
     }
 
     @Override
-    public void check() throws Exception {
+    public String check() throws Exception {
         Query s = testQueries.get(globalState.getRandomly().getInteger(0, testQueries.size()));
         globalState.executeStatement(s.getQuery(globalState, errors));
         globalState.getManager().incrementSelectQueryCount();
+        return "Not implemented!";
     }
 
     private static class Query {

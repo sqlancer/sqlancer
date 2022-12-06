@@ -16,7 +16,7 @@ public class QuestDBQueryPartitioningWhereTester extends QuestDBQueryPartitionin
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         select.setWhereClause(null);
         String originalQueryString = QuestDBToStringVisitor.asString(select);
@@ -37,5 +37,6 @@ public class QuestDBQueryPartitioningWhereTester extends QuestDBQueryPartitionin
                 thirdQueryString, combinedString, false, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state, QuestDBQueryPartitioningBase::canonicalizeResultValue);
+        return "Not implemented!";
     }
 }

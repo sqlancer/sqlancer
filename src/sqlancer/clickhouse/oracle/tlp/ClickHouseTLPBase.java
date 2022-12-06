@@ -39,7 +39,7 @@ public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickH
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         gen = new ClickHouseExpressionGenerator(state);
         schema = state.getSchema();
         initializeTernaryPredicateVariants();
@@ -62,6 +62,7 @@ public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickH
         select.setWhereClause(null);
         // Smoke check
         ComparatorHelper.getResultSetFirstColumnAsString(ClickHouseVisitor.asString(select), errors, state);
+        return "Not implemented!";
     }
 
     List<ClickHouseExpression> generateFetchColumns(List<ClickHouseColumnReference> columns) {

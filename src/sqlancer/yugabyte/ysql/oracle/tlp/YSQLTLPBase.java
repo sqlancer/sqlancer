@@ -68,12 +68,13 @@ public class YSQLTLPBase extends TernaryLogicPartitioningOracleBase<YSQLExpressi
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
         List<YSQLTable> tables = targetTables.getTables();
         List<YSQLJoin> joins = getJoinStatements(state, targetTables.getColumns(), tables);
         generateSelectBase(tables, joins);
+        return "Not implemented!";
     }
 
     protected List<YSQLJoin> getJoinStatements(YSQLGlobalState globalState, List<YSQLColumn> columns,

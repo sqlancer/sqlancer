@@ -19,7 +19,7 @@ public class CitusTLPWhereOracle extends PostgresTLPWhereOracle {
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         state.setAllowedFunctionTypes(Arrays.asList(PostgresGlobalState.IMMUTABLE));
         citusTLPBase.check();
         s = citusTLPBase.getSchema();
@@ -31,5 +31,6 @@ public class CitusTLPWhereOracle extends PostgresTLPWhereOracle {
         isNullPredicate = citusTLPBase.getIsNullPredicate();
         whereCheck();
         state.setDefaultAllowedFunctionTypes();
+        return "Not implemented!";
     }
 }

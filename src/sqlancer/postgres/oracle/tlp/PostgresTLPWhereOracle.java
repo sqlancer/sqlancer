@@ -17,9 +17,10 @@ public class PostgresTLPWhereOracle extends PostgresTLPBase {
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         whereCheck();
+        return "Not implemented!";
     }
 
     protected void whereCheck() throws SQLException {

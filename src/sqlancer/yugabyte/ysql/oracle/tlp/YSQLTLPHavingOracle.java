@@ -20,9 +20,10 @@ public class YSQLTLPHavingOracle extends YSQLTLPBase {
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         havingCheck();
+        return "Not implemented!";
     }
 
     @Override

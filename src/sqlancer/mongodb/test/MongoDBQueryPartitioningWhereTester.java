@@ -16,7 +16,7 @@ public class MongoDBQueryPartitioningWhereTester extends MongoDBQueryPartitionin
     }
 
     @Override
-    public void check() throws Exception {
+    public String check() throws Exception {
         super.check();
 
         select.setWithCountClause(false);
@@ -43,6 +43,7 @@ public class MongoDBQueryPartitioningWhereTester extends MongoDBQueryPartitionin
 
         secondResultSet.addAll(thirdResultSet);
         MongoDBComparatorHelper.assumeResultSetsAreEqual(firstResultSet, secondResultSet, q);
+        return "Not implemented!";
 
     }
 }
