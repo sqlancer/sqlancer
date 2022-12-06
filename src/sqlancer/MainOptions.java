@@ -50,6 +50,27 @@ public class MainOptions {
     @Parameter(names = "--print-failed", description = "Logs failed insert, create and other statements without results", arity = 1)
     private boolean loggerPrintFailed = true; // NOPMD
 
+    @Parameter(names = "--log-execution-result", description = "Logs the execution result of each statement (requires --log-each-select to be enabled)", arity = 1)
+    private boolean logExecutionResult = true; // NOPMD
+
+    @Parameter(names = "--log-query-plan", description = "Logs the query plans of each statemen", arity = 1)
+    private boolean logQueryPlan = false; // NOPMD
+
+    @Parameter(names = "--enable-qpg", description = "Enable the experimental feature Query Plan Guidance (QPS)", arity = 1)
+    private boolean enableQPG = false;
+
+    @Parameter(names = "--enable-random-qpg", description = "Enable the random mutation of Query Plan Guidance (QPS) (requires --enable-qpg to be enabled)", arity = 1)
+    private boolean enableRandomQPG = false;
+
+    @Parameter(names = "--qpg-min-interval", description = "Specifies the minimal number of iterations between table mutations")
+    private int QPGMinInterval = 1000;
+
+    @Parameter(names = "--qpg-k", description = "Specifies the k parameter of the QPG (The value should be 1/k)")
+    private double QPGk = 4.0;
+
+    @Parameter(names = "--qpg-probability", description = "The probability of the random selection in QPG")
+    private double QPGProbability = 0.7;
+
     @Parameter(names = "--username", description = "The user name used to log into the DBMS")
     private String userName = "sqlancer"; // NOPMD
 
@@ -110,6 +131,13 @@ public class MainOptions {
     @Parameter(names = "--use-reducer", description = "EXPERIMENTAL Attempt to reduce queries using a simple reducer")
     private boolean useReducer = false; // NOPMD
 
+    @Parameter(names = "--stop-when-bug", description = "Stop the current testing process and output report when a bug found", arity = 1)
+    private boolean stopWhenBug = true; // NOPMD
+
+    public boolean isStopWhenBug() {
+        return stopWhenBug;
+    }
+
     public int getMaxExpressionDepth() {
         return maxExpressionDepth;
     }
@@ -149,6 +177,37 @@ public class MainOptions {
 
     public boolean loggerPrintFailed() {
         return loggerPrintFailed;
+    }
+
+    public boolean logExecutionResult() {
+        if (!logEachSelect) {
+            throw new AssertionError();
+        }
+        return logExecutionResult;
+    }
+
+    public boolean logQueryPlan() {
+        return logQueryPlan;
+    }
+
+    public boolean enableQPG() {
+        return enableQPG;
+    }
+
+    public boolean enableRandomQPG() {
+        return enableRandomQPG;
+    }
+
+    public int getQPGMinInterval() {
+        return QPGMinInterval;
+    }
+
+    public double getQPGk() {
+        return QPGk;
+    }
+
+    public double getQPGProbability() {
+        return QPGProbability;
     }
 
     public int getNrQueries() {

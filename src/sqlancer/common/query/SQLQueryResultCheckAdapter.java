@@ -25,7 +25,7 @@ public class SQLQueryResultCheckAdapter extends SQLQueryAdapter {
             rsChecker.accept(rs);
             return true;
         } catch (Exception e) {
-            checkException(e);
+            checkException(e, globalState);
             return false;
         }
     }

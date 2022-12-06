@@ -46,7 +46,7 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
     }
 
     private void checkQueryString() {
-        if (query.contains("CREATE TABLE") && !couldAffectSchema) {
+        if (query.contains("CREATE TABLE") && !query.startsWith("EXPLAIN") && !couldAffectSchema) {
             throw new AssertionError("CREATE TABLE statements should set couldAffectSchema to true");
         }
     }
@@ -87,26 +87,37 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
                 s.execute(query);
             }
             Main.nrSuccessfulActions.addAndGet(1);
+            if (globalState.getOptions().logEachSelect()) {
+                if (globalState.getOptions().logExecutionTime()) {
+                    globalState.getLogger().writeCurrentNoLineBreak("--" + "Success");
+                } else {
+                    globalState.getLogger().writeCurrent("--" + "Success");
+                }
+            }
+            s.close();
             return true;
-        } catch (Exception e) {
+        } catch (SQLException e) {
+            s.close();
             Main.nrUnsuccessfulActions.addAndGet(1);
-            checkException(e);
+            if (globalState.getOptions().logEachSelect()) {
+                if (globalState.getOptions().logExecutionTime()) {
+                    globalState.getLogger().writeCurrentNoLineBreak("--" + e.getMessage());
+                } else {
+                    globalState.getLogger().writeCurrent("--" + e.getMessage());
+                }
+            }
+            checkException(e, globalState);
             return false;
         }
     }
 
-    public void checkException(Exception e) throws AssertionError {
-        Throwable ex = e;
-
-        while (ex != null) {
-            if (expectedErrors.errorIsExpected(ex.getMessage())) {
-                return;
-            } else {
-                ex = ex.getCause();
+    public <G extends GlobalState<?, ?, SQLConnection>> void checkException(Exception e, G globalState)
+            throws AssertionError {
+        if (expectedErrors != null && !expectedErrors.errorIsExpected(e.getMessage())) {
+            if (globalState.getOptions().isStopWhenBug()) {
+                throw new AssertionError(query, e);
             }
         }
-
-        throw new AssertionError(query, e);
     }
 
     @Override
@@ -134,9 +145,8 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
             }
             return new SQLancerResultSet(result);
         } catch (Exception e) {
-            s.close();
             Main.nrUnsuccessfulActions.addAndGet(1);
-            checkException(e);
+            checkException(e, globalState);
         }
         return null;
     }

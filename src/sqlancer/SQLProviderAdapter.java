@@ -1,5 +1,6 @@
 package sqlancer;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import sqlancer.common.log.LoggableFactory;
@@ -20,25 +21,22 @@ public abstract class SQLProviderAdapter<G extends SQLGlobalState<O, ? extends A
     }
 
     @Override
-    protected void checkViewsAreValid(G globalState) {
+    protected void checkViewsAreValid(G globalState) throws SQLException {
         List<? extends AbstractTable<?, ?, ?>> views = globalState.getSchema().getViews();
         for (AbstractTable<?, ?, ?> view : views) {
             SQLQueryAdapter q = new SQLQueryAdapter("SELECT 1 FROM " + view.getName() + " LIMIT 1");
             try {
                 if (!q.execute(globalState)) {
-                    dropView(globalState, view.getName());
+                    throw new AssertionError();
                 }
             } catch (Throwable t) {
-                dropView(globalState, view.getName());
+                SQLQueryAdapter q_drop = new SQLQueryAdapter("DROP VIEW " + view.getName(), true);
+                try {
+                    globalState.executeStatement(q_drop);
+                } catch (Throwable t2) {
+                    throw new IgnoreMeException();
+                }
             }
-        }
-    }
-
-    private void dropView(G globalState, String viewName) {
-        try {
-            globalState.executeStatement(new SQLQueryAdapter("DROP VIEW " + viewName, true));
-        } catch (Throwable t2) {
-            throw new IgnoreMeException();
         }
     }
 }

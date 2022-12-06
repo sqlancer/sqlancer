@@ -16,9 +16,10 @@ public class CompositeTestOracle<G extends GlobalState<?, ?, ?>> implements Test
     }
 
     @Override
-    public void check() throws Exception {
+    public String check() throws Exception {
+        String result = "";
         try {
-            oracles.get(i).check();
+            result = oracles.get(i).check();
             boolean lastOracleIndex = i == oracles.size() - 1;
             if (!lastOracleIndex) {
                 globalState.getManager().incrementSelectQueryCount();
@@ -26,5 +27,6 @@ public class CompositeTestOracle<G extends GlobalState<?, ?, ?>> implements Test
         } finally {
             i = (i + 1) % oracles.size();
         }
+        return result;
     }
 }

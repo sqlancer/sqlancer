@@ -92,7 +92,7 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
             System.out.println(q.getLogString());
         }
         if (getOptions().logEachSelect()) {
-            if (logExecutionTime) {
+            if (logExecutionTime || getOptions().logExecutionResult()) {
                 getLogger().writeCurrentNoLineBreak(q.getLogString());
             } else {
                 getLogger().writeCurrent(q.getLogString());
@@ -131,7 +131,7 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
             try {
                 updateSchema();
             } catch (Exception e) {
-                throw new AssertionError(e.getMessage());
+                throw new AssertionError(e);
             }
         }
         return schema;

@@ -34,7 +34,7 @@ public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?, C>, 
     }
 
     @Override
-    public final void check() throws Exception {
+    public final String check() throws Exception {
         rectifiedPredicates.clear();
         Query<C> pivotRowQuery = getRectifiedQuery();
         if (globalState.getOptions().logEachSelect()) {
@@ -50,6 +50,7 @@ public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?, C>, 
         if (!pivotRowIsContained) {
             reportMissingPivotRow(pivotRowQuery);
         }
+        return "Not implemented!";
     }
 
     /**
