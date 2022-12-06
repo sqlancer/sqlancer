@@ -92,7 +92,7 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
     }
 
     @Override
-    public void QPG(G globalState) throws Exception {
+    public void qpg(G globalState) throws Exception {
         try {
             generateDatabase(globalState);
             checkViewsAreValid(globalState);
@@ -141,7 +141,11 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
         boolean userRequiresMoreThanZeroRows = globalState.getOptions().testOnlyWithMoreThanZeroRows();
         boolean checkZeroRows = testOracleRequiresMoreThanZeroRows || userRequiresMoreThanZeroRows;
         if (checkZeroRows && globalState.getSchema().containsTableWithZeroRows(globalState)) {
-            addRowsToAllTables(globalState);
+            if (globalState.getOptions().enableQPG()) {
+                addRowsToAllTables(globalState);
+            } else {
+                throw new IgnoreMeException();
+            }
         }
         if (testOracleFactory.size() == 1) {
             return testOracleFactory.get(0).create(globalState);

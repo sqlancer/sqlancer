@@ -5,7 +5,7 @@ import sqlancer.Randomly;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 
-public class TiDBDropTableGenerator {
+public final class TiDBDropTableGenerator {
 
     private TiDBDropTableGenerator() {
     }

@@ -54,22 +54,22 @@ public class MainOptions {
     private boolean logExecutionResult = true; // NOPMD
 
     @Parameter(names = "--log-query-plan", description = "Logs the query plans of each statemen", arity = 1)
-    private boolean logQueryPlan = false; // NOPMD
+    private boolean logQueryPlan; // NOPMD
 
     @Parameter(names = "--enable-qpg", description = "Enable the experimental feature Query Plan Guidance (QPS)", arity = 1)
-    private boolean enableQPG = false;
+    private boolean enableQPG;
 
     @Parameter(names = "--enable-random-qpg", description = "Enable the random mutation of Query Plan Guidance (QPS) (requires --enable-qpg to be enabled)", arity = 1)
-    private boolean enableRandomQPG = false;
+    private boolean enableRandomQPG;
 
     @Parameter(names = "--qpg-min-interval", description = "Specifies the minimal number of iterations between table mutations")
-    private int QPGMinInterval = 1000;
+    private static int qpgMinInterval = 1000;
 
     @Parameter(names = "--qpg-k", description = "Specifies the k parameter of the QPG (The value should be 1/k)")
-    private double QPGk = 4.0;
+    private static double qpgk = 4.0;
 
     @Parameter(names = "--qpg-probability", description = "The probability of the random selection in QPG")
-    private double QPGProbability = 0.7;
+    private static double qpgProbability = 0.7;
 
     @Parameter(names = "--username", description = "The user name used to log into the DBMS")
     private String userName = "sqlancer"; // NOPMD
@@ -199,15 +199,15 @@ public class MainOptions {
     }
 
     public int getQPGMinInterval() {
-        return QPGMinInterval;
+        return qpgMinInterval;
     }
 
     public double getQPGk() {
-        return QPGk;
+        return qpgk;
     }
 
     public double getQPGProbability() {
-        return QPGProbability;
+        return qpgProbability;
     }
 
     public int getNrQueries() {

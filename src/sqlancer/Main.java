@@ -359,7 +359,7 @@ public final class Main {
                 }
                 Reproducer<G> reproducer = null;
                 if (options.enableQPG()) {
-                    provider.QPG(state);
+                    provider.qpg(state);
                 } else {
                     reproducer = provider.generateAndTestDatabase(state);
                 }

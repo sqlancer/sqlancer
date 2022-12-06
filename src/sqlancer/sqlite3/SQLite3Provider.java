@@ -55,7 +55,7 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
     public static boolean allowFloatingPointFp = true;
     public static boolean mustKnowResult;
 
-    private HashMap<String, String> queryPlanPool;
+    private Map<String, String> queryPlanPool;
 
     // Data structures for MAB algorithm at table mutation
     private static double[] weightedAverageReward = new double[Action.values().length];
@@ -74,13 +74,13 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
     public static final int MAX_TRIGGERS = 20; // The maximum number of triggers to be created
     public static final int MAX_TABLES = 10; // The maximum number of tables/virtual tables/ rtree tables/ views to be
                                              // created
-    public static int cur_triggers;
+    public static int curTriggers;
 
     public SQLite3Provider() {
         super(SQLite3GlobalState.class, SQLite3Options.class);
         queryPlanPool = new HashMap<>();
         cumulativeMutationTimes = new int[Action.values().length];
-        cur_triggers = 0;
+        curTriggers = 0;
 
         // For post reward calculation
         currentSelectRewards = 0;
@@ -386,8 +386,7 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
             // Remove the invalid views
             checkViewsAreValid(globalState);
             reward = checkQueryPlan(globalState);
-        } catch (IgnoreMeException e) {
-        } catch (AssertionError e) {
+        } catch (IgnoreMeException | AssertionError e) {
         } finally {
             updateReward(selectedActionIndex, (double) reward / (double) queryPlanPool.size(), globalState);
             currentMutationOperator = selectedActionIndex;
@@ -479,9 +478,7 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
                     queryPlan += rs.getString(4) + ";";
                 }
             }
-        } catch (SQLException e) {
-            queryPlan = "";
-        } catch (AssertionError e) {
+        } catch (SQLException | AssertionError e) {
             queryPlan = "";
         }
         return queryPlan;

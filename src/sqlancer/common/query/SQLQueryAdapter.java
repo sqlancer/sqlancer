@@ -113,10 +113,9 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
 
     public <G extends GlobalState<?, ?, SQLConnection>> void checkException(Exception e, G globalState)
             throws AssertionError {
-        if (expectedErrors != null && !expectedErrors.errorIsExpected(e.getMessage())) {
-            if (globalState.getOptions().isStopWhenBug()) {
-                throw new AssertionError(query, e);
-            }
+        if (expectedErrors != null && !expectedErrors.errorIsExpected(e.getMessage())
+                && globalState.getOptions().isStopWhenBug()) {
+            throw new AssertionError(query, e);
         }
     }
 

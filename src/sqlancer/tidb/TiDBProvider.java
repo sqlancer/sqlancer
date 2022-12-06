@@ -38,7 +38,7 @@ import sqlancer.tidb.gen.TiDBViewGenerator;
 
 @AutoService(DatabaseProvider.class)
 public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOptions> {
-    private HashMap<String, String> queryPlanPool;
+    private Map<String, String> queryPlanPool;
 
     // Data structures for MAB algorithm at table mutation
     private double[] weightedAverageReward;
@@ -232,8 +232,7 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
             // Remove the invalid views
             checkViewsAreValid(globalState);
             reward = checkQueryPlan(globalState);
-        } catch (IgnoreMeException e) {
-        } catch (AssertionError e) {
+        } catch (IgnoreMeException | AssertionError e) {
         } finally {
             updateReward(selectedActionIndex, (double) reward / (double) queryPlanPool.size(), globalState);
             currentMutationOperator = selectedActionIndex;

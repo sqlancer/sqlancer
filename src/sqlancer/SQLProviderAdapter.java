@@ -30,9 +30,9 @@ public abstract class SQLProviderAdapter<G extends SQLGlobalState<O, ? extends A
                     throw new AssertionError();
                 }
             } catch (Throwable t) {
-                SQLQueryAdapter q_drop = new SQLQueryAdapter("DROP VIEW " + view.getName(), true);
+                SQLQueryAdapter qDrop = new SQLQueryAdapter("DROP VIEW " + view.getName(), true);
                 try {
-                    globalState.executeStatement(q_drop);
+                    globalState.executeStatement(qDrop);
                 } catch (Throwable t2) {
                     throw new IgnoreMeException();
                 }

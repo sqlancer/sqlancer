@@ -42,7 +42,7 @@ public interface DatabaseProvider<G extends GlobalState<O, ?, C>, O extends DBMS
      *             if testing fails.
      *
      */
-    void QPG(G globalState) throws Exception;
+    void qpg(G globalState) throws Exception;
 
     C createDatabase(G globalState) throws Exception;
 

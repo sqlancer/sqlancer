@@ -45,7 +45,7 @@ import sqlancer.common.query.SQLancerResultSet;
 
 @AutoService(DatabaseProvider.class)
 public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalState, CockroachDBOptions> {
-    private HashMap<String, String> queryPlanPool;
+    private Map<String, String> queryPlanPool;
 
     // Data structures for MAB algorithm at table mutation
     private double[] weightedAverageReward;
@@ -349,8 +349,7 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             // Remove the invalid views
             checkViewsAreValid(globalState);
             reward = checkQueryPlan(globalState);
-        } catch (IgnoreMeException e) {
-        } catch (AssertionError e) {
+        } catch (IgnoreMeException | AssertionError e) {
         } finally {
             updateReward(selectedActionIndex, (double) reward / (double) queryPlanPool.size(), globalState);
             currentMutationOperator = selectedActionIndex;
@@ -471,7 +470,7 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
                 }
             }
         } catch (AssertionError e) {
-            new AssertionError("Explain failed: " + explainQuery);
+            throw new AssertionError("Explain failed: " + explainQuery);
         }
 
         return queryPlan;
