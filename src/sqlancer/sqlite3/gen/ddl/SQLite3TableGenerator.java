@@ -5,12 +5,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3GlobalState;
+import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.sqlite3.SQLite3Options.SQLite3OracleFactory;
 import sqlancer.sqlite3.gen.SQLite3ColumnBuilder;
 import sqlancer.sqlite3.gen.SQLite3Common;
@@ -46,12 +48,19 @@ public class SQLite3TableGenerator {
         this.existingSchema = globalState.getSchema();
     }
 
+    public static SQLQueryAdapter createRandomTableStatement(SQLite3GlobalState globalState) {
+        if (globalState.getSchema().getTables().getTables().size() > SQLite3Provider.MAX_TABLES) {
+            throw new IgnoreMeException();
+        }
+        return createTableStatement(globalState.getSchema().getFreeTableName(), globalState);
+    }
+
     public static SQLQueryAdapter createTableStatement(String tableName, SQLite3GlobalState globalState) {
         SQLite3TableGenerator sqLite3TableGenerator = new SQLite3TableGenerator(tableName, globalState);
         sqLite3TableGenerator.start();
         ExpectedErrors errors = new ExpectedErrors();
         SQLite3Errors.addTableManipulationErrors(errors);
-        errors.add("second argument to likelihood() must be a constant between 0.0 and 1.0");
+        errors.add("second argument to LIKELIHOOD() must be a constant between 0.0 and 1.0");
         errors.add("non-deterministic functions prohibited in generated columns");
         errors.add("subqueries prohibited in generated columns");
         errors.add("parser stack overflow");

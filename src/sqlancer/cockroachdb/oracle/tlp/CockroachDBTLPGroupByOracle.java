@@ -19,7 +19,7 @@ public class CockroachDBTLPGroupByOracle extends CockroachDBTLPBase {
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         select.setGroupByExpressions(select.getFetchColumns());
         select.setWhereClause(null);
@@ -38,6 +38,7 @@ public class CockroachDBTLPGroupByOracle extends CockroachDBTLPBase {
                 secondQueryString, thirdQueryString, combinedString, true, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
+        return originalQueryString;
     }
 
     @Override

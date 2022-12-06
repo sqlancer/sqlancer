@@ -18,7 +18,7 @@ public class TiDBTLPWhereOracle extends TiDBTLPBase {
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         select.setWhereClause(null);
         String originalQueryString = TiDBVisitor.asString(select);
@@ -40,6 +40,7 @@ public class TiDBTLPWhereOracle extends TiDBTLPBase {
                 thirdQueryString, combinedString, !orderBy, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
+        return originalQueryString;
     }
 
 }

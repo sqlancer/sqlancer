@@ -16,7 +16,7 @@ public class SQLite3Fuzzer implements TestOracle<SQLite3GlobalState> {
     }
 
     @Override
-    public void check() throws Exception {
+    public String check() throws Exception {
         String s = SQLite3Visitor
                 .asString(SQLite3RandomQuerySynthesizer.generate(globalState, Randomly.smallNumber() + 1)) + ";";
         try {
@@ -27,6 +27,7 @@ public class SQLite3Fuzzer implements TestOracle<SQLite3GlobalState> {
         } catch (Error e) {
 
         }
+        return s;
     }
 
 }

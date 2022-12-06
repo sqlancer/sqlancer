@@ -12,7 +12,7 @@ public final class SQLite3DropTableGenerator {
     }
 
     public static SQLQueryAdapter dropTable(SQLite3GlobalState globalState) {
-        if (globalState.getSchema().getTables(t -> !t.isView()).size() == 1) {
+        if (globalState.getSchema().getTables(t -> !t.isView()).size() <= 1) {
             throw new IgnoreMeException();
         }
         StringBuilder sb = new StringBuilder("DROP TABLE ");

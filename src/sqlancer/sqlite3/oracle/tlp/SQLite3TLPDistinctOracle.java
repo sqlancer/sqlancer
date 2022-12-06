@@ -16,7 +16,7 @@ public class SQLite3TLPDistinctOracle extends SQLite3TLPBase {
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         select.setSelectType(SelectType.DISTINCT);
         select.setWhereClause(null);
@@ -35,6 +35,7 @@ public class SQLite3TLPDistinctOracle extends SQLite3TLPBase {
                 secondQueryString, thirdQueryString, combinedString, true, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
+        return originalQueryString;
     }
 
 }

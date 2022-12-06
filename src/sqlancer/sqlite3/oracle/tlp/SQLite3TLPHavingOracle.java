@@ -42,7 +42,7 @@ public class SQLite3TLPHavingOracle implements TestOracle<SQLite3GlobalState> {
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         SQLite3Schema s = state.getSchema();
         SQLite3Tables targetTables = s.getRandomTableNonEmptyTables();
         List<SQLite3Expression> groupByColumns = Randomly.nonEmptySubset(targetTables.getColumns()).stream()
@@ -83,5 +83,6 @@ public class SQLite3TLPHavingOracle implements TestOracle<SQLite3GlobalState> {
         if (new HashSet<>(resultSet).size() != new HashSet<>(secondResultSet).size()) {
             throw new AssertionError(originalQueryString + ";\n" + combinedString + ";");
         }
+        return originalQueryString;
     }
 }

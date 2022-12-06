@@ -1,12 +1,15 @@
 package sqlancer.cockroachdb;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import com.google.auto.service.AutoService;
 
@@ -23,6 +26,8 @@ import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.gen.CockroachDBCommentOnGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBCreateStatisticsGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBDeleteGenerator;
+import sqlancer.cockroachdb.gen.CockroachDBDropTableGenerator;
+import sqlancer.cockroachdb.gen.CockroachDBDropViewGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBIndexGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBInsertGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBRandomQuerySynthesizer;
@@ -36,24 +41,49 @@ import sqlancer.cockroachdb.gen.CockroachDBViewGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
+import sqlancer.common.query.SQLancerResultSet;
 
 @AutoService(DatabaseProvider.class)
 public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalState, CockroachDBOptions> {
+    private HashMap<String, String> queryPlanPool;
+
+    // Data structures for MAB algorithm at table mutation
+    private double[] weightedAverageReward;
+    private int[] cumulativeMutationTimes;
+
+    // For post reward calculation
+    private int currentSelectRewards;
+    private int currentSelectCounts;
+    private int currentMutationOperator;
+
+    public static final int MAX_INDEXES = 20; // The maximum number of indexes to be created
+    public static final int MAX_TABLES = 10; // The maximum number of tables/virtual tables/ rtree tables/ views to be
+                                             // created
 
     public CockroachDBProvider() {
         super(CockroachDBGlobalState.class, CockroachDBOptions.class);
+        queryPlanPool = new HashMap<>();
+        weightedAverageReward = new double[Action.values().length];
+        cumulativeMutationTimes = new int[Action.values().length];
+
+        // For post reward calculation
+        currentSelectRewards = 0;
+        currentSelectCounts = 0;
+        currentMutationOperator = -1;
     }
 
     public enum Action {
-        INSERT(CockroachDBInsertGenerator::insert), //
-        TRUNCATE(CockroachDBTruncateGenerator::truncate), //
-        CREATE_STATISTICS(CockroachDBCreateStatisticsGenerator::create), //
-        SET_SESSION(CockroachDBSetSessionGenerator::create), //
-        CREATE_INDEX(CockroachDBIndexGenerator::create), //
-        UPDATE(CockroachDBUpdateGenerator::gen), //
+        CREATE_TABLE(CockroachDBTableGenerator::generate), CREATE_INDEX(CockroachDBIndexGenerator::create), //
         CREATE_VIEW(CockroachDBViewGenerator::generate), //
+        CREATE_STATISTICS(CockroachDBCreateStatisticsGenerator::create), //
+        INSERT(CockroachDBInsertGenerator::insert), //
+        UPDATE(CockroachDBUpdateGenerator::gen), //
+        SET_SESSION(CockroachDBSetSessionGenerator::create), //
         SET_CLUSTER_SETTING(CockroachDBSetClusterSettingGenerator::create), //
         DELETE(CockroachDBDeleteGenerator::delete), //
+        TRUNCATE(CockroachDBTruncateGenerator::truncate), //
+        DROP_TABLE(CockroachDBDropTableGenerator::drop), //
+        DROP_VIEW(CockroachDBDropViewGenerator::drop), //
         COMMENT_ON(CockroachDBCommentOnGenerator::comment), //
         SHOW(CockroachDBShowGenerator::show), //
         TRANSACTION((g) -> {
@@ -65,8 +95,7 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             ExpectedErrors errors = new ExpectedErrors();
             if (Randomly.getBoolean()) {
                 sb.append("(");
-                sb.append(Randomly.nonEmptySubset("VERBOSE", "TYPES", "OPT", "DISTSQL", "VEC").stream()
-                        .collect(Collectors.joining(", ")));
+                sb.append(Randomly.fromOptions("VERBOSE", "TYPES", "OPT", "DISTSQL", "VEC"));
                 sb.append(") ");
                 errors.add("cannot set EXPLAIN mode more than once");
                 errors.add("unable to vectorize execution plan");
@@ -199,6 +228,9 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
                                   */
                 break;
             case TRANSACTION:
+            case CREATE_TABLE:
+            case DROP_TABLE:
+            case DROP_VIEW:
                 nrPerformed = 0; // r.getInteger(0, 0);
                 break;
             default:
@@ -243,7 +275,7 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             total--;
         }
         if (globalState.getDbmsSpecificOptions().makeVectorizationMoreLikely && Randomly.getBoolean()) {
-            manager.execute(new SQLQueryAdapter("SET vectorize=on;"));
+            manager.execute(new SQLQueryAdapter("SET vectorize=off;"));
         }
     }
 
@@ -273,7 +305,7 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             s.execute(createDatabaseCommand);
         }
         con.close();
-        con = DriverManager.getConnection("jdbc:postgresql://localhost:26257/" + databaseName,
+        con = DriverManager.getConnection(String.format("jdbc:postgresql://%s:%d/%s", host, port, databaseName),
                 globalState.getOptions().getUserName(), globalState.getOptions().getPassword());
         return new SQLConnection(con);
     }
@@ -281,6 +313,168 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
     @Override
     public String getDBMSName() {
         return "cockroachdb";
+    }
+
+    @Override
+    public synchronized boolean mutateTables(CockroachDBGlobalState globalState) throws Exception {
+        // Update the post rewards
+        if (currentMutationOperator != -1) {
+            double k = globalState.getOptions().getQPGk();
+            if (k == 0) {
+                weightedAverageReward[currentMutationOperator] += ((double) currentSelectRewards
+                        / (double) currentSelectCounts) / cumulativeMutationTimes[currentMutationOperator];
+            } else {
+                weightedAverageReward[currentMutationOperator] += ((double) currentSelectRewards
+                        / (double) currentSelectCounts) / k; // Update the post rewards without updating the cumulative
+                                                             // mutation times
+            }
+        }
+        currentMutationOperator = -1;
+
+        // Mutate tables
+        int selectedActionIndex = 0;
+        if (globalState.getOptions().enableRandomQPG()
+                || Randomly.getPercentage() < globalState.getOptions().getQPGProbability()) {
+            selectedActionIndex = globalState.getRandomly().getInteger(0, Action.values().length);
+        } else {
+            selectedActionIndex = getMaxRewardIndex();
+        }
+        cumulativeMutationTimes[selectedActionIndex]++;
+        int reward = 0;
+
+        try {
+            SQLQueryAdapter queryMutateTable = Action.values()[selectedActionIndex].getQuery(globalState);
+            globalState.executeStatement(queryMutateTable);
+
+            // Remove the invalid views
+            checkViewsAreValid(globalState);
+            reward = checkQueryPlan(globalState);
+        } catch (IgnoreMeException e) {
+        } catch (AssertionError e) {
+        } finally {
+            updateReward(selectedActionIndex, (double) reward / (double) queryPlanPool.size(), globalState);
+            currentMutationOperator = selectedActionIndex;
+        }
+        currentSelectRewards = 0;
+        currentSelectCounts = 0;
+        // Debug
+        // System.out.println(Thread.currentThread().getName() + ": " + selectedActionIndex);
+        // for (double weight : weightedAverageReward) {
+        // System.out.print(weight + " ");
+        // }
+        // System.out.println("Weighted Average Reward");
+        return true;
+    }
+
+    @Override
+    public boolean addQueryPlan(CockroachDBGlobalState globalState, String selectStr) throws Exception {
+        String queryPlan = getQueryPlan(globalState, selectStr);
+
+        if (globalState.getOptions().logQueryPlan()) {
+            globalState.getLogger().writeQueryPlan(queryPlan);
+        }
+
+        currentSelectCounts += 1;
+        if (queryPlanPool.containsKey(queryPlan)) {
+            return false;
+        } else {
+            queryPlanPool.put(queryPlan, selectStr);
+            currentSelectRewards += 1;
+            return true;
+        }
+    }
+
+    private int checkQueryPlan(CockroachDBGlobalState globalState) throws Exception {
+        int newQueryPlanFound = 0;
+        HashMap<String, String> modifiedQueryPlan = new HashMap<>();
+        for (Iterator<Map.Entry<String, String>> it = queryPlanPool.entrySet().iterator(); it.hasNext();) {
+            Map.Entry<String, String> item = it.next();
+            String queryPlan = item.getKey();
+            String selectStr = item.getValue();
+            String newQueryPlan = getQueryPlan(globalState, selectStr);
+            if (newQueryPlan.isEmpty()) { // Invalid query
+                it.remove();
+            } else if (!queryPlan.equals(newQueryPlan)) { // The query plan has changed
+                it.remove();
+                modifiedQueryPlan.put(newQueryPlan, selectStr);
+                if (!queryPlanPool.containsKey(newQueryPlan)) { // The new query plan found
+                    newQueryPlanFound++;
+                }
+            }
+        }
+        queryPlanPool.putAll(modifiedQueryPlan);
+        return newQueryPlanFound;
+    }
+
+    private int getMaxRewardIndex() {
+        int maxIndex = 0;
+        double maxReward = 0.0;
+
+        for (int j = 0; j < weightedAverageReward.length; j++) {
+            double curReward = weightedAverageReward[j];
+            if (curReward > maxReward) {
+                maxIndex = j;
+                maxReward = curReward;
+            }
+        }
+
+        return maxIndex;
+    }
+
+    private void updateReward(int actionIndex, double reward, CockroachDBGlobalState globalState) {
+        double k = globalState.getOptions().getQPGk();
+        if (k == 0) {
+            weightedAverageReward[actionIndex] += (reward - weightedAverageReward[actionIndex])
+                    / cumulativeMutationTimes[actionIndex];
+        } else {
+            weightedAverageReward[actionIndex] += (reward - weightedAverageReward[actionIndex]) / k; // The latest
+                                                                                                     // reward always
+                                                                                                     // takes k percent
+                                                                                                     // of the total
+                                                                                                     // reward
+        }
+    }
+
+    @Override
+    public String getQueryPlan(CockroachDBGlobalState globalState, String selectStr) throws Exception {
+        String queryPlan = "";
+        String explainQuery = "EXPLAIN (OPT) " + selectStr;
+        if (globalState.getOptions().logEachSelect()) {
+            globalState.getLogger().writeCurrent(explainQuery);
+            try {
+                globalState.getLogger().getCurrentFileWriter().flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        SQLQueryAdapter q = new SQLQueryAdapter(explainQuery, null);
+        boolean afterProjection = false; // Remove the concrete expression after each Projection operator
+        try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
+            if (rs != null) {
+                while (rs.next()) {
+                    String targetQueryPlan = rs.getString(1).replace("└──", "").replace("├──", "").replace("│", "")
+                            .trim() + ";"; // Unify format
+                    if (afterProjection) {
+                        afterProjection = false;
+                        continue;
+                    }
+                    if (targetQueryPlan.startsWith("projections")) {
+                        afterProjection = true;
+                    }
+                    // Remove all concrete expressions by keywords
+                    if (targetQueryPlan.contains(">") || targetQueryPlan.contains("<") || targetQueryPlan.contains("=")
+                            || targetQueryPlan.contains("*") || targetQueryPlan.contains("+")
+                            || targetQueryPlan.contains("'")) {
+                        continue;
+                    }
+                    queryPlan += targetQueryPlan;
+                }
+            }
+        } catch (AssertionError e) {
+            new AssertionError("Explain failed: " + explainQuery);
+        }
+
+        return queryPlan;
     }
 
 }

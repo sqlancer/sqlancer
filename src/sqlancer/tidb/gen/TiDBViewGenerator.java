@@ -5,6 +5,7 @@ import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.tidb.TiDBErrors;
+import sqlancer.tidb.TiDBProvider;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 
 public final class TiDBViewGenerator {
@@ -13,6 +14,9 @@ public final class TiDBViewGenerator {
     }
 
     public static SQLQueryAdapter getQuery(TiDBGlobalState globalState) {
+        if (globalState.getSchema().getDatabaseTables().size() > TiDBProvider.MAX_TABLES) {
+            throw new IgnoreMeException();
+        }
         int nrColumns = Randomly.smallNumber() + 1;
         StringBuilder sb = new StringBuilder("CREATE ");
         if (Randomly.getBoolean()) {

@@ -2,12 +2,14 @@ package sqlancer.sqlite3.gen.ddl;
 
 import java.sql.SQLException;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3GlobalState;
+import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.sqlite3.SQLite3Options.SQLite3OracleFactory;
 import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.ast.SQLite3Expression;
@@ -29,9 +31,12 @@ public final class SQLite3ViewGenerator {
     }
 
     public static SQLQueryAdapter generate(SQLite3GlobalState globalState) throws SQLException {
+        if (globalState.getSchema().getTables().getTables().size() >= SQLite3Provider.MAX_TABLES) {
+            throw new IgnoreMeException();
+        }
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE");
-        if (Randomly.getBoolean()) {
+        if (globalState.getDbmsSpecificOptions().testTempTables && Randomly.getBoolean()) {
             sb.append(" ");
             sb.append(Randomly.fromOptions("TEMP", "TEMPORARY"));
         }

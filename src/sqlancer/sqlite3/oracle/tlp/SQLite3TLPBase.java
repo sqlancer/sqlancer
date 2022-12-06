@@ -11,6 +11,7 @@ import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3GlobalState;
+import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.ast.SQLite3Expression;
 import sqlancer.sqlite3.ast.SQLite3Expression.Join;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
@@ -37,7 +38,7 @@ public class SQLite3TLPBase extends TernaryLogicPartitioningOracleBase<SQLite3Ex
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
         gen = new SQLite3ExpressionGenerator(state).setColumns(targetTables.getColumns());
@@ -50,15 +51,21 @@ public class SQLite3TLPBase extends TernaryLogicPartitioningOracleBase<SQLite3Ex
         select.setJoinClauses(joinStatements.stream().collect(Collectors.toList()));
         select.setFromTables(tableRefs);
         select.setWhereClause(null);
+        return SQLite3Visitor.asString(select);
     }
 
     List<SQLite3Expression> generateFetchColumns() {
         List<SQLite3Expression> columns = new ArrayList<>();
-        if (Randomly.getBoolean()) {
+        if (Randomly.getBoolean() || targetTables.getColumns().size() == 0) {
             columns.add(new SQLite3ColumnName(SQLite3Column.createDummy("*"), null));
         } else {
-            columns = Randomly.nonEmptySubset(targetTables.getColumns()).stream()
-                    .map(c -> new SQLite3ColumnName(c, null)).collect(Collectors.toList());
+            try {
+                columns = Randomly.nonEmptySubset(targetTables.getColumns()).stream()
+                        .map(c -> new SQLite3ColumnName(c, null)).collect(Collectors.toList());
+            } catch (AssertionError e) { // For debug purposes. TODO: remove
+                throw new AssertionError(
+                        "Empty columns: " + targetTables.tableNamesAsString() + targetTables.getColumns());
+            }
         }
         return columns;
     }

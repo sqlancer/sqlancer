@@ -43,7 +43,7 @@ public class CockroachDBNoRECOracle extends NoRECBase<CockroachDBGlobalState>
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         CockroachDBTables tables = state.getSchema().getRandomTableNonEmptyTables();
         List<CockroachDBTableReference> tableL = tables.getTables().stream().map(t -> new CockroachDBTableReference(t))
                 .collect(Collectors.toList());
@@ -63,6 +63,7 @@ public class CockroachDBNoRECOracle extends NoRECBase<CockroachDBGlobalState>
             state.getState().getLocalState().log(optimizedQueryString + ";\n" + unoptimizedQueryString + ";");
             throw new AssertionError(CockroachDBVisitor.asString(whereCondition));
         }
+        return optimizedQueryString;
     }
 
     public static List<CockroachDBExpression> getJoins(List<CockroachDBExpression> tableList,

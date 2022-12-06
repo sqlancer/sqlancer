@@ -22,7 +22,7 @@ public class CockroachDBTLPWhereOracle extends CockroachDBTLPBase {
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         String originalQueryString = CockroachDBVisitor.asString(select);
 
@@ -44,5 +44,6 @@ public class CockroachDBTLPWhereOracle extends CockroachDBTLPBase {
                 thirdQueryString, combinedString, !allowOrderBy, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
+        return originalQueryString;
     }
 }
