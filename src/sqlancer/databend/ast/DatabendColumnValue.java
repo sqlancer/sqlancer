@@ -14,10 +14,12 @@ public class DatabendColumnValue extends ColumnReferenceNode<DatabendExpression,
         this.expectedValue = value;
     }
 
+    @Override
     public DatabendConstant getExpectedValue() {
         return expectedValue;
     }
 
+    @Override
     public DatabendDataType getExpectedType() {
         return getColumn().getType().getPrimitiveDataType();
     }

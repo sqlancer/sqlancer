@@ -16,6 +16,7 @@ public final class DatabendErrors {
         errors.add("index out of bounds"); // bug
         errors.add("validity's length must be equal"); // bug
         errors.add("validity must be equal to the array's length"); // bug
+
         /*
          * TODO column为not null 时，注意default不能为null DROP DATABASE IF EXISTS databend2; CREATE DATABASE databend2; USE
          * databend2; CREATE TABLE t0(c0VARCHAR VARCHAR NULL, c1VARCHAR VARCHAR NULL, c2FLOAT FLOAT NOT NULL

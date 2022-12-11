@@ -27,7 +27,7 @@ public class QuestDBOptions implements DBMSSpecificOptions<QuestDBOracleFactory>
         // TODO (anxing): implement test oracles
         WHERE {
             @Override
-            public TestOracle create(QuestDBGlobalState globalState) throws SQLException {
+            public TestOracle<QuestDBGlobalState> create(QuestDBGlobalState globalState) throws SQLException {
                 return new QuestDBQueryPartitioningWhereTester(globalState);
             }
         }

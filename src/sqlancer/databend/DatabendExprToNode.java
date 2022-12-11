@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.databend.ast.DatabendExpression;
 
-public class DatabendExprToNode {
+public final class DatabendExprToNode {
 
     private DatabendExprToNode() {
 

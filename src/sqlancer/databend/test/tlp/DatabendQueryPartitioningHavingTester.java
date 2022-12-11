@@ -8,7 +8,6 @@ import java.util.List;
 import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
-import sqlancer.common.oracle.TestOracle;
 import sqlancer.databend.DatabendErrors;
 import sqlancer.databend.DatabendExprToNode;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
@@ -17,7 +16,7 @@ import sqlancer.databend.DatabendToStringVisitor;
 import sqlancer.databend.ast.DatabendConstant;
 import sqlancer.databend.ast.DatabendExpression;
 
-public class DatabendQueryPartitioningHavingTester extends DatabendQueryPartitioningBase implements TestOracle {
+public class DatabendQueryPartitioningHavingTester extends DatabendQueryPartitioningBase {
 
     public DatabendQueryPartitioningHavingTester(DatabendGlobalState state) {
         super(state);

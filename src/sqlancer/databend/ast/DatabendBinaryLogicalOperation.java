@@ -47,8 +47,8 @@ public class DatabendBinaryLogicalOperation extends NewBinaryOperatorNode<Databe
             public DatabendConstant apply(DatabendConstant left, DatabendConstant right) {
                 DatabendConstant leftVal = left.cast(DatabendDataType.BOOLEAN);
                 DatabendConstant rightVal = right.cast(DatabendDataType.BOOLEAN);
-                assert (leftVal.isNull() || leftVal.isBoolean()) : leftVal + "不是NULL也不是Boolean类型";
-                assert (rightVal.isNull() || rightVal.isBoolean()) : rightVal + "不是NULL也不是Boolean类型";
+                assert leftVal.isNull() || leftVal.isBoolean() : leftVal + "不是NULL也不是Boolean类型";
+                assert rightVal.isNull() || rightVal.isBoolean() : rightVal + "不是NULL也不是Boolean类型";
                 if (leftVal.isNull()) {
                     if (rightVal.isNull()) {
                         return DatabendConstant.createNullConstant();
@@ -75,8 +75,8 @@ public class DatabendBinaryLogicalOperation extends NewBinaryOperatorNode<Databe
             public DatabendConstant apply(DatabendConstant left, DatabendConstant right) {
                 DatabendConstant leftVal = left.cast(DatabendDataType.BOOLEAN);
                 DatabendConstant rightVal = right.cast(DatabendDataType.BOOLEAN);
-                assert (leftVal.isNull() || leftVal.isBoolean()) : leftVal + "不是NULL也不是Boolean类型";
-                assert (rightVal.isNull() || rightVal.isBoolean()) : rightVal + "不是NULL也不是Boolean类型";
+                assert leftVal.isNull() || leftVal.isBoolean() : leftVal + "不是NULL也不是Boolean类型";
+                assert rightVal.isNull() || rightVal.isBoolean() : rightVal + "不是NULL也不是Boolean类型";
                 if (leftVal.isBoolean() && leftVal.asBoolean()) {
                     return DatabendConstant.createBooleanConstant(true);
                 }

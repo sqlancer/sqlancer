@@ -27,7 +27,8 @@ import sqlancer.databend.ast.DatabendSelect;
 import sqlancer.databend.gen.DatabendNewExpressionGenerator;
 
 public class DatabendQueryPartitioningBase
-        extends TernaryLogicPartitioningOracleBase<DatabendExpression, DatabendGlobalState> implements TestOracle {
+        extends TernaryLogicPartitioningOracleBase<DatabendExpression, DatabendGlobalState>
+        implements TestOracle<DatabendGlobalState> {
 
     DatabendSchema s;
     DatabendTables targetTables;

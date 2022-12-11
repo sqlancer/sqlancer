@@ -63,10 +63,8 @@ public final class DatabendRandomQuerySynthesizer {
 
         List<Node<DatabendExpression>> noExprColumns = new ArrayList<>(columnOfLeafNode);
 
-        if (Randomly.getBoolean() && noExprColumns.size() > 0) {
-            if (!isDistinct) {
-                select.setOrderByExpressions(Randomly.nonEmptySubset(noExprColumns));
-            }
+        if (Randomly.getBoolean() && !noExprColumns.isEmpty() && !isDistinct) {
+            select.setOrderByExpressions(Randomly.nonEmptySubset(noExprColumns));
             // TODO (for SELECT DISTINCT, ORDER BY expressions must appear in select list) isDistinct
             // 需要orderby输入每个select list，可以用数字代替比如：1,2,3...
         }
@@ -77,7 +75,7 @@ public final class DatabendRandomQuerySynthesizer {
 
         noExprColumns = new ArrayList<>(columnOfLeafNode);
 
-        if (Randomly.getBoolean() && noExprColumns.size() > 0) {
+        if (Randomly.getBoolean() && !noExprColumns.isEmpty()) {
             select.setGroupByExpressions(noExprColumns);
         }
 

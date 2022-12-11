@@ -29,7 +29,7 @@ import sqlancer.yugabyte.ysql.ast.YSQLPrefixOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLPrefixOperation.PrefixOperator;
 import sqlancer.yugabyte.ysql.ast.YSQLSelect;
 
-public class YSQLTLPAggregateOracle extends YSQLTLPBase implements TestOracle {
+public class YSQLTLPAggregateOracle extends YSQLTLPBase implements TestOracle<YSQLGlobalState> {
 
     private String firstResult;
     private String secondResult;

@@ -28,7 +28,7 @@ public class MySQLOptions implements DBMSSpecificOptions<MySQLOracleFactory> {
         TLP_WHERE {
 
             @Override
-            public TestOracle create(MySQLGlobalState globalState) throws SQLException {
+            public TestOracle<MySQLGlobalState> create(MySQLGlobalState globalState) throws SQLException {
                 return new MySQLTLPWhereOracle(globalState);
             }
 
@@ -36,7 +36,7 @@ public class MySQLOptions implements DBMSSpecificOptions<MySQLOracleFactory> {
         PQS {
 
             @Override
-            public TestOracle create(MySQLGlobalState globalState) throws SQLException {
+            public TestOracle<MySQLGlobalState> create(MySQLGlobalState globalState) throws SQLException {
                 return new MySQLPivotedQuerySynthesisOracle(globalState);
             }
 

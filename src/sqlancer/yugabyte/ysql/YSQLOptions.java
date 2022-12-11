@@ -48,25 +48,25 @@ public class YSQLOptions implements DBMSSpecificOptions<YSQLOracleFactory> {
     public enum YSQLOracleFactory implements OracleFactory<YSQLGlobalState> {
         FUZZER {
             @Override
-            public TestOracle create(YSQLGlobalState globalState) throws SQLException {
+            public TestOracle<YSQLGlobalState> create(YSQLGlobalState globalState) throws SQLException {
                 return new YSQLFuzzer(globalState);
             }
         },
         CATALOG {
             @Override
-            public TestOracle create(YSQLGlobalState globalState) throws SQLException {
+            public TestOracle<YSQLGlobalState> create(YSQLGlobalState globalState) throws SQLException {
                 return new YSQLCatalog(globalState);
             }
         },
         NOREC {
             @Override
-            public TestOracle create(YSQLGlobalState globalState) throws SQLException {
+            public TestOracle<YSQLGlobalState> create(YSQLGlobalState globalState) throws SQLException {
                 return new YSQLNoRECOracle(globalState);
             }
         },
         PQS {
             @Override
-            public TestOracle create(YSQLGlobalState globalState) throws SQLException {
+            public TestOracle<YSQLGlobalState> create(YSQLGlobalState globalState) throws SQLException {
                 return new YSQLPivotedQuerySynthesisOracle(globalState);
             }
 
@@ -77,19 +77,19 @@ public class YSQLOptions implements DBMSSpecificOptions<YSQLOracleFactory> {
         },
         HAVING {
             @Override
-            public TestOracle create(YSQLGlobalState globalState) throws SQLException {
+            public TestOracle<YSQLGlobalState> create(YSQLGlobalState globalState) throws SQLException {
                 return new YSQLTLPHavingOracle(globalState);
             }
 
         },
         QUERY_PARTITIONING {
             @Override
-            public TestOracle create(YSQLGlobalState globalState) throws SQLException {
-                List<TestOracle> oracles = new ArrayList<>();
+            public TestOracle<YSQLGlobalState> create(YSQLGlobalState globalState) throws SQLException {
+                List<TestOracle<YSQLGlobalState>> oracles = new ArrayList<>();
                 oracles.add(new YSQLTLPWhereOracle(globalState));
                 oracles.add(new YSQLTLPHavingOracle(globalState));
                 oracles.add(new YSQLTLPAggregateOracle(globalState));
-                return new CompositeTestOracle(oracles, globalState);
+                return new CompositeTestOracle<YSQLGlobalState>(oracles, globalState);
             }
         }
 

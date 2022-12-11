@@ -14,7 +14,6 @@ import sqlancer.common.ast.newast.NewFunctionNode;
 import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
 import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
 import sqlancer.common.ast.newast.Node;
-import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.databend.DatabendErrors;
@@ -32,7 +31,7 @@ import sqlancer.databend.ast.DatabendSelect;
 import sqlancer.databend.ast.DatabendUnaryPostfixOperation.DatabendUnaryPostfixOperator;
 import sqlancer.databend.ast.DatabendUnaryPrefixOperation.DatabendUnaryPrefixOperator;
 
-public class DatabendQueryPartitioningAggregateTester extends DatabendQueryPartitioningBase implements TestOracle {
+public class DatabendQueryPartitioningAggregateTester extends DatabendQueryPartitioningBase {
 
     private String firstResult;
     private String secondResult;

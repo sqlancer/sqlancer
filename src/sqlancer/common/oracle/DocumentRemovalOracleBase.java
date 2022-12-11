@@ -3,7 +3,7 @@ package sqlancer.common.oracle;
 import sqlancer.GlobalState;
 import sqlancer.common.gen.ExpressionGenerator;
 
-public abstract class DocumentRemovalOracleBase<E, S extends GlobalState<?, ?, ?>> implements TestOracle {
+public abstract class DocumentRemovalOracleBase<E, S extends GlobalState<?, ?, ?>> implements TestOracle<S> {
 
     protected E predicate;
 

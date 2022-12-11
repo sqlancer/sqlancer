@@ -94,8 +94,8 @@ public class DatabendNewExpressionGenerator
 
     public List<Node<DatabendExpression>> generateOrderBy() {
         List<DatabendColumn> randomColumns = Randomly.subset(columns);
-        return randomColumns.stream()
-                .map(c -> new DatabendOrderByTerm(new DatabendColumnValue(c, null), NewOrderingTerm.Ordering.getRandom()))
+        return randomColumns.stream().map(
+                c -> new DatabendOrderByTerm(new DatabendColumnValue(c, null), NewOrderingTerm.Ordering.getRandom()))
                 .collect(Collectors.toList());
     }
 

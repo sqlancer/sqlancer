@@ -9,7 +9,7 @@ import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema.DatabendDataType;
 import sqlancer.databend.DatabendToStringVisitor;
 
-public class DatabendDeleteGenerator {
+public final class DatabendDeleteGenerator {
 
     private DatabendDeleteGenerator() {
     }

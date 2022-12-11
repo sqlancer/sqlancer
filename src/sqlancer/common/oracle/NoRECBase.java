@@ -6,7 +6,7 @@ import sqlancer.SQLConnection;
 import sqlancer.SQLGlobalState;
 import sqlancer.common.query.ExpectedErrors;
 
-public abstract class NoRECBase<S extends SQLGlobalState<?, ?>> implements TestOracle {
+public abstract class NoRECBase<S extends SQLGlobalState<?, ?>> implements TestOracle<S> {
 
     protected final S state;
     protected final ExpectedErrors errors = new ExpectedErrors();
