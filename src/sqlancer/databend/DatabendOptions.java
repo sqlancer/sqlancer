@@ -15,11 +15,12 @@ import sqlancer.common.oracle.TestOracle;
 import sqlancer.databend.DatabendOptions.DatabendOracleFactory;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.test.DatabendNoRECOracle;
-import sqlancer.databend.test.DatabendQueryPartitioningAggregateTester;
-import sqlancer.databend.test.DatabendQueryPartitioningDistinctTester;
-import sqlancer.databend.test.DatabendQueryPartitioningGroupByTester;
-import sqlancer.databend.test.DatabendQueryPartitioningHavingTester;
-import sqlancer.databend.test.DatabendQueryPartitioningWhereTester;
+import sqlancer.databend.test.DatabendPivotedQuerySynthesisOracle;
+import sqlancer.databend.test.tlp.DatabendQueryPartitioningAggregateTester;
+import sqlancer.databend.test.tlp.DatabendQueryPartitioningDistinctTester;
+import sqlancer.databend.test.tlp.DatabendQueryPartitioningGroupByTester;
+import sqlancer.databend.test.tlp.DatabendQueryPartitioningHavingTester;
+import sqlancer.databend.test.tlp.DatabendQueryPartitioningWhereTester;
 
 @Parameters(commandDescription = "Databend")
 public class DatabendOptions implements DBMSSpecificOptions<DatabendOracleFactory> {
@@ -147,7 +148,13 @@ public class DatabendOptions implements DBMSSpecificOptions<DatabendOracleFactor
                 oracles.add(new DatabendQueryPartitioningGroupByTester(globalState));
                 return new CompositeTestOracle(oracles, globalState);
             }
-        };
+        },
+        PQS {
+            @Override
+            public TestOracle create(DatabendGlobalState globalState) throws Exception {
+                return new DatabendPivotedQuerySynthesisOracle(globalState);
+            }
+        }
 
     }
 

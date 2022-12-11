@@ -1,22 +1,29 @@
 package sqlancer.databend;
 
+import static sqlancer.databend.DatabendSchema.DatabendDataType.INT;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.common.schema.AbstractRelationalTable;
+import sqlancer.common.schema.AbstractRowValue;
 import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.common.schema.TableIndex;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema.DatabendTable;
+import sqlancer.databend.ast.DatabendConstant;
 
 public class DatabendSchema extends AbstractSchema<DatabendGlobalState, DatabendTable> {
 
@@ -158,6 +165,55 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
             super(tables);
         }
 
+        public DatabendRowValue getRandomRowValue(SQLConnection con) throws SQLException {
+            String rowValueQuery = String.format("SELECT %s FROM %s ORDER BY 1 LIMIT 1", columnNamesAsString(
+                    c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
+                    tableNamesAsString());
+            Map<DatabendColumn, DatabendConstant> values = new HashMap<>();
+            try (Statement s = con.createStatement()) {
+                ResultSet rs = s.executeQuery(rowValueQuery);
+                if (!rs.next()) {
+                    throw new AssertionError("could not find random row " + rowValueQuery + "\n");
+                }
+                for (int i = 0; i < getColumns().size(); i++) {
+                    DatabendColumn column = getColumns().get(i);
+                    int columnIndex = rs.findColumn(column.getTable().getName() + column.getName());
+                    assert columnIndex == i + 1;
+                    DatabendConstant constant;
+                    if (rs.getString(columnIndex) == null) {
+                        constant = DatabendConstant.createNullConstant();
+                    } else {
+                        switch (column.getType().getPrimitiveDataType()) {
+                        case INT:
+                            constant = DatabendConstant.createIntConstant(rs.getLong(columnIndex));
+                            break;
+                        case BOOLEAN:
+                            constant = DatabendConstant.createBooleanConstant(rs.getBoolean(columnIndex));
+                            break;
+                        case VARCHAR:
+                            constant = DatabendConstant.createStringConstant(rs.getString(columnIndex));
+                            break;
+                        default:
+                            throw new IgnoreMeException();
+                        }
+                    }
+                    values.put(column, constant);
+                }
+                assert !rs.next();
+                return new DatabendRowValue(this, values);
+            } catch (SQLException e) {
+                throw new IgnoreMeException();
+            }
+        }
+
+    }
+
+    public static class DatabendRowValue extends AbstractRowValue<DatabendTables, DatabendColumn, DatabendConstant> {
+
+        DatabendRowValue(DatabendTables tables, Map<DatabendColumn, DatabendConstant> values) {
+            super(tables, values);
+        }
+
     }
 
     public DatabendSchema(List<DatabendTable> databaseTables) {
@@ -168,6 +224,12 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
         return new DatabendTables(Randomly.nonEmptySubset(getDatabaseTables()));
     }
 
+    public DatabendTables getRandomTableNonEmptyAndViewTables() {
+        List<DatabendTable> tables = getDatabaseTables().stream().filter(t -> !t.isView()).collect(Collectors.toList());
+        tables = Randomly.nonEmptySubset(tables);
+        return new DatabendTables(tables);
+    }
+
     private static DatabendCompositeDataType getColumnType(String typeString) {
         DatabendDataType primitiveType;
         int size = -1;
@@ -176,19 +238,19 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
         }
         switch (typeString) {
         case "INT":
-            primitiveType = DatabendDataType.INT;
+            primitiveType = INT;
             size = 4;
             break;
         case "SMALLINT":
-            primitiveType = DatabendDataType.INT;
+            primitiveType = INT;
             size = 2;
             break;
         case "BIGINT":
-            primitiveType = DatabendDataType.INT;
+            primitiveType = INT;
             size = 8;
             break;
         case "TINYINT":
-            primitiveType = DatabendDataType.INT;
+            primitiveType = INT;
             size = 1;
             break;
         case "VARCHAR":

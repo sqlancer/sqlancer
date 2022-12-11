@@ -1,17 +1,20 @@
-package sqlancer.databend.test;
+package sqlancer.databend.test.tlp;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.ComparatorHelper;
+import sqlancer.Randomly;
 import sqlancer.databend.DatabendErrors;
+import sqlancer.databend.DatabendExprToNode;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
+import sqlancer.databend.DatabendSchema;
 import sqlancer.databend.DatabendToStringVisitor;
 
-public class DatabendQueryPartitioningWhereTester extends DatabendQueryPartitioningBase {
+public class DatabendQueryPartitioningDistinctTester extends DatabendQueryPartitioningBase {
 
-    public DatabendQueryPartitioningWhereTester(DatabendGlobalState state) {
+    public DatabendQueryPartitioningDistinctTester(DatabendGlobalState state) {
         super(state);
         DatabendErrors.addGroupByErrors(errors);
     }
@@ -19,25 +22,23 @@ public class DatabendQueryPartitioningWhereTester extends DatabendQueryPartition
     @Override
     public void check() throws SQLException {
         super.check();
-        select.setWhereClause(null);
+        select.setDistinct(true);
+        select.setWhereClause(DatabendExprToNode.cast(gen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN)));
         String originalQueryString = DatabendToStringVisitor.asString(select);
 
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
-
-        // boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
-        boolean orderBy = false;
-        // if (orderBy) { //TODO 待开启
-        // select.setOrderByExpressions(gen.generateOrderBys());
-        // }
-        select.setWhereClause(predicate);
+        if (Randomly.getBoolean()) {
+            select.setDistinct(false);
+        }
+        select.setWhereClause(DatabendExprToNode.cast(predicate));
         String firstQueryString = DatabendToStringVisitor.asString(select);
-        select.setWhereClause(negatedPredicate);
+        select.setWhereClause(DatabendExprToNode.cast(negatedPredicate));
         String secondQueryString = DatabendToStringVisitor.asString(select);
-        select.setWhereClause(isNullPredicate);
+        select.setWhereClause(DatabendExprToNode.cast(isNullPredicate));
         String thirdQueryString = DatabendToStringVisitor.asString(select);
         List<String> combinedString = new ArrayList<>();
-        List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
-                thirdQueryString, combinedString, !orderBy, state, errors);
+        List<String> secondResultSet = ComparatorHelper.getCombinedResultSetNoDuplicates(firstQueryString,
+                secondQueryString, thirdQueryString, combinedString, true, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state, DatabendQueryPartitioningBase::canonicalizeResultValue);
     }

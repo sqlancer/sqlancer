@@ -45,8 +45,12 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
             for (int i = 0; i < globalState.getOptions().getNrQueries(); i++) {
                 try (OracleRunReproductionState localState = globalState.getState().createLocalState()) {
                     assert localState != null;
-                    oracle.check();
-                    globalState.getManager().incrementSelectQueryCount();
+                    try {
+                        oracle.check();
+                        globalState.getManager().incrementSelectQueryCount();
+                    } catch (IgnoreMeException e) {
+
+                    }
                     assert localState != null;
                     localState.executedWithoutError();
                 }

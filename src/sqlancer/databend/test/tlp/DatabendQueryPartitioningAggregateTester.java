@@ -1,4 +1,4 @@
-package sqlancer.databend.test;
+package sqlancer.databend.test.tlp;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -18,17 +18,19 @@ import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.databend.DatabendErrors;
+import sqlancer.databend.DatabendExprToNode;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema.DatabendCompositeDataType;
 import sqlancer.databend.DatabendSchema.DatabendDataType;
 import sqlancer.databend.DatabendToStringVisitor;
+import sqlancer.databend.ast.DatabendAggregateOperation;
+import sqlancer.databend.ast.DatabendAggregateOperation.DatabendAggregateFunction;
 import sqlancer.databend.ast.DatabendBinaryArithmeticOperation.DatabendBinaryArithmeticOperator;
 import sqlancer.databend.ast.DatabendCastOperation;
 import sqlancer.databend.ast.DatabendExpression;
 import sqlancer.databend.ast.DatabendSelect;
 import sqlancer.databend.ast.DatabendUnaryPostfixOperation.DatabendUnaryPostfixOperator;
 import sqlancer.databend.ast.DatabendUnaryPrefixOperation.DatabendUnaryPrefixOperator;
-import sqlancer.databend.gen.DatabendNewExpressionGenerator.DatabendAggregateFunction;
 
 public class DatabendQueryPartitioningAggregateTester extends DatabendQueryPartitioningBase implements TestOracle {
 
@@ -48,12 +50,12 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
         DatabendAggregateFunction aggregateFunction = Randomly.fromOptions(DatabendAggregateFunction.MAX,
                 DatabendAggregateFunction.MIN, DatabendAggregateFunction.SUM, DatabendAggregateFunction.COUNT,
                 DatabendAggregateFunction.AVG/* , DatabendAggregateFunction.STDDEV_POP */);
-        NewFunctionNode<DatabendExpression, DatabendAggregateFunction> aggregate = gen
+        NewFunctionNode<DatabendExpression, DatabendAggregateFunction> aggregate = (DatabendAggregateOperation) gen
                 .generateArgsForAggregate(aggregateFunction);
         List<Node<DatabendExpression>> fetchColumns = new ArrayList<>();
         fetchColumns.add(aggregate);
         while (Randomly.getBooleanWithRatherLowProbability()) {
-            fetchColumns.add(gen.generateAggregate()); // TODO 更换成非聚合函数
+            fetchColumns.add((DatabendAggregateOperation) gen.generateAggregate()); // TODO 更换成非聚合函数
         }
         select.setFetchColumns(Arrays.asList(aggregate));
         // if (Randomly.getBooleanWithRatherLowProbability()) {
@@ -81,7 +83,8 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
             NewFunctionNode<DatabendExpression, DatabendAggregateFunction> aggregate,
             List<Node<DatabendExpression>> from) {
         String metamorphicQuery;
-        Node<DatabendExpression> whereClause = gen.generateExpression(DatabendDataType.BOOLEAN);
+        Node<DatabendExpression> whereClause = DatabendExprToNode
+                .cast(gen.generateExpression(DatabendDataType.BOOLEAN));
         Node<DatabendExpression> negatedClause = new NewUnaryPrefixOperatorNode<>(whereClause,
                 DatabendUnaryPrefixOperator.NOT);
         Node<DatabendExpression> notNullClause = new NewUnaryPostfixOperatorNode<>(whereClause,
@@ -186,9 +189,10 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
         select.setFromList(from);
         select.setWhereClause(whereClause);
         select.setJoinList(joinList);
-         if (Randomly.getBooleanWithSmallProbability()) {
-             select.setGroupByExpressions(List.of(gen.generateConstant(DatabendDataType.INT))); // TODO 仍可加强
-         }
+        if (Randomly.getBooleanWithSmallProbability()) {
+            select.setGroupByExpressions(List.of(DatabendExprToNode.cast(gen.generateConstant(DatabendDataType.INT)))); // TODO
+                                                                                                                        // 仍可加强
+        }
         return select;
     }
 

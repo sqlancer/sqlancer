@@ -35,12 +35,10 @@ public class DatabendProvider extends SQLProviderAdapter<DatabendGlobalState, Da
 
     public enum Action implements AbstractAction<DatabendGlobalState> {
 
-        INSERT(DatabendInsertGenerator::getQuery),
-        DELETE(DatabendDeleteGenerator::generate),
+        INSERT(DatabendInsertGenerator::getQuery), DELETE(DatabendDeleteGenerator::generate),
         // TODO 等待databend实现update
         // UPDATE(DatabendUpdateGenerator::getQuery), //
-        CREATE_VIEW(DatabendViewGenerator::generate),
-        EXPLAIN((g) -> {
+        CREATE_VIEW(DatabendViewGenerator::generate), EXPLAIN((g) -> {
             ExpectedErrors errors = new ExpectedErrors();
             DatabendErrors.addExpressionErrors(errors);
             DatabendErrors.addGroupByErrors(errors);
