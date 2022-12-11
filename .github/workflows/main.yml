@@ -43,9 +43,9 @@ jobs:
         run: |
           echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" | sudo tee  /etc/apt/sources.list.d/pgdg.list
           curl https://install.citusdata.com/community/deb.sh | sudo bash
-          sudo apt-get -y install postgresql-13-citus-10.1
+          sudo apt-get -y install  postgresql-15-citus-11.1
           sudo chown -R $USER:$USER /var/run/postgresql
-          export PATH=/usr/lib/postgresql/13/bin:$PATH
+          export PATH=/usr/lib/postgresql/15/bin:$PATH
           cd ~
           mkdir -p citus/coordinator citus/worker1 citus/worker2
           initdb -D citus/coordinator
