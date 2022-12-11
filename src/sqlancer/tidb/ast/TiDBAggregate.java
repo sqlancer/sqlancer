@@ -16,8 +16,6 @@ public class TiDBAggregate extends FunctionNode<TiDBAggregateFunction, TiDBExpre
         BIT_AND(1), //
         BIT_OR(1), //
         MAX(1);
-
-
         private int nrArgs;
 
         TiDBAggregateFunction(int nrArgs) {
