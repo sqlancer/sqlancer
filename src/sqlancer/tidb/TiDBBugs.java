@@ -42,9 +42,6 @@ public final class TiDBBugs {
     // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/50
     public static boolean bug50;
 
-    // https://github.com/citusdata/citus/issues/4079
-    public static boolean bug4079;
-
     // https://github.com/pingcap/tidb/issues/35677
     public static boolean bug35677 = true;
 
@@ -55,7 +52,7 @@ public final class TiDBBugs {
     public static boolean bug35652 = true;
 
     // https://github.com/pingcap/tidb/issues/38295
-    public static boolean bug38295 = true;
+    public static boolean bug38295;
 
     private TiDBBugs() {
     }
