@@ -9,6 +9,7 @@ import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3GlobalState;
+import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.gen.dml.SQLite3DeleteGenerator;
@@ -31,6 +32,10 @@ public final class SQLite3CreateTriggerGenerator {
     }
 
     public static SQLQueryAdapter create(SQLite3GlobalState globalState) throws SQLException {
+        SQLite3Provider.curTriggers++;
+        if (SQLite3Provider.curTriggers >= SQLite3Provider.MAX_TRIGGERS) {
+            throw new IgnoreMeException();
+        }
         SQLite3Schema s = globalState.getSchema();
         StringBuilder sb = new StringBuilder();
         SQLite3Table table = s.getRandomTableOrBailout(t -> !t.isVirtual());

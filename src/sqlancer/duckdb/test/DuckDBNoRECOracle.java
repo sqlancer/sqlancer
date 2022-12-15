@@ -44,7 +44,7 @@ public class DuckDBNoRECOracle extends NoRECBase<DuckDBGlobalState> implements T
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         DuckDBTables randomTables = s.getRandomTableNonEmptyTables();
         List<DuckDBColumn> columns = randomTables.getColumns();
         DuckDBExpressionGenerator gen = new DuckDBExpressionGenerator(state).setColumns(columns);
@@ -63,6 +63,7 @@ public class DuckDBNoRECOracle extends NoRECBase<DuckDBGlobalState> implements T
             throw new AssertionError(
                     optimizedQueryString + "; -- " + firstCount + "\n" + unoptimizedQueryString + " -- " + secondCount);
         }
+        return "Not implemented!";
     }
 
     private int getSecondQuery(List<Node<DuckDBExpression>> tableList, Node<DuckDBExpression> randomWhereCondition,

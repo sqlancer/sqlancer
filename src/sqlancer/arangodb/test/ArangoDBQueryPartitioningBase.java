@@ -35,7 +35,7 @@ public class ArangoDBQueryPartitioningBase
     }
 
     @Override
-    public void check() throws Exception {
+    public String check() throws Exception {
         numberComputedColumns = state.getRandomly().getInteger(0, 4);
         schema = state.getSchema();
         generateTargetColumns();
@@ -46,6 +46,7 @@ public class ArangoDBQueryPartitioningBase
         select.setFromColumns(targetColumns);
         select.setProjectionColumns(Randomly.nonEmptySubset(targetColumns));
         generateComputedClause();
+        return "Not implemented!";
     }
 
     private void generateComputedClause() {

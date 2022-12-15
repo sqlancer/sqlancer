@@ -19,7 +19,7 @@ public class CitusTLPAggregateOracle extends PostgresTLPAggregateOracle {
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         state.setAllowedFunctionTypes(Arrays.asList(PostgresGlobalState.IMMUTABLE));
         citusTLPBase.check();
         s = citusTLPBase.getSchema();
@@ -31,6 +31,7 @@ public class CitusTLPAggregateOracle extends PostgresTLPAggregateOracle {
         isNullPredicate = citusTLPBase.getIsNullPredicate();
         aggregateCheck();
         state.setDefaultAllowedFunctionTypes();
+        return "Not implemented!";
     }
 
 }

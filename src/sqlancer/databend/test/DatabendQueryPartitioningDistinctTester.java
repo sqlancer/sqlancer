@@ -18,7 +18,7 @@ public class DatabendQueryPartitioningDistinctTester extends DatabendQueryPartit
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         select.setDistinct(true);
         select.setWhereClause(null);
@@ -39,6 +39,7 @@ public class DatabendQueryPartitioningDistinctTester extends DatabendQueryPartit
                 secondQueryString, thirdQueryString, combinedString, true, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state, DatabendQueryPartitioningBase::canonicalizeResultValue);
+        return "Not implemented!";
     }
 
 }

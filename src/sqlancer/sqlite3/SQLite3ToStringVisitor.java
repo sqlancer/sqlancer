@@ -237,6 +237,12 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
         case OUTER:
             sb.append("LEFT OUTER");
             break;
+        case RIGHT:
+            sb.append("RIGHT OUTER");
+            break;
+        case FULL:
+            sb.append("FULL OUTER");
+            break;
         default:
             throw new AssertionError(join.getType());
         }

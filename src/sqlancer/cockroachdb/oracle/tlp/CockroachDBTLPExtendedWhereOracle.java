@@ -27,7 +27,7 @@ public class CockroachDBTLPExtendedWhereOracle extends CockroachDBTLPBase {
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         originalPredicate = generatePredicate();
         select.setWhereClause(originalPredicate);
@@ -50,6 +50,7 @@ public class CockroachDBTLPExtendedWhereOracle extends CockroachDBTLPBase {
                 thirdQueryString, combinedString, !allowOrderBy, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
+        return originalQueryString;
     }
 
     public CockroachDBExpression combinePredicate(CockroachDBExpression expr) {

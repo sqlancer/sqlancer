@@ -69,7 +69,7 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         reproducer = null;
         SQLite3Tables randomTables = s.getRandomTableNonEmptyTables();
         List<SQLite3Column> columns = randomTables.getColumns();
@@ -81,7 +81,7 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
         SQLite3Select select = new SQLite3Select();
         select.setFromTables(tableRefs);
         select.setJoinClauses(joinStatements);
-
+        String result = SQLite3Visitor.asString(select);
         Function<SQLite3GlobalState, Integer> optimizedQuery = getOptimizedQuery(select, randomWhereCondition);
         Function<SQLite3GlobalState, Integer> unoptimizedQuery = getUnoptimizedQuery(select, randomWhereCondition);
         int optimizedCount = optimizedQuery.apply(state);
@@ -94,6 +94,7 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
             state.getState().getLocalState().log(optimizedQueryString + ";\n" + unoptimizedQueryString + ";");
             throw new AssertionError(optimizedCount + " " + unoptimizedCount);
         }
+        return result;
 
     }
 

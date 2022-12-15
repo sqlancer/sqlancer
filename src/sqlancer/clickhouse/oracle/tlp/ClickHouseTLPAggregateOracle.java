@@ -29,7 +29,7 @@ public class ClickHouseTLPAggregateOracle extends ClickHouseTLPBase {
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         ClickHouseSchema s = state.getSchema();
         ClickHouseSchema.ClickHouseTables randomTables = s.getRandomTableNonEmptyTables();
         ClickHouseSchema.ClickHouseTable table = randomTables.getTables().remove(0);
@@ -93,16 +93,17 @@ public class ClickHouseTLPAggregateOracle extends ClickHouseTLPBase {
         if (firstResult.size() != secondResult.size()) {
             throw new AssertionError();
         } else if (firstResult.isEmpty() || firstResult.equals(secondResult)) {
-            return;
+            return "Not implemented!";
         } else if (firstResult.size() == 1 && secondResult.size() == 1) {
             if (firstResult.get(0).equals(secondResult.get(0))) {
-                return;
+                return "Not implemented!";
             } else if (!ComparatorHelper.isEqualDouble(firstResult.get(0), secondResult.get(0))) {
                 throw new AssertionError();
             }
         } else {
             throw new AssertionError();
         }
+        return "Not implemented!";
     }
 
 }

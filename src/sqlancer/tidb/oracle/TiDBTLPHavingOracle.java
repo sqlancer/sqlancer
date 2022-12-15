@@ -20,7 +20,7 @@ public class TiDBTLPHavingOracle extends TiDBTLPBase implements TestOracle<TiDBG
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         if (Randomly.getBoolean()) {
             select.setWhereClause(gen.generateExpression());
@@ -45,6 +45,7 @@ public class TiDBTLPHavingOracle extends TiDBTLPBase implements TestOracle<TiDBG
                 thirdQueryString, combinedString, !orderBy, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
+        return originalQueryString;
     }
 
     @Override

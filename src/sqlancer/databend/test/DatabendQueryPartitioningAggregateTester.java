@@ -44,7 +44,7 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         DatabendAggregateFunction aggregateFunction = Randomly.fromOptions(DatabendAggregateFunction.MAX,
                 DatabendAggregateFunction.MIN, DatabendAggregateFunction.SUM, DatabendAggregateFunction.COUNT,
@@ -75,7 +75,7 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
             }
             throw new AssertionError();
         }
-
+        return "Not implemented!";
     }
 
     private String createMetamorphicUnionQuery(DatabendSelect select,

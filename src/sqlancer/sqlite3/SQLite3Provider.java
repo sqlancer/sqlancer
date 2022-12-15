@@ -1,11 +1,16 @@
 package sqlancer.sqlite3;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.google.auto.service.AutoService;
 
@@ -20,6 +25,7 @@ import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
+import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.sqlite3.SQLite3Options.SQLite3OracleFactory;
 import sqlancer.sqlite3.gen.SQLite3AnalyzeGenerator;
 import sqlancer.sqlite3.gen.SQLite3CreateVirtualRtreeTabelGenerator;
@@ -49,56 +55,85 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
     public static boolean allowFloatingPointFp = true;
     public static boolean mustKnowResult;
 
+    private Map<String, String> queryPlanPool;
+
+    // Data structures for MAB algorithm at table mutation
+    private static double[] weightedAverageReward = new double[Action.values().length];
+    private int[] cumulativeMutationTimes;
+
+    // For post reward calculation
+    private int currentSelectRewards;
+    private int currentSelectCounts;
+    private int currentMutationOperator;
+
     // PRAGMAS to achieve good performance
     private static final List<String> DEFAULT_PRAGMAS = Arrays.asList("PRAGMA cache_size = 50000;",
             "PRAGMA temp_store=MEMORY;", "PRAGMA synchronous=off;");
 
+    public static final int MAX_INDEXES = 20; // The maximum number of indexes to be created
+    public static final int MAX_TRIGGERS = 20; // The maximum number of triggers to be created
+    public static final int MAX_TABLES = 10; // The maximum number of tables/virtual tables/ rtree tables/ views to be
+                                             // created
+    public static int curTriggers;
+
     public SQLite3Provider() {
         super(SQLite3GlobalState.class, SQLite3Options.class);
+        queryPlanPool = new HashMap<>();
+        cumulativeMutationTimes = new int[Action.values().length];
+        curTriggers = 0;
+
+        // For post reward calculation
+        currentSelectRewards = 0;
+        currentSelectCounts = 0;
+        currentMutationOperator = -1;
     }
 
     public enum Action implements AbstractAction<SQLite3GlobalState> {
-        PRAGMA(SQLite3PragmaGenerator::insertPragma), //
-        INDEX(SQLite3IndexGenerator::insertIndex), //
-        INSERT(SQLite3InsertGenerator::insertRow), //
-        VACUUM(SQLite3VacuumGenerator::executeVacuum), //
-        REINDEX(SQLite3ReindexGenerator::executeReindex), //
-        ANALYZE(SQLite3AnalyzeGenerator::generateAnalyze), //
-        DELETE(SQLite3DeleteGenerator::deleteContent), //
+        PRAGMA(SQLite3PragmaGenerator::insertPragma), // 0
+        CREATE_INDEX(SQLite3IndexGenerator::insertIndex), // 1
+        CREATE_VIEW(SQLite3ViewGenerator::generate), // 2
+        CREATE_TRIGGER(SQLite3CreateTriggerGenerator::create), // No implementation for dropping triggers, so disable it
+                                                               // for now
+        CREATE_TABLE(SQLite3TableGenerator::createRandomTableStatement), // 3
+        CREATE_VIRTUALTABLE(SQLite3CreateVirtualFTSTableGenerator::createRandomTableStatement), // 4
+        CREATE_RTREETABLE(SQLite3CreateVirtualRtreeTabelGenerator::createRandomTableStatement), // 5
+        INSERT(SQLite3InsertGenerator::insertRow), // 6
+        DELETE(SQLite3DeleteGenerator::deleteContent), // 7
+        ALTER(SQLite3AlterTable::alterTable), // 8
+        UPDATE(SQLite3UpdateGenerator::updateRow), // 9
+        DROP_INDEX(SQLite3DropIndexGenerator::dropIndex), // 10
+        DROP_TABLE(SQLite3DropTableGenerator::dropTable), // 11
+        DROP_VIEW(SQLite3ViewGenerator::dropView), // 12
+        VACUUM(SQLite3VacuumGenerator::executeVacuum), // 13
+        REINDEX(SQLite3ReindexGenerator::executeReindex), // 14
+        ANALYZE(SQLite3AnalyzeGenerator::generateAnalyze), // 15
+        EXPLAIN(SQLite3ExplainGenerator::explain), // 16
+        CHECK_RTREE_TABLE((g) -> {
+            SQLite3Table table = g.getSchema().getRandomTableOrBailout(t -> t.getName().startsWith("r"));
+            String format = String.format("SELECT rtreecheck('%s');", table.getName());
+            return new SQLQueryAdapter(format, ExpectedErrors.from("The database file is locked"));
+        }), // 17
+        VIRTUAL_TABLE_ACTION(SQLite3VirtualFTSTableCommandGenerator::create), // 18
+        MANIPULATE_STAT_TABLE(SQLite3StatTableGenerator::getQuery), // 19
         TRANSACTION_START(SQLite3TransactionGenerator::generateBeginTransaction) {
             @Override
             public boolean canBeRetried() {
                 return false;
             }
 
-        }, //
-        ALTER(SQLite3AlterTable::alterTable), //
-        DROP_INDEX(SQLite3DropIndexGenerator::dropIndex), //
-        UPDATE(SQLite3UpdateGenerator::updateRow), //
+        }, // 20
         ROLLBACK_TRANSACTION(SQLite3TransactionGenerator::generateRollbackTransaction) {
             @Override
             public boolean canBeRetried() {
                 return false;
             }
-        }, //
+        }, // 21
         COMMIT(SQLite3TransactionGenerator::generateCommit) {
             @Override
             public boolean canBeRetried() {
                 return false;
             }
-        }, //
-        DROP_TABLE(SQLite3DropTableGenerator::dropTable), //
-        DROP_VIEW(SQLite3ViewGenerator::dropView), //
-        EXPLAIN(SQLite3ExplainGenerator::explain), //
-        CHECK_RTREE_TABLE((g) -> {
-            SQLite3Table table = g.getSchema().getRandomTableOrBailout(t -> t.getName().startsWith("r"));
-            String format = String.format("SELECT rtreecheck('%s');", table.getName());
-            return new SQLQueryAdapter(format, ExpectedErrors.from("The database file is locked"));
-        }), //
-        VIRTUAL_TABLE_ACTION(SQLite3VirtualFTSTableCommandGenerator::create), //
-        CREATE_VIEW(SQLite3ViewGenerator::generate), //
-        CREATE_TRIGGER(SQLite3CreateTriggerGenerator::create), //
-        MANIPULATE_STAT_TABLE(SQLite3StatTableGenerator::getQuery);
+        }; // 22
 
         private final SQLQueryProvider<SQLite3GlobalState> sqlQueryProvider;
 
@@ -146,7 +181,7 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
         case MANIPULATE_STAT_TABLE:
             nrPerformed = r.getInteger(0, 5);
             break;
-        case INDEX:
+        case CREATE_INDEX:
             nrPerformed = r.getInteger(0, 5);
             break;
         case VIRTUAL_TABLE_ACTION:
@@ -155,6 +190,11 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
             break;
         case PRAGMA:
             nrPerformed = r.getInteger(0, 20);
+            break;
+        case CREATE_TABLE:
+        case CREATE_VIRTUALTABLE:
+        case CREATE_RTREETABLE:
+            nrPerformed = 0;
             break;
         case TRANSACTION_START:
         case REINDEX:
@@ -290,5 +330,169 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
     @Override
     public String getDBMSName() {
         return "sqlite3";
+    }
+
+    @Override
+    public boolean addQueryPlan(SQLite3GlobalState globalState, String selectStr) throws Exception {
+        String queryPlan = getQueryPlan(globalState, selectStr);
+
+        if (globalState.getOptions().logQueryPlan()) {
+            globalState.getLogger().writeQueryPlan(queryPlan);
+        }
+
+        currentSelectCounts += 1;
+        if (queryPlanPool.containsKey(queryPlan)) {
+            return false;
+        } else {
+            queryPlanPool.put(queryPlan, selectStr);
+            currentSelectRewards += 1;
+            return true;
+        }
+    }
+
+    @Override
+    public boolean mutateTables(SQLite3GlobalState globalState) throws Exception {
+        // Update the post rewards
+        if (currentMutationOperator != -1) {
+            double k = globalState.getOptions().getQPGk();
+            if (k == 0) {
+                weightedAverageReward[currentMutationOperator] += ((double) currentSelectRewards
+                        / (double) currentSelectCounts) / cumulativeMutationTimes[currentMutationOperator];
+            } else {
+                weightedAverageReward[currentMutationOperator] += ((double) currentSelectRewards
+                        / (double) currentSelectCounts) / k; // Update the post rewards without updating the cumulative
+                                                             // mutation times
+            }
+        }
+        currentMutationOperator = -1;
+
+        // Mutate tables
+        int selectedActionIndex = 0;
+        if (globalState.getOptions().enableRandomQPG()
+                || Randomly.getPercentage() < globalState.getOptions().getQPGProbability()) {
+            selectedActionIndex = globalState.getRandomly().getInteger(0, Action.values().length);
+        } else {
+            selectedActionIndex = getMaxRewardIndex();
+        }
+        cumulativeMutationTimes[selectedActionIndex]++;
+        int reward = 0;
+        // Debug
+        // System.out.println(selectedActionIndex);
+
+        try {
+            SQLQueryAdapter queryMutateTable = Action.values()[selectedActionIndex].getQuery(globalState);
+            globalState.executeStatement(queryMutateTable);
+
+            // Remove the invalid views
+            checkViewsAreValid(globalState);
+            reward = checkQueryPlan(globalState);
+        } catch (IgnoreMeException | AssertionError e) {
+        } finally {
+            updateReward(selectedActionIndex, (double) reward / (double) queryPlanPool.size(), globalState);
+            currentMutationOperator = selectedActionIndex;
+        }
+        currentSelectRewards = 0;
+        currentSelectCounts = 0;
+        // Debug
+        // System.out.println(Thread.currentThread().getName() + ": " + selectedActionIndex);
+        // for (double weight : weightedAverageReward) {
+        // System.out.print(weight + " ");
+        // }
+        // System.out.println("Weighted Average Reward");
+        return true;
+    }
+
+    private int checkQueryPlan(SQLite3GlobalState globalState) throws Exception {
+        int newQueryPlanFound = 0;
+        HashMap<String, String> modifiedQueryPlan = new HashMap<>();
+        for (Iterator<Map.Entry<String, String>> it = queryPlanPool.entrySet().iterator(); it.hasNext();) {
+            Map.Entry<String, String> item = it.next();
+            String queryPlan = item.getKey();
+            String selectStr = item.getValue();
+            String newQueryPlan = getQueryPlan(globalState, selectStr);
+            if (newQueryPlan.isEmpty()) { // Invalid query
+                it.remove();
+            } else if (!queryPlan.equals(newQueryPlan)) { // The query plan has changed
+                it.remove();
+                modifiedQueryPlan.put(newQueryPlan, selectStr);
+                if (!queryPlanPool.containsKey(newQueryPlan)) { // The new query plan found
+                    newQueryPlanFound++;
+                }
+            }
+        }
+        queryPlanPool.putAll(modifiedQueryPlan);
+        return newQueryPlanFound;
+    }
+
+    private int getMaxRewardIndex() {
+        int maxIndex = 0;
+        double maxReward = 0.0;
+
+        for (int j = 0; j < weightedAverageReward.length; j++) {
+            double curReward = weightedAverageReward[j];
+            if (curReward > maxReward) {
+                maxIndex = j;
+                maxReward = curReward;
+            }
+        }
+
+        return maxIndex;
+    }
+
+    private void updateReward(int actionIndex, double reward, SQLite3GlobalState globalState) {
+        double k = globalState.getOptions().getQPGk();
+        if (k == 0) {
+            weightedAverageReward[actionIndex] += (reward - weightedAverageReward[actionIndex])
+                    / cumulativeMutationTimes[actionIndex];
+        } else {
+            weightedAverageReward[actionIndex] += (reward - weightedAverageReward[actionIndex]) / k; // The latest
+                                                                                                     // reward always
+                                                                                                     // takes k percent
+                                                                                                     // of the total
+                                                                                                     // reward
+        }
+    }
+
+    @Override
+    public String getQueryPlan(SQLite3GlobalState globalState, String selectStr) throws Exception {
+        String queryPlan = "";
+        if (globalState.getOptions().logEachSelect()) {
+            globalState.getLogger().writeCurrent(selectStr);
+            try {
+                globalState.getLogger().getCurrentFileWriter().flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        // Set up the expected errors for NoREC oracle and it needs to be updated later.
+        ExpectedErrors errors = new ExpectedErrors();
+        SQLite3Errors.addExpectedExpressionErrors(errors);
+        SQLite3Errors.addMatchQueryErrors(errors);
+        SQLite3Errors.addQueryErrors(errors);
+        SQLite3Errors.addInsertUpdateErrors(errors);
+
+        SQLQueryAdapter q = new SQLQueryAdapter(SQLite3ExplainGenerator.explain(selectStr), errors);
+        try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
+            if (rs != null) {
+                while (rs.next()) {
+                    queryPlan += rs.getString(4) + ";";
+                }
+            }
+        } catch (SQLException | AssertionError e) {
+            queryPlan = "";
+        }
+        return queryPlan;
+    }
+
+    @Override
+    public boolean addRowsToAllTables(SQLite3GlobalState globalState) throws Exception {
+        List<SQLite3Table> tablesNoRow = globalState.getSchema().getDatabaseTables().stream()
+                .filter(t -> t.getNrRows(globalState) == 0).collect(Collectors.toList());
+        for (SQLite3Table table : tablesNoRow) {
+            SQLQueryAdapter queryAddRows = SQLite3InsertGenerator.insertRow(globalState, table);
+            globalState.executeStatement(queryAddRows);
+        }
+
+        return true;
     }
 }

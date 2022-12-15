@@ -51,10 +51,13 @@ public final class Main {
 
         private final File loggerFile;
         private File curFile;
+        private File queryPlanFile;
         private FileWriter logFileWriter;
         public FileWriter currentFileWriter;
+        private FileWriter queryPlanFileWriter;
         private static final List<String> INITIALIZED_PROVIDER_NAMES = new ArrayList<>();
         private final boolean logEachSelect;
+        private final boolean logQueryPlan;
         private final DatabaseProvider<?, ?, ?> databaseProvider;
 
         private static final class AlsoWriteToConsoleFileWriter extends FileWriter {
@@ -86,6 +89,10 @@ public final class Main {
             logEachSelect = options.logEachSelect();
             if (logEachSelect) {
                 curFile = new File(dir, databaseName + "-cur.log");
+            }
+            logQueryPlan = options.logQueryPlan();
+            if (logQueryPlan) {
+                queryPlanFile = new File(dir, databaseName + "-plan.log");
             }
             this.databaseProvider = provider;
         }
@@ -138,6 +145,20 @@ public final class Main {
             return currentFileWriter;
         }
 
+        public FileWriter getQueryPlanFileWriter() {
+            if (!logQueryPlan) {
+                throw new UnsupportedOperationException();
+            }
+            if (queryPlanFileWriter == null) {
+                try {
+                    queryPlanFileWriter = new FileWriter(queryPlanFile, true);
+                } catch (IOException e) {
+                    throw new AssertionError(e);
+                }
+            }
+            return queryPlanFileWriter;
+        }
+
         public void writeCurrent(StateToReproduce state) {
             if (!logEachSelect) {
                 throw new UnsupportedOperationException();
@@ -172,6 +193,18 @@ public final class Main {
             }
         }
 
+        public void writeQueryPlan(String queryPlan) {
+            if (!logQueryPlan) {
+                throw new UnsupportedOperationException();
+            }
+            try {
+                getQueryPlanFileWriter().append(processQueryPlan(queryPlan));
+                queryPlanFileWriter.flush();
+            } catch (IOException e) {
+                throw new AssertionError();
+            }
+        }
+
         public void logException(Throwable reduce, StateToReproduce state) {
             Loggable stackTrace = getStackTrace(reduce);
             FileWriter logFileWriter2 = getLogFileWriter();
@@ -201,8 +234,7 @@ public final class Main {
                     .getInfo(state.getDatabaseName(), state.getDatabaseVersion(), state.getSeedValue()).getLogString());
 
             for (Query<?> s : state.getStatements()) {
-                sb.append(s.getLogString());
-                sb.append('\n');
+                sb.append(databaseProvider.getLoggableFactory().createLoggable(s.getLogString()).getLogString());
             }
             try {
                 writer.write(sb.toString());
@@ -211,6 +243,13 @@ public final class Main {
             }
         }
 
+        private String processQueryPlan(String queryPlan) {
+            String result = queryPlan;
+            result = result.replaceAll("t[0-9]+", "t0"); // Avoid duplicate tables
+            result = result.replaceAll("v[0-9]+", "v0"); // Avoid duplicate views
+            result = result.replaceAll("i[0-9]+", "i0"); // Avoid duplicate indexes
+            return result + "\n";
+        }
     }
 
     public static class QueryManager<C extends SQLancerDBConnection> {
@@ -241,6 +280,10 @@ public final class Main {
 
         public void incrementSelectQueryCount() {
             Main.nrQueries.addAndGet(1);
+        }
+
+        public Long getSelectQueryCount() {
+            return Main.nrQueries.get();
         }
 
         public void incrementCreateDatabase() {
@@ -314,7 +357,12 @@ public final class Main {
                 if (options.logEachSelect()) {
                     logger.writeCurrent(state.getState());
                 }
-                Reproducer<G> reproducer = provider.generateAndTestDatabase(state);
+                Reproducer<G> reproducer = null;
+                if (options.enableQPG()) {
+                    provider.qpg(state);
+                } else {
+                    reproducer = provider.generateAndTestDatabase(state);
+                }
                 try {
                     logger.getCurrentFileWriter().close();
                     logger.currentFileWriter = null;

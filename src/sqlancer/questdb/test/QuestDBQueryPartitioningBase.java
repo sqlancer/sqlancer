@@ -64,7 +64,7 @@ public class QuestDBQueryPartitioningBase
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
         gen = new QuestDBExpressionGenerator(state).setColumns(targetTables.getColumns());
@@ -77,5 +77,6 @@ public class QuestDBQueryPartitioningBase
         // Ignore JOINs for now
         select.setFromList(new ArrayList<>(tableList));
         select.setWhereClause(null);
+        return "Not implemented!";
     }
 }

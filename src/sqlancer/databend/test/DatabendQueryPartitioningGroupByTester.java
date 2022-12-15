@@ -23,7 +23,7 @@ public class DatabendQueryPartitioningGroupByTester extends DatabendQueryPartiti
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         select.setGroupByExpressions(select.getFetchColumns());
         select.setWhereClause(null);
@@ -42,6 +42,7 @@ public class DatabendQueryPartitioningGroupByTester extends DatabendQueryPartiti
                 secondQueryString, thirdQueryString, combinedString, true, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state, DatabendQueryPartitioningBase::canonicalizeResultValue);
+        return "Not implemented!";
     }
 
     @Override

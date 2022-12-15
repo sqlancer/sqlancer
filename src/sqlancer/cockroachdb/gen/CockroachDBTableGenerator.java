@@ -8,6 +8,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBCommon;
 import sqlancer.cockroachdb.CockroachDBErrors;
+import sqlancer.cockroachdb.CockroachDBProvider;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBCompositeDataType;
@@ -29,6 +30,9 @@ public class CockroachDBTableGenerator extends CockroachDBGenerator {
     }
 
     public static SQLQueryAdapter generate(CockroachDBGlobalState globalState) {
+        if (globalState.getSchema().getDatabaseTables().size() > CockroachDBProvider.MAX_TABLES) {
+            throw new IgnoreMeException();
+        }
         return new CockroachDBTableGenerator(globalState).getQuery();
     }
 

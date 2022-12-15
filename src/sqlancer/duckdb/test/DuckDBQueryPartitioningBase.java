@@ -54,7 +54,7 @@ public class DuckDBQueryPartitioningBase
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
         gen = new DuckDBExpressionGenerator(state).setColumns(targetTables.getColumns());
@@ -68,6 +68,7 @@ public class DuckDBQueryPartitioningBase
         select.setJoinList(joins.stream().collect(Collectors.toList()));
         select.setFromList(tableList.stream().collect(Collectors.toList()));
         select.setWhereClause(null);
+        return "Not implemented!";
     }
 
     List<Node<DuckDBExpression>> generateFetchColumns() {

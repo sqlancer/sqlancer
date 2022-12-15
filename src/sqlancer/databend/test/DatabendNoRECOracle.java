@@ -44,7 +44,7 @@ public class DatabendNoRECOracle extends NoRECBase<DatabendGlobalState> implemen
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         DatabendTables randomTables = s.getRandomTableNonEmptyTables(); // 随机获得nr张表
         List<DatabendColumn> columns = randomTables.getColumns();
         DatabendNewExpressionGenerator gen = new DatabendNewExpressionGenerator(state).setColumns(columns);
@@ -65,6 +65,7 @@ public class DatabendNoRECOracle extends NoRECBase<DatabendGlobalState> implemen
             throw new AssertionError(
                     optimizedQueryString + "; -- " + firstCount + "\n" + unoptimizedQueryString + " -- " + secondCount);
         }
+        return "Not implemented!";
     }
 
     private int getSecondQuery(List<Node<DatabendExpression>> tableList, Node<DatabendExpression> randomWhereCondition,

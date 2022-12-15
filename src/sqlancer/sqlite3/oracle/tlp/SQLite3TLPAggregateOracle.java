@@ -40,7 +40,7 @@ public class SQLite3TLPAggregateOracle implements TestOracle<SQLite3GlobalState>
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         SQLite3Schema s = state.getSchema();
         SQLite3Tables targetTables = s.getRandomTableNonEmptyTables();
         gen = new SQLite3ExpressionGenerator(state).setColumns(targetTables.getColumns());
@@ -65,7 +65,9 @@ public class SQLite3TLPAggregateOracle implements TestOracle<SQLite3GlobalState>
         SQLite3Select leftSelect = getSelect(aggregate, from, whereClause);
         SQLite3Select middleSelect = getSelect(aggregate, from, negatedClause);
         SQLite3Select rightSelect = getSelect(aggregate, from, notNullClause);
-        String metamorphicText = "SELECT " + aggregate.getFunc().toString() + "(aggr) FROM (";
+        String aggreateMethod = aggregate.getFunc() == SQLite3AggregateFunction.COUNT_ALL
+                ? SQLite3AggregateFunction.COUNT.toString() : aggregate.getFunc().toString();
+        String metamorphicText = "SELECT " + aggreateMethod + "(aggr) FROM (";
         metamorphicText += SQLite3Visitor.asString(leftSelect) + " UNION ALL " + SQLite3Visitor.asString(middleSelect)
                 + " UNION ALL " + SQLite3Visitor.asString(rightSelect);
         metamorphicText += ")";
@@ -104,6 +106,7 @@ public class SQLite3TLPAggregateOracle implements TestOracle<SQLite3GlobalState>
             throw new AssertionError();
 
         }
+        return originalQuery;
 
     }
 

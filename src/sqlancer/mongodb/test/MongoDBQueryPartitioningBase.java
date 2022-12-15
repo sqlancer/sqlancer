@@ -34,7 +34,7 @@ public class MongoDBQueryPartitioningBase
     }
 
     @Override
-    public void check() throws Exception {
+    public String check() throws Exception {
         schema = state.getSchema();
         targetTables = schema.getRandomTableNonEmptyTables();
         mainTable = targetTables.getTables().get(0);
@@ -51,6 +51,7 @@ public class MongoDBQueryPartitioningBase
         if (state.getDbmsSpecificOptions().testComputedValues) {
             generateComputedColumns();
         }
+        return "Not implemented!";
     }
 
     private void generateComputedColumns() {

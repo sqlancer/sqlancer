@@ -26,4 +26,11 @@ public final class SQLite3ExplainGenerator {
         return new SQLQueryAdapter(sb.toString(), query.getExpectedErrors());
     }
 
+    public static String explain(String selectStr) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        sb.append("EXPLAIN QUERY PLAN ");
+        sb.append(selectStr);
+        return sb.toString();
+    }
+
 }

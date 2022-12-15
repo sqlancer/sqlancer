@@ -53,7 +53,7 @@ public class CockroachDBTLPAggregateOracle implements TestOracle<CockroachDBGlob
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         CockroachDBSchema s = state.getSchema();
         CockroachDBTables targetTables = s.getRandomTableNonEmptyTables();
         gen = new CockroachDBExpressionGenerator(state).setColumns(targetTables.getColumns());
@@ -85,14 +85,15 @@ public class CockroachDBTLPAggregateOracle implements TestOracle<CockroachDBGlob
 
         state.getState().getLocalState().log(
                 "--" + originalQuery + ";\n--" + metamorphicQuery + "\n-- " + firstResult + "\n-- " + secondResult);
-        if (firstResult == null && secondResult != null
-                || firstResult != null && (!firstResult.contentEquals(secondResult)
+        if (firstResult == null && secondResult != null || firstResult != null && secondResult == null
+                || firstResult != null && secondResult != null && (!firstResult.contentEquals(secondResult)
                         && !ComparatorHelper.isEqualDouble(firstResult, secondResult))) {
             if (secondResult.contains("Inf")) {
                 throw new IgnoreMeException(); // FIXME: average computation
             }
             throw new AssertionError();
         }
+        return originalQuery;
 
     }
 

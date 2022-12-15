@@ -70,7 +70,7 @@ public class YSQLNoRECOracle extends NoRECBase<YSQLGlobalState> implements TestO
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         YSQLTables randomTables = s.getRandomTableNonEmptyTables();
         List<YSQLColumn> columns = randomTables.getColumns();
         YSQLExpression randomWhereCondition = getRandomWhereCondition(columns);
@@ -94,6 +94,7 @@ public class YSQLNoRECOracle extends NoRECBase<YSQLGlobalState> implements TestO
                     firstQueryStringWithCount, secondQueryStringWithCount);
             throw new AssertionError(assertionMessage);
         }
+        return "Not implemented!";
     }
 
     private YSQLExpression getRandomWhereCondition(List<YSQLColumn> columns) {

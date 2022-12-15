@@ -380,11 +380,6 @@ public class SQLite3Schema extends AbstractSchema<SQLite3GlobalState, SQLite3Tab
         } catch (SQLException e) {
 
         }
-        if (databaseColumns.isEmpty()) {
-            // only generated columns
-            throw new IgnoreMeException();
-        }
-        assert !databaseColumns.isEmpty() : tableName;
         return databaseColumns;
     }
 

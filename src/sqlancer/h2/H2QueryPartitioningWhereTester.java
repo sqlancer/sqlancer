@@ -15,7 +15,7 @@ public class H2QueryPartitioningWhereTester extends H2QueryPartitioningBase {
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         select.setWhereClause(null);
         String originalQueryString = H2ToStringVisitor.asString(select);
@@ -37,6 +37,7 @@ public class H2QueryPartitioningWhereTester extends H2QueryPartitioningBase {
                 thirdQueryString, combinedString, !orderBy, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
+        return "Not implemented!";
     }
 
 }

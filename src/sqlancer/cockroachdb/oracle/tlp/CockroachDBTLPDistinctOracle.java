@@ -21,7 +21,7 @@ public class CockroachDBTLPDistinctOracle extends CockroachDBTLPBase {
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         select.setDistinct(true);
         String originalQueryString = CockroachDBVisitor.asString(select);
@@ -40,5 +40,6 @@ public class CockroachDBTLPDistinctOracle extends CockroachDBTLPBase {
                 secondQueryString, thirdQueryString, combinedString, true, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
+        return originalQueryString;
     }
 }

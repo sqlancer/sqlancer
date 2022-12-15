@@ -19,7 +19,7 @@ public class CockroachDBTLPHavingOracle extends CockroachDBTLPBase {
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         if (Randomly.getBoolean()) {
             select.setWhereClause(gen.generateExpression(CockroachDBDataType.BOOL.get()));
@@ -45,6 +45,7 @@ public class CockroachDBTLPHavingOracle extends CockroachDBTLPBase {
                 thirdQueryString, combinedString, !orderBy, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
+        return originalQueryString;
     }
 
     @Override

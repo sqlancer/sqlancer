@@ -37,7 +37,7 @@ public class CockroachDBTLPBase
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
         gen = new CockroachDBExpressionGenerator(state).setColumns(targetTables.getColumns());
@@ -51,6 +51,7 @@ public class CockroachDBTLPBase
         select.setJoinList(joins);
         select.setFromList(tableList);
         select.setWhereClause(null);
+        return "Not implemented!";
     }
 
     List<CockroachDBExpression> generateFetchColumns() {

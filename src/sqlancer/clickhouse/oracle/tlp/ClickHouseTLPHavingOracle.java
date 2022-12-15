@@ -29,7 +29,7 @@ public class ClickHouseTLPHavingOracle extends ClickHouseTLPBase {
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         ClickHouseSchema s = state.getSchema();
         ClickHouseSchema.ClickHouseTables randomTables = s.getRandomTableNonEmptyTables();
         ClickHouseSchema.ClickHouseTable table = randomTables.getTables().remove(0);
@@ -89,5 +89,6 @@ public class ClickHouseTLPHavingOracle extends ClickHouseTLPBase {
             throw new AssertionError(originalQueryString + ";\n" + combinedString + ";\n" + "Left: "
                     + diffLeft.toString() + "\nRight: " + diffRight.toString());
         }
+        return "Not implemented!";
     }
 }

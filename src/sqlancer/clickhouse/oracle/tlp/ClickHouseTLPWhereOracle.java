@@ -18,7 +18,7 @@ public class ClickHouseTLPWhereOracle extends ClickHouseTLPBase {
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         if (Randomly.getBooleanWithRatherLowProbability()) {
             select.setOrderByExpressions(gen.generateOrderBys());
@@ -41,5 +41,6 @@ public class ClickHouseTLPWhereOracle extends ClickHouseTLPBase {
                 thirdQueryString, combinedString, !orderBy, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
+        return "Not implemented!";
     }
 }

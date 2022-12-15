@@ -73,7 +73,7 @@ public class YSQLCatalog implements TestOracle<YSQLGlobalState> {
     }
 
     @Override
-    public void check() throws Exception {
+    public String check() throws Exception {
         // create table or evaluate catalog test
         int seed = state.getRandomly().getInteger(1, 100);
         if (seed > 95) {
@@ -92,5 +92,6 @@ public class YSQLCatalog implements TestOracle<YSQLGlobalState> {
             state.executeStatement(randomAction.getQuery(state));
         }
         state.getManager().incrementSelectQueryCount();
+        return "Not implemented!";
     }
 }

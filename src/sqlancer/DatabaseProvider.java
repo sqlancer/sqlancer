@@ -32,6 +32,18 @@ public interface DatabaseProvider<G extends GlobalState<O, ?, C>, O extends DBMS
      */
     Reproducer<G> generateAndTestDatabase(G globalState) throws Exception;
 
+    /**
+     * The experimental feature: QPG.
+     *
+     * @param globalState
+     *            the state created and is valid for this method call.
+     *
+     * @throws Exception
+     *             if testing fails.
+     *
+     */
+    void qpg(G globalState) throws Exception;
+
     C createDatabase(G globalState) throws Exception;
 
     /**
@@ -45,4 +57,11 @@ public interface DatabaseProvider<G extends GlobalState<O, ?, C>, O extends DBMS
 
     StateToReproduce getStateToReproduce(String databaseName);
 
+    boolean addQueryPlan(G globalState, String selectStr) throws Exception;
+
+    String getQueryPlan(G globalState, String selectStr) throws Exception;
+
+    boolean mutateTables(G globalState) throws Exception;
+
+    boolean addRowsToAllTables(G globalState) throws Exception;
 }

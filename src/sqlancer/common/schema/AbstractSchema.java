@@ -41,7 +41,12 @@ public class AbstractSchema<G extends GlobalState<?, ?, ?>, A extends AbstractTa
     }
 
     public A getRandomTable(Predicate<A> predicate) {
-        return Randomly.fromList(getDatabaseTables().stream().filter(predicate).collect(Collectors.toList()));
+        List<A> filtered = getDatabaseTables().stream().filter(predicate).collect(Collectors.toList());
+        if (filtered.isEmpty()) {
+            throw new IgnoreMeException();
+        } else {
+            return Randomly.fromList(filtered);
+        }
     }
 
     public A getRandomTableOrBailout(Function<A, Boolean> f) {
@@ -119,6 +124,34 @@ public class AbstractSchema<G extends GlobalState<?, ?, ?>, A extends AbstractTa
         }
         do {
             String tableName = String.format("t%d", i++);
+            if (databaseTables.stream().noneMatch(t -> t.getName().equalsIgnoreCase(tableName))) {
+                return tableName;
+            }
+        } while (true);
+
+    }
+
+    public String getFreeVirtualTableName() {
+        int i = 0;
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            i = (int) Randomly.getNotCachedInteger(0, 100);
+        }
+        do {
+            String tableName = String.format("vt%d", i++);
+            if (databaseTables.stream().noneMatch(t -> t.getName().equalsIgnoreCase(tableName))) {
+                return tableName;
+            }
+        } while (true);
+
+    }
+
+    public String getFreeRtreeTableName() {
+        int i = 0;
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            i = (int) Randomly.getNotCachedInteger(0, 100);
+        }
+        do {
+            String tableName = String.format("rt%d", i++);
             if (databaseTables.stream().noneMatch(t -> t.getName().equalsIgnoreCase(tableName))) {
                 return tableName;
             }

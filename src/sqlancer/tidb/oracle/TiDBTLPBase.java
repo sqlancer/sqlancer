@@ -36,7 +36,7 @@ public abstract class TiDBTLPBase extends TernaryLogicPartitioningOracleBase<TiD
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
         gen = new TiDBExpressionGenerator(state).setColumns(targetTables.getColumns());
@@ -54,6 +54,7 @@ public abstract class TiDBTLPBase extends TernaryLogicPartitioningOracleBase<TiD
         select.setJoinList(joins);
         select.setFromList(tableList);
         select.setWhereClause(null);
+        return "Not implemented!";
     }
 
     List<TiDBExpression> generateFetchColumns() {

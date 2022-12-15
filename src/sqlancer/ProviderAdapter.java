@@ -1,5 +1,6 @@
 package sqlancer;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,9 +15,12 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
     private final Class<G> globalClass;
     private final Class<O> optionClass;
 
+    private Long executedQueryCount;
+
     public ProviderAdapter(Class<G> globalClass, Class<O> optionClass) {
         this.globalClass = globalClass;
         this.optionClass = optionClass;
+        this.executedQueryCount = 0L;
     }
 
     @Override
@@ -32,6 +36,26 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
     @Override
     public Class<O> getOptionClass() {
         return optionClass;
+    }
+
+    @Override
+    public boolean addQueryPlan(G globalState, String select) throws Exception {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getQueryPlan(G globalState, String selectStr) throws Exception {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean mutateTables(G globalState) throws Exception {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean addRowsToAllTables(G globalState) throws Exception {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -67,7 +91,47 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
         return null;
     }
 
-    protected abstract void checkViewsAreValid(G globalState);
+    @Override
+    public void qpg(G globalState) throws Exception {
+        try {
+            generateDatabase(globalState);
+            checkViewsAreValid(globalState);
+            globalState.getManager().incrementCreateDatabase();
+
+            while (executedQueryCount < globalState.getOptions().getNrQueries()) {
+                int numOfNoNewQueryPlans = 0;
+                // Check the oracles
+                TestOracle<G> oracle = getTestOracle(globalState);
+                while (true) {
+                    try (OracleRunReproductionState localState = globalState.getState().createLocalState()) {
+                        assert localState != null;
+                        try {
+                            String query = oracle.check();
+                            executedQueryCount += 1;
+                            if (addQueryPlan(globalState, query)) {
+                                numOfNoNewQueryPlans = 0;
+                            } else {
+                                numOfNoNewQueryPlans++;
+                            }
+                            globalState.getManager().incrementSelectQueryCount();
+                        } catch (IgnoreMeException e) {
+
+                        }
+                        assert localState != null;
+                        localState.executedWithoutError();
+                    }
+                    if (numOfNoNewQueryPlans > globalState.getOptions().getQPGMinInterval()) {
+                        break;
+                    }
+                }
+                mutateTables(globalState);
+            }
+        } finally {
+            globalState.getConnection().close();
+        }
+    }
+
+    protected abstract void checkViewsAreValid(G globalState) throws SQLException;
 
     protected TestOracle<G> getTestOracle(G globalState) throws Exception {
         List<? extends OracleFactory<G>> testOracleFactory = globalState.getDbmsSpecificOptions()
@@ -77,7 +141,11 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
         boolean userRequiresMoreThanZeroRows = globalState.getOptions().testOnlyWithMoreThanZeroRows();
         boolean checkZeroRows = testOracleRequiresMoreThanZeroRows || userRequiresMoreThanZeroRows;
         if (checkZeroRows && globalState.getSchema().containsTableWithZeroRows(globalState)) {
-            throw new IgnoreMeException();
+            if (globalState.getOptions().enableQPG()) {
+                addRowsToAllTables(globalState);
+            } else {
+                throw new IgnoreMeException();
+            }
         }
         if (testOracleFactory.size() == 1) {
             return testOracleFactory.get(0).create(globalState);

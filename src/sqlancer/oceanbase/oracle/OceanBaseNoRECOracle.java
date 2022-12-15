@@ -60,7 +60,7 @@ public class OceanBaseNoRECOracle extends NoRECBase<OceanBaseGlobalState> implem
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         OceanBaseSchema.OceanBaseTable randomTable = s.getRandomTable();
         List<OceanBaseSchema.OceanBaseColumn> columns = randomTable.getColumns();
         OceanBaseExpressionGenerator gen = new OceanBaseExpressionGenerator(state).setColumns(columns);
@@ -80,6 +80,7 @@ public class OceanBaseNoRECOracle extends NoRECBase<OceanBaseGlobalState> implem
                     firstQueryStringWithCount, secondQueryStringWithCount);
             throw new AssertionError(assertionMessage);
         }
+        return "Not implemented!";
     }
 
     private int getSecondQuery(List<OceanBaseExpression> tableList, OceanBaseExpression randomWhereCondition,

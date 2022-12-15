@@ -36,7 +36,7 @@ public abstract class OceanBaseTLPBase
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
         gen = new OceanBaseExpressionGenerator(state).setColumns(targetTables.getColumns());
@@ -49,6 +49,7 @@ public abstract class OceanBaseTLPBase
                 .collect(Collectors.toList());
         select.setFromList(tableList);
         select.setWhereClause(null);
+        return "Not implemented!";
     }
 
     List<OceanBaseExpression> generateFetchColumns() {

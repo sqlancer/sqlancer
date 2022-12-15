@@ -50,7 +50,7 @@ public class MariaDBNoRECOracle extends NoRECBase<MariaDBGlobalState> implements
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         MariaDBTable randomTable = s.getRandomTable();
         List<MariaDBColumn> columns = randomTable.getColumns();
         MariaDBExpressionGenerator gen = new MariaDBExpressionGenerator(state.getRandomly()).setColumns(columns)
@@ -66,6 +66,7 @@ public class MariaDBNoRECOracle extends NoRECBase<MariaDBGlobalState> implements
             state.getState().getLocalState().log(optimizedQueryString + ";\n" + unoptimizedQueryString + ";");
             throw new AssertionError(optimizedCount + " " + unoptimizedCount);
         }
+        return "Not implemented!";
     }
 
     private int getUnoptimizedQuery(MariaDBTable randomTable, MariaDBExpression randomWhereCondition,

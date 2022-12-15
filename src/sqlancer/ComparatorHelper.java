@@ -69,13 +69,15 @@ public final class ComparatorHelper {
                 throw e;
             }
 
-            if (e.getMessage() == null) {
+            if (e.getMessage() == null && state.getOptions().isStopWhenBug()) {
                 throw new AssertionError(queryString, e);
             }
             if (errors.errorIsExpected(e.getMessage())) {
                 throw new IgnoreMeException();
             }
-            throw new AssertionError(queryString, e);
+            if (state.getOptions().isStopWhenBug()) {
+                throw new AssertionError(queryString, e);
+            }
         } finally {
             if (result != null && !result.isClosed()) {
                 result.close();
@@ -94,7 +96,9 @@ public final class ComparatorHelper {
             state.getState().getLocalState().log(String.format("%s\n%s", firstQueryString, secondQueryString));
             String assertionMessage = String.format("the size of the result sets mismatch (%d and %d)!\n%s\n%s",
                     resultSet.size(), secondResultSet.size(), firstQueryString, secondQueryString);
-            throw new AssertionError(assertionMessage);
+            if (state.getOptions().isStopWhenBug()) {
+                throw new AssertionError(assertionMessage);
+            }
         }
 
         Set<String> firstHashSet = new HashSet<>(resultSet);
@@ -113,7 +117,9 @@ public final class ComparatorHelper {
             state.getState().getLocalState().log(String.format("%s\n%s", firstQueryString, secondQueryString));
             String assertionMessage = String.format("the content of the result sets mismatch!\n%s\n%s",
                     firstQueryString, secondQueryString);
-            throw new AssertionError(assertionMessage);
+            if (state.getOptions().isStopWhenBug()) {
+                throw new AssertionError(assertionMessage);
+            }
         }
     }
 

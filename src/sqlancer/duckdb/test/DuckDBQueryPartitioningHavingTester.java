@@ -23,7 +23,7 @@ public class DuckDBQueryPartitioningHavingTester extends DuckDBQueryPartitioning
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         if (Randomly.getBoolean()) {
             select.setWhereClause(gen.generateExpression());
@@ -48,6 +48,7 @@ public class DuckDBQueryPartitioningHavingTester extends DuckDBQueryPartitioning
                 thirdQueryString, combinedString, !orderBy, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state, DuckDBQueryPartitioningBase::canonicalizeResultValue);
+        return "Not implemented!";
     }
 
     @Override

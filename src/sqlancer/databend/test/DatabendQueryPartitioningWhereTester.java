@@ -17,7 +17,7 @@ public class DatabendQueryPartitioningWhereTester extends DatabendQueryPartition
     }
 
     @Override
-    public void check() throws SQLException {
+    public String check() throws SQLException {
         super.check();
         select.setWhereClause(null);
         String originalQueryString = DatabendToStringVisitor.asString(select);
@@ -40,6 +40,7 @@ public class DatabendQueryPartitioningWhereTester extends DatabendQueryPartition
                 thirdQueryString, combinedString, !orderBy, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state, DatabendQueryPartitioningBase::canonicalizeResultValue);
+        return "Not implemented!";
     }
 
 }
