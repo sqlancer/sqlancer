@@ -31,7 +31,9 @@ public class TiDBHintGenerator {
         // READ_FROM_STORAGE
         USE_INDEX_MERGE, //
         NO_INDEX_MERGE, //
-        USE_TOJA;
+        USE_TOJA, //
+        HASH_JOIN_BUILD, //
+        HASH_JOIN_PROBE;
     }
 
     public TiDBHintGenerator(TiDBSelect select, List<TiDBTable> tables) {
@@ -98,6 +100,16 @@ public class TiDBHintGenerator {
         case USE_TOJA:
             sb.append("USE_TOJA(");
             sb.append(Randomly.getBoolean());
+            sb.append(")");
+            break;
+        case HASH_JOIN_BUILD:
+            sb.append("HASH_JOIN_BUILD(");
+            sb.append(table.getName());
+            sb.append(")");
+            break;
+        case HASH_JOIN_PROBE:
+            sb.append("HASH_JOIN_PROBE(");
+            sb.append(table.getName());
             sb.append(")");
             break;
         default:
