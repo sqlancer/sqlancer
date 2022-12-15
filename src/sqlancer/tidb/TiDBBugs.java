@@ -2,21 +2,8 @@ package sqlancer.tidb;
 
 // do not make the fields final to avoid warnings
 public final class TiDBBugs {
-
-    // https://github.com/pingcap/tidb/issues/15987
-    public static boolean bug15987;
-
-    // // https://github.com/pingcap/tidb/issues/15988
-    public static boolean bug15988;
-
     // https://github.com/pingcap/tidb/issues/16028
     public static boolean bug16028;
-
-    // https://github.com/pingcap/tidb/issues/16020
-    public static boolean bug16020;
-
-    // https://github.com/pingcap/tidb/issues/15990
-    public static boolean bug15990;
 
     // https://github.com/pingcap/tidb/issues/15844
     public static boolean bug15844;
@@ -50,9 +37,6 @@ public final class TiDBBugs {
 
     // https://github.com/pingcap/tidb/issues/35652
     public static boolean bug35652 = true;
-
-    // https://github.com/pingcap/tidb/issues/38295
-    public static boolean bug38295;
 
     private TiDBBugs() {
     }

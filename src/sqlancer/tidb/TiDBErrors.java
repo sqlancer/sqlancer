@@ -48,9 +48,6 @@ public final class TiDBErrors {
         if (TiDBBugs.bug35652) {
             errors.add("from binary to utf8");
         }
-        if (TiDBBugs.bug38295) {
-            errors.add("assertion failed");
-        }
     }
 
     public static void addExpressionHavingErrors(ExpectedErrors errors) {
