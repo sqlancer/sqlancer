@@ -32,9 +32,7 @@ public class TiDBHintGenerator {
         USE_INDEX_MERGE, //
         NO_INDEX_MERGE, //
         USE_TOJA, //
-
         HASH_JOIN_BUILD, //
-
         HASH_JOIN_PROBE;
     }
 
