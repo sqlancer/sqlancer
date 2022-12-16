@@ -38,8 +38,7 @@ public class TiDBHintGenerator {
         MPP_2PHASE_AGG, //
         LIMIT_TO_COP, //
         SHUFFLE_JOIN, //
-
-        BROADCAST_JOIN;
+        BROADCAST_JOIN
     }
 
     public TiDBHintGenerator(TiDBSelect select, List<TiDBTable> tables) {
@@ -117,9 +116,9 @@ public class TiDBHintGenerator {
         case HASH_JOIN_PROBE:
             tablesHint("HASH_JOIN_PROBE");
             break;
-            case BROADCAST_JOIN:
-                twoTablesHint("BROADCAST_JOIN",table);
-                break;
+        case BROADCAST_JOIN:
+            twoTablesHint("BROADCAST_JOIN", table);
+            break;
         default:
             throw new AssertionError();
         }
@@ -151,7 +150,7 @@ public class TiDBHintGenerator {
 
     private void twoTablesHint(String string ,TiDBTable table) {
         if (table.hasIndexes()) {
-            sb.append(string)
+            sb.append(string);
             sb.append("(");
             sb.append(table.getName());
             sb.append(", ");
@@ -161,7 +160,6 @@ public class TiDBHintGenerator {
         } else {
             throw new IgnoreMeException();
         }
-        break;
     }
 
     private void appendTables() {
