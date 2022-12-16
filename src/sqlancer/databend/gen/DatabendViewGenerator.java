@@ -17,15 +17,6 @@ public final class DatabendViewGenerator {
         StringBuilder sb = new StringBuilder("CREATE ");
         sb.append("VIEW ");
         sb.append(globalState.getSchema().getFreeViewName());
-        // sb.append("(");
-        // for (int i = 0; i < nrColumns; i++) {
-        // if (i != 0) {
-        // sb.append(", ");
-        // }
-        // sb.append("c");
-        // sb.append(i);
-        // }
-        // sb.append(") AS ");
         sb.append(" AS ");
         sb.append(DatabendToStringVisitor
                 .asString(DatabendRandomQuerySynthesizer.generateSelect(globalState, nrColumns)));

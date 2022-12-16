@@ -1,4 +1,4 @@
-package sqlancer.databend.test;
+package sqlancer.databend.test.tlp;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -8,16 +8,15 @@ import java.util.List;
 import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
-import sqlancer.common.oracle.TestOracle;
 import sqlancer.databend.DatabendErrors;
+import sqlancer.databend.DatabendExprToNode;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema;
 import sqlancer.databend.DatabendToStringVisitor;
 import sqlancer.databend.ast.DatabendConstant;
 import sqlancer.databend.ast.DatabendExpression;
 
-public class DatabendQueryPartitioningHavingTester extends DatabendQueryPartitioningBase
-        implements TestOracle<DatabendGlobalState> {
+public class DatabendQueryPartitioningHavingTester extends DatabendQueryPartitioningBase {
 
     public DatabendQueryPartitioningHavingTester(DatabendGlobalState state) {
         super(state);
@@ -28,7 +27,8 @@ public class DatabendQueryPartitioningHavingTester extends DatabendQueryPartitio
     public void check() throws SQLException {
         super.check();
         if (Randomly.getBoolean()) {
-            select.setWhereClause(gen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN));
+            select.setWhereClause(
+                    DatabendExprToNode.cast(gen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN)));
         }
         // boolean orderBy = Randomly.getBoolean();
         boolean orderBy = false; // 关闭order by
@@ -39,18 +39,16 @@ public class DatabendQueryPartitioningHavingTester extends DatabendQueryPartitio
                     Randomly.smallNumber() % select.getFetchColumns().size() + 1));
             select.setOrderByExpressions(constants);
         }
-        // select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
-        select.setGroupByExpressions(select.getFetchColumns());
+        select.setGroupByExpressions(groupByExpression);
         select.setHavingClause(null);
         String originalQueryString = DatabendToStringVisitor.asString(select);
-        // System.out.println(originalQueryString);
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
-        select.setHavingClause(predicate);
+        select.setHavingClause(DatabendExprToNode.cast(predicate));
         String firstQueryString = DatabendToStringVisitor.asString(select);
-        select.setHavingClause(negatedPredicate);
+        select.setHavingClause(DatabendExprToNode.cast(negatedPredicate));
         String secondQueryString = DatabendToStringVisitor.asString(select);
-        select.setHavingClause(isNullPredicate);
+        select.setHavingClause(DatabendExprToNode.cast(isNullPredicate));
         String thirdQueryString = DatabendToStringVisitor.asString(select);
         List<String> combinedString = new ArrayList<>();
         List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
@@ -60,13 +58,13 @@ public class DatabendQueryPartitioningHavingTester extends DatabendQueryPartitio
     }
 
     @Override
-    protected Node<DatabendExpression> generatePredicate() {
+    protected DatabendExpression generatePredicate() {
         return gen.generateHavingClause();
     }
 
     @Override
     List<Node<DatabendExpression>> generateFetchColumns() {
-        return Collections.singletonList(gen.generateHavingClause());
+        return Collections.singletonList(DatabendExprToNode.cast(gen.generateHavingClause()));
     }
 
 }
