@@ -30,7 +30,7 @@ public final class DatabendErrors {
         if (DatabendBugs.bug9264) {
             errors.add("assertion failed: offset + length <= self.length");
         }
-        errors.add("validity's length must be equal"); // bug
+        // errors.add("validity's length must be equal"); // bug
 
         /*
          * TODO column为not null 时，注意default不能为null DROP DATABASE IF EXISTS databend2; CREATE DATABASE databend2; USE
