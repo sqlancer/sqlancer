@@ -12,10 +12,25 @@ public final class DatabendErrors {
         errors.add("/ by zero");
         errors.add("ORDER BY position");
         errors.add("GROUP BY position");
-        errors.add("downcast column error"); // bug
-        errors.add("index out of bounds"); // bug
+        if (DatabendBugs.bug9162) {
+            errors.add("downcast column error");
+        }
+        if (DatabendBugs.bug9018) {
+            errors.add("index out of bounds");
+        }
+        if (DatabendBugs.bug9163) {
+            errors.add("validity must be equal to the array's length");
+        }
+        if (DatabendBugs.bug9224) {
+            errors.add("Can't cast column from nullable data into non-nullable type");
+        }
+        if (DatabendBugs.bug9234) {
+            errors.add("called `Option::unwrap()` on a `None` value");
+        }
+        if (DatabendBugs.bug9264) {
+            errors.add("assertion failed: offset + length <= self.length");
+        }
         errors.add("validity's length must be equal"); // bug
-        errors.add("validity must be equal to the array's length"); // bug
 
         /*
          * TODO column为not null 时，注意default不能为null DROP DATABASE IF EXISTS databend2; CREATE DATABASE databend2; USE

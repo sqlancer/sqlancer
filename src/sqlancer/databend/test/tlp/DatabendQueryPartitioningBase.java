@@ -14,6 +14,7 @@ import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
 import sqlancer.common.oracle.TestOracle;
+import sqlancer.databend.DatabendBugs;
 import sqlancer.databend.DatabendErrors;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema;
@@ -71,8 +72,10 @@ public class DatabendQueryPartitioningBase
         List<DatabendTable> tables = targetTables.getTables();
         List<TableReferenceNode<DatabendExpression, DatabendTable>> tableList = tables.stream()
                 .map(t -> new TableReferenceNode<DatabendExpression, DatabendTable>(t)).collect(Collectors.toList());
-        List<Node<DatabendExpression>> joins = DatabendJoin.getJoins(tableList, state);
-        select.setJoinList(joins.stream().collect(Collectors.toList()));
+        if (!DatabendBugs.bug9236) {
+            List<Node<DatabendExpression>> joins = DatabendJoin.getJoins(tableList, state);
+            select.setJoinList(joins.stream().collect(Collectors.toList()));
+        }
         select.setFromList(tableList.stream().collect(Collectors.toList()));
         select.setWhereClause(null);
     }
