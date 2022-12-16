@@ -462,4 +462,32 @@ public class SQLite3Schema extends AbstractSchema<SQLite3GlobalState, SQLite3Tab
         return getDatabaseTables().stream().filter(t -> !t.isView() && !t.isVirtual).collect(Collectors.toList());
     }
 
+    public String getFreeVirtualTableName() {
+        int i = 0;
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            i = (int) Randomly.getNotCachedInteger(0, 100);
+        }
+        do {
+            String tableName = String.format("vt%d", i++);
+            if (getDatabaseTables().stream().noneMatch(t -> t.getName().equalsIgnoreCase(tableName))) {
+                return tableName;
+            }
+        } while (true);
+
+    }
+
+    public String getFreeRtreeTableName() {
+        int i = 0;
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            i = (int) Randomly.getNotCachedInteger(0, 100);
+        }
+        do {
+            String tableName = String.format("rt%d", i++);
+            if (getDatabaseTables().stream().noneMatch(t -> t.getName().equalsIgnoreCase(tableName))) {
+                return tableName;
+            }
+        } while (true);
+
+    }
+
 }
