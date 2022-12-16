@@ -148,7 +148,7 @@ public class TiDBHintGenerator {
         sb.append(")");
     }
 
-    private void twoTablesHint(String string ,TiDBTable table) {
+    private void twoTablesHint(String string, TiDBTable table) {
         if (table.hasIndexes()) {
             sb.append(string);
             sb.append("(");
