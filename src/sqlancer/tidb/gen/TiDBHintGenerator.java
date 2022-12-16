@@ -37,9 +37,9 @@ public class TiDBHintGenerator {
         MPP_1PHASE_AGG, //
         MPP_2PHASE_AGG, //
         LIMIT_TO_COP, //
+        SHUFFLE_JOIN, //
 
-        SHUFFLE_JOIN;
-
+        BROADCAST_JOIN;
     }
 
     public TiDBHintGenerator(TiDBSelect select, List<TiDBTable> tables) {
@@ -117,6 +117,9 @@ public class TiDBHintGenerator {
         case HASH_JOIN_PROBE:
             tablesHint("HASH_JOIN_PROBE");
             break;
+            case BROADCAST_JOIN:
+                twoTablesHint("BROADCAST_JOIN",table);
+                break;
         default:
             throw new AssertionError();
         }
