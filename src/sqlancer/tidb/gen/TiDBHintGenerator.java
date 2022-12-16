@@ -33,7 +33,13 @@ public class TiDBHintGenerator {
         NO_INDEX_MERGE, //
         USE_TOJA, //
         HASH_JOIN_BUILD, //
-        HASH_JOIN_PROBE;
+        HASH_JOIN_PROBE, //
+        MPP_1PHASE_AGG, //
+        MPP_2PHASE_AGG, //
+        LIMIT_TO_COP, //
+
+        SHUFFLE_JOIN;
+
     }
 
     public TiDBHintGenerator(TiDBSelect select, List<TiDBTable> tables) {
@@ -73,6 +79,15 @@ public class TiDBHintGenerator {
         case STREAM_AGG:
             sb.append("STREAM_AGG()");
             break;
+        case MPP_1PHASE_AGG:
+            sb.append("MPP_1PHASE_AGG()");
+            break;
+        case MPP_2PHASE_AGG:
+            sb.append("MPP_2PHASE_AGG()");
+            break;
+        case LIMIT_TO_COP:
+            sb.append("LIMIT_TO_COP()");
+            break;
         case USE_INDEX:
             indexesHint("USE_INDEX");
             break;
@@ -82,17 +97,11 @@ public class TiDBHintGenerator {
         case AGG_TO_COP:
             sb.append("AGG_TO_COP()");
             break;
+        case SHUFFLE_JOIN:
+            twoTablesHint("SHUFFLE_JOIN", table);
+            break;
         case USE_INDEX_MERGE:
-            if (table.hasIndexes()) {
-                sb.append("USE_INDEX_MERGE(");
-                sb.append(table.getName());
-                sb.append(", ");
-                List<TableIndex> indexes = Randomly.nonEmptySubset(table.getIndexes());
-                sb.append(indexes.stream().map(i -> i.getIndexName()).collect(Collectors.joining(", ")));
-                sb.append(")");
-            } else {
-                throw new IgnoreMeException();
-            }
+            twoTablesHint("USE_INDEX_MERGE", table);
             break;
         case NO_INDEX_MERGE:
             sb.append("NO_INDEX_MERGE()");
@@ -103,14 +112,10 @@ public class TiDBHintGenerator {
             sb.append(")");
             break;
         case HASH_JOIN_BUILD:
-            sb.append("HASH_JOIN_BUILD(");
-            sb.append(table.getName());
-            sb.append(")");
+            tablesHint("HASH_JOIN_BUILD");
             break;
         case HASH_JOIN_PROBE:
-            sb.append("HASH_JOIN_PROBE(");
-            sb.append(table.getName());
-            sb.append(")");
+            tablesHint("HASH_JOIN_PROBE");
             break;
         default:
             throw new AssertionError();
@@ -139,6 +144,21 @@ public class TiDBHintGenerator {
         sb.append("(");
         appendTables();
         sb.append(")");
+    }
+
+    private void twoTablesHint(String string ,TiDBTable table) {
+        if (table.hasIndexes()) {
+            sb.append(string)
+            sb.append("(");
+            sb.append(table.getName());
+            sb.append(", ");
+            List<TableIndex> indexes = Randomly.nonEmptySubset(table.getIndexes());
+            sb.append(indexes.stream().map(i -> i.getIndexName()).collect(Collectors.joining(", ")));
+            sb.append(")");
+        } else {
+            throw new IgnoreMeException();
+        }
+        break;
     }
 
     private void appendTables() {
