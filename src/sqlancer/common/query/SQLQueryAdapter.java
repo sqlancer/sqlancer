@@ -46,7 +46,7 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
     }
 
     private void checkQueryString() {
-        if (query.contains("CREATE TABLE") && !couldAffectSchema) {
+        if (query.contains("CREATE TABLE") && !query.startsWith("EXPLAIN") && !couldAffectSchema) {
             throw new AssertionError("CREATE TABLE statements should set couldAffectSchema to true");
         }
     }
