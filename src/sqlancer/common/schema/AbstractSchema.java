@@ -126,6 +126,34 @@ public class AbstractSchema<G extends GlobalState<?, ?, ?>, A extends AbstractTa
 
     }
 
+    public String getFreeVirtualTableName() {
+        int i = 0;
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            i = (int) Randomly.getNotCachedInteger(0, 100);
+        }
+        do {
+            String tableName = String.format("vt%d", i++);
+            if (databaseTables.stream().noneMatch(t -> t.getName().equalsIgnoreCase(tableName))) {
+                return tableName;
+            }
+        } while (true);
+
+    }
+
+    public String getFreeRtreeTableName() {
+        int i = 0;
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            i = (int) Randomly.getNotCachedInteger(0, 100);
+        }
+        do {
+            String tableName = String.format("rt%d", i++);
+            if (databaseTables.stream().noneMatch(t -> t.getName().equalsIgnoreCase(tableName))) {
+                return tableName;
+            }
+        } while (true);
+
+    }
+
     public String getFreeViewName() {
         int i = 0;
         if (Randomly.getBooleanWithRatherLowProbability()) {
