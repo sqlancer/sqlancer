@@ -39,9 +39,6 @@ public final class TiDBAlterTableGenerator {
         sb.append(" ");
         switch (a) {
         case MODIFY_COLUMN:
-            if (TiDBBugs.bug10) {
-                throw new IgnoreMeException();
-            }
             sb.append("MODIFY ");
             sb.append(column.getName());
             sb.append(" ");
@@ -92,9 +89,6 @@ public final class TiDBAlterTableGenerator {
             errors.add("'Defining a virtual generated column as primary key' is not supported for generated columns");
             break;
         case CHANGE:
-            if (TiDBBugs.bug10) {
-                throw new IgnoreMeException();
-            }
             sb.append(" CHANGE ");
             sb.append(column.getName());
             sb.append(" ");

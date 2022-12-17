@@ -61,9 +61,6 @@ public class TiDBHintGenerator {
             tablesHint("INL_JOIN");
             break;
         case INL_HASH_JOIN:
-            if (TiDBBugs.bug50) {
-                throw new IgnoreMeException();
-            }
             tablesHint("INL_HASH_JOIN");
             break;
         case INL_MERGE_JOIN:

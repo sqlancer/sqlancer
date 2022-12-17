@@ -130,9 +130,6 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
                 sb.append("LEFT ");
                 break;
             case RIGHT:
-                if (TiDBBugs.bug15844) {
-                    throw new IgnoreMeException();
-                }
                 sb.append("RIGHT ");
                 break;
             default:
