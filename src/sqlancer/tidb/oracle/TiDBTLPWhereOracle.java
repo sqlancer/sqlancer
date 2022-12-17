@@ -12,6 +12,8 @@ import sqlancer.tidb.visitor.TiDBVisitor;
 
 public class TiDBTLPWhereOracle extends TiDBTLPBase {
 
+    private String generatedQueryString;
+
     public TiDBTLPWhereOracle(TiDBGlobalState state) {
         super(state);
         TiDBErrors.addExpressionErrors(errors);
@@ -22,7 +24,7 @@ public class TiDBTLPWhereOracle extends TiDBTLPBase {
         super.check();
         select.setWhereClause(null);
         String originalQueryString = TiDBVisitor.asString(select);
-
+        generatedQueryString = originalQueryString;
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
@@ -40,6 +42,11 @@ public class TiDBTLPWhereOracle extends TiDBTLPBase {
                 thirdQueryString, combinedString, !orderBy, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
+    }
+
+    @Override
+    public String getLastQueryString() {
+        return generatedQueryString;
     }
 
 }
