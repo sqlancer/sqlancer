@@ -139,19 +139,25 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         if (!globalState.getDbmsSpecificOptions().testJoins) {
             return joinStatements;
         }
+        List<JoinType> options = new ArrayList<>(Arrays.asList(JoinType.values()));
         if (Randomly.getBoolean() && tables.size() > 1) {
             int nrJoinClauses = (int) Randomly.getNotCachedInteger(0, tables.size());
+            // Natural join is incompatible with other joins
+            // because it needs unique column names
+            // while other joins will produce duplicate column names
+            if (nrJoinClauses > 1) {
+                options.remove(JoinType.NATURAL);
+            }
             for (int i = 0; i < nrJoinClauses; i++) {
                 SQLite3Expression joinClause = generateExpression();
                 SQLite3Table table = Randomly.fromList(tables);
                 tables.remove(table);
-                JoinType options;
-                options = Randomly.fromOptions(JoinType.INNER, JoinType.CROSS, JoinType.OUTER, JoinType.NATURAL);
-                if (options == JoinType.NATURAL) {
+                JoinType selectedOption = Randomly.fromList(options);
+                if (selectedOption == JoinType.NATURAL) {
                     // NATURAL joins do not have an ON clause
                     joinClause = null;
                 }
-                Join j = new SQLite3Expression.Join(table, joinClause, options);
+                Join j = new SQLite3Expression.Join(table, joinClause, selectedOption);
                 joinStatements.add(j);
             }
 
