@@ -6,7 +6,6 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.tidb.TiDBBugs;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
 import sqlancer.tidb.TiDBSchema.TiDBCompositeDataType;

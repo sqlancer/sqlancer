@@ -1,9 +1,7 @@
 package sqlancer.tidb.visitor;
 
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.visitor.ToStringVisitor;
-import sqlancer.tidb.TiDBBugs;
 import sqlancer.tidb.ast.TiDBAggregate;
 import sqlancer.tidb.ast.TiDBCase;
 import sqlancer.tidb.ast.TiDBCastOperation;
