@@ -547,6 +547,12 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
                 nrArgs += Randomly.smallNumber();
             }
             List<SQLite3Expression> expressions = randomFunction.generateArguments(nrArgs, depth + 1, this);
+            // The second argument of LIKELIHOOD must be a float number within 0.0 -1.0
+            if (randomFunction == AnyFunction.LIKELIHOOD) {
+                SQLite3Expression lastArg = SQLite3Constant.createRealConstant(Randomly.getPercentage());
+                expressions.remove(expressions.size() - 1);
+                expressions.add(lastArg);
+            }
             return new SQLite3Expression.Function(randomFunction.toString(),
                     expressions.toArray(new SQLite3Expression[0]));
         }
@@ -603,6 +609,11 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
             if (i == 0 && Randomly.getBoolean()) {
                 args[i] = new SQLite3Distinct(args[i]);
             }
+        }
+        // The second argument of LIKELIHOOD must be a float number within 0.0 -1.0
+        if (func == ComputableFunction.LIKELIHOOD) {
+            SQLite3Expression lastArg = SQLite3Constant.createRealConstant(Randomly.getPercentage());
+            args[args.length - 1] = lastArg;
         }
         return new SQLite3Function(func, args);
     }
