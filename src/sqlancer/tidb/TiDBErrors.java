@@ -49,7 +49,7 @@ public final class TiDBErrors {
             errors.add("from binary to utf8");
         }
         if (TiDBBugs.bug38295) {
-             errors.add("assertion failed");
+            errors.add("assertion failed");
         }
     }
 
