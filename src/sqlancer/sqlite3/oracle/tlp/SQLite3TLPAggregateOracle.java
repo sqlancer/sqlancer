@@ -33,6 +33,7 @@ public class SQLite3TLPAggregateOracle implements TestOracle<SQLite3GlobalState>
     private final SQLite3GlobalState state;
     private final ExpectedErrors errors = new ExpectedErrors();
     private SQLite3ExpressionGenerator gen;
+    private String generatedQueryString;
 
     public SQLite3TLPAggregateOracle(SQLite3GlobalState state) {
         this.state = state;
@@ -56,7 +57,7 @@ public class SQLite3TLPAggregateOracle implements TestOracle<SQLite3GlobalState>
             select.setOrderByExpressions(gen.generateOrderBys());
         }
         String originalQuery = SQLite3Visitor.asString(select);
-
+        generatedQueryString = originalQuery;
         SQLite3Expression whereClause = gen.generateExpression();
         SQLite3UnaryOperation negatedClause = new SQLite3UnaryOperation(UnaryOperator.NOT, whereClause);
         SQLite3PostfixUnaryOperation notNullClause = new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.ISNULL,
@@ -120,6 +121,11 @@ public class SQLite3TLPAggregateOracle implements TestOracle<SQLite3GlobalState>
             leftSelect.setOrderByExpressions(gen.generateOrderBys());
         }
         return leftSelect;
+    }
+
+    @Override
+    public String getLastQueryString() {
+        return generatedQueryString;
     }
 
 }

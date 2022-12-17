@@ -14,6 +14,8 @@ import sqlancer.tidb.visitor.TiDBVisitor;
 
 public class TiDBTLPHavingOracle extends TiDBTLPBase implements TestOracle<TiDBGlobalState> {
 
+    private String generatedQueryString;
+
     public TiDBTLPHavingOracle(TiDBGlobalState state) {
         super(state);
         TiDBErrors.addExpressionHavingErrors(errors);
@@ -32,6 +34,7 @@ public class TiDBTLPHavingOracle extends TiDBTLPBase implements TestOracle<TiDBG
         select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
         select.setHavingClause(null);
         String originalQueryString = TiDBVisitor.asString(select);
+        generatedQueryString = originalQueryString;
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         select.setHavingClause(predicate);
@@ -50,5 +53,10 @@ public class TiDBTLPHavingOracle extends TiDBTLPBase implements TestOracle<TiDBG
     @Override
     protected TiDBExpression generatePredicate() {
         return gen.generateHavingClause();
+    }
+
+    @Override
+    public String getLastQueryString() {
+        return generatedQueryString;
     }
 }

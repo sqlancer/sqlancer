@@ -195,4 +195,9 @@ public class CockroachDBTLPAggregateOracle implements TestOracle<CockroachDBGlob
         return leftSelect;
     }
 
+    @Override
+    public String getLastQueryString() {
+        return originalQuery;
+    }
+
 }
