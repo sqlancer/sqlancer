@@ -258,10 +258,6 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         if (dataType == PostgresDataType.REAL && Randomly.getBoolean()) {
             dataType = Randomly.fromOptions(PostgresDataType.INT, PostgresDataType.FLOAT);
         }
-		/*
-		 * if (dataType == PostgresDataType.FLOAT && Randomly.getBoolean()) { dataType =
-		 * PostgresDataType.INT; }
-		 */
         if (!filterColumns(dataType).isEmpty() && Randomly.getBoolean()) {
             return potentiallyWrapInCollate(dataType, createColumnOfType(dataType));
         }
