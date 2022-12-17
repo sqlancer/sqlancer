@@ -31,7 +31,7 @@ public final class SQLite3ViewGenerator {
     public static SQLQueryAdapter generate(SQLite3GlobalState globalState) throws SQLException {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE");
-        if (Randomly.getBoolean()) {
+        if (globalState.getDbmsSpecificOptions().testTempTables && Randomly.getBoolean()) {
             sb.append(" ");
             sb.append(Randomly.fromOptions("TEMP", "TEMPORARY"));
         }
