@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.tidb.TiDBBugs;
 import sqlancer.tidb.TiDBExpressionGenerator;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
@@ -113,8 +112,7 @@ public class TiDBTableGenerator {
             errors.add(" used in key specification without a key length");
         }
         sb.append(")");
-        if (Randomly.getBooleanWithRatherLowProbability()
-                && !TiDBBugs.bug14 /* there are also a number of unresolved other partitioning bugs */) {
+        if (Randomly.getBooleanWithRatherLowProbability()) {
             sb.append("PARTITION BY HASH(");
             sb.append(TiDBVisitor.asString(gen.generateExpression()));
             sb.append(") ");
@@ -127,9 +125,6 @@ public class TiDBTableGenerator {
             errors.add("A UNIQUE INDEX must include all columns in the table's partitioning function");
             errors.add("is of a not allowed type for this type of partitioning");
             errors.add("The PARTITION function returns the wrong type");
-            if (TiDBBugs.bug16) {
-                errors.add("UnknownType: *ast.WhenClause");
-            }
         }
     }
 
@@ -144,11 +139,10 @@ public class TiDBTableGenerator {
     }
 
     private void appendSizeSpecifiers(StringBuilder sb, TiDBDataType type) {
-        if (type.isNumeric() && Randomly.getBoolean() && !TiDBBugs.bug16028) {
+        if (type.isNumeric() && Randomly.getBoolean()) {
             sb.append(" UNSIGNED");
         }
-        if (type.isNumeric() && Randomly.getBoolean()
-                && !TiDBBugs.bug16028 /* seems to be the same bug as https://github.com/pingcap/tidb/issues/16028 */) {
+        if (type.isNumeric() && Randomly.getBoolean()) {
             sb.append(" ZEROFILL");
         }
     }
