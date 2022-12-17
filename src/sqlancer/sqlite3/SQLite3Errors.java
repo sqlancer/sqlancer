@@ -21,7 +21,6 @@ public final class SQLite3Errors {
         errors.add("FTS expression tree is too large");
         errors.add("String or BLOB exceeds size limit");
         errors.add("[SQLITE_ERROR] SQL error or missing database (integer overflow)");
-        errors.add("second argument to likelihood() must be a constant between 0.0 and 1.0");
         errors.add("ORDER BY term out of range");
         errors.add("GROUP BY term out of range");
         errors.add("not authorized"); // load_extension
