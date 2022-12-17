@@ -258,9 +258,10 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         if (dataType == PostgresDataType.REAL && Randomly.getBoolean()) {
             dataType = Randomly.fromOptions(PostgresDataType.INT, PostgresDataType.FLOAT);
         }
-        if (dataType == PostgresDataType.FLOAT && Randomly.getBoolean()) {
-            dataType = PostgresDataType.INT;
-        }
+		/*
+		 * if (dataType == PostgresDataType.FLOAT && Randomly.getBoolean()) { dataType =
+		 * PostgresDataType.INT; }
+		 */
         if (!filterColumns(dataType).isEmpty() && Randomly.getBoolean()) {
             return potentiallyWrapInCollate(dataType, createColumnOfType(dataType));
         }
@@ -311,6 +312,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             case DECIMAL:
             case REAL:
             case FLOAT:
+            	return generateFloatExpression(depth);
             case MONEY:
             case INET:
                 return generateConstant(r, dataType);
@@ -423,6 +425,21 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         }
     }
 
+    private enum FloatExpression {
+        BINARY_ARITHMETIC_EXPRESSION
+    }
+
+    private PostgresExpression generateFloatExpression(int depth) {
+        FloatExpression option = Randomly.fromOptions(FloatExpression.values());
+        switch (option) {
+        case BINARY_ARITHMETIC_EXPRESSION:
+            return new PostgresBinaryArithmeticOperation(generateExpression(depth + 1, PostgresDataType.FLOAT),
+                    generateExpression(depth + 1, PostgresDataType.FLOAT), PostgresBinaryOperator.getRandom());
+        default:
+            throw new AssertionError();
+        }
+    }
+    
     private enum IntExpression {
         UNARY_OPERATION, FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION
     }
