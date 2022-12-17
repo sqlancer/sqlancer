@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.schema.TableIndex;
-import sqlancer.tidb.TiDBBugs;
 import sqlancer.tidb.TiDBSchema.TiDBTable;
 import sqlancer.tidb.ast.TiDBSelect;
 import sqlancer.tidb.ast.TiDBText;
@@ -61,9 +60,6 @@ public class TiDBHintGenerator {
             tablesHint("INL_JOIN");
             break;
         case INL_HASH_JOIN:
-            if (TiDBBugs.bug50) {
-                throw new IgnoreMeException();
-            }
             tablesHint("INL_HASH_JOIN");
             break;
         case INL_MERGE_JOIN:
