@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.google.auto.service.AutoService;
 
@@ -23,6 +22,8 @@ import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.gen.CockroachDBCommentOnGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBCreateStatisticsGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBDeleteGenerator;
+import sqlancer.cockroachdb.gen.CockroachDBDropTableGenerator;
+import sqlancer.cockroachdb.gen.CockroachDBDropViewGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBIndexGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBInsertGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBRandomQuerySynthesizer;
@@ -45,15 +46,17 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
     }
 
     public enum Action {
-        INSERT(CockroachDBInsertGenerator::insert), //
-        TRUNCATE(CockroachDBTruncateGenerator::truncate), //
-        CREATE_STATISTICS(CockroachDBCreateStatisticsGenerator::create), //
-        SET_SESSION(CockroachDBSetSessionGenerator::create), //
-        CREATE_INDEX(CockroachDBIndexGenerator::create), //
-        UPDATE(CockroachDBUpdateGenerator::gen), //
+        CREATE_TABLE(CockroachDBTableGenerator::generate), CREATE_INDEX(CockroachDBIndexGenerator::create), //
         CREATE_VIEW(CockroachDBViewGenerator::generate), //
+        CREATE_STATISTICS(CockroachDBCreateStatisticsGenerator::create), //
+        INSERT(CockroachDBInsertGenerator::insert), //
+        UPDATE(CockroachDBUpdateGenerator::gen), //
+        SET_SESSION(CockroachDBSetSessionGenerator::create), //
         SET_CLUSTER_SETTING(CockroachDBSetClusterSettingGenerator::create), //
         DELETE(CockroachDBDeleteGenerator::delete), //
+        TRUNCATE(CockroachDBTruncateGenerator::truncate), //
+        DROP_TABLE(CockroachDBDropTableGenerator::drop), //
+        DROP_VIEW(CockroachDBDropViewGenerator::drop), //
         COMMENT_ON(CockroachDBCommentOnGenerator::comment), //
         SHOW(CockroachDBShowGenerator::show), //
         TRANSACTION((g) -> {
@@ -65,8 +68,7 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             ExpectedErrors errors = new ExpectedErrors();
             if (Randomly.getBoolean()) {
                 sb.append("(");
-                sb.append(Randomly.nonEmptySubset("VERBOSE", "TYPES", "OPT", "DISTSQL", "VEC").stream()
-                        .collect(Collectors.joining(", ")));
+                sb.append(Randomly.fromOptions("VERBOSE", "TYPES", "OPT", "DISTSQL", "VEC"));
                 sb.append(") ");
                 errors.add("cannot set EXPLAIN mode more than once");
                 errors.add("unable to vectorize execution plan");
@@ -199,6 +201,9 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
                                   */
                 break;
             case TRANSACTION:
+            case CREATE_TABLE:
+            case DROP_TABLE:
+            case DROP_VIEW:
                 nrPerformed = 0; // r.getInteger(0, 0);
                 break;
             default:
