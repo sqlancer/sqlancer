@@ -278,7 +278,7 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             s.execute(createDatabaseCommand);
         }
         con.close();
-        con = DriverManager.getConnection("jdbc:postgresql://localhost:26257/" + databaseName,
+        con = DriverManager.getConnection(String.format("jdbc:postgresql://%s:%d/%s", host, port, databaseName),
                 globalState.getOptions().getUserName(), globalState.getOptions().getPassword());
         return new SQLConnection(con);
     }
