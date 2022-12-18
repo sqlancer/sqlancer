@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -22,6 +23,13 @@ public class TiDBTableGenerator {
     private final List<TiDBColumn> columns = new ArrayList<>();
     private boolean primaryKeyAsTableConstraints;
     private final ExpectedErrors errors = new ExpectedErrors();
+
+    public static SQLQueryAdapter createRandomTableStatement(TiDBGlobalState globalState) throws SQLException {
+        if (globalState.getSchema().getDatabaseTables().size() > globalState.getDbmsSpecificOptions().maxNumTables) {
+            throw new IgnoreMeException();
+        }
+        return new TiDBTableGenerator().getQuery(globalState);
+    }
 
     public SQLQueryAdapter getQuery(TiDBGlobalState globalState) throws SQLException {
         errors.add("Information schema is changed during the execution of the statement");
