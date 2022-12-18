@@ -247,9 +247,6 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             }
             total--;
         }
-        if (globalState.getDbmsSpecificOptions().makeVectorizationMoreLikely && Randomly.getBoolean()) {
-            manager.execute(new SQLQueryAdapter("SET vectorize=on;"));
-        }
     }
 
     @Override

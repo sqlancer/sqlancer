@@ -99,10 +99,6 @@ public class CockroachDBOptions implements DBMSSpecificOptions<CockroachDBOracle
     @Parameter(names = { "--test-temp-tables" }, description = "Test TEMPORARY tables")
     public boolean testTempTables; // default: false https://github.com/cockroachdb/cockroach/issues/85388
 
-    @Parameter(names = {
-            "--increased-vectorization" }, description = "Generate VECTORIZE=on with a higher probability (which found a number of bugs in the past)")
-    public boolean makeVectorizationMoreLikely = true;
-
     @Parameter(names = { "--max-num-tables" }, description = "The maximum number of tables that can be created")
     public int maxNumTables = 10;
 
