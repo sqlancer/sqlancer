@@ -2,6 +2,7 @@ package sqlancer.cockroachdb.gen;
 
 import java.util.List;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBBugs;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
@@ -17,6 +18,9 @@ public class CockroachDBIndexGenerator extends CockroachDBGenerator {
     }
 
     public static SQLQueryAdapter create(CockroachDBGlobalState s) {
+        if (s.getSchema().getIndexCount() >= s.getDbmsSpecificOptions().maxNumIndexes) {
+            throw new IgnoreMeException();
+        }
         return new CockroachDBIndexGenerator(s).getQuery();
     }
 
