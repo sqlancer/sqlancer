@@ -58,47 +58,50 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
     }
 
     public enum Action implements AbstractAction<SQLite3GlobalState> {
-        PRAGMA(SQLite3PragmaGenerator::insertPragma), //
-        INDEX(SQLite3IndexGenerator::insertIndex), //
-        INSERT(SQLite3InsertGenerator::insertRow), //
-        VACUUM(SQLite3VacuumGenerator::executeVacuum), //
-        REINDEX(SQLite3ReindexGenerator::executeReindex), //
-        ANALYZE(SQLite3AnalyzeGenerator::generateAnalyze), //
-        DELETE(SQLite3DeleteGenerator::deleteContent), //
+        PRAGMA(SQLite3PragmaGenerator::insertPragma), // 0
+        CREATE_INDEX(SQLite3IndexGenerator::insertIndex), // 1
+        CREATE_VIEW(SQLite3ViewGenerator::generate), // 2
+        CREATE_TRIGGER(SQLite3CreateTriggerGenerator::create), // 3
+        CREATE_TABLE(SQLite3TableGenerator::createRandomTableStatement), // 4
+        CREATE_VIRTUALTABLE(SQLite3CreateVirtualFTSTableGenerator::createRandomTableStatement), // 5
+        CREATE_RTREETABLE(SQLite3CreateVirtualRtreeTabelGenerator::createRandomTableStatement), // 6
+        INSERT(SQLite3InsertGenerator::insertRow), // 7
+        DELETE(SQLite3DeleteGenerator::deleteContent), // 8
+        ALTER(SQLite3AlterTable::alterTable), // 9
+        UPDATE(SQLite3UpdateGenerator::updateRow), // 10
+        DROP_INDEX(SQLite3DropIndexGenerator::dropIndex), // 11
+        DROP_TABLE(SQLite3DropTableGenerator::dropTable), // 12
+        DROP_VIEW(SQLite3ViewGenerator::dropView), // 13
+        VACUUM(SQLite3VacuumGenerator::executeVacuum), // 14
+        REINDEX(SQLite3ReindexGenerator::executeReindex), // 15
+        ANALYZE(SQLite3AnalyzeGenerator::generateAnalyze), // 16
+        EXPLAIN(SQLite3ExplainGenerator::explain), // 17
+        CHECK_RTREE_TABLE((g) -> {
+            SQLite3Table table = g.getSchema().getRandomTableOrBailout(t -> t.getName().startsWith("r"));
+            String format = String.format("SELECT rtreecheck('%s');", table.getName());
+            return new SQLQueryAdapter(format, ExpectedErrors.from("The database file is locked"));
+        }), // 18
+        VIRTUAL_TABLE_ACTION(SQLite3VirtualFTSTableCommandGenerator::create), // 19
+        MANIPULATE_STAT_TABLE(SQLite3StatTableGenerator::getQuery), // 20
         TRANSACTION_START(SQLite3TransactionGenerator::generateBeginTransaction) {
             @Override
             public boolean canBeRetried() {
                 return false;
             }
 
-        }, //
-        ALTER(SQLite3AlterTable::alterTable), //
-        DROP_INDEX(SQLite3DropIndexGenerator::dropIndex), //
-        UPDATE(SQLite3UpdateGenerator::updateRow), //
+        }, // 21
         ROLLBACK_TRANSACTION(SQLite3TransactionGenerator::generateRollbackTransaction) {
             @Override
             public boolean canBeRetried() {
                 return false;
             }
-        }, //
+        }, // 22
         COMMIT(SQLite3TransactionGenerator::generateCommit) {
             @Override
             public boolean canBeRetried() {
                 return false;
             }
-        }, //
-        DROP_TABLE(SQLite3DropTableGenerator::dropTable), //
-        DROP_VIEW(SQLite3ViewGenerator::dropView), //
-        EXPLAIN(SQLite3ExplainGenerator::explain), //
-        CHECK_RTREE_TABLE((g) -> {
-            SQLite3Table table = g.getSchema().getRandomTableOrBailout(t -> t.getName().startsWith("r"));
-            String format = String.format("SELECT rtreecheck('%s');", table.getName());
-            return new SQLQueryAdapter(format, ExpectedErrors.from("The database file is locked"));
-        }), //
-        VIRTUAL_TABLE_ACTION(SQLite3VirtualFTSTableCommandGenerator::create), //
-        CREATE_VIEW(SQLite3ViewGenerator::generate), //
-        CREATE_TRIGGER(SQLite3CreateTriggerGenerator::create), //
-        MANIPULATE_STAT_TABLE(SQLite3StatTableGenerator::getQuery);
+        }; // 23
 
         private final SQLQueryProvider<SQLite3GlobalState> sqlQueryProvider;
 
@@ -146,7 +149,7 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
         case MANIPULATE_STAT_TABLE:
             nrPerformed = r.getInteger(0, 5);
             break;
-        case INDEX:
+        case CREATE_INDEX:
             nrPerformed = r.getInteger(0, 5);
             break;
         case VIRTUAL_TABLE_ACTION:
@@ -155,6 +158,11 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
             break;
         case PRAGMA:
             nrPerformed = r.getInteger(0, 20);
+            break;
+        case CREATE_TABLE:
+        case CREATE_VIRTUALTABLE:
+        case CREATE_RTREETABLE:
+            nrPerformed = 0;
             break;
         case TRANSACTION_START:
         case REINDEX:

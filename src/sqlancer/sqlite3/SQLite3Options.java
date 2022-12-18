@@ -90,6 +90,13 @@ public class SQLite3Options implements DBMSSpecificOptions<SQLite3OracleFactory>
             "--execute-queries" }, description = "Specifies whether the query in the fuzzer should be executed", arity = 1)
     public boolean executeQuery = true;
 
+    @Parameter(names = {
+            "--max-num-tables" }, description = "The maximum number of tables/virtual tables/ rtree tables/ views that can be created")
+    public int maxNumTables = 10;
+
+    @Parameter(names = { "--max-num-indexes" }, description = "The maximum number of indexes that can be created")
+    public int maxNumIndexes = 20;
+
     public enum SQLite3OracleFactory implements OracleFactory<SQLite3GlobalState> {
         PQS {
             @Override
