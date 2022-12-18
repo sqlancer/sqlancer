@@ -4,6 +4,7 @@ import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
+import sqlancer.common.gen.AbstractUpdateGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.yugabyte.ycql.YCQLErrors;
@@ -13,35 +14,28 @@ import sqlancer.yugabyte.ycql.YCQLSchema.YCQLTable;
 import sqlancer.yugabyte.ycql.YCQLToStringVisitor;
 import sqlancer.yugabyte.ycql.ast.YCQLExpression;
 
-public final class YCQLUpdateGenerator {
+public final class YCQLUpdateGenerator extends AbstractUpdateGenerator<YCQLColumn> {
 
-    private YCQLUpdateGenerator() {
+    private final YCQLGlobalState globalState;
+    private final ExpectedErrors errors = new ExpectedErrors();
+    private YCQLExpressionGenerator gen;
+
+    private YCQLUpdateGenerator(YCQLGlobalState globalState) {
+        this.globalState = globalState;
     }
 
     public static SQLQueryAdapter getQuery(YCQLGlobalState globalState) {
-        StringBuilder sb = new StringBuilder("UPDATE ");
-        ExpectedErrors errors = new ExpectedErrors();
-        YCQLTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-        sb.append(table.getName());
-        YCQLExpressionGenerator gen = new YCQLExpressionGenerator(globalState).setColumns(table.getColumns());
-        sb.append(" SET ");
-        List<YCQLColumn> columns = table.getRandomNonEmptyColumnSubset();
-        for (int i = 0; i < columns.size(); i++) {
-            if (i != 0) {
-                sb.append(", ");
-            }
-            sb.append(columns.get(i).getName());
-            sb.append("=");
-            Node<YCQLExpression> expr;
-            if (Randomly.getBooleanWithSmallProbability()) {
-                expr = gen.generateExpression();
-                YCQLErrors.addExpressionErrors(errors);
-            } else {
-                expr = gen.generateConstant();
-            }
-            sb.append(YCQLToStringVisitor.asString(expr));
-        }
+        return new YCQLUpdateGenerator(globalState).generate();
+    }
 
+    private SQLQueryAdapter generate() {
+        YCQLTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
+        List<YCQLColumn> columns = table.getRandomNonEmptyColumnSubset();
+        gen = new YCQLExpressionGenerator(globalState).setColumns(table.getColumns());
+        sb.append("UPDATE ");
+        sb.append(table.getName());
+        sb.append(" SET ");
+        updateColumns(columns);
         errors.add("Invalid Arguments");
         errors.add("Invalid CQL Statement");
         errors.add("Invalid SQL Statement");
@@ -51,6 +45,18 @@ public final class YCQLUpdateGenerator {
 
         YCQLErrors.addExpressionErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors);
+    }
+
+    @Override
+    protected void updateValue(YCQLColumn column) {
+        Node<YCQLExpression> expr;
+        if (Randomly.getBooleanWithSmallProbability()) {
+            expr = gen.generateExpression();
+            YCQLErrors.addExpressionErrors(errors);
+        } else {
+            expr = gen.generateConstant();
+        }
+        sb.append(YCQLToStringVisitor.asString(expr));
     }
 
 }

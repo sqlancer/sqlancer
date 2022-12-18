@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.common.gen.AbstractUpdateGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Errors;
@@ -14,12 +15,11 @@ import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
-public class SQLite3UpdateGenerator {
+public class SQLite3UpdateGenerator extends AbstractUpdateGenerator<SQLite3Column> {
 
-    private final StringBuilder sb = new StringBuilder();
-    private final Randomly r;
-    private final ExpectedErrors errors = new ExpectedErrors();
     private final SQLite3GlobalState globalState;
+    private final ExpectedErrors errors = new ExpectedErrors();
+    private final Randomly r;
 
     public SQLite3UpdateGenerator(SQLite3GlobalState globalState, Randomly r) {
         this.globalState = globalState;
@@ -34,10 +34,11 @@ public class SQLite3UpdateGenerator {
 
     public static SQLQueryAdapter updateRow(SQLite3GlobalState globalState, SQLite3Table table) {
         SQLite3UpdateGenerator generator = new SQLite3UpdateGenerator(globalState, globalState.getRandomly());
-        return generator.update(table);
+        return generator.generate(table);
     }
 
-    private SQLQueryAdapter update(SQLite3Table table) {
+    private SQLQueryAdapter generate(SQLite3Table table) {
+        List<SQLite3Column> columnsToUpdate = Randomly.nonEmptySubsetPotentialDuplicates(table.getColumns());
         sb.append("UPDATE ");
         if (Randomly.getBoolean()) {
             sb.append("OR IGNORE ");
@@ -55,7 +56,6 @@ public class SQLite3UpdateGenerator {
 
         sb.append(table.getName());
         sb.append(" SET ");
-        List<SQLite3Column> columnsToUpdate = Randomly.nonEmptySubsetPotentialDuplicates(table.getColumns());
         if (Randomly.getBoolean()) {
             sb.append("(");
             sb.append(columnsToUpdate.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
@@ -66,19 +66,12 @@ public class SQLite3UpdateGenerator {
                 if (i != 0) {
                     sb.append(", ");
                 }
-                getToUpdateValue(columnsToUpdate, i);
+                updateValue(columnsToUpdate.get(i));
             }
             sb.append(")");
             // row values
         } else {
-            for (int i = 0; i < columnsToUpdate.size(); i++) {
-                if (i != 0) {
-                    sb.append(", ");
-                }
-                sb.append(columnsToUpdate.get(i).getName());
-                sb.append(" = ");
-                getToUpdateValue(columnsToUpdate, i);
-            }
+            updateColumns(columnsToUpdate);
         }
 
         if (Randomly.getBoolean()) {
@@ -111,8 +104,9 @@ public class SQLite3UpdateGenerator {
 
     }
 
-    private void getToUpdateValue(List<SQLite3Column> columnsToUpdate, int i) {
-        if (columnsToUpdate.get(i).isIntegerPrimaryKey()) {
+    @Override
+    protected void updateValue(SQLite3Column column) {
+        if (column.isIntegerPrimaryKey()) {
             sb.append(SQLite3Visitor.asString(SQLite3Constant.createIntConstant(r.getInteger())));
         } else {
             sb.append(SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(globalState)));
