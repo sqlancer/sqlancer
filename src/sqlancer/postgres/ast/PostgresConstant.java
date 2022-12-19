@@ -504,6 +504,37 @@ public abstract class PostgresConstant implements PostgresExpression {
             }
         }
 
+        @Override
+        public PostgresConstant isEquals(PostgresConstant rightVal) {
+            if (rightVal.isNull()) {
+                return PostgresConstant.createNullConstant();
+            } else if (rightVal.isBoolean()) {
+                return cast(PostgresDataType.BOOLEAN).isEquals(rightVal);
+            } else if (rightVal.isInt()) {
+                return PostgresConstant.createBooleanConstant(val == rightVal.asInt());
+            } else if (rightVal.isString()) {
+                return PostgresConstant.createBooleanConstant(val == rightVal.cast(PostgresDataType.INT).asInt());
+            } else {
+                throw new AssertionError(rightVal);
+            }
+        }
+
+        @Override
+        protected PostgresConstant isLessThan(PostgresConstant rightVal) {
+            if (rightVal.isNull()) {
+                return PostgresConstant.createNullConstant();
+            } else if (rightVal.isInt()) {
+                return PostgresConstant.createBooleanConstant(val < rightVal.asInt());
+            } else if (rightVal.isBoolean()) {
+                throw new AssertionError(rightVal);
+            } else if (rightVal.isString()) {
+                return PostgresConstant.createBooleanConstant(val < rightVal.cast(PostgresDataType.INT).asInt());
+            } else {
+                throw new IgnoreMeException();
+            }
+
+        }
+
     }
 
     public static class DoubleConstant extends PostgresConstantBase {

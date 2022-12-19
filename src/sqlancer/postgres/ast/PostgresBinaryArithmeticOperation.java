@@ -16,27 +16,27 @@ public class PostgresBinaryArithmeticOperation extends BinaryOperatorNode<Postgr
         ADDITION("+") {
             @Override
             public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-                return applyBitOperation(left, right, (l, r) -> l + r);
+                return applyBinaryArithmeticOperation(left, right, (l, r) -> l + r);
             }
 
         },
         SUBTRACTION("-") {
             @Override
             public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-                return applyBitOperation(left, right, (l, r) -> l - r);
+                return applyBinaryArithmeticOperation(left, right, (l, r) -> l - r);
             }
         },
         MULTIPLICATION("*") {
             @Override
             public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-                return applyBitOperation(left, right, (l, r) -> l * r);
+                return applyBinaryArithmeticOperation(left, right, (l, r) -> l * r);
             }
         },
         DIVISION("/") {
 
             @Override
             public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-                return applyBitOperation(left, right, (l, r) -> r == 0 ? -1 : l / r);
+                return applyBinaryArithmeticOperation(left, right, (l, r) -> r == 0 ? -1 : l / r);
 
             }
 
@@ -44,7 +44,7 @@ public class PostgresBinaryArithmeticOperation extends BinaryOperatorNode<Postgr
         MODULO("%") {
             @Override
             public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-                return applyBitOperation(left, right, (l, r) -> r == 0 ? -1 : l % r);
+                return applyBinaryArithmeticOperation(left, right, (l, r) -> r == 0 ? -1 : l % r);
 
             }
         },
@@ -57,7 +57,7 @@ public class PostgresBinaryArithmeticOperation extends BinaryOperatorNode<Postgr
 
         private String textRepresentation;
 
-        private static PostgresConstant applyBitOperation(PostgresConstant left, PostgresConstant right,
+        private static PostgresConstant applyBinaryArithmeticOperation(PostgresConstant left, PostgresConstant right,
                 BinaryOperator<Float> op) {
             if (left.isNull() || right.isNull()) {
                 return PostgresConstant.createNullConstant();
