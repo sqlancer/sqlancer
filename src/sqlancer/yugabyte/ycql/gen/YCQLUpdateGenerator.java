@@ -5,7 +5,6 @@ import java.util.List;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.AbstractUpdateGenerator;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.yugabyte.ycql.YCQLErrors;
 import sqlancer.yugabyte.ycql.YCQLProvider.YCQLGlobalState;
@@ -17,7 +16,6 @@ import sqlancer.yugabyte.ycql.ast.YCQLExpression;
 public final class YCQLUpdateGenerator extends AbstractUpdateGenerator<YCQLColumn> {
 
     private final YCQLGlobalState globalState;
-    private final ExpectedErrors errors = new ExpectedErrors();
     private YCQLExpressionGenerator gen;
 
     private YCQLUpdateGenerator(YCQLGlobalState globalState) {

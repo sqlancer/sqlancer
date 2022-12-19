@@ -4,7 +4,6 @@ import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.gen.AbstractUpdateGenerator;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.oceanbase.OceanBaseErrors;
 import sqlancer.oceanbase.OceanBaseGlobalState;
@@ -15,7 +14,6 @@ import sqlancer.oceanbase.OceanBaseVisitor;
 public class OceanBaseUpdateGenerator extends AbstractUpdateGenerator<OceanBaseColumn> {
 
     private final OceanBaseGlobalState globalState;
-    private final ExpectedErrors errors = new ExpectedErrors();
     private OceanBaseExpressionGenerator gen;
     private final Randomly r;
 

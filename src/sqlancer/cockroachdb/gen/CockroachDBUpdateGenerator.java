@@ -10,13 +10,11 @@ import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBDataType;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.CockroachDBVisitor;
 import sqlancer.common.gen.AbstractUpdateGenerator;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 
 public final class CockroachDBUpdateGenerator extends AbstractUpdateGenerator<CockroachDBColumn> {
 
     private final CockroachDBGlobalState globalState;
-    private final ExpectedErrors errors = new ExpectedErrors();
     private CockroachDBExpressionGenerator gen;
 
     private CockroachDBUpdateGenerator(CockroachDBGlobalState globalState) {

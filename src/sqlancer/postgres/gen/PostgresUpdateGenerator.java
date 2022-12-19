@@ -1,10 +1,10 @@
 package sqlancer.postgres.gen;
 
+import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.gen.AbstractUpdateGenerator;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
@@ -16,17 +16,16 @@ import sqlancer.postgres.ast.PostgresExpression;
 public final class PostgresUpdateGenerator extends AbstractUpdateGenerator<PostgresColumn> {
 
     private final PostgresGlobalState globalState;
-    private final ExpectedErrors errors;
     private PostgresTable randomTable;
 
     private PostgresUpdateGenerator(PostgresGlobalState globalState) {
         this.globalState = globalState;
-        this.errors = ExpectedErrors.from("conflicting key value violates exclusion constraint",
+        errors.addAll(Arrays.asList("conflicting key value violates exclusion constraint",
                 "reached maximum value of sequence", "violates foreign key constraint", "violates not-null constraint",
                 "violates unique constraint", "out of range", "cannot cast", "must be type boolean", "is not unique",
                 " bit string too long", "can only be updated to DEFAULT", "division by zero",
                 "You might need to add explicit type casts.", "invalid regular expression",
-                "View columns that are not columns of their base relation are not updatable");
+                "View columns that are not columns of their base relation are not updatable"));
     }
 
     public static SQLQueryAdapter create(PostgresGlobalState globalState) {

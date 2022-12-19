@@ -5,7 +5,6 @@ import java.util.List;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.AbstractUpdateGenerator;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.hsqldb.HSQLDBErrors;
 import sqlancer.hsqldb.HSQLDBProvider;
@@ -19,7 +18,6 @@ import sqlancer.hsqldb.ast.HSQLDBExpression;
 public final class HSQLDBUpdateGenerator extends AbstractUpdateGenerator<HSQLDBColumn> {
 
     private final HSQLDBProvider.HSQLDBGlobalState globalState;
-    private final ExpectedErrors errors = new ExpectedErrors();
     private HSQLDBExpressionGenerator gen;
 
     private HSQLDBUpdateGenerator(HSQLDBProvider.HSQLDBGlobalState globalState) {

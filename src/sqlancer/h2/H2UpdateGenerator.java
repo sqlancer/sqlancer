@@ -4,7 +4,6 @@ import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.gen.AbstractUpdateGenerator;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.h2.H2Provider.H2GlobalState;
 import sqlancer.h2.H2Schema.H2Column;
@@ -13,7 +12,6 @@ import sqlancer.h2.H2Schema.H2Table;
 public final class H2UpdateGenerator extends AbstractUpdateGenerator<H2Column> {
 
     private final H2GlobalState globalState;
-    private final ExpectedErrors errors = new ExpectedErrors();
     private H2ExpressionGenerator gen;
 
     private H2UpdateGenerator(H2GlobalState globalState) {

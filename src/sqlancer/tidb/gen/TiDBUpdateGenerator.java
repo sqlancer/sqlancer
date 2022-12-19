@@ -5,7 +5,6 @@ import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.gen.AbstractUpdateGenerator;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBExpressionGenerator;
@@ -17,7 +16,6 @@ import sqlancer.tidb.visitor.TiDBVisitor;
 public final class TiDBUpdateGenerator extends AbstractUpdateGenerator<TiDBColumn> {
 
     private final TiDBGlobalState globalState;
-    private final ExpectedErrors errors = new ExpectedErrors();
     private TiDBExpressionGenerator gen;
 
     private TiDBUpdateGenerator(TiDBGlobalState globalState) {

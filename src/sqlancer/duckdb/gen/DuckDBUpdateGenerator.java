@@ -5,7 +5,6 @@ import java.util.List;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.AbstractUpdateGenerator;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
@@ -17,7 +16,6 @@ import sqlancer.duckdb.ast.DuckDBExpression;
 public final class DuckDBUpdateGenerator extends AbstractUpdateGenerator<DuckDBColumn> {
 
     private final DuckDBGlobalState globalState;
-    private final ExpectedErrors errors = new ExpectedErrors();
     private DuckDBExpressionGenerator gen;
 
     private DuckDBUpdateGenerator(DuckDBGlobalState globalState) {

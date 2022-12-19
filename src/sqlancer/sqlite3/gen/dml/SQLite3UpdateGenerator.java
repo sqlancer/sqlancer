@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.gen.AbstractUpdateGenerator;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3GlobalState;
@@ -18,7 +17,6 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 public class SQLite3UpdateGenerator extends AbstractUpdateGenerator<SQLite3Column> {
 
     private final SQLite3GlobalState globalState;
-    private final ExpectedErrors errors = new ExpectedErrors();
     private final Randomly r;
 
     public SQLite3UpdateGenerator(SQLite3GlobalState globalState, Randomly r) {
