@@ -1,6 +1,6 @@
 # Papers
 
-The testing approaches implemented in SQLancer are described in the three papers below.
+The testing approaches implemented in SQLancer are described in the four papers below.
 
 ## Testing Database Engines via Pivoted Query Synthesis
 
@@ -48,6 +48,20 @@ This paper describes TLP, a metamorphic testing approach that can detect various
 	doi={10.1145/3428279},
 	volume={4},
 	articleno={211}
+}
+```
+
+## Testing Database Engines via Query Plan Guidance
+
+This paper describes Query Plan Guidance (QPG), a test case generation method guided by query plan coverage. This method can be paired with above three testing methods.
+
+```
+@inproceedings{Ba2023QPG,
+  author = {Ba, Jinsheng and Rigger, Manuel},
+  title = {Testing Database Engines via Query Plan Guidance},
+  booktitle = {The 45th International Conference on Software Engineering (ICSE'23)},
+  year = {2023},
+  month = may
 }
 ```
 

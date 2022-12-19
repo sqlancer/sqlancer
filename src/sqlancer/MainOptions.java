@@ -50,6 +50,21 @@ public class MainOptions {
     @Parameter(names = "--print-failed", description = "Logs failed insert, create and other statements without results", arity = 1)
     private boolean loggerPrintFailed = true; // NOPMD
 
+    @Parameter(names = "--qpg-enable", description = "Enable the experimental feature Query Plan Guidance (QPG)", arity = 1)
+    private boolean enableQPG;
+
+    @Parameter(names = "--qpg-log-query-plan", description = "Logs the query plans of each query (requires --qpg-enable)", arity = 1)
+    private boolean logQueryPlan;
+
+    @Parameter(names = "--qpg-max-interval", description = "The maximum number of iterations to mutate tables if no new query plans (requires --qpg-enable)")
+    private static int qpgMaxInterval = 1000;
+
+    @Parameter(names = "--qpg-reward-weight", description = "The weight (0-1) of last reward when updating weighted average reward. A higher value denotes average reward is more affected by the last reward (requires --qpg-enable)")
+    private static double qpgk = 0.25;
+
+    @Parameter(names = "--qpg-selection-probability", description = "The probability (0-1) of the random selection of mutators. A higher value (>0.5) favors exploration over exploitation. (requires --qpg-enable)")
+    private static double qpgProbability = 0.7;
+
     @Parameter(names = "--username", description = "The user name used to log into the DBMS")
     private String userName = "sqlancer"; // NOPMD
 
@@ -149,6 +164,26 @@ public class MainOptions {
 
     public boolean loggerPrintFailed() {
         return loggerPrintFailed;
+    }
+
+    public boolean logQueryPlan() {
+        return logQueryPlan;
+    }
+
+    public boolean enableQPG() {
+        return enableQPG;
+    }
+
+    public int getQPGMaxMutationInterval() {
+        return qpgMaxInterval;
+    }
+
+    public double getQPGk() {
+        return qpgk;
+    }
+
+    public double getQPGProbability() {
+        return qpgProbability;
     }
 
     public int getNrQueries() {

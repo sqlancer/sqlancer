@@ -32,6 +32,18 @@ public interface DatabaseProvider<G extends GlobalState<O, ?, C>, O extends DBMS
      */
     Reproducer<G> generateAndTestDatabase(G globalState) throws Exception;
 
+    /**
+     * The experimental feature: Query Plan Guidance.
+     *
+     * @param globalState
+     *            the state created and is valid for this method call.
+     *
+     * @throws Exception
+     *             if testing fails.
+     *
+     */
+    void generateAndTestDatabaseWithQueryPlanGuidance(G globalState) throws Exception;
+
     C createDatabase(G globalState) throws Exception;
 
     /**
