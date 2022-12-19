@@ -47,6 +47,7 @@ public final class SQLite3Errors {
         errors.add("json_insert() needs an odd number of arguments");
         errors.add("json_object() labels must be TEXT");
         errors.add("json_object() requires an even number of arguments");
+        errors.add("argument of ntile must be a positive integer");
 
         // fts5 functions
         errors.add("unable to use function highlight in the requested context");
@@ -61,6 +62,11 @@ public final class SQLite3Errors {
         errors.add("ORDER BY clause should come after");
         errors.add("LIMIT clause should come after");
 
+        errors.add("unsafe use of load_extension");
+        errors.add("table does not support scanning");
+        errors.add("circularly defined");
+        errors.add("[SQLITE_ERROR] SQL error or missing database"); // A possible delay in the execution of DROP TABLE
+                                                                    // statement.
     }
 
     public static void addMatchQueryErrors(ExpectedErrors errors) {
