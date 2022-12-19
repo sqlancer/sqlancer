@@ -173,7 +173,8 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
             try (Statement s = con.createStatement()) {
                 ResultSet rs = s.executeQuery(rowValueQuery);
                 if (!rs.next()) {
-                    throw new AssertionError("could not find random row " + rowValueQuery + "\n");
+                    throw new IgnoreMeException();
+                    // throw new AssertionError("could not find random row " + rowValueQuery + "\n");
                 }
                 for (int i = 0; i < getColumns().size(); i++) {
                     DatabendColumn column = getColumns().get(i);

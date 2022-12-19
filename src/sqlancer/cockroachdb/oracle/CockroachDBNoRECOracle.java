@@ -150,4 +150,9 @@ public class CockroachDBNoRECOracle extends NoRECBase<CockroachDBGlobalState>
         return count;
     }
 
+    @Override
+    public String getLastQueryString() {
+        return optimizedQueryString;
+    }
+
 }

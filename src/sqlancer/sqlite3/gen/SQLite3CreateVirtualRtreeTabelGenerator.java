@@ -3,6 +3,7 @@ package sqlancer.sqlite3.gen;
 import java.util.ArrayList;
 import java.util.List;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
@@ -13,6 +14,14 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 public final class SQLite3CreateVirtualRtreeTabelGenerator {
 
     private SQLite3CreateVirtualRtreeTabelGenerator() {
+    }
+
+    public static SQLQueryAdapter createRandomTableStatement(SQLite3GlobalState globalState) {
+        if (globalState.getSchema().getTables().getTables()
+                .size() > globalState.getDbmsSpecificOptions().maxNumTables) {
+            throw new IgnoreMeException();
+        }
+        return createTableStatement(globalState.getSchema().getFreeRtreeTableName(), globalState);
     }
 
     public static SQLQueryAdapter createTableStatement(String rTreeTableName, SQLite3GlobalState globalState) {

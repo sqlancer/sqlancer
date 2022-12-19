@@ -23,6 +23,12 @@ public class TiDBOptions implements DBMSSpecificOptions<TiDBOracleFactory> {
     public static final String DEFAULT_HOST = "localhost";
     public static final int DEFAULT_PORT = 4000;
 
+    @Parameter(names = { "--max-num-tables" }, description = "The maximum number of tables/views that can be created")
+    public int maxNumTables = 10;
+
+    @Parameter(names = { "--max-num-indexes" }, description = "The maximum number of indexes that can be created")
+    public int maxNumIndexes = 20;
+
     @Parameter(names = "--oracle")
     public List<TiDBOracleFactory> oracle = Arrays.asList(TiDBOracleFactory.QUERY_PARTITIONING);
 
@@ -55,5 +61,4 @@ public class TiDBOptions implements DBMSSpecificOptions<TiDBOracleFactory> {
     public List<TiDBOracleFactory> getTestOracleFactory() {
         return oracle;
     }
-
 }

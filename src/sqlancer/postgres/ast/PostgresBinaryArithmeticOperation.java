@@ -70,7 +70,7 @@ public class PostgresBinaryArithmeticOperation extends BinaryOperatorNode<Postgr
                 long leftVal = left.cast(PostgresDataType.INT).asInt();
                 long rightVal = right.cast(PostgresDataType.INT).asInt();
                 long value = op.apply(Float.valueOf(leftVal), Float.valueOf(rightVal)).intValue();
-                return PostgresConstant.createFloatConstant(value);
+                return PostgresConstant.createIntConstant(value);
             }
             
         }
