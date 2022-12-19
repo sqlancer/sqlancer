@@ -1,11 +1,13 @@
 package sqlancer.sqlite3;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.auto.service.AutoService;
 
@@ -20,6 +22,7 @@ import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
+import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.sqlite3.SQLite3Options.SQLite3OracleFactory;
 import sqlancer.sqlite3.gen.SQLite3AnalyzeGenerator;
 import sqlancer.sqlite3.gen.SQLite3CreateVirtualRtreeTabelGenerator;
@@ -298,5 +301,60 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
     @Override
     public String getDBMSName() {
         return "sqlite3";
+    }
+
+    @Override
+    public String getQueryPlan(String selectStr, SQLite3GlobalState globalState) throws Exception {
+        String queryPlan = "";
+        if (globalState.getOptions().logEachSelect()) {
+            globalState.getLogger().writeCurrent(selectStr);
+            try {
+                globalState.getLogger().getCurrentFileWriter().flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        // Set up the expected errors for NoREC oracle.
+        ExpectedErrors errors = new ExpectedErrors();
+        SQLite3Errors.addExpectedExpressionErrors(errors);
+        SQLite3Errors.addMatchQueryErrors(errors);
+        SQLite3Errors.addQueryErrors(errors);
+        SQLite3Errors.addInsertUpdateErrors(errors);
+
+        SQLQueryAdapter q = new SQLQueryAdapter(SQLite3ExplainGenerator.explain(selectStr), errors);
+        try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
+            if (rs != null) {
+                while (rs.next()) {
+                    queryPlan += rs.getString(4) + ";";
+                }
+            }
+        } catch (SQLException | AssertionError e) {
+            queryPlan = "";
+        }
+        return queryPlan;
+    }
+
+    @Override
+    protected double[] initializeWeightedAverageReward() {
+        return new double[Action.values().length];
+    }
+
+    @Override
+    protected void executeMutator(int index, SQLite3GlobalState globalState) throws Exception {
+        SQLQueryAdapter queryMutateTable = Action.values()[index].getQuery(globalState);
+        globalState.executeStatement(queryMutateTable);
+
+    }
+
+    @Override
+    protected boolean addRowsToAllTables(SQLite3GlobalState globalState) throws Exception {
+        List<SQLite3Table> tablesNoRow = globalState.getSchema().getDatabaseTables().stream()
+                .filter(t -> t.getNrRows(globalState) == 0).collect(Collectors.toList());
+        for (SQLite3Table table : tablesNoRow) {
+            SQLQueryAdapter queryAddRows = SQLite3InsertGenerator.insertRow(globalState, table);
+            globalState.executeStatement(queryAddRows);
+        }
+
+        return true;
     }
 }
