@@ -1,5 +1,6 @@
 package sqlancer.tidb;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -18,6 +19,7 @@ import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
+import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.gen.TiDBAlterTableGenerator;
 import sqlancer.tidb.gen.TiDBAnalyzeTableGenerator;
@@ -167,6 +169,45 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
     @Override
     public String getDBMSName() {
         return "tidb";
+    }
+
+    @Override
+    public String getQueryPlan(String selectStr, TiDBGlobalState globalState) throws Exception {
+        String queryPlan = "";
+        if (globalState.getOptions().logEachSelect()) {
+            globalState.getLogger().writeCurrent(selectStr);
+            try {
+                globalState.getLogger().getCurrentFileWriter().flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        SQLQueryAdapter q = new SQLQueryAdapter("EXPLAIN " + selectStr, null);
+        try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
+            if (rs != null) {
+                while (rs.next()) {
+                    String targetQueryPlan = rs.getString(1).replace("├─", "").replace("└─", "").replace("│", "").trim()
+                            + ";"; // Unify format
+                    queryPlan += targetQueryPlan;
+                }
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+
+        return queryPlan;
+    }
+
+    @Override
+    protected double[] initializeWeightedAverageReward() {
+        return new double[Action.values().length];
+    }
+
+    @Override
+    protected void executeMutator(int index, TiDBGlobalState globalState) throws Exception {
+        SQLQueryAdapter queryMutateTable = Action.values()[index].getQuery(globalState);
+        globalState.executeStatement(queryMutateTable);
     }
 
 }
