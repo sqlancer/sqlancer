@@ -16,27 +16,27 @@ public class PostgresBinaryArithmeticOperation extends BinaryOperatorNode<Postgr
         ADDITION("+") {
             @Override
             public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-                return applyBitOperation(left, right, (l, r) -> l + r);
+                return applyBinaryArithmeticOperation(left, right, (l, r) -> l + r);
             }
 
         },
         SUBTRACTION("-") {
             @Override
             public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-                return applyBitOperation(left, right, (l, r) -> l - r);
+                return applyBinaryArithmeticOperation(left, right, (l, r) -> l - r);
             }
         },
         MULTIPLICATION("*") {
             @Override
             public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-                return applyBitOperation(left, right, (l, r) -> l * r);
+                return applyBinaryArithmeticOperation(left, right, (l, r) -> l * r);
             }
         },
         DIVISION("/") {
 
             @Override
             public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-                return applyBitOperation(left, right, (l, r) -> r == 0 ? -1 : l / r);
+                return applyBinaryArithmeticOperation(left, right, (l, r) -> r == 0 ? -1 : l / r);
 
             }
 
@@ -44,7 +44,7 @@ public class PostgresBinaryArithmeticOperation extends BinaryOperatorNode<Postgr
         MODULO("%") {
             @Override
             public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-                return applyBitOperation(left, right, (l, r) -> r == 0 ? -1 : l % r);
+                return applyBinaryArithmeticOperation(left, right, (l, r) -> r == 0 ? -1 : l % r);
 
             }
         },
@@ -57,16 +57,22 @@ public class PostgresBinaryArithmeticOperation extends BinaryOperatorNode<Postgr
 
         private String textRepresentation;
 
-        private static PostgresConstant applyBitOperation(PostgresConstant left, PostgresConstant right,
-                BinaryOperator<Long> op) {
+        private static PostgresConstant applyBinaryArithmeticOperation(PostgresConstant left, PostgresConstant right,
+                BinaryOperator<Float> op) {
             if (left.isNull() || right.isNull()) {
                 return PostgresConstant.createNullConstant();
+            } else if (left.isFloat() || right.isFloat()) {
+                float leftVal = left.cast(PostgresDataType.FLOAT).asFloat();
+                float rightVal = right.cast(PostgresDataType.FLOAT).asFloat();
+                float value = op.apply(Float.valueOf(leftVal), Float.valueOf(rightVal)).floatValue();
+                return PostgresConstant.createFloatConstant(value);
             } else {
                 long leftVal = left.cast(PostgresDataType.INT).asInt();
                 long rightVal = right.cast(PostgresDataType.INT).asInt();
-                long value = op.apply(leftVal, rightVal);
+                long value = op.apply(Float.valueOf(leftVal), Float.valueOf(rightVal)).intValue();
                 return PostgresConstant.createIntConstant(value);
             }
+            
         }
 
         PostgresBinaryOperator(String textRepresentation) {

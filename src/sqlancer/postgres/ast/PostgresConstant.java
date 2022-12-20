@@ -209,6 +209,12 @@ public abstract class PostgresConstant implements PostgresExpression {
                 } catch (NumberFormatException e) {
                     return PostgresConstant.createIntConstant(-1);
                 }
+            case FLOAT:
+                try {
+                    return PostgresConstant.createFloatConstant(Float.parseFloat(s));
+                } catch (NumberFormatException e) {
+                    return PostgresConstant.createFloatConstant(-1);
+                }
             case TEXT:
                 return this;
             default:
@@ -322,20 +328,24 @@ public abstract class PostgresConstant implements PostgresExpression {
         return new PostgresNullConstant();
     }
 
-    public String asString() {
-        throw new UnsupportedOperationException(this.toString());
-    }
-
-    public boolean isString() {
-        return false;
-    }
-
     public static PostgresConstant createIntConstant(long val) {
         return new IntConstant(val);
     }
 
     public static PostgresConstant createBooleanConstant(boolean val) {
         return new BooleanConstant(val);
+    }
+    
+    public static PostgresConstant createFalse() {
+        return createBooleanConstant(false);
+    }
+
+    public static PostgresConstant createTrue() {
+        return createBooleanConstant(true);
+    }
+    
+    public static PostgresConstant createTextConstant(String string) {
+        return new StringConstant(string);
     }
 
     @Override
@@ -351,28 +361,36 @@ public abstract class PostgresConstant implements PostgresExpression {
         throw new UnsupportedOperationException(this.toString());
     }
 
-    public static PostgresConstant createFalse() {
-        return createBooleanConstant(false);
+    public boolean isBoolean() {
+        return false;
     }
-
-    public static PostgresConstant createTrue() {
-        return createBooleanConstant(true);
+    
+    public float asFloat() {
+    	throw new UnsupportedOperationException(this.toString());
+    }
+    
+    public boolean isFloat() {
+    	return false;
     }
 
     public long asInt() {
         throw new UnsupportedOperationException(this.toString());
     }
+    
+    public boolean isInt() {
+        return false;
+    }
+    
+    public String asString() {
+        throw new UnsupportedOperationException(this.toString());
+    }
 
-    public boolean isBoolean() {
+    public boolean isString() {
         return false;
     }
 
     public abstract PostgresConstant isEquals(PostgresConstant rightVal);
-
-    public boolean isInt() {
-        return false;
-    }
-
+    
     protected abstract PostgresConstant isLessThan(PostgresConstant rightVal);
 
     @Override
@@ -382,9 +400,6 @@ public abstract class PostgresConstant implements PostgresExpression {
 
     public abstract PostgresConstant cast(PostgresDataType type);
 
-    public static PostgresConstant createTextConstant(String string) {
-        return new StringConstant(string);
-    }
 
     public abstract static class PostgresConstantBase extends PostgresConstant {
 
@@ -451,6 +466,8 @@ public abstract class PostgresConstant implements PostgresExpression {
 
     public static class FloatConstant extends PostgresConstantBase {
 
+        private static final double COMPARISON_TRHESHOLD = Math.pow(10, -8);
+
         private final float val;
 
         public FloatConstant(float val) {
@@ -459,7 +476,7 @@ public abstract class PostgresConstant implements PostgresExpression {
 
         @Override
         public String getTextRepresentation() {
-            if (Double.isFinite(val)) {
+            if (Float.isFinite(val)) {
                 return String.valueOf(val);
             } else {
                 return "'" + val + "'";
@@ -469,6 +486,73 @@ public abstract class PostgresConstant implements PostgresExpression {
         @Override
         public PostgresDataType getExpressionType() {
             return PostgresDataType.FLOAT;
+        }
+        
+        @Override
+        public float asFloat() {
+        	return this.val;
+        }
+        
+        @Override
+        public boolean isFloat() {
+        	return true;
+        }
+        
+        @Override
+        public PostgresConstant cast(PostgresDataType type) {
+            switch (type) {
+            case FLOAT:
+                return this;
+            case INT:
+                return PostgresConstant.createIntConstant((int)this.val);
+            case TEXT:
+                return PostgresConstant.createTextConstant(Double.valueOf(this.val).toString());
+            case BOOLEAN:
+                return PostgresConstant.createBooleanConstant(
+                    !(asFloat()-0<COMPARISON_TRHESHOLD && 0-asFloat()<COMPARISON_TRHESHOLD)
+                );
+            default:
+                return null;
+            }
+        }
+
+        @Override
+        public PostgresConstant isEquals(PostgresConstant rightVal) {
+            if (rightVal.isNull()) {
+                return PostgresConstant.createNullConstant();
+            } else if (rightVal.isFloat()) {
+                return PostgresConstant.createBooleanConstant(
+                        asFloat()-rightVal.asFloat()<COMPARISON_TRHESHOLD && rightVal.asFloat()-asFloat()<COMPARISON_TRHESHOLD
+                );
+            } else if (rightVal.isBoolean()) {
+                return cast(PostgresDataType.BOOLEAN).isEquals(rightVal);
+            } else if (rightVal.isInt()) {
+                return PostgresConstant.createBooleanConstant(
+                        asFloat()-rightVal.asInt()<COMPARISON_TRHESHOLD && rightVal.asInt()-asFloat()<COMPARISON_TRHESHOLD
+                );
+            } else if (rightVal.isString()) {
+                return isEquals(rightVal.cast(PostgresDataType.FLOAT));
+            } else {
+                throw new AssertionError(rightVal);
+            }
+        }
+
+        @Override
+        protected PostgresConstant isLessThan(PostgresConstant rightVal) {
+            if (rightVal.isNull()) {
+                return PostgresConstant.createNullConstant();
+            } else if (rightVal.isFloat()) {
+                return PostgresConstant.createBooleanConstant(asFloat() < rightVal.asFloat());
+            } else if (rightVal.isInt()) {
+                return PostgresConstant.createBooleanConstant(val < rightVal.asInt());
+            } else if (rightVal.isBoolean()) {
+                throw new AssertionError(rightVal);
+            } else if (rightVal.isString()) {
+                return PostgresConstant.createBooleanConstant(val < rightVal.cast(PostgresDataType.FLOAT).asFloat());
+            } else {
+                throw new IgnoreMeException();
+            }
+
         }
 
     }
@@ -494,6 +578,9 @@ public abstract class PostgresConstant implements PostgresExpression {
         public PostgresDataType getExpressionType() {
             return PostgresDataType.FLOAT;
         }
+        
+        
+        
 
     }
 
