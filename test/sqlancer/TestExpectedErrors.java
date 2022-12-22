@@ -29,7 +29,6 @@ public class TestExpectedErrors {
         assertTrue(errors.errorIsExpected("aa"));
         assertFalse(errors.errorIsExpected("d"));
 
-
     }
 
     @Test
@@ -42,7 +41,6 @@ public class TestExpectedErrors {
         assertTrue(errors.errorIsExpected("bb"));
         assertTrue(errors.errorIsExpected("c"));
         assertFalse(errors.errorIsExpected("aa"));
-
 
     }
 
