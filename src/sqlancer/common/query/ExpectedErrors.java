@@ -17,9 +17,6 @@ public class ExpectedErrors {
     private final Set<String> errors = new HashSet<>();
     private final List<Pattern> regexes = new ArrayList<>();
 
-    private boolean usingString = true;
-    private boolean usingRegex = true;
-
     public ExpectedErrors add(String error) {
         if (error == null) {
             throw new IllegalArgumentException();
@@ -70,39 +67,17 @@ public class ExpectedErrors {
         if (error == null) {
             throw new IllegalArgumentException();
         }
-        if (this.usingString) {
-            for (String s : this.errors) {
-                if (error.contains(s)) {
-                    return true;
-                }
+        for (String s : this.errors) {
+            if (error.contains(s)) {
+                return true;
             }
         }
-        if (this.usingRegex) {
-            for (Pattern p : this.regexes) {
-                if (p.matcher(error).find()) {
-                    return true;
-                }
+        for (Pattern p : this.regexes) {
+            if (p.matcher(error).find()) {
+                return true;
             }
         }
         return false;
     }
 
-    // use the following setters to configure
-    // whether errorIsExpected should use String, Regex, or both
-    // default is both
-    public void disableStringMatching() {
-        this.usingString = false;
-    }
-
-    public void enableStringMatching() {
-        this.usingString = true;
-    }
-
-    public void disableRegexMatching() {
-        this.usingRegex = false;
-    }
-
-    public void enableRegexMatching() {
-        this.usingRegex = true;
-    }
 }
