@@ -29,11 +29,6 @@ public class TestExpectedErrors {
         assertTrue(errors.errorIsExpected("aa"));
         assertFalse(errors.errorIsExpected("d"));
 
-        errors.disableStringMatching();
-        assertFalse(errors.errorIsExpected("a"));
-        assertFalse(errors.errorIsExpected("b"));
-        assertFalse(errors.errorIsExpected("c"));
-        assertFalse(errors.errorIsExpected("aa"));
 
     }
 
@@ -48,9 +43,6 @@ public class TestExpectedErrors {
         assertTrue(errors.errorIsExpected("c"));
         assertFalse(errors.errorIsExpected("aa"));
 
-        errors.disableRegexMatching();
-        assertFalse(errors.errorIsExpected("a0"));
-        assertTrue(errors.errorIsExpected("c"));
 
     }
 
