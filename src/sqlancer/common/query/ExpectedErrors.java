@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 public class ExpectedErrors {
 
     private final Set<String> errors = new HashSet<>();
-    private List<Pattern> regexes = new ArrayList<>();
+    private final List<Pattern> regexes = new ArrayList<>();
 
     private boolean usingString = true;
     private boolean usingRegex = true;
