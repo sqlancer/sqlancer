@@ -219,7 +219,7 @@ public final class CockroachDBErrors {
         errors.add("unknown signature: max(string[])");
         errors.add("unknown signature: min(string[])");
         errors.add("unknown signature: max(decimal[])");
-        errors.add("unknown signature: min(decimal[])");    
+        errors.add("unknown signature: min(decimal[])");
         errors.add("unknown signature: max(varbit[])");
         errors.add("unknown signature: min(varbit[])");
         errors.add("unknown signature: max(int[])");

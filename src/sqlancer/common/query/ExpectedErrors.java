@@ -19,9 +19,7 @@ public class ExpectedErrors {
     private List<Pattern> regexes = new ArrayList<>();
 
     private boolean usingString = true;
-    private boolean usingRegex =true;
-
-
+    private boolean usingRegex = true;
 
     public ExpectedErrors add(String error) {
         if (error == null) {
@@ -39,22 +37,18 @@ public class ExpectedErrors {
         return this;
     }
 
-
-
     public ExpectedErrors addAll(Collection<String> list) {
         errors.addAll(list);
         return this;
     }
 
     public ExpectedErrors addAllRegexes(Collection<Pattern> list) {
-        if (list == null){
+        if (list == null) {
             throw new IllegalArgumentException();
         }
         regexes.addAll(list);
         return this;
     }
-
-
 
     public static ExpectedErrors from(String... errors) {
         ExpectedErrors expectedErrors = new ExpectedErrors();
@@ -77,14 +71,14 @@ public class ExpectedErrors {
         if (error == null) {
             throw new IllegalArgumentException();
         }
-        if (this.usingString){
+        if (this.usingString) {
             for (String s : this.errors) {
                 if (error.contains(s)) {
                     return true;
                 }
             }
         }
-        if (this.usingRegex){
+        if (this.usingRegex) {
             for (Pattern p : this.regexes) {
                 if (p.matcher(error).find()) {
                     return true;
@@ -94,24 +88,22 @@ public class ExpectedErrors {
         return false;
     }
 
-
-
-    // use the following setters to configure 
+    // use the following setters to configure
     // whether errorIsExpected should use String, Regex, or both
     // default is both
-    public void disableStringMatching(){
+    public void disableStringMatching() {
         this.usingString = false;
     }
 
-    public void enableStringMatching(){
+    public void enableStringMatching() {
         this.usingString = true;
     }
 
-    public void disableRegexMatching(){
+    public void disableRegexMatching() {
         this.usingRegex = false;
     }
 
-    public void enableRegexMatching(){
+    public void enableRegexMatching() {
         this.usingRegex = true;
     }
 }
