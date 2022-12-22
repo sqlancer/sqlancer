@@ -2,7 +2,10 @@ package sqlancer.common.query;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 /**
  * This class represents the errors that executing a statement might result in. For example, an INSERT statement might
@@ -12,6 +15,12 @@ import java.util.Set;
 public class ExpectedErrors {
 
     private final Set<String> errors = new HashSet<>();
+    private List<Pattern> regexes = new ArrayList<>();
+
+    private boolean usingString = true;
+    private boolean usingRegex =true;
+
+
 
     public ExpectedErrors add(String error) {
         if (error == null) {
@@ -19,6 +28,57 @@ public class ExpectedErrors {
         }
         errors.add(error);
         return this;
+    }
+
+    public ExpectedErrors addRegex(String error) {
+        if (error == null) {
+            throw new IllegalArgumentException();
+        }
+        regexes.add(Pattern.compile(error));
+        return this;
+    }
+
+    public ExpectedErrors addRegex(Pattern errorPattern) {
+        if (error == null) {
+            throw new IllegalArgumentException();
+        }
+        regexes.add(errorPattern);
+        return this;
+    }
+
+
+
+    public ExpectedErrors addAll(Collection<String> list) {
+        errors.addAll(list);
+        return this;
+    }
+
+    public ExpectedErrors addAllRegexes(Collection<String> list) {
+        if (list == null){
+            throw new IllegalArgumentException();
+        }
+        for (String error: list){
+            addRegex(error);
+        }
+        return this;
+    }
+
+    public ExpectedErrors addAllRegexes(Collection<Pattern> list) {
+        if (list == null){
+            throw new IllegalArgumentException();
+        }
+        regexes.addAll(list);
+        return this;
+    }
+
+
+
+    public static ExpectedErrors from(String... errors) {
+        ExpectedErrors expectedErrors = new ExpectedErrors();
+        for (String error : errors) {
+            expectedErrors.add(error);
+        }
+        return expectedErrors;
     }
 
     /**
@@ -34,25 +94,41 @@ public class ExpectedErrors {
         if (error == null) {
             throw new IllegalArgumentException();
         }
-        for (String s : errors) {
-            if (error.contains(s)) {
-                return true;
+        if (this.usingString){
+            for (String s : this.errors) {
+                if (error.contains(s)) {
+                    return true;
+                }
+            }
+        }
+        if (this.usingRegex){
+            for (Pattern p : this.regexes) {
+                if (p.matcher(error)) {
+                    return true;
+                }
             }
         }
         return false;
     }
 
-    public ExpectedErrors addAll(Collection<String> list) {
-        errors.addAll(list);
-        return this;
+
+
+    // use the following setters to configure 
+    // whether errorIsExpected should use String, Regex, or both
+    // default is both
+    public void disableStringMatching(){
+        this.usingString = false;
     }
 
-    public static ExpectedErrors from(String... errors) {
-        ExpectedErrors expectedErrors = new ExpectedErrors();
-        for (String error : errors) {
-            expectedErrors.add(error);
-        }
-        return expectedErrors;
+    public void enableStringMatching(){
+        this.usingString = true;
     }
 
+    public void disableRegexMatching(){
+        this.usingRegex = false;
+    }
+
+    public void enableRegexMatching(){
+        this.usingRegex = true;
+    }
 }
