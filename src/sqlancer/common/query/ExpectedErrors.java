@@ -1,5 +1,6 @@
 package sqlancer.common.query;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -30,16 +31,8 @@ public class ExpectedErrors {
         return this;
     }
 
-    public ExpectedErrors addRegex(String error) {
-        if (error == null) {
-            throw new IllegalArgumentException();
-        }
-        regexes.add(Pattern.compile(error));
-        return this;
-    }
-
     public ExpectedErrors addRegex(Pattern errorPattern) {
-        if (error == null) {
+        if (errorPattern == null) {
             throw new IllegalArgumentException();
         }
         regexes.add(errorPattern);
@@ -50,16 +43,6 @@ public class ExpectedErrors {
 
     public ExpectedErrors addAll(Collection<String> list) {
         errors.addAll(list);
-        return this;
-    }
-
-    public ExpectedErrors addAllRegexes(Collection<String> list) {
-        if (list == null){
-            throw new IllegalArgumentException();
-        }
-        for (String error: list){
-            addRegex(error);
-        }
         return this;
     }
 
@@ -103,7 +86,7 @@ public class ExpectedErrors {
         }
         if (this.usingRegex){
             for (Pattern p : this.regexes) {
-                if (p.matcher(error)) {
+                if (p.matcher(error).find()) {
                     return true;
                 }
             }
