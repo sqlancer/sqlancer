@@ -1,7 +1,5 @@
 package sqlancer;
 
-import java.util.regex.Pattern;
-
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -18,7 +16,7 @@ public class TestExpectedErrors {
     }
 
     @Test
-    public void testStringSimple() {
+    public void testSimple() {
         ExpectedErrors errors = new ExpectedErrors();
         errors.add("a");
         errors.add("b");
@@ -27,45 +25,14 @@ public class TestExpectedErrors {
         assertTrue(errors.errorIsExpected("b"));
         assertTrue(errors.errorIsExpected("c"));
         assertTrue(errors.errorIsExpected("aa"));
+
         assertFalse(errors.errorIsExpected("d"));
-
-        errors.disableStringMatching();
-        assertFalse(errors.errorIsExpected("a"));
-        assertFalse(errors.errorIsExpected("b"));
-        assertFalse(errors.errorIsExpected("c"));
-        assertFalse(errors.errorIsExpected("aa"));
-
     }
 
     @Test
-    public void testRegexSimple() {
-        ExpectedErrors errors = new ExpectedErrors();
-        errors.addRegex(Pattern.compile("a\\d"));
-        errors.addRegex(Pattern.compile("b\\D"));
-        errors.add("c");
-        assertTrue(errors.errorIsExpected("a0"));
-        assertTrue(errors.errorIsExpected("bb"));
-        assertTrue(errors.errorIsExpected("c"));
-        assertFalse(errors.errorIsExpected("aa"));
-
-        errors.disableRegexMatching();
-        assertFalse(errors.errorIsExpected("a0"));
-        assertTrue(errors.errorIsExpected("c"));
-
-    }
-
-    @Test
-    public void testStringRealistic() {
+    public void testRealistic() {
         ExpectedErrors errors = new ExpectedErrors();
         errors.add("violated");
-        assertTrue(errors.errorIsExpected("UNIQUE constraint was violated!"));
-        assertTrue(errors.errorIsExpected("PRIMARY KEY constraint was violated!"));
-    }
-
-    @Test
-    public void testRegexRealistic() {
-        ExpectedErrors errors = new ExpectedErrors();
-        errors.addRegex(Pattern.compile(".violated."));
         assertTrue(errors.errorIsExpected("UNIQUE constraint was violated!"));
         assertTrue(errors.errorIsExpected("PRIMARY KEY constraint was violated!"));
     }
