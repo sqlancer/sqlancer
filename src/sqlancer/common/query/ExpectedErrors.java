@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 /**
  * This class represents the errors that executing a statement might result in. For example, an INSERT statement might
