@@ -1,5 +1,6 @@
 package sqlancer.cockroachdb;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -37,6 +38,7 @@ import sqlancer.cockroachdb.gen.CockroachDBViewGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
+import sqlancer.common.query.SQLancerResultSet;
 
 @AutoService(DatabaseProvider.class)
 public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalState, CockroachDBOptions> {
@@ -283,6 +285,59 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
     @Override
     public String getDBMSName() {
         return "cockroachdb";
+    }
+
+    @Override
+    public String getQueryPlan(String selectStr, CockroachDBGlobalState globalState) throws Exception {
+        String queryPlan = "";
+        String explainQuery = "EXPLAIN (OPT) " + selectStr;
+        if (globalState.getOptions().logEachSelect()) {
+            globalState.getLogger().writeCurrent(explainQuery);
+            try {
+                globalState.getLogger().getCurrentFileWriter().flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        SQLQueryAdapter q = new SQLQueryAdapter(explainQuery, null);
+        boolean afterProjection = false; // Remove the concrete expression after each Projection operator
+        try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
+            if (rs != null) {
+                while (rs.next()) {
+                    String targetQueryPlan = rs.getString(1).replace("└──", "").replace("├──", "").replace("│", "")
+                            .trim() + ";"; // Unify format
+                    if (afterProjection) {
+                        afterProjection = false;
+                        continue;
+                    }
+                    if (targetQueryPlan.startsWith("projections")) {
+                        afterProjection = true;
+                    }
+                    // Remove all concrete expressions by keywords
+                    if (targetQueryPlan.contains(">") || targetQueryPlan.contains("<") || targetQueryPlan.contains("=")
+                            || targetQueryPlan.contains("*") || targetQueryPlan.contains("+")
+                            || targetQueryPlan.contains("'")) {
+                        continue;
+                    }
+                    queryPlan += targetQueryPlan;
+                }
+            }
+        } catch (AssertionError e) {
+            throw new AssertionError("Explain failed: " + explainQuery);
+        }
+
+        return queryPlan;
+    }
+
+    @Override
+    protected double[] initializeWeightedAverageReward() {
+        return new double[Action.values().length];
+    }
+
+    @Override
+    protected void executeMutator(int index, CockroachDBGlobalState globalState) throws Exception {
+        SQLQueryAdapter queryMutateTable = Action.values()[index].getQuery(globalState);
+        globalState.executeStatement(queryMutateTable);
     }
 
 }
