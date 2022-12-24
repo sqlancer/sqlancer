@@ -183,7 +183,7 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
             }
         }
 
-        SQLQueryAdapter q = new SQLQueryAdapter("EXPLAIN " + selectStr, null);
+        SQLQueryAdapter q = new SQLQueryAdapter("EXPLAIN " + selectStr);
         try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
             if (rs != null) {
                 while (rs.next()) {
