@@ -299,7 +299,7 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
                 e.printStackTrace();
             }
         }
-        SQLQueryAdapter q = new SQLQueryAdapter(explainQuery, null);
+        SQLQueryAdapter q = new SQLQueryAdapter(explainQuery);
         boolean afterProjection = false; // Remove the concrete expression after each Projection operator
         try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
             if (rs != null) {
