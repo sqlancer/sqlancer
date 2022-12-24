@@ -20,7 +20,7 @@ public class TestTiDBQueryPlan {
         String tiDB = System.getenv("TIDB_AVAILABLE");
         boolean tiDBIsAvailable = tiDB != null && tiDB.equalsIgnoreCase("true");
         assumeTrue(tiDBIsAvailable);
-        
+
         String databaseName = "tidb";
         TiDBProvider provider = new TiDBProvider();
         TiDBGlobalState state = provider.getGlobalStateClass().getDeclaredConstructor().newInstance();
@@ -40,8 +40,10 @@ public class TestTiDBQueryPlan {
         q = new SQLQueryAdapter("CREATE TABLE t2(c INT);", true);
         q.execute(state);
         String queryPlan = provider.getQueryPlan("SELECT * FROM t1 RIGHT JOIN t2 ON a<>0;", state);
-        
-        assertEquals("HashJoin_7;TableReader_10(Build);Selection_9;TableFullScan_8;TableReader_12(Probe);TableFullScan_11;", queryPlan);
+
+        assertEquals(
+                "HashJoin_7;TableReader_10(Build);Selection_9;TableFullScan_8;TableReader_12(Probe);TableFullScan_11;",
+                queryPlan);
     }
 
 }

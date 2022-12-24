@@ -15,8 +15,10 @@ public class TestCockroachDBQPG {
         String cockroachDB = System.getenv("COCKROACHDB_AVAILABLE");
         boolean cockroachDBIsAvailable = cockroachDB != null && cockroachDB.equalsIgnoreCase("true");
         assumeTrue(cockroachDBIsAvailable);
-        assertEquals(0, Main.executeMain(new String[] { "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS,
-        "--num-threads", "1", "--qpg-enable", "true", "--num-queries", TestConfig.NUM_QUERIES, "cockroachdb", "--oracle", "QUERY_PARTITIONING"}));
+        assertEquals(0,
+                Main.executeMain(new String[] { "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS,
+                        "--num-threads", "1", "--qpg-enable", "true", "--num-queries", TestConfig.NUM_QUERIES,
+                        "cockroachdb", "--oracle", "QUERY_PARTITIONING" }));
     }
 
 }

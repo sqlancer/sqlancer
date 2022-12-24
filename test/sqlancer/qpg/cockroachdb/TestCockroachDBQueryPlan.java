@@ -20,7 +20,7 @@ public class TestCockroachDBQueryPlan {
         String cockroachDB = System.getenv("COCKROACHDB_AVAILABLE");
         boolean cockroachDBIsAvailable = cockroachDB != null && cockroachDB.equalsIgnoreCase("true");
         assumeTrue(cockroachDBIsAvailable);
-        
+
         String databaseName = "cockroachdb";
         CockroachDBProvider provider = new CockroachDBProvider();
         CockroachDBGlobalState state = provider.getGlobalStateClass().getDeclaredConstructor().newInstance();
@@ -40,7 +40,7 @@ public class TestCockroachDBQueryPlan {
         q = new SQLQueryAdapter("CREATE TABLE t2(c INT);", true);
         q.execute(state);
         String queryPlan = provider.getQueryPlan("SELECT * FROM t1 RIGHT JOIN t2 ON a<>0;", state);
-        
+
         assertEquals("left-join (cross);scan t2;select;scan t1;filters;filters (true);", queryPlan);
     }
 

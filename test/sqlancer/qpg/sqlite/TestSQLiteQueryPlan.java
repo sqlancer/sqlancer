@@ -34,7 +34,7 @@ public class TestSQLiteQueryPlan {
         q = new SQLQueryAdapter("CREATE TABLE t2(c INT);", true);
         q.execute(state);
         String queryPlan = provider.getQueryPlan("SELECT * FROM t1 RIGHT JOIN t2 ON a<>0;", state);
-        
+
         assertEquals("SCAN t1;SCAN t2;RIGHT-JOIN t2;SCAN t2;", queryPlan);
     }
 
