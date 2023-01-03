@@ -30,7 +30,6 @@ public class ClickHouseTLPGroupByOracle extends ClickHouseTLPBase {
 
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
-        ClickHouseExpression predicate = gen.generateExpressionWithColumns(columns, 5);
         select.setWhereClause(predicate);
         String firstQueryString = ClickHouseVisitor.asString(select);
         select.setWhereClause(negatedPredicate);
