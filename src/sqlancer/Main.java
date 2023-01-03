@@ -97,13 +97,12 @@ public final class Main {
             this.databaseProvider = provider;
         }
 
-        public void resetCurrentFileWriter() throws IOException{
-            if (currentFileWriter != null){
+        public void resetCurrentFileWriter() throws IOException {
+            if (currentFileWriter != null) {
                 try {
                     currentFileWriter.close();
                     currentFileWriter = null;
-                }
-                catch (IOException e){
+                } catch (IOException e) {
                     currentFileWriter = null;
                     throw e;
                 }

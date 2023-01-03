@@ -20,7 +20,7 @@ public abstract class SQLGlobalState<O extends DBMSSpecificOptions<?>, S extends
         if (success && getOptions().printSucceedingStatements()) {
             System.out.println(q.getQueryString());
         }
-        if (getOptions().logEachSelect()){
+        if (getOptions().logEachSelect()) {
             if (logExecutionTime) {
                 getLogger().writeCurrent(" -- " + timer.end().asString());
             }

@@ -70,7 +70,7 @@ public class ArangoDBProvider
             if (success && getOptions().printSucceedingStatements()) {
                 System.out.println(q.getLogString());
             }
-            if (getOptions().logEachSelect()){
+            if (getOptions().logEachSelect()) {
                 if (logExecutionTime) {
                     getLogger().writeCurrent("//" + timer.end().asString());
                 }
