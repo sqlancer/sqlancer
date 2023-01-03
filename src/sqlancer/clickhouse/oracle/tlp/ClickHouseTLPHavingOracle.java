@@ -11,15 +11,12 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.clickhouse.ClickHouseErrors;
 import sqlancer.clickhouse.ClickHouseProvider;
-import sqlancer.clickhouse.ClickHouseSchema;
 import sqlancer.clickhouse.ClickHouseVisitor;
-import sqlancer.clickhouse.ast.ClickHouseColumnReference;
+import sqlancer.clickhouse.ast.ClickHouseAggregate;
 import sqlancer.clickhouse.ast.ClickHouseExpression;
 import sqlancer.clickhouse.ast.ClickHouseSelect;
-import sqlancer.clickhouse.ast.ClickHouseTableReference;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation;
-import sqlancer.clickhouse.gen.ClickHouseExpressionGenerator;
 
 public class ClickHouseTLPHavingOracle extends ClickHouseTLPBase {
 
@@ -30,33 +27,15 @@ public class ClickHouseTLPHavingOracle extends ClickHouseTLPBase {
 
     @Override
     public void check() throws SQLException {
-        ClickHouseSchema s = state.getSchema();
-        ClickHouseSchema.ClickHouseTables randomTables = s.getRandomTableNonEmptyTables();
-        ClickHouseSchema.ClickHouseTable table = randomTables.getTables().remove(0);
-        ClickHouseTableReference tableRef = new ClickHouseTableReference(table, table.getName());
-        List<ClickHouseSchema.ClickHouseColumn> columns = randomTables.getColumns();
-        columns.addAll(table.getColumns());
-        ClickHouseExpressionGenerator gen = new ClickHouseExpressionGenerator(state).setColumns(columns);
-        List<ClickHouseExpression.ClickHouseJoin> joins = gen.getRandomJoinClauses(tableRef, randomTables.getTables());
-        List<ClickHouseColumnReference> colRefs = joins.stream()
-                .flatMap(j -> j.getRightTable().getColumnReferences().stream()).collect(Collectors.toList());
-
-        ClickHouseExpressionGenerator aggrGen = new ClickHouseExpressionGenerator(state).allowAggregates(true)
-                .setColumns(columns);
-        ClickHouseSelect select = new ClickHouseSelect();
-        select.setFetchColumns(aggrGen.generateExpressions(Randomly.smallNumber() + 1));
-        ClickHouseTableReference from = new ClickHouseTableReference(table, table.getName());
-        select.setJoinClauses(joins);
+        super.check();
+        select.setFetchColumns(IntStream.range(0, Randomly.smallNumber() + 1)
+                .mapToObj(i -> gen.generateAggregateExpressionWithColumns(columns, 3)).collect(Collectors.toList()));
         select.setSelectType(ClickHouseSelect.SelectType.ALL);
-        select.setFromClause(from);
         // TODO order by?
 
-        List<ClickHouseExpression> groupByColumns = IntStream.range(0, Randomly.smallNumber())
-                .mapToObj(i -> gen.generateExpressionWithColumns(colRefs, 0)).collect(Collectors.toList());
+        List<ClickHouseExpression> groupByColumns = IntStream.range(0, 1 + Randomly.smallNumber())
+                .mapToObj(i -> gen.generateExpressionWithColumns(columns, 6)).collect(Collectors.toList());
 
-        if (groupByColumns.isEmpty()) {
-            throw new IgnoreMeException();
-        }
         select.setGroupByClause(groupByColumns);
         select.setHavingClause(null);
         String originalQueryString = ClickHouseVisitor.asString(select);
@@ -64,7 +43,12 @@ public class ClickHouseTLPHavingOracle extends ClickHouseTLPBase {
 
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
-        ClickHouseExpression predicate = aggrGen.getHavingClause();
+        List<ClickHouseExpression> aggregateExprs = select.getFetchColumns().stream()
+                .filter(p -> p instanceof ClickHouseAggregate).collect(Collectors.toList());
+        if (aggregateExprs.isEmpty()) {
+            throw new IgnoreMeException();
+        }
+        ClickHouseExpression predicate = gen.generateExpressionWithExpression(aggregateExprs, 6);
         select.setHavingClause(predicate);
         String firstQueryString = ClickHouseVisitor.asString(select);
         select.setHavingClause(new ClickHouseUnaryPrefixOperation(predicate,

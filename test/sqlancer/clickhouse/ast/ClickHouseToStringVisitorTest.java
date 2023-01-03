@@ -164,8 +164,7 @@ class ClickHouseToStringVisitorTest {
         ClickHouseColumnReference a_ref = a_col.asColumnReference(null);
         ClickHouseColumnReference b_ref = b_col.asColumnReference(null);
         ClickHouseSelect selectAB = new ClickHouseSelect();
-        ClickHouseAggregate sum_a = new ClickHouseAggregate(Arrays.asList(a_ref),
-                ClickHouseAggregate.ClickHouseAggregateFunction.SUM);
+        ClickHouseAggregate sum_a = new ClickHouseAggregate(a_ref, ClickHouseAggregate.ClickHouseAggregateFunction.SUM);
         selectAB.setFetchColumns(Arrays.asList(sum_a));
         selectAB.setFromClause(table_ref);
         selectAB.setGroupByClause(Arrays.asList(b_ref));

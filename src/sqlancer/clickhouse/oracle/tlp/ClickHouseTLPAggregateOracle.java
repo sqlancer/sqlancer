@@ -3,23 +3,16 @@ package sqlancer.clickhouse.oracle.tlp;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
-
-import com.clickhouse.client.ClickHouseDataType;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
 import sqlancer.clickhouse.ClickHouseErrors;
 import sqlancer.clickhouse.ClickHouseProvider;
-import sqlancer.clickhouse.ClickHouseSchema;
 import sqlancer.clickhouse.ClickHouseVisitor;
 import sqlancer.clickhouse.ast.ClickHouseAggregate;
 import sqlancer.clickhouse.ast.ClickHouseAliasOperation;
-import sqlancer.clickhouse.ast.ClickHouseExpression;
-import sqlancer.clickhouse.ast.ClickHouseSelect;
-import sqlancer.clickhouse.ast.ClickHouseTableReference;
-import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation;
-import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation;
-import sqlancer.clickhouse.gen.ClickHouseExpressionGenerator;
 
 public class ClickHouseTLPAggregateOracle extends ClickHouseTLPBase {
 
@@ -30,55 +23,41 @@ public class ClickHouseTLPAggregateOracle extends ClickHouseTLPBase {
 
     @Override
     public void check() throws SQLException {
-        ClickHouseSchema s = state.getSchema();
-        ClickHouseSchema.ClickHouseTables randomTables = s.getRandomTableNonEmptyTables();
-        ClickHouseSchema.ClickHouseTable table = randomTables.getTables().remove(0);
-        ClickHouseTableReference tableRef = new ClickHouseTableReference(table, table.getName());
-        List<ClickHouseSchema.ClickHouseColumn> columns = randomTables.getColumns();
-        columns.addAll(table.getColumns());
-        ClickHouseExpressionGenerator gen = new ClickHouseExpressionGenerator(state).setColumns(columns);
-        List<ClickHouseExpression.ClickHouseJoin> joins = gen.getRandomJoinClauses(tableRef, randomTables.getTables());
+        super.check();
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            select.setOrderByExpressions(IntStream.range(0, 1 + Randomly.smallNumber())
+                    .mapToObj(i -> gen.generateExpressionWithColumns(columns, 5)).collect(Collectors.toList()));
+        }
 
-        gen = new ClickHouseExpressionGenerator(state).setColumns(randomTables.getColumns());
-        ClickHouseSelect select = new ClickHouseSelect();
         ClickHouseAggregate.ClickHouseAggregateFunction windowFunction = Randomly.fromOptions(
                 ClickHouseAggregate.ClickHouseAggregateFunction.MIN,
                 ClickHouseAggregate.ClickHouseAggregateFunction.MAX,
                 ClickHouseAggregate.ClickHouseAggregateFunction.SUM);
-        ClickHouseAggregate aggregate = new ClickHouseAggregate(
-                gen.generateExpressions(ClickHouseSchema.ClickHouseLancerDataType.getRandom(), 1), windowFunction);
+
+        ClickHouseAggregate aggregate = new ClickHouseAggregate(gen.generateExpressionWithColumns(columns, 6),
+                windowFunction);
         select.setFetchColumns(Arrays.asList(aggregate));
-        ClickHouseExpression from = tableRef;
-        select.setFromClause(from);
-        select.setJoinClauses(joins);
-        if (Randomly.getBoolean()) {
-            select.setOrderByExpressions(gen.generateOrderBys());
-        }
+
         String originalQuery = ClickHouseVisitor.asString(select);
         originalQuery += " SETTINGS aggregate_functions_null_for_empty = 1";
 
-        ClickHouseExpression whereClause = gen
-                .generateExpression(new ClickHouseSchema.ClickHouseLancerDataType(ClickHouseDataType.UInt8));
-        ClickHouseUnaryPrefixOperation negatedClause = new ClickHouseUnaryPrefixOperation(whereClause,
-                ClickHouseUnaryPrefixOperation.ClickHouseUnaryPrefixOperator.NOT);
-        ClickHouseUnaryPostfixOperation notNullClause = new ClickHouseUnaryPostfixOperation(whereClause,
-                ClickHouseUnaryPostfixOperation.ClickHouseUnaryPostfixOperator.IS_NULL, false);
-
         select.setFetchColumns(Arrays.asList(new ClickHouseAliasOperation(aggregate, "aggr")));
-        select.setFromClause(from);
-        select.setWhereClause(whereClause);
+
+        select.setWhereClause(predicate);
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setGroupByClause(gen.generateExpressions(Randomly.smallNumber() + 1));
+            select.setGroupByClause(IntStream.range(0, 1 + Randomly.smallNumber())
+                    .mapToObj(i -> gen.generateExpressionWithColumns(columns, 5)).collect(Collectors.toList()));
         }
         if (Randomly.getBoolean()) {
-            select.setOrderByExpressions(gen.generateOrderBys());
+            select.setOrderByExpressions(IntStream.range(0, 1 + Randomly.smallNumber())
+                    .mapToObj(i -> gen.generateExpressionWithColumns(columns, 5)).collect(Collectors.toList()));
         }
 
         String metamorphicText = "SELECT " + aggregate.getFunc().toString() + "(aggr) FROM (";
         metamorphicText += ClickHouseVisitor.asString(select) + " UNION ALL ";
-        select.setWhereClause(negatedClause);
+        select.setWhereClause(negatedPredicate);
         metamorphicText += ClickHouseVisitor.asString(select) + " UNION ALL ";
-        select.setWhereClause(notNullClause);
+        select.setWhereClause(isNullPredicate);
         metamorphicText += ClickHouseVisitor.asString(select);
         metamorphicText += ")";
         metamorphicText += " SETTINGS aggregate_functions_null_for_empty = 1";
