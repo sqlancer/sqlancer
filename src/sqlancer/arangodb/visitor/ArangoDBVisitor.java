@@ -24,7 +24,6 @@ public abstract class ArangoDBVisitor<E> {
 
     protected abstract void visit(NewFunctionNode<E, ?> expression);
 
-    @SuppressWarnings("unchecked")
     public void visit(Node<E> expressionNode) {
         if (expressionNode instanceof ArangoDBSelect) {
             visit((ArangoDBSelect<E>) expressionNode);

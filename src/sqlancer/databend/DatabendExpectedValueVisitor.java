@@ -31,7 +31,6 @@ public class DatabendExpectedValueVisitor {
         sb.append("\n");
     }
 
-    @SuppressWarnings("unchecked")
     public void visit(Node<DatabendExpression> expr) {
         assert expr != null;
         if (expr instanceof ColumnReferenceNode<?, ?>) {

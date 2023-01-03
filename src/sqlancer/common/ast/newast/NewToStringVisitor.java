@@ -6,7 +6,6 @@ public abstract class NewToStringVisitor<E> {
 
     protected final StringBuilder sb = new StringBuilder();
 
-    @SuppressWarnings("unchecked")
     public void visit(Node<E> expr) {
         assert expr != null;
         if (expr instanceof ColumnReferenceNode<?, ?>) {
