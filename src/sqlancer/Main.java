@@ -97,6 +97,19 @@ public final class Main {
             this.databaseProvider = provider;
         }
 
+        public void resetCurrentFileWriter() throws IOException{
+            if (currentFileWriter != null){
+                try {
+                    currentFileWriter.close();
+                    currentFileWriter = null;
+                }
+                catch (IOException e){
+                    currentFileWriter = null;
+                    throw e;
+                }
+            }
+        }
+
         private void ensureExistsAndIsEmpty(File dir, DatabaseProvider<?, ?, ?> provider) {
             if (INITIALIZED_PROVIDER_NAMES.contains(provider.getDBMSName())) {
                 return;
@@ -364,8 +377,7 @@ public final class Main {
                     reproducer = provider.generateAndTestDatabase(state);
                 }
                 try {
-                    logger.getCurrentFileWriter().close();
-                    logger.currentFileWriter = null;
+                    logger.resetCurrentFileWriter();
                 } catch (IOException e) {
                     throw new AssertionError(e);
                 }
