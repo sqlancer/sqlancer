@@ -32,7 +32,7 @@ public final class TiDBAnalyzeTableGenerator {
             sb.append(Randomly.getNotCachedInteger(1, 1024));
             sb.append(" BUCKETS");
         }
-        errors.add("Fast analyze hasn't reached General Availability and only support analyze version 1 currently")
+        errors.add("Fast analyze hasn't reached General Availability and only support analyze version 1 currently");
         return new SQLQueryAdapter(sb.toString(), errors);
     }
 
