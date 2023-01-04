@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.clickhouse.client.ClickHouseDataType;
-
 import sqlancer.Randomly;
 import sqlancer.clickhouse.ClickHouseErrors;
 import sqlancer.clickhouse.ClickHouseProvider;
@@ -82,7 +80,7 @@ public class ClickHouseTableGenerator {
             if (Randomly.getBoolean()) {
                 sb.append(" ORDER BY ");
                 ClickHouseExpression expr = gen.generateExpressionWithColumns(
-                        columns.stream().map(c -> c.asColumnReference(null)).collect(Collectors.toList()), 0);
+                        columns.stream().map(c -> c.asColumnReference(null)).collect(Collectors.toList()), 3);
                 sb.append(ClickHouseToStringVisitor.asString(expr));
             } else {
                 sb.append(" ORDER BY tuple() ");
@@ -91,13 +89,13 @@ public class ClickHouseTableGenerator {
             if (Randomly.getBoolean()) {
                 sb.append(" PARTITION BY ");
                 ClickHouseExpression expr = gen.generateExpressionWithColumns(
-                        columns.stream().map(c -> c.asColumnReference(null)).collect(Collectors.toList()), 0);
+                        columns.stream().map(c -> c.asColumnReference(null)).collect(Collectors.toList()), 3);
                 sb.append(ClickHouseToStringVisitor.asString(expr));
             }
             if (Randomly.getBoolean()) {
                 sb.append(" SAMPLE BY ");
                 ClickHouseExpression expr = gen.generateExpressionWithColumns(
-                        columns.stream().map(c -> c.asColumnReference(null)).collect(Collectors.toList()), 0);
+                        columns.stream().map(c -> c.asColumnReference(null)).collect(Collectors.toList()), 3);
                 sb.append(ClickHouseToStringVisitor.asString(expr));
             }
             // TODO: PRIMARY KEY
@@ -111,8 +109,8 @@ public class ClickHouseTableGenerator {
             sb.append(" CONSTRAINT ");
             sb.append(ClickHouseCommon.createConstraintName(i));
             sb.append(" CHECK ");
-            ClickHouseExpression expr = gen
-                    .generateExpression(new ClickHouseSchema.ClickHouseLancerDataType(ClickHouseDataType.UInt8));
+            ClickHouseExpression expr = gen.generateExpressionWithColumns(
+                    columns.stream().map(c -> c.asColumnReference(null)).collect(Collectors.toList()), 2);
             sb.append(ClickHouseToStringVisitor.asString(expr));
         }
     }

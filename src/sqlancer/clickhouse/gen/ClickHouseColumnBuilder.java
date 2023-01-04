@@ -61,12 +61,11 @@ public class ClickHouseColumnBuilder {
                 if (allowMaterialized) {
                     sb.append(" MATERIALIZED (");
                     sb.append(
-                            ClickHouseVisitor
-                                    .asString(new ClickHouseExpressionGenerator(globalState)
-                                            .setColumns(
-                                                    columns.stream().filter(p -> !p.getName().contentEquals(columnName))
-                                                            .collect(Collectors.toList()))
-                                            .generateExpression(dataType)));
+                            ClickHouseVisitor.asString(
+                                    new ClickHouseExpressionGenerator(globalState).generateExpressionWithColumns(
+                                            columns.stream().filter(p -> !p.getName().contentEquals(columnName))
+                                                    .map(p -> p.asColumnReference(null)).collect(Collectors.toList()),
+                                            2)));
                     sb.append(")");
                 }
                 break;
