@@ -53,7 +53,8 @@ public class ClickHouseExpressionGenerator
         UNARY_POSTFIX
     }
 
-    public ClickHouseExpression generateExpressionWithColumns(List<ClickHouseColumnReference> columns, int remainingDepth) {
+    public ClickHouseExpression generateExpressionWithColumns(List<ClickHouseColumnReference> columns,
+            int remainingDepth) {
         if (columns.isEmpty() || remainingDepth <= 2 && Randomly.getBooleanWithRatherLowProbability()) {
             return generateConstant(null);
         }
@@ -137,22 +138,27 @@ public class ClickHouseExpressionGenerator
             return new ClickHouseUnaryPostfixOperation(generateExpressionWithExpression(expression, remainingDepth - 1),
                     ClickHouseUnaryPostfixOperation.ClickHouseUnaryPostfixOperator.getRandom(), false);
         case BINARY_COMPARISON:
-            return new ClickHouseBinaryComparisonOperation(generateExpressionWithExpression(expression, remainingDepth - 1),
+            return new ClickHouseBinaryComparisonOperation(
+                    generateExpressionWithExpression(expression, remainingDepth - 1),
                     generateExpressionWithExpression(expression, remainingDepth - 1),
                     ClickHouseBinaryComparisonOperation.ClickHouseBinaryComparisonOperator.getRandomOperator());
         case BINARY_LOGICAL:
-            return new ClickHouseBinaryLogicalOperation(generateExpressionWithExpression(expression, remainingDepth - 1),
+            return new ClickHouseBinaryLogicalOperation(
+                    generateExpressionWithExpression(expression, remainingDepth - 1),
                     generateExpressionWithExpression(expression, remainingDepth - 1),
                     ClickHouseBinaryLogicalOperation.ClickHouseBinaryLogicalOperator.getRandom());
         case BINARY_ARITHMETIC:
-            return new ClickHouseBinaryArithmeticOperation(generateExpressionWithExpression(expression, remainingDepth - 1),
+            return new ClickHouseBinaryArithmeticOperation(
+                    generateExpressionWithExpression(expression, remainingDepth - 1),
                     generateExpressionWithExpression(expression, remainingDepth - 1),
                     ClickHouseBinaryArithmeticOperation.ClickHouseBinaryArithmeticOperator.getRandom());
         case UNARY_FUNCTION:
-            return new ClickHouseUnaryFunctionOperation(generateExpressionWithExpression(expression, remainingDepth - 1),
+            return new ClickHouseUnaryFunctionOperation(
+                    generateExpressionWithExpression(expression, remainingDepth - 1),
                     ClickHouseUnaryFunctionOperation.ClickHouseUnaryFunctionOperator.getRandom());
         case BINARY_FUNCTION:
-            return new ClickHouseBinaryFunctionOperation(generateExpressionWithExpression(expression, remainingDepth - 1),
+            return new ClickHouseBinaryFunctionOperation(
+                    generateExpressionWithExpression(expression, remainingDepth - 1),
                     generateExpressionWithExpression(expression, remainingDepth - 1),
                     ClickHouseBinaryFunctionOperation.ClickHouseBinaryFunctionOperator.getRandom());
         default:
