@@ -73,6 +73,7 @@ public final class ClickHouseErrors {
         errors.add(" is out of bounds. Expected in range");
         errors.add("with constants is not supported. (INVALID_JOIN_ON_EXPRESSION)");
         errors.add("Different order of columns in UNION subquery"); // https://github.com/ClickHouse/ClickHouse/issues/44866
+        errors.add("Unexpected inf or nan to integer conversion");
     }
 
 }

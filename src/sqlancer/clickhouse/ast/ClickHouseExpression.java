@@ -63,8 +63,10 @@ public abstract class ClickHouseExpression {
 
     public static class ClickHouseJoin extends ClickHouseExpression {
         // TODO: support ANY, ALL, ASOF modifiers
+        // LEFT_SEMI, RIGHT_SEMI are not deterministic as ClickHouse allows to read columns from
+        // whitelist table as well
         public enum JoinType {
-            INNER, CROSS, LEFT_OUTER, RIGHT_OUTER, FULL_OUTER, LEFT_SEMI, RIGHT_SEMI, LEFT_ANTI, RIGHT_ANTI;
+            INNER, CROSS, LEFT_OUTER, RIGHT_OUTER, FULL_OUTER, NATURAL, LEFT_ANTI, RIGHT_ANTI;
         }
 
         private final ClickHouseTableReference leftTable;
