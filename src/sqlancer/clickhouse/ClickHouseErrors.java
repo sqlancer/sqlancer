@@ -71,6 +71,7 @@ public final class ClickHouseErrors {
         errors.add("Positional argument must be constant with numeric type");
         errors.add(" is out of bounds. Expected in range");
         errors.add("with constants is not supported. (INVALID_JOIN_ON_EXPRESSION)");
+        errors.add("Different order of columns in UNION subquery"); // https://github.com/ClickHouse/ClickHouse/issues/44866
         errors.add("Unexpected inf or nan to integer conversion");
         errors.add("Unsigned type must not contain");
         errors.add("Unexpected inf or nan to integer conversion");
