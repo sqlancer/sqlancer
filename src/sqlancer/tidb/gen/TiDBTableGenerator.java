@@ -38,7 +38,7 @@ public class TiDBTableGenerator {
         allowPrimaryKey = Randomly.getBoolean();
         primaryKeyAsTableConstraints = allowPrimaryKey && Randomly.getBoolean();
         for (int i = 0; i < nrColumns; i++) {
-            TiDBColumn fakeColumn = new TiDBColumn("c" + i, null, false, false,false);
+            TiDBColumn fakeColumn = new TiDBColumn("c" + i, null, false, false, false);
             columns.add(fakeColumn);
         }
         TiDBExpressionGenerator gen = new TiDBExpressionGenerator(globalState).setColumns(columns);
