@@ -13,7 +13,7 @@ public final class TiDBSetGenerator {
     }
 
     private enum Action {
-
+        TIDB_COST_MODEL_VERSION("tidb_cost_model_version", (r) -> Randomly.fromOptions(1, 2)), //
         // SQL_MODE("sql_mode", (r) -> Randomly.fromOptions("TRADITIONAL", "ANSI", "POSTGRESQL", "ORACLE")),
         TIDB_OPT_AGG_PUSH_DOWN("tidb_opt_agg_push_down", (r) -> Randomly.fromOptions(0, 1)), //
         TIDB_BUILD_STATS_CONCURRENCY("tidb_build_stats_concurrency", (r) -> Randomly.getNotCachedInteger(0, 500)), //
