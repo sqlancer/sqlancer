@@ -66,7 +66,11 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
             if (globalState.getSchema().getDatabaseTables().isEmpty()) {
                 throw new IgnoreMeException();
             }
-            return new TiDBFunctionCall(TiDBFunction.DEFAULT, Arrays.asList(generateColumn()));
+            TiDBColumn column = Randomly.fromList(columns);
+            if (column.hasDefault()) {
+                return new TiDBFunctionCall(TiDBFunction.DEFAULT, Arrays.asList(new TiDBColumnReference(column)));
+            }
+            throw new IgnoreMeException();
         case UNARY_POSTFIX:
             return new TiDBUnaryPostfixOperation(generateExpression(depth + 1), TiDBUnaryPostfixOperator.getRandom());
         case UNARY_PREFIX:
