@@ -75,8 +75,10 @@ public final class ClickHouseErrors {
         errors.add("Unexpected inf or nan to integer conversion");
         errors.add("Unsigned type must not contain");
         errors.add("Unexpected inf or nan to integer conversion");
+
         // The way we generate JOINs we can have ambiguous left table column without alias
         // We may not count it as an issue, but it makes no sense to add more complex AST generation logic
+        errors.add("MULTIPLE_EXPRESSIONS_FOR_ALIAS");
         errors.add("AMBIGUOUS_IDENTIFIER"); // https://github.com/ClickHouse/ClickHouse/issues/45389
     }
 
