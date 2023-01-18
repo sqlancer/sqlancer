@@ -38,7 +38,6 @@ public final class ClickHouseErrors {
         errors.add("Sorting key cannot contain constants");
         errors.add("There is no supertype for types");
         errors.add("argument of function");
-        errors.add("because it is constant but values of constants are different in source and result"); // https://github.com/ClickHouse/ClickHouse/issues/22119
         errors.add("but its arguments considered equal according to constraints");
         errors.add("does not return a value of type UInt8");
         errors.add("does not return a value of type UInt8");
@@ -62,7 +61,20 @@ public final class ClickHouseErrors {
         errors.add("ILLEGAL_DIVISION");
         errors.add("DECIMAL_OVERFLOW");
         errors.add("Cannot convert out of range floating point value to integer type");
-        errors.add("EMPTY_LIST_OF_COLUMNS_QUERIED"); // https://github.com/ClickHouse/ClickHouse/issues/42768
+        errors.add("Unexpected inf or nan to integer conversion");
+        errors.add("No such name in Block::erase"); // https://github.com/ClickHouse/ClickHouse/issues/42769
+        errors.add("EMPTY_LIST_OF_COLUMNS_QUERIED"); // https://github.com/ClickHouse/ClickHouse/issues/43003
+        errors.add("cannot get JOIN keys. (INVALID_JOIN_ON_EXPRESSION)");
+        errors.add("AMBIGUOUS_IDENTIFIER");
+        errors.add("CYCLIC_ALIASES");
+        errors.add("Positional argument numeric constant expression is not representable as");
+        errors.add("Positional argument must be constant with numeric type");
+        errors.add(" is out of bounds. Expected in range");
+        errors.add("with constants is not supported. (INVALID_JOIN_ON_EXPRESSION)");
+        errors.add("Different order of columns in UNION subquery"); // https://github.com/ClickHouse/ClickHouse/issues/44866
+        errors.add("Unexpected inf or nan to integer conversion");
+        errors.add("Unsigned type must not contain");
+        errors.add("Unexpected inf or nan to integer conversion");
     }
 
 }

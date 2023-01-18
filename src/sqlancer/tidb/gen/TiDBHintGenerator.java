@@ -96,7 +96,15 @@ public class TiDBHintGenerator {
             twoTablesHint("SHUFFLE_JOIN", table);
             break;
         case USE_INDEX_MERGE:
-            twoTablesHint("USE_INDEX_MERGE", table);
+            if (Randomly.getBoolean()) {
+                if (table.hasIndexes()) {
+                    tablesHint("USE_INDEX_MERGE");
+                } else {
+                    throw new IgnoreMeException();
+                }
+            } else {
+                twoTablesHint("USE_INDEX_MERGE", table);
+            }
             break;
         case NO_INDEX_MERGE:
             sb.append("NO_INDEX_MERGE()");

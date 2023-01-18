@@ -13,7 +13,6 @@ import sqlancer.clickhouse.ClickHouseErrors;
 import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
 import sqlancer.clickhouse.ClickHouseSchema;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTable;
-import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTables;
 import sqlancer.clickhouse.ClickHouseVisitor;
 import sqlancer.clickhouse.ast.ClickHouseColumnReference;
 import sqlancer.clickhouse.ast.ClickHouseExpression;
@@ -29,7 +28,7 @@ public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickH
         implements TestOracle<ClickHouseGlobalState> {
 
     ClickHouseSchema schema;
-    ClickHouseTables targetTables;
+    List<ClickHouseColumnReference> columns;
     ClickHouseExpressionGenerator gen;
     ClickHouseSelect select;
 
@@ -42,26 +41,30 @@ public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickH
     public void check() throws SQLException {
         gen = new ClickHouseExpressionGenerator(state);
         schema = state.getSchema();
-        initializeTernaryPredicateVariants();
         select = new ClickHouseSelect();
         List<ClickHouseTable> tables = schema.getRandomTableNonEmptyTables().getTables();
         ClickHouseTableReference table = new ClickHouseTableReference(
                 tables.get((int) Randomly.getNotCachedInteger(0, tables.size())),
                 Randomly.getBoolean() ? "left" : null);
         select.setFromClause(table);
-        List<ClickHouseColumnReference> columns = table.getColumnReferences();
+        columns = table.getColumnReferences();
 
         if (state.getClickHouseOptions().testJoins && Randomly.getBoolean()) {
             List<ClickHouseJoin> joinStatements = gen.getRandomJoinClauses(table, tables);
-            select.setJoinClauses(joinStatements.stream().collect(Collectors.toList()));
+            columns.addAll(joinStatements.stream().flatMap(j -> j.getRightTable().getColumnReferences().stream())
+                    .collect(Collectors.toList()));
+            select.setJoinClauses(joinStatements);
         }
         gen.addColumns(columns);
-        range(0, Randomly.smallNumber()).mapToObj(i -> gen.generateExpressionWithColumns(columns, 0))
-                .collect(Collectors.toList());
-        select.setFetchColumns(generateFetchColumns(columns));
+        int small = Randomly.smallNumber();
+        List<ClickHouseExpression> from = range(0, 1 + small)
+                .mapToObj(i -> gen.generateExpressionWithColumns(columns, 5)).collect(Collectors.toList());
+        select.setFetchColumns(from);
         select.setWhereClause(null);
+        initializeTernaryPredicateVariants();
         // Smoke check
-        ComparatorHelper.getResultSetFirstColumnAsString(ClickHouseVisitor.asString(select), errors, state);
+        String query = ClickHouseVisitor.asString(select);
+        ComparatorHelper.getResultSetFirstColumnAsString(query, errors, state);
     }
 
     List<ClickHouseExpression> generateFetchColumns(List<ClickHouseColumnReference> columns) {
