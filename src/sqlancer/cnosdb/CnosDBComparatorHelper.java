@@ -1,10 +1,5 @@
 package sqlancer.cnosdb;
 
-import sqlancer.IgnoreMeException;
-import sqlancer.cnosdb.client.CnosDBResultSet;
-import sqlancer.cnosdb.query.CnosDBSelectQuery;
-import sqlancer.common.query.ExpectedErrors;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -13,7 +8,16 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
-public class CnosDBComparatorHelper {
+import sqlancer.IgnoreMeException;
+import sqlancer.cnosdb.client.CnosDBResultSet;
+import sqlancer.cnosdb.query.CnosDBSelectQuery;
+import sqlancer.common.query.ExpectedErrors;
+
+public final class CnosDBComparatorHelper {
+
+    private CnosDBComparatorHelper() {
+    }
+
     public static boolean isEqualDouble(String first, String second) {
         try {
             double val = Double.parseDouble(first);

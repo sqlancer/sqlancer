@@ -1,14 +1,14 @@
 package sqlancer.cnosdb.oracle.tlp;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import sqlancer.Randomly;
 import sqlancer.cnosdb.CnosDBComparatorHelper;
 import sqlancer.cnosdb.CnosDBExpectedError;
 import sqlancer.cnosdb.CnosDBGlobalState;
 import sqlancer.cnosdb.CnosDBVisitor;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class CnosDBTLPWhereOracle extends CnosDBTLPBase {
 
@@ -23,7 +23,7 @@ public class CnosDBTLPWhereOracle extends CnosDBTLPBase {
     }
 
     protected void whereCheck() throws Exception {
-        errors.addAll(CnosDBExpectedError.Errors());
+        errors.addAll(CnosDBExpectedError.expectedErrors());
         if (Randomly.getBooleanWithRatherLowProbability()) {
             select.setOrderByExpressions(gen.generateOrderBy());
         }

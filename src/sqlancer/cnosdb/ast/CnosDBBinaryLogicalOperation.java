@@ -4,12 +4,30 @@ import sqlancer.Randomly;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
 import sqlancer.cnosdb.ast.CnosDBBinaryLogicalOperation.BinaryLogicalOperator;
 import sqlancer.common.ast.BinaryOperatorNode;
-import sqlancer.common.ast.BinaryOperatorNode.Operator;
 
 public class CnosDBBinaryLogicalOperation extends BinaryOperatorNode<CnosDBExpression, BinaryLogicalOperator>
         implements CnosDBExpression {
 
-    public enum BinaryLogicalOperator implements Operator {
+    public CnosDBBinaryLogicalOperation(CnosDBExpression left, CnosDBExpression right, BinaryLogicalOperator op) {
+        super(left, right, op);
+    }
+
+    @Override
+    public CnosDBDataType getExpressionType() {
+        return CnosDBDataType.BOOLEAN;
+    }
+
+    @Override
+    public CnosDBConstant getExpectedValue() {
+        CnosDBConstant leftExpectedValue = getLeft().getExpectedValue();
+        CnosDBConstant rightExpectedValue = getRight().getExpectedValue();
+        if (leftExpectedValue == null || rightExpectedValue == null) {
+            return null;
+        }
+        return getOp().apply(leftExpectedValue, rightExpectedValue);
+    }
+
+    public enum BinaryLogicalOperator implements BinaryOperatorNode.Operator {
         AND {
             @Override
             public CnosDBConstant apply(CnosDBConstant left, CnosDBConstant right) {
@@ -54,35 +72,16 @@ public class CnosDBBinaryLogicalOperation extends BinaryOperatorNode<CnosDBExpre
             }
         };
 
-        public abstract CnosDBConstant apply(CnosDBConstant left, CnosDBConstant right);
-
         public static BinaryLogicalOperator getRandom() {
             return Randomly.fromOptions(values());
         }
+
+        public abstract CnosDBConstant apply(CnosDBConstant left, CnosDBConstant right);
 
         @Override
         public String getTextRepresentation() {
             return toString();
         }
-    }
-
-    public CnosDBBinaryLogicalOperation(CnosDBExpression left, CnosDBExpression right, BinaryLogicalOperator op) {
-        super(left, right, op);
-    }
-
-    @Override
-    public CnosDBDataType getExpressionType() {
-        return CnosDBDataType.BOOLEAN;
-    }
-
-    @Override
-    public CnosDBConstant getExpectedValue() {
-        CnosDBConstant leftExpectedValue = getLeft().getExpectedValue();
-        CnosDBConstant rightExpectedValue = getRight().getExpectedValue();
-        if (leftExpectedValue == null || rightExpectedValue == null) {
-            return null;
-        }
-        return getOp().apply(leftExpectedValue, rightExpectedValue);
     }
 
 }

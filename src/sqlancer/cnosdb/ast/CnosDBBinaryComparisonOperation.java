@@ -4,12 +4,31 @@ import sqlancer.Randomly;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
 import sqlancer.cnosdb.ast.CnosDBBinaryComparisonOperation.CnosDBBinaryComparisonOperator;
 import sqlancer.common.ast.BinaryOperatorNode;
-import sqlancer.common.ast.BinaryOperatorNode.Operator;
 
 public class CnosDBBinaryComparisonOperation
         extends BinaryOperatorNode<CnosDBExpression, CnosDBBinaryComparisonOperator> implements CnosDBExpression {
 
-    public enum CnosDBBinaryComparisonOperator implements Operator {
+    public CnosDBBinaryComparisonOperation(CnosDBExpression left, CnosDBExpression right,
+            CnosDBBinaryComparisonOperator op) {
+        super(left, right, op);
+    }
+
+    @Override
+    public CnosDBConstant getExpectedValue() {
+        CnosDBConstant leftExpectedValue = getLeft().getExpectedValue();
+        CnosDBConstant rightExpectedValue = getRight().getExpectedValue();
+        if (leftExpectedValue == null || rightExpectedValue == null) {
+            return null;
+        }
+        return getOp().getExpectedValue(leftExpectedValue, rightExpectedValue);
+    }
+
+    @Override
+    public CnosDBDataType getExpressionType() {
+        return CnosDBDataType.BOOLEAN;
+    }
+
+    public enum CnosDBBinaryComparisonOperator implements BinaryOperatorNode.Operator {
         EQUALS("=") {
             @Override
             public CnosDBConstant getExpectedValue(CnosDBConstant leftVal, CnosDBConstant rightVal) {
@@ -96,41 +115,21 @@ public class CnosDBBinaryComparisonOperation
 
         private final String textRepresentation;
 
-        @Override
-        public String getTextRepresentation() {
-            return textRepresentation;
-        }
-
         CnosDBBinaryComparisonOperator(String textRepresentation) {
             this.textRepresentation = textRepresentation;
         }
-
-        public abstract CnosDBConstant getExpectedValue(CnosDBConstant leftVal, CnosDBConstant rightVal);
 
         public static CnosDBBinaryComparisonOperator getRandom() {
             return Randomly.fromOptions(CnosDBBinaryComparisonOperator.values());
         }
 
-    }
-
-    public CnosDBBinaryComparisonOperation(CnosDBExpression left, CnosDBExpression right,
-            CnosDBBinaryComparisonOperator op) {
-        super(left, right, op);
-    }
-
-    @Override
-    public CnosDBConstant getExpectedValue() {
-        CnosDBConstant leftExpectedValue = getLeft().getExpectedValue();
-        CnosDBConstant rightExpectedValue = getRight().getExpectedValue();
-        if (leftExpectedValue == null || rightExpectedValue == null) {
-            return null;
+        @Override
+        public String getTextRepresentation() {
+            return textRepresentation;
         }
-        return getOp().getExpectedValue(leftExpectedValue, rightExpectedValue);
-    }
 
-    @Override
-    public CnosDBDataType getExpressionType() {
-        return CnosDBDataType.BOOLEAN;
+        public abstract CnosDBConstant getExpectedValue(CnosDBConstant leftVal, CnosDBConstant rightVal);
+
     }
 
 }

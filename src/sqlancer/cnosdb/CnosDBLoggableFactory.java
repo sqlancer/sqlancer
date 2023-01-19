@@ -1,5 +1,8 @@
 package sqlancer.cnosdb;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import sqlancer.cnosdb.query.CnosDBOtherQuery;
 import sqlancer.cnosdb.query.CnosDBQueryAdapter;
 import sqlancer.common.log.Loggable;
@@ -7,9 +10,6 @@ import sqlancer.common.log.LoggableFactory;
 import sqlancer.common.log.LoggedString;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
 public class CnosDBLoggableFactory extends LoggableFactory {
 
@@ -28,7 +28,7 @@ public class CnosDBLoggableFactory extends LoggableFactory {
     @Override
     public CnosDBQueryAdapter getQueryForStateToReproduce(String queryString) {
         ExpectedErrors errors = new ExpectedErrors();
-        errors.addAll(CnosDBExpectedError.Errors());
+        errors.addAll(CnosDBExpectedError.expectedErrors());
         return new CnosDBOtherQuery(queryString, errors);
     }
 
@@ -37,19 +37,16 @@ public class CnosDBLoggableFactory extends LoggableFactory {
         String queryString = query.getLogString();
         String newQueryString = "-- " + queryString;
         ExpectedErrors errors = new ExpectedErrors();
-        errors.addAll(CnosDBExpectedError.Errors());
+        errors.addAll(CnosDBExpectedError.expectedErrors());
 
         return new CnosDBOtherQuery(newQueryString, errors);
     }
 
     @Override
     protected Loggable infoToLoggable(String time, String databaseName, String databaseVersion, long seedValue) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("-- Time: " + time + "\n");
-        sb.append("-- Database: " + databaseName + "\n");
-        sb.append("-- Database version: " + databaseVersion + "\n");
-        sb.append("-- seed value: " + seedValue + "\n");
-        return new LoggedString(sb.toString());
+        String sb = "-- Time: " + time + "\n" + "-- Database: " + databaseName + "\n" + "-- Database version: "
+                + databaseVersion + "\n" + "-- seed value: " + seedValue + "\n";
+        return new LoggedString(sb);
     }
 
     @Override

@@ -1,5 +1,8 @@
 package sqlancer.cnosdb.oracle.tlp;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import sqlancer.Randomly;
 import sqlancer.cnosdb.CnosDBComparatorHelper;
 import sqlancer.cnosdb.CnosDBExpectedError;
@@ -7,9 +10,6 @@ import sqlancer.cnosdb.CnosDBGlobalState;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
 import sqlancer.cnosdb.CnosDBVisitor;
 import sqlancer.cnosdb.ast.CnosDBExpression;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class CnosDBTLPHavingOracle extends CnosDBTLPBase {
 
@@ -24,7 +24,7 @@ public class CnosDBTLPHavingOracle extends CnosDBTLPBase {
     }
 
     protected void havingCheck() throws Exception {
-        errors.addAll(CnosDBExpectedError.Errors());
+        errors.addAll(CnosDBExpectedError.expectedErrors());
         if (Randomly.getBoolean()) {
             select.setWhereClause(gen.generateExpression(CnosDBDataType.BOOLEAN));
         }

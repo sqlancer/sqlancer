@@ -1,8 +1,8 @@
 package sqlancer.cnosdb.ast;
 
-import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
-
 import java.util.List;
+
+import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
 
 public class CnosDBInOperation implements CnosDBExpression {
 

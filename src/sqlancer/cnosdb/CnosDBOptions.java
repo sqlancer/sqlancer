@@ -1,7 +1,11 @@
 package sqlancer.cnosdb;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+
 import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
 import sqlancer.cnosdb.CnosDBOptions.CnosDBOracleFactory;
@@ -11,9 +15,6 @@ import sqlancer.cnosdb.oracle.tlp.CnosDBTLPHavingOracle;
 import sqlancer.cnosdb.oracle.tlp.CnosDBTLPWhereOracle;
 import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Parameters(separators = "=", commandDescription = "CnosDB (default port: " + CnosDBOptions.DEFAULT_PORT
         + ", default host: " + CnosDBOptions.DEFAULT_HOST + ")")
@@ -27,6 +28,11 @@ public class CnosDBOptions implements DBMSSpecificOptions<CnosDBOracleFactory> {
 
     @Parameter(names = "--connection-url", description = "Specifies the URL for connecting to the CnosDB", arity = 1)
     public String connectionURL = String.format("http://%s:%d", CnosDBOptions.DEFAULT_HOST, CnosDBOptions.DEFAULT_PORT);
+
+    @Override
+    public List<CnosDBOracleFactory> getTestOracleFactory() {
+        return oracle;
+    }
 
     public enum CnosDBOracleFactory implements OracleFactory<CnosDBGlobalState> {
         NOREC {
@@ -66,11 +72,6 @@ public class CnosDBOptions implements DBMSSpecificOptions<CnosDBOracleFactory> {
             }
         }
 
-    }
-
-    @Override
-    public List<CnosDBOracleFactory> getTestOracleFactory() {
-        return oracle;
     }
 
 }

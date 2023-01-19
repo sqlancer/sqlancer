@@ -1,5 +1,12 @@
 package sqlancer.cnosdb.gen;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.cnosdb.CnosDBCompoundDataType;
@@ -7,22 +14,32 @@ import sqlancer.cnosdb.CnosDBGlobalState;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBColumn;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBRowValue;
-import sqlancer.cnosdb.ast.*;
+import sqlancer.cnosdb.ast.CnosDBAggregate;
 import sqlancer.cnosdb.ast.CnosDBAggregate.CnosDBAggregateFunction;
+import sqlancer.cnosdb.ast.CnosDBBetweenOperation;
+import sqlancer.cnosdb.ast.CnosDBBinaryArithmeticOperation;
 import sqlancer.cnosdb.ast.CnosDBBinaryArithmeticOperation.CnosDBBinaryOperator;
+import sqlancer.cnosdb.ast.CnosDBBinaryComparisonOperation;
+import sqlancer.cnosdb.ast.CnosDBBinaryLogicalOperation;
 import sqlancer.cnosdb.ast.CnosDBBinaryLogicalOperation.BinaryLogicalOperator;
+import sqlancer.cnosdb.ast.CnosDBCastOperation;
+import sqlancer.cnosdb.ast.CnosDBColumnValue;
+import sqlancer.cnosdb.ast.CnosDBConcatOperation;
+import sqlancer.cnosdb.ast.CnosDBConstant;
+import sqlancer.cnosdb.ast.CnosDBExpression;
+import sqlancer.cnosdb.ast.CnosDBFunction;
 import sqlancer.cnosdb.ast.CnosDBFunction.CnosDBFunctionWithResult;
+import sqlancer.cnosdb.ast.CnosDBFunctionWithUnknownResult;
+import sqlancer.cnosdb.ast.CnosDBInOperation;
+import sqlancer.cnosdb.ast.CnosDBLikeOperation;
+import sqlancer.cnosdb.ast.CnosDBOrderByTerm;
 import sqlancer.cnosdb.ast.CnosDBOrderByTerm.CnosDBOrder;
+import sqlancer.cnosdb.ast.CnosDBPostfixOperation;
 import sqlancer.cnosdb.ast.CnosDBPostfixOperation.PostfixOperator;
+import sqlancer.cnosdb.ast.CnosDBPrefixOperation;
 import sqlancer.cnosdb.ast.CnosDBPrefixOperation.PrefixOperator;
+import sqlancer.cnosdb.ast.CnosDBSimilarTo;
 import sqlancer.common.gen.ExpressionGenerator;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class CnosDBExpressionGenerator implements ExpressionGenerator<CnosDBExpression> {
 
@@ -42,6 +59,45 @@ public class CnosDBExpressionGenerator implements ExpressionGenerator<CnosDBExpr
         this.r = globalState.getRandomly();
         this.maxDepth = globalState.getOptions().getMaxExpressionDepth();
         this.globalState = globalState;
+    }
+
+    public static CnosDBExpression generateExpression(CnosDBGlobalState globalState, CnosDBDataType type) {
+        return new CnosDBExpressionGenerator(globalState).generateExpression(0, type);
+    }
+
+    private static CnosDBCompoundDataType getCompoundDataType(CnosDBDataType type) {
+        return CnosDBCompoundDataType.create(type);
+    }
+
+    public static CnosDBExpression generateConstant(Randomly r, CnosDBDataType type) {
+        if (Randomly.getBooleanWithSmallProbability()) {
+            return CnosDBConstant.createNullConstant();
+        }
+        switch (type) {
+        case INT:
+            return CnosDBConstant.createIntConstant(r.getInteger());
+        case UINT:
+            return CnosDBConstant.createUintConstant(r.getPositiveInteger());
+        case TIMESTAMP:
+            return CnosDBConstant.createTimeStampConstant(r.getPositiveIntegerNotNull());
+        case BOOLEAN:
+            return CnosDBConstant.createBooleanConstant(Randomly.getBoolean());
+        case STRING:
+            return CnosDBConstant.createStringConstant(r.getString());
+        case DOUBLE:
+            return CnosDBConstant.createDoubleConstant(r.getDouble());
+        default:
+            throw new AssertionError(type);
+        }
+    }
+
+    public static CnosDBExpression generateExpression(CnosDBGlobalState globalState, List<CnosDBColumn> columns,
+            CnosDBDataType type) {
+        return new CnosDBExpressionGenerator(globalState).setColumns(columns).generateExpression(0, type);
+    }
+
+    public static CnosDBExpression generateExpression(CnosDBGlobalState globalState, List<CnosDBColumn> columns) {
+        return new CnosDBExpressionGenerator(globalState).setColumns(columns).generateExpression(0);
     }
 
     public CnosDBExpressionGenerator setColumns(List<CnosDBColumn> columns) {
@@ -65,11 +121,6 @@ public class CnosDBExpressionGenerator implements ExpressionGenerator<CnosDBExpr
                     CnosDBOrder.getRandomOrder()));
         }
         return orderBys;
-    }
-
-    private enum BooleanExpression {
-        POSTFIX_OPERATOR, NOT, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON, FUNCTION, CAST, LIKE, BETWEEN, IN_OPERATION,
-        SIMILAR_TO,
     }
 
     private CnosDBExpression generateFunctionWithUnknownResult(int depth, CnosDBDataType type) {
@@ -184,10 +235,6 @@ public class CnosDBExpressionGenerator implements ExpressionGenerator<CnosDBExpr
         return new CnosDBInOperation(leftExpr, rightExpr, Randomly.getBoolean());
     }
 
-    public static CnosDBExpression generateExpression(CnosDBGlobalState globalState, CnosDBDataType type) {
-        return new CnosDBExpressionGenerator(globalState).generateExpression(0, type);
-    }
-
     public CnosDBExpression generateExpression(int depth, CnosDBDataType originalType) {
         return generateExpressionInternal(depth, originalType);
     }
@@ -236,14 +283,6 @@ public class CnosDBExpressionGenerator implements ExpressionGenerator<CnosDBExpr
         }
     }
 
-    private static CnosDBCompoundDataType getCompoundDataType(CnosDBDataType type) {
-        return CnosDBCompoundDataType.create(type);
-    }
-
-    private enum StringExpression {
-        CAST, FUNCTION, CONCAT
-    }
-
     private CnosDBExpression generateStringExpression(int depth) {
         StringExpression option;
         List<StringExpression> validOptions = new ArrayList<>(Arrays.asList(StringExpression.values()));
@@ -267,10 +306,6 @@ public class CnosDBExpressionGenerator implements ExpressionGenerator<CnosDBExpr
         return new CnosDBConcatOperation(left, right);
     }
 
-    private enum IntExpression {
-        UNARY_OPERATION, FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION
-    }
-
     private CnosDBExpression generateIntExpression(int depth) {
         IntExpression option;
         option = Randomly.fromOptions(IntExpression.values());
@@ -292,10 +327,6 @@ public class CnosDBExpressionGenerator implements ExpressionGenerator<CnosDBExpr
         }
     }
 
-    private enum UIntExpression {
-        FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION
-    }
-
     private CnosDBExpression generateUIntExpression(int depth) {
         UIntExpression option = Randomly.fromOptions(UIntExpression.values());
         switch (option) {
@@ -311,10 +342,6 @@ public class CnosDBExpressionGenerator implements ExpressionGenerator<CnosDBExpr
             throw new AssertionError();
         }
 
-    }
-
-    private enum FloatExpression {
-        UNARY_OPERATION, FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION, CONSTANT
     }
 
     private CnosDBExpression generateFloatExpression(int depth) {
@@ -338,10 +365,6 @@ public class CnosDBExpressionGenerator implements ExpressionGenerator<CnosDBExpr
         default:
             throw new AssertionError();
         }
-    }
-
-    private enum TimestampExpression {
-        FUNCTION, CAST
     }
 
     private CnosDBExpression generateTimeStampExpression(int depth) {
@@ -390,37 +413,6 @@ public class CnosDBExpressionGenerator implements ExpressionGenerator<CnosDBExpr
             expr = gen.generateExpression(type);
         } while (expr.getExpectedValue() == null);
         return expr;
-    }
-
-    public static CnosDBExpression generateConstant(Randomly r, CnosDBDataType type) {
-        if (Randomly.getBooleanWithSmallProbability()) {
-            return CnosDBConstant.createNullConstant();
-        }
-        switch (type) {
-        case INT:
-            return CnosDBConstant.createIntConstant(r.getInteger());
-        case UINT:
-            return CnosDBConstant.createUintConstant(r.getPositiveInteger());
-        case TIMESTAMP:
-            return CnosDBConstant.createTimeStampConstant(r.getPositiveIntegerNotNull());
-        case BOOLEAN:
-            return CnosDBConstant.createBooleanConstant(Randomly.getBoolean());
-        case STRING:
-            return CnosDBConstant.createStringConstant(r.getString());
-        case DOUBLE:
-            return CnosDBConstant.createDoubleConstant(r.getDouble());
-        default:
-            throw new AssertionError(type);
-        }
-    }
-
-    public static CnosDBExpression generateExpression(CnosDBGlobalState globalState, List<CnosDBColumn> columns,
-            CnosDBDataType type) {
-        return new CnosDBExpressionGenerator(globalState).setColumns(columns).generateExpression(0, type);
-    }
-
-    public static CnosDBExpression generateExpression(CnosDBGlobalState globalState, List<CnosDBColumn> columns) {
-        return new CnosDBExpressionGenerator(globalState).setColumns(columns).generateExpression(0);
     }
 
     public List<CnosDBExpression> generateExpressions(int nr) {
@@ -492,6 +484,31 @@ public class CnosDBExpressionGenerator implements ExpressionGenerator<CnosDBExpr
     @Override
     public CnosDBExpression isNull(CnosDBExpression expr) {
         return new CnosDBPostfixOperation(expr, PostfixOperator.IS_NULL);
+    }
+
+    private enum BooleanExpression {
+        POSTFIX_OPERATOR, NOT, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON, FUNCTION, CAST, LIKE, BETWEEN, IN_OPERATION,
+        SIMILAR_TO,
+    }
+
+    private enum StringExpression {
+        CAST, FUNCTION, CONCAT
+    }
+
+    private enum IntExpression {
+        UNARY_OPERATION, FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION
+    }
+
+    private enum UIntExpression {
+        FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION
+    }
+
+    private enum FloatExpression {
+        UNARY_OPERATION, FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION, CONSTANT
+    }
+
+    private enum TimestampExpression {
+        FUNCTION, CAST
     }
 
 }

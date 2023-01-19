@@ -1,12 +1,12 @@
 package sqlancer.cnosdb.ast;
 
+import java.util.Collections;
+import java.util.List;
+
 import sqlancer.Randomly;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBTable;
 import sqlancer.common.ast.SelectBase;
-
-import java.util.Collections;
-import java.util.List;
 
 public class CnosDBSelect extends SelectBase<CnosDBExpression> implements CnosDBExpression {
 
@@ -14,10 +14,55 @@ public class CnosDBSelect extends SelectBase<CnosDBExpression> implements CnosDB
     private List<CnosDBJoin> joinClauses = Collections.emptyList();
     private CnosDBExpression distinctOnClause;
 
+    public void setSelectType(SelectType fromOptions) {
+        this.setSelectOption(fromOptions);
+    }
+
+    public SelectType getSelectOption() {
+        return selectOption;
+    }
+
+    public void setSelectOption(SelectType fromOptions) {
+        this.selectOption = fromOptions;
+    }
+
+    @Override
+    public CnosDBDataType getExpressionType() {
+        return null;
+    }
+
+    public List<CnosDBJoin> getJoinClauses() {
+        return joinClauses;
+    }
+
+    public void setJoinClauses(List<CnosDBJoin> joinStatements) {
+        this.joinClauses = joinStatements;
+
+    }
+
+    public CnosDBExpression getDistinctOnClause() {
+        return distinctOnClause;
+    }
+
+    public void setDistinctOnClause(CnosDBExpression distinctOnClause) {
+        if (selectOption != SelectType.DISTINCT) {
+            throw new IllegalArgumentException();
+        }
+        this.distinctOnClause = distinctOnClause;
+    }
+
+    public enum SelectType {
+        DISTINCT, ALL;
+
+        public static SelectType getRandom() {
+            return Randomly.fromOptions(values());
+        }
+    }
+
     public static class CnosDBFromTable implements CnosDBExpression {
         private final CnosDBTable t;
 
-        public CnosDBFromTable(CnosDBTable t, boolean only) {
+        public CnosDBFromTable(CnosDBTable t) {
             this.t = t;
         }
 
@@ -52,51 +97,6 @@ public class CnosDBSelect extends SelectBase<CnosDBExpression> implements CnosDB
         public CnosDBDataType getExpressionType() {
             return null;
         }
-    }
-
-    public enum SelectType {
-        DISTINCT, ALL;
-
-        public static SelectType getRandom() {
-            return Randomly.fromOptions(values());
-        }
-    }
-
-    public void setSelectType(SelectType fromOptions) {
-        this.setSelectOption(fromOptions);
-    }
-
-    public void setDistinctOnClause(CnosDBExpression distinctOnClause) {
-        if (selectOption != SelectType.DISTINCT) {
-            throw new IllegalArgumentException();
-        }
-        this.distinctOnClause = distinctOnClause;
-    }
-
-    public SelectType getSelectOption() {
-        return selectOption;
-    }
-
-    public void setSelectOption(SelectType fromOptions) {
-        this.selectOption = fromOptions;
-    }
-
-    @Override
-    public CnosDBDataType getExpressionType() {
-        return null;
-    }
-
-    public void setJoinClauses(List<CnosDBJoin> joinStatements) {
-        this.joinClauses = joinStatements;
-
-    }
-
-    public List<CnosDBJoin> getJoinClauses() {
-        return joinClauses;
-    }
-
-    public CnosDBExpression getDistinctOnClause() {
-        return distinctOnClause;
     }
 
 }

@@ -3,8 +3,11 @@ package sqlancer.cnosdb;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CnosDBExpectedError {
-    public static List<String> Errors() {
+public final class CnosDBExpectedError {
+    private CnosDBExpectedError() {
+    }
+
+    public static List<String> expectedErrors() {
         List<String> errors = new ArrayList<>();
         errors.add("have the same name. Consider aliasing");
         errors.add(

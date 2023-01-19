@@ -1,13 +1,28 @@
 package sqlancer.cnosdb;
 
-import sqlancer.cnosdb.ast.*;
+import sqlancer.cnosdb.ast.CnosDBAggregate;
+import sqlancer.cnosdb.ast.CnosDBBetweenOperation;
+import sqlancer.cnosdb.ast.CnosDBBinaryLogicalOperation;
+import sqlancer.cnosdb.ast.CnosDBCastOperation;
+import sqlancer.cnosdb.ast.CnosDBColumnValue;
+import sqlancer.cnosdb.ast.CnosDBConstant;
+import sqlancer.cnosdb.ast.CnosDBExpression;
+import sqlancer.cnosdb.ast.CnosDBFunction;
+import sqlancer.cnosdb.ast.CnosDBInOperation;
+import sqlancer.cnosdb.ast.CnosDBLikeOperation;
+import sqlancer.cnosdb.ast.CnosDBOrderByTerm;
+import sqlancer.cnosdb.ast.CnosDBPostfixOperation;
+import sqlancer.cnosdb.ast.CnosDBPostfixText;
+import sqlancer.cnosdb.ast.CnosDBPrefixOperation;
+import sqlancer.cnosdb.ast.CnosDBSelect;
 import sqlancer.cnosdb.ast.CnosDBSelect.CnosDBFromTable;
 import sqlancer.cnosdb.ast.CnosDBSelect.CnosDBSubquery;
+import sqlancer.cnosdb.ast.CnosDBSimilarTo;
 
 public final class CnosDBExpectedValueVisitor implements CnosDBVisitor {
 
-    private final StringBuilder sb = new StringBuilder();
     private static final int NR_TABS = 0;
+    private final StringBuilder sb = new StringBuilder();
 
     private void print(CnosDBExpression expr) {
         CnosDBToStringVisitor v = new CnosDBToStringVisitor();

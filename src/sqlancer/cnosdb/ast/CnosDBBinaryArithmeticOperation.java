@@ -1,20 +1,38 @@
 package sqlancer.cnosdb.ast;
 
-import sqlancer.Randomly;
-import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
-import sqlancer.cnosdb.ast.CnosDBBinaryArithmeticOperation.CnosDBBinaryOperator;
-import sqlancer.common.ast.BinaryOperatorNode;
-import sqlancer.common.ast.BinaryOperatorNode.Operator;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BinaryOperator;
 
+import sqlancer.Randomly;
+import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
+import sqlancer.cnosdb.ast.CnosDBBinaryArithmeticOperation.CnosDBBinaryOperator;
+import sqlancer.common.ast.BinaryOperatorNode;
+
 public class CnosDBBinaryArithmeticOperation extends BinaryOperatorNode<CnosDBExpression, CnosDBBinaryOperator>
         implements CnosDBExpression {
 
-    public enum CnosDBBinaryOperator implements Operator {
+    public CnosDBBinaryArithmeticOperation(CnosDBExpression left, CnosDBExpression right, CnosDBBinaryOperator op) {
+        super(left, right, op);
+    }
+
+    @Override
+    public CnosDBConstant getExpectedValue() {
+        CnosDBConstant leftExpected = getLeft().getExpectedValue();
+        CnosDBConstant rightExpected = getRight().getExpectedValue();
+        if (leftExpected == null || rightExpected == null) {
+            return null;
+        }
+        return getOp().apply(leftExpected, rightExpected);
+    }
+
+    @Override
+    public CnosDBDataType getExpressionType() {
+        return CnosDBDataType.INT;
+    }
+
+    public enum CnosDBBinaryOperator implements BinaryOperatorNode.Operator {
 
         ADDITION("+") {
             @Override
@@ -57,7 +75,11 @@ public class CnosDBBinaryArithmeticOperation extends BinaryOperatorNode<CnosDBEx
             }
         };
 
-        private String textRepresentation;
+        private final String textRepresentation;
+
+        CnosDBBinaryOperator(String textRepresentation) {
+            this.textRepresentation = textRepresentation;
+        }
 
         private static CnosDBConstant applyBitOperation(CnosDBConstant left, CnosDBConstant right,
                 BinaryOperator<Long> op) {
@@ -70,17 +92,6 @@ public class CnosDBBinaryArithmeticOperation extends BinaryOperatorNode<CnosDBEx
                 return CnosDBConstant.createIntConstant(value);
             }
         }
-
-        CnosDBBinaryOperator(String textRepresentation) {
-            this.textRepresentation = textRepresentation;
-        }
-
-        @Override
-        public String getTextRepresentation() {
-            return textRepresentation;
-        }
-
-        public abstract CnosDBConstant apply(CnosDBConstant left, CnosDBConstant right);
 
         public static CnosDBBinaryOperator getRandom(CnosDBDataType dataType) {
             List<CnosDBBinaryOperator> ops = new ArrayList<>(Arrays.asList(values()));
@@ -100,25 +111,13 @@ public class CnosDBBinaryArithmeticOperation extends BinaryOperatorNode<CnosDBEx
             return Randomly.fromList(ops);
         }
 
-    }
-
-    public CnosDBBinaryArithmeticOperation(CnosDBExpression left, CnosDBExpression right, CnosDBBinaryOperator op) {
-        super(left, right, op);
-    }
-
-    @Override
-    public CnosDBConstant getExpectedValue() {
-        CnosDBConstant leftExpected = getLeft().getExpectedValue();
-        CnosDBConstant rightExpected = getRight().getExpectedValue();
-        if (leftExpected == null || rightExpected == null) {
-            return null;
+        @Override
+        public String getTextRepresentation() {
+            return textRepresentation;
         }
-        return getOp().apply(leftExpected, rightExpected);
-    }
 
-    @Override
-    public CnosDBDataType getExpressionType() {
-        return CnosDBDataType.INT;
+        public abstract CnosDBConstant apply(CnosDBConstant left, CnosDBConstant right);
+
     }
 
 }

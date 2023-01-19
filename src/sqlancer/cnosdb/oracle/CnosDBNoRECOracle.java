@@ -1,14 +1,27 @@
 package sqlancer.cnosdb.oracle;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.cnosdb.*;
+import sqlancer.cnosdb.CnosDBCompoundDataType;
+import sqlancer.cnosdb.CnosDBExpectedError;
+import sqlancer.cnosdb.CnosDBGlobalState;
+import sqlancer.cnosdb.CnosDBSchema;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBColumn;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBTable;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBTables;
-import sqlancer.cnosdb.ast.*;
+import sqlancer.cnosdb.CnosDBVisitor;
+import sqlancer.cnosdb.ast.CnosDBCastOperation;
+import sqlancer.cnosdb.ast.CnosDBColumnValue;
+import sqlancer.cnosdb.ast.CnosDBExpression;
+import sqlancer.cnosdb.ast.CnosDBJoin;
 import sqlancer.cnosdb.ast.CnosDBJoin.CnosDBJoinType;
+import sqlancer.cnosdb.ast.CnosDBPostfixText;
+import sqlancer.cnosdb.ast.CnosDBSelect;
 import sqlancer.cnosdb.ast.CnosDBSelect.CnosDBFromTable;
 import sqlancer.cnosdb.ast.CnosDBSelect.CnosDBSubquery;
 import sqlancer.cnosdb.ast.CnosDBSelect.SelectType;
@@ -17,10 +30,6 @@ import sqlancer.cnosdb.gen.CnosDBExpressionGenerator;
 import sqlancer.cnosdb.oracle.tlp.CnosDBTLPBase;
 import sqlancer.cnosdb.query.CnosDBSelectQuery;
 import sqlancer.common.oracle.TestOracle;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<CnosDBGlobalState> {
 
@@ -31,6 +40,31 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
         this.s = globalState.getSchema();
     }
 
+    public static List<CnosDBJoin> getJoinStatements(CnosDBGlobalState globalState, List<CnosDBColumn> columns,
+            List<CnosDBTable> tables) {
+        List<CnosDBJoin> joinStatements = new ArrayList<>();
+        CnosDBExpressionGenerator gen = new CnosDBExpressionGenerator(globalState).setColumns(columns);
+        for (int i = 1; i < tables.size(); i++) {
+            CnosDBExpression joinClause = gen.generateExpression(CnosDBDataType.BOOLEAN);
+            CnosDBTable table = Randomly.fromList(tables);
+            tables.remove(table);
+            CnosDBJoinType options = CnosDBJoinType.getRandom();
+            CnosDBJoin j = new CnosDBJoin(new CnosDBFromTable(table), joinClause, options);
+            joinStatements.add(j);
+        }
+        // JOIN subqueries
+        for (int i = 0; i < Randomly.smallNumber(); i++) {
+            CnosDBTables subqueryTables = globalState.getSchema().getRandomTableNonEmptyTables();
+            CnosDBSubquery subquery = CnosDBTLPBase.createSubquery(globalState, String.format("sub%d", i),
+                    subqueryTables);
+            CnosDBExpression joinClause = gen.generateExpression(CnosDBDataType.BOOLEAN);
+            CnosDBJoinType options = CnosDBJoinType.getRandom();
+            CnosDBJoin j = new CnosDBJoin(subquery, joinClause, options);
+            joinStatements.add(j);
+        }
+        return joinStatements;
+    }
+
     @Override
     public void check() throws Exception {
         CnosDBTables randomTables = s.getRandomTableNonEmptyTables();
@@ -39,8 +73,7 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
         List<CnosDBTable> tables = randomTables.getTables();
 
         List<CnosDBJoin> joinStatements = getJoinStatements(state, columns, tables);
-        List<CnosDBExpression> fromTables = tables.stream().map(t -> new CnosDBFromTable(t, Randomly.getBoolean()))
-                .collect(Collectors.toList());
+        List<CnosDBExpression> fromTables = tables.stream().map(CnosDBFromTable::new).collect(Collectors.toList());
         int secondCount = getUnoptimizedQueryCount(fromTables, randomWhereCondition, joinStatements);
         int firstCount = getOptimizedQueryCount(fromTables, columns, randomWhereCondition, joinStatements);
         if (firstCount == -1 || secondCount == -1) {
@@ -56,31 +89,6 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
                     firstQueryStringWithCount, secondQueryStringWithCount);
             throw new AssertionError(assertionMessage);
         }
-    }
-
-    public static List<CnosDBJoin> getJoinStatements(CnosDBGlobalState globalState, List<CnosDBColumn> columns,
-            List<CnosDBTable> tables) {
-        List<CnosDBJoin> joinStatements = new ArrayList<>();
-        CnosDBExpressionGenerator gen = new CnosDBExpressionGenerator(globalState).setColumns(columns);
-        for (int i = 1; i < tables.size(); i++) {
-            CnosDBExpression joinClause = gen.generateExpression(CnosDBDataType.BOOLEAN);
-            CnosDBTable table = Randomly.fromList(tables);
-            tables.remove(table);
-            CnosDBJoinType options = CnosDBJoinType.getRandom();
-            CnosDBJoin j = new CnosDBJoin(new CnosDBFromTable(table, Randomly.getBoolean()), joinClause, options);
-            joinStatements.add(j);
-        }
-        // JOIN subqueries
-        for (int i = 0; i < Randomly.smallNumber(); i++) {
-            CnosDBTables subqueryTables = globalState.getSchema().getRandomTableNonEmptyTables();
-            CnosDBSubquery subquery = CnosDBTLPBase.createSubquery(globalState, String.format("sub%d", i),
-                    subqueryTables);
-            CnosDBExpression joinClause = gen.generateExpression(CnosDBDataType.BOOLEAN);
-            CnosDBJoinType options = CnosDBJoinType.getRandom();
-            CnosDBJoin j = new CnosDBJoin(subquery, joinClause, options);
-            joinStatements.add(j);
-        }
-        return joinStatements;
     }
 
     private CnosDBExpression getRandomWhereCondition(List<CnosDBColumn> columns) {
@@ -104,7 +112,7 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
         }
         CnosDBSelectQuery q = new CnosDBSelectQuery(unoptimizedQueryString, errors);
         CnosDBResultSet rs;
-        errors.addAll(CnosDBExpectedError.Errors());
+        errors.addAll(CnosDBExpectedError.expectedErrors());
         try {
             q.executeAndGet(state);
             rs = q.getResultSet();
@@ -142,7 +150,7 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
         if (options.logEachSelect()) {
             logger.writeCurrent(optimizedQueryString);
         }
-        errors.addAll(CnosDBExpectedError.Errors());
+        errors.addAll(CnosDBExpectedError.expectedErrors());
         CnosDBSelectQuery query = new CnosDBSelectQuery(optimizedQueryString, errors);
         CnosDBResultSet rs;
         try {

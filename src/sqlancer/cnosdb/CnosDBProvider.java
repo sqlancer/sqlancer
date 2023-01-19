@@ -1,7 +1,15 @@
 package sqlancer.cnosdb;
 
+import java.util.Objects;
+
 import com.google.auto.service.AutoService;
-import sqlancer.*;
+
+import sqlancer.AbstractAction;
+import sqlancer.DatabaseProvider;
+import sqlancer.IgnoreMeException;
+import sqlancer.ProviderAdapter;
+import sqlancer.Randomly;
+import sqlancer.StatementExecutor;
 import sqlancer.cnosdb.client.CnosDBClient;
 import sqlancer.cnosdb.client.CnosDBConnection;
 import sqlancer.cnosdb.gen.CnosDBInsertGenerator;
@@ -10,8 +18,6 @@ import sqlancer.cnosdb.query.CnosDBOtherQuery;
 import sqlancer.cnosdb.query.CnosDBQueryProvider;
 import sqlancer.common.log.LoggableFactory;
 import sqlancer.common.query.ExpectedErrors;
-
-import java.util.Objects;
 
 @AutoService(DatabaseProvider.class)
 public class CnosDBProvider extends ProviderAdapter<CnosDBGlobalState, CnosDBOptions, CnosDBConnection> {
@@ -30,27 +36,6 @@ public class CnosDBProvider extends ProviderAdapter<CnosDBGlobalState, CnosDBOpt
         super(globalClass, optionClass);
     }
 
-    @Override
-    protected void checkViewsAreValid(CnosDBGlobalState globalState) {
-    }
-
-    public enum Action implements AbstractAction<CnosDBGlobalState> {
-        INSERT(CnosDBInsertGenerator::insert);
-
-        private final CnosDBQueryProvider<CnosDBGlobalState> sqlQueryProvider;
-
-        Action(CnosDBQueryProvider<CnosDBGlobalState> sqlQueryProvider) {
-            this.sqlQueryProvider = sqlQueryProvider;
-        }
-
-        @Override
-        public CnosDBOtherQuery getQuery(CnosDBGlobalState state) throws Exception {
-            ExpectedErrors errors = new ExpectedErrors();
-            errors.addAll(CnosDBExpectedError.Errors());
-            return new CnosDBOtherQuery(sqlQueryProvider.getQuery(state).getQueryString(), errors);
-        }
-    }
-
     protected static int mapActions(CnosDBGlobalState globalState, Action a) {
         Randomly r = globalState.getRandomly();
         int nrPerformed;
@@ -61,6 +46,10 @@ public class CnosDBProvider extends ProviderAdapter<CnosDBGlobalState, CnosDBOpt
         }
         return nrPerformed;
 
+    }
+
+    @Override
+    protected void checkViewsAreValid(CnosDBGlobalState globalState) {
     }
 
     @Override
@@ -114,6 +103,23 @@ public class CnosDBProvider extends ProviderAdapter<CnosDBGlobalState, CnosDBOpt
     @Override
     public LoggableFactory getLoggableFactory() {
         return new CnosDBLoggableFactory();
+    }
+
+    public enum Action implements AbstractAction<CnosDBGlobalState> {
+        INSERT(CnosDBInsertGenerator::insert);
+
+        private final CnosDBQueryProvider<CnosDBGlobalState> sqlQueryProvider;
+
+        Action(CnosDBQueryProvider<CnosDBGlobalState> sqlQueryProvider) {
+            this.sqlQueryProvider = sqlQueryProvider;
+        }
+
+        @Override
+        public CnosDBOtherQuery getQuery(CnosDBGlobalState state) throws Exception {
+            ExpectedErrors errors = new ExpectedErrors();
+            errors.addAll(CnosDBExpectedError.expectedErrors());
+            return new CnosDBOtherQuery(sqlQueryProvider.getQuery(state).getQueryString(), errors);
+        }
     }
 
 }

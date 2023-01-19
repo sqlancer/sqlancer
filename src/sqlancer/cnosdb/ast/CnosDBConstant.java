@@ -1,19 +1,103 @@
 package sqlancer.cnosdb.ast;
 
-import sqlancer.IgnoreMeException;
-import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
-
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import sqlancer.IgnoreMeException;
+import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
+
 public abstract class CnosDBConstant implements CnosDBExpression {
+
+    public static CnosDBConstant createNullConstant() {
+        return new CnosDBNullConstant();
+    }
+
+    public static CnosDBConstant createIntConstant(long val) {
+        return new IntConstant(val, false);
+    }
+
+    public static CnosDBConstant createBooleanConstant(boolean val) {
+        return new BooleanConstant(val);
+    }
+
+    public static CnosDBConstant createFalse() {
+        return createBooleanConstant(false);
+    }
+
+    public static CnosDBConstant createTrue() {
+        return createBooleanConstant(true);
+    }
+
+    public static CnosDBConstant createStringConstant(String string) {
+        return new StringConstant(string);
+    }
+
+    public static CnosDBConstant createDoubleConstant(double val) {
+        return new DoubleConstant(val);
+    }
+
+    public static CnosDBConstant createUintConstant(long val) {
+        return new IntConstant(val, true);
+    }
+
+    public static CnosDBConstant createTimeStampConstant(long val) {
+        return new TimeStampConstant(val);
+    }
 
     public abstract String getTextRepresentation();
 
     public String getUnquotedTextRepresentation() {
         return getTextRepresentation();
     }
+
+    public String asString() {
+        throw new UnsupportedOperationException(this.toString());
+    }
+
+    public boolean isString() {
+        return false;
+    }
+
+    @Override
+    public CnosDBConstant getExpectedValue() {
+        return this;
+    }
+
+    public boolean isNull() {
+        return false;
+    }
+
+    public boolean asBoolean() {
+        throw new UnsupportedOperationException(this.toString());
+    }
+
+    public long asInt() {
+        throw new UnsupportedOperationException(this.toString());
+    }
+
+    public double asDouble() {
+        throw new UnsupportedOperationException(this.toString());
+    }
+
+    public boolean isBoolean() {
+        return false;
+    }
+
+    public abstract CnosDBConstant isEquals(CnosDBConstant rightVal);
+
+    public boolean isInt() {
+        return false;
+    }
+
+    protected abstract CnosDBConstant isLessThan(CnosDBConstant rightVal);
+
+    @Override
+    public String toString() {
+        return getTextRepresentation();
+    }
+
+    public abstract CnosDBConstant cast(CnosDBDataType type);
 
     public static class BooleanConstant extends CnosDBConstant {
 
@@ -172,7 +256,7 @@ public abstract class CnosDBConstant implements CnosDBExpression {
             case BOOLEAN:
                 try {
                     return CnosDBConstant.createBooleanConstant(Long.parseLong(s) != 0);
-                } catch (NumberFormatException e) {
+                } catch (NumberFormatException ignored) {
                 }
                 switch (s.toUpperCase()) {
                 case "T":
@@ -277,6 +361,7 @@ public abstract class CnosDBConstant implements CnosDBExpression {
             return val;
         }
 
+        @Override
         public double asDouble() {
             return val;
         }
@@ -339,7 +424,6 @@ public abstract class CnosDBConstant implements CnosDBExpression {
     }
 
     public static class TimeStampConstant extends CnosDBConstant {
-        static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         final long val;
 
         TimeStampConstant(long time) {
@@ -353,7 +437,7 @@ public abstract class CnosDBConstant implements CnosDBExpression {
 
         @Override
         public String getUnquotedTextRepresentation() {
-            return "CAST (" + String.valueOf(val) + " AS TIMESTAMP)";
+            return "CAST (" + val + " AS TIMESTAMP)";
         }
 
         @Override
@@ -384,6 +468,7 @@ public abstract class CnosDBConstant implements CnosDBExpression {
             case INT:
                 return createIntConstant(val);
             case STRING:
+                final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
                 return CnosDBConstant.createStringConstant(dateFormat.format(new Date(val)));
             default:
                 return null;
@@ -394,78 +479,6 @@ public abstract class CnosDBConstant implements CnosDBExpression {
         public long asInt() {
             return val;
         }
-    }
-
-    public static CnosDBConstant createNullConstant() {
-        return new CnosDBNullConstant();
-    }
-
-    public String asString() {
-        throw new UnsupportedOperationException(this.toString());
-    }
-
-    public boolean isString() {
-        return false;
-    }
-
-    public static CnosDBConstant createIntConstant(long val) {
-        return new IntConstant(val, false);
-    }
-
-    public static CnosDBConstant createBooleanConstant(boolean val) {
-        return new BooleanConstant(val);
-    }
-
-    @Override
-    public CnosDBConstant getExpectedValue() {
-        return this;
-    }
-
-    public boolean isNull() {
-        return false;
-    }
-
-    public boolean asBoolean() {
-        throw new UnsupportedOperationException(this.toString());
-    }
-
-    public static CnosDBConstant createFalse() {
-        return createBooleanConstant(false);
-    }
-
-    public static CnosDBConstant createTrue() {
-        return createBooleanConstant(true);
-    }
-
-    public long asInt() {
-        throw new UnsupportedOperationException(this.toString());
-    }
-
-    public double asDouble() {
-        throw new UnsupportedOperationException(this.toString());
-    }
-
-    public boolean isBoolean() {
-        return false;
-    }
-
-    public abstract CnosDBConstant isEquals(CnosDBConstant rightVal);
-
-    public boolean isInt() {
-        return false;
-    }
-
-    protected abstract CnosDBConstant isLessThan(CnosDBConstant rightVal);
-
-    @Override
-    public String toString() {
-        return getTextRepresentation();
-    }
-
-    public abstract CnosDBConstant cast(CnosDBDataType type);
-
-    public static CnosDBConstant createStringConstant(String string) {
-        return new StringConstant(string);
     }
 
     public static class DoubleConstant extends CnosDBConstant {
@@ -482,7 +495,7 @@ public abstract class CnosDBConstant implements CnosDBExpression {
                 BigDecimal bigDecimal = new BigDecimal(val);
                 return bigDecimal.toPlainString();
             } else {
-                return new BigDecimal(0).toPlainString();
+                return String.valueOf(0.0);
             }
         }
 
@@ -519,36 +532,9 @@ public abstract class CnosDBConstant implements CnosDBExpression {
         }
 
         @Override
-        public boolean isBoolean() {
-            return super.isBoolean();
-        }
-
-        @Override
-        public boolean isString() {
-            return super.isString();
-        }
-
-        @Override
-        public boolean isInt() {
-            return super.isInt();
-        }
-
-        @Override
         public CnosDBConstant cast(CnosDBDataType type) {
             return null;
         }
-    }
-
-    public static CnosDBConstant createDoubleConstant(double val) {
-        return new DoubleConstant(val);
-    }
-
-    public static CnosDBConstant createUintConstant(long val) {
-        return new IntConstant(val, true);
-    }
-
-    public static CnosDBConstant createTimeStampConstant(long val) {
-        return new TimeStampConstant(val);
     }
 
 }

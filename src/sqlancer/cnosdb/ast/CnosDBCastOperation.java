@@ -1,11 +1,11 @@
 package sqlancer.cnosdb.ast;
 
-import sqlancer.cnosdb.CnosDBCompoundDataType;
-import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import sqlancer.cnosdb.CnosDBCompoundDataType;
+import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
 
 public class CnosDBCastOperation implements CnosDBExpression {
 

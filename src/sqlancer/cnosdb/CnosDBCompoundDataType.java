@@ -10,11 +10,11 @@ public final class CnosDBCompoundDataType {
         this.dataType = dataType;
     }
 
-    public CnosDBDataType getDataType() {
-        return dataType;
-    }
-
     public static CnosDBCompoundDataType create(CnosDBDataType type) {
         return new CnosDBCompoundDataType(type);
+    }
+
+    public CnosDBDataType getDataType() {
+        return dataType;
     }
 }

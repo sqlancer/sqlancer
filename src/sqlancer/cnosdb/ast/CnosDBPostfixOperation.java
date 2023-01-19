@@ -10,6 +10,38 @@ public class CnosDBPostfixOperation implements CnosDBExpression {
     private final PostfixOperator op;
     private final String operatorTextRepresentation;
 
+    public CnosDBPostfixOperation(CnosDBExpression expr, PostfixOperator op) {
+        this.expr = expr;
+        this.operatorTextRepresentation = Randomly.fromOptions(op.textRepresentations);
+        this.op = op;
+    }
+
+    public static CnosDBExpression create(CnosDBExpression expr, PostfixOperator op) {
+        return new CnosDBPostfixOperation(expr, op);
+    }
+
+    @Override
+    public CnosDBDataType getExpressionType() {
+        return CnosDBDataType.BOOLEAN;
+    }
+
+    @Override
+    public CnosDBConstant getExpectedValue() {
+        CnosDBConstant expectedValue = expr.getExpectedValue();
+        if (expectedValue == null) {
+            return null;
+        }
+        return op.apply(expectedValue);
+    }
+
+    public String getOperatorTextRepresentation() {
+        return operatorTextRepresentation;
+    }
+
+    public CnosDBExpression getExpression() {
+        return expr;
+    }
+
     public enum PostfixOperator implements Operator {
         IS_NULL("IS NULL"/* , "ISNULL" */) {
             @Override
@@ -92,56 +124,24 @@ public class CnosDBPostfixOperation implements CnosDBExpression {
 
         };
 
-        private String[] textRepresentations;
+        private final String[] textRepresentations;
 
         PostfixOperator(String... textRepresentations) {
             this.textRepresentations = textRepresentations.clone();
+        }
+
+        public static PostfixOperator getRandom() {
+            return Randomly.fromOptions(values());
         }
 
         public abstract CnosDBConstant apply(CnosDBConstant expectedValue);
 
         public abstract CnosDBDataType[] getInputDataTypes();
 
-        public static PostfixOperator getRandom() {
-            return Randomly.fromOptions(values());
-        }
-
         @Override
         public String getTextRepresentation() {
             return toString();
         }
-    }
-
-    public CnosDBPostfixOperation(CnosDBExpression expr, PostfixOperator op) {
-        this.expr = expr;
-        this.operatorTextRepresentation = Randomly.fromOptions(op.textRepresentations);
-        this.op = op;
-    }
-
-    @Override
-    public CnosDBDataType getExpressionType() {
-        return CnosDBDataType.BOOLEAN;
-    }
-
-    @Override
-    public CnosDBConstant getExpectedValue() {
-        CnosDBConstant expectedValue = expr.getExpectedValue();
-        if (expectedValue == null) {
-            return null;
-        }
-        return op.apply(expectedValue);
-    }
-
-    public String getOperatorTextRepresentation() {
-        return operatorTextRepresentation;
-    }
-
-    public static CnosDBExpression create(CnosDBExpression expr, PostfixOperator op) {
-        return new CnosDBPostfixOperation(expr, op);
-    }
-
-    public CnosDBExpression getExpression() {
-        return expr;
     }
 
 }

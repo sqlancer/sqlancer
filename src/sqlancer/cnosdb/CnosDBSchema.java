@@ -1,16 +1,93 @@
 package sqlancer.cnosdb;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
 import sqlancer.Randomly;
 import sqlancer.cnosdb.ast.CnosDBConstant;
 import sqlancer.cnosdb.client.CnosDBConnection;
 import sqlancer.cnosdb.client.CnosDBResultSet;
-import sqlancer.common.schema.*;
-
-import java.util.*;
+import sqlancer.common.schema.AbstractRowValue;
+import sqlancer.common.schema.AbstractSchema;
+import sqlancer.common.schema.AbstractTable;
+import sqlancer.common.schema.AbstractTableColumn;
+import sqlancer.common.schema.AbstractTables;
+import sqlancer.common.schema.TableIndex;
 
 public class CnosDBSchema extends AbstractSchema<CnosDBGlobalState, CnosDBSchema.CnosDBTable> {
 
     private final String databaseName;
+
+    public CnosDBSchema(List<CnosDBTable> databaseTables, String databaseName) {
+        super(databaseTables);
+        this.databaseName = databaseName;
+    }
+
+    public static CnosDBDataType getColumnType(String typeString) {
+        switch (typeString.toLowerCase()) {
+        case "bigint":
+            return CnosDBDataType.INT;
+        case "boolean":
+            return CnosDBDataType.BOOLEAN;
+        case "string":
+            return CnosDBDataType.STRING;
+        case "double":
+            return CnosDBDataType.DOUBLE;
+        case "bigint unsigned":
+        case "unsigned":
+            return CnosDBDataType.UINT;
+        case "timestamp":
+            return CnosDBDataType.TIMESTAMP;
+        default:
+            throw new AssertionError(typeString);
+        }
+    }
+
+    public static CnosDBSchema fromConnection(CnosDBConnection con) throws Exception {
+        CnosDBResultSet tablesRes = con.getClient().executeQuery("SHOW TABLES");
+
+        List<CnosDBTable> tables = new ArrayList<>();
+        while (tablesRes.next()) {
+            String tableName = tablesRes.getString(1);
+            List<CnosDBColumn> columns = getTableColumns(con, tableName);
+            tables.add(new CnosDBTable(tableName, columns));
+        }
+
+        return new CnosDBSchema(tables, con.getClient().getDatabase());
+    }
+
+    protected static List<CnosDBColumn> getTableColumns(CnosDBConnection con, String tableName) throws Exception {
+        CnosDBResultSet columnsRes = con.getClient().executeQuery("DESCRIBE TABLE " + tableName);
+        List<CnosDBColumn> columns = new ArrayList<>();
+        CnosDBTable table = new CnosDBTable(tableName, columns);
+        while (columnsRes.next()) {
+            String columnName = columnsRes.getString(1);
+            String columnType = columnsRes.getString(3).toLowerCase();
+            CnosDBDataType dataType = CnosDBSchema.getColumnType(columnsRes.getString(2));
+            CnosDBColumn column;
+            if (columnType.contentEquals("time")) {
+                column = new CnosDBTimeColumn();
+            } else if (columnType.contentEquals("tag")) {
+                column = new CnosDBTagColumn(columnName);
+            } else {
+                column = new CnosDBFieldColumn(columnName, dataType);
+            }
+            column.setTable(table);
+            columns.add(column);
+        }
+
+        return columns;
+    }
+
+    public CnosDBTables getRandomTableNonEmptyTables() {
+        return new CnosDBTables(Randomly.nonEmptySubset(getDatabaseTables()));
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
 
     public enum CnosDBDataType {
         INT, BOOLEAN, STRING, DOUBLE, UINT, TIMESTAMP;
@@ -75,26 +152,6 @@ public class CnosDBSchema extends AbstractSchema<CnosDBGlobalState, CnosDBSchema
 
     }
 
-    public static CnosDBDataType getColumnType(String typeString) {
-        switch (typeString.toLowerCase()) {
-        case "bigint":
-            return CnosDBDataType.INT;
-        case "boolean":
-            return CnosDBDataType.BOOLEAN;
-        case "string":
-            return CnosDBDataType.STRING;
-        case "double":
-            return CnosDBDataType.DOUBLE;
-        case "bigint unsigned":
-        case "unsigned":
-            return CnosDBDataType.UINT;
-        case "timestamp":
-            return CnosDBDataType.TIMESTAMP;
-        default:
-            throw new AssertionError(typeString);
-        }
-    }
-
     public static class CnosDBRowValue extends AbstractRowValue<CnosDBTables, CnosDBColumn, CnosDBConstant> {
 
         protected CnosDBRowValue(CnosDBTables tables, Map<CnosDBColumn, CnosDBConstant> values) {
@@ -153,6 +210,7 @@ public class CnosDBSchema extends AbstractSchema<CnosDBGlobalState, CnosDBSchema
             return res;
         }
 
+        @Override
         public List<CnosDBColumn> getRandomNonEmptyColumnSubset() {
             List<CnosDBColumn> selectedColumns = new ArrayList<>();
             ArrayList<CnosDBColumn> remainingColumns = new ArrayList<>(this.getColumns());
@@ -180,56 +238,6 @@ public class CnosDBSchema extends AbstractSchema<CnosDBGlobalState, CnosDBSchema
             }
             return selectedColumns;
         }
-
-    }
-
-    public static CnosDBSchema fromConnection(CnosDBConnection con) throws Exception {
-        CnosDBResultSet tablesRes = con.getClient().executeQuery("SHOW TABLES");
-
-        List<CnosDBTable> tables = new ArrayList<>();
-        while (tablesRes.next()) {
-            String tableName = tablesRes.getString(1);
-            List<CnosDBColumn> columns = getTableColumns(con, tableName);
-            tables.add(new CnosDBTable(tableName, columns));
-        }
-
-        return new CnosDBSchema(tables, con.getClient().getDatabase());
-    }
-
-    protected static List<CnosDBColumn> getTableColumns(CnosDBConnection con, String tableName) throws Exception {
-        CnosDBResultSet columnsRes = con.getClient().executeQuery("DESCRIBE TABLE " + tableName);
-        List<CnosDBColumn> columns = new ArrayList<>();
-        CnosDBTable table = new CnosDBTable(tableName, columns);
-        while (columnsRes.next()) {
-            String columnName = columnsRes.getString(1);
-            String columnType = columnsRes.getString(3).toLowerCase();
-            CnosDBDataType dataType = CnosDBSchema.getColumnType(columnsRes.getString(2));
-            CnosDBColumn column;
-            if (columnType.contentEquals("time")) {
-                column = new CnosDBTimeColumn();
-            } else if (columnType.contentEquals("tag")) {
-                column = new CnosDBTagColumn(columnName);
-            } else {
-                column = new CnosDBFieldColumn(columnName, dataType);
-            }
-            column.setTable(table);
-            columns.add(column);
-        }
-
-        return columns;
-    }
-
-    public CnosDBSchema(List<CnosDBTable> databaseTables, String databaseName) {
-        super(databaseTables);
-        this.databaseName = databaseName;
-    }
-
-    public CnosDBTables getRandomTableNonEmptyTables() {
-        return new CnosDBTables(Randomly.nonEmptySubset(getDatabaseTables()));
-    }
-
-    public String getDatabaseName() {
-        return databaseName;
     }
 
 }

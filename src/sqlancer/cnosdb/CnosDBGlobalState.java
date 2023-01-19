@@ -1,14 +1,14 @@
 package sqlancer.cnosdb;
 
-import sqlancer.ExecutionTimer;
-import sqlancer.GlobalState;
-import sqlancer.cnosdb.client.CnosDBConnection;
-import sqlancer.common.query.Query;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import sqlancer.ExecutionTimer;
+import sqlancer.GlobalState;
+import sqlancer.cnosdb.client.CnosDBConnection;
+import sqlancer.common.query.Query;
 
 public class CnosDBGlobalState extends GlobalState<CnosDBOptions, CnosDBSchema, CnosDBConnection> {
 
@@ -17,7 +17,7 @@ public class CnosDBGlobalState extends GlobalState<CnosDBOptions, CnosDBSchema, 
     public static final char VOLATILE = 'v';
 
     private final Map<String, Character> functionsAndTypes = new HashMap<>();
-    private List<Character> allowedFunctionTypes = Arrays.asList(IMMUTABLE, STABLE, VOLATILE);
+    private final List<Character> allowedFunctionTypes = Arrays.asList(IMMUTABLE, STABLE, VOLATILE);
 
     @Override
     protected void executeEpilogue(Query<?> q, boolean success, ExecutionTimer timer) throws Exception {

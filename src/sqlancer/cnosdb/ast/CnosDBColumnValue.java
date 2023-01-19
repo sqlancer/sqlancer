@@ -13,6 +13,10 @@ public class CnosDBColumnValue implements CnosDBExpression {
         this.expectedValue = expectedValue;
     }
 
+    public static CnosDBColumnValue create(CnosDBColumn c, CnosDBConstant expected) {
+        return new CnosDBColumnValue(c, expected);
+    }
+
     @Override
     public CnosDBDataType getExpressionType() {
         return c.getType();
@@ -21,10 +25,6 @@ public class CnosDBColumnValue implements CnosDBExpression {
     @Override
     public CnosDBConstant getExpectedValue() {
         return expectedValue;
-    }
-
-    public static CnosDBColumnValue create(CnosDBColumn c, CnosDBConstant expected) {
-        return new CnosDBColumnValue(c, expected);
     }
 
     public CnosDBColumn getColumn() {

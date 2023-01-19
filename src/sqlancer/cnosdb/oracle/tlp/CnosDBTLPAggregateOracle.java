@@ -1,5 +1,10 @@
 package sqlancer.cnosdb.oracle.tlp;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
@@ -7,18 +12,19 @@ import sqlancer.cnosdb.CnosDBExpectedError;
 import sqlancer.cnosdb.CnosDBGlobalState;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
 import sqlancer.cnosdb.CnosDBVisitor;
-import sqlancer.cnosdb.ast.*;
+import sqlancer.cnosdb.ast.CnosDBAggregate;
 import sqlancer.cnosdb.ast.CnosDBAggregate.CnosDBAggregateFunction;
+import sqlancer.cnosdb.ast.CnosDBAlias;
+import sqlancer.cnosdb.ast.CnosDBExpression;
+import sqlancer.cnosdb.ast.CnosDBJoin;
+import sqlancer.cnosdb.ast.CnosDBPostfixOperation;
 import sqlancer.cnosdb.ast.CnosDBPostfixOperation.PostfixOperator;
+import sqlancer.cnosdb.ast.CnosDBPrefixOperation;
 import sqlancer.cnosdb.ast.CnosDBPrefixOperation.PrefixOperator;
+import sqlancer.cnosdb.ast.CnosDBSelect;
 import sqlancer.cnosdb.client.CnosDBResultSet;
 import sqlancer.cnosdb.query.CnosDBSelectQuery;
 import sqlancer.common.oracle.TestOracle;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 public class CnosDBTLPAggregateOracle extends CnosDBTLPBase implements TestOracle<CnosDBGlobalState> {
 
@@ -106,7 +112,7 @@ public class CnosDBTLPAggregateOracle extends CnosDBTLPBase implements TestOracl
         }
         String resultString = null;
 
-        errors.addAll(CnosDBExpectedError.Errors());
+        errors.addAll(CnosDBExpectedError.expectedErrors());
 
         CnosDBSelectQuery q = new CnosDBSelectQuery(queryString, errors);
         try {

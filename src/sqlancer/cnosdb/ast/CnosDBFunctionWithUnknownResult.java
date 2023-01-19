@@ -1,10 +1,10 @@
 package sqlancer.cnosdb.ast;
 
-import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
-import sqlancer.cnosdb.gen.CnosDBExpressionGenerator;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
+import sqlancer.cnosdb.gen.CnosDBExpressionGenerator;
 
 public enum CnosDBFunctionWithUnknownResult {
 
@@ -60,7 +60,7 @@ public enum CnosDBFunctionWithUnknownResult {
     COS("cos", CnosDBDataType.DOUBLE, CnosDBDataType.DOUBLE), SIN("sin", CnosDBDataType.DOUBLE, CnosDBDataType.DOUBLE),
     SQRT("sqrt", CnosDBDataType.DOUBLE, CnosDBDataType.DOUBLE),
     TAN("tan", CnosDBDataType.DOUBLE, CnosDBDataType.DOUBLE),
-    DATA_PART("date_part", CnosDBDataType.INT, CnosDBDataType.STRING, CnosDBDataType.TIMESTAMP),
+    DATA_PART("date_part", CnosDBDataType.INT, CnosDBDataType.STRING, CnosDBDataType.TIMESTAMP);
 
     // because bug of arrow-csv https://github.com/apache/arrow-rs/issues/3547
     // NOW("now", CnosDBDataType.TIMESTAMP),
@@ -69,7 +69,6 @@ public enum CnosDBFunctionWithUnknownResult {
     // TO_TIMESTAMP_MICROS("to_timestamp_micros", CnosDBDataType.TIMESTAMP, CnosDBDataType.INT),
     // TO_TIMESTAMP_SECONDS("to_timestamp_seconds", CnosDBDataType.TIMESTAMP, CnosDBDataType.INT),
     // DATA_TRUNC("date_trunc", CnosDBDataType.TIMESTAMP, CnosDBDataType.STRING, CnosDBDataType.TIMESTAMP),
-    ;
 
     private final String functionName;
     private final CnosDBDataType returnType;
@@ -80,6 +79,16 @@ public enum CnosDBFunctionWithUnknownResult {
         this.returnType = returnType;
         this.argTypes = indexType.clone();
 
+    }
+
+    public static List<CnosDBFunctionWithUnknownResult> getSupportedFunctions(CnosDBDataType type) {
+        List<CnosDBFunctionWithUnknownResult> functions = new ArrayList<>();
+        for (CnosDBFunctionWithUnknownResult func : values()) {
+            if (func.isCompatibleWithReturnType(type)) {
+                functions.add(func);
+            }
+        }
+        return functions;
     }
 
     public boolean isCompatibleWithReturnType(CnosDBDataType t) {
@@ -96,16 +105,6 @@ public enum CnosDBFunctionWithUnknownResult {
 
     public String getName() {
         return functionName;
-    }
-
-    public static List<CnosDBFunctionWithUnknownResult> getSupportedFunctions(CnosDBDataType type) {
-        List<CnosDBFunctionWithUnknownResult> functions = new ArrayList<>();
-        for (CnosDBFunctionWithUnknownResult func : values()) {
-            if (func.isCompatibleWithReturnType(type)) {
-                functions.add(func);
-            }
-        }
-        return functions;
     }
 
 }

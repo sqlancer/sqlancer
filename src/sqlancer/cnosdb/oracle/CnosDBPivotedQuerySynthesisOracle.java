@@ -1,5 +1,10 @@
 package sqlancer.cnosdb.oracle;
 
+import java.sql.SQLException;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import sqlancer.Randomly;
 import sqlancer.cnosdb.CnosDBExpectedError;
 import sqlancer.cnosdb.CnosDBGlobalState;
@@ -8,8 +13,12 @@ import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBRowValue;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBTables;
 import sqlancer.cnosdb.CnosDBVisitor;
-import sqlancer.cnosdb.ast.*;
+import sqlancer.cnosdb.ast.CnosDBColumnValue;
+import sqlancer.cnosdb.ast.CnosDBConstant;
+import sqlancer.cnosdb.ast.CnosDBExpression;
+import sqlancer.cnosdb.ast.CnosDBPostfixOperation;
 import sqlancer.cnosdb.ast.CnosDBPostfixOperation.PostfixOperator;
+import sqlancer.cnosdb.ast.CnosDBSelect;
 import sqlancer.cnosdb.ast.CnosDBSelect.CnosDBFromTable;
 import sqlancer.cnosdb.client.CnosDBConnection;
 import sqlancer.cnosdb.gen.CnosDBExpressionGenerator;
@@ -17,11 +26,6 @@ import sqlancer.cnosdb.query.CnosDBQueryAdapter;
 import sqlancer.cnosdb.query.CnosDBSelectQuery;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.common.query.Query;
-
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class CnosDBPivotedQuerySynthesisOracle
         extends PivotedQuerySynthesisBase<CnosDBGlobalState, CnosDBRowValue, CnosDBExpression, CnosDBConnection> {
@@ -34,7 +38,7 @@ public class CnosDBPivotedQuerySynthesisOracle
 
     @Override
     public CnosDBQueryAdapter getRectifiedQuery() throws SQLException {
-        errors.addAll(CnosDBExpectedError.Errors());
+        errors.addAll(CnosDBExpectedError.expectedErrors());
         CnosDBTables randomFromTables = globalState.getSchema().getRandomTableNonEmptyTables();
 
         CnosDBSelect selectStatement = new CnosDBSelect();
@@ -43,8 +47,8 @@ public class CnosDBPivotedQuerySynthesisOracle
         pivotRow = randomFromTables.getRandomRowValue(globalState.getConnection());
 
         fetchColumns = columns;
-        selectStatement.setFromList(randomFromTables.getTables().stream().map(t -> new CnosDBFromTable(t, false))
-                .collect(Collectors.toList()));
+        selectStatement.setFromList(
+                randomFromTables.getTables().stream().map(CnosDBFromTable::new).collect(Collectors.toList()));
         selectStatement.setFetchColumns(fetchColumns.stream()
                 .map(c -> new CnosDBColumnValue(getFetchValueAliasedColumn(c), pivotRow.getValues().get(c)))
                 .collect(Collectors.toList()));
@@ -116,7 +120,7 @@ public class CnosDBPivotedQuerySynthesisOracle
 
     @Override
     protected CnosDBQueryAdapter getContainmentCheckQuery(Query<?> query) throws SQLException {
-        errors.addAll(CnosDBExpectedError.Errors());
+        errors.addAll(CnosDBExpectedError.expectedErrors());
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ("); // ANOTHER SELECT TO USE ORDER BY without restrictions
         sb.append(query.getUnterminatedQueryString());

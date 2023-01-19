@@ -30,6 +30,26 @@ public class CnosDBFunction implements CnosDBExpression {
         return args.clone();
     }
 
+    @Override
+    public CnosDBConstant getExpectedValue() {
+        if (functionWithKnownResult == null) {
+            return null;
+        }
+        CnosDBConstant[] constants = new CnosDBConstant[args.length];
+        for (int i = 0; i < constants.length; i++) {
+            constants[i] = args[i].getExpectedValue();
+            if (constants[i] == null) {
+                return null;
+            }
+        }
+        return functionWithKnownResult.apply(constants, args);
+    }
+
+    @Override
+    public CnosDBDataType getExpressionType() {
+        return returnType;
+    }
+
     public enum CnosDBFunctionWithResult {
         ABS(1, "abs") {
             @Override
@@ -116,7 +136,7 @@ public class CnosDBFunction implements CnosDBExpression {
                 return new CnosDBDataType[] { CnosDBDataType.STRING };
             }
 
-        },
+        };
         // NULL_IF(2, "nullif") {
         //
         // @Override
@@ -207,10 +227,9 @@ public class CnosDBFunction implements CnosDBExpression {
         // }
         //
         // }
-        ;
 
-        private String functionName;
         final int nrArgs;
+        private final String functionName;
         private final boolean variadic;
 
         CnosDBFunctionWithResult(int nrArgs, String functionName) {
@@ -248,30 +267,10 @@ public class CnosDBFunction implements CnosDBExpression {
 
         public abstract CnosDBDataType[] getInputTypesForReturnType(CnosDBDataType returnType, int nrArguments);
 
-        public boolean checkArguments(CnosDBExpression... constants) {
+        public boolean checkArguments(CnosDBExpression... ignore) {
             return true;
         }
 
-    }
-
-    @Override
-    public CnosDBConstant getExpectedValue() {
-        if (functionWithKnownResult == null) {
-            return null;
-        }
-        CnosDBConstant[] constants = new CnosDBConstant[args.length];
-        for (int i = 0; i < constants.length; i++) {
-            constants[i] = args[i].getExpectedValue();
-            if (constants[i] == null) {
-                return null;
-            }
-        }
-        return functionWithKnownResult.apply(constants, args);
-    }
-
-    @Override
-    public CnosDBDataType getExpressionType() {
-        return returnType;
     }
 
 }

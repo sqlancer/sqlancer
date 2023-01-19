@@ -1,24 +1,24 @@
 package sqlancer.cnosdb.gen;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import sqlancer.Randomly;
+import sqlancer.cnosdb.CnosDBSchema.CnosDBColumn;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBFieldColumn;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBTable;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBTagColumn;
 import sqlancer.cnosdb.query.CnosDBOtherQuery;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.cnosdb.CnosDBSchema.CnosDBColumn;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class CnosDBTableGenerator {
 
+    protected final ExpectedErrors errors = new ExpectedErrors();
     private final String tableName;
     private final StringBuilder sb = new StringBuilder();
-    protected final ExpectedErrors errors = new ExpectedErrors();
-    private CnosDBTable table;
     private final List<CnosDBColumn> columnsToBeAdd = new ArrayList<>();
+    private CnosDBTable table;
 
     public CnosDBTableGenerator(String tableName) {
         this.tableName = tableName;

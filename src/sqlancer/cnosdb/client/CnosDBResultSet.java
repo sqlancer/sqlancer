@@ -1,16 +1,17 @@
 package sqlancer.cnosdb.client;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
-import sqlancer.IgnoreMeException;
-
 import java.io.Reader;
 import java.sql.SQLException;
 import java.util.Iterator;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
+
+import sqlancer.IgnoreMeException;
+
 public class CnosDBResultSet {
-    final private Iterator<CSVRecord> records;
-    private CSVRecord next = null;
+    private final Iterator<CSVRecord> records;
+    private CSVRecord next;
 
     public CnosDBResultSet(Reader in) throws Exception {
         Iterable<CSVRecord> records = CSVFormat.DEFAULT.builder().setHeader().setSkipHeaderRecord(true).build()

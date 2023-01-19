@@ -1,16 +1,20 @@
 package sqlancer.cnosdb.ast;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import sqlancer.Randomly;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
 import sqlancer.cnosdb.ast.CnosDBAggregate.CnosDBAggregateFunction;
 import sqlancer.common.ast.FunctionNode;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
 public class CnosDBAggregate extends FunctionNode<CnosDBAggregateFunction, CnosDBExpression>
         implements CnosDBExpression {
+
+    public CnosDBAggregate(List<CnosDBExpression> args, CnosDBAggregateFunction func) {
+        super(func, args);
+    }
 
     public enum CnosDBAggregateFunction {
         AVG(CnosDBDataType.DOUBLE),
@@ -24,9 +28,10 @@ public class CnosDBAggregate extends FunctionNode<CnosDBAggregateFunction, CnosD
                 return new CnosDBDataType[] { CnosDBDataType.getRandomType() };
             }
         },
-        SUM(CnosDBDataType.INT, CnosDBDataType.DOUBLE, CnosDBDataType.UINT), APPROX_MEDIAN(CnosDBDataType.DOUBLE),
+        SUM(CnosDBDataType.INT, CnosDBDataType.DOUBLE, CnosDBDataType.UINT), APPROX_MEDIAN(CnosDBDataType.DOUBLE);
 
         // Currently these aggregate functions have bugs https://github.com/cnosdb/cnosdb/issues/786
+
         // VAR(CnosDBDataType.DOUBLE),
         // VAR_SAMP(CnosDBDataType.DOUBLE),
         // VAR_POP( CnosDBDataType.DOUBLE) ,
@@ -73,12 +78,16 @@ public class CnosDBAggregate extends FunctionNode<CnosDBAggregateFunction, CnosD
         // APPROX_DISTINCT(CnosDBDataType.UINT),
         // GROUPING(CnosDBDataType.INT),
         // ARRAY_AGG(CnosDBDataType.STRING)
-        ;
 
-        private CnosDBDataType[] supportedReturnTypes;
+        private final CnosDBDataType[] supportedReturnTypes;
 
         CnosDBAggregateFunction(CnosDBDataType... supportedReturnTypes) {
             this.supportedReturnTypes = supportedReturnTypes.clone();
+        }
+
+        public static List<CnosDBAggregateFunction> getAggregates(CnosDBDataType type) {
+            return Arrays.asList(values()).stream().filter(p -> p.supportsReturnType(type))
+                    .collect(Collectors.toList());
         }
 
         public CnosDBDataType[] getInputTypes(CnosDBDataType returnType) {
@@ -90,11 +99,6 @@ public class CnosDBAggregate extends FunctionNode<CnosDBAggregateFunction, CnosD
                     || supportedReturnTypes.length == 0;
         }
 
-        public static List<CnosDBAggregateFunction> getAggregates(CnosDBDataType type) {
-            return Arrays.asList(values()).stream().filter(p -> p.supportsReturnType(type))
-                    .collect(Collectors.toList());
-        }
-
         public CnosDBDataType getRandomReturnType() {
             if (supportedReturnTypes.length == 0) {
                 return Randomly.fromOptions(CnosDBDataType.getRandomType());
@@ -103,10 +107,6 @@ public class CnosDBAggregate extends FunctionNode<CnosDBAggregateFunction, CnosD
             }
         }
 
-    }
-
-    public CnosDBAggregate(List<CnosDBExpression> args, CnosDBAggregateFunction func) {
-        super(func, args);
     }
 
 }

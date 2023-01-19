@@ -6,6 +6,40 @@ import sqlancer.common.ast.BinaryOperatorNode.Operator;
 
 public class CnosDBPrefixOperation implements CnosDBExpression {
 
+    private final CnosDBExpression expr;
+    private final PrefixOperator op;
+
+    public CnosDBPrefixOperation(CnosDBExpression expr, PrefixOperator op) {
+        this.expr = expr;
+        this.op = op;
+    }
+
+    @Override
+    public CnosDBDataType getExpressionType() {
+        return op.getExpressionType();
+    }
+
+    @Override
+    public CnosDBConstant getExpectedValue() {
+        CnosDBConstant expectedValue = expr.getExpectedValue();
+        if (expectedValue == null) {
+            return null;
+        }
+        return op.getExpectedValue(expectedValue);
+    }
+
+    public CnosDBDataType[] getInputDataTypes() {
+        return op.dataTypes;
+    }
+
+    public String getTextRepresentation() {
+        return op.textRepresentation;
+    }
+
+    public CnosDBExpression getExpression() {
+        return expr;
+    }
+
     public enum PrefixOperator implements Operator {
         NOT("NOT", CnosDBDataType.BOOLEAN) {
             @Override
@@ -60,8 +94,8 @@ public class CnosDBPrefixOperation implements CnosDBExpression {
 
         };
 
-        private String textRepresentation;
-        private CnosDBDataType[] dataTypes;
+        private final String textRepresentation;
+        private final CnosDBDataType[] dataTypes;
 
         PrefixOperator(String textRepresentation, CnosDBDataType... dataTypes) {
             this.textRepresentation = textRepresentation;
@@ -77,40 +111,6 @@ public class CnosDBPrefixOperation implements CnosDBExpression {
             return toString();
         }
 
-    }
-
-    private final CnosDBExpression expr;
-    private final PrefixOperator op;
-
-    public CnosDBPrefixOperation(CnosDBExpression expr, PrefixOperator op) {
-        this.expr = expr;
-        this.op = op;
-    }
-
-    @Override
-    public CnosDBDataType getExpressionType() {
-        return op.getExpressionType();
-    }
-
-    @Override
-    public CnosDBConstant getExpectedValue() {
-        CnosDBConstant expectedValue = expr.getExpectedValue();
-        if (expectedValue == null) {
-            return null;
-        }
-        return op.getExpectedValue(expectedValue);
-    }
-
-    public CnosDBDataType[] getInputDataTypes() {
-        return op.dataTypes;
-    }
-
-    public String getTextRepresentation() {
-        return op.textRepresentation;
-    }
-
-    public CnosDBExpression getExpression() {
-        return expr;
     }
 
 }
