@@ -45,15 +45,6 @@ public class CnosDBCastOperation implements CnosDBExpression {
         return type.getDataType();
     }
 
-    @Override
-    public CnosDBConstant getExpectedValue() {
-        CnosDBConstant expectedValue = expression.getExpectedValue();
-        if (expectedValue == null) {
-            return null;
-        }
-        return expectedValue.cast(type.getDataType());
-    }
-
     public CnosDBExpression getExpression() {
         return expression;
     }

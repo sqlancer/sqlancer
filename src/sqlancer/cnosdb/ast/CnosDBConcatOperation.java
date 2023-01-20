@@ -15,21 +15,6 @@ public class CnosDBConcatOperation extends BinaryNode<CnosDBExpression> implemen
     }
 
     @Override
-    public CnosDBConstant getExpectedValue() {
-        CnosDBConstant leftExpectedValue = getLeft().getExpectedValue();
-        CnosDBConstant rightExpectedValue = getRight().getExpectedValue();
-        if (leftExpectedValue == null || rightExpectedValue == null) {
-            return null;
-        }
-        if (leftExpectedValue.isNull() || rightExpectedValue.isNull()) {
-            return CnosDBConstant.createNullConstant();
-        }
-        String leftStr = leftExpectedValue.cast(CnosDBDataType.STRING).getUnquotedTextRepresentation();
-        String rightStr = rightExpectedValue.cast(CnosDBDataType.STRING).getUnquotedTextRepresentation();
-        return CnosDBConstant.createStringConstant(leftStr + rightStr);
-    }
-
-    @Override
     public String getOperatorRepresentation() {
         return "||";
     }

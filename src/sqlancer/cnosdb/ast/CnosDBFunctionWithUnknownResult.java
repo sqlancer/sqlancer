@@ -24,6 +24,7 @@ public enum CnosDBFunctionWithUnknownResult {
     LEFT("left", CnosDBDataType.STRING, CnosDBDataType.STRING, CnosDBDataType.INT),
     LENGTH("length", CnosDBDataType.UINT, CnosDBDataType.STRING),
     LOWER("lower", CnosDBDataType.STRING, CnosDBDataType.STRING),
+    UPPER("upper", CnosDBDataType.STRING, CnosDBDataType.STRING),
     LPAD3("lpad", CnosDBDataType.STRING, CnosDBDataType.STRING, CnosDBDataType.INT, CnosDBDataType.STRING),
     LPAD2("lpad", CnosDBDataType.STRING, CnosDBDataType.STRING, CnosDBDataType.INT),
     RPAD3("rpad", CnosDBDataType.STRING, CnosDBDataType.STRING, CnosDBDataType.INT, CnosDBDataType.STRING),
@@ -40,11 +41,7 @@ public enum CnosDBFunctionWithUnknownResult {
     STRPOS("strpos", CnosDBDataType.INT, CnosDBDataType.STRING, CnosDBDataType.STRING),
     SUBSTR("substr", CnosDBDataType.STRING, CnosDBDataType.STRING, CnosDBDataType.INT, CnosDBDataType.INT),
     TRANSLATE("translate", CnosDBDataType.STRING, CnosDBDataType.STRING, CnosDBDataType.STRING, CnosDBDataType.STRING),
-
-    UPPER("upper", CnosDBDataType.STRING, CnosDBDataType.STRING),
-
     MD5("md5", CnosDBDataType.STRING, CnosDBDataType.STRING),
-
     // mathematical functions
     ABS("abs", CnosDBDataType.DOUBLE, CnosDBDataType.DOUBLE),
     CEIL("ceil", CnosDBDataType.DOUBLE, CnosDBDataType.DOUBLE),
@@ -66,8 +63,7 @@ public enum CnosDBFunctionWithUnknownResult {
     TO_TIMESTAMP("to_timestamp", CnosDBDataType.TIMESTAMP, CnosDBDataType.INT),
     TO_TIMESTAMP_MILLIS("to_timestamp_millis", CnosDBDataType.TIMESTAMP, CnosDBDataType.INT),
     TO_TIMESTAMP_MICROS("to_timestamp_micros", CnosDBDataType.TIMESTAMP, CnosDBDataType.INT),
-    TO_TIMESTAMP_SECONDS("to_timestamp_seconds", CnosDBDataType.TIMESTAMP, CnosDBDataType.INT),
-    DATA_TRUNC("date_trunc", CnosDBDataType.TIMESTAMP, CnosDBDataType.STRING, CnosDBDataType.TIMESTAMP);
+    TO_TIMESTAMP_SECONDS("to_timestamp_seconds", CnosDBDataType.TIMESTAMP, CnosDBDataType.INT);
 
     private final String functionName;
     private final CnosDBDataType returnType;
@@ -83,9 +79,8 @@ public enum CnosDBFunctionWithUnknownResult {
     public static List<CnosDBFunctionWithUnknownResult> getSupportedFunctions(CnosDBDataType type) {
         List<CnosDBFunctionWithUnknownResult> res = Stream.of(values())
                 .filter(function -> function.isCompatibleWithReturnType(type)).collect(Collectors.toList());
-        if (CnosDBBugs.bug3547) {
-            res.removeAll(
-                    List.of(DATA_TRUNC, TO_TIMESTAMP, TO_TIMESTAMP_MICROS, TO_TIMESTAMP_MILLIS, TO_TIMESTAMP_SECONDS));
+        if (CnosDBBugs.BUG3547) {
+            res.removeAll(List.of(TO_TIMESTAMP, TO_TIMESTAMP_MICROS, TO_TIMESTAMP_MILLIS, TO_TIMESTAMP_SECONDS));
         }
         return res;
     }

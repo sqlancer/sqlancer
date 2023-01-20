@@ -9,6 +9,6 @@ public interface CnosDBExpression {
     }
 
     default CnosDBConstant getExpectedValue() {
-        return null;
+        throw new AssertionError("Not impl");
     }
 }

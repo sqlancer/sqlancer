@@ -27,12 +27,6 @@ public interface CnosDBVisitor {
         return visitor.get();
     }
 
-    static String asExpectedValues(CnosDBExpression expr) {
-        CnosDBExpectedValueVisitor v = new CnosDBExpectedValueVisitor();
-        v.visit(expr);
-        return v.get();
-    }
-
     void visit(CnosDBConstant constant);
 
     void visit(CnosDBPostfixOperation op);

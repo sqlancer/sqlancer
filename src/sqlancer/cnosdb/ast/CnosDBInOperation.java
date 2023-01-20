@@ -24,36 +24,6 @@ public class CnosDBInOperation implements CnosDBExpression {
         return listElements;
     }
 
-    @Override
-    public CnosDBConstant getExpectedValue() {
-        CnosDBConstant leftValue = expr.getExpectedValue();
-        if (leftValue == null) {
-            return null;
-        }
-        if (leftValue.isNull()) {
-            return CnosDBConstant.createNullConstant();
-        }
-        boolean isNull = false;
-        for (CnosDBExpression expr : getListElements()) {
-            CnosDBConstant rightExpectedValue = expr.getExpectedValue();
-            if (rightExpectedValue == null) {
-                return null;
-            }
-            if (rightExpectedValue.isNull()) {
-                isNull = true;
-            } else if (rightExpectedValue.isEquals(this.expr.getExpectedValue()).isBoolean()
-                    && rightExpectedValue.isEquals(this.expr.getExpectedValue()).asBoolean()) {
-                return CnosDBConstant.createBooleanConstant(isTrue);
-            }
-        }
-
-        if (isNull) {
-            return CnosDBConstant.createNullConstant();
-        } else {
-            return CnosDBConstant.createBooleanConstant(!isTrue);
-        }
-    }
-
     public boolean isTrue() {
         return isTrue;
     }

@@ -100,7 +100,7 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
         CnosDBSelect select = new CnosDBSelect();
         CnosDBCastOperation isTrue = new CnosDBCastOperation(randomWhereCondition,
                 CnosDBCompoundDataType.create(CnosDBDataType.INT));
-        CnosDBPostfixText asText = new CnosDBPostfixText(isTrue, " as count", null, CnosDBDataType.INT);
+        CnosDBPostfixText asText = new CnosDBPostfixText(isTrue, " as count", CnosDBDataType.INT);
         select.setFetchColumns(List.of(asText));
         select.setFromList(fromTables);
         select.setSelectType(SelectType.ALL);
@@ -136,7 +136,7 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
     private int getOptimizedQueryCount(List<CnosDBExpression> randomTables, List<CnosDBColumn> columns,
             CnosDBExpression randomWhereCondition, List<CnosDBJoin> joinStatements) {
         CnosDBSelect select = new CnosDBSelect();
-        CnosDBColumnValue allColumns = new CnosDBColumnValue(Randomly.fromList(columns), null);
+        CnosDBColumnValue allColumns = new CnosDBColumnValue(Randomly.fromList(columns));
         select.setFetchColumns(List.of(allColumns));
         select.setFromList(randomTables);
         select.setWhereClause(randomWhereCondition);

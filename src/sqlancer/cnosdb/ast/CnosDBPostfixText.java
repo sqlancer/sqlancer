@@ -6,13 +6,11 @@ public class CnosDBPostfixText implements CnosDBExpression {
 
     private final CnosDBExpression expr;
     private final String text;
-    private final CnosDBConstant expectedValue;
     private final CnosDBDataType type;
 
-    public CnosDBPostfixText(CnosDBExpression expr, String text, CnosDBConstant expectedValue, CnosDBDataType type) {
+    public CnosDBPostfixText(CnosDBExpression expr, String text, CnosDBDataType type) {
         this.expr = expr;
         this.text = text;
-        this.expectedValue = expectedValue;
         this.type = type;
     }
 
@@ -22,11 +20,6 @@ public class CnosDBPostfixText implements CnosDBExpression {
 
     public String getText() {
         return text;
-    }
-
-    @Override
-    public CnosDBConstant getExpectedValue() {
-        return expectedValue;
     }
 
     @Override

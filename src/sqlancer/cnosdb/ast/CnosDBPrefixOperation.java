@@ -1,6 +1,5 @@
 package sqlancer.cnosdb.ast;
 
-import sqlancer.IgnoreMeException;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
 
@@ -17,15 +16,6 @@ public class CnosDBPrefixOperation implements CnosDBExpression {
     @Override
     public CnosDBDataType getExpressionType() {
         return op.getExpressionType();
-    }
-
-    @Override
-    public CnosDBConstant getExpectedValue() {
-        CnosDBConstant expectedValue = expr.getExpectedValue();
-        if (expectedValue == null) {
-            return null;
-        }
-        return op.getExpectedValue(expectedValue);
     }
 
     public CnosDBDataType[] getInputDataTypes() {
@@ -47,15 +37,6 @@ public class CnosDBPrefixOperation implements CnosDBExpression {
                 return CnosDBDataType.BOOLEAN;
             }
 
-            @Override
-            protected CnosDBConstant getExpectedValue(CnosDBConstant expectedValue) {
-                if (expectedValue.isNull()) {
-                    return CnosDBConstant.createNullConstant();
-                } else {
-                    return CnosDBConstant
-                            .createBooleanConstant(!expectedValue.cast(CnosDBDataType.BOOLEAN).asBoolean());
-                }
-            }
         },
         UNARY_PLUS("+", CnosDBDataType.INT) {
             @Override
@@ -63,33 +44,11 @@ public class CnosDBPrefixOperation implements CnosDBExpression {
                 return CnosDBDataType.INT;
             }
 
-            @Override
-            protected CnosDBConstant getExpectedValue(CnosDBConstant expectedValue) {
-                // TODO: actual converts to double precision
-                return expectedValue;
-            }
-
         },
         UNARY_MINUS("-", CnosDBDataType.INT) {
             @Override
             public CnosDBDataType getExpressionType() {
                 return CnosDBDataType.INT;
-            }
-
-            @Override
-            protected CnosDBConstant getExpectedValue(CnosDBConstant expectedValue) {
-                if (expectedValue.isNull()) {
-                    // TODO
-                    throw new IgnoreMeException();
-                }
-                if (expectedValue.isInt() && expectedValue.asInt() == Long.MIN_VALUE) {
-                    throw new IgnoreMeException();
-                }
-                try {
-                    return CnosDBConstant.createIntConstant(-expectedValue.asInt());
-                } catch (UnsupportedOperationException e) {
-                    return null;
-                }
             }
 
         };
@@ -103,8 +62,6 @@ public class CnosDBPrefixOperation implements CnosDBExpression {
         }
 
         public abstract CnosDBDataType getExpressionType();
-
-        protected abstract CnosDBConstant getExpectedValue(CnosDBConstant expectedValue);
 
         @Override
         public String getTextRepresentation() {

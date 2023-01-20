@@ -17,66 +17,12 @@ public class CnosDBBinaryLogicalOperation extends BinaryOperatorNode<CnosDBExpre
         return CnosDBDataType.BOOLEAN;
     }
 
-    @Override
-    public CnosDBConstant getExpectedValue() {
-        CnosDBConstant leftExpectedValue = getLeft().getExpectedValue();
-        CnosDBConstant rightExpectedValue = getRight().getExpectedValue();
-        if (leftExpectedValue == null || rightExpectedValue == null) {
-            return null;
-        }
-        return getOp().apply(leftExpectedValue, rightExpectedValue);
-    }
-
     public enum BinaryLogicalOperator implements BinaryOperatorNode.Operator {
-        AND {
-            @Override
-            public CnosDBConstant apply(CnosDBConstant left, CnosDBConstant right) {
-                CnosDBConstant leftBool = left.cast(CnosDBDataType.BOOLEAN);
-                CnosDBConstant rightBool = right.cast(CnosDBDataType.BOOLEAN);
-                if (leftBool.isNull()) {
-                    if (rightBool.isNull()) {
-                        return CnosDBConstant.createNullConstant();
-                    } else {
-                        if (rightBool.asBoolean()) {
-                            return CnosDBConstant.createNullConstant();
-                        } else {
-                            return CnosDBConstant.createFalse();
-                        }
-                    }
-                } else if (!leftBool.asBoolean()) {
-                    return CnosDBConstant.createFalse();
-                }
-                assert leftBool.asBoolean();
-                if (rightBool.isNull()) {
-                    return CnosDBConstant.createNullConstant();
-                } else {
-                    return CnosDBConstant.createBooleanConstant(rightBool.isBoolean() && rightBool.asBoolean());
-                }
-            }
-        },
-        OR {
-            @Override
-            public CnosDBConstant apply(CnosDBConstant left, CnosDBConstant right) {
-                CnosDBConstant leftBool = left.cast(CnosDBDataType.BOOLEAN);
-                CnosDBConstant rightBool = right.cast(CnosDBDataType.BOOLEAN);
-                if (leftBool.isBoolean() && leftBool.asBoolean()) {
-                    return CnosDBConstant.createTrue();
-                }
-                if (rightBool.isBoolean() && rightBool.asBoolean()) {
-                    return CnosDBConstant.createTrue();
-                }
-                if (leftBool.isNull() || rightBool.isNull()) {
-                    return CnosDBConstant.createNullConstant();
-                }
-                return CnosDBConstant.createFalse();
-            }
-        };
+        AND, OR;
 
         public static BinaryLogicalOperator getRandom() {
             return Randomly.fromOptions(values());
         }
-
-        public abstract CnosDBConstant apply(CnosDBConstant left, CnosDBConstant right);
 
         @Override
         public String getTextRepresentation() {

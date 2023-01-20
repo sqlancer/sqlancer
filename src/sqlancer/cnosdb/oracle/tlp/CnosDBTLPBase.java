@@ -65,14 +65,12 @@ public class CnosDBTLPBase extends TernaryLogicPartitioningOracleBase<CnosDBExpr
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
         List<CnosDBTable> tables = targetTables.getTables();
-        List<CnosDBJoin> joins = getJoinStatements(state, targetTables.getColumns(), tables);
+        List<CnosDBJoin> joins = getJoinStatements(targetTables.getColumns(), tables);
         generateSelectBase(tables, joins);
     }
 
-    protected List<CnosDBJoin> getJoinStatements(CnosDBGlobalState globalState, List<CnosDBColumn> columns,
-            List<CnosDBTable> tables) {
+    protected List<CnosDBJoin> getJoinStatements(List<CnosDBColumn> columns, List<CnosDBTable> tables) {
         return CnosDBNoRECOracle.getJoinStatements(state, columns, tables);
-        // TODO joins
     }
 
     protected void generateSelectBase(List<CnosDBTable> tables, List<CnosDBJoin> joins) {
@@ -88,21 +86,20 @@ public class CnosDBTLPBase extends TernaryLogicPartitioningOracleBase<CnosDBExpr
 
     List<CnosDBExpression> generateFetchColumns() {
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            return List.of(new CnosDBColumnValue(CnosDBColumn.createDummy("*"), null));
+            return List.of(new CnosDBColumnValue(CnosDBColumn.createDummy("*")));
         }
         List<CnosDBExpression> fetchColumns = new ArrayList<>();
         List<CnosDBColumn> targetColumns = targetTables.getRandomColumnsWithOnlyOneField();
 
-        List<CnosDBColumn> columns = targetColumns
-                .stream().map(c -> c.getTable().getColumns().stream()
-                        .filter(f -> f instanceof CnosDBSchema.CnosDBFieldColumn).findFirst().get())
-                .collect(Collectors.toList());
+        ArrayList<CnosDBColumn> columns = new ArrayList<>();
+        targetColumns.forEach(column -> column.getTable().getColumns().stream()
+                .filter(field -> field instanceof CnosDBSchema.CnosDBFieldColumn).findFirst().ifPresent(columns::add));
         targetColumns.addAll(columns);
 
         targetColumns = targetColumns.stream().distinct().collect(Collectors.toList());
 
         for (CnosDBColumn c : targetColumns) {
-            fetchColumns.add(new CnosDBColumnValue(c, null));
+            fetchColumns.add(new CnosDBColumnValue(c));
         }
         return fetchColumns;
     }

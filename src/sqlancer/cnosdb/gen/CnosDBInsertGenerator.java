@@ -11,6 +11,7 @@ import sqlancer.cnosdb.CnosDBVisitor;
 import sqlancer.cnosdb.ast.CnosDBExpression;
 import sqlancer.cnosdb.query.CnosDBOtherQuery;
 import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.schema.AbstractTableColumn;
 
 public final class CnosDBInsertGenerator {
 
@@ -26,7 +27,7 @@ public final class CnosDBInsertGenerator {
         sb.append(table.getName());
         List<CnosDBColumn> columns = table.getRandomNonEmptyColumnSubset();
         sb.append("(");
-        sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
+        sb.append(columns.stream().map(AbstractTableColumn::getName).collect(Collectors.joining(", ")));
         sb.append(")");
         sb.append(" VALUES");
 

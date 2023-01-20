@@ -1,8 +1,6 @@
 package sqlancer.cnosdb.ast;
 
 import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
-import sqlancer.cnosdb.ast.CnosDBBinaryComparisonOperation.CnosDBBinaryComparisonOperator;
-import sqlancer.cnosdb.ast.CnosDBBinaryLogicalOperation.BinaryLogicalOperator;
 
 public final class CnosDBBetweenOperation implements CnosDBExpression {
 
@@ -26,17 +24,6 @@ public final class CnosDBBetweenOperation implements CnosDBExpression {
 
     public CnosDBExpression getRight() {
         return right;
-    }
-
-    @Override
-    public CnosDBConstant getExpectedValue() {
-        CnosDBBinaryComparisonOperation leftComparison = new CnosDBBinaryComparisonOperation(left, expr,
-                CnosDBBinaryComparisonOperator.LESS_EQUALS);
-        CnosDBBinaryComparisonOperation rightComparison = new CnosDBBinaryComparisonOperation(expr, right,
-                CnosDBBinaryComparisonOperator.LESS_EQUALS);
-        CnosDBBinaryLogicalOperation andOperation = new CnosDBBinaryLogicalOperation(leftComparison, rightComparison,
-                BinaryLogicalOperator.AND);
-        return andOperation.getExpectedValue();
     }
 
     @Override

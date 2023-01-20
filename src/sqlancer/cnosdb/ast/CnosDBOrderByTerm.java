@@ -22,11 +22,6 @@ public class CnosDBOrderByTerm implements CnosDBExpression {
     }
 
     @Override
-    public CnosDBConstant getExpectedValue() {
-        throw new AssertionError(this);
-    }
-
-    @Override
     public CnosDBDataType getExpressionType() {
         return null;
     }

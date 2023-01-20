@@ -6,25 +6,18 @@ import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
 public class CnosDBColumnValue implements CnosDBExpression {
 
     private final CnosDBColumn c;
-    private final CnosDBConstant expectedValue;
 
-    public CnosDBColumnValue(CnosDBColumn c, CnosDBConstant expectedValue) {
+    public CnosDBColumnValue(CnosDBColumn c) {
         this.c = c;
-        this.expectedValue = expectedValue;
     }
 
-    public static CnosDBColumnValue create(CnosDBColumn c, CnosDBConstant expected) {
-        return new CnosDBColumnValue(c, expected);
+    public static CnosDBColumnValue create(CnosDBColumn c) {
+        return new CnosDBColumnValue(c);
     }
 
     @Override
     public CnosDBDataType getExpressionType() {
         return c.getType();
-    }
-
-    @Override
-    public CnosDBConstant getExpectedValue() {
-        return expectedValue;
     }
 
     public CnosDBColumn getColumn() {

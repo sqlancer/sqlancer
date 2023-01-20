@@ -47,21 +47,12 @@ public abstract class CnosDBConstant implements CnosDBExpression {
 
     public abstract String getTextRepresentation();
 
-    public String getUnquotedTextRepresentation() {
-        return getTextRepresentation();
-    }
-
     public String asString() {
         throw new UnsupportedOperationException(this.toString());
     }
 
     public boolean isString() {
         return false;
-    }
-
-    @Override
-    public CnosDBConstant getExpectedValue() {
-        return this;
     }
 
     public boolean isNull() {
@@ -320,11 +311,6 @@ public abstract class CnosDBConstant implements CnosDBExpression {
             return value;
         }
 
-        @Override
-        public String getUnquotedTextRepresentation() {
-            return value;
-        }
-
     }
 
     public static class IntConstant extends CnosDBConstant {
@@ -430,11 +416,6 @@ public abstract class CnosDBConstant implements CnosDBExpression {
 
         @Override
         public String getTextRepresentation() {
-            return getUnquotedTextRepresentation();
-        }
-
-        @Override
-        public String getUnquotedTextRepresentation() {
             return "CAST (" + val + " AS TIMESTAMP)";
         }
 
@@ -477,6 +458,7 @@ public abstract class CnosDBConstant implements CnosDBExpression {
         public long asInt() {
             return val;
         }
+
     }
 
     public static class DoubleConstant extends CnosDBConstant {

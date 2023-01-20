@@ -32,11 +32,6 @@ public class CnosDBJoin implements CnosDBExpression {
         throw new AssertionError();
     }
 
-    @Override
-    public CnosDBConstant getExpectedValue() {
-        throw new AssertionError();
-    }
-
     public enum CnosDBJoinType {
         INNER, LEFT, RIGHT, FULL;
         // now not support

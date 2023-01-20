@@ -82,7 +82,7 @@ public class CnosDBAggregate extends FunctionNode<CnosDBAggregateFunction, CnosD
         public static List<CnosDBAggregateFunction> getAggregates(CnosDBDataType type) {
             List<CnosDBAggregateFunction> res = Stream.of(values()).filter(p -> p.supportsReturnType(type))
                     .collect(Collectors.toList());
-            if (CnosDBBugs.bug786) {
+            if (CnosDBBugs.BUG786) {
                 res.removeAll(List.of(VAR, VAR_POP, VAR_SAMP, STDDEV, STDDEV_POP, STDDEV_SAMP, CORR, COVAR, COVAR_POP,
                         COVAR_SAMP, APPROX_PERCENTILE_CONT_WITH_WEIGHT, APPROX_DISTINCT, APPROX_PERCENTILE_CONT,
                         APPROX_PERCENTILE_CONT_WITH_WEIGHT, GROUPING, ARRAY_AGG));
