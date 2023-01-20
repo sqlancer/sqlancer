@@ -99,8 +99,6 @@ public class CnosDBBinaryArithmeticOperation extends BinaryOperatorNode<CnosDBEx
             case DOUBLE:
             case UINT:
             case STRING:
-                ops.remove(MODULO);
-                ops.remove(EXPONENTIATION);
                 ops.remove(EXPONENTIATION);
                 ops.remove(MODULO);
                 break;

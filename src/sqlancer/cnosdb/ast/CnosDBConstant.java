@@ -287,8 +287,6 @@ public abstract class CnosDBConstant implements CnosDBExpression {
                 } catch (NumberFormatException e) {
                     return CnosDBConstant.createIntConstant(-1);
                 }
-            case STRING:
-                return this;
             case UINT:
                 try {
                     return CnosDBConstant.createUintConstant(Long.parseUnsignedLong(s));

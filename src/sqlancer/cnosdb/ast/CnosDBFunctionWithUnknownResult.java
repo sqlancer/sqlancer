@@ -1,8 +1,10 @@
 package sqlancer.cnosdb.ast;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import sqlancer.cnosdb.CnosDBBugs;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
 import sqlancer.cnosdb.gen.CnosDBExpressionGenerator;
 
@@ -60,15 +62,12 @@ public enum CnosDBFunctionWithUnknownResult {
     COS("cos", CnosDBDataType.DOUBLE, CnosDBDataType.DOUBLE), SIN("sin", CnosDBDataType.DOUBLE, CnosDBDataType.DOUBLE),
     SQRT("sqrt", CnosDBDataType.DOUBLE, CnosDBDataType.DOUBLE),
     TAN("tan", CnosDBDataType.DOUBLE, CnosDBDataType.DOUBLE),
-    DATA_PART("date_part", CnosDBDataType.INT, CnosDBDataType.STRING, CnosDBDataType.TIMESTAMP);
-
-    // because bug of arrow-csv https://github.com/apache/arrow-rs/issues/3547
-    // NOW("now", CnosDBDataType.TIMESTAMP),
-    // TO_TIMESTAMP("to_timestamp", CnosDBDataType.TIMESTAMP, CnosDBDataType.INT),
-    // TO_TIMESTAMP_MILLIS("to_timestamp_millis", CnosDBDataType.TIMESTAMP, CnosDBDataType.INT),
-    // TO_TIMESTAMP_MICROS("to_timestamp_micros", CnosDBDataType.TIMESTAMP, CnosDBDataType.INT),
-    // TO_TIMESTAMP_SECONDS("to_timestamp_seconds", CnosDBDataType.TIMESTAMP, CnosDBDataType.INT),
-    // DATA_TRUNC("date_trunc", CnosDBDataType.TIMESTAMP, CnosDBDataType.STRING, CnosDBDataType.TIMESTAMP),
+    DATE_PART("date_part", CnosDBDataType.INT, CnosDBDataType.STRING, CnosDBDataType.TIMESTAMP),
+    TO_TIMESTAMP("to_timestamp", CnosDBDataType.TIMESTAMP, CnosDBDataType.INT),
+    TO_TIMESTAMP_MILLIS("to_timestamp_millis", CnosDBDataType.TIMESTAMP, CnosDBDataType.INT),
+    TO_TIMESTAMP_MICROS("to_timestamp_micros", CnosDBDataType.TIMESTAMP, CnosDBDataType.INT),
+    TO_TIMESTAMP_SECONDS("to_timestamp_seconds", CnosDBDataType.TIMESTAMP, CnosDBDataType.INT),
+    DATA_TRUNC("date_trunc", CnosDBDataType.TIMESTAMP, CnosDBDataType.STRING, CnosDBDataType.TIMESTAMP);
 
     private final String functionName;
     private final CnosDBDataType returnType;
@@ -82,20 +81,20 @@ public enum CnosDBFunctionWithUnknownResult {
     }
 
     public static List<CnosDBFunctionWithUnknownResult> getSupportedFunctions(CnosDBDataType type) {
-        List<CnosDBFunctionWithUnknownResult> functions = new ArrayList<>();
-        for (CnosDBFunctionWithUnknownResult func : values()) {
-            if (func.isCompatibleWithReturnType(type)) {
-                functions.add(func);
-            }
+        List<CnosDBFunctionWithUnknownResult> res = Stream.of(values())
+                .filter(function -> function.isCompatibleWithReturnType(type)).collect(Collectors.toList());
+        if (CnosDBBugs.bug3547) {
+            res.removeAll(
+                    List.of(DATA_TRUNC, TO_TIMESTAMP, TO_TIMESTAMP_MICROS, TO_TIMESTAMP_MILLIS, TO_TIMESTAMP_SECONDS));
         }
-        return functions;
+        return res;
     }
 
     public boolean isCompatibleWithReturnType(CnosDBDataType t) {
         return t == returnType;
     }
 
-    public CnosDBExpression[] getArguments(CnosDBDataType returnType, CnosDBExpressionGenerator gen, int depth) {
+    public CnosDBExpression[] getArguments(CnosDBDataType ignore, CnosDBExpressionGenerator gen, int depth) {
         CnosDBExpression[] args = new CnosDBExpression[argTypes.length];
         for (int i = 0; i < args.length; i++) {
             args[i] = gen.generateExpression(depth, argTypes[i]);

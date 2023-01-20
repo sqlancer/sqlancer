@@ -457,7 +457,7 @@ public class CnosDBExpressionGenerator implements ExpressionGenerator<CnosDBExpr
     }
 
     public CnosDBAggregate generateArgsForAggregate(CnosDBDataType dataType, CnosDBAggregateFunction agg) {
-        CnosDBDataType[] types = agg.getInputTypes(dataType);
+        CnosDBDataType[] types = agg.getArgsTypes(dataType);
         List<CnosDBExpression> args = new ArrayList<>();
         for (CnosDBDataType argType : types) {
             args.add(createColumnOfType(argType));

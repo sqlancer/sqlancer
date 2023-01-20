@@ -18,24 +18,6 @@ public final class CnosDBComparatorHelper {
     private CnosDBComparatorHelper() {
     }
 
-    public static boolean isEqualDouble(String first, String second) {
-        try {
-            double val = Double.parseDouble(first);
-            double secVal = Double.parseDouble(second);
-            return equals(val, secVal);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    static boolean equals(double a, double b) {
-        if (a == b) {
-            return true;
-        }
-        // If the difference is less than epsilon, treat as equal.
-        return Math.abs(a - b) < 0.001 * Math.max(Math.abs(a), Math.abs(b)) + 0.001;
-    }
-
     public static List<String> getResultSetFirstColumnAsString(String queryString, ExpectedErrors errors,
             CnosDBGlobalState state) throws Exception {
         if (state.getOptions().logEachSelect()) {
@@ -50,7 +32,7 @@ public final class CnosDBComparatorHelper {
         }
         CnosDBSelectQuery q = new CnosDBSelectQuery(queryString, errors);
         List<String> result = new ArrayList<>();
-        CnosDBResultSet resultSet = null;
+        CnosDBResultSet resultSet;
         try {
             q.executeAndGet(state);
             resultSet = q.getResultSet();
@@ -84,8 +66,8 @@ public final class CnosDBComparatorHelper {
         if (resultSet.size() != secondResultSet.size()) {
             String queryFormatString = "-- %s;\n-- cardinality: %d";
             String firstQueryString = String.format(queryFormatString, originalQueryString, resultSet.size());
-            String secondQueryString = String.format(queryFormatString,
-                    combinedString.stream().collect(Collectors.joining(";")), secondResultSet.size());
+            String secondQueryString = String.format(queryFormatString, String.join(";", combinedString),
+                    secondResultSet.size());
             state.getState().getLocalState().log(String.format("%s\n%s", firstQueryString, secondQueryString));
             String assertionMessage = String.format("the size of the result sets mismatch (%d and %d)!\n%s\n%s",
                     resultSet.size(), secondResultSet.size(), firstQueryString, secondQueryString);
@@ -102,8 +84,8 @@ public final class CnosDBComparatorHelper {
             secondResultSetMisses.removeAll(firstHashSet);
             String queryFormatString = "-- %s;\n-- misses: %s";
             String firstQueryString = String.format(queryFormatString, originalQueryString, firstResultSetMisses);
-            String secondQueryString = String.format(queryFormatString,
-                    combinedString.stream().collect(Collectors.joining(";")), secondResultSetMisses);
+            String secondQueryString = String.format(queryFormatString, String.join(";", combinedString),
+                    secondResultSetMisses);
             // update the SELECT queries to be logged at the bottom of the error log file
             state.getState().getLocalState().log(String.format("%s\n%s", firstQueryString, secondQueryString));
             String assertionMessage = String.format("the content of the result sets mismatch!\n%s\n%s",

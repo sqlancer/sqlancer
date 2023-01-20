@@ -41,19 +41,6 @@ public class CnosDBOptions implements DBMSSpecificOptions<CnosDBOracleFactory> {
                 return new CnosDBNoRECOracle(globalState);
             }
         },
-
-        // not support
-        // PQS {
-        // @Override
-        // public TestOracle create(CnosDBGlobalState globalState) {
-        // return new CnosDBPivotedQuerySynthesisOracle(globalState);
-        // }
-        //
-        // @Override
-        // public boolean requiresAllTablesToContainRows() {
-        // return true;
-        // }
-        // },
         HAVING {
             @Override
             public TestOracle<CnosDBGlobalState> create(CnosDBGlobalState globalState) {

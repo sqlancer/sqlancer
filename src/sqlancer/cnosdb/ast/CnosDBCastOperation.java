@@ -24,9 +24,6 @@ public class CnosDBCastOperation implements CnosDBExpression {
         List<CnosDBDataType> options = new ArrayList<>(Arrays.asList(CnosDBDataType.values()));
 
         switch (dataType) {
-        case INT:
-        case STRING:
-            break;
         case UINT:
         case BOOLEAN:
         case DOUBLE:

@@ -37,8 +37,6 @@ public class CnosDBLoggableFactory extends LoggableFactory {
         String queryString = query.getLogString();
         String newQueryString = "-- " + queryString;
         ExpectedErrors errors = new ExpectedErrors();
-        errors.addAll(CnosDBExpectedError.expectedErrors());
-
         return new CnosDBOtherQuery(newQueryString, errors);
     }
 
