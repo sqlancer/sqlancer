@@ -87,7 +87,7 @@ jobs:
         run: mvn -B package -DskipTests=true
       - name: Set up ClickHouse
         run: |
-          docker pull clickhouse/clickhouse-server:latest
+          docker pull clickhouse/clickhouse-server:head
           docker run --ulimit nofile=262144:262144 --name clickhouse-server -p8123:8123 -d clickhouse/clickhouse-server:latest
           sleep 5
       - name: Run Tests
