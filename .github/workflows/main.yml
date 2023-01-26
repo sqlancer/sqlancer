@@ -94,7 +94,7 @@ jobs:
       - name: Run Tests
         run: CLICKHOUSE_AVAILABLE=true mvn -Dtest=ClickHouseBinaryComparisonOperationTest,TestClickHouse,ClickHouseOperatorsVisitorTest,ClickHouseToStringVisitorTest test
       - name: Show fatal errors
-        run: docker exec clickhouse-server grep Fatal /var/log/clickhouse-server/clickhouse-server.log
+        run: docker exec clickhouse-server grep Fatal /var/log/clickhouse-server/clickhouse-server.log || echo No Fatal Errors found
       - name: Teardown ClickHouse server
         run: |
           docker stop clickhouse-server
