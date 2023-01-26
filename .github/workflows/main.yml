@@ -72,6 +72,7 @@ jobs:
       - name: Run Tests
         run: CITUS_AVAILABLE=true mvn -Dtest=TestCitus test
 
+
   clickhouse:
     name: DBMS Tests (ClickHouse)
     runs-on: ubuntu-latest
@@ -92,6 +93,12 @@ jobs:
           sleep 5
       - name: Run Tests
         run: CLICKHOUSE_AVAILABLE=true mvn -Dtest=ClickHouseBinaryComparisonOperationTest,TestClickHouse,ClickHouseOperatorsVisitorTest,ClickHouseToStringVisitorTest test
+      - name: Show fatal errors
+	run: docker exec clickhouse-server grep Fatal /var/log/clickhouse-server/clickhouse-server.log
+      - name: Teardown ClickHouse server
+        run: |
+          docker stop clickhouse-server
+          docker rm clickhouse-server
 
 
   cockroachdb:
