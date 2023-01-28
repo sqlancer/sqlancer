@@ -7,6 +7,7 @@ import java.util.Objects;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
+import sqlancer.Main;
 import sqlancer.Randomly;
 import sqlancer.cnosdb.CnosDBExpectedError;
 import sqlancer.cnosdb.CnosDBGlobalState;
@@ -44,8 +45,6 @@ public class CnosDBTLPAggregateOracle extends CnosDBTLPBase implements TestOracl
     }
 
     protected void aggregateCheck() {
-        // now not support
-        // CnosDBAggregateFunction.COUNT
         CnosDBAggregateFunction aggregateFunction = Randomly.fromOptions(CnosDBAggregateFunction.MAX,
                 CnosDBAggregateFunction.MIN, CnosDBAggregateFunction.SUM);
 
@@ -77,8 +76,10 @@ public class CnosDBTLPAggregateOracle extends CnosDBTLPBase implements TestOracl
             }
             String assertionMessage = String.format("%s: the results mismatch!\n%s\n%s", this.s.getDatabaseName(),
                     firstQueryString, secondQueryString);
+            Main.nrUnsuccessfulActions.addAndGet(1);
             throw new AssertionError(assertionMessage);
         }
+        Main.nrSuccessfulActions.addAndGet(1);
     }
 
     private String createMetamorphicUnionQuery(CnosDBSelect select, CnosDBAggregate aggregate,
@@ -112,9 +113,7 @@ public class CnosDBTLPAggregateOracle extends CnosDBTLPBase implements TestOracl
         }
         String resultString = null;
 
-        errors.addAll(CnosDBExpectedError.expectedErrors());
-
-        CnosDBSelectQuery q = new CnosDBSelectQuery(queryString, errors);
+        CnosDBSelectQuery q = new CnosDBSelectQuery(queryString, CnosDBExpectedError.expectedErrors());
         try {
             q.executeAndGet(state);
             CnosDBResultSet result = q.getResultSet();
@@ -126,7 +125,7 @@ public class CnosDBTLPAggregateOracle extends CnosDBTLPBase implements TestOracl
             resultString = result.getString(1);
 
         } catch (Exception e) {
-            if (errors.errorIsExpected(e.getMessage())) {
+            if (q.getExpectedErrors().errorIsExpected(e.getMessage())) {
                 throw new IgnoreMeException();
             }
         }

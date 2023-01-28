@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
+import sqlancer.Main;
 import sqlancer.Randomly;
 import sqlancer.cnosdb.CnosDBCompoundDataType;
 import sqlancer.cnosdb.CnosDBExpectedError;
@@ -75,7 +76,8 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
         List<CnosDBJoin> joinStatements = getJoinStatements(state, columns, tables);
         List<CnosDBExpression> fromTables = tables.stream().map(CnosDBFromTable::new).collect(Collectors.toList());
         int secondCount = getUnoptimizedQueryCount(fromTables, randomWhereCondition, joinStatements);
-        int firstCount = getOptimizedQueryCount(fromTables, columns, randomWhereCondition, joinStatements);
+        int firstCount = getOptimizedQueryCount(fromTables, List.of(CnosDBColumn.createDummy("f0")),
+                randomWhereCondition, joinStatements);
         if (firstCount == -1 || secondCount == -1) {
             throw new IgnoreMeException();
         }
@@ -87,8 +89,10 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
                     .log(String.format("%s\n%s", firstQueryStringWithCount, secondQueryStringWithCount));
             String assertionMessage = String.format("the counts mismatch (%d and %d)!\n%s\n%s", firstCount, secondCount,
                     firstQueryStringWithCount, secondQueryStringWithCount);
+            Main.nrUnsuccessfulActions.addAndGet(1);
             throw new AssertionError(assertionMessage);
         }
+        Main.nrSuccessfulActions.addAndGet(1);
     }
 
     private CnosDBExpression getRandomWhereCondition(List<CnosDBColumn> columns) {
@@ -110,14 +114,13 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
         if (options.logEachSelect()) {
             logger.writeCurrent(unoptimizedQueryString);
         }
-        CnosDBSelectQuery q = new CnosDBSelectQuery(unoptimizedQueryString, errors);
+        CnosDBSelectQuery q = new CnosDBSelectQuery(unoptimizedQueryString, CnosDBExpectedError.expectedErrors());
         CnosDBResultSet rs;
-        errors.addAll(CnosDBExpectedError.expectedErrors());
         try {
             q.executeAndGet(state);
             rs = q.getResultSet();
         } catch (Exception e) {
-            if (errors.errorIsExpected(e.getMessage())) {
+            if (q.getExpectedErrors().errorIsExpected(e.getMessage())) {
                 throw new IgnoreMeException();
             }
             throw new AssertionError(unoptimizedQueryString, e);
@@ -150,8 +153,7 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
         if (options.logEachSelect()) {
             logger.writeCurrent(optimizedQueryString);
         }
-        errors.addAll(CnosDBExpectedError.expectedErrors());
-        CnosDBSelectQuery query = new CnosDBSelectQuery(optimizedQueryString, errors);
+        CnosDBSelectQuery query = new CnosDBSelectQuery(optimizedQueryString, CnosDBExpectedError.expectedErrors());
         CnosDBResultSet rs;
         try {
             query.executeAndGet(state);
@@ -160,7 +162,7 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
                 firstCount++;
             }
         } catch (Exception e) {
-            if (errors.errorIsExpected(e.getMessage())) {
+            if (query.getExpectedErrors().errorIsExpected(e.getMessage())) {
                 throw new IgnoreMeException();
             }
 

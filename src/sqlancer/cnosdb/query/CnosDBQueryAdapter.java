@@ -36,6 +36,6 @@ public abstract class CnosDBQueryAdapter extends Query<CnosDBConnection> {
 
     @Override
     public ExpectedErrors getExpectedErrors() {
-        return new ExpectedErrors();
+        return errors;
     }
 }

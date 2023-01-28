@@ -27,9 +27,7 @@ public class CnosDBLoggableFactory extends LoggableFactory {
 
     @Override
     public CnosDBQueryAdapter getQueryForStateToReproduce(String queryString) {
-        ExpectedErrors errors = new ExpectedErrors();
-        errors.addAll(CnosDBExpectedError.expectedErrors());
-        return new CnosDBOtherQuery(queryString, errors);
+        return new CnosDBOtherQuery(queryString, CnosDBExpectedError.expectedErrors());
     }
 
     @Override

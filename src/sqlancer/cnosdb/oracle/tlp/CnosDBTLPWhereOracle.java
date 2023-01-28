@@ -23,13 +23,12 @@ public class CnosDBTLPWhereOracle extends CnosDBTLPBase {
     }
 
     protected void whereCheck() throws Exception {
-        errors.addAll(CnosDBExpectedError.expectedErrors());
         if (Randomly.getBooleanWithRatherLowProbability()) {
             select.setOrderByExpressions(gen.generateOrderBy());
         }
         String originalQueryString = CnosDBVisitor.asString(select);
-        List<String> resultSet = CnosDBComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state);
+        List<String> resultSet = CnosDBComparatorHelper.getResultSetFirstColumnAsString(originalQueryString,
+                CnosDBExpectedError.expectedErrors(), state);
 
         select.setOrderByExpressions(Collections.emptyList());
         select.setWhereClause(predicate);
@@ -40,7 +39,7 @@ public class CnosDBTLPWhereOracle extends CnosDBTLPBase {
         String thirdQueryString = CnosDBVisitor.asString(select);
         List<String> combinedString = new ArrayList<>();
         List<String> secondResultSet = CnosDBComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
-                thirdQueryString, combinedString, Randomly.getBoolean(), state, errors);
+                thirdQueryString, combinedString, Randomly.getBoolean(), state, CnosDBExpectedError.expectedErrors());
         CnosDBComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
     }
