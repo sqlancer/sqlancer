@@ -7,7 +7,6 @@ import java.util.Objects;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
-import sqlancer.Main;
 import sqlancer.Randomly;
 import sqlancer.cnosdb.CnosDBExpectedError;
 import sqlancer.cnosdb.CnosDBGlobalState;
@@ -76,10 +75,8 @@ public class CnosDBTLPAggregateOracle extends CnosDBTLPBase implements TestOracl
             }
             String assertionMessage = String.format("%s: the results mismatch!\n%s\n%s", this.s.getDatabaseName(),
                     firstQueryString, secondQueryString);
-            Main.nrUnsuccessfulActions.addAndGet(1);
             throw new AssertionError(assertionMessage);
         }
-        Main.nrSuccessfulActions.addAndGet(1);
     }
 
     private String createMetamorphicUnionQuery(CnosDBSelect select, CnosDBAggregate aggregate,

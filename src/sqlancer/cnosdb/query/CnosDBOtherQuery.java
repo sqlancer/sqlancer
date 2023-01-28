@@ -2,7 +2,6 @@ package sqlancer.cnosdb.query;
 
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
-import sqlancer.Main;
 import sqlancer.cnosdb.client.CnosDBConnection;
 import sqlancer.common.query.ExpectedErrors;
 
@@ -20,7 +19,6 @@ public class CnosDBOtherQuery extends CnosDBQueryAdapter {
     public <G extends GlobalState<?, ?, CnosDBConnection>> boolean execute(G globalState, String... fills)
             throws Exception {
         try {
-            Main.nrQueries.addAndGet(1);
             globalState.getConnection().getClient().execute(query);
         } catch (Exception e) {
             if (this.errors.errorIsExpected(e.getMessage())) {

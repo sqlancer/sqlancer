@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
-import sqlancer.Main;
 import sqlancer.Randomly;
 import sqlancer.cnosdb.CnosDBCompoundDataType;
 import sqlancer.cnosdb.CnosDBExpectedError;
@@ -89,10 +88,8 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
                     .log(String.format("%s\n%s", firstQueryStringWithCount, secondQueryStringWithCount));
             String assertionMessage = String.format("the counts mismatch (%d and %d)!\n%s\n%s", firstCount, secondCount,
                     firstQueryStringWithCount, secondQueryStringWithCount);
-            Main.nrUnsuccessfulActions.addAndGet(1);
             throw new AssertionError(assertionMessage);
         }
-        Main.nrSuccessfulActions.addAndGet(1);
     }
 
     private CnosDBExpression getRandomWhereCondition(List<CnosDBColumn> columns) {

@@ -9,7 +9,6 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
-import sqlancer.Main;
 import sqlancer.cnosdb.client.CnosDBResultSet;
 import sqlancer.cnosdb.query.CnosDBSelectQuery;
 import sqlancer.common.query.ExpectedErrors;
@@ -72,7 +71,6 @@ public final class CnosDBComparatorHelper {
             state.getState().getLocalState().log(String.format("%s\n%s", firstQueryString, secondQueryString));
             String assertionMessage = String.format("the size of the result sets mismatch (%d and %d)!\n%s\n%s",
                     resultSet.size(), secondResultSet.size(), firstQueryString, secondQueryString);
-            Main.nrUnsuccessfulActions.addAndGet(1);
             throw new AssertionError(assertionMessage);
         }
 
@@ -92,10 +90,8 @@ public final class CnosDBComparatorHelper {
             state.getState().getLocalState().log(String.format("%s\n%s", firstQueryString, secondQueryString));
             String assertionMessage = String.format("the content of the result sets mismatch!\n%s\n%s",
                     firstQueryString, secondQueryString);
-            Main.nrUnsuccessfulActions.addAndGet(1);
             throw new AssertionError(assertionMessage);
         }
-        Main.nrSuccessfulActions.addAndGet(1);
     }
 
     public static void assumeResultSetsAreEqual(List<String> resultSet, List<String> secondResultSet,
