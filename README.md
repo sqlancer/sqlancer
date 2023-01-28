@@ -97,6 +97,10 @@ In many cases, SQLancer does not support the latest version of a DBMS. You can c
 
 Another reason for many failures on a supported version could be that error messages are printed in a non-English locale (which would then be visible in the stack trace). In such a case, try setting the DBMS' locale to English (e.g., see the [PostgreSQL homepage](https://www.postgresql.org/docs/current/locale.html)).
 
+## When starting SQLancer, I get an error such as "database 'test' does not exist". How can I run SQLancer without this error?
+
+For some DBMSs, SQLancer expects that a database "test" exists, which it then uses as an initial database to connect to. If you have not yet created such a database, you can use a command such as `CREATE DATABASE test` to create this database (e.g., see the [PostgreSQL documentation](https://www.postgresql.org/docs/current/sql-createdatabase.html)).
+
 # Additional Documentation
 
 * [Contributing to SQLancer](CONTRIBUTING.md)
