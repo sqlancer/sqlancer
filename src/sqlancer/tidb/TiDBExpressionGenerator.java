@@ -63,13 +63,14 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
         }
         switch (Randomly.fromOptions(Gen.values())) {
         case DEFAULT:
-            if (TiDBBugs.bug15) {
-                throw new IgnoreMeException();
-            }
             if (globalState.getSchema().getDatabaseTables().isEmpty()) {
                 throw new IgnoreMeException();
             }
-            return new TiDBFunctionCall(TiDBFunction.DEFAULT, Arrays.asList(generateColumn()));
+            TiDBColumn column = Randomly.fromList(columns);
+            if (column.hasDefault()) {
+                return new TiDBFunctionCall(TiDBFunction.DEFAULT, Arrays.asList(new TiDBColumnReference(column)));
+            }
+            throw new IgnoreMeException();
         case UNARY_POSTFIX:
             return new TiDBUnaryPostfixOperation(generateExpression(depth + 1), TiDBUnaryPostfixOperator.getRandom());
         case UNARY_PREFIX:
@@ -92,9 +93,6 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
             return new TiDBBinaryBitOperation(generateExpression(depth + 1), generateExpression(depth + 1),
                     TiDBBinaryBitOperator.getRandom());
         case BINARY_LOGICAL:
-            if (TiDBBugs.bug48) {
-                throw new IgnoreMeException();
-            }
             return new TiDBBinaryLogicalOperation(generateExpression(depth + 1), generateExpression(depth + 1),
                     TiDBBinaryLogicalOperator.getRandom());
         case CAST:
@@ -102,9 +100,6 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
                     "CHAR", "DATE", "DATETIME", "TIME", // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/13
                     "DECIMAL", "SIGNED", "UNSIGNED" /* https://github.com/pingcap/tidb/issues/16028 */));
         case CASE:
-            if (TiDBBugs.bug19) {
-                throw new IgnoreMeException();
-            }
             int nr = Randomly.fromOptions(1, 2);
             return new TiDBCase(generateExpression(depth + 1), generateExpressions(nr, depth + 1),
                     generateExpressions(nr, depth + 1), generateExpression(depth + 1));

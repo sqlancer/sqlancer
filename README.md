@@ -9,7 +9,7 @@ SQLancer (Synthesized Query Lancer) is a tool to automatically test Database Man
 
 SQLancer operates in the following two phases:
 
-1. Database generation: The goal of this phase is to create a populated database, and stress the DBMS to increase the probability of causing an inconsistent database state that could be detected subsequently. First, random tables are created. Then, randomly SQL statements are chosen to generate, modify, and delete data. Also other statements, such as those to create indexes as well as views and to set DBMS-specific options are sent to the DBMS.
+1. Database generation: The goal of this phase is to create a populated database, and stress the DBMS to increase the probability of causing an inconsistent database state that could be detected subsequently. First, random tables are created. Then, randomly SQL statements are chosen to generate, modify, and delete data. Also other statements, such as those to create indexes as well as views and to set DBMS-specific options are sent to the DBMS. **New: we support query plan guided generation now. See Generation Approaches below.**
 2. Testing: The goal of this phase is to detect the logic bugs based on the generated database. See Testing Approaches below.
 
 # Getting Started
@@ -40,6 +40,11 @@ If you launch SQLancer without parameters, available options and commands are di
 | Pivoted Query Synthesis (PQS)                        | PQS is the first technique that we designed and implemented. It randomly selects a row, called a pivot row, for which a query is generated that is guaranteed to fetch the row. If the row is not contained in the result set, a bug has been detected. It is fully described [here](https://arxiv.org/abs/2001.04174). PQS is the most powerful technique, but also requires more implementation effort than the other two techniques. It is currently unmaintained. |
 | Non-optimizing Reference Engine Construction (NoREC) | NoREC aims to find optimization bugs. It is described [here](https://www.manuelrigger.at/preprints/NoREC.pdf). It translates a query that is potentially optimized by the DBMS to one for which hardly any optimizations are applicable, and compares the two result sets. A mismatch between the result sets indicates a bug in the DBMS.                                                                                                                                                                                                        |
 | Ternary Logic Partitioning (TLP)                     | TLP partitions a query into three partitioning queries, whose results are composed and compare to the original query's result set. A mismatch in the result sets indicates a bug in the DBMS. In contrast to NoREC and PQS, it can detect bugs in advanced features such as aggregate functions.                                                                                                                                                                                                                                                  |
+# Generation Approaches
+| Approach | Description |
+|----------|-------------|
+| Random Generation | Random generation is the default test case generation approach in SQLancer. First, random tables are generated. Then queries are randomly generated based on the schemas of the tables. |
+| Query Plan Guidance (QPG) | QPG is a test case generation method guided by query plan coverage. Given a database state, we mutate it after no new unique query plans have been observed by randomly-generated queries on the database state aiming to cover more unique query plans for exposing more logics of DBMSs. This approach is enabled by option `--qpg-enable` and now supports TLP and NoREC oracles for SQLite, CockroachDB, and TiDB. |
 
 Please find the `.bib` entries [here](docs/PAPERS.md).
 
@@ -63,6 +68,7 @@ Since SQL dialects differ widely, each DBMS to be tested requires a separate imp
 | YugabyteDB                   | Working     | Typed (YSQL), Untyped (YCQL) | YSQL implementation based on Postgres code. YCQL implementation is primitive for now and uses Cassandra JDBC driver as a proxy interface.                                                       |
 | Databend                    | Working     | Typed                      |  |
 | QuestDB                    | Working     | Untyped, Generic                      | The implementation of QuestDB is still WIP, current version covers very basic data types, operations and SQL keywords. |
+| CnosDB                       |Working      | Typed                        | The implementation of CnosDB currently uses Restful API.                                                                                                                                        |
 
 
 # Using SQLancer
@@ -73,7 +79,7 @@ SQLancer stores logs in the `target/logs` subdirectory. By default, the option `
 
 ## Reducing a Bug
 
-After finding a bug, it is useful to produce a minimal test case before reporting the bug, to save the DBMS developers' time and effort. For many test cases, [C-Reduce](https://embed.cs.utah.edu/creduce/) does a great job. In addition, we have been working on a SQL-specific reducer, which we plan to release soon.
+After finding a bug, it is useful to produce a minimal test case before reporting the bug, to save the DBMS developers' time and effort. For many test cases, [C-Reduce](https://embed.cs.utah.edu/creduce/) does a great job.
 
 ## Found Bugs
 
@@ -84,6 +90,17 @@ We would appreciate it if you mention SQLancer when you report bugs found by it.
 
 We have created a [Slack workspace](https://join.slack.com/t/sqlancer/shared_invite/zt-eozrcao4-ieG29w1LNaBDMF7OB_~ACg) to discuss SQLancer, and DBMS testing in general. SQLancer's official Twitter handle is [@sqlancer_dbms](https://twitter.com/sqlancer_dbms).
 
+# FAQ
+
+## I am running SQLancer on the latest version of a supported DBMS. Is it expected that SQLancer prints many AssertionErrors?
+
+In many cases, SQLancer does not support the latest version of a DBMS. You can check the [`.github/workflows/main.yml`](https://github.com/sqlancer/sqlancer/blob/master/.github/workflows/main.yml) file to determine which version we use in our CI tests, which corresponds to the currently supported version of that DBMS. SQLancer should print only an `AssertionError` and produce a corresponding log file, if it has identified a bug. To upgrade SQLancer to support a new DBMS version, either two options are advisable: (1) the generators can be updated to no longer generate certain patterns that might cause errors (e.g., which might be the case if a keyword or option is no longer supported) or (2) the newly-appearing errors can be added as [expected errors](https://github.com/sqlancer/sqlancer/blob/354d591cfcd37fa1de85ec77ec933d5d975e947a/src/sqlancer/common/query/ExpectedErrors.java) so that SQLancer ignores them when they appear (e.g., this is useful if some error-inducing patterns cannot easily be avoided).
+
+Another reason for many failures on a supported version could be that error messages are printed in a non-English locale (which would then be visible in the stack trace). In such a case, try setting the DBMS' locale to English (e.g., see the [PostgreSQL homepage](https://www.postgresql.org/docs/current/locale.html)).
+
+## When starting SQLancer, I get an error such as "database 'test' does not exist". How can I run SQLancer without this error?
+
+For some DBMSs, SQLancer expects that a database "test" exists, which it then uses as an initial database to connect to. If you have not yet created such a database, you can use a command such as `CREATE DATABASE test` to create this database (e.g., see the [PostgreSQL documentation](https://www.postgresql.org/docs/current/sql-createdatabase.html)).
 
 # Additional Documentation
 

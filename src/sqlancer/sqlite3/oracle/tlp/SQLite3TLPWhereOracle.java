@@ -11,6 +11,8 @@ import sqlancer.sqlite3.SQLite3Visitor;
 
 public class SQLite3TLPWhereOracle extends SQLite3TLPBase {
 
+    private String generatedQueryString;
+
     public SQLite3TLPWhereOracle(SQLite3GlobalState state) {
         super(state);
     }
@@ -20,7 +22,7 @@ public class SQLite3TLPWhereOracle extends SQLite3TLPBase {
         super.check();
         select.setWhereClause(null);
         String originalQueryString = SQLite3Visitor.asString(select);
-
+        generatedQueryString = originalQueryString;
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         boolean orderBy = Randomly.getBooleanWithSmallProbability();
@@ -38,6 +40,11 @@ public class SQLite3TLPWhereOracle extends SQLite3TLPBase {
                 thirdQueryString, combinedString, !orderBy, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
+    }
+
+    @Override
+    public String getLastQueryString() {
+        return generatedQueryString;
     }
 
 }

@@ -13,6 +13,7 @@ public final class TiDBErrors {
         errors.add("BIGINT UNSIGNED value is out of range");
         errors.add("Data truncation: Truncated incorrect time value");
         errors.add("Data truncation: Incorrect time value");
+        errors.add("Data truncation: Incorrect datetime value");
         errors.add("overflows double");
         errors.add("overflows bigint");
         errors.add("strconv.ParseFloat: parsing");

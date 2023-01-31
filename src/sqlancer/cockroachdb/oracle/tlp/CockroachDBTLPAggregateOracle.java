@@ -85,8 +85,8 @@ public class CockroachDBTLPAggregateOracle implements TestOracle<CockroachDBGlob
 
         state.getState().getLocalState().log(
                 "--" + originalQuery + ";\n--" + metamorphicQuery + "\n-- " + firstResult + "\n-- " + secondResult);
-        if (firstResult == null && secondResult != null
-                || firstResult != null && (!firstResult.contentEquals(secondResult)
+        if (firstResult == null && secondResult != null || firstResult != null && secondResult == null
+                || firstResult != null && secondResult != null && (!firstResult.contentEquals(secondResult)
                         && !ComparatorHelper.isEqualDouble(firstResult, secondResult))) {
             if (secondResult.contains("Inf")) {
                 throw new IgnoreMeException(); // FIXME: average computation
@@ -193,6 +193,11 @@ public class CockroachDBTLPAggregateOracle implements TestOracle<CockroachDBGlob
             leftSelect.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
         }
         return leftSelect;
+    }
+
+    @Override
+    public String getLastQueryString() {
+        return originalQuery;
     }
 
 }

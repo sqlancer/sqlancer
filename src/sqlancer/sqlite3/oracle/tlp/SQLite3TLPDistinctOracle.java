@@ -11,6 +11,8 @@ import sqlancer.sqlite3.ast.SQLite3Select.SelectType;
 
 public class SQLite3TLPDistinctOracle extends SQLite3TLPBase {
 
+    private String generatedQueryString;
+
     public SQLite3TLPDistinctOracle(SQLite3GlobalState state) {
         super(state);
     }
@@ -21,7 +23,7 @@ public class SQLite3TLPDistinctOracle extends SQLite3TLPBase {
         select.setSelectType(SelectType.DISTINCT);
         select.setWhereClause(null);
         String originalQueryString = SQLite3Visitor.asString(select);
-
+        generatedQueryString = originalQueryString;
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         select.setWhereClause(predicate);
@@ -35,6 +37,11 @@ public class SQLite3TLPDistinctOracle extends SQLite3TLPBase {
                 secondQueryString, thirdQueryString, combinedString, true, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
+    }
+
+    @Override
+    public String getLastQueryString() {
+        return generatedQueryString;
     }
 
 }

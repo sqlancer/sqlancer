@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.sqlite3.SQLite3GlobalState;
 
 public class SQLite3CreateVirtualFTSTableGenerator {
 
@@ -18,6 +20,14 @@ public class SQLite3CreateVirtualFTSTableGenerator {
     public SQLite3CreateVirtualFTSTableGenerator(String tableName, Randomly r) {
         this.tableName = tableName;
         this.r = r;
+    }
+
+    public static SQLQueryAdapter createRandomTableStatement(SQLite3GlobalState globalState) {
+        if (globalState.getSchema().getTables().getTables()
+                .size() > globalState.getDbmsSpecificOptions().maxNumTables) {
+            throw new IgnoreMeException();
+        }
+        return createTableStatement(globalState.getSchema().getFreeVirtualTableName(), globalState.getRandomly());
     }
 
     public static SQLQueryAdapter createTableStatement(String tableName, Randomly r) {

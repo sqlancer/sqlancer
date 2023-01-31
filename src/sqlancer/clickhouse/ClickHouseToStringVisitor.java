@@ -151,12 +151,6 @@ public class ClickHouseToStringVisitor extends ToStringVisitor<ClickHouseExpress
         } else if (type == ClickHouseExpression.ClickHouseJoin.JoinType.FULL_OUTER) {
             sb.append(" FULL OUTER JOIN ");
             visit(join.getRightTable());
-        } else if (type == ClickHouseExpression.ClickHouseJoin.JoinType.LEFT_SEMI) {
-            sb.append(" LEFT SEMI JOIN ");
-            visit(join.getRightTable());
-        } else if (type == ClickHouseExpression.ClickHouseJoin.JoinType.RIGHT_SEMI) {
-            sb.append(" RIGHT SEMI JOIN ");
-            visit(join.getRightTable());
         } else if (type == ClickHouseExpression.ClickHouseJoin.JoinType.LEFT_ANTI) {
             sb.append(" LEFT ANTI JOIN ");
             visit(join.getRightTable());

@@ -3,6 +3,7 @@ package sqlancer.tidb.gen;
 import java.sql.SQLException;
 import java.util.List;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -16,6 +17,9 @@ public final class TiDBIndexGenerator {
     }
 
     public static SQLQueryAdapter getQuery(TiDBGlobalState globalState) throws SQLException {
+        if (globalState.getSchema().getIndexCount() > globalState.getDbmsSpecificOptions().maxNumIndexes) {
+            throw new IgnoreMeException();
+        }
         ExpectedErrors errors = new ExpectedErrors();
 
         TiDBTable randomTable = globalState.getSchema().getRandomTable(t -> !t.isView());

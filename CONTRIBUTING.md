@@ -14,6 +14,13 @@ If you do not find an option to import Maven projects, you might need to install
 
 The DuckDB implementation provides a good template for a new implementation. The `DuckDBProvider` class is the central class that manages the creation of the databases and executes the selected test oracles. Try to copy its structure for the new DBMS that you want to implement, and start by generate databases (without implementing a test oracle). As part of this, you will also need to implement the equivalent of `DuckDBSchema`, which represents the database schema of the generated database. After you can successfully generate databases, the next step is to generate one of the test oracles. For example, you might want to implement NoREC (see `DuckDBNoRECOracle` or `DuckDBQueryPartitioningWhereTester` for TLP). As part of this, you must also implement a random expression generator (see `DuckDBExpressionGenerator`) and a visitor to derive the textual representation of an expression (see `DuckDBToStringVisitor`).
 
+Please consider the following suggestions when creating a  PR to contribute a new DBMS:
+* Ensure that `mvn verify -DskipTests=true` does not result in style violations.
+* Add a [CI test](https://github.com/sqlancer/sqlancer/blob/master/.github/workflows/main.yml) to ensure that future changes to SQLancer are unlikely to break the newly-supported DBMS. It is reasonable to do this in a follow-up PR—please indicate whether you plan to do so in the PR description.
+* Add the DBMS' name to the [check_names.py](https://github.com/sqlancer/sqlancer/blob/master/src/check_names.py) script, which ensures adherence to a common prefix in the Java classes.
+* Add the DBMS' name to the [README.md](https://github.com/sqlancer/sqlancer/blob/master/README.md#supported-dbms) file.
+* It would be easier to review multiple smaller PRs, than one PR that contains the complete implementation. Consider contributing parts of your implementation as you work on their implementation.
+
 ### Typed vs. Untyped Expression Generation
 
 Each DBMS implementation provides an expression generator used, for example, to generate expressions used in `WHERE` clauses. We found that DBMS can be roughly classified into "permissive" ones, which apply implicit type conversions when needed and "strict" ones, which provide only few implicit conversions and output an error when the type is unexpected. For example, consider the following test case:

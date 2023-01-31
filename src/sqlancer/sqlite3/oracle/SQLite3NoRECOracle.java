@@ -102,6 +102,11 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
         return reproducer;
     }
 
+    @Override
+    public String getLastQueryString() {
+        return optimizedQueryString;
+    }
+
     private Function<SQLite3GlobalState, Integer> getUnoptimizedQuery(SQLite3Select select,
             SQLite3Expression randomWhereCondition) throws SQLException {
         SQLite3PostfixUnaryOperation isTrue = new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.IS_TRUE,

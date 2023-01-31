@@ -13,6 +13,8 @@ import sqlancer.cockroachdb.ast.CockroachDBExpression;
 
 public class CockroachDBTLPHavingOracle extends CockroachDBTLPBase {
 
+    private String generatedQueryString;
+
     public CockroachDBTLPHavingOracle(CockroachDBGlobalState state) {
         super(state);
         errors.add("GROUP BY term out of range");
@@ -31,6 +33,7 @@ public class CockroachDBTLPHavingOracle extends CockroachDBTLPBase {
         select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
         select.setHavingClause(null);
         String originalQueryString = CockroachDBVisitor.asString(select);
+        generatedQueryString = originalQueryString;
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         CockroachDBExpression predicate = gen.generateExpression(CockroachDBDataType.BOOL.get());
@@ -50,6 +53,11 @@ public class CockroachDBTLPHavingOracle extends CockroachDBTLPBase {
     @Override
     protected CockroachDBExpression generatePredicate() {
         return gen.generateHavingClause();
+    }
+
+    @Override
+    public String getLastQueryString() {
+        return generatedQueryString;
     }
 
 }
