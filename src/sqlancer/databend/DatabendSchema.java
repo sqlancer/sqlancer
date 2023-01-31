@@ -339,6 +339,9 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
                     while (rs.next()) {
                         String columnName = rs.getString("column_name");
                         String dataType = rs.getString("data_type");
+                        if (dataType.contains("NULL")) {
+                            dataType = dataType.substring(0, dataType.indexOf(' '));
+                        }
                         boolean isNullable = rs.getBoolean("is_nullable");
                         // boolean isPrimaryKey = rs.getString("pk").contains("true");
                         boolean isPrimaryKey = false; // 没找到主键元数据
