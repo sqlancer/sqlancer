@@ -34,7 +34,7 @@ public class DatabendBinaryArithmeticOperation extends NewBinaryOperatorNode<Dat
                 return applyOperation(left, right, (l, r) -> l * r);
             }
         },
-        DIVISION("/") {
+        DIVISION("/") { // TODO databend不允许出现not(float)，而a/b为float
             @Override
             public DatabendConstant apply(DatabendConstant left, DatabendConstant right) {
                 return applyOperation(left, right, (l, r) -> r == 0 ? -1 : l / r);
