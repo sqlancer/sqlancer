@@ -348,9 +348,9 @@ public class CitusProvider extends PostgresProvider {
     }
 
     private void addCitusExtension(PostgresGlobalState globalState, SQLConnection con) throws SQLException {
-        globalState.getState().logStatement("CREATE EXTENSION citus;");
+        globalState.getState().logStatement("CREATE EXTENSION IF NOT EXISTS citus;");
         try (Statement s = con.createStatement()) {
-            s.execute("CREATE EXTENSION citus;");
+            s.execute("CREATE EXTENSION IF NOT EXISTS citus;");
         }
     }
 
@@ -370,9 +370,23 @@ public class CitusProvider extends PostgresProvider {
             // create test database at worker node
             globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
             globalState.getState().logStatement(createDatabaseCommand);
-            try (Statement s = con.createStatement()) {
-                s.execute("DROP DATABASE IF EXISTS " + databaseName);
-            }
+            boolean failToDrop;
+            do {
+                try (Statement s = con.createStatement()) {
+                    s.execute("DROP DATABASE IF EXISTS " + databaseName);
+                    failToDrop = false;
+                } catch (Exception e) {
+                    failToDrop = true;
+                    try {
+                        Thread.sleep(1000);
+                    } catch (Exception e2) {
+
+                    }
+                    addCitusExtension(globalState, con);
+                    System.out.println("retrying");
+                }
+            } while (failToDrop);
+
             try (Statement s = con.createStatement()) {
                 s.execute(createDatabaseCommand);
             }
