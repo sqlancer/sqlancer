@@ -348,9 +348,9 @@ public class CitusProvider extends PostgresProvider {
     }
 
     private void addCitusExtension(PostgresGlobalState globalState, SQLConnection con) throws SQLException {
-        globalState.getState().logStatement("CREATE EXTENSION citus;");
+        globalState.getState().logStatement("CREATE EXTENSION IF NOT EXISTS citus;");
         try (Statement s = con.createStatement()) {
-            s.execute("CREATE EXTENSION citus;");
+            s.execute("CREATE EXTENSION IF NOT EXISTS citus;");
         }
     }
 
@@ -366,10 +366,12 @@ public class CitusProvider extends PostgresProvider {
             globalState.getState().logStatement(entryWorkerURL);
             SQLConnection con = new SQLConnection(
                     DriverManager.getConnection("jdbc:" + entryWorkerURL, username, password));
+            addCitusExtension(globalState, con);
 
             // create test database at worker node
             globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
             globalState.getState().logStatement(createDatabaseCommand);
+            addCitusExtension(globalState, con);
             try (Statement s = con.createStatement()) {
                 s.execute("DROP DATABASE IF EXISTS " + databaseName);
             }
@@ -418,6 +420,7 @@ public class CitusProvider extends PostgresProvider {
             // reconnect to coordinator node, entry database
             globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
             con = new SQLConnection(DriverManager.getConnection("jdbc:" + entryURL, username, password));
+            addCitusExtension(globalState, con);
             // read info about worker nodes
             List<CitusWorkerNode> citusWorkerNodes = readCitusWorkerNodes(globalState, con);
             con.close();
