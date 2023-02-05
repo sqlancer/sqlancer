@@ -238,6 +238,7 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
                 primitiveType = TiDBDataType.FLOATING;
                 break;
             case "double":
+            case "double(8,6)": // workaround to address https://github.com/sqlancer/sqlancer/issues/669
                 size = 8;
                 primitiveType = TiDBDataType.FLOATING;
                 break;
@@ -271,6 +272,7 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
                 break;
             case "date":
             case "datetime":
+            case "datetime(6)": // workaround to address https://github.com/sqlancer/sqlancer/issues/669
             case "timestamp":
             case "time":
             case "year":
