@@ -18,6 +18,11 @@ public class QuestDBQueryPartitioningWhereTester extends QuestDBQueryPartitionin
     @Override
     public void check() throws SQLException {
         super.check();
+        if (select == null) {
+        	// Forbid multiple table selection, which is regarded as illegal by QuestDB
+            // e.g. "SELECT * FROM t0, t1;"
+        	return; 
+        }
         select.setWhereClause(null);
         String originalQueryString = QuestDBToStringVisitor.asString(select);
 

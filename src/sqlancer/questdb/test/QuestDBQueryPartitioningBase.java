@@ -67,6 +67,11 @@ public class QuestDBQueryPartitioningBase
     public void check() throws SQLException {
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
+        if (targetTables.getTables().size() > 1) {
+        	// Forbid multiple table selection, which is regarded as illegal by QuestDB
+            // e.g. "SELECT * FROM t0, t1;"
+        	return; 
+        }
         gen = new QuestDBExpressionGenerator(state).setColumns(targetTables.getColumns());
         initializeTernaryPredicateVariants();
         select = new QuestDBSelect();
