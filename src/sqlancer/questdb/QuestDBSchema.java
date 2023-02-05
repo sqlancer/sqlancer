@@ -177,7 +177,7 @@ public class QuestDBSchema extends AbstractSchema<QuestDBGlobalState, QuestDBTab
 
     public static class QuestDBTables extends AbstractTables<QuestDBTable, QuestDBColumn> {
         public static final Set<String> RESERVED_TABLES = new HashSet<>(
-                Arrays.asList("sys.column_versions_purge_log", "telemetry_config", "telemetry"));
+                Arrays.asList("sys.column_versions_purge_log", "telemetry_config", "telemetry", "sys.telemetry_wal"));
 
         public QuestDBTables(List<QuestDBTable> tables) {
             super(tables);
