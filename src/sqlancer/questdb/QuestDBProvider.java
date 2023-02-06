@@ -106,7 +106,7 @@ public class QuestDBProvider extends SQLProviderAdapter<QuestDBGlobalState, Ques
         }
         // TODO(anxing): maybe not hardcode here...
         String databaseName = "qdb";
-        String tableName = "test";
+        String tableName = "sqlancer_test";
         String url = String.format("jdbc:postgresql://%s:%d/%s", host, port, databaseName);
         // use QuestDB default username & password for Postgres JDBC
         Properties properties = new Properties();
