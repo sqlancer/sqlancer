@@ -18,7 +18,6 @@ import sqlancer.questdb.QuestDBProvider.QuestDBGlobalState;
 import sqlancer.questdb.QuestDBSchema;
 import sqlancer.questdb.QuestDBSchema.QuestDBColumn;
 import sqlancer.questdb.QuestDBSchema.QuestDBTable;
-import sqlancer.questdb.QuestDBSchema.QuestDBTables;
 import sqlancer.questdb.ast.QuestDBExpression;
 import sqlancer.questdb.ast.QuestDBSelect;
 import sqlancer.questdb.gen.QuestDBExpressionGenerator;
@@ -28,7 +27,7 @@ public class QuestDBQueryPartitioningBase
         implements TestOracle<QuestDBGlobalState> {
 
     QuestDBSchema s;
-    QuestDBTables targetTables;
+    QuestDBTable targetTable; // single table
     QuestDBExpressionGenerator gen;
     QuestDBSelect select;
 
@@ -42,7 +41,7 @@ public class QuestDBQueryPartitioningBase
         if (Randomly.getBoolean()) {
             columns.add(new ColumnReferenceNode<>(new QuestDBColumn("*", null, false)));
         } else {
-            columns = Randomly.nonEmptySubset(targetTables.getColumns()).stream()
+            columns = Randomly.nonEmptySubset(targetTable.getColumns()).stream()
                     .map(c -> new ColumnReferenceNode<QuestDBExpression, QuestDBColumn>(c))
                     .collect(Collectors.toList());
         }
@@ -66,12 +65,15 @@ public class QuestDBQueryPartitioningBase
     @Override
     public void check() throws SQLException {
         s = state.getSchema();
-        targetTables = s.getRandomTableNonEmptyTables();
-        gen = new QuestDBExpressionGenerator(state).setColumns(targetTables.getColumns());
+        // Only return one table instead of multiple tables, which is regarded as illegal by QuestDB
+        // e.g. "SELECT * FROM t0, t1;"
+        targetTable = s.getRandomTable();
+        gen = new QuestDBExpressionGenerator(state).setColumns(targetTable.getColumns());
         initializeTernaryPredicateVariants();
         select = new QuestDBSelect();
         select.setFetchColumns(generateFetchColumns());
-        List<QuestDBTable> tables = targetTables.getTables();
+        List<QuestDBTable> tables = new ArrayList<>();
+        tables.add(targetTable);
         List<TableReferenceNode<QuestDBExpression, QuestDBTable>> tableList = tables.stream()
                 .map(t -> new TableReferenceNode<QuestDBExpression, QuestDBTable>(t)).collect(Collectors.toList());
         // Ignore JOINs for now
