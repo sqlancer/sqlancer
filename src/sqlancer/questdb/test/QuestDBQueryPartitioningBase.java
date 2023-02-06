@@ -18,7 +18,6 @@ import sqlancer.questdb.QuestDBProvider.QuestDBGlobalState;
 import sqlancer.questdb.QuestDBSchema;
 import sqlancer.questdb.QuestDBSchema.QuestDBColumn;
 import sqlancer.questdb.QuestDBSchema.QuestDBTable;
-import sqlancer.questdb.QuestDBSchema.QuestDBTables;
 import sqlancer.questdb.ast.QuestDBExpression;
 import sqlancer.questdb.ast.QuestDBSelect;
 import sqlancer.questdb.gen.QuestDBExpressionGenerator;
@@ -28,7 +27,6 @@ public class QuestDBQueryPartitioningBase
         implements TestOracle<QuestDBGlobalState> {
 
     QuestDBSchema s;
-    QuestDBTables targetTables;
     QuestDBTable targetTable; // single table
     QuestDBExpressionGenerator gen;
     QuestDBSelect select;
@@ -69,7 +67,7 @@ public class QuestDBQueryPartitioningBase
         s = state.getSchema();
         // Only return one table instead of multiple tables, which is regarded as illegal by QuestDB
         // e.g. "SELECT * FROM t0, t1;"
-        targetTable = s.getRandomTable(t -> !t.isView());
+        targetTable = s.getRandomTable();
         gen = new QuestDBExpressionGenerator(state).setColumns(targetTable.getColumns());
         initializeTernaryPredicateVariants();
         select = new QuestDBSelect();
