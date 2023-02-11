@@ -56,7 +56,10 @@ public class QuestDBConstant implements Node<QuestDBExpression> {
 
         @Override
         public String toString() {
-            return value;
+            if (value.equals("NULL")) {
+                return value;
+            }
+            return "'" + value + "'";
         }
 
         public String getValue() {

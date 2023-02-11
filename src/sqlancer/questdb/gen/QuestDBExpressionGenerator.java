@@ -57,13 +57,7 @@ public class QuestDBExpressionGenerator extends UntypedExpressionGenerator<Node<
             return QuestDBConstant.createFloatConstant(globalState.getRandomly().getDouble());
         case SYMBOL:
             StringGenerationStrategy strategy = Randomly.StringGenerationStrategy.ALPHANUMERIC;
-            // Add quotes to form a valid string for QuestDB
-            String str = '\"' + strategy.getString(globalState.getRandomly()) + '\"';
-            // When the value of symbol is not specified, set it to NULL (not "NULL")
-            if (str.length() == 2) {
-                str = "NULL";
-            }
-            return QuestDBConstant.createSymbolConstant(str);
+            return QuestDBConstant.createSymbolConstant(strategy.getString(globalState.getRandomly()));
         // case CHAR:
         // case DATE:
         // case TIMESTAMP:

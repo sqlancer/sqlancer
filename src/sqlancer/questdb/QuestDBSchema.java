@@ -70,7 +70,7 @@ public class QuestDBSchema extends AbstractSchema<QuestDBGlobalState, QuestDBTab
                 isNullable = false;
                 break;
             case SYMBOL:
-                isNullable = false;
+                isNullable = true;
                 break;
             default:
                 isNullable = true;
