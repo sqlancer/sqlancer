@@ -47,6 +47,23 @@ public class QuestDBConstant implements Node<QuestDBExpression> {
         }
     }
 
+    public static class QuestDBSymbolConstant extends QuestDBConstant {
+        private final String value;
+
+        public QuestDBSymbolConstant(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
     public static Node<QuestDBExpression> createIntConstant(long val) {
         return new QuestDBIntConstant(val);
     }
@@ -85,5 +102,9 @@ public class QuestDBConstant implements Node<QuestDBExpression> {
 
     public static Node<QuestDBExpression> createFloatConstant(double val) {
         return new QuestDBDoubleConstant(val);
+    }
+
+    public static Node<QuestDBExpression> createSymbolConstant(String val) {
+        return new QuestDBSymbolConstant(val);
     }
 }

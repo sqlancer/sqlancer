@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.Randomly.StringGenerationStrategy;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
 import sqlancer.common.ast.newast.ColumnReferenceNode;
 import sqlancer.common.ast.newast.NewBinaryOperatorNode;
@@ -54,6 +55,15 @@ public class QuestDBExpressionGenerator extends UntypedExpressionGenerator<Node<
             return QuestDBConstant.createBooleanConstant(Randomly.getBoolean());
         case FLOAT:
             return QuestDBConstant.createFloatConstant(globalState.getRandomly().getDouble());
+        case SYMBOL:
+            StringGenerationStrategy strategy = Randomly.StringGenerationStrategy.ALPHANUMERIC;
+            // Add quotes to form a valid string for QuestDB
+            String str = '\"' + strategy.getString(globalState.getRandomly()) + '\"';
+            // When the value of symbol is not specified, set it to NULL (not "NULL")
+            if (str.length() == 2) {
+                str = "NULL";
+            }
+            return QuestDBConstant.createSymbolConstant(str);
         // case CHAR:
         // case DATE:
         // case TIMESTAMP:
