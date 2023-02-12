@@ -27,8 +27,7 @@ public class QuestDBSchema extends AbstractSchema<QuestDBGlobalState, QuestDBTab
 
         BOOLEAN, // CHAR,
         /* STRING, */
-        INT, FLOAT,
-        /* SYMBOL, */
+        INT, FLOAT, SYMBOL,
         // DATE, TIMESTAMP,
         /* GEOHASH, */
         NULL;
@@ -70,6 +69,9 @@ public class QuestDBSchema extends AbstractSchema<QuestDBGlobalState, QuestDBTab
             case BOOLEAN:
                 isNullable = false;
                 break;
+            case SYMBOL:
+                isNullable = true;
+                break;
             default:
                 isNullable = true;
             }
@@ -104,6 +106,9 @@ public class QuestDBSchema extends AbstractSchema<QuestDBGlobalState, QuestDBTab
                 // case CHAR:
                 // case DATE:
                 // case TIMESTAMP:
+                size = 0;
+                break;
+            case SYMBOL:
                 size = 0;
                 break;
             default:
@@ -142,6 +147,8 @@ public class QuestDBSchema extends AbstractSchema<QuestDBGlobalState, QuestDBTab
                 }
             case BOOLEAN:
                 return Randomly.fromOptions("BOOLEAN");
+            case SYMBOL:
+                return Randomly.fromOptions("SYMBOL");
             // case TIMESTAMP:
             // return Randomly.fromOptions("TIMESTAMP");
             // case DATE:
@@ -232,6 +239,9 @@ public class QuestDBSchema extends AbstractSchema<QuestDBGlobalState, QuestDBTab
         case "SHORT":
             primitiveType = QuestDBDataType.INT;
             size = 2;
+            break;
+        case "SYMBOL":
+            primitiveType = QuestDBDataType.SYMBOL;
             break;
         case "NULL":
             primitiveType = QuestDBDataType.NULL;

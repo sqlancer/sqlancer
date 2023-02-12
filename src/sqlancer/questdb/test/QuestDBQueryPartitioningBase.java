@@ -27,7 +27,7 @@ public class QuestDBQueryPartitioningBase
         implements TestOracle<QuestDBGlobalState> {
 
     QuestDBSchema s;
-    QuestDBTable targetTable; // single table
+    QuestDBTable targetTable;
     QuestDBExpressionGenerator gen;
     QuestDBSelect select;
 
