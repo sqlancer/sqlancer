@@ -1,6 +1,5 @@
 package sqlancer.questdb.gen;
 
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -33,13 +32,8 @@ public final class QuestDBAlterIndexGenerator {
         sb.append("ALTER COLUMN ");
 
         // We should always choose column with SYMBOL type
-        QuestDBColumn columnWithSymbolType = table.getRandomColumnWithFilter("SYMBOL");
-
-        if (columnWithSymbolType == null) {
-            // no column having "SYMBOL" type
-            throw new IgnoreMeException();
-        }
-
+        QuestDBColumn columnWithSymbolType = table.getRandomColumnOrBailout(c -> c.getType().toString().equals("SYMBOL")); 
+        
         String columnName = columnWithSymbolType.getName();
 
         sb.append(columnName);
