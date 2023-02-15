@@ -2,8 +2,8 @@ package sqlancer.common.schema;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
