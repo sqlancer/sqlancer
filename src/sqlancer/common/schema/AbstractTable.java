@@ -60,6 +60,15 @@ public abstract class AbstractTable<C extends AbstractTableColumn<?, ?>, I exten
         return Randomly.fromList(columns);
     }
 
+    public C getRandomColumnWithFilter(String typeFilter) {
+        for (C c : columns) {
+            if (c.getType().toString().equals(typeFilter)) {
+                return c;
+            }
+        }
+        return null;
+    }
+
     public boolean hasIndexes() {
         return !indexes.isEmpty();
     }
