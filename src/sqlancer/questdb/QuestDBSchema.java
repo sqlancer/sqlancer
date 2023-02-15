@@ -148,7 +148,7 @@ public class QuestDBSchema extends AbstractSchema<QuestDBGlobalState, QuestDBTab
             case BOOLEAN:
                 return Randomly.fromOptions("BOOLEAN");
             case SYMBOL:
-                return "SYMBOL"; 
+                return "SYMBOL";
             // case TIMESTAMP:
             // return Randomly.fromOptions("TIMESTAMP");
             // case DATE:

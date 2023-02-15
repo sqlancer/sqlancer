@@ -63,12 +63,12 @@ public abstract class AbstractTable<C extends AbstractTableColumn<?, ?>, I exten
     }
 
     public C getRandomColumnOrBailout(Predicate<C> predicate) {
-    	List<C> relevantColumns = columns.stream().filter(predicate).collect(Collectors.toList()); 
-    	if (relevantColumns.isEmpty()) {
-    		throw new IgnoreMeException();
-    	}
-    	
-    	return Randomly.fromList(relevantColumns); 
+        List<C> relevantColumns = columns.stream().filter(predicate).collect(Collectors.toList());
+        if (relevantColumns.isEmpty()) {
+            throw new IgnoreMeException();
+        }
+
+        return Randomly.fromList(relevantColumns);
     }
 
     public boolean hasIndexes() {
