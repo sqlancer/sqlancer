@@ -5,6 +5,7 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.questdb.QuestDBProvider.QuestDBGlobalState;
 import sqlancer.questdb.QuestDBSchema.QuestDBColumn;
+import sqlancer.questdb.QuestDBSchema.QuestDBDataType;
 import sqlancer.questdb.QuestDBSchema.QuestDBTable;
 
 public final class QuestDBAlterIndexGenerator {
@@ -33,7 +34,7 @@ public final class QuestDBAlterIndexGenerator {
 
         // We should always choose column with SYMBOL type
         QuestDBColumn columnWithSymbolType = table
-                .getRandomColumnOrBailout(c -> c.getType().toString().equals("SYMBOL"));
+                .getRandomColumnOrBailout(c -> c.getType().getPrimitiveDataType().equals(QuestDBDataType.SYMBOL));
 
         String columnName = columnWithSymbolType.getName();
 
