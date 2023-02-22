@@ -296,7 +296,7 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
             }
 
             if (Randomly.getBoolean()) {
-                sb.append("COLOCATED = true ");
+                sb.append("COLOCATION = true ");
             }
 
             for (String lc : Arrays.asList("LC_COLLATE", "LC_CTYPE")) {

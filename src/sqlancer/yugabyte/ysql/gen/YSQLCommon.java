@@ -124,13 +124,13 @@ public final class YSQLCommon {
                 sb.append(Randomly.smallNumber() + 1);
                 sb.append(" TABLETS ");
 
-                errors.add("cannot create colocated table with split option");
+                errors.add("with split option");
                 errors.add("columns must be present to split by number of tablets");
                 errors.add("option is not yet supported for hash partitioned tables");
             } else {
                 sb.append(" SPLIT AT VALUES (");
 
-                errors.add("cannot create colocated table with split option");
+                errors.add("table with split option");
                 errors.add("SPLIT AT option is not yet supported for hash partitioned tables");
                 errors.add("Cannot have duplicate split rows"); // just in case
 
@@ -285,7 +285,7 @@ public final class YSQLCommon {
     }
 
     private enum StorageParameters {
-        COLOCATED("COLOCATED", (r) -> Randomly.getBoolean());
+        COLOCATION("COLOCATION", (r) -> Randomly.getBoolean());
 
         private final String parameter;
         private final Function<Randomly, Object> op;
