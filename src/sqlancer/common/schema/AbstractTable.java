@@ -2,9 +2,11 @@ package sqlancer.common.schema;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import sqlancer.GlobalState;
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 
 public abstract class AbstractTable<C extends AbstractTableColumn<?, ?>, I extends TableIndex, G extends GlobalState<?, ?, ?>>
@@ -58,6 +60,15 @@ public abstract class AbstractTable<C extends AbstractTableColumn<?, ?>, I exten
 
     public C getRandomColumn() {
         return Randomly.fromList(columns);
+    }
+
+    public C getRandomColumnOrBailout(Predicate<C> predicate) {
+        List<C> relevantColumns = columns.stream().filter(predicate).collect(Collectors.toList());
+        if (relevantColumns.isEmpty()) {
+            throw new IgnoreMeException();
+        }
+
+        return Randomly.fromList(relevantColumns);
     }
 
     public boolean hasIndexes() {

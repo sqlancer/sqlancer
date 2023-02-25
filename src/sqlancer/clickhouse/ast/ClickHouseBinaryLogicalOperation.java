@@ -1,6 +1,7 @@
 package sqlancer.clickhouse.ast;
 
 import sqlancer.Randomly;
+import sqlancer.clickhouse.ast.constant.ClickHouseCreateConstant;
 
 public class ClickHouseBinaryLogicalOperation extends ClickHouseExpression {
 
@@ -14,22 +15,22 @@ public class ClickHouseBinaryLogicalOperation extends ClickHouseExpression {
             @Override
             public ClickHouseConstant apply(ClickHouseConstant left, ClickHouseConstant right) {
                 if (left.isNull() && right.isNull()) {
-                    return ClickHouseConstant.createNullConstant();
+                    return ClickHouseCreateConstant.createNullConstant();
                 } else if (left.isNull()) {
                     if (right.asBooleanNotNull()) {
-                        return ClickHouseConstant.createNullConstant();
+                        return ClickHouseCreateConstant.createNullConstant();
                     } else {
-                        return ClickHouseConstant.createFalse();
+                        return ClickHouseCreateConstant.createFalse();
                     }
                 } else if (right.isNull()) {
                     if (left.asBooleanNotNull()) {
-                        return ClickHouseConstant.createNullConstant();
+                        return ClickHouseCreateConstant.createNullConstant();
                     } else {
-                        return ClickHouseConstant.createFalse();
+                        return ClickHouseCreateConstant.createFalse();
                     }
                 } else {
-                    return left.asBooleanNotNull() && right.asBooleanNotNull() ? ClickHouseConstant.createTrue()
-                            : ClickHouseConstant.createFalse();
+                    return left.asBooleanNotNull() && right.asBooleanNotNull() ? ClickHouseCreateConstant.createTrue()
+                            : ClickHouseCreateConstant.createFalse();
                 }
             }
         },
@@ -37,13 +38,13 @@ public class ClickHouseBinaryLogicalOperation extends ClickHouseExpression {
             @Override
             public ClickHouseConstant apply(ClickHouseConstant left, ClickHouseConstant right) {
                 if (!left.isNull() && left.asBooleanNotNull()) {
-                    return ClickHouseConstant.createTrue();
+                    return ClickHouseCreateConstant.createTrue();
                 } else if (!right.isNull() && right.asBooleanNotNull()) {
-                    return ClickHouseConstant.createTrue();
+                    return ClickHouseCreateConstant.createTrue();
                 } else if (left.isNull() || right.isNull()) {
-                    return ClickHouseConstant.createNullConstant();
+                    return ClickHouseCreateConstant.createNullConstant();
                 } else {
-                    return ClickHouseConstant.createFalse();
+                    return ClickHouseCreateConstant.createFalse();
                 }
             }
         };

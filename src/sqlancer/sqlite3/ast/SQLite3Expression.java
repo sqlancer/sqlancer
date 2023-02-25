@@ -131,7 +131,7 @@ public abstract class SQLite3Expression {
     public static class Join extends SQLite3Expression {
 
         public enum JoinType {
-            INNER, CROSS, OUTER, NATURAL;
+            INNER, CROSS, OUTER, NATURAL, RIGHT, FULL;
         }
 
         private final SQLite3Table table;

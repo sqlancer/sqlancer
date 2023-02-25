@@ -19,7 +19,8 @@ import sqlancer.mongodb.gen.MongoDBComputedExpressionGenerator;
 import sqlancer.mongodb.gen.MongoDBMatchExpressionGenerator;
 
 public class MongoDBQueryPartitioningBase
-        extends TernaryLogicPartitioningOracleBase<Node<MongoDBExpression>, MongoDBGlobalState> implements TestOracle {
+        extends TernaryLogicPartitioningOracleBase<Node<MongoDBExpression>, MongoDBGlobalState>
+        implements TestOracle<MongoDBGlobalState> {
 
     protected MongoDBSchema schema;
     protected MongoDBTables targetTables;

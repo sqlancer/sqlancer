@@ -17,7 +17,7 @@ import sqlancer.h2.H2Schema.H2Table;
 import sqlancer.h2.H2Schema.H2Tables;
 
 public class H2QueryPartitioningBase extends TernaryLogicPartitioningOracleBase<Node<H2Expression>, H2GlobalState>
-        implements TestOracle {
+        implements TestOracle<H2GlobalState> {
 
     H2Schema s;
     H2Tables targetTables;

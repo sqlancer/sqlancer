@@ -4,7 +4,7 @@ import sqlancer.common.oracle.TestOracle;
 
 public interface OracleFactory<G extends GlobalState<?, ?, ?>> {
 
-    TestOracle create(G globalState) throws Exception;
+    TestOracle<G> create(G globalState) throws Exception;
 
     /**
      * Indicates whether the test oracle requires that all tables (including views) contain at least one row.

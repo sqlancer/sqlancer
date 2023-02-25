@@ -17,8 +17,20 @@ public class TestDatabend {
         assertEquals(0,
                 Main.executeMain("--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS, "--num-threads", "4",
                         "--num-queries", TestConfig.NUM_QUERIES, "--database-prefix", "databend",
-                        "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.NUMERIC),
+                        "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.ALPHANUMERIC),
                         "--host", "127.0.0.1", "--port", "3307", "databend", "--oracle", "NOREC"));
+    }
+
+    @Test
+    public void testDatabendPQS() {
+        String databendAvailable = System.getenv("DATABEND_AVAILABLE");
+        boolean databendIsAvailable = databendAvailable != null && databendAvailable.equalsIgnoreCase("true");
+        assumeTrue(databendIsAvailable);
+        assertEquals(0,
+                Main.executeMain("--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS, "--num-threads", "4",
+                        "--num-queries", TestConfig.NUM_QUERIES, "--database-prefix", "databend",
+                        "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.ALPHANUMERIC),
+                        "--host", "127.0.0.1", "--port", "3307", "databend", "--oracle", "PQS"));
     }
 
     @Test
@@ -29,7 +41,7 @@ public class TestDatabend {
         assertEquals(0,
                 Main.executeMain("--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS, "--num-threads", "4",
                         "--num-queries", TestConfig.NUM_QUERIES, "--database-prefix", "databend",
-                        "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.NUMERIC),
+                        "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.ALPHANUMERIC),
                         "--host", "127.0.0.1", "--port", "3307", "databend", "--oracle", "QUERY_PARTITIONING"));
     }
 
@@ -41,7 +53,7 @@ public class TestDatabend {
     // assertEquals(0,
     // Main.executeMain("--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS, "--num-threads", "4",
     // "--num-queries", TestConfig.NUM_QUERIES, "--database-prefix", "databend",
-    // "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.NUMERIC),
+    // "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.ALPHANUMERIC),
     // "--host", "127.0.0.1", "--port", "3307", "databend", "--oracle", "WHERE"));
     // }
     //
@@ -53,7 +65,7 @@ public class TestDatabend {
     // assertEquals(0,
     // Main.executeMain("--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS, "--num-threads", "4",
     // "--num-queries", TestConfig.NUM_QUERIES, "--database-prefix", "databend",
-    // "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.NUMERIC),
+    // "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.ALPHANUMERIC),
     // "--host", "127.0.0.1", "--port", "3307", "databend", "--oracle", "GROUP_BY"));
     // }
     //
@@ -65,7 +77,7 @@ public class TestDatabend {
     // assertEquals(0,
     // Main.executeMain("--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS, "--num-threads", "4",
     // "--num-queries", TestConfig.NUM_QUERIES, "--database-prefix", "databend",
-    // "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.NUMERIC),
+    // "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.ALPHANUMERIC),
     // "--host", "127.0.0.1", "--port", "3307", "databend", "--oracle", "HAVING"));
     // }
     //
@@ -77,7 +89,7 @@ public class TestDatabend {
     // assertEquals(0,
     // Main.executeMain("--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS, "--num-threads", "4",
     // "--num-queries", TestConfig.NUM_QUERIES, "--database-prefix", "databend",
-    // "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.NUMERIC),
+    // "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.ALPHANUMERIC),
     // "--host", "127.0.0.1", "--port", "3307", "databend", "--oracle", "DISTINCT"));
     // }
     //
@@ -89,18 +101,8 @@ public class TestDatabend {
     // assertEquals(0,
     // Main.executeMain("--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS, "--num-threads", "4",
     // "--num-queries", TestConfig.NUM_QUERIES, "--database-prefix", "databend",
-    // "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.NUMERIC),
+    // "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.ALPHANUMERIC),
     // "--host", "127.0.0.1", "--port", "3307", "databend", "--oracle", "AGGREGATE"));
-    // }
-
-    // @Test
-    // void testConnection() {
-    // assertEquals(0,
-    // Main.executeMain(new String[] { "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS,
-    // "--num-threads", "4", "--num-queries", TestConfig.NUM_QUERIES, "--database-prefix", "databend",
-    // "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.NUMERIC),
-    // "--host", "127.0.0.1", "--port", "3307", "--username", "user1", "--password", "1234",
-    // "databend", "--oracle", "HAVING" }));
     // }
 
 }

@@ -1,5 +1,7 @@
 package sqlancer;
 
+import java.util.Objects;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
@@ -8,6 +10,7 @@ import sqlancer.Randomly.StringGenerationStrategy;
 @Parameters(separators = "=", commandDescription = "Options applicable to all DBMS")
 public class MainOptions {
     public static final int NO_SET_PORT = -1;
+    public static final MainOptions DEFAULT_OPTIONS = new MainOptions();
 
     @Parameter(names = { "--help", "-h" }, description = "Lists all supported options and commands", help = true)
     private boolean help; // NOPMD
@@ -43,6 +46,24 @@ public class MainOptions {
 
     @Parameter(names = "--log-execution-time", description = "Logs the execution time of each statement (requires --log-each-select to be enabled)", arity = 1)
     private boolean logExecutionTime = true; // NOPMD
+
+    @Parameter(names = "--print-failed", description = "Logs failed insert, create and other statements without results", arity = 1)
+    private boolean loggerPrintFailed = true; // NOPMD
+
+    @Parameter(names = "--qpg-enable", description = "Enable the experimental feature Query Plan Guidance (QPG)", arity = 1)
+    private boolean enableQPG;
+
+    @Parameter(names = "--qpg-log-query-plan", description = "Logs the query plans of each query (requires --qpg-enable)", arity = 1)
+    private boolean logQueryPlan;
+
+    @Parameter(names = "--qpg-max-interval", description = "The maximum number of iterations to mutate tables if no new query plans (requires --qpg-enable)")
+    private static int qpgMaxInterval = 1000;
+
+    @Parameter(names = "--qpg-reward-weight", description = "The weight (0-1) of last reward when updating weighted average reward. A higher value denotes average reward is more affected by the last reward (requires --qpg-enable)")
+    private static double qpgk = 0.25;
+
+    @Parameter(names = "--qpg-selection-probability", description = "The probability (0-1) of the random selection of mutators. A higher value (>0.5) favors exploration over exploitation. (requires --qpg-enable)")
+    private static double qpgProbability = 0.7;
 
     @Parameter(names = "--username", description = "The user name used to log into the DBMS")
     private String userName = "sqlancer"; // NOPMD
@@ -101,6 +122,9 @@ public class MainOptions {
     @Parameter(names = "--database-prefix", description = "The prefix used for each database created")
     private String databasePrefix = "database"; // NOPMD
 
+    @Parameter(names = "--use-reducer", description = "EXPERIMENTAL Attempt to reduce queries using a simple reducer")
+    private boolean useReducer = false; // NOPMD
+
     public int getMaxExpressionDepth() {
         return maxExpressionDepth;
     }
@@ -136,6 +160,30 @@ public class MainOptions {
             throw new AssertionError();
         }
         return logExecutionTime;
+    }
+
+    public boolean loggerPrintFailed() {
+        return loggerPrintFailed;
+    }
+
+    public boolean logQueryPlan() {
+        return logQueryPlan;
+    }
+
+    public boolean enableQPG() {
+        return enableQPG;
+    }
+
+    public int getQPGMaxMutationInterval() {
+        return qpgMaxInterval;
+    }
+
+    public double getQPGk() {
+        return qpgk;
+    }
+
+    public double getQPGProbability() {
+        return qpgProbability;
     }
 
     public int getNrQueries() {
@@ -218,6 +266,14 @@ public class MainOptions {
         return help;
     }
 
+    public boolean isDefaultPassword() {
+        return Objects.equals(password, DEFAULT_OPTIONS.password);
+    }
+
+    public boolean isDefaultUsername() {
+        return Objects.equals(userName, DEFAULT_OPTIONS.userName);
+    }
+
     public String getDatabasePrefix() {
         return databasePrefix;
     }
@@ -226,4 +282,7 @@ public class MainOptions {
         return useConnectionTest;
     }
 
+    public boolean useReducer() {
+        return useReducer;
+    }
 }

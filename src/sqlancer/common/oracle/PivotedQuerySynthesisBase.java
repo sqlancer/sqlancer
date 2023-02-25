@@ -12,7 +12,7 @@ import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.common.schema.AbstractRowValue;
 
 public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?, C>, R extends AbstractRowValue<?, ?, ?>, E, C extends SQLancerDBConnection>
-        implements TestOracle {
+        implements TestOracle<S> {
 
     protected final ExpectedErrors errors = new ExpectedErrors();
 

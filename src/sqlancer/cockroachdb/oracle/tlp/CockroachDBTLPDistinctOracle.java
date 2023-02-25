@@ -15,6 +15,8 @@ import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnar
 
 public class CockroachDBTLPDistinctOracle extends CockroachDBTLPBase {
 
+    private String generatedQueryString;
+
     public CockroachDBTLPDistinctOracle(CockroachDBGlobalState state) {
         super(state);
         errors.add("GROUP BY term out of range");
@@ -25,7 +27,7 @@ public class CockroachDBTLPDistinctOracle extends CockroachDBTLPBase {
         super.check();
         select.setDistinct(true);
         String originalQueryString = CockroachDBVisitor.asString(select);
-
+        generatedQueryString = originalQueryString;
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
         select.setDistinct(false);
         CockroachDBExpression predicate = gen.generateExpression(CockroachDBDataType.BOOL.get());
@@ -40,5 +42,10 @@ public class CockroachDBTLPDistinctOracle extends CockroachDBTLPBase {
                 secondQueryString, thirdQueryString, combinedString, true, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
+    }
+
+    @Override
+    public String getLastQueryString() {
+        return generatedQueryString;
     }
 }

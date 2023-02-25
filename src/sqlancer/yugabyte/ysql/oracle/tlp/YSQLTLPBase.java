@@ -26,7 +26,7 @@ import sqlancer.yugabyte.ysql.gen.YSQLExpressionGenerator;
 import sqlancer.yugabyte.ysql.oracle.YSQLNoRECOracle;
 
 public class YSQLTLPBase extends TernaryLogicPartitioningOracleBase<YSQLExpression, YSQLGlobalState>
-        implements TestOracle {
+        implements TestOracle<YSQLGlobalState> {
 
     protected YSQLSchema s;
     protected YSQLTables targetTables;

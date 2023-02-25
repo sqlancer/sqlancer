@@ -29,7 +29,7 @@ import sqlancer.postgres.ast.PostgresPrefixOperation.PrefixOperator;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.gen.PostgresCommon;
 
-public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestOracle {
+public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestOracle<PostgresGlobalState> {
 
     private String firstResult;
     private String secondResult;

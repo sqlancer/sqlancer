@@ -1,5 +1,6 @@
 package sqlancer.tidb;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -16,16 +17,17 @@ import sqlancer.SQLConnection;
 import sqlancer.SQLGlobalState;
 import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
+import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.gen.TiDBAlterTableGenerator;
 import sqlancer.tidb.gen.TiDBAnalyzeTableGenerator;
 import sqlancer.tidb.gen.TiDBDeleteGenerator;
+import sqlancer.tidb.gen.TiDBDropTableGenerator;
+import sqlancer.tidb.gen.TiDBDropViewGenerator;
 import sqlancer.tidb.gen.TiDBIndexGenerator;
 import sqlancer.tidb.gen.TiDBInsertGenerator;
-import sqlancer.tidb.gen.TiDBRandomQuerySynthesizer;
 import sqlancer.tidb.gen.TiDBSetGenerator;
 import sqlancer.tidb.gen.TiDBTableGenerator;
 import sqlancer.tidb.gen.TiDBUpdateGenerator;
@@ -39,25 +41,20 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
     }
 
     public enum Action implements AbstractAction<TiDBGlobalState> {
-        INSERT(TiDBInsertGenerator::getQuery), //
-        ANALYZE_TABLE(TiDBAnalyzeTableGenerator::getQuery), //
-        TRUNCATE((g) -> new SQLQueryAdapter("TRUNCATE " + g.getSchema().getRandomTable(t -> !t.isView()).getName())), //
-        CREATE_INDEX(TiDBIndexGenerator::getQuery), //
-        DELETE(TiDBDeleteGenerator::getQuery), //
-        SET(TiDBSetGenerator::getQuery), //
-        UPDATE(TiDBUpdateGenerator::getQuery), //
+        CREATE_TABLE(TiDBTableGenerator::createRandomTableStatement), // 0
+        CREATE_INDEX(TiDBIndexGenerator::getQuery), // 1
+        VIEW_GENERATOR(TiDBViewGenerator::getQuery), // 2
+        INSERT(TiDBInsertGenerator::getQuery), // 3
+        ALTER_TABLE(TiDBAlterTableGenerator::getQuery), // 4
+        TRUNCATE((g) -> new SQLQueryAdapter("TRUNCATE " + g.getSchema().getRandomTable(t -> !t.isView()).getName())), // 5
+        UPDATE(TiDBUpdateGenerator::getQuery), // 6
+        DELETE(TiDBDeleteGenerator::getQuery), // 7
+        SET(TiDBSetGenerator::getQuery), // 8
         ADMIN_CHECKSUM_TABLE(
-                (g) -> new SQLQueryAdapter("ADMIN CHECKSUM TABLE " + g.getSchema().getRandomTable().getName())), //
-        VIEW_GENERATOR(TiDBViewGenerator::getQuery), //
-        ALTER_TABLE(TiDBAlterTableGenerator::getQuery), //
-        EXPLAIN((g) -> {
-            ExpectedErrors errors = new ExpectedErrors();
-            TiDBErrors.addExpressionErrors(errors);
-            TiDBErrors.addExpressionHavingErrors(errors);
-            return new SQLQueryAdapter(
-                    "EXPLAIN " + TiDBRandomQuerySynthesizer.generate(g, Randomly.smallNumber() + 1).getQueryString(),
-                    errors);
-        });
+                (g) -> new SQLQueryAdapter("ADMIN CHECKSUM TABLE " + g.getSchema().getRandomTable().getName())), // 9
+        ANALYZE_TABLE(TiDBAnalyzeTableGenerator::getQuery), // 10
+        DROP_TABLE(TiDBDropTableGenerator::dropTable), // 11
+        DROP_VIEW(TiDBDropViewGenerator::dropView); // 12
 
         private final SQLQueryProvider<TiDBGlobalState> sqlQueryProvider;
 
@@ -87,8 +84,6 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
         case CREATE_INDEX:
             return r.getInteger(0, 2);
         case INSERT:
-        case EXPLAIN:
-            return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
         case TRUNCATE:
         case DELETE:
         case ADMIN_CHECKSUM_TABLE:
@@ -101,6 +96,10 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
             return r.getInteger(0, 2);
         case ALTER_TABLE:
             return r.getInteger(0, 10); // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/10
+        case CREATE_TABLE:
+        case DROP_TABLE:
+        case DROP_VIEW:
+            return 0;
         default:
             throw new AssertionError(a);
         }
@@ -170,6 +169,45 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
     @Override
     public String getDBMSName() {
         return "tidb";
+    }
+
+    @Override
+    public String getQueryPlan(String selectStr, TiDBGlobalState globalState) throws Exception {
+        String queryPlan = "";
+        if (globalState.getOptions().logEachSelect()) {
+            globalState.getLogger().writeCurrent(selectStr);
+            try {
+                globalState.getLogger().getCurrentFileWriter().flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        SQLQueryAdapter q = new SQLQueryAdapter("EXPLAIN " + selectStr);
+        try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
+            if (rs != null) {
+                while (rs.next()) {
+                    String targetQueryPlan = rs.getString(1).replace("├─", "").replace("└─", "").replace("│", "").trim()
+                            + ";"; // Unify format
+                    queryPlan += targetQueryPlan;
+                }
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+
+        return queryPlan;
+    }
+
+    @Override
+    protected double[] initializeWeightedAverageReward() {
+        return new double[Action.values().length];
+    }
+
+    @Override
+    protected void executeMutator(int index, TiDBGlobalState globalState) throws Exception {
+        SQLQueryAdapter queryMutateTable = Action.values()[index].getQuery(globalState);
+        globalState.executeStatement(queryMutateTable);
     }
 
 }

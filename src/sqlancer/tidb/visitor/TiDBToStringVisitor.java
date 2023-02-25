@@ -1,9 +1,7 @@
 package sqlancer.tidb.visitor;
 
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.visitor.ToStringVisitor;
-import sqlancer.tidb.TiDBBugs;
 import sqlancer.tidb.ast.TiDBAggregate;
 import sqlancer.tidb.ast.TiDBCase;
 import sqlancer.tidb.ast.TiDBCastOperation;
@@ -130,9 +128,6 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
                 sb.append("LEFT ");
                 break;
             case RIGHT:
-                if (TiDBBugs.bug15844) {
-                    throw new IgnoreMeException();
-                }
                 sb.append("RIGHT ");
                 break;
             default:

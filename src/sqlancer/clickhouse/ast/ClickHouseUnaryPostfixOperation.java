@@ -1,6 +1,7 @@
 package sqlancer.clickhouse.ast;
 
 import sqlancer.Randomly;
+import sqlancer.clickhouse.ast.constant.ClickHouseCreateConstant;
 import sqlancer.common.ast.BinaryOperatorNode;
 import sqlancer.common.visitor.UnaryOperation;
 
@@ -86,7 +87,7 @@ public class ClickHouseUnaryPostfixOperation extends ClickHouseExpression
         if (negate) {
             val = !val;
         }
-        return ClickHouseConstant.createInt32Constant(val ? 1 : 0);
+        return ClickHouseCreateConstant.createInt32Constant(val ? 1 : 0);
     }
 
 }

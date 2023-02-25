@@ -29,10 +29,11 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
-public class SQLite3TLPHavingOracle implements TestOracle {
+public class SQLite3TLPHavingOracle implements TestOracle<SQLite3GlobalState> {
 
     private final SQLite3GlobalState state;
     private final ExpectedErrors errors = new ExpectedErrors();
+    private String generatedQueryString;
 
     public SQLite3TLPHavingOracle(SQLite3GlobalState state) {
         this.state = state;
@@ -61,7 +62,7 @@ public class SQLite3TLPHavingOracle implements TestOracle {
         select.setGroupByClause(groupByColumns);
         select.setHavingClause(null);
         String originalQueryString = SQLite3Visitor.asString(select);
-
+        generatedQueryString = originalQueryString;
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         SQLite3Expression predicate = gen.getHavingClause();
@@ -83,5 +84,10 @@ public class SQLite3TLPHavingOracle implements TestOracle {
         if (new HashSet<>(resultSet).size() != new HashSet<>(secondResultSet).size()) {
             throw new AssertionError(originalQueryString + ";\n" + combinedString + ";");
         }
+    }
+
+    @Override
+    public String getLastQueryString() {
+        return generatedQueryString;
     }
 }

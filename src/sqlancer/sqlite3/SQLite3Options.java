@@ -90,10 +90,17 @@ public class SQLite3Options implements DBMSSpecificOptions<SQLite3OracleFactory>
             "--execute-queries" }, description = "Specifies whether the query in the fuzzer should be executed", arity = 1)
     public boolean executeQuery = true;
 
+    @Parameter(names = {
+            "--max-num-tables" }, description = "The maximum number of tables/virtual tables/ rtree tables/ views that can be created")
+    public int maxNumTables = 10;
+
+    @Parameter(names = { "--max-num-indexes" }, description = "The maximum number of indexes that can be created")
+    public int maxNumIndexes = 20;
+
     public enum SQLite3OracleFactory implements OracleFactory<SQLite3GlobalState> {
         PQS {
             @Override
-            public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
+            public TestOracle<SQLite3GlobalState> create(SQLite3GlobalState globalState) throws SQLException {
                 return new SQLite3PivotedQuerySynthesisOracle(globalState);
             }
 
@@ -105,14 +112,14 @@ public class SQLite3Options implements DBMSSpecificOptions<SQLite3OracleFactory>
         },
         NoREC {
             @Override
-            public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
+            public TestOracle<SQLite3GlobalState> create(SQLite3GlobalState globalState) throws SQLException {
                 return new SQLite3NoRECOracle(globalState);
             }
         },
         AGGREGATE {
 
             @Override
-            public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
+            public TestOracle<SQLite3GlobalState> create(SQLite3GlobalState globalState) throws SQLException {
                 return new SQLite3TLPAggregateOracle(globalState);
             }
 
@@ -120,45 +127,45 @@ public class SQLite3Options implements DBMSSpecificOptions<SQLite3OracleFactory>
         WHERE {
 
             @Override
-            public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
+            public TestOracle<SQLite3GlobalState> create(SQLite3GlobalState globalState) throws SQLException {
                 return new SQLite3TLPWhereOracle(globalState);
             }
 
         },
         DISTINCT {
             @Override
-            public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
+            public TestOracle<SQLite3GlobalState> create(SQLite3GlobalState globalState) throws SQLException {
                 return new SQLite3TLPDistinctOracle(globalState);
             }
         },
         GROUP_BY {
             @Override
-            public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
+            public TestOracle<SQLite3GlobalState> create(SQLite3GlobalState globalState) throws SQLException {
                 return new SQLite3TLPGroupByOracle(globalState);
             }
         },
         HAVING {
             @Override
-            public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
+            public TestOracle<SQLite3GlobalState> create(SQLite3GlobalState globalState) throws SQLException {
                 return new SQLite3TLPHavingOracle(globalState);
             }
         },
         FUZZER {
             @Override
-            public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
+            public TestOracle<SQLite3GlobalState> create(SQLite3GlobalState globalState) throws SQLException {
                 return new SQLite3Fuzzer(globalState);
             }
         },
         QUERY_PARTITIONING {
             @Override
-            public TestOracle create(SQLite3GlobalState globalState) throws SQLException {
-                List<TestOracle> oracles = new ArrayList<>();
+            public TestOracle<SQLite3GlobalState> create(SQLite3GlobalState globalState) throws SQLException {
+                List<TestOracle<SQLite3GlobalState>> oracles = new ArrayList<>();
                 oracles.add(new SQLite3TLPWhereOracle(globalState));
                 oracles.add(new SQLite3TLPDistinctOracle(globalState));
                 oracles.add(new SQLite3TLPGroupByOracle(globalState));
                 oracles.add(new SQLite3TLPHavingOracle(globalState));
                 oracles.add(new SQLite3TLPAggregateOracle(globalState));
-                return new CompositeTestOracle(oracles, globalState);
+                return new CompositeTestOracle<SQLite3GlobalState>(oracles, globalState);
             }
         };
 
