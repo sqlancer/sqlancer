@@ -69,6 +69,7 @@ public final class CnosDBExpectedError {
         ERRORS.add(
                 "Coercion from [Utf8, Float64, Utf8] to the signature OneOf([Exact([Utf8, Int64]), Exact([LargeUtf8, Int64]), Exact([Utf8, Int64, Utf8]), Exact([LargeUtf8, Int64, Utf8]), Exact([Utf8, Int64, LargeUtf8]), Exact([LargeUtf8, Int64, LargeUtf8])]) failed.");
         ERRORS.add("Coercion from");
+        ERRORS.add("Build left right indices error");
     }
 
     public static ExpectedErrors expectedErrors() {
