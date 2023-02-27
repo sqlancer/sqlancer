@@ -69,9 +69,10 @@ public class CnosDBProvider extends ProviderAdapter<CnosDBGlobalState, CnosDBOpt
         CnosDBClient client = new CnosDBClient(host, port, username, password, databaseName);
         CnosDBConnection connection = new CnosDBConnection(client);
         client.execute("DROP DATABASE IF EXISTS " + databaseName);
+        String createdb = "CREATE DATABASE " + databaseName + "WITH TTL '1000000' REPLICA 2";
         globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
-        client.execute("CREATE DATABASE " + databaseName);
-        globalState.getState().logStatement("CREATE DATABASE " + databaseName);
+        client.execute(createdb);
+        globalState.getState().logStatement(createdb);
 
         return connection;
     }
