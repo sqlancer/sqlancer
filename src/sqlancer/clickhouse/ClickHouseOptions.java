@@ -31,6 +31,9 @@ public class ClickHouseOptions implements DBMSSpecificOptions<ClickHouseOracleFa
     @Parameter(names = { "--test-joins" }, description = "Allow the generation of JOIN clauses", arity = 1)
     public boolean testJoins = true;
 
+    @Parameter(names = { "--analyzer" }, description = "Enable analyzer in ClickHouse", arity = 1)
+    public boolean enableAnalyzer = true;
+
     public enum ClickHouseOracleFactory implements OracleFactory<ClickHouseGlobalState> {
         TLPWhere {
             @Override
