@@ -79,6 +79,7 @@ public final class ClickHouseErrors {
         errors.add("MULTIPLE_EXPRESSIONS_FOR_ALIAS");
         errors.add("AMBIGUOUS_IDENTIFIER"); // https://github.com/ClickHouse/ClickHouse/issues/45389
         errors.add("AMBIGUOUS_COLUMN_NAME"); // same https://github.com/ClickHouse/ClickHouse/issues/45389
+        errors.add("Cannot parse number with multiple sign");
     }
 
 }
