@@ -112,9 +112,9 @@
         <configuration>
           <source>11</source>
           <target>11</target>
-          <compilerArguments>
+          <compilerArgs>
             <properties>${project.basedir}/.settings/org.eclipse.jdt.core.prefs</properties>
-          </compilerArguments>
+          </compilerArgs>
           <compilerId>eclipse</compilerId>
           <showWarnings>true</showWarnings>
           <failOnWarning>true</failOnWarning>
