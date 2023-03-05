@@ -213,3 +213,34 @@ can use `git rebase -i` to change the respective commit. If you already have a n
 use `git squash` to "collapse" multiple commits into one. For more information, you might want to
 read [How (and Why!) to Keep Your Git Commit History Clean](https://about.gitlab.com/blog/2018/06/07/keeping-git-commit-history-clean/)
 written by Kushal Pandya.
+
+## Commit Message Conventions
+
+- Start with a short summary (50 characters or less) of the changes made.
+- Use the present tense and imperative mood.
+- Separate the summary from the body of the message with a blank line.
+- Use the body to explain what and why changes were made, as well as any necessary details.
+- Addionally, you can consider
+  using [semantic commit messages](https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716?permalink_comment_id=3867882)
+  like "feat:", "docs:", etc. which will provide additional context to the commit message.
+
+**Example:** feat: add support for ClickHouse
+
+**Example:** docs: updated README.md with installation instructions
+
+**Example:** style: formatting, missing semi colons, etc
+
+**Example:** fix: fixed bug in scan logic for GCE instances
+
+**Example:** test: added unit tests for new scan feature
+
+**Example:** ci: updated build pipeline to include new dependency
+
+**Example:** chore: removed unused code and refactored some variables
+
+## Branching Naming Conventions
+
+- Use lowercase letters.
+- Separate words with hyphens.
+- Use descriptive names that reflect the purpose of the branch.
+- Add `issue tracker id`
