@@ -58,41 +58,35 @@ public class CitusSchema extends PostgresSchema {
 
     public static CitusSchema fromConnection(SQLConnection con, String databaseName) throws SQLException {
         PostgresSchema schema = PostgresSchema.fromConnection(con, databaseName);
-        try {
-            List<CitusTable> databaseTables = new ArrayList<>();
-            try (Statement s = con.createStatement()) {
-                try (ResultSet rs = s.executeQuery(
-                        "SELECT table_name, column_to_column_name(logicalrelid, partkey) AS dist_col_name, colocationid FROM information_schema.tables LEFT OUTER JOIN pg_dist_partition ON logicalrelid=table_name::regclass WHERE table_schema='public' OR table_schema LIKE 'pg_temp_%';")) {
-                    while (rs.next()) {
-                        String tableName = rs.getString("table_name");
-                        /* citus_tables is a helper view, we don't need to test with it so we let's ignore it */
-                        if (tableName.equals("citus_tables")) {
-                            continue;
-                        }
-                        String distributionColumnName = rs.getString("dist_col_name");
-                        Integer colocationId = rs.getInt("colocationid");
-                        if (rs.wasNull()) {
-                            colocationId = null;
-                        }
-                        PostgresTable t = schema.getDatabaseTable(tableName);
-                        PostgresColumn distributionColumn = null;
-                        if (t == null) {
-                            continue;
-                        }
-                        if (distributionColumnName != null && !distributionColumnName.equals("")) {
-                            distributionColumn = t.getColumns().stream()
-                                    .filter(c -> c.getName().equals(distributionColumnName))
-                                    .collect(Collectors.toList()).get(0);
-                        }
-                        CitusTable tCitus = new CitusTable(t, distributionColumn, colocationId);
-                        databaseTables.add(tCitus);
-                    }
+        List<CitusTable> databaseTables = new ArrayList<>();
+        try (Statement s = con.createStatement(); ResultSet rs = s.executeQuery(
+                "SELECT table_name, column_to_column_name(logicalrelid, partkey) AS dist_col_name, colocationid FROM information_schema.tables LEFT OUTER JOIN pg_dist_partition ON logicalrelid=table_name::regclass WHERE table_schema='public' OR table_schema LIKE 'pg_temp_%';")) {
+            while (rs.next()) {
+                String tableName = rs.getString("table_name");
+                /* citus_tables is a helper view, we don't need to test with it so we let's ignore it */
+                if (tableName.equals("citus_tables")) {
+                    continue;
                 }
+                String distributionColumnName = rs.getString("dist_col_name");
+                Integer colocationId = rs.getInt("colocationid");
+                if (rs.wasNull()) {
+                    colocationId = null;
+                }
+                PostgresTable t = schema.getDatabaseTable(tableName);
+                PostgresColumn distributionColumn = null;
+                if (t == null) {
+                    continue;
+                }
+                if (distributionColumnName != null && !distributionColumnName.equals("")) {
+                    distributionColumn = t.getColumns().stream().filter(c -> c.getName().equals(distributionColumnName))
+                            .collect(Collectors.toList()).get(0);
+                }
+                CitusTable tCitus = new CitusTable(t, distributionColumn, colocationId);
+                databaseTables.add(tCitus);
             }
-            return new CitusSchema(databaseTables, databaseName);
         } catch (SQLIntegrityConstraintViolationException e) {
             throw new AssertionError(e);
         }
+        return new CitusSchema(databaseTables, databaseName);
     }
-
 }
