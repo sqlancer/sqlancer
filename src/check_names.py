@@ -36,3 +36,4 @@ verify_prefix('QuestDB', get_java_files("sqlancer/questdb/"))
 verify_prefix('SQLite3', get_java_files("sqlancer/sqlite3/"))
 verify_prefix('TiDB', get_java_files("sqlancer/tidb/"))
 verify_prefix('Y', get_java_files("sqlancer/yugabyte/")) # has both YCQL and YSQL prefixes
+verify_prefix('TimescaleDB', get_java_files("sqlancer/timescaledb/"))
