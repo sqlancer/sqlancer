@@ -31,19 +31,17 @@ public class TimeScaleDBSchema extends PostgresSchema {
     public static TimeScaleDBSchema fromConnection(SQLConnection con, String databaseName) throws SQLException {
         PostgresSchema schema = PostgresSchema.fromConnection(con, databaseName);
         List<TimeScaleDBTable> databaseTables = new ArrayList<>();
-        try {
-            try (Statement s = con.createStatement(); ResultSet rs = s.executeQuery("SELECT table_name FROM information_schema.tables")) {
-                while (rs.next()) {
-                    String tableName = rs.getString("table_name");
+        try (Statement s = con.createStatement(); ResultSet rs = s.executeQuery("SELECT table_name FROM information_schema.tables")) {
+            while (rs.next()) {
+                String tableName = rs.getString("table_name");
 
-                    PostgresTable t = schema.getDatabaseTable(tableName);
-                    if (t == null) {
-                        continue;
-                    }
-
-                    TimeScaleDBTable tCitus = new TimeScaleDBTable(t);
-                    databaseTables.add(tCitus);
+                PostgresTable t = schema.getDatabaseTable(tableName);
+                if (t == null) {
+                    continue;
                 }
+
+                TimeScaleDBTable table = new TimeScaleDBTable(t);
+                databaseTables.add(table);
             }
         } catch (SQLIntegrityConstraintViolationException e) {
             throw new AssertionError(e);
