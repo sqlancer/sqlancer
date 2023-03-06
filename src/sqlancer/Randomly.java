@@ -1,6 +1,7 @@
 package sqlancer;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -131,19 +132,15 @@ public final class Randomly {
         return extractNrRandomColumns(columns, nr);
     }
 
+
     public static <T> List<T> subset(int nr, @SuppressWarnings("unchecked") T... values) {
         List<T> list = new ArrayList<>();
-        for (T val : values) {
-            list.add(val);
-        }
+        Collections.addAll(list, values);
         return extractNrRandomColumns(list, nr);
     }
 
     public static <T> List<T> subset(@SuppressWarnings("unchecked") T... values) {
-        List<T> list = new ArrayList<>();
-        for (T val : values) {
-            list.add(val);
-        }
+        List<T> list = new ArrayList<>(Arrays.asList(values));
         return subset(list);
     }
 
@@ -350,7 +347,6 @@ public final class Randomly {
         do {
             value = getInteger();
         } while (value == 0);
-        assert value != 0;
         addToCache(value);
         return value;
     }
@@ -425,7 +421,7 @@ public final class Randomly {
     }
 
     public BigDecimal getRandomBigDecimal() {
-        return new BigDecimal(getThreadRandom().get().nextDouble());
+        return BigDecimal.valueOf(getThreadRandom().get().nextDouble());
     }
 
     public long getPositiveIntegerNotNull() {
@@ -494,7 +490,7 @@ public final class Randomly {
         if (lower == upper) {
             return lower;
         }
-        return (long) (getThreadRandom().get().longs(lower, upper).findFirst().getAsLong());
+        return getThreadRandom().get().longs(lower, upper).findFirst().getAsLong();
     }
 
     private static int getNextInt(int lower, int upper) {

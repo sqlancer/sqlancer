@@ -63,7 +63,7 @@ public abstract class AbstractRowValue<T extends AbstractTables<?, C>, C extends
                 sb.append("\n");
             }
             AbstractTable<?, ?, ?> t = tableList.get(j);
-            sb.append("-- " + t.getName() + "\n");
+            sb.append("-- ").append(t.getName()).append("\n");
             List<C> columnsForTable = columnList.stream().filter(c -> c.getTable().equals(t))
                     .collect(Collectors.toList());
             for (int i = 0; i < columnsForTable.size(); i++) {
