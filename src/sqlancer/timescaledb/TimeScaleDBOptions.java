@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.beust.jcommander.Parameter;
+
 import sqlancer.OracleFactory;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.postgres.PostgresGlobalState;

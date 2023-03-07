@@ -19,6 +19,7 @@ public class TimeScaleDBProvider extends PostgresProvider {
 
     @Override
     public String getDBMSName() {
+        getTimeScaleDBErrors(); // todo: remove this
         return "TimeScaleDB";
     }
 
