@@ -3,7 +3,6 @@ package sqlancer.timescaledb.gen;
 import sqlancer.common.query.ExpectedErrors;
 
 public final class TimeScaleDBCommon {
-
     private TimeScaleDBCommon() {
 
     }

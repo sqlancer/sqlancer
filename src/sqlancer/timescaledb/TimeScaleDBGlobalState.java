@@ -1,8 +1,8 @@
 package sqlancer.timescaledb;
 
-import sqlancer.postgres.PostgresGlobalState;
-
 import java.sql.SQLException;
+
+import sqlancer.postgres.PostgresGlobalState;
 
 public class TimeScaleDBGlobalState extends PostgresGlobalState {
     @Override
