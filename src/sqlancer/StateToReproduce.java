@@ -70,6 +70,9 @@ public class StateToReproduce {
         return Collections.unmodifiableList(statements);
     }
 
+    /**
+     * @deprecated
+     */
     @Deprecated
     public void commentStatements() {
         for (int i = 0; i < statements.size(); i++) {
@@ -100,7 +103,7 @@ public class StateToReproduce {
 
         private final List<Query<?>> statements = new ArrayList<>();
 
-        public boolean success;
+        private boolean success;
 
         public OracleRunReproductionState() {
             StateToReproduce.this.localState = this;

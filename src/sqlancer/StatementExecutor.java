@@ -70,7 +70,7 @@ public class StatementExecutor<G extends GlobalState<?, ?, ?>, A extends Abstrac
                     success = globalState.executeStatement(query);
                 } while (nextAction.canBeRetried() && !success
                         && nrTries++ < globalState.getOptions().getNrStatementRetryCount());
-            } catch (IgnoreMeException e) {
+            } catch (IgnoreMeException ignored) {
 
             }
             if (query != null && query.couldAffectSchema()) {

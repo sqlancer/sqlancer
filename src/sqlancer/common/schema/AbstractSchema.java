@@ -45,7 +45,7 @@ public class AbstractSchema<G extends GlobalState<?, ?, ?>, A extends AbstractTa
     }
 
     public A getRandomTableOrBailout(Function<A, Boolean> f) {
-        List<A> relevantTables = databaseTables.stream().filter(t -> f.apply(t)).collect(Collectors.toList());
+        List<A> relevantTables = databaseTables.stream().filter(f::apply).collect(Collectors.toList());
         if (relevantTables.isEmpty()) {
             throw new IgnoreMeException();
         }

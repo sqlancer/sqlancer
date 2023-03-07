@@ -27,7 +27,7 @@ public final class DBMSCommon {
         return matcher.matches();
     }
 
-    public static int getMaxIndexInDoubleArrary(double... doubleArray) {
+    public static int getMaxIndexInDoubleArray(double... doubleArray) {
         int maxIndex = 0;
         double maxValue = 0.0;
         for (int j = 0; j < doubleArray.length; j++) {
