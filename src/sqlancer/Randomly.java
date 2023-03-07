@@ -132,7 +132,6 @@ public final class Randomly {
         return extractNrRandomColumns(columns, nr);
     }
 
-
     public static <T> List<T> subset(int nr, @SuppressWarnings("unchecked") T... values) {
         List<T> list = new ArrayList<>();
         Collections.addAll(list, values);

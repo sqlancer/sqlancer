@@ -10,7 +10,7 @@ public abstract class BinaryOperatorNode<T, O extends Operator> extends BinaryNo
         String getTextRepresentation();
     }
 
-   protected BinaryOperatorNode(T left, T right, O op) {
+    protected BinaryOperatorNode(T left, T right, O op) {
         super(left, right);
         this.op = op;
     }
