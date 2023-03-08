@@ -7,14 +7,14 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresOptions;
 import sqlancer.postgres.PostgresProvider;
-import sqlancer.timescaledb.gen.TimeScaleDBCommon;
+import sqlancer.timescaledb.gen.TimescaleDBCommon;
 
 @AutoService(DatabaseProvider.class)
-public class TimeScaleDBProvider extends PostgresProvider {
+public class TimescaleDBProvider extends PostgresProvider {
     @SuppressWarnings("unchecked")
-    public TimeScaleDBProvider() {
-        super((Class<PostgresGlobalState>) (Object) TimeScaleDBGlobalState.class,
-                (Class<PostgresOptions>) (Object) TimeScaleDBOptions.class);
+    public TimescaleDBProvider() {
+        super((Class<PostgresGlobalState>) (Object) TimescaleDBGlobalState.class,
+                (Class<PostgresOptions>) (Object) TimescaleDBOptions.class);
     }
 
     @Override
@@ -22,9 +22,9 @@ public class TimeScaleDBProvider extends PostgresProvider {
         return "timescaledb";
     }
 
-    public static ExpectedErrors getTimeScaleDBErrors() {
+    public static ExpectedErrors getTimescaleDBErrors() {
         ExpectedErrors errors = new ExpectedErrors();
-        TimeScaleDBCommon.addTimeScaleDBErrors(errors);
+        TimescaleDBCommon.addTimescaleDBErrors(errors);
         return errors;
     }
 }

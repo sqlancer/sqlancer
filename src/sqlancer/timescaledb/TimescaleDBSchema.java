@@ -10,30 +10,29 @@ import java.util.List;
 import sqlancer.SQLConnection;
 import sqlancer.postgres.PostgresSchema;
 
-public class TimeScaleDBSchema extends PostgresSchema {
+public class TimescaleDBSchema extends PostgresSchema {
 
-    public TimeScaleDBSchema(List<TimeScaleDBTable> databaseTables, String databaseName) {
+    public TimescaleDBSchema(List<TimescaleDBTable> databaseTables, String databaseName) {
         super(new ArrayList<>(databaseTables), databaseName);
     }
 
-    public static class TimeScaleDBTable extends PostgresTable {
-
-        public TimeScaleDBTable(String tableName, List<PostgresColumn> columns, List<PostgresIndex> indexes,
-                TableType tableType, List<PostgresStatisticsObject> statistics, boolean isView, boolean isInsertable) {
+    public static class TimescaleDBTable extends PostgresTable {
+        public TimescaleDBTable(String tableName, List<PostgresColumn> columns, List<PostgresIndex> indexes,
+                                TableType tableType, List<PostgresStatisticsObject> statistics, boolean isView, boolean isInsertable) {
             super(tableName, columns, indexes, tableType, statistics, isView, isInsertable);
         }
 
-        public TimeScaleDBTable(PostgresTable table) {
+        public TimescaleDBTable(PostgresTable table) {
             super(table.getName(), table.getColumns(), table.getIndexes(), table.getTableType(), table.getStatistics(),
                     table.isView(), table.isInsertable());
         }
     }
 
-    public static TimeScaleDBSchema fromConnection(SQLConnection con, String databaseName) throws SQLException {
+    public static TimescaleDBSchema fromConnection(SQLConnection con, String databaseName) throws SQLException {
         PostgresSchema schema = PostgresSchema.fromConnection(con, databaseName);
-        List<TimeScaleDBTable> databaseTables = new ArrayList<>();
+        List<TimescaleDBTable> databaseTables = new ArrayList<>();
         try (Statement s = con.createStatement();
-                ResultSet rs = s.executeQuery("SELECT table_name FROM information_schema.tables")) {
+             ResultSet rs = s.executeQuery("SELECT table_name FROM information_schema.tables")) {
             while (rs.next()) {
                 String tableName = rs.getString("table_name");
 
@@ -42,12 +41,12 @@ public class TimeScaleDBSchema extends PostgresSchema {
                     continue;
                 }
 
-                TimeScaleDBTable table = new TimeScaleDBTable(t);
+                TimescaleDBTable table = new TimescaleDBTable(t);
                 databaseTables.add(table);
             }
         } catch (SQLIntegrityConstraintViolationException e) {
             throw new AssertionError(e);
         }
-        return new TimeScaleDBSchema(databaseTables, databaseName);
+        return new TimescaleDBSchema(databaseTables, databaseName);
     }
 }

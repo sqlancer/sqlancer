@@ -12,11 +12,11 @@ import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresOptions;
 import sqlancer.postgres.oracle.PostgresPivotedQuerySynthesisOracle;
 
-public class TimeScaleDBOptions extends PostgresOptions {
+public class TimescaleDBOptions extends PostgresOptions {
     @Parameter(names = "--timescaledboracle", description = "Specifies which test oracle should be used for TimeScaleDB extension to PostgreSQL")
-    public List<TimeScaleDBOracleFactory> timeScaleDBOracle = Arrays.asList(TimeScaleDBOracleFactory.PQS);
+    public List<TimescaleDBOracleFactory> timescaleDBOracle = Arrays.asList(TimescaleDBOracleFactory.PQS);
 
-    public enum TimeScaleDBOracleFactory implements OracleFactory<PostgresGlobalState> {
+    public enum TimescaleDBOracleFactory implements OracleFactory<PostgresGlobalState> {
         PQS {
             @Override
             public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws SQLException {
