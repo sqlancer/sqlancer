@@ -18,7 +18,7 @@ public class TimescaleDBSchema extends PostgresSchema {
 
     public static class TimescaleDBTable extends PostgresTable {
         public TimescaleDBTable(String tableName, List<PostgresColumn> columns, List<PostgresIndex> indexes,
-                                TableType tableType, List<PostgresStatisticsObject> statistics, boolean isView, boolean isInsertable) {
+                TableType tableType, List<PostgresStatisticsObject> statistics, boolean isView, boolean isInsertable) {
             super(tableName, columns, indexes, tableType, statistics, isView, isInsertable);
         }
 
@@ -32,7 +32,7 @@ public class TimescaleDBSchema extends PostgresSchema {
         PostgresSchema schema = PostgresSchema.fromConnection(con, databaseName);
         List<TimescaleDBTable> databaseTables = new ArrayList<>();
         try (Statement s = con.createStatement();
-             ResultSet rs = s.executeQuery("SELECT table_name FROM information_schema.tables")) {
+                ResultSet rs = s.executeQuery("SELECT table_name FROM information_schema.tables")) {
             while (rs.next()) {
                 String tableName = rs.getString("table_name");
 
