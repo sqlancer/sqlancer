@@ -26,7 +26,7 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
     int currentSelectCounts;
     int currentMutationOperator = -1;
 
-    public ProviderAdapter(Class<G> globalClass, Class<O> optionClass) {
+    protected ProviderAdapter(Class<G> globalClass, Class<O> optionClass) {
         this.globalClass = globalClass;
         this.optionClass = optionClass;
     }
@@ -85,7 +85,7 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
         List<? extends OracleFactory<G>> testOracleFactory = globalState.getDbmsSpecificOptions()
                 .getTestOracleFactory();
         boolean testOracleRequiresMoreThanZeroRows = testOracleFactory.stream()
-                .anyMatch(p -> p.requiresAllTablesToContainRows());
+                .anyMatch(OracleFactory::requiresAllTablesToContainRows);
         boolean userRequiresMoreThanZeroRows = globalState.getOptions().testOnlyWithMoreThanZeroRows();
         boolean checkZeroRows = testOracleRequiresMoreThanZeroRows || userRequiresMoreThanZeroRows;
         if (checkZeroRows && globalState.getSchema().containsTableWithZeroRows(globalState)) {
@@ -98,7 +98,7 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
         if (testOracleFactory.size() == 1) {
             return testOracleFactory.get(0).create(globalState);
         } else {
-            return new CompositeTestOracle<G>(testOracleFactory.stream().map(o -> {
+            return new CompositeTestOracle<>(testOracleFactory.stream().map(o -> {
                 try {
                     return o.create(globalState);
                 } catch (Exception e1) {
@@ -170,7 +170,7 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
         if (Randomly.getPercentage() < globalState.getOptions().getQPGProbability()) {
             selectedActionIndex = globalState.getRandomly().getInteger(0, weightedAverageReward.length);
         } else {
-            selectedActionIndex = DBMSCommon.getMaxIndexInDoubleArrary(weightedAverageReward);
+            selectedActionIndex = DBMSCommon.getMaxIndexInDoubleArray(weightedAverageReward);
         }
         int reward = 0;
 

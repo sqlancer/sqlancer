@@ -6,7 +6,7 @@ public abstract class UnaryOperatorNode<T, O extends Operator> extends UnaryNode
 
     protected final O op;
 
-    public UnaryOperatorNode(T expr, O op) {
+    protected UnaryOperatorNode(T expr, O op) {
         super(expr);
         this.op = op;
     }
