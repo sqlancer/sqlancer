@@ -19,10 +19,10 @@ public class TimeScaleDBProvider extends PostgresProvider {
 
     @Override
     public String getDBMSName() {
-        return "TimeScaleDB";
+        return "timescaledb";
     }
 
-    private static ExpectedErrors getTimeScaleDBErrors() {
+    public static ExpectedErrors getTimeScaleDBErrors() {
         ExpectedErrors errors = new ExpectedErrors();
         TimeScaleDBCommon.addTimeScaleDBErrors(errors);
         return errors;
