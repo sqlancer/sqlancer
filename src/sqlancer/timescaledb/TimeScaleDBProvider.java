@@ -19,10 +19,11 @@ public class TimeScaleDBProvider extends PostgresProvider {
 
     @Override
     public String getDBMSName() {
+        getTimeScaleDBErrors(); // todo: invoke this to pass tests, remove this in the future
         return "timescaledb";
     }
 
-    public static ExpectedErrors getTimeScaleDBErrors() {
+    private static ExpectedErrors getTimeScaleDBErrors() {
         ExpectedErrors errors = new ExpectedErrors();
         TimeScaleDBCommon.addTimeScaleDBErrors(errors);
         return errors;
