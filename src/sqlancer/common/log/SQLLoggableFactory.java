@@ -37,10 +37,10 @@ public class SQLLoggableFactory extends LoggableFactory {
     @Override
     protected Loggable infoToLoggable(String time, String databaseName, String databaseVersion, long seedValue) {
         StringBuilder sb = new StringBuilder();
-        sb.append("-- Time: " + time + "\n");
-        sb.append("-- Database: " + databaseName + "\n");
-        sb.append("-- Database version: " + databaseVersion + "\n");
-        sb.append("-- seed value: " + seedValue + "\n");
+        sb.append("-- Time: ").append(time).append("\n");
+        sb.append("-- Database: ").append(databaseName).append("\n");
+        sb.append("-- Database version: ").append(databaseVersion).append("\n");
+        sb.append("-- seed value: ").append(seedValue).append("\n");
         return new LoggedString(sb.toString());
     }
 

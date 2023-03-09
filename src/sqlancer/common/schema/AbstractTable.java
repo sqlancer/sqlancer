@@ -19,7 +19,7 @@ public abstract class AbstractTable<C extends AbstractTableColumn<?, ?>, I exten
     private final boolean isView;
     protected long rowCount = NO_ROW_COUNT_AVAILABLE;
 
-    public AbstractTable(String name, List<C> columns, List<I> indexes, boolean isView) {
+    protected AbstractTable(String name, List<C> columns, List<I> indexes, boolean isView) {
         this.name = name;
         this.indexes = indexes;
         this.isView = isView;
@@ -41,7 +41,7 @@ public abstract class AbstractTable<C extends AbstractTableColumn<?, ?>, I exten
         sb.append(getName());
         sb.append("\n");
         for (C c : columns) {
-            sb.append("\t" + c + "\n");
+            sb.append("\t").append(c).append("\n");
         }
         return sb.toString();
     }
