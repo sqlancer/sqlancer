@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
@@ -53,7 +54,7 @@ public final class PostgresCommon {
         errors.add("invalid hexadecimal digit");
         errors.add("invalid hexadecimal data: odd number of digits");
         errors.add("zero raised to a negative power is undefined");
-        errors.add("cannot convert infinity to numeric");
+        errors.addRegex(Pattern.compile("cannot convert infinity to \\w+"));
         errors.add("division by zero");
         errors.add("invalid input syntax for type money");
         errors.add("invalid input syntax for type");
@@ -101,7 +102,20 @@ public final class PostgresCommon {
         errors.add("requested character not valid for encoding"); // chr
         errors.add("requested length too large"); // repeat
         errors.add("invalid memory alloc request size"); // repeat
-        errors.add("encoding conversion from UTF8 to ASCII not supported"); // to_ascii
+
+        /*
+         * PostgreSQL support only a few conversion variants to ASCII: LATIN1, LATIN2, LATIN9 and WINDOWS1250. So, it is
+         * better to skip this error at all.
+         */
+        errors.addRegex(Pattern.compile("encoding conversion from \\w+ to ASCII not supported"));
+
+        /*
+         * In accordance with PostgreSQL code, commit 0ab1a2e, conversions to or from SQL_ASCII is meaningless. So
+         * disable errors on such an attempt.
+         */
+        errors.addRegex(Pattern.compile("encoding conversion from SQL_ASCII to \\w+ not supported"));
+        errors.addRegex(Pattern.compile("encoding conversion from \\w+ to SQL_ASCII not supported"));
+
         errors.add("negative substring length not allowed"); // substr
         errors.add("invalid mask length"); // set_masklen
     }
