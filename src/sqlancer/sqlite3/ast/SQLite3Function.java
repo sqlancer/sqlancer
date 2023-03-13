@@ -47,12 +47,7 @@ public class SQLite3Function extends SQLite3Expression {
         LENGTH(1, "LENGTH") {
             @Override
             public SQLite3Constant apply(SQLite3Constant... args) {
-                SQLite3Constant castValue = SQLite3Cast.castToText(args[0]);
-                if (castValue.isNull()) {
-                    return castValue;
-                } else {
-                    return SQLite3Constant.createIntConstant(castValue.asString().length());
-                }
+                return null;
             }
         },
 
