@@ -8,7 +8,7 @@ public abstract class TernaryNode<T> implements BinaryOperation<T> {
     private final T middle;
     private final T right;
 
-    public TernaryNode(T left, T middle, T right) {
+    protected TernaryNode(T left, T middle, T right) {
         this.left = left;
         this.middle = middle;
         this.right = right;
