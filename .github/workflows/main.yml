@@ -24,7 +24,7 @@ jobs:
       - name: Verify
         run: mvn -B verify -DskipTests=true
       - name: Misc Tests
-        run: mvn -B '-Dtest=!sqlancer.dbms.**' test
+        run: mvn -B '-Dtest=!sqlancer.dbms.**,!sqlancer.qpg.**' test
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
