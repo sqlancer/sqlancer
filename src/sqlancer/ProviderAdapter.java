@@ -125,7 +125,7 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
             while (executedQueryCount < globalState.getOptions().getNrQueries()) {
                 int numOfNoNewQueryPlans = 0;
                 TestOracle<G> oracle = getTestOracle(globalState);
-                while (true) {
+                while (executedQueryCount < globalState.getOptions().getNrQueries()) {
                     try (OracleRunReproductionState localState = globalState.getState().createLocalState()) {
                         assert localState != null;
                         try {

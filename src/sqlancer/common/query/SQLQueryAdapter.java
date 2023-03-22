@@ -92,6 +92,8 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
             Main.nrUnsuccessfulActions.addAndGet(1);
             checkException(e);
             return false;
+        } finally {
+            s.close();
         }
     }
 
