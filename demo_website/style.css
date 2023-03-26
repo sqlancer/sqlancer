@@ -1,0 +1,120 @@
+/* reset default styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* set background color */
+  body {
+    background-color: #f2f2f2;
+  }
+  
+  /* style header */
+  header {
+    background-color: #333;
+    color: #fff;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  /* style header title */
+  header h1 {
+    font-size: 2rem;
+  }
+  
+  /* style header navigation */
+  nav ul {
+    display: flex;
+    list-style: none;
+  }
+  
+  nav li {
+    margin-left: 20px;
+  }
+  
+  nav a {
+    color: #fff;
+    text-decoration: none;
+  }
+  
+  nav a:hover {
+    text-decoration: underline;
+  }
+  
+  /* style main content */
+  main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  /* style welcome section */
+  #welcome h2 {
+    margin-bottom: 20px;
+    font-size: 2rem;
+  }
+  
+  /* style supported dbms section */
+  #supported-dbms h2 {
+    margin-bottom: 20px;
+    font-size: 2rem;
+  }
+  
+  #supported-dbms li {
+    margin-bottom: 10px;
+  }
+  
+  /* style resources section */
+  #resources h2 {
+    margin-bottom: 20px;
+    font-size: 2rem;
+  }
+  
+  #resources li {
+    margin-bottom: 10px;
+  }
+  
+  #resources a {
+    color: #333;
+  }
+  
+  #resources a:hover {
+    text-decoration: underline;
+  }
+  
+  /* style tutorial section */
+  #tutorial h2 {
+    margin-bottom: 20px;
+    font-size: 2rem;
+  }
+  
+  #tutorial p {
+    margin-bottom: 20px;
+  }
+  
+  #tutorial a {
+    display: inline-block;
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+  }
+  
+  #tutorial a:hover {
+    background-color: #666;
+  }
+  
+  /* style footer */
+  footer {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 10px;
+    margin-top: 20px;
+  }
+  
