@@ -35,7 +35,7 @@ public class PostgresPostfixOperation implements PostgresExpression {
             }
         },
 
-        IS_NOT_NULL("IS NOT NULL", "NOTNULL") {
+        IS_NOT_NULL("IS NOT NULL"/*, "NOTNULL"*/) {
 
             @Override
             public PostgresConstant apply(PostgresConstant expectedValue) {

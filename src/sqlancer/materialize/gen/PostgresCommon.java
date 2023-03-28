@@ -32,6 +32,14 @@ public final class PostgresCommon {
         errors.add("non-integer constant in GROUP BY");
         errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
         errors.add("GROUP BY position");
+        errors.add("results exceed max size of");
+
+        // Materialize, TODO: Better fixes, but they are not common
+        errors.add("does not exist");
+        errors.add("aggregate functions are not allowed in");
+        //errors.add("Expected joined table, found");
+        //errors.add("Expected right parenthesis, found left parenthesis");
+        errors.add("is only defined for finite arguments");
     }
 
     public static void addCommonTableErrors(ExpectedErrors errors) {
@@ -59,11 +67,20 @@ public final class PostgresCommon {
         errors.add("invalid input syntax for type");
         errors.add("cannot cast type");
         errors.add("value overflows numeric format");
+        errors.add("numeric field overflow");
         errors.add("LIKE pattern must not end with escape character");
         errors.add("is of type boolean but expression is of type text");
         errors.add("a negative number raised to a non-integer power yields a complex result");
         errors.add("could not determine polymorphic type because input has type unknown");
         errors.add("character number must be positive");
+        errors.add("unterminated escape sequence");
+        errors.add("cannot be matched");
+        errors.add("clause must have type"); // "not" in having doesn't work
+        errors.add("argument must have type"); // "not" in having doesn't work
+        errors.add("CAST does not support casting from");
+        errors.add("aggregate functions are not allowed in");
+        errors.add("only defined for finite arguments");
+        errors.add("unable to parse column reference in GROUP BY clause"); // TODO
         addToCharFunctionErrors(errors);
         addBitStringOperationErrors(errors);
         addFunctionErrors(errors);
@@ -121,6 +138,7 @@ public final class PostgresCommon {
     public static void addCommonInsertUpdateErrors(ExpectedErrors errors) {
         errors.add("value too long for type character");
         errors.add("not found in view targetlist");
+        errors.add("CAST does not support casting from");
     }
 
     public static boolean appendDataType(PostgresDataType type, StringBuilder sb, boolean allowSerial,
@@ -131,17 +149,18 @@ public final class PostgresCommon {
             sb.append("boolean");
             break;
         case INT:
-            if (Randomly.getBoolean() && allowSerial) {
-                serial = true;
-                sb.append(Randomly.fromOptions("serial", "bigserial"));
-            } else {
+            //if (Randomly.getBoolean() && allowSerial) {
+            //    serial = true;
+            //    sb.append(Randomly.fromOptions("serial", "bigserial"));
+            //} else {
                 sb.append(Randomly.fromOptions("smallint", "integer", "bigint"));
-            }
+            //}
             break;
         case TEXT:
             if (Randomly.getBoolean()) {
                 sb.append("TEXT");
-            } else if (Randomly.getBoolean()) {
+            } else {
+            //} else if (Randomly.getBoolean()) {
                 // TODO: support CHAR (without VAR)
                 if (PostgresProvider.generateOnlyKnown || Randomly.getBoolean()) {
                     sb.append("VAR");
@@ -150,15 +169,18 @@ public final class PostgresCommon {
                 sb.append("(");
                 sb.append(ThreadLocalRandom.current().nextInt(1, 500));
                 sb.append(")");
-            } else {
-                sb.append("name");
             }
-            if (Randomly.getBoolean() && !PostgresProvider.generateOnlyKnown) {
-                sb.append(" COLLATE ");
-                sb.append('"');
-                sb.append(Randomly.fromList(opClasses));
-                sb.append('"');
-            }
+            // ERROR: unknown catalog item 'name'
+            //} else {
+            //    sb.append("name");
+            //}
+            // pg_collation is empty
+            //if (Randomly.getBoolean() && !PostgresProvider.generateOnlyKnown) {
+            //    sb.append(" COLLATE ");
+            //    sb.append('"');
+            //    sb.append(Randomly.fromList(opClasses));
+            //    sb.append('"');
+            //}
             break;
         case DECIMAL:
             sb.append("DECIMAL");
@@ -169,24 +191,25 @@ public final class PostgresCommon {
         case REAL:
             sb.append("FLOAT");
             break;
-        case RANGE:
-            sb.append(Randomly.fromOptions("int4range", "int4range")); // , "int8range", "numrange"
-            break;
-        case MONEY:
-            sb.append("money");
-            break;
+        //case RANGE:
+        //    sb.append(Randomly.fromOptions("int4range", "int4range")); // , "int8range", "numrange"
+        //    break;
+        //case MONEY:
+        //    sb.append("money");
+        //    break;
         case BIT:
-            sb.append("BIT");
+            //sb.append("BIT");
+            sb.append("INT");
             // if (Randomly.getBoolean()) {
-            sb.append(" VARYING");
-            // }
-            sb.append("(");
-            sb.append(Randomly.getNotCachedInteger(1, 500));
-            sb.append(")");
+            //sb.append(" VARYING");
+            //// }
+            //sb.append("(");
+            //sb.append(Randomly.getNotCachedInteger(1, 500));
+            //sb.append(")");
             break;
-        case INET:
-            sb.append("inet");
-            break;
+        //case INET:
+        //    sb.append("inet");
+        //    break;
         default:
             throw new AssertionError(type);
         }
@@ -282,10 +305,10 @@ public final class PostgresCommon {
             errors.add("missing FROM-clause entry for table");
             break;
         case UNIQUE:
-            sb.append("UNIQUE(");
-            sb.append(randomNonEmptyColumnSubset.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
-            sb.append(")");
-            appendIndexParameters(sb, globalState, errors);
+            //sb.append("UNIQUE(");
+            //sb.append(randomNonEmptyColumnSubset.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
+            //sb.append(")");
+            //appendIndexParameters(sb, globalState, errors);
             break;
         case PRIMARY_KEY:
             sb.append("PRIMARY KEY(");
@@ -370,9 +393,9 @@ public final class PostgresCommon {
 
     private static void appendIndexParameters(StringBuilder sb, PostgresGlobalState globalState,
             ExpectedErrors errors) {
-        if (Randomly.getBoolean()) {
-            generateWith(sb, globalState, errors);
-        }
+        //if (Randomly.getBoolean()) {
+        //    generateWith(sb, globalState, errors);
+        //}
         // TODO: [ USING INDEX TABLESPACE tablespace ]
     }
 
@@ -412,9 +435,10 @@ public final class PostgresCommon {
 
     public static void addGroupingErrors(ExpectedErrors errors) {
         errors.add("non-integer constant in GROUP BY"); // TODO
+        errors.add("unable to parse column reference in GROUP BY clause"); // TODO
         errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
         errors.add("is not in select list");
-        errors.add("aggregate functions are not allowed in GROUP BY");
+        errors.add("aggregate functions are not allowed in");
     }
 
 }

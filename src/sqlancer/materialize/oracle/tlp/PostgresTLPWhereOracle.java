@@ -11,6 +11,7 @@ import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresVisitor;
 
 public class PostgresTLPWhereOracle extends PostgresTLPBase {
+    private String generatedQueryString;
 
     public PostgresTLPWhereOracle(PostgresGlobalState state) {
         super(state);
@@ -27,6 +28,7 @@ public class PostgresTLPWhereOracle extends PostgresTLPBase {
             select.setOrderByExpressions(gen.generateOrderBy());
         }
         String originalQueryString = PostgresVisitor.asString(select);
+        generatedQueryString = originalQueryString;
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         select.setOrderByExpressions(Collections.emptyList());
@@ -41,5 +43,10 @@ public class PostgresTLPWhereOracle extends PostgresTLPBase {
                 thirdQueryString, combinedString, Randomly.getBoolean(), state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
+    }
+
+    @Override
+    public String getLastQueryString() {
+        return generatedQueryString;
     }
 }

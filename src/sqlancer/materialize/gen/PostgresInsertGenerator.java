@@ -41,12 +41,12 @@ public final class PostgresInsertGenerator {
         sb.append("(");
         sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
         sb.append(")");
-        if (Randomly.getBooleanWithRatherLowProbability()) {
-            sb.append(" OVERRIDING");
-            sb.append(" ");
-            sb.append(Randomly.fromOptions("SYSTEM", "USER"));
-            sb.append(" VALUE");
-        }
+        //if (Randomly.getBooleanWithRatherLowProbability()) {
+        //    sb.append(" OVERRIDING");
+        //    sb.append(" ");
+        //    sb.append(Randomly.fromOptions("SYSTEM", "USER"));
+        //    sb.append(" VALUE");
+        //}
         sb.append(" VALUES");
 
         if (globalState.getDbmsSpecificOptions().allowBulkInsert && Randomly.getBooleanWithSmallProbability()) {
@@ -77,16 +77,16 @@ public final class PostgresInsertGenerator {
                 insertRow(globalState, sb, columns, n == 1);
             }
         }
-        if (Randomly.getBooleanWithRatherLowProbability()) {
-            sb.append(" ON CONFLICT ");
-            if (Randomly.getBoolean()) {
-                sb.append("(");
-                sb.append(table.getRandomColumn().getName());
-                sb.append(")");
-                errors.add("there is no unique or exclusion constraint matching the ON CONFLICT specification");
-            }
-            sb.append(" DO NOTHING");
-        }
+        //if (Randomly.getBooleanWithRatherLowProbability()) {
+        //    sb.append(" ON CONFLICT ");
+        //    if (Randomly.getBoolean()) {
+        //        sb.append("(");
+        //        sb.append(table.getRandomColumn().getName());
+        //        sb.append(")");
+        //        errors.add("there is no unique or exclusion constraint matching the ON CONFLICT specification");
+        //    }
+        //    sb.append(" DO NOTHING");
+        //}
         errors.add("duplicate key value violates unique constraint");
         errors.add("identity column defined as GENERATED ALWAYS");
         errors.add("out of range");
@@ -106,7 +106,7 @@ public final class PostgresInsertGenerator {
             if (i != 0) {
                 sb.append(", ");
             }
-            if (!Randomly.getBooleanWithSmallProbability() || !canBeDefault) {
+            //if (!Randomly.getBooleanWithSmallProbability() || !canBeDefault) {
                 PostgresExpression generateConstant;
                 if (Randomly.getBoolean()) {
                     generateConstant = PostgresExpressionGenerator.generateConstant(globalState.getRandomly(),
@@ -116,9 +116,9 @@ public final class PostgresInsertGenerator {
                             .generateExpression(columns.get(i).getType());
                 }
                 sb.append(PostgresVisitor.asString(generateConstant));
-            } else {
-                sb.append("DEFAULT");
-            }
+            //} else {
+            //    sb.append("DEFAULT");
+            //}
         }
         sb.append(")");
     }

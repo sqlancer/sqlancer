@@ -31,7 +31,7 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
     private final String databaseName;
 
     public enum PostgresDataType {
-        INT, BOOLEAN, TEXT, DECIMAL, FLOAT, REAL, RANGE, MONEY, BIT, INET;
+        INT, BOOLEAN, TEXT, DECIMAL, FLOAT, REAL, BIT; //, RANGE, MONEY, INET;
 
         public static PostgresDataType getRandomType() {
             List<PostgresDataType> dataTypes = new ArrayList<>(Arrays.asList(values()));
@@ -39,9 +39,9 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
                 dataTypes.remove(PostgresDataType.DECIMAL);
                 dataTypes.remove(PostgresDataType.FLOAT);
                 dataTypes.remove(PostgresDataType.REAL);
-                dataTypes.remove(PostgresDataType.INET);
-                dataTypes.remove(PostgresDataType.RANGE);
-                dataTypes.remove(PostgresDataType.MONEY);
+                //dataTypes.remove(PostgresDataType.INET);
+                //dataTypes.remove(PostgresDataType.RANGE);
+                //dataTypes.remove(PostgresDataType.MONEY);
                 dataTypes.remove(PostgresDataType.BIT);
             }
             return Randomly.fromList(dataTypes);
@@ -67,7 +67,7 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
         }
 
         public PostgresRowValue getRandomRowValue(SQLConnection con) throws SQLException {
-            String randomRow = String.format("SELECT %s FROM %s ORDER BY RANDOM() LIMIT 1", columnNamesAsString(
+            String randomRow = String.format("SELECT %s FROM %s LIMIT 1", columnNamesAsString(
                     c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
                     // columnNamesAsString(c -> "typeof(" + c.getTable().getName() + "." +
                     // c.getName() + ")")
@@ -132,15 +132,15 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
             return PostgresDataType.FLOAT;
         case "real":
             return PostgresDataType.REAL;
-        case "int4range":
-            return PostgresDataType.RANGE;
-        case "money":
-            return PostgresDataType.MONEY;
+        //case "int4range":
+        //    return PostgresDataType.RANGE;
+        //case "money":
+        //    return PostgresDataType.MONEY;
         case "bit":
-        case "bit varying":
+        //case "bit varying":
             return PostgresDataType.BIT;
-        case "inet":
-            return PostgresDataType.INET;
+        //case "inet":
+        //    return PostgresDataType.INET;
         default:
             throw new AssertionError(typeString);
         }
@@ -224,17 +224,21 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
         try {
             List<PostgresTable> databaseTables = new ArrayList<>();
             try (Statement s = con.createStatement()) {
+                // ERROR: column "is_insertable_into" does not exist
                 try (ResultSet rs = s.executeQuery(
-                        "SELECT table_name, table_schema, table_type, is_insertable_into FROM information_schema.tables WHERE table_schema='public' OR table_schema LIKE 'pg_temp_%' ORDER BY table_name;")) {
+                        "SELECT table_name, table_schema, table_type FROM information_schema.tables WHERE table_schema='public' OR table_schema LIKE 'pg_temp_%' ORDER BY table_name;")) {
                     while (rs.next()) {
                         String tableName = rs.getString("table_name");
                         String tableTypeSchema = rs.getString("table_schema");
-                        boolean isInsertable = rs.getBoolean("is_insertable_into");
-                        // TODO: also check insertable
-                        // TODO: insert into view?
-                        boolean isView = tableName.startsWith("v"); // tableTypeStr.contains("VIEW") ||
-                                                                    // tableTypeStr.contains("LOCAL TEMPORARY") &&
-                                                                    // !isInsertable;
+                        boolean isInsertable = true;
+                        String type = rs.getString("table_type");
+                        //boolean isView = tableName.startsWith("v"); // tableTypeStr.contains("VIEW") ||
+                        //                                            // tableTypeStr.contains("LOCAL TEMPORARY") &&
+                        //                                            // !isInsertable;
+                        boolean isView = type.equals("VIEW") || type.equals("MATERIALIZED VIEW");
+                        if (isView) {
+                          isInsertable = false;
+                        }
                         PostgresTable.TableType tableType = getTableType(tableTypeSchema);
                         List<PostgresColumn> databaseColumns = getTableColumns(con, tableName);
                         List<PostgresIndex> indexes = getIndexes(con, tableName);
@@ -256,13 +260,13 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
 
     protected static List<PostgresStatisticsObject> getStatistics(SQLConnection con) throws SQLException {
         List<PostgresStatisticsObject> statistics = new ArrayList<>();
-        try (Statement s = con.createStatement()) {
-            try (ResultSet rs = s.executeQuery("SELECT stxname FROM pg_statistic_ext ORDER BY stxname;")) {
-                while (rs.next()) {
-                    statistics.add(new PostgresStatisticsObject(rs.getString("stxname")));
-                }
-            }
-        }
+        //try (Statement s = con.createStatement()) {
+        //    try (ResultSet rs = s.executeQuery("SELECT stxname FROM pg_statistic_ext ORDER BY stxname;")) {
+        //        while (rs.next()) {
+        //            statistics.add(new PostgresStatisticsObject(rs.getString("stxname")));
+        //        }
+        //    }
+        //}
         return statistics;
     }
 
@@ -282,7 +286,9 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
         List<PostgresIndex> indexes = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery(String
-                    .format("SELECT indexname FROM pg_indexes WHERE tablename='%s' ORDER BY indexname;", tableName))) {
+                    // org.postgresql.util.PSQLException: ERROR: unknown catalog item 'pg_indexes'
+                    //.format("SELECT indexname FROM pg_indexes WHERE tablename='%s' ORDER BY indexname;", tableName))) {
+                    .format("SELECT c.relname as indexname FROM pg_catalog.pg_class c LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace LEFT JOIN pg_catalog.pg_index i ON i.indexrelid = c.oid LEFT JOIN pg_catalog.pg_class c2 ON i.indrelid = c2.oid WHERE c.relkind IN ('i','I','') AND n.nspname <> 'pg_catalog' AND n.nspname !~ '^pg_toast' AND n.nspname <> 'information_schema' AND c2.relname = '%s' AND pg_catalog.pg_table_is_visible(c.oid) ORDER BY indexname;", tableName))) {
                 while (rs.next()) {
                     String indexName = rs.getString("indexname");
                     if (DBMSCommon.matchesIndexName(indexName)) {

@@ -165,4 +165,8 @@ public class PostgresNoRECOracle extends NoRECBase<PostgresGlobalState> implemen
         return firstCount;
     }
 
+    @Override
+    public String getLastQueryString() {
+        return optimizedQueryString;
+    }
 }

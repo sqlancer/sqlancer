@@ -8,7 +8,7 @@ import sqlancer.postgres.ast.PostgresAggregate;
 import sqlancer.postgres.ast.PostgresBetweenOperation;
 import sqlancer.postgres.ast.PostgresBinaryLogicalOperation;
 import sqlancer.postgres.ast.PostgresCastOperation;
-import sqlancer.postgres.ast.PostgresCollate;
+//import sqlancer.postgres.ast.PostgresCollate;
 import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.ast.PostgresExpression;
@@ -54,7 +54,7 @@ public interface PostgresVisitor {
 
     void visit(PostgresSimilarTo op);
 
-    void visit(PostgresCollate op);
+    //void visit(PostgresCollate op);
 
     void visit(PostgresPOSIXRegularExpression op);
 
@@ -95,8 +95,8 @@ public interface PostgresVisitor {
             visit((PostgresSimilarTo) expression);
         } else if (expression instanceof PostgresPOSIXRegularExpression) {
             visit((PostgresPOSIXRegularExpression) expression);
-        } else if (expression instanceof PostgresCollate) {
-            visit((PostgresCollate) expression);
+        //} else if (expression instanceof PostgresCollate) {
+        //    visit((PostgresCollate) expression);
         } else if (expression instanceof PostgresFromTable) {
             visit((PostgresFromTable) expression);
         } else if (expression instanceof PostgresSubquery) {

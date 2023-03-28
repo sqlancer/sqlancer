@@ -34,6 +34,9 @@ public class PostgresOptions implements DBMSSpecificOptions<PostgresOracleFactor
     @Parameter(names = "--test-collations", description = "Specifies whether to test different collations", arity = 1)
     public boolean testCollations = true;
 
+    @Parameter(names = "--set-max-tables-mvs", description = "Specifies whether to set the maximum number of tables and materialized views intiially", arity = 1)
+    public boolean setMaxTablesMVs = false;
+
     @Parameter(names = "--connection-url", description = "Specifies the URL for connecting to the PostgreSQL server", arity = 1)
     public String connectionURL = String.format("postgresql://%s:%d/test", PostgresOptions.DEFAULT_HOST,
             PostgresOptions.DEFAULT_PORT);

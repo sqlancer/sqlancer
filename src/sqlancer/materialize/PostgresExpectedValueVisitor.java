@@ -4,7 +4,7 @@ import sqlancer.postgres.ast.PostgresAggregate;
 import sqlancer.postgres.ast.PostgresBetweenOperation;
 import sqlancer.postgres.ast.PostgresBinaryLogicalOperation;
 import sqlancer.postgres.ast.PostgresCastOperation;
-import sqlancer.postgres.ast.PostgresCollate;
+//import sqlancer.postgres.ast.PostgresCollate;
 import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.ast.PostgresExpression;
@@ -147,11 +147,11 @@ public final class PostgresExpectedValueVisitor implements PostgresVisitor {
         visit(op.getRegex());
     }
 
-    @Override
-    public void visit(PostgresCollate op) {
-        print(op);
-        visit(op.getExpr());
-    }
+    //@Override
+    //public void visit(PostgresCollate op) {
+    //    print(op);
+    //    visit(op.getExpr());
+    //}
 
     @Override
     public void visit(PostgresFromTable from) {

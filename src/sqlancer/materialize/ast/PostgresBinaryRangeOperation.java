@@ -31,7 +31,7 @@ public class PostgresBinaryRangeOperation extends BinaryNode<PostgresExpression>
 
     public enum PostgresBinaryRangeComparisonOperator {
         CONTAINS_RANGE_OR_ELEMENT("@>"), RANGE_OR_ELEMENT_IS_CONTAINED("<@"), OVERLAP("&&"), STRICT_LEFT_OF("<<"),
-        STRICT_RIGHT_OF(">>"), NOT_RIGHT_OF("&<"), NOT_LEFT_OF(">&"), ADJACENT("-|-");
+        STRICT_RIGHT_OF(">>")/*, NOT_RIGHT_OF("&<"), NOT_LEFT_OF(">&"), ADJACENT("-|-")*/;
 
         private final String textRepresentation;
 

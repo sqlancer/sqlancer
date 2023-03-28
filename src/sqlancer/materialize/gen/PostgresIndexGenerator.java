@@ -1,19 +1,19 @@
 package sqlancer.postgres.gen;
 
 import java.util.List;
-import java.util.stream.Collectors;
+//import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
-import sqlancer.postgres.PostgresSchema.PostgresColumn;
-import sqlancer.postgres.PostgresSchema.PostgresDataType;
+//import sqlancer.postgres.PostgresSchema.PostgresColumn;
+//import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresIndex;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
-import sqlancer.postgres.PostgresVisitor;
-import sqlancer.postgres.ast.PostgresExpression;
+//import sqlancer.postgres.PostgresVisitor;
+//import sqlancer.postgres.ast.PostgresExpression;
 
 public final class PostgresIndexGenerator {
 
@@ -28,9 +28,9 @@ public final class PostgresIndexGenerator {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE");
-        if (Randomly.getBoolean()) {
-            sb.append(" UNIQUE");
-        }
+        //if (Randomly.getBoolean()) {
+        //    sb.append(" UNIQUE");
+        //}
         sb.append(" INDEX ");
         /*
          * Commented out as a workaround for https://www.postgresql.org/message-id/CA%2Bu7OA4XYhc-
@@ -44,18 +44,18 @@ public final class PostgresIndexGenerator {
         String indexName = getNewIndexName(randomTable);
         sb.append(indexName);
         sb.append(" ON ");
-        if (Randomly.getBoolean()) {
-            sb.append("ONLY ");
-        }
+        //if (Randomly.getBoolean()) {
+        //    sb.append("ONLY ");
+        //}
         sb.append(randomTable.getName());
         IndexType method;
-        if (Randomly.getBoolean()) {
-            sb.append(" USING ");
-            method = Randomly.fromOptions(IndexType.values());
-            sb.append(method);
-        } else {
-            method = IndexType.BTREE;
-        }
+        //if (Randomly.getBoolean()) {
+        //    sb.append(" USING ");
+        //    method = Randomly.fromOptions(IndexType.values());
+        //    sb.append(method);
+        //} else {
+        method = IndexType.BTREE;
+        //}
 
         sb.append("(");
         if (method == IndexType.HASH) {
@@ -65,27 +65,29 @@ public final class PostgresIndexGenerator {
                 if (i != 0) {
                     sb.append(", ");
                 }
-                if (Randomly.getBoolean()) {
+                //if (Randomly.getBoolean()) {
                     sb.append(randomTable.getRandomColumn().getName());
-                } else {
-                    sb.append("(");
-                    PostgresExpression expression = PostgresExpressionGenerator.generateExpression(globalState,
-                            randomTable.getColumns());
-                    sb.append(PostgresVisitor.asString(expression));
-                    sb.append(")");
-                }
+                // ERROR:  column "t0.c0" does not exist
+                //} else {
+                //    sb.append("(");
+                //    PostgresExpression expression = PostgresExpressionGenerator.generateExpression(globalState,
+                //            randomTable.getColumns());
+                //    sb.append(PostgresVisitor.asString(expression));
+                //    sb.append(")");
+                //}
 
                 // if (Randomly.getBoolean()) {
                 // sb.append(" ");
                 // sb.append("COLLATE ");
                 // sb.append(Randomly.fromOptions("C", "POSIX"));
                 // }
-                if (Randomly.getBooleanWithRatherLowProbability()) {
-                    sb.append(" ");
-                    sb.append(globalState.getRandomOpclass());
-                    errors.add("does not accept");
-                    errors.add("does not exist for access method");
-                }
+                // ERROR: unknown catalog item 'pg_opclass'
+                //if (Randomly.getBooleanWithRatherLowProbability()) {
+                //    sb.append(" ");
+                //    sb.append(globalState.getRandomOpclass());
+                //    errors.add("does not accept");
+                //    errors.add("does not exist for access method");
+                //}
                 if (Randomly.getBoolean()) {
                     sb.append(" ");
                     sb.append(Randomly.fromOptions("ASC", "DESC"));
@@ -98,18 +100,18 @@ public final class PostgresIndexGenerator {
         }
 
         sb.append(")");
-        if (Randomly.getBoolean() && method != IndexType.HASH) {
-            sb.append(" INCLUDE(");
-            List<PostgresColumn> columns = randomTable.getRandomNonEmptyColumnSubset();
-            sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
-            sb.append(")");
-        }
-        if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
-            PostgresExpression expr = new PostgresExpressionGenerator(globalState).setColumns(randomTable.getColumns())
-                    .setGlobalState(globalState).generateExpression(PostgresDataType.BOOLEAN);
-            sb.append(PostgresVisitor.asString(expr));
-        }
+        //if (Randomly.getBoolean() && method != IndexType.HASH) {
+        //    sb.append(" INCLUDE(");
+        //    List<PostgresColumn> columns = randomTable.getRandomNonEmptyColumnSubset();
+        //    sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
+        //    sb.append(")");
+        //}
+        //if (Randomly.getBoolean()) {
+        //    sb.append(" WHERE ");
+        //    PostgresExpression expr = new PostgresExpressionGenerator(globalState).setColumns(randomTable.getColumns())
+        //            .setGlobalState(globalState).generateExpression(PostgresDataType.BOOLEAN);
+        //    sb.append(PostgresVisitor.asString(expr));
+        //}
         errors.add("already contains data"); // CONCURRENT INDEX failed
         errors.add("You might need to add explicit type casts");
         errors.add(" collations are not supported"); // TODO check
@@ -123,7 +125,7 @@ public final class PostgresIndexGenerator {
         errors.add("could not create unique index");
         errors.add("has no default operator class");
         errors.add("does not support");
-        errors.add("cannot cast");
+        errors.add("does not support casting");
         errors.add("unsupported UNIQUE constraint with partition key definition");
         errors.add("insufficient columns in UNIQUE constraint definition");
         errors.add("invalid input syntax for");
@@ -143,7 +145,7 @@ public final class PostgresIndexGenerator {
         List<PostgresIndex> indexes = randomTable.getIndexes();
         int indexI = 0;
         while (true) {
-            String indexName = DBMSCommon.createIndexName(indexI++);
+            String indexName = DBMSCommon.createIndexNameWithTable(randomTable.getName(), indexI++);
             if (indexes.stream().noneMatch(i -> i.getIndexName().equals(indexName))) {
                 return indexName;
             }

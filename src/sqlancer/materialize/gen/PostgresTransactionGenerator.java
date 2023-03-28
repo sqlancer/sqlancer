@@ -15,7 +15,7 @@ public final class PostgresTransactionGenerator {
         if (Randomly.getBoolean()) {
             errors.add("SET TRANSACTION ISOLATION LEVEL must be called before any query");
             sb.append(" ISOLATION LEVEL ");
-            sb.append(Randomly.fromOptions("SERIALIZABLE", "REPEATABLE READ", "READ COMMITTED", "READ UNCOMMITTED"));
+            sb.append(Randomly.fromOptions("STRICT SERIALIZABLE", "SERIALIZABLE"));
             // if (Randomly.getBoolean()) {
             // sb.append(" ");
             // sb.append(Randomly.fromOptions("READ WRITE", "READ ONLY"));

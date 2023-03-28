@@ -27,11 +27,11 @@ import sqlancer.postgres.ast.PostgresBinaryBitOperation.PostgresBinaryBitOperato
 import sqlancer.postgres.ast.PostgresBinaryComparisonOperation;
 import sqlancer.postgres.ast.PostgresBinaryLogicalOperation;
 import sqlancer.postgres.ast.PostgresBinaryLogicalOperation.BinaryLogicalOperator;
-import sqlancer.postgres.ast.PostgresBinaryRangeOperation;
-import sqlancer.postgres.ast.PostgresBinaryRangeOperation.PostgresBinaryRangeComparisonOperator;
-import sqlancer.postgres.ast.PostgresBinaryRangeOperation.PostgresBinaryRangeOperator;
+//import sqlancer.postgres.ast.PostgresBinaryRangeOperation;
+//import sqlancer.postgres.ast.PostgresBinaryRangeOperation.PostgresBinaryRangeComparisonOperator;
+//import sqlancer.postgres.ast.PostgresBinaryRangeOperation.PostgresBinaryRangeOperator;
 import sqlancer.postgres.ast.PostgresCastOperation;
-import sqlancer.postgres.ast.PostgresCollate;
+//import sqlancer.postgres.ast.PostgresCollate;
 import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresConcatOperation;
 import sqlancer.postgres.ast.PostgresConstant;
@@ -49,7 +49,7 @@ import sqlancer.postgres.ast.PostgresPostfixOperation;
 import sqlancer.postgres.ast.PostgresPostfixOperation.PostfixOperator;
 import sqlancer.postgres.ast.PostgresPrefixOperation;
 import sqlancer.postgres.ast.PostgresPrefixOperation.PrefixOperator;
-import sqlancer.postgres.ast.PostgresSimilarTo;
+//import sqlancer.postgres.ast.PostgresSimilarTo;
 
 public class PostgresExpressionGenerator implements ExpressionGenerator<PostgresExpression> {
 
@@ -103,8 +103,9 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     }
 
     private enum BooleanExpression {
-        POSTFIX_OPERATOR, NOT, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON, FUNCTION, CAST, LIKE, BETWEEN, IN_OPERATION,
-        SIMILAR_TO, POSIX_REGEX, BINARY_RANGE_COMPARISON;
+        POSTFIX_OPERATOR, NOT, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON, FUNCTION, /*CAST, */LIKE, BETWEEN, IN_OPERATION,
+        //SIMILAR_TO,
+        POSIX_REGEX; //BINARY_RANGE_COMPARISON;
     }
 
     private PostgresExpression generateFunctionWithUnknownResult(int depth, PostgresDataType type) {
@@ -148,9 +149,9 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     private PostgresExpression generateBooleanExpression(int depth) {
         List<BooleanExpression> validOptions = new ArrayList<>(Arrays.asList(BooleanExpression.values()));
         if (PostgresProvider.generateOnlyKnown) {
-            validOptions.remove(BooleanExpression.SIMILAR_TO);
+            //validOptions.remove(BooleanExpression.SIMILAR_TO);
             validOptions.remove(BooleanExpression.POSIX_REGEX);
-            validOptions.remove(BooleanExpression.BINARY_RANGE_COMPARISON);
+            //validOptions.remove(BooleanExpression.BINARY_RANGE_COMPARISON);
         }
         BooleanExpression option = Randomly.fromList(validOptions);
         switch (option) {
@@ -174,9 +175,9 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         case BINARY_COMPARISON:
             PostgresDataType dataType = getMeaningfulType();
             return generateComparison(depth, dataType);
-        case CAST:
-            return new PostgresCastOperation(generateExpression(depth + 1),
-                    getCompoundDataType(PostgresDataType.BOOLEAN));
+        //case CAST:
+        //    return new PostgresCastOperation(generateExpression(depth + 1),
+        //            getCompoundDataType(PostgresDataType.BOOLEAN));
         case FUNCTION:
             return generateFunction(depth + 1, PostgresDataType.BOOLEAN);
         case LIKE:
@@ -186,20 +187,20 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             PostgresDataType type = getMeaningfulType();
             return new PostgresBetweenOperation(generateExpression(depth + 1, type),
                     generateExpression(depth + 1, type), generateExpression(depth + 1, type), Randomly.getBoolean());
-        case SIMILAR_TO:
-            assert !expectedResult;
-            // TODO also generate the escape character
-            return new PostgresSimilarTo(generateExpression(depth + 1, PostgresDataType.TEXT),
-                    generateExpression(depth + 1, PostgresDataType.TEXT), null);
+        //case SIMILAR_TO:
+        //    assert !expectedResult;
+        //    // TODO also generate the escape character
+        //    return new PostgresSimilarTo(generateExpression(depth + 1, PostgresDataType.TEXT),
+        //            generateExpression(depth + 1, PostgresDataType.TEXT), null);
         case POSIX_REGEX:
             assert !expectedResult;
             return new PostgresPOSIXRegularExpression(generateExpression(depth + 1, PostgresDataType.TEXT),
                     generateExpression(depth + 1, PostgresDataType.TEXT), POSIXRegex.getRandom());
-        case BINARY_RANGE_COMPARISON:
-            // TODO element check
-            return new PostgresBinaryRangeOperation(PostgresBinaryRangeComparisonOperator.getRandom(),
-                    generateExpression(depth + 1, PostgresDataType.RANGE),
-                    generateExpression(depth + 1, PostgresDataType.RANGE));
+        //case BINARY_RANGE_COMPARISON:
+        //    // TODO element check
+        //    return new PostgresBinaryRangeOperation(PostgresBinaryRangeComparisonOperator.getRandom(),
+        //            generateExpression(depth + 1, PostgresDataType.RANGE),
+        //            generateExpression(depth + 1, PostgresDataType.RANGE));
         default:
             throw new AssertionError();
         }
@@ -232,10 +233,10 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     private PostgresExpression getComparison(PostgresExpression leftExpr, PostgresExpression rightExpr) {
         PostgresBinaryComparisonOperation op = new PostgresBinaryComparisonOperation(leftExpr, rightExpr,
                 PostgresBinaryComparisonOperation.PostgresBinaryComparisonOperator.getRandom());
-        if (PostgresProvider.generateOnlyKnown && op.getLeft().getExpressionType() == PostgresDataType.TEXT
-                && op.getRight().getExpressionType() == PostgresDataType.TEXT) {
-            return new PostgresCollate(op, "C");
-        }
+        //if (PostgresProvider.generateOnlyKnown && op.getLeft().getExpressionType() == PostgresDataType.TEXT
+        //        && op.getRight().getExpressionType() == PostgresDataType.TEXT) {
+        //    return new PostgresCollate(op, "C");
+        //}
         return op;
     }
 
@@ -269,11 +270,11 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     }
 
     private PostgresExpression potentiallyWrapInCollate(PostgresDataType dataType, PostgresExpression exprInternal) {
-        if (dataType == PostgresDataType.TEXT && PostgresProvider.generateOnlyKnown) {
-            return new PostgresCollate(exprInternal, "C");
-        } else {
+        //if (dataType == PostgresDataType.TEXT && PostgresProvider.generateOnlyKnown) {
+        //    return new PostgresCollate(exprInternal, "C");
+        //} else {
             return exprInternal;
-        }
+        //}
     }
 
     private PostgresExpression generateExpressionInternal(int depth, PostgresDataType dataType) throws AssertionError {
@@ -311,13 +312,13 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             case DECIMAL:
             case REAL:
             case FLOAT:
-            case MONEY:
-            case INET:
+            //case MONEY:
+            //case INET:
                 return generateConstant(r, dataType);
             case BIT:
                 return generateBitExpression(depth);
-            case RANGE:
-                return generateRangeExpression(depth);
+            //case RANGE:
+            //    return generateRangeExpression(depth);
             default:
                 throw new AssertionError(dataType);
             }
@@ -330,13 +331,13 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         case DECIMAL: // TODO
         case FLOAT:
         case INT:
-        case MONEY:
-        case RANGE:
+        //case MONEY:
+        //case RANGE:
         case REAL:
-        case INET:
+        //case INET:
+        case BIT: // Because I mapped BIT to INT
             return PostgresCompoundDataType.create(type);
         case TEXT: // TODO
-        case BIT:
             if (Randomly.getBoolean() || PostgresProvider.generateOnlyKnown /*
                                                                              * The PQS implementation does not check for
                                                                              * size specifications
@@ -351,37 +352,37 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
 
     }
 
-    private enum RangeExpression {
-        BINARY_OP;
-    }
+    //private enum RangeExpression {
+    //    BINARY_OP;
+    //}
 
-    private PostgresExpression generateRangeExpression(int depth) {
-        RangeExpression option;
-        List<RangeExpression> validOptions = new ArrayList<>(Arrays.asList(RangeExpression.values()));
-        option = Randomly.fromList(validOptions);
-        switch (option) {
-        case BINARY_OP:
-            return new PostgresBinaryRangeOperation(PostgresBinaryRangeOperator.getRandom(),
-                    generateExpression(depth + 1, PostgresDataType.RANGE),
-                    generateExpression(depth + 1, PostgresDataType.RANGE));
-        default:
-            throw new AssertionError(option);
-        }
-    }
+    //private PostgresExpression generateRangeExpression(int depth) {
+    //    RangeExpression option;
+    //    List<RangeExpression> validOptions = new ArrayList<>(Arrays.asList(RangeExpression.values()));
+    //    option = Randomly.fromList(validOptions);
+    //    switch (option) {
+    //    case BINARY_OP:
+    //        return new PostgresBinaryRangeOperation(PostgresBinaryRangeOperator.getRandom(),
+    //                generateExpression(depth + 1, PostgresDataType.RANGE),
+    //                generateExpression(depth + 1, PostgresDataType.RANGE));
+    //    default:
+    //        throw new AssertionError(option);
+    //    }
+    //}
 
     private enum TextExpression {
-        CAST, FUNCTION, CONCAT, COLLATE
+        CAST, FUNCTION, CONCAT//, COLLATE
     }
 
     private PostgresExpression generateTextExpression(int depth) {
         TextExpression option;
         List<TextExpression> validOptions = new ArrayList<>(Arrays.asList(TextExpression.values()));
-        if (expectedResult) {
-            validOptions.remove(TextExpression.COLLATE);
-        }
-        if (!globalState.getDbmsSpecificOptions().testCollations) {
-            validOptions.remove(TextExpression.COLLATE);
-        }
+        //if (expectedResult) {
+        //    validOptions.remove(TextExpression.COLLATE);
+        //}
+        //if (!globalState.getDbmsSpecificOptions().testCollations) {
+        //    validOptions.remove(TextExpression.COLLATE);
+        //}
         option = Randomly.fromList(validOptions);
 
         switch (option) {
@@ -391,10 +392,11 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             return generateFunction(depth + 1, PostgresDataType.TEXT);
         case CONCAT:
             return generateConcat(depth);
-        case COLLATE:
-            assert !expectedResult;
-            return new PostgresCollate(generateExpression(depth + 1, PostgresDataType.TEXT), globalState == null
-                    ? Randomly.fromOptions("C", "POSIX", "de_CH.utf8", "es_CR.utf8") : globalState.getRandomCollate());
+        // java.lang.IndexOutOfBoundsException: Index 0 out of bounds for length 0
+        //case COLLATE:
+        //    assert !expectedResult;
+        //    return new PostgresCollate(generateExpression(depth + 1, PostgresDataType.TEXT), globalState == null
+        //            ? Randomly.fromOptions("C", "POSIX", "de_CH.utf8", "es_CR.utf8") : globalState.getRandomCollate());
         default:
             throw new AssertionError();
         }
@@ -424,15 +426,15 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     }
 
     private enum IntExpression {
-        UNARY_OPERATION, FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION
+        UNARY_OPERATION, FUNCTION, /*CAST, */BINARY_ARITHMETIC_EXPRESSION
     }
 
     private PostgresExpression generateIntExpression(int depth) {
         IntExpression option;
         option = Randomly.fromOptions(IntExpression.values());
         switch (option) {
-        case CAST:
-            return new PostgresCastOperation(generateExpression(depth + 1), getCompoundDataType(PostgresDataType.INT));
+        //case CAST:
+        //    return new PostgresCastOperation(generateExpression(depth + 1), getCompoundDataType(PostgresDataType.INT));
         case UNARY_OPERATION:
             PostgresExpression intExpression = generateExpression(depth + 1, PostgresDataType.INT);
             return new PostgresPrefixOperation(intExpression,
@@ -502,14 +504,14 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             return PostgresConstant.createFloatConstant((float) r.getDouble());
         case REAL:
             return PostgresConstant.createDoubleConstant(r.getDouble());
-        case RANGE:
-            return PostgresConstant.createRange(r.getInteger(), Randomly.getBoolean(), r.getInteger(),
-                    Randomly.getBoolean());
-        case MONEY:
-            return new PostgresCastOperation(generateConstant(r, PostgresDataType.FLOAT),
-                    getCompoundDataType(PostgresDataType.MONEY));
-        case INET:
-            return PostgresConstant.createInetConstant(getRandomInet(r));
+        //case RANGE:
+        //    return PostgresConstant.createRange(r.getInteger(), Randomly.getBoolean(), r.getInteger(),
+        //            Randomly.getBoolean());
+        //case MONEY:
+        //    return new PostgresCastOperation(generateConstant(r, PostgresDataType.FLOAT),
+        //            getCompoundDataType(PostgresDataType.MONEY));
+        //case INET:
+        //    return PostgresConstant.createInetConstant(getRandomInet(r));
         case BIT:
             return PostgresConstant.createBitConstant(r.getInteger());
         default:
@@ -517,16 +519,16 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         }
     }
 
-    private static String getRandomInet(Randomly r) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < 4; i++) {
-            if (i != 0) {
-                sb.append('.');
-            }
-            sb.append(r.getInteger() & 255);
-        }
-        return sb.toString();
-    }
+    //private static String getRandomInet(Randomly r) {
+    //    StringBuilder sb = new StringBuilder();
+    //    for (int i = 0; i < 4; i++) {
+    //        if (i != 0) {
+    //            sb.append('.');
+    //        }
+    //        sb.append(r.getInteger() & 255);
+    //    }
+    //    return sb.toString();
+    //}
 
     public static PostgresExpression generateExpression(PostgresGlobalState globalState, List<PostgresColumn> columns,
             PostgresDataType type) {

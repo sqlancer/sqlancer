@@ -56,13 +56,159 @@ public class PostgresGlobalState extends SQLGlobalState<PostgresOptions, Postgre
 
     private List<String> getOpclasses(SQLConnection con) throws SQLException {
         List<String> opClasses = new ArrayList<>();
-        try (Statement s = con.createStatement()) {
-            try (ResultSet rs = s.executeQuery("select opcname FROM pg_opclass;")) {
-                while (rs.next()) {
-                    opClasses.add(rs.getString(1));
-                }
-            }
-        }
+        // ERROR: unknown catalog item 'pg_opclass'
+        //try (Statement s = con.createStatement()) {
+        //    try (ResultSet rs = s.executeQuery("select opcname FROM pg_opclass;")) {
+        //        while (rs.next()) {
+        //            opClasses.add(rs.getString(1));
+        //        }
+        //    }
+        //}
+        //
+        opClasses.add("array_ops");
+        opClasses.add("array_ops");
+        opClasses.add("bit_ops");
+        opClasses.add("bool_ops");
+        opClasses.add("bpchar_ops");
+        opClasses.add("bpchar_ops");
+        opClasses.add("bytea_ops");
+        opClasses.add("char_ops");
+        opClasses.add("char_ops");
+        opClasses.add("cidr_ops");
+        opClasses.add("cidr_ops");
+        opClasses.add("date_ops");
+        opClasses.add("date_ops");
+        opClasses.add("float4_ops");
+        opClasses.add("float4_ops");
+        opClasses.add("float8_ops");
+        opClasses.add("float8_ops");
+        opClasses.add("inet_ops");
+        opClasses.add("inet_ops");
+        opClasses.add("inet_ops");
+        opClasses.add("inet_ops");
+        opClasses.add("int2_ops");
+        opClasses.add("int2_ops");
+        opClasses.add("int4_ops");
+        opClasses.add("int4_ops");
+        opClasses.add("int8_ops");
+        opClasses.add("int8_ops");
+        opClasses.add("interval_ops");
+        opClasses.add("interval_ops");
+        opClasses.add("macaddr_ops");
+        opClasses.add("macaddr_ops");
+        opClasses.add("macaddr8_ops");
+        opClasses.add("macaddr8_ops");
+        opClasses.add("name_ops");
+        opClasses.add("name_ops");
+        opClasses.add("numeric_ops");
+        opClasses.add("numeric_ops");
+        opClasses.add("oid_ops");
+        opClasses.add("oid_ops");
+        opClasses.add("oidvector_ops");
+        opClasses.add("oidvector_ops");
+        opClasses.add("record_ops");
+        opClasses.add("record_image_ops");
+        opClasses.add("text_ops");
+        opClasses.add("text_ops");
+        opClasses.add("time_ops");
+        opClasses.add("time_ops");
+        opClasses.add("timestamptz_ops");
+        opClasses.add("timestamptz_ops");
+        opClasses.add("timetz_ops");
+        opClasses.add("timetz_ops");
+        opClasses.add("varbit_ops");
+        opClasses.add("varchar_ops");
+        opClasses.add("varchar_ops");
+        opClasses.add("timestamp_ops");
+        opClasses.add("timestamp_ops");
+        opClasses.add("text_pattern_ops");
+        opClasses.add("varchar_pattern_ops");
+        opClasses.add("bpchar_pattern_ops");
+        opClasses.add("money_ops");
+        opClasses.add("bool_ops");
+        opClasses.add("bytea_ops");
+        opClasses.add("tid_ops");
+        opClasses.add("xid_ops");
+        opClasses.add("cid_ops");
+        opClasses.add("tid_ops");
+        opClasses.add("text_pattern_ops");
+        opClasses.add("varchar_pattern_ops");
+        opClasses.add("bpchar_pattern_ops");
+        opClasses.add("aclitem_ops");
+        opClasses.add("box_ops");
+        opClasses.add("point_ops");
+        opClasses.add("text_pattern_ops");
+        opClasses.add("varchar_pattern_ops");
+        opClasses.add("bpchar_pattern_ops");
+        opClasses.add("money_ops");
+        opClasses.add("bool_ops");
+        opClasses.add("bytea_ops");
+        opClasses.add("tid_ops");
+        opClasses.add("xid_ops");
+        opClasses.add("cid_ops");
+        opClasses.add("tid_ops");
+        opClasses.add("text_pattern_ops");
+        opClasses.add("varchar_pattern_ops");
+        opClasses.add("bpchar_pattern_ops");
+        opClasses.add("aclitem_ops");
+        opClasses.add("box_ops");
+        opClasses.add("point_ops");
+        opClasses.add("poly_ops");
+        opClasses.add("circle_ops");
+        opClasses.add("array_ops");
+        opClasses.add("uuid_ops");
+        opClasses.add("uuid_ops");
+        opClasses.add("pg_lsn_ops");
+        opClasses.add("pg_lsn_ops");
+        opClasses.add("enum_ops");
+        opClasses.add("enum_ops");
+        opClasses.add("tsvector_ops");
+        opClasses.add("tsvector_ops");
+        opClasses.add("tsvector_ops");
+        opClasses.add("tsquery_ops");
+        opClasses.add("tsquery_ops");
+        opClasses.add("range_ops");
+        opClasses.add("range_ops");
+        opClasses.add("range_ops");
+        opClasses.add("range_ops");
+        opClasses.add("box_ops");
+        opClasses.add("quad_point_ops");
+        opClasses.add("kd_point_ops");
+        opClasses.add("text_ops");
+        opClasses.add("poly_ops");
+        opClasses.add("jsonb_ops");
+        opClasses.add("jsonb_ops");
+        opClasses.add("jsonb_ops");
+        opClasses.add("jsonb_path_ops");
+        opClasses.add("bytea_minmax_ops");
+        opClasses.add("char_minmax_ops");
+        opClasses.add("name_minmax_ops");
+        opClasses.add("int8_minmax_ops");
+        opClasses.add("int2_minmax_ops");
+        opClasses.add("int4_minmax_ops");
+        opClasses.add("text_minmax_ops");
+        opClasses.add("oid_minmax_ops");
+        opClasses.add("tid_minmax_ops");
+        opClasses.add("float4_minmax_ops");
+        opClasses.add("float8_minmax_ops");
+        opClasses.add("macaddr_minmax_ops");
+        opClasses.add("macaddr8_minmax_ops");
+        opClasses.add("inet_minmax_ops");
+        opClasses.add("inet_inclusion_ops");
+        opClasses.add("bpchar_minmax_ops");
+        opClasses.add("time_minmax_ops");
+        opClasses.add("date_minmax_ops");
+        opClasses.add("timestamp_minmax_ops");
+        opClasses.add("timestamptz_minmax_ops");
+        opClasses.add("interval_minmax_ops");
+        opClasses.add("timetz_minmax_ops");
+        opClasses.add("bit_minmax_ops");
+        opClasses.add("varbit_minmax_ops");
+        opClasses.add("numeric_minmax_ops");
+        opClasses.add("uuid_minmax_ops");
+        opClasses.add("range_inclusion_ops");
+        opClasses.add("pg_lsn_minmax_ops");
+        opClasses.add("box_inclusion_ops");
         return opClasses;
     }
 

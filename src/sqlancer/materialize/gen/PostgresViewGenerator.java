@@ -16,8 +16,8 @@ public final class PostgresViewGenerator {
     public static SQLQueryAdapter create(PostgresGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder("CREATE");
-        boolean materialized;
-        boolean recursive = false;
+        @SuppressWarnings("unused") boolean materialized;
+        @SuppressWarnings("unused") boolean recursive = false;
         if (Randomly.getBoolean()) {
             sb.append(" MATERIALIZED");
             materialized = true;
@@ -25,13 +25,14 @@ public final class PostgresViewGenerator {
             if (Randomly.getBoolean()) {
                 sb.append(" OR REPLACE");
             }
-            if (Randomly.getBoolean()) {
-                sb.append(Randomly.fromOptions(" TEMP", " TEMPORARY"));
-            }
-            if (Randomly.getBoolean()) {
-                sb.append(" RECURSIVE");
-                recursive = true;
-            }
+            // https://github.com/MaterializeInc/materialize/issues/17797
+            //if (Randomly.getBoolean()) {
+            //    sb.append(Randomly.fromOptions(" TEMP", " TEMPORARY"));
+            //}
+            //if (Randomly.getBoolean()) {
+            //    sb.append(" RECURSIVE");
+            //    recursive = true;
+            //}
             materialized = false;
         }
         sb.append(" VIEW ");
@@ -67,12 +68,12 @@ public final class PostgresViewGenerator {
         PostgresSelect select = PostgresRandomQueryGenerator.createRandomQuery(nrColumns, globalState);
         sb.append(PostgresVisitor.asString(select));
         sb.append(")");
-        if (Randomly.getBoolean() && !materialized && !recursive) {
-            sb.append(" WITH ");
-            sb.append(Randomly.fromOptions("CASCADED", "LOCAL"));
-            sb.append(" CHECK OPTION");
-            errors.add("WITH CHECK OPTION is supported only on automatically updatable views");
-        }
+        //if (Randomly.getBoolean() && !materialized && !recursive) {
+        //    sb.append(" WITH ");
+        //    sb.append(Randomly.fromOptions("CASCADED", "LOCAL"));
+        //    sb.append(" CHECK OPTION");
+        //    errors.add("WITH CHECK OPTION is supported only on automatically updatable views");
+        //}
         PostgresCommon.addGroupingErrors(errors);
         errors.add("already exists");
         errors.add("cannot drop columns from view");
@@ -84,6 +85,7 @@ public final class PostgresViewGenerator {
         errors.add("does not have the form non-recursive-term UNION [ALL] recursive-term");
         errors.add("is not a view");
         errors.add("non-integer constant in DISTINCT ON");
+        errors.add("unable to parse column reference in DISTINCT ON clause");
         errors.add("SELECT DISTINCT ON expressions must match initial ORDER BY expressions");
         PostgresCommon.addCommonExpressionErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors, true);

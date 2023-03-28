@@ -10,7 +10,7 @@ public class PostgresBinaryBitOperation extends BinaryOperatorNode<PostgresExpre
         implements PostgresExpression {
 
     public enum PostgresBinaryBitOperator implements Operator {
-        CONCATENATION("||"), //
+        //CONCATENATION("||"), //
         BITWISE_AND("&"), //
         BITWISE_OR("|"), //
         BITWISE_XOR("#"), //
@@ -40,7 +40,7 @@ public class PostgresBinaryBitOperation extends BinaryOperatorNode<PostgresExpre
 
     @Override
     public PostgresDataType getExpressionType() {
-        return PostgresDataType.BIT;
+        return PostgresDataType.INT;
     }
 
 }

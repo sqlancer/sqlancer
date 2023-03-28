@@ -16,25 +16,25 @@ public class PostgresBinaryComparisonOperation
                 return leftVal.isEquals(rightVal);
             }
         },
-        IS_DISTINCT("IS DISTINCT FROM") {
-            @Override
-            public PostgresConstant getExpectedValue(PostgresConstant leftVal, PostgresConstant rightVal) {
-                return PostgresConstant
-                        .createBooleanConstant(!IS_NOT_DISTINCT.getExpectedValue(leftVal, rightVal).asBoolean());
-            }
-        },
-        IS_NOT_DISTINCT("IS NOT DISTINCT FROM") {
-            @Override
-            public PostgresConstant getExpectedValue(PostgresConstant leftVal, PostgresConstant rightVal) {
-                if (leftVal.isNull()) {
-                    return PostgresConstant.createBooleanConstant(rightVal.isNull());
-                } else if (rightVal.isNull()) {
-                    return PostgresConstant.createFalse();
-                } else {
-                    return leftVal.isEquals(rightVal);
-                }
-            }
-        },
+        //IS_DISTINCT("IS DISTINCT FROM") {
+        //    @Override
+        //    public PostgresConstant getExpectedValue(PostgresConstant leftVal, PostgresConstant rightVal) {
+        //        return PostgresConstant
+        //                .createBooleanConstant(!IS_NOT_DISTINCT.getExpectedValue(leftVal, rightVal).asBoolean());
+        //    }
+        //},
+        //IS_NOT_DISTINCT("IS NOT DISTINCT FROM") {
+        //    @Override
+        //    public PostgresConstant getExpectedValue(PostgresConstant leftVal, PostgresConstant rightVal) {
+        //        if (leftVal.isNull()) {
+        //            return PostgresConstant.createBooleanConstant(rightVal.isNull());
+        //        } else if (rightVal.isNull()) {
+        //            return PostgresConstant.createFalse();
+        //        } else {
+        //            return leftVal.isEquals(rightVal);
+        //        }
+        //    }
+        //},
         NOT_EQUALS("!=") {
             @Override
             public PostgresConstant getExpectedValue(PostgresConstant leftVal, PostgresConstant rightVal) {

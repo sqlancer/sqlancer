@@ -117,5 +117,4 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
         }
         return new PostgresSubquery(select, name);
     }
-
 }

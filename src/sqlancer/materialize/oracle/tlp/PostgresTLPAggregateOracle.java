@@ -30,6 +30,7 @@ import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.gen.PostgresCommon;
 
 public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestOracle<PostgresGlobalState> {
+    private String generatedQueryString;
 
     private String firstResult;
     private String secondResult;
@@ -64,6 +65,7 @@ public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestO
             select.setOrderByExpressions(gen.generateOrderBy());
         }
         originalQuery = PostgresVisitor.asString(select);
+        generatedQueryString = originalQuery;
         firstResult = getAggregateResult(originalQuery);
         metamorphicQuery = createMetamorphicUnionQuery(select, aggregate, select.getFromList());
         secondResult = getAggregateResult(metamorphicQuery);
@@ -192,4 +194,8 @@ public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestO
         return leftSelect;
     }
 
+    @Override
+    public String getLastQueryString() {
+        return generatedQueryString;
+    }
 }

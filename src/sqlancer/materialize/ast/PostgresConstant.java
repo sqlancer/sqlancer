@@ -429,25 +429,25 @@ public abstract class PostgresConstant implements PostgresExpression {
 
     }
 
-    public static class InetConstant extends PostgresConstantBase {
+    //public static class InetConstant extends PostgresConstantBase {
 
-        private final String val;
+    //    private final String val;
 
-        public InetConstant(String val) {
-            this.val = "'" + val + "'";
-        }
+    //    public InetConstant(String val) {
+    //        this.val = "'" + val + "'";
+    //    }
 
-        @Override
-        public String getTextRepresentation() {
-            return String.valueOf(val);
-        }
+    //    @Override
+    //    public String getTextRepresentation() {
+    //        return String.valueOf(val);
+    //    }
 
-        @Override
-        public PostgresDataType getExpressionType() {
-            return PostgresDataType.INET;
-        }
+    //    @Override
+    //    public PostgresDataType getExpressionType() {
+    //        return PostgresDataType.INET;
+    //    }
 
-    }
+    //}
 
     public static class FloatConstant extends PostgresConstantBase {
 
@@ -507,7 +507,8 @@ public abstract class PostgresConstant implements PostgresExpression {
 
         @Override
         public String getTextRepresentation() {
-            return String.format("B'%s'", Long.toBinaryString(val));
+            //return String.format("B'%s'", Long.toBinaryString(val));
+            return String.format("%d", val);
         }
 
         @Override
@@ -517,48 +518,48 @@ public abstract class PostgresConstant implements PostgresExpression {
 
     }
 
-    public static class RangeConstant extends PostgresConstantBase {
+    //public static class RangeConstant extends PostgresConstantBase {
 
-        private final long left;
-        private final boolean leftIsInclusive;
-        private final long right;
-        private final boolean rightIsInclusive;
+    //    private final long left;
+    //    private final boolean leftIsInclusive;
+    //    private final long right;
+    //    private final boolean rightIsInclusive;
 
-        public RangeConstant(long left, boolean leftIsInclusive, long right, boolean rightIsInclusive) {
-            this.left = left;
-            this.leftIsInclusive = leftIsInclusive;
-            this.right = right;
-            this.rightIsInclusive = rightIsInclusive;
-        }
+    //    public RangeConstant(long left, boolean leftIsInclusive, long right, boolean rightIsInclusive) {
+    //        this.left = left;
+    //        this.leftIsInclusive = leftIsInclusive;
+    //        this.right = right;
+    //        this.rightIsInclusive = rightIsInclusive;
+    //    }
 
-        @Override
-        public String getTextRepresentation() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("'");
-            if (leftIsInclusive) {
-                sb.append("[");
-            } else {
-                sb.append("(");
-            }
-            sb.append(left);
-            sb.append(",");
-            sb.append(right);
-            if (rightIsInclusive) {
-                sb.append("]");
-            } else {
-                sb.append(")");
-            }
-            sb.append("'");
-            sb.append("::int4range");
-            return sb.toString();
-        }
+    //    @Override
+    //    public String getTextRepresentation() {
+    //        StringBuilder sb = new StringBuilder();
+    //        sb.append("'");
+    //        if (leftIsInclusive) {
+    //            sb.append("[");
+    //        } else {
+    //            sb.append("(");
+    //        }
+    //        sb.append(left);
+    //        sb.append(",");
+    //        sb.append(right);
+    //        if (rightIsInclusive) {
+    //            sb.append("]");
+    //        } else {
+    //            sb.append(")");
+    //        }
+    //        sb.append("'");
+    //        sb.append("::int4range");
+    //        return sb.toString();
+    //    }
 
-        @Override
-        public PostgresDataType getExpressionType() {
-            return PostgresDataType.RANGE;
-        }
+    //    @Override
+    //    public PostgresDataType getExpressionType() {
+    //        return PostgresDataType.RANGE;
+    //    }
 
-    }
+    //}
 
     public static PostgresConstant createDecimalConstant(BigDecimal bigDecimal) {
         return new DecimalConstant(bigDecimal);
@@ -572,26 +573,26 @@ public abstract class PostgresConstant implements PostgresExpression {
         return new DoubleConstant(val);
     }
 
-    public static PostgresConstant createRange(long left, boolean leftIsInclusive, long right,
-            boolean rightIsInclusive) {
-        long realLeft;
-        long realRight;
-        if (left > right) {
-            realRight = left;
-            realLeft = right;
-        } else {
-            realLeft = left;
-            realRight = right;
-        }
-        return new RangeConstant(realLeft, leftIsInclusive, realRight, rightIsInclusive);
-    }
+    //public static PostgresConstant createRange(long left, boolean leftIsInclusive, long right,
+    //        boolean rightIsInclusive) {
+    //    long realLeft;
+    //    long realRight;
+    //    if (left > right) {
+    //        realRight = left;
+    //        realLeft = right;
+    //    } else {
+    //        realLeft = left;
+    //        realRight = right;
+    //    }
+    //    return new RangeConstant(realLeft, leftIsInclusive, realRight, rightIsInclusive);
+    //}
 
     public static PostgresExpression createBitConstant(long integer) {
         return new BitConstant(integer);
     }
 
-    public static PostgresExpression createInetConstant(String val) {
-        return new InetConstant(val);
-    }
+    //public static PostgresExpression createInetConstant(String val) {
+    //    return new InetConstant(val);
+    //}
 
 }

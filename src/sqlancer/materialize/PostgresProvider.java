@@ -1,5 +1,6 @@
 package sqlancer.postgres;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Connection;
@@ -23,25 +24,25 @@ import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.postgres.PostgresOptions.PostgresOracleFactory;
-import sqlancer.postgres.gen.PostgresAlterTableGenerator;
-import sqlancer.postgres.gen.PostgresAnalyzeGenerator;
-import sqlancer.postgres.gen.PostgresClusterGenerator;
-import sqlancer.postgres.gen.PostgresCommentGenerator;
+//import sqlancer.postgres.gen.PostgresAlterTableGenerator;
+//import sqlancer.postgres.gen.PostgresAnalyzeGenerator;
+//import sqlancer.postgres.gen.PostgresClusterGenerator;
+//import sqlancer.postgres.gen.PostgresCommentGenerator;
 import sqlancer.postgres.gen.PostgresDeleteGenerator;
-import sqlancer.postgres.gen.PostgresDiscardGenerator;
+//import sqlancer.postgres.gen.PostgresDiscardGenerator;
 import sqlancer.postgres.gen.PostgresDropIndexGenerator;
 import sqlancer.postgres.gen.PostgresIndexGenerator;
 import sqlancer.postgres.gen.PostgresInsertGenerator;
-import sqlancer.postgres.gen.PostgresNotifyGenerator;
-import sqlancer.postgres.gen.PostgresReindexGenerator;
-import sqlancer.postgres.gen.PostgresSequenceGenerator;
-import sqlancer.postgres.gen.PostgresSetGenerator;
-import sqlancer.postgres.gen.PostgresStatisticsGenerator;
+//import sqlancer.postgres.gen.PostgresNotifyGenerator;
+//import sqlancer.postgres.gen.PostgresReindexGenerator;
+//import sqlancer.postgres.gen.PostgresSequenceGenerator;
+//import sqlancer.postgres.gen.PostgresSetGenerator;
+//import sqlancer.postgres.gen.PostgresStatisticsGenerator;
 import sqlancer.postgres.gen.PostgresTableGenerator;
-import sqlancer.postgres.gen.PostgresTransactionGenerator;
-import sqlancer.postgres.gen.PostgresTruncateGenerator;
+//import sqlancer.postgres.gen.PostgresTransactionGenerator;
+//import sqlancer.postgres.gen.PostgresTruncateGenerator;
 import sqlancer.postgres.gen.PostgresUpdateGenerator;
-import sqlancer.postgres.gen.PostgresVacuumGenerator;
+//import sqlancer.postgres.gen.PostgresVacuumGenerator;
 import sqlancer.postgres.gen.PostgresViewGenerator;
 
 // EXISTS
@@ -74,49 +75,50 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
     }
 
     public enum Action implements AbstractAction<PostgresGlobalState> {
-        ANALYZE(PostgresAnalyzeGenerator::create), //
-        ALTER_TABLE(g -> PostgresAlterTableGenerator.create(g.getSchema().getRandomTable(t -> !t.isView()), g,
-                generateOnlyKnown)), //
-        CLUSTER(PostgresClusterGenerator::create), //
-        COMMIT(g -> {
-            SQLQueryAdapter query;
-            if (Randomly.getBoolean()) {
-                query = new SQLQueryAdapter("COMMIT", true);
-            } else if (Randomly.getBoolean()) {
-                query = PostgresTransactionGenerator.executeBegin();
-            } else {
-                query = new SQLQueryAdapter("ROLLBACK", true);
-            }
-            return query;
-        }), //
-        CREATE_STATISTICS(PostgresStatisticsGenerator::insert), //
-        DROP_STATISTICS(PostgresStatisticsGenerator::remove), //
+        //ANALYZE(PostgresAnalyzeGenerator::create), //
+        //ALTER_TABLE(g -> PostgresAlterTableGenerator.create(g.getSchema().getRandomTable(t -> !t.isView()), g,
+        //        generateOnlyKnown)), //
+        //CLUSTER(PostgresClusterGenerator::create), //
+        // Disabled because of https://github.com/MaterializeInc/materialize/issues/18392
+        //COMMIT(g -> {
+        //    SQLQueryAdapter query;
+        //    if (Randomly.getBoolean()) {
+        //        query = new SQLQueryAdapter("COMMIT", true);
+        //    } else if (Randomly.getBoolean()) {
+        //        query = PostgresTransactionGenerator.executeBegin();
+        //    } else {
+        //        query = new SQLQueryAdapter("ROLLBACK", true);
+        //    }
+        //    return query;
+        //}), //
+        //CREATE_STATISTICS(PostgresStatisticsGenerator::insert), //
+        //DROP_STATISTICS(PostgresStatisticsGenerator::remove), //
         DELETE(PostgresDeleteGenerator::create), //
-        DISCARD(PostgresDiscardGenerator::create), //
+        //DISCARD(PostgresDiscardGenerator::create), //
         DROP_INDEX(PostgresDropIndexGenerator::create), //
         INSERT(PostgresInsertGenerator::insert), //
         UPDATE(PostgresUpdateGenerator::create), //
-        TRUNCATE(PostgresTruncateGenerator::create), //
-        VACUUM(PostgresVacuumGenerator::create), //
-        REINDEX(PostgresReindexGenerator::create), //
-        SET(PostgresSetGenerator::create), //
+        //TRUNCATE(PostgresTruncateGenerator::create), //
+        //VACUUM(PostgresVacuumGenerator::create), //
+        //REINDEX(PostgresReindexGenerator::create), //
+        //SET(PostgresSetGenerator::create), //
         CREATE_INDEX(PostgresIndexGenerator::generate), //
-        SET_CONSTRAINTS((g) -> {
-            StringBuilder sb = new StringBuilder();
-            sb.append("SET CONSTRAINTS ALL ");
-            sb.append(Randomly.fromOptions("DEFERRED", "IMMEDIATE"));
-            return new SQLQueryAdapter(sb.toString());
-        }), //
-        RESET_ROLE((g) -> new SQLQueryAdapter("RESET ROLE")), //
-        COMMENT_ON(PostgresCommentGenerator::generate), //
-        RESET((g) -> new SQLQueryAdapter("RESET ALL") /*
-                                                       * https://www.postgresql.org/docs/devel/sql-reset.html TODO: also
-                                                       * configuration parameter
-                                                       */), //
-        NOTIFY(PostgresNotifyGenerator::createNotify), //
-        LISTEN((g) -> PostgresNotifyGenerator.createListen()), //
-        UNLISTEN((g) -> PostgresNotifyGenerator.createUnlisten()), //
-        CREATE_SEQUENCE(PostgresSequenceGenerator::createSequence), //
+        //SET_CONSTRAINTS((g) -> {
+        //    StringBuilder sb = new StringBuilder();
+        //    sb.append("SET CONSTRAINTS ALL ");
+        //    sb.append(Randomly.fromOptions("DEFERRED", "IMMEDIATE"));
+        //    return new SQLQueryAdapter(sb.toString());
+        //}), //
+        //RESET_ROLE((g) -> new SQLQueryAdapter("RESET ROLE")), //
+        //COMMENT_ON(PostgresCommentGenerator::generate), //
+        //RESET((g) -> new SQLQueryAdapter("RESET ALL") /*
+        //                                               * https://www.postgresql.org/docs/devel/sql-reset.html TODO: also
+        //                                               * configuration parameter
+        //                                               */), //
+        //NOTIFY(PostgresNotifyGenerator::createNotify), //
+        //LISTEN((g) -> PostgresNotifyGenerator.createListen()), //
+        //UNLISTEN((g) -> PostgresNotifyGenerator.createUnlisten()), //
+        //CREATE_SEQUENCE(PostgresSequenceGenerator::createSequence), //
         CREATE_VIEW(PostgresViewGenerator::create);
 
         private final SQLQueryProvider<PostgresGlobalState> sqlQueryProvider;
@@ -136,45 +138,45 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         int nrPerformed;
         switch (a) {
         case CREATE_INDEX:
-        case CLUSTER:
+        //case CLUSTER:
             nrPerformed = r.getInteger(0, 3);
             break;
-        case CREATE_STATISTICS:
-            nrPerformed = r.getInteger(0, 5);
-            break;
-        case DISCARD:
+        //case CREATE_STATISTICS:
+        //    nrPerformed = r.getInteger(0, 5);
+        //    break;
+        //case DISCARD:
         case DROP_INDEX:
             nrPerformed = r.getInteger(0, 5);
             break;
-        case COMMIT:
-            nrPerformed = r.getInteger(0, 0);
-            break;
-        case ALTER_TABLE:
-            nrPerformed = r.getInteger(0, 5);
-            break;
-        case REINDEX:
-        case RESET:
-            nrPerformed = r.getInteger(0, 3);
-            break;
+        //case COMMIT:
+        //    nrPerformed = r.getInteger(0, 0);
+        //    break;
+        //case ALTER_TABLE:
+        //    nrPerformed = r.getInteger(0, 5);
+        //    break;
+        //case REINDEX:
+        //case RESET:
+        //    nrPerformed = r.getInteger(0, 3);
+        //    break;
         case DELETE:
-        case RESET_ROLE:
-        case SET:
+        //case RESET_ROLE:
+        //case SET:
             nrPerformed = r.getInteger(0, 5);
             break;
-        case ANALYZE:
-            nrPerformed = r.getInteger(0, 3);
-            break;
-        case VACUUM:
-        case SET_CONSTRAINTS:
-        case COMMENT_ON:
-        case NOTIFY:
-        case LISTEN:
-        case UNLISTEN:
-        case CREATE_SEQUENCE:
-        case DROP_STATISTICS:
-        case TRUNCATE:
-            nrPerformed = r.getInteger(0, 2);
-            break;
+        //case ANALYZE:
+        //    nrPerformed = r.getInteger(0, 3);
+        //    break;
+        //case VACUUM:
+        //case SET_CONSTRAINTS:
+        //case COMMENT_ON:
+        //case NOTIFY:
+        //case LISTEN:
+        //case UNLISTEN:
+        //case CREATE_SEQUENCE:
+        //case DROP_STATISTICS:
+        //case TRUNCATE:
+        //    nrPerformed = r.getInteger(0, 2);
+        //    break;
         case CREATE_VIEW:
             nrPerformed = r.getInteger(0, 2);
             break;
@@ -277,6 +279,16 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
             s.execute(createDatabaseCommand);
         }
         con.close();
+        if(globalState.getDbmsSpecificOptions().setMaxTablesMVs) {
+          Connection con_mz_system = DriverManager.getConnection("jdbc:postgresql://localhost:6877/materialize", "mz_system", "materialize");
+          try (Statement s = con_mz_system.createStatement()) {
+              s.execute("ALTER SYSTEM SET max_tables TO 1000");
+          }
+          try (Statement s = con_mz_system.createStatement()) {
+              s.execute("ALTER SYSTEM SET max_materialized_views TO 1000");
+          }
+          con_mz_system.close();
+        }
         int databaseIndex = entryURL.indexOf(entryDatabaseName);
         String preDatabaseName = entryURL.substring(0, databaseIndex);
         String postDatabaseName = entryURL.substring(databaseIndex + entryDatabaseName.length());
@@ -288,7 +300,8 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
     }
 
     protected void readFunctions(PostgresGlobalState globalState) throws SQLException {
-        SQLQueryAdapter query = new SQLQueryAdapter("SELECT proname, provolatile FROM pg_proc;");
+        // ERROR: column "provolatile" does not exist
+        SQLQueryAdapter query = new SQLQueryAdapter("SELECT proname, 1 FROM pg_proc;");
         SQLancerResultSet rs = query.executeAndGet(globalState);
         while (rs.next()) {
             String functionName = rs.getString(1);
@@ -326,17 +339,18 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE DATABASE " + databaseName + " ");
         if (Randomly.getBoolean() && ((PostgresOptions) state.getDbmsSpecificOptions()).testCollations) {
-            if (Randomly.getBoolean()) {
-                sb.append("WITH ENCODING '");
-                sb.append(Randomly.fromOptions("utf8"));
-                sb.append("' ");
-            }
+            //if (Randomly.getBoolean()) {
+            //    sb.append("WITH ENCODING '");
+            //    sb.append(Randomly.fromOptions("utf8"));
+            //    sb.append("' ");
+            //}
             for (String lc : Arrays.asList("LC_COLLATE", "LC_CTYPE")) {
                 if (!state.getCollates().isEmpty() && Randomly.getBoolean()) {
                     sb.append(String.format(" %s = '%s'", lc, Randomly.fromList(state.getCollates())));
                 }
             }
-            sb.append(" TEMPLATE template0");
+            // org.postgresql.util.PSQLException: ERROR: Expected end of statement, found identifier "template"
+            //sb.append(" TEMPLATE template0");
         }
         return sb.toString();
     }
@@ -346,4 +360,52 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         return "postgres";
     }
 
+    @Override
+    public String getQueryPlan(String selectStr, PostgresGlobalState globalState) throws Exception {
+        String queryPlan = "";
+        String explainQuery = "EXPLAIN OPTIMIZED PLAN FOR " + selectStr;
+        if (globalState.getOptions().logEachSelect()) {
+            globalState.getLogger().writeCurrent(explainQuery);
+            try {
+                globalState.getLogger().getCurrentFileWriter().flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        SQLQueryAdapter q = new SQLQueryAdapter(explainQuery);
+        boolean afterProjection = false; // Remove the concrete expression after each Projection operator
+        SQLancerResultSet rs = q.executeAndGet(globalState);
+        if (rs != null) {
+            while (rs.next()) {
+                String targetQueryPlan = rs.getString(1).trim() + ";"; // Unify format
+                if (afterProjection) {
+                    afterProjection = false;
+                    continue;
+                }
+                if (targetQueryPlan.startsWith("Project")) {
+                    afterProjection = true;
+                }
+                // Remove all concrete expressions by keywords
+                if (targetQueryPlan.contains(">") || targetQueryPlan.contains("<") || targetQueryPlan.contains("=")
+                        || targetQueryPlan.contains("*") || targetQueryPlan.contains("+")
+                        || targetQueryPlan.contains("'")) {
+                    continue;
+                }
+                queryPlan += targetQueryPlan;
+            }
+        }
+
+        return queryPlan;
+    }
+
+    @Override
+    protected double[] initializeWeightedAverageReward() {
+        return new double[Action.values().length];
+    }
+
+    @Override
+    protected void executeMutator(int index, PostgresGlobalState globalState) throws Exception {
+        SQLQueryAdapter queryMutateTable = Action.values()[index].getQuery(globalState);
+        globalState.executeStatement(queryMutateTable);
+    }
 }
