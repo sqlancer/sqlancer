@@ -82,7 +82,7 @@ public final class SQLite3Common {
         List<String> indexNames = s.getIndexNames();
         String candidateName;
         do {
-            candidateName = DBMSCommon.createIndexName((int) Randomly.getNotCachedInteger(0, 100));
+            candidateName = DBMSCommon.createIndexName("t0", (int) Randomly.getNotCachedInteger(0, 100));
         } while (indexNames.contains(candidateName));
         return candidateName;
     }

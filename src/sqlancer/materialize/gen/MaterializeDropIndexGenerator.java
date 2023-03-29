@@ -27,7 +27,7 @@ public final class MaterializeDropIndexGenerator {
                     sb.append(", ");
                 }
                 if (indexes.isEmpty() || Randomly.getBoolean()) {
-                    sb.append(DBMSCommon.createIndexName(Randomly.smallNumber()));
+                    sb.append(DBMSCommon.createIndexName(randomTable.getName(), Randomly.smallNumber()));
                 } else {
                     sb.append(Randomly.fromList(indexes).getIndexName());
                 }

@@ -145,7 +145,7 @@ public final class MaterializeIndexGenerator {
         List<MaterializeIndex> indexes = randomTable.getIndexes();
         int indexI = 0;
         while (true) {
-            String indexName = DBMSCommon.createIndexName(indexI++);
+            String indexName = DBMSCommon.createIndexName(randomTable.getName(), indexI++);
             if (indexes.stream().noneMatch(i -> i.getIndexName().equals(indexName))) {
                 return indexName;
             }
