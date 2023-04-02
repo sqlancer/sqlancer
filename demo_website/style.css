@@ -108,6 +108,30 @@
   #tutorial a:hover {
     background-color: #666;
   }
+
+  /* style console section */
+  #console h2 {
+    margin-bottom: 20px;
+    font-size: 2rem;
+  }
+  
+  #console p {
+    margin-bottom: 20px;
+  }
+  
+  #console a {
+    display: inline-block;
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+  }
+  
+  #console a:hover {
+    background-color: #666;
+  }
   
   /* style footer */
   footer {
