@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>SQLancer Console</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .console-container {
+      width: 80%;
+      margin: 20px auto;
+      background-color: #f1f1f1;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    .console-input {
+      width: 100%;
+      border: none;
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    .console-output {
+      width: 100%;
+      height: 200px;
+      border: none;
+      border-radius: 5px;
+      padding: 10px;
+      background-color: #ffffff;
+      color: #000000;
+      overflow: auto;
+    }
+
+    .console-button {
+      background-color: #4CAF50;
+      color: #ffffff;
+      border: none;
+      border-radius: 5px;
+      padding: 10px;
+      margin: 10px 0;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .console-button:hover {
+      background-color: #3e8e41;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>SQLancer Console</h2>
+
+  <p>The SQLancer console allows you to test SQL queries against a database using SQLancer. Simply enter your SQL query in the input field below and click "Run Query" to see the results.</p>
+
+  <div class="console-container">
+    <form>
+      <label for="console-input">Enter your SQL query:</label>
+      <input type="text" id="console-input" class="console-input" name="console-input" placeholder="SELECT * FROM employees">
+
+      <button type="button" class="console-button" onclick="runQuery()">Run Query</button>
+
+      <label for="console-output">Query Results:</label>
+      <textarea id="console-output" class="console-output" name="console-output" readonly></textarea>
+    </form>
+  </div>
+
+  <script>
+    function runQuery() {
+      var inputField = document.getElementById("console-input");
+      var outputField = document.getElementById("console-output");
+
+      var query = inputField.value;
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "/run_query", true);
+      xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          outputField.value = xhr.responseText;
+        }
+      };
+      xhr.send("query=" + encodeURIComponent(query));
+    }
+  </script>
+</body>
+
+</html>
