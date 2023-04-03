@@ -20,9 +20,6 @@ public final class MaterializeDeleteGenerator {
         errors.add("violates not-null constraint");
         errors.add("could not determine which collation to use for string comparison");
         StringBuilder sb = new StringBuilder("DELETE FROM");
-        // if (Randomly.getBoolean()) {
-        // sb.append(" ONLY");
-        // }
         sb.append(" ");
         sb.append(table.getName());
         if (Randomly.getBoolean()) {
@@ -30,11 +27,6 @@ public final class MaterializeDeleteGenerator {
             sb.append(MaterializeVisitor.asString(MaterializeExpressionGenerator.generateExpression(globalState,
                     table.getColumns(), MaterializeDataType.BOOLEAN)));
         }
-        // if (Randomly.getBoolean()) {
-        // sb.append(" RETURNING ");
-        // sb.append(MaterializeVisitor
-        // .asString(MaterializeExpressionGenerator.generateExpression(globalState, table.getColumns())));
-        // }
         MaterializeCommon.addCommonExpressionErrors(errors);
         errors.add("out of range");
         errors.add("does not support casting");

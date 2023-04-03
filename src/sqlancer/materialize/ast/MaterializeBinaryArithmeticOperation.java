@@ -48,12 +48,6 @@ public class MaterializeBinaryArithmeticOperation
 
             }
         };
-        // EXPONENTIATION("^") {
-        // @Override
-        // public MaterializeConstant apply(MaterializeConstant left, MaterializeConstant right) {
-        // return null;
-        // }
-        // };
 
         private String textRepresentation;
 

@@ -4,7 +4,6 @@ import sqlancer.materialize.ast.MaterializeAggregate;
 import sqlancer.materialize.ast.MaterializeBetweenOperation;
 import sqlancer.materialize.ast.MaterializeBinaryLogicalOperation;
 import sqlancer.materialize.ast.MaterializeCastOperation;
-//import sqlancer.materialize.ast.MaterializeCollate;
 import sqlancer.materialize.ast.MaterializeColumnValue;
 import sqlancer.materialize.ast.MaterializeConstant;
 import sqlancer.materialize.ast.MaterializeExpression;
@@ -37,17 +36,6 @@ public final class MaterializeExpectedValueVisitor implements MaterializeVisitor
         sb.append(expr.getExpectedValue());
         sb.append("\n");
     }
-
-    // @Override
-    // public void visit(MaterializeExpression expr) {
-    // nrTabs++;
-    // try {
-    // super.visit(expr);
-    // } catch (IgnoreMeException e) {
-    //
-    // }
-    // nrTabs--;
-    // }
 
     @Override
     public void visit(MaterializeConstant constant) {
@@ -146,12 +134,6 @@ public final class MaterializeExpectedValueVisitor implements MaterializeVisitor
         visit(op.getString());
         visit(op.getRegex());
     }
-
-    // @Override
-    // public void visit(MaterializeCollate op) {
-    // print(op);
-    // visit(op.getExpr());
-    // }
 
     @Override
     public void visit(MaterializeFromTable from) {

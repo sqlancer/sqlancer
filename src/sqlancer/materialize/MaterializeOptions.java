@@ -35,7 +35,7 @@ public class MaterializeOptions implements DBMSSpecificOptions<MaterializeOracle
     public boolean testCollations = true;
 
     @Parameter(names = "--set-max-tables-mvs", description = "Specifies whether to set the maximum number of tables and materialized views intiially", arity = 1)
-    public boolean setMaxTablesMVs = false;
+    public boolean setMaxTablesMVs;
 
     @Parameter(names = "--connection-url", description = "Specifies the URL for connecting to the PostgreSQL server", arity = 1)
     public String connectionURL = String.format("postgresql://%s:%d/test", MaterializeOptions.DEFAULT_HOST,

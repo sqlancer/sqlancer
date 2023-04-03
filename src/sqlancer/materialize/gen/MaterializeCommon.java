@@ -1,10 +1,7 @@
 package sqlancer.materialize.gen;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
@@ -34,11 +31,8 @@ public final class MaterializeCommon {
         errors.add("GROUP BY position");
         errors.add("results exceed max size of");
 
-        // Materialize, TODO: Better fixes, but they are not common
         errors.add("does not exist");
         errors.add("aggregate functions are not allowed in");
-        // errors.add("Expected joined table, found");
-        // errors.add("Expected right parenthesis, found left parenthesis");
         errors.add("is only defined for finite arguments");
     }
 
@@ -149,19 +143,12 @@ public final class MaterializeCommon {
             sb.append("boolean");
             break;
         case INT:
-            // if (Randomly.getBoolean() && allowSerial) {
-            // serial = true;
-            // sb.append(Randomly.fromOptions("serial", "bigserial"));
-            // } else {
             sb.append(Randomly.fromOptions("smallint", "integer", "bigint"));
-            // }
             break;
         case TEXT:
             if (Randomly.getBoolean()) {
                 sb.append("TEXT");
             } else {
-                // } else if (Randomly.getBoolean()) {
-                // TODO: support CHAR (without VAR)
                 if (MaterializeProvider.generateOnlyKnown || Randomly.getBoolean()) {
                     sb.append("VAR");
                 }
@@ -170,17 +157,6 @@ public final class MaterializeCommon {
                 sb.append(ThreadLocalRandom.current().nextInt(1, 500));
                 sb.append(")");
             }
-            // ERROR: unknown catalog item 'name'
-            // } else {
-            // sb.append("name");
-            // }
-            // pg_collation is empty
-            // if (Randomly.getBoolean() && !MaterializeProvider.generateOnlyKnown) {
-            // sb.append(" COLLATE ");
-            // sb.append('"');
-            // sb.append(Randomly.fromList(opClasses));
-            // sb.append('"');
-            // }
             break;
         case DECIMAL:
             sb.append("DECIMAL");
@@ -191,25 +167,9 @@ public final class MaterializeCommon {
         case REAL:
             sb.append("FLOAT");
             break;
-        // case RANGE:
-        // sb.append(Randomly.fromOptions("int4range", "int4range")); // , "int8range", "numrange"
-        // break;
-        // case MONEY:
-        // sb.append("money");
-        // break;
         case BIT:
-            // sb.append("BIT");
             sb.append("INT");
-            // if (Randomly.getBoolean()) {
-            // sb.append(" VARYING");
-            //// }
-            // sb.append("(");
-            // sb.append(Randomly.getNotCachedInteger(1, 500));
-            // sb.append(")");
             break;
-        // case INET:
-        // sb.append("inet");
-        // break;
         default:
             throw new AssertionError(type);
         }
@@ -217,56 +177,7 @@ public final class MaterializeCommon {
     }
 
     public enum TableConstraints {
-        CHECK, UNIQUE, PRIMARY_KEY, FOREIGN_KEY, EXCLUDE
-    }
-
-    private enum StorageParameters {
-        FILLFACTOR("fillfactor", (r) -> r.getInteger(10, 100)),
-        // toast_tuple_target
-        PARALLEL_WORKERS("parallel_workers", (r) -> r.getInteger(0, 1024)),
-        AUTOVACUUM_ENABLED("autovacuum_enabled", (r) -> Randomly.fromOptions(0, 1)),
-        AUTOVACUUM_VACUUM_THRESHOLD("autovacuum_vacuum_threshold", (r) -> r.getInteger(0, 2147483647)),
-        OIDS("oids", (r) -> Randomly.fromOptions(0, 1)),
-        AUTOVACUUM_VACUUM_SCALE_FACTOR("autovacuum_vacuum_scale_factor",
-                (r) -> Randomly.fromOptions(0, 0.00001, 0.01, 0.1, 0.2, 0.5, 0.8, 0.9, 1)),
-        AUTOVACUUM_ANALYZE_THRESHOLD("autovacuum_analyze_threshold", (r) -> r.getLong(0, Integer.MAX_VALUE)),
-        AUTOVACUUM_ANALYZE_SCALE_FACTOR("autovacuum_analyze_scale_factor",
-                (r) -> Randomly.fromOptions(0, 0.00001, 0.01, 0.1, 0.2, 0.5, 0.8, 0.9, 1)),
-        AUTOVACUUM_VACUUM_COST_DELAY("autovacuum_vacuum_cost_delay", (r) -> r.getLong(0, 100)),
-        AUTOVACUUM_VACUUM_COST_LIMIT("autovacuum_vacuum_cost_limit", (r) -> r.getLong(1, 10000)),
-        AUTOVACUUM_FREEZE_MIN_AGE("autovacuum_freeze_min_age", (r) -> r.getLong(0, 1000000000)),
-        AUTOVACUUM_FREEZE_MAX_AGE("autovacuum_freeze_max_age", (r) -> r.getLong(100000, 2000000000)),
-        AUTOVACUUM_FREEZE_TABLE_AGE("autovacuum_freeze_table_age", (r) -> r.getLong(0, 2000000000));
-        // TODO
-
-        private String parameter;
-        private Function<Randomly, Object> op;
-
-        StorageParameters(String parameter, Function<Randomly, Object> op) {
-            this.parameter = parameter;
-            this.op = op;
-        }
-    }
-
-    public static void generateWith(StringBuilder sb, MaterializeGlobalState globalState, ExpectedErrors errors) {
-        if (Randomly.getBoolean()) {
-            sb.append(" WITH (");
-            ArrayList<StorageParameters> values = new ArrayList<>(Arrays.asList(StorageParameters.values()));
-            values.remove(StorageParameters.OIDS);
-            errors.add("unrecognized parameter");
-            errors.add("ALTER TABLE / ADD CONSTRAINT USING INDEX is not supported on partitioned tables");
-            List<StorageParameters> subset = Randomly.nonEmptySubset(values);
-            int i = 0;
-            for (StorageParameters parameter : subset) {
-                if (i++ != 0) {
-                    sb.append(", ");
-                }
-                sb.append(parameter.parameter);
-                sb.append("=");
-                sb.append(parameter.op.apply(globalState.getRandomly()));
-            }
-            sb.append(")");
-        }
+        CHECK, PRIMARY_KEY, FOREIGN_KEY, EXCLUDE
     }
 
     public static void addTableConstraints(boolean excludePrimaryKey, StringBuilder sb, MaterializeTable table,
@@ -305,17 +216,10 @@ public final class MaterializeCommon {
             errors.add("constraint must be added to child tables too");
             errors.add("missing FROM-clause entry for table");
             break;
-        case UNIQUE:
-            // sb.append("UNIQUE(");
-            // sb.append(randomNonEmptyColumnSubset.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
-            // sb.append(")");
-            // appendIndexParameters(sb, globalState, errors);
-            break;
         case PRIMARY_KEY:
             sb.append("PRIMARY KEY(");
             sb.append(randomNonEmptyColumnSubset.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
             sb.append(")");
-            appendIndexParameters(sb, globalState, errors);
             break;
         case FOREIGN_KEY:
             sb.append("FOREIGN KEY (");
@@ -370,7 +274,6 @@ public final class MaterializeCommon {
                 appendOperator(sb, globalState.getOperators());
             }
             sb.append(")");
-            appendIndexParameters(sb, globalState, errors);
             errors.add("is not valid");
             errors.add("no operator matches");
             errors.add("operator does not exist");
@@ -390,14 +293,6 @@ public final class MaterializeCommon {
         default:
             throw new AssertionError(t);
         }
-    }
-
-    private static void appendIndexParameters(StringBuilder sb, MaterializeGlobalState globalState,
-            ExpectedErrors errors) {
-        // if (Randomly.getBoolean()) {
-        // generateWith(sb, globalState, errors);
-        // }
-        // TODO: [ USING INDEX TABLESPACE tablespace ]
     }
 
     private static void appendOperator(StringBuilder sb, List<String> operators) {

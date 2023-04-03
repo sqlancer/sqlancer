@@ -1,19 +1,14 @@
 package sqlancer.materialize.gen;
 
 import java.util.List;
-//import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.materialize.MaterializeGlobalState;
-//import sqlancer.materialize.MaterializeSchema.MaterializeColumn;
-//import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
 import sqlancer.materialize.MaterializeSchema.MaterializeIndex;
 import sqlancer.materialize.MaterializeSchema.MaterializeTable;
-//import sqlancer.materialize.MaterializeVisitor;
-//import sqlancer.materialize.ast.MaterializeExpression;
 
 public final class MaterializeIndexGenerator {
 
@@ -28,34 +23,15 @@ public final class MaterializeIndexGenerator {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE");
-        // if (Randomly.getBoolean()) {
-        // sb.append(" UNIQUE");
-        // }
         sb.append(" INDEX ");
-        /*
-         * Commented out as a workaround for https://www.postgresql.org/message-id/CA%2Bu7OA4XYhc-
-         * qyCgJqwwgMGZDWAyeH821oa5oMzm_HEifZ4BeA%40mail.gmail.com
-         */
-        // if (Randomly.getBoolean()) {
-        // sb.append("CONCURRENTLY ");
-        // }
         MaterializeTable randomTable = globalState.getSchema().getRandomTable(t -> !t.isView()); // TODO: materialized
                                                                                                  // views
         String indexName = getNewIndexName(randomTable);
         sb.append(indexName);
         sb.append(" ON ");
-        // if (Randomly.getBoolean()) {
-        // sb.append("ONLY ");
-        // }
         sb.append(randomTable.getName());
         IndexType method;
-        // if (Randomly.getBoolean()) {
-        // sb.append(" USING ");
-        // method = Randomly.fromOptions(IndexType.values());
-        // sb.append(method);
-        // } else {
         method = IndexType.BTREE;
-        // }
 
         sb.append("(");
         if (method == IndexType.HASH) {
@@ -65,29 +41,7 @@ public final class MaterializeIndexGenerator {
                 if (i != 0) {
                     sb.append(", ");
                 }
-                // if (Randomly.getBoolean()) {
                 sb.append(randomTable.getRandomColumn().getName());
-                // ERROR: column "t0.c0" does not exist
-                // } else {
-                // sb.append("(");
-                // MaterializeExpression expression = MaterializeExpressionGenerator.generateExpression(globalState,
-                // randomTable.getColumns());
-                // sb.append(MaterializeVisitor.asString(expression));
-                // sb.append(")");
-                // }
-
-                // if (Randomly.getBoolean()) {
-                // sb.append(" ");
-                // sb.append("COLLATE ");
-                // sb.append(Randomly.fromOptions("C", "POSIX"));
-                // }
-                // ERROR: unknown catalog item 'pg_opclass'
-                // if (Randomly.getBooleanWithRatherLowProbability()) {
-                // sb.append(" ");
-                // sb.append(globalState.getRandomOpclass());
-                // errors.add("does not accept");
-                // errors.add("does not exist for access method");
-                // }
                 if (Randomly.getBoolean()) {
                     sb.append(" ");
                     sb.append(Randomly.fromOptions("ASC", "DESC"));
@@ -100,22 +54,9 @@ public final class MaterializeIndexGenerator {
         }
 
         sb.append(")");
-        // if (Randomly.getBoolean() && method != IndexType.HASH) {
-        // sb.append(" INCLUDE(");
-        // List<MaterializeColumn> columns = randomTable.getRandomNonEmptyColumnSubset();
-        // sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
-        // sb.append(")");
-        // }
-        // if (Randomly.getBoolean()) {
-        // sb.append(" WHERE ");
-        // MaterializeExpression expr = new
-        // MaterializeExpressionGenerator(globalState).setColumns(randomTable.getColumns())
-        // .setGlobalState(globalState).generateExpression(MaterializeDataType.BOOLEAN);
-        // sb.append(MaterializeVisitor.asString(expr));
-        // }
         errors.add("already contains data"); // CONCURRENT INDEX failed
         errors.add("You might need to add explicit type casts");
-        errors.add(" collations are not supported"); // TODO check
+        errors.add(" collations are not supported");
         errors.add("because it has pending trigger events");
         errors.add("could not determine which collation to use for index expression");
         errors.add("could not determine which collation to use for string comparison");

@@ -9,28 +9,8 @@ import sqlancer.materialize.gen.MaterializeExpressionGenerator;
 
 public enum MaterializeFunctionWithUnknownResult {
 
-    // ABBREV("abbrev", MaterializeDataType.TEXT, MaterializeDataType.INET),
-    // BROADCAST("broadcast", MaterializeDataType.INET, MaterializeDataType.INET),
-    // FAMILY("family", MaterializeDataType.INT, MaterializeDataType.INET),
-    // HOSTMASK("hostmask", MaterializeDataType.INET, MaterializeDataType.INET),
-    // MASKLEN("masklen", MaterializeDataType.INT, MaterializeDataType.INET),
-    // NETMASK("netmask", MaterializeDataType.INET, MaterializeDataType.INET),
-    // SET_MASKLEN("set_masklen", MaterializeDataType.INET, MaterializeDataType.INET, MaterializeDataType.INT),
-    // TEXT("text", MaterializeDataType.TEXT, MaterializeDataType.INET),
-    // INET_SAME_FAMILY("inet_same_family", MaterializeDataType.BOOLEAN, MaterializeDataType.INET,
-    // MaterializeDataType.INET),
-
-    // https://www.postgresql.org/docs/devel/functions-admin.html#FUNCTIONS-ADMIN-SIGNAL-TABLE
-    // PG_RELOAD_CONF("pg_reload_conf", MaterializeDataType.BOOLEAN), // too much output
-    // PG_ROTATE_LOGFILE("pg_rotate_logfile", MaterializeDataType.BOOLEAN), prints warning
-
-    // https://www.postgresql.org/docs/devel/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE
     CURRENT_DATABASE("current_database", MaterializeDataType.TEXT), // name
-    // CURRENT_QUERY("current_query", MaterializeDataType.TEXT), // can generate false positives
     CURRENT_SCHEMA("current_schema", MaterializeDataType.TEXT), // name
-    // CURRENT_SCHEMAS("current_schemas", MaterializeDataType.TEXT, MaterializeDataType.BOOLEAN),
-    // INET_CLIENT_PORT("inet_client_port", MaterializeDataType.INT),
-    // INET_SERVER_PORT("inet_server_port", MaterializeDataType.INT),
     PG_BACKEND_PID("pg_backend_pid", MaterializeDataType.INT),
     PG_CURRENT_LOGFILE("pg_current_logfile", MaterializeDataType.TEXT),
     PG_IS_OTHER_TEMP_SCHEMA("pg_is_other_temp_schema", MaterializeDataType.BOOLEAN),
@@ -62,20 +42,14 @@ public enum MaterializeFunctionWithUnknownResult {
             return args;
         }
     },
-    // concat
-    // segfault
-    // BIT_LENGTH("bit_length", MaterializeDataType.INT, MaterializeDataType.TEXT),
     INITCAP("initcap", MaterializeDataType.TEXT, MaterializeDataType.TEXT),
     LEFT("left", MaterializeDataType.TEXT, MaterializeDataType.INT, MaterializeDataType.TEXT),
     LOWER("lower", MaterializeDataType.TEXT, MaterializeDataType.TEXT),
     MD5("md5", MaterializeDataType.TEXT, MaterializeDataType.TEXT),
     UPPER("upper", MaterializeDataType.TEXT, MaterializeDataType.TEXT),
-    // PG_CLIENT_ENCODING("pg_client_encoding", MaterializeDataType.TEXT),
     QUOTE_LITERAL("quote_literal", MaterializeDataType.TEXT, MaterializeDataType.TEXT),
     QUOTE_IDENT("quote_ident", MaterializeDataType.TEXT, MaterializeDataType.TEXT),
     REGEX_REPLACE("regex_replace", MaterializeDataType.TEXT, MaterializeDataType.TEXT, MaterializeDataType.TEXT),
-    // REPEAT("repeat", MaterializeDataType.TEXT, MaterializeDataType.TEXT,
-    // MaterializeDataType.INT),
     REPLACE("replace", MaterializeDataType.TEXT, MaterializeDataType.TEXT, MaterializeDataType.TEXT),
     REVERSE("reverse", MaterializeDataType.TEXT, MaterializeDataType.TEXT),
     RIGHT("right", MaterializeDataType.TEXT, MaterializeDataType.TEXT, MaterializeDataType.INT),
@@ -90,7 +64,6 @@ public enum MaterializeFunctionWithUnknownResult {
     TRANSLATE("translate", MaterializeDataType.TEXT, MaterializeDataType.TEXT, MaterializeDataType.TEXT,
             MaterializeDataType.TEXT),
     // mathematical functions
-    // https://www.postgresql.org/docs/9.5/functions-math.html
     ABS("abs", MaterializeDataType.REAL, MaterializeDataType.REAL),
     CBRT("cbrt", MaterializeDataType.REAL, MaterializeDataType.REAL), CEILING("ceiling", MaterializeDataType.REAL), //
     DEGREES("degrees", MaterializeDataType.REAL), EXP("exp", MaterializeDataType.REAL),
@@ -102,7 +75,6 @@ public enum MaterializeFunctionWithUnknownResult {
     FLOOR("floor", MaterializeDataType.REAL),
 
     // trigonometric functions - complete
-    // https://www.postgresql.org/docs/12/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE
     ACOS("acos", MaterializeDataType.REAL), //
     ACOSD("acosd", MaterializeDataType.REAL), //
     ASIN("asin", MaterializeDataType.REAL), //
@@ -121,7 +93,6 @@ public enum MaterializeFunctionWithUnknownResult {
     TAND("tand", MaterializeDataType.REAL), //
 
     // hyperbolic functions - complete
-    // https://www.postgresql.org/docs/12/functions-math.html#FUNCTIONS-MATH-HYP-TABLE
     SINH("sinh", MaterializeDataType.REAL), //
     COSH("cosh", MaterializeDataType.REAL), //
     TANH("tanh", MaterializeDataType.REAL), //
@@ -129,25 +100,10 @@ public enum MaterializeFunctionWithUnknownResult {
     ACOSH("acosh", MaterializeDataType.REAL), //
     ATANH("atanh", MaterializeDataType.REAL), //
 
-    // https://www.postgresql.org/docs/devel/functions-binarystring.html
     GET_BIT("get_bit", MaterializeDataType.INT, MaterializeDataType.TEXT, MaterializeDataType.INT),
     GET_BYTE("get_byte", MaterializeDataType.INT, MaterializeDataType.TEXT, MaterializeDataType.INT),
 
-    // range functions
-    // https://www.postgresql.org/docs/devel/functions-range.html#RANGE-FUNCTIONS-TABLE
-    // RANGE_LOWER("lower", MaterializeDataType.INT, MaterializeDataType.RANGE), //
-    // RANGE_UPPER("upper", MaterializeDataType.INT, MaterializeDataType.RANGE), //
-    // RANGE_ISEMPTY("isempty", MaterializeDataType.BOOLEAN, MaterializeDataType.RANGE), //
-    // RANGE_LOWER_INC("lower_inc", MaterializeDataType.BOOLEAN, MaterializeDataType.RANGE), //
-    // RANGE_UPPER_INC("upper_inc", MaterializeDataType.BOOLEAN, MaterializeDataType.RANGE), //
-    // RANGE_LOWER_INF("lower_inf", MaterializeDataType.BOOLEAN, MaterializeDataType.RANGE), //
-    // RANGE_UPPER_INF("upper_inf", MaterializeDataType.BOOLEAN, MaterializeDataType.RANGE), //
-    // RANGE_MERGE("range_merge", MaterializeDataType.RANGE, MaterializeDataType.RANGE, MaterializeDataType.RANGE), //
-
-    // https://www.postgresql.org/docs/devel/functions-admin.html#FUNCTIONS-ADMIN-DBSIZE
     GET_COLUMN_SIZE("get_column_size", MaterializeDataType.INT, MaterializeDataType.TEXT);
-    // PG_DATABASE_SIZE("pg_database_size", MaterializeDataType.INT, MaterializeDataType.INT);
-    // PG_SIZE_BYTES("pg_size_bytes", MaterializeDataType.INT, MaterializeDataType.TEXT);
 
     private String functionName;
     private MaterializeDataType returnType;

@@ -65,8 +65,6 @@ public final class MaterializeUpdateGenerator extends AbstractUpdateGenerator<Ma
             MaterializeExpression constant = MaterializeExpressionGenerator.generateConstant(globalState.getRandomly(),
                     column.getType());
             sb.append(MaterializeVisitor.asString(constant));
-            // } else if (Randomly.getBoolean()) {
-            // sb.append("DEFAULT");
         } else {
             sb.append("(");
             MaterializeExpression expr = MaterializeExpressionGenerator.generateExpression(globalState,

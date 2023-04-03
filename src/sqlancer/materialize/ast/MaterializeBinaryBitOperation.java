@@ -10,7 +10,6 @@ public class MaterializeBinaryBitOperation extends
         BinaryOperatorNode<MaterializeExpression, MaterializeBinaryBitOperator> implements MaterializeExpression {
 
     public enum MaterializeBinaryBitOperator implements Operator {
-        // CONCATENATION("||"), //
         BITWISE_AND("&"), //
         BITWISE_OR("|"), //
         BITWISE_XOR("#"), //

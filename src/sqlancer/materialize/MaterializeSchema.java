@@ -31,7 +31,7 @@ public class MaterializeSchema extends AbstractSchema<MaterializeGlobalState, Ma
     private final String databaseName;
 
     public enum MaterializeDataType {
-        INT, BOOLEAN, TEXT, DECIMAL, FLOAT, REAL, BIT; // , RANGE, MONEY, INET;
+        INT, BOOLEAN, TEXT, DECIMAL, FLOAT, REAL, BIT;
 
         public static MaterializeDataType getRandomType() {
             List<MaterializeDataType> dataTypes = new ArrayList<>(Arrays.asList(values()));
@@ -39,9 +39,6 @@ public class MaterializeSchema extends AbstractSchema<MaterializeGlobalState, Ma
                 dataTypes.remove(MaterializeDataType.DECIMAL);
                 dataTypes.remove(MaterializeDataType.FLOAT);
                 dataTypes.remove(MaterializeDataType.REAL);
-                // dataTypes.remove(MaterializeDataType.INET);
-                // dataTypes.remove(MaterializeDataType.RANGE);
-                // dataTypes.remove(MaterializeDataType.MONEY);
                 dataTypes.remove(MaterializeDataType.BIT);
             }
             return Randomly.fromList(dataTypes);
@@ -69,8 +66,6 @@ public class MaterializeSchema extends AbstractSchema<MaterializeGlobalState, Ma
         public MaterializeRowValue getRandomRowValue(SQLConnection con) throws SQLException {
             String randomRow = String.format("SELECT %s FROM %s LIMIT 1", columnNamesAsString(
                     c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
-                    // columnNamesAsString(c -> "typeof(" + c.getTable().getName() + "." +
-                    // c.getName() + ")")
                     tableNamesAsString());
             Map<MaterializeColumn, MaterializeConstant> values = new HashMap<>();
             try (Statement s = con.createStatement()) {
@@ -133,15 +128,8 @@ public class MaterializeSchema extends AbstractSchema<MaterializeGlobalState, Ma
             return MaterializeDataType.FLOAT;
         case "real":
             return MaterializeDataType.REAL;
-        // case "int4range":
-        // return MaterializeDataType.RANGE;
-        // case "money":
-        // return MaterializeDataType.MONEY;
         case "bit":
-            // case "bit varying":
             return MaterializeDataType.BIT;
-        // case "inet":
-        // return MaterializeDataType.INET;
         default:
             throw new AssertionError(typeString);
         }
@@ -235,9 +223,6 @@ public class MaterializeSchema extends AbstractSchema<MaterializeGlobalState, Ma
                         String tableTypeSchema = rs.getString("table_schema");
                         boolean isInsertable = true;
                         String type = rs.getString("table_type");
-                        // boolean isView = tableName.startsWith("v"); // tableTypeStr.contains("VIEW") ||
-                        // // tableTypeStr.contains("LOCAL TEMPORARY") &&
-                        // // !isInsertable;
                         boolean isView = type.equals("VIEW") || type.equals("MATERIALIZED VIEW");
                         if (isView) {
                             isInsertable = false;
@@ -262,15 +247,7 @@ public class MaterializeSchema extends AbstractSchema<MaterializeGlobalState, Ma
     }
 
     protected static List<MaterializeStatisticsObject> getStatistics(SQLConnection con) throws SQLException {
-        List<MaterializeStatisticsObject> statistics = new ArrayList<>();
-        // try (Statement s = con.createStatement()) {
-        // try (ResultSet rs = s.executeQuery("SELECT stxname FROM pg_statistic_ext ORDER BY stxname;")) {
-        // while (rs.next()) {
-        // statistics.add(new MaterializeStatisticsObject(rs.getString("stxname")));
-        // }
-        // }
-        // }
-        return statistics;
+        return new ArrayList<>();
     }
 
     protected static MaterializeTable.TableType getTableType(String tableTypeStr) throws AssertionError {
@@ -290,8 +267,6 @@ public class MaterializeSchema extends AbstractSchema<MaterializeGlobalState, Ma
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery(String
                     // org.postgresql.util.PSQLException: ERROR: unknown catalog item 'pg_indexes'
-                    // .format("SELECT indexname FROM pg_indexes WHERE tablename='%s' ORDER BY indexname;", tableName)))
-                    // {
                     .format("SELECT c.relname as indexname FROM pg_catalog.pg_class c LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace LEFT JOIN pg_catalog.pg_index i ON i.indexrelid = c.oid LEFT JOIN pg_catalog.pg_class c2 ON i.indrelid = c2.oid WHERE c.relkind IN ('i','I','') AND n.nspname <> 'pg_catalog' AND n.nspname !~ '^pg_toast' AND n.nspname <> 'information_schema' AND c2.relname = '%s' AND pg_catalog.pg_table_is_visible(c.oid) ORDER BY indexname;",
                             tableName))) {
                 while (rs.next()) {

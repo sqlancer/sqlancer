@@ -122,40 +122,6 @@ public class MaterializeFunction implements MaterializeExpression {
             }
 
         },
-        // NULL_IF(2, "nullif") {
-        //
-        // @Override
-        // public MaterializeConstant apply(MaterializeConstant[] evaluatedArgs, MaterializeExpression[] args) {
-        // MaterializeConstant equals = evaluatedArgs[0].isEquals(evaluatedArgs[1]);
-        // if (equals.isBoolean() && equals.asBoolean()) {
-        // return MaterializeConstant.createNullConstant();
-        // } else {
-        // // TODO: SELECT (nullif('1', FALSE)); yields '1', but should yield TRUE
-        // return evaluatedArgs[0];
-        // }
-        // }
-        //
-        // @Override
-        // public boolean supportsReturnType(MaterializeDataType type) {
-        // return true;
-        // }
-        //
-        // @Override
-        // public MaterializeDataType[] getInputTypesForReturnType(MaterializeDataType returnType, int nrArguments) {
-        // return getType(nrArguments, returnType);
-        // }
-        //
-        // @Override
-        // public boolean checkArguments(MaterializeExpression[] constants) {
-        // for (MaterializeExpression e : constants) {
-        // if (!(e instanceof MaterializeNullConstant)) {
-        // return true;
-        // }
-        // }
-        // return false;
-        // }
-        //
-        // },
         NUM_NONNULLS(1, "num_nonnulls") {
             @Override
             public MaterializeConstant apply(MaterializeConstant[] args, MaterializeExpression... origArgs) {

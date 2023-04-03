@@ -36,7 +36,8 @@ public class MaterializeTLPHavingOracle extends MaterializeTLPBase {
         generatedQueryString = originalQueryString;
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
-        // Mz: See #18346, have to check if predicate errors by putting it in SELECT first
+        // See https://github.com/MaterializeInc/materialize/issues/18346, have to check if predicate errors by putting
+        // it in SELECT first
         List<MaterializeExpression> originalColumns = select.getFetchColumns();
         List<MaterializeExpression> checkColumns = new ArrayList<>();
         checkColumns.add(predicate);

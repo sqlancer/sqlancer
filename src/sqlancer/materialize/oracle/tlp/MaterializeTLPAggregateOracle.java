@@ -144,19 +144,6 @@ public class MaterializeTLPAggregateOracle extends MaterializeTLPBase implements
         case MAX:
         case MIN:
             return aliasArgs(Arrays.asList(aggregate));
-        // case AVG:
-        //// List<MaterializeExpression> arg = Arrays.asList(new
-        // MaterializeCast(aggregate.getExpr().get(0),
-        // MaterializeDataType.DECIMAL.get()));
-        // MaterializeAggregate sum = new MaterializeAggregate(MaterializeAggregateFunction.SUM,
-        // aggregate.getExpr());
-        // MaterializeCast count = new MaterializeCast(
-        // new MaterializeAggregate(MaterializeAggregateFunction.COUNT, aggregate.getExpr()),
-        // MaterializeDataType.DECIMAL.get());
-        //// MaterializeBinaryArithmeticOperation avg = new
-        // MaterializeBinaryArithmeticOperation(sum, count,
-        // MaterializeBinaryArithmeticOperator.DIV);
-        // return aliasArgs(Arrays.asList(sum, count));
         default:
             throw new AssertionError(aggregate.getFunction());
         }
@@ -173,8 +160,6 @@ public class MaterializeTLPAggregateOracle extends MaterializeTLPBase implements
 
     private String getOuterAggregateFunction(MaterializeAggregate aggregate) {
         switch (aggregate.getFunction()) {
-        // case AVG:
-        // return "SUM(agg0::DECIMAL)/SUM(agg1)::DECIMAL";
         case COUNT:
             return MaterializeAggregateFunction.SUM.toString() + "(agg0)";
         default:

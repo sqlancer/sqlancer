@@ -32,7 +32,7 @@ public class MaterializeGlobalState extends SQLGlobalState<MaterializeOptions, M
     public void setConnection(SQLConnection con) {
         super.setConnection(con);
         try {
-            this.opClasses = getOpclasses(getConnection());
+            this.opClasses = getOpclasses();
             this.operators = getOperators(getConnection());
             this.collates = getCollnames(getConnection());
             this.tableAccessMethods = getTableAccessMethods(getConnection());
@@ -54,17 +54,10 @@ public class MaterializeGlobalState extends SQLGlobalState<MaterializeOptions, M
         return collNames;
     }
 
-    private List<String> getOpclasses(SQLConnection con) throws SQLException {
+    private List<String> getOpclasses() throws SQLException {
         List<String> opClasses = new ArrayList<>();
+        // select opcname FROM pg_opclass;
         // ERROR: unknown catalog item 'pg_opclass'
-        // try (Statement s = con.createStatement()) {
-        // try (ResultSet rs = s.executeQuery("select opcname FROM pg_opclass;")) {
-        // while (rs.next()) {
-        // opClasses.add(rs.getString(1));
-        // }
-        // }
-        // }
-        //
         opClasses.add("array_ops");
         opClasses.add("array_ops");
         opClasses.add("bit_ops");

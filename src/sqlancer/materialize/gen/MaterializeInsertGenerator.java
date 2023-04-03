@@ -41,12 +41,6 @@ public final class MaterializeInsertGenerator {
         sb.append("(");
         sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
         sb.append(")");
-        // if (Randomly.getBooleanWithRatherLowProbability()) {
-        // sb.append(" OVERRIDING");
-        // sb.append(" ");
-        // sb.append(Randomly.fromOptions("SYSTEM", "USER"));
-        // sb.append(" VALUE");
-        // }
         sb.append(" VALUES");
 
         if (globalState.getDbmsSpecificOptions().allowBulkInsert && Randomly.getBooleanWithSmallProbability()) {
@@ -74,19 +68,9 @@ public final class MaterializeInsertGenerator {
                 if (i != 0) {
                     sb.append(", ");
                 }
-                insertRow(globalState, sb, columns, n == 1);
+                insertRow(globalState, sb, columns);
             }
         }
-        // if (Randomly.getBooleanWithRatherLowProbability()) {
-        // sb.append(" ON CONFLICT ");
-        // if (Randomly.getBoolean()) {
-        // sb.append("(");
-        // sb.append(table.getRandomColumn().getName());
-        // sb.append(")");
-        // errors.add("there is no unique or exclusion constraint matching the ON CONFLICT specification");
-        // }
-        // sb.append(" DO NOTHING");
-        // }
         errors.add("duplicate key value violates unique constraint");
         errors.add("identity column defined as GENERATED ALWAYS");
         errors.add("out of range");
@@ -99,14 +83,13 @@ public final class MaterializeInsertGenerator {
         return new SQLQueryAdapter(sb.toString(), errors);
     }
 
-    private static void insertRow(MaterializeGlobalState globalState, StringBuilder sb, List<MaterializeColumn> columns,
-            boolean canBeDefault) {
+    private static void insertRow(MaterializeGlobalState globalState, StringBuilder sb,
+            List<MaterializeColumn> columns) {
         sb.append("(");
         for (int i = 0; i < columns.size(); i++) {
             if (i != 0) {
                 sb.append(", ");
             }
-            // if (!Randomly.getBooleanWithSmallProbability() || !canBeDefault) {
             MaterializeExpression generateConstant;
             if (Randomly.getBoolean()) {
                 generateConstant = MaterializeExpressionGenerator.generateConstant(globalState.getRandomly(),
@@ -116,9 +99,6 @@ public final class MaterializeInsertGenerator {
                         .generateExpression(columns.get(i).getType());
             }
             sb.append(MaterializeVisitor.asString(generateConstant));
-            // } else {
-            // sb.append("DEFAULT");
-            // }
         }
         sb.append(")");
     }

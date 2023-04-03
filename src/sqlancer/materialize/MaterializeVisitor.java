@@ -8,7 +8,6 @@ import sqlancer.materialize.ast.MaterializeAggregate;
 import sqlancer.materialize.ast.MaterializeBetweenOperation;
 import sqlancer.materialize.ast.MaterializeBinaryLogicalOperation;
 import sqlancer.materialize.ast.MaterializeCastOperation;
-//import sqlancer.materialize.ast.MaterializeCollate;
 import sqlancer.materialize.ast.MaterializeColumnValue;
 import sqlancer.materialize.ast.MaterializeConstant;
 import sqlancer.materialize.ast.MaterializeExpression;
@@ -54,8 +53,6 @@ public interface MaterializeVisitor {
 
     void visit(MaterializeSimilarTo op);
 
-    // void visit(MaterializeCollate op);
-
     void visit(MaterializePOSIXRegularExpression op);
 
     void visit(MaterializeFromTable from);
@@ -95,8 +92,6 @@ public interface MaterializeVisitor {
             visit((MaterializeSimilarTo) expression);
         } else if (expression instanceof MaterializePOSIXRegularExpression) {
             visit((MaterializePOSIXRegularExpression) expression);
-            // } else if (expression instanceof MaterializeCollate) {
-            // visit((MaterializeCollate) expression);
         } else if (expression instanceof MaterializeFromTable) {
             visit((MaterializeFromTable) expression);
         } else if (expression instanceof MaterializeSubquery) {

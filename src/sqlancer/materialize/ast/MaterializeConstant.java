@@ -429,26 +429,6 @@ public abstract class MaterializeConstant implements MaterializeExpression {
 
     }
 
-    // public static class InetConstant extends MaterializeConstantBase {
-
-    // private final String val;
-
-    // public InetConstant(String val) {
-    // this.val = "'" + val + "'";
-    // }
-
-    // @Override
-    // public String getTextRepresentation() {
-    // return String.valueOf(val);
-    // }
-
-    // @Override
-    // public MaterializeDataType getExpressionType() {
-    // return MaterializeDataType.INET;
-    // }
-
-    // }
-
     public static class FloatConstant extends MaterializeConstantBase {
 
         private final float val;
@@ -507,7 +487,6 @@ public abstract class MaterializeConstant implements MaterializeExpression {
 
         @Override
         public String getTextRepresentation() {
-            // return String.format("B'%s'", Long.toBinaryString(val));
             return String.format("%d", val);
         }
 
@@ -517,49 +496,6 @@ public abstract class MaterializeConstant implements MaterializeExpression {
         }
 
     }
-
-    // public static class RangeConstant extends MaterializeConstantBase {
-
-    // private final long left;
-    // private final boolean leftIsInclusive;
-    // private final long right;
-    // private final boolean rightIsInclusive;
-
-    // public RangeConstant(long left, boolean leftIsInclusive, long right, boolean rightIsInclusive) {
-    // this.left = left;
-    // this.leftIsInclusive = leftIsInclusive;
-    // this.right = right;
-    // this.rightIsInclusive = rightIsInclusive;
-    // }
-
-    // @Override
-    // public String getTextRepresentation() {
-    // StringBuilder sb = new StringBuilder();
-    // sb.append("'");
-    // if (leftIsInclusive) {
-    // sb.append("[");
-    // } else {
-    // sb.append("(");
-    // }
-    // sb.append(left);
-    // sb.append(",");
-    // sb.append(right);
-    // if (rightIsInclusive) {
-    // sb.append("]");
-    // } else {
-    // sb.append(")");
-    // }
-    // sb.append("'");
-    // sb.append("::int4range");
-    // return sb.toString();
-    // }
-
-    // @Override
-    // public MaterializeDataType getExpressionType() {
-    // return MaterializeDataType.RANGE;
-    // }
-
-    // }
 
     public static MaterializeConstant createDecimalConstant(BigDecimal bigDecimal) {
         return new DecimalConstant(bigDecimal);
@@ -573,26 +509,8 @@ public abstract class MaterializeConstant implements MaterializeExpression {
         return new DoubleConstant(val);
     }
 
-    // public static MaterializeConstant createRange(long left, boolean leftIsInclusive, long right,
-    // boolean rightIsInclusive) {
-    // long realLeft;
-    // long realRight;
-    // if (left > right) {
-    // realRight = left;
-    // realLeft = right;
-    // } else {
-    // realLeft = left;
-    // realRight = right;
-    // }
-    // return new RangeConstant(realLeft, leftIsInclusive, realRight, rightIsInclusive);
-    // }
-
     public static MaterializeExpression createBitConstant(long integer) {
         return new BitConstant(integer);
     }
-
-    // public static MaterializeExpression createInetConstant(String val) {
-    // return new InetConstant(val);
-    // }
 
 }
