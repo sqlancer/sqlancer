@@ -9,7 +9,8 @@ public class MaterializeFunction implements MaterializeExpression {
     private final MaterializeDataType returnType;
     private MaterializeFunctionWithResult functionWithKnownResult;
 
-    public MaterializeFunction(MaterializeFunctionWithResult func, MaterializeDataType returnType, MaterializeExpression... args) {
+    public MaterializeFunction(MaterializeFunctionWithResult func, MaterializeDataType returnType,
+            MaterializeExpression... args) {
         functionWithKnownResult = func;
         this.func = func.getName();
         this.returnType = returnType;
@@ -257,7 +258,8 @@ public class MaterializeFunction implements MaterializeExpression {
 
         public abstract boolean supportsReturnType(MaterializeDataType type);
 
-        public abstract MaterializeDataType[] getInputTypesForReturnType(MaterializeDataType returnType, int nrArguments);
+        public abstract MaterializeDataType[] getInputTypesForReturnType(MaterializeDataType returnType,
+                int nrArguments);
 
         public boolean checkArguments(MaterializeExpression... constants) {
             return true;

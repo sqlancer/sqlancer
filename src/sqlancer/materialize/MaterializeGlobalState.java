@@ -57,13 +57,13 @@ public class MaterializeGlobalState extends SQLGlobalState<MaterializeOptions, M
     private List<String> getOpclasses(SQLConnection con) throws SQLException {
         List<String> opClasses = new ArrayList<>();
         // ERROR: unknown catalog item 'pg_opclass'
-        //try (Statement s = con.createStatement()) {
-        //    try (ResultSet rs = s.executeQuery("select opcname FROM pg_opclass;")) {
-        //        while (rs.next()) {
-        //            opClasses.add(rs.getString(1));
-        //        }
-        //    }
-        //}
+        // try (Statement s = con.createStatement()) {
+        // try (ResultSet rs = s.executeQuery("select opcname FROM pg_opclass;")) {
+        // while (rs.next()) {
+        // opClasses.add(rs.getString(1));
+        // }
+        // }
+        // }
         //
         opClasses.add("array_ops");
         opClasses.add("array_ops");

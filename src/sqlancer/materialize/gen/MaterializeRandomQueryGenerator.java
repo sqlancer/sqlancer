@@ -23,7 +23,8 @@ public final class MaterializeRandomQueryGenerator {
     public static MaterializeSelect createRandomQuery(int nrColumns, MaterializeGlobalState globalState) {
         List<MaterializeExpression> columns = new ArrayList<>();
         MaterializeTables tables = globalState.getSchema().getRandomTableNonEmptyTables();
-        MaterializeExpressionGenerator gen = new MaterializeExpressionGenerator(globalState).setColumns(tables.getColumns());
+        MaterializeExpressionGenerator gen = new MaterializeExpressionGenerator(globalState)
+                .setColumns(tables.getColumns());
         for (int i = 0; i < nrColumns; i++) {
             columns.add(gen.generateExpression(0));
         }

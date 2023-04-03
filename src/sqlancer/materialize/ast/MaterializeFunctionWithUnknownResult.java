@@ -9,15 +9,16 @@ import sqlancer.materialize.gen.MaterializeExpressionGenerator;
 
 public enum MaterializeFunctionWithUnknownResult {
 
-    //ABBREV("abbrev", MaterializeDataType.TEXT, MaterializeDataType.INET),
-    //BROADCAST("broadcast", MaterializeDataType.INET, MaterializeDataType.INET),
-    //FAMILY("family", MaterializeDataType.INT, MaterializeDataType.INET),
-    //HOSTMASK("hostmask", MaterializeDataType.INET, MaterializeDataType.INET),
-    //MASKLEN("masklen", MaterializeDataType.INT, MaterializeDataType.INET),
-    //NETMASK("netmask", MaterializeDataType.INET, MaterializeDataType.INET),
-    //SET_MASKLEN("set_masklen", MaterializeDataType.INET, MaterializeDataType.INET, MaterializeDataType.INT),
-    //TEXT("text", MaterializeDataType.TEXT, MaterializeDataType.INET),
-    //INET_SAME_FAMILY("inet_same_family", MaterializeDataType.BOOLEAN, MaterializeDataType.INET, MaterializeDataType.INET),
+    // ABBREV("abbrev", MaterializeDataType.TEXT, MaterializeDataType.INET),
+    // BROADCAST("broadcast", MaterializeDataType.INET, MaterializeDataType.INET),
+    // FAMILY("family", MaterializeDataType.INT, MaterializeDataType.INET),
+    // HOSTMASK("hostmask", MaterializeDataType.INET, MaterializeDataType.INET),
+    // MASKLEN("masklen", MaterializeDataType.INT, MaterializeDataType.INET),
+    // NETMASK("netmask", MaterializeDataType.INET, MaterializeDataType.INET),
+    // SET_MASKLEN("set_masklen", MaterializeDataType.INET, MaterializeDataType.INET, MaterializeDataType.INT),
+    // TEXT("text", MaterializeDataType.TEXT, MaterializeDataType.INET),
+    // INET_SAME_FAMILY("inet_same_family", MaterializeDataType.BOOLEAN, MaterializeDataType.INET,
+    // MaterializeDataType.INET),
 
     // https://www.postgresql.org/docs/devel/functions-admin.html#FUNCTIONS-ADMIN-SIGNAL-TABLE
     // PG_RELOAD_CONF("pg_reload_conf", MaterializeDataType.BOOLEAN), // too much output
@@ -28,7 +29,7 @@ public enum MaterializeFunctionWithUnknownResult {
     // CURRENT_QUERY("current_query", MaterializeDataType.TEXT), // can generate false positives
     CURRENT_SCHEMA("current_schema", MaterializeDataType.TEXT), // name
     // CURRENT_SCHEMAS("current_schemas", MaterializeDataType.TEXT, MaterializeDataType.BOOLEAN),
-    //INET_CLIENT_PORT("inet_client_port", MaterializeDataType.INT),
+    // INET_CLIENT_PORT("inet_client_port", MaterializeDataType.INT),
     // INET_SERVER_PORT("inet_server_port", MaterializeDataType.INT),
     PG_BACKEND_PID("pg_backend_pid", MaterializeDataType.INT),
     PG_CURRENT_LOGFILE("pg_current_logfile", MaterializeDataType.TEXT),
@@ -82,17 +83,20 @@ public enum MaterializeFunctionWithUnknownResult {
     RTRIM("rtrim", MaterializeDataType.TEXT, MaterializeDataType.TEXT),
     SPLIT_PART("split_part", MaterializeDataType.TEXT, MaterializeDataType.TEXT, MaterializeDataType.INT),
     STRPOS("strpos", MaterializeDataType.INT, MaterializeDataType.TEXT, MaterializeDataType.TEXT),
-    SUBSTR("substr", MaterializeDataType.TEXT, MaterializeDataType.TEXT, MaterializeDataType.INT, MaterializeDataType.INT),
+    SUBSTR("substr", MaterializeDataType.TEXT, MaterializeDataType.TEXT, MaterializeDataType.INT,
+            MaterializeDataType.INT),
     TO_ASCII("to_ascii", MaterializeDataType.TEXT, MaterializeDataType.TEXT),
     TO_HEX("to_hex", MaterializeDataType.INT, MaterializeDataType.TEXT),
-    TRANSLATE("translate", MaterializeDataType.TEXT, MaterializeDataType.TEXT, MaterializeDataType.TEXT, MaterializeDataType.TEXT),
+    TRANSLATE("translate", MaterializeDataType.TEXT, MaterializeDataType.TEXT, MaterializeDataType.TEXT,
+            MaterializeDataType.TEXT),
     // mathematical functions
     // https://www.postgresql.org/docs/9.5/functions-math.html
     ABS("abs", MaterializeDataType.REAL, MaterializeDataType.REAL),
     CBRT("cbrt", MaterializeDataType.REAL, MaterializeDataType.REAL), CEILING("ceiling", MaterializeDataType.REAL), //
-    DEGREES("degrees", MaterializeDataType.REAL), EXP("exp", MaterializeDataType.REAL), LN("ln", MaterializeDataType.REAL),
-    LOG("log", MaterializeDataType.REAL), LOG2("log", MaterializeDataType.REAL, MaterializeDataType.REAL),
-    PI("pi", MaterializeDataType.REAL), POWER("power", MaterializeDataType.REAL, MaterializeDataType.REAL),
+    DEGREES("degrees", MaterializeDataType.REAL), EXP("exp", MaterializeDataType.REAL),
+    LN("ln", MaterializeDataType.REAL), LOG("log", MaterializeDataType.REAL),
+    LOG2("log", MaterializeDataType.REAL, MaterializeDataType.REAL), PI("pi", MaterializeDataType.REAL),
+    POWER("power", MaterializeDataType.REAL, MaterializeDataType.REAL),
     TRUNC("trunc", MaterializeDataType.REAL, MaterializeDataType.INT),
     TRUNC2("trunc", MaterializeDataType.REAL, MaterializeDataType.INT, MaterializeDataType.REAL),
     FLOOR("floor", MaterializeDataType.REAL),
@@ -131,14 +135,14 @@ public enum MaterializeFunctionWithUnknownResult {
 
     // range functions
     // https://www.postgresql.org/docs/devel/functions-range.html#RANGE-FUNCTIONS-TABLE
-    //RANGE_LOWER("lower", MaterializeDataType.INT, MaterializeDataType.RANGE), //
-    //RANGE_UPPER("upper", MaterializeDataType.INT, MaterializeDataType.RANGE), //
-    //RANGE_ISEMPTY("isempty", MaterializeDataType.BOOLEAN, MaterializeDataType.RANGE), //
-    //RANGE_LOWER_INC("lower_inc", MaterializeDataType.BOOLEAN, MaterializeDataType.RANGE), //
-    //RANGE_UPPER_INC("upper_inc", MaterializeDataType.BOOLEAN, MaterializeDataType.RANGE), //
-    //RANGE_LOWER_INF("lower_inf", MaterializeDataType.BOOLEAN, MaterializeDataType.RANGE), //
-    //RANGE_UPPER_INF("upper_inf", MaterializeDataType.BOOLEAN, MaterializeDataType.RANGE), //
-    //RANGE_MERGE("range_merge", MaterializeDataType.RANGE, MaterializeDataType.RANGE, MaterializeDataType.RANGE), //
+    // RANGE_LOWER("lower", MaterializeDataType.INT, MaterializeDataType.RANGE), //
+    // RANGE_UPPER("upper", MaterializeDataType.INT, MaterializeDataType.RANGE), //
+    // RANGE_ISEMPTY("isempty", MaterializeDataType.BOOLEAN, MaterializeDataType.RANGE), //
+    // RANGE_LOWER_INC("lower_inc", MaterializeDataType.BOOLEAN, MaterializeDataType.RANGE), //
+    // RANGE_UPPER_INC("upper_inc", MaterializeDataType.BOOLEAN, MaterializeDataType.RANGE), //
+    // RANGE_LOWER_INF("lower_inf", MaterializeDataType.BOOLEAN, MaterializeDataType.RANGE), //
+    // RANGE_UPPER_INF("upper_inf", MaterializeDataType.BOOLEAN, MaterializeDataType.RANGE), //
+    // RANGE_MERGE("range_merge", MaterializeDataType.RANGE, MaterializeDataType.RANGE, MaterializeDataType.RANGE), //
 
     // https://www.postgresql.org/docs/devel/functions-admin.html#FUNCTIONS-ADMIN-DBSIZE
     GET_COLUMN_SIZE("get_column_size", MaterializeDataType.INT, MaterializeDataType.TEXT);
@@ -149,7 +153,8 @@ public enum MaterializeFunctionWithUnknownResult {
     private MaterializeDataType returnType;
     private MaterializeDataType[] argTypes;
 
-    MaterializeFunctionWithUnknownResult(String functionName, MaterializeDataType returnType, MaterializeDataType... indexType) {
+    MaterializeFunctionWithUnknownResult(String functionName, MaterializeDataType returnType,
+            MaterializeDataType... indexType) {
         this.functionName = functionName;
         this.returnType = returnType;
         this.argTypes = indexType.clone();
@@ -160,7 +165,8 @@ public enum MaterializeFunctionWithUnknownResult {
         return t == returnType;
     }
 
-    public MaterializeExpression[] getArguments(MaterializeDataType returnType, MaterializeExpressionGenerator gen, int depth) {
+    public MaterializeExpression[] getArguments(MaterializeDataType returnType, MaterializeExpressionGenerator gen,
+            int depth) {
         MaterializeExpression[] args = new MaterializeExpression[argTypes.length];
         for (int i = 0; i < args.length; i++) {
             args[i] = gen.generateExpression(depth, argTypes[i]);

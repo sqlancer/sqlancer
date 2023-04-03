@@ -11,8 +11,8 @@ public final class MaterializeBetweenOperation implements MaterializeExpression 
     private final MaterializeExpression right;
     private final boolean isSymmetric;
 
-    public MaterializeBetweenOperation(MaterializeExpression expr, MaterializeExpression left, MaterializeExpression right,
-            boolean symmetric) {
+    public MaterializeBetweenOperation(MaterializeExpression expr, MaterializeExpression left,
+            MaterializeExpression right, boolean symmetric) {
         this.expr = expr;
         this.left = left;
         this.right = right;

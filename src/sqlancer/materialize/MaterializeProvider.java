@@ -75,50 +75,50 @@ public class MaterializeProvider extends SQLProviderAdapter<MaterializeGlobalSta
     }
 
     public enum Action implements AbstractAction<MaterializeGlobalState> {
-        //ANALYZE(MaterializeAnalyzeGenerator::create), //
-        //ALTER_TABLE(g -> MaterializeAlterTableGenerator.create(g.getSchema().getRandomTable(t -> !t.isView()), g,
-        //        generateOnlyKnown)), //
-        //CLUSTER(MaterializeClusterGenerator::create), //
+        // ANALYZE(MaterializeAnalyzeGenerator::create), //
+        // ALTER_TABLE(g -> MaterializeAlterTableGenerator.create(g.getSchema().getRandomTable(t -> !t.isView()), g,
+        // generateOnlyKnown)), //
+        // CLUSTER(MaterializeClusterGenerator::create), //
         // Disabled because of https://github.com/MaterializeInc/materialize/issues/18392
-        //COMMIT(g -> {
-        //    SQLQueryAdapter query;
-        //    if (Randomly.getBoolean()) {
-        //        query = new SQLQueryAdapter("COMMIT", true);
-        //    } else if (Randomly.getBoolean()) {
-        //        query = MaterializeTransactionGenerator.executeBegin();
-        //    } else {
-        //        query = new SQLQueryAdapter("ROLLBACK", true);
-        //    }
-        //    return query;
-        //}), //
-        //CREATE_STATISTICS(MaterializeStatisticsGenerator::insert), //
-        //DROP_STATISTICS(MaterializeStatisticsGenerator::remove), //
+        // COMMIT(g -> {
+        // SQLQueryAdapter query;
+        // if (Randomly.getBoolean()) {
+        // query = new SQLQueryAdapter("COMMIT", true);
+        // } else if (Randomly.getBoolean()) {
+        // query = MaterializeTransactionGenerator.executeBegin();
+        // } else {
+        // query = new SQLQueryAdapter("ROLLBACK", true);
+        // }
+        // return query;
+        // }), //
+        // CREATE_STATISTICS(MaterializeStatisticsGenerator::insert), //
+        // DROP_STATISTICS(MaterializeStatisticsGenerator::remove), //
         DELETE(MaterializeDeleteGenerator::create), //
-        //DISCARD(MaterializeDiscardGenerator::create), //
+        // DISCARD(MaterializeDiscardGenerator::create), //
         DROP_INDEX(MaterializeDropIndexGenerator::create), //
         INSERT(MaterializeInsertGenerator::insert), //
         UPDATE(MaterializeUpdateGenerator::create), //
-        //TRUNCATE(MaterializeTruncateGenerator::create), //
-        //VACUUM(MaterializeVacuumGenerator::create), //
-        //REINDEX(MaterializeReindexGenerator::create), //
-        //SET(MaterializeSetGenerator::create), //
+        // TRUNCATE(MaterializeTruncateGenerator::create), //
+        // VACUUM(MaterializeVacuumGenerator::create), //
+        // REINDEX(MaterializeReindexGenerator::create), //
+        // SET(MaterializeSetGenerator::create), //
         CREATE_INDEX(MaterializeIndexGenerator::generate), //
-        //SET_CONSTRAINTS((g) -> {
-        //    StringBuilder sb = new StringBuilder();
-        //    sb.append("SET CONSTRAINTS ALL ");
-        //    sb.append(Randomly.fromOptions("DEFERRED", "IMMEDIATE"));
-        //    return new SQLQueryAdapter(sb.toString());
-        //}), //
-        //RESET_ROLE((g) -> new SQLQueryAdapter("RESET ROLE")), //
-        //COMMENT_ON(MaterializeCommentGenerator::generate), //
-        //RESET((g) -> new SQLQueryAdapter("RESET ALL") /*
-        //                                               * https://www.postgresql.org/docs/devel/sql-reset.html TODO: also
-        //                                               * configuration parameter
-        //                                               */), //
-        //NOTIFY(MaterializeNotifyGenerator::createNotify), //
-        //LISTEN((g) -> MaterializeNotifyGenerator.createListen()), //
-        //UNLISTEN((g) -> MaterializeNotifyGenerator.createUnlisten()), //
-        //CREATE_SEQUENCE(MaterializeSequenceGenerator::createSequence), //
+        // SET_CONSTRAINTS((g) -> {
+        // StringBuilder sb = new StringBuilder();
+        // sb.append("SET CONSTRAINTS ALL ");
+        // sb.append(Randomly.fromOptions("DEFERRED", "IMMEDIATE"));
+        // return new SQLQueryAdapter(sb.toString());
+        // }), //
+        // RESET_ROLE((g) -> new SQLQueryAdapter("RESET ROLE")), //
+        // COMMENT_ON(MaterializeCommentGenerator::generate), //
+        // RESET((g) -> new SQLQueryAdapter("RESET ALL") /*
+        // * https://www.postgresql.org/docs/devel/sql-reset.html TODO: also
+        // * configuration parameter
+        // */), //
+        // NOTIFY(MaterializeNotifyGenerator::createNotify), //
+        // LISTEN((g) -> MaterializeNotifyGenerator.createListen()), //
+        // UNLISTEN((g) -> MaterializeNotifyGenerator.createUnlisten()), //
+        // CREATE_SEQUENCE(MaterializeSequenceGenerator::createSequence), //
         CREATE_VIEW(MaterializeViewGenerator::create);
 
         private final SQLQueryProvider<MaterializeGlobalState> sqlQueryProvider;
@@ -138,45 +138,45 @@ public class MaterializeProvider extends SQLProviderAdapter<MaterializeGlobalSta
         int nrPerformed;
         switch (a) {
         case CREATE_INDEX:
-        //case CLUSTER:
+            // case CLUSTER:
             nrPerformed = r.getInteger(0, 3);
             break;
-        //case CREATE_STATISTICS:
-        //    nrPerformed = r.getInteger(0, 5);
-        //    break;
-        //case DISCARD:
+        // case CREATE_STATISTICS:
+        // nrPerformed = r.getInteger(0, 5);
+        // break;
+        // case DISCARD:
         case DROP_INDEX:
             nrPerformed = r.getInteger(0, 5);
             break;
-        //case COMMIT:
-        //    nrPerformed = r.getInteger(0, 0);
-        //    break;
-        //case ALTER_TABLE:
-        //    nrPerformed = r.getInteger(0, 5);
-        //    break;
-        //case REINDEX:
-        //case RESET:
-        //    nrPerformed = r.getInteger(0, 3);
-        //    break;
+        // case COMMIT:
+        // nrPerformed = r.getInteger(0, 0);
+        // break;
+        // case ALTER_TABLE:
+        // nrPerformed = r.getInteger(0, 5);
+        // break;
+        // case REINDEX:
+        // case RESET:
+        // nrPerformed = r.getInteger(0, 3);
+        // break;
         case DELETE:
-        //case RESET_ROLE:
-        //case SET:
+            // case RESET_ROLE:
+            // case SET:
             nrPerformed = r.getInteger(0, 5);
             break;
-        //case ANALYZE:
-        //    nrPerformed = r.getInteger(0, 3);
-        //    break;
-        //case VACUUM:
-        //case SET_CONSTRAINTS:
-        //case COMMENT_ON:
-        //case NOTIFY:
-        //case LISTEN:
-        //case UNLISTEN:
-        //case CREATE_SEQUENCE:
-        //case DROP_STATISTICS:
-        //case TRUNCATE:
-        //    nrPerformed = r.getInteger(0, 2);
-        //    break;
+        // case ANALYZE:
+        // nrPerformed = r.getInteger(0, 3);
+        // break;
+        // case VACUUM:
+        // case SET_CONSTRAINTS:
+        // case COMMENT_ON:
+        // case NOTIFY:
+        // case LISTEN:
+        // case UNLISTEN:
+        // case CREATE_SEQUENCE:
+        // case DROP_STATISTICS:
+        // case TRUNCATE:
+        // nrPerformed = r.getInteger(0, 2);
+        // break;
         case CREATE_VIEW:
             nrPerformed = r.getInteger(0, 2);
             break;
@@ -279,15 +279,16 @@ public class MaterializeProvider extends SQLProviderAdapter<MaterializeGlobalSta
             s.execute(createDatabaseCommand);
         }
         con.close();
-        if(globalState.getDbmsSpecificOptions().setMaxTablesMVs) {
-          Connection con_mz_system = DriverManager.getConnection("jdbc:postgresql://localhost:6877/materialize", "mz_system", "materialize");
-          try (Statement s = con_mz_system.createStatement()) {
-              s.execute("ALTER SYSTEM SET max_tables TO 1000");
-          }
-          try (Statement s = con_mz_system.createStatement()) {
-              s.execute("ALTER SYSTEM SET max_materialized_views TO 1000");
-          }
-          con_mz_system.close();
+        if (globalState.getDbmsSpecificOptions().setMaxTablesMVs) {
+            Connection con_mz_system = DriverManager.getConnection("jdbc:postgresql://localhost:6877/materialize",
+                    "mz_system", "materialize");
+            try (Statement s = con_mz_system.createStatement()) {
+                s.execute("ALTER SYSTEM SET max_tables TO 1000");
+            }
+            try (Statement s = con_mz_system.createStatement()) {
+                s.execute("ALTER SYSTEM SET max_materialized_views TO 1000");
+            }
+            con_mz_system.close();
         }
         int databaseIndex = entryURL.indexOf(entryDatabaseName);
         String preDatabaseName = entryURL.substring(0, databaseIndex);
@@ -339,18 +340,18 @@ public class MaterializeProvider extends SQLProviderAdapter<MaterializeGlobalSta
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE DATABASE " + databaseName + " ");
         if (Randomly.getBoolean() && ((MaterializeOptions) state.getDbmsSpecificOptions()).testCollations) {
-            //if (Randomly.getBoolean()) {
-            //    sb.append("WITH ENCODING '");
-            //    sb.append(Randomly.fromOptions("utf8"));
-            //    sb.append("' ");
-            //}
+            // if (Randomly.getBoolean()) {
+            // sb.append("WITH ENCODING '");
+            // sb.append(Randomly.fromOptions("utf8"));
+            // sb.append("' ");
+            // }
             for (String lc : Arrays.asList("LC_COLLATE", "LC_CTYPE")) {
                 if (!state.getCollates().isEmpty() && Randomly.getBoolean()) {
                     sb.append(String.format(" %s = '%s'", lc, Randomly.fromList(state.getCollates())));
                 }
             }
             // org.postgresql.util.PSQLException: ERROR: Expected end of statement, found identifier "template"
-            //sb.append(" TEMPLATE template0");
+            // sb.append(" TEMPLATE template0");
         }
         return sb.toString();
     }

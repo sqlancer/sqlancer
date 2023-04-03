@@ -16,8 +16,10 @@ public final class MaterializeViewGenerator {
     public static SQLQueryAdapter create(MaterializeGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder("CREATE");
-        @SuppressWarnings("unused") boolean materialized;
-        @SuppressWarnings("unused") boolean recursive = false;
+        @SuppressWarnings("unused")
+        boolean materialized;
+        @SuppressWarnings("unused")
+        boolean recursive = false;
         if (Randomly.getBoolean()) {
             sb.append(" MATERIALIZED");
             materialized = true;
@@ -26,13 +28,13 @@ public final class MaterializeViewGenerator {
                 sb.append(" OR REPLACE");
             }
             // https://github.com/MaterializeInc/materialize/issues/17797
-            //if (Randomly.getBoolean()) {
-            //    sb.append(Randomly.fromOptions(" TEMP", " TEMPORARY"));
-            //}
-            //if (Randomly.getBoolean()) {
-            //    sb.append(" RECURSIVE");
-            //    recursive = true;
-            //}
+            // if (Randomly.getBoolean()) {
+            // sb.append(Randomly.fromOptions(" TEMP", " TEMPORARY"));
+            // }
+            // if (Randomly.getBoolean()) {
+            // sb.append(" RECURSIVE");
+            // recursive = true;
+            // }
             materialized = false;
         }
         sb.append(" VIEW ");
@@ -68,12 +70,12 @@ public final class MaterializeViewGenerator {
         MaterializeSelect select = MaterializeRandomQueryGenerator.createRandomQuery(nrColumns, globalState);
         sb.append(MaterializeVisitor.asString(select));
         sb.append(")");
-        //if (Randomly.getBoolean() && !materialized && !recursive) {
-        //    sb.append(" WITH ");
-        //    sb.append(Randomly.fromOptions("CASCADED", "LOCAL"));
-        //    sb.append(" CHECK OPTION");
-        //    errors.add("WITH CHECK OPTION is supported only on automatically updatable views");
-        //}
+        // if (Randomly.getBoolean() && !materialized && !recursive) {
+        // sb.append(" WITH ");
+        // sb.append(Randomly.fromOptions("CASCADED", "LOCAL"));
+        // sb.append(" CHECK OPTION");
+        // errors.add("WITH CHECK OPTION is supported only on automatically updatable views");
+        // }
         MaterializeCommon.addGroupingErrors(errors);
         errors.add("already exists");
         errors.add("cannot drop columns from view");

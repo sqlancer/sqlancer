@@ -103,9 +103,10 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
     }
 
     private enum BooleanExpression {
-        POSTFIX_OPERATOR, NOT, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON, FUNCTION, /*CAST, */LIKE, BETWEEN, IN_OPERATION,
-        //SIMILAR_TO,
-        POSIX_REGEX; //BINARY_RANGE_COMPARISON;
+        POSTFIX_OPERATOR, NOT, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON, FUNCTION, /* CAST, */LIKE, BETWEEN,
+        IN_OPERATION,
+        // SIMILAR_TO,
+        POSIX_REGEX; // BINARY_RANGE_COMPARISON;
     }
 
     private MaterializeExpression generateFunctionWithUnknownResult(int depth, MaterializeDataType type) {
@@ -123,8 +124,9 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
     }
 
     private MaterializeExpression generateFunctionWithKnownResult(int depth, MaterializeDataType type) {
-        List<MaterializeFunctionWithResult> functions = Stream.of(MaterializeFunction.MaterializeFunctionWithResult.values())
-                .filter(f -> f.supportsReturnType(type)).collect(Collectors.toList());
+        List<MaterializeFunctionWithResult> functions = Stream
+                .of(MaterializeFunction.MaterializeFunctionWithResult.values()).filter(f -> f.supportsReturnType(type))
+                .collect(Collectors.toList());
         // filters functions by allowed type (STABLE 's', IMMUTABLE 'i', VOLATILE 'v')
         functions = functions.stream().filter(f -> allowedFunctionTypes.contains(functionsAndTypes.get(f.getName())))
                 .collect(Collectors.toList());
@@ -149,9 +151,9 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
     private MaterializeExpression generateBooleanExpression(int depth) {
         List<BooleanExpression> validOptions = new ArrayList<>(Arrays.asList(BooleanExpression.values()));
         if (MaterializeProvider.generateOnlyKnown) {
-            //validOptions.remove(BooleanExpression.SIMILAR_TO);
+            // validOptions.remove(BooleanExpression.SIMILAR_TO);
             validOptions.remove(BooleanExpression.POSIX_REGEX);
-            //validOptions.remove(BooleanExpression.BINARY_RANGE_COMPARISON);
+            // validOptions.remove(BooleanExpression.BINARY_RANGE_COMPARISON);
         }
         BooleanExpression option = Randomly.fromList(validOptions);
         switch (option) {
@@ -175,9 +177,9 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
         case BINARY_COMPARISON:
             MaterializeDataType dataType = getMeaningfulType();
             return generateComparison(depth, dataType);
-        //case CAST:
-        //    return new MaterializeCastOperation(generateExpression(depth + 1),
-        //            getCompoundDataType(MaterializeDataType.BOOLEAN));
+        // case CAST:
+        // return new MaterializeCastOperation(generateExpression(depth + 1),
+        // getCompoundDataType(MaterializeDataType.BOOLEAN));
         case FUNCTION:
             return generateFunction(depth + 1, MaterializeDataType.BOOLEAN);
         case LIKE:
@@ -187,20 +189,20 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
             MaterializeDataType type = getMeaningfulType();
             return new MaterializeBetweenOperation(generateExpression(depth + 1, type),
                     generateExpression(depth + 1, type), generateExpression(depth + 1, type), Randomly.getBoolean());
-        //case SIMILAR_TO:
-        //    assert !expectedResult;
-        //    // TODO also generate the escape character
-        //    return new MaterializeSimilarTo(generateExpression(depth + 1, MaterializeDataType.TEXT),
-        //            generateExpression(depth + 1, MaterializeDataType.TEXT), null);
+        // case SIMILAR_TO:
+        // assert !expectedResult;
+        // // TODO also generate the escape character
+        // return new MaterializeSimilarTo(generateExpression(depth + 1, MaterializeDataType.TEXT),
+        // generateExpression(depth + 1, MaterializeDataType.TEXT), null);
         case POSIX_REGEX:
             assert !expectedResult;
             return new MaterializePOSIXRegularExpression(generateExpression(depth + 1, MaterializeDataType.TEXT),
                     generateExpression(depth + 1, MaterializeDataType.TEXT), POSIXRegex.getRandom());
-        //case BINARY_RANGE_COMPARISON:
-        //    // TODO element check
-        //    return new MaterializeBinaryRangeOperation(MaterializeBinaryRangeComparisonOperator.getRandom(),
-        //            generateExpression(depth + 1, MaterializeDataType.RANGE),
-        //            generateExpression(depth + 1, MaterializeDataType.RANGE));
+        // case BINARY_RANGE_COMPARISON:
+        // // TODO element check
+        // return new MaterializeBinaryRangeOperation(MaterializeBinaryRangeComparisonOperator.getRandom(),
+        // generateExpression(depth + 1, MaterializeDataType.RANGE),
+        // generateExpression(depth + 1, MaterializeDataType.RANGE));
         default:
             throw new AssertionError();
         }
@@ -233,10 +235,10 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
     private MaterializeExpression getComparison(MaterializeExpression leftExpr, MaterializeExpression rightExpr) {
         MaterializeBinaryComparisonOperation op = new MaterializeBinaryComparisonOperation(leftExpr, rightExpr,
                 MaterializeBinaryComparisonOperation.MaterializeBinaryComparisonOperator.getRandom());
-        //if (MaterializeProvider.generateOnlyKnown && op.getLeft().getExpressionType() == MaterializeDataType.TEXT
-        //        && op.getRight().getExpressionType() == MaterializeDataType.TEXT) {
-        //    return new MaterializeCollate(op, "C");
-        //}
+        // if (MaterializeProvider.generateOnlyKnown && op.getLeft().getExpressionType() == MaterializeDataType.TEXT
+        // && op.getRight().getExpressionType() == MaterializeDataType.TEXT) {
+        // return new MaterializeCollate(op, "C");
+        // }
         return op;
     }
 
@@ -250,7 +252,8 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
         return new MaterializeInOperation(leftExpr, rightExpr, Randomly.getBoolean());
     }
 
-    public static MaterializeExpression generateExpression(MaterializeGlobalState globalState, MaterializeDataType type) {
+    public static MaterializeExpression generateExpression(MaterializeGlobalState globalState,
+            MaterializeDataType type) {
         return new MaterializeExpressionGenerator(globalState).generateExpression(0, type);
     }
 
@@ -269,15 +272,17 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
         return potentiallyWrapInCollate(dataType, exprInternal);
     }
 
-    private MaterializeExpression potentiallyWrapInCollate(MaterializeDataType dataType, MaterializeExpression exprInternal) {
-        //if (dataType == MaterializeDataType.TEXT && MaterializeProvider.generateOnlyKnown) {
-        //    return new MaterializeCollate(exprInternal, "C");
-        //} else {
-            return exprInternal;
-        //}
+    private MaterializeExpression potentiallyWrapInCollate(MaterializeDataType dataType,
+            MaterializeExpression exprInternal) {
+        // if (dataType == MaterializeDataType.TEXT && MaterializeProvider.generateOnlyKnown) {
+        // return new MaterializeCollate(exprInternal, "C");
+        // } else {
+        return exprInternal;
+        // }
     }
 
-    private MaterializeExpression generateExpressionInternal(int depth, MaterializeDataType dataType) throws AssertionError {
+    private MaterializeExpression generateExpressionInternal(int depth, MaterializeDataType dataType)
+            throws AssertionError {
         if (allowAggregateFunctions && Randomly.getBoolean()) {
             allowAggregateFunctions = false; // aggregate function calls cannot be nested
             return getAggregate(dataType);
@@ -312,13 +317,13 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
             case DECIMAL:
             case REAL:
             case FLOAT:
-            //case MONEY:
-            //case INET:
+                // case MONEY:
+                // case INET:
                 return generateConstant(r, dataType);
             case BIT:
                 return generateBitExpression(depth);
-            //case RANGE:
-            //    return generateRangeExpression(depth);
+            // case RANGE:
+            // return generateRangeExpression(depth);
             default:
                 throw new AssertionError(dataType);
             }
@@ -331,17 +336,17 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
         case DECIMAL: // TODO
         case FLOAT:
         case INT:
-        //case MONEY:
-        //case RANGE:
+            // case MONEY:
+            // case RANGE:
         case REAL:
-        //case INET:
+            // case INET:
         case BIT: // Because I mapped BIT to INT
             return MaterializeCompoundDataType.create(type);
         case TEXT: // TODO
             if (Randomly.getBoolean() || MaterializeProvider.generateOnlyKnown /*
-                                                                             * The PQS implementation does not check for
-                                                                             * size specifications
-                                                                             */) {
+                                                                                * The PQS implementation does not check
+                                                                                * for size specifications
+                                                                                */) {
                 return MaterializeCompoundDataType.create(type);
             } else {
                 return MaterializeCompoundDataType.create(type, (int) Randomly.getNotCachedInteger(1, 1000));
@@ -352,51 +357,52 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
 
     }
 
-    //private enum RangeExpression {
-    //    BINARY_OP;
-    //}
+    // private enum RangeExpression {
+    // BINARY_OP;
+    // }
 
-    //private MaterializeExpression generateRangeExpression(int depth) {
-    //    RangeExpression option;
-    //    List<RangeExpression> validOptions = new ArrayList<>(Arrays.asList(RangeExpression.values()));
-    //    option = Randomly.fromList(validOptions);
-    //    switch (option) {
-    //    case BINARY_OP:
-    //        return new MaterializeBinaryRangeOperation(MaterializeBinaryRangeOperator.getRandom(),
-    //                generateExpression(depth + 1, MaterializeDataType.RANGE),
-    //                generateExpression(depth + 1, MaterializeDataType.RANGE));
-    //    default:
-    //        throw new AssertionError(option);
-    //    }
-    //}
+    // private MaterializeExpression generateRangeExpression(int depth) {
+    // RangeExpression option;
+    // List<RangeExpression> validOptions = new ArrayList<>(Arrays.asList(RangeExpression.values()));
+    // option = Randomly.fromList(validOptions);
+    // switch (option) {
+    // case BINARY_OP:
+    // return new MaterializeBinaryRangeOperation(MaterializeBinaryRangeOperator.getRandom(),
+    // generateExpression(depth + 1, MaterializeDataType.RANGE),
+    // generateExpression(depth + 1, MaterializeDataType.RANGE));
+    // default:
+    // throw new AssertionError(option);
+    // }
+    // }
 
     private enum TextExpression {
-        CAST, FUNCTION, CONCAT//, COLLATE
+        CAST, FUNCTION, CONCAT// , COLLATE
     }
 
     private MaterializeExpression generateTextExpression(int depth) {
         TextExpression option;
         List<TextExpression> validOptions = new ArrayList<>(Arrays.asList(TextExpression.values()));
-        //if (expectedResult) {
-        //    validOptions.remove(TextExpression.COLLATE);
-        //}
-        //if (!globalState.getDbmsSpecificOptions().testCollations) {
-        //    validOptions.remove(TextExpression.COLLATE);
-        //}
+        // if (expectedResult) {
+        // validOptions.remove(TextExpression.COLLATE);
+        // }
+        // if (!globalState.getDbmsSpecificOptions().testCollations) {
+        // validOptions.remove(TextExpression.COLLATE);
+        // }
         option = Randomly.fromList(validOptions);
 
         switch (option) {
         case CAST:
-            return new MaterializeCastOperation(generateExpression(depth + 1), getCompoundDataType(MaterializeDataType.TEXT));
+            return new MaterializeCastOperation(generateExpression(depth + 1),
+                    getCompoundDataType(MaterializeDataType.TEXT));
         case FUNCTION:
             return generateFunction(depth + 1, MaterializeDataType.TEXT);
         case CONCAT:
             return generateConcat(depth);
         // java.lang.IndexOutOfBoundsException: Index 0 out of bounds for length 0
-        //case COLLATE:
-        //    assert !expectedResult;
-        //    return new MaterializeCollate(generateExpression(depth + 1, MaterializeDataType.TEXT), globalState == null
-        //            ? Randomly.fromOptions("C", "POSIX", "de_CH.utf8", "es_CR.utf8") : globalState.getRandomCollate());
+        // case COLLATE:
+        // assert !expectedResult;
+        // return new MaterializeCollate(generateExpression(depth + 1, MaterializeDataType.TEXT), globalState == null
+        // ? Randomly.fromOptions("C", "POSIX", "de_CH.utf8", "es_CR.utf8") : globalState.getRandomCollate());
         default:
             throw new AssertionError();
         }
@@ -426,15 +432,16 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
     }
 
     private enum IntExpression {
-        UNARY_OPERATION, FUNCTION, /*CAST, */BINARY_ARITHMETIC_EXPRESSION
+        UNARY_OPERATION, FUNCTION, /* CAST, */BINARY_ARITHMETIC_EXPRESSION
     }
 
     private MaterializeExpression generateIntExpression(int depth) {
         IntExpression option;
         option = Randomly.fromOptions(IntExpression.values());
         switch (option) {
-        //case CAST:
-        //    return new MaterializeCastOperation(generateExpression(depth + 1), getCompoundDataType(MaterializeDataType.INT));
+        // case CAST:
+        // return new MaterializeCastOperation(generateExpression(depth + 1),
+        // getCompoundDataType(MaterializeDataType.INT));
         case UNARY_OPERATION:
             MaterializeExpression intExpression = generateExpression(depth + 1, MaterializeDataType.INT);
             return new MaterializePrefixOperation(intExpression,
@@ -504,14 +511,14 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
             return MaterializeConstant.createFloatConstant((float) r.getDouble());
         case REAL:
             return MaterializeConstant.createDoubleConstant(r.getDouble());
-        //case RANGE:
-        //    return MaterializeConstant.createRange(r.getInteger(), Randomly.getBoolean(), r.getInteger(),
-        //            Randomly.getBoolean());
-        //case MONEY:
-        //    return new MaterializeCastOperation(generateConstant(r, MaterializeDataType.FLOAT),
-        //            getCompoundDataType(MaterializeDataType.MONEY));
-        //case INET:
-        //    return MaterializeConstant.createInetConstant(getRandomInet(r));
+        // case RANGE:
+        // return MaterializeConstant.createRange(r.getInteger(), Randomly.getBoolean(), r.getInteger(),
+        // Randomly.getBoolean());
+        // case MONEY:
+        // return new MaterializeCastOperation(generateConstant(r, MaterializeDataType.FLOAT),
+        // getCompoundDataType(MaterializeDataType.MONEY));
+        // case INET:
+        // return MaterializeConstant.createInetConstant(getRandomInet(r));
         case BIT:
             return MaterializeConstant.createBitConstant(r.getInteger());
         default:
@@ -519,23 +526,24 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
         }
     }
 
-    //private static String getRandomInet(Randomly r) {
-    //    StringBuilder sb = new StringBuilder();
-    //    for (int i = 0; i < 4; i++) {
-    //        if (i != 0) {
-    //            sb.append('.');
-    //        }
-    //        sb.append(r.getInteger() & 255);
-    //    }
-    //    return sb.toString();
-    //}
+    // private static String getRandomInet(Randomly r) {
+    // StringBuilder sb = new StringBuilder();
+    // for (int i = 0; i < 4; i++) {
+    // if (i != 0) {
+    // sb.append('.');
+    // }
+    // sb.append(r.getInteger() & 255);
+    // }
+    // return sb.toString();
+    // }
 
-    public static MaterializeExpression generateExpression(MaterializeGlobalState globalState, List<MaterializeColumn> columns,
-            MaterializeDataType type) {
+    public static MaterializeExpression generateExpression(MaterializeGlobalState globalState,
+            List<MaterializeColumn> columns, MaterializeDataType type) {
         return new MaterializeExpressionGenerator(globalState).setColumns(columns).generateExpression(0, type);
     }
 
-    public static MaterializeExpression generateExpression(MaterializeGlobalState globalState, List<MaterializeColumn> columns) {
+    public static MaterializeExpression generateExpression(MaterializeGlobalState globalState,
+            List<MaterializeColumn> columns) {
         return new MaterializeExpressionGenerator(globalState).setColumns(columns).generateExpression(0);
 
     }
@@ -574,7 +582,8 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
         return generateArgsForAggregate(dataType, agg);
     }
 
-    public MaterializeAggregate generateArgsForAggregate(MaterializeDataType dataType, MaterializeAggregateFunction agg) {
+    public MaterializeAggregate generateArgsForAggregate(MaterializeDataType dataType,
+            MaterializeAggregateFunction agg) {
         List<MaterializeDataType> types = agg.getTypes(dataType);
         List<MaterializeExpression> args = new ArrayList<>();
         for (MaterializeDataType argType : types) {

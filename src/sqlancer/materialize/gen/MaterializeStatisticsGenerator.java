@@ -23,7 +23,8 @@ public final class MaterializeStatisticsGenerator {
         if (Randomly.getBoolean()) {
             sb.append(" IF NOT EXISTS");
         }
-        MaterializeTable randomTable = globalState.getSchema().getRandomTable(t -> !t.isView()); // TODO materialized view
+        MaterializeTable randomTable = globalState.getSchema().getRandomTable(t -> !t.isView()); // TODO materialized
+                                                                                                 // view
         if (randomTable.getColumns().size() < 2) {
             throw new IgnoreMeException();
         }

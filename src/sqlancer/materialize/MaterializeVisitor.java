@@ -54,7 +54,7 @@ public interface MaterializeVisitor {
 
     void visit(MaterializeSimilarTo op);
 
-    //void visit(MaterializeCollate op);
+    // void visit(MaterializeCollate op);
 
     void visit(MaterializePOSIXRegularExpression op);
 
@@ -95,8 +95,8 @@ public interface MaterializeVisitor {
             visit((MaterializeSimilarTo) expression);
         } else if (expression instanceof MaterializePOSIXRegularExpression) {
             visit((MaterializePOSIXRegularExpression) expression);
-        //} else if (expression instanceof MaterializeCollate) {
-        //    visit((MaterializeCollate) expression);
+            // } else if (expression instanceof MaterializeCollate) {
+            // visit((MaterializeCollate) expression);
         } else if (expression instanceof MaterializeFromTable) {
             visit((MaterializeFromTable) expression);
         } else if (expression instanceof MaterializeSubquery) {
@@ -122,7 +122,8 @@ public interface MaterializeVisitor {
 
     static String getExpressionAsString(MaterializeGlobalState globalState, MaterializeDataType type,
             List<MaterializeColumn> columns) {
-        MaterializeExpression expression = MaterializeExpressionGenerator.generateExpression(globalState, columns, type);
+        MaterializeExpression expression = MaterializeExpressionGenerator.generateExpression(globalState, columns,
+                type);
         MaterializeToStringVisitor visitor = new MaterializeToStringVisitor();
         visitor.visit(expression);
         return visitor.get();

@@ -26,8 +26,8 @@ import sqlancer.materialize.ast.MaterializeSelect.MaterializeFromTable;
 import sqlancer.materialize.gen.MaterializeCommon;
 import sqlancer.materialize.gen.MaterializeExpressionGenerator;
 
-public class MaterializePivotedQuerySynthesisOracle
-        extends PivotedQuerySynthesisBase<MaterializeGlobalState, MaterializeRowValue, MaterializeExpression, SQLConnection> {
+public class MaterializePivotedQuerySynthesisOracle extends
+        PivotedQuerySynthesisBase<MaterializeGlobalState, MaterializeRowValue, MaterializeExpression, SQLConnection> {
 
     private List<MaterializeColumn> fetchColumns;
 
@@ -72,8 +72,8 @@ public class MaterializePivotedQuerySynthesisOracle
      * Prevent name collisions by aliasing the column.
      */
     private MaterializeColumn getFetchValueAliasedColumn(MaterializeColumn c) {
-        MaterializeColumn aliasedColumn = new MaterializeColumn(c.getName() + " AS " + c.getTable().getName() + c.getName(),
-                c.getType());
+        MaterializeColumn aliasedColumn = new MaterializeColumn(
+                c.getName() + " AS " + c.getTable().getName() + c.getName(), c.getType());
         aliasedColumn.setTable(c.getTable());
         return aliasedColumn;
     }

@@ -66,7 +66,8 @@ public class MaterializeBinaryLogicalOperation extends BinaryOperatorNode<Materi
         }
     }
 
-    public MaterializeBinaryLogicalOperation(MaterializeExpression left, MaterializeExpression right, BinaryLogicalOperator op) {
+    public MaterializeBinaryLogicalOperation(MaterializeExpression left, MaterializeExpression right,
+            BinaryLogicalOperator op) {
         super(left, right, op);
     }
 

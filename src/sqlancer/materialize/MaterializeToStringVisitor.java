@@ -29,7 +29,8 @@ import sqlancer.materialize.ast.MaterializeSelect.MaterializeFromTable;
 import sqlancer.materialize.ast.MaterializeSelect.MaterializeSubquery;
 import sqlancer.materialize.ast.MaterializeSimilarTo;
 
-public final class MaterializeToStringVisitor extends ToStringVisitor<MaterializeExpression> implements MaterializeVisitor {
+public final class MaterializeToStringVisitor extends ToStringVisitor<MaterializeExpression>
+        implements MaterializeVisitor {
 
     @Override
     public void visitSpecific(MaterializeExpression expr) {
@@ -70,13 +71,13 @@ public final class MaterializeToStringVisitor extends ToStringVisitor<Materializ
 
     @Override
     public void visit(MaterializeFromTable from) {
-        //if (from.isOnly()) {
-        //    sb.append("ONLY ");
-        //}
+        // if (from.isOnly()) {
+        // sb.append("ONLY ");
+        // }
         sb.append(from.getTable().getName());
-        //if (!from.isOnly() && Randomly.getBoolean()) {
-        //    sb.append("*");
-        //}
+        // if (!from.isOnly() && Randomly.getBoolean()) {
+        // sb.append("*");
+        // }
     }
 
     @Override
@@ -105,11 +106,11 @@ public final class MaterializeToStringVisitor extends ToStringVisitor<Materializ
         default:
             throw new AssertionError();
         }
-        //if (s.getFetchColumns() == null) {
-        //    sb.append("*");
-        //} else {
-            visit(s.getFetchColumns());
-        //}
+        // if (s.getFetchColumns() == null) {
+        // sb.append("*");
+        // } else {
+        visit(s.getFetchColumns());
+        // }
         sb.append(" FROM ");
         visit(s.getFromList());
 
@@ -208,7 +209,8 @@ public final class MaterializeToStringVisitor extends ToStringVisitor<Materializ
                 sb.append(" != 0)");
             }
         } else if (Randomly.getBoolean()) {
-            if (cast.getCompoundType().getDataType() == MaterializeDataType.REAL || cast.getCompoundType().getDataType() == MaterializeDataType.FLOAT) {
+            if (cast.getCompoundType().getDataType() == MaterializeDataType.REAL
+                    || cast.getCompoundType().getDataType() == MaterializeDataType.FLOAT) {
                 sb.append("CAST(CAST(");
                 visit(cast.getExpression());
                 sb.append(" AS INT) AS ");
@@ -222,7 +224,8 @@ public final class MaterializeToStringVisitor extends ToStringVisitor<Materializ
                 sb.append(")");
             }
         } else {
-            if (cast.getCompoundType().getDataType() == MaterializeDataType.REAL || cast.getCompoundType().getDataType() == MaterializeDataType.FLOAT) {
+            if (cast.getCompoundType().getDataType() == MaterializeDataType.REAL
+                    || cast.getCompoundType().getDataType() == MaterializeDataType.FLOAT) {
                 sb.append("(");
                 visit(cast.getExpression());
                 sb.append(")::INT::");
@@ -258,17 +261,17 @@ public final class MaterializeToStringVisitor extends ToStringVisitor<Materializ
         case FLOAT:
             sb.append("REAL");
             break;
-        //case RANGE:
-        //    sb.append("int4range");
-        //    break;
-        //case MONEY:
-        //    sb.append("MONEY");
-        //    break;
-        //case INET:
-        //    sb.append("INET");
-        //    break;
+        // case RANGE:
+        // sb.append("int4range");
+        // break;
+        // case MONEY:
+        // sb.append("MONEY");
+        // break;
+        // case INET:
+        // sb.append("INET");
+        // break;
         case BIT:
-            //sb.append("BIT");
+            // sb.append("BIT");
             sb.append("INT");
             // if (Randomly.getBoolean()) {
             // sb.append("(");
@@ -291,22 +294,22 @@ public final class MaterializeToStringVisitor extends ToStringVisitor<Materializ
     public void visit(MaterializeBetweenOperation op) {
         sb.append("(");
         visit(op.getExpr());
-        //if (MaterializeProvider.generateOnlyKnown && op.getExpr().getExpressionType() == MaterializeDataType.TEXT
-        //        && op.getLeft().getExpressionType() == MaterializeDataType.TEXT) {
-        //    sb.append(" COLLATE \"C\"");
-        //}
+        // if (MaterializeProvider.generateOnlyKnown && op.getExpr().getExpressionType() == MaterializeDataType.TEXT
+        // && op.getLeft().getExpressionType() == MaterializeDataType.TEXT) {
+        // sb.append(" COLLATE \"C\"");
+        // }
         sb.append(") BETWEEN ");
-        //if (op.isSymmetric()) {
-        //    sb.append("SYMMETRIC ");
-        //}
+        // if (op.isSymmetric()) {
+        // sb.append("SYMMETRIC ");
+        // }
         sb.append("(");
         visit(op.getLeft());
         sb.append(") AND (");
         visit(op.getRight());
-        //if (MaterializeProvider.generateOnlyKnown && op.getExpr().getExpressionType() == MaterializeDataType.TEXT
-        //        && op.getRight().getExpressionType() == MaterializeDataType.TEXT) {
-        //    sb.append(" COLLATE \"C\"");
-        //}
+        // if (MaterializeProvider.generateOnlyKnown && op.getExpr().getExpressionType() == MaterializeDataType.TEXT
+        // && op.getRight().getExpressionType() == MaterializeDataType.TEXT) {
+        // sb.append(" COLLATE \"C\"");
+        // }
         sb.append(")");
     }
 
@@ -356,16 +359,16 @@ public final class MaterializeToStringVisitor extends ToStringVisitor<Materializ
         visit(op.getRegex());
     }
 
-    //@Override
-    //public void visit(MaterializeCollate op) {
-    //    sb.append("(");
-    //    visit(op.getExpr());
-    //    sb.append(" COLLATE ");
-    //    sb.append('"');
-    //    sb.append(op.getCollate());
-    //    sb.append('"');
-    //    sb.append(")");
-    //}
+    // @Override
+    // public void visit(MaterializeCollate op) {
+    // sb.append("(");
+    // visit(op.getExpr());
+    // sb.append(" COLLATE ");
+    // sb.append('"');
+    // sb.append(op.getCollate());
+    // sb.append('"');
+    // sb.append(")");
+    // }
 
     @Override
     public void visit(MaterializeBinaryLogicalOperation op) {

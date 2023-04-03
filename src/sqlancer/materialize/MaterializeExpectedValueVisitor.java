@@ -147,11 +147,11 @@ public final class MaterializeExpectedValueVisitor implements MaterializeVisitor
         visit(op.getRegex());
     }
 
-    //@Override
-    //public void visit(MaterializeCollate op) {
-    //    print(op);
-    //    visit(op.getExpr());
-    //}
+    // @Override
+    // public void visit(MaterializeCollate op) {
+    // print(op);
+    // visit(op.getExpr());
+    // }
 
     @Override
     public void visit(MaterializeFromTable from) {

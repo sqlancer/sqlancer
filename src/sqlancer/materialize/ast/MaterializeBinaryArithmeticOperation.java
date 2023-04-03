@@ -8,8 +8,8 @@ import sqlancer.common.ast.BinaryOperatorNode.Operator;
 import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
 import sqlancer.materialize.ast.MaterializeBinaryArithmeticOperation.MaterializeBinaryOperator;
 
-public class MaterializeBinaryArithmeticOperation extends BinaryOperatorNode<MaterializeExpression, MaterializeBinaryOperator>
-        implements MaterializeExpression {
+public class MaterializeBinaryArithmeticOperation
+        extends BinaryOperatorNode<MaterializeExpression, MaterializeBinaryOperator> implements MaterializeExpression {
 
     public enum MaterializeBinaryOperator implements Operator {
 
@@ -48,12 +48,12 @@ public class MaterializeBinaryArithmeticOperation extends BinaryOperatorNode<Mat
 
             }
         };
-        //EXPONENTIATION("^") {
-        //    @Override
-        //    public MaterializeConstant apply(MaterializeConstant left, MaterializeConstant right) {
-        //        return null;
-        //    }
-        //};
+        // EXPONENTIATION("^") {
+        // @Override
+        // public MaterializeConstant apply(MaterializeConstant left, MaterializeConstant right) {
+        // return null;
+        // }
+        // };
 
         private String textRepresentation;
 

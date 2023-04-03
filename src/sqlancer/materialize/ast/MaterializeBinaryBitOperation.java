@@ -6,11 +6,11 @@ import sqlancer.common.ast.BinaryOperatorNode.Operator;
 import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
 import sqlancer.materialize.ast.MaterializeBinaryBitOperation.MaterializeBinaryBitOperator;
 
-public class MaterializeBinaryBitOperation extends BinaryOperatorNode<MaterializeExpression, MaterializeBinaryBitOperator>
-        implements MaterializeExpression {
+public class MaterializeBinaryBitOperation extends
+        BinaryOperatorNode<MaterializeExpression, MaterializeBinaryBitOperator> implements MaterializeExpression {
 
     public enum MaterializeBinaryBitOperator implements Operator {
-        //CONCATENATION("||"), //
+        // CONCATENATION("||"), //
         BITWISE_AND("&"), //
         BITWISE_OR("|"), //
         BITWISE_XOR("#"), //
@@ -34,7 +34,8 @@ public class MaterializeBinaryBitOperation extends BinaryOperatorNode<Materializ
 
     }
 
-    public MaterializeBinaryBitOperation(MaterializeBinaryBitOperator op, MaterializeExpression left, MaterializeExpression right) {
+    public MaterializeBinaryBitOperation(MaterializeBinaryBitOperator op, MaterializeExpression left,
+            MaterializeExpression right) {
         super(left, right, op);
     }
 

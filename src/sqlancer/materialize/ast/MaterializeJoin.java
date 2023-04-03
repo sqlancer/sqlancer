@@ -18,7 +18,8 @@ public class MaterializeJoin implements MaterializeExpression {
     private final MaterializeExpression onClause;
     private final MaterializeJoinType type;
 
-    public MaterializeJoin(MaterializeExpression tableReference, MaterializeExpression onClause, MaterializeJoinType type) {
+    public MaterializeJoin(MaterializeExpression tableReference, MaterializeExpression onClause,
+            MaterializeJoinType type) {
         this.tableReference = tableReference;
         this.onClause = onClause;
         this.type = type;

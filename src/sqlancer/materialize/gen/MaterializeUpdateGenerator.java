@@ -22,8 +22,8 @@ public final class MaterializeUpdateGenerator extends AbstractUpdateGenerator<Ma
         this.globalState = globalState;
         errors.addAll(Arrays.asList("conflicting key value violates exclusion constraint",
                 "reached maximum value of sequence", "violates foreign key constraint", "violates not-null constraint",
-                "violates unique constraint", "out of range", "does not support casting", "must be type boolean", "is not unique",
-                " bit string too long", "can only be updated to DEFAULT", "division by zero",
+                "violates unique constraint", "out of range", "does not support casting", "must be type boolean",
+                "is not unique", " bit string too long", "can only be updated to DEFAULT", "division by zero",
                 "You might need to add explicit type casts.", "invalid regular expression",
                 "View columns that are not columns of their base relation are not updatable"));
     }
@@ -65,8 +65,8 @@ public final class MaterializeUpdateGenerator extends AbstractUpdateGenerator<Ma
             MaterializeExpression constant = MaterializeExpressionGenerator.generateConstant(globalState.getRandomly(),
                     column.getType());
             sb.append(MaterializeVisitor.asString(constant));
-        //} else if (Randomly.getBoolean()) {
-        //    sb.append("DEFAULT");
+            // } else if (Randomly.getBoolean()) {
+            // sb.append("DEFAULT");
         } else {
             sb.append("(");
             MaterializeExpression expr = MaterializeExpressionGenerator.generateExpression(globalState,

@@ -36,7 +36,8 @@ import sqlancer.materialize.gen.MaterializeCommon;
 import sqlancer.materialize.gen.MaterializeExpressionGenerator;
 import sqlancer.materialize.oracle.tlp.MaterializeTLPBase;
 
-public class MaterializeNoRECOracle extends NoRECBase<MaterializeGlobalState> implements TestOracle<MaterializeGlobalState> {
+public class MaterializeNoRECOracle extends NoRECBase<MaterializeGlobalState>
+        implements TestOracle<MaterializeGlobalState> {
 
     private final MaterializeSchema s;
 
@@ -55,8 +56,8 @@ public class MaterializeNoRECOracle extends NoRECBase<MaterializeGlobalState> im
         List<MaterializeTable> tables = randomTables.getTables();
 
         List<MaterializeJoin> joinStatements = getJoinStatements(state, columns, tables);
-        List<MaterializeExpression> fromTables = tables.stream().map(t -> new MaterializeFromTable(t, Randomly.getBoolean()))
-                .collect(Collectors.toList());
+        List<MaterializeExpression> fromTables = tables.stream()
+                .map(t -> new MaterializeFromTable(t, Randomly.getBoolean())).collect(Collectors.toList());
         int secondCount = getUnoptimizedQueryCount(fromTables, randomWhereCondition, joinStatements);
         int firstCount = getOptimizedQueryCount(fromTables, columns, randomWhereCondition, joinStatements);
         if (firstCount == -1 || secondCount == -1) {
@@ -74,8 +75,8 @@ public class MaterializeNoRECOracle extends NoRECBase<MaterializeGlobalState> im
         }
     }
 
-    public static List<MaterializeJoin> getJoinStatements(MaterializeGlobalState globalState, List<MaterializeColumn> columns,
-            List<MaterializeTable> tables) {
+    public static List<MaterializeJoin> getJoinStatements(MaterializeGlobalState globalState,
+            List<MaterializeColumn> columns, List<MaterializeTable> tables) {
         List<MaterializeJoin> joinStatements = new ArrayList<>();
         MaterializeExpressionGenerator gen = new MaterializeExpressionGenerator(globalState).setColumns(columns);
         for (int i = 1; i < tables.size(); i++) {
@@ -83,7 +84,8 @@ public class MaterializeNoRECOracle extends NoRECBase<MaterializeGlobalState> im
             MaterializeTable table = Randomly.fromList(tables);
             tables.remove(table);
             MaterializeJoinType options = MaterializeJoinType.getRandom();
-            MaterializeJoin j = new MaterializeJoin(new MaterializeFromTable(table, Randomly.getBoolean()), joinClause, options);
+            MaterializeJoin j = new MaterializeJoin(new MaterializeFromTable(table, Randomly.getBoolean()), joinClause,
+                    options);
             joinStatements.add(j);
         }
         // JOIN subqueries
@@ -100,11 +102,12 @@ public class MaterializeNoRECOracle extends NoRECBase<MaterializeGlobalState> im
     }
 
     private MaterializeExpression getRandomWhereCondition(List<MaterializeColumn> columns) {
-        return new MaterializeExpressionGenerator(state).setColumns(columns).generateExpression(MaterializeDataType.BOOLEAN);
+        return new MaterializeExpressionGenerator(state).setColumns(columns)
+                .generateExpression(MaterializeDataType.BOOLEAN);
     }
 
-    private int getUnoptimizedQueryCount(List<MaterializeExpression> fromTables, MaterializeExpression randomWhereCondition,
-            List<MaterializeJoin> joinStatements) throws SQLException {
+    private int getUnoptimizedQueryCount(List<MaterializeExpression> fromTables,
+            MaterializeExpression randomWhereCondition, List<MaterializeJoin> joinStatements) throws SQLException {
         MaterializeSelect select = new MaterializeSelect();
         MaterializeCastOperation isTrue = new MaterializeCastOperation(randomWhereCondition,
                 MaterializeCompoundDataType.create(MaterializeDataType.INT));
@@ -144,7 +147,8 @@ public class MaterializeNoRECOracle extends NoRECBase<MaterializeGlobalState> im
         select.setFromList(randomTables);
         select.setWhereClause(randomWhereCondition);
         if (Randomly.getBooleanWithSmallProbability()) {
-            select.setOrderByExpressions(new MaterializeExpressionGenerator(state).setColumns(columns).generateOrderBy());
+            select.setOrderByExpressions(
+                    new MaterializeExpressionGenerator(state).setColumns(columns).generateOrderBy());
         }
         select.setSelectType(SelectType.ALL);
         select.setJoinClauses(joinStatements);

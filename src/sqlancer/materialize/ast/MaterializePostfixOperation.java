@@ -35,7 +35,7 @@ public class MaterializePostfixOperation implements MaterializeExpression {
             }
         },
 
-        IS_NOT_NULL("IS NOT NULL"/*, "NOTNULL"*/) {
+        IS_NOT_NULL("IS NOT NULL"/* , "NOTNULL" */) {
 
             @Override
             public MaterializeConstant apply(MaterializeConstant expectedValue) {

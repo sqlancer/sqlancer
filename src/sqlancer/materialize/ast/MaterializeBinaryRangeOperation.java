@@ -5,7 +5,8 @@ import sqlancer.common.ast.BinaryNode;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
 import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
 
-public class MaterializeBinaryRangeOperation extends BinaryNode<MaterializeExpression> implements MaterializeExpression {
+public class MaterializeBinaryRangeOperation extends BinaryNode<MaterializeExpression>
+        implements MaterializeExpression {
 
     private final String op;
 
@@ -31,7 +32,7 @@ public class MaterializeBinaryRangeOperation extends BinaryNode<MaterializeExpre
 
     public enum MaterializeBinaryRangeComparisonOperator {
         CONTAINS_RANGE_OR_ELEMENT("@>"), RANGE_OR_ELEMENT_IS_CONTAINED("<@"), OVERLAP("&&"), STRICT_LEFT_OF("<<"),
-        STRICT_RIGHT_OF(">>")/*, NOT_RIGHT_OF("&<"), NOT_LEFT_OF(">&"), ADJACENT("-|-")*/;
+        STRICT_RIGHT_OF(">>")/* , NOT_RIGHT_OF("&<"), NOT_LEFT_OF(">&"), ADJACENT("-|-") */;
 
         private final String textRepresentation;
 

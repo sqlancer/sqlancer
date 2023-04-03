@@ -31,7 +31,7 @@ public class MaterializeSchema extends AbstractSchema<MaterializeGlobalState, Ma
     private final String databaseName;
 
     public enum MaterializeDataType {
-        INT, BOOLEAN, TEXT, DECIMAL, FLOAT, REAL, BIT; //, RANGE, MONEY, INET;
+        INT, BOOLEAN, TEXT, DECIMAL, FLOAT, REAL, BIT; // , RANGE, MONEY, INET;
 
         public static MaterializeDataType getRandomType() {
             List<MaterializeDataType> dataTypes = new ArrayList<>(Arrays.asList(values()));
@@ -39,9 +39,9 @@ public class MaterializeSchema extends AbstractSchema<MaterializeGlobalState, Ma
                 dataTypes.remove(MaterializeDataType.DECIMAL);
                 dataTypes.remove(MaterializeDataType.FLOAT);
                 dataTypes.remove(MaterializeDataType.REAL);
-                //dataTypes.remove(MaterializeDataType.INET);
-                //dataTypes.remove(MaterializeDataType.RANGE);
-                //dataTypes.remove(MaterializeDataType.MONEY);
+                // dataTypes.remove(MaterializeDataType.INET);
+                // dataTypes.remove(MaterializeDataType.RANGE);
+                // dataTypes.remove(MaterializeDataType.MONEY);
                 dataTypes.remove(MaterializeDataType.BIT);
             }
             return Randomly.fromList(dataTypes);
@@ -91,7 +91,8 @@ public class MaterializeSchema extends AbstractSchema<MaterializeGlobalState, Ma
                             constant = MaterializeConstant.createIntConstant(randomRowValues.getLong(columnIndex));
                             break;
                         case BOOLEAN:
-                            constant = MaterializeConstant.createBooleanConstant(randomRowValues.getBoolean(columnIndex));
+                            constant = MaterializeConstant
+                                    .createBooleanConstant(randomRowValues.getBoolean(columnIndex));
                             break;
                         case TEXT:
                             constant = MaterializeConstant.createTextConstant(randomRowValues.getString(columnIndex));
@@ -132,21 +133,22 @@ public class MaterializeSchema extends AbstractSchema<MaterializeGlobalState, Ma
             return MaterializeDataType.FLOAT;
         case "real":
             return MaterializeDataType.REAL;
-        //case "int4range":
-        //    return MaterializeDataType.RANGE;
-        //case "money":
-        //    return MaterializeDataType.MONEY;
+        // case "int4range":
+        // return MaterializeDataType.RANGE;
+        // case "money":
+        // return MaterializeDataType.MONEY;
         case "bit":
-        //case "bit varying":
+            // case "bit varying":
             return MaterializeDataType.BIT;
-        //case "inet":
-        //    return MaterializeDataType.INET;
+        // case "inet":
+        // return MaterializeDataType.INET;
         default:
             throw new AssertionError(typeString);
         }
     }
 
-    public static class MaterializeRowValue extends AbstractRowValue<MaterializeTables, MaterializeColumn, MaterializeConstant> {
+    public static class MaterializeRowValue
+            extends AbstractRowValue<MaterializeTables, MaterializeColumn, MaterializeConstant> {
 
         protected MaterializeRowValue(MaterializeTables tables, Map<MaterializeColumn, MaterializeConstant> values) {
             super(tables, values);
@@ -166,7 +168,8 @@ public class MaterializeSchema extends AbstractSchema<MaterializeGlobalState, Ma
         private final boolean isInsertable;
 
         public MaterializeTable(String tableName, List<MaterializeColumn> columns, List<MaterializeIndex> indexes,
-                TableType tableType, List<MaterializeStatisticsObject> statistics, boolean isView, boolean isInsertable) {
+                TableType tableType, List<MaterializeStatisticsObject> statistics, boolean isView,
+                boolean isInsertable) {
             super(tableName, columns, indexes, isView);
             this.statistics = statistics;
             this.isInsertable = isInsertable;
@@ -232,19 +235,19 @@ public class MaterializeSchema extends AbstractSchema<MaterializeGlobalState, Ma
                         String tableTypeSchema = rs.getString("table_schema");
                         boolean isInsertable = true;
                         String type = rs.getString("table_type");
-                        //boolean isView = tableName.startsWith("v"); // tableTypeStr.contains("VIEW") ||
-                        //                                            // tableTypeStr.contains("LOCAL TEMPORARY") &&
-                        //                                            // !isInsertable;
+                        // boolean isView = tableName.startsWith("v"); // tableTypeStr.contains("VIEW") ||
+                        // // tableTypeStr.contains("LOCAL TEMPORARY") &&
+                        // // !isInsertable;
                         boolean isView = type.equals("VIEW") || type.equals("MATERIALIZED VIEW");
                         if (isView) {
-                          isInsertable = false;
+                            isInsertable = false;
                         }
                         MaterializeTable.TableType tableType = getTableType(tableTypeSchema);
                         List<MaterializeColumn> databaseColumns = getTableColumns(con, tableName);
                         List<MaterializeIndex> indexes = getIndexes(con, tableName);
                         List<MaterializeStatisticsObject> statistics = getStatistics(con);
-                        MaterializeTable t = new MaterializeTable(tableName, databaseColumns, indexes, tableType, statistics,
-                                isView, isInsertable);
+                        MaterializeTable t = new MaterializeTable(tableName, databaseColumns, indexes, tableType,
+                                statistics, isView, isInsertable);
                         for (MaterializeColumn c : databaseColumns) {
                             c.setTable(t);
                         }
@@ -260,13 +263,13 @@ public class MaterializeSchema extends AbstractSchema<MaterializeGlobalState, Ma
 
     protected static List<MaterializeStatisticsObject> getStatistics(SQLConnection con) throws SQLException {
         List<MaterializeStatisticsObject> statistics = new ArrayList<>();
-        //try (Statement s = con.createStatement()) {
-        //    try (ResultSet rs = s.executeQuery("SELECT stxname FROM pg_statistic_ext ORDER BY stxname;")) {
-        //        while (rs.next()) {
-        //            statistics.add(new MaterializeStatisticsObject(rs.getString("stxname")));
-        //        }
-        //    }
-        //}
+        // try (Statement s = con.createStatement()) {
+        // try (ResultSet rs = s.executeQuery("SELECT stxname FROM pg_statistic_ext ORDER BY stxname;")) {
+        // while (rs.next()) {
+        // statistics.add(new MaterializeStatisticsObject(rs.getString("stxname")));
+        // }
+        // }
+        // }
         return statistics;
     }
 
@@ -287,8 +290,10 @@ public class MaterializeSchema extends AbstractSchema<MaterializeGlobalState, Ma
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery(String
                     // org.postgresql.util.PSQLException: ERROR: unknown catalog item 'pg_indexes'
-                    //.format("SELECT indexname FROM pg_indexes WHERE tablename='%s' ORDER BY indexname;", tableName))) {
-                    .format("SELECT c.relname as indexname FROM pg_catalog.pg_class c LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace LEFT JOIN pg_catalog.pg_index i ON i.indexrelid = c.oid LEFT JOIN pg_catalog.pg_class c2 ON i.indrelid = c2.oid WHERE c.relkind IN ('i','I','') AND n.nspname <> 'pg_catalog' AND n.nspname !~ '^pg_toast' AND n.nspname <> 'information_schema' AND c2.relname = '%s' AND pg_catalog.pg_table_is_visible(c.oid) ORDER BY indexname;", tableName))) {
+                    // .format("SELECT indexname FROM pg_indexes WHERE tablename='%s' ORDER BY indexname;", tableName)))
+                    // {
+                    .format("SELECT c.relname as indexname FROM pg_catalog.pg_class c LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace LEFT JOIN pg_catalog.pg_index i ON i.indexrelid = c.oid LEFT JOIN pg_catalog.pg_class c2 ON i.indrelid = c2.oid WHERE c.relkind IN ('i','I','') AND n.nspname <> 'pg_catalog' AND n.nspname !~ '^pg_toast' AND n.nspname <> 'information_schema' AND c2.relname = '%s' AND pg_catalog.pg_table_is_visible(c.oid) ORDER BY indexname;",
+                            tableName))) {
                 while (rs.next()) {
                     String indexName = rs.getString("indexname");
                     if (DBMSCommon.matchesIndexName(indexName)) {

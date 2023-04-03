@@ -18,7 +18,8 @@ public class MaterializeAggregate extends FunctionNode<MaterializeAggregateFunct
     public enum MaterializeAggregateFunction {
         AVG(MaterializeDataType.INT, MaterializeDataType.FLOAT, MaterializeDataType.REAL, MaterializeDataType.DECIMAL),
         BIT_AND(MaterializeDataType.INT), BIT_OR(MaterializeDataType.INT), BOOL_AND(MaterializeDataType.BOOLEAN),
-        BOOL_OR(MaterializeDataType.BOOLEAN), COUNT(MaterializeDataType.INT)/*, EVERY(MaterializeDataType.BOOLEAN)*/, MAX, MIN,
+        BOOL_OR(MaterializeDataType.BOOLEAN), COUNT(MaterializeDataType.INT)/* , EVERY(MaterializeDataType.BOOLEAN) */,
+        MAX, MIN,
         // STRING_AGG
         SUM(MaterializeDataType.INT, MaterializeDataType.FLOAT, MaterializeDataType.REAL, MaterializeDataType.DECIMAL);
 

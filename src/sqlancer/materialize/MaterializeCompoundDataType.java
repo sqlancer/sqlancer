@@ -10,7 +10,8 @@ public final class MaterializeCompoundDataType {
     private final MaterializeCompoundDataType elemType;
     private final Integer size;
 
-    private MaterializeCompoundDataType(MaterializeDataType dataType, MaterializeCompoundDataType elemType, Integer size) {
+    private MaterializeCompoundDataType(MaterializeDataType dataType, MaterializeCompoundDataType elemType,
+            Integer size) {
         this.dataType = dataType;
         this.elemType = elemType;
         this.size = size;

@@ -10,7 +10,8 @@ public class MaterializeInOperation implements MaterializeExpression {
     private final List<MaterializeExpression> listElements;
     private final boolean isTrue;
 
-    public MaterializeInOperation(MaterializeExpression expr, List<MaterializeExpression> listElements, boolean isTrue) {
+    public MaterializeInOperation(MaterializeExpression expr, List<MaterializeExpression> listElements,
+            boolean isTrue) {
         this.expr = expr;
         this.listElements = listElements;
         this.isTrue = isTrue;

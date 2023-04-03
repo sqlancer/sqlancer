@@ -28,7 +28,8 @@ import sqlancer.materialize.gen.MaterializeCommon;
 import sqlancer.materialize.gen.MaterializeExpressionGenerator;
 import sqlancer.materialize.oracle.MaterializeNoRECOracle;
 
-public class MaterializeTLPBase extends TernaryLogicPartitioningOracleBase<MaterializeExpression, MaterializeGlobalState>
+public class MaterializeTLPBase
+        extends TernaryLogicPartitioningOracleBase<MaterializeExpression, MaterializeGlobalState>
         implements TestOracle<MaterializeGlobalState> {
 
     protected MaterializeSchema s;
@@ -51,15 +52,15 @@ public class MaterializeTLPBase extends TernaryLogicPartitioningOracleBase<Mater
         generateSelectBase(tables, joins);
     }
 
-    protected List<MaterializeJoin> getJoinStatements(MaterializeGlobalState globalState, List<MaterializeColumn> columns,
-            List<MaterializeTable> tables) {
+    protected List<MaterializeJoin> getJoinStatements(MaterializeGlobalState globalState,
+            List<MaterializeColumn> columns, List<MaterializeTable> tables) {
         return MaterializeNoRECOracle.getJoinStatements(state, columns, tables);
         // TODO joins
     }
 
     protected void generateSelectBase(List<MaterializeTable> tables, List<MaterializeJoin> joins) {
-        List<MaterializeExpression> tableList = tables.stream().map(t -> new MaterializeFromTable(t, Randomly.getBoolean()))
-                .collect(Collectors.toList());
+        List<MaterializeExpression> tableList = tables.stream()
+                .map(t -> new MaterializeFromTable(t, Randomly.getBoolean())).collect(Collectors.toList());
         gen = new MaterializeExpressionGenerator(state).setColumns(targetTables.getColumns());
         initializeTernaryPredicateVariants();
         select = new MaterializeSelect();
@@ -89,9 +90,11 @@ public class MaterializeTLPBase extends TernaryLogicPartitioningOracleBase<Mater
         return gen;
     }
 
-    public static MaterializeSubquery createSubquery(MaterializeGlobalState globalState, String name, MaterializeTables tables) {
+    public static MaterializeSubquery createSubquery(MaterializeGlobalState globalState, String name,
+            MaterializeTables tables) {
         List<MaterializeExpression> columns = new ArrayList<>();
-        MaterializeExpressionGenerator gen = new MaterializeExpressionGenerator(globalState).setColumns(tables.getColumns());
+        MaterializeExpressionGenerator gen = new MaterializeExpressionGenerator(globalState)
+                .setColumns(tables.getColumns());
         for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
             columns.add(gen.generateExpression(0));
         }

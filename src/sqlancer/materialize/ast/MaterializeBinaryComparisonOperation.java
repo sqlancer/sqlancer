@@ -7,7 +7,8 @@ import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
 import sqlancer.materialize.ast.MaterializeBinaryComparisonOperation.MaterializeBinaryComparisonOperator;
 
 public class MaterializeBinaryComparisonOperation
-        extends BinaryOperatorNode<MaterializeExpression, MaterializeBinaryComparisonOperator> implements MaterializeExpression {
+        extends BinaryOperatorNode<MaterializeExpression, MaterializeBinaryComparisonOperator>
+        implements MaterializeExpression {
 
     public enum MaterializeBinaryComparisonOperator implements Operator {
         EQUALS("=") {
@@ -16,25 +17,25 @@ public class MaterializeBinaryComparisonOperation
                 return leftVal.isEquals(rightVal);
             }
         },
-        //IS_DISTINCT("IS DISTINCT FROM") {
-        //    @Override
-        //    public MaterializeConstant getExpectedValue(MaterializeConstant leftVal, MaterializeConstant rightVal) {
-        //        return MaterializeConstant
-        //                .createBooleanConstant(!IS_NOT_DISTINCT.getExpectedValue(leftVal, rightVal).asBoolean());
-        //    }
-        //},
-        //IS_NOT_DISTINCT("IS NOT DISTINCT FROM") {
-        //    @Override
-        //    public MaterializeConstant getExpectedValue(MaterializeConstant leftVal, MaterializeConstant rightVal) {
-        //        if (leftVal.isNull()) {
-        //            return MaterializeConstant.createBooleanConstant(rightVal.isNull());
-        //        } else if (rightVal.isNull()) {
-        //            return MaterializeConstant.createFalse();
-        //        } else {
-        //            return leftVal.isEquals(rightVal);
-        //        }
-        //    }
-        //},
+        // IS_DISTINCT("IS DISTINCT FROM") {
+        // @Override
+        // public MaterializeConstant getExpectedValue(MaterializeConstant leftVal, MaterializeConstant rightVal) {
+        // return MaterializeConstant
+        // .createBooleanConstant(!IS_NOT_DISTINCT.getExpectedValue(leftVal, rightVal).asBoolean());
+        // }
+        // },
+        // IS_NOT_DISTINCT("IS NOT DISTINCT FROM") {
+        // @Override
+        // public MaterializeConstant getExpectedValue(MaterializeConstant leftVal, MaterializeConstant rightVal) {
+        // if (leftVal.isNull()) {
+        // return MaterializeConstant.createBooleanConstant(rightVal.isNull());
+        // } else if (rightVal.isNull()) {
+        // return MaterializeConstant.createFalse();
+        // } else {
+        // return leftVal.isEquals(rightVal);
+        // }
+        // }
+        // },
         NOT_EQUALS("!=") {
             @Override
             public MaterializeConstant getExpectedValue(MaterializeConstant leftVal, MaterializeConstant rightVal) {

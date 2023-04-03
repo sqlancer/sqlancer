@@ -50,8 +50,9 @@ public class MaterializeTLPAggregateOracle extends MaterializeTLPBase implements
 
     protected void aggregateCheck() throws SQLException {
         MaterializeAggregateFunction aggregateFunction = Randomly.fromOptions(MaterializeAggregateFunction.MAX,
-                MaterializeAggregateFunction.MIN, MaterializeAggregateFunction.SUM, MaterializeAggregateFunction.BIT_AND,
-                MaterializeAggregateFunction.BIT_OR, MaterializeAggregateFunction.BOOL_AND, MaterializeAggregateFunction.BOOL_OR,
+                MaterializeAggregateFunction.MIN, MaterializeAggregateFunction.SUM,
+                MaterializeAggregateFunction.BIT_AND, MaterializeAggregateFunction.BIT_OR,
+                MaterializeAggregateFunction.BOOL_AND, MaterializeAggregateFunction.BOOL_OR,
                 MaterializeAggregateFunction.COUNT);
         MaterializeAggregate aggregate = gen.generateArgsForAggregate(aggregateFunction.getRandomReturnType(),
                 aggregateFunction);
