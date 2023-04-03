@@ -8,7 +8,6 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresIndex;
-import sqlancer.postgres.PostgresSchema.PostgresTable;
 
 public final class PostgresDropIndexGenerator {
 
@@ -16,8 +15,7 @@ public final class PostgresDropIndexGenerator {
     }
 
     public static SQLQueryAdapter create(PostgresGlobalState globalState) {
-        PostgresTable randomTable = globalState.getSchema().getRandomTable();
-        List<PostgresIndex> indexes = randomTable.getIndexes();
+        List<PostgresIndex> indexes = globalState.getSchema().getRandomTable().getIndexes();
         StringBuilder sb = new StringBuilder();
         sb.append("DROP INDEX ");
         if (Randomly.getBoolean() || indexes.isEmpty()) {
@@ -27,7 +25,7 @@ public final class PostgresDropIndexGenerator {
                     sb.append(", ");
                 }
                 if (indexes.isEmpty() || Randomly.getBoolean()) {
-                    sb.append(DBMSCommon.createIndexName(randomTable.getName(), Randomly.smallNumber()));
+                    sb.append(DBMSCommon.createIndexName(Randomly.smallNumber()));
                 } else {
                     sb.append(Randomly.fromList(indexes).getIndexName());
                 }

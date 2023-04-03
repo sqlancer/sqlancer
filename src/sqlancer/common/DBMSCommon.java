@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 public final class DBMSCommon {
 
-    private static final Pattern SQLANCER_INDEX_PATTERN = Pattern.compile("^t\\d+i\\d+");
+    private static final Pattern SQLANCER_INDEX_PATTERN = Pattern.compile("^i\\d+");
 
     private DBMSCommon() {
     }
@@ -18,8 +18,8 @@ public final class DBMSCommon {
         return String.format("c%d", nr);
     }
 
-    public static String createIndexName(String tableName, int nr) {
-        return String.format("%si%d", tableName, nr);
+    public static String createIndexName(int nr) {
+        return String.format("i%d", nr);
     }
 
     public static boolean matchesIndexName(String indexName) {

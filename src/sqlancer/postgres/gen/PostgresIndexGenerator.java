@@ -143,7 +143,7 @@ public final class PostgresIndexGenerator {
         List<PostgresIndex> indexes = randomTable.getIndexes();
         int indexI = 0;
         while (true) {
-            String indexName = DBMSCommon.createIndexName(randomTable.getName(), indexI++);
+            String indexName = DBMSCommon.createIndexName(indexI++);
             if (indexes.stream().noneMatch(i -> i.getIndexName().equals(indexName))) {
                 return indexName;
             }

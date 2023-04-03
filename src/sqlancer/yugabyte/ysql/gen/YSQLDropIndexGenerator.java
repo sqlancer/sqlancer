@@ -8,7 +8,6 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLIndex;
-import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTable;
 
 public final class YSQLDropIndexGenerator {
 
@@ -16,14 +15,13 @@ public final class YSQLDropIndexGenerator {
     }
 
     public static SQLQueryAdapter create(YSQLGlobalState globalState) {
-        YSQLTable randomTable = globalState.getSchema().getRandomTable();
-        List<YSQLIndex> indexes = randomTable.getIndexes();
+        List<YSQLIndex> indexes = globalState.getSchema().getRandomTable().getIndexes();
         StringBuilder sb = new StringBuilder();
         sb.append("DROP INDEX ");
         if (Randomly.getBoolean() || indexes.isEmpty()) {
             sb.append("IF EXISTS ");
             if (indexes.isEmpty() || Randomly.getBoolean()) {
-                sb.append(DBMSCommon.createIndexName(randomTable.getName(), Randomly.smallNumber()));
+                sb.append(DBMSCommon.createIndexName(Randomly.smallNumber()));
             } else {
                 sb.append(Randomly.fromList(indexes).getIndexName());
             }
