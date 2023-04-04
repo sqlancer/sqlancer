@@ -1,6 +1,8 @@
 package sqlancer.materialize;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Connection;
@@ -288,21 +290,28 @@ public class MaterializeProvider extends SQLProviderAdapter<MaterializeGlobalSta
         SQLancerResultSet rs = q.executeAndGet(globalState);
         if (rs != null) {
             while (rs.next()) {
-                String targetQueryPlan = rs.getString(1).trim() + ";"; // Unify format
-                if (afterProjection) {
-                    afterProjection = false;
-                    continue;
+                String line;
+                BufferedReader bufReader = new BufferedReader(new StringReader(rs.getString(1)));
+                while ((line = bufReader.readLine()) != null) {
+                    String targetQueryPlan = line.trim() + ";"; // Unify format
+                    if (targetQueryPlan.startsWith("Explained Query:")) {
+                        continue;
+                    }
+                    if (afterProjection) {
+                        afterProjection = false;
+                        continue;
+                    }
+                    if (targetQueryPlan.startsWith("Project")) {
+                        afterProjection = true;
+                    }
+                    // Remove all concrete expressions by keywords
+                    if (targetQueryPlan.contains(">") || targetQueryPlan.contains("<") || targetQueryPlan.contains("=")
+                            || targetQueryPlan.contains("*") || targetQueryPlan.contains("+")
+                            || targetQueryPlan.contains("'")) {
+                        continue;
+                    }
+                    queryPlan += targetQueryPlan;
                 }
-                if (targetQueryPlan.startsWith("Project")) {
-                    afterProjection = true;
-                }
-                // Remove all concrete expressions by keywords
-                if (targetQueryPlan.contains(">") || targetQueryPlan.contains("<") || targetQueryPlan.contains("=")
-                        || targetQueryPlan.contains("*") || targetQueryPlan.contains("+")
-                        || targetQueryPlan.contains("'")) {
-                    continue;
-                }
-                queryPlan += targetQueryPlan;
             }
         }
 
