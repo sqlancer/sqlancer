@@ -29,6 +29,11 @@ import sqlancer.materialize.ast.MaterializeConstant;
 public class MaterializeSchema extends AbstractSchema<MaterializeGlobalState, MaterializeTable> {
 
     private final String databaseName;
+    private final List<String> indexNames;
+
+    public List<String> getIndexNames() {
+        return indexNames;
+    }
 
     public enum MaterializeDataType {
         INT, BOOLEAN, TEXT, DECIMAL, FLOAT, REAL, BIT;
@@ -214,6 +219,7 @@ public class MaterializeSchema extends AbstractSchema<MaterializeGlobalState, Ma
     public static MaterializeSchema fromConnection(SQLConnection con, String databaseName) throws SQLException {
         try {
             List<MaterializeTable> databaseTables = new ArrayList<>();
+            List<String> indexNames = new ArrayList<>();
             try (Statement s = con.createStatement()) {
                 // ERROR: column "is_insertable_into" does not exist
                 try (ResultSet rs = s.executeQuery(
@@ -240,7 +246,17 @@ public class MaterializeSchema extends AbstractSchema<MaterializeGlobalState, Ma
                     }
                 }
             }
-            return new MaterializeSchema(databaseTables, databaseName);
+            try (Statement s = con.createStatement()) {
+                try (ResultSet rs = s.executeQuery(String.format(
+                        "SELECT mz_indexes.name, mz_databases.name FROM mz_indexes JOIN mz_relations ON mz_indexes.on_id = mz_relations.id JOIN mz_schemas ON mz_relations.schema_id = mz_schemas.id JOIN mz_databases ON mz_schemas.database_id = mz_databases.id WHERE mz_databases.name = '%s';",
+                        databaseName))) {
+                    while (rs.next()) {
+                        String name = rs.getString(1);
+                        indexNames.add(name);
+                    }
+                }
+            }
+            return new MaterializeSchema(databaseTables, databaseName, indexNames);
         } catch (SQLIntegrityConstraintViolationException e) {
             throw new AssertionError(e);
         }
@@ -297,9 +313,10 @@ public class MaterializeSchema extends AbstractSchema<MaterializeGlobalState, Ma
         return columns;
     }
 
-    public MaterializeSchema(List<MaterializeTable> databaseTables, String databaseName) {
+    public MaterializeSchema(List<MaterializeTable> databaseTables, String databaseName, List<String> indexNames) {
         super(databaseTables);
         this.databaseName = databaseName;
+        this.indexNames = indexNames;
     }
 
     public MaterializeTables getRandomTableNonEmptyTables() {

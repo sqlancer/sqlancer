@@ -6,9 +6,11 @@ import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.materialize.MaterializeGlobalState;
 import sqlancer.materialize.MaterializeProvider;
+import sqlancer.materialize.MaterializeSchema;
 import sqlancer.materialize.MaterializeSchema.MaterializeColumn;
 import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
 import sqlancer.materialize.MaterializeSchema.MaterializeTable;
@@ -338,4 +340,12 @@ public final class MaterializeCommon {
         errors.add("aggregate functions are not allowed in");
     }
 
+    public static String getFreeIndexName(MaterializeSchema s) {
+        List<String> indexNames = s.getIndexNames();
+        String candidateName;
+        do {
+            candidateName = DBMSCommon.createIndexName((int) Randomly.getNotCachedInteger(0, 100));
+        } while (indexNames.contains(candidateName));
+        return candidateName;
+    }
 }

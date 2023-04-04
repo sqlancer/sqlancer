@@ -1,13 +1,9 @@
 package sqlancer.materialize.gen;
 
-import java.util.List;
-
 import sqlancer.Randomly;
-import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.materialize.MaterializeGlobalState;
-import sqlancer.materialize.MaterializeSchema.MaterializeIndex;
 import sqlancer.materialize.MaterializeSchema.MaterializeTable;
 
 public final class MaterializeIndexGenerator {
@@ -26,8 +22,7 @@ public final class MaterializeIndexGenerator {
         sb.append(" INDEX ");
         MaterializeTable randomTable = globalState.getSchema().getRandomTable(t -> !t.isView()); // TODO: materialized
                                                                                                  // views
-        String indexName = getNewIndexName(randomTable);
-        sb.append(indexName);
+        sb.append(MaterializeCommon.getFreeIndexName(globalState.getSchema()));
         sb.append(" ON ");
         sb.append(randomTable.getName());
         IndexType method;
@@ -82,16 +77,4 @@ public final class MaterializeIndexGenerator {
         MaterializeCommon.addCommonExpressionErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors);
     }
-
-    private static String getNewIndexName(MaterializeTable randomTable) {
-        List<MaterializeIndex> indexes = randomTable.getIndexes();
-        int indexI = 0;
-        while (true) {
-            String indexName = DBMSCommon.createIndexName(indexI++);
-            if (indexes.stream().noneMatch(i -> i.getIndexName().equals(indexName))) {
-                return indexName;
-            }
-        }
-    }
-
 }
