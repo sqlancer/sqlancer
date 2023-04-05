@@ -30,6 +30,7 @@ public class TiDBOptions implements DBMSSpecificOptions<TiDBOracleFactory> {
     public int maxNumIndexes = 20;
 
     @Parameter(names = "--enable-tiflash", description = "enable tiflash")
+    @SuppressWarnings("RedundantFieldInitialization")
     public boolean enableTiflash = false;
 
     @Parameter(names = "--oracle")
