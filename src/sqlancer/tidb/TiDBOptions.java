@@ -30,8 +30,7 @@ public class TiDBOptions implements DBMSSpecificOptions<TiDBOracleFactory> {
     public int maxNumIndexes = 20;
 
     @Parameter(names = "--enable-tiflash", description = "enable tiflash")
-    @SuppressWarnings("RedundantFieldInitialization")
-    public boolean enableTiflash = false;
+    public boolean enableTiflash = true;
 
     @Parameter(names = "--oracle")
     public List<TiDBOracleFactory> oracle = Arrays.asList(TiDBOracleFactory.QUERY_PARTITIONING);
