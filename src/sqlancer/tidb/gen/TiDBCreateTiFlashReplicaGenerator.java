@@ -9,7 +9,6 @@ public final class TiDBCreateTiFlashReplicaGenerator {
     private TiDBCreateTiFlashReplicaGenerator() {
     }
 
-
     public static SQLQueryAdapter getQuery(TiDBGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         TiDBSchema.TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
