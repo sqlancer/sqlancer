@@ -21,17 +21,7 @@ import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
-import sqlancer.tidb.gen.TiDBAlterTableGenerator;
-import sqlancer.tidb.gen.TiDBAnalyzeTableGenerator;
-import sqlancer.tidb.gen.TiDBDeleteGenerator;
-import sqlancer.tidb.gen.TiDBDropTableGenerator;
-import sqlancer.tidb.gen.TiDBDropViewGenerator;
-import sqlancer.tidb.gen.TiDBIndexGenerator;
-import sqlancer.tidb.gen.TiDBInsertGenerator;
-import sqlancer.tidb.gen.TiDBSetGenerator;
-import sqlancer.tidb.gen.TiDBTableGenerator;
-import sqlancer.tidb.gen.TiDBUpdateGenerator;
-import sqlancer.tidb.gen.TiDBViewGenerator;
+import sqlancer.tidb.gen.*;
 
 @AutoService(DatabaseProvider.class)
 public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOptions> {
@@ -54,7 +44,8 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
                 (g) -> new SQLQueryAdapter("ADMIN CHECKSUM TABLE " + g.getSchema().getRandomTable().getName())), // 9
         ANALYZE_TABLE(TiDBAnalyzeTableGenerator::getQuery), // 10
         DROP_TABLE(TiDBDropTableGenerator::dropTable), // 11
-        DROP_VIEW(TiDBDropViewGenerator::dropView); // 12
+        DROP_VIEW(TiDBDropViewGenerator::dropView), // 12
+        ADD_TIFLASH_REPLICAS(TiDBCreateTiFlashReplicaGenerator::getQuery); // 13
 
         private final SQLQueryProvider<TiDBGlobalState> sqlQueryProvider;
 
@@ -97,7 +88,11 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
         case ALTER_TABLE:
             return r.getInteger(0, 10); // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/10
         case CREATE_TABLE:
+            if (globalState.getDbmsSpecificOptions().enableTiflash) {
+                return 13;
+            }
         case DROP_TABLE:
+        case ADD_TIFLASH_REPLICAS:
         case DROP_VIEW:
             return 0;
         default:
