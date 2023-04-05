@@ -21,7 +21,18 @@ import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
-import sqlancer.tidb.gen.*;
+import sqlancer.tidb.gen.TiDBAlterTableGenerator;
+import sqlancer.tidb.gen.TiDBAnalyzeTableGenerator;
+import sqlancer.tidb.gen.TiDBDeleteGenerator;
+import sqlancer.tidb.gen.TiDBDropTableGenerator;
+import sqlancer.tidb.gen.TiDBDropViewGenerator;
+import sqlancer.tidb.gen.TiDBIndexGenerator;
+import sqlancer.tidb.gen.TiDBInsertGenerator;
+import sqlancer.tidb.gen.TiDBSetGenerator;
+import sqlancer.tidb.gen.TiDBTableGenerator;
+import sqlancer.tidb.gen.TiDBUpdateGenerator;
+import sqlancer.tidb.gen.TiDBViewGenerator;
+import sqlancer.tidb.gen.TiDBCreateTiFlashReplicaGenerator;
 
 @AutoService(DatabaseProvider.class)
 public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOptions> {
@@ -71,32 +82,32 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
     private static int mapActions(TiDBGlobalState globalState, Action a) {
         Randomly r = globalState.getRandomly();
         switch (a) {
-        case ANALYZE_TABLE:
-        case CREATE_INDEX:
-            return r.getInteger(0, 2);
-        case INSERT:
-        case TRUNCATE:
-        case DELETE:
-        case ADMIN_CHECKSUM_TABLE:
-            return r.getInteger(0, 2);
-        case SET:
-        case UPDATE:
-            return r.getInteger(0, 5);
-        case VIEW_GENERATOR:
-            // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/8
-            return r.getInteger(0, 2);
-        case ALTER_TABLE:
-            return r.getInteger(0, 10); // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/10
-        case CREATE_TABLE:
-            if (globalState.getDbmsSpecificOptions().enableTiflash) {
-                return 13;
-            }
-        case DROP_TABLE:
-        case ADD_TIFLASH_REPLICAS:
-        case DROP_VIEW:
-            return 0;
-        default:
-            throw new AssertionError(a);
+            case ANALYZE_TABLE:
+            case CREATE_INDEX:
+                return r.getInteger(0, 2);
+            case INSERT:
+            case TRUNCATE:
+            case DELETE:
+            case ADMIN_CHECKSUM_TABLE:
+                return r.getInteger(0, 2);
+            case SET:
+            case UPDATE:
+                return r.getInteger(0, 5);
+            case VIEW_GENERATOR:
+                // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/8
+                return r.getInteger(0, 2);
+            case ALTER_TABLE:
+                return r.getInteger(0, 10); // https://github.com/tidb-challenge-program/bug-hunting-issue/issues/10
+            case CREATE_TABLE:
+                if (globalState.getDbmsSpecificOptions().enableTiflash) {
+                    return 13;
+                }
+            case DROP_TABLE:
+            case ADD_TIFLASH_REPLICAS:
+            case DROP_VIEW:
+                return 0;
+            default:
+                throw new AssertionError(a);
         }
 
     }
@@ -113,10 +124,10 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
 
         StatementExecutor<TiDBGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
                 TiDBProvider::mapActions, (q) -> {
-                    if (globalState.getSchema().getDatabaseTables().isEmpty()) {
-                        throw new IgnoreMeException();
-                    }
-                });
+            if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+                throw new IgnoreMeException();
+            }
+        });
         try {
             se.executeStatements();
         } catch (SQLException e) {
