@@ -17,5 +17,4 @@ public final class TiDBCreateTiFlashReplicaGenerator {
         sb.append(" SET TIFLASH REPLICA 1;");
         return new SQLQueryAdapter(sb.toString(), errors);
     }
-
 }

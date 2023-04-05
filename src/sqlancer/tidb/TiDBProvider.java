@@ -28,11 +28,11 @@ import sqlancer.tidb.gen.TiDBDropTableGenerator;
 import sqlancer.tidb.gen.TiDBDropViewGenerator;
 import sqlancer.tidb.gen.TiDBIndexGenerator;
 import sqlancer.tidb.gen.TiDBInsertGenerator;
+import sqlancer.tidb.gen.TiDBCreateTiFlashReplicaGenerator;
 import sqlancer.tidb.gen.TiDBSetGenerator;
 import sqlancer.tidb.gen.TiDBTableGenerator;
 import sqlancer.tidb.gen.TiDBUpdateGenerator;
 import sqlancer.tidb.gen.TiDBViewGenerator;
-import sqlancer.tidb.gen.TiDBCreateTiFlashReplicaGenerator;
 
 @AutoService(DatabaseProvider.class)
 public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOptions> {
