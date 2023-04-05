@@ -29,7 +29,7 @@ public class TiDBOptions implements DBMSSpecificOptions<TiDBOracleFactory> {
     @Parameter(names = { "--max-num-indexes" }, description = "The maximum number of indexes that can be created")
     public int maxNumIndexes = 20;
 
-    @Parameter(names = "--enable-tiflash", description = "enable tiflash")
+    @Parameter(names = "--enable-tiflash", description = "enable tiflash", required = true)
     public boolean enableTiflash = true;
 
     @Parameter(names = "--oracle")
