@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import sqlancer.Main;
 
-public class TestMaterialize {
+public class TestMaterializePQS {
 
     String materializeAvailable = System.getenv("MATERIALIZE_AVAILABLE");
     boolean materializeIsAvailable = materializeAvailable != null && materializeAvailable.equalsIgnoreCase("true");
@@ -17,8 +17,9 @@ public class TestMaterialize {
         assumeTrue(materializeIsAvailable);
         assertEquals(0,
                 Main.executeMain(new String[] { "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS,
-                        "--num-threads", "4", "--num-queries", TestConfig.NUM_QUERIES, "--username", "materialize",
-                        "materialize", "--set-max-tables-mvs", "true" }));
+                        "--num-threads", "4", "--num-queries", TestConfig.NUM_QUERIES, "--random-string-generation",
+                        "ALPHANUMERIC_SPECIALCHAR", "--username", "materialize", "materialize", "--oracle", "pqs",
+                        "--set-max-tables-mvs", "true" }));
     }
 
 }

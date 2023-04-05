@@ -262,6 +262,7 @@ jobs:
       - name: Run Tests
         run: |
           MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterialize
+          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializePQS
 
   materialize-qpg:
     name: QPG Tests (Materialize)
