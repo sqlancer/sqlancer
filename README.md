@@ -44,7 +44,7 @@ If you launch SQLancer without parameters, available options and commands are di
 | Approach | Description |
 |----------|-------------|
 | Random Generation | Random generation is the default test case generation approach in SQLancer. First, random tables are generated. Then queries are randomly generated based on the schemas of the tables. |
-| Query Plan Guidance (QPG) | QPG is a test case generation method guided by query plan coverage. Given a database state, we mutate it after no new unique query plans have been observed by randomly-generated queries on the database state aiming to cover more unique query plans for exposing more logics of DBMSs. This approach is enabled by option `--qpg-enable` and now supports TLP and NoREC oracles for SQLite, CockroachDB, and TiDB. |
+| Query Plan Guidance (QPG) | QPG is a test case generation method guided by query plan coverage. Given a database state, we mutate it after no new unique query plans have been observed by randomly-generated queries on the database state aiming to cover more unique query plans for exposing more logics of DBMSs. This approach is enabled by option `--qpg-enable` and now supports TLP and NoREC oracles for SQLite, CockroachDB, TiDB, and Materialize. |
 
 Please find the `.bib` entries [here](docs/PAPERS.md).
 
@@ -69,6 +69,7 @@ Since SQL dialects differ widely, each DBMS to be tested requires a separate imp
 | Databend                    | Working     | Typed                      |  |
 | QuestDB                    | Working     | Untyped, Generic                      | The implementation of QuestDB is still WIP, current version covers very basic data types, operations and SQL keywords. |
 | CnosDB                       |Working      | Typed                        | The implementation of CnosDB currently uses Restful API.                                                                                                                                        |
+| Materialize                  |Working      | Typed                        |                                                                                                                                                                                                 |
 
 
 # Using SQLancer

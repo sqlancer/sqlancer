@@ -44,6 +44,7 @@ if __name__ == '__main__':
     name_to_files["H2"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "h2"))
     name_to_files["HSQLDB"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "hsqldb"))
     name_to_files["MariaDB"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "mariadb"))
+    name_to_files["Materialize"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "materialize"))
     name_to_files["MySQL"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "mysql"))
     name_to_files["OceanBase"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "oceanbase"))
     name_to_files["Postgres"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "postgres"))
