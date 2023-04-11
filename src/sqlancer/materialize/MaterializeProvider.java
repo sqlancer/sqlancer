@@ -216,6 +216,12 @@ public class MaterializeProvider extends SQLProviderAdapter<MaterializeGlobalSta
         globalState.getState().logStatement(String.format("\\c %s;", databaseName));
 
         con = DriverManager.getConnection("jdbc:" + testURL, username, password);
+        // Serializable transaction isolation is much faster than Strict
+        // Serializable and should guarantee enough for SQLancer:
+        // https://materialize.com/docs/overview/isolation-level/
+        try (Statement s = con.createStatement()) {
+            s.execute("SET transaction_isolation = 'SERIALIZABLE'");
+        }
         return new SQLConnection(con);
     }
 
