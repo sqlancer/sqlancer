@@ -31,7 +31,7 @@ public final class MaterializeCommon {
         errors.add("non-integer constant in GROUP BY");
         errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
         errors.add("GROUP BY position");
-        errors.add("results exceeds max size of");
+        errors.add("result exceeds max size of");
 
         errors.add("does not exist");
         errors.add("aggregate functions are not allowed in");
