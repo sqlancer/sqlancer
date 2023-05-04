@@ -32,6 +32,9 @@ public class TiDBOptions implements DBMSSpecificOptions<TiDBOracleFactory> {
     @Parameter(names = "--oracle")
     public List<TiDBOracleFactory> oracle = Arrays.asList(TiDBOracleFactory.QUERY_PARTITIONING);
 
+    @Parameter(names = "--enable-non-prepared-plan-cache")
+    public boolean nonPreparePlanCache;
+
     public enum TiDBOracleFactory implements OracleFactory<TiDBGlobalState> {
         HAVING {
             @Override

@@ -156,6 +156,9 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
         globalState.getState().logStatement("USE " + databaseName);
         try (Statement s = con.createStatement()) {
             s.execute("DROP DATABASE IF EXISTS " + databaseName);
+            if (globalState.getDbmsSpecificOptions().nonPreparePlanCache) {
+                s.execute("set global tidb_enable_non_prepared_plan_cache=ON;");
+            }
         }
         try (Statement s = con.createStatement()) {
             s.execute(createDatabaseCommand);

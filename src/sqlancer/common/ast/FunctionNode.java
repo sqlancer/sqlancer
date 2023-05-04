@@ -7,7 +7,7 @@ public abstract class FunctionNode<F, A> {
     protected F function;
     protected List<A> args;
 
-    public FunctionNode(F function, List<A> args) {
+    protected FunctionNode(F function, List<A> args) {
         this.function = function;
         this.args = args;
     }

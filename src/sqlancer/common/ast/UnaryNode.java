@@ -6,7 +6,7 @@ public abstract class UnaryNode<T> implements UnaryOperation<T> {
 
     protected final T expr;
 
-    public UnaryNode(T expr) {
+    protected UnaryNode(T expr) {
         this.expr = expr;
     }
 

@@ -29,7 +29,7 @@ public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?, C>, 
     protected final S globalState;
     protected R pivotRow;
 
-    public PivotedQuerySynthesisBase(S globalState) {
+    protected PivotedQuerySynthesisBase(S globalState) {
         this.globalState = globalState;
     }
 

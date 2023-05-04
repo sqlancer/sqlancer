@@ -16,7 +16,7 @@ public abstract class NoRECBase<S extends SQLGlobalState<?, ?>> implements TestO
     protected String optimizedQueryString;
     protected String unoptimizedQueryString;
 
-    public NoRECBase(S state) {
+    protected NoRECBase(S state) {
         this.state = state;
         this.con = state.getConnection();
         this.logger = state.getLogger();

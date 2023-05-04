@@ -24,7 +24,13 @@ jobs:
       - name: Verify
         run: mvn -B verify -DskipTests=true
       - name: Misc Tests
-        run: mvn -B '-Dtest=!sqlancer.dbms.**' test
+        run: mvn -B '-Dtest=!sqlancer.dbms.**,!sqlancer.qpg.**' test
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Naming Convention Tests
+        run: python src/check_names.py
 
   citus:
     name: DBMS Tests (Citus)
@@ -72,7 +78,6 @@ jobs:
       - name: Run Tests
         run: CITUS_AVAILABLE=true mvn -Dtest=TestCitus test
 
-
   clickhouse:
     name: DBMS Tests (ClickHouse)
     runs-on: ubuntu-latest
@@ -101,6 +106,7 @@ jobs:
           docker rm clickhouse-server
 
 
+
   cockroachdb:
     name: DBMS Tests (CockroachDB)
     runs-on: ubuntu-latest
@@ -116,14 +122,14 @@ jobs:
         run: mvn -B package -DskipTests=true
       - name: Set up CockroachDB
         run: |
-          wget -qO- https://binaries.cockroachdb.com/cockroach-v22.2.3.linux-amd64.tgz | tar  xvz
-          cd  cockroach-v22.2.3.linux-amd64/ && ./cockroach start-single-node --insecure &
+          wget -qO- https://binaries.cockroachdb.com/cockroach-v23.1.0-beta.2.linux-amd64.tgz | tar  xvz
+          cd  cockroach-v23.1.0-beta.2.linux-amd64/ && ./cockroach start-single-node --insecure &
           sleep 10
       - name: Create SQLancer user
-        run: cd cockroach-v22.2.3.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
+        run: cd cockroach-v23.1.0-beta.2.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
       - name: Run Tests
         run: COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDB test
-    
+
   cockroachdb-qpg:
     name: QPG Tests (CockroachDB)
     runs-on: ubuntu-latest
@@ -139,11 +145,11 @@ jobs:
         run: mvn -B package -DskipTests=true
       - name: Set up CockroachDB
         run: |
-          wget -qO- https://binaries.cockroachdb.com/cockroach-v22.2.3.linux-amd64.tgz | tar  xvz
-          cd cockroach-v22.2.3.linux-amd64/ && ./cockroach start-single-node --insecure &
+          wget -qO- https://binaries.cockroachdb.com/cockroach-v23.1.0-beta.2.linux-amd64.tgz | tar  xvz
+          cd  cockroach-v23.1.0-beta.2.linux-amd64/ && ./cockroach start-single-node --insecure &
           sleep 10
       - name: Create SQLancer user
-        run: cd cockroach-v22.2.3.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
+        run: cd cockroach-v23.1.0-beta.2.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
       - name: Run Tests
         run: COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBQPG test
 
@@ -172,6 +178,7 @@ jobs:
       - name: Run Tests
         run: |
           DATABEND_AVAILABLE=true mvn -Dtest=TestDatabend test
+
 
   duckdb:
     name: DBMS Tests (DuckDB)
@@ -232,6 +239,56 @@ jobs:
       - name: Run Tests
         run: MARIADB_AVAILABLE=true mvn -Dtest=TestMariaDB test
 
+  materialize:
+    name: DBMS Tests (Materialize)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Materialize
+        run: |
+          docker pull materialize/materialized:latest
+          docker run -d -p6875:6875 -p6877:6877 -p 26257:26257 materialize/materialized:latest
+          sleep 5
+          # Workaround for https://github.com/cockroachdb/cockroach/issues/93892
+          psql postgres://root@localhost:26257 -c "SET CLUSTER SETTING sql.stats.forecasts.enabled = false"
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Run Tests
+        run: |
+          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterialize
+          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializePQS
+
+  materialize-qpg:
+    name: QPG Tests (Materialize)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Materialize
+        run: |
+          docker pull materialize/materialized:latest
+          docker run -d -p6875:6875 -p6877:6877 -p 26257:26257 materialize/materialized:latest
+          sleep 5
+          # Workaround for https://github.com/cockroachdb/cockroach/issues/93892
+          psql postgres://root@localhost:26257 -c "SET CLUSTER SETTING sql.stats.forecasts.enabled = false"
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Run Tests
+        run: |
+          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeQPG
+          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeQueryPlan
+
   mysql:
     name: DBMS Tests (MySQL)
     runs-on: ubuntu-18.04
@@ -259,6 +316,7 @@ jobs:
         run: |
           MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLPQS
           MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLTLP
+
 
   postgres:
     name: DBMS Tests (PostgreSQL)
@@ -298,9 +356,10 @@ jobs:
       - name: Build
         run: mvn -B package -DskipTests=true
       - name: SQLite Tests
-        run:  |
+        run: |
           mvn -Dtest=TestSQLitePQS test
           mvn -Dtest=TestSQLite3 test
+
 
   sqlite-qpg:
     name: QPG Tests (SQLite)
@@ -317,8 +376,9 @@ jobs:
       - name: Build
         run: mvn -B package -DskipTests=true
       - name: SQLite Tests for QPG
-        run:  |
+        run: |
           mvn -Dtest=TestSQLiteQPG test
+
 
   tidb:
     name: DBMS Tests (TiDB)
@@ -365,7 +425,7 @@ jobs:
         run: sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
       - name: Run Tests
         run: TIDB_AVAILABLE=true mvn -Dtest=TestTiDBQPG test
-        
+
   yugabyte:
     name: DBMS Tests (YugabyteDB)
     runs-on: ubuntu-latest
@@ -420,7 +480,6 @@ jobs:
         run: mvn -B package -DskipTests=true
       - name: Shortly run DuckDB
         run: cd target && java -jar $(ls | grep -P 'sqlancer-[0-9.]*.jar') --num-threads 4 --timeout-seconds 30 --num-queries 0 duckdb
-
 
   java15:
     name: Java 15 EA Compatibility (DuckDB)
