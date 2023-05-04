@@ -5,28 +5,30 @@ import sqlancer.clickhouse.ClickHouseSchema.ClickHouseColumn;
 public class ClickHouseColumnReference extends ClickHouseExpression {
 
     private final ClickHouseColumn column;
-    private final ClickHouseConstant value;
+    private final String columnAlias;
+    private final String tableAlias;
 
-    public ClickHouseColumnReference(ClickHouseColumn column, ClickHouseConstant value) {
+    public ClickHouseColumnReference(ClickHouseColumn column, String columnAlias, String tableAlias) {
         this.column = column;
-        this.value = value;
+        this.columnAlias = columnAlias;
+        this.tableAlias = tableAlias;
     }
 
-    public static ClickHouseColumnReference create(ClickHouseColumn column, ClickHouseConstant value) {
-        return new ClickHouseColumnReference(column, value);
+    public ClickHouseColumnReference(ClickHouseAliasOperation alias) {
+        this.column = new ClickHouseColumn(alias.getAlias(), null, true, false, null);
+        this.columnAlias = null;
+        this.tableAlias = null;
     }
 
     public ClickHouseColumn getColumn() {
         return column;
     }
 
-    public ClickHouseConstant getValue() {
-        return value;
+    public String getAlias() {
+        return columnAlias;
     }
 
-    @Override
-    public ClickHouseConstant getExpectedValue() {
-        return value;
+    public String getTableAlias() {
+        return tableAlias;
     }
-
 }

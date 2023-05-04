@@ -28,11 +28,12 @@ import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
-public class SQLite3TLPAggregateOracle implements TestOracle {
+public class SQLite3TLPAggregateOracle implements TestOracle<SQLite3GlobalState> {
 
     private final SQLite3GlobalState state;
     private final ExpectedErrors errors = new ExpectedErrors();
     private SQLite3ExpressionGenerator gen;
+    private String generatedQueryString;
 
     public SQLite3TLPAggregateOracle(SQLite3GlobalState state) {
         this.state = state;
@@ -56,7 +57,7 @@ public class SQLite3TLPAggregateOracle implements TestOracle {
             select.setOrderByExpressions(gen.generateOrderBys());
         }
         String originalQuery = SQLite3Visitor.asString(select);
-
+        generatedQueryString = originalQuery;
         SQLite3Expression whereClause = gen.generateExpression();
         SQLite3UnaryOperation negatedClause = new SQLite3UnaryOperation(UnaryOperator.NOT, whereClause);
         SQLite3PostfixUnaryOperation notNullClause = new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.ISNULL,
@@ -65,7 +66,9 @@ public class SQLite3TLPAggregateOracle implements TestOracle {
         SQLite3Select leftSelect = getSelect(aggregate, from, whereClause);
         SQLite3Select middleSelect = getSelect(aggregate, from, negatedClause);
         SQLite3Select rightSelect = getSelect(aggregate, from, notNullClause);
-        String metamorphicText = "SELECT " + aggregate.getFunc().toString() + "(aggr) FROM (";
+        String aggreateMethod = aggregate.getFunc() == SQLite3AggregateFunction.COUNT_ALL
+                ? SQLite3AggregateFunction.COUNT.toString() : aggregate.getFunc().toString();
+        String metamorphicText = "SELECT " + aggreateMethod + "(aggr) FROM (";
         metamorphicText += SQLite3Visitor.asString(leftSelect) + " UNION ALL " + SQLite3Visitor.asString(middleSelect)
                 + " UNION ALL " + SQLite3Visitor.asString(rightSelect);
         metamorphicText += ")";
@@ -120,6 +123,11 @@ public class SQLite3TLPAggregateOracle implements TestOracle {
             leftSelect.setOrderByExpressions(gen.generateOrderBys());
         }
         return leftSelect;
+    }
+
+    @Override
+    public String getLastQueryString() {
+        return generatedQueryString;
     }
 
 }

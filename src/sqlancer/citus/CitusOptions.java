@@ -29,21 +29,21 @@ public class CitusOptions extends PostgresOptions {
     public enum CitusOracleFactory implements OracleFactory<PostgresGlobalState> {
         NOREC {
             @Override
-            public TestOracle create(PostgresGlobalState globalState) throws SQLException {
+            public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws SQLException {
                 CitusGlobalState citusGlobalState = (CitusGlobalState) globalState;
                 return new CitusNoRECOracle(citusGlobalState);
             }
         },
         PQS {
             @Override
-            public TestOracle create(PostgresGlobalState globalState) throws SQLException {
+            public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws SQLException {
                 return new PostgresPivotedQuerySynthesisOracle(globalState);
             }
         },
         HAVING {
 
             @Override
-            public TestOracle create(PostgresGlobalState globalState) throws SQLException {
+            public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws SQLException {
                 CitusGlobalState citusGlobalState = (CitusGlobalState) globalState;
                 return new CitusTLPHavingOracle(citusGlobalState);
             }
@@ -51,13 +51,13 @@ public class CitusOptions extends PostgresOptions {
         },
         QUERY_PARTITIONING {
             @Override
-            public TestOracle create(PostgresGlobalState globalState) throws SQLException {
+            public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws SQLException {
                 CitusGlobalState citusGlobalState = (CitusGlobalState) globalState;
-                List<TestOracle> oracles = new ArrayList<>();
+                List<TestOracle<PostgresGlobalState>> oracles = new ArrayList<>();
                 oracles.add(new CitusTLPWhereOracle(citusGlobalState));
                 oracles.add(new CitusTLPHavingOracle(citusGlobalState));
                 oracles.add(new CitusTLPAggregateOracle(citusGlobalState));
-                return new CompositeTestOracle(oracles, globalState);
+                return new CompositeTestOracle<PostgresGlobalState>(oracles, globalState);
             }
         };
 

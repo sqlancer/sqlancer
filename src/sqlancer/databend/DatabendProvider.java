@@ -20,9 +20,11 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
+import sqlancer.databend.gen.DatabendDeleteGenerator;
 import sqlancer.databend.gen.DatabendInsertGenerator;
 import sqlancer.databend.gen.DatabendRandomQuerySynthesizer;
 import sqlancer.databend.gen.DatabendTableGenerator;
+import sqlancer.databend.gen.DatabendViewGenerator;
 
 @AutoService(DatabaseProvider.class)
 public class DatabendProvider extends SQLProviderAdapter<DatabendGlobalState, DatabendOptions> {
@@ -33,13 +35,10 @@ public class DatabendProvider extends SQLProviderAdapter<DatabendGlobalState, Da
 
     public enum Action implements AbstractAction<DatabendGlobalState> {
 
-        INSERT(DatabendInsertGenerator::getQuery), //
-        // TODO 等待databend实现update && delete
-        // DELETE(DatabendDeleteGenerator::generate), //
+        INSERT(DatabendInsertGenerator::getQuery), DELETE(DatabendDeleteGenerator::generate),
+        // TODO 等待databend实现update
         // UPDATE(DatabendUpdateGenerator::getQuery), //
-
-        // CREATE_VIEW(DatabendViewGenerator::generate), //TODO 等待databend的create view语法 更加贴近mysql
-        EXPLAIN((g) -> {
+        CREATE_VIEW(DatabendViewGenerator::generate), EXPLAIN((g) -> {
             ExpectedErrors errors = new ExpectedErrors();
             DatabendErrors.addExpressionErrors(errors);
             DatabendErrors.addGroupByErrors(errors);
@@ -71,10 +70,10 @@ public class DatabendProvider extends SQLProviderAdapter<DatabendGlobalState, Da
         // TODO 等待databend实现update && delete
         // case UPDATE:
         // return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumUpdates + 1);
-        // case DELETE:
-        // return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumDeletes + 1);
-        // case CREATE_VIEW: //TODO 暂时关闭create view
-        // return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumViews + 1);
+        case DELETE:
+            return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumDeletes + 1);
+        case CREATE_VIEW:
+            return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumViews + 1);
         default:
             throw new AssertionError(a);
         }
@@ -91,7 +90,7 @@ public class DatabendProvider extends SQLProviderAdapter<DatabendGlobalState, Da
 
     @Override
     public void generateDatabase(DatabendGlobalState globalState) throws Exception {
-        for (int i = 0; i < Randomly.fromOptions(1, 2); i++) {
+        for (int i = 0; i < Randomly.fromOptions(3, 4); i++) {
             boolean success;
             do {
                 SQLQueryAdapter qt = new DatabendTableGenerator().getQuery(globalState);
@@ -107,7 +106,7 @@ public class DatabendProvider extends SQLProviderAdapter<DatabendGlobalState, Da
                         throw new IgnoreMeException();
                     }
                 });
-        se.executeStatements(); // 在已有的表格中插入数据，原先是增删改一些数据，除了insert和explan我都去掉了
+        se.executeStatements(); // 增删改一些数据（按权重随机选取算法）
     }
 
     @Override
@@ -129,12 +128,8 @@ public class DatabendProvider extends SQLProviderAdapter<DatabendGlobalState, Da
         try (Statement s = con.createStatement()) {
             s.execute("DROP DATABASE IF EXISTS " + databaseName);
             globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
-        }
-        try (Statement s = con.createStatement()) {
             s.execute("CREATE DATABASE " + databaseName);
             globalState.getState().logStatement("CREATE DATABASE " + databaseName);
-        }
-        try (Statement s = con.createStatement()) {
             s.execute("USE " + databaseName);
             globalState.getState().logStatement("USE " + databaseName);
         }

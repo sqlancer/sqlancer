@@ -30,7 +30,8 @@ import sqlancer.duckdb.gen.DuckDBExpressionGenerator.DuckDBCastOperation;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator.DuckDBUnaryPostfixOperator;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator.DuckDBUnaryPrefixOperator;
 
-public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartitioningBase implements TestOracle {
+public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartitioningBase
+        implements TestOracle<DuckDBGlobalState> {
 
     private String firstResult;
     private String secondResult;

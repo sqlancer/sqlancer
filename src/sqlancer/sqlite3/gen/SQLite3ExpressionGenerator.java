@@ -139,19 +139,25 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         if (!globalState.getDbmsSpecificOptions().testJoins) {
             return joinStatements;
         }
+        List<JoinType> options = new ArrayList<>(Arrays.asList(JoinType.values()));
         if (Randomly.getBoolean() && tables.size() > 1) {
             int nrJoinClauses = (int) Randomly.getNotCachedInteger(0, tables.size());
+            // Natural join is incompatible with other joins
+            // because it needs unique column names
+            // while other joins will produce duplicate column names
+            if (nrJoinClauses > 1) {
+                options.remove(JoinType.NATURAL);
+            }
             for (int i = 0; i < nrJoinClauses; i++) {
                 SQLite3Expression joinClause = generateExpression();
                 SQLite3Table table = Randomly.fromList(tables);
                 tables.remove(table);
-                JoinType options;
-                options = Randomly.fromOptions(JoinType.INNER, JoinType.CROSS, JoinType.OUTER, JoinType.NATURAL);
-                if (options == JoinType.NATURAL) {
+                JoinType selectedOption = Randomly.fromList(options);
+                if (selectedOption == JoinType.NATURAL) {
                     // NATURAL joins do not have an ON clause
                     joinClause = null;
                 }
-                Join j = new SQLite3Expression.Join(table, joinClause, options);
+                Join j = new SQLite3Expression.Join(table, joinClause, selectedOption);
                 joinStatements.add(j);
             }
 
@@ -547,6 +553,12 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
                 nrArgs += Randomly.smallNumber();
             }
             List<SQLite3Expression> expressions = randomFunction.generateArguments(nrArgs, depth + 1, this);
+            // The second argument of LIKELIHOOD must be a float number within 0.0 -1.0
+            if (randomFunction == AnyFunction.LIKELIHOOD) {
+                SQLite3Expression lastArg = SQLite3Constant.createRealConstant(Randomly.getPercentage());
+                expressions.remove(expressions.size() - 1);
+                expressions.add(lastArg);
+            }
             return new SQLite3Expression.Function(randomFunction.toString(),
                     expressions.toArray(new SQLite3Expression[0]));
         }
@@ -603,6 +615,11 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
             if (i == 0 && Randomly.getBoolean()) {
                 args[i] = new SQLite3Distinct(args[i]);
             }
+        }
+        // The second argument of LIKELIHOOD must be a float number within 0.0 -1.0
+        if (func == ComputableFunction.LIKELIHOOD) {
+            SQLite3Expression lastArg = SQLite3Constant.createRealConstant(Randomly.getPercentage());
+            args[args.length - 1] = lastArg;
         }
         return new SQLite3Function(func, args);
     }

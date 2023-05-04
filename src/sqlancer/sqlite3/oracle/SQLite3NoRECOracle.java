@@ -4,9 +4,11 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.Reproducer;
 import sqlancer.common.oracle.NoRECBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -29,11 +31,28 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
-public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements TestOracle {
+public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements TestOracle<SQLite3GlobalState> {
 
     private static final int NO_VALID_RESULT = -1;
     private final SQLite3Schema s;
     private SQLite3ExpressionGenerator gen;
+    private Reproducer<SQLite3GlobalState> reproducer;
+
+    private class SQLite3NoRECReproducer implements Reproducer<SQLite3GlobalState> {
+        private final Function<SQLite3GlobalState, Integer> optimizedQuery;
+        private final Function<SQLite3GlobalState, Integer> unoptimizedQuery;
+
+        SQLite3NoRECReproducer(Function<SQLite3GlobalState, Integer> optimizedQuery,
+                Function<SQLite3GlobalState, Integer> unoptimizedQuery) {
+            this.optimizedQuery = optimizedQuery;
+            this.unoptimizedQuery = unoptimizedQuery;
+        }
+
+        @Override
+        public boolean bugStillTriggers(SQLite3GlobalState globalState) {
+            return optimizedQuery.apply(globalState) != unoptimizedQuery.apply(globalState);
+        }
+    }
 
     public SQLite3NoRECOracle(SQLite3GlobalState globalState) {
         super(globalState);
@@ -51,6 +70,7 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
 
     @Override
     public void check() throws SQLException {
+        reproducer = null;
         SQLite3Tables randomTables = s.getRandomTableNonEmptyTables();
         List<SQLite3Column> columns = randomTables.getColumns();
         gen = new SQLite3ExpressionGenerator(state).setColumns(columns);
@@ -62,19 +82,33 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
         select.setFromTables(tableRefs);
         select.setJoinClauses(joinStatements);
 
-        int optimizedCount = getOptimizedQuery(select, randomWhereCondition);
-        int unoptimizedCount = getUnoptimizedQuery(select, randomWhereCondition);
+        Function<SQLite3GlobalState, Integer> optimizedQuery = getOptimizedQuery(select, randomWhereCondition);
+        Function<SQLite3GlobalState, Integer> unoptimizedQuery = getUnoptimizedQuery(select, randomWhereCondition);
+        int optimizedCount = optimizedQuery.apply(state);
+        int unoptimizedCount = unoptimizedQuery.apply(state);
         if (optimizedCount == NO_VALID_RESULT || unoptimizedCount == NO_VALID_RESULT) {
             throw new IgnoreMeException();
         }
         if (optimizedCount != unoptimizedCount) {
+            reproducer = new SQLite3NoRECReproducer(optimizedQuery, unoptimizedQuery);
             state.getState().getLocalState().log(optimizedQueryString + ";\n" + unoptimizedQueryString + ";");
             throw new AssertionError(optimizedCount + " " + unoptimizedCount);
         }
 
     }
 
-    private int getUnoptimizedQuery(SQLite3Select select, SQLite3Expression randomWhereCondition) throws SQLException {
+    @Override
+    public Reproducer<SQLite3GlobalState> getLastReproducer() {
+        return reproducer;
+    }
+
+    @Override
+    public String getLastQueryString() {
+        return optimizedQueryString;
+    }
+
+    private Function<SQLite3GlobalState, Integer> getUnoptimizedQuery(SQLite3Select select,
+            SQLite3Expression randomWhereCondition) throws SQLException {
         SQLite3PostfixUnaryOperation isTrue = new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.IS_TRUE,
                 randomWhereCondition);
         SQLite3PostfixText asText = new SQLite3PostfixText(isTrue, " as count", null);
@@ -85,10 +119,17 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
             logger.writeCurrent(unoptimizedQueryString);
         }
         SQLQueryAdapter q = new SQLQueryAdapter(unoptimizedQueryString, errors);
-        return extractCounts(q);
+        return new Function<SQLite3GlobalState, Integer>() {
+
+            @Override
+            public Integer apply(SQLite3GlobalState state) {
+                return extractCounts(q, state);
+            }
+        };
     }
 
-    private int getOptimizedQuery(SQLite3Select select, SQLite3Expression randomWhereCondition) throws SQLException {
+    private Function<SQLite3GlobalState, Integer> getOptimizedQuery(SQLite3Select select,
+            SQLite3Expression randomWhereCondition) throws SQLException {
         boolean useAggregate = Randomly.getBoolean();
         if (Randomly.getBoolean()) {
             select.setOrderByExpressions(gen.generateOrderBys());
@@ -106,12 +147,19 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
             logger.writeCurrent(optimizedQueryString);
         }
         SQLQueryAdapter q = new SQLQueryAdapter(optimizedQueryString, errors);
-        return useAggregate ? extractCounts(q) : countRows(q);
+        return new Function<SQLite3GlobalState, Integer>() {
+
+            @Override
+            public Integer apply(SQLite3GlobalState state) {
+                return useAggregate ? extractCounts(q, state) : countRows(q, state);
+            }
+
+        };
     }
 
-    private int countRows(SQLQueryAdapter q) {
+    private int countRows(SQLQueryAdapter q, SQLite3GlobalState globalState) {
         int count = 0;
-        try (SQLancerResultSet rs = q.executeAndGet(state)) {
+        try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
             if (rs == null) {
                 return NO_VALID_RESULT;
             } else {
@@ -132,9 +180,9 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
         return count;
     }
 
-    private int extractCounts(SQLQueryAdapter q) {
+    private int extractCounts(SQLQueryAdapter q, SQLite3GlobalState globalState) {
         int count = 0;
-        try (SQLancerResultSet rs = q.executeAndGet(state)) {
+        try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
             if (rs == null) {
                 return NO_VALID_RESULT;
             } else {

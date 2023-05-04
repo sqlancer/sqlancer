@@ -13,7 +13,7 @@ import sqlancer.yugabyte.ysql.YSQLProvider;
 import sqlancer.yugabyte.ysql.YSQLVisitor;
 import sqlancer.yugabyte.ysql.gen.YSQLRandomQueryGenerator;
 
-public class YSQLFuzzer implements TestOracle {
+public class YSQLFuzzer implements TestOracle<YSQLGlobalState> {
     private final YSQLGlobalState globalState;
     private final List<Query> testQueries;
     private final ExpectedErrors errors = new ExpectedErrors();

@@ -20,7 +20,7 @@ public class H2Options implements DBMSSpecificOptions<H2OracleFactory> {
         TLP_WHERE {
 
             @Override
-            public TestOracle create(H2GlobalState globalState) throws SQLException {
+            public TestOracle<H2GlobalState> create(H2GlobalState globalState) throws SQLException {
                 return new H2QueryPartitioningWhereTester(globalState);
             }
 

@@ -23,7 +23,7 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
 public class SQLite3TLPBase extends TernaryLogicPartitioningOracleBase<SQLite3Expression, SQLite3GlobalState>
-        implements TestOracle {
+        implements TestOracle<SQLite3GlobalState> {
 
     SQLite3Schema s;
     SQLite3Tables targetTables;

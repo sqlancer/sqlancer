@@ -3,7 +3,6 @@ package sqlancer.databend.test;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,6 +18,7 @@ import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.databend.DatabendErrors;
+import sqlancer.databend.DatabendExprToNode;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema;
 import sqlancer.databend.DatabendSchema.DatabendColumn;
@@ -33,7 +33,7 @@ import sqlancer.databend.ast.DatabendJoin;
 import sqlancer.databend.ast.DatabendSelect;
 import sqlancer.databend.gen.DatabendNewExpressionGenerator;
 
-public class DatabendNoRECOracle extends NoRECBase<DatabendGlobalState> implements TestOracle {
+public class DatabendNoRECOracle extends NoRECBase<DatabendGlobalState> implements TestOracle<DatabendGlobalState> {
 
     private final DatabendSchema s;
 
@@ -45,18 +45,21 @@ public class DatabendNoRECOracle extends NoRECBase<DatabendGlobalState> implemen
 
     @Override
     public void check() throws SQLException {
-        DatabendTables randomTables = s.getRandomTableNonEmptyTables(); // 随机获得nr张表
+        DatabendTables randomTables = s.getRandomTableNonEmptyAndViewTables(); // 随机获得nr张表
         List<DatabendColumn> columns = randomTables.getColumns();
+        if (columns.isEmpty()) {
+            debugColumns(columns, randomTables); // 调试代码，可忽略
+        }
         DatabendNewExpressionGenerator gen = new DatabendNewExpressionGenerator(state).setColumns(columns);
-
-        Node<DatabendExpression> randomWhereCondition = gen.generateExpression(DatabendDataType.BOOLEAN); // 生成随机where条件，形式为ast
-
+        Node<DatabendExpression> randomWhereCondition = DatabendExprToNode
+                .cast(gen.generateExpression(DatabendDataType.BOOLEAN)); // 生成随机where条件
         List<DatabendTable> tables = randomTables.getTables();
         List<TableReferenceNode<DatabendExpression, DatabendTable>> tableList = tables.stream()
                 .map(t -> new TableReferenceNode<DatabendExpression, DatabendTable>(t)).collect(Collectors.toList());
         List<Node<DatabendExpression>> joins = DatabendJoin.getJoins(tableList, state);
-        int secondCount = getSecondQuery(tableList.stream().collect(Collectors.toList()), randomWhereCondition, joins); // 禁用优化
-        int firstCount = getFirstQueryCount(con, tableList.stream().collect(Collectors.toList()), columns,
+        int secondCount = getUnoptimizedQueryCount(tableList.stream().collect(Collectors.toList()),
+                randomWhereCondition, joins);
+        int firstCount = getOptimizedQueryCount(con, tableList.stream().collect(Collectors.toList()), columns,
                 randomWhereCondition, joins);
         if (firstCount == -1 || secondCount == -1) {
             throw new IgnoreMeException();
@@ -67,23 +70,20 @@ public class DatabendNoRECOracle extends NoRECBase<DatabendGlobalState> implemen
         }
     }
 
-    private int getSecondQuery(List<Node<DatabendExpression>> tableList, Node<DatabendExpression> randomWhereCondition,
-            List<Node<DatabendExpression>> joins) throws SQLException {
+    private int getUnoptimizedQueryCount(List<Node<DatabendExpression>> tableList,
+            Node<DatabendExpression> randomWhereCondition, List<Node<DatabendExpression>> joins) throws SQLException {
         DatabendSelect select = new DatabendSelect();
         // select.setGroupByClause(groupBys);
-        // DatabendExpression isTrue = DatabendPostfixOperation.create(randomWhereCondition,
-        // PostfixOperator.IS_TRUE);
         Node<DatabendExpression> asText = new NewPostfixTextNode<>(new DatabendCastOperation(
                 new NewPostfixTextNode<DatabendExpression>(randomWhereCondition,
                         " IS NOT NULL AND " + DatabendToStringVisitor.asString(randomWhereCondition)),
                 new DatabendCompositeDataType(DatabendDataType.INT, 8)), "as count");
 
-        select.setFetchColumns(Arrays.asList(asText)); // ?
+        select.setFetchColumns(List.of(asText));
         select.setFromList(tableList);
         select.setJoinList(joins);
         int secondCount = 0;
         unoptimizedQueryString = "SELECT SUM(count) FROM (" + DatabendToStringVisitor.asString(select) + ") as res";
-        errors.add("canceling statement due to statement timeout");
         SQLQueryAdapter q = new SQLQueryAdapter(unoptimizedQueryString, errors);
         SQLancerResultSet rs;
         try {
@@ -101,23 +101,20 @@ public class DatabendNoRECOracle extends NoRECBase<DatabendGlobalState> implemen
         return secondCount;
     }
 
-    private int getFirstQueryCount(SQLConnection con, List<Node<DatabendExpression>> tableList,
+    private int getOptimizedQueryCount(SQLConnection con, List<Node<DatabendExpression>> tableList,
             List<DatabendColumn> columns, Node<DatabendExpression> randomWhereCondition,
             List<Node<DatabendExpression>> joins) throws SQLException {
         DatabendSelect select = new DatabendSelect();
         // select.setGroupByClause(groupBys);
-        // DatabendAggregate aggr = new DatabendAggregate(
         List<Node<DatabendExpression>> allColumns = columns.stream()
                 .map((c) -> new ColumnReferenceNode<DatabendExpression, DatabendColumn>(c))
                 .collect(Collectors.toList());
-        // DatabendAggregateFunction.COUNT);
-        // select.setFetchColumns(Arrays.asList(aggr));
         select.setFetchColumns(allColumns);
         select.setFromList(tableList);
         select.setWhereClause(randomWhereCondition);
         if (Randomly.getBooleanWithSmallProbability()) {
-            select.setOrderByExpressions(
-                    new DatabendNewExpressionGenerator(state).setColumns(columns).generateOrderBys());
+            select.setOrderByExpressions(new DatabendNewExpressionGenerator(state).setColumns(columns)
+                    .generateOrderBys().stream().map(DatabendExprToNode::cast).collect(Collectors.toList()));
         }
         select.setJoinList(joins);
         int firstCount = 0;
@@ -135,6 +132,28 @@ public class DatabendNoRECOracle extends NoRECBase<DatabendGlobalState> implemen
             throw new IgnoreMeException();
         }
         return firstCount;
+    }
+
+    void debugColumns(List<DatabendColumn> columns, DatabendTables randomTables) {
+        DatabendTables test = new DatabendTables(s.getDatabaseTables());
+        System.out.println(String.format("tables size: %d", test.getTables().size()));
+        for (DatabendTable table : test.getTables()) {
+            System.out.println(String.format("%s", table.getName()));
+            for (DatabendColumn column : table.getColumns()) {
+                System.out.println(String.format("%s %s", column.getName(), column.getType()));
+            }
+            System.out.println("------------------------");
+        }
+        System.out.println("+++++++++++++++++++++++++++++");
+        for (DatabendTable table : randomTables.getTables()) {
+            System.out.println(String.format("%s", table.getName()));
+            for (DatabendColumn column : table.getColumns()) {
+                System.out.println(String.format("%s %s", column.getName(), column.getType()));
+            }
+            System.out.println("------------------------");
+        }
+        throw new AssertionError(
+                String.format("randomTables size: %d,column is empty", randomTables.getTables().size()));
     }
 
 }

@@ -1,7 +1,9 @@
 package sqlancer.clickhouse;
 
 import sqlancer.clickhouse.ast.ClickHouseAggregate;
+import sqlancer.clickhouse.ast.ClickHouseAliasOperation;
 import sqlancer.clickhouse.ast.ClickHouseBinaryComparisonOperation;
+import sqlancer.clickhouse.ast.ClickHouseBinaryFunctionOperation;
 import sqlancer.clickhouse.ast.ClickHouseBinaryLogicalOperation;
 import sqlancer.clickhouse.ast.ClickHouseCastOperation;
 import sqlancer.clickhouse.ast.ClickHouseColumnReference;
@@ -51,12 +53,18 @@ public interface ClickHouseVisitor {
 
     void visit(ClickHouseCastOperation cast);
 
+    void visit(ClickHouseAliasOperation alias);
+
     void visit(ClickHouseExpression.ClickHouseJoin join);
 
     void visit(ClickHouseAggregate aggregate);
 
+    void visit(ClickHouseBinaryFunctionOperation func);
+
     default void visit(ClickHouseExpression expr) {
-        if (expr instanceof ClickHouseBinaryComparisonOperation) {
+        if (expr instanceof ClickHouseBinaryFunctionOperation) {
+            visit((ClickHouseBinaryFunctionOperation) expr);
+        } else if (expr instanceof ClickHouseBinaryComparisonOperation) {
             visit((ClickHouseBinaryComparisonOperation) expr);
         } else if (expr instanceof ClickHouseBinaryLogicalOperation) {
             visit((ClickHouseBinaryLogicalOperation) expr);
@@ -78,6 +86,10 @@ public interface ClickHouseVisitor {
             visit((ClickHouseExpression.ClickHousePostfixText) expr);
         } else if (expr instanceof ClickHouseAggregate) {
             visit((ClickHouseAggregate) expr);
+        } else if (expr instanceof ClickHouseAliasOperation) {
+            visit((ClickHouseAliasOperation) expr);
+        } else if (expr instanceof ClickHouseExpression.ClickHouseJoinOnClause) {
+            visit((ClickHouseExpression.ClickHouseJoinOnClause) expr);
         } else {
             throw new AssertionError(expr);
         }

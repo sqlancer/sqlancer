@@ -5,10 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.tidb.TiDBBugs;
 import sqlancer.tidb.TiDBExpressionGenerator;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
@@ -24,6 +24,13 @@ public class TiDBTableGenerator {
     private boolean primaryKeyAsTableConstraints;
     private final ExpectedErrors errors = new ExpectedErrors();
 
+    public static SQLQueryAdapter createRandomTableStatement(TiDBGlobalState globalState) throws SQLException {
+        if (globalState.getSchema().getDatabaseTables().size() > globalState.getDbmsSpecificOptions().maxNumTables) {
+            throw new IgnoreMeException();
+        }
+        return new TiDBTableGenerator().getQuery(globalState);
+    }
+
     public SQLQueryAdapter getQuery(TiDBGlobalState globalState) throws SQLException {
         errors.add("Information schema is changed during the execution of the statement");
         String tableName = globalState.getSchema().getFreeTableName();
@@ -31,7 +38,7 @@ public class TiDBTableGenerator {
         allowPrimaryKey = Randomly.getBoolean();
         primaryKeyAsTableConstraints = allowPrimaryKey && Randomly.getBoolean();
         for (int i = 0; i < nrColumns; i++) {
-            TiDBColumn fakeColumn = new TiDBColumn("c" + i, null, false, false);
+            TiDBColumn fakeColumn = new TiDBColumn("c" + i, null, false, false, false);
             columns.add(fakeColumn);
         }
         TiDBExpressionGenerator gen = new TiDBExpressionGenerator(globalState).setColumns(columns);
@@ -113,8 +120,7 @@ public class TiDBTableGenerator {
             errors.add(" used in key specification without a key length");
         }
         sb.append(")");
-        if (Randomly.getBooleanWithRatherLowProbability()
-                && !TiDBBugs.bug14 /* there are also a number of unresolved other partitioning bugs */) {
+        if (Randomly.getBooleanWithRatherLowProbability()) {
             sb.append("PARTITION BY HASH(");
             sb.append(TiDBVisitor.asString(gen.generateExpression()));
             sb.append(") ");
@@ -127,9 +133,6 @@ public class TiDBTableGenerator {
             errors.add("A UNIQUE INDEX must include all columns in the table's partitioning function");
             errors.add("is of a not allowed type for this type of partitioning");
             errors.add("The PARTITION function returns the wrong type");
-            if (TiDBBugs.bug16) {
-                errors.add("UnknownType: *ast.WhenClause");
-            }
         }
     }
 
@@ -144,11 +147,10 @@ public class TiDBTableGenerator {
     }
 
     private void appendSizeSpecifiers(StringBuilder sb, TiDBDataType type) {
-        if (type.isNumeric() && Randomly.getBoolean() && !TiDBBugs.bug16028) {
+        if (type.isNumeric() && Randomly.getBoolean()) {
             sb.append(" UNSIGNED");
         }
-        if (type.isNumeric() && Randomly.getBoolean()
-                && !TiDBBugs.bug16028 /* seems to be the same bug as https://github.com/pingcap/tidb/issues/16028 */) {
+        if (type.isNumeric() && Randomly.getBoolean()) {
             sb.append(" ZEROFILL");
         }
     }

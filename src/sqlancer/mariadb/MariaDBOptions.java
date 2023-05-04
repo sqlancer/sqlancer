@@ -28,7 +28,7 @@ public class MariaDBOptions implements DBMSSpecificOptions<MariaDBOracleFactory>
         NOREC {
 
             @Override
-            public TestOracle create(MariaDBGlobalState globalState) throws SQLException {
+            public TestOracle<MariaDBGlobalState> create(MariaDBGlobalState globalState) throws SQLException {
                 return new MariaDBNoRECOracle(globalState);
             }
 

@@ -6,7 +6,7 @@ import java.util.List;
 public class ClickHouseSelect extends ClickHouseExpression {
 
     private ClickHouseSelect.SelectType fromOptions = ClickHouseSelect.SelectType.ALL;
-    private List<ClickHouseExpression> fromList = Collections.emptyList();
+    private ClickHouseExpression fromClause;
     private ClickHouseExpression whereClause;
     private List<ClickHouseExpression> groupByClause = Collections.emptyList();
     private ClickHouseExpression limitClause;
@@ -24,8 +24,12 @@ public class ClickHouseSelect extends ClickHouseExpression {
         this.setFromOptions(fromOptions);
     }
 
-    public void setFromTables(List<ClickHouseExpression> fromTables) {
-        this.setFromList(fromTables);
+    public void setFromClause(ClickHouseExpression fromClause) {
+        this.fromClause = fromClause;
+    }
+
+    public ClickHouseExpression getFromClause() {
+        return fromClause;
     }
 
     public ClickHouseSelect.SelectType getFromOptions() {
@@ -34,14 +38,6 @@ public class ClickHouseSelect extends ClickHouseExpression {
 
     public void setFromOptions(ClickHouseSelect.SelectType fromOptions) {
         this.fromOptions = fromOptions;
-    }
-
-    public List<ClickHouseExpression> getFromList() {
-        return fromList;
-    }
-
-    public void setFromList(List<ClickHouseExpression> fromList) {
-        this.fromList = fromList;
     }
 
     public ClickHouseExpression getWhereClause() {

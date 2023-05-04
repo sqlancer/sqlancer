@@ -29,7 +29,7 @@ import sqlancer.postgres.gen.PostgresExpressionGenerator;
 import sqlancer.postgres.oracle.PostgresNoRECOracle;
 
 public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<PostgresExpression, PostgresGlobalState>
-        implements TestOracle {
+        implements TestOracle<PostgresGlobalState> {
 
     protected PostgresSchema s;
     protected PostgresTables targetTables;

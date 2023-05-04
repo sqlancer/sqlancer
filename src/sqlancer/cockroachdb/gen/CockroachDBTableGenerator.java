@@ -29,6 +29,9 @@ public class CockroachDBTableGenerator extends CockroachDBGenerator {
     }
 
     public static SQLQueryAdapter generate(CockroachDBGlobalState globalState) {
+        if (globalState.getSchema().getDatabaseTables().size() > globalState.getDbmsSpecificOptions().maxNumTables) {
+            throw new IgnoreMeException();
+        }
         return new CockroachDBTableGenerator(globalState).getQuery();
     }
 

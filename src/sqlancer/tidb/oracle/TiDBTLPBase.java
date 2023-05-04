@@ -23,7 +23,7 @@ import sqlancer.tidb.ast.TiDBTableReference;
 import sqlancer.tidb.gen.TiDBHintGenerator;
 
 public abstract class TiDBTLPBase extends TernaryLogicPartitioningOracleBase<TiDBExpression, TiDBGlobalState>
-        implements TestOracle {
+        implements TestOracle<TiDBGlobalState> {
 
     TiDBSchema s;
     TiDBTables targetTables;
