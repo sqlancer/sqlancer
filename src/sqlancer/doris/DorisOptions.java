@@ -1,21 +1,33 @@
 package sqlancer.doris;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
+import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.doris.DorisOptions.DorisOracleFactory;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
-
-import java.util.Arrays;
-import java.util.List;
+import sqlancer.doris.oracle.DorisNoRECOracle;
+import sqlancer.doris.oracle.DorisPivotedQuerySynthesisOracle;
+import sqlancer.doris.oracle.tlp.*;
 
 @Parameters(commandDescription = "Apache Doris (default port: " + DorisOptions.DEFAULT_PORT
         + ", default host: " + DorisOptions.DEFAULT_HOST + ")")
 public class DorisOptions implements DBMSSpecificOptions<DorisOracleFactory> {
     public static final String DEFAULT_HOST = "localhost";
     public static final int DEFAULT_PORT = 9030;
+
+    @Parameter(names = {"--max-num-tables"}, description = "The maximum number of tables/views that can be created")
+    public int maxNumTables = 10;
+
+    @Parameter(names = {"--max-num-indexes"}, description = "The maximum number of indexes that can be created")
+    public int maxNumIndexes = 20;
 
     @Parameter(names = "--test-default-values", description = "Allow generating DEFAULT values in tables", arity = 1)
     public boolean testDefaultValues = true;
@@ -69,7 +81,10 @@ public class DorisOptions implements DBMSSpecificOptions<DorisOracleFactory> {
     public int maxNumDeletes = 1;
 
     @Parameter(names = "--max-num-updates", description = "The maximum number of UPDATE statements that are issued for a database", arity = 1)
-    public int maxNumUpdates = 5;
+    public int maxNumUpdates = 0;
+
+    @Parameter(names = "--max-num-table-alters", description = "The maximum number of ALTER TABLE statements that are issued for a database", arity = 1)
+    public int maxNumTableAlters = 0;
 
     @Parameter(names = "--test-engine-type", description = "The engine type in Doris, only consider OLAP now", arity = 1)
     public String testEngineType = "OLAP";
@@ -90,73 +105,77 @@ public class DorisOptions implements DBMSSpecificOptions<DorisOracleFactory> {
     public boolean testRollup = true;
 
     @Parameter(names = "--oracle")
-    public List<DorisOracleFactory> oracles = Arrays.asList(DorisOracleFactory.None);
+    public List<DorisOracleFactory> oracles = Arrays.asList(DorisOracleFactory.NOREC);
 
     public enum DorisOracleFactory implements OracleFactory<DorisGlobalState> {
-//        NOREC {
-//
-//            @Override
-//            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws SQLException {
-//                return new DorisNoRECOracle(globalState);
-//            }
-//
-//        },
-//        HAVING {
-//            @Override
-//            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws SQLException {
-//                return new DorisQueryPartitioningHavingTester(globalState);
-//            }
-//        },
-//        WHERE {
-//            @Override
-//            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws SQLException {
-//                return new DorisQueryPartitioningWhereTester(globalState);
-//            }
-//        },
-//        GROUP_BY {
-//            @Override
-//            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws SQLException {
-//                return new DorisQueryPartitioningGroupByTester(globalState);
-//            }
-//        },
-//        AGGREGATE {
-//
-//            @Override
-//            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws SQLException {
-//                return new DorisQueryPartitioningAggregateTester(globalState);
-//            }
-//
-//        },
-//        DISTINCT {
-//            @Override
-//            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws SQLException {
-//                return new DorisQueryPartitioningDistinctTester(globalState);
-//            }
-//        },
-//        QUERY_PARTITIONING {
-//            @Override
-//            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws SQLException {
-//                List<TestOracle<DorisGlobalState>> oracles = new ArrayList<>();
-//                oracles.add(new DorisQueryPartitioningWhereTester(globalState));
-//                oracles.add(new DorisQueryPartitioningHavingTester(globalState));
-//                oracles.add(new DorisQueryPartitioningAggregateTester(globalState));
-//                oracles.add(new DorisQueryPartitioningDistinctTester(globalState));
-//                oracles.add(new DorisQueryPartitioningGroupByTester(globalState));
-//                return new CompositeTestOracle<DorisGlobalState>(oracles, globalState);
-//            }
-//        };
+        NOREC {
+            @Override
+            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws SQLException {
+                return new DorisNoRECOracle(globalState);
+            }
 
-        None {
+        },
+        HAVING {
+            @Override
+            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws SQLException {
+                return new DorisQueryPartitioningHavingTester(globalState);
+            }
+        },
+        WHERE {
+            @Override
+            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws SQLException {
+                return new DorisQueryPartitioningWhereTester(globalState);
+            }
+        },
+        GROUP_BY {
+            @Override
+            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws SQLException {
+                return new DorisQueryPartitioningGroupByTester(globalState);
+            }
+        },
+        AGGREGATE {
+            @Override
+            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws SQLException {
+                return new DorisQueryPartitioningAggregateTester(globalState);
+            }
+
+        },
+        DISTINCT {
+            @Override
+            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws SQLException {
+                return new DorisQueryPartitioningDistinctTester(globalState);
+            }
+        },
+        QUERY_PARTITIONING {
+            @Override
+            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws SQLException {
+                List<TestOracle<DorisGlobalState>> oracles = new ArrayList<>();
+                oracles.add(new DorisQueryPartitioningWhereTester(globalState));
+                oracles.add(new DorisQueryPartitioningHavingTester(globalState));
+                oracles.add(new DorisQueryPartitioningAggregateTester(globalState));
+                oracles.add(new DorisQueryPartitioningDistinctTester(globalState));
+                oracles.add(new DorisQueryPartitioningGroupByTester(globalState));
+                return new CompositeTestOracle<DorisGlobalState>(oracles, globalState);
+            }
+        },
+        PQS {
             @Override
             public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws Exception {
-//                List<TestOracle<DuckDBProvider.DuckDBGlobalState>> oracles = new ArrayList<>();
-//                oracles.add(new sqlancer.duckdb.test.DuckDBQueryPartitioningWhereTester(globalState));
-//                oracles.add(new DuckDBQueryPartitioningHavingTester(globalState));
-//                oracles.add(new sqlancer.duckdb.test.DuckDBQueryPartitioningAggregateTester(globalState));
-//                oracles.add(new sqlancer.duckdb.test.DuckDBQueryPartitioningDistinctTester(globalState));
-//                oracles.add(new DuckDBQueryPartitioningGroupByTester(globalState));
-//                return new CompositeTestOracle<DuckDBProvider.DuckDBGlobalState>(oracles, globalState);
-                return null;
+                return new DorisPivotedQuerySynthesisOracle(globalState);
+            }
+        },
+        ALL {
+            @Override
+            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws Exception {
+                List<TestOracle<DorisGlobalState>> oracles = new ArrayList<>();
+                oracles.add(new DorisNoRECOracle(globalState));
+                oracles.add(new DorisQueryPartitioningWhereTester(globalState));
+                oracles.add(new DorisQueryPartitioningHavingTester(globalState));
+                oracles.add(new DorisQueryPartitioningAggregateTester(globalState));
+                oracles.add(new DorisQueryPartitioningDistinctTester(globalState));
+                oracles.add(new DorisQueryPartitioningGroupByTester(globalState));
+                oracles.add(new DorisPivotedQuerySynthesisOracle(globalState));
+                return new CompositeTestOracle<DorisGlobalState>(oracles, globalState);
             }
         }
 

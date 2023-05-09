@@ -1,11 +1,9 @@
-package sqlancer.doris;
+package sqlancer.doris.visitor;
 
+import sqlancer.Randomly;
 import sqlancer.common.ast.newast.NewToStringVisitor;
 import sqlancer.common.ast.newast.Node;
-import sqlancer.doris.ast.DorisConstant;
-import sqlancer.doris.ast.DorisExpression;
-import sqlancer.doris.ast.DorisJoin;
-import sqlancer.doris.ast.DorisSelect;
+import sqlancer.doris.ast.*;
 
 public class DorisToStringVisitor extends NewToStringVisitor<DorisExpression> {
 
@@ -17,29 +15,64 @@ public class DorisToStringVisitor extends NewToStringVisitor<DorisExpression> {
             visit((DorisSelect) expr);
         } else if (expr instanceof DorisJoin) {
             visit((DorisJoin) expr);
+        } else if (expr instanceof DorisCastOperation) {
+            visit((DorisCastOperation) expr);
         } else {
             throw new AssertionError(expr.getClass());
         }
     }
 
     private void visit(DorisJoin join) {
+        sb.append(" ");
         visit(join.getLeftTable());
         sb.append(" ");
-        sb.append(join.getJoinType());
-        sb.append(" ");
-        if (join.getOuterType() != null) {
-            sb.append(join.getOuterType());
+        switch (join.getJoinType()) {
+            case INNER:
+                if (Randomly.getBoolean()) {
+                    sb.append("INNER ");
+                } else {
+                    sb.append("CROSS ");
+                }
+                sb.append("JOIN ");
+                break;
+            case LEFT:
+                sb.append("LEFT ");
+                if (Randomly.getBoolean()) {
+                    sb.append(" OUTER ");
+                }
+                sb.append("JOIN ");
+                break;
+            case RIGHT:
+                sb.append("RIGHT ");
+                if (Randomly.getBoolean()) {
+                    sb.append(" OUTER ");
+                }
+                sb.append("JOIN ");
+                break;
+            case STRAIGHT:
+                sb.append("STRAIGHT_JOIN ");
+                break;
+            default:
+                throw new AssertionError();
         }
-        sb.append(" JOIN ");
         visit(join.getRightTable());
+        sb.append(" ");
         if (join.getOnCondition() != null) {
-            sb.append(" ON ");
+            sb.append("ON ");
             visit(join.getOnCondition());
         }
     }
 
     private void visit(DorisConstant constant) {
         sb.append(constant.toString());
+    }
+
+    private void visit(DorisCastOperation castExpr) {
+        sb.append("CAST(");
+        visit(castExpr.getExpr());
+        sb.append(" AS ");
+        sb.append(castExpr.getType().toString());
+        sb.append(") ");
     }
 
     private void visit(DorisSelect select) {
@@ -88,4 +121,9 @@ public class DorisToStringVisitor extends NewToStringVisitor<DorisExpression> {
         return visitor.get();
     }
 
+    public static String asString(DorisExpression expr) {
+        DorisToStringVisitor visitor = new DorisToStringVisitor();
+        visitor.visit(DorisExprToNode.cast(expr));
+        return visitor.get();
+    }
 }

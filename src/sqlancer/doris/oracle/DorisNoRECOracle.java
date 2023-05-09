@@ -1,4 +1,12 @@
-package sqlancer.doris.test;
+package sqlancer.doris.oracle;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
@@ -11,23 +19,14 @@ import sqlancer.common.oracle.NoRECBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
-import sqlancer.doris.ast.DorisExpression;
-import sqlancer.doris.ast.DorisJoin;
-import sqlancer.doris.ast.DorisSelect;
-import sqlancer.doris.gen.DorisExpressionGenerator;
 import sqlancer.doris.DorisErrors;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
 import sqlancer.doris.DorisSchema;
 import sqlancer.doris.DorisSchema.*;
-import sqlancer.doris.DorisToStringVisitor;
-import sqlancer.doris.gen.DorisExpressionGenerator.DorisCastOperation;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import sqlancer.doris.ast.*;
+import sqlancer.doris.gen.DorisNewExpressionGenerator;
+import sqlancer.doris.visitor.DorisExprToNode;
+import sqlancer.doris.visitor.DorisToStringVisitor;
 
 public class DorisNoRECOracle extends NoRECBase<DorisGlobalState> implements TestOracle<DorisGlobalState> {
 
@@ -37,20 +36,21 @@ public class DorisNoRECOracle extends NoRECBase<DorisGlobalState> implements Tes
         super(globalState);
         this.s = globalState.getSchema();
         DorisErrors.addExpressionErrors(errors);
+        DorisErrors.addInsertErrors(errors);
     }
 
     @Override
     public void check() throws SQLException {
         DorisTables randomTables = s.getRandomTableNonEmptyTables();
         List<DorisColumn> columns = randomTables.getColumns();
-        DorisExpressionGenerator gen = new DorisExpressionGenerator(state).setColumns(columns);
-        Node<DorisExpression> randomWhereCondition = gen.generateExpression();
+        DorisNewExpressionGenerator gen = new DorisNewExpressionGenerator(state).setColumns(columns);
+        Node<DorisExpression> randomWhereCondition = DorisExprToNode.cast(gen.generateExpression(DorisDataType.BOOLEAN));
         List<DorisTable> tables = randomTables.getTables();
         List<TableReferenceNode<DorisExpression, DorisTable>> tableList = tables.stream()
                 .map(t -> new TableReferenceNode<DorisExpression, DorisTable>(t)).collect(Collectors.toList());
         List<Node<DorisExpression>> joins = DorisJoin.getJoins(tableList, state);
-        int secondCount = getSecondQuery(tableList.stream().collect(Collectors.toList()), randomWhereCondition, joins);
-        int firstCount = getFirstQueryCount(con, tableList.stream().collect(Collectors.toList()), columns,
+        int secondCount = getUnoptimizedQueryCount(tableList.stream().collect(Collectors.toList()), randomWhereCondition, joins);
+        int firstCount = getOptimizedQueryCount(con, tableList.stream().collect(Collectors.toList()), columns,
                 randomWhereCondition, joins);
         if (firstCount == -1 || secondCount == -1) {
             throw new IgnoreMeException();
@@ -61,23 +61,18 @@ public class DorisNoRECOracle extends NoRECBase<DorisGlobalState> implements Tes
         }
     }
 
-    private int getSecondQuery(List<Node<DorisExpression>> tableList, Node<DorisExpression> randomWhereCondition,
-                               List<Node<DorisExpression>> joins) throws SQLException {
+    private int getUnoptimizedQueryCount(List<Node<DorisExpression>> tableList, Node<DorisExpression> randomWhereCondition,
+                                         List<Node<DorisExpression>> joins) throws SQLException {
         DorisSelect select = new DorisSelect();
-        // select.setGroupByClause(groupBys);
-        // DorisExpression isTrue = DorisPostfixOperation.create(randomWhereCondition,
-        // PostfixOperator.IS_TRUE);
         Node<DorisExpression> asText = new NewPostfixTextNode<>(new DorisCastOperation(
                 new NewPostfixTextNode<DorisExpression>(randomWhereCondition,
                         " IS NOT NULL AND " + DorisToStringVisitor.asString(randomWhereCondition)),
                 new DorisCompositeDataType(DorisDataType.INT, 8)), "as count");
         select.setFetchColumns(Arrays.asList(asText));
         select.setFromList(tableList);
-        // select.setSelectType(SelectType.ALL);
         select.setJoinList(joins);
         int secondCount = 0;
         unoptimizedQueryString = "SELECT SUM(count) FROM (" + DorisToStringVisitor.asString(select) + ") as res";
-        errors.add("canceling statement due to statement timeout");
         SQLQueryAdapter q = new SQLQueryAdapter(unoptimizedQueryString, errors);
         SQLancerResultSet rs;
         try {
@@ -95,23 +90,22 @@ public class DorisNoRECOracle extends NoRECBase<DorisGlobalState> implements Tes
         return secondCount;
     }
 
-    private int getFirstQueryCount(SQLConnection con, List<Node<DorisExpression>> tableList,
-                                   List<DorisColumn> columns, Node<DorisExpression> randomWhereCondition, List<Node<DorisExpression>> joins)
+    private int getOptimizedQueryCount(SQLConnection con, List<Node<DorisExpression>> tableList,
+                                       List<DorisColumn> columns, Node<DorisExpression> randomWhereCondition, List<Node<DorisExpression>> joins)
             throws SQLException {
         DorisSelect select = new DorisSelect();
         // select.setGroupByClause(groupBys);
-        // DorisAggregate aggr = new DorisAggregate(
         List<Node<DorisExpression>> allColumns = columns.stream()
                 .map((c) -> new ColumnReferenceNode<DorisExpression, DorisColumn>(c)).collect(Collectors.toList());
-        // DorisAggregateFunction.COUNT);
-        // select.setFetchColumns(Arrays.asList(aggr));
         select.setFetchColumns(allColumns);
         select.setFromList(tableList);
         select.setWhereClause(randomWhereCondition);
         if (Randomly.getBooleanWithSmallProbability()) {
-            select.setOrderByExpressions(new DorisExpressionGenerator(state).setColumns(columns).generateOrderBys());
+            List<Node<DorisExpression>> constants = new ArrayList<>();
+            constants.add(new DorisConstant.DorisIntConstant(
+                    Randomly.smallNumber() % select.getFetchColumns().size() + 1));
+            select.setOrderByExpressions(constants);
         }
-        // select.setSelectType(SelectType.ALL);
         select.setJoinList(joins);
         int firstCount = 0;
         try (Statement stat = con.createStatement()) {

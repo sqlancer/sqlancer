@@ -1,16 +1,16 @@
 package sqlancer.doris;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import com.google.auto.service.AutoService;
 import sqlancer.*;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
 import sqlancer.doris.gen.*;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
 
 @AutoService(DatabaseProvider.class)
 public class DorisProvider extends SQLProviderAdapter<DorisGlobalState, DorisOptions> {
@@ -20,10 +20,16 @@ public class DorisProvider extends SQLProviderAdapter<DorisGlobalState, DorisOpt
     }
 
     public enum Action implements AbstractAction<DorisGlobalState> {
-        INSERT(DorisInsertGenerator::getQuery), //
-        DELETE(DorisDeleteGenerator::generate), //
-        UPDATE(DorisUpdateGenerator::getQuery), //
-        REHASH((g) -> new SQLQueryAdapter("REHASH;"));
+        CREATE_TABLE(DorisTableGenerator::createRandomTableStatement),
+        CREATE_VIEW(DorisViewGenerator::getQuery),
+        CREATE_INDEX(DorisIndexGenerator::getQuery),
+        INSERT(DorisInsertGenerator::getQuery),
+        DELETE(DorisDeleteGenerator::generate),
+        UPDATE(DorisUpdateGenerator::getQuery),
+        ALTER_TABLE(DorisAlterTableGenerator::getQuery),
+        TRUNCATE((g) -> new SQLQueryAdapter("TRUNCATE TABLE " + g.getSchema().getRandomTable(t -> !t.isView()).getName())),
+        DROP_TABLE(DorisDropTableGenerator::dropTable),
+        DROP_VIEW(DorisDropViewGenerator::dropView);
 
         private final SQLQueryProvider<DorisGlobalState> sqlQueryProvider;
 
@@ -40,16 +46,25 @@ public class DorisProvider extends SQLProviderAdapter<DorisGlobalState, DorisOpt
     private static int mapActions(DorisGlobalState globalState, Action a) {
         Randomly r = globalState.getRandomly();
         switch (a) {
-        case INSERT:
-            return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
-        case DELETE:
-            return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumDeletes + 1);
-        case UPDATE:
-            return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumUpdates + 1);
-        case REHASH:
-            return r.getInteger(0, 2);
-        default:
-            throw new AssertionError(a);
+            case CREATE_TABLE:
+            case CREATE_INDEX:
+            case CREATE_VIEW:
+                return 0;
+            case INSERT:
+                return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
+            case DELETE:
+                return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumDeletes);
+            case UPDATE:
+                return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumUpdates);
+            case ALTER_TABLE:
+                return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumTableAlters);
+            case TRUNCATE:
+                return r.getInteger(0, 2);
+            case DROP_TABLE:
+            case DROP_VIEW:
+                return 0;
+            default:
+                throw new AssertionError(a);
         }
     }
 
@@ -72,14 +87,14 @@ public class DorisProvider extends SQLProviderAdapter<DorisGlobalState, DorisOpt
             } while (!success);
         }
         if (globalState.getSchema().getDatabaseTables().isEmpty()) {
-            throw new IgnoreMeException(); // TODO
+            throw new IgnoreMeException();
         }
         StatementExecutor<DorisGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
                 DorisProvider::mapActions, (q) -> {
-                    if (globalState.getSchema().getDatabaseTables().isEmpty()) {
-                        throw new IgnoreMeException();
-                    }
-                });
+            if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+                throw new IgnoreMeException();
+            }
+        });
         se.executeStatements();
     }
 

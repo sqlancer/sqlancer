@@ -1,4 +1,10 @@
-package sqlancer.doris.test;
+package sqlancer.doris.oracle.tlp;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.ColumnReferenceNode;
@@ -7,34 +13,33 @@ import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
 import sqlancer.common.oracle.TestOracle;
-import sqlancer.doris.ast.DorisExpression;
-import sqlancer.doris.ast.DorisJoin;
-import sqlancer.doris.ast.DorisSelect;
-import sqlancer.doris.gen.DorisExpressionGenerator;
 import sqlancer.doris.DorisErrors;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
 import sqlancer.doris.DorisSchema;
 import sqlancer.doris.DorisSchema.DorisColumn;
 import sqlancer.doris.DorisSchema.DorisTable;
 import sqlancer.doris.DorisSchema.DorisTables;
-
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import sqlancer.doris.ast.DorisColumnValue;
+import sqlancer.doris.ast.DorisExpression;
+import sqlancer.doris.ast.DorisJoin;
+import sqlancer.doris.ast.DorisSelect;
+import sqlancer.doris.gen.DorisNewExpressionGenerator;
 
 public class DorisQueryPartitioningBase
-        extends TernaryLogicPartitioningOracleBase<Node<DorisExpression>, DorisGlobalState>
+        extends TernaryLogicPartitioningOracleBase<DorisExpression, DorisGlobalState>
         implements TestOracle<DorisGlobalState> {
 
     DorisSchema s;
     DorisTables targetTables;
-    DorisExpressionGenerator gen;
+    DorisNewExpressionGenerator gen;
     DorisSelect select;
+
+    List<Node<DorisExpression>> groupByExpression;
 
     public DorisQueryPartitioningBase(DorisGlobalState state) {
         super(state);
         DorisErrors.addExpressionErrors(errors);
+        DorisErrors.addInsertErrors(errors);
     }
 
     public static String canonicalizeResultValue(String value) {
@@ -43,11 +48,11 @@ public class DorisQueryPartitioningBase
         }
 
         switch (value) {
-        case "-0.0":
-            return "0.0";
-        case "-0":
-            return "0";
-        default:
+            case "-0.0":
+                return "0.0";
+            case "-0":
+                return "0";
+            default:
         }
 
         return value;
@@ -57,9 +62,14 @@ public class DorisQueryPartitioningBase
     public void check() throws SQLException {
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
-        gen = new DorisExpressionGenerator(state).setColumns(targetTables.getColumns());
+        gen = new DorisNewExpressionGenerator(state).setColumns(targetTables.getColumns());
+        HashSet<DorisColumnValue> columnOfLeafNode = new HashSet<>();
+        gen.setColumnOfLeafNode(columnOfLeafNode);
         initializeTernaryPredicateVariants();
         select = new DorisSelect();
+        columnOfLeafNode
+                .addAll(targetTables.getColumns().stream().map(c -> new DorisColumnValue(c, null)).collect(Collectors.toList()));
+        groupByExpression = new ArrayList<>(columnOfLeafNode);
         select.setFetchColumns(generateFetchColumns());
         List<DorisTable> tables = targetTables.getTables();
         List<TableReferenceNode<DorisExpression, DorisTable>> tableList = tables.stream()
@@ -82,7 +92,7 @@ public class DorisQueryPartitioningBase
     }
 
     @Override
-    protected ExpressionGenerator<Node<DorisExpression>> getGen() {
+    protected ExpressionGenerator<DorisExpression> getGen() {
         return gen;
     }
 

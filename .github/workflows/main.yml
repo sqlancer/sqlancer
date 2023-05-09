@@ -442,10 +442,51 @@ jobs:
       - name: Setup Yugabyte
         run: |
           docker pull yugabytedb/yugabyte:latest
-          docker run -d --name yugabyte -p7000:7000 -p9000:9000 -p5433:5433 -p9042:9042 yugabytedb/yugabyte:latest bin/yugabyted start --daemon=false 
+          docker run -d --name yugabyte -p7000:7000 -p9000:9000 -p5433:5433 -p9042:9042 yugabytedb/yugabyte:latest bin/yugabyted start --daemon=false
           sleep 5
       - name: Run Tests
         run: YUGABYTE_AVAILABLE=true mvn -Dtest=TestYugabyte test
+
+
+  doris:
+    name: DBMS Tests (Apache Doris)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: install mysql client
+        run: |
+          sudo apt update
+          sudo apt install mysql-client --assume-yes
+      - name: Set up Apache Doris
+        run: |
+          sysctl -w vm.max_map_count=2000000
+          LASTEST_TAG=$(curl -s GET https://api.github.com/repos/apache/doris/releases | jq -r '.[].tag_name' | sed -n 1p)
+          LASTEST_TAG_BIG_VERSION=$(echo ${LASTEST_TAG} | awk '{split($1, arr, "."); print arr[1]"."arr[2]}')
+          curl -LJO "https://www.apache.org/dyn/mirrors/mirrors.cgi?action=download&filename=doris/${LASTEST_TAG_BIG_VERSION}/${LASTEST_TAG}/apache-doris-fe-${LASTEST_TAG}-bin-x86_64.tar.xz"
+          curl -LJO "https://www.apache.org/dyn/mirrors/mirrors.cgi?action=download&filename=doris/${LASTEST_TAG_BIG_VERSION}/${LASTEST_TAG}/apache-doris-be-${LASTEST_TAG}-bin-x86_64.tar.xz"
+          curl -LJO "https://www.apache.org/dyn/mirrors/mirrors.cgi?action=download&filename=doris/${LASTEST_TAG_BIG_VERSION}/${LASTEST_TAG}/apache-doris-dependencies-${LASTEST_TAG}-bin-x86_64.tar.xz"
+          mkdir ./doris
+          tar xvf apache-doris-fe-${LASTEST_TAG}-bin-x86_64.tar.xz -C ./doris && mv doris/apache-doris-fe-${LASTEST_TAG}-bin-x86_64 doris/fe
+          tar xvf apache-doris-be-${LASTEST_TAG}-bin-x86_64.tar.xz -C ./doris && mv doris/apache-doris-be-${LASTEST_TAG}-bin-x86_64 doris/be
+          tar xvf apache-doris-dependencies-${LASTEST_TAG}-bin-x86_64.tar.xz -C ./doris && mv doris/apache-doris-dependencies-${LASTEST_TAG}-bin-x86_64 doris/dependencies
+          cp doris/dependencies/*.jar doris/be/lib/
+          doris/fe/bin/start_fe.sh --daemon
+          doris/be/bin/start_be.sh --daemon
+          apt install libnet-ifconfig-wrapper-perl --assume-yes
+          IP=$(ifconfig eth0 | grep inet | grep -v inet6 | awk '{print $2}')
+          mysql -u root -h 127.0.0.1 --port 9030 -e "ALTER SYSTEM ADD BACKEND '${IP}:9050';"
+          mysql -u root -h 127.0.0.1 --port 9030 -e "CREATE USER 'sqlancer' IDENTIFIED BY 'sqlancer'; GRANT ALL ON *.* TO sqlancer;"
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Run Tests
+        run: DORIS_AVAILABLE=true mvn -Dtest=TestDoris test
+
 
   java13:
     name: Java 13 Compatibility (DuckDB)

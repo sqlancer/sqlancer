@@ -1,19 +1,19 @@
 package sqlancer.doris.gen;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.ast.newast.TableReferenceNode;
-import sqlancer.doris.ast.DorisConstant;
-import sqlancer.doris.ast.DorisExpression;
-import sqlancer.doris.ast.DorisJoin;
-import sqlancer.doris.ast.DorisSelect;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
+import sqlancer.doris.DorisSchema;
 import sqlancer.doris.DorisSchema.DorisTable;
 import sqlancer.doris.DorisSchema.DorisTables;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import sqlancer.doris.ast.*;
+import sqlancer.doris.visitor.DorisExprToNode;
 
 public final class DorisRandomQuerySynthesizer {
 
@@ -22,20 +22,24 @@ public final class DorisRandomQuerySynthesizer {
 
     public static DorisSelect generateSelect(DorisGlobalState globalState, int nrColumns) {
         DorisTables targetTables = globalState.getSchema().getRandomTableNonEmptyTables();
-        DorisExpressionGenerator gen = new DorisExpressionGenerator(globalState)
-                .setColumns(targetTables.getColumns());
+        List<DorisSchema.DorisColumn> targetColumns = targetTables.getColumns();
+        DorisNewExpressionGenerator gen = new DorisNewExpressionGenerator(globalState).setColumns(targetColumns);
         DorisSelect select = new DorisSelect();
-        // TODO: distinct
-        // select.setDistinct(Randomly.getBoolean());
-        // boolean allowAggregates = Randomly.getBooleanWithSmallProbability();
+        HashSet<DorisColumnValue> columnOfLeafNode = new HashSet<>();
+        gen.setColumnOfLeafNode(columnOfLeafNode);
+        int freeColumns = targetColumns.size();
+        select.setDistinct(DorisSelect.DorisSelectDistinctType.getRandomWithoutNull());
         List<Node<DorisExpression>> columns = new ArrayList<>();
         for (int i = 0; i < nrColumns; i++) {
-            // if (allowAggregates && Randomly.getBoolean()) {
-            Node<DorisExpression> expression = gen.generateExpression();
-            columns.add(expression);
-            // } else {
-            // columns.add(gen());
-            // }
+            Node<DorisExpression> column = null;
+            if (freeColumns > 0 && Randomly.getBoolean()) {
+                column = new DorisColumnValue(targetColumns.get(freeColumns - 1), null);
+                freeColumns -= 1;
+                columnOfLeafNode.add((DorisColumnValue) column);
+            } else {
+                column = DorisExprToNode.cast(gen.generateExpression(DorisSchema.DorisDataType.BOOLEAN));
+            }
+            columns.add(column);
         }
         select.setFetchColumns(columns);
         List<DorisTable> tables = targetTables.getTables();
@@ -45,24 +49,26 @@ public final class DorisRandomQuerySynthesizer {
         select.setJoinList(joins.stream().collect(Collectors.toList()));
         select.setFromList(tableList.stream().collect(Collectors.toList()));
         if (Randomly.getBoolean()) {
-            select.setWhereClause(gen.generateExpression());
+            select.setHavingClause(DorisExprToNode.cast(gen.generateHavingClause()));
         }
         if (Randomly.getBoolean()) {
-            select.setOrderByExpressions(gen.generateOrderBys());
-        }
-        if (Randomly.getBoolean()) {
-            select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
+            select.setWhereClause(DorisExprToNode.cast(gen.generateExpression(DorisSchema.DorisDataType.BOOLEAN)));
         }
 
+        List<Node<DorisExpression>> noExprColumns = new ArrayList<>(columnOfLeafNode);
+
+        if (Randomly.getBoolean()) {
+            select.setOrderByExpressions(Randomly.nonEmptySubset(noExprColumns));
+        }
+        if (Randomly.getBoolean()) {
+            select.setGroupByExpressions(noExprColumns);
+        }
         if (Randomly.getBoolean()) {
             select.setLimitClause(DorisConstant.createIntConstant(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)));
         }
         if (Randomly.getBoolean()) {
             select.setOffsetClause(
                     DorisConstant.createIntConstant(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)));
-        }
-        if (Randomly.getBoolean()) {
-            select.setHavingClause(gen.generateHavingClause());
         }
         return select;
     }

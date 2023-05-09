@@ -5,8 +5,9 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.doris.DorisErrors;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
+import sqlancer.doris.DorisSchema;
 import sqlancer.doris.DorisSchema.DorisTable;
-import sqlancer.doris.DorisToStringVisitor;
+import sqlancer.doris.visitor.DorisToStringVisitor;
 
 public final class DorisDeleteGenerator {
 
@@ -21,9 +22,9 @@ public final class DorisDeleteGenerator {
         if (Randomly.getBoolean()) {
             sb.append(" WHERE ");
             sb.append(DorisToStringVisitor.asString(
-                    new DorisExpressionGenerator(globalState).setColumns(table.getColumns()).generateExpression()));
+                    new DorisNewExpressionGenerator(globalState).setColumns(table.getColumns()).generateExpression(DorisSchema.DorisDataType.BOOLEAN)));
+            DorisErrors.addExpressionErrors(errors);
         }
-        DorisErrors.addExpressionErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors);
     }
 

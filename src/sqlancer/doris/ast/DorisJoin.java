@@ -1,15 +1,17 @@
 package sqlancer.doris.ast;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.ast.newast.TableReferenceNode;
-import sqlancer.doris.gen.DorisExpressionGenerator;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
+import sqlancer.doris.DorisSchema;
 import sqlancer.doris.DorisSchema.DorisColumn;
 import sqlancer.doris.DorisSchema.DorisTable;
-
-import java.util.ArrayList;
-import java.util.List;
+import sqlancer.doris.gen.DorisNewExpressionGenerator;
+import sqlancer.doris.visitor.DorisExprToNode;
 
 public class DorisJoin implements Node<DorisExpression> {
 
@@ -17,20 +19,11 @@ public class DorisJoin implements Node<DorisExpression> {
     private final TableReferenceNode<DorisExpression, DorisTable> rightTable;
     private final JoinType joinType;
     private final Node<DorisExpression> onCondition;
-    private OuterType outerType;
 
     public enum JoinType {
-        INNER, NATURAL, LEFT, RIGHT;
+        INNER, STRAIGHT, LEFT, RIGHT;
 
         public static JoinType getRandom() {
-            return Randomly.fromOptions(values());
-        }
-    }
-
-    public enum OuterType {
-        FULL, LEFT, RIGHT;
-
-        public static OuterType getRandom() {
             return Randomly.fromOptions(values());
         }
     }
@@ -60,14 +53,6 @@ public class DorisJoin implements Node<DorisExpression> {
         return onCondition;
     }
 
-    private void setOuterType(OuterType outerType) {
-        this.outerType = outerType;
-    }
-
-    public OuterType getOuterType() {
-        return outerType;
-    }
-
     public static List<Node<DorisExpression>> getJoins(
             List<TableReferenceNode<DorisExpression, DorisTable>> tableList, DorisGlobalState globalState) {
         List<Node<DorisExpression>> joinExpressions = new ArrayList<>();
@@ -76,27 +61,35 @@ public class DorisJoin implements Node<DorisExpression> {
             TableReferenceNode<DorisExpression, DorisTable> rightTable = tableList.remove(0);
             List<DorisColumn> columns = new ArrayList<>(leftTable.getTable().getColumns());
             columns.addAll(rightTable.getTable().getColumns());
-            DorisExpressionGenerator joinGen = new DorisExpressionGenerator(globalState).setColumns(columns);
+            DorisNewExpressionGenerator joinGen = new DorisNewExpressionGenerator(globalState).setColumns(columns);
             switch (DorisJoin.JoinType.getRandom()) {
-            case INNER:
-                joinExpressions.add(DorisJoin.createInnerJoin(leftTable, rightTable, joinGen.generateExpression()));
-                break;
-            case NATURAL:
-                joinExpressions.add(DorisJoin.createNaturalJoin(leftTable, rightTable, OuterType.getRandom()));
-                break;
-            case LEFT:
-                joinExpressions
-                        .add(DorisJoin.createLeftOuterJoin(leftTable, rightTable, joinGen.generateExpression()));
-                break;
-            case RIGHT:
-                joinExpressions
-                        .add(DorisJoin.createRightOuterJoin(leftTable, rightTable, joinGen.generateExpression()));
-                break;
-            default:
-                throw new AssertionError();
+                case INNER:
+                    joinExpressions.add(DorisJoin.createInnerJoin(leftTable, rightTable, DorisExprToNode.cast(joinGen.generateExpression(DorisSchema.DorisDataType.BOOLEAN))));
+                    break;
+                case STRAIGHT:
+                    joinExpressions.add(DorisJoin.createStraightJoin(leftTable, rightTable, DorisExprToNode.cast(joinGen.generateExpression(DorisSchema.DorisDataType.BOOLEAN))));
+                    break;
+                case LEFT:
+                    joinExpressions.add(DorisJoin.createLeftOuterJoin(leftTable, rightTable, DorisExprToNode.cast(joinGen.generateExpression(DorisSchema.DorisDataType.BOOLEAN))));
+                    break;
+                case RIGHT:
+                    joinExpressions.add(DorisJoin.createRightOuterJoin(leftTable, rightTable, DorisExprToNode.cast(joinGen.generateExpression(DorisSchema.DorisDataType.BOOLEAN))));
+                    break;
+                default:
+                    throw new AssertionError();
             }
         }
         return joinExpressions;
+    }
+
+    public static DorisJoin createInnerJoin(TableReferenceNode<DorisExpression, DorisTable> left,
+                                            TableReferenceNode<DorisExpression, DorisTable> right, Node<DorisExpression> predicate) {
+        return new DorisJoin(left, right, JoinType.INNER, predicate);
+    }
+
+    public static DorisJoin createStraightJoin(TableReferenceNode<DorisExpression, DorisTable> left,
+                                               TableReferenceNode<DorisExpression, DorisTable> right, Node<DorisExpression> predicate) {
+        return new DorisJoin(left, right, JoinType.STRAIGHT, predicate);
     }
 
     public static DorisJoin createRightOuterJoin(TableReferenceNode<DorisExpression, DorisTable> left,
@@ -108,17 +101,4 @@ public class DorisJoin implements Node<DorisExpression> {
                                                 TableReferenceNode<DorisExpression, DorisTable> right, Node<DorisExpression> predicate) {
         return new DorisJoin(left, right, JoinType.LEFT, predicate);
     }
-
-    public static DorisJoin createInnerJoin(TableReferenceNode<DorisExpression, DorisTable> left,
-                                            TableReferenceNode<DorisExpression, DorisTable> right, Node<DorisExpression> predicate) {
-        return new DorisJoin(left, right, JoinType.INNER, predicate);
-    }
-
-    public static Node<DorisExpression> createNaturalJoin(TableReferenceNode<DorisExpression, DorisTable> left,
-                                                          TableReferenceNode<DorisExpression, DorisTable> right, OuterType naturalJoinType) {
-        DorisJoin join = new DorisJoin(left, right, JoinType.NATURAL, null);
-        join.setOuterType(naturalJoinType);
-        return join;
-    }
-
 }

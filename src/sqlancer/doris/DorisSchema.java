@@ -1,18 +1,19 @@
 package sqlancer.doris;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.schema.*;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
 import sqlancer.doris.DorisSchema.DorisTable;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import sqlancer.doris.ast.DorisConstant;
 
 public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
 
@@ -28,22 +29,20 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
         SUM, MIN, MAX, REPLACE, REPLCAE_IF_NOT_NULL, BITMAP_UNION, HLL_UNION, NULL;
 
         public static DorisColumnAggrType getRandom(DorisCompositeDataType columnDataType) {
-            if (columnDataType.getPrimitiveDataType() == DorisSchema.DorisDataType.BITMAP) {
-                return DorisColumnAggrType.BITMAP_UNION;
-            }
-            if (columnDataType.getPrimitiveDataType() == DorisSchema.DorisDataType.HLL) {
-                return DorisColumnAggrType.HLL_UNION;
-            }
+//            if (columnDataType.getPrimitiveDataType() == DorisSchema.DorisDataType.BITMAP) {
+//                return DorisColumnAggrType.BITMAP_UNION;
+//            }
+//            if (columnDataType.getPrimitiveDataType() == DorisSchema.DorisDataType.HLL) {
+//                return DorisColumnAggrType.HLL_UNION;
+//            }
 
             return Randomly.fromOptions(SUM, MIN, MAX, REPLACE, REPLCAE_IF_NOT_NULL);
         }
     }
 
     public enum DorisDataType {
-//        TINYINT, SMALLINT, INT, BIGINT, LARGEINT, FLOAT, DOUBLE, DECIMAL, DECIMALV3, BOOLEAN, CHAR,
-//        VARCHAR, STRING, DATE, DATEV2, DATETIME, DATETIMEV2, BITMAP, HLL, NULL;
-
-        INT, FLOAT, DECIMAL, DATE, DATETIME, VARCHAR, BOOLEAN, HLL, BITMAP, NULL;
+        INT, FLOAT, DECIMAL, DATE, DATETIME, VARCHAR, BOOLEAN, NULL;
+//        HLL, BITMAP, ARRAY;
 
         public static DorisDataType getRandomWithoutNull() {
             DorisDataType dt;
@@ -81,25 +80,26 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
             DorisDataType type = DorisDataType.getRandomWithoutNull();
             int size = -1;
             switch (type) {
-            case INT:
-                size = Randomly.fromOptions(1, 2, 4, 8, 16);
-                break;
-            case FLOAT:
-                size = Randomly.fromOptions(4, 12);
-                break;
-            case DECIMAL:
-                size = Randomly.fromOptions(1, 3);  // DECIMAL or DECIMALV3
-                break;
-            case DATE:
-            case DATETIME:
-            case VARCHAR:
-            case BOOLEAN:
-            case HLL:
-            case BITMAP:
-                size = 0;
-                break;
-            default:
-                throw new AssertionError(type);
+                case INT:
+                    size = Randomly.fromOptions(1, 2, 4, 8, 16);
+                    break;
+                case FLOAT:
+                    size = Randomly.fromOptions(4, 12);
+                    break;
+                case DECIMAL:
+                    size = Randomly.fromOptions(1, 3);  // DECIMAL or DECIMALV3
+                    break;
+                case DATE:
+                case DATETIME:
+                case VARCHAR:
+                case BOOLEAN:
+//                case HLL:
+//                case BITMAP:
+//                case ARRAY:
+                    size = 0;
+                    break;
+                default:
+                    throw new AssertionError(type);
             }
 
             return new DorisCompositeDataType(type, size);
@@ -109,67 +109,72 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
         public String toString() {
             Randomly r = new Randomly();
             switch (getPrimitiveDataType()) {
-            case INT:
-                switch (size) {
-                case 16:
-                    return "LARGEINT";
-                case 8:
-                    return "BIGINT";
-                case 4:
-                    return "INT";
-                case 2:
-                    return "SMALLINT";
-                case 1:
-                    return "TINYINT";
+                case INT:
+                    switch (size) {
+                        case 16:
+                            return "LARGEINT";
+                        case 8:
+                            return "BIGINT";
+                        case 4:
+                            return "INT";
+                        case 2:
+                            return "SMALLINT";
+                        case 1:
+                            return "TINYINT";
+                        default:
+                            throw new AssertionError(size);
+                    }
+                case FLOAT:
+                    switch (size) {
+                        case 12:
+                            return "DOUBLE";
+                        case 4:
+                            return "FLOAT";
+                        default:
+                            throw new AssertionError(size);
+                    }
+                case DECIMAL:
+                    switch (size) {
+                        case 1: {
+                            int scale = r.getInteger(0, 9);
+                            int precision = r.getInteger(scale + 1, scale + 18);
+                            return "DECIMAL(" + precision + "," + scale + ")";
+                        }
+                        case 3: {
+                            int precision = r.getInteger(1, 38);
+                            int scale = r.getInteger(0, precision);
+                            return "DECIMALV3(" + precision + "," + scale + ")";
+                        }
+                        default:
+                            throw new AssertionError(size);
+                    }
+                case DATE:
+                    return Randomly.fromOptions("DATE", "DATEV2");
+                case DATETIME:
+                    return Randomly.fromOptions("DATETIME", "DATETIMEV2");
+                case VARCHAR:
+                    int chars = r.getInteger(1, 255);
+                    return Randomly.fromOptions("VARCHAR", "CHAR") + "(" + chars + ")";
+                case BOOLEAN:
+                    return "BOOLEAN";
+//                case HLL:
+//                    return "HLL";
+//                case BITMAP:
+//                    return "BITMAP";
+//                case ARRAY:
+//                    return "ARRAY";
+                case NULL:
+                    return Randomly.fromOptions("NULL");
                 default:
-                    throw new AssertionError(size);
-                }
-            case FLOAT:
-                switch (size) {
-                    case 12:
-                        return "DOUBLE";
-                    case 4:
-                        return "FLOAT";
-                    default:
-                        throw new AssertionError(size);
-                }
-            case DECIMAL:
-                switch (size) {
-                    case 1: {
-                        int scale = r.getInteger(0, 9);
-                        int precision = r.getInteger(scale + 1, scale + 18);
-                        return "DECIMAL(" + precision + "," + scale + ")";
-                    } case 3: {
-                        int precision = r.getInteger(1, 38);
-                        int scale = r.getInteger(0, precision);
-                        return "DECIMALV3(" + precision + "," + scale + ")";
-                    } default:
-                        throw new AssertionError(size);
-                }
-            case DATE:
-                return Randomly.fromOptions("DATE", "DATEV2");
-            case DATETIME:
-                return Randomly.fromOptions("DATETIME", "DATETIMEV2");
-            case VARCHAR:
-                int chars = r.getInteger(1, 255);
-                return Randomly.fromOptions("VARCHAR", "CHAR") + "(" + chars + ")";
-            case BOOLEAN:
-                return "BOOLEAN";
-            case HLL:
-                return "HLL";
-            case BITMAP:
-                return "BITMAP";
-            case NULL:
-                return Randomly.fromOptions("NULL");
-            default:
-                throw new AssertionError(getPrimitiveDataType());
+                    throw new AssertionError(getPrimitiveDataType());
             }
         }
 
         public boolean canBeKey() {
             switch (dataType) {
-                case HLL:
-                case BITMAP:
+//                case HLL:
+//                case BITMAP:
+//                case ARRAY:
                 case FLOAT:
                     return false;
                 default:
@@ -213,6 +218,10 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
             return isNullable;
         }
 
+        public boolean hasDefaultValue() {
+            return hasDefaultValue;
+        }
+
         @Override
         public String toString() {
             String ret = this.getName() + " " + this.getType();
@@ -230,6 +239,7 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
 
         @Override
         public int compareTo(AbstractTableColumn<DorisTable, DorisCompositeDataType> o) {
+            // To sort columns
             DorisColumn other = (DorisColumn) o;
             if (isKey != other.isKey) return isKey ? 1 : -1;
             return getName().compareTo(other.getName());
@@ -242,6 +252,56 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
             super(tables);
         }
 
+        public DorisRowValue getRandomRowValue(SQLConnection con) throws SQLException {
+            String rowValueQuery = String.format("SELECT %s FROM %s ORDER BY 1 LIMIT 1", columnNamesAsString(
+                            c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
+                    tableNamesAsString());
+            Map<DorisColumn, DorisConstant> values = new HashMap<>();
+            try (Statement s = con.createStatement()) {
+                ResultSet rs = s.executeQuery(rowValueQuery);
+                if (!rs.next()) {
+                    throw new IgnoreMeException();
+                    // throw new AssertionError("could not find random row " + rowValueQuery + "\n");
+                }
+                for (int i = 0; i < getColumns().size(); i++) {
+                    DorisColumn column = getColumns().get(i);
+                    int columnIndex = rs.findColumn(column.getTable().getName() + column.getName());
+                    assert columnIndex == i + 1;
+                    DorisConstant constant;
+                    if (rs.getString(columnIndex) == null) {
+                        constant = DorisConstant.createNullConstant();
+                    } else {
+                        switch (column.getType().getPrimitiveDataType()) {
+                            case INT:
+                                constant = DorisConstant.createIntConstant(rs.getLong(columnIndex));
+                                break;
+                            case BOOLEAN:
+                                constant = DorisConstant.createBooleanConstant(rs.getBoolean(columnIndex));
+                                break;
+                            case VARCHAR:
+                                constant = DorisConstant.createStringConstant(rs.getString(columnIndex));
+                                break;
+                            default:
+                                throw new IgnoreMeException();
+                        }
+                    }
+                    values.put(column, constant);
+                }
+                assert !rs.next();
+                return new DorisRowValue(this, values);
+            } catch (SQLException e) {
+                throw new IgnoreMeException();
+            }
+        }
+
+    }
+
+    public static class DorisRowValue extends AbstractRowValue<DorisTables, DorisColumn, DorisConstant> {
+
+        DorisRowValue(DorisTables tables, Map<DorisColumn, DorisConstant> values) {
+            super(tables, values);
+        }
+
     }
 
     public DorisSchema(List<DorisTable> databaseTables) {
@@ -250,6 +310,20 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
 
     public DorisTables getRandomTableNonEmptyTables() {
         return new DorisTables(Randomly.nonEmptySubset(getDatabaseTables()));
+    }
+
+    public DorisTables getRandomTableNonEmptyAndViewTables() {
+        List<DorisTable> tables = getDatabaseTables().stream().filter(t -> !t.isView()).collect(Collectors.toList());
+        tables = Randomly.nonEmptySubset(tables);
+        return new DorisTables(tables);
+    }
+
+    public int getIndexCount() {
+        int count = 0;
+        for (DorisTable table : getDatabaseTables()) {
+            count += table.getIndexes().size();
+        }
+        return count;
     }
 
     private static DorisCompositeDataType getColumnType(String typeString) {
@@ -268,7 +342,7 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
         } else if (typeString.startsWith("DATE")) {
             primitiveType = DorisDataType.DATE;
             size = 1;
-        }  else if (typeString.startsWith("DATETIMEV2")) {
+        } else if (typeString.startsWith("DATETIMEV2")) {
             primitiveType = DorisDataType.DATETIME;
             size = 2;
         } else if (typeString.startsWith("DATETIME")) {
@@ -282,7 +356,7 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
                     primitiveType = DorisDataType.INT;
                     size = 16;
                     break;
-                case "BITINT":
+                case "BIGINT":
                     primitiveType = DorisDataType.INT;
                     size = 8;
                     break;
@@ -341,12 +415,12 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
                 case "BOOLEAN":
                     primitiveType = DorisDataType.BOOLEAN;
                     break;
-                case "HLL":
-                    primitiveType = DorisDataType.HLL;
-                    break;
-                case "BITMAP":
-                    primitiveType = DorisDataType.BITMAP;
-                    break;
+//                case "HLL":
+//                    primitiveType = DorisDataType.HLL;
+//                    break;
+//                case "BITMAP":
+//                    primitiveType = DorisDataType.BITMAP;
+//                    break;
                 case "NULL":
                     primitiveType = DorisDataType.NULL;
                     break;
@@ -363,6 +437,22 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
             super(tableName, columns, Collections.emptyList(), isView);
         }
 
+        public List<DorisColumn> getRandomNonEmptyInsertColumns() {
+            List<DorisColumn> columns = getColumns();
+            List<DorisColumn> retColumns = new ArrayList<>();
+            List<DorisColumn> remainColumns = new ArrayList<>();
+            for (DorisColumn column : columns) {
+                if (!column.hasDefaultValue() && !column.isNullable) retColumns.add(column);
+                else remainColumns.add(column);
+            }
+            if (retColumns.isEmpty()) {
+                retColumns.addAll(Randomly.nonEmptySubset(remainColumns));
+            } else {
+                retColumns.addAll(Randomly.subset(remainColumns));
+            }
+            return retColumns;
+        }
+
     }
 
     public static DorisSchema fromConnection(SQLConnection con, String databaseName) throws SQLException {
@@ -370,7 +460,7 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
         List<String> tableNames = getTableNames(con);
         for (String tableName : tableNames) {
             if (DBMSCommon.matchesIndexName(tableName)) {
-                continue; // TODO: unexpected?
+                continue;
             }
             List<DorisColumn> databaseColumns = getTableColumns(con, tableName);
             boolean isView = tableName.startsWith("v");
@@ -403,10 +493,14 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
                 while (rs.next()) {
                     String columnName = rs.getString("Field");
                     String dataType = rs.getString("Type");
-                    boolean isNullable = rs.getString("Null").contentEquals("Yes");
-                    boolean isKey = rs.getString("Key").contains("true");
+                    String isNullString = rs.getString("Null");
+                    assert isNullString.contentEquals("Yes") || isNullString.contentEquals("No");
+                    boolean isNullable = isNullString.contentEquals("Yes");
+                    String isKeyString = rs.getString("Key");
+                    assert isKeyString.contentEquals("true") || isKeyString.contentEquals("false");
+                    boolean isKey = isKeyString.contentEquals("true");
                     String defaultValue = rs.getString("Default");
-                    boolean hasDefaultValue = (defaultValue != null);
+                    boolean hasDefaultValue = defaultValue != null;
                     DorisColumn c = new DorisColumn(columnName, getColumnType(dataType), isKey, isNullable, DorisColumnAggrType.NULL, hasDefaultValue, defaultValue);
                     columns.add(c);
                 }

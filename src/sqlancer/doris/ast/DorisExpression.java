@@ -1,5 +1,13 @@
 package sqlancer.doris.ast;
 
-public interface DorisExpression {
+import sqlancer.doris.DorisSchema;
 
+public interface DorisExpression {
+    default DorisSchema.DorisDataType getExpectedType() {
+        return null;
+    }
+
+    default DorisConstant getExpectedValue() {
+        return null;
+    }
 }

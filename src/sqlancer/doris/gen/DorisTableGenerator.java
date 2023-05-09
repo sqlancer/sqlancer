@@ -1,18 +1,33 @@
 package sqlancer.doris.gen;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.doris.DorisSchema;
-import sqlancer.doris.DorisToStringVisitor;
+import sqlancer.doris.DorisErrors;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
+import sqlancer.doris.DorisSchema;
 import sqlancer.doris.DorisSchema.DorisColumn;
 import sqlancer.doris.DorisSchema.DorisCompositeDataType;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import sqlancer.doris.visitor.DorisExprToNode;
+import sqlancer.doris.visitor.DorisToStringVisitor;
 
 public class DorisTableGenerator {
+
+//    private final ExpectedErrors errors = new ExpectedErrors();
+
+    public static SQLQueryAdapter createRandomTableStatement(DorisGlobalState globalState) throws SQLException {
+        if (globalState.getSchema().getDatabaseTables().size() > globalState.getDbmsSpecificOptions().maxNumTables) {
+            throw new IgnoreMeException();
+        }
+        return new DorisTableGenerator().getQuery(globalState);
+    }
 
     public SQLQueryAdapter getQuery(DorisGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
@@ -24,7 +39,8 @@ public class DorisTableGenerator {
         sb.append("(");
         List<DorisColumn> columns = getNewColumns(globalState, dataModel);
         Collections.sort(columns);
-        if (columns.isEmpty() || !columns.get(0).isKey()) return null; // ensure table has at least one key column
+        if (columns.isEmpty() || !columns.get(0).isKey())
+            return null; // ensure table has at least one key column
 
         sb.append(columns.stream().map(DorisColumn::toString).collect(Collectors.joining(", ")));
         sb.append(")");
@@ -32,11 +48,12 @@ public class DorisTableGenerator {
         List<DorisColumn> keysColumn = columns.stream().filter(DorisColumn::isKey).collect(Collectors.toList());
         if (globalState.getDbmsSpecificOptions().testDataModel && Randomly.getBoolean() && !keysColumn.isEmpty()) {
             sb.append(" " + dataModel).append(" KEY(");
-            sb.append(keysColumn.stream().map(c->c.getName()).collect(Collectors.joining(", ")));
+            sb.append(keysColumn.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
             sb.append(")");
         }
         sb.append(generateDistributionStr(globalState, dataModel, keysColumn));
         sb.append(" PROPERTIES (\"replication_num\" = \"1\")"); // now only consider this one parameter
+        DorisErrors.addExpressionErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 
@@ -66,8 +83,9 @@ public class DorisTableGenerator {
 
             boolean iskey = columnType.canBeKey() && Randomly.getBoolean();
             boolean isNullable = Randomly.getBoolean();
-            boolean isHllOrBitmap = (columnType.getPrimitiveDataType() == DorisSchema.DorisDataType.HLL)
-                    || (columnType.getPrimitiveDataType() == DorisSchema.DorisDataType.BITMAP);
+//            boolean isHllOrBitmap = (columnType.getPrimitiveDataType() == DorisSchema.DorisDataType.HLL)
+//                    || (columnType.getPrimitiveDataType() == DorisSchema.DorisDataType.BITMAP);
+            boolean isHllOrBitmap = false;
             DorisSchema.DorisColumnAggrType aggrType = DorisSchema.DorisColumnAggrType.NULL;
             if (globalState.getDbmsSpecificOptions().testColumnAggr) {
                 if (isHllOrBitmap || !iskey) {
@@ -78,10 +96,9 @@ public class DorisTableGenerator {
             boolean hasDefaultValue = globalState.getDbmsSpecificOptions().testDefaultValues && Randomly.getBoolean() && !isHllOrBitmap;
             String defaultValue = "";
             if (hasDefaultValue) {
-                defaultValue = DorisToStringVisitor.asString(new DorisExpressionGenerator(globalState).generateConstant(globalState, columnType.getPrimitiveDataType(), isNullable));
-                if (!defaultValue.equals("NULL") && !defaultValue.equals("CURRENT_TIMESTAMP")) {
-                    defaultValue = "\"" + defaultValue + "\"";
-                }
+                defaultValue = DorisToStringVisitor
+                        .asString(DorisExprToNode.cast(new DorisNewExpressionGenerator(globalState)
+                                .generateConstant(columnType.getPrimitiveDataType(), isNullable)));
             }
             columns.add(new DorisColumn(columnName, columnType, iskey, isNullable, aggrType, hasDefaultValue, defaultValue));
         }
