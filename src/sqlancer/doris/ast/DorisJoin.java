@@ -29,8 +29,8 @@ public class DorisJoin implements Node<DorisExpression> {
     }
 
     public DorisJoin(TableReferenceNode<DorisExpression, DorisTable> leftTable,
-                     TableReferenceNode<DorisExpression, DorisTable> rightTable, JoinType joinType,
-                     Node<DorisExpression> whereCondition) {
+            TableReferenceNode<DorisExpression, DorisTable> rightTable, JoinType joinType,
+            Node<DorisExpression> whereCondition) {
         this.leftTable = leftTable;
         this.rightTable = rightTable;
         this.joinType = joinType;
@@ -53,8 +53,8 @@ public class DorisJoin implements Node<DorisExpression> {
         return onCondition;
     }
 
-    public static List<Node<DorisExpression>> getJoins(
-            List<TableReferenceNode<DorisExpression, DorisTable>> tableList, DorisGlobalState globalState) {
+    public static List<Node<DorisExpression>> getJoins(List<TableReferenceNode<DorisExpression, DorisTable>> tableList,
+            DorisGlobalState globalState) {
         List<Node<DorisExpression>> joinExpressions = new ArrayList<>();
         while (tableList.size() >= 2 && Randomly.getBooleanWithRatherLowProbability()) {
             TableReferenceNode<DorisExpression, DorisTable> leftTable = tableList.remove(0);
@@ -63,42 +63,46 @@ public class DorisJoin implements Node<DorisExpression> {
             columns.addAll(rightTable.getTable().getColumns());
             DorisNewExpressionGenerator joinGen = new DorisNewExpressionGenerator(globalState).setColumns(columns);
             switch (DorisJoin.JoinType.getRandom()) {
-                case INNER:
-                    joinExpressions.add(DorisJoin.createInnerJoin(leftTable, rightTable, DorisExprToNode.cast(joinGen.generateExpression(DorisSchema.DorisDataType.BOOLEAN))));
-                    break;
-                case STRAIGHT:
-                    joinExpressions.add(DorisJoin.createStraightJoin(leftTable, rightTable, DorisExprToNode.cast(joinGen.generateExpression(DorisSchema.DorisDataType.BOOLEAN))));
-                    break;
-                case LEFT:
-                    joinExpressions.add(DorisJoin.createLeftOuterJoin(leftTable, rightTable, DorisExprToNode.cast(joinGen.generateExpression(DorisSchema.DorisDataType.BOOLEAN))));
-                    break;
-                case RIGHT:
-                    joinExpressions.add(DorisJoin.createRightOuterJoin(leftTable, rightTable, DorisExprToNode.cast(joinGen.generateExpression(DorisSchema.DorisDataType.BOOLEAN))));
-                    break;
-                default:
-                    throw new AssertionError();
+            case INNER:
+                joinExpressions.add(DorisJoin.createInnerJoin(leftTable, rightTable,
+                        DorisExprToNode.cast(joinGen.generateExpression(DorisSchema.DorisDataType.BOOLEAN))));
+                break;
+            case STRAIGHT:
+                joinExpressions.add(DorisJoin.createStraightJoin(leftTable, rightTable,
+                        DorisExprToNode.cast(joinGen.generateExpression(DorisSchema.DorisDataType.BOOLEAN))));
+                break;
+            case LEFT:
+                joinExpressions.add(DorisJoin.createLeftOuterJoin(leftTable, rightTable,
+                        DorisExprToNode.cast(joinGen.generateExpression(DorisSchema.DorisDataType.BOOLEAN))));
+                break;
+            case RIGHT:
+                joinExpressions.add(DorisJoin.createRightOuterJoin(leftTable, rightTable,
+                        DorisExprToNode.cast(joinGen.generateExpression(DorisSchema.DorisDataType.BOOLEAN))));
+                break;
+            default:
+                throw new AssertionError();
             }
         }
         return joinExpressions;
     }
 
     public static DorisJoin createInnerJoin(TableReferenceNode<DorisExpression, DorisTable> left,
-                                            TableReferenceNode<DorisExpression, DorisTable> right, Node<DorisExpression> predicate) {
+            TableReferenceNode<DorisExpression, DorisTable> right, Node<DorisExpression> predicate) {
         return new DorisJoin(left, right, JoinType.INNER, predicate);
     }
 
     public static DorisJoin createStraightJoin(TableReferenceNode<DorisExpression, DorisTable> left,
-                                               TableReferenceNode<DorisExpression, DorisTable> right, Node<DorisExpression> predicate) {
+            TableReferenceNode<DorisExpression, DorisTable> right, Node<DorisExpression> predicate) {
         return new DorisJoin(left, right, JoinType.STRAIGHT, predicate);
     }
 
     public static DorisJoin createRightOuterJoin(TableReferenceNode<DorisExpression, DorisTable> left,
-                                                 TableReferenceNode<DorisExpression, DorisTable> right, Node<DorisExpression> predicate) {
+            TableReferenceNode<DorisExpression, DorisTable> right, Node<DorisExpression> predicate) {
         return new DorisJoin(left, right, JoinType.RIGHT, predicate);
     }
 
     public static DorisJoin createLeftOuterJoin(TableReferenceNode<DorisExpression, DorisTable> left,
-                                                TableReferenceNode<DorisExpression, DorisTable> right, Node<DorisExpression> predicate) {
+            TableReferenceNode<DorisExpression, DorisTable> right, Node<DorisExpression> predicate) {
         return new DorisJoin(left, right, JoinType.LEFT, predicate);
     }
 }

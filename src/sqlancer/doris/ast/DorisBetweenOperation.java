@@ -5,8 +5,7 @@ import sqlancer.doris.DorisSchema;
 import sqlancer.doris.visitor.DorisExprToNode;
 
 public class DorisBetweenOperation extends NewBetweenOperatorNode<DorisExpression> implements DorisExpression {
-    public DorisBetweenOperation(DorisExpression left, DorisExpression middle, DorisExpression right,
-                                 boolean isTrue) {
+    public DorisBetweenOperation(DorisExpression left, DorisExpression middle, DorisExpression right, boolean isTrue) {
         super(DorisExprToNode.cast(left), DorisExprToNode.cast(middle), DorisExprToNode.cast(right), isTrue);
     }
 

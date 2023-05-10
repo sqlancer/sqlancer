@@ -5,11 +5,10 @@ import sqlancer.common.ast.newast.NewBinaryOperatorNode;
 import sqlancer.doris.DorisSchema.DorisDataType;
 import sqlancer.doris.visitor.DorisExprToNode;
 
-public class DorisBinaryComparisonOperation extends NewBinaryOperatorNode<DorisExpression>
-        implements DorisExpression {
+public class DorisBinaryComparisonOperation extends NewBinaryOperatorNode<DorisExpression> implements DorisExpression {
 
     public DorisBinaryComparisonOperation(DorisExpression left, DorisExpression right,
-                                          DorisBinaryComparisonOperator op) {
+            DorisBinaryComparisonOperator op) {
         super(DorisExprToNode.cast(left), DorisExprToNode.cast(right), op);
     }
 
@@ -69,7 +68,9 @@ public class DorisBinaryComparisonOperation extends NewBinaryOperatorNode<DorisE
             public DorisConstant apply(DorisConstant left, DorisConstant right) {
                 DorisConstant valueLessThan = left.valueLessThan(right);
                 DorisConstant valueEquals = left.valueEquals(right);
-                if (valueEquals.isBoolean() && valueEquals.asBoolean()) return valueEquals;
+                if (valueEquals.isBoolean() && valueEquals.asBoolean()) {
+                    return valueEquals;
+                }
                 return valueLessThan;
             }
         },
@@ -78,9 +79,12 @@ public class DorisBinaryComparisonOperation extends NewBinaryOperatorNode<DorisE
             public DorisConstant apply(DorisConstant left, DorisConstant right) {
                 DorisConstant valueLessThan = left.valueLessThan(right);
                 DorisConstant valueEquals = left.valueEquals(right);
-                if (valueEquals.isBoolean() && valueEquals.asBoolean())
+                if (valueEquals.isBoolean() && valueEquals.asBoolean()) {
                     return DorisConstant.createBooleanConstant(false);
-                if (valueLessThan.isNull()) return valueLessThan;
+                }
+                if (valueLessThan.isNull()) {
+                    return valueLessThan;
+                }
                 return DorisConstant.createBooleanConstant(!valueLessThan.asBoolean());
             }
         },
@@ -89,9 +93,12 @@ public class DorisBinaryComparisonOperation extends NewBinaryOperatorNode<DorisE
             public DorisConstant apply(DorisConstant left, DorisConstant right) {
                 DorisConstant valueLessThan = left.valueLessThan(right);
                 DorisConstant valueEquals = left.valueEquals(right);
-                if (valueEquals.isBoolean() && valueEquals.asBoolean())
+                if (valueEquals.isBoolean() && valueEquals.asBoolean()) {
                     return DorisConstant.createBooleanConstant(true);
-                if (valueLessThan.isNull()) return valueLessThan;
+                }
+                if (valueLessThan.isNull()) {
+                    return valueLessThan;
+                }
                 return DorisConstant.createBooleanConstant(!valueLessThan.asBoolean());
             }
         };

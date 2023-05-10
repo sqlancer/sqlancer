@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+
 import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
 import sqlancer.common.oracle.CompositeTestOracle;
@@ -15,18 +16,22 @@ import sqlancer.doris.DorisOptions.DorisOracleFactory;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
 import sqlancer.doris.oracle.DorisNoRECOracle;
 import sqlancer.doris.oracle.DorisPivotedQuerySynthesisOracle;
-import sqlancer.doris.oracle.tlp.*;
+import sqlancer.doris.oracle.tlp.DorisQueryPartitioningAggregateTester;
+import sqlancer.doris.oracle.tlp.DorisQueryPartitioningDistinctTester;
+import sqlancer.doris.oracle.tlp.DorisQueryPartitioningGroupByTester;
+import sqlancer.doris.oracle.tlp.DorisQueryPartitioningHavingTester;
+import sqlancer.doris.oracle.tlp.DorisQueryPartitioningWhereTester;
 
-@Parameters(commandDescription = "Apache Doris (default port: " + DorisOptions.DEFAULT_PORT
-        + ", default host: " + DorisOptions.DEFAULT_HOST + ")")
+@Parameters(commandDescription = "Apache Doris (default port: " + DorisOptions.DEFAULT_PORT + ", default host: "
+        + DorisOptions.DEFAULT_HOST + ")")
 public class DorisOptions implements DBMSSpecificOptions<DorisOracleFactory> {
     public static final String DEFAULT_HOST = "localhost";
     public static final int DEFAULT_PORT = 9030;
 
-    @Parameter(names = {"--max-num-tables"}, description = "The maximum number of tables/views that can be created")
+    @Parameter(names = { "--max-num-tables" }, description = "The maximum number of tables/views that can be created")
     public int maxNumTables = 10;
 
-    @Parameter(names = {"--max-num-indexes"}, description = "The maximum number of indexes that can be created")
+    @Parameter(names = { "--max-num-indexes" }, description = "The maximum number of indexes that can be created")
     public int maxNumIndexes = 20;
 
     @Parameter(names = "--test-default-values", description = "Allow generating DEFAULT values in tables", arity = 1)
@@ -81,10 +86,10 @@ public class DorisOptions implements DBMSSpecificOptions<DorisOracleFactory> {
     public int maxNumDeletes = 1;
 
     @Parameter(names = "--max-num-updates", description = "The maximum number of UPDATE statements that are issued for a database", arity = 1)
-    public int maxNumUpdates = 0;
+    public int maxNumUpdates;
 
     @Parameter(names = "--max-num-table-alters", description = "The maximum number of ALTER TABLE statements that are issued for a database", arity = 1)
-    public int maxNumTableAlters = 0;
+    public int maxNumTableAlters;
 
     @Parameter(names = "--test-engine-type", description = "The engine type in Doris, only consider OLAP now", arity = 1)
     public String testEngineType = "OLAP";

@@ -12,7 +12,11 @@ import sqlancer.doris.DorisProvider.DorisGlobalState;
 import sqlancer.doris.DorisSchema;
 import sqlancer.doris.DorisSchema.DorisTable;
 import sqlancer.doris.DorisSchema.DorisTables;
-import sqlancer.doris.ast.*;
+import sqlancer.doris.ast.DorisColumnValue;
+import sqlancer.doris.ast.DorisConstant;
+import sqlancer.doris.ast.DorisExpression;
+import sqlancer.doris.ast.DorisJoin;
+import sqlancer.doris.ast.DorisSelect;
 import sqlancer.doris.visitor.DorisExprToNode;
 
 public final class DorisRandomQuerySynthesizer {
@@ -67,8 +71,7 @@ public final class DorisRandomQuerySynthesizer {
             select.setLimitClause(DorisConstant.createIntConstant(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)));
         }
         if (Randomly.getBoolean()) {
-            select.setOffsetClause(
-                    DorisConstant.createIntConstant(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)));
+            select.setOffsetClause(DorisConstant.createIntConstant(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)));
         }
         return select;
     }

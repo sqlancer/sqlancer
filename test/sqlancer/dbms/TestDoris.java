@@ -22,7 +22,8 @@ public class TestDoris {
                 Main.executeMain("--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS, "--num-threads", "4",
                         "--num-queries", TestConfig.NUM_QUERIES, "--database-prefix", "doris",
                         "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.ALPHANUMERIC),
-                        "--username", username, "--password", password, "--host", host, "--port", port, "doris", "--oracle", "NOREC"));
+                        "--username", username, "--password", password, "--host", host, "--port", port, "doris",
+                        "--oracle", "NOREC"));
     }
 
     @Test
@@ -34,7 +35,8 @@ public class TestDoris {
                 Main.executeMain("--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS, "--num-threads", "4",
                         "--num-queries", TestConfig.NUM_QUERIES, "--database-prefix", "doris",
                         "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.ALPHANUMERIC),
-                        "--username", username, "--password", password, "--host", host, "--port", port, "doris", "--oracle", "PQS"));
+                        "--username", username, "--password", password, "--host", host, "--port", port, "doris",
+                        "--oracle", "PQS"));
     }
 
     @Test
@@ -46,6 +48,7 @@ public class TestDoris {
                 Main.executeMain("--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS, "--num-threads", "4",
                         "--num-queries", TestConfig.NUM_QUERIES, "--database-prefix", "doris",
                         "--random-string-generation", String.valueOf(Randomly.StringGenerationStrategy.ALPHANUMERIC),
-                        "--username", username, "--password", password, "--host", host, "--port", port, "doris", "--oracle", "QUERY_PARTITIONING"));
+                        "--username", username, "--password", password, "--host", host, "--port", port, "doris",
+                        "--oracle", "QUERY_PARTITIONING"));
     }
 }

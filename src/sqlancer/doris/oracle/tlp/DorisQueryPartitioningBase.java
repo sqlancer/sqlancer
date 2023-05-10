@@ -25,8 +25,7 @@ import sqlancer.doris.ast.DorisJoin;
 import sqlancer.doris.ast.DorisSelect;
 import sqlancer.doris.gen.DorisNewExpressionGenerator;
 
-public class DorisQueryPartitioningBase
-        extends TernaryLogicPartitioningOracleBase<DorisExpression, DorisGlobalState>
+public class DorisQueryPartitioningBase extends TernaryLogicPartitioningOracleBase<DorisExpression, DorisGlobalState>
         implements TestOracle<DorisGlobalState> {
 
     DorisSchema s;
@@ -48,11 +47,11 @@ public class DorisQueryPartitioningBase
         }
 
         switch (value) {
-            case "-0.0":
-                return "0.0";
-            case "-0":
-                return "0";
-            default:
+        case "-0.0":
+            return "0.0";
+        case "-0":
+            return "0";
+        default:
         }
 
         return value;
@@ -67,8 +66,8 @@ public class DorisQueryPartitioningBase
         gen.setColumnOfLeafNode(columnOfLeafNode);
         initializeTernaryPredicateVariants();
         select = new DorisSelect();
-        columnOfLeafNode
-                .addAll(targetTables.getColumns().stream().map(c -> new DorisColumnValue(c, null)).collect(Collectors.toList()));
+        columnOfLeafNode.addAll(targetTables.getColumns().stream().map(c -> new DorisColumnValue(c, null))
+                .collect(Collectors.toList()));
         groupByExpression = new ArrayList<>(columnOfLeafNode);
         select.setFetchColumns(generateFetchColumns());
         List<DorisTable> tables = targetTables.getTables();

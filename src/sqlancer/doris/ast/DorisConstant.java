@@ -2,7 +2,7 @@ package sqlancer.doris.ast;
 
 import sqlancer.common.ast.newast.Node;
 import sqlancer.doris.DorisSchema.DorisDataType;
-import sqlancer.doris.utils.NumberUtils;
+import sqlancer.doris.utils.DorisNumberUtils;
 
 public abstract class DorisConstant implements Node<DorisExpression>, DorisExpression {
 
@@ -95,11 +95,6 @@ public abstract class DorisConstant implements Node<DorisExpression>, DorisExpre
         public DorisDataType getExpectedType() {
             return DorisDataType.NULL;
         }
-
-        @Override
-        public DorisConstant getExpectedValue() {
-            return super.getExpectedValue();
-        }
     }
 
     public static class DorisIntConstant extends DorisConstant {
@@ -132,17 +127,17 @@ public abstract class DorisConstant implements Node<DorisExpression>, DorisExpre
         @Override
         public DorisConstant cast(DorisDataType dataType) {
             switch (dataType) {
-                case INT:
-                    return this;
-                case FLOAT:
-                case DECIMAL:
-                    return new DorisFloatConstant(value);
-                case VARCHAR:
-                    return new DorisTextConstant(String.valueOf(value));
-                case BOOLEAN:
-                    return new DorisBooleanConstant(value != 0);
-                default:
-                    return DorisConstant.createNullConstant();
+            case INT:
+                return this;
+            case FLOAT:
+            case DECIMAL:
+                return new DorisFloatConstant(value);
+            case VARCHAR:
+                return new DorisTextConstant(String.valueOf(value));
+            case BOOLEAN:
+                return new DorisBooleanConstant(value != 0);
+            default:
+                return DorisConstant.createNullConstant();
             }
         }
 
@@ -228,17 +223,17 @@ public abstract class DorisConstant implements Node<DorisExpression>, DorisExpre
         @Override
         public DorisConstant cast(DorisDataType dataType) {
             switch (dataType) {
-                case INT:
-                    return new DorisIntConstant((long) value);
-                case FLOAT:
-                case DECIMAL:
-                    return this;
-                case VARCHAR:
-                    return new DorisTextConstant(String.valueOf(value));
-                case BOOLEAN:
-                    return new DorisBooleanConstant(value >= 1);
-                default:
-                    return null;
+            case INT:
+                return new DorisIntConstant((long) value);
+            case FLOAT:
+            case DECIMAL:
+                return this;
+            case VARCHAR:
+                return new DorisTextConstant(String.valueOf(value));
+            case BOOLEAN:
+                return new DorisBooleanConstant(value >= 1);
+            default:
+                return null;
             }
         }
 
@@ -305,41 +300,42 @@ public abstract class DorisConstant implements Node<DorisExpression>, DorisExpre
         @Override
         public DorisConstant cast(DorisDataType dataType) {
             switch (dataType) {
-                case INT:
-                    // Currently only supports conversion of int text to int, not float text, see https://github.com/apache/doris/issues/18227
-                    if (NumberUtils.isNumber(value)) {
-                        long val = (long) Double.parseDouble(value);
-                        return new DorisIntConstant(val);
-                    }
-                    return new DorisNullConstant();
-                case FLOAT:
-                case DECIMAL:
-                    if (NumberUtils.isNumber(value)) {
-                        return new DorisFloatConstant(Double.parseDouble(value));
-                    }
-                    return new DorisNullConstant();
-                case DATE:
-                    if (NumberUtils.isDate(value)) {
-                        return new DorisDateConstant(value);
-                    }
-                    return new DorisNullConstant();
-                case DATETIME:
-                    if (NumberUtils.isDatetime(value)) {
-                        return new DorisDatetimeConstant(value);
-                    }
-                    return new DorisNullConstant();
-                case VARCHAR:
-                    return this;
-                case BOOLEAN:
-                    if ("false".contentEquals(value.toLowerCase())) {
-                        return new DorisBooleanConstant(false);
-                    }
-                    if ("true".contentEquals(value.toLowerCase())) {
-                        return new DorisBooleanConstant(true);
-                    }
-                    return new DorisNullConstant();
-                default:
-                    return new DorisNullConstant();
+            case INT:
+                // Currently only supports conversion of int text to int, not float text, see
+                // https://github.com/apache/doris/issues/18227
+                if (DorisNumberUtils.isNumber(value)) {
+                    long val = (long) Double.parseDouble(value);
+                    return new DorisIntConstant(val);
+                }
+                return new DorisNullConstant();
+            case FLOAT:
+            case DECIMAL:
+                if (DorisNumberUtils.isNumber(value)) {
+                    return new DorisFloatConstant(Double.parseDouble(value));
+                }
+                return new DorisNullConstant();
+            case DATE:
+                if (DorisNumberUtils.isDate(value)) {
+                    return new DorisDateConstant(value);
+                }
+                return new DorisNullConstant();
+            case DATETIME:
+                if (DorisNumberUtils.isDatetime(value)) {
+                    return new DorisDatetimeConstant(value);
+                }
+                return new DorisNullConstant();
+            case VARCHAR:
+                return this;
+            case BOOLEAN:
+                if ("false".contentEquals(value.toLowerCase())) {
+                    return new DorisBooleanConstant(false);
+                }
+                if ("true".contentEquals(value.toLowerCase())) {
+                    return new DorisBooleanConstant(true);
+                }
+                return new DorisNullConstant();
+            default:
+                return new DorisNullConstant();
             }
         }
 
@@ -351,7 +347,7 @@ public abstract class DorisConstant implements Node<DorisExpression>, DorisExpre
             if (rightVal.isString()) {
                 return DorisConstant.createBooleanConstant(value.contentEquals(rightVal.asString()));
             }
-            if (NumberUtils.isNumber(value) && rightVal.isNum()) {
+            if (DorisNumberUtils.isNumber(value) && rightVal.isNum()) {
                 return DorisConstant.createBooleanConstant(Double.parseDouble(value) == rightVal.asFloat());
             }
             // Doris currently does not support judgment between string types and other types, such date, datetime
@@ -366,7 +362,7 @@ public abstract class DorisConstant implements Node<DorisExpression>, DorisExpre
             if (rightVal.isString()) {
                 return DorisConstant.createBooleanConstant(value.compareTo(rightVal.asString()) < 0);
             }
-            if (NumberUtils.isNumber(value) && rightVal.isNum()) {
+            if (DorisNumberUtils.isNumber(value) && rightVal.isNum()) {
                 return DorisConstant.createBooleanConstant(Double.parseDouble(value) < rightVal.asFloat());
             }
             // Doris currently does not support judgment between string types and other types, such date, datetime
@@ -380,7 +376,7 @@ public abstract class DorisConstant implements Node<DorisExpression>, DorisExpre
         public String textRepr;
 
         public DorisDateConstant(long val) {
-            textRepr = NumberUtils.timestampToDateText(val);
+            textRepr = DorisNumberUtils.timestampToDateText(val);
         }
 
         public DorisDateConstant(String textRepr) {
@@ -399,14 +395,14 @@ public abstract class DorisConstant implements Node<DorisExpression>, DorisExpre
         @Override
         public DorisConstant cast(DorisDataType dataType) {
             switch (dataType) {
-                case VARCHAR:
-                    return new DorisTextConstant(textRepr);
-                case DATE:
-                    return this;
-                case DATETIME:
-                    return new DorisDatetimeConstant(NumberUtils.dateTextToDatetimeText(textRepr));
-                default:
-                    return new DorisNullConstant();
+            case VARCHAR:
+                return new DorisTextConstant(textRepr);
+            case DATE:
+                return this;
+            case DATETIME:
+                return new DorisDatetimeConstant(DorisNumberUtils.dateTextToDatetimeText(textRepr));
+            default:
+                return new DorisNullConstant();
             }
         }
 
@@ -419,7 +415,7 @@ public abstract class DorisConstant implements Node<DorisExpression>, DorisExpre
                 return DorisConstant.createBooleanConstant(false);
             }
             if (rightVal.isString() || rightVal.isDate() || rightVal.isDatetime()) {
-                return DorisConstant.createBooleanConstant(NumberUtils.dateEqual(textRepr, rightVal.asString()));
+                return DorisConstant.createBooleanConstant(DorisNumberUtils.dateEqual(textRepr, rightVal.asString()));
             }
             return DorisConstant.createBooleanConstant(false);
         }
@@ -430,10 +426,12 @@ public abstract class DorisConstant implements Node<DorisExpression>, DorisExpre
                 return DorisConstant.createNullConstant();
             }
             if (rightVal.isDatetime() && rightVal.asString().contentEquals("CURRENT_TIMESTAMP")) {
-                return DorisConstant.createBooleanConstant(NumberUtils.dateLessThan(textRepr, NumberUtils.getCurrentTimeText()));
+                return DorisConstant.createBooleanConstant(
+                        DorisNumberUtils.dateLessThan(textRepr, DorisNumberUtils.getCurrentTimeText()));
             }
             if (rightVal.isString() || rightVal.isDate() || rightVal.isDatetime()) {
-                return DorisConstant.createBooleanConstant(NumberUtils.dateLessThan(textRepr, rightVal.asString()));
+                return DorisConstant
+                        .createBooleanConstant(DorisNumberUtils.dateLessThan(textRepr, rightVal.asString()));
             }
             return DorisConstant.createBooleanConstant(false);
         }
@@ -449,7 +447,7 @@ public abstract class DorisConstant implements Node<DorisExpression>, DorisExpre
         public String textRepr;
 
         public DorisDatetimeConstant(long val) {
-            textRepr = NumberUtils.timestampToDatetimeText(val);
+            textRepr = DorisNumberUtils.timestampToDatetimeText(val);
         }
 
         public DorisDatetimeConstant(String textRepr) {
@@ -472,14 +470,14 @@ public abstract class DorisConstant implements Node<DorisExpression>, DorisExpre
         @Override
         public DorisConstant cast(DorisDataType dataType) {
             switch (dataType) {
-                case VARCHAR:
-                    return new DorisTextConstant(textRepr);
-                case DATE:
-                    return new DorisDatetimeConstant(NumberUtils.datetimeTextToDateText(textRepr));
-                case DATETIME:
-                    return this;
-                default:
-                    return new DorisNullConstant();
+            case VARCHAR:
+                return new DorisTextConstant(textRepr);
+            case DATE:
+                return new DorisDatetimeConstant(DorisNumberUtils.datetimeTextToDateText(textRepr));
+            case DATETIME:
+                return this;
+            default:
+                return new DorisNullConstant();
             }
         }
 
@@ -488,12 +486,15 @@ public abstract class DorisConstant implements Node<DorisExpression>, DorisExpre
             if (rightVal.isNull()) {
                 return DorisConstant.createNullConstant();
             }
-            if (rightVal.isDatetime() && (rightVal.asString().contentEquals("CURRENT_TIMESTAMP") || textRepr.contentEquals("CURRENT_TIMESTAMP"))) {
-                boolean isEq = rightVal.asString().contentEquals("CURRENT_TIMESTAMP") && textRepr.contentEquals("CURRENT_TIMESTAMP");
+            if (rightVal.isDatetime() && (rightVal.asString().contentEquals("CURRENT_TIMESTAMP")
+                    || textRepr.contentEquals("CURRENT_TIMESTAMP"))) {
+                boolean isEq = rightVal.asString().contentEquals("CURRENT_TIMESTAMP")
+                        && textRepr.contentEquals("CURRENT_TIMESTAMP");
                 return DorisConstant.createBooleanConstant(isEq);
             }
             if (rightVal.isString() || rightVal.isDate() || rightVal.isDatetime()) {
-                return DorisConstant.createBooleanConstant(NumberUtils.datetimeEqual(textRepr, rightVal.asString()));
+                return DorisConstant
+                        .createBooleanConstant(DorisNumberUtils.datetimeEqual(textRepr, rightVal.asString()));
             }
             return DorisConstant.createBooleanConstant(false);
         }
@@ -503,20 +504,25 @@ public abstract class DorisConstant implements Node<DorisExpression>, DorisExpre
             if (rightVal.isNull()) {
                 return DorisConstant.createNullConstant();
             }
-            if (rightVal.isDatetime() && (rightVal.asString().contentEquals("CURRENT_TIMESTAMP") || textRepr.contentEquals("CURRENT_TIMESTAMP"))) {
+            if (rightVal.isDatetime() && (rightVal.asString().contentEquals("CURRENT_TIMESTAMP")
+                    || textRepr.contentEquals("CURRENT_TIMESTAMP"))) {
                 String leftText = textRepr;
                 String rightText = rightVal.asString();
-                if (leftText.contentEquals(rightText))
+                if (leftText.contentEquals(rightText)) {
                     return DorisConstant.createBooleanConstant(false);
-                if (leftText.contentEquals("CURRENT_TIMESTAMP"))
-                    leftText = NumberUtils.getCurrentTimeText();
-                if (rightText.contentEquals("CURRENT_TIMESTAMP"))
-                    rightText = NumberUtils.getCurrentTimeText();
-                boolean lessThan = NumberUtils.dateLessThan(leftText, rightText);
+                }
+                if (leftText.contentEquals("CURRENT_TIMESTAMP")) {
+                    leftText = DorisNumberUtils.getCurrentTimeText();
+                }
+                if (rightText.contentEquals("CURRENT_TIMESTAMP")) {
+                    rightText = DorisNumberUtils.getCurrentTimeText();
+                }
+                boolean lessThan = DorisNumberUtils.dateLessThan(leftText, rightText);
                 return DorisConstant.createBooleanConstant(lessThan);
             }
             if (rightVal.isString() || rightVal.isDate() || rightVal.isDatetime()) {
-                return DorisConstant.createBooleanConstant(NumberUtils.datetimeLessThan(textRepr, rightVal.asString()));
+                return DorisConstant
+                        .createBooleanConstant(DorisNumberUtils.datetimeLessThan(textRepr, rightVal.asString()));
             }
             return DorisConstant.createBooleanConstant(false);
         }
@@ -563,37 +569,45 @@ public abstract class DorisConstant implements Node<DorisExpression>, DorisExpre
         @Override
         public DorisConstant cast(DorisDataType dataType) {
             switch (dataType) {
-                case INT:
-                    return new DorisIntConstant(value ? 1 : 0);
-                case FLOAT:
-                case DECIMAL:
-                    return new DorisFloatConstant(value ? 1 : 0);
-                case BOOLEAN:
-                    return this;
-                case VARCHAR:
-                    return new DorisTextConstant(value ? "1" : "0");
-                default:
-                    return null;
+            case INT:
+                return new DorisIntConstant(value ? 1 : 0);
+            case FLOAT:
+            case DECIMAL:
+                return new DorisFloatConstant(value ? 1 : 0);
+            case BOOLEAN:
+                return this;
+            case VARCHAR:
+                return new DorisTextConstant(value ? "1" : "0");
+            default:
+                return null;
             }
         }
 
         @Override
         public DorisConstant valueEquals(DorisConstant rightVal) {
-            if (rightVal.isNull()) return DorisConstant.createNullConstant();
-            if (rightVal.isBoolean())
+            if (rightVal.isNull()) {
+                return DorisConstant.createNullConstant();
+            }
+            if (rightVal.isBoolean()) {
                 return DorisConstant.createBooleanConstant(value == rightVal.asBoolean());
-            if (rightVal.isNum() || (rightVal.isString() && NumberUtils.isNumber(rightVal.asString())))
+            }
+            if (rightVal.isNum() || rightVal.isString() && DorisNumberUtils.isNumber(rightVal.asString())) {
                 return DorisConstant.createBooleanConstant((value ? 1 : 0) == rightVal.asFloat());
+            }
             throw new AssertionError(rightVal);
         }
 
         @Override
         public DorisConstant valueLessThan(DorisConstant rightVal) {
-            if (rightVal.isNull()) return DorisConstant.createNullConstant();
-            if (rightVal.isBoolean())
+            if (rightVal.isNull()) {
+                return DorisConstant.createNullConstant();
+            }
+            if (rightVal.isBoolean()) {
                 return DorisConstant.createBooleanConstant(value == rightVal.asBoolean());
-            if (rightVal.isNum() || (rightVal.isString() && NumberUtils.isNumber(rightVal.asString())))
+            }
+            if (rightVal.isNum() || rightVal.isString() && DorisNumberUtils.isNumber(rightVal.asString())) {
                 return DorisConstant.createBooleanConstant((value ? 1 : 0) == rightVal.asFloat());
+            }
             throw new AssertionError(rightVal);
         }
     }

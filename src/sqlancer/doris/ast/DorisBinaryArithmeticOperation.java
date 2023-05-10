@@ -7,11 +7,9 @@ import sqlancer.common.ast.newast.NewBinaryOperatorNode;
 import sqlancer.doris.DorisSchema.DorisDataType;
 import sqlancer.doris.visitor.DorisExprToNode;
 
-public class DorisBinaryArithmeticOperation extends NewBinaryOperatorNode<DorisExpression>
-        implements DorisExpression {
+public class DorisBinaryArithmeticOperation extends NewBinaryOperatorNode<DorisExpression> implements DorisExpression {
 
-    public DorisBinaryArithmeticOperation(DorisExpression left, DorisExpression right,
-                                          BinaryOperatorNode.Operator op) {
+    public DorisBinaryArithmeticOperation(DorisExpression left, DorisExpression right, BinaryOperatorNode.Operator op) {
         super(DorisExprToNode.cast(left), DorisExprToNode.cast(right), op);
     }
 
@@ -37,50 +35,57 @@ public class DorisBinaryArithmeticOperation extends NewBinaryOperatorNode<DorisE
         DIVISION("/") {
             @Override
             public DorisConstant apply(DorisConstant left, DorisConstant right) {
-                if (right.asInt() == 0) return DorisConstant.createNullConstant();
                 return applyOperation(left, right, (l, r) -> r == 0 ? -1 : l / r);
             }
         },
         MODULO("%") {
             @Override
             public DorisConstant apply(DorisConstant left, DorisConstant right) {
-                if (right.asInt() == 0) return DorisConstant.createNullConstant();
                 return applyOperation(left, right, (l, r) -> r == 0 ? -1 : l % r);
             }
         },
         CONCAT("||") {
             @Override
             public DorisConstant apply(DorisConstant left, DorisConstant right) {
-                if (!left.isBoolean() || !right.isBoolean())
+                if (!left.isBoolean() || !right.isBoolean()) {
                     return DorisConstant.createNullConstant();
-                return applyOperation(left, right, (l, r) -> (l == 1 || r == 1) ? 1.0 : 0.0);
+                }
+                return applyOperation(left, right, (l, r) -> l == 1 || r == 1 ? 1.0 : 0.0);
             }
         },
         BIT_AND("&") {
             @Override
             public DorisConstant apply(DorisConstant left, DorisConstant right) {
-                if (!left.isInt() || !right.isInt()) return DorisConstant.createNullConstant();
+                if (!left.isInt() || !right.isInt()) {
+                    return DorisConstant.createNullConstant();
+                }
                 return applyOperation(left, right, (l, r) -> (double) ((int) l.doubleValue() & (int) r.doubleValue()));
             }
         },
         BIT_OR("|") {
             @Override
             public DorisConstant apply(DorisConstant left, DorisConstant right) {
-                if (!left.isInt() || !right.isInt()) return DorisConstant.createNullConstant();
+                if (!left.isInt() || !right.isInt()) {
+                    return DorisConstant.createNullConstant();
+                }
                 return applyOperation(left, right, (l, r) -> (double) ((int) l.doubleValue() | (int) r.doubleValue()));
             }
         },
         LSHIFT("<<") {
             @Override
             public DorisConstant apply(DorisConstant left, DorisConstant right) {
-                if (!left.isInt() || !right.isInt()) return DorisConstant.createNullConstant();
+                if (!left.isInt() || !right.isInt()) {
+                    return DorisConstant.createNullConstant();
+                }
                 return applyOperation(left, right, (l, r) -> (double) ((int) l.doubleValue() << (int) r.doubleValue()));
             }
         },
         RSHIFT(">>") {
             @Override
             public DorisConstant apply(DorisConstant left, DorisConstant right) {
-                if (!left.isInt() || !right.isInt()) return DorisConstant.createNullConstant();
+                if (!left.isInt() || !right.isInt()) {
+                    return DorisConstant.createNullConstant();
+                }
                 return applyOperation(left, right, (l, r) -> (double) ((int) l.doubleValue() >> (int) r.doubleValue()));
             }
         };

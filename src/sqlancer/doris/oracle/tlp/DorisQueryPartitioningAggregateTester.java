@@ -8,7 +8,12 @@ import java.util.List;
 import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.*;
+import sqlancer.common.ast.newast.NewAliasNode;
+import sqlancer.common.ast.newast.NewBinaryOperatorNode;
+import sqlancer.common.ast.newast.NewFunctionNode;
+import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
+import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
+import sqlancer.common.ast.newast.Node;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
@@ -16,8 +21,13 @@ import sqlancer.doris.DorisErrors;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
 import sqlancer.doris.DorisSchema.DorisCompositeDataType;
 import sqlancer.doris.DorisSchema.DorisDataType;
-import sqlancer.doris.ast.*;
+import sqlancer.doris.ast.DorisAggregateOperation;
 import sqlancer.doris.ast.DorisAggregateOperation.DorisAggregateFunction;
+import sqlancer.doris.ast.DorisBinaryArithmeticOperation;
+import sqlancer.doris.ast.DorisCastOperation;
+import sqlancer.doris.ast.DorisConstant;
+import sqlancer.doris.ast.DorisExpression;
+import sqlancer.doris.ast.DorisSelect;
 import sqlancer.doris.ast.DorisUnaryPostfixOperation.DorisUnaryPostfixOperator;
 import sqlancer.doris.ast.DorisUnaryPrefixOperation.DorisUnaryPrefixOperator;
 import sqlancer.doris.visitor.DorisExprToNode;
@@ -53,8 +63,8 @@ public class DorisQueryPartitioningAggregateTester extends DorisQueryPartitionin
         select.setFetchColumns(Arrays.asList(aggregate));
         if (Randomly.getBooleanWithRatherLowProbability()) {
             List<Node<DorisExpression>> constants = new ArrayList<>();
-            constants.add(new DorisConstant.DorisIntConstant(
-                    Randomly.smallNumber() % select.getFetchColumns().size() + 1));
+            constants.add(
+                    new DorisConstant.DorisIntConstant(Randomly.smallNumber() % select.getFetchColumns().size() + 1));
             select.setOrderByExpressions(constants);
         }
         originalQuery = DorisToStringVisitor.asString(select);
@@ -66,14 +76,14 @@ public class DorisQueryPartitioningAggregateTester extends DorisQueryPartitionin
                 "--" + originalQuery + ";\n--" + metamorphicQuery + "\n-- " + firstResult + "\n-- " + secondResult);
         if (firstResult == null && secondResult != null
                 || firstResult != null && (!firstResult.contentEquals(secondResult)
-                && !ComparatorHelper.isEqualDouble(firstResult, secondResult))) {
+                        && !ComparatorHelper.isEqualDouble(firstResult, secondResult))) {
             throw new AssertionError();
         }
 
     }
 
     private String createMetamorphicUnionQuery(DorisSelect select,
-                                               NewFunctionNode<DorisExpression, DorisAggregateFunction> aggregate, List<Node<DorisExpression>> from) {
+            NewFunctionNode<DorisExpression, DorisAggregateFunction> aggregate, List<Node<DorisExpression>> from) {
         String metamorphicQuery;
         Node<DorisExpression> whereClause = DorisExprToNode.cast(gen.generateExpression(DorisDataType.BOOLEAN));
         Node<DorisExpression> negatedClause = new NewUnaryPrefixOperatorNode<>(whereClause,
@@ -118,31 +128,31 @@ public class DorisQueryPartitioningAggregateTester extends DorisQueryPartitionin
 
         DorisCastOperation count;
         switch (aggregate.getFunc()) {
-            case COUNT:
-            case MAX:
-            case MIN:
-            case SUM:
-                return aliasArgs(Arrays.asList(aggregate));
-            case AVG:
-                NewFunctionNode<DorisExpression, DorisAggregateFunction> sum = new NewFunctionNode<>(aggregate.getArgs(),
-                        DorisAggregateFunction.SUM);
-                count = new DorisCastOperation(new NewFunctionNode<>(aggregate.getArgs(), DorisAggregateFunction.COUNT),
-                        new DorisCompositeDataType(DorisDataType.FLOAT, 8));
-                return aliasArgs(Arrays.asList(sum, count));
-            case STDDEV_POP:
-                NewFunctionNode<DorisExpression, DorisAggregateFunction> sumSquared = new NewFunctionNode<>(
-                        Arrays.asList(new NewBinaryOperatorNode<>(aggregate.getArgs().get(0), aggregate.getArgs().get(0),
-                                DorisBinaryArithmeticOperation.DorisBinaryArithmeticOperator.MULTIPLICATION)),
-                        DorisAggregateFunction.SUM);
-                count = new DorisCastOperation(
-                        new NewFunctionNode<DorisExpression, DorisAggregateFunction>(aggregate.getArgs(),
-                                DorisAggregateFunction.COUNT),
-                        new DorisCompositeDataType(DorisDataType.FLOAT, 8));
-                NewFunctionNode<DorisExpression, DorisAggregateFunction> avg = new NewFunctionNode<>(aggregate.getArgs(),
-                        DorisAggregateFunction.AVG);
-                return aliasArgs(Arrays.asList(sumSquared, count, avg));
-            default:
-                throw new AssertionError(aggregate.getFunc());
+        case COUNT:
+        case MAX:
+        case MIN:
+        case SUM:
+            return aliasArgs(Arrays.asList(aggregate));
+        case AVG:
+            NewFunctionNode<DorisExpression, DorisAggregateFunction> sum = new NewFunctionNode<>(aggregate.getArgs(),
+                    DorisAggregateFunction.SUM);
+            count = new DorisCastOperation(new NewFunctionNode<>(aggregate.getArgs(), DorisAggregateFunction.COUNT),
+                    new DorisCompositeDataType(DorisDataType.FLOAT, 8));
+            return aliasArgs(Arrays.asList(sum, count));
+        case STDDEV_POP:
+            NewFunctionNode<DorisExpression, DorisAggregateFunction> sumSquared = new NewFunctionNode<>(
+                    Arrays.asList(new NewBinaryOperatorNode<>(aggregate.getArgs().get(0), aggregate.getArgs().get(0),
+                            DorisBinaryArithmeticOperation.DorisBinaryArithmeticOperator.MULTIPLICATION)),
+                    DorisAggregateFunction.SUM);
+            count = new DorisCastOperation(
+                    new NewFunctionNode<DorisExpression, DorisAggregateFunction>(aggregate.getArgs(),
+                            DorisAggregateFunction.COUNT),
+                    new DorisCompositeDataType(DorisDataType.FLOAT, 8));
+            NewFunctionNode<DorisExpression, DorisAggregateFunction> avg = new NewFunctionNode<>(aggregate.getArgs(),
+                    DorisAggregateFunction.AVG);
+            return aliasArgs(Arrays.asList(sumSquared, count, avg));
+        default:
+            throw new AssertionError(aggregate.getFunc());
         }
     }
 
@@ -157,19 +167,19 @@ public class DorisQueryPartitioningAggregateTester extends DorisQueryPartitionin
 
     private String getOuterAggregateFunction(NewFunctionNode<DorisExpression, DorisAggregateFunction> aggregate) {
         switch (aggregate.getFunc()) {
-            case STDDEV_POP:
-                return "sqrt(SUM(agg0)/SUM(agg1)-SUM(agg2)*SUM(agg2))";
-            case AVG:
-                return "SUM(agg0::FLOAT)/SUM(agg1)::FLOAT";
-            case COUNT:
-                return DorisAggregateFunction.SUM.toString() + "(agg0)";
-            default:
-                return aggregate.getFunc().toString() + "(agg0)";
+        case STDDEV_POP:
+            return "sqrt(SUM(agg0)/SUM(agg1)-SUM(agg2)*SUM(agg2))";
+        case AVG:
+            return "SUM(agg0::FLOAT)/SUM(agg1)::FLOAT";
+        case COUNT:
+            return DorisAggregateFunction.SUM.toString() + "(agg0)";
+        default:
+            return aggregate.getFunc().toString() + "(agg0)";
         }
     }
 
     private DorisSelect getSelect(List<Node<DorisExpression>> aggregates, List<Node<DorisExpression>> from,
-                                  Node<DorisExpression> whereClause, List<Node<DorisExpression>> joinList) {
+            Node<DorisExpression> whereClause, List<Node<DorisExpression>> joinList) {
         DorisSelect leftSelect = new DorisSelect();
         leftSelect.setFetchColumns(aggregates);
         leftSelect.setFromList(from);

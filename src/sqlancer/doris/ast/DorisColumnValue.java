@@ -6,8 +6,7 @@ import sqlancer.common.ast.newast.ColumnReferenceNode;
 import sqlancer.doris.DorisSchema.DorisColumn;
 import sqlancer.doris.DorisSchema.DorisDataType;
 
-public class DorisColumnValue extends ColumnReferenceNode<DorisExpression, DorisColumn>
-        implements DorisExpression {
+public class DorisColumnValue extends ColumnReferenceNode<DorisExpression, DorisColumn> implements DorisExpression {
 
     private final DorisConstant expectedValue;
 
@@ -32,10 +31,16 @@ public class DorisColumnValue extends ColumnReferenceNode<DorisExpression, Doris
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         DorisColumnValue that = (DorisColumnValue) o;
-        if (!this.getColumn().getName().equals(that.getColumn().getName())) return false;
+        if (!this.getColumn().getName().equals(that.getColumn().getName())) {
+            return false;
+        }
         return Objects.equals(expectedValue, that.expectedValue);
     }
 

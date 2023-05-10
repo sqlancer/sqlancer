@@ -69,7 +69,8 @@ Since SQL dialects differ widely, each DBMS to be tested requires a separate imp
 | Databend                    | Working     | Typed                      |  |
 | QuestDB                    | Working     | Untyped, Generic                      | The implementation of QuestDB is still WIP, current version covers very basic data types, operations and SQL keywords. |
 | CnosDB                       |Working      | Typed                        | The implementation of CnosDB currently uses Restful API.                                                                                                                                        |
-| Materialize                  |Working      | Typed                        |                                                                                                                                                                                                 |
+| Materialize                  |Working      | Typed                        |           
+| Apache Doris                 / Preliminary | Typed                        / This is a preliminary implementation, which only contains the common logic of Doris. We have found some errors through it, and hope to improve it in the future.
 
 
 # Using SQLancer

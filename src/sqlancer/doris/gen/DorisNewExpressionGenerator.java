@@ -1,7 +1,10 @@
 package sqlancer.doris.gen;
 
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
@@ -13,16 +16,27 @@ import sqlancer.doris.DorisProvider.DorisGlobalState;
 import sqlancer.doris.DorisSchema.DorisColumn;
 import sqlancer.doris.DorisSchema.DorisDataType;
 import sqlancer.doris.DorisSchema.DorisRowValue;
-import sqlancer.doris.ast.*;
+import sqlancer.doris.ast.DorisAggregateOperation;
 import sqlancer.doris.ast.DorisAggregateOperation.DorisAggregateFunction;
+import sqlancer.doris.ast.DorisBetweenOperation;
+import sqlancer.doris.ast.DorisBinaryArithmeticOperation;
 import sqlancer.doris.ast.DorisBinaryArithmeticOperation.DorisBinaryArithmeticOperator;
+import sqlancer.doris.ast.DorisBinaryComparisonOperation;
 import sqlancer.doris.ast.DorisBinaryComparisonOperation.DorisBinaryComparisonOperator;
+import sqlancer.doris.ast.DorisBinaryLogicalOperation;
 import sqlancer.doris.ast.DorisBinaryLogicalOperation.DorisBinaryLogicalOperator;
+import sqlancer.doris.ast.DorisColumnValue;
+import sqlancer.doris.ast.DorisConstant;
+import sqlancer.doris.ast.DorisExpression;
+import sqlancer.doris.ast.DorisInOperation;
+import sqlancer.doris.ast.DorisLikeOperation;
+import sqlancer.doris.ast.DorisOrderByTerm;
+import sqlancer.doris.ast.DorisUnaryPostfixOperation;
 import sqlancer.doris.ast.DorisUnaryPostfixOperation.DorisUnaryPostfixOperator;
+import sqlancer.doris.ast.DorisUnaryPrefixOperation;
 import sqlancer.doris.ast.DorisUnaryPrefixOperation.DorisUnaryPrefixOperator;
 
-public class DorisNewExpressionGenerator
-        extends TypedExpressionGenerator<DorisExpression, DorisColumn, DorisDataType> {
+public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisExpression, DorisColumn, DorisDataType> {
 
     private final DorisGlobalState globalState;
 
@@ -31,7 +45,6 @@ public class DorisNewExpressionGenerator
     private DorisRowValue rowValue;
 
     private Set<DorisColumnValue> columnOfLeafNode;
-
 
     public DorisNewExpressionGenerator setRowValue(DorisRowValue rowValue) {
         this.rowValue = rowValue;
@@ -81,8 +94,8 @@ public class DorisNewExpressionGenerator
 
     public List<Node<DorisExpression>> generateOrderBy() {
         List<DorisColumn> randomColumns = Randomly.subset(columns);
-        return randomColumns.stream().map(
-                        c -> new DorisOrderByTerm(new DorisColumnValue(c, null), NewOrderingTerm.Ordering.getRandom()))
+        return randomColumns.stream()
+                .map(c -> new DorisOrderByTerm(new DorisColumnValue(c, null), NewOrderingTerm.Ordering.getRandom()))
                 .collect(Collectors.toList());
     }
 
@@ -95,19 +108,19 @@ public class DorisNewExpressionGenerator
         }
 
         switch (type) {
-            case INT:
-                return generateIntExpression(depth);
-            case BOOLEAN:
-                return generateBooleanExpression(depth);
-            case FLOAT:
-            case DECIMAL:
-            case DATE:
-            case DATETIME:
-            case VARCHAR:
-            case NULL:
-                return generateConstant(type);
-            default:
-                throw new AssertionError();
+        case INT:
+            return generateIntExpression(depth);
+        case BOOLEAN:
+            return generateBooleanExpression(depth);
+        case FLOAT:
+        case DECIMAL:
+        case DATE:
+        case DATETIME:
+        case VARCHAR:
+        case NULL:
+            return generateConstant(type);
+        default:
+            throw new AssertionError();
         }
     }
 
@@ -129,16 +142,15 @@ public class DorisNewExpressionGenerator
         }
         IntExpression intExpression = Randomly.fromOptions(IntExpression.values());
         switch (intExpression) {
-            case UNARY_OPERATION:
-                return new DorisUnaryPrefixOperation(generateExpression(DorisDataType.INT, depth + 1),
-                        Randomly.getBoolean() ? DorisUnaryPrefixOperator.UNARY_PLUS
-                                : DorisUnaryPrefixOperator.UNARY_MINUS);
-            case BINARY_ARITHMETIC_OPERATION:
-                return new DorisBinaryArithmeticOperation(generateExpression(DorisDataType.INT, depth + 1),
-                        generateExpression(DorisDataType.INT, depth + 1),
-                        Randomly.fromOptions(DorisBinaryArithmeticOperator.values()));
-            default:
-                throw new AssertionError();
+        case UNARY_OPERATION:
+            return new DorisUnaryPrefixOperation(generateExpression(DorisDataType.INT, depth + 1),
+                    Randomly.getBoolean() ? DorisUnaryPrefixOperator.UNARY_PLUS : DorisUnaryPrefixOperator.UNARY_MINUS);
+        case BINARY_ARITHMETIC_OPERATION:
+            return new DorisBinaryArithmeticOperation(generateExpression(DorisDataType.INT, depth + 1),
+                    generateExpression(DorisDataType.INT, depth + 1),
+                    Randomly.fromOptions(DorisBinaryArithmeticOperator.values()));
+        default:
+            throw new AssertionError();
         }
     }
 
@@ -154,22 +166,22 @@ public class DorisNewExpressionGenerator
         List<BooleanExpression> validOptions = new ArrayList<>(Arrays.asList(BooleanExpression.values()));
         BooleanExpression option = Randomly.fromList(validOptions);
         switch (option) {
-            case POSTFIX_OPERATOR:
-                return getPostfix(depth + 1);
-            case NOT:
-                return getNOT(depth + 1);
-            case BETWEEN:
-                return getBetween(depth + 1);
-            case IN_OPERATION:
-                return getIn(depth + 1);
-            case BINARY_LOGICAL_OPERATOR:
-                return getBinaryLogical(depth + 1, DorisDataType.BOOLEAN);
-            case BINARY_COMPARISON:
-                return getComparison(depth + 1);
-            case LIKE:
-                return getLike(depth + 1, DorisDataType.VARCHAR);
-            default:
-                throw new AssertionError();
+        case POSTFIX_OPERATOR:
+            return getPostfix(depth + 1);
+        case NOT:
+            return getNOT(depth + 1);
+        case BETWEEN:
+            return getBetween(depth + 1);
+        case IN_OPERATION:
+            return getIn(depth + 1);
+        case BINARY_LOGICAL_OPERATOR:
+            return getBinaryLogical(depth + 1, DorisDataType.BOOLEAN);
+        case BINARY_COMPARISON:
+            return getComparison(depth + 1);
+        case LIKE:
+            return getLike(depth + 1, DorisDataType.VARCHAR);
+        default:
+            throw new AssertionError();
         }
 
     }
@@ -186,7 +198,6 @@ public class DorisNewExpressionGenerator
     }
 
     DorisExpression getBetween(int depth) {
-        // 跳过boolean
         DorisDataType dataType = Randomly.fromList(Arrays.asList(DorisDataType.values()).stream()
                 .filter(t -> t != DorisDataType.BOOLEAN).collect(Collectors.toList()));
 
@@ -272,29 +283,31 @@ public class DorisNewExpressionGenerator
         Randomly r = globalState.getRandomly();
         long timestamp;
         switch (type) {
-            case INT:
-                return DorisConstant.createIntConstant(r.getInteger());
-            case BOOLEAN:
-                return DorisConstant.createBooleanConstant(Randomly.getBoolean());
-            case DECIMAL:
-            case FLOAT:
-                return DorisConstant.createFloatConstant((float) r.getDouble());
-            case DATE:
-                if (!globalState.getDbmsSpecificOptions().testDateConstants) {
-                    throw new IgnoreMeException();
-                }
-                timestamp = globalState.getRandomly().getLong(-62167420800000L, 253402185600000L);
-                return DorisConstant.createDateConstant(timestamp);
-            case DATETIME:
-                // ['0000-01-01 00:00:00', '9999-12-31 23:59:59']
-                timestamp = globalState.getRandomly().getLong(-62167420800000L, 253402271999000L);
-                return Randomly.fromOptions(DorisConstant.createDatetimeConstant(timestamp), DorisConstant.createDatetimeConstant());
-            case VARCHAR:
-                return DorisConstant.createStringConstant(r.getString());
-            case NULL:
-                return DorisConstant.createNullConstant();
-            default:
-                throw new AssertionError(type);
+        case INT:
+            return DorisConstant.createIntConstant(r.getInteger());
+        case BOOLEAN:
+            return DorisConstant.createBooleanConstant(Randomly.getBoolean());
+        case DECIMAL:
+        case FLOAT:
+            return DorisConstant.createFloatConstant((float) r.getDouble());
+        case DATE:
+            if (!globalState.getDbmsSpecificOptions().testDateConstants) {
+                throw new IgnoreMeException();
+            }
+            // [1970-01-01 08:00:00, 3000-01-01 00:00:00]
+            timestamp = globalState.getRandomly().getLong(0, 32503651200L);
+            return DorisConstant.createDateConstant(timestamp);
+        case DATETIME:
+            // [1970-01-01 08:00:00, 3000-01-01 00:00:00]
+            timestamp = globalState.getRandomly().getLong(0, 32503651200L);
+            return Randomly.fromOptions(DorisConstant.createDatetimeConstant(timestamp),
+                    DorisConstant.createDatetimeConstant());
+        case VARCHAR:
+            return DorisConstant.createStringConstant(r.getString());
+        case NULL:
+            return DorisConstant.createNullConstant();
+        default:
+            throw new AssertionError(type);
         }
     }
 
@@ -315,8 +328,7 @@ public class DorisNewExpressionGenerator
 
     public DorisExpression generateArgsForAggregate(DorisAggregateFunction aggregateFunction) {
         DorisDataType dataType = Randomly.fromOptions(DorisDataType.values());
-        return new DorisAggregateOperation(
-                generateExpressions(aggregateFunction.getNrArgs(), dataType),
+        return new DorisAggregateOperation(generateExpressions(aggregateFunction.getNrArgs(), dataType),
                 aggregateFunction);
     }
 

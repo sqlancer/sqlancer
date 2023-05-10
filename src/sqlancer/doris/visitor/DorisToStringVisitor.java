@@ -3,7 +3,11 @@ package sqlancer.doris.visitor;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.NewToStringVisitor;
 import sqlancer.common.ast.newast.Node;
-import sqlancer.doris.ast.*;
+import sqlancer.doris.ast.DorisCastOperation;
+import sqlancer.doris.ast.DorisConstant;
+import sqlancer.doris.ast.DorisExpression;
+import sqlancer.doris.ast.DorisJoin;
+import sqlancer.doris.ast.DorisSelect;
 
 public class DorisToStringVisitor extends NewToStringVisitor<DorisExpression> {
 
@@ -27,33 +31,33 @@ public class DorisToStringVisitor extends NewToStringVisitor<DorisExpression> {
         visit(join.getLeftTable());
         sb.append(" ");
         switch (join.getJoinType()) {
-            case INNER:
-                if (Randomly.getBoolean()) {
-                    sb.append("INNER ");
-                } else {
-                    sb.append("CROSS ");
-                }
-                sb.append("JOIN ");
-                break;
-            case LEFT:
-                sb.append("LEFT ");
-                if (Randomly.getBoolean()) {
-                    sb.append(" OUTER ");
-                }
-                sb.append("JOIN ");
-                break;
-            case RIGHT:
-                sb.append("RIGHT ");
-                if (Randomly.getBoolean()) {
-                    sb.append(" OUTER ");
-                }
-                sb.append("JOIN ");
-                break;
-            case STRAIGHT:
-                sb.append("STRAIGHT_JOIN ");
-                break;
-            default:
-                throw new AssertionError();
+        case INNER:
+            if (Randomly.getBoolean()) {
+                sb.append("INNER ");
+            } else {
+                sb.append("CROSS ");
+            }
+            sb.append("JOIN ");
+            break;
+        case LEFT:
+            sb.append("LEFT ");
+            if (Randomly.getBoolean()) {
+                sb.append(" OUTER ");
+            }
+            sb.append("JOIN ");
+            break;
+        case RIGHT:
+            sb.append("RIGHT ");
+            if (Randomly.getBoolean()) {
+                sb.append(" OUTER ");
+            }
+            sb.append("JOIN ");
+            break;
+        case STRAIGHT:
+            sb.append("STRAIGHT_JOIN ");
+            break;
+        default:
+            throw new AssertionError();
         }
         visit(join.getRightTable());
         sb.append(" ");

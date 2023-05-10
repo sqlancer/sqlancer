@@ -1,6 +1,6 @@
 package sqlancer.doris;
 
-public class DorisBugs {
+public final class DorisBugs {
     // https://github.com/apache/doris/issues/17697
     // Logical bug about where true not in (columns)
     public static boolean bug17697 = true;

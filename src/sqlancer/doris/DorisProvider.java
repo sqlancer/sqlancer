@@ -6,11 +6,28 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import com.google.auto.service.AutoService;
-import sqlancer.*;
+
+import sqlancer.AbstractAction;
+import sqlancer.DatabaseProvider;
+import sqlancer.IgnoreMeException;
+import sqlancer.MainOptions;
+import sqlancer.Randomly;
+import sqlancer.SQLConnection;
+import sqlancer.SQLGlobalState;
+import sqlancer.SQLProviderAdapter;
+import sqlancer.StatementExecutor;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
-import sqlancer.doris.gen.*;
+import sqlancer.doris.gen.DorisAlterTableGenerator;
+import sqlancer.doris.gen.DorisDeleteGenerator;
+import sqlancer.doris.gen.DorisDropTableGenerator;
+import sqlancer.doris.gen.DorisDropViewGenerator;
+import sqlancer.doris.gen.DorisIndexGenerator;
+import sqlancer.doris.gen.DorisInsertGenerator;
+import sqlancer.doris.gen.DorisTableGenerator;
+import sqlancer.doris.gen.DorisUpdateGenerator;
+import sqlancer.doris.gen.DorisViewGenerator;
 
 @AutoService(DatabaseProvider.class)
 public class DorisProvider extends SQLProviderAdapter<DorisGlobalState, DorisOptions> {
@@ -20,16 +37,13 @@ public class DorisProvider extends SQLProviderAdapter<DorisGlobalState, DorisOpt
     }
 
     public enum Action implements AbstractAction<DorisGlobalState> {
-        CREATE_TABLE(DorisTableGenerator::createRandomTableStatement),
-        CREATE_VIEW(DorisViewGenerator::getQuery),
-        CREATE_INDEX(DorisIndexGenerator::getQuery),
-        INSERT(DorisInsertGenerator::getQuery),
-        DELETE(DorisDeleteGenerator::generate),
-        UPDATE(DorisUpdateGenerator::getQuery),
+        CREATE_TABLE(DorisTableGenerator::createRandomTableStatement), CREATE_VIEW(DorisViewGenerator::getQuery),
+        CREATE_INDEX(DorisIndexGenerator::getQuery), INSERT(DorisInsertGenerator::getQuery),
+        DELETE(DorisDeleteGenerator::generate), UPDATE(DorisUpdateGenerator::getQuery),
         ALTER_TABLE(DorisAlterTableGenerator::getQuery),
-        TRUNCATE((g) -> new SQLQueryAdapter("TRUNCATE TABLE " + g.getSchema().getRandomTable(t -> !t.isView()).getName())),
-        DROP_TABLE(DorisDropTableGenerator::dropTable),
-        DROP_VIEW(DorisDropViewGenerator::dropView);
+        TRUNCATE((g) -> new SQLQueryAdapter(
+                "TRUNCATE TABLE " + g.getSchema().getRandomTable(t -> !t.isView()).getName())),
+        DROP_TABLE(DorisDropTableGenerator::dropTable), DROP_VIEW(DorisDropViewGenerator::dropView);
 
         private final SQLQueryProvider<DorisGlobalState> sqlQueryProvider;
 
@@ -46,25 +60,24 @@ public class DorisProvider extends SQLProviderAdapter<DorisGlobalState, DorisOpt
     private static int mapActions(DorisGlobalState globalState, Action a) {
         Randomly r = globalState.getRandomly();
         switch (a) {
-            case CREATE_TABLE:
-            case CREATE_INDEX:
-            case CREATE_VIEW:
-                return 0;
-            case INSERT:
-                return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
-            case DELETE:
-                return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumDeletes);
-            case UPDATE:
-                return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumUpdates);
-            case ALTER_TABLE:
-                return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumTableAlters);
-            case TRUNCATE:
-                return r.getInteger(0, 2);
-            case DROP_TABLE:
-            case DROP_VIEW:
-                return 0;
-            default:
-                throw new AssertionError(a);
+        case INSERT:
+            return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
+        case DELETE:
+            return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumDeletes);
+        case UPDATE:
+            return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumUpdates);
+        case ALTER_TABLE:
+            return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumTableAlters);
+        case TRUNCATE:
+            return r.getInteger(0, 2);
+        case CREATE_TABLE:
+        case CREATE_INDEX:
+        case CREATE_VIEW:
+        case DROP_TABLE:
+        case DROP_VIEW:
+            return 0;
+        default:
+            throw new AssertionError(a);
         }
     }
 
@@ -83,7 +96,9 @@ public class DorisProvider extends SQLProviderAdapter<DorisGlobalState, DorisOpt
             boolean success = false;
             do {
                 SQLQueryAdapter qt = new DorisTableGenerator().getQuery(globalState);
-                if (qt != null) success = globalState.executeStatement(qt);
+                if (qt != null) {
+                    success = globalState.executeStatement(qt);
+                }
             } while (!success);
         }
         if (globalState.getSchema().getDatabaseTables().isEmpty()) {
@@ -91,10 +106,10 @@ public class DorisProvider extends SQLProviderAdapter<DorisGlobalState, DorisOpt
         }
         StatementExecutor<DorisGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
                 DorisProvider::mapActions, (q) -> {
-            if (globalState.getSchema().getDatabaseTables().isEmpty()) {
-                throw new IgnoreMeException();
-            }
-        });
+                    if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+                        throw new IgnoreMeException();
+                    }
+                });
         se.executeStatements();
     }
 
@@ -102,7 +117,9 @@ public class DorisProvider extends SQLProviderAdapter<DorisGlobalState, DorisOpt
     public SQLConnection createDatabase(DorisGlobalState globalState) throws SQLException {
         String username = globalState.getOptions().getUserName();
         String password = globalState.getOptions().getPassword();
-        if (password.equals("\"\"")) password = "";
+        if (password.equals("\"\"")) {
+            password = "";
+        }
         String host = globalState.getOptions().getHost();
         int port = globalState.getOptions().getPort();
         if (host == null) {

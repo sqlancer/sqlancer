@@ -20,30 +20,31 @@ public final class DorisAlterTableGenerator {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder("ALTER TABLE ");
         DorisTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-//        DorisNewExpressionGenerator gen = new DorisNewExpressionGenerator(globalState).setColumns(table.getColumns());
+        // DorisNewExpressionGenerator gen = new
+        // DorisNewExpressionGenerator(globalState).setColumns(table.getColumns());
         sb.append(table.getName());
         sb.append(" ");
         Action action = Randomly.fromOptions(Action.values());
         switch (action) {
-            case ADD_COLUMN:
-                sb.append("ADD COLUMN ");
-                String columnName = table.getFreeColumnName();
-                sb.append(columnName);
-                sb.append(" ");
-                sb.append(DorisCompositeDataType.getRandomWithoutNull().toString());
-                break;
-            case ALTER_COLUMN:
-                sb.append("MODIFY COLUMN ");
-                sb.append(table.getRandomColumn().getName());
-                sb.append(" ");
-                sb.append(DorisCompositeDataType.getRandomWithoutNull().toString());
-                break;
-            case DROP_COLUMN:
-                sb.append("DROP COLUMN ");
-                sb.append(table.getRandomColumn().getName());
-                break;
-            default:
-                throw new AssertionError(action);
+        case ADD_COLUMN:
+            sb.append("ADD COLUMN ");
+            String columnName = table.getFreeColumnName();
+            sb.append(columnName);
+            sb.append(" ");
+            sb.append(DorisCompositeDataType.getRandomWithoutNull().toString());
+            break;
+        case ALTER_COLUMN:
+            sb.append("MODIFY COLUMN ");
+            sb.append(table.getRandomColumn().getName());
+            sb.append(" ");
+            sb.append(DorisCompositeDataType.getRandomWithoutNull().toString());
+            break;
+        case DROP_COLUMN:
+            sb.append("DROP COLUMN ");
+            sb.append(table.getRandomColumn().getName());
+            break;
+        default:
+            throw new AssertionError(action);
         }
         return new SQLQueryAdapter(sb.toString(), errors, true);
     }

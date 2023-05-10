@@ -1,5 +1,9 @@
 package sqlancer.doris.oracle.tlp;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
 import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
@@ -11,10 +15,6 @@ import sqlancer.doris.ast.DorisConstant;
 import sqlancer.doris.ast.DorisExpression;
 import sqlancer.doris.visitor.DorisExprToNode;
 import sqlancer.doris.visitor.DorisToStringVisitor;
-
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class DorisQueryPartitioningHavingTester extends DorisQueryPartitioningBase
         implements TestOracle<DorisGlobalState> {
@@ -34,8 +34,8 @@ public class DorisQueryPartitioningHavingTester extends DorisQueryPartitioningBa
         boolean orderBy = Randomly.getBoolean();
         if (orderBy) {
             List<Node<DorisExpression>> constants = new ArrayList<>();
-            constants.add(new DorisConstant.DorisIntConstant(
-                    Randomly.smallNumber() % select.getFetchColumns().size() + 1));
+            constants.add(
+                    new DorisConstant.DorisIntConstant(Randomly.smallNumber() % select.getFetchColumns().size() + 1));
             select.setOrderByExpressions(constants);
         }
         select.setGroupByExpressions(groupByExpression);
@@ -64,7 +64,8 @@ public class DorisQueryPartitioningHavingTester extends DorisQueryPartitioningBa
     @Override
     List<Node<DorisExpression>> generateFetchColumns() {
         gen.setAllowAggregateFunctions(true);
-        List<Node<DorisExpression>> expressions = DorisExprToNode.casts(gen.generateExpressions(Randomly.smallNumber() + 1));
+        List<Node<DorisExpression>> expressions = DorisExprToNode
+                .casts(gen.generateExpressions(Randomly.smallNumber() + 1));
         gen.setAllowAggregateFunctions(false);
         return expressions;
     }

@@ -14,7 +14,6 @@ import sqlancer.doris.ast.DorisExpression;
 import sqlancer.doris.visitor.DorisExprToNode;
 import sqlancer.doris.visitor.DorisToStringVisitor;
 
-
 public final class DorisUpdateGenerator extends AbstractUpdateGenerator<DorisColumn> {
 
     private final DorisGlobalState globalState;

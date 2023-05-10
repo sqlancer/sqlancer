@@ -14,8 +14,17 @@ import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.doris.DorisErrors;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
-import sqlancer.doris.DorisSchema.*;
-import sqlancer.doris.ast.*;
+import sqlancer.doris.DorisSchema.DorisColumn;
+import sqlancer.doris.DorisSchema.DorisDataType;
+import sqlancer.doris.DorisSchema.DorisRowValue;
+import sqlancer.doris.DorisSchema.DorisTable;
+import sqlancer.doris.DorisSchema.DorisTables;
+import sqlancer.doris.ast.DorisColumnValue;
+import sqlancer.doris.ast.DorisConstant;
+import sqlancer.doris.ast.DorisExpression;
+import sqlancer.doris.ast.DorisSelect;
+import sqlancer.doris.ast.DorisUnaryPostfixOperation;
+import sqlancer.doris.ast.DorisUnaryPrefixOperation;
 import sqlancer.doris.gen.DorisNewExpressionGenerator;
 import sqlancer.doris.visitor.DorisExpectedValueVisitor;
 import sqlancer.doris.visitor.DorisExprToNode;
@@ -73,11 +82,9 @@ public class DorisPivotedQuerySynthesisOracle
         DorisExpression expr = gen.generateExpressionWithExpectedResult(DorisDataType.BOOLEAN);
         DorisExpression result = null;
         if (expr.getExpectedValue().isNull()) {
-            result = new DorisUnaryPostfixOperation(expr,
-                    DorisUnaryPostfixOperation.DorisUnaryPostfixOperator.IS_NULL);
+            result = new DorisUnaryPostfixOperation(expr, DorisUnaryPostfixOperation.DorisUnaryPostfixOperator.IS_NULL);
         } else if (!expr.getExpectedValue().cast(DorisDataType.BOOLEAN).asBoolean()) {
-            result = new DorisUnaryPrefixOperation(expr,
-                    DorisUnaryPrefixOperation.DorisUnaryPrefixOperator.NOT);
+            result = new DorisUnaryPrefixOperation(expr, DorisUnaryPrefixOperation.DorisUnaryPrefixOperator.NOT);
         }
         rectifiedPredicates.add(result);
         return result;
@@ -120,8 +127,7 @@ public class DorisPivotedQuerySynthesisOracle
         return DorisExpectedValueVisitor.asExpectedValues(DorisExprToNode.cast(expr));
     }
 
-    private List<Node<DorisExpression>> generateGroupByClause(List<DorisColumn> columns,
-                                                              DorisRowValue rowValue) {
+    private List<Node<DorisExpression>> generateGroupByClause(List<DorisColumn> columns, DorisRowValue rowValue) {
         if (Randomly.getBoolean()) {
             return columns.stream().map(c -> new DorisColumnValue(c, rowValue.getValues().get(c)))
                     .collect(Collectors.toList());

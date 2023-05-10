@@ -21,7 +21,7 @@ public final class DorisErrors {
         errors.add("can't be assigned to some PlanNode");
         errors.add("can not cast from origin type");
         errors.add("not produced by aggregation output");
-
+        errors.add("cannot combine"); // cannot combine SELECT DISTINCT with aggregate functions or GROUP BY
 
         // functions
         errors.add("No matching function with signature");

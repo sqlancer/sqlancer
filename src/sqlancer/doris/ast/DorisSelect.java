@@ -34,7 +34,8 @@ public class DorisSelect extends SelectBase<Node<DorisExpression>> implements No
     }
 
     public boolean isDistinct() {
-        return this.selectDistinctType == DorisSelectDistinctType.DISTINCT || this.selectDistinctType == DorisSelectDistinctType.DISTINCTROW;
+        return this.selectDistinctType == DorisSelectDistinctType.DISTINCT
+                || this.selectDistinctType == DorisSelectDistinctType.DISTINCTROW;
     }
 
 }

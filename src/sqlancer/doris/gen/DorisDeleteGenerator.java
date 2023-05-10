@@ -21,8 +21,8 @@ public final class DorisDeleteGenerator {
         sb.append(table.getName());
         if (Randomly.getBoolean()) {
             sb.append(" WHERE ");
-            sb.append(DorisToStringVisitor.asString(
-                    new DorisNewExpressionGenerator(globalState).setColumns(table.getColumns()).generateExpression(DorisSchema.DorisDataType.BOOLEAN)));
+            sb.append(DorisToStringVisitor.asString(new DorisNewExpressionGenerator(globalState)
+                    .setColumns(table.getColumns()).generateExpression(DorisSchema.DorisDataType.BOOLEAN)));
             DorisErrors.addExpressionErrors(errors);
         }
         return new SQLQueryAdapter(sb.toString(), errors);

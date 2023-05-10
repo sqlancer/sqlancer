@@ -33,8 +33,8 @@ public class DorisQueryPartitioningWhereTester extends DorisQueryPartitioningBas
         boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
         if (orderBy) {
             List<Node<DorisExpression>> constants = new ArrayList<>();
-            constants.add(new DorisConstant.DorisIntConstant(
-                    Randomly.smallNumber() % select.getFetchColumns().size() + 1));
+            constants.add(
+                    new DorisConstant.DorisIntConstant(Randomly.smallNumber() % select.getFetchColumns().size() + 1));
             select.setOrderByExpressions(constants);
         }
         select.setWhereClause(DorisExprToNode.cast(predicate));

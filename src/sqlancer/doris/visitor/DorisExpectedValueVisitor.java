@@ -2,7 +2,18 @@ package sqlancer.doris.visitor;
 
 import java.util.List;
 
-import sqlancer.common.ast.newast.*;
+import sqlancer.common.ast.newast.ColumnReferenceNode;
+import sqlancer.common.ast.newast.NewAliasNode;
+import sqlancer.common.ast.newast.NewBetweenOperatorNode;
+import sqlancer.common.ast.newast.NewBinaryOperatorNode;
+import sqlancer.common.ast.newast.NewFunctionNode;
+import sqlancer.common.ast.newast.NewInOperatorNode;
+import sqlancer.common.ast.newast.NewOrderingTerm;
+import sqlancer.common.ast.newast.NewPostfixTextNode;
+import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
+import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
+import sqlancer.common.ast.newast.Node;
+import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.doris.DorisSchema.DorisColumn;
 import sqlancer.doris.ast.DorisConstant;
 import sqlancer.doris.ast.DorisExpression;
