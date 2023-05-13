@@ -19,7 +19,7 @@ public class DorisSelect extends SelectBase<Node<DorisExpression>> implements No
         }
     }
 
-    private DorisSelectDistinctType selectDistinctType;
+    private DorisSelectDistinctType selectDistinctType = DorisSelectDistinctType.ALL;
 
     public void setDistinct(boolean isDistinct) {
         if (isDistinct) {

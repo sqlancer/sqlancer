@@ -43,6 +43,9 @@ public final class DorisErrors {
         if (DorisBugs.bug19374) {
             errors.add("the size of the result sets mismatch");
         }
+        if (DorisBugs.bug19611) {
+            errors.add("Duplicated inline view column alias");
+        }
     }
 
     public static void addInsertErrors(ExpectedErrors errors) {

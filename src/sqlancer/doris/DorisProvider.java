@@ -132,6 +132,7 @@ public class DorisProvider extends SQLProviderAdapter<DorisGlobalState, DorisOpt
         globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
         globalState.getState().logStatement("CREATE DATABASE " + databaseName);
         globalState.getState().logStatement("USE " + databaseName);
+        globalState.getState().logStatement("SET enable_nereids_planner=true"); // https://doris.apache.org/zh-CN/docs/dev/query-acceleration/nereids
         String url = String.format("jdbc:mysql://%s:%d?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true",
                 host, port);
         Connection con = DriverManager.getConnection(url, username, password);
