@@ -20,8 +20,6 @@ public final class DorisAlterTableGenerator {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder("ALTER TABLE ");
         DorisTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-        // DorisNewExpressionGenerator gen = new
-        // DorisNewExpressionGenerator(globalState).setColumns(table.getColumns());
         sb.append(table.getName());
         sb.append(" ");
         Action action = Randomly.fromOptions(Action.values());

@@ -3,9 +3,11 @@ package sqlancer.doris.visitor;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.NewToStringVisitor;
 import sqlancer.common.ast.newast.Node;
+import sqlancer.doris.ast.DorisCaseOperation;
 import sqlancer.doris.ast.DorisCastOperation;
 import sqlancer.doris.ast.DorisConstant;
 import sqlancer.doris.ast.DorisExpression;
+import sqlancer.doris.ast.DorisFunctionOperation;
 import sqlancer.doris.ast.DorisJoin;
 import sqlancer.doris.ast.DorisSelect;
 
@@ -21,6 +23,10 @@ public class DorisToStringVisitor extends NewToStringVisitor<DorisExpression> {
             visit((DorisJoin) expr);
         } else if (expr instanceof DorisCastOperation) {
             visit((DorisCastOperation) expr);
+        } else if (expr instanceof DorisCaseOperation) {
+            visit((DorisCaseOperation) expr);
+        } else if (expr instanceof DorisFunctionOperation) {
+            visit((DorisFunctionOperation) expr);
         } else {
             throw new AssertionError(expr.getClass());
         }
@@ -77,6 +83,42 @@ public class DorisToStringVisitor extends NewToStringVisitor<DorisExpression> {
         sb.append(" AS ");
         sb.append(castExpr.getType().toString());
         sb.append(") ");
+    }
+
+    private void visit(DorisFunctionOperation func) {
+        sb.append(func.getFunction().getFunctionName());
+        sb.append("(");
+
+        if (func.getArgs() != null) {
+            for (int i = 0; i < func.getArgs().size(); i++) {
+                visit(DorisExprToNode.cast(func.getArgs().get(i)));
+                if (i != func.getArgs().size() - 1) {
+                    sb.append(",");
+                }
+            }
+        }
+        sb.append(") ");
+    }
+
+    private void visit(DorisCaseOperation cases) {
+        sb.append("CASE ");
+        visit(DorisExprToNode.cast(cases.getExpr()));
+        sb.append(" ");
+        for (int i = 0; i < cases.getConditions().size(); i++) {
+            DorisExpression predicate = cases.getConditions().get(i);
+            DorisExpression then = cases.getThenClauses().get(i);
+            sb.append(" WHEN ");
+            visit(DorisExprToNode.cast(predicate));
+            sb.append(" THEN ");
+            visit(DorisExprToNode.cast(then));
+            sb.append(" ");
+        }
+        if (cases.getElseClause() != null) {
+            sb.append("ELSE ");
+            visit(DorisExprToNode.cast(cases.getElseClause()));
+            sb.append(" ");
+        }
+        sb.append("END ");
     }
 
     private void visit(DorisSelect select) {

@@ -157,6 +157,11 @@ public abstract class DorisConstant implements Node<DorisExpression>, DorisExpre
         }
 
         @Override
+        public String asString() {
+            return String.valueOf(value);
+        }
+
+        @Override
         public DorisConstant valueEquals(DorisConstant rightVal) {
             if (rightVal.isNull()) {
                 return DorisConstant.createNullConstant();
@@ -240,6 +245,11 @@ public abstract class DorisConstant implements Node<DorisExpression>, DorisExpre
         @Override
         public double asFloat() {
             return value;
+        }
+
+        @Override
+        public String asString() {
+            return toString();
         }
 
         @Override
@@ -393,6 +403,11 @@ public abstract class DorisConstant implements Node<DorisExpression>, DorisExpre
         }
 
         @Override
+        public String asString() {
+            return textRepr;
+        }
+
+        @Override
         public DorisConstant cast(DorisDataType dataType) {
             switch (dataType) {
             case VARCHAR:
@@ -465,6 +480,11 @@ public abstract class DorisConstant implements Node<DorisExpression>, DorisExpre
         @Override
         public String toString() {
             return String.format("TIMESTAMP '%s'", textRepr);
+        }
+
+        @Override
+        public String asString() {
+            return textRepr;
         }
 
         @Override
@@ -552,6 +572,11 @@ public abstract class DorisConstant implements Node<DorisExpression>, DorisExpre
         }
 
         @Override
+        public String asString() {
+            return toString();
+        }
+
+        @Override
         public boolean asBoolean() {
             return value;
         }
@@ -636,8 +661,16 @@ public abstract class DorisConstant implements Node<DorisExpression>, DorisExpre
         return new DorisDateConstant(integer);
     }
 
+    public static DorisConstant createDateConstant(String date) {
+        return new DorisDateConstant(date);
+    }
+
     public static DorisConstant createDatetimeConstant(long integer) {
         return new DorisDatetimeConstant(integer);
+    }
+
+    public static DorisConstant createDatetimeConstant(String datetime) {
+        return new DorisDatetimeConstant(datetime);
     }
 
     public static DorisConstant createDatetimeConstant() {

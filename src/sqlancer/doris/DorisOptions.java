@@ -41,7 +41,7 @@ public class DorisOptions implements DBMSSpecificOptions<DorisOracleFactory> {
     public boolean testNotNullConstraints = true;
 
     @Parameter(names = "--test-functions", description = "Allow generating functions in expressions", arity = 1)
-    public boolean testFunctions = true;
+    public boolean testFunctions;
 
     @Parameter(names = "--test-casts", description = "Allow generating casts in expressions", arity = 1)
     public boolean testCasts = true;
@@ -92,10 +92,10 @@ public class DorisOptions implements DBMSSpecificOptions<DorisOracleFactory> {
     public int maxNumTableAlters;
 
     @Parameter(names = "--test-engine-type", description = "The engine type in Doris, only consider OLAP now", arity = 1)
-    public String testEngineType = "OLAP";
+    public String testEngineType = "OLAP"; // skip now
 
     @Parameter(names = "--test-indexes", description = "Allow explicit indexes, Doris only supports creating indexes on single-column BITMAP", arity = 1)
-    public boolean testIndexes = true;
+    public boolean testIndexes = true; // skip now
 
     @Parameter(names = "--test-column-aggr", description = "Allow test column aggregation (sum, min, max, replace, replace_if_not_null, hll_union, bitmap_untion)", arity = 1)
     public boolean testColumnAggr = true;
@@ -104,10 +104,10 @@ public class DorisOptions implements DBMSSpecificOptions<DorisOracleFactory> {
     public boolean testDataModel = true;
 
     @Parameter(names = "--test-distribution", description = "Allow generating data distribution in tables.", arity = 1)
-    public boolean testDistribution = true;
+    public boolean testDistribution = true; // must have it, skip now
 
     @Parameter(names = "--test-rollup", description = "Allow generating rollups in tables.", arity = 1)
-    public boolean testRollup = true;
+    public boolean testRollup = true; // skip now
 
     @Parameter(names = "--oracle")
     public List<DorisOracleFactory> oracles = Arrays.asList(DorisOracleFactory.NOREC);

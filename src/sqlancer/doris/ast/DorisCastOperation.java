@@ -13,6 +13,11 @@ public class DorisCastOperation implements Node<DorisExpression>, DorisExpressio
         this.type = type.getPrimitiveDataType();
     }
 
+    public DorisCastOperation(Node<DorisExpression> expr, DorisDataType type) {
+        this.expr = expr;
+        this.type = type;
+    }
+
     public Node<DorisExpression> getExpr() {
         return expr;
     }

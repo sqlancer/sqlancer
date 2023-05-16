@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.NewOrderingTerm;
 import sqlancer.common.ast.newast.Node;
@@ -25,9 +24,12 @@ import sqlancer.doris.ast.DorisBinaryComparisonOperation;
 import sqlancer.doris.ast.DorisBinaryComparisonOperation.DorisBinaryComparisonOperator;
 import sqlancer.doris.ast.DorisBinaryLogicalOperation;
 import sqlancer.doris.ast.DorisBinaryLogicalOperation.DorisBinaryLogicalOperator;
+import sqlancer.doris.ast.DorisCaseOperation;
+import sqlancer.doris.ast.DorisCastOperation;
 import sqlancer.doris.ast.DorisColumnValue;
 import sqlancer.doris.ast.DorisConstant;
 import sqlancer.doris.ast.DorisExpression;
+import sqlancer.doris.ast.DorisFunctionOperation.DorisFunction;
 import sqlancer.doris.ast.DorisInOperation;
 import sqlancer.doris.ast.DorisLikeOperation;
 import sqlancer.doris.ast.DorisOrderByTerm;
@@ -35,6 +37,7 @@ import sqlancer.doris.ast.DorisUnaryPostfixOperation;
 import sqlancer.doris.ast.DorisUnaryPostfixOperation.DorisUnaryPostfixOperator;
 import sqlancer.doris.ast.DorisUnaryPrefixOperation;
 import sqlancer.doris.ast.DorisUnaryPrefixOperation.DorisUnaryPrefixOperator;
+import sqlancer.doris.visitor.DorisExprToNode;
 
 public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisExpression, DorisColumn, DorisDataType> {
 
@@ -100,11 +103,36 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
     }
 
     @Override
-    protected DorisExpression generateExpression(DorisDataType type, int depth) {
-        // todo: cast, in, func operation should be add into generateExpression
+    public DorisExpression generateExpression(DorisDataType type, int depth) {
+        // todo: case operation should be add into generateExpression
 
         if (Randomly.getBooleanWithRatherLowProbability() || depth >= maxDepth) {
             return generateLeafNode(type);
+        }
+
+        if (globalState.getDbmsSpecificOptions().testFunctions && Randomly.getBooleanWithRatherLowProbability()) {
+            List<DorisFunction> applicableFunctions = DorisFunction.getFunctionsCompatibleWith(type);
+            if (!applicableFunctions.isEmpty()) {
+                DorisFunction function = Randomly.fromList(applicableFunctions);
+                return function.getCall(type, this, depth + 1);
+            }
+        }
+        if (globalState.getDbmsSpecificOptions().testCasts && Randomly.getBooleanWithRatherLowProbability()) {
+            return new DorisCastOperation(DorisExprToNode.cast(generateExpression(getRandomType(), depth + 1)), type);
+        }
+        if (globalState.getDbmsSpecificOptions().testCase && Randomly.getBooleanWithRatherLowProbability()) {
+            DorisExpression expr = generateExpression(DorisDataType.BOOLEAN, depth + 1);
+            List<DorisExpression> conditions = new ArrayList<>();
+            List<DorisExpression> cases = new ArrayList<>();
+            for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
+                conditions.add(generateExpression(DorisDataType.BOOLEAN, depth + 1));
+                cases.add(generateExpression(type, depth + 1));
+            }
+            DorisExpression elseExpr = null;
+            if (Randomly.getBoolean()) {
+                elseExpr = generateExpression(type, depth + 1);
+            }
+            return new DorisCaseOperation(expr, conditions, cases, elseExpr);
         }
 
         switch (type) {
@@ -164,6 +192,19 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
             allowAggregateFunctions = false;
         }
         List<BooleanExpression> validOptions = new ArrayList<>(Arrays.asList(BooleanExpression.values()));
+        if (!globalState.getDbmsSpecificOptions().testIn) {
+            validOptions.remove(BooleanExpression.IN_OPERATION);
+        }
+        if (!globalState.getDbmsSpecificOptions().testBinaryLogicals) {
+            validOptions.remove(BooleanExpression.BINARY_LOGICAL_OPERATOR);
+        }
+        if (!globalState.getDbmsSpecificOptions().testBinaryComparisons) {
+            validOptions.remove(BooleanExpression.BINARY_COMPARISON);
+        }
+        if (!globalState.getDbmsSpecificOptions().testBetween) {
+            validOptions.remove(BooleanExpression.BETWEEN);
+        }
+
         BooleanExpression option = Randomly.fromList(validOptions);
         switch (option) {
         case POSTFIX_OPERATOR:
@@ -284,26 +325,62 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
         long timestamp;
         switch (type) {
         case INT:
-            return DorisConstant.createIntConstant(r.getInteger());
-        case BOOLEAN:
-            return DorisConstant.createBooleanConstant(Randomly.getBoolean());
-        case DECIMAL:
-        case FLOAT:
-            return DorisConstant.createFloatConstant((float) r.getDouble());
-        case DATE:
-            if (!globalState.getDbmsSpecificOptions().testDateConstants) {
-                throw new IgnoreMeException();
+            if (globalState.getDbmsSpecificOptions().testIntConstants) {
+                return DorisConstant.createIntConstant(r.getInteger());
             }
-            // [1970-01-01 08:00:00, 3000-01-01 00:00:00]
-            timestamp = globalState.getRandomly().getLong(0, 32503651200L);
-            return DorisConstant.createDateConstant(timestamp);
+            return DorisConstant.createNullConstant();
+        case BOOLEAN:
+            if (globalState.getDbmsSpecificOptions().testBooleanConstants) {
+                return DorisConstant.createBooleanConstant(Randomly.getBoolean());
+            }
+            return DorisConstant.createNullConstant();
+        case DECIMAL:
+            if (globalState.getDbmsSpecificOptions().testDecimalConstants) {
+                double v = r.getDouble();
+                while (v == Double.MAX_VALUE || v == -Double.MAX_VALUE || v == Double.POSITIVE_INFINITY
+                        || v == Double.NEGATIVE_INFINITY) {
+                    v = r.getDouble();
+                }
+
+                // e.g. format 1234.413232532 to qualify num 34.4132
+                String formatter = "%." + type.getDecimalScale() + "f";
+                String vStr = String.format(formatter, v);
+                int pointPos = vStr.indexOf('.');
+                if (pointPos > type.getDecimalPrecision() - type.getDecimalScale()) {
+                    vStr = vStr.substring(pointPos - (type.getDecimalPrecision() - type.getDecimalScale()));
+                }
+                return DorisConstant.createFloatConstant(Double.parseDouble(vStr));
+            }
+            return DorisConstant.createNullConstant();
+        case FLOAT:
+            if (globalState.getDbmsSpecificOptions().testFloatConstants) {
+                return DorisConstant.createFloatConstant((float) r.getDouble());
+            }
+            return DorisConstant.createNullConstant();
+        case DATE:
+            if (globalState.getDbmsSpecificOptions().testDateConstants) {
+                // [1970-01-01 08:00:00, 3000-01-01 00:00:00]
+                timestamp = globalState.getRandomly().getLong(0, 32503651200L);
+                return DorisConstant.createDateConstant(timestamp);
+            }
+            return DorisConstant.createNullConstant();
         case DATETIME:
-            // [1970-01-01 08:00:00, 3000-01-01 00:00:00]
-            timestamp = globalState.getRandomly().getLong(0, 32503651200L);
-            return Randomly.fromOptions(DorisConstant.createDatetimeConstant(timestamp),
-                    DorisConstant.createDatetimeConstant());
+            if (globalState.getDbmsSpecificOptions().testDateTimeConstants) {
+                // [1970-01-01 08:00:00, 3000-01-01 00:00:00]
+                timestamp = globalState.getRandomly().getLong(0, 32503651200L);
+                return Randomly.fromOptions(DorisConstant.createDatetimeConstant(timestamp),
+                        DorisConstant.createDatetimeConstant());
+            }
+            return DorisConstant.createNullConstant();
         case VARCHAR:
-            return DorisConstant.createStringConstant(r.getString());
+            if (globalState.getDbmsSpecificOptions().testStringConstants) {
+                String s = r.getString();
+                if (s.length() > type.getVarcharLength()) {
+                    s = s.substring(0, type.getVarcharLength());
+                }
+                return DorisConstant.createStringConstant(s);
+            }
+            return DorisConstant.createNullConstant();
         case NULL:
             return DorisConstant.createNullConstant();
         default:

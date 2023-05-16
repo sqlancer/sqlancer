@@ -53,6 +53,10 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
         INT, FLOAT, DECIMAL, DATE, DATETIME, VARCHAR, BOOLEAN, NULL;
         // HLL, BITMAP, ARRAY;
 
+        private int decimalScale;
+        private int decimalPrecision;
+        private int varcharLength;
+
         public static DorisDataType getRandomWithoutNull() {
             DorisDataType dt;
             do {
@@ -61,6 +65,29 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
             return dt;
         }
 
+        public int getDecimalScale() {
+            return decimalScale;
+        }
+
+        public void setDecimalScale(int decimalScale) {
+            this.decimalScale = decimalScale;
+        }
+
+        public int getDecimalPrecision() {
+            return decimalPrecision;
+        }
+
+        public void setDecimalPrecision(int decimalPrecision) {
+            this.decimalPrecision = decimalPrecision;
+        }
+
+        public int getVarcharLength() {
+            return varcharLength;
+        }
+
+        public void setVarcharLength(int varcharLength) {
+            this.varcharLength = varcharLength;
+        }
     }
 
     public static class DorisCompositeDataType {
@@ -114,11 +141,45 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
             return new DorisCompositeDataType(type, size);
         }
 
-        @Override
-        public String toString() {
+        public void initColumnArgs() {
             Randomly r = new Randomly();
             int scale;
             int precision;
+            int varcharLength;
+            switch (getPrimitiveDataType()) {
+            case DECIMAL:
+                if (getPrimitiveDataType().getDecimalPrecision() != 0) {
+                    break;
+                }
+                if (size == 1) {
+                    scale = r.getInteger(0, 9);
+                    precision = r.getInteger(scale + 1, scale + 18);
+                    getPrimitiveDataType().setDecimalPrecision(precision);
+                    getPrimitiveDataType().setDecimalScale(scale);
+                } else if (size == 3) {
+                    precision = r.getInteger(1, 38);
+                    scale = r.getInteger(0, precision);
+                    getPrimitiveDataType().setDecimalPrecision(precision);
+                    getPrimitiveDataType().setDecimalScale(scale);
+                } else {
+                    throw new AssertionError(size);
+                }
+                break;
+            case VARCHAR:
+                if (getPrimitiveDataType().getVarcharLength() != 0) {
+                    break;
+                }
+                varcharLength = r.getInteger(1, 255);
+                getPrimitiveDataType().setVarcharLength(varcharLength);
+                break;
+            default:
+                // pass
+            }
+
+        }
+
+        @Override
+        public String toString() {
             switch (getPrimitiveDataType()) {
             case INT:
                 switch (size) {
@@ -147,23 +208,20 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
             case DECIMAL:
                 switch (size) {
                 case 1:
-                    scale = r.getInteger(0, 9);
-                    precision = r.getInteger(scale + 1, scale + 18);
-                    return "DECIMAL(" + precision + "," + scale + ")";
+                    return "DECIMAL(" + getPrimitiveDataType().getDecimalPrecision() + ","
+                            + getPrimitiveDataType().getDecimalScale() + ")";
                 case 3:
-                    precision = r.getInteger(1, 38);
-                    scale = r.getInteger(0, precision);
-                    return "DECIMALV3(" + precision + "," + scale + ")";
+                    return "DECIMALV3(" + getPrimitiveDataType().getDecimalPrecision() + ","
+                            + getPrimitiveDataType().getDecimalScale() + ")";
                 default:
                     throw new AssertionError(size);
                 }
             case DATE:
-                return Randomly.fromOptions("DATE", "DATEV2");
+                return "DATEV2";
             case DATETIME:
                 return Randomly.fromOptions("DATETIME", "DATETIMEV2");
             case VARCHAR:
-                int chars = r.getInteger(1, 255);
-                return Randomly.fromOptions("VARCHAR", "CHAR") + "(" + chars + ")";
+                return Randomly.fromOptions("VARCHAR", "CHAR") + "(" + getPrimitiveDataType().getVarcharLength() + ")";
             case BOOLEAN:
                 return "BOOLEAN";
             // case HLL:
@@ -287,11 +345,24 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
                         case INT:
                             constant = DorisConstant.createIntConstant(rs.getLong(columnIndex));
                             break;
-                        case BOOLEAN:
-                            constant = DorisConstant.createBooleanConstant(rs.getBoolean(columnIndex));
+                        case FLOAT:
+                        case DECIMAL:
+                            constant = DorisConstant.createFloatConstant(rs.getDouble(columnIndex));
+                            break;
+                        case DATE:
+                            constant = DorisConstant.createDateConstant(rs.getString(columnIndex));
+                            break;
+                        case DATETIME:
+                            constant = DorisConstant.createDatetimeConstant(rs.getString(columnIndex));
                             break;
                         case VARCHAR:
                             constant = DorisConstant.createStringConstant(rs.getString(columnIndex));
+                            break;
+                        case BOOLEAN:
+                            constant = DorisConstant.createBooleanConstant(rs.getBoolean(columnIndex));
+                            break;
+                        case NULL:
+                            constant = DorisConstant.createNullConstant();
                             break;
                         default:
                             throw new IgnoreMeException();
@@ -344,9 +415,19 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
 
         if (typeString.startsWith("DECIMALV3")) {
             primitiveType = DorisDataType.DECIMAL;
+            String precisionAndScale = typeString.substring(typeString.indexOf('(') + 1, typeString.indexOf(')'));
+            String[] split = precisionAndScale.split(",");
+            assert split.length == 2;
+            primitiveType.setDecimalPrecision(Integer.parseInt(split[0].trim()));
+            primitiveType.setDecimalScale(Integer.parseInt(split[1].trim()));
             size = 3;
         } else if (typeString.startsWith("DECIMAL")) {
             primitiveType = DorisDataType.DECIMAL;
+            String precisionAndScale = typeString.substring(typeString.indexOf('(') + 1, typeString.indexOf(')'));
+            String[] split = precisionAndScale.split(",");
+            assert split.length == 2;
+            primitiveType.setDecimalPrecision(Integer.parseInt(split[0].trim()));
+            primitiveType.setDecimalScale(Integer.parseInt(split[1].trim()));
             size = 1;
         } else if (typeString.startsWith("DATEV2")) {
             primitiveType = DorisDataType.DATE;
@@ -362,6 +443,8 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
             size = 1;
         } else if (typeString.startsWith("CHAR") || typeString.startsWith("VARCHAR")) {
             primitiveType = DorisDataType.VARCHAR;
+            String varcharLength = typeString.substring(typeString.indexOf('(') + 1, typeString.indexOf(')'));
+            primitiveType.setVarcharLength(Integer.parseInt(varcharLength.trim()));
         } else {
             switch (typeString) {
             case "LARGEINT":

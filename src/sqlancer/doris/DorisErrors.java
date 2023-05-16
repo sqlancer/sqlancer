@@ -22,6 +22,8 @@ public final class DorisErrors {
         errors.add("can not cast from origin type");
         errors.add("not produced by aggregation output");
         errors.add("cannot combine"); // cannot combine SELECT DISTINCT with aggregate functions or GROUP BY
+        errors.add("Invalid type");
+        errors.add("cannot be cast to");
 
         // functions
         errors.add("No matching function with signature");
@@ -33,6 +35,10 @@ public final class DorisErrors {
         errors.add("function do not support");
         errors.add("parameter must be");
         errors.add("Not supported input arguments types");
+        errors.add("No matching function with signature");
+        errors.add("function");
+        errors.add("Invalid");
+        errors.add("Incorrect");
 
         // regex
 

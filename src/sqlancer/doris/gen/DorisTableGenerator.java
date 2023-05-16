@@ -82,9 +82,13 @@ public class DorisTableGenerator {
         for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
             String columnName = String.format("c%d", i);
             DorisCompositeDataType columnType = DorisCompositeDataType.getRandomWithoutNull();
+            columnType.initColumnArgs(); // set decimalAndVarchar
 
             boolean iskey = columnType.canBeKey() && Randomly.getBoolean();
             boolean isNullable = Randomly.getBoolean();
+            if (!globalState.getDbmsSpecificOptions().testNotNullConstraints) {
+                isNullable = true;
+            }
             // boolean isHllOrBitmap = (columnType.getPrimitiveDataType() == DorisSchema.DorisDataType.HLL)
             // || (columnType.getPrimitiveDataType() == DorisSchema.DorisDataType.BITMAP);
             boolean isHllOrBitmap = false;
