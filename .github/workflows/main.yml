@@ -300,7 +300,8 @@ jobs:
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Setup MySQL
-        uses: mirromutth/mysql-action@v1.1
+        run: |
+          sudo systemctl start mysql.service # MySQL 8.0.32-0ubuntu0.22.04.2
       - name: Create SQLancer user
         run: mysql -uroot -proot -e "CREATE USER 'sqlancer'@'localhost' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'localhost';"
       - name: Run Tests

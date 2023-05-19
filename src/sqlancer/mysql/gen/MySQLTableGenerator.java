@@ -176,9 +176,10 @@ public class MySQLTableGenerator {
                 sb.append("AUTO_INCREMENT = ");
                 sb.append(r.getPositiveInteger());
                 break;
+            // The valid range for avg_row_length is [0,4294967295]
             case AVG_ROW_LENGTH:
                 sb.append("AVG_ROW_LENGTH = ");
-                sb.append(r.getPositiveInteger());
+                sb.append(r.getLong(0, 4294967295L + 1));
                 break;
             case CHECKSUM:
                 sb.append("CHECKSUM = 1");
@@ -212,9 +213,10 @@ public class MySQLTableGenerator {
                 sb.append("INSERT_METHOD = ");
                 sb.append(Randomly.fromOptions("NO", "FIRST", "LAST"));
                 break;
+            // The valid range for key_block_size is [0,65535]
             case KEY_BLOCK_SIZE:
                 sb.append("KEY_BLOCK_SIZE = ");
-                sb.append(r.getPositiveInteger());
+                sb.append(r.getInteger(0, 65535 + 1));
                 break;
             case MAX_ROWS:
                 sb.append("MAX_ROWS = ");
@@ -336,7 +338,7 @@ public class MySQLTableGenerator {
             if (Randomly.getBoolean()) {
                 sb.append("(");
                 sb.append(Randomly.getNotCachedInteger(0, 255)); // Display width out of range for column 'c0' (max =
-                                                                 // 255)
+                // 255)
                 sb.append(")");
             }
             break;
