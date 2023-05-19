@@ -273,6 +273,7 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
         case "BOOLEAN":
         case "BOOL":
             primitiveType = DatabendDataType.BOOLEAN;
+            size = 1;
             break;
         // case "DATE":
         // primitiveType = DatabendDataType.DATE;
