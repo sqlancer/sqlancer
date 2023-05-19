@@ -215,7 +215,7 @@ jobs:
 
   mariadb:
     name: DBMS Tests (MariaDB)
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
@@ -291,7 +291,7 @@ jobs:
 
   mysql:
     name: DBMS Tests (MySQL)
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
