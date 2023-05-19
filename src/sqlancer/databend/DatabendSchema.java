@@ -76,20 +76,20 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
             DatabendDataType type = DatabendDataType.getRandomWithoutNull();
             int size = -1;
             switch (type) {
-                case INT:
-                    size = Randomly.fromOptions(1, 2, 4, 8);
-                    break;
-                case FLOAT:
-                    size = Randomly.fromOptions(4, 8);
-                    break;
-                case BOOLEAN:
-                case VARCHAR:
-                    // case DATE:
-                    // case TIMESTAMP:
-                    size = 0;
-                    break;
-                default:
-                    throw new AssertionError(type);
+            case INT:
+                size = Randomly.fromOptions(1, 2, 4, 8);
+                break;
+            case FLOAT:
+                size = Randomly.fromOptions(4, 8);
+                break;
+            case BOOLEAN:
+            case VARCHAR:
+                // case DATE:
+                // case TIMESTAMP:
+                size = 0;
+                break;
+            default:
+                throw new AssertionError(type);
             }
 
             return new DatabendCompositeDataType(type, size);
@@ -98,40 +98,40 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
         @Override
         public String toString() {
             switch (getPrimitiveDataType()) {
-                case INT:
-                    switch (size) {
-                        case 8:
-                            return Randomly.fromOptions("BIGINT", "INT64");
-                        case 4:
-                            return Randomly.fromOptions("INT", "INT32");
-                        case 2:
-                            return Randomly.fromOptions("SMALLINT", "INT16");
-                        case 1:
-                            return Randomly.fromOptions("TINYINT", "INT8");
-                        default:
-                            throw new AssertionError(size);
-                    }
-                case VARCHAR:
-                    return Randomly.fromOptions("VARCHAR");
-                case FLOAT:
-                    switch (size) {
-                        case 8:
-                            return Randomly.fromOptions("DOUBLE");
-                        case 4:
-                            return Randomly.fromOptions("FLOAT");
-                        default:
-                            throw new AssertionError(size);
-                    }
-                case BOOLEAN:
-                    return Randomly.fromOptions("BOOLEAN", "BOOL");
-                // case TIMESTAMP:
-                // return Randomly.fromOptions("TIMESTAMP", "DATETIME");
-                // case DATE:
-                // return Randomly.fromOptions("DATE");
-                case NULL:
-                    return Randomly.fromOptions("NULL");
+            case INT:
+                switch (size) {
+                case 8:
+                    return Randomly.fromOptions("BIGINT", "INT64");
+                case 4:
+                    return Randomly.fromOptions("INT", "INT32");
+                case 2:
+                    return Randomly.fromOptions("SMALLINT", "INT16");
+                case 1:
+                    return Randomly.fromOptions("TINYINT", "INT8");
                 default:
-                    throw new AssertionError(getPrimitiveDataType());
+                    throw new AssertionError(size);
+                }
+            case VARCHAR:
+                return Randomly.fromOptions("VARCHAR");
+            case FLOAT:
+                switch (size) {
+                case 8:
+                    return Randomly.fromOptions("DOUBLE");
+                case 4:
+                    return Randomly.fromOptions("FLOAT");
+                default:
+                    throw new AssertionError(size);
+                }
+            case BOOLEAN:
+                return Randomly.fromOptions("BOOLEAN", "BOOL");
+            // case TIMESTAMP:
+            // return Randomly.fromOptions("TIMESTAMP", "DATETIME");
+            // case DATE:
+            // return Randomly.fromOptions("DATE");
+            case NULL:
+                return Randomly.fromOptions("NULL");
+            default:
+                throw new AssertionError(getPrimitiveDataType());
             }
         }
 
@@ -143,7 +143,7 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
         private final boolean isNullable;
 
         public DatabendColumn(String name, DatabendCompositeDataType columnType, boolean isPrimaryKey,
-                              boolean isNullable) {
+                boolean isNullable) {
             super(name, null, columnType);
             this.isPrimaryKey = isPrimaryKey;
             this.isNullable = isNullable;
@@ -167,7 +167,7 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
 
         public DatabendRowValue getRandomRowValue(SQLConnection con) throws SQLException {
             String rowValueQuery = String.format("SELECT %s FROM %s ORDER BY 1 LIMIT 1", columnNamesAsString(
-                            c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
+                    c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
                     tableNamesAsString());
             Map<DatabendColumn, DatabendConstant> values = new HashMap<>();
             try (Statement s = con.createStatement()) {
@@ -185,17 +185,17 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
                         constant = DatabendConstant.createNullConstant();
                     } else {
                         switch (column.getType().getPrimitiveDataType()) {
-                            case INT:
-                                constant = DatabendConstant.createIntConstant(rs.getLong(columnIndex));
-                                break;
-                            case BOOLEAN:
-                                constant = DatabendConstant.createBooleanConstant(rs.getBoolean(columnIndex));
-                                break;
-                            case VARCHAR:
-                                constant = DatabendConstant.createStringConstant(rs.getString(columnIndex));
-                                break;
-                            default:
-                                throw new IgnoreMeException();
+                        case INT:
+                            constant = DatabendConstant.createIntConstant(rs.getLong(columnIndex));
+                            break;
+                        case BOOLEAN:
+                            constant = DatabendConstant.createBooleanConstant(rs.getBoolean(columnIndex));
+                            break;
+                        case VARCHAR:
+                            constant = DatabendConstant.createStringConstant(rs.getString(columnIndex));
+                            break;
+                        default:
+                            throw new IgnoreMeException();
                         }
                     }
                     values.put(column, constant);
@@ -238,57 +238,57 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
             return new DatabendCompositeDataType(DatabendDataType.FLOAT, 8);
         }
         switch (typeString.toUpperCase()) {
-            case "INT":
-            case "INT32":
-                primitiveType = INT;
-                size = 4;
-                break;
-            case "SMALLINT":
-            case "INT16":
-                primitiveType = INT;
-                size = 2;
-                break;
-            case "BIGINT":
-            case "INT64":
-                primitiveType = INT;
-                size = 8;
-                break;
-            case "TINYINT":
-            case "INT8":
-                primitiveType = INT;
-                size = 1;
-                break;
-            case "VARCHAR":
-            case "STRING":
-                primitiveType = DatabendDataType.VARCHAR;
-                break;
-            case "FLOAT":
-                primitiveType = DatabendDataType.FLOAT;
-                size = 4;
-                break;
-            case "DOUBLE":
-                primitiveType = DatabendDataType.FLOAT;
-                size = 8;
-                break;
-            case "BOOLEAN":
-            case "BOOL":
-                primitiveType = DatabendDataType.BOOLEAN;
-                break;
-            // case "DATE":
-            // primitiveType = DatabendDataType.DATE;
-            // break;
-            // case "TIMESTAMP":
-            // primitiveType = DatabendDataType.TIMESTAMP;
-            // break;
-            case "NULL":
-                primitiveType = DatabendDataType.NULL;
-                break;
-            case "INTERVAL":
-                throw new IgnoreMeException();
-                // TODO: caused when a view contains a computation like ((TIMESTAMP '1970-01-05 11:26:57')-(TIMESTAMP
-                // '1969-12-29 06:50:27'))
-            default:
-                throw new AssertionError(typeString);
+        case "INT":
+        case "INT32":
+            primitiveType = INT;
+            size = 4;
+            break;
+        case "SMALLINT":
+        case "INT16":
+            primitiveType = INT;
+            size = 2;
+            break;
+        case "BIGINT":
+        case "INT64":
+            primitiveType = INT;
+            size = 8;
+            break;
+        case "TINYINT":
+        case "INT8":
+            primitiveType = INT;
+            size = 1;
+            break;
+        case "VARCHAR":
+        case "STRING":
+            primitiveType = DatabendDataType.VARCHAR;
+            break;
+        case "FLOAT":
+            primitiveType = DatabendDataType.FLOAT;
+            size = 4;
+            break;
+        case "DOUBLE":
+            primitiveType = DatabendDataType.FLOAT;
+            size = 8;
+            break;
+        case "BOOLEAN":
+        case "BOOL":
+            primitiveType = DatabendDataType.BOOLEAN;
+            break;
+        // case "DATE":
+        // primitiveType = DatabendDataType.DATE;
+        // break;
+        // case "TIMESTAMP":
+        // primitiveType = DatabendDataType.TIMESTAMP;
+        // break;
+        case "NULL":
+            primitiveType = DatabendDataType.NULL;
+            break;
+        case "INTERVAL":
+            throw new IgnoreMeException();
+        // TODO: caused when a view contains a computation like ((TIMESTAMP '1970-01-05 11:26:57')-(TIMESTAMP
+        // '1969-12-29 06:50:27'))
+        default:
+            throw new AssertionError(typeString);
         }
         return new DatabendCompositeDataType(primitiveType, size);
     }
