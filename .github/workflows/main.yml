@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up JDK 11
+      - name: Setup JDK 11
         uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
@@ -39,13 +39,13 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up JDK 11
+      - name: Setup JDK 11
         uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
-      - name: Set up Citus
+      - name: Setup Citus
         run: |
           echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" | sudo tee  /etc/apt/sources.list.d/pgdg.list
           curl https://install.citusdata.com/community/deb.sh | sudo bash
@@ -85,13 +85,13 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up JDK 11
+      - name: Setup JDK 11
         uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
-      - name: Set up ClickHouse
+      - name: Setup ClickHouse
         run: |
           docker pull clickhouse/clickhouse-server:head
           docker run --ulimit nofile=262144:262144 --name clickhouse-server -p8123:8123 -d clickhouse/clickhouse-server:head
@@ -112,13 +112,13 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up JDK 11
+      - name: Setup JDK 11
         uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
-      - name: Set up CockroachDB
+      - name: Setup CockroachDB
         run: |
           wget -qO- https://binaries.cockroachdb.com/cockroach-v23.1.0-beta.2.linux-amd64.tgz | tar  xvz
           cd  cockroach-v23.1.0-beta.2.linux-amd64/ && ./cockroach start-single-node --insecure &
@@ -135,13 +135,13 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up JDK 11
+      - name: Setup JDK 11
         uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
-      - name: Set up CockroachDB
+      - name: Setup CockroachDB
         run: |
           wget -qO- https://binaries.cockroachdb.com/cockroach-v23.1.0-beta.2.linux-amd64.tgz | tar  xvz
           cd  cockroach-v23.1.0-beta.2.linux-amd64/ && ./cockroach start-single-node --insecure &
@@ -167,7 +167,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up JDK 11
+      - name: Setup JDK 11
         uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
@@ -185,7 +185,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up JDK 11
+      - name: Setup JDK 11
         uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
@@ -201,7 +201,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up JDK 11
+      - name: Setup JDK 11
         uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
@@ -218,7 +218,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up JDK 11
+      - name: Setup JDK 11
         uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
@@ -243,14 +243,14 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up Materialize
+      - name: Setup Materialize
         run: |
           docker pull materialize/materialized:latest
           docker run -d -p6875:6875 -p6877:6877 -p 26257:26257 materialize/materialized:latest
           sleep 5
           # Workaround for https://github.com/cockroachdb/cockroach/issues/93892
           psql postgres://root@localhost:26257 -c "SET CLUSTER SETTING sql.stats.forecasts.enabled = false"
-      - name: Set up JDK 11
+      - name: Setup JDK 11
         uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
@@ -268,14 +268,14 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up Materialize
+      - name: Setup Materialize
         run: |
           docker pull materialize/materialized:latest
           docker run -d -p6875:6875 -p6877:6877 -p 26257:26257 materialize/materialized:latest
           sleep 5
           # Workaround for https://github.com/cockroachdb/cockroach/issues/93892
           psql postgres://root@localhost:26257 -c "SET CLUSTER SETTING sql.stats.forecasts.enabled = false"
-      - name: Set up JDK 11
+      - name: Setup JDK 11
         uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
@@ -293,20 +293,14 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up JDK 11
+      - name: Setup JDK 11
         uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
-      - name: Set up MySQL
-        run: |
-          sudo apt-get install libssl-dev libmecab2 libjson-perl mecab-ipadic-utf8
-          sudo apt-get remove mysql-*
-          wget -q https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar
-          tar -xvf mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar
-          sudo dpkg -i *.deb
-          sudo systemctl start mysql
+      - name: Setup MySQL
+        uses: mirromutth/mysql-action@v1.1
       - name: Create SQLancer user
         run: mysql -uroot -proot -e "CREATE USER 'sqlancer'@'localhost' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'localhost';"
       - name: Run Tests
@@ -321,14 +315,14 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up PostgreSQL
-        uses: harmon758/postgresql-action@v3
+      - name: Setup PostgreSQL
+        uses: harmon758/postgresql-action@v1.0.0
         with:
           postgresql version: '12'
           postgresql user: 'sqlancer'
           postgresql password: 'sqlancer'
           postgresql db: 'test'
-      - name: Set up JDK 11
+      - name: Setup JDK 11
         uses: actions/setup-java@v1
         with:
           java-version: 11
@@ -345,7 +339,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up JDK 11
+      - name: Setup JDK 11
         uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
@@ -364,7 +358,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up JDK 11
+      - name: Setup JDK 11
         uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
@@ -381,13 +375,13 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up JDK 11
+      - name: Setup JDK 11
         uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
-      - name: Set up TiDB
+      - name: Setup TiDB
         run: |
           docker pull pingcap/tidb:latest
           docker run --name tidb-server -d -p 4000:4000 pingcap/tidb:latest
@@ -404,13 +398,13 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up JDK 11
+      - name: Setup JDK 11
         uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
-      - name: Set up TiDB
+      - name: Setup TiDB
         run: |
           docker pull pingcap/tidb:latest
           docker run --name tidb-server -d -p 4000:4000 pingcap/tidb:latest
@@ -427,7 +421,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up JDK 11
+      - name: Setup JDK 11
         uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
@@ -449,7 +443,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up JDK 13
+      - name: Setup JDK 13
         uses: actions/setup-java@v1.4.4
         with:
           java-version: 13
@@ -466,7 +460,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up JDK 14
+      - name: Setup JDK 14
         uses: actions/setup-java@v1.4.4
         with:
           java-version: 14
@@ -483,7 +477,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up JDK 15
+      - name: Setup JDK 15
         uses: actions/setup-java@v1.4.4
         with:
           java-version: 15-ea
