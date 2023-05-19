@@ -232,11 +232,19 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
     }
 
     private static DatabendCompositeDataType getColumnType(String typeString) {
-        DatabendDataType primitiveType;
-        int size = -1;
         if (typeString.startsWith("DECIMAL")) { // Ugly hack
             return new DatabendCompositeDataType(DatabendDataType.FLOAT, 8);
         }
+        if (typeString.startsWith("Nullable")) { // Ugly hack
+            String substring = typeString.substring(typeString.indexOf('(') + 1, typeString.indexOf(')'));
+            return getColumnTypeNormalCases(substring);
+        }
+        return getColumnTypeNormalCases(typeString);
+    }
+
+    private static DatabendCompositeDataType getColumnTypeNormalCases(String typeString) {
+        DatabendDataType primitiveType;
+        int size = -1;
         switch (typeString.toUpperCase()) {
         case "INT":
         case "INT32":
@@ -263,6 +271,7 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
             primitiveType = DatabendDataType.VARCHAR;
             break;
         case "FLOAT":
+        case "FLOAT32":
             primitiveType = DatabendDataType.FLOAT;
             size = 4;
             break;
