@@ -240,8 +240,10 @@ public class MaterializeProvider extends SQLProviderAdapter<MaterializeGlobalSta
         while (globalState.getSchema().getDatabaseTables().size() < numTables) {
             try {
                 String tableName = DBMSCommon.createTableName(globalState.getSchema().getDatabaseTables().size());
+                SQLQueryAdapter dropTable = new SQLQueryAdapter("DROP TABLE IF EXISTS " + tableName);
                 SQLQueryAdapter createTable = MaterializeTableGenerator.generate(tableName, globalState.getSchema(),
                         generateOnlyKnown, globalState);
+                globalState.executeStatement(dropTable);
                 globalState.executeStatement(createTable);
             } catch (IgnoreMeException e) {
 
