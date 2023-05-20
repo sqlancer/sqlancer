@@ -232,41 +232,54 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
     }
 
     private static DatabendCompositeDataType getColumnType(String typeString) {
-        DatabendDataType primitiveType;
-        int size = -1;
         if (typeString.startsWith("DECIMAL")) { // Ugly hack
             return new DatabendCompositeDataType(DatabendDataType.FLOAT, 8);
         }
-        switch (typeString) {
-        case "INT":
-            primitiveType = INT;
-            size = 4;
-            break;
-        case "SMALLINT":
-            primitiveType = INT;
-            size = 2;
-            break;
-        case "BIGINT":
-            primitiveType = INT;
-            size = 8;
+        if (typeString.startsWith("Nullable")) { // Ugly hack
+            String substring = typeString.substring(typeString.indexOf('(') + 1, typeString.indexOf(')'));
+            return getColumnTypeNormalCases(substring);
+        }
+        return getColumnTypeNormalCases(typeString);
+    }
+
+    private static DatabendCompositeDataType getColumnTypeNormalCases(String typeString) {
+        DatabendDataType primitiveType;
+        int size = -1;
+        switch (typeString.toUpperCase()) {
+        case "BOOLEAN":
+        case "BOOL":
+            primitiveType = DatabendDataType.BOOLEAN;
+            size = 1;
             break;
         case "TINYINT":
+        case "INT8":
             primitiveType = INT;
             size = 1;
             break;
-        case "VARCHAR":
-            primitiveType = DatabendDataType.VARCHAR;
+        case "SMALLINT":
+        case "INT16":
+            primitiveType = INT;
+            size = 2;
+            break;
+        case "INT":
+        case "INT32":
+            primitiveType = INT;
+            size = 4;
+            break;
+        case "BIGINT":
+        case "INT64":
+            primitiveType = INT;
+            size = 8;
             break;
         case "FLOAT":
+        case "FLOAT32":
             primitiveType = DatabendDataType.FLOAT;
             size = 4;
             break;
         case "DOUBLE":
+        case "FLOAT64":
             primitiveType = DatabendDataType.FLOAT;
             size = 8;
-            break;
-        case "BOOLEAN":
-            primitiveType = DatabendDataType.BOOLEAN;
             break;
         // case "DATE":
         // primitiveType = DatabendDataType.DATE;
@@ -274,6 +287,10 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
         // case "TIMESTAMP":
         // primitiveType = DatabendDataType.TIMESTAMP;
         // break;
+        case "VARCHAR":
+        case "STRING":
+            primitiveType = DatabendDataType.VARCHAR;
+            break;
         case "NULL":
             primitiveType = DatabendDataType.NULL;
             break;
