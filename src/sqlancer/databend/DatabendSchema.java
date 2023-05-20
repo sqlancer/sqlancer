@@ -276,6 +276,7 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
             size = 4;
             break;
         case "DOUBLE":
+        case "FLOAT64":
             primitiveType = DatabendDataType.FLOAT;
             size = 8;
             break;
