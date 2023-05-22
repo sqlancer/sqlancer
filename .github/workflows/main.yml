@@ -14,18 +14,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Verify
         run: mvn -B verify -DskipTests=true
       - name: Misc Tests
         run: mvn -B '-Dtest=!sqlancer.dbms.**,!sqlancer.qpg.**' test
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
@@ -36,11 +36,11 @@ jobs:
     name: DBMS Tests (Citus)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
@@ -82,11 +82,11 @@ jobs:
     name: DBMS Tests (ClickHouse)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
@@ -105,17 +105,15 @@ jobs:
           docker stop clickhouse-server
           docker rm clickhouse-server
 
-
-
   cockroachdb:
     name: DBMS Tests (CockroachDB)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
@@ -134,11 +132,11 @@ jobs:
     name: QPG Tests (CockroachDB)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
@@ -166,11 +164,11 @@ jobs:
           - 8000:8000
           - 3307:3307
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
@@ -179,17 +177,16 @@ jobs:
         run: |
           DATABEND_AVAILABLE=true mvn -Dtest=TestDatabend test
 
-
   duckdb:
     name: DBMS Tests (DuckDB)
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build
@@ -201,11 +198,11 @@ jobs:
     name: DBMS Tests (H2)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
@@ -215,14 +212,14 @@ jobs:
 
   mariadb:
     name: DBMS Tests (MariaDB)
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
@@ -243,7 +240,7 @@ jobs:
     name: DBMS Tests (Materialize)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up Materialize
@@ -254,7 +251,7 @@ jobs:
           # Workaround for https://github.com/cockroachdb/cockroach/issues/93892
           psql postgres://root@localhost:26257 -c "SET CLUSTER SETTING sql.stats.forecasts.enabled = false"
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
@@ -268,7 +265,7 @@ jobs:
     name: QPG Tests (Materialize)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up Materialize
@@ -279,7 +276,7 @@ jobs:
           # Workaround for https://github.com/cockroachdb/cockroach/issues/93892
           psql postgres://root@localhost:26257 -c "SET CLUSTER SETTING sql.stats.forecasts.enabled = false"
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
@@ -291,25 +288,20 @@ jobs:
 
   mysql:
     name: DBMS Tests (MySQL)
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Set up MySQL
         run: |
-          sudo apt-get install libssl-dev libmecab2 libjson-perl mecab-ipadic-utf8
-          sudo apt-get remove mysql-*
-          wget -q https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar
-          tar -xvf mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar
-          sudo dpkg -i *.deb
-          sudo systemctl start mysql
+          sudo systemctl start mysql.service # MySQL 8.0.32-0ubuntu0.22.04.2
       - name: Create SQLancer user
         run: mysql -uroot -proot -e "CREATE USER 'sqlancer'@'localhost' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'localhost';"
       - name: Run Tests
@@ -317,16 +309,15 @@ jobs:
           MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLPQS
           MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLTLP
 
-
   postgres:
     name: DBMS Tests (PostgreSQL)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up PostgreSQL
-        uses: harmon758/postgresql-action@v1
+        uses: harmon758/postgresql-action@v1.0.0
         with:
           postgresql version: '12'
           postgresql user: 'sqlancer'
@@ -346,11 +337,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build
@@ -360,17 +351,16 @@ jobs:
           mvn -Dtest=TestSQLitePQS test
           mvn -Dtest=TestSQLite3 test
 
-
   sqlite-qpg:
     name: QPG Tests (SQLite)
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build
@@ -379,16 +369,15 @@ jobs:
         run: |
           mvn -Dtest=TestSQLiteQPG test
 
-
   tidb:
     name: DBMS Tests (TiDB)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
@@ -407,11 +396,11 @@ jobs:
     name: QPG Tests (TiDB)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
@@ -430,16 +419,16 @@ jobs:
     name: DBMS Tests (YugabyteDB)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
-      - name: Setup Yugabyte
+      - name: Set up Yugabyte
         run: |
           docker pull yugabytedb/yugabyte:latest
           docker run -d --name yugabyte -p7000:7000 -p9000:9000 -p5433:5433 -p9042:9042 yugabytedb/yugabyte:latest bin/yugabyted start --daemon=false
@@ -493,11 +482,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 13
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 13
       - name: Build
@@ -510,11 +499,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 14
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 14
       - name: Build
@@ -527,11 +516,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 15
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 15-ea
       - name: Build
