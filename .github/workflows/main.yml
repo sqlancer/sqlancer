@@ -478,7 +478,7 @@ jobs:
           cp doris/dependencies/*.jar doris/be/lib/
           doris/fe/bin/start_fe.sh --daemon
           doris/be/bin/start_be.sh --daemon
-          apt install libnet-ifconfig-wrapper-perl --assume-yes
+          sudo apt install libnet-ifconfig-wrapper-perl --assume-yes
           IP=$(ifconfig eth0 | grep inet | grep -v inet6 | awk '{print $2}')
           mysql -u root -h 127.0.0.1 --port 9030 -e "ALTER SYSTEM ADD BACKEND '${IP}:9050';"
           mysql -u root -h 127.0.0.1 --port 9030 -e "CREATE USER 'sqlancer' IDENTIFIED BY 'sqlancer'; GRANT ALL ON *.* TO sqlancer;"
