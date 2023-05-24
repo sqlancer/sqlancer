@@ -12,6 +12,8 @@ import sqlancer.mysql.MySQLVisitor;
 
 public class MySQLTLPWhereOracle extends MySQLQueryPartitioningBase {
 
+    private String generatedQueryString;
+
     public MySQLTLPWhereOracle(MySQLGlobalState state) {
         super(state);
     }
@@ -21,7 +23,7 @@ public class MySQLTLPWhereOracle extends MySQLQueryPartitioningBase {
         super.check();
         select.setWhereClause(null);
         String originalQueryString = MySQLVisitor.asString(select);
-
+        generatedQueryString = originalQueryString;
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         if (Randomly.getBoolean()) {
@@ -39,6 +41,11 @@ public class MySQLTLPWhereOracle extends MySQLQueryPartitioningBase {
                 thirdQueryString, combinedString, Randomly.getBoolean(), state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
+    }
+
+    @Override
+    public String getLastQueryString() {
+        return generatedQueryString;
     }
 
 }
