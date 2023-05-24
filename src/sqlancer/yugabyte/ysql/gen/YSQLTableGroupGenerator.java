@@ -1,8 +1,10 @@
 package sqlancer.yugabyte.ysql.gen;
 
+import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicLong;
 
 import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 
@@ -14,7 +16,11 @@ public final class YSQLTableGroupGenerator {
     private YSQLTableGroupGenerator() {
     }
 
-    public static SQLQueryAdapter create(YSQLGlobalState globalState) {
+    public static SQLQueryAdapter create(YSQLGlobalState globalState) throws SQLException {
+        if (globalState.getSchema().getDatabaseIsColocated(globalState.getConnection())) {
+            return new SQLQueryAdapter("", null, false);
+        }
+
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder("CREATE TABLEGROUP ");
         String tableGroupName = "tg" + UNIQUE_TABLEGROUP_COUNTER.incrementAndGet();
