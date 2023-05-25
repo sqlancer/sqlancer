@@ -166,7 +166,7 @@ public class YSQLSchema extends AbstractSchema<YSQLGlobalState, YSQLTable> {
                 if (!rs.next()) {
                     throw new IgnoreMeException();
                 }
-                String result = rs.getString(0);
+                String result = rs.getString(1);
                 // The query will result in a 'f' for a non-colocated database
                 return !"f".equals(result);
             }
