@@ -4,7 +4,6 @@ import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicLong;
 
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 
