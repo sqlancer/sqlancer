@@ -1,5 +1,6 @@
 package sqlancer.yugabyte.ysql.gen;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -7,6 +8,7 @@ import java.util.stream.Collectors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
@@ -92,7 +94,7 @@ public final class YSQLCommon {
     }
 
     public static void generateWith(StringBuilder sb, YSQLGlobalState globalState, ExpectedErrors errors,
-            List<YSQLColumn> columnsToBeAdded, boolean isTemporaryTable) {
+            List<YSQLColumn> columnsToBeAdded, boolean isTemporaryTable) throws SQLException {
         if (Randomly.getBoolean()) {
             sb.append(" WITHOUT OIDS ");
         } else if (Randomly.getBoolean() && !isTemporaryTable) {
@@ -159,8 +161,11 @@ public final class YSQLCommon {
             }
         } else if (Randomly.getBoolean()) {
             errors.add("Cannot use TABLEGROUP with TEMP table");
-            sb.append(" TABLEGROUP tg").append(
-                    Randomly.getNotCachedInteger(1, (int) YSQLTableGroupGenerator.UNIQUE_TABLEGROUP_COUNTER.get()));
+            if (!globalState.getSchema().getDatabaseIsColocated(globalState.getConnection())) {
+                sb.append(" TABLEGROUP tg").append(
+                        Randomly.getNotCachedInteger(1, (int) YSQLTableGroupGenerator.UNIQUE_TABLEGROUP_COUNTER.get()));
+            }
+
         }
     }
 

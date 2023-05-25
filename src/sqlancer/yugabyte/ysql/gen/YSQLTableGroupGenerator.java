@@ -15,10 +15,7 @@ public final class YSQLTableGroupGenerator {
     private YSQLTableGroupGenerator() {
     }
 
-    public static SQLQueryAdapter create(YSQLGlobalState globalState) throws SQLException {
-        if (globalState.getSchema().getDatabaseIsColocated(globalState.getConnection())) {
-            return new SQLQueryAdapter("", null, false);
-        }
+    public static SQLQueryAdapter create(YSQLGlobalState globalState) {
 
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder("CREATE TABLEGROUP ");
