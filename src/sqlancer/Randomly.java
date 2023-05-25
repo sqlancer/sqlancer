@@ -16,6 +16,7 @@ public final class Randomly {
     private static int cacheSize = 100;
 
     private final List<Long> cachedLongs = new ArrayList<>();
+    private final List<Integer> cachedIntegers = new ArrayList<>();
     private final List<String> cachedStrings = new ArrayList<>();
     private final List<Double> cachedDoubles = new ArrayList<>();
     private final List<byte[]> cachedBytes = new ArrayList<>();
@@ -27,6 +28,12 @@ public final class Randomly {
     private void addToCache(long val) {
         if (useCaching && cachedLongs.size() < cacheSize && !cachedLongs.contains(val)) {
             cachedLongs.add(val);
+        }
+    }
+
+    private void addToCache(int val) {
+        if (useCaching && cachedIntegers.size() < cacheSize && !cachedIntegers.contains(val)) {
+            cachedIntegers.add(val);
         }
     }
 
@@ -47,6 +54,14 @@ public final class Randomly {
             return null;
         } else {
             return Randomly.fromList(cachedLongs);
+        }
+    }
+
+    private Integer getFromIntegerCache() {
+        if (!useCaching || cachedIntegers.isEmpty()) {
+            return null;
+        } else {
+            return Randomly.fromList(cachedIntegers);
         }
     }
 
@@ -362,6 +377,24 @@ public final class Randomly {
             value = Randomly.fromOptions(0L, Long.MAX_VALUE, 1L);
         } else {
             value = getNextLong(0, Long.MAX_VALUE);
+        }
+        addToCache(value);
+        assert value >= 0;
+        return value;
+    }
+
+    public int getPositiveIntegerInt() {
+        if (cacheProbability()) {
+            Integer value = getFromIntegerCache();
+            if (value != null && value >= 0) {
+                return value;
+            }
+        }
+        int value;
+        if (smallBiasProbability()) {
+            value = Randomly.fromOptions(0, Integer.MAX_VALUE, 1);
+        } else {
+            value = getNextInt(0, Integer.MAX_VALUE);
         }
         addToCache(value);
         assert value >= 0;

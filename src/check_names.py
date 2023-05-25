@@ -52,4 +52,5 @@ if __name__ == '__main__':
     name_to_files["SQLite3"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "sqlite3"))
     name_to_files["TiDB"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "tidb"))
     name_to_files["Y"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "yugabyte"))  # has both YCQL and YSQL prefixes
+    name_to_files["Doris"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "doris"))
     verify_all_dbs(name_to_files)
