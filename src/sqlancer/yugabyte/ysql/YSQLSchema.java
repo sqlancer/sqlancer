@@ -160,7 +160,7 @@ public class YSQLSchema extends AbstractSchema<YSQLGlobalState, YSQLTable> {
         return columns;
     }
 
-    public boolean getDatabaseIsColocated(SQLConnection con) throws SQLException {
+    public boolean getDatabaseIsColocated(SQLConnection con) throws Exception {
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery("SELECT yb_is_database_colocated();")) {
                 if (!rs.next()) {

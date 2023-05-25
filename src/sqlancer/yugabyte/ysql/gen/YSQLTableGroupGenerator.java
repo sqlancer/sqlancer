@@ -1,6 +1,5 @@
 package sqlancer.yugabyte.ysql.gen;
 
-import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicLong;
 
 import sqlancer.common.query.ExpectedErrors;
