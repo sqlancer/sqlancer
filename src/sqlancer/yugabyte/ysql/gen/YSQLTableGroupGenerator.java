@@ -15,7 +15,6 @@ public final class YSQLTableGroupGenerator {
     }
 
     public static SQLQueryAdapter create(YSQLGlobalState globalState) {
-
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder("CREATE TABLEGROUP ");
         String tableGroupName = "tg" + UNIQUE_TABLEGROUP_COUNTER.incrementAndGet();

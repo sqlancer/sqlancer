@@ -159,13 +159,9 @@ public final class YSQLCommon {
             }
         } else if (Randomly.getBoolean()) {
             errors.add("Cannot use TABLEGROUP with TEMP table");
-            try {
-                if (!globalState.getSchema().getDatabaseIsColocated(globalState.getConnection())) {
-                    sb.append(" TABLEGROUP tg").append(Randomly.getNotCachedInteger(1,
-                            (int) YSQLTableGroupGenerator.UNIQUE_TABLEGROUP_COUNTER.get()));
-                }
-            } catch (Exception ignore) {
-
+            if (!globalState.getSchema().getDatabaseIsColocated(globalState.getConnection())) {
+                sb.append(" TABLEGROUP tg").append(
+                        Randomly.getNotCachedInteger(1, (int) YSQLTableGroupGenerator.UNIQUE_TABLEGROUP_COUNTER.get()));
             }
         }
     }
