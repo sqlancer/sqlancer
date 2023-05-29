@@ -168,7 +168,7 @@ public class YSQLSchema extends AbstractSchema<YSQLGlobalState, YSQLTable> {
             return !"f".equals(result);
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new AssertionError(e);
         }
     }
 
