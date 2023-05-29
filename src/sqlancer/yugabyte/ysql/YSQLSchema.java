@@ -162,9 +162,7 @@ public class YSQLSchema extends AbstractSchema<YSQLGlobalState, YSQLTable> {
 
     public boolean getDatabaseIsColocated(SQLConnection con) {
         try (Statement s = con.createStatement(); ResultSet rs = s.executeQuery("SELECT yb_is_database_colocated();")) {
-            if (!rs.next()) {
-                throw new IgnoreMeException();
-            }
+            rs.next();
             String result = rs.getString(1);
             // The query will result in a 'f' for a non-colocated database
             return !"f".equals(result);
