@@ -10,9 +10,9 @@ import sqlancer.mysql.MySQLSchema.MySQLTable;
 /**
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/drop-index.html">DROP INDEX Statement</a>
  */
-public final class MySQLDropIndex {
+public class MySQLDropIndex {
 
-    private MySQLDropIndex() {
+    public MySQLDropIndex() {
     }
 
     // DROP INDEX index_name ON tbl_name

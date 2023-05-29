@@ -159,7 +159,7 @@ public class MySQLSchema extends AbstractSchema<MySQLGlobalState, MySQLTable> {
 
     public static class MySQLRowValue extends AbstractRowValue<MySQLTables, MySQLColumn, MySQLConstant> {
 
-        MySQLRowValue(MySQLTables tables, Map<MySQLColumn, MySQLConstant> values) {
+        protected MySQLRowValue(MySQLTables tables, Map<MySQLColumn, MySQLConstant> values) {
             super(tables, values);
         }
 
@@ -200,9 +200,9 @@ public class MySQLSchema extends AbstractSchema<MySQLGlobalState, MySQLTable> {
 
     }
 
-    public static final class MySQLIndex extends TableIndex {
+    public static class MySQLIndex extends TableIndex {
 
-        private MySQLIndex(String indexName) {
+        public MySQLIndex(String indexName) {
             super(indexName);
         }
 
