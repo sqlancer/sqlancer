@@ -15,7 +15,7 @@ import sqlancer.mysql.MySQLVisitor;
 public class MySQLInsertGenerator {
 
     private final MySQLTable table;
-    private final StringBuilder sb = new StringBuilder();
+    protected final StringBuilder sb = new StringBuilder();
     private final ExpectedErrors errors = new ExpectedErrors();
     private final MySQLGlobalState globalState;
 
