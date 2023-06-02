@@ -166,4 +166,20 @@ public final class ComparatorHelper {
         return secondResultSet;
     }
 
+    public static String canonicalizeResultValue(String value) {
+        if (value == null) {
+            return value;
+        }
+
+        switch (value) {
+        case "-0.0":
+            return "0.0";
+        case "-0":
+            return "0";
+        default:
+        }
+
+        return value;
+    }
+
 }
