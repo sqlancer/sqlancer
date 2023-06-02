@@ -39,7 +39,7 @@ public class DorisQueryPartitioningDistinctTester extends DorisQueryPartitioning
         combinedString.add(unionString);
         List<String> secondResultSet = ComparatorHelper.getResultSetFirstColumnAsString(unionString, errors, state);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
-                state, DorisQueryPartitioningBase::canonicalizeResultValue);
+                state, ComparatorHelper::canonicalizeResultValue);
     }
 
 }

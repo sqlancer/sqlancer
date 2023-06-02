@@ -43,7 +43,7 @@ public class DorisQueryPartitioningGroupByTester extends DorisQueryPartitioningB
         List<String> secondResultSet = ComparatorHelper.getCombinedResultSetNoDuplicates(firstQueryString,
                 secondQueryString, thirdQueryString, combinedString, true, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
-                state, DorisQueryPartitioningBase::canonicalizeResultValue);
+                state, ComparatorHelper::canonicalizeResultValue);
     }
 
     @Override

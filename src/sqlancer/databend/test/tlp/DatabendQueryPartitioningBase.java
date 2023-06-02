@@ -4,7 +4,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
@@ -41,15 +40,6 @@ public class DatabendQueryPartitioningBase
     public DatabendQueryPartitioningBase(DatabendGlobalState state) {
         super(state);
         DatabendErrors.addExpressionErrors(errors);
-    }
-
-    public static String canonicalizeResultValue(String value) {
-        // Rule: -0.0 should be canonicalized to 0.0
-        if (Objects.equals(value, "-0.0")) {
-            return "0.0";
-        }
-
-        return value;
     }
 
     @Override

@@ -37,22 +37,6 @@ public class DuckDBQueryPartitioningBase
         DuckDBErrors.addExpressionErrors(errors);
     }
 
-    public static String canonicalizeResultValue(String value) {
-        if (value == null) {
-            return value;
-        }
-
-        switch (value) {
-        case "-0.0":
-            return "0.0";
-        case "-0":
-            return "0";
-        default:
-        }
-
-        return value;
-    }
-
     @Override
     public void check() throws SQLException {
         s = state.getSchema();
