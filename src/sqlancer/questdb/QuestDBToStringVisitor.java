@@ -2,7 +2,7 @@ package sqlancer.questdb;
 
 import sqlancer.common.ast.newast.NewToStringVisitor;
 import sqlancer.common.ast.newast.Node;
-import sqlancer.questdb.ast.QuestDBConstant;
+import sqlancer.questdb.ast.QuestDBConstants.QuestDBConstant;
 import sqlancer.questdb.ast.QuestDBExpression;
 import sqlancer.questdb.ast.QuestDBSelect;
 
@@ -11,16 +11,12 @@ public class QuestDBToStringVisitor extends NewToStringVisitor<QuestDBExpression
     @Override
     public void visitSpecific(Node<QuestDBExpression> expr) {
         if (expr instanceof QuestDBConstant) {
-            visit((QuestDBConstant) expr);
+            sb.append(expr);
         } else if (expr instanceof QuestDBSelect) {
             visit((QuestDBSelect) expr);
         } else { // TODO: maybe implement QuestDBJoin
-            throw new AssertionError("Unknown class: " + expr.getClass());
+            throw new AssertionError("unknown class: " + expr.getClass());
         }
-    }
-
-    private void visit(QuestDBConstant constant) {
-        sb.append(constant.toString());
     }
 
     private void visit(QuestDBSelect select) {

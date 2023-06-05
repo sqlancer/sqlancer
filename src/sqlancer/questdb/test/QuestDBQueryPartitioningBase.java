@@ -38,7 +38,7 @@ public class QuestDBQueryPartitioningBase
     List<Node<QuestDBExpression>> generateFetchColumns() {
         List<Node<QuestDBExpression>> columns = new ArrayList<>();
         if (Randomly.getBoolean()) {
-            columns.add(new ColumnReferenceNode<>(new QuestDBColumn("*", null, false)));
+            columns.add(new ColumnReferenceNode<>(new QuestDBColumn("*", null, false, false)));
         } else {
             columns = Randomly.nonEmptySubset(targetTable.getColumns()).stream()
                     .map(c -> new ColumnReferenceNode<QuestDBExpression, QuestDBColumn>(c))

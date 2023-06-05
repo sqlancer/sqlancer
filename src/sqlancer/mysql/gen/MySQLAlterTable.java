@@ -130,15 +130,15 @@ public class MySQLAlterTable {
                 break;
             case STATS_AUTO_RECALC:
                 sb.append("STATS_AUTO_RECALC ");
-                sb.append(Randomly.fromOptions(0, 1, "DEFAULT"));
+                sb.append(Randomly.fromOptions("0", "1", "DEFAULT"));
                 break;
             case STATS_PERSISTENT:
                 sb.append("STATS_PERSISTENT ");
-                sb.append(Randomly.fromOptions(0, 1, "DEFAULT"));
+                sb.append(Randomly.fromOptions("0", "1", "DEFAULT"));
                 break;
             case PACK_KEYS:
                 sb.append("PACK_KEYS ");
-                sb.append(Randomly.fromOptions(0, 1, "DEFAULT"));
+                sb.append(Randomly.fromOptions("0", "1", "DEFAULT"));
                 break;
             // not relevant:
             // case WITH_WITHOUT_VALIDATION:
