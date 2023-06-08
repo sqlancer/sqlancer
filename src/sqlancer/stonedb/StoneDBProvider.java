@@ -1,21 +1,10 @@
 package sqlancer.stonedb;
 
 import com.google.auto.service.AutoService;
-import sqlancer.*;
-import sqlancer.common.DBMSCommon;
-import sqlancer.common.schema.AbstractRelationalTable;
-import sqlancer.common.schema.TableIndex;
-import sqlancer.mysql.MySQLGlobalState;
-import sqlancer.mysql.MySQLOptions;
-import sqlancer.mysql.MySQLProvider;
-import sqlancer.mysql.MySQLSchema;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import sqlancer.DatabaseProvider;
+import sqlancer.SQLConnection;
+import sqlancer.SQLGlobalState;
+import sqlancer.SQLProviderAdapter;
 
 @AutoService(DatabaseProvider.class)
 public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBGlobalState, StoneDBOptions> {
