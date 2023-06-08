@@ -39,15 +39,15 @@ public class MySQLSchema extends AbstractSchema<MySQLGlobalState, MySQLTable> {
 
         public boolean isNumeric() {
             switch (this) {
-            case INT:
-            case DOUBLE:
-            case FLOAT:
-            case DECIMAL:
-                return true;
-            case VARCHAR:
-                return false;
-            default:
-                throw new AssertionError(this);
+                case INT:
+                case DOUBLE:
+                case FLOAT:
+                case DECIMAL:
+                    return true;
+                case VARCHAR:
+                    return false;
+                default:
+                    throw new AssertionError(this);
             }
         }
 
@@ -90,7 +90,7 @@ public class MySQLSchema extends AbstractSchema<MySQLGlobalState, MySQLTable> {
 
         public MySQLRowValue getRandomRowValue(SQLConnection con) throws SQLException {
             String randomRow = String.format("SELECT %s FROM %s ORDER BY RAND() LIMIT 1", columnNamesAsString(
-                    c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
+                            c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
                     // columnNamesAsString(c -> "typeof(" + c.getTable().getName() + "." +
                     // c.getName() + ")")
                     tableNamesAsString());
@@ -110,16 +110,16 @@ public class MySQLSchema extends AbstractSchema<MySQLGlobalState, MySQLTable> {
                         constant = MySQLConstant.createNullConstant();
                     } else {
                         switch (column.getType()) {
-                        case INT:
-                            value = randomRowValues.getLong(columnIndex);
-                            constant = MySQLConstant.createIntConstant((long) value);
-                            break;
-                        case VARCHAR:
-                            value = randomRowValues.getString(columnIndex);
-                            constant = MySQLConstant.createStringConstant((String) value);
-                            break;
-                        default:
-                            throw new AssertionError(column.getType());
+                            case INT:
+                                value = randomRowValues.getLong(columnIndex);
+                                constant = MySQLConstant.createIntConstant((long) value);
+                                break;
+                            case VARCHAR:
+                                value = randomRowValues.getString(columnIndex);
+                                constant = MySQLConstant.createStringConstant((String) value);
+                                break;
+                            default:
+                                throw new AssertionError(column.getType());
                         }
                     }
                     values.put(column, constant);
@@ -134,32 +134,32 @@ public class MySQLSchema extends AbstractSchema<MySQLGlobalState, MySQLTable> {
 
     private static MySQLDataType getColumnType(String typeString) {
         switch (typeString) {
-        case "tinyint":
-        case "smallint":
-        case "mediumint":
-        case "int":
-        case "bigint":
-            return MySQLDataType.INT;
-        case "varchar":
-        case "tinytext":
-        case "mediumtext":
-        case "text":
-        case "longtext":
-            return MySQLDataType.VARCHAR;
-        case "double":
-            return MySQLDataType.DOUBLE;
-        case "float":
-            return MySQLDataType.FLOAT;
-        case "decimal":
-            return MySQLDataType.DECIMAL;
-        default:
-            throw new AssertionError(typeString);
+            case "tinyint":
+            case "smallint":
+            case "mediumint":
+            case "int":
+            case "bigint":
+                return MySQLDataType.INT;
+            case "varchar":
+            case "tinytext":
+            case "mediumtext":
+            case "text":
+            case "longtext":
+                return MySQLDataType.VARCHAR;
+            case "double":
+                return MySQLDataType.DOUBLE;
+            case "float":
+                return MySQLDataType.FLOAT;
+            case "decimal":
+                return MySQLDataType.DECIMAL;
+            default:
+                throw new AssertionError(typeString);
         }
     }
 
     public static class MySQLRowValue extends AbstractRowValue<MySQLTables, MySQLColumn, MySQLConstant> {
 
-        protected MySQLRowValue(MySQLTables tables, Map<MySQLColumn, MySQLConstant> values) {
+        MySQLRowValue(MySQLTables tables, Map<MySQLColumn, MySQLConstant> values) {
             super(tables, values);
         }
 
@@ -200,9 +200,9 @@ public class MySQLSchema extends AbstractSchema<MySQLGlobalState, MySQLTable> {
 
     }
 
-    public static class MySQLIndex extends TableIndex {
+    public static final class MySQLIndex extends TableIndex {
 
-        public MySQLIndex(String indexName) {
+        private MySQLIndex(String indexName) {
             super(indexName);
         }
 
