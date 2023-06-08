@@ -16,9 +16,9 @@ import sqlancer.mysql.MySQLSchema.MySQLTable;
 public class MySQLAlterTable {
 
     private final MySQLSchema schema;
-    private final StringBuilder sb = new StringBuilder();
+    protected final StringBuilder sb = new StringBuilder();
     boolean couldAffectSchema;
-    private List<Action> selectedActions;
+    protected List<Action> selectedActions;
 
     public MySQLAlterTable(MySQLSchema newSchema) {
         this.schema = newSchema;
@@ -28,7 +28,7 @@ public class MySQLAlterTable {
         return new MySQLAlterTable(globalState.getSchema()).create();
     }
 
-    private enum Action {
+    protected enum Action {
         ALGORITHM, //
         CHECKSUM, //
         COMPRESSION, //
@@ -60,7 +60,7 @@ public class MySQLAlterTable {
 
     }
 
-    private SQLQueryAdapter create() {
+    protected SQLQueryAdapter create() {
         ExpectedErrors errors = ExpectedErrors.from("does not support the create option", "doesn't have this option",
                 "is not supported for this operation", "Data truncation", "Specified key was too long");
         errors.add("Data truncated for functional index ");

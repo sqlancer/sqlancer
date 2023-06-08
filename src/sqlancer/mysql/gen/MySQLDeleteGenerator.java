@@ -12,7 +12,7 @@ import sqlancer.mysql.MySQLVisitor;
 
 public class MySQLDeleteGenerator {
 
-    private final StringBuilder sb = new StringBuilder();
+    protected final StringBuilder sb = new StringBuilder();
     private final MySQLGlobalState globalState;
 
     public MySQLDeleteGenerator(MySQLGlobalState globalState) {
@@ -23,7 +23,7 @@ public class MySQLDeleteGenerator {
         return new MySQLDeleteGenerator(globalState).generate();
     }
 
-    private SQLQueryAdapter generate() {
+    protected SQLQueryAdapter generate() {
         MySQLTable randomTable = globalState.getSchema().getRandomTable();
         MySQLExpressionGenerator gen = new MySQLExpressionGenerator(globalState).setColumns(randomTable.getColumns());
         ExpectedErrors errors = new ExpectedErrors();
