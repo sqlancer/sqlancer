@@ -7,9 +7,6 @@ import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.TableIndex;
-import sqlancer.duckdb.DuckDBProvider;
-import sqlancer.duckdb.DuckDBSchema;
-import sqlancer.stonedb.StoneDBProvider;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -134,6 +131,7 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
             throw new AssertionError(typeString);
         }
     }
+
 
     private static StoneDBDataType getColumnType(String typeString) {
         switch (typeString) {
