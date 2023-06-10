@@ -2,7 +2,6 @@ package sqlancer.stonedb;
 
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
-import sqlancer.common.DBMSCommon;
 import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractTableColumn;
@@ -10,9 +9,7 @@ import sqlancer.common.schema.TableIndex;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalState, StoneDBSchema.StoneDBTable> {
@@ -55,26 +52,47 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
         return new StoneDBCompositeDataType(type, size);
     }
 
-    public static class StoneDBTable extends
-            AbstractRelationalTable<StoneDBSchema.StoneDBColumn, TableIndex, StoneDBProvider.StoneDBGlobalState> {
+    public static class StoneDBTable
+            extends AbstractRelationalTable<StoneDBColumn, StoneDBIndex, StoneDBProvider.StoneDBGlobalState> {
 
-        public StoneDBTable(String tableName, List<StoneDBSchema.StoneDBColumn> columns, boolean isView) {
-            super(tableName, columns, Collections.emptyList(), isView);
+        public StoneDBTable(String tableName, List<StoneDBColumn> columns, List<StoneDBIndex> indexes, boolean isView) {
+            super(tableName, columns, indexes, isView);
+        }
+
+        public boolean hasPrimaryKey() {
+            return getColumns().stream().anyMatch(c -> c.isPrimaryKey());
         }
 
     }
 
+    public static final class StoneDBIndex extends TableIndex {
+        private StoneDBIndex(String indexName) {
+            super(indexName);
+        }
+
+        public static StoneDBIndex create(String indexName) {
+            return new StoneDBIndex(indexName);
+        }
+
+        @Override
+        public String getIndexName() {
+            if (super.getIndexName().contentEquals("PRIMARY")) {
+                return "`PRIMARY`";
+            } else {
+                return super.getIndexName();
+            }
+        }
+    }
+
     public static StoneDBSchema fromConnection(SQLConnection con, String databaseName) throws SQLException {
         List<StoneDBTable> databaseTables = new ArrayList<>();
-        List<String> tableNames = getTableNames(con);
+        List<String> tableNames = getTableNames(con, databaseName);
         for (String tableName : tableNames) {
-            if (DBMSCommon.matchesIndexName(tableName)) {
-                continue; // TODO: unexpected?
-            }
-            List<StoneDBSchema.StoneDBColumn> databaseColumns = getTableColumns(con, tableName, tableName);
+            List<StoneDBColumn> databaseColumns = getTableColumns(con, databaseName, tableName);
+            List<StoneDBIndex> indexes = getIndexes(con, databaseName, tableName);
             boolean isView = tableName.startsWith("v");
-            StoneDBTable t = new StoneDBTable(tableName, databaseColumns, isView);
-            for (StoneDBSchema.StoneDBColumn c : databaseColumns) {
+            StoneDBTable t = new StoneDBTable(tableName, databaseColumns, indexes, isView);
+            for (StoneDBColumn c : databaseColumns) {
                 c.setTable(t);
             }
             databaseTables.add(t);
@@ -83,22 +101,35 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
         return new StoneDBSchema(databaseTables);
     }
 
-    private static List<StoneDBColumn> getTableColumns(SQLConnection con, String tableName, String databaseName)
+    private static List<StoneDBIndex> getIndexes(SQLConnection con, String databaseName, String tableName)
+            throws SQLException {
+        List<StoneDBIndex> indexes = new ArrayList<>();
+        try (ResultSet rs = con.createStatement()
+                .executeQuery("SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = '"
+                        + databaseName + "' AND TABLE_NAME='" + tableName + "';")) {
+            while (rs.next()) {
+                String indexName = rs.getString("INDEX_NAME");
+                indexes.add(StoneDBIndex.create(indexName));
+            }
+        }
+        return indexes;
+    }
+
+    private static List<StoneDBColumn> getTableColumns(SQLConnection con, String databaseName, String tableName)
             throws SQLException {
         List<StoneDBColumn> columns = new ArrayList<>();
-        try (Statement s = con.createStatement()) {
-            try (ResultSet rs = s.executeQuery("select * from information_schema.columns where table_schema = '"
-                    + databaseName + "' AND TABLE_NAME='" + tableName + "'")) {
-                while (rs.next()) {
-                    String columnName = rs.getString("COLUMN_NAME");
-                    String dataType = rs.getString("DATA_TYPE");
-                    int precision = rs.getInt("NUMERIC_PRECISION");
-                    boolean isNullable = rs.getString("notnull").contentEquals("false");
-                    boolean isPrimaryKey = rs.getString("COLUMN_KEY").equals("PRI");
-                    StoneDBColumn c = new StoneDBColumn(columnName, getColumnCompositeDataType(dataType), isPrimaryKey,
-                            isNullable, precision);
-                    columns.add(c);
-                }
+        try (ResultSet rs = con.createStatement()
+                .executeQuery("select * from information_schema.columns where table_schema = '" + databaseName
+                        + "' AND TABLE_NAME='" + tableName + "';")) {
+            while (rs.next()) {
+                String columnName = rs.getString("COLUMN_NAME");
+                String dataType = rs.getString("DATA_TYPE");
+                int precision = rs.getInt("NUMERIC_PRECISION");
+                boolean isNullable = !rs.getString("IS_NULLABLE").equals("NO");
+                boolean isPrimaryKey = rs.getString("COLUMN_KEY").equals("PRI");
+                StoneDBColumn c = new StoneDBColumn(columnName, getColumnCompositeDataType(dataType), isPrimaryKey,
+                        isNullable, precision);
+                columns.add(c);
             }
         }
         return columns;
@@ -132,7 +163,6 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
         }
     }
 
-
     private static StoneDBDataType getColumnType(String typeString) {
         switch (typeString) {
         case "tinyint":
@@ -161,12 +191,14 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
         }
     }
 
-    private static List<String> getTableNames(SQLConnection con) throws SQLException {
+    private static List<String> getTableNames(SQLConnection con, String databaseName) throws SQLException {
         List<String> tableNames = new ArrayList<>();
-        try (Statement s = con.createStatement()) {
-            try (ResultSet rs = s.executeQuery("SELECT * FROM sqlite_master WHERE type='table' or type='view'")) {
-                while (rs.next()) {
-                    tableNames.add(rs.getString("name"));
+        try (ResultSet rs = con.createStatement()
+                .executeQuery("select TABLE_NAME, ENGINE from information_schema.TABLES where table_schema = '"
+                        + databaseName + "';")) {
+            while (rs.next()) {
+                if (rs.getString("ENGINE").equals("TIANMU")) {
+                    tableNames.add(rs.getString("TABLE_NAME"));
                 }
             }
         }
