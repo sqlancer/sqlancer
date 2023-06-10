@@ -5,18 +5,17 @@ import com.beust.jcommander.Parameters;
 import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
 import sqlancer.common.oracle.TestOracle;
-import sqlancer.mysql.MySQLOptions;
+import sqlancer.stonedb.StoneDBOptions.StoneDBOracleFactory;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.oracle.StoneDBNoRECOracle;
 import sqlancer.stonedb.oracle.StoneDBTLPOracle;
-import sqlancer.stonedb.StoneDBOptions.StoneDBOracleFactory;
 
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
-@Parameters(separators = "=", commandDescription = "StoneDB (default host: " + MySQLOptions.DEFAULT_HOST
-        + ", default port: " + MySQLOptions.DEFAULT_PORT + ")")
+@Parameters(separators = "=", commandDescription = "StoneDB (default host: " + StoneDBOptions.DEFAULT_HOST
+        + ", default port: " + StoneDBOptions.DEFAULT_PORT + ")")
 public class StoneDBOptions implements DBMSSpecificOptions<StoneDBOracleFactory> {
     public static final String DEFAULT_HOST = "localhost";
     public static final int DEFAULT_PORT = 3306;
