@@ -153,11 +153,40 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
             return new StoneDBCompositeDataType(StoneDBDataType.DOUBLE);
         case "decimal":
             return new StoneDBCompositeDataType(StoneDBDataType.DECIMAL);
+        case "year":
+            return new StoneDBCompositeDataType(StoneDBDataType.YEAR);
+        case "time":
+            return new StoneDBCompositeDataType(StoneDBDataType.TIME);
+        case "date":
+            return new StoneDBCompositeDataType(StoneDBDataType.DATE);
+        case "datetime":
+            return new StoneDBCompositeDataType(StoneDBDataType.DATETIME);
+        case "timestamp":
+            return new StoneDBCompositeDataType(StoneDBDataType.TIMESTAMP);
         case "char":
             return new StoneDBCompositeDataType(StoneDBDataType.CHAR);
         case "varchar":
             return new StoneDBCompositeDataType(StoneDBDataType.VARCHAR);
-        // todo: support more data type
+        case "tinytext":
+            return new StoneDBCompositeDataType(StoneDBDataType.TINYTEXT);
+        case "text":
+            return new StoneDBCompositeDataType(StoneDBDataType.TEXT);
+        case "mediumtext":
+            return new StoneDBCompositeDataType(StoneDBDataType.MEDIUMTEXT);
+        case "longtext":
+            return new StoneDBCompositeDataType(StoneDBDataType.LONGTEXT);
+        case "binary":
+            return new StoneDBCompositeDataType(StoneDBDataType.BINARY);
+        case "varbinary":
+            return new StoneDBCompositeDataType(StoneDBDataType.VARBINARY);
+        case "tinyblob":
+            return new StoneDBCompositeDataType(StoneDBDataType.TINYBLOB);
+        case "blob":
+            return new StoneDBCompositeDataType(StoneDBDataType.BLOB);
+        case "mediumblob":
+            return new StoneDBCompositeDataType(StoneDBDataType.MEDIUMBLOB);
+        case "longblob":
+            return new StoneDBCompositeDataType(StoneDBDataType.LONGBLOB);
         default:
             throw new AssertionError(typeString);
         }
@@ -181,11 +210,40 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
             return StoneDBDataType.DOUBLE;
         case "decimal":
             return StoneDBDataType.DECIMAL;
+        case "year":
+            return StoneDBDataType.YEAR;
+        case "time":
+            return StoneDBDataType.TIME;
+        case "date":
+            return StoneDBDataType.DATE;
+        case "datetime":
+            return StoneDBDataType.DATETIME;
+        case "timestamp":
+            return StoneDBDataType.TIMESTAMP;
         case "char":
             return StoneDBDataType.CHAR;
         case "varchar":
             return StoneDBDataType.VARCHAR;
-        // todo: support more data type
+        case "tinytext":
+            return StoneDBDataType.TINYTEXT;
+        case "text":
+            return StoneDBDataType.TEXT;
+        case "mediumtext":
+            return StoneDBDataType.MEDIUMTEXT;
+        case "longtext":
+            return StoneDBDataType.LONGTEXT;
+        case "binary":
+            return StoneDBDataType.BINARY;
+        case "varbinary":
+            return StoneDBDataType.VARBINARY;
+        case "tinyblob":
+            return StoneDBDataType.TINYBLOB;
+        case "blob":
+            return StoneDBDataType.BLOB;
+        case "mediumblob":
+            return StoneDBDataType.MEDIUMBLOB;
+        case "longblob":
+            return StoneDBDataType.LONGBLOB;
         default:
             throw new AssertionError(typeString);
         }
