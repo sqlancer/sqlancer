@@ -2,6 +2,9 @@ package sqlancer.stonedb;
 
 import com.google.auto.service.AutoService;
 import sqlancer.*;
+import sqlancer.common.DBMSCommon;
+import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.stonedb.gen.StoneDBTableGenerator;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -23,8 +26,11 @@ public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBG
 
     @Override
     public void generateDatabase(StoneDBGlobalState globalState) throws Exception {
-        // todo
-        return;
+        while (globalState.getSchema().getDatabaseTables().size() < Randomly.smallNumber() + 1) {
+            String tableName = DBMSCommon.createTableName(globalState.getSchema().getDatabaseTables().size());
+            SQLQueryAdapter createTable = StoneDBTableGenerator.generate(globalState, tableName);
+            globalState.executeStatement(createTable);
+        }
     }
 
     @Override
