@@ -1,11 +1,8 @@
 package sqlancer;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.math.BigInteger;
+import java.util.*;
 import java.util.function.Supplier;
 
 public final class Randomly {
@@ -215,7 +212,6 @@ public final class Randomly {
 
         },
         ALPHANUMERIC {
-
             @Override
             public String getString(Randomly r) {
                 return getStringOfAlphabet(r, ALPHANUMERIC_ALPHABET);
@@ -224,7 +220,6 @@ public final class Randomly {
 
         },
         ALPHANUMERIC_SPECIALCHAR {
-
             @Override
             public String getString(Randomly r) {
                 return getStringOfAlphabet(r, ALPHANUMERIC_SPECIALCHAR_ALPHABET);
@@ -450,6 +445,18 @@ public final class Randomly {
             return left;
         }
         return getNextLong(left, right);
+    }
+
+    public BigInteger getBigInteger(BigInteger left, BigInteger right) {
+        if (left.equals(right)) {
+            return left;
+        }
+        while (true) {
+            BigInteger result = new BigInteger(63, new Random());
+            if (result.compareTo(left) >= 0 && result.compareTo(right) <= 0) {
+                return result;
+            }
+        }
     }
 
     public BigDecimal getRandomBigDecimal() {
