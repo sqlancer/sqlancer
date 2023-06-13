@@ -37,7 +37,7 @@ public final class ComparatorHelper {
     }
 
     public static List<String> getResultSetFirstColumnAsString(String queryString, ExpectedErrors errors,
-            SQLGlobalState<?, ?> state) throws SQLException {
+                                                               SQLGlobalState<?, ?> state) throws SQLException {
         if (state.getOptions().logEachSelect()) {
             // TODO: refactor me
             state.getLogger().writeCurrent(queryString);
@@ -60,7 +60,7 @@ public final class ComparatorHelper {
                 String resultTemp = result.getString(1);
                 if (resultTemp != null) {
                     resultTemp = resultTemp.replaceAll("[\\.]0+$", ""); // Remove the trailing zeros as many DBMS treat
-                                                                        // it as non-bugs
+                    // it as non-bugs
                 }
                 resultSet.add(resultTemp);
             }
@@ -84,42 +84,42 @@ public final class ComparatorHelper {
         return resultSet;
     }
 
-    public static void assumeResultSetsAreEqual(List<String> resultSet, List<String> secondResultSet,
-            String originalQueryString, List<String> combinedString, SQLGlobalState<?, ?> state) {
-        if (resultSet.size() != secondResultSet.size()) {
-            String queryFormatString = "-- %s;\n-- cardinality: %d";
-            String firstQueryString = String.format(queryFormatString, originalQueryString, resultSet.size());
-            String secondQueryString = String.format(queryFormatString,
-                    combinedString.stream().collect(Collectors.joining(";")), secondResultSet.size());
-            state.getState().getLocalState().log(String.format("%s\n%s", firstQueryString, secondQueryString));
-            String assertionMessage = String.format("the size of the result sets mismatch (%d and %d)!\n%s\n%s",
-                    resultSet.size(), secondResultSet.size(), firstQueryString, secondQueryString);
+    public static void assumeResultSetsAreEqual(List<String> result1, List<String> result2, String originalQuery,
+                                                List<String> combinedQuery, SQLGlobalState<?, ?> state) {
+        if (result1.size() != result2.size()) {
+            String queryFormat = "-- %s;\n-- cardinality: %d\n\n\n";
+            String firstQuery = String.format(queryFormat, originalQuery, result1.size());
+            String combinedQueryStr = String.join(";", combinedQuery);
+            String secondQuery = String.format(queryFormat, combinedQueryStr, result2.size());
+            state.getState().getLocalState().log(String.format("%s\n%s", firstQuery, secondQuery));
+            String assertionMessage = String.format("the size of the result sets mismatch (%d and %d)!\nfirstQuery: %s\nsecondQuery: %s\n\n\n",
+                    result1.size(), result2.size(), firstQuery, secondQuery);
             throw new AssertionError(assertionMessage);
         }
 
-        Set<String> firstHashSet = new HashSet<>(resultSet);
-        Set<String> secondHashSet = new HashSet<>(secondResultSet);
+        Set<String> firstHashSet = new HashSet<>(result1);
+        Set<String> secondHashSet = new HashSet<>(result2);
 
         if (!firstHashSet.equals(secondHashSet)) {
             Set<String> firstResultSetMisses = new HashSet<>(firstHashSet);
             firstResultSetMisses.removeAll(secondHashSet);
             Set<String> secondResultSetMisses = new HashSet<>(secondHashSet);
             secondResultSetMisses.removeAll(firstHashSet);
-            String queryFormatString = "-- %s;\n-- misses: %s";
-            String firstQueryString = String.format(queryFormatString, originalQueryString, firstResultSetMisses);
-            String secondQueryString = String.format(queryFormatString,
-                    combinedString.stream().collect(Collectors.joining(";")), secondResultSetMisses);
+            String format = "-- %s;\n-- misses: %s\n\n\n";
+            String firstQuery = String.format(format, originalQuery, firstResultSetMisses);
+            String secondQuery = String.format(format,
+                    String.join(";", combinedQuery), secondResultSetMisses);
             // update the SELECT queries to be logged at the bottom of the error log file
-            state.getState().getLocalState().log(String.format("%s\n%s", firstQueryString, secondQueryString));
-            String assertionMessage = String.format("the content of the result sets mismatch!\n%s\n%s",
-                    firstQueryString, secondQueryString);
+            state.getState().getLocalState().log(String.format("%s\n%s", firstQuery, secondQuery));
+            String assertionMessage = String.format("the content of the result sets mismatch!\nfirstQuery: %s\nsecondQuery: %s\n\n\n",
+                    firstQuery, secondQuery);
             throw new AssertionError(assertionMessage);
         }
     }
 
     public static void assumeResultSetsAreEqual(List<String> resultSet, List<String> secondResultSet,
-            String originalQueryString, List<String> combinedString, SQLGlobalState<?, ?> state,
-            UnaryOperator<String> canonicalizationRule) {
+                                                String originalQueryString, List<String> combinedString, SQLGlobalState<?, ?> state,
+                                                UnaryOperator<String> canonicalizationRule) {
         // Overloaded version of assumeResultSetsAreEqual that takes a canonicalization function which is applied to
         // both result sets before their comparison.
         List<String> canonicalizedResultSet = resultSet.stream().map(canonicalizationRule).collect(Collectors.toList());
@@ -130,8 +130,8 @@ public final class ComparatorHelper {
     }
 
     public static List<String> getCombinedResultSet(String firstQueryString, String secondQueryString,
-            String thirdQueryString, List<String> combinedString, boolean asUnion, SQLGlobalState<?, ?> state,
-            ExpectedErrors errors) throws SQLException {
+                                                    String thirdQueryString, List<String> combinedString, boolean asUnion, SQLGlobalState<?, ?> state,
+                                                    ExpectedErrors errors) throws SQLException {
         List<String> secondResultSet;
         if (asUnion) {
             String unionString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL "
@@ -151,8 +151,8 @@ public final class ComparatorHelper {
     }
 
     public static List<String> getCombinedResultSetNoDuplicates(String firstQueryString, String secondQueryString,
-            String thirdQueryString, List<String> combinedString, boolean asUnion, SQLGlobalState<?, ?> state,
-            ExpectedErrors errors) throws SQLException {
+                                                                String thirdQueryString, List<String> combinedString, boolean asUnion, SQLGlobalState<?, ?> state,
+                                                                ExpectedErrors errors) throws SQLException {
         String unionString;
         if (asUnion) {
             unionString = firstQueryString + " UNION " + secondQueryString + " UNION " + thirdQueryString;
@@ -172,11 +172,11 @@ public final class ComparatorHelper {
         }
 
         switch (value) {
-        case "-0.0":
-            return "0.0";
-        case "-0":
-            return "0";
-        default:
+            case "-0.0":
+                return "0.0";
+            case "-0":
+                return "0";
+            default:
         }
 
         return value;
