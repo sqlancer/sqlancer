@@ -3,11 +3,12 @@ name: ci
 on:
   push:
     branches:
-      - master
       - main
+    paths:
+      - 'src/**'
+      - '.github/workflows/*.yml'
   pull_request:
     branches:
-      - master
       - main
     paths:
       - 'src/**'
