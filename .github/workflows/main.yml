@@ -4,9 +4,14 @@ on:
   push:
     branches:
       - master
+      - main
   pull_request:
     branches:
       - master
+      - main
+    paths:
+      - 'src/**'
+      - '.github/workflows/*.yml'
 
 jobs:
   misc:
