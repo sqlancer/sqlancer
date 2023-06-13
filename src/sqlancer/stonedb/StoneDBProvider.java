@@ -28,6 +28,7 @@ public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBG
 
     enum Action implements AbstractAction<StoneDBGlobalState> {
         SHOW_TABLES((g) -> new SQLQueryAdapter("SHOW TABLES"));
+
         private final SQLQueryProvider<StoneDBGlobalState> sqlQueryProvider;
 
         Action(SQLQueryProvider<StoneDBGlobalState> sqlQueryProvider) {
@@ -43,10 +44,10 @@ public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBG
     private static int mapActions(StoneDBGlobalState globalState, Action a) {
         Randomly r = globalState.getRandomly();
         switch (a) {
-            case SHOW_TABLES:
-                return 1;
-            default:
-                throw new AssertionError(a);
+        case SHOW_TABLES:
+            return 1;
+        default:
+            throw new AssertionError(a);
         }
     }
 
@@ -59,10 +60,10 @@ public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBG
         }
         StatementExecutor<StoneDBGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
                 StoneDBProvider::mapActions, (q) -> {
-            if (globalState.getSchema().getDatabaseTables().isEmpty()) {
-                throw new IgnoreMeException();
-            }
-        });
+                    if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+                        throw new IgnoreMeException();
+                    }
+                });
         se.executeStatements();
     }
 
