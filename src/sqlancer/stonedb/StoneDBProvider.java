@@ -3,7 +3,9 @@ package sqlancer.stonedb;
 import com.google.auto.service.AutoService;
 import sqlancer.*;
 import sqlancer.common.DBMSCommon;
+import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.stonedb.gen.StoneDBTableGenerator;
 
 import java.sql.Connection;
@@ -24,6 +26,30 @@ public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBG
         }
     }
 
+    enum Action implements AbstractAction<StoneDBGlobalState> {
+        SHOW_TABLES((g) -> new SQLQueryAdapter("SHOW TABLES"));
+        private final SQLQueryProvider<StoneDBGlobalState> sqlQueryProvider;
+
+        Action(SQLQueryProvider<StoneDBGlobalState> sqlQueryProvider) {
+            this.sqlQueryProvider = sqlQueryProvider;
+        }
+
+        @Override
+        public Query<?> getQuery(StoneDBGlobalState globalState) throws Exception {
+            return sqlQueryProvider.getQuery(globalState);
+        }
+    }
+
+    private static int mapActions(StoneDBGlobalState globalState, Action a) {
+        Randomly r = globalState.getRandomly();
+        switch (a) {
+            case SHOW_TABLES:
+                return 1;
+            default:
+                throw new AssertionError(a);
+        }
+    }
+
     @Override
     public void generateDatabase(StoneDBGlobalState globalState) throws Exception {
         while (globalState.getSchema().getDatabaseTables().size() < Randomly.smallNumber() + 1) {
@@ -31,6 +57,13 @@ public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBG
             SQLQueryAdapter createTable = StoneDBTableGenerator.generate(globalState, tableName);
             globalState.executeStatement(createTable);
         }
+        StatementExecutor<StoneDBGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
+                StoneDBProvider::mapActions, (q) -> {
+            if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+                throw new IgnoreMeException();
+            }
+        });
+        se.executeStatements();
     }
 
     @Override
