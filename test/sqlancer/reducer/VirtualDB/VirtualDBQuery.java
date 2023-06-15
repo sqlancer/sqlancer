@@ -9,7 +9,9 @@ import java.sql.SQLException;
 public class VirtualDBQuery extends SQLQueryAdapter {
 
     public VirtualDBQuery(String query) {
-        super(query);
+        // Since the base class must check the format
+        // We judge if the statement could affect schema. A bit hacky tho.
+        super(query, (query.contains("CREATE TABLE") && !query.startsWith("EXPLAIN")));
     }
 
     public VirtualDBQuery(String query, boolean couldAffectSchema) {

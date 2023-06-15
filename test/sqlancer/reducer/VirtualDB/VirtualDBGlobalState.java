@@ -1,11 +1,9 @@
 package sqlancer.reducer.VirtualDB;
 
-import sqlancer.Reproducer;
 import sqlancer.SQLConnection;
 import sqlancer.SQLGlobalState;
 import sqlancer.common.query.Query;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -49,9 +47,9 @@ public class VirtualDBGlobalState extends SQLGlobalState<VirtualDBOptions, Virtu
         return true;
     }
 
-//    public String getCurrentQueriesString() {
-//        return queriesStringBuilder.toString();
-//    }
+    // public String getCurrentQueriesString() {
+    // return queriesStringBuilder.toString();
+    // }
 
     public void setBugInducingCondition(Function<List<Query<?>>, Boolean> condition) {
         bugInducingCondition = (condition);
