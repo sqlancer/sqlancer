@@ -16,9 +16,9 @@ import java.util.stream.Collectors;
  * TODO: Make Connection a generic type OR Fake a conn QUERY AND CONNECTION BOTH ARE FAKE. FAKE QUERY sub class
  */
 public class TestEnvironment {
-    private VirtualDBProvider provider = null;
     private final String databaseName = "VirtualDB";
     private final MainOptions options = new MainOptions();
+    private VirtualDBProvider provider = null;
     private VirtualDBGlobalState state, newGlobalState;
 
     public TestEnvironment() throws Exception {
@@ -26,7 +26,6 @@ public class TestEnvironment {
     }
 
     /**
-     *
      * @param queries:
      *            List of Query<?>
      *

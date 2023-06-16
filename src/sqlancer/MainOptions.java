@@ -127,10 +127,10 @@ public class MainOptions {
     private boolean useReducer = false; // NOPMD
 
     @Parameter(names = "--statement-reducer-max-steps", description = "EXPERIMENTAL Maximum steps the statement reducer will do")
-    private long maxStatementReduceSteps = NO_REDUCE_LIMIT;
+    private long maxStatementReduceSteps = NO_REDUCE_LIMIT; // NOPMD
 
     @Parameter(names = "--statement-reducer-max-time", description = "EXPERIMENTAL Maximum time duration (secs) the statement reducer will do")
-    private long maxStatementReduceTime = NO_REDUCE_LIMIT;
+    private long maxStatementReduceTime = NO_REDUCE_LIMIT; // NOPMD
 
     public int getMaxExpressionDepth() {
         return maxExpressionDepth;

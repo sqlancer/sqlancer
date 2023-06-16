@@ -1,7 +1,10 @@
 package sqlancer.reducer.VirtualDB;
 
 import com.google.auto.service.AutoService;
-import sqlancer.*;
+import sqlancer.DatabaseProvider;
+import sqlancer.Reproducer;
+import sqlancer.SQLConnection;
+import sqlancer.SQLProviderAdapter;
 
 @AutoService(DatabaseProvider.class)
 public class VirtualDBProvider extends SQLProviderAdapter<VirtualDBGlobalState, VirtualDBOptions> {
@@ -41,11 +44,11 @@ public class VirtualDBProvider extends SQLProviderAdapter<VirtualDBGlobalState, 
         return super.getGlobalStateClass();
     }
 
-    public void setReproducerForTesting(Reproducer<VirtualDBGlobalState> reproducer) {
-        this.reproducerForTesting = reproducer;
-    }
-
     public Reproducer<VirtualDBGlobalState> getReproducerForTesting() {
         return reproducerForTesting;
+    }
+
+    public void setReproducerForTesting(Reproducer<VirtualDBGlobalState> reproducer) {
+        this.reproducerForTesting = reproducer;
     }
 }

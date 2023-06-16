@@ -12,12 +12,15 @@ public class VirtualDBGlobalState extends SQLGlobalState<VirtualDBOptions, Virtu
 
     private SQLConnection virtualConn = new SQLConnection(null);
     private StringBuilder queriesStringBuilder = new StringBuilder();
+    private Function<List<Query<?>>, Boolean> bugInducingCondition = null;
 
     public Function<List<Query<?>>, Boolean> getBugInducingCondition() {
         return bugInducingCondition;
     }
 
-    private Function<List<Query<?>>, Boolean> bugInducingCondition = null;
+    public void setBugInducingCondition(Function<List<Query<?>>, Boolean> condition) {
+        bugInducingCondition = (condition);
+    }
 
     @Override
     protected VirtualDBSchema readSchema() throws Exception {
@@ -38,6 +41,10 @@ public class VirtualDBGlobalState extends SQLGlobalState<VirtualDBOptions, Virtu
         // queriesStringBuilder = new StringBuilder();
     }
 
+    // public String getCurrentQueriesString() {
+    // return queriesStringBuilder.toString();
+    // }
+
     @Override
     public boolean executeStatement(Query<SQLConnection> q, String... fills) throws Exception {
         if (queriesStringBuilder.length() != 0) {
@@ -45,13 +52,5 @@ public class VirtualDBGlobalState extends SQLGlobalState<VirtualDBOptions, Virtu
         }
         queriesStringBuilder.append(q.getQueryString());
         return true;
-    }
-
-    // public String getCurrentQueriesString() {
-    // return queriesStringBuilder.toString();
-    // }
-
-    public void setBugInducingCondition(Function<List<Query<?>>, Boolean> condition) {
-        bugInducingCondition = (condition);
     }
 }

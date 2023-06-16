@@ -1,6 +1,7 @@
 package sqlancer.reducer.VirtualDB;
 
 import sqlancer.SQLConnection;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 
