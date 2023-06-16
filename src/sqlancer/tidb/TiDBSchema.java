@@ -239,6 +239,7 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
                 break;
             case "double":
             case "double(8,6)": // workaround to address https://github.com/sqlancer/sqlancer/issues/669
+            case "double(23,16)":
                 size = 8;
                 primitiveType = TiDBDataType.FLOATING;
                 break;
