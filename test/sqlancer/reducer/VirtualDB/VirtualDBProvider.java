@@ -22,7 +22,7 @@ public class VirtualDBProvider extends SQLProviderAdapter<VirtualDBGlobalState, 
 
     @Override
     public String getDBMSName() {
-        return "VirtualDB";
+        return "virtual_db";
     }
 
     @Override
