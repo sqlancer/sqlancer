@@ -21,7 +21,7 @@ public final class MySQLBugs {
 
     // https://bugs.mysql.com/bug.php?id=111471
     public static boolean bug111471 = true;
-    
+
     private MySQLBugs() {
     }
 
