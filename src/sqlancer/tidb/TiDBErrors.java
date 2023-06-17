@@ -52,6 +52,9 @@ public final class TiDBErrors {
         if (TiDBBugs.bug38295) {
             errors.add("assertion failed");
         }
+        if (TiDBBugs.bug44747) {
+            errors.add("index out of range");
+        }
     }
 
     public static void addExpressionHavingErrors(ExpectedErrors errors) {
