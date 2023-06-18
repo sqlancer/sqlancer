@@ -14,6 +14,7 @@ import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.tidb.TiDBOptions.TiDBOracleFactory;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
+import sqlancer.tidb.oracle.TiDBCERTOracle;
 import sqlancer.tidb.oracle.TiDBTLPHavingOracle;
 import sqlancer.tidb.oracle.TiDBTLPWhereOracle;
 
@@ -55,6 +56,17 @@ public class TiDBOptions implements DBMSSpecificOptions<TiDBOracleFactory> {
                 oracles.add(new TiDBTLPWhereOracle(globalState));
                 oracles.add(new TiDBTLPHavingOracle(globalState));
                 return new CompositeTestOracle<TiDBGlobalState>(oracles, globalState);
+            }
+        },
+        CERT {
+            @Override
+            public TestOracle<TiDBGlobalState> create(TiDBGlobalState globalState) throws SQLException {
+                return new TiDBCERTOracle(globalState);
+            }
+
+            @Override
+            public boolean requiresAllTablesToContainRows() {
+                return true;
             }
         };
 
