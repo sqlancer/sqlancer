@@ -87,7 +87,7 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
         case CREATE_INDEX:
             return r.getInteger(0, 2);
         case INSERT:
-            return globalState.getRandomly().getInteger(0, globalState.getOptions().getMaxNumberInserts());
+            return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
         case TRUNCATE:
         case DELETE:
         case ADMIN_CHECKSUM_TABLE:
