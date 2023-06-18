@@ -90,7 +90,7 @@ public class SelectBase<T> {
     public void clearHavingClause() {
         this.havingClause = null;
     }
-    
+
     public void setLimitClause(T limitClause) {
         this.limitClause = limitClause;
     }
