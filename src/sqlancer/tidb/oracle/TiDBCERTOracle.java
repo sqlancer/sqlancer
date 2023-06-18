@@ -61,7 +61,7 @@ public class TiDBCERTOracle implements TestOracle<TiDBGlobalState> {
 
         List<TiDBExpression> tableList = tables.getTables().stream().map(t -> new TiDBTableReference(t))
                 .collect(Collectors.toList());
-        List<TiDBExpression> joins = TiDBJoin.getJoins(tableList, state);
+        List<TiDBExpression> joins = TiDBJoin.getJoinsWithoutNature(tableList, state);
         select.setJoinList(joins);
         select.setFromList(tableList);
         if (Randomly.getBoolean()) {
@@ -145,11 +145,6 @@ public class TiDBCERTOracle implements TestOracle<TiDBGlobalState> {
         }
         TiDBJoin join = (TiDBJoin) Randomly.fromList(select.getJoinList());
 
-        // Natural means automatically looking for columns with the same name for ON condition, which is not supported
-        // by CERT
-        if (join.getJoinType() == JoinType.NATURAL) {
-            throw new IgnoreMeException();
-        }
         // CROSS does not need ON Condition, while other joins do
         // To avoid Null pointer, generating a new new condition when mutating CROSS to other joins
         if (join.getJoinType() == JoinType.CROSS) {

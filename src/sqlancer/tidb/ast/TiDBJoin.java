@@ -128,6 +128,39 @@ public class TiDBJoin implements TiDBExpression {
         return joinExpressions;
     }
 
+    public static List<TiDBExpression> getJoinsWithoutNature(List<TiDBExpression> tableList,
+            TiDBGlobalState globalState) {
+        List<TiDBExpression> joinExpressions = new ArrayList<>();
+        while (tableList.size() >= 2 && Randomly.getBoolean()) {
+            TiDBTableReference leftTable = (TiDBTableReference) tableList.remove(0);
+            TiDBTableReference rightTable = (TiDBTableReference) tableList.remove(0);
+            List<TiDBColumn> columns = new ArrayList<>(leftTable.getTable().getColumns());
+            columns.addAll(rightTable.getTable().getColumns());
+            TiDBExpressionGenerator joinGen = new TiDBExpressionGenerator(globalState).setColumns(columns);
+            switch (TiDBJoin.JoinType.getRandom()) {
+            case INNER:
+                joinExpressions.add(TiDBJoin.createInnerJoin(leftTable, rightTable, joinGen.generateExpression()));
+                break;
+            case STRAIGHT:
+                joinExpressions.add(TiDBJoin.createStraightJoin(leftTable, rightTable, joinGen.generateExpression()));
+                break;
+            case LEFT:
+                joinExpressions.add(TiDBJoin.createLeftOuterJoin(leftTable, rightTable, joinGen.generateExpression()));
+                break;
+            case RIGHT:
+                joinExpressions.add(TiDBJoin.createRightOuterJoin(leftTable, rightTable, joinGen.generateExpression()));
+                break;
+            case NATURAL:
+            case CROSS:
+                joinExpressions.add(TiDBJoin.createCrossJoin(leftTable, rightTable, null));
+                break;
+            default:
+                throw new AssertionError();
+            }
+        }
+        return joinExpressions;
+    }
+
     public void setOnCondition(TiDBExpression generateExpression) {
         this.onCondition = generateExpression;
     }
