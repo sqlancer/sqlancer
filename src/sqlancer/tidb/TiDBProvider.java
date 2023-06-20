@@ -5,6 +5,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.auto.service.AutoService;
 
@@ -21,6 +23,7 @@ import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
+import sqlancer.tidb.TiDBSchema.TiDBTable;
 import sqlancer.tidb.gen.TiDBAlterTableGenerator;
 import sqlancer.tidb.gen.TiDBAnalyzeTableGenerator;
 import sqlancer.tidb.gen.TiDBDeleteGenerator;
@@ -84,6 +87,7 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
         case CREATE_INDEX:
             return r.getInteger(0, 2);
         case INSERT:
+            return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
         case TRUNCATE:
         case DELETE:
         case ADMIN_CHECKSUM_TABLE:
@@ -211,6 +215,17 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
     protected void executeMutator(int index, TiDBGlobalState globalState) throws Exception {
         SQLQueryAdapter queryMutateTable = Action.values()[index].getQuery(globalState);
         globalState.executeStatement(queryMutateTable);
+    }
+
+    @Override
+    public boolean addRowsToAllTables(TiDBGlobalState globalState) throws Exception {
+        List<TiDBTable> tablesNoRow = globalState.getSchema().getDatabaseTables().stream()
+                .filter(t -> t.getNrRows(globalState) == 0).collect(Collectors.toList());
+        for (TiDBTable table : tablesNoRow) {
+            SQLQueryAdapter queryAddRows = TiDBInsertGenerator.getQuery(globalState, table);
+            globalState.executeStatement(queryAddRows);
+        }
+        return true;
     }
 
 }

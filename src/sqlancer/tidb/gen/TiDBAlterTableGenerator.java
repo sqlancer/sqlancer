@@ -30,6 +30,8 @@ public final class TiDBAlterTableGenerator {
         errors.add("supported");
         errors.add("SQL syntax");
         errors.add("can't drop");
+        errors.add("A PRIMARY must include all columns in the table's partitioning function");
+        errors.add("key was too long");
         StringBuilder sb = new StringBuilder("ALTER TABLE ");
         TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         TiDBColumn column = table.getRandomColumn();

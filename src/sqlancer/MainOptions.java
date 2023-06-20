@@ -10,6 +10,7 @@ import sqlancer.Randomly.StringGenerationStrategy;
 @Parameters(separators = "=", commandDescription = "Options applicable to all DBMS")
 public class MainOptions {
     public static final int NO_SET_PORT = -1;
+    public static final int NO_REDUCE_LIMIT = -1;
     public static final MainOptions DEFAULT_OPTIONS = new MainOptions();
 
     @Parameter(names = { "--help", "-h" }, description = "Lists all supported options and commands", help = true)
@@ -124,6 +125,12 @@ public class MainOptions {
 
     @Parameter(names = "--use-reducer", description = "EXPERIMENTAL Attempt to reduce queries using a simple reducer")
     private boolean useReducer = false; // NOPMD
+
+    @Parameter(names = "--statement-reducer-max-steps", description = "EXPERIMENTAL Maximum steps the statement reducer will do")
+    private long maxStatementReduceSteps = NO_REDUCE_LIMIT; // NOPMD
+
+    @Parameter(names = "--statement-reducer-max-time", description = "EXPERIMENTAL Maximum time duration (secs) the statement reducer will do")
+    private long maxStatementReduceTime = NO_REDUCE_LIMIT; // NOPMD
 
     public int getMaxExpressionDepth() {
         return maxExpressionDepth;
@@ -284,5 +291,13 @@ public class MainOptions {
 
     public boolean useReducer() {
         return useReducer;
+    }
+
+    public long getMaxStatementReduceSteps() {
+        return maxStatementReduceSteps;
+    }
+
+    public long getMaxStatementReduceTime() {
+        return maxStatementReduceTime;
     }
 }

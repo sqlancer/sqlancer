@@ -61,6 +61,8 @@ public final class TiDBIndexGenerator {
         }
         errors.add("Cannot decode index value, because"); // invalid value for generated column
         errors.add("index already exist");
+        errors.add("Data truncation");
+        errors.add("key was too long");
         return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 
