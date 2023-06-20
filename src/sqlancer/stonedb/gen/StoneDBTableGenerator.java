@@ -1,18 +1,17 @@
 package sqlancer.stonedb.gen;
 
-import sqlancer.Randomly;
-import sqlancer.common.DBMSCommon;
-import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.mysql.MySQLBugs;
-import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
-import sqlancer.stonedb.StoneDBSchema;
-import sqlancer.stonedb.StoneDBSchema.StoneDBDataType;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import sqlancer.Randomly;
+import sqlancer.common.DBMSCommon;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
+import sqlancer.stonedb.StoneDBSchema;
+import sqlancer.stonedb.StoneDBSchema.StoneDBDataType;
 
 public class StoneDBTableGenerator {
     private final String tableName;
@@ -190,10 +189,10 @@ public class StoneDBTableGenerator {
         boolean isNull = false;
         boolean columnHasPrimaryKey = false;
         List<ColumnOptions> columnOptions = Randomly.subset(ColumnOptions.values());
-        boolean tableHasNullableColumn;
-        if (!columnOptions.contains(ColumnOptions.NULL_OR_NOT_NULL)) {
-            tableHasNullableColumn = true;
-        }
+        // boolean tableHasNullableColumn;
+        // if (!columnOptions.contains(ColumnOptions.NULL_OR_NOT_NULL)) {
+        // tableHasNullableColumn = true;
+        // }
         if (isTextType) {
             // TODO: restriction due to the limited key length
             columnOptions.remove(ColumnOptions.PRIMARY_KEY);
@@ -208,7 +207,7 @@ public class StoneDBTableGenerator {
                     if (Randomly.getBoolean()) {
                         sb.append("NULL");
                     }
-                    tableHasNullableColumn = true;
+                    // tableHasNullableColumn = true;
                     isNull = true;
                 } else {
                     sb.append("NOT NULL");
@@ -333,11 +332,13 @@ public class StoneDBTableGenerator {
         case LONGBLOB:
             sb.append("LONGBLOB");
             break;
+        default:
+            throw new AssertionError();
         }
     }
 
     public static void optionallyAddPrecisionAndScale(StringBuilder sb) {
-        if (Randomly.getBoolean() && !MySQLBugs.bug99183) {
+        if (Randomly.getBoolean()) {
             sb.append("(");
             // The maximum number of digits (M) for DECIMAL is 65
             long m = Randomly.getNotCachedInteger(1, 65);
