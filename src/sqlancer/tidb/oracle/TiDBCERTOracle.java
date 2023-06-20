@@ -39,6 +39,14 @@ public class TiDBCERTOracle implements TestOracle<TiDBGlobalState> {
     private List<String> queryPlan1Sequences;
     private List<String> queryPlan2Sequences;
 
+    public enum Mutator {
+        JOIN, WHERE, GROUPBY, HAVING, AND, OR, LIMIT;
+
+        public static Mutator getRandom() {
+            return Randomly.fromOptions(values());
+        }
+    }
+
     public TiDBCERTOracle(TiDBGlobalState globalState) {
         state = globalState;
         TiDBErrors.addExpressionErrors(errors);
@@ -89,28 +97,28 @@ public class TiDBCERTOracle implements TestOracle<TiDBGlobalState> {
 
         // Mutate the query
         boolean increase = false;
-        int mutator = (int) Randomly.getNotCachedInteger(0, 7);
 
-        switch (mutator) {
-        case 0:
+        Mutator mutation = Mutator.getRandom();
+        switch (mutation) {
+        case JOIN:
             increase = mutateJoin();
             break;
-        case 1:
+        case WHERE:
             increase = mutateWhere();
             break;
-        case 2:
+        case GROUPBY:
             increase = mutateGroupBy();
             break;
-        case 3:
+        case HAVING:
             increase = mutateHaving();
             break;
-        case 4:
+        case AND:
             increase = mutateAnd();
             break;
-        case 5:
+        case OR:
             increase = mutateOr();
             break;
-        case 6:
+        case LIMIT:
             increase = mutateLimit();
             break;
         default:
@@ -134,7 +142,7 @@ public class TiDBCERTOracle implements TestOracle<TiDBGlobalState> {
          */
         // Check the results
         if (increase && rowCount1 > (rowCount2 + 1) || !increase && (rowCount1 + 1) < rowCount2) {
-            throw new AssertionError("Mutator: " + mutator + ", Inconsistent result for query: EXPLAIN " + queryString1
+            throw new AssertionError("Mutator: " + mutation + ", Inconsistent result for query: EXPLAIN " + queryString1
                     + "; --" + rowCount1 + "\nEXPLAIN " + queryString2 + "; --" + rowCount2);
         }
     }
@@ -269,7 +277,7 @@ public class TiDBCERTOracle implements TestOracle<TiDBGlobalState> {
                     if (row == -1) {
                         row = estRows;
                     }
-                    String operation = rs.getString(1).split("_")[0];
+                    String operation = rs.getString(1).split("_")[0]; // Extract operation names for query plans
                     queryPlanSequences.add(operation);
                     return estRows;
                 }
