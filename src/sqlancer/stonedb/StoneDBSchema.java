@@ -1,16 +1,16 @@
 package sqlancer.stonedb;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.TableIndex;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalState, StoneDBSchema.StoneDBTable> {
 
@@ -192,62 +192,63 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
         }
     }
 
-    private static StoneDBDataType getColumnType(String typeString) {
-        switch (typeString) {
-        case "tinyint":
-            return StoneDBDataType.TINYINT;
-        case "smallint":
-            return StoneDBDataType.SMALLINT;
-        case "mediumint":
-            return StoneDBDataType.MEDIUMINT;
-        case "int":
-            return StoneDBDataType.INT;
-        case "bigint":
-            return StoneDBDataType.BIGINT;
-        case "float":
-            return StoneDBDataType.FLOAT;
-        case "double":
-            return StoneDBDataType.DOUBLE;
-        case "decimal":
-            return StoneDBDataType.DECIMAL;
-        case "year":
-            return StoneDBDataType.YEAR;
-        case "time":
-            return StoneDBDataType.TIME;
-        case "date":
-            return StoneDBDataType.DATE;
-        case "datetime":
-            return StoneDBDataType.DATETIME;
-        case "timestamp":
-            return StoneDBDataType.TIMESTAMP;
-        case "char":
-            return StoneDBDataType.CHAR;
-        case "varchar":
-            return StoneDBDataType.VARCHAR;
-        case "tinytext":
-            return StoneDBDataType.TINYTEXT;
-        case "text":
-            return StoneDBDataType.TEXT;
-        case "mediumtext":
-            return StoneDBDataType.MEDIUMTEXT;
-        case "longtext":
-            return StoneDBDataType.LONGTEXT;
-        case "binary":
-            return StoneDBDataType.BINARY;
-        case "varbinary":
-            return StoneDBDataType.VARBINARY;
-        case "tinyblob":
-            return StoneDBDataType.TINYBLOB;
-        case "blob":
-            return StoneDBDataType.BLOB;
-        case "mediumblob":
-            return StoneDBDataType.MEDIUMBLOB;
-        case "longblob":
-            return StoneDBDataType.LONGBLOB;
-        default:
-            throw new AssertionError(typeString);
-        }
-    }
+    //
+    // private static StoneDBDataType getColumnType(String typeString) {
+    // switch (typeString) {
+    // case "tinyint":
+    // return StoneDBDataType.TINYINT;
+    // case "smallint":
+    // return StoneDBDataType.SMALLINT;
+    // case "mediumint":
+    // return StoneDBDataType.MEDIUMINT;
+    // case "int":
+    // return StoneDBDataType.INT;
+    // case "bigint":
+    // return StoneDBDataType.BIGINT;
+    // case "float":
+    // return StoneDBDataType.FLOAT;
+    // case "double":
+    // return StoneDBDataType.DOUBLE;
+    // case "decimal":
+    // return StoneDBDataType.DECIMAL;
+    // case "year":
+    // return StoneDBDataType.YEAR;
+    // case "time":
+    // return StoneDBDataType.TIME;
+    // case "date":
+    // return StoneDBDataType.DATE;
+    // case "datetime":
+    // return StoneDBDataType.DATETIME;
+    // case "timestamp":
+    // return StoneDBDataType.TIMESTAMP;
+    // case "char":
+    // return StoneDBDataType.CHAR;
+    // case "varchar":
+    // return StoneDBDataType.VARCHAR;
+    // case "tinytext":
+    // return StoneDBDataType.TINYTEXT;
+    // case "text":
+    // return StoneDBDataType.TEXT;
+    // case "mediumtext":
+    // return StoneDBDataType.MEDIUMTEXT;
+    // case "longtext":
+    // return StoneDBDataType.LONGTEXT;
+    // case "binary":
+    // return StoneDBDataType.BINARY;
+    // case "varbinary":
+    // return StoneDBDataType.VARBINARY;
+    // case "tinyblob":
+    // return StoneDBDataType.TINYBLOB;
+    // case "blob":
+    // return StoneDBDataType.BLOB;
+    // case "mediumblob":
+    // return StoneDBDataType.MEDIUMBLOB;
+    // case "longblob":
+    // return StoneDBDataType.LONGBLOB;
+    // default:
+    // throw new AssertionError(typeString);
+    // }
+    // }
 
     private static List<String> getTableNames(SQLConnection con, String databaseName) throws SQLException {
         List<String> tableNames = new ArrayList<>();
@@ -285,6 +286,10 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
             return isNullable;
         }
 
+        public int getPrecision() {
+            return precision;
+        }
+
     }
 
     public StoneDBSchema(List<StoneDBTable> databaseTables) {
@@ -293,7 +298,7 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
 
     public static class StoneDBCompositeDataType {
         private final StoneDBDataType dataType;
-        private int size;
+        private final int size;
 
         public StoneDBCompositeDataType(StoneDBDataType dataType, int size) {
             this.dataType = dataType;
@@ -302,7 +307,7 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
 
         public StoneDBCompositeDataType(StoneDBDataType dataType) {
             this.dataType = dataType;
-            size = -1;
+            int size = -1;
             switch (dataType) {
             case TINYINT:
                 size = 1;
@@ -325,8 +330,65 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
             case DOUBLE:
                 size = 8;
                 break;
-            // TODO: ADD MORE DATA TYPE
+            case DECIMAL:
+                size = -2;
+                break;
+            case YEAR:
+                size = -2;
+                break;
+            case TIME:
+                size = -2;
+                break;
+            case DATE:
+                size = -2;
+                break;
+            case DATETIME:
+                size = -2;
+                break;
+            case TIMESTAMP:
+                size = -2;
+                break;
+            case CHAR:
+                size = -2;
+                break;
+            case VARCHAR:
+                size = -2;
+                break;
+            case TINYTEXT:
+                size = -2;
+                break;
+            case TEXT:
+                size = -2;
+                break;
+            case MEDIUMTEXT:
+                size = -2;
+                break;
+            case LONGTEXT:
+                size = -2;
+                break;
+            case BINARY:
+                size = -2;
+                break;
+            case VARBINARY:
+                size = -2;
+                break;
+            case TINYBLOB:
+                size = -2;
+                break;
+            case BLOB:
+                size = -2;
+                break;
+            case MEDIUMBLOB:
+                size = -2;
+                break;
+            case LONGBLOB:
+                size = -2;
+                break;
+            default:
+                size = -1;
+                throw new AssertionError();
             }
+            this.size = size;
         }
 
         public StoneDBDataType getPrimitiveDataType() {

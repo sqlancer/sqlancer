@@ -1,16 +1,25 @@
 package sqlancer.stonedb;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
+
 import com.google.auto.service.AutoService;
-import sqlancer.*;
+
+import sqlancer.AbstractAction;
+import sqlancer.DatabaseProvider;
+import sqlancer.IgnoreMeException;
+import sqlancer.MainOptions;
+import sqlancer.Randomly;
+import sqlancer.SQLConnection;
+import sqlancer.SQLGlobalState;
+import sqlancer.SQLProviderAdapter;
+import sqlancer.StatementExecutor;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.stonedb.gen.StoneDBTableGenerator;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.Statement;
 
 @AutoService(DatabaseProvider.class)
 public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBGlobalState, StoneDBOptions> {
@@ -42,7 +51,7 @@ public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBG
     }
 
     private static int mapActions(StoneDBGlobalState globalState, Action a) {
-        Randomly r = globalState.getRandomly();
+        globalState.getRandomly();
         switch (a) {
         case SHOW_TABLES:
             return 1;
