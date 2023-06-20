@@ -130,7 +130,7 @@ public class TiDBCERTOracle implements TestOracle<TiDBGlobalState> {
         double rowCount2 = getRow(state, queryString2, queryPlan2Sequences);
 
         // Check structural equivalence
-        if (DBMSCommon.editDistance(queryPlan1Sequences, queryPlan2Sequences) > 1) {
+        if (DBMSCommon.areQueryPlanSequencesSimilar(queryPlan1Sequences, queryPlan2Sequences) > 1) {
             return;
         }
 

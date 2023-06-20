@@ -41,7 +41,7 @@ public final class DBMSCommon {
         return maxIndex;
     }
 
-    public static int editDistance(List<String> list1, List<String> list2) {
+    public static int areQueryPlanSequencesSimilar(List<String> list1, List<String> list2) {
         int[][] dp = new int[list1.size() + 1][list2.size() + 1];
         for (int i = 0; i <= list1.size(); i++) {
             for (int j = 0; j <= list2.size(); j++) {
