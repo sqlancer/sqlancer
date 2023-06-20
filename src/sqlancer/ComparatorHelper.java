@@ -84,13 +84,13 @@ public final class ComparatorHelper {
         return resultSet;
     }
 
-    public static void assumeResultSetsAreEqual(List<String> firstResultSet, List<String> secondResultSet,
-            String originalQuery, List<String> combinedQuery, SQLGlobalState<?, ?> state) {
-        if (firstResultSet.size() != secondResultSet.size()) {
+    public static void assumeResultSetsAreEqual(List<String> resultSet, List<String> secondResultSet,
+            String originalQueryString, List<String> combinedString, SQLGlobalState<?, ?> state) {
+        if (resultSet.size() != secondResultSet.size()) {
             String queryFormatString = "-- %s;" + System.lineSeparator() + "-- cardinality: %d" + System.lineSeparator()
                     + System.lineSeparator() + System.lineSeparator();
-            String firstQueryString = String.format(queryFormatString, originalQuery, firstResultSet.size());
-            String combinedQueryString = String.join(";", combinedQuery);
+            String firstQueryString = String.format(queryFormatString, originalQueryString, resultSet.size());
+            String combinedQueryString = String.join(";", combinedString);
             String secondQueryString = String.format(queryFormatString, combinedQueryString, secondResultSet.size());
             state.getState().getLocalState()
                     .log(String.format("%s" + System.lineSeparator() + "%s", firstQueryString, secondQueryString));
@@ -98,11 +98,11 @@ public final class ComparatorHelper {
                     "the size of the result sets mismatch (%d and %d)!" + System.lineSeparator() + "firstQuery: %s"
                             + System.lineSeparator() + "secondQuery: %s" + System.lineSeparator()
                             + System.lineSeparator() + System.lineSeparator(),
-                    firstResultSet.size(), secondResultSet.size(), firstQueryString, secondQueryString);
+                    resultSet.size(), secondResultSet.size(), firstQueryString, secondQueryString);
             throw new AssertionError(assertionMessage);
         }
 
-        Set<String> firstHashSet = new HashSet<>(firstResultSet);
+        Set<String> firstHashSet = new HashSet<>(resultSet);
         Set<String> secondHashSet = new HashSet<>(secondResultSet);
 
         if (!firstHashSet.equals(secondHashSet)) {
@@ -112,8 +112,8 @@ public final class ComparatorHelper {
             secondResultSetMisses.removeAll(firstHashSet);
             String queryFormatString = "-- %s;" + System.lineSeparator() + "-- misses: %s" + System.lineSeparator()
                     + System.lineSeparator() + System.lineSeparator();
-            String firstQueryString = String.format(queryFormatString, originalQuery, firstResultSetMisses);
-            String secondQueryString = String.format(queryFormatString, String.join(";", combinedQuery),
+            String firstQueryString = String.format(queryFormatString, originalQueryString, firstResultSetMisses);
+            String secondQueryString = String.format(queryFormatString, String.join(";", combinedString),
                     secondResultSetMisses);
             // update the SELECT queries to be logged at the bottom of the error log file
             state.getState().getLocalState().log(String.format("%s\n%s", firstQueryString, secondQueryString));
