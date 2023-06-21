@@ -95,7 +95,9 @@ public final class ComparatorHelper {
             state.getState().getLocalState()
                     .log(String.format("%s" + System.lineSeparator() + "%s", firstQueryString, secondQueryString));
             String assertionMessage = String.format(
-                    "the size of the result sets mismatch (%d and %d)! FirstQuery: \"%s\", whose cardinality is: %d; SecondQuery:\"%s\", whose cardinality is: %d",
+                    "the size of the result sets mismatch (%d and %d)!" + System.lineSeparator()
+                            + "FirstQuery: \"%s\", whose cardinality is: %d" + System.lineSeparator()
+                            + "SecondQuery:\"%s\", whose cardinality is: %d",
                     resultSet.size(), secondResultSet.size(), originalQueryString, resultSet.size(),
                     combinedQueryString, secondResultSet.size());
             throw new AssertionError(assertionMessage);
@@ -110,16 +112,16 @@ public final class ComparatorHelper {
             Set<String> secondResultSetMisses = new HashSet<>(secondHashSet);
             secondResultSetMisses.removeAll(firstHashSet);
 
-            String queryFormatString = "-- %s;" + System.lineSeparator() + "-- misses: %s" + System.lineSeparator();
+            String queryFormatString = "-- Query: \"%s\"; It misses: \"%s\"";
             String firstQueryString = String.format(queryFormatString, originalQueryString, firstResultSetMisses);
             String secondQueryString = String.format(queryFormatString, String.join(";", combinedString),
                     secondResultSetMisses);
             // update the SELECT queries to be logged at the bottom of the error log file
             state.getState().getLocalState()
                     .log(String.format("%s" + System.lineSeparator() + "%s", firstQueryString, secondQueryString));
-            String assertionMessage = String.format(
-                    "the content of the result sets mismatch! FirstQuery : \"%s\"; SecondQuery: \"%s\"",
-                    originalQueryString, secondQueryString);
+            String assertionMessage = String.format("the content of the result sets mismatch!" + System.lineSeparator()
+                    + "FirstQuery : \"%s\"" + System.lineSeparator() + "SecondQuery: \"%s\"", originalQueryString,
+                    secondQueryString);
             throw new AssertionError(assertionMessage);
         }
     }
