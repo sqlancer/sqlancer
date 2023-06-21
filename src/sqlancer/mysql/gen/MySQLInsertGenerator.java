@@ -28,7 +28,7 @@ public class MySQLInsertGenerator {
         MySQLTable table = globalState.getSchema().getRandomTable();
         return insertRow(globalState, table);
     }
-    
+
     public static SQLQueryAdapter insertRow(MySQLGlobalState globalState, MySQLTable table) throws SQLException {
         if (Randomly.getBoolean()) {
             return new MySQLInsertGenerator(globalState, table).generateInsert();

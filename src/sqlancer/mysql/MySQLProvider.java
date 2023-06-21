@@ -193,7 +193,8 @@ public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOpt
 
     @Override
     public boolean addRowsToAllTables(MySQLGlobalState globalState) throws Exception {
-        List<MySQLTable> tablesNoRow = globalState.getSchema().getDatabaseTables().stream().filter(t -> t.getNrRows(globalState) == 0).collect(Collectors.toList());
+        List<MySQLTable> tablesNoRow = globalState.getSchema().getDatabaseTables().stream()
+                .filter(t -> t.getNrRows(globalState) == 0).collect(Collectors.toList());
         for (MySQLTable table : tablesNoRow) {
             SQLQueryAdapter queryAddRows = MySQLInsertGenerator.insertRow(globalState, table);
             globalState.executeStatement(queryAddRows);

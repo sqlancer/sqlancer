@@ -152,12 +152,7 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
         case STRING:
             /* Replace characters that still trigger open bugs in MySQL */
             String string = state.getRandomly().getString().replace("\\", "").replace("\n", "");
-            MySQLConstant createStringConstant = MySQLConstant.createStringConstant(string);
-            // if (Randomly.getBoolean()) {
-            // return new MySQLCollate(createStringConstant,
-            // Randomly.fromOptions("ascii_bin", "binary"));
-            // }
-            return createStringConstant;
+            return MySQLConstant.createStringConstant(string);
         case DOUBLE:
             double val = state.getRandomly().getDouble();
             return new MySQLDoubleConstant(val);
