@@ -14,11 +14,11 @@ public class StoneDBToStringVisitor extends NewToStringVisitor<StoneDBExpression
             throw new AssertionError(expr.getClass());
         }
     }
-    
+
     private void visit(StoneDBConstant constant) {
         sb.append(constant.toString());
     }
-    
+
     public static String asString(Node<StoneDBExpression> expr) {
         StoneDBToStringVisitor visitor = new StoneDBToStringVisitor();
         visitor.visit(expr);

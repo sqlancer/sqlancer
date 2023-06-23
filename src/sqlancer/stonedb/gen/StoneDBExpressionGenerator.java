@@ -31,7 +31,8 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
     }
 
     private enum Expression {
-        UNARY_PREFIX, UNARY_POSTFIX, BINARY_COMPARISON, BINARY_LOGICAL, BINARY_ARITHMETIC, BINARY_BITWISE, BETWEEN, IN, CASE
+        UNARY_PREFIX, UNARY_POSTFIX, BINARY_COMPARISON, BINARY_LOGICAL, BINARY_ARITHMETIC, BINARY_BITWISE, BETWEEN, IN,
+        CASE
     }
 
     @Override
@@ -51,18 +52,18 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
         }
         StoneDBDataType type = StoneDBDataType.getRandomWithoutNull();
         switch (type) {
-            case INT:
-                return StoneDBConstant.createIntConstant(globalState.getRandomly().getInteger());
-            case DATE:
-                return StoneDBConstant.createDateConstant(globalState.getRandomly().getInteger());
-            case TIMESTAMP:
-                return StoneDBConstant.createTimestampConstant(globalState.getRandomly().getInteger());
-            case VARCHAR:
-                return StoneDBConstant.createStringConstant(globalState.getRandomly().getString());
-            case FLOAT:
-                return StoneDBConstant.createFloatConstant(globalState.getRandomly().getDouble());
-            default:
-                throw new IgnoreMeException();
+        case INT:
+            return StoneDBConstant.createIntConstant(globalState.getRandomly().getInteger());
+        case DATE:
+            return StoneDBConstant.createDateConstant(globalState.getRandomly().getInteger());
+        case TIMESTAMP:
+            return StoneDBConstant.createTimestampConstant(globalState.getRandomly().getInteger());
+        case VARCHAR:
+            return StoneDBConstant.createStringConstant(globalState.getRandomly().getString());
+        case FLOAT:
+            return StoneDBConstant.createFloatConstant(globalState.getRandomly().getDouble());
+        default:
+            throw new IgnoreMeException();
         }
     }
 
@@ -81,36 +82,36 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
         Expression expr = Randomly.fromList(possibleOptions);
         Operator op;
         switch (expr) {
-            case UNARY_PREFIX:
-                op = StoneDBUnaryPrefixOperator.getRandom();
-                return new NewUnaryPrefixOperatorNode<>(generateExpression(depth + 1), op);
-            case UNARY_POSTFIX:
-                op = StoneDBUnaryPostfixOperator.getRandom();
-                return new NewUnaryPostfixOperatorNode<>(generateExpression(depth + 1), op);
-            case BINARY_COMPARISON:
-                op = StoneDBBinaryComparisonOperator.getRandom();
-                return new NewBinaryOperatorNode<>(generateExpression(depth + 1), generateExpression(depth + 1), op);
-            case BINARY_LOGICAL:
-                op = StoneDBBinaryLogicalOperator.getRandom();
-                return new NewBinaryOperatorNode<>(generateExpression(depth + 1), generateExpression(depth + 1), op);
-            case BINARY_ARITHMETIC:
-                op = StoneDBBinaryArithmeticOperator.getRandom();
-                return new NewBinaryOperatorNode<>(generateExpression(depth + 1), generateExpression(depth + 1), op);
-            case BINARY_BITWISE:
-                op = StoneDBBinaryBitwiseOperator.getRandom();
-                return new NewBinaryOperatorNode<>(generateExpression(depth + 1), generateExpression(depth + 1), op);
-            case BETWEEN:
-                return new NewBetweenOperatorNode<>(generateExpression(depth + 1), generateExpression(depth + 1),
-                        generateExpression(depth + 1), Randomly.getBoolean());
-            case IN:
-                return new NewInOperatorNode<>(generateExpression(depth + 1),
-                        generateExpressions(Randomly.smallNumber() + 1, depth + 1), Randomly.getBoolean());
-            case CASE:
-                int nr = Randomly.smallNumber() + 1;
-                return new NewCaseOperatorNode<>(generateExpression(depth + 1), generateExpressions(nr, depth + 1),
-                        generateExpressions(nr, depth + 1), generateExpression(depth + 1));
-            default:
-                throw new AssertionError();
+        case UNARY_PREFIX:
+            op = StoneDBUnaryPrefixOperator.getRandom();
+            return new NewUnaryPrefixOperatorNode<>(generateExpression(depth + 1), op);
+        case UNARY_POSTFIX:
+            op = StoneDBUnaryPostfixOperator.getRandom();
+            return new NewUnaryPostfixOperatorNode<>(generateExpression(depth + 1), op);
+        case BINARY_COMPARISON:
+            op = StoneDBBinaryComparisonOperator.getRandom();
+            return new NewBinaryOperatorNode<>(generateExpression(depth + 1), generateExpression(depth + 1), op);
+        case BINARY_LOGICAL:
+            op = StoneDBBinaryLogicalOperator.getRandom();
+            return new NewBinaryOperatorNode<>(generateExpression(depth + 1), generateExpression(depth + 1), op);
+        case BINARY_ARITHMETIC:
+            op = StoneDBBinaryArithmeticOperator.getRandom();
+            return new NewBinaryOperatorNode<>(generateExpression(depth + 1), generateExpression(depth + 1), op);
+        case BINARY_BITWISE:
+            op = StoneDBBinaryBitwiseOperator.getRandom();
+            return new NewBinaryOperatorNode<>(generateExpression(depth + 1), generateExpression(depth + 1), op);
+        case BETWEEN:
+            return new NewBetweenOperatorNode<>(generateExpression(depth + 1), generateExpression(depth + 1),
+                    generateExpression(depth + 1), Randomly.getBoolean());
+        case IN:
+            return new NewInOperatorNode<>(generateExpression(depth + 1),
+                    generateExpressions(Randomly.smallNumber() + 1, depth + 1), Randomly.getBoolean());
+        case CASE:
+            int nr = Randomly.smallNumber() + 1;
+            return new NewCaseOperatorNode<>(generateExpression(depth + 1), generateExpressions(nr, depth + 1),
+                    generateExpressions(nr, depth + 1), generateExpression(depth + 1));
+        default:
+            throw new AssertionError();
         }
     }
 
@@ -182,9 +183,8 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
      */
     public enum StoneDBBinaryComparisonOperator implements Operator {
         EQUAL("="), GREATER(">"), LESS("<"), GREATER_EQUAL(">="), LESS_EQUAL("<="),
-        NOT_EQUALS(Randomly.fromList(Arrays.asList("!=", "<>"))), NULL_SAFE_EQUAL("<=>"),
-        IN("IN"), NOT_IN("NOT_IN"), LIKE("LIKE"),
-        IS_NULL("IS NULL"), IS_NOT_NULL("IS NOT NULL");
+        NOT_EQUALS(Randomly.fromList(Arrays.asList("!=", "<>"))), NULL_SAFE_EQUAL("<=>"), IN("IN"), NOT_IN("NOT_IN"),
+        LIKE("LIKE"), IS_NULL("IS NULL"), IS_NOT_NULL("IS NOT NULL");
 
         private final String textRepr;
 

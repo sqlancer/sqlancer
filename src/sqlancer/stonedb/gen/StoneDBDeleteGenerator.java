@@ -5,7 +5,6 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
-import sqlancer.stonedb.StoneDBSchema;
 import sqlancer.stonedb.StoneDBSchema.StoneDBTable;
 import sqlancer.stonedb.StoneDBToStringVisitor;
 
@@ -26,9 +25,7 @@ public class StoneDBDeleteGenerator {
 
     public SQLQueryAdapter getQuery() {
         StoneDBTable randomTable = globalState.getSchema().getRandomTable();
-        StoneDBExpressionGenerator gen = new StoneDBExpressionGenerator(globalState);
         sb.append("DELETE");
-
         if (Randomly.getBoolean()) {
             sb.append(" LOW_PRIORITY");
         }
@@ -46,11 +43,13 @@ public class StoneDBDeleteGenerator {
         }
         if (Randomly.getBoolean()) {
             sb.append(" WHERE ");
-            sb.append(StoneDBToStringVisitor.asString(new StoneDBExpressionGenerator(globalState).setColumns(randomTable.getColumns()).generateExpression()));
+            sb.append(StoneDBToStringVisitor.asString(new StoneDBExpressionGenerator(globalState)
+                    .setColumns(randomTable.getColumns()).generateExpression()));
         }
         if (Randomly.getBoolean()) {
             sb.append(" ORDER BY ");
-            sb.append(Randomly.fromOptions(randomTable.getColumns().stream().map(AbstractTableColumn::getName).collect(Collectors.toList())));
+            sb.append(Randomly.fromOptions(
+                    randomTable.getColumns().stream().map(AbstractTableColumn::getName).collect(Collectors.toList())));
         }
         if (Randomly.getBoolean()) {
             sb.append(" LIMIT ");

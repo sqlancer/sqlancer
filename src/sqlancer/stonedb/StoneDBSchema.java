@@ -22,34 +22,6 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
         public static StoneDBDataType getRandomWithoutNull() {
             return Randomly.fromOptions(values());
         }
-
-    }
-
-    public static StoneDBCompositeDataType getRandomWithoutNull() {
-        StoneDBDataType type = StoneDBDataType.getRandomWithoutNull();
-        int size = -1;
-        switch (type) {
-        case TINYINT:
-            size = 1;
-            break;
-        case SMALLINT:
-            size = 2;
-            break;
-        case MEDIUMINT:
-            size = 3;
-            break;
-        case INT:
-            size = 4;
-            break;
-        case BIGINT:
-            size = 8;
-            break;
-        // todo: add more data type
-        default:
-            throw new AssertionError(type);
-        }
-
-        return new StoneDBCompositeDataType(type, size);
     }
 
     public static class StoneDBTable
@@ -400,6 +372,11 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
                 throw new AssertionError(this);
             }
             return size;
+        }
+
+        public static StoneDBCompositeDataType getRandomWithoutNull() {
+            StoneDBDataType type = StoneDBDataType.getRandomWithoutNull();
+            return new StoneDBCompositeDataType(type);
         }
     }
 }
