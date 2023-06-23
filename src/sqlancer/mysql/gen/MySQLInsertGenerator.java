@@ -19,16 +19,21 @@ public class MySQLInsertGenerator {
     private final ExpectedErrors errors = new ExpectedErrors();
     private final MySQLGlobalState globalState;
 
-    public MySQLInsertGenerator(MySQLGlobalState globalState) {
+    public MySQLInsertGenerator(MySQLGlobalState globalState, MySQLTable table) {
         this.globalState = globalState;
-        table = globalState.getSchema().getRandomTable();
+        this.table = table;
     }
 
     public static SQLQueryAdapter insertRow(MySQLGlobalState globalState) throws SQLException {
+        MySQLTable table = globalState.getSchema().getRandomTable();
+        return insertRow(globalState, table);
+    }
+
+    public static SQLQueryAdapter insertRow(MySQLGlobalState globalState, MySQLTable table) throws SQLException {
         if (Randomly.getBoolean()) {
-            return new MySQLInsertGenerator(globalState).generateInsert();
+            return new MySQLInsertGenerator(globalState, table).generateInsert();
         } else {
-            return new MySQLInsertGenerator(globalState).generateReplace();
+            return new MySQLInsertGenerator(globalState, table).generateReplace();
         }
     }
 
