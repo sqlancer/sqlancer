@@ -455,15 +455,7 @@ public final class Randomly {
         if (left.equals(right)) {
             return left;
         }
-        if (right.subtract(left).abs().compareTo(new BigInteger("10000")) <= 0) {
-            return left.add(right).mod(new BigInteger("2"));
-        }
-        while (true) {
-            BigInteger result = new BigInteger(63, new Random());
-            if (result.compareTo(left) >= 0 && result.compareTo(right) <= 0) {
-                return result;
-            }
-        }
+        return new BigInteger(String.valueOf(getInteger(left.intValue(),right.intValue())));
     }
 
     public BigDecimal getRandomBigDecimal() {
