@@ -11,8 +11,8 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLGlobalState;
 import sqlancer.common.DBMSCommon;
+import sqlancer.common.oracle.CERTOracleBase;
 import sqlancer.common.oracle.TestOracle;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.tidb.TiDBErrors;
@@ -31,24 +31,12 @@ import sqlancer.tidb.ast.TiDBSelect;
 import sqlancer.tidb.ast.TiDBTableReference;
 import sqlancer.tidb.visitor.TiDBVisitor;
 
-public class TiDBCERTOracle implements TestOracle<TiDBGlobalState> {
-    private final TiDBGlobalState state;
+public class TiDBCERTOracle extends CERTOracleBase<TiDBGlobalState> implements TestOracle<TiDBGlobalState> {
     private TiDBExpressionGenerator gen;
-    private final ExpectedErrors errors = new ExpectedErrors();
     private TiDBSelect select;
-    private List<String> queryPlan1Sequences;
-    private List<String> queryPlan2Sequences;
-
-    public enum Mutator {
-        JOIN, WHERE, GROUPBY, HAVING, AND, OR, LIMIT;
-
-        public static Mutator getRandom() {
-            return Randomly.fromOptions(values());
-        }
-    }
 
     public TiDBCERTOracle(TiDBGlobalState globalState) {
-        state = globalState;
+        super(globalState);
         TiDBErrors.addExpressionErrors(errors);
     }
 
@@ -103,6 +91,9 @@ public class TiDBCERTOracle implements TestOracle<TiDBGlobalState> {
         case JOIN:
             increase = mutateJoin();
             break;
+        case DISTINCT:
+            // increase = mutateDistinct();
+            // break;
         case WHERE:
             increase = mutateWhere();
             break;
@@ -147,7 +138,8 @@ public class TiDBCERTOracle implements TestOracle<TiDBGlobalState> {
         }
     }
 
-    private boolean mutateJoin() {
+    @Override
+    protected boolean mutateJoin() {
         if (select.getJoinList().isEmpty()) {
             return false;
         }
@@ -183,7 +175,8 @@ public class TiDBCERTOracle implements TestOracle<TiDBGlobalState> {
         return increase;
     }
 
-    private boolean mutateWhere() {
+    @Override
+    protected boolean mutateWhere() {
         boolean increase = select.getWhereClause() != null;
         if (increase) {
             select.setWhereClause(null);
@@ -193,7 +186,8 @@ public class TiDBCERTOracle implements TestOracle<TiDBGlobalState> {
         return increase;
     }
 
-    private boolean mutateGroupBy() {
+    @Override
+    protected boolean mutateGroupBy() {
         boolean increase = select.getGroupByExpressions().size() > 0;
         if (increase) {
             select.clearGroupByExpressions();
@@ -204,7 +198,8 @@ public class TiDBCERTOracle implements TestOracle<TiDBGlobalState> {
         return increase;
     }
 
-    private boolean mutateHaving() {
+    @Override
+    protected boolean mutateHaving() {
         if (select.getGroupByExpressions().size() == 0) {
             select.setGroupByExpressions(select.getFetchColumns());
             select.setHavingClause(gen.generateExpression());
@@ -220,7 +215,8 @@ public class TiDBCERTOracle implements TestOracle<TiDBGlobalState> {
         }
     }
 
-    private boolean mutateAnd() {
+    @Override
+    protected boolean mutateAnd() {
         if (select.getWhereClause() == null) {
             select.setWhereClause(gen.generateExpression());
         } else {
@@ -231,7 +227,8 @@ public class TiDBCERTOracle implements TestOracle<TiDBGlobalState> {
         return false;
     }
 
-    private boolean mutateOr() {
+    @Override
+    protected boolean mutateOr() {
         if (select.getWhereClause() == null) {
             select.setWhereClause(gen.generateExpression());
             return false;
@@ -243,7 +240,8 @@ public class TiDBCERTOracle implements TestOracle<TiDBGlobalState> {
         }
     }
 
-    private boolean mutateLimit() {
+    @Override
+    protected boolean mutateLimit() {
         boolean increase = select.getLimitClause() != null;
         if (increase) {
             select.setLimitClause(null);

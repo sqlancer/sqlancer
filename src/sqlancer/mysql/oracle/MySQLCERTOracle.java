@@ -10,8 +10,8 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLGlobalState;
 import sqlancer.common.DBMSCommon;
+import sqlancer.common.oracle.CERTOracleBase;
 import sqlancer.common.oracle.TestOracle;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.mysql.MySQLErrors;
@@ -26,24 +26,12 @@ import sqlancer.mysql.ast.MySQLSelect;
 import sqlancer.mysql.ast.MySQLTableReference;
 import sqlancer.mysql.gen.MySQLExpressionGenerator;
 
-public class MySQLCERTOracle implements TestOracle<MySQLGlobalState> {
-    private final MySQLGlobalState state;
+public class MySQLCERTOracle extends CERTOracleBase<MySQLGlobalState> implements TestOracle<MySQLGlobalState> {
     private MySQLExpressionGenerator gen;
-    private final ExpectedErrors errors = new ExpectedErrors();
     private MySQLSelect select;
-    private List<String> queryPlan1Sequences;
-    private List<String> queryPlan2Sequences;
-
-    public enum Mutator {
-        JOIN, DISTINCT, WHERE, GROUPBY, HAVING, AND, OR, LIMIT;
-
-        public static Mutator getRandom() {
-            return Randomly.fromOptions(values());
-        }
-    }
 
     public MySQLCERTOracle(MySQLGlobalState globalState) {
-        state = globalState;
+        super(globalState);
         MySQLErrors.addExpressionErrors(errors);
     }
 
@@ -133,7 +121,8 @@ public class MySQLCERTOracle implements TestOracle<MySQLGlobalState> {
         }
     }
 
-    private boolean mutateDistinct() {
+    @Override
+    protected boolean mutateDistinct() {
         MySQLSelect.SelectType selectType = select.getFromOptions();
         if (selectType != MySQLSelect.SelectType.ALL) {
             select.setSelectType(MySQLSelect.SelectType.ALL);
@@ -144,7 +133,8 @@ public class MySQLCERTOracle implements TestOracle<MySQLGlobalState> {
         }
     }
 
-    private boolean mutateWhere() {
+    @Override
+    protected boolean mutateWhere() {
         boolean increase = select.getWhereClause() != null;
         if (increase) {
             select.setWhereClause(null);
@@ -154,7 +144,8 @@ public class MySQLCERTOracle implements TestOracle<MySQLGlobalState> {
         return increase;
     }
 
-    private boolean mutateGroupBy() {
+    @Override
+    protected boolean mutateGroupBy() {
         boolean increase = select.getGroupByExpressions().size() > 0;
         if (increase) {
             select.clearGroupByExpressions();
@@ -164,7 +155,8 @@ public class MySQLCERTOracle implements TestOracle<MySQLGlobalState> {
         return increase;
     }
 
-    private boolean mutateHaving() {
+    @Override
+    protected boolean mutateHaving() {
         if (select.getGroupByExpressions().size() == 0) {
             select.setGroupByExpressions(select.getFetchColumns());
             select.setHavingClause(gen.generateExpression());
@@ -180,7 +172,8 @@ public class MySQLCERTOracle implements TestOracle<MySQLGlobalState> {
         }
     }
 
-    private boolean mutateAnd() {
+    @Override
+    protected boolean mutateAnd() {
         if (select.getWhereClause() == null) {
             select.setWhereClause(gen.generateExpression());
         } else {
@@ -191,7 +184,8 @@ public class MySQLCERTOracle implements TestOracle<MySQLGlobalState> {
         return false;
     }
 
-    private boolean mutateOr() {
+    @Override
+    protected boolean mutateOr() {
         if (select.getWhereClause() == null) {
             select.setWhereClause(gen.generateExpression());
             return false;
