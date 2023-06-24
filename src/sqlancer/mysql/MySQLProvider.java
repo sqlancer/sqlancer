@@ -168,16 +168,9 @@ public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOpt
                 sb.append("ANALYZE TABLE ");
                 sb.append(table.getName());
                 sb.append(" UPDATE HISTOGRAM ON ");
-                boolean first = true;
-                for (MySQLColumn c : table.getColumns()) {
-                    if (first) {
-                        first = false;
-                    } else {
-                        sb.append(", ");
-                    }
-                    sb.append(c.getName());
-                }
-                sb.append(";");
+                String columns = table.getColumns().stream().map(MySQLColumn::getName)
+                        .collect(Collectors.joining(", "));
+                sb.append(columns + ";");
                 globalState.executeStatement(new SQLQueryAdapter(sb.toString(), errors));
             }
         }
