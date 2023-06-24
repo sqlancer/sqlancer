@@ -1,26 +1,26 @@
 package sqlancer.stonedb.gen;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.common.ast.newast.NewBetweenOperatorNode;
 import sqlancer.common.ast.newast.NewBinaryOperatorNode;
 import sqlancer.common.ast.newast.NewCaseOperatorNode;
 import sqlancer.common.ast.newast.NewFunctionNode;
 import sqlancer.common.ast.newast.NewInOperatorNode;
-import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
 import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
+import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
+import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema.StoneDBColumn;
 import sqlancer.stonedb.StoneDBSchema.StoneDBDataType;
 import sqlancer.stonedb.ast.StoneDBConstant;
 import sqlancer.stonedb.ast.StoneDBExpression;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<StoneDBExpression>, StoneDBColumn> {
 
@@ -53,15 +53,16 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
         StoneDBDataType type = StoneDBDataType.getRandomWithoutNull();
         switch (type) {
         case INT:
-            return StoneDBConstant.createIntConstant(globalState.getRandomly().getInteger());
+            return StoneDBConstant
+                    .createIntConstant(globalState.getRandomly().getInteger(Integer.MIN_VALUE + 1, Integer.MAX_VALUE));
         case DATE:
             return StoneDBConstant.createDateConstant(globalState.getRandomly().getInteger());
         case TIMESTAMP:
             return StoneDBConstant.createTimestampConstant(globalState.getRandomly().getInteger());
         case VARCHAR:
             return StoneDBConstant.createStringConstant(globalState.getRandomly().getString());
-        case FLOAT:
-            return StoneDBConstant.createFloatConstant(globalState.getRandomly().getDouble());
+        case DOUBLE:
+            return StoneDBConstant.createDoubleConstant(globalState.getRandomly().getDouble());
         default:
             throw new IgnoreMeException();
         }

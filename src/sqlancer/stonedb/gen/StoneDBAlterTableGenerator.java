@@ -20,11 +20,11 @@ public class StoneDBAlterTableGenerator {
         this.globalState = globalState;
     }
 
-    private static SQLQueryAdapter generate(StoneDBGlobalState globalState) {
+    public static SQLQueryAdapter generate(StoneDBGlobalState globalState) {
         return new StoneDBAlterTableGenerator(globalState).getQuery();
     }
 
-    public SQLQueryAdapter getQuery() {
+    private SQLQueryAdapter getQuery() {
         sb.append("ALTER TABLE ");
         StoneDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         StoneDBExpressionGenerator generator = new StoneDBExpressionGenerator(globalState)

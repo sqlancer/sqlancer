@@ -15,11 +15,11 @@ public class StoneDBIndexGenerator {
         this.globalState = globalState;
     }
 
-    private static SQLQueryAdapter generate(StoneDBGlobalState globalState) {
+    public static SQLQueryAdapter generate(StoneDBGlobalState globalState) {
         return new StoneDBIndexGenerator(globalState).getQuery();
     }
 
-    public SQLQueryAdapter getQuery() {
+    private SQLQueryAdapter getQuery() {
         sb.append("CREATE ");
         sb.append(Randomly.fromOptions("UNIQUE", "FULLTEXT", "SPATIAL"));
         sb.append(" INDEX");

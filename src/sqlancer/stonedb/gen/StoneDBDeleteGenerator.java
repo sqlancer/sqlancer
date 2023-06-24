@@ -1,5 +1,7 @@
 package sqlancer.stonedb.gen;
 
+import java.util.stream.Collectors;
+
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -8,9 +10,7 @@ import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema.StoneDBTable;
 import sqlancer.stonedb.StoneDBToStringVisitor;
 
-import java.util.stream.Collectors;
-
-public class StoneDBDeleteGenerator {
+public final class StoneDBDeleteGenerator {
     private final StoneDBGlobalState globalState;
     private final StringBuilder sb = new StringBuilder();
     ExpectedErrors errors = new ExpectedErrors();
@@ -19,7 +19,7 @@ public class StoneDBDeleteGenerator {
         this.globalState = globalState;
     }
 
-    private static SQLQueryAdapter generate(StoneDBGlobalState globalState) {
+    public static SQLQueryAdapter generate(StoneDBGlobalState globalState) {
         return new StoneDBDeleteGenerator(globalState).getQuery();
     }
 

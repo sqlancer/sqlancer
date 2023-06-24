@@ -1,5 +1,8 @@
 package sqlancer.stonedb.gen;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -8,9 +11,6 @@ import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema.StoneDBColumn;
 import sqlancer.stonedb.StoneDBSchema.StoneDBTable;
 import sqlancer.stonedb.StoneDBToStringVisitor;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class StoneDBInsertGenerator {
     private final StoneDBGlobalState globalState;
@@ -27,11 +27,11 @@ public class StoneDBInsertGenerator {
         columns = table.getRandomNonEmptyColumnSubset();
     }
 
-    private static SQLQueryAdapter generate(StoneDBGlobalState globalState) {
-        return new StoneDBIndexGenerator(globalState).getQuery();
+    public static SQLQueryAdapter generate(StoneDBGlobalState globalState) {
+        return new StoneDBInsertGenerator(globalState).getQuery();
     }
 
-    public SQLQueryAdapter getQuery() {
+    private SQLQueryAdapter getQuery() {
         sb.append("INSERT");
         if (Randomly.getBoolean()) {
             sb.append(" ");

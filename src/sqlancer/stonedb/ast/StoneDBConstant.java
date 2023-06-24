@@ -10,39 +10,58 @@ public class StoneDBConstant implements Node<StoneDBExpression> {
     private StoneDBConstant() {
     }
 
-    public static class DuckDBNullConstant extends StoneDBConstant {
-
+    public static class StoneDBNullConstant extends StoneDBConstant {
         @Override
         public String toString() {
             return "NULL";
         }
-
     }
 
-    public static class DuckDBIntConstant extends StoneDBConstant {
+    public static Node<StoneDBExpression> createNullConstant() {
+        return new StoneDBNullConstant();
+    }
 
-        private final long value;
+    public static class StoneDBIntConstant extends StoneDBConstant {
+        private final Integer value;
 
-        public DuckDBIntConstant(long value) {
+        public StoneDBIntConstant(int value) {
             this.value = value;
         }
 
         @Override
         public String toString() {
+            if (value.equals(Integer.MIN_VALUE)) {
+                return "INT_NULL";
+            }
             return String.valueOf(value);
         }
-
-        public long getValue() {
-            return value;
-        }
-
     }
 
-    public static class DuckDBDoubleConstant extends StoneDBConstant {
+    public static Node<StoneDBExpression> createIntConstant(int val) {
+        return new StoneDBIntConstant(val);
+    }
 
-        private final double value;
+    public static class StoneDBBigIntConstant extends StoneDBConstant {
+        private final Long value;
 
-        public DuckDBDoubleConstant(double value) {
+        public StoneDBBigIntConstant(long value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            if (value.equals(Long.MIN_VALUE)) {
+                return "BIGINT_NULL";
+            }
+            return String.valueOf(value);
+        }
+    }
+
+    public static class StoneDBDoubleConstant extends StoneDBConstant {
+
+        private final Double value;
+
+        public StoneDBDoubleConstant(double value) {
             this.value = value;
         }
 
@@ -62,11 +81,15 @@ public class StoneDBConstant implements Node<StoneDBExpression> {
 
     }
 
-    public static class DuckDBTextConstant extends StoneDBConstant {
+    public static Node<StoneDBExpression> createDoubleConstant(double val) {
+        return new StoneDBDoubleConstant(val);
+    }
+
+    public static class StoneDBTextConstant extends StoneDBConstant {
 
         private final String value;
 
-        public DuckDBTextConstant(String value) {
+        public StoneDBTextConstant(String value) {
             this.value = value;
         }
 
@@ -81,11 +104,15 @@ public class StoneDBConstant implements Node<StoneDBExpression> {
 
     }
 
-    public static class DuckDBBitConstant extends StoneDBConstant {
+    public static Node<StoneDBExpression> createStringConstant(String text) {
+        return new StoneDBTextConstant(text);
+    }
+
+    public static class StoneDBBitConstant extends StoneDBConstant {
 
         private final String value;
 
-        public DuckDBBitConstant(long value) {
+        public StoneDBBitConstant(long value) {
             this.value = Long.toBinaryString(value);
         }
 
@@ -100,11 +127,11 @@ public class StoneDBConstant implements Node<StoneDBExpression> {
 
     }
 
-    public static class DuckDBDateConstant extends StoneDBConstant {
+    public static class StoneDBDateConstant extends StoneDBConstant {
 
         public String textRepr;
 
-        public DuckDBDateConstant(long val) {
+        public StoneDBDateConstant(long val) {
             Timestamp timestamp = new Timestamp(val);
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             textRepr = dateFormat.format(timestamp);
@@ -121,11 +148,15 @@ public class StoneDBConstant implements Node<StoneDBExpression> {
 
     }
 
-    public static class DuckDBTimestampConstant extends StoneDBConstant {
+    public static Node<StoneDBExpression> createDateConstant(long integer) {
+        return new StoneDBDateConstant(integer);
+    }
+
+    public static class StoneDBTimestampConstant extends StoneDBConstant {
 
         public String textRepr;
 
-        public DuckDBTimestampConstant(long val) {
+        public StoneDBTimestampConstant(long val) {
             Timestamp timestamp = new Timestamp(val);
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             textRepr = dateFormat.format(timestamp);
@@ -142,11 +173,15 @@ public class StoneDBConstant implements Node<StoneDBExpression> {
 
     }
 
-    public static class DuckDBBooleanConstant extends StoneDBConstant {
+    public static Node<StoneDBExpression> createTimestampConstant(long integer) {
+        return new StoneDBTimestampConstant(integer);
+    }
+
+    public static class StoneDBBooleanConstant extends StoneDBConstant {
 
         private final boolean value;
 
-        public DuckDBBooleanConstant(boolean value) {
+        public StoneDBBooleanConstant(boolean value) {
             this.value = value;
         }
 
@@ -161,32 +196,8 @@ public class StoneDBConstant implements Node<StoneDBExpression> {
 
     }
 
-    public static Node<StoneDBExpression> createStringConstant(String text) {
-        return new DuckDBTextConstant(text);
-    }
-
-    public static Node<StoneDBExpression> createFloatConstant(double val) {
-        return new DuckDBDoubleConstant(val);
-    }
-
-    public static Node<StoneDBExpression> createIntConstant(long val) {
-        return new DuckDBIntConstant(val);
-    }
-
-    public static Node<StoneDBExpression> createNullConstant() {
-        return new DuckDBNullConstant();
-    }
-
     public static Node<StoneDBExpression> createBooleanConstant(boolean val) {
-        return new DuckDBBooleanConstant(val);
-    }
-
-    public static Node<StoneDBExpression> createDateConstant(long integer) {
-        return new DuckDBDateConstant(integer);
-    }
-
-    public static Node<StoneDBExpression> createTimestampConstant(long integer) {
-        return new DuckDBTimestampConstant(integer);
+        return new StoneDBBooleanConstant(val);
     }
 
 }
