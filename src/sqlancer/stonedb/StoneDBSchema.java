@@ -3,6 +3,7 @@ package sqlancer.stonedb;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.Randomly;
@@ -108,60 +109,10 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
     }
 
     private static StoneDBCompositeDataType getColumnCompositeDataType(String typeString) {
-        switch (typeString) {
-        case "tinyint":
-            return new StoneDBCompositeDataType(StoneDBDataType.TINYINT);
-        case "smallint":
-            return new StoneDBCompositeDataType(StoneDBDataType.SMALLINT);
-        case "mediumint":
-            return new StoneDBCompositeDataType(StoneDBDataType.MEDIUMINT);
-        case "int":
-            return new StoneDBCompositeDataType(StoneDBDataType.INT);
-        case "bigint":
-            return new StoneDBCompositeDataType(StoneDBDataType.BIGINT);
-        case "float":
-            return new StoneDBCompositeDataType(StoneDBDataType.FLOAT);
-        case "double":
-            return new StoneDBCompositeDataType(StoneDBDataType.DOUBLE);
-        case "decimal":
-            return new StoneDBCompositeDataType(StoneDBDataType.DECIMAL);
-        case "year":
-            return new StoneDBCompositeDataType(StoneDBDataType.YEAR);
-        case "time":
-            return new StoneDBCompositeDataType(StoneDBDataType.TIME);
-        case "date":
-            return new StoneDBCompositeDataType(StoneDBDataType.DATE);
-        case "datetime":
-            return new StoneDBCompositeDataType(StoneDBDataType.DATETIME);
-        case "timestamp":
-            return new StoneDBCompositeDataType(StoneDBDataType.TIMESTAMP);
-        case "char":
-            return new StoneDBCompositeDataType(StoneDBDataType.CHAR);
-        case "varchar":
-            return new StoneDBCompositeDataType(StoneDBDataType.VARCHAR);
-        case "tinytext":
-            return new StoneDBCompositeDataType(StoneDBDataType.TINYTEXT);
-        case "text":
-            return new StoneDBCompositeDataType(StoneDBDataType.TEXT);
-        case "mediumtext":
-            return new StoneDBCompositeDataType(StoneDBDataType.MEDIUMTEXT);
-        case "longtext":
-            return new StoneDBCompositeDataType(StoneDBDataType.LONGTEXT);
-        case "binary":
-            return new StoneDBCompositeDataType(StoneDBDataType.BINARY);
-        case "varbinary":
-            return new StoneDBCompositeDataType(StoneDBDataType.VARBINARY);
-        case "tinyblob":
-            return new StoneDBCompositeDataType(StoneDBDataType.TINYBLOB);
-        case "blob":
-            return new StoneDBCompositeDataType(StoneDBDataType.BLOB);
-        case "mediumblob":
-            return new StoneDBCompositeDataType(StoneDBDataType.MEDIUMBLOB);
-        case "longblob":
-            return new StoneDBCompositeDataType(StoneDBDataType.LONGBLOB);
-        default:
+        if (Arrays.stream(StoneDBDataType.values()).noneMatch(e -> e.name().equals(typeString.toUpperCase()))) {
             throw new AssertionError(typeString);
         }
+        return new StoneDBCompositeDataType(StoneDBDataType.valueOf(typeString.toUpperCase()));
     }
 
     //
@@ -357,7 +308,6 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
                 size = -2;
                 break;
             default:
-                size = -1;
                 throw new AssertionError();
             }
             this.size = size;
