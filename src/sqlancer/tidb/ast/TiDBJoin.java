@@ -12,12 +12,12 @@ public class TiDBJoin implements TiDBExpression {
 
     private final TiDBExpression leftTable;
     private final TiDBExpression rightTable;
-    private final JoinType joinType;
-    private final TiDBExpression onCondition;
+    private JoinType joinType;
+    private TiDBExpression onCondition;
     private NaturalJoinType outerType;
 
     public enum JoinType {
-        INNER, NATURAL, STRAIGHT, LEFT, RIGHT;
+        NATURAL, INNER, STRAIGHT, LEFT, RIGHT, CROSS;
 
         public static JoinType getRandom() {
             return Randomly.fromOptions(values());
@@ -52,8 +52,16 @@ public class TiDBJoin implements TiDBExpression {
         return joinType;
     }
 
+    public void setJoinType(JoinType joinType) {
+        this.joinType = joinType;
+    }
+
     public TiDBExpression getOnCondition() {
         return onCondition;
+    }
+
+    public static TiDBJoin createCrossJoin(TiDBExpression left, TiDBExpression right, TiDBExpression onClause) {
+        return new TiDBJoin(left, right, JoinType.CROSS, onClause);
     }
 
     public static TiDBJoin createNaturalJoin(TiDBExpression left, TiDBExpression right, NaturalJoinType type) {
@@ -110,11 +118,51 @@ public class TiDBJoin implements TiDBExpression {
             case RIGHT:
                 joinExpressions.add(TiDBJoin.createRightOuterJoin(leftTable, rightTable, joinGen.generateExpression()));
                 break;
+            case CROSS:
+                joinExpressions.add(TiDBJoin.createCrossJoin(leftTable, rightTable, null));
+                break;
             default:
                 throw new AssertionError();
             }
         }
         return joinExpressions;
+    }
+
+    public static List<TiDBExpression> getJoinsWithoutNature(List<TiDBExpression> tableList,
+            TiDBGlobalState globalState) {
+        List<TiDBExpression> joinExpressions = new ArrayList<>();
+        while (tableList.size() >= 2 && Randomly.getBoolean()) {
+            TiDBTableReference leftTable = (TiDBTableReference) tableList.remove(0);
+            TiDBTableReference rightTable = (TiDBTableReference) tableList.remove(0);
+            List<TiDBColumn> columns = new ArrayList<>(leftTable.getTable().getColumns());
+            columns.addAll(rightTable.getTable().getColumns());
+            TiDBExpressionGenerator joinGen = new TiDBExpressionGenerator(globalState).setColumns(columns);
+            switch (TiDBJoin.JoinType.getRandom()) {
+            case INNER:
+                joinExpressions.add(TiDBJoin.createInnerJoin(leftTable, rightTable, joinGen.generateExpression()));
+                break;
+            case STRAIGHT:
+                joinExpressions.add(TiDBJoin.createStraightJoin(leftTable, rightTable, joinGen.generateExpression()));
+                break;
+            case LEFT:
+                joinExpressions.add(TiDBJoin.createLeftOuterJoin(leftTable, rightTable, joinGen.generateExpression()));
+                break;
+            case RIGHT:
+                joinExpressions.add(TiDBJoin.createRightOuterJoin(leftTable, rightTable, joinGen.generateExpression()));
+                break;
+            case NATURAL:
+            case CROSS:
+                joinExpressions.add(TiDBJoin.createCrossJoin(leftTable, rightTable, null));
+                break;
+            default:
+                throw new AssertionError();
+            }
+        }
+        return joinExpressions;
+    }
+
+    public void setOnCondition(TiDBExpression generateExpression) {
+        this.onCondition = generateExpression;
     }
 
 }

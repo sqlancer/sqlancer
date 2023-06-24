@@ -60,7 +60,7 @@ public final class ComparatorHelper {
                 String resultTemp = result.getString(1);
                 if (resultTemp != null) {
                     resultTemp = resultTemp.replaceAll("[\\.]0+$", ""); // Remove the trailing zeros as many DBMS treat
-                                                                        // it as non-bugs
+                    // it as non-bugs
                 }
                 resultSet.add(resultTemp);
             }
@@ -87,13 +87,19 @@ public final class ComparatorHelper {
     public static void assumeResultSetsAreEqual(List<String> resultSet, List<String> secondResultSet,
             String originalQueryString, List<String> combinedString, SQLGlobalState<?, ?> state) {
         if (resultSet.size() != secondResultSet.size()) {
-            String queryFormatString = "-- %s;\n-- cardinality: %d";
+            String queryFormatString = "-- %s;" + System.lineSeparator() + "-- cardinality: %d"
+                    + System.lineSeparator();
             String firstQueryString = String.format(queryFormatString, originalQueryString, resultSet.size());
-            String secondQueryString = String.format(queryFormatString,
-                    combinedString.stream().collect(Collectors.joining(";")), secondResultSet.size());
-            state.getState().getLocalState().log(String.format("%s\n%s", firstQueryString, secondQueryString));
-            String assertionMessage = String.format("the size of the result sets mismatch (%d and %d)!\n%s\n%s",
-                    resultSet.size(), secondResultSet.size(), firstQueryString, secondQueryString);
+            String combinedQueryString = String.join(";", combinedString);
+            String secondQueryString = String.format(queryFormatString, combinedQueryString, secondResultSet.size());
+            state.getState().getLocalState()
+                    .log(String.format("%s" + System.lineSeparator() + "%s", firstQueryString, secondQueryString));
+            String assertionMessage = String.format(
+                    "The size of the result sets mismatch (%d and %d)!" + System.lineSeparator()
+                            + "First query: \"%s\", whose cardinality is: %d" + System.lineSeparator()
+                            + "Second query:\"%s\", whose cardinality is: %d",
+                    resultSet.size(), secondResultSet.size(), originalQueryString, resultSet.size(),
+                    combinedQueryString, secondResultSet.size());
             throw new AssertionError(assertionMessage);
         }
 
@@ -105,14 +111,17 @@ public final class ComparatorHelper {
             firstResultSetMisses.removeAll(secondHashSet);
             Set<String> secondResultSetMisses = new HashSet<>(secondHashSet);
             secondResultSetMisses.removeAll(firstHashSet);
-            String queryFormatString = "-- %s;\n-- misses: %s";
+
+            String queryFormatString = "-- Query: \"%s\"; It misses: \"%s\"";
             String firstQueryString = String.format(queryFormatString, originalQueryString, firstResultSetMisses);
-            String secondQueryString = String.format(queryFormatString,
-                    combinedString.stream().collect(Collectors.joining(";")), secondResultSetMisses);
+            String secondQueryString = String.format(queryFormatString, String.join(";", combinedString),
+                    secondResultSetMisses);
             // update the SELECT queries to be logged at the bottom of the error log file
-            state.getState().getLocalState().log(String.format("%s\n%s", firstQueryString, secondQueryString));
-            String assertionMessage = String.format("the content of the result sets mismatch!\n%s\n%s",
-                    firstQueryString, secondQueryString);
+            state.getState().getLocalState()
+                    .log(String.format("%s" + System.lineSeparator() + "%s", firstQueryString, secondQueryString));
+            String assertionMessage = String.format("The content of the result sets mismatch!" + System.lineSeparator()
+                    + "First query : \"%s\"" + System.lineSeparator() + "Second query: \"%s\"", originalQueryString,
+                    secondQueryString);
             throw new AssertionError(assertionMessage);
         }
     }

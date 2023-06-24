@@ -50,6 +50,10 @@ public class SelectBase<T> {
         this.groupByExpressions = groupByExpressions;
     }
 
+    public void clearGroupByExpressions() {
+        this.groupByExpressions = Collections.emptyList();
+    }
+
     public List<T> getGroupByExpressions() {
         assert groupByExpressions != null;
         return groupByExpressions;
@@ -81,6 +85,10 @@ public class SelectBase<T> {
 
     public T getHavingClause() {
         return havingClause;
+    }
+
+    public void clearHavingClause() {
+        this.havingClause = null;
     }
 
     public void setLimitClause(T limitClause) {

@@ -95,11 +95,7 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
         sb.append(" ");
         switch (join.getJoinType()) {
         case INNER:
-            if (Randomly.getBoolean()) {
-                sb.append("INNER ");
-            } else {
-                sb.append("CROSS ");
-            }
+            sb.append("INNER ");
             sb.append("JOIN ");
             break;
         case LEFT:
@@ -135,13 +131,15 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
             }
             sb.append("JOIN ");
             break;
+        case CROSS:
+            sb.append("CROSS JOIN ");
+            break;
         default:
             throw new AssertionError();
         }
         visit(join.getRightTable());
-        sb.append(" ");
-        if (join.getJoinType() != JoinType.NATURAL) {
-            sb.append("ON ");
+        if (join.getOnCondition() != null && join.getJoinType() != JoinType.NATURAL) {
+            sb.append(" ON ");
             visit(join.getOnCondition());
         }
     }

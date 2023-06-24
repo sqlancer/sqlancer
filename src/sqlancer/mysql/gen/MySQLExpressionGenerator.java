@@ -65,10 +65,6 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
         case UNARY_PREFIX_OPERATION:
             MySQLExpression subExpr = generateExpression(depth + 1);
             MySQLUnaryPrefixOperator random = MySQLUnaryPrefixOperator.getRandom();
-            if (random == MySQLUnaryPrefixOperator.MINUS) {
-                // workaround for https://bugs.mysql.com/bug.php?id=99122
-                throw new IgnoreMeException();
-            }
             return new MySQLUnaryPrefixOperation(subExpr, random);
         case UNARY_POSTFIX:
             return new MySQLUnaryPostfixOperation(generateExpression(depth + 1),
@@ -156,34 +152,9 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
         case STRING:
             /* Replace characters that still trigger open bugs in MySQL */
             String string = state.getRandomly().getString().replace("\\", "").replace("\n", "");
-            if (string.startsWith("\n")) {
-                // workaround for https://bugs.mysql.com/bug.php?id=99130
-                throw new IgnoreMeException();
-            }
-            if (string.startsWith("-0") || string.startsWith("0.") || string.startsWith(".")) {
-                // https://bugs.mysql.com/bug.php?id=99145
-                throw new IgnoreMeException();
-            }
-            MySQLConstant createStringConstant = MySQLConstant.createStringConstant(string);
-            // if (Randomly.getBoolean()) {
-            // return new MySQLCollate(createStringConstant,
-            // Randomly.fromOptions("ascii_bin", "binary"));
-            // }
-            if (string.startsWith("1e")) {
-                // https://bugs.mysql.com/bug.php?id=99146
-                throw new IgnoreMeException();
-            }
-            return createStringConstant;
+            return MySQLConstant.createStringConstant(string);
         case DOUBLE:
             double val = state.getRandomly().getDouble();
-            if (Math.abs(val) <= 1 && val != 0) {
-                // https://bugs.mysql.com/bug.php?id=99145
-                throw new IgnoreMeException();
-            }
-            if (Math.abs(val) > 1.0E30) {
-                // https://bugs.mysql.com/bug.php?id=99146
-                throw new IgnoreMeException();
-            }
             return new MySQLDoubleConstant(val);
         default:
             throw new AssertionError();

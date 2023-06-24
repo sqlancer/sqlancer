@@ -18,6 +18,10 @@ public class MySQLSelect extends SelectBase<MySQLExpression> implements MySQLExp
         this.setFromOptions(fromOptions);
     }
 
+    public SelectType getSelectType() {
+        return fromOptions;
+    }
+
     public SelectType getFromOptions() {
         return fromOptions;
     }

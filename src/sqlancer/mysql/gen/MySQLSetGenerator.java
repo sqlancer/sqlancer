@@ -66,9 +66,6 @@ public class MySQLSetGenerator {
         MAX_SP_RECURSION_DEPTH("max_sp_recursion_depth", (r) -> r.getLong(0, 255), Scope.GLOBAL, Scope.SESSION), //
         MYISAM_DATA_POINTER_SIZE("myisam_data_pointer_size", (r) -> r.getLong(2, 7), Scope.GLOBAL), //
         MYISAM_MAX_SORT_FILE_SIZE("myisam_max_sort_file_size", (r) -> r.getLong(0, 9223372036854775807L), Scope.GLOBAL), //
-        // MYISAM_REPAIR_THREADS("myisam_repair_threads", (r) -> r.getLong(1, Long.MAX_VALUE), Scope.GLOBAL,
-        // Scope.SESSION), // comment out this to avoid java.sql.SQLException: Unknown system variable
-        // 'myisam_repair_threads'
         MYISAM_SORT_BUFFER_SIZE("myisam_sort_buffer_size", (r) -> r.getLong(4096, Long.MAX_VALUE), Scope.GLOBAL,
                 Scope.SESSION), //
         MYISAM_STATS_METHOD("myisam_stats_method",

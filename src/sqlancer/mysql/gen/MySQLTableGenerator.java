@@ -18,13 +18,11 @@ import sqlancer.mysql.MySQLSchema.MySQLDataType;
 import sqlancer.mysql.MySQLSchema.MySQLTable.MySQLEngine;
 
 public class MySQLTableGenerator {
-
     private final StringBuilder sb = new StringBuilder();
     private final boolean allowPrimaryKey;
     private boolean setPrimaryKey;
     private final String tableName;
     private final Randomly r;
-    private int columnId;
     private boolean tableHasNullableColumn;
     private MySQLEngine engine;
     private int keysSpecified;
@@ -65,18 +63,18 @@ public class MySQLTableGenerator {
                 if (i != 0) {
                     sb.append(", ");
                 }
-                appendColumn();
+                appendColumn(i);
             }
             sb.append(")");
             sb.append(" ");
             appendTableOptions();
             appendPartitionOptions();
-            if ((tableHasNullableColumn || setPrimaryKey) && engine == MySQLEngine.CSV) {
+            if (engine == MySQLEngine.CSV && (tableHasNullableColumn || setPrimaryKey)) {
                 if (true) { // TODO
                     // results in an error
                     throw new IgnoreMeException();
                 }
-            } else if ((tableHasNullableColumn || keysSpecified > 1) && engine == MySQLEngine.ARCHIVE) {
+            } else if (engine == MySQLEngine.ARCHIVE && (tableHasNullableColumn || keysSpecified > 1)) {
                 errors.add("Too many keys specified; max 1 keys allowed");
                 errors.add("Table handler doesn't support NULL in given index");
                 addCommonErrors(errors);
@@ -248,27 +246,21 @@ public class MySQLTableGenerator {
         }
     }
 
-    private void appendColumn() {
+    private void appendColumn(int columnId) {
         String columnName = DBMSCommon.createColumnName(columnId);
         columns.add(columnName);
         sb.append(columnName);
         appendColumnDefinition();
-        columnId++;
     }
 
     private enum ColumnOptions {
         NULL_OR_NOT_NULL, UNIQUE, COMMENT, COLUMN_FORMAT, STORAGE, PRIMARY_KEY
     }
 
-    private void appendColumnDefinition() {
-        sb.append(" ");
-        MySQLDataType randomType = MySQLDataType.getRandom(globalState);
-        boolean isTextType = randomType == MySQLDataType.VARCHAR;
-        appendTypeString(randomType);
-        sb.append(" ");
+    private void appendColumnOption(MySQLDataType type) {
+        boolean isTextType = type == MySQLDataType.VARCHAR;
         boolean isNull = false;
         boolean columnHasPrimaryKey = false;
-
         List<ColumnOptions> columnOptions = Randomly.subset(ColumnOptions.values());
         if (!columnOptions.contains(ColumnOptions.NULL_OR_NOT_NULL)) {
             tableHasNullableColumn = true;
@@ -324,10 +316,17 @@ public class MySQLTableGenerator {
                 throw new AssertionError();
             }
         }
-
     }
 
-    private void appendTypeString(MySQLDataType randomType) {
+    private void appendColumnDefinition() {
+        sb.append(" ");
+        MySQLDataType randomType = MySQLDataType.getRandom(globalState);
+        appendType(randomType);
+        sb.append(" ");
+        appendColumnOption(randomType);
+    }
+
+    private void appendType(MySQLDataType randomType) {
         switch (randomType) {
         case DECIMAL:
             sb.append("DECIMAL");
