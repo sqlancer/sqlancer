@@ -455,7 +455,11 @@ public final class Randomly {
         if (left.equals(right)) {
             return left;
         }
-        return new BigInteger(String.valueOf(getInteger(left.intValue(),right.intValue())));
+        BigInteger result = new BigInteger(String.valueOf(getInteger(left.intValue(), right.intValue())));
+        if (result.compareTo(left) < 0 && result.compareTo(right) > 0) {
+            throw new IgnoreMeException();
+        }
+        return result;
     }
 
     public BigDecimal getRandomBigDecimal() {
