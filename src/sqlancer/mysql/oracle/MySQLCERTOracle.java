@@ -72,38 +72,7 @@ public class MySQLCERTOracle extends CERTOracleBase<MySQLGlobalState> implements
         String queryString1 = MySQLVisitor.asString(select);
         int rowCount1 = getRow(state, queryString1, queryPlan1Sequences);
 
-        boolean increase = false;
-        // Mutate the query
-        // Disable limit due to its false positive
-        Mutator mutation = Mutator.getRandom();
-        switch (mutation) {
-        case JOIN:
-            // increase = mutateJoin();
-            // break;
-        case DISTINCT:
-            increase = mutateDistinct();
-            break;
-        case WHERE:
-            increase = mutateWhere();
-            break;
-        case GROUPBY:
-            increase = mutateGroupBy();
-            break;
-        case HAVING:
-            increase = mutateHaving();
-            break;
-        case AND:
-            increase = mutateAnd();
-            break;
-        case LIMIT:
-            // increase = mutateLimit();
-            // break;
-        case OR:
-            increase = mutateOr();
-            break;
-        default:
-            throw new AssertionError();
-        }
+        boolean increase = mutate(Mutator.JOIN, Mutator.LIMIT);
 
         // Get the result of the second query
         String queryString2 = MySQLVisitor.asString(select);
@@ -116,8 +85,8 @@ public class MySQLCERTOracle extends CERTOracleBase<MySQLGlobalState> implements
 
         // Check the results
         if (increase && rowCount1 > rowCount2 || !increase && rowCount1 < rowCount2) {
-            throw new AssertionError("Mutator: " + mutation + ", Inconsistent result for query: EXPLAIN " + queryString1
-                    + "; --" + rowCount1 + "\nEXPLAIN " + queryString2 + "; --" + rowCount2);
+            throw new AssertionError("Inconsistent result for query: EXPLAIN " + queryString1 + "; --" + rowCount1
+                    + "\nEXPLAIN " + queryString2 + "; --" + rowCount2);
         }
     }
 

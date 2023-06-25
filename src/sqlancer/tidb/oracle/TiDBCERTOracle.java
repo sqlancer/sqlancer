@@ -84,37 +84,7 @@ public class TiDBCERTOracle extends CERTOracleBase<TiDBGlobalState> implements T
         double rowCount1 = getRow(state, queryString1, queryPlan1Sequences);
 
         // Mutate the query
-        boolean increase = false;
-
-        Mutator mutation = Mutator.getRandom();
-        switch (mutation) {
-        case JOIN:
-            increase = mutateJoin();
-            break;
-        case DISTINCT:
-            // increase = mutateDistinct();
-            // break;
-        case WHERE:
-            increase = mutateWhere();
-            break;
-        case GROUPBY:
-            increase = mutateGroupBy();
-            break;
-        case HAVING:
-            increase = mutateHaving();
-            break;
-        case AND:
-            increase = mutateAnd();
-            break;
-        case OR:
-            increase = mutateOr();
-            break;
-        case LIMIT:
-            increase = mutateLimit();
-            break;
-        default:
-            throw new AssertionError();
-        }
+        boolean increase = mutate(Mutator.DISTINCT);
 
         // Get the result of the second query
         String queryString2 = TiDBVisitor.asString(select);
@@ -133,8 +103,8 @@ public class TiDBCERTOracle extends CERTOracleBase<TiDBGlobalState> implements T
          */
         // Check the results
         if (increase && rowCount1 > (rowCount2 + 1) || !increase && (rowCount1 + 1) < rowCount2) {
-            throw new AssertionError("Mutator: " + mutation + ", Inconsistent result for query: EXPLAIN " + queryString1
-                    + "; --" + rowCount1 + "\nEXPLAIN " + queryString2 + "; --" + rowCount2);
+            throw new AssertionError("Inconsistent result for query: EXPLAIN " + queryString1 + "; --" + rowCount1
+                    + "\nEXPLAIN " + queryString2 + "; --" + rowCount2);
         }
     }
 

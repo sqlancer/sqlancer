@@ -1,5 +1,6 @@
 package sqlancer.common.oracle;
 
+import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.Randomly;
@@ -16,14 +17,40 @@ public abstract class CERTOracleBase<S extends SQLGlobalState<?, ?>> implements 
     protected enum Mutator {
         JOIN, DISTINCT, WHERE, GROUPBY, HAVING, AND, OR, LIMIT;
 
-        public static Mutator getRandom() {
-            return Randomly.fromOptions(values());
+        public static Mutator getRandom(Mutator... exclude) {
+            Mutator[] values = Arrays.stream(values()).filter(m -> !Arrays.asList(exclude).contains(m))
+                    .toArray(Mutator[]::new);
+            return Randomly.fromOptions(values);
         }
     }
 
     protected CERTOracleBase(S state) {
         this.state = state;
         this.errors = new ExpectedErrors();
+    }
+
+    protected boolean mutate(Mutator... exclude) {
+        Mutator m = Mutator.getRandom(exclude);
+        switch (m) {
+        case JOIN:
+            return mutateJoin();
+        case DISTINCT:
+            return mutateDistinct();
+        case WHERE:
+            return mutateWhere();
+        case GROUPBY:
+            return mutateGroupBy();
+        case HAVING:
+            return mutateHaving();
+        case AND:
+            return mutateAnd();
+        case OR:
+            return mutateOr();
+        case LIMIT:
+            return mutateLimit();
+        default:
+            throw new AssertionError(m);
+        }
     }
 
     protected boolean mutateJoin() {
