@@ -50,6 +50,9 @@ public class StoneDBConstant implements Node<StoneDBExpression> {
 
         @Override
         public String toString() {
+            // For INT type: -2147483648 is reserved to indicate INT_NULL in Tianmu engine, Minimum Value Signed start
+            // from -2147483647
+            // refer: https://stonedb.io/docs/SQL-reference/data-types
             if (value.equals(Long.MIN_VALUE)) {
                 return "BIGINT_NULL";
             }
