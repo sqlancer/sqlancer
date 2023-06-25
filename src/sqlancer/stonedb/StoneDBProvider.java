@@ -19,11 +19,11 @@ import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
-import sqlancer.stonedb.gen.StoneDBAlterTableGenerator;
 import sqlancer.stonedb.gen.StoneDBDeleteGenerator;
 import sqlancer.stonedb.gen.StoneDBIndexGenerator;
 import sqlancer.stonedb.gen.StoneDBInsertGenerator;
-import sqlancer.stonedb.gen.StoneDBTableGenerator;
+import sqlancer.stonedb.gen.StoneDBTableAlterGenerator;
+import sqlancer.stonedb.gen.StoneDBTableCreateGenerator;
 
 @AutoService(DatabaseProvider.class)
 public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBGlobalState, StoneDBOptions> {
@@ -41,7 +41,7 @@ public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBG
 
     enum Action implements AbstractAction<StoneDBGlobalState> {
         SHOW_TABLES((g) -> new SQLQueryAdapter("SHOW TABLES")), //
-        ALTER_TABLE(StoneDBAlterTableGenerator::generate), //
+        ALTER_TABLE(StoneDBTableAlterGenerator::generate), //
         DELETE(StoneDBDeleteGenerator::generate), //
         INDEX(StoneDBIndexGenerator::generate), //
         INSERT(StoneDBInsertGenerator::generate); //
@@ -72,7 +72,7 @@ public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBG
     public void generateDatabase(StoneDBGlobalState globalState) throws Exception {
         while (globalState.getSchema().getDatabaseTables().size() < Randomly.smallNumber() + 1) {
             String tableName = DBMSCommon.createTableName(globalState.getSchema().getDatabaseTables().size());
-            SQLQueryAdapter createTable = StoneDBTableGenerator.generate(globalState, tableName);
+            SQLQueryAdapter createTable = StoneDBTableCreateGenerator.generate(globalState, tableName);
             globalState.executeStatement(createTable);
         }
         StatementExecutor<StoneDBGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),

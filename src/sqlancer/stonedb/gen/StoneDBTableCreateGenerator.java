@@ -13,16 +13,18 @@ import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema;
 import sqlancer.stonedb.StoneDBSchema.StoneDBDataType;
 
-public class StoneDBTableGenerator {
+public class StoneDBTableCreateGenerator {
+    // the name of the table to create
     private final String tableName;
     private final StoneDBSchema schema;
+    // the name of the columns in the table
     private final List<String> columns = new ArrayList<>();
     private final boolean allowPrimaryKey;
     private boolean setPrimaryKey;
     private final StringBuilder sb = new StringBuilder();
     private final Randomly r;
 
-    public StoneDBTableGenerator(StoneDBGlobalState globalState, String tableName) {
+    public StoneDBTableCreateGenerator(StoneDBGlobalState globalState, String tableName) {
         this.tableName = tableName;
         this.schema = globalState.getSchema();
         allowPrimaryKey = Randomly.getBoolean();
@@ -30,17 +32,17 @@ public class StoneDBTableGenerator {
     }
 
     public static SQLQueryAdapter generate(StoneDBGlobalState globalState, String tableName) {
-        return new StoneDBTableGenerator(globalState, tableName).getQuery();
+        return new StoneDBTableCreateGenerator(globalState, tableName).getQuery();
     }
 
     public SQLQueryAdapter getQuery() {
         ExpectedErrors errors = new ExpectedErrors();
-        sb.append("CREATE TABLE");
+        sb.append(Randomly.fromOptions("CREATE TABLE", "CREATE TEMPORARY TABLE"));
         if (Randomly.getBoolean()) {
-            sb.append(" IF NOT EXISTS");
+            sb.append(" IF NOT EXISTS ");
         }
-        sb.append(" ");
         sb.append(tableName);
+        // ues link statement
         if (Randomly.getBoolean() && !schema.getDatabaseTables().isEmpty()) {
             sb.append(" LIKE ");
             sb.append(schema.getRandomTable().getName());

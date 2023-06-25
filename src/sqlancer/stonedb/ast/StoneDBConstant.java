@@ -104,7 +104,7 @@ public class StoneDBConstant implements Node<StoneDBExpression> {
 
     }
 
-    public static Node<StoneDBExpression> createStringConstant(String text) {
+    public static Node<StoneDBExpression> createTextConstant(String text) {
         return new StoneDBTextConstant(text);
     }
 

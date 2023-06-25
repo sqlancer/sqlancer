@@ -7,7 +7,7 @@ import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema.StoneDBCompositeDataType;
 import sqlancer.stonedb.StoneDBSchema.StoneDBTable;
 
-public class StoneDBAlterTableGenerator {
+public class StoneDBTableAlterGenerator {
     private final StoneDBGlobalState globalState;
     private final StringBuilder sb = new StringBuilder();
     ExpectedErrors errors = new ExpectedErrors();
@@ -16,12 +16,12 @@ public class StoneDBAlterTableGenerator {
         ADD_COLUMN, ALTER_COLUMN, DROP_COLUMN, CHANGE_COLUMN, RENAME_COLUMN
     }
 
-    public StoneDBAlterTableGenerator(StoneDBGlobalState globalState) {
+    public StoneDBTableAlterGenerator(StoneDBGlobalState globalState) {
         this.globalState = globalState;
     }
 
     public static SQLQueryAdapter generate(StoneDBGlobalState globalState) {
-        return new StoneDBAlterTableGenerator(globalState).getQuery();
+        return new StoneDBTableAlterGenerator(globalState).getQuery();
     }
 
     private SQLQueryAdapter getQuery() {

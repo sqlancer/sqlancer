@@ -8,11 +8,14 @@ import sqlancer.stonedb.StoneDBSchema.StoneDBTable;
 
 public class StoneDBIndexGenerator {
     private final StoneDBGlobalState globalState;
+    // which table to add index
+    StoneDBTable table;
     private final StringBuilder sb = new StringBuilder();
     ExpectedErrors errors = new ExpectedErrors();
 
     public StoneDBIndexGenerator(StoneDBGlobalState globalState) {
         this.globalState = globalState;
+        table = globalState.getSchema().getRandomTable();
     }
 
     public static SQLQueryAdapter generate(StoneDBGlobalState globalState) {
@@ -26,9 +29,8 @@ public class StoneDBIndexGenerator {
         sb.append(globalState.getSchema().getFreeIndexName());
         appendIndexType();
         sb.append(" ON ");
-        StoneDBTable table = globalState.getSchema().getRandomTable();
         sb.append(table.getName());
-        appendKeyPart(table);
+        appendKeyPart();
         appendIndexOption();
         appendAlgoOrLockOption();
         return new SQLQueryAdapter(sb.toString(), errors, true);
@@ -42,7 +44,7 @@ public class StoneDBIndexGenerator {
         sb.append(Randomly.fromOptions("BTREE", "HASH"));
     }
 
-    private void appendKeyPart(StoneDBTable table) {
+    private void appendKeyPart() {
         sb.append("(");
         sb.append(table.getRandomColumn().getName());
         if (Randomly.getBoolean()) {

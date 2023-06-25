@@ -60,7 +60,7 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
         case TIMESTAMP:
             return StoneDBConstant.createTimestampConstant(globalState.getRandomly().getInteger());
         case VARCHAR:
-            return StoneDBConstant.createStringConstant(globalState.getRandomly().getString());
+            return StoneDBConstant.createTextConstant(globalState.getRandomly().getString());
         case DOUBLE:
             return StoneDBConstant.createDoubleConstant(globalState.getRandomly().getDouble());
         default:
