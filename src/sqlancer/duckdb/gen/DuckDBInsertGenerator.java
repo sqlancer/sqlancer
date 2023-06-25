@@ -41,7 +41,7 @@ public class DuckDBInsertGenerator extends AbstractInsertGenerator<DuckDBColumn>
     }
 
     @Override
-    protected void insertValue(DuckDBColumn tiDBColumn) {
+    protected void insertValue(DuckDBColumn columnDuckDB) {
         // TODO: select a more meaningful value
         if (Randomly.getBooleanWithRatherLowProbability()) {
             sb.append("DEFAULT");

@@ -24,6 +24,6 @@ public abstract class AbstractInsertGenerator<C> {
         }
     }
 
-    protected abstract void insertValue(C tiDBColumn);
+    protected abstract void insertValue(C column);
 
 }
