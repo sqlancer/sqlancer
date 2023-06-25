@@ -51,7 +51,11 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
             return StoneDBConstant.createNullConstant();
         }
         StoneDBDataType type = StoneDBDataType.getRandomWithoutNull();
-        switch (type) {
+        return generateConstant(type);
+    }
+
+    public Node<StoneDBExpression> generateConstant(StoneDBDataType dataType) {
+        switch (dataType) {
         case INT:
             return StoneDBConstant
                     .createIntConstant(globalState.getRandomly().getInteger(Integer.MIN_VALUE + 1, Integer.MAX_VALUE));
@@ -66,6 +70,13 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
         default:
             throw new IgnoreMeException();
         }
+    }
+
+    public Node<StoneDBExpression> generateConstant(StoneDBDataType dataType, boolean isNullable) {
+        if (isNullable && Randomly.getBooleanWithSmallProbability()) {
+            generateConstant(StoneDBDataType.NULL);
+        }
+        return generateConstant(dataType);
     }
 
     @Override

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.common.gen.AbstractInsertGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.schema.AbstractTableColumn;
@@ -12,7 +13,7 @@ import sqlancer.stonedb.StoneDBSchema.StoneDBColumn;
 import sqlancer.stonedb.StoneDBSchema.StoneDBTable;
 import sqlancer.stonedb.StoneDBToStringVisitor;
 
-public class StoneDBInsertGenerator {
+public class StoneDBInsertGenerator extends AbstractInsertGenerator<StoneDBColumn> {
     private final StoneDBGlobalState globalState;
     // which table to insert into
     private final StoneDBTable table;
@@ -84,5 +85,15 @@ public class StoneDBInsertGenerator {
 
         }
         sb.append(")");
+    }
+
+    @Override
+    protected void insertValue(StoneDBColumn column) {
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            sb.append("DEFAULT");
+        } else {
+            sb.append(StoneDBToStringVisitor.asString(new StoneDBExpressionGenerator(globalState)
+                    .generateConstant(column.getType().getPrimitiveDataType(), column.isNullable())));
+        }
     }
 }

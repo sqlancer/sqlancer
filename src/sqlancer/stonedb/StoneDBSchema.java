@@ -20,8 +20,8 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
 
     public enum StoneDBDataType {
 
-        TINYINT, SMALLINT, MEDIUMINT, INT, BIGINT, FLOAT, DOUBLE, DECIMAL, YEAR, TIME, DATE, DATETIME, TIMESTAMP, CHAR,
-        VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, BINARY, VARBINARY, TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB;
+        NULL, TINYINT, SMALLINT, MEDIUMINT, INT, BIGINT, FLOAT, DOUBLE, DECIMAL, YEAR, TIME, DATE, DATETIME, TIMESTAMP,
+        CHAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, BINARY, VARBINARY, TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB;
 
         public static StoneDBDataType getRandomWithoutNull() {
             return Randomly.fromOptions(values());
@@ -176,63 +176,12 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
         return new StoneDBCompositeDataType(StoneDBDataType.valueOf(typeString.toUpperCase()));
     }
 
-    //
-    // private static StoneDBDataType getColumnType(String typeString) {
-    // switch (typeString) {
-    // case "tinyint":
-    // return StoneDBDataType.TINYINT;
-    // case "smallint":
-    // return StoneDBDataType.SMALLINT;
-    // case "mediumint":
-    // return StoneDBDataType.MEDIUMINT;
-    // case "int":
-    // return StoneDBDataType.INT;
-    // case "bigint":
-    // return StoneDBDataType.BIGINT;
-    // case "float":
-    // return StoneDBDataType.FLOAT;
-    // case "double":
-    // return StoneDBDataType.DOUBLE;
-    // case "decimal":
-    // return StoneDBDataType.DECIMAL;
-    // case "year":
-    // return StoneDBDataType.YEAR;
-    // case "time":
-    // return StoneDBDataType.TIME;
-    // case "date":
-    // return StoneDBDataType.DATE;
-    // case "datetime":
-    // return StoneDBDataType.DATETIME;
-    // case "timestamp":
-    // return StoneDBDataType.TIMESTAMP;
-    // case "char":
-    // return StoneDBDataType.CHAR;
-    // case "varchar":
-    // return StoneDBDataType.VARCHAR;
-    // case "tinytext":
-    // return StoneDBDataType.TINYTEXT;
-    // case "text":
-    // return StoneDBDataType.TEXT;
-    // case "mediumtext":
-    // return StoneDBDataType.MEDIUMTEXT;
-    // case "longtext":
-    // return StoneDBDataType.LONGTEXT;
-    // case "binary":
-    // return StoneDBDataType.BINARY;
-    // case "varbinary":
-    // return StoneDBDataType.VARBINARY;
-    // case "tinyblob":
-    // return StoneDBDataType.TINYBLOB;
-    // case "blob":
-    // return StoneDBDataType.BLOB;
-    // case "mediumblob":
-    // return StoneDBDataType.MEDIUMBLOB;
-    // case "longblob":
-    // return StoneDBDataType.LONGBLOB;
-    // default:
-    // throw new AssertionError(typeString);
-    // }
-    // }
+    public static StoneDBDataType getColumnDataType(String typeString) {
+        if (Arrays.stream(StoneDBDataType.values()).noneMatch(e -> e.name().equals(typeString.toUpperCase()))) {
+            throw new AssertionError(typeString);
+        }
+        return StoneDBDataType.valueOf(typeString.toUpperCase());
+    }
 
     private static List<String> getTableNames(SQLConnection con, String databaseName) throws SQLException {
         List<String> tableNames = new ArrayList<>();
