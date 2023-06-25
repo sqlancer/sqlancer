@@ -17,7 +17,7 @@ public abstract class CERTOracleBase<S extends SQLGlobalState<?, ?>> implements 
     protected enum Mutator {
         JOIN, DISTINCT, WHERE, GROUPBY, HAVING, AND, OR, LIMIT;
 
-        public static Mutator getRandom(Mutator... exclude) {
+        public static Mutator getRandomExcept(Mutator... exclude) {
             Mutator[] values = Arrays.stream(values()).filter(m -> !Arrays.asList(exclude).contains(m))
                     .toArray(Mutator[]::new);
             return Randomly.fromOptions(values);
@@ -30,7 +30,7 @@ public abstract class CERTOracleBase<S extends SQLGlobalState<?, ?>> implements 
     }
 
     protected boolean mutate(Mutator... exclude) {
-        Mutator m = Mutator.getRandom(exclude);
+        Mutator m = Mutator.getRandomExcept(exclude);
         switch (m) {
         case JOIN:
             return mutateJoin();
