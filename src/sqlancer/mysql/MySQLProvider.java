@@ -18,8 +18,10 @@ import sqlancer.SQLConnection;
 import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.common.DBMSCommon;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
+import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.gen.MySQLAlterTable;
 import sqlancer.mysql.gen.MySQLDeleteGenerator;
@@ -36,6 +38,7 @@ import sqlancer.mysql.gen.tblmaintenance.MySQLCheckTable;
 import sqlancer.mysql.gen.tblmaintenance.MySQLChecksum;
 import sqlancer.mysql.gen.tblmaintenance.MySQLOptimize;
 import sqlancer.mysql.gen.tblmaintenance.MySQLRepair;
+import sqlancer.mysql.oracle.MySQLCERTOracle;
 
 @AutoService(DatabaseProvider.class)
 public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOptions> {
@@ -153,6 +156,24 @@ public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOpt
                     }
                 });
         se.executeStatements();
+
+        if (globalState.getDbmsSpecificOptions().getTestOracleFactory().size() == 1
+                && globalState.getDbmsSpecificOptions().getTestOracleFactory().get(0)
+                        .create(globalState) instanceof MySQLCERTOracle) {
+            // Enfore statistic collected for all tables
+            ExpectedErrors errors = new ExpectedErrors();
+            MySQLErrors.addExpressionErrors(errors);
+            for (MySQLTable table : globalState.getSchema().getDatabaseTables()) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("ANALYZE TABLE ");
+                sb.append(table.getName());
+                sb.append(" UPDATE HISTOGRAM ON ");
+                String columns = table.getColumns().stream().map(MySQLColumn::getName)
+                        .collect(Collectors.joining(", "));
+                sb.append(columns + ";");
+                globalState.executeStatement(new SQLQueryAdapter(sb.toString(), errors));
+            }
+        }
     }
 
     @Override
