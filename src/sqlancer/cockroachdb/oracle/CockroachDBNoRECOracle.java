@@ -19,7 +19,6 @@ import sqlancer.cockroachdb.CockroachDBVisitor;
 import sqlancer.cockroachdb.ast.CockroachDBColumnReference;
 import sqlancer.cockroachdb.ast.CockroachDBExpression;
 import sqlancer.cockroachdb.ast.CockroachDBJoin;
-import sqlancer.cockroachdb.ast.CockroachDBJoin.OuterType;
 import sqlancer.cockroachdb.ast.CockroachDBSelect;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
@@ -75,24 +74,8 @@ public class CockroachDBNoRECOracle extends NoRECBase<CockroachDBGlobalState>
             columns.addAll(rightTable.getTable().getColumns());
             CockroachDBExpressionGenerator joinGen = new CockroachDBExpressionGenerator(globalState)
                     .setColumns(columns);
-            switch (CockroachDBJoin.JoinType.getRandom()) {
-            case INNER:
-                joinExpressions.add(new CockroachDBJoin(leftTable, rightTable, CockroachDBJoin.JoinType.INNER,
-                        joinGen.generateExpression(CockroachDBDataType.BOOL.get())));
-                break;
-            case NATURAL:
-                joinExpressions.add(CockroachDBJoin.createNaturalJoin(leftTable, rightTable));
-                break;
-            case CROSS:
-                joinExpressions.add(CockroachDBJoin.createCrossJoin(leftTable, rightTable));
-                break;
-            case OUTER:
-                joinExpressions.add(CockroachDBJoin.createOuterJoin(leftTable, rightTable, OuterType.getRandom(),
-                        joinGen.generateExpression(CockroachDBDataType.BOOL.get())));
-                break;
-            default:
-                throw new AssertionError();
-            }
+            joinExpressions.add(CockroachDBJoin.createJoin(leftTable, rightTable, CockroachDBJoin.JoinType.getRandom(),
+                    joinGen.generateExpression(CockroachDBDataType.BOOL.get())));
         }
         return joinExpressions;
     }
