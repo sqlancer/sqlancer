@@ -252,8 +252,9 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             total--;
         }
 
-        if (globalState.getDbmsSpecificOptions().getTestOracleFactory().size() == 1 && globalState
-                .getDbmsSpecificOptions().getTestOracleFactory().get(0).create(globalState) instanceof CockroachDBCERTOracle) {
+        if (globalState.getDbmsSpecificOptions().getTestOracleFactory().size() == 1
+                && globalState.getDbmsSpecificOptions().getTestOracleFactory().get(0)
+                        .create(globalState) instanceof CockroachDBCERTOracle) {
             // Enfore statistic collected for all tables
             ExpectedErrors errors = new ExpectedErrors();
             CockroachDBErrors.addExpressionErrors(errors);
