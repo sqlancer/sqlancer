@@ -137,9 +137,7 @@ public final class Randomly {
 
     public static <T> List<T> nonEmptySubsetLeast(List<T> columns, int min) {
         int nr = getNextInt(min, columns.size() + 1);
-        if (nr > columns.size()) {
-            throw new AssertionError(columns + " " + nr);
-        }
+        assert nr <= columns.size();
         return extractNrRandomColumns(columns, nr);
     }
 
