@@ -18,6 +18,11 @@ public final class CockroachDBInsertGenerator {
     }
 
     public static SQLQueryAdapter insert(CockroachDBGlobalState globalState) {
+        CockroachDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
+        return insert(globalState, table);
+    }
+
+    public static SQLQueryAdapter insert(CockroachDBGlobalState globalState, CockroachDBTable table) {
         ExpectedErrors errors = new ExpectedErrors();
 
         CockroachDBErrors.addExpressionErrors(errors); // e.g., caused by computed columns
@@ -32,7 +37,6 @@ public final class CockroachDBInsertGenerator {
         errors.add("foreign key violation");
         errors.add("multi-part foreign key");
         StringBuilder sb = new StringBuilder();
-        CockroachDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         boolean isUpsert = Randomly.getBoolean();
         if (!isUpsert) {
             sb.append("INSERT INTO ");
