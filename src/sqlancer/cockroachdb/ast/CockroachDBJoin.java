@@ -1,5 +1,7 @@
 package sqlancer.cockroachdb.ast;
 
+import java.util.Arrays;
+
 import sqlancer.Randomly;
 
 public class CockroachDBJoin implements CockroachDBExpression {
@@ -14,6 +16,12 @@ public class CockroachDBJoin implements CockroachDBExpression {
 
         public static JoinType getRandom() {
             return Randomly.fromOptions(values());
+        }
+
+        public static JoinType getRandomExcept(JoinType... exclude) {
+            JoinType[] values = Arrays.stream(values()).filter(m -> !Arrays.asList(exclude).contains(m))
+                    .toArray(JoinType[]::new);
+            return Randomly.fromOptions(values);
         }
     }
 
