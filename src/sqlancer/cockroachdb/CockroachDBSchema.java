@@ -208,6 +208,10 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBGlobalState, Co
         return new CockroachDBTables(Randomly.nonEmptySubset(getDatabaseTables()));
     }
 
+    public CockroachDBTables getRandomTableNonEmptyTables(int nr) {
+        return new CockroachDBTables(Randomly.nonEmptySubsetLeast(getDatabaseTables(), nr));
+    }
+
     private static CockroachDBCompositeDataType getColumnType(String typeString) {
         if (typeString.endsWith("[]")) {
             String substring = typeString.substring(0, typeString.length() - 2);

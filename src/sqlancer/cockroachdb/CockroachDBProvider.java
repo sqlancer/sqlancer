@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.auto.service.AutoService;
 
@@ -338,6 +339,17 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
     protected void executeMutator(int index, CockroachDBGlobalState globalState) throws Exception {
         SQLQueryAdapter queryMutateTable = Action.values()[index].getQuery(globalState);
         globalState.executeStatement(queryMutateTable);
+    }
+
+    @Override
+    public boolean addRowsToAllTables(CockroachDBGlobalState globalState) throws Exception {
+        List<CockroachDBTable> tablesNoRow = globalState.getSchema().getDatabaseTables().stream()
+                .filter(t -> t.getNrRows(globalState) == 0).collect(Collectors.toList());
+        for (CockroachDBTable table : tablesNoRow) {
+            SQLQueryAdapter queryAddRows = CockroachDBInsertGenerator.insert(globalState, table);
+            globalState.executeStatement(queryAddRows);
+        }
+        return true;
     }
 
 }
