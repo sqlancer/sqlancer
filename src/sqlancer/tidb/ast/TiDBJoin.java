@@ -1,6 +1,7 @@
 package sqlancer.tidb.ast;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.Randomly;
@@ -21,6 +22,12 @@ public class TiDBJoin implements TiDBExpression {
 
         public static JoinType getRandom() {
             return Randomly.fromOptions(values());
+        }
+
+        public static JoinType getRandomExcept(JoinType... exclude) {
+            JoinType[] values = Arrays.stream(values()).filter(m -> !Arrays.asList(exclude).contains(m))
+                    .toArray(JoinType[]::new);
+            return Randomly.fromOptions(values);
         }
     }
 

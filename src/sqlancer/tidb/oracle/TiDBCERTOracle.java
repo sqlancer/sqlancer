@@ -3,7 +3,6 @@ package sqlancer.tidb.oracle;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -129,14 +128,11 @@ public class TiDBCERTOracle extends CERTOracleBase<TiDBGlobalState> implements T
         if (join.getJoinType() == JoinType.LEFT || join.getJoinType() == JoinType.RIGHT) { // No invarient relation
                                                                                            // between LEFT and RIGHT
                                                                                            // join
-            newJoinType = Randomly.fromOptions(Arrays.stream(JoinType.values())
-                    .filter(j -> j != JoinType.LEFT && j != JoinType.RIGHT && j != JoinType.NATURAL)
-                    .toArray(JoinType[]::new));
+            newJoinType = JoinType.getRandomExcept(JoinType.NATURAL, JoinType.LEFT, JoinType.RIGHT);
         } else {
-            newJoinType = Randomly.fromOptions(Arrays.stream(JoinType.values())
-                    .filter(j -> j != join.getJoinType() && j != JoinType.NATURAL).toArray(JoinType[]::new));
+            newJoinType = JoinType.getRandomExcept(JoinType.NATURAL, join.getJoinType());
         }
-
+        assert newJoinType != JoinType.NATURAL; // Natural Join is not supported for CERT
         boolean increase = join.getJoinType().ordinal() < newJoinType.ordinal();
         join.setJoinType(newJoinType);
         if (newJoinType == JoinType.CROSS) {
