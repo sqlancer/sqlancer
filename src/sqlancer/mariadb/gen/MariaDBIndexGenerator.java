@@ -6,6 +6,7 @@ import sqlancer.Randomly;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.mariadb.MariaDBBugs;
 import sqlancer.mariadb.MariaDBSchema;
 import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
@@ -19,7 +20,12 @@ public final class MariaDBIndexGenerator {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder("CREATE ");
         errors.add("Key/Index cannot be defined on a virtual generated column");
-        errors.add("Specified key was too long; max key length is 2300 bytes");
+
+        if (MariaDBBugs.bug835) {
+            errors.add("Specified key was too long; max key length is 2300 bytes");
+            errors.add("Lock wait timeout exceeded; try restarting transaction");
+        }
+
         if (Randomly.getBoolean()) {
             errors.add("Duplicate entry");
             errors.add("Key/Index cannot be defined on a virtual generated column");
