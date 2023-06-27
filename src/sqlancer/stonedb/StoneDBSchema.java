@@ -12,6 +12,7 @@ import sqlancer.common.ast.newast.Node;
 import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractTableColumn;
+import sqlancer.common.schema.AbstractTables;
 import sqlancer.common.schema.TableIndex;
 import sqlancer.stonedb.ast.StoneDBConstant;
 import sqlancer.stonedb.ast.StoneDBExpression;
@@ -97,6 +98,12 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
             return getColumns().stream().anyMatch(c -> c.isPrimaryKey());
         }
 
+    }
+
+    public static class StoneDBTables extends AbstractTables<StoneDBTable, StoneDBColumn> {
+        public StoneDBTables(List<StoneDBTable> tables) {
+            super(tables);
+        }
     }
 
     public static final class StoneDBIndex extends TableIndex {
@@ -338,5 +345,9 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
             StoneDBDataType type = StoneDBDataType.getRandomWithoutNull();
             return new StoneDBCompositeDataType(type);
         }
+    }
+
+    public StoneDBTables getRandomTableNonEmptyTables() {
+        return new StoneDBTables(Randomly.nonEmptySubset(getDatabaseTables()));
     }
 }
