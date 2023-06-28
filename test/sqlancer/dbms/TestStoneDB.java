@@ -16,7 +16,7 @@ public class TestStoneDB {
     public void testStoneDB() {
         assumeTrue(stoneDBIsAvailable);
         assertEquals(0, Main.executeMain("--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS, "--num-threads",
-                "1", "--num-queries", TestConfig.NUM_QUERIES, "stonedb", "--oracle", "NoRec"));
+                "1", "--num-queries", TestConfig.NUM_QUERIES, "stonedb", "--oracle", "NoREC"));
     }
 
 }
