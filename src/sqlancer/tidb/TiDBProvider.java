@@ -23,6 +23,7 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
+import sqlancer.tidb.TiDBOptions.TiDBOracleFactory;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBTable;
 import sqlancer.tidb.gen.TiDBAlterTableGenerator;
@@ -36,7 +37,6 @@ import sqlancer.tidb.gen.TiDBSetGenerator;
 import sqlancer.tidb.gen.TiDBTableGenerator;
 import sqlancer.tidb.gen.TiDBUpdateGenerator;
 import sqlancer.tidb.gen.TiDBViewGenerator;
-import sqlancer.tidb.oracle.TiDBCERTOracle;
 
 @AutoService(DatabaseProvider.class)
 public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOptions> {
@@ -139,8 +139,8 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
             }
         }
 
-        if (globalState.getDbmsSpecificOptions().getTestOracleFactory().size() == 1 && globalState
-                .getDbmsSpecificOptions().getTestOracleFactory().get(0).create(globalState) instanceof TiDBCERTOracle) {
+        if (globalState.getDbmsSpecificOptions().getTestOracleFactory().stream()
+                .anyMatch((o) -> o == TiDBOracleFactory.CERT)) {
             // Disable strict Group By constraints for ROW oracle
             globalState.executeStatement(new SQLQueryAdapter(
                     "SET @@sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';"));

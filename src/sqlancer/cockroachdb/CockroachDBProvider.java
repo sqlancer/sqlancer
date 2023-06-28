@@ -19,6 +19,7 @@ import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.SQLGlobalState;
 import sqlancer.SQLProviderAdapter;
+import sqlancer.cockroachdb.CockroachDBOptions.CockroachDBOracleFactory;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.gen.CockroachDBCommentOnGenerator;
@@ -36,7 +37,6 @@ import sqlancer.cockroachdb.gen.CockroachDBTableGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBTruncateGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBUpdateGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBViewGenerator;
-import sqlancer.cockroachdb.oracle.CockroachDBCERTOracle;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
@@ -252,9 +252,8 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             total--;
         }
 
-        if (globalState.getDbmsSpecificOptions().getTestOracleFactory().size() == 1
-                && globalState.getDbmsSpecificOptions().getTestOracleFactory().get(0)
-                        .create(globalState) instanceof CockroachDBCERTOracle) {
+        if (globalState.getDbmsSpecificOptions().getTestOracleFactory().stream()
+                .anyMatch((o) -> o == CockroachDBOracleFactory.CERT)) {
             // Enfore statistic collected for all tables
             ExpectedErrors errors = new ExpectedErrors();
             CockroachDBErrors.addExpressionErrors(errors);
