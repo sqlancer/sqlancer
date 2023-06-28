@@ -57,8 +57,8 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
             throw new IgnoreMeException();
         }
         if (firstCount != secondCount) {
-            throw new AssertionError(
-                    optimizedQueryString + "; -- " + firstCount + "\n" + unoptimizedQueryString + " -- " + secondCount);
+            throw new AssertionError(optimizedQueryString + "; -- " + firstCount + System.lineSeparator()
+                    + unoptimizedQueryString + " -- " + secondCount);
         }
     }
 
@@ -66,22 +66,20 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
             Node<StoneDBExpression> randomWhereCondition, List<Node<StoneDBExpression>> joins) throws SQLException {
         StoneDBSelect select = new StoneDBSelect();
         Node<StoneDBExpression> asText = new NewPostfixTextNode<>(new StoneDBCastOperation(
-                new NewPostfixTextNode<StoneDBExpression>(randomWhereCondition,
+                new NewPostfixTextNode<>(randomWhereCondition,
                         " IS NOT NULL AND " + StoneDBToStringVisitor.asString(randomWhereCondition)),
                 new StoneDBCompositeDataType(StoneDBDataType.INT, 8)), "as count");
         select.setFetchColumns(List.of(asText));
         select.setFromList(tableList);
-        // select.setSelectType(SelectType.ALL);
         select.setJoinList(joins);
         int secondCount = 0;
         unoptimizedQueryString = "SELECT SUM(count) FROM (" + StoneDBToStringVisitor.asString(select) + ") as res";
-        errors.add("canceling statement due to statement timeout");
         SQLQueryAdapter q = new SQLQueryAdapter(unoptimizedQueryString, errors);
         SQLancerResultSet rs;
         try {
             rs = q.executeAndGetLogged(state);
         } catch (Exception e) {
-            throw new AssertionError(unoptimizedQueryString, e);
+            throw new AssertionError("error occurred when executing: \"" + unoptimizedQueryString + "\"", e);
         }
         if (rs == null) {
             return -1;
@@ -105,7 +103,6 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
         if (Randomly.getBooleanWithSmallProbability()) {
             select.setOrderByExpressions(new StoneDBExpressionGenerator(state).setColumns(columns).generateOrderBys());
         }
-        // select.setSelectType(SelectType.ALL);
         select.setJoinList(joins);
         int firstCount = 0;
         try (Statement stat = con.createStatement()) {
