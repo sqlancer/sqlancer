@@ -57,7 +57,7 @@ public class YCQLInsertGenerator extends AbstractInsertGenerator<YCQLColumn> {
     }
 
     @Override
-    protected void insertValue(YCQLColumn tiDBColumn) {
+    protected void insertValue(YCQLColumn columnYCQL) {
         // TODO: select a more meaningful value
         sb.append(YCQLToStringVisitor.asString(new YCQLExpressionGenerator(globalState).generateConstant()));
     }

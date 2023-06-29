@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.auto.service.AutoService;
 
@@ -18,6 +19,7 @@ import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.SQLGlobalState;
 import sqlancer.SQLProviderAdapter;
+import sqlancer.cockroachdb.CockroachDBOptions.CockroachDBOracleFactory;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.gen.CockroachDBCommentOnGenerator;
@@ -129,13 +131,13 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
         QueryManager<SQLConnection> manager = globalState.getManager();
         MainOptions options = globalState.getOptions();
         List<String> standardSettings = new ArrayList<>();
-        standardSettings.add("--Don't send automatic bug reports\n"
-                + "SET CLUSTER SETTING debug.panic_on_failed_assertions = true;");
+        standardSettings.add("--Don't send automatic bug reports");
+        standardSettings.add("SET CLUSTER SETTING debug.panic_on_failed_assertions = true;");
         standardSettings.add("SET CLUSTER SETTING diagnostics.reporting.enabled    = false;");
         standardSettings.add("SET CLUSTER SETTING diagnostics.reporting.send_crash_reports = false;");
 
-        standardSettings.add("-- Disable the collection of metrics and hope that it helps performance\n"
-                + "SET CLUSTER SETTING sql.metrics.statement_details.enabled = 'off'");
+        standardSettings.add("-- Disable the collection of metrics and hope that it helps performance");
+        standardSettings.add("SET CLUSTER SETTING sql.metrics.statement_details.enabled = 'off'");
         standardSettings.add("SET CLUSTER SETTING sql.metrics.statement_details.plan_collection.enabled = 'off'");
         standardSettings.add("SET CLUSTER SETTING sql.stats.automatic_collection.enabled = 'off'");
         standardSettings.add("SET CLUSTER SETTING timeseries.storage.enabled = 'off'");
@@ -249,6 +251,16 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             }
             total--;
         }
+
+        if (globalState.getDbmsSpecificOptions().getTestOracleFactory().stream()
+                .anyMatch((o) -> o == CockroachDBOracleFactory.CERT)) {
+            // Enfore statistic collected for all tables
+            ExpectedErrors errors = new ExpectedErrors();
+            CockroachDBErrors.addExpressionErrors(errors);
+            for (CockroachDBTable table : globalState.getSchema().getDatabaseTables()) {
+                globalState.executeStatement(new SQLQueryAdapter("ANALYZE " + table.getName() + ";", errors));
+            }
+        }
     }
 
     @Override
@@ -338,6 +350,17 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
     protected void executeMutator(int index, CockroachDBGlobalState globalState) throws Exception {
         SQLQueryAdapter queryMutateTable = Action.values()[index].getQuery(globalState);
         globalState.executeStatement(queryMutateTable);
+    }
+
+    @Override
+    public boolean addRowsToAllTables(CockroachDBGlobalState globalState) throws Exception {
+        List<CockroachDBTable> tablesNoRow = globalState.getSchema().getDatabaseTables().stream()
+                .filter(t -> t.getNrRows(globalState) == 0).collect(Collectors.toList());
+        for (CockroachDBTable table : tablesNoRow) {
+            SQLQueryAdapter queryAddRows = CockroachDBInsertGenerator.insert(globalState, table);
+            globalState.executeStatement(queryAddRows);
+        }
+        return true;
     }
 
 }

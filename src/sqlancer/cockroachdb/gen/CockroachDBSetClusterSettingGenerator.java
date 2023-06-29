@@ -20,7 +20,8 @@ public final class CockroachDBSetClusterSettingGenerator {
         RANGE_DESCRIPTOR_CACHE_SIZE("kv.range_descriptor_cache.size", (g) -> Randomly.getNonCachedInteger()),
         SQL_QUERY_CACHE_ENABLED("sql.query_cache.enabled", CockroachDBSetSessionGenerator::onOff),
         SQL_STATS_HISTOGRAM_COLLECTION_ENABLED("sql.stats.histogram_collection.enabled",
-                CockroachDBSetSessionGenerator::onOff);
+                CockroachDBSetSessionGenerator::onOff),
+        HISTOGRAM_COLLECT("sql.stats.histogram_collection.enabled", CockroachDBSetSessionGenerator::onOff);
 
         private Function<CockroachDBGlobalState, Object> f;
         private String name;

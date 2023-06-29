@@ -135,6 +135,12 @@ public final class Randomly {
         return extractNrRandomColumns(columns, nr);
     }
 
+    public static <T> List<T> nonEmptySubsetLeast(List<T> columns, int min) {
+        int nr = getNextInt(min, columns.size() + 1);
+        assert nr <= columns.size();
+        return extractNrRandomColumns(columns, nr);
+    }
+
     public static <T> List<T> nonEmptySubsetPotentialDuplicates(List<T> columns) {
         List<T> arr = new ArrayList<>();
         for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
