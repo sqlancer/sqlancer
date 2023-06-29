@@ -59,10 +59,18 @@ public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBG
     }
 
     private static int mapActions(StoneDBGlobalState globalState, Action a) {
-        globalState.getRandomly();
+        Randomly r = globalState.getRandomly();
         switch (a) {
         case SHOW_TABLES:
             return 1;
+        case ALTER_TABLE:
+            return Randomly.smallNumber();
+        case DELETE:
+            return Randomly.smallNumber();
+        case INDEX:
+            return Randomly.smallNumber();
+        case INSERT:
+            return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
         default:
             throw new AssertionError(a);
         }
