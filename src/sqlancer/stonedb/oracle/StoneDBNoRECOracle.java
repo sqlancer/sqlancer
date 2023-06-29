@@ -51,6 +51,7 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
         List<TableReferenceNode<StoneDBExpression, StoneDBTable>> tableList = tables.stream()
                 .map(t -> new TableReferenceNode<StoneDBExpression, StoneDBTable>(t)).collect(Collectors.toList());
         List<Node<StoneDBExpression>> joins = StoneDBJoin.getJoins(tableList, state);
+        // get and check count
         int secondCount = getUnoptimizedQueryCount(new ArrayList<>(tableList), randomWhereCondition, joins);
         int firstCount = getOptimizedQueryCount(con, new ArrayList<>(tableList), columns, randomWhereCondition, joins);
         if (firstCount == -1 || secondCount == -1) {
@@ -72,7 +73,6 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
         select.setFetchColumns(List.of(asText));
         select.setFromList(tableList);
         select.setJoinList(joins);
-        int secondCount = 0;
         unoptimizedQueryString = "SELECT SUM(count) FROM (" + StoneDBToStringVisitor.asString(select) + ") as res";
         SQLQueryAdapter q = new SQLQueryAdapter(unoptimizedQueryString, errors);
         SQLancerResultSet rs;
@@ -84,6 +84,7 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
         if (rs == null) {
             return -1;
         }
+        int secondCount = 0;
         if (rs.next()) {
             secondCount += rs.getLong(1);
         }
@@ -93,7 +94,7 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
 
     private int getOptimizedQueryCount(SQLConnection con, List<Node<StoneDBExpression>> tableList,
             List<StoneDBColumn> columns, Node<StoneDBExpression> randomWhereCondition,
-            List<Node<StoneDBExpression>> joins) throws SQLException {
+            List<Node<StoneDBExpression>> joins) {
         StoneDBSelect select = new StoneDBSelect();
         List<Node<StoneDBExpression>> allColumns = columns.stream()
                 .map((c) -> new ColumnReferenceNode<StoneDBExpression, StoneDBColumn>(c)).collect(Collectors.toList());
@@ -104,16 +105,14 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
             select.setOrderByExpressions(new StoneDBExpressionGenerator(state).setColumns(columns).generateOrderBys());
         }
         select.setJoinList(joins);
-        int firstCount = 0;
+        int firstCount;
         try (Statement stat = con.createStatement()) {
             optimizedQueryString = StoneDBToStringVisitor.asString(select);
             if (options.logEachSelect()) {
                 logger.writeCurrent(optimizedQueryString);
             }
             try (ResultSet rs = stat.executeQuery(optimizedQueryString)) {
-                while (rs.next()) {
-                    firstCount++;
-                }
+                firstCount = rs.getFetchSize();
             }
         } catch (SQLException e) {
             throw new IgnoreMeException();
