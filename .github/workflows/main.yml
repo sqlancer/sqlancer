@@ -385,12 +385,12 @@ jobs:
           fetch-depth: 0
       - name: Set up StoneDB
         run: |
-          docker pull stoneatom/stonedb
-          docker run -p 3306:3306 -itd  -e MYSQL_ROOT_PASSWORD='123456'  stoneatom/stonedb
-          docker ps
-          ContainerID=$(docker ps --filter ancestor=stoneatom/stonedb --format "{{.ID}}") 
-          echo $ContainerID
-          docker exec $ContainerID bash
+          wget https://github.com/stoneatom/stonedb/releases/download/8.0-v1.0.1-beta/stonedb-ce-8.0-v1.0.1-beta.el7.x86_64.tar.gz
+          tar -zxvf stonedb-ce-8.0-v1.0.1-beta.el7.x86_64.tar.gz
+          groupadd mysql
+          useradd -g sqlancer sqlancer
+          cd /stonedb57/install
+          ./reinstall.sh
       - name: Set up JDK 11
         uses: actions/setup-java@v1.4.4
         with:
