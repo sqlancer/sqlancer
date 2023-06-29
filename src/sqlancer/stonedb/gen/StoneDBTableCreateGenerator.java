@@ -1,5 +1,8 @@
 package sqlancer.stonedb.gen;
 
+import static sqlancer.stonedb.gen.StoneDBTableCreateGenerator.ColumnOptions.PRIMARY_KEY;
+import static sqlancer.stonedb.gen.StoneDBTableCreateGenerator.ColumnOptions.UNIQUE;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -156,6 +159,8 @@ public class StoneDBTableCreateGenerator {
         list.add("used in key specification without a key length");
         // java.sql.SQLSyntaxErrorException: BLOB/TEXT column 'c0' used in key specification without a key length
         list.add("Got error -1 - 'Unknown error -1' from storage engine");
+        // java.sql.SQLException: Tianmu engine does not support unique index.
+        list.add("Tianmu engine does not support unique index");
     }
 
     private void appendColumns() {
@@ -184,7 +189,7 @@ public class StoneDBTableCreateGenerator {
         appendColumnOption(randomType);
     }
 
-    private enum ColumnOptions {
+    protected enum ColumnOptions {
         NULL_OR_NOT_NULL, UNIQUE, COMMENT, COLUMN_FORMAT, STORAGE, PRIMARY_KEY
     }
 
@@ -197,10 +202,14 @@ public class StoneDBTableCreateGenerator {
         // if (!columnOptions.contains(ColumnOptions.NULL_OR_NOT_NULL)) {
         // tableHasNullableColumn = true;
         // }
+        // only use one key, unique key or primary key, but not both
+        if (columnOptions.contains(PRIMARY_KEY) && columnOptions.contains(UNIQUE)) {
+            columnOptions.remove(Randomly.fromOptions(PRIMARY_KEY, UNIQUE));
+        }
         if (isTextType) {
             // TODO: restriction due to the limited key length
-            columnOptions.remove(ColumnOptions.PRIMARY_KEY);
-            columnOptions.remove(ColumnOptions.UNIQUE);
+            columnOptions.remove(PRIMARY_KEY);
+            columnOptions.remove(UNIQUE);
         }
         for (ColumnOptions o : columnOptions) {
             sb.append(" ");
