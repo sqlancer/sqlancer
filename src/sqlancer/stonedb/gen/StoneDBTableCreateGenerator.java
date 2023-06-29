@@ -301,19 +301,20 @@ public class StoneDBTableCreateGenerator {
             sb.append("CHAR(").append(Randomly.fromOptions("", new Randomly().getInteger(0, 255) + ")"));
             break;
         case VARCHAR:
-            sb.append("VARCHAR(").append(Randomly.fromOptions("", new Randomly().getInteger(0, 65535) + ")"));
+            sb.append("VARCHAR(").append(Randomly.fromOptions("", "(" + new Randomly().getInteger(0, 65535) + ")"));
             break;
         case TINYTEXT:
-            sb.append("TINYTEXT").append(Randomly.fromOptions("", new Randomly().getInteger(0, 255) + ")"));
+            sb.append("TINYTEXT").append(Randomly.fromOptions("", "(" + new Randomly().getInteger(0, 255) + ")"));
             break;
         case TEXT:
-            sb.append("TEXT").append(Randomly.fromOptions("", new Randomly().getInteger(0, 65535) + ")"));
+            sb.append("TEXT").append(Randomly.fromOptions("", "(" + new Randomly().getInteger(0, 65535) + ")"));
             break;
         case MEDIUMTEXT:
-            sb.append("MEDIUMTEXT").append(Randomly.fromOptions("", new Randomly().getInteger(0, 16777215) + ")"));
+            sb.append("MEDIUMTEXT")
+                    .append(Randomly.fromOptions("", "(" + new Randomly().getInteger(0, 16777215) + ")"));
             break;
         case LONGTEXT:
-            sb.append("LONGTEXT").append(Randomly.fromOptions("", new Randomly().getLong(0L, 4294967295L) + ")"));
+            sb.append("LONGTEXT").append(Randomly.fromOptions("", "(" + new Randomly().getLong(0L, 4294967295L) + ")"));
             break;
         case BINARY:
             sb.append("BINARY");
