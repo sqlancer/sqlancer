@@ -37,9 +37,9 @@ public class StoneDBTableCreateGenerator {
 
     public SQLQueryAdapter getQuery() {
         ExpectedErrors errors = new ExpectedErrors();
-        sb.append(Randomly.fromOptions("CREATE TABLE", "CREATE TEMPORARY TABLE"));
+        sb.append(Randomly.fromOptions("CREATE TABLE ", "CREATE TEMPORARY TABLE "));
         if (Randomly.getBoolean()) {
-            sb.append(" IF NOT EXISTS ");
+            sb.append("IF NOT EXISTS ");
         }
         sb.append(tableName);
         // ues link statement
