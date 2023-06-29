@@ -148,15 +148,6 @@ public class StoneDBTableCreateGenerator {
     }
 
     private void addCommonErrors(ExpectedErrors list) {
-        list.add("The storage engine for the table doesn't support");
-        list.add("doesn't have this option");
-        list.add("must include all columns");
-        list.add("not allowed type for this type of partitioning");
-        list.add("doesn't support BLOB/TEXT columns");
-        list.add("A BLOB field is not allowed in partition function");
-        list.add("Too many keys specified; max 1 keys allowed");
-        list.add("The total length of the partitioning fields is too large");
-        list.add("used in key specification without a key length");
         // java.sql.SQLSyntaxErrorException: BLOB/TEXT column 'c0' used in key specification without a key length
         list.add("Got error -1 - 'Unknown error -1' from storage engine");
         // java.sql.SQLException: Tianmu engine does not support unique index.
