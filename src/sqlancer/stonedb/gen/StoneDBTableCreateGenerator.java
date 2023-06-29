@@ -224,8 +224,7 @@ public class StoneDBTableCreateGenerator {
                 }
                 break;
             case COMMENT:
-                // TODO: generate randomly
-                sb.append(String.format("COMMENT '%s' ", "asdf"));
+                sb.append(String.format("COMMENT '%s' ", new Randomly().getString()));
                 break;
             case COLUMN_FORMAT:
                 sb.append("COLUMN_FORMAT ");
