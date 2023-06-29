@@ -48,7 +48,7 @@ public class StoneDBIndexGenerator {
         sb.append("(");
         sb.append(table.getRandomColumn().getName());
         if (Randomly.getBoolean()) {
-            sb.append(Randomly.fromOptions("ASC", "DESC"));
+            sb.append(Randomly.fromOptions(" ASC", " DESC"));
         }
         sb.append(")");
     }
