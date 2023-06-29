@@ -25,7 +25,7 @@ public class StoneDBIndexGenerator {
     private SQLQueryAdapter getQuery() {
         sb.append("CREATE ");
         sb.append(Randomly.fromOptions("UNIQUE", "FULLTEXT", "SPATIAL"));
-        sb.append(" INDEX");
+        sb.append(" INDEX ");
         sb.append(globalState.getSchema().getFreeIndexName());
         appendIndexType();
         sb.append(" ON ");
