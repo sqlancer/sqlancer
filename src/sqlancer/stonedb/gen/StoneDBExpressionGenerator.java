@@ -18,6 +18,7 @@ import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema.StoneDBColumn;
+import sqlancer.stonedb.StoneDBSchema.StoneDBCompositeDataType;
 import sqlancer.stonedb.StoneDBSchema.StoneDBDataType;
 import sqlancer.stonedb.ast.StoneDBConstant;
 import sqlancer.stonedb.ast.StoneDBExpression;
@@ -33,6 +34,20 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
     private enum Expression {
         UNARY_PREFIX, UNARY_POSTFIX, BINARY_COMPARISON, BINARY_LOGICAL, BINARY_ARITHMETIC, BINARY_BITWISE, BETWEEN, IN,
         CASE
+    }
+
+    public static class StoneDBCastOperation extends NewUnaryPostfixOperatorNode<StoneDBExpression> {
+
+        public StoneDBCastOperation(Node<StoneDBExpression> expr, StoneDBCompositeDataType type) {
+            super(expr, new Operator() {
+
+                @Override
+                public String getTextRepresentation() {
+                    return "::" + type.toString();
+                }
+            });
+        }
+
     }
 
     @Override
