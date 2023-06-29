@@ -55,6 +55,7 @@ public class StoneDBTableAlterGenerator {
         case ALTER_COLUMN:
             sb.append(Randomly.fromOptions("ALTER COLUMN ", "ALTER "));
             sb.append(table.getRandomColumn().getName());
+            sb.append("{");
             if (Randomly.getBoolean()) {
                 sb.append(" SET DEFAULT ").append(generator.generateExpression());
             } else {
@@ -63,6 +64,7 @@ public class StoneDBTableAlterGenerator {
             if (Randomly.getBoolean()) {
                 sb.append(" SET ").append(Randomly.fromOptions("VISIBLE", "INVISIBLE"));
             }
+            sb.append("}");
             break;
         case CHANGE_COLUMN:
             sb.append(Randomly.fromOptions("CHANGE COLUMN ", "CHANGE "));
@@ -81,7 +83,7 @@ public class StoneDBTableAlterGenerator {
             }
             break;
         case RENAME_COLUMN:
-            sb.append("RENAME COLUMN");
+            sb.append("RENAME COLUMN ");
             sb.append(table.getRandomColumn().getName());
             sb.append(" TO ");
             sb.append(table.getFreeColumnName());
