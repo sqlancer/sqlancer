@@ -19,7 +19,6 @@ import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
-import sqlancer.stonedb.gen.StoneDBDeleteGenerator;
 import sqlancer.stonedb.gen.StoneDBIndexGenerator;
 import sqlancer.stonedb.gen.StoneDBInsertGenerator;
 import sqlancer.stonedb.gen.StoneDBTableAlterGenerator;
@@ -42,7 +41,7 @@ public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBG
     enum Action implements AbstractAction<StoneDBGlobalState> {
         SHOW_TABLES((g) -> new SQLQueryAdapter("SHOW TABLES")), //
         ALTER_TABLE(StoneDBTableAlterGenerator::generate), //
-        DELETE(StoneDBDeleteGenerator::generate), //
+        DELETE(sqlancer.stonedb.gen.StoneDBTableDeleteGenerator::generate), //
         INDEX(StoneDBIndexGenerator::generate), //
         INSERT(StoneDBInsertGenerator::generate); //
 

@@ -149,7 +149,7 @@ public class StoneDBTableCreateGenerator {
 
     private void addCommonErrors(ExpectedErrors list) {
         // java.sql.SQLSyntaxErrorException: BLOB/TEXT column 'c0' used in key specification without a key length
-        list.add("Got error -1 - 'Unknown error -1' from storage engine");
+        list.add("used in key specification without a key length");
         // java.sql.SQLException: Tianmu engine does not support unique index.
         list.add("Tianmu engine does not support unique index");
     }

@@ -10,17 +10,17 @@ import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema.StoneDBTable;
 import sqlancer.stonedb.StoneDBToStringVisitor;
 
-public final class StoneDBDeleteGenerator {
+public final class StoneDBTableDeleteGenerator {
     private final StoneDBGlobalState globalState;
     private final StringBuilder sb = new StringBuilder();
     ExpectedErrors errors = new ExpectedErrors();
 
-    private StoneDBDeleteGenerator(StoneDBGlobalState globalState) {
+    private StoneDBTableDeleteGenerator(StoneDBGlobalState globalState) {
         this.globalState = globalState;
     }
 
     public static SQLQueryAdapter generate(StoneDBGlobalState globalState) {
-        return new StoneDBDeleteGenerator(globalState).getQuery();
+        return new StoneDBTableDeleteGenerator(globalState).getQuery();
     }
 
     public SQLQueryAdapter getQuery() {
@@ -37,10 +37,11 @@ public final class StoneDBDeleteGenerator {
         }
         sb.append(" FROM ");
         sb.append(randomTable.getName());
-        if (Randomly.getBoolean()) {
-            sb.append(" AS ");
-            sb.append(globalState.getSchema().getRandomTable().getName());
-        }
+        // do not need AS if does not use tbl_alias later
+        // if (Randomly.getBooleanWithSmallProbability()) {
+        // sb.append(" AS ");
+        // sb.append(globalState.getSchema().getRandomTable().getName());
+        // }
         if (Randomly.getBoolean()) {
             sb.append(" WHERE ");
             sb.append(StoneDBToStringVisitor.asString(new StoneDBExpressionGenerator(globalState)
