@@ -22,6 +22,7 @@ public class StoneDBTableCreateGenerator {
     private final boolean allowPrimaryKey;
     private boolean setPrimaryKey;
     private final StringBuilder sb = new StringBuilder();
+    ExpectedErrors errors = new ExpectedErrors();
     private final Randomly r;
 
     public StoneDBTableCreateGenerator(StoneDBGlobalState globalState, String tableName) {
@@ -36,7 +37,6 @@ public class StoneDBTableCreateGenerator {
     }
 
     public SQLQueryAdapter getQuery() {
-        ExpectedErrors errors = new ExpectedErrors();
         sb.append(Randomly.fromOptions("CREATE TABLE ", "CREATE TEMPORARY TABLE "));
         if (Randomly.getBoolean()) {
             sb.append("IF NOT EXISTS ");
@@ -153,6 +153,8 @@ public class StoneDBTableCreateGenerator {
         list.add("A BLOB field is not allowed in partition function");
         list.add("Too many keys specified; max 1 keys allowed");
         list.add("The total length of the partitioning fields is too large");
+        list.add("used in key specification without a key length");
+        // java.sql.SQLSyntaxErrorException: BLOB/TEXT column 'c0' used in key specification without a key length
         list.add("Got error -1 - 'Unknown error -1' from storage engine");
     }
 
@@ -297,24 +299,22 @@ public class StoneDBTableCreateGenerator {
             sb.append("TIMESTAMP");
             break;
         case CHAR:
-            sb.append("CHAR");
+            sb.append("CHAR(").append(Randomly.fromOptions("", new Randomly().getInteger(0, 255) + ")"));
             break;
         case VARCHAR:
-            sb.append("VARCHAR(");
-            sb.append(r.getInteger(0, 65535));
-            sb.append(")");
+            sb.append("VARCHAR(").append(Randomly.fromOptions("", new Randomly().getInteger(0, 65535) + ")"));
             break;
         case TINYTEXT:
-            sb.append("TINYTEXT");
+            sb.append("TINYTEXT").append(Randomly.fromOptions("", new Randomly().getInteger(0, 255) + ")"));
             break;
         case TEXT:
-            sb.append("TEXT");
+            sb.append("TEXT").append(Randomly.fromOptions("", new Randomly().getInteger(0, 65535) + ")"));
             break;
         case MEDIUMTEXT:
-            sb.append("MEDIUMTEXT");
+            sb.append("MEDIUMTEXT").append(Randomly.fromOptions("", new Randomly().getInteger(0, 16777215) + ")"));
             break;
         case LONGTEXT:
-            sb.append("LONGTEXT");
+            sb.append("LONGTEXT").append(Randomly.fromOptions("", new Randomly().getLong(0L, 4294967295L) + ")"));
             break;
         case BINARY:
             sb.append("BINARY");
