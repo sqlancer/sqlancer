@@ -153,11 +153,13 @@ public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, Mari
                 total--;
                 continue;
             }
-            try {
-                globalState.executeStatement(query);
-            } catch (Throwable t) {
-                System.err.println(query.getQueryString());
-                throw t;
+            if (query != null) {
+                try {
+                    globalState.executeStatement(query);
+                } catch (Throwable t) {
+                    System.err.println(query.getQueryString());
+                    throw t;
+                }
             }
             total--;
         }
