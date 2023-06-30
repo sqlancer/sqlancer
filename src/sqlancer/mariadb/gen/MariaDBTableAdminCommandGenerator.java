@@ -58,8 +58,7 @@ public final class MariaDBTableAdminCommandGenerator {
         return checkForMsgText(sb,
                 s -> s.equals("OK") || s.equals("Table does not support optimize, doing recreate + analyze instead")
                         || s.contentEquals("Table is already up to date")
-                        || s.contains("Lock wait timeout exceeded; try restarting transaction")
-                );
+                        || s.contains("Lock wait timeout exceeded; try restarting transaction"));
     }
 
     private static SQLQueryAdapter checkForMsgText(StringBuilder sb, Function<String, Boolean> checker) {
