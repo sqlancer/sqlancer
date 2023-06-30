@@ -1,6 +1,7 @@
 package sqlancer.stonedb.gen;
 
 import sqlancer.Randomly;
+import sqlancer.Randomly.StringGenerationStrategy;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
@@ -8,6 +9,7 @@ import sqlancer.stonedb.StoneDBSchema.StoneDBTable;
 
 public class StoneDBIndexGenerator {
     private final StoneDBGlobalState globalState;
+    private final Randomly r;
     // which table to add index
     StoneDBTable table;
     private final StringBuilder sb = new StringBuilder();
@@ -15,6 +17,7 @@ public class StoneDBIndexGenerator {
 
     public StoneDBIndexGenerator(StoneDBGlobalState globalState) {
         this.globalState = globalState;
+        r = globalState.getRandomly();
         table = globalState.getSchema().getRandomTable();
     }
 
@@ -24,8 +27,7 @@ public class StoneDBIndexGenerator {
 
     private SQLQueryAdapter getQuery() {
         sb.append("CREATE ");
-        // Tianmu engine does not support fulltext index.
-        sb.append(Randomly.fromOptions("UNIQUE" /* "FULLTEXT" */, "SPATIAL"));
+        sb.append(Randomly.fromOptions("UNIQUE", "FULLTEXT", "SPATIAL"));
         sb.append(" INDEX ");
         sb.append(globalState.getSchema().getFreeIndexName());
         appendIndexType();
@@ -55,10 +57,18 @@ public class StoneDBIndexGenerator {
     }
 
     private void appendIndexOption() {
-        if (Randomly.getBoolean()) {
+        if (Randomly.getBoolean()){
             return;
         }
-        sb.append(Randomly.fromOptions(" VISIBLE", " INVISIBLE"));
+        if (Randomly.getBoolean()){
+            sb.append(Randomly.fromOptions("KEY_BLOCK_SIZE ", "KEY_BLOCK_SIZE = "));
+            sb.append(r.getInteger(1, Randomly.smallNumber()));
+            sb.append(" ");
+        }
+        if (Randomly.getBoolean()) {
+            StringGenerationStrategy strategy = Randomly.StringGenerationStrategy.ALPHANUMERIC;
+            sb.append(String.format("COMMENT '%s' ", strategy.getString(r)));
+        }
     }
 
     private void appendAlgoOrLockOption() {
