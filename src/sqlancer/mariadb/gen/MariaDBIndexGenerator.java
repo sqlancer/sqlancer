@@ -22,7 +22,7 @@ public final class MariaDBIndexGenerator {
         errors.add("Key/Index cannot be defined on a virtual generated column");
 
         if (MariaDBBugs.bug834) {
-            errors.add("Specified key was too long; max key length is 2300 bytes");
+            errors.add("Specified key was too long; max key length is");
             errors.add("Lock wait timeout exceeded; try restarting transaction");
         }
 
