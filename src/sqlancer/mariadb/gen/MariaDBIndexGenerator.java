@@ -19,7 +19,7 @@ public final class MariaDBIndexGenerator {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder("CREATE ");
         errors.add("Key/Index cannot be defined on a virtual generated column");
-
+        errors.add("Specified key was too long; max key length is");
         if (Randomly.getBoolean()) {
             errors.add("Duplicate entry");
             errors.add("Key/Index cannot be defined on a virtual generated column");
