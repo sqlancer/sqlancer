@@ -6,7 +6,7 @@ public final class MariaDBBugs {
     public static boolean bug21058 = true;
 
     // https://github.com/sqlancer/sqlancer/pull/834
-    public static boolean bug835 = true;
+    public static boolean bug834 = true;
 
     private MariaDBBugs() {
     }

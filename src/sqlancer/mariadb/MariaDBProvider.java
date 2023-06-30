@@ -107,7 +107,7 @@ public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, Mari
             assert nextAction != null;
             assert nrRemaining[nextAction.ordinal()] > 0;
             nrRemaining[nextAction.ordinal()]--;
-            SQLQueryAdapter query;
+            SQLQueryAdapter query = null;
             try {
                 switch (nextAction) {
                 case CHECKSUM:
@@ -117,6 +117,9 @@ public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, Mari
                     query = MariaDBTableAdminCommandGenerator.checkTable(globalState.getSchema());
                     break;
                 case TRUNCATE:
+                    if (MariaDBBugs.bug834) {
+                        break;
+                    }
                     query = MariaDBTruncateGenerator.truncate(globalState.getSchema());
                     break;
                 case REPAIR_TABLE:
@@ -126,6 +129,9 @@ public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, Mari
                     query = MariaDBInsertGenerator.insert(globalState.getSchema(), globalState.getRandomly());
                     break;
                 case OPTIMIZE:
+                    if (MariaDBBugs.bug834) {
+                        break;
+                    }
                     query = MariaDBTableAdminCommandGenerator.optimizeTable(globalState.getSchema());
                     break;
                 case ANALYZE_TABLE:
