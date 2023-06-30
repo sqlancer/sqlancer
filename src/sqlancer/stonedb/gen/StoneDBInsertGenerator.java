@@ -60,6 +60,7 @@ public class StoneDBInsertGenerator extends AbstractInsertGenerator<StoneDBColum
         appendValues();
     }
 
+    // insert multiple rows
     private void appendValues() {
         int nrRows;
         if (Randomly.getBoolean()) {
@@ -72,6 +73,7 @@ public class StoneDBInsertGenerator extends AbstractInsertGenerator<StoneDBColum
         }
     }
 
+    // insert one row
     private void appendOneValue(int nrRow) {
         if (nrRow != 0) {
             sb.append(", ");
@@ -81,8 +83,7 @@ public class StoneDBInsertGenerator extends AbstractInsertGenerator<StoneDBColum
             if (c != 0) {
                 sb.append(", ");
             }
-            sb.append(StoneDBToStringVisitor.asString(new StoneDBExpressionGenerator(globalState).generateConstant()));
-
+            insertValue(columns.get(c));
         }
         sb.append(")");
     }
