@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.Randomly.StringGenerationStrategy;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -223,7 +224,8 @@ public class StoneDBTableCreateGenerator {
                 }
                 break;
             case COMMENT:
-                sb.append(String.format("COMMENT '%s' ", r.getString()));
+                StringGenerationStrategy strategy = Randomly.StringGenerationStrategy.ALPHANUMERIC;
+                sb.append(String.format("COMMENT '%s' ", strategy.getString(r)));
                 break;
             case COLUMN_FORMAT:
                 sb.append("COLUMN_FORMAT ");
@@ -309,8 +311,7 @@ public class StoneDBTableCreateGenerator {
             sb.append("TEXT").append(Randomly.fromOptions("", "(" + r.getInteger(0, 65535) + ")"));
             break;
         case MEDIUMTEXT:
-            sb.append("MEDIUMTEXT")
-                    .append(Randomly.fromOptions("", "(" + r.getInteger(0, 16777215) + ")"));
+            sb.append("MEDIUMTEXT").append(Randomly.fromOptions("", "(" + r.getInteger(0, 16777215) + ")"));
             break;
         case LONGTEXT:
             sb.append("LONGTEXT").append(Randomly.fromOptions("", "(" + r.getLong(0L, 4294967295L) + ")"));
