@@ -24,7 +24,8 @@ public class StoneDBIndexGenerator {
 
     private SQLQueryAdapter getQuery() {
         sb.append("CREATE ");
-        sb.append(Randomly.fromOptions("UNIQUE", "FULLTEXT", "SPATIAL"));
+        // Tianmu engine does not support fulltext index.
+        sb.append(Randomly.fromOptions("UNIQUE" /* "FULLTEXT" */, "SPATIAL"));
         sb.append(" INDEX ");
         sb.append(globalState.getSchema().getFreeIndexName());
         appendIndexType();
