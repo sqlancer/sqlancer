@@ -40,6 +40,10 @@ public class StoneDBIndexGenerator {
     }
 
     private void appendIndexType() {
+        // The index_type clause cannot be used for FULLTEXT INDEX or SPATIAL INDEX specifications.
+        if (sb.toString().contains("FULLTEXT") || sb.toString().contains("SPATIAL")) {
+            return;
+        }
         if (Randomly.getBoolean()) {
             return;
         }
@@ -62,7 +66,7 @@ public class StoneDBIndexGenerator {
         }
         if (Randomly.getBoolean()) {
             sb.append(Randomly.fromOptions("KEY_BLOCK_SIZE ", "KEY_BLOCK_SIZE = "));
-            sb.append(r.getInteger(1, Randomly.smallNumber()));
+            sb.append(r.getInteger(1, Math.max(1, Randomly.smallNumber())));
             sb.append(" ");
         }
         if (Randomly.getBoolean()) {

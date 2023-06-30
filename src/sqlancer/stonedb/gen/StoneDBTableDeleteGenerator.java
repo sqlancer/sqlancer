@@ -51,8 +51,9 @@ public final class StoneDBTableDeleteGenerator {
         }
         if (Randomly.getBoolean()) {
             sb.append(" ORDER BY ");
-            sb.append(Randomly.fromOptions(
-                    randomTable.getColumns().stream().map(AbstractTableColumn::getName).collect(Collectors.toList())));
+            sb.append(String.join(", ", Randomly.fromOptions(
+                    randomTable.getColumns().stream().map(AbstractTableColumn::getName).collect(Collectors.toList())))
+                    .replace('[', '(').replace(']', ')'));
         }
         if (Randomly.getBoolean()) {
             sb.append(" LIMIT ");
