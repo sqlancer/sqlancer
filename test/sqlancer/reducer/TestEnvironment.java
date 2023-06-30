@@ -21,8 +21,26 @@ public class TestEnvironment {
     private VirtualDBProvider provider = null;
     private VirtualDBGlobalState state, newGlobalState;
 
-    public TestEnvironment() throws Exception {
+    private Reducer<VirtualDBGlobalState> reducer = null;
+
+    private static final int USING_STATEMENT_REDUCER = 1;
+    private static final int USING_AST_BASED_REDUCER = 2;
+
+    private TestEnvironment(int type) throws Exception {
         setUpTestingEnvironment();
+        if (type == USING_STATEMENT_REDUCER) {
+            reducer = new StatementReducer<>(provider);
+        } else if (type == USING_AST_BASED_REDUCER) {
+            reducer = new ASTBasedReducer<>(provider);
+        }
+    }
+
+    public static TestEnvironment getStatementReducerEnv() throws Exception {
+        return new TestEnvironment(USING_STATEMENT_REDUCER);
+    }
+
+    public static TestEnvironment getASTBasedReducerEnv() throws Exception {
+        return new TestEnvironment(USING_AST_BASED_REDUCER);
     }
 
     /**
@@ -99,7 +117,7 @@ public class TestEnvironment {
     }
 
     public void runReduce() throws Exception {
-        Reducer<VirtualDBGlobalState> reducer = new StatementReducer<>(provider);
+
         Reproducer<VirtualDBGlobalState> reproducer = provider.generateAndTestDatabase(newGlobalState);
         reducer.reduce(state, reproducer, newGlobalState);
     }
