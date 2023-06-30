@@ -301,7 +301,7 @@ public class StoneDBTableCreateGenerator {
             sb.append("TIMESTAMP");
             break;
         case CHAR:
-            sb.append("CHAR").append(Randomly.fromOptions("", "(" +r.getInteger(0, 255) + ")"));
+            sb.append("CHAR").append(Randomly.fromOptions("", "(" + r.getInteger(0, 255) + ")"));
             break;
         case VARCHAR:
             sb.append("VARCHAR").append("(").append(r.getInteger(0, 65535)).append(")");
