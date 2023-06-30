@@ -57,10 +57,10 @@ public class StoneDBIndexGenerator {
     }
 
     private void appendIndexOption() {
-        if (Randomly.getBoolean()){
+        if (Randomly.getBoolean()) {
             return;
         }
-        if (Randomly.getBoolean()){
+        if (Randomly.getBoolean()) {
             sb.append(Randomly.fromOptions("KEY_BLOCK_SIZE ", "KEY_BLOCK_SIZE = "));
             sb.append(r.getInteger(1, Randomly.smallNumber()));
             sb.append(" ");
