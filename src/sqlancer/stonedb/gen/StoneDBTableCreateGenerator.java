@@ -176,7 +176,6 @@ public class StoneDBTableCreateGenerator {
         sb.append(" ");
         StoneDBDataType randomType = StoneDBDataType.getRandomWithoutNull();
         appendType(randomType);
-        sb.append(" ");
         appendColumnOption(randomType);
     }
 
@@ -224,7 +223,7 @@ public class StoneDBTableCreateGenerator {
                 }
                 break;
             case COMMENT:
-                sb.append(String.format("COMMENT '%s' ", new Randomly().getString()));
+                sb.append(String.format("COMMENT '%s' ", r.getString()));
                 break;
             case COLUMN_FORMAT:
                 sb.append("COLUMN_FORMAT ");
@@ -298,29 +297,29 @@ public class StoneDBTableCreateGenerator {
             sb.append("TIMESTAMP");
             break;
         case CHAR:
-            sb.append("CHAR(").append(Randomly.fromOptions("", new Randomly().getInteger(0, 255) + ")"));
+            sb.append("CHAR(").append(Randomly.fromOptions("", r.getInteger(0, 255) + ")"));
             break;
         case VARCHAR:
-            sb.append("VARCHAR(").append(Randomly.fromOptions("", "(" + new Randomly().getInteger(0, 65535) + ")"));
+            sb.append("VARCHAR(").append(Randomly.fromOptions("", "(" + r.getInteger(0, 65535) + ")"));
             break;
         case TINYTEXT:
-            sb.append("TINYTEXT").append(Randomly.fromOptions("", "(" + new Randomly().getInteger(0, 255) + ")"));
+            sb.append("TINYTEXT").append(Randomly.fromOptions("", "(" + r.getInteger(0, 255) + ")"));
             break;
         case TEXT:
-            sb.append("TEXT").append(Randomly.fromOptions("", "(" + new Randomly().getInteger(0, 65535) + ")"));
+            sb.append("TEXT").append(Randomly.fromOptions("", "(" + r.getInteger(0, 65535) + ")"));
             break;
         case MEDIUMTEXT:
             sb.append("MEDIUMTEXT")
-                    .append(Randomly.fromOptions("", "(" + new Randomly().getInteger(0, 16777215) + ")"));
+                    .append(Randomly.fromOptions("", "(" + r.getInteger(0, 16777215) + ")"));
             break;
         case LONGTEXT:
-            sb.append("LONGTEXT").append(Randomly.fromOptions("", "(" + new Randomly().getLong(0L, 4294967295L) + ")"));
+            sb.append("LONGTEXT").append(Randomly.fromOptions("", "(" + r.getLong(0L, 4294967295L) + ")"));
             break;
         case BINARY:
             sb.append("BINARY");
             break;
         case VARBINARY:
-            sb.append("VARBINARY");
+            sb.append("VARBINARY").append("(").append(r.getInteger(0, 65535)).append(")");
             break;
         case TINYBLOB:
             sb.append("TINYBLOB");
