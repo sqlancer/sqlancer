@@ -14,9 +14,11 @@ public final class StoneDBTableDeleteGenerator {
     private final StoneDBGlobalState globalState;
     private final StringBuilder sb = new StringBuilder();
     ExpectedErrors errors = new ExpectedErrors();
+    Randomly r;
 
     private StoneDBTableDeleteGenerator(StoneDBGlobalState globalState) {
         this.globalState = globalState;
+        r = globalState.getRandomly();
     }
 
     public static SQLQueryAdapter generate(StoneDBGlobalState globalState) {
@@ -54,7 +56,7 @@ public final class StoneDBTableDeleteGenerator {
         }
         if (Randomly.getBoolean()) {
             sb.append(" LIMIT ");
-            sb.append(new Randomly().getInteger());
+            sb.append(r.getInteger(0, (int) randomTable.getNrRows(globalState)));
         }
         return new SQLQueryAdapter(sb.toString(), errors);
     }
