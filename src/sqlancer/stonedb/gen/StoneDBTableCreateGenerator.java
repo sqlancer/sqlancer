@@ -153,6 +153,8 @@ public class StoneDBTableCreateGenerator {
         list.add("used in key specification without a key length");
         // java.sql.SQLException: Tianmu engine does not support unique index.
         list.add("Tianmu engine does not support unique index");
+        // BLOB column 'c0' can't be used in key specification with the used table type
+        list.add("can't be used in key specification with the used table type");
     }
 
     private void appendColumns() {
