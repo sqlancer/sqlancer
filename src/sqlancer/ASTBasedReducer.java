@@ -2,7 +2,6 @@ package sqlancer;
 
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.relational.*;
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
@@ -67,11 +66,15 @@ class ExpressionTransformer {
 
 }
 
+@SuppressWarnings("unchecked")
 public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection>
         implements Reducer<G> {
 
     private final DatabaseProvider<G, O, C> provider;
-    private G state = null, newGlobalState = null;
+
+    @SuppressWarnings("unused")
+    private G state = null;
+    private G newGlobalState = null;
     private Reproducer<G> reproducer = null;
     private int reduceTargetIndex;
     private Statement targetStatement;
