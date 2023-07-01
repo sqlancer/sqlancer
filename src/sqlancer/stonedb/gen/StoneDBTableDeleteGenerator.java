@@ -39,11 +39,6 @@ public final class StoneDBTableDeleteGenerator {
         }
         sb.append(" FROM ");
         sb.append(randomTable.getName());
-        // do not need AS if does not use tbl_alias later
-        // if (Randomly.getBooleanWithSmallProbability()) {
-        // sb.append(" AS ");
-        // sb.append(globalState.getSchema().getRandomTable().getName());
-        // }
         if (Randomly.getBoolean()) {
             sb.append(" WHERE ");
             sb.append(StoneDBToStringVisitor.asString(new StoneDBExpressionGenerator(globalState)
