@@ -385,6 +385,10 @@ jobs:
           fetch-depth: 0
       - name: Set up StoneDB
         run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
           docker pull stoneatom/stonedb
           docker run -p 3306:3306 -itd  -e MYSQL_ROOT_PASSWORD='123456'  stoneatom/stonedb
           docker ps
@@ -397,7 +401,7 @@ jobs:
           java-version: 11
       - name: Build
         run: mvn -B package -DskipTests=true
-      - name: SQLite Tests
+      - name: StoneDB Tests
         run: |
           STONEDB_AVAILABLE=true mvn -Dtest=TestStoneDB
 
