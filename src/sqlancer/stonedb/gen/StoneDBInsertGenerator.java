@@ -50,13 +50,17 @@ public class StoneDBInsertGenerator extends AbstractInsertGenerator<StoneDBColum
     }
 
     private void addExpectedErrors() {
-        // com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Out of range value for column 'c0' at row 1
+        // com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Out of range value for column 'c0' at row
+        // 1
         errors.add("Data truncation: Out of range value for column ");
         // java.sql.SQLSyntaxErrorException: Unknown column 'c0' in 'field list'
         errors.add("Unknown column ");
-        // Caused by: acom.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Incorrect datetime value: '1969-12-08 01:07:14' for column 'c0' at row 3
-        // Reason: The TIMESTAMP data type is used for values that contain both date and time parts. TIMESTAMP has a range of '1970-01-01 00:00:01' UTC to '2038-01-19 03:14:07' UTC.
-        // Reference: https://dev.mysql.com/doc/refman/5.7/en/datetime.html#:~:text=The%20TIMESTAMP%20data%20type%20is%20used%20for%20values%20that%20contain%20both%20date%20and%20time%20parts.%20TIMESTAMP%20has%20a%20range%20of%20%271970%2D01%2D01%2000%3A00%3A01%27%20UTC%20to%20%272038%2D01%2D19%2003%3A14%3A07%27%20UTC.
+        // Caused by: acom.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Incorrect datetime value:
+        // '1969-12-08 01:07:14' for column 'c0' at row 3
+        // Reason: The TIMESTAMP data type is used for values that contain both date and time parts. TIMESTAMP has a
+        // range of '1970-01-01 00:00:01' UTC to '2038-01-19 03:14:07' UTC.
+        // Reference:
+        // https://dev.mysql.com/doc/refman/5.7/en/datetime.html#:~:text=The%20TIMESTAMP%20data%20type%20is%20used%20for%20values%20that%20contain%20both%20date%20and%20time%20parts.%20TIMESTAMP%20has%20a%20range%20of%20%271970%2D01%2D01%2000%3A00%3A01%27%20UTC%20to%20%272038%2D01%2D19%2003%3A14%3A07%27%20UTC.
         errors.add("Data truncation: Incorrect datetime value: ");
     }
 

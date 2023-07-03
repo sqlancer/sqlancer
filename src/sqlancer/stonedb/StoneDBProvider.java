@@ -23,6 +23,7 @@ import sqlancer.stonedb.gen.StoneDBIndexGenerator;
 import sqlancer.stonedb.gen.StoneDBInsertGenerator;
 import sqlancer.stonedb.gen.StoneDBTableAlterGenerator;
 import sqlancer.stonedb.gen.StoneDBTableCreateGenerator;
+import sqlancer.stonedb.gen.StoneDBTableDeleteGenerator;
 
 @AutoService(DatabaseProvider.class)
 public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBGlobalState, StoneDBOptions> {
@@ -41,7 +42,7 @@ public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBG
     enum Action implements AbstractAction<StoneDBGlobalState> {
         SHOW_TABLES((g) -> new SQLQueryAdapter("SHOW TABLES")), //
         ALTER_TABLE(StoneDBTableAlterGenerator::generate), //
-        DELETE(sqlancer.stonedb.gen.StoneDBTableDeleteGenerator::generate), //
+        DELETE(StoneDBTableDeleteGenerator::generate), //
         INDEX(StoneDBIndexGenerator::generate), //
         INSERT(StoneDBInsertGenerator::generate); //
 
