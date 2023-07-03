@@ -24,10 +24,8 @@ public class TestEnvironment {
     private Reducer<VirtualDBGlobalState> reducer = null;
 
     enum ReducerType {
-        USING_STATEMENT_REDUCER,
-        USING_AST_BASED_REDUCER
+        USING_STATEMENT_REDUCER, USING_AST_BASED_REDUCER
     };
-
 
     private TestEnvironment(ReducerType type) throws Exception {
         setUpTestingEnvironment();
