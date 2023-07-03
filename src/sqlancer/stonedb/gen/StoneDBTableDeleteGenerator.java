@@ -54,6 +54,10 @@ public final class StoneDBTableDeleteGenerator {
             sb.append(" LIMIT ");
             sb.append(r.getInteger(0, (int) randomTable.getNrRows(globalState)));
         }
+        addExpectedErrors();
         return new SQLQueryAdapter(sb.toString(), errors);
+    }
+
+    private void addExpectedErrors() {
     }
 }
