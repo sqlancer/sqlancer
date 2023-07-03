@@ -32,9 +32,6 @@ class ExpressionTransformer {
     }
 
     public static List<Expression> candidateExpressions(Expression expr) {
-
-        // Queue<Expression> candidateExprQue = new PriorityQueue<>(Comparator.comparingInt(o ->
-        // o.toString().length()));
         if (expr instanceof Parenthesis) {
             // try removing a pair of brackets.
             Parenthesis paren = (Parenthesis) expr;
@@ -45,7 +42,7 @@ class ExpressionTransformer {
             return transformExpr((Between) expr);
         } else if (expr instanceof LongValue) {
             LongValue longValue = (LongValue) expr;
-            if (longValue.getValue() >= 1000) {
+            if (String.valueOf(longValue).length() <= 4) {
                 return List.of(new NullValue(), new LongValue(10), new LongValue(0), new LongValue(1));
             }
             return new ArrayList<>();
@@ -57,6 +54,14 @@ class ExpressionTransformer {
             }
             double roundedValue = Math.round(literal * 10.0) / 10.0;
             return List.of(new NullValue(), new DoubleValue(String.valueOf(roundedValue)));
+        }
+        else if (expr instanceof StringValue){
+            StringValue sv = (StringValue) expr;
+            String str = sv.getValue();
+            if(str.length() > 4) {
+                return List.of(new NullValue(), new StringValue(" "));
+            }
+            return new ArrayList<>();
         } else if (expr instanceof CaseExpression) {
             CaseExpression caseExpression = (CaseExpression) expr;
             return List.of(caseExpression.getSwitchExpression(), caseExpression.getElseExpression());
@@ -264,12 +269,39 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
             });
             super.visit(selectExpressionItem);
         }
+
+        @Override
+        public void visit(SubSelect subSelect) {
+            subSelect.getSelectBody().accept(selectReducerVisitor);
+        }
+
     };
 
     SelectVisitorAdapter selectReducerVisitor = new SelectVisitorAdapter() {
+
+        // Clauses that would be tried removing.
+        // examples:
+        // Remove when: select * from table when 1 -> select * from table
+        // Remove limit: select * from table limit 1 -> select * from table
         private final String[] removeList = { "Limit", "Offset", "Where", "Having", "GroupBy", "Distinct",
                 "OrderByElements", "Joins" };
-        private final String[] pullUpList = { "Where", "Having", "FromItem", "SelectItems", "GroupBy", "Joins" };
+
+
+        // Clauses that would be tried transforming.
+        // examples:
+        // select * from t where a + b < c + d
+        // where clause might become one of the statement below after transformation:
+        //  -> select * from table where c + d
+        //  -> select * from table where a + b
+
+        private final String[] transformList = { "Where", "Having", "FromItem", "SelectItems", "GroupBy", "Joins" };
+
+        // Clauses that would be visited for further reduction.
+        // example:
+        // select * from t where a + b < c + d
+        // Assuming that the coexistence of a and c would trigger the bug.
+        // The where clause : a + b < c + d would be visited and a + b, c + d would be reduced respectively.
+        // a + b < c + d might become a + c
         private final String[] descendList = { "Where", "Having", "FromItem", "SelectItems", "GroupBy" };
 
         private String getterName(String astNodeName) {
@@ -285,8 +317,19 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
         }
 
         @Override
+        public void visit(WithItem withItem) {
+            // withItem.getItemsList();
+        }
+
+        @Override
         public void visit(PlainSelect plainSelect) {
-            // Remove Section
+            /**
+             * transform section.
+             * Lists defined above would be iterated to get the corresponding clause name.
+             * Reflection is used to avoid repetitive code.
+             * e.g. The current astNodeName is When
+             * `getWhen`, `setWhen` would be called.
+             */
             for (String astNodeName : removeList) {
                 try {
                     Method nodeGetter = plainSelect.getClass().getMethod(getterName(astNodeName));
@@ -302,12 +345,13 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
                         nodeSetter.invoke(plainSelect, astNode);
                         updateStatements();
                     }
-                } catch (Exception ignoredException) {
+                } catch (Exception e) {
+                    throw new AssertionError(e);
                 }
             }
 
             // Pull Up Section
-            for (String astNodeName : pullUpList) {
+            for (String astNodeName : transformList) {
                 try {
                     Method nodeGetter = plainSelect.getClass().getMethod(getterName(astNodeName));
                     Object astNode = nodeGetter.invoke(plainSelect);
@@ -357,7 +401,8 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
                             });
                         }
                     }
-                } catch (Exception ignoredException) {
+                } catch (Exception e) {
+                    throw new AssertionError(e);
                 }
             }
 
@@ -390,8 +435,7 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
                         }
                     }
                 } catch (Exception e) {
-                    System.out.println("Reflection Exception:");
-                    e.printStackTrace();
+                    throw new AssertionError(e);
                 }
             }
         }
@@ -408,8 +452,8 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
                     visit((PlainSelect) selectBody);
                 }
             }
-
         }
+
     };
 
     StatementVisitorAdapter statementReducerVisitor = new StatementVisitorAdapter() {

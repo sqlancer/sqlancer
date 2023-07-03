@@ -23,24 +23,27 @@ public class TestEnvironment {
 
     private Reducer<VirtualDBGlobalState> reducer = null;
 
-    private static final int USING_STATEMENT_REDUCER = 1;
-    private static final int USING_AST_BASED_REDUCER = 2;
+    enum ReducerType {
+        USING_STATEMENT_REDUCER,
+        USING_AST_BASED_REDUCER
+    };
 
-    private TestEnvironment(int type) throws Exception {
+
+    private TestEnvironment(ReducerType type) throws Exception {
         setUpTestingEnvironment();
-        if (type == USING_STATEMENT_REDUCER) {
+        if (type == ReducerType.USING_STATEMENT_REDUCER) {
             reducer = new StatementReducer<>(provider);
-        } else if (type == USING_AST_BASED_REDUCER) {
+        } else if (type == ReducerType.USING_AST_BASED_REDUCER) {
             reducer = new ASTBasedReducer<>(provider);
         }
     }
 
     public static TestEnvironment getStatementReducerEnv() throws Exception {
-        return new TestEnvironment(USING_STATEMENT_REDUCER);
+        return new TestEnvironment(ReducerType.USING_STATEMENT_REDUCER);
     }
 
     public static TestEnvironment getASTBasedReducerEnv() throws Exception {
-        return new TestEnvironment(USING_AST_BASED_REDUCER);
+        return new TestEnvironment(ReducerType.USING_AST_BASED_REDUCER);
     }
 
     /**
