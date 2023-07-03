@@ -126,4 +126,38 @@ public class TestASTBasedReducer {
         System.out.println(Arrays.toString(queriesStrs));
         System.out.println(reducedResult);
     }
+
+    @Test
+    void testDerivedSelect() throws Exception {
+        TestEnvironment env = TestEnvironment.getASTBasedReducerEnv();
+
+        String[] queriesStrs = { "SELECT AVG(sum_column1)\n" + "  FROM (SELECT SUM(column1) AS sum_column1\n"
+                + "        FROM t1 GROUP BY column1 LIMIT 32 OFFSET 128) AS t1;" };
+        env.setInitialStatementsFromStrings(List.of(queriesStrs));
+        env.setBugInducingCondition(statements -> {
+            String queriesString = TestEnvironment.getQueriesString(statements);
+            return queriesString.contains("AVG");
+        });
+        env.runReduce();
+        List<Query<?>> reducedResult = env.getReducedStatements();
+        System.out.println(Arrays.toString(queriesStrs));
+        System.out.println(reducedResult);
+    }
+
+    @Test
+    void testWith() throws Exception {
+        TestEnvironment env = TestEnvironment.getASTBasedReducerEnv();
+
+        String[] queriesStrs = { "WITH cte AS\n" + "(\n" + "  SELECT 1 AS col1, 2 AS col2\n" + "  UNION ALL\n"
+                + "  SELECT 3, 4\n" + ")\n" + "SELECT col1, col2 FROM cte;" };
+        env.setInitialStatementsFromStrings(List.of(queriesStrs));
+        env.setBugInducingCondition(statements -> {
+            String queriesString = TestEnvironment.getQueriesString(statements);
+            return queriesString.contains("AVG");
+        });
+        env.runReduce();
+        List<Query<?>> reducedResult = env.getReducedStatements();
+        System.out.println(Arrays.toString(queriesStrs));
+        System.out.println(reducedResult);
+    }
 }

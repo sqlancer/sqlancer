@@ -42,7 +42,7 @@ class ExpressionTransformer {
             return transformExpr((Between) expr);
         } else if (expr instanceof LongValue) {
             LongValue longValue = (LongValue) expr;
-            if (String.valueOf(longValue).length() <= 4) {
+            if (String.valueOf(longValue).length() >= 4) {
                 return List.of(new NullValue(), new LongValue(10), new LongValue(0), new LongValue(1));
             }
             return new ArrayList<>();
@@ -54,11 +54,10 @@ class ExpressionTransformer {
             }
             double roundedValue = Math.round(literal * 10.0) / 10.0;
             return List.of(new NullValue(), new DoubleValue(String.valueOf(roundedValue)));
-        }
-        else if (expr instanceof StringValue){
+        } else if (expr instanceof StringValue) {
             StringValue sv = (StringValue) expr;
             String str = sv.getValue();
-            if(str.length() > 4) {
+            if (str.length() > 4) {
                 return List.of(new NullValue(), new StringValue(" "));
             }
             return new ArrayList<>();
@@ -286,13 +285,12 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
         private final String[] removeList = { "Limit", "Offset", "Where", "Having", "GroupBy", "Distinct",
                 "OrderByElements", "Joins" };
 
-
         // Clauses that would be tried transforming.
         // examples:
         // select * from t where a + b < c + d
         // where clause might become one of the statement below after transformation:
-        //  -> select * from table where c + d
-        //  -> select * from table where a + b
+        // -> select * from table where c + d
+        // -> select * from table where a + b
 
         private final String[] transformList = { "Where", "Having", "FromItem", "SelectItems", "GroupBy", "Joins" };
 
@@ -324,11 +322,9 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
         @Override
         public void visit(PlainSelect plainSelect) {
             /**
-             * transform section.
-             * Lists defined above would be iterated to get the corresponding clause name.
-             * Reflection is used to avoid repetitive code.
-             * e.g. The current astNodeName is When
-             * `getWhen`, `setWhen` would be called.
+             * transform section. Lists defined above would be iterated to get the corresponding clause name. Reflection
+             * is used to avoid repetitive code. e.g. The current astNodeName is When `getWhen`, `setWhen` would be
+             * called.
              */
             for (String astNodeName : removeList) {
                 try {
