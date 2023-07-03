@@ -399,7 +399,6 @@ jobs:
         run: df . -H
       - name: Set up StoneDB
         run: |
-          df -H
           docker pull stoneatom/stonedb
           docker run -p 3306:3306 -itd  -e MYSQL_ROOT_PASSWORD='123456'  stoneatom/stonedb
           docker ps
