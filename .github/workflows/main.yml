@@ -410,9 +410,11 @@ jobs:
           java-version: 11
       - name: Build
         run: mvn -B package -DskipTests=true
+      - name: Check disk space
+        run: df . -H
       - name: SQLite Tests
         run: |
-          STONEDB_AVAILABLE=true mvn -Dtest=TestStoneDB
+          STONEDB_AVAILABLE=true mvn test -Dtest=TestStoneDB
 
   tidb:
     name: DBMS Tests (TiDB)
