@@ -383,17 +383,27 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up StoneDB
+      - name: Check disk space
+        run: df . -H
+      - name: Free disk space
         run: |
           sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/share/swift
+          sudo rm -rf /usr/local/share/powershell
           sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /usr/local/.ghcup
+          sudo rm -rf /opt/ghc
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+      - name: Check disk space
+        run: df . -H
+      - name: Set up StoneDB
+        run: |
+          df -H
           docker pull stoneatom/stonedb
           docker run -p 3306:3306 -itd  -e MYSQL_ROOT_PASSWORD='123456'  stoneatom/stonedb
           docker ps
           ContainerID=$(docker ps --filter ancestor=stoneatom/stonedb --format "{{.ID}}") 
-          echo $ContainerID
           docker exec $ContainerID bash
       - name: Set up JDK 11
         uses: actions/setup-java@v1.4.4
@@ -401,7 +411,7 @@ jobs:
           java-version: 11
       - name: Build
         run: mvn -B package -DskipTests=true
-      - name: StoneDB Tests
+      - name: SQLite Tests
         run: |
           STONEDB_AVAILABLE=true mvn -Dtest=TestStoneDB
 
