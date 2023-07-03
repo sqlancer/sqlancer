@@ -39,7 +39,11 @@ public class StoneDBTableUpdateGenerator {
         if (Randomly.getBoolean()) {
             appendLimit();
         }
+        addExpectedErrors();
         return new SQLQueryAdapter(sb.toString(), errors);
+    }
+
+    private void addExpectedErrors() {
     }
 
     public void appendAssignmentList() {

@@ -36,7 +36,17 @@ public class StoneDBIndexGenerator {
         appendKeyPart();
         appendIndexOption();
         appendAlgoOrLockOption();
+        addExpectedErrors();
         return new SQLQueryAdapter(sb.toString(), errors, true);
+    }
+
+    private void addExpectedErrors() {
+        // java.sql.SQLException: Tianmu engine does not support fulltext index.
+        errors.add("Tianmu engine does not support fulltext index");
+        // java.sql.SQLException: The used table type doesn't support SPATIAL indexes
+        errors.add("The used table type doesn't support SPATIAL indexes");
+        // java.sql.SQLException: ALGORITHM=INPLACE is not supported for this operation. Try ALGORITHM=COPY.
+        errors.add("ALGORITHM=INPLACE is not supported for this operation. Try ALGORITHM=COPY.");
     }
 
     private void appendIndexType() {

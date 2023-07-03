@@ -45,7 +45,11 @@ public class StoneDBInsertGenerator extends AbstractInsertGenerator<StoneDBColum
         sb.append(table.getName());
         appendPartition();
         appendColumnsAndValues(columns);
+        addExpectedErrors();
         return new SQLQueryAdapter(sb.toString(), errors);
+    }
+
+    private void addExpectedErrors() {
     }
 
     private void appendPartition() {

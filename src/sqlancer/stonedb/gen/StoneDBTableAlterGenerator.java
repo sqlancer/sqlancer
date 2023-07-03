@@ -91,6 +91,12 @@ public class StoneDBTableAlterGenerator {
         default:
             throw new AssertionError(action);
         }
+        addExpectedErrors();
         return new SQLQueryAdapter(sb.toString(), errors, true);
+    }
+
+    private void addExpectedErrors() {
+        // java.sql.SQLSyntaxErrorException: You can't delete all columns with ALTER TABLE; use DROP TABLE instead
+        errors.add("You can't delete all columns with ALTER TABLE; use DROP TABLE instead");
     }
 }
