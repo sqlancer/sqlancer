@@ -29,7 +29,11 @@ public class StoneDBIndexDropGenerator {
         sb.append(" ON ");
         sb.append(table.getName());
         appendAlgoOrLockOption();
+        addExpectedErrors();
         return new SQLQueryAdapter(sb.toString(), errors);
+    }
+
+    private void addExpectedErrors() {
     }
 
     private void appendAlgoOrLockOption() {
