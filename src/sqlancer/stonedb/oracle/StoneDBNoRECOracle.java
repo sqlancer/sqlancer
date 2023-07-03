@@ -21,7 +21,6 @@ import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema;
 import sqlancer.stonedb.StoneDBSchema.StoneDBColumn;
-import sqlancer.stonedb.StoneDBSchema.StoneDBCompositeDataType;
 import sqlancer.stonedb.StoneDBSchema.StoneDBDataType;
 import sqlancer.stonedb.StoneDBSchema.StoneDBTable;
 import sqlancer.stonedb.StoneDBSchema.StoneDBTables;
@@ -69,7 +68,7 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
         Node<StoneDBExpression> asText = new NewPostfixTextNode<>(new StoneDBCastOperation(
                 new NewPostfixTextNode<>(randomWhereCondition,
                         " IS NOT NULL AND " + StoneDBToStringVisitor.asString(randomWhereCondition)),
-                new StoneDBCompositeDataType(StoneDBDataType.INT, 8)), "as count");
+                StoneDBDataType.INT), "as count");
         select.setFetchColumns(List.of(asText));
         select.setFromList(tableList);
         select.setJoinList(joins);

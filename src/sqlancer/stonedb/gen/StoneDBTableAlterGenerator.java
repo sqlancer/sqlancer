@@ -4,6 +4,7 @@ import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
+import sqlancer.stonedb.StoneDBSchema.StoneDBColumn;
 import sqlancer.stonedb.StoneDBSchema.StoneDBCompositeDataType;
 import sqlancer.stonedb.StoneDBSchema.StoneDBTable;
 
@@ -54,17 +55,17 @@ public class StoneDBTableAlterGenerator {
             break;
         case ALTER_COLUMN:
             sb.append(Randomly.fromOptions("ALTER COLUMN ", "ALTER "));
-            sb.append(table.getRandomColumn().getName());
-            sb.append("{");
+            StoneDBColumn randomColumn = table.getRandomColumn();
+            sb.append(randomColumn.getName());
             if (Randomly.getBoolean()) {
-                sb.append(" SET DEFAULT ").append(generator.generateExpression());
+                sb.append(" SET DEFAULT ").append(generator
+                        .generateConstant(randomColumn.getType().getPrimitiveDataType(), Randomly.getBoolean()));
             } else {
                 sb.append(" DROP DEFAULT");
             }
             if (Randomly.getBoolean()) {
                 sb.append(" SET ").append(Randomly.fromOptions("VISIBLE", "INVISIBLE"));
             }
-            sb.append("}");
             break;
         case CHANGE_COLUMN:
             sb.append(Randomly.fromOptions("CHANGE COLUMN ", "CHANGE "));
@@ -72,7 +73,7 @@ public class StoneDBTableAlterGenerator {
             String newColumnName = table.getFreeColumnName();
             sb.append(oldColumnName).append(" ").append(newColumnName);
             sb.append(" ");
-            sb.append(StoneDBCompositeDataType.getRandomWithoutNull());
+            sb.append(StoneDBCompositeDataType.getRandomWithoutNull().getPrimitiveDataType().toString());
             if (Randomly.getBoolean()) {
                 if (Randomly.getBoolean()) {
                     sb.append(" FIRST");
