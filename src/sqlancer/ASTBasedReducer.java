@@ -1,31 +1,52 @@
 package sqlancer;
 
-import net.sf.jsqlparser.expression.*;
-import net.sf.jsqlparser.expression.operators.relational.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
+
+import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.CaseExpression;
+import net.sf.jsqlparser.expression.DoubleValue;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
+import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.NullValue;
+import net.sf.jsqlparser.expression.Parenthesis;
+import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.WhenClause;
+import net.sf.jsqlparser.expression.operators.relational.Between;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.InExpression;
+import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
-import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.select.GroupByElement;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
+import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.statement.select.WithItem;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.function.BiConsumer;
+final class ExpressionTransformer {
 
-class ExpressionTransformer {
-
-    private static List<Expression> transformExpr(BinaryExpression expr) {
+    private static List<Expression> flattenChildren(BinaryExpression expr) {
         List<Expression> candidates = new ArrayList<>();
-        Expression lhs = (expr).getLeftExpression();
-        Expression rhs = (expr).getRightExpression();
+        Expression lhs = expr.getLeftExpression();
+        Expression rhs = expr.getRightExpression();
         candidates.add(lhs);
         candidates.add(rhs);
         return candidates;
     }
 
-    private static List<Expression> transformExpr(Between expr) {
+    private static List<Expression> flattenChildren(Between expr) {
         Expression lhs = expr.getBetweenExpressionStart();
         Expression rhs = expr.getBetweenExpressionEnd();
         return List.of(lhs, rhs);
@@ -37,9 +58,9 @@ class ExpressionTransformer {
             Parenthesis paren = (Parenthesis) expr;
             return List.of(paren.getExpression());
         } else if (expr instanceof BinaryExpression) {
-            return transformExpr((BinaryExpression) expr);
+            return flattenChildren((BinaryExpression) expr);
         } else if (expr instanceof Between) {
-            return transformExpr((Between) expr);
+            return flattenChildren((Between) expr);
         } else if (expr instanceof LongValue) {
             LongValue longValue = (LongValue) expr;
             if (String.valueOf(longValue).length() >= 4) {
@@ -64,10 +85,14 @@ class ExpressionTransformer {
         } else if (expr instanceof CaseExpression) {
             CaseExpression caseExpression = (CaseExpression) expr;
             return List.of(caseExpression.getSwitchExpression(), caseExpression.getElseExpression());
-        } else
+        } else {
             return new ArrayList<>();
+        }
     }
 
+    private ExpressionTransformer() throws Exception {
+        throw new AssertionError("Do not initialize the util class");
+    }
 }
 
 @SuppressWarnings("unchecked")
@@ -77,9 +102,9 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
     private final DatabaseProvider<G, O, C> provider;
 
     @SuppressWarnings("unused")
-    private G state = null;
-    private G newGlobalState = null;
-    private Reproducer<G> reproducer = null;
+    private G state;
+    private G newGlobalState;
+    private Reproducer<G> reproducer;
     private int reduceTargetIndex;
     private Statement targetStatement;
 
@@ -96,7 +121,8 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
         reducedStatements.set(reduceTargetIndex, (Query<C>) new SQLQueryAdapter(queryString, couldAffectSchema));
     }
 
-    public <P> void expressionReduce(P parent, Expression subExpr, BiConsumer<P, Expression> setter) {
+    public <P> void expressionReduce(P parent, Expression subExpr, // NOPMD
+            BiConsumer<P, Expression> setter) {
         boolean observeChange;
         do {
             observeChange = false;
@@ -115,7 +141,8 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
         } while (observeChange);
     }
 
-    public <P, T> void listElementRemovingReduce(P parent, List<T> elms, BiConsumer<P, List<T>> setter) {
+    public <P, T> void listElementRemovingReduce(P parent, List<T> elms, // NOPMD
+            BiConsumer<P, List<T>> setter) {
         // TODO: For AST-Reducer, is delta-debugging needed ? Or just use the naive approach ?
         boolean observeChange;
         do {
@@ -138,7 +165,6 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
                     e.printStackTrace();
                 }
             }
-            ;
             setter.accept(parent, elms);
         } while (observeChange);
 
@@ -175,20 +201,20 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
             rhs.accept(this);
         }
 
-        @Override
-        public void visit(DateValue value) {
-            super.visit(value);
-        }
-
-        @Override
-        public void visit(TimeValue value) {
-            super.visit(value);
-        }
-
-        @Override
-        public void visit(LikeExpression expr) {
-            super.visit(expr);
-        }
+        // @Override
+        // public void visit(DateValue value) {
+        // super.visit(value);
+        // }
+        //
+        // @Override
+        // public void visit(TimeValue value) {
+        // super.visit(value);
+        // }
+        //
+        // @Override
+        // public void visit(LikeExpression expr) {
+        // super.visit(expr);
+        // }
 
         @Override
         public void visit(CaseExpression expr) {
@@ -235,10 +261,10 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
             closedExpr.accept(this);
         }
 
-        @Override
-        public void visit(Function function) {
-            super.visit(function);
-        }
+        // @Override
+        // public void visit(Function function) {
+        // super.visit(function);
+        // }
 
         @Override
         public void visit(ExpressionList expressionList) {
@@ -321,11 +347,9 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
 
         @Override
         public void visit(PlainSelect plainSelect) {
-            /**
-             * transform section. Lists defined above would be iterated to get the corresponding clause name. Reflection
-             * is used to avoid repetitive code. e.g. The current astNodeName is When `getWhen`, `setWhen` would be
-             * called.
-             */
+            // transform section. Lists defined above would be iterated to get the corresponding clause name. Reflection
+            // is used to avoid repetitive code. e.g. The current astNodeName is When `getWhen`, `setWhen` would be
+            // called.
             for (String astNodeName : removeList) {
                 try {
                     Method nodeGetter = plainSelect.getClass().getMethod(getterName(astNodeName));
@@ -426,9 +450,9 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
                         ExpressionList expressionList = groupByElement.getGroupByExpressionList();
                         if (expressionList != null) {
                             expressionList.accept(expressionReducerVisitor);
-                        } else {
-                            // TODO: TO BE IMPLEMENTED
                         }
+                        // TODO: groupByElement.getGroupingSets() TO BE IMPLEMENTED
+
                     }
                 } catch (Exception e) {
                     throw new AssertionError(e);
