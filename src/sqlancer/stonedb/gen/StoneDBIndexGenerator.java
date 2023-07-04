@@ -41,12 +41,18 @@ public class StoneDBIndexGenerator {
     }
 
     private void addExpectedErrors() {
+        // java.sql.SQLException: Tianmu engine does not support unique index.
+        errors.add("Tianmu engine does not support unique index");
         // java.sql.SQLException: Tianmu engine does not support fulltext index.
         errors.add("Tianmu engine does not support fulltext index");
         // java.sql.SQLException: The used table type doesn't support SPATIAL indexes
         errors.add("The used table type doesn't support SPATIAL indexes");
         // java.sql.SQLException: ALGORITHM=INPLACE is not supported for this operation. Try ALGORITHM=COPY.
         errors.add("ALGORITHM=INPLACE is not supported for this operation. Try ALGORITHM=COPY.");
+        // java.sql.SQLSyntaxErrorException: Key column 'c0' doesn't exist in table
+        errors.add("doesn't exist in table");
+        // java.sql.SQLSyntaxErrorException: A SPATIAL index may only contain a geometrical type column
+        errors.add("A SPATIAL index may only contain a geometrical type column");
     }
 
     private void appendIndexType() {

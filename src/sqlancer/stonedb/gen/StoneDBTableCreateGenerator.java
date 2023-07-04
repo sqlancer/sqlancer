@@ -50,14 +50,13 @@ public class StoneDBTableCreateGenerator {
         if (Randomly.getBoolean() && !schema.getDatabaseTables().isEmpty()) {
             sb.append(" LIKE ");
             sb.append(schema.getRandomTable().getName());
-            return new SQLQueryAdapter(sb.toString(), true);
         } else {
             appendColumns();
             sb.append(" ");
             appendTableOptions();
-            addExpectedErrors();
-            return new SQLQueryAdapter(sb.toString(), errors, true);
         }
+        addExpectedErrors();
+        return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 
     private void addExpectedErrors() {
@@ -75,7 +74,7 @@ public class StoneDBTableCreateGenerator {
         errors.add("Specified key was too long; max key length is 3072 bytes");
         // java.sql.SQLSyntaxErrorException: Column length too big for column 'c1' (max = 16383); use BLOB or TEXT
         // instead
-        errors.add("Column length too big for column 'c1' (max = 16383); use BLOB or TEXT instead");
+        errors.add("Column length too big for column");
     }
 
     private enum TableOptions {
