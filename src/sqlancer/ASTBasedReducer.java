@@ -148,10 +148,6 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
         do {
             observeChange = false;
             for (int i = elms.size() - 1; i >= 0; i--) {
-                if (elms.size() == 1) {
-                    // At least one element should be kept.
-                    break;
-                }
                 List<T> reducedElms = new ArrayList<>(elms);
                 reducedElms.subList(i, i + 1).clear();
                 setter.accept(parent, reducedElms);
