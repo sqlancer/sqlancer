@@ -19,7 +19,6 @@ public class StoneDBInsertGenerator extends AbstractInsertGenerator<StoneDBColum
     private final StoneDBTable table;
     // which subset columns of the table to add values
     private final List<StoneDBColumn> columns;
-    private final StringBuilder sb = new StringBuilder();
     ExpectedErrors errors = new ExpectedErrors();
 
     public StoneDBInsertGenerator(StoneDBGlobalState globalState) {

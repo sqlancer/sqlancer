@@ -64,7 +64,7 @@ public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBG
         case SHOW_TABLES:
             return 1;
         case ALTER_TABLE:
-            return Randomly.smallNumber();
+            return r.getInteger(0, 2);
         case DELETE:
             return Randomly.smallNumber();
         case INDEX:
