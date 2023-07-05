@@ -13,7 +13,7 @@ public class TestStatementReducer {
 
     @Test
     void testSimple() throws Exception {
-        TestEnvironment env = new TestEnvironment();
+        TestEnvironment env = TestEnvironment.getStatementReducerEnv();
 
         String[] queriesStr = { "CREATE TABLE FAKE_TABLE;", "SELECT * FROM FAKE_TABLE;", "EXIT", };
         env.setInitialStatementsFromStrings(List.of(queriesStr));
@@ -30,7 +30,7 @@ public class TestStatementReducer {
 
     @Test
     void testDeltaDebugging() throws Exception {
-        TestEnvironment env = new TestEnvironment();
+        TestEnvironment env = TestEnvironment.getStatementReducerEnv();
         List<String> fakeStatements = new ArrayList<>();
         for (int i = 0; i < 10000; i++) {
             String statement = "Statement_" + i + ";";
@@ -51,7 +51,7 @@ public class TestStatementReducer {
 
     @Test
     void testDeltaDebuggingWithStatementsCombination() throws Exception {
-        TestEnvironment env = new TestEnvironment();
+        TestEnvironment env = TestEnvironment.getStatementReducerEnv();
         List<String> fakeStatements = new ArrayList<>();
 
         String pattern = "(.*\\n)*(Statement_2;)\\n(.*\\n)*(Statement_318);\\n(.*\\n)*(Statement_990;)(.*\\n)*.*";
