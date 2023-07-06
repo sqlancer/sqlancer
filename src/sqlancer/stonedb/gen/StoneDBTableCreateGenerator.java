@@ -66,10 +66,6 @@ public class StoneDBTableCreateGenerator {
         errors.add("Tianmu engine does not support unique index");
         // java.sql.SQLException: BLOB column 'c0' can't be used in key specification with the used table type
         errors.add("can't be used in key specification with the used table type");
-        // java.sql.SQLException: Table storage engine for 't0' doesn't have this option
-        errors.add("doesn't have this option");
-        // java.sql.SQLSyntaxErrorException: Table 't0' uses an extension that doesn't exist in this MySQL version
-        errors.add("uses an extension that doesn't exist in this MySQL version");
         // java.sql.SQLSyntaxErrorException: Specified key was too long; max key length is 3072 bytes
         errors.add("Specified key was too long; max key length is 3072 bytes");
         // java.sql.SQLSyntaxErrorException: Column length too big for column 'c1' (max = 16383); use BLOB or TEXT
