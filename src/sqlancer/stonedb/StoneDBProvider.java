@@ -66,9 +66,9 @@ public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBG
         case ALTER_TABLE:
             return r.getInteger(0, 2);
         case DELETE:
-            return Randomly.smallNumber();
+            return r.getInteger(0, 2);
         case INDEX:
-            return Randomly.smallNumber();
+            return r.getInteger(0, 2);
         case INSERT:
             return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
         default:
