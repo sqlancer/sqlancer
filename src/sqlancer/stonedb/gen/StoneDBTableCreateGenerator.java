@@ -1,7 +1,7 @@
 package sqlancer.stonedb.gen;
 
 import static sqlancer.stonedb.gen.StoneDBTableCreateGenerator.ColumnOptions.PRIMARY_KEY;
-import static sqlancer.stonedb.gen.StoneDBTableCreateGenerator.ColumnOptions.UNIQUE;
+import static sqlancer.stonedb.gen.StoneDBTableCreateGenerator.ColumnOptions.UNIQUE_KEY;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,8 +52,10 @@ public class StoneDBTableCreateGenerator {
             sb.append(schema.getRandomTable().getName());
         } else {
             appendColumns();
-            sb.append(" ");
-            appendTableOptions();
+            if (Randomly.getBoolean()) {
+                sb.append(" ");
+                appendTableOptions();
+            }
         }
         addExpectedErrors();
         return new SQLQueryAdapter(sb.toString(), errors, true);
@@ -191,7 +193,7 @@ public class StoneDBTableCreateGenerator {
     }
 
     protected enum ColumnOptions {
-        NULL_OR_NOT_NULL, UNIQUE, COMMENT, COLUMN_FORMAT, STORAGE, PRIMARY_KEY
+        NULL_OR_NOT_NULL, PRIMARY_KEY, UNIQUE_KEY, COMMENT, COLUMN_FORMAT, STORAGE
     }
 
     private void appendColumnOption(StoneDBDataType type) {
@@ -204,13 +206,13 @@ public class StoneDBTableCreateGenerator {
         // tableHasNullableColumn = true;
         // }
         // only use one key, unique key or primary key, but not both
-        if (columnOptions.contains(PRIMARY_KEY) && columnOptions.contains(UNIQUE)) {
-            columnOptions.remove(Randomly.fromOptions(PRIMARY_KEY, UNIQUE));
+        if (columnOptions.contains(PRIMARY_KEY) && columnOptions.contains(UNIQUE_KEY)) {
+            columnOptions.remove(Randomly.fromOptions(PRIMARY_KEY, UNIQUE_KEY));
         }
         if (isTextType) {
             // TODO: restriction due to the limited key length
             columnOptions.remove(PRIMARY_KEY);
-            columnOptions.remove(UNIQUE);
+            columnOptions.remove(UNIQUE_KEY);
         }
         for (ColumnOptions o : columnOptions) {
             sb.append(" ");
@@ -227,7 +229,7 @@ public class StoneDBTableCreateGenerator {
                     sb.append("NOT NULL");
                 }
                 break;
-            case UNIQUE:
+            case UNIQUE_KEY:
                 sb.append("UNIQUE");
                 if (Randomly.getBoolean()) {
                     sb.append(" KEY");

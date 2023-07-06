@@ -49,8 +49,8 @@ public class StoneDBTableUpdateGenerator {
             }
             sb.append(table.getColumns().get(i));
             sb.append(" = ");
-            sb.append(StoneDBToStringVisitor.asString(StoneDBSchema.StoneDBDataType
-                    .getRandomValue(table.getColumns().get(i).getType().getPrimitiveDataType())));
+            sb.append(Randomly.fromOptions(StoneDBToStringVisitor.asString(StoneDBSchema.StoneDBDataType
+                    .getRandomValue(table.getColumns().get(i).getType().getPrimitiveDataType())), "DEFAULT"));
         }
     }
 
