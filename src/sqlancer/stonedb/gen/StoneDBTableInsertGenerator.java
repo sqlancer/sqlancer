@@ -13,7 +13,7 @@ import sqlancer.stonedb.StoneDBSchema.StoneDBColumn;
 import sqlancer.stonedb.StoneDBSchema.StoneDBTable;
 import sqlancer.stonedb.StoneDBToStringVisitor;
 
-public class StoneDBInsertGenerator extends AbstractInsertGenerator<StoneDBColumn> {
+public class StoneDBTableInsertGenerator extends AbstractInsertGenerator<StoneDBColumn> {
     private final StoneDBGlobalState globalState;
     // which table to insert into
     private final StoneDBTable table;
@@ -21,14 +21,14 @@ public class StoneDBInsertGenerator extends AbstractInsertGenerator<StoneDBColum
     private final List<StoneDBColumn> columns;
     ExpectedErrors errors = new ExpectedErrors();
 
-    public StoneDBInsertGenerator(StoneDBGlobalState globalState) {
+    public StoneDBTableInsertGenerator(StoneDBGlobalState globalState) {
         this.globalState = globalState;
         table = globalState.getSchema().getRandomTable();
         columns = table.getRandomNonEmptyColumnSubset();
     }
 
     public static SQLQueryAdapter generate(StoneDBGlobalState globalState) {
-        return new StoneDBInsertGenerator(globalState).getQuery();
+        return new StoneDBTableInsertGenerator(globalState).getQuery();
     }
 
     private SQLQueryAdapter getQuery() {

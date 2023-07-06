@@ -7,7 +7,7 @@ import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema.StoneDBTable;
 
-public class StoneDBIndexGenerator {
+public class StoneDBIndexCreateGenerator {
     private final StoneDBGlobalState globalState;
     private final Randomly r;
     // which table to add index
@@ -15,14 +15,14 @@ public class StoneDBIndexGenerator {
     private final StringBuilder sb = new StringBuilder();
     ExpectedErrors errors = new ExpectedErrors();
 
-    public StoneDBIndexGenerator(StoneDBGlobalState globalState) {
+    public StoneDBIndexCreateGenerator(StoneDBGlobalState globalState) {
         this.globalState = globalState;
         r = globalState.getRandomly();
         table = globalState.getSchema().getRandomTable();
     }
 
     public static SQLQueryAdapter generate(StoneDBGlobalState globalState) {
-        return new StoneDBIndexGenerator(globalState).getQuery();
+        return new StoneDBIndexCreateGenerator(globalState).getQuery();
     }
 
     private SQLQueryAdapter getQuery() {
