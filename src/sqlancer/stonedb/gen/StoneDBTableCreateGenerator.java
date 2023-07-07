@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import sqlancer.Randomly;
 import sqlancer.Randomly.StringGenerationStrategy;
@@ -41,7 +42,7 @@ public class StoneDBTableCreateGenerator {
     }
 
     public SQLQueryAdapter getQuery() {
-        sb.append(Randomly.fromOptions("CREATE TABLE ", "CREATE TEMPORARY TABLE "));
+        sb.append(Randomly.fromOptions("CREATE TABLE "/* , "CREATE TEMPORARY TABLE " */));
         if (Randomly.getBoolean()) {
             sb.append("IF NOT EXISTS ");
         }
@@ -73,6 +74,8 @@ public class StoneDBTableCreateGenerator {
         // java.sql.SQLSyntaxErrorException: Column length too big for column 'c1' (max = 16383); use BLOB or TEXT
         // instead
         errors.add("Column length too big for column");
+        // BLOB/TEXT column 'c0' used in key specification without a key length
+        errors.addRegex(Pattern.compile("BLOB/TEXT column 'c.*' used in key specification without a key length"));
     }
 
     private enum TableOptions {
