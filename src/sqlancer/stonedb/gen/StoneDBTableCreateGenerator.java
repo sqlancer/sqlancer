@@ -1,11 +1,15 @@
 package sqlancer.stonedb.gen;
 
+import static sqlancer.stonedb.gen.StoneDBTableCreateGenerator.ColumnOptions.PRIMARY_KEY;
+import static sqlancer.stonedb.gen.StoneDBTableCreateGenerator.ColumnOptions.UNIQUE;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.Randomly.StringGenerationStrategy;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -22,6 +26,7 @@ public class StoneDBTableCreateGenerator {
     private final boolean allowPrimaryKey;
     private boolean setPrimaryKey;
     private final StringBuilder sb = new StringBuilder();
+    ExpectedErrors errors = new ExpectedErrors();
     private final Randomly r;
 
     public StoneDBTableCreateGenerator(StoneDBGlobalState globalState, String tableName) {
@@ -36,24 +41,36 @@ public class StoneDBTableCreateGenerator {
     }
 
     public SQLQueryAdapter getQuery() {
-        ExpectedErrors errors = new ExpectedErrors();
-        sb.append(Randomly.fromOptions("CREATE TABLE", "CREATE TEMPORARY TABLE"));
+        sb.append(Randomly.fromOptions("CREATE TABLE ", "CREATE TEMPORARY TABLE "));
         if (Randomly.getBoolean()) {
-            sb.append(" IF NOT EXISTS ");
+            sb.append("IF NOT EXISTS ");
         }
         sb.append(tableName);
         // ues link statement
         if (Randomly.getBoolean() && !schema.getDatabaseTables().isEmpty()) {
             sb.append(" LIKE ");
             sb.append(schema.getRandomTable().getName());
-            return new SQLQueryAdapter(sb.toString(), true);
         } else {
             appendColumns();
             sb.append(" ");
             appendTableOptions();
-            addCommonErrors(errors);
-            return new SQLQueryAdapter(sb.toString(), errors, true);
         }
+        addExpectedErrors();
+        return new SQLQueryAdapter(sb.toString(), errors, true);
+    }
+
+    private void addExpectedErrors() {
+        // java.sql.SQLSyntaxErrorException: BLOB/TEXT column 'c0' used in key specification without a key length
+        errors.add("used in key specification without a key length");
+        // java.sql.SQLException: Tianmu engine does not support unique index.
+        errors.add("Tianmu engine does not support unique index");
+        // java.sql.SQLException: BLOB column 'c0' can't be used in key specification with the used table type
+        errors.add("can't be used in key specification with the used table type");
+        // java.sql.SQLSyntaxErrorException: Specified key was too long; max key length is 3072 bytes
+        errors.add("Specified key was too long; max key length is 3072 bytes");
+        // java.sql.SQLSyntaxErrorException: Column length too big for column 'c1' (max = 16383); use BLOB or TEXT
+        // instead
+        errors.add("Column length too big for column");
     }
 
     private enum TableOptions {
@@ -144,18 +161,6 @@ public class StoneDBTableCreateGenerator {
         }
     }
 
-    private void addCommonErrors(ExpectedErrors list) {
-        list.add("The storage engine for the table doesn't support");
-        list.add("doesn't have this option");
-        list.add("must include all columns");
-        list.add("not allowed type for this type of partitioning");
-        list.add("doesn't support BLOB/TEXT columns");
-        list.add("A BLOB field is not allowed in partition function");
-        list.add("Too many keys specified; max 1 keys allowed");
-        list.add("The total length of the partitioning fields is too large");
-        list.add("Got error -1 - 'Unknown error -1' from storage engine");
-    }
-
     private void appendColumns() {
         sb.append("(");
         for (int i = 0; i < 1 + Randomly.smallNumber(); i++) {
@@ -178,11 +183,10 @@ public class StoneDBTableCreateGenerator {
         sb.append(" ");
         StoneDBDataType randomType = StoneDBDataType.getRandomWithoutNull();
         appendType(randomType);
-        sb.append(" ");
         appendColumnOption(randomType);
     }
 
-    private enum ColumnOptions {
+    protected enum ColumnOptions {
         NULL_OR_NOT_NULL, UNIQUE, COMMENT, COLUMN_FORMAT, STORAGE, PRIMARY_KEY
     }
 
@@ -195,10 +199,14 @@ public class StoneDBTableCreateGenerator {
         // if (!columnOptions.contains(ColumnOptions.NULL_OR_NOT_NULL)) {
         // tableHasNullableColumn = true;
         // }
+        // only use one key, unique key or primary key, but not both
+        if (columnOptions.contains(PRIMARY_KEY) && columnOptions.contains(UNIQUE)) {
+            columnOptions.remove(Randomly.fromOptions(PRIMARY_KEY, UNIQUE));
+        }
         if (isTextType) {
             // TODO: restriction due to the limited key length
-            columnOptions.remove(ColumnOptions.PRIMARY_KEY);
-            columnOptions.remove(ColumnOptions.UNIQUE);
+            columnOptions.remove(PRIMARY_KEY);
+            columnOptions.remove(UNIQUE);
         }
         for (ColumnOptions o : columnOptions) {
             sb.append(" ");
@@ -222,8 +230,8 @@ public class StoneDBTableCreateGenerator {
                 }
                 break;
             case COMMENT:
-                // TODO: generate randomly
-                sb.append(String.format("COMMENT '%s' ", "asdf"));
+                StringGenerationStrategy strategy = Randomly.StringGenerationStrategy.ALPHANUMERIC;
+                sb.append(String.format("COMMENT '%s' ", strategy.getString(r)));
                 break;
             case COLUMN_FORMAT:
                 sb.append("COLUMN_FORMAT ");
@@ -297,12 +305,10 @@ public class StoneDBTableCreateGenerator {
             sb.append("TIMESTAMP");
             break;
         case CHAR:
-            sb.append("CHAR");
+            sb.append("CHAR").append(Randomly.fromOptions("", "(" + r.getInteger(0, 255) + ")"));
             break;
         case VARCHAR:
-            sb.append("VARCHAR(");
-            sb.append(r.getInteger(0, 65535));
-            sb.append(")");
+            sb.append("VARCHAR").append("(").append(r.getInteger(0, 65535)).append(")");
             break;
         case TINYTEXT:
             sb.append("TINYTEXT");
@@ -320,7 +326,7 @@ public class StoneDBTableCreateGenerator {
             sb.append("BINARY");
             break;
         case VARBINARY:
-            sb.append("VARBINARY");
+            sb.append("VARBINARY").append("(").append(r.getInteger(0, 65535)).append(")");
             break;
         case TINYBLOB:
             sb.append("TINYBLOB");

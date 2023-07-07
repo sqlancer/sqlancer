@@ -19,11 +19,13 @@ import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
-import sqlancer.stonedb.gen.StoneDBDeleteGenerator;
-import sqlancer.stonedb.gen.StoneDBIndexGenerator;
-import sqlancer.stonedb.gen.StoneDBInsertGenerator;
+import sqlancer.stonedb.gen.StoneDBIndexCreateGenerator;
+import sqlancer.stonedb.gen.StoneDBIndexDropGenerator;
 import sqlancer.stonedb.gen.StoneDBTableAlterGenerator;
 import sqlancer.stonedb.gen.StoneDBTableCreateGenerator;
+import sqlancer.stonedb.gen.StoneDBTableDeleteGenerator;
+import sqlancer.stonedb.gen.StoneDBTableInsertGenerator;
+import sqlancer.stonedb.gen.StoneDBTableUpdateGenerator;
 
 @AutoService(DatabaseProvider.class)
 public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBGlobalState, StoneDBOptions> {
@@ -40,11 +42,17 @@ public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBG
     }
 
     enum Action implements AbstractAction<StoneDBGlobalState> {
-        SHOW_TABLES((g) -> new SQLQueryAdapter("SHOW TABLES")), //
-        ALTER_TABLE(StoneDBTableAlterGenerator::generate), //
-        DELETE(StoneDBDeleteGenerator::generate), //
-        INDEX(StoneDBIndexGenerator::generate), //
-        INSERT(StoneDBInsertGenerator::generate); //
+        TABLES_SHOW((g) -> new SQLQueryAdapter("SHOW TABLES")), //
+        TABLE_ALTER(StoneDBTableAlterGenerator::generate), //
+        TABLE_CREATE((g) -> {
+            String tableName = DBMSCommon.createTableName(g.getSchema().getDatabaseTables().size());
+            return StoneDBTableCreateGenerator.generate(g, tableName);
+        }), //
+        TABLE_DELETE(StoneDBTableDeleteGenerator::generate), //
+        TABLE_UPDATE(StoneDBTableUpdateGenerator::generate), //
+        INDEX_CREATE(StoneDBIndexCreateGenerator::generate), //
+        INDEX_DROP(StoneDBIndexDropGenerator::generate), //
+        TABLE_INSERT(StoneDBTableInsertGenerator::generate); //
 
         private final SQLQueryProvider<StoneDBGlobalState> sqlQueryProvider;
 
@@ -59,10 +67,24 @@ public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBG
     }
 
     private static int mapActions(StoneDBGlobalState globalState, Action a) {
-        globalState.getRandomly();
+        Randomly r = globalState.getRandomly();
         switch (a) {
-        case SHOW_TABLES:
-            return 1;
+        case TABLES_SHOW:
+            return r.getInteger(0, 1);
+        case TABLE_ALTER:
+            return r.getInteger(0, 5);
+        case TABLE_CREATE:
+            return r.getInteger(0, 1);
+        case TABLE_DELETE:
+            return r.getInteger(0, 10);
+        case TABLE_INSERT:
+            return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
+        case TABLE_UPDATE:
+            return r.getInteger(0, 1);
+        case INDEX_CREATE:
+            return r.getInteger(0, 1);
+        case INDEX_DROP:
+            return r.getInteger(0, 1);
         default:
             throw new AssertionError(a);
         }

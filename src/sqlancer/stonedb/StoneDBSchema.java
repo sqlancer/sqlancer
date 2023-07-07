@@ -5,6 +5,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
@@ -25,6 +27,11 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
         CHAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, BINARY, VARBINARY, TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB;
 
         public static StoneDBDataType getRandomWithoutNull() {
+            List<StoneDBDataType> collect = Stream.of(values()).filter(c -> c != NULL).collect(Collectors.toList());
+            return Randomly.fromList(collect);
+        }
+
+        public static StoneDBDataType getRandom() {
             return Randomly.fromOptions(values());
         }
 
