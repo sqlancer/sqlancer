@@ -38,14 +38,8 @@ public class MySQLUpdateGenerator extends AbstractUpdateGenerator<MySQLColumn> {
             MySQLErrors.addExpressionErrors(errors);
             sb.append(MySQLVisitor.asString(gen.generateExpression()));
         }
-        errors.add("doesn't have a default value");
-        errors.add("Data truncation");	
-        errors.add("Incorrect integer value");
-        errors.add("Duplicate entry");
-        errors.add("Data truncated for functional index");
-        errors.add("Data truncated for column");
-        errors.add("cannot be null");
-        errors.add("Incorrect decimal value");
+        MySQLErrors.addInsertUpdateErrors(errors);
+        errors.add("doesn't have this option");
 
         return new SQLQueryAdapter(sb.toString(), errors);
     }
