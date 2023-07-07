@@ -103,7 +103,7 @@ public class StoneDBTableAlterGenerator {
             String oldColumnName = table.getRandomColumn().getName();
             String newColumnName = table.getFreeColumnName();
             sb.append(oldColumnName).append(" ").append(newColumnName).append(" ");
-            StoneDBDataType.appendTypeAndValue(StoneDBDataType.getRandomWithoutNull(), sb, globalState.getRandomly());
+            StoneDBDataType.appendTypeAndValue(StoneDBDataType.getRandomWithoutNull());
             if (Randomly.getBoolean()) {
                 if (Randomly.getBoolean()) {
                     sb.append(" FIRST");
