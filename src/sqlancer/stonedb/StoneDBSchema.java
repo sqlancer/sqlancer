@@ -93,95 +93,69 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
             return null;
         }
 
-        public static StringBuilder appendTypeAndValue(StoneDBDataType dataType, StringBuilder sb, Randomly r) {
+        public static String appendTypeAndValue(StoneDBDataType dataType) {
+            StringBuilder sb = new StringBuilder();
             switch (dataType) {
             case TINYINT:
-                sb.append("TINYINT");
-                // sb.append(r.getInteger(-128, 127));
-                break;
+                return "TINYINT";
             case SMALLINT:
-                sb.append("SMALLINT");
-                // sb.append(r.getInteger(-32768, 32767));
-                break;
+                return "SMALLINT";
             case MEDIUMINT:
-                sb.append("MEDIUMINT");
-                // sb.append(r.getInteger(-8388608, 8388607));
-                break;
+                return "MEDIUMINT";
             case INT:
-                sb.append("INT");
-                // sb.append(r.getInteger(-2147483647, 2147483647));
-                break;
+                return "INT";
             case BIGINT:
-                sb.append("BIGINT");
-                // sb.append(r.getBigInteger(new BigInteger("-9223372036854775806"), new
-                // BigInteger("9223372036854775807")));
-                break;
+                return "BIGINT";
             case FLOAT:
                 sb.append("FLOAT");
                 optionallyAddPrecisionAndScale(sb);
-                break;
+                return sb.toString();
             case DOUBLE:
                 sb.append("DOUBLE");
                 optionallyAddPrecisionAndScale(sb);
-                break;
+                return sb.toString();
             case DECIMAL:
-                sb.append("DECIMAL"); // The default value is P(10,0);
-                break;
+                return "DECIMAL"; // The default value is P(10,0);
             case YEAR:
-                sb.append("YEAR");
-                break;
+                return "YEAR";
             case TIME:
-                sb.append("TIME");
-                break;
+                return "TIME";
             case DATE:
-                sb.append("DATE");
-                break;
+                return "DATE";
             case DATETIME:
-                sb.append("DATETIME");
-                break;
+                return "DATETIME";
             case TIMESTAMP:
-                sb.append("TIMESTAMP");
-                break;
+                return "TIMESTAMP";
             case CHAR:
-                sb.append("CHAR").append(Randomly.fromOptions("", "(" + r.getInteger(0, 255) + ")"));
-                break;
+                sb.append("CHAR").append(Randomly.fromOptions("", "(" + new Randomly().getInteger(0, 255) + ")"));
+                return sb.toString();
             case VARCHAR:
-                sb.append("VARCHAR").append("(").append(r.getInteger(0, 65535)).append(")");
-                break;
+                sb.append("VARCHAR").append("(").append(new Randomly().getInteger(0, 65535)).append(")");
+                return sb.toString();
             case TINYTEXT:
-                sb.append("TINYTEXT");
-                break;
+                return "TINYTEXT";
             case TEXT:
-                sb.append("TEXT");
-                break;
+                return "TEXT";
             case MEDIUMTEXT:
-                sb.append("MEDIUMTEXT");
-                break;
+                return "MEDIUMTEXT";
             case LONGTEXT:
-                sb.append("LONGTEXT");
-                break;
+                return "LONGTEXT";
             case BINARY:
-                sb.append("BINARY");
-                break;
+                return "BINARY";
             case VARBINARY:
-                sb.append("VARBINARY").append("(").append(r.getInteger(0, 65535)).append(")");
-                break;
+                sb.append("VARBINARY").append("(").append(new Randomly().getInteger(0, 65535)).append(")");
+                return sb.toString();
             case TINYBLOB:
-                sb.append("TINYBLOB");
-                break;
+                return "TINYBLOB";
             case BLOB:
-                sb.append("BLOB");
-                break;
+                return "BLOB";
             case MEDIUMBLOB:
-                sb.append("MEDIUMBLOB");
-                break;
+                return "MEDIUMBLOB";
             case LONGBLOB:
-                sb.append("LONGBLOB");
-                break;
+                return "LONGBLOB";
             default:
                 throw new AssertionError();
             }
-            return sb;
         }
 
         private static void optionallyAddPrecisionAndScale(StringBuilder sb) {
