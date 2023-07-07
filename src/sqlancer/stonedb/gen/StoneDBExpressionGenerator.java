@@ -20,6 +20,7 @@ import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema.StoneDBColumn;
 import sqlancer.stonedb.StoneDBSchema.StoneDBDataType;
+import sqlancer.stonedb.StoneDBToStringVisitor;
 import sqlancer.stonedb.ast.StoneDBConstant;
 import sqlancer.stonedb.ast.StoneDBExpression;
 
@@ -38,7 +39,8 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
 
     public static class StoneDBCastOperation extends NewUnaryPostfixOperatorNode<StoneDBExpression> {
         public StoneDBCastOperation(Node<StoneDBExpression> expr, StoneDBDataType type) {
-            super(expr, () -> "CAST(" + expr + " AS " + type + ")");
+            super(expr, () -> "CAST(" + StoneDBToStringVisitor.asString(expr) + " AS "
+                    + (type == StoneDBDataType.INT ? "SIGNED" : type.name()) + ")");
         }
     }
 
