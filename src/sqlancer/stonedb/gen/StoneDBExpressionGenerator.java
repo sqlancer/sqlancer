@@ -37,11 +37,9 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
     }
 
     public static class StoneDBCastOperation extends NewUnaryPostfixOperatorNode<StoneDBExpression> {
-
         public StoneDBCastOperation(Node<StoneDBExpression> expr, StoneDBDataType type) {
-            super(expr, () -> "::" + type.toString());
+            super(expr, () -> "CAST(" + expr + " AS " + type + ")");
         }
-
     }
 
     @Override
