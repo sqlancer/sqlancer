@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
@@ -88,14 +89,7 @@ public class MySQLInsertGenerator {
             }
             sb.append(")");
         }
-        errors.add("doesn't have a default value");
-        errors.add("Data truncation");
-        errors.add("Incorrect integer value");
-        errors.add("Duplicate entry");
-        errors.add("Data truncated for functional index");
-        errors.add("Data truncated for column");
-        errors.add("cannot be null");
-        errors.add("Incorrect decimal value");
+        MySQLErrors.addInsertUpdateErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors);
     }
 
