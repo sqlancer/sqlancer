@@ -85,7 +85,7 @@ public class StoneDBTableAlterGenerator {
             sb.append(table.getRandomColumn().getName());
             break;
         case ALTER_COLUMN:
-            sb.append(Randomly.fromOptions("CHANGE COLUMN ", "CHANGE "));
+            sb.append(Randomly.fromOptions("ALTER COLUMN ", "ALTER "));
             StoneDBColumn randomColumn = table.getRandomColumn();
             sb.append(randomColumn.getName());
             if (Randomly.getBoolean()) {
