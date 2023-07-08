@@ -61,6 +61,7 @@ public class StoneDBTableAlterGenerator {
         }
         for (Action action : actions) {
             appendAlterOption(action);
+            sb.append(" ");
         }
     }
 
