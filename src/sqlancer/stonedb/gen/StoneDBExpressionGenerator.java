@@ -7,6 +7,7 @@ import java.util.List;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
+import sqlancer.common.ast.newast.ColumnReferenceNode;
 import sqlancer.common.ast.newast.NewBetweenOperatorNode;
 import sqlancer.common.ast.newast.NewBinaryOperatorNode;
 import sqlancer.common.ast.newast.NewCaseOperatorNode;
@@ -19,6 +20,7 @@ import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema.StoneDBColumn;
 import sqlancer.stonedb.StoneDBSchema.StoneDBDataType;
+import sqlancer.stonedb.StoneDBToStringVisitor;
 import sqlancer.stonedb.ast.StoneDBConstant;
 import sqlancer.stonedb.ast.StoneDBExpression;
 
@@ -36,21 +38,20 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
     }
 
     public static class StoneDBCastOperation extends NewUnaryPostfixOperatorNode<StoneDBExpression> {
-
         public StoneDBCastOperation(Node<StoneDBExpression> expr, StoneDBDataType type) {
-            super(expr, () -> "::" + type.toString());
+            super(expr, () -> "CAST(" + StoneDBToStringVisitor.asString(expr) + " AS "
+                    + (type == StoneDBDataType.INT ? "SIGNED" : type.name()) + ")");
         }
-
     }
 
     @Override
     public Node<StoneDBExpression> negatePredicate(Node<StoneDBExpression> predicate) {
-        return null;
+        return new NewUnaryPrefixOperatorNode<>(predicate, StoneDBUnaryPrefixOperator.NOT);
     }
 
     @Override
     public Node<StoneDBExpression> isNull(Node<StoneDBExpression> expr) {
-        return null;
+        return new NewUnaryPostfixOperatorNode<>(expr, StoneDBUnaryPostfixOperator.IS_NULL);
     }
 
     @Override
@@ -137,7 +138,8 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
 
     @Override
     protected Node<StoneDBExpression> generateColumn() {
-        return null;
+        StoneDBColumn column = Randomly.fromList(columns);
+        return new ColumnReferenceNode<>(column);
     }
 
     public enum StoneDBAggregateFunction {

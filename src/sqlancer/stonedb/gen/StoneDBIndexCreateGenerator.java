@@ -5,6 +5,7 @@ import sqlancer.Randomly.StringGenerationStrategy;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
+import sqlancer.stonedb.StoneDBSchema.StoneDBColumn;
 import sqlancer.stonedb.StoneDBSchema.StoneDBTable;
 
 public class StoneDBIndexCreateGenerator {
@@ -30,10 +31,12 @@ public class StoneDBIndexCreateGenerator {
         sb.append(Randomly.fromOptions("UNIQUE", "FULLTEXT", "SPATIAL"));
         sb.append(" INDEX ");
         sb.append(globalState.getSchema().getFreeIndexName());
-        appendIndexType();
+        if (Randomly.getBoolean()) {
+            appendIndexType();
+        }
         sb.append(" ON ");
         sb.append(table.getName());
-        appendKeyPart();
+        appendKeyParts();
         appendIndexOption();
         appendAlgoOrLockOption();
         addExpectedErrors();
@@ -67,9 +70,20 @@ public class StoneDBIndexCreateGenerator {
         sb.append(Randomly.fromOptions("BTREE", "HASH"));
     }
 
+    private void appendKeyParts() {
+        int numberOfKeyParts = Randomly.fromOptions(1, 1, 1, 1, table.getColumns().size());
+        for (int i = 0; i < numberOfKeyParts; i++) {
+            appendKeyPart();
+        }
+    }
+
     private void appendKeyPart() {
         sb.append("(");
-        sb.append(table.getRandomColumn().getName());
+        StoneDBColumn randomColumn = table.getRandomColumn();
+        sb.append(randomColumn.getName());
+        if (Randomly.getBoolean()) {
+            sb.append(" (").append(Randomly.smallNumber()).append(")");
+        }
         if (Randomly.getBoolean()) {
             sb.append(Randomly.fromOptions(" ASC", " DESC"));
         }

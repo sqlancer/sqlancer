@@ -1,13 +1,13 @@
 package sqlancer.stonedb.gen;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema.StoneDBColumn;
-import sqlancer.stonedb.StoneDBSchema.StoneDBCompositeDataType;
 import sqlancer.stonedb.StoneDBSchema.StoneDBDataType;
 import sqlancer.stonedb.StoneDBSchema.StoneDBTable;
 
@@ -18,7 +18,7 @@ public class StoneDBTableAlterGenerator {
     ExpectedErrors errors = new ExpectedErrors();
 
     enum Action {
-        ADD_COLUMN, ALTER_COLUMN, DROP_COLUMN, CHANGE_COLUMN, RENAME_COLUMN
+        ADD_COLUMN, ALTER_COLUMN, DROP_COLUMN, CHANGE_COLUMN
     }
 
     public StoneDBTableAlterGenerator(StoneDBGlobalState globalState) {
@@ -42,6 +42,14 @@ public class StoneDBTableAlterGenerator {
     private void addExpectedErrors() {
         // java.sql.SQLSyntaxErrorException: You can't delete all columns with ALTER TABLE; use DROP TABLE instead
         errors.add("You can't delete all columns with ALTER TABLE; use DROP TABLE instead");
+        // java.sql.SQLSyntaxErrorException: Unknown column 'c0' in 't1'
+        errors.addRegex(Pattern.compile("Unknown column 'c.*' in 't.*'"));
+        // java.sql.SQLSyntaxErrorException: BLOB, TEXT, GEOMETRY or JSON column 'c0' can't have a default value
+        errors.addRegex(Pattern.compile("BLOB, TEXT, GEOMETRY or JSON column 'c.*' can't have a default value"));
+        // java.sql.SQLSyntaxErrorException: Column length too big for column 'c91' (max = 16383); use BLOB or TEXT
+        // instead
+        errors.addRegex(
+                Pattern.compile("Column length too big for column 'c.*' (max = 16383); use BLOB or TEXT instead"));
     }
 
     private void appendAlterOptions() {
@@ -53,6 +61,7 @@ public class StoneDBTableAlterGenerator {
         }
         for (Action action : actions) {
             appendAlterOption(action);
+            sb.append(" ");
         }
     }
 
@@ -63,9 +72,8 @@ public class StoneDBTableAlterGenerator {
         case ADD_COLUMN:
             sb.append("ADD COLUMN ");
             String columnName = table.getFreeColumnName();
-            sb.append(columnName);
-            sb.append(" ");
-            sb.append(StoneDBCompositeDataType.getRandomWithoutNull().getPrimitiveDataType().toString());
+            sb.append(" ").append(columnName).append(" ");
+            sb.append(StoneDBDataType.getTypeAndValue(StoneDBDataType.getRandomWithoutNull()));
             if (Randomly.getBoolean()) {
                 if (Randomly.getBoolean()) {
                     sb.append(" FIRST");
@@ -80,7 +88,7 @@ public class StoneDBTableAlterGenerator {
             sb.append(table.getRandomColumn().getName());
             break;
         case ALTER_COLUMN:
-            sb.append(Randomly.fromOptions("CHANGE COLUMN ", "CHANGE "));
+            sb.append(Randomly.fromOptions("ALTER COLUMN ", "ALTER "));
             StoneDBColumn randomColumn = table.getRandomColumn();
             sb.append(randomColumn.getName());
             if (Randomly.getBoolean()) {
@@ -95,7 +103,7 @@ public class StoneDBTableAlterGenerator {
             String oldColumnName = table.getRandomColumn().getName();
             String newColumnName = table.getFreeColumnName();
             sb.append(oldColumnName).append(" ").append(newColumnName).append(" ");
-            StoneDBDataType.appendTypeAndValue(StoneDBDataType.getRandomWithoutNull());
+            sb.append(StoneDBDataType.getTypeAndValue(StoneDBDataType.getRandomWithoutNull()));
             if (Randomly.getBoolean()) {
                 if (Randomly.getBoolean()) {
                     sb.append(" FIRST");
@@ -104,12 +112,6 @@ public class StoneDBTableAlterGenerator {
                     sb.append(table.getRandomColumn().getName());
                 }
             }
-            break;
-        case RENAME_COLUMN:
-            sb.append("RENAME COLUMN ");
-            sb.append(table.getRandomColumn().getName());
-            sb.append(Randomly.fromOptions(" TO ", " AS "));
-            sb.append(table.getFreeColumnName());
             break;
         default:
             throw new AssertionError(action);

@@ -93,7 +93,7 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
             return null;
         }
 
-        public static String appendTypeAndValue(StoneDBDataType dataType) {
+        public static String getTypeAndValue(StoneDBDataType dataType) {
             StringBuilder sb = new StringBuilder();
             switch (dataType) {
             case TINYINT:
