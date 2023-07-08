@@ -17,7 +17,7 @@ public class StoneDBTableAlterGenerator {
     ExpectedErrors errors = new ExpectedErrors();
 
     enum Action {
-        ADD_COLUMN, ALTER_COLUMN, DROP_COLUMN, CHANGE_COLUMN, RENAME_COLUMN
+        ADD_COLUMN, ALTER_COLUMN, DROP_COLUMN, CHANGE_COLUMN
     }
 
     public StoneDBTableAlterGenerator(StoneDBGlobalState globalState) {
@@ -103,12 +103,6 @@ public class StoneDBTableAlterGenerator {
                     sb.append(table.getRandomColumn().getName());
                 }
             }
-            break;
-        case RENAME_COLUMN:
-            sb.append("RENAME COLUMN ");
-            sb.append(table.getRandomColumn().getName());
-            sb.append(Randomly.fromOptions(" TO ", " AS "));
-            sb.append(table.getFreeColumnName());
             break;
         default:
             throw new AssertionError(action);
