@@ -8,7 +8,6 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema.StoneDBColumn;
-import sqlancer.stonedb.StoneDBSchema.StoneDBCompositeDataType;
 import sqlancer.stonedb.StoneDBSchema.StoneDBDataType;
 import sqlancer.stonedb.StoneDBSchema.StoneDBTable;
 
@@ -47,8 +46,10 @@ public class StoneDBTableAlterGenerator {
         errors.addRegex(Pattern.compile("Unknown column 'c.*' in 't.*'"));
         // java.sql.SQLSyntaxErrorException: BLOB, TEXT, GEOMETRY or JSON column 'c0' can't have a default value
         errors.addRegex(Pattern.compile("BLOB, TEXT, GEOMETRY or JSON column 'c.*' can't have a default value"));
-    // java.sql.SQLSyntaxErrorException: Column length too big for column 'c91' (max = 16383); use BLOB or TEXT instead
-        errors.addRegex(Pattern.compile("Column length too big for column 'c.*' (max = 16383); use BLOB or TEXT instead"));
+        // java.sql.SQLSyntaxErrorException: Column length too big for column 'c91' (max = 16383); use BLOB or TEXT
+        // instead
+        errors.addRegex(
+                Pattern.compile("Column length too big for column 'c.*' (max = 16383); use BLOB or TEXT instead"));
     }
 
     private void appendAlterOptions() {
