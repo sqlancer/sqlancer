@@ -6,6 +6,7 @@ import sqlancer.stonedb.ast.StoneDBConstant;
 import sqlancer.stonedb.ast.StoneDBExpression;
 import sqlancer.stonedb.ast.StoneDBJoin;
 import sqlancer.stonedb.ast.StoneDBSelect;
+import sqlancer.stonedb.gen.StoneDBExpressionGenerator.StoneDBCastOperation;
 
 public class StoneDBToStringVisitor extends NewToStringVisitor<StoneDBExpression> {
     @Override
@@ -16,6 +17,8 @@ public class StoneDBToStringVisitor extends NewToStringVisitor<StoneDBExpression
             visit((StoneDBSelect) expr);
         } else if (expr instanceof StoneDBJoin) {
             visit((StoneDBJoin) expr);
+        } else if (expr instanceof StoneDBCastOperation) {
+            visit((StoneDBCastOperation) expr);
         } else {
             throw new AssertionError(expr.getClass());
         }
@@ -79,6 +82,14 @@ public class StoneDBToStringVisitor extends NewToStringVisitor<StoneDBExpression
             sb.append(" ON ");
             visit(join.getOnCondition());
         }
+    }
+
+    private void visit(StoneDBCastOperation cast) {
+        sb.append("CAST(");
+        visit(cast.getExpr());
+        sb.append(" AS ");
+        sb.append(cast.getType().toString());
+        sb.append(") ");
     }
 
     public static String asString(Node<StoneDBExpression> expr) {
