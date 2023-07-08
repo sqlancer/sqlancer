@@ -94,9 +94,6 @@ public class StoneDBTableAlterGenerator {
             } else {
                 sb.append(" DROP DEFAULT");
             }
-            if (Randomly.getBoolean()) {
-                sb.append(" SET ").append(Randomly.fromOptions("VISIBLE", "INVISIBLE"));
-            }
             break;
         case CHANGE_COLUMN:
             sb.append(Randomly.fromOptions("CHANGE COLUMN ", "CHANGE "));
