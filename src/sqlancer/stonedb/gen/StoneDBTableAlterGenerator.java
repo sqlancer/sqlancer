@@ -47,6 +47,8 @@ public class StoneDBTableAlterGenerator {
         errors.addRegex(Pattern.compile("Unknown column 'c.*' in 't.*'"));
         // java.sql.SQLSyntaxErrorException: BLOB, TEXT, GEOMETRY or JSON column 'c0' can't have a default value
         errors.addRegex(Pattern.compile("BLOB, TEXT, GEOMETRY or JSON column 'c.*' can't have a default value"));
+    // java.sql.SQLSyntaxErrorException: Column length too big for column 'c91' (max = 16383); use BLOB or TEXT instead
+        errors.addRegex(Pattern.compile("Column length too big for column 'c.*' (max = 16383); use BLOB or TEXT instead"));
     }
 
     private void appendAlterOptions() {
@@ -68,8 +70,8 @@ public class StoneDBTableAlterGenerator {
         case ADD_COLUMN:
             sb.append("ADD COLUMN ");
             String columnName = table.getFreeColumnName();
-            sb.append(columnName);
-            sb.append(" ");
+            sb.append(" ").append(columnName).append(" ");
+            sb.append(StoneDBDataType.getTypeAndValue(StoneDBDataType.getRandomWithoutNull()));
             sb.append(StoneDBCompositeDataType.getRandomWithoutNull().getPrimitiveDataType().toString());
             if (Randomly.getBoolean()) {
                 if (Randomly.getBoolean()) {

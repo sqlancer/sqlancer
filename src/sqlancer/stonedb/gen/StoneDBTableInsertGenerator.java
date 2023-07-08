@@ -57,6 +57,8 @@ public class StoneDBTableInsertGenerator extends AbstractInsertGenerator<StoneDB
         errors.add("Insert duplicate key on row: ");
         // com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Incorrect datetime value:
         errors.add("Data truncation: Incorrect datetime value: ");
+        // java.sql.SQLException: Field 'c0' doesn't have a default value
+        errors.add("doesn't have a default value");
     }
 
     private void appendPartition() {
