@@ -2,6 +2,7 @@ package sqlancer.stonedb;
 
 import sqlancer.common.ast.newast.NewToStringVisitor;
 import sqlancer.common.ast.newast.Node;
+import sqlancer.stonedb.StoneDBSchema.StoneDBDataType;
 import sqlancer.stonedb.ast.StoneDBConstant;
 import sqlancer.stonedb.ast.StoneDBExpression;
 import sqlancer.stonedb.ast.StoneDBJoin;
@@ -88,7 +89,7 @@ public class StoneDBToStringVisitor extends NewToStringVisitor<StoneDBExpression
         sb.append("CAST(");
         visit(cast.getExpr());
         sb.append(" AS ");
-        sb.append(cast.getType().toString());
+        sb.append(cast.getType() == StoneDBDataType.INT ? "UNSIGNED" : cast.getType().toString());
         sb.append(") ");
     }
 
