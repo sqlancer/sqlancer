@@ -1,6 +1,7 @@
 package sqlancer.stonedb.gen;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
@@ -41,6 +42,10 @@ public class StoneDBTableAlterGenerator {
     private void addExpectedErrors() {
         // java.sql.SQLSyntaxErrorException: You can't delete all columns with ALTER TABLE; use DROP TABLE instead
         errors.add("You can't delete all columns with ALTER TABLE; use DROP TABLE instead");
+        // java.sql.SQLSyntaxErrorException: Unknown column 'c0' in 't1'
+        errors.addRegex(Pattern.compile("Unknown column 'c.*' in 't.*'"));
+        // java.sql.SQLSyntaxErrorException: BLOB, TEXT, GEOMETRY or JSON column 'c0' can't have a default value
+        errors.addRegex(Pattern.compile("BLOB, TEXT, GEOMETRY or JSON column 'c.*' can't have a default value"));
     }
 
     private void appendAlterOptions() {
