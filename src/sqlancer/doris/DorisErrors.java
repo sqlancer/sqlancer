@@ -13,6 +13,12 @@ public final class DorisErrors {
         errors.add("Please check your sql, we meet an error when parsing");
         errors.add("but returns type");
         errors.add("is not a number");
+        errors.add("not produced by aggregation output");
+        errors.add("Can not set null default value to non nullable column");
+        errors.add("ordinal must be");
+        errors.add("ordinal exceeds number");
+        errors.add("items in select list");
+        errors.add("java.lang.IllegalStateException: null");
 
         // Not in line with Doris' logic
         errors.add("Unexpected exception: null");
@@ -24,6 +30,7 @@ public final class DorisErrors {
         errors.add("cannot combine"); // cannot combine SELECT DISTINCT with aggregate functions or GROUP BY
         errors.add("Invalid type");
         errors.add("cannot be cast to");
+        errors.add("Duplicated inline view column");
 
         // functions
         errors.add("No matching function with signature");

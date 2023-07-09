@@ -29,13 +29,13 @@ public final class DorisAlterTableGenerator {
             String columnName = table.getFreeColumnName();
             sb.append(columnName);
             sb.append(" ");
-            sb.append(DorisCompositeDataType.getRandomWithoutNull().toString());
+            sb.append(DorisCompositeDataType.getRandomWithoutNull(globalState).toString());
             break;
         case ALTER_COLUMN:
             sb.append("MODIFY COLUMN ");
             sb.append(table.getRandomColumn().getName());
             sb.append(" ");
-            sb.append(DorisCompositeDataType.getRandomWithoutNull().toString());
+            sb.append(DorisCompositeDataType.getRandomWithoutNull(globalState).toString());
             break;
         case DROP_COLUMN:
             sb.append("DROP COLUMN ");

@@ -112,8 +112,25 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
             return size;
         }
 
-        public static DorisCompositeDataType getRandomWithoutNull() {
+        public static DorisCompositeDataType getRandomWithoutNull(DorisGlobalState globalState) {
             DorisDataType type = DorisDataType.getRandomWithoutNull();
+            if (globalState != null) {
+                boolean typeIsQualified = false;
+                while (!typeIsQualified) {
+                    if (type == DorisDataType.INT && globalState.getDbmsSpecificOptions().testIntConstants
+                    || type == DorisDataType.BOOLEAN && globalState.getDbmsSpecificOptions().testBooleanConstants
+                    || type == DorisDataType.DECIMAL && globalState.getDbmsSpecificOptions().testDecimalConstants
+                    || type == DorisDataType.FLOAT && globalState.getDbmsSpecificOptions().testFloatConstants
+                    || type == DorisDataType.DATE && globalState.getDbmsSpecificOptions().testDateConstants
+                    || type == DorisDataType.DATETIME && globalState.getDbmsSpecificOptions().testDateTimeConstants
+                    || type == DorisDataType.VARCHAR && globalState.getDbmsSpecificOptions().testStringConstants
+                    ) {
+                        typeIsQualified = true;
+                    } else {
+                        type = DorisDataType.getRandomWithoutNull();
+                    }
+                }
+            }
             int size = -1;
             switch (type) {
             case INT:
