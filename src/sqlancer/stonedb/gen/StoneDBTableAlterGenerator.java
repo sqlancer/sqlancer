@@ -74,6 +74,7 @@ public class StoneDBTableAlterGenerator {
             String columnName = table.getFreeColumnName();
             sb.append(" ").append(columnName).append(" ");
             sb.append(StoneDBDataType.getTypeAndValue(StoneDBDataType.getRandomWithoutNull()));
+            errors.addRegex(Pattern.compile("Column length too big for column 'c.*' (max = 16383); use BLOB or TEXT instead"));
             if (Randomly.getBoolean()) {
                 if (Randomly.getBoolean()) {
                     sb.append(" FIRST");
@@ -104,6 +105,7 @@ public class StoneDBTableAlterGenerator {
             String newColumnName = table.getFreeColumnName();
             sb.append(oldColumnName).append(" ").append(newColumnName).append(" ");
             sb.append(StoneDBDataType.getTypeAndValue(StoneDBDataType.getRandomWithoutNull()));
+            errors.addRegex(Pattern.compile("Column length too big for column 'c.*' (max = 16383); use BLOB or TEXT instead"));
             if (Randomly.getBoolean()) {
                 if (Randomly.getBoolean()) {
                     sb.append(" FIRST");
