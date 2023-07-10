@@ -40,6 +40,10 @@ public class StoneDBTableAlterGenerator {
     }
 
     private void addExpectedErrors() {
+        // com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Data too long for column 'c0' at row 2
+        errors.addRegex(Pattern.compile("Data truncation: Data too long for column 'c.*' at row .*"));
+        // java.sql.SQLSyntaxErrorException: Specified key was too long; max key length is 3072 bytes
+        errors.add("Specified key was too long; max key length is 3072 bytes");
         // java.sql.SQLSyntaxErrorException: You can't delete all columns with ALTER TABLE; use DROP TABLE instead
         errors.add("You can't delete all columns with ALTER TABLE; use DROP TABLE instead");
         // java.sql.SQLSyntaxErrorException: Unknown column 'c0' in 't1'
@@ -49,7 +53,7 @@ public class StoneDBTableAlterGenerator {
         // java.sql.SQLSyntaxErrorException: Column length too big for column 'c91' (max = 16383); use BLOB or TEXT
         // instead
         errors.addRegex(
-                Pattern.compile("Column length too big for column 'c.*' (max = 16383); use BLOB or TEXT instead"));
+                Pattern.compile("Column length too big for column 'c\\d{1,3}' \\(max = 16383\\); use BLOB or TEXT instead"));
     }
 
     private void appendAlterOptions() {
