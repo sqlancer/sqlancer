@@ -76,7 +76,7 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
         select.setFetchColumns(List.of(asText));
         select.setFromList(tableList);
         select.setJoinList(joins);
-        unoptimizedQueryString = "SELECT SUM(count) FROM (" + StoneDBToStringVisitor.asString(select) + ") as res";
+        unoptimizedQueryString = "SELECT SUM(count) FROM (" + StoneDBToStringVisitor.asString(select) + ") as res;";
         SQLQueryAdapter q = new SQLQueryAdapter(unoptimizedQueryString, errors);
         SQLancerResultSet rs;
         try {

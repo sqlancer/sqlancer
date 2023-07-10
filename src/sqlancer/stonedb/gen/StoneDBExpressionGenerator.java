@@ -172,7 +172,7 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
 
     public enum StoneDBUnaryPrefixOperator implements Operator {
 
-        NOT("NOT"), PLUS("+"), MINUS("-");
+        NOT("NOT"), PLUS("+"), MINUS("-"), INVERSION("!");
 
         private final String textRepr;
 
@@ -286,7 +286,7 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
      * Bitwise operators supported by StoneDB: https://stonedb.io/docs/SQL-reference/operators/bitwise-operators
      */
     public enum StoneDBBinaryBitwiseOperator implements Operator {
-        AND("&"), OR("|"), XOR("^"), INVERSION("!"), LEFTSHIFT("<<"), RIGHTSHIFT(">>");
+        AND("&"), OR("|"), XOR("^"), LEFTSHIFT("<<"), RIGHTSHIFT(">>");
 
         private final String textRepr;
 
