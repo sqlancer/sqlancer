@@ -47,13 +47,20 @@ public final class StoneDBTableDeleteGenerator {
         if (Randomly.getBoolean()) {
             sb.append(" ORDER BY ");
             sb.append(String.join(", ", Randomly.fromOptions(
-                    randomTable.getColumns().stream().map(AbstractTableColumn::getName).collect(Collectors.toList())))
+                            randomTable.getColumns().stream().map(AbstractTableColumn::getName).collect(Collectors.toList())))
                     .replace('[', '(').replace(']', ')'));
         }
         if (Randomly.getBoolean()) {
             sb.append(" LIMIT ");
             sb.append(r.getInteger(0, (int) randomTable.getNrRows(globalState)));
         }
+        addExpectedErrors();
         return new SQLQueryAdapter(sb.toString(), errors);
     }
+
+    private void addExpectedErrors() {
+//    com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Truncated incorrect INTEGER value:
+        errors.add("Data truncation: Truncated incorrect INTEGER value:");
+    }
+
 }
