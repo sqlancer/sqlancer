@@ -57,12 +57,31 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
         private int decimalPrecision;
         private int varcharLength;
 
-        public static DorisDataType getRandomWithoutNull() {
-            DorisDataType dt;
-            do {
-                dt = Randomly.fromOptions(values());
-            } while (dt == DorisDataType.NULL);
-            return dt;
+        public static DorisDataType getRandomWithoutNull(DorisOptions options) {
+            List<DorisDataType> validTypes = new ArrayList<>();
+            if (options.testIntConstants) {
+                validTypes.add(DorisDataType.INT);
+            }
+            if (options.testFloatConstants) {
+                validTypes.add(DorisDataType.FLOAT);
+            }
+            if (options.testDecimalConstants) {
+                validTypes.add(DorisDataType.DECIMAL);
+            }
+            if (options.testDateConstants) {
+                validTypes.add(DorisDataType.DATE);
+            }
+            if (options.testDateTimeConstants) {
+                validTypes.add(DorisDataType.DATETIME);
+            }
+            if (options.testStringConstants) {
+                validTypes.add(DorisDataType.VARCHAR);
+            }
+            if (options.testBooleanConstants) {
+                validTypes.add(DorisDataType.BOOLEAN);
+            }
+
+            return Randomly.fromList(validTypes);
         }
 
         public int getDecimalScale() {
@@ -113,24 +132,7 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
         }
 
         public static DorisCompositeDataType getRandomWithoutNull(DorisGlobalState globalState) {
-            DorisDataType type = DorisDataType.getRandomWithoutNull();
-            if (globalState != null) {
-                boolean typeIsQualified = false;
-                while (!typeIsQualified) {
-                    if (type == DorisDataType.INT && globalState.getDbmsSpecificOptions().testIntConstants
-                    || type == DorisDataType.BOOLEAN && globalState.getDbmsSpecificOptions().testBooleanConstants
-                    || type == DorisDataType.DECIMAL && globalState.getDbmsSpecificOptions().testDecimalConstants
-                    || type == DorisDataType.FLOAT && globalState.getDbmsSpecificOptions().testFloatConstants
-                    || type == DorisDataType.DATE && globalState.getDbmsSpecificOptions().testDateConstants
-                    || type == DorisDataType.DATETIME && globalState.getDbmsSpecificOptions().testDateTimeConstants
-                    || type == DorisDataType.VARCHAR && globalState.getDbmsSpecificOptions().testStringConstants
-                    ) {
-                        typeIsQualified = true;
-                    } else {
-                        type = DorisDataType.getRandomWithoutNull();
-                    }
-                }
-            }
+            DorisDataType type = DorisDataType.getRandomWithoutNull(globalState.getDbmsSpecificOptions());
             int size = -1;
             switch (type) {
             case INT:

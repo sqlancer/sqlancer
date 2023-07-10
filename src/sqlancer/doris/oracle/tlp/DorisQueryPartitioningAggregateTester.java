@@ -186,10 +186,9 @@ public class DorisQueryPartitioningAggregateTester extends DorisQueryPartitionin
         leftSelect.setFromList(from);
         leftSelect.setWhereClause(whereClause);
         leftSelect.setJoinList(joinList);
-        Randomly r = new Randomly();
         if (Randomly.getBooleanWithSmallProbability()) {
             //leftSelect.setGroupByExpressions(groupByExpression);    // todo: something maybe error in here
-            DorisConstant groupByColumn = DorisConstant.createIntConstant(r.getInteger(1, targetTables.getColumns().size()));
+            DorisConstant groupByColumn = DorisConstant.createIntConstant(state.getRandomly().getInteger(1, targetTables.getColumns().size()));
             leftSelect.setGroupByExpressions(List.of(DorisExprToNode.cast(groupByColumn)));
         }
         return leftSelect;
