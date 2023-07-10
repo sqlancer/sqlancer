@@ -108,14 +108,16 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
             select.setOrderByExpressions(new StoneDBExpressionGenerator(state).setColumns(columns).generateOrderBys());
         }
         select.setJoinList(joins);
-        int firstCount;
+        int firstCount = 0;
         try (Statement stat = con.createStatement()) {
             optimizedQueryString = StoneDBToStringVisitor.asString(select);
             if (options.logEachSelect()) {
                 logger.writeCurrent(optimizedQueryString);
             }
             try (ResultSet rs = stat.executeQuery(optimizedQueryString)) {
-                firstCount = rs.getFetchSize();
+                while (rs.next()) {
+                    firstCount++;
+                }
             }
         } catch (SQLException e) {
             throw new IgnoreMeException();
