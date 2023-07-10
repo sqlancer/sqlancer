@@ -13,23 +13,22 @@ import sqlancer.stonedb.StoneDBSchema.StoneDBColumn;
 import sqlancer.stonedb.StoneDBSchema.StoneDBTable;
 import sqlancer.stonedb.StoneDBToStringVisitor;
 
-public class StoneDBInsertGenerator extends AbstractInsertGenerator<StoneDBColumn> {
+public class StoneDBTableInsertGenerator extends AbstractInsertGenerator<StoneDBColumn> {
     private final StoneDBGlobalState globalState;
     // which table to insert into
     private final StoneDBTable table;
     // which subset columns of the table to add values
     private final List<StoneDBColumn> columns;
-    private final StringBuilder sb = new StringBuilder();
     ExpectedErrors errors = new ExpectedErrors();
 
-    public StoneDBInsertGenerator(StoneDBGlobalState globalState) {
+    public StoneDBTableInsertGenerator(StoneDBGlobalState globalState) {
         this.globalState = globalState;
         table = globalState.getSchema().getRandomTable();
         columns = table.getRandomNonEmptyColumnSubset();
     }
 
     public static SQLQueryAdapter generate(StoneDBGlobalState globalState) {
-        return new StoneDBInsertGenerator(globalState).getQuery();
+        return new StoneDBTableInsertGenerator(globalState).getQuery();
     }
 
     private SQLQueryAdapter getQuery() {
@@ -45,7 +44,19 @@ public class StoneDBInsertGenerator extends AbstractInsertGenerator<StoneDBColum
         sb.append(table.getName());
         appendPartition();
         appendColumnsAndValues(columns);
+        addExpectedErrors();
         return new SQLQueryAdapter(sb.toString(), errors);
+    }
+
+    private void addExpectedErrors() {
+        // com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Out of range value for column 'c0' at row
+        errors.add("Data truncation: Out of range value for column ");
+        // java.sql.SQLSyntaxErrorException: Unknown column 'c0' in 'field list'
+        errors.add("Unknown column ");
+        // java.sql.SQLException: Insert duplicate key on row: 4, pk: 138609795916627968
+        errors.add("Insert duplicate key on row: ");
+        // com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Incorrect datetime value:
+        errors.add("Data truncation: Incorrect datetime value: ");
     }
 
     private void appendPartition() {
@@ -60,6 +71,7 @@ public class StoneDBInsertGenerator extends AbstractInsertGenerator<StoneDBColum
         appendValues();
     }
 
+    // append nrRows rows
     private void appendValues() {
         int nrRows;
         if (Randomly.getBoolean()) {
@@ -72,6 +84,7 @@ public class StoneDBInsertGenerator extends AbstractInsertGenerator<StoneDBColum
         }
     }
 
+    // append all columns of one row
     private void appendOneValue(int nrRow) {
         if (nrRow != 0) {
             sb.append(", ");
@@ -81,12 +94,12 @@ public class StoneDBInsertGenerator extends AbstractInsertGenerator<StoneDBColum
             if (c != 0) {
                 sb.append(", ");
             }
-            sb.append(StoneDBToStringVisitor.asString(new StoneDBExpressionGenerator(globalState).generateConstant()));
-
+            insertValue(columns.get(c));
         }
         sb.append(")");
     }
 
+    // append one column of one row
     @Override
     protected void insertValue(StoneDBColumn column) {
         if (Randomly.getBooleanWithRatherLowProbability()) {

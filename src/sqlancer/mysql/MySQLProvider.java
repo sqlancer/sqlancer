@@ -31,6 +31,7 @@ import sqlancer.mysql.gen.MySQLInsertGenerator;
 import sqlancer.mysql.gen.MySQLSetGenerator;
 import sqlancer.mysql.gen.MySQLTableGenerator;
 import sqlancer.mysql.gen.MySQLTruncateTableGenerator;
+import sqlancer.mysql.gen.MySQLUpdateGenerator;
 import sqlancer.mysql.gen.admin.MySQLFlush;
 import sqlancer.mysql.gen.admin.MySQLReset;
 import sqlancer.mysql.gen.datadef.MySQLIndexGenerator;
@@ -67,6 +68,7 @@ public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOpt
             String tableName = DBMSCommon.createTableName(g.getSchema().getDatabaseTables().size());
             return MySQLTableGenerator.generate(g, tableName);
         }), //
+        UPDATE(MySQLUpdateGenerator::create), //
         DELETE(MySQLDeleteGenerator::delete), //
         DROP_INDEX(MySQLDropIndex::generate);
 
@@ -130,6 +132,9 @@ public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOpt
             nrPerformed = r.getInteger(0, 2);
             break;
         case SELECT_INFO:
+            nrPerformed = r.getInteger(0, 10);
+            break;
+        case UPDATE:
             nrPerformed = r.getInteger(0, 10);
             break;
         case DELETE:

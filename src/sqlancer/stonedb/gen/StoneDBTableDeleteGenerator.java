@@ -6,21 +6,24 @@ import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.schema.AbstractTableColumn;
+import sqlancer.stonedb.StoneDBBugs;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema.StoneDBTable;
 import sqlancer.stonedb.StoneDBToStringVisitor;
 
-public final class StoneDBDeleteGenerator {
+public final class StoneDBTableDeleteGenerator {
     private final StoneDBGlobalState globalState;
     private final StringBuilder sb = new StringBuilder();
     ExpectedErrors errors = new ExpectedErrors();
+    Randomly r;
 
-    private StoneDBDeleteGenerator(StoneDBGlobalState globalState) {
+    private StoneDBTableDeleteGenerator(StoneDBGlobalState globalState) {
         this.globalState = globalState;
+        r = globalState.getRandomly();
     }
 
     public static SQLQueryAdapter generate(StoneDBGlobalState globalState) {
-        return new StoneDBDeleteGenerator(globalState).getQuery();
+        return new StoneDBTableDeleteGenerator(globalState).getQuery();
     }
 
     public SQLQueryAdapter getQuery() {
@@ -38,23 +41,27 @@ public final class StoneDBDeleteGenerator {
         sb.append(" FROM ");
         sb.append(randomTable.getName());
         if (Randomly.getBoolean()) {
-            sb.append(" AS ");
-            sb.append(globalState.getSchema().getRandomTable().getName());
-        }
-        if (Randomly.getBoolean()) {
             sb.append(" WHERE ");
             sb.append(StoneDBToStringVisitor.asString(new StoneDBExpressionGenerator(globalState)
                     .setColumns(randomTable.getColumns()).generateExpression()));
         }
         if (Randomly.getBoolean()) {
             sb.append(" ORDER BY ");
-            sb.append(Randomly.fromOptions(
-                    randomTable.getColumns().stream().map(AbstractTableColumn::getName).collect(Collectors.toList())));
+            sb.append(String.join(", ", Randomly.fromOptions(
+                    randomTable.getColumns().stream().map(AbstractTableColumn::getName).collect(Collectors.toList())))
+                    .replace('[', '(').replace(']', ')'));
         }
         if (Randomly.getBoolean()) {
             sb.append(" LIMIT ");
-            sb.append(new Randomly().getInteger());
+            sb.append(r.getInteger(0, (int) randomTable.getNrRows(globalState)));
         }
+        addExpectedErrors();
         return new SQLQueryAdapter(sb.toString(), errors);
+    }
+
+    private void addExpectedErrors() {
+        if (StoneDBBugs.bug1933) {
+            errors.add("assert failed on i < m_idx.size() at tianmu_attr.h:387, msg: [bad dpn index 0/0]");
+        }
     }
 }
