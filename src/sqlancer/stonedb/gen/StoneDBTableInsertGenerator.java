@@ -1,6 +1,7 @@
 package sqlancer.stonedb.gen;
 
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
@@ -59,6 +60,8 @@ public class StoneDBTableInsertGenerator extends AbstractInsertGenerator<StoneDB
         errors.add("Data truncation: Incorrect datetime value: ");
         // java.sql.SQLException: Field 'c0' doesn't have a default value
         errors.add("doesn't have a default value");
+        // java.sql.SQLException: Data truncated for column 'c0' at row 1
+        errors.addRegex(Pattern.compile("Data truncated for column 'c.*' at row .*"));
     }
 
     private void appendPartition() {
