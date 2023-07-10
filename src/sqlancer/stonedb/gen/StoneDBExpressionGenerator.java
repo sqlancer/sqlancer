@@ -216,7 +216,7 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
     public enum StoneDBBinaryComparisonOperator implements Operator {
         EQUAL("="), GREATER(">"), LESS("<"), GREATER_EQUAL(">="), LESS_EQUAL("<="),
         NOT_EQUALS(Randomly.fromList(Arrays.asList("!=", "<>"))), NULL_SAFE_EQUAL("<=>"), IN("IN"), NOT_IN("NOT_IN"),
-        LIKE("LIKE"), IS_NULL("IS NULL"), IS_NOT_NULL("IS NOT NULL");
+        LIKE("LIKE");
 
         private final String textRepr;
 
@@ -239,7 +239,7 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
      */
     public enum StoneDBBinaryLogicalOperator implements Operator {
 
-        NOT("NOT"), AND("AND"), OR("OR"), XOR("XOR");
+        AND("AND"), OR("OR"), XOR("XOR");
 
         private final String textRepr;
 
