@@ -52,8 +52,8 @@ public class StoneDBTableAlterGenerator {
         errors.addRegex(Pattern.compile("BLOB, TEXT, GEOMETRY or JSON column 'c\\d{1,3}' can't have a default value"));
         // java.sql.SQLSyntaxErrorException: Column length too big for column 'c91' (max = 16383); use BLOB or TEXT
         // instead
-        errors.addRegex(
-                Pattern.compile("Column length too big for column 'c\\d{1,3}' \\(max = 16383\\); use BLOB or TEXT instead"));
+        errors.addRegex(Pattern
+                .compile("Column length too big for column 'c\\d{1,3}' \\(max = 16383\\); use BLOB or TEXT instead"));
     }
 
     private void appendAlterOptions() {
@@ -80,8 +80,8 @@ public class StoneDBTableAlterGenerator {
             sb.append(StoneDBDataType.getTypeAndValue(StoneDBDataType.getRandomWithoutNull()));
             // java.sql.SQLSyntaxErrorException: Column length too big for column 'c1' (max = 16383); use BLOB or TEXT
             // instead
-            errors.addRegex(
-                    Pattern.compile("Column length too big for column 'c\\d{1,3}' (max = 16383); use BLOB or TEXT instead"));
+            errors.addRegex(Pattern
+                    .compile("Column length too big for column 'c\\d{1,3}' (max = 16383); use BLOB or TEXT instead"));
             if (Randomly.getBoolean()) {
                 if (Randomly.getBoolean()) {
                     sb.append(" FIRST");
@@ -114,8 +114,8 @@ public class StoneDBTableAlterGenerator {
             sb.append(StoneDBDataType.getTypeAndValue(StoneDBDataType.getRandomWithoutNull()));
             // java.sql.SQLSyntaxErrorException: Column length too big for column 'c1' (max = 16383); use BLOB or TEXT
             // instead
-            errors.addRegex(
-                    Pattern.compile("Column length too big for column 'c\\d{1,3}' (max = 16383); use BLOB or TEXT instead"));
+            errors.addRegex(Pattern
+                    .compile("Column length too big for column 'c\\d{1,3}' (max = 16383); use BLOB or TEXT instead"));
             if (Randomly.getBoolean()) {
                 if (Randomly.getBoolean()) {
                     sb.append(" FIRST");
