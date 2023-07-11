@@ -6,6 +6,7 @@ import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.schema.AbstractTableColumn;
+import sqlancer.stonedb.StoneDBBugs;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema.StoneDBTable;
 import sqlancer.stonedb.StoneDBToStringVisitor;
@@ -47,7 +48,7 @@ public final class StoneDBTableDeleteGenerator {
         if (Randomly.getBoolean()) {
             sb.append(" ORDER BY ");
             sb.append(String.join(", ", Randomly.fromOptions(
-                            randomTable.getColumns().stream().map(AbstractTableColumn::getName).collect(Collectors.toList())))
+                    randomTable.getColumns().stream().map(AbstractTableColumn::getName).collect(Collectors.toList())))
                     .replace('[', '(').replace(']', ')'));
         }
         if (Randomly.getBoolean()) {
@@ -59,8 +60,8 @@ public final class StoneDBTableDeleteGenerator {
     }
 
     private void addExpectedErrors() {
-//    com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Truncated incorrect INTEGER value:
-        errors.add("Data truncation: Truncated incorrect INTEGER value:");
+        if (StoneDBBugs.bug1933) {
+            errors.add("assert failed on i < m_idx.size() at tianmu_attr.h:387, msg: [bad dpn index 0/0]");
+        }
     }
-
 }
