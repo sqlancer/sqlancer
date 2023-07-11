@@ -2,7 +2,6 @@ package sqlancer.stonedb;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.beust.jcommander.Parameter;

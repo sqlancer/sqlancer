@@ -1,5 +1,9 @@
 package sqlancer.stonedb.oracle;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.ColumnReferenceNode;
@@ -8,10 +12,6 @@ import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema.StoneDBColumn;
 import sqlancer.stonedb.StoneDBToStringVisitor;
 import sqlancer.stonedb.ast.StoneDBExpression;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class StoneDBQueryPartitioningGroupByTester extends StoneDBQueryPartitioningBase {
     public StoneDBQueryPartitioningGroupByTester(StoneDBGlobalState state) {

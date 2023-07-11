@@ -1,12 +1,12 @@
 package sqlancer.stonedb.oracle;
 
-import sqlancer.ComparatorHelper;
-import sqlancer.Randomly;
-import sqlancer.stonedb.StoneDBToStringVisitor;
-import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import sqlancer.ComparatorHelper;
+import sqlancer.Randomly;
+import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
+import sqlancer.stonedb.StoneDBToStringVisitor;
 
 public class StoneDBQueryPartitioningHavingTester extends StoneDBQueryPartitioningBase {
     public StoneDBQueryPartitioningHavingTester(StoneDBGlobalState state) {

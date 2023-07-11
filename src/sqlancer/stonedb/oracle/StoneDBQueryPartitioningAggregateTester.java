@@ -63,17 +63,17 @@ public class StoneDBQueryPartitioningAggregateTester extends StoneDBQueryPartiti
 
         if (originalResult == null && metamorphicResult != null
                 || originalResult != null && (!originalResult.contentEquals(metamorphicResult)
-                && !ComparatorHelper.isEqualDouble(originalResult, metamorphicResult))) {
+                        && !ComparatorHelper.isEqualDouble(originalResult, metamorphicResult))) {
             throw new AssertionError("aggregate result mismatch!" + System.lineSeparator() + output);
         }
     }
 
     private String createMetamorphicUnionQuery(StoneDBSelect select,
-                                               NewFunctionNode<StoneDBExpression, StoneDBAggregateFunction> aggregate,
-                                               List<Node<StoneDBExpression>> from) {
+            NewFunctionNode<StoneDBExpression, StoneDBAggregateFunction> aggregate,
+            List<Node<StoneDBExpression>> from) {
         String metamorphicQuery;
         Node<StoneDBExpression> whereClause = gen.generateExpression();
-        ;
+
         Node<StoneDBExpression> negatedClause = new NewUnaryPrefixOperatorNode<>(whereClause,
                 StoneDBUnaryPrefixOperator.NOT);
         Node<StoneDBExpression> notNullClause = new NewUnaryPostfixOperatorNode<>(whereClause,
@@ -117,19 +117,19 @@ public class StoneDBQueryPartitioningAggregateTester extends StoneDBQueryPartiti
 
         StoneDBCastOperation count;
         switch (aggregate.getFunc()) {
-            case COUNT:
-            case MAX:
-            case MIN:
-            case SUM:
-                return aliasArgs(List.of(aggregate));
-            case AVG:
-                NewFunctionNode<StoneDBExpression, StoneDBAggregateFunction> sum = new NewFunctionNode<>(
-                        aggregate.getArgs(), StoneDBAggregateFunction.SUM);
-                count = new StoneDBCastOperation(new NewFunctionNode<>(aggregate.getArgs(), StoneDBAggregateFunction.COUNT),
-                        new StoneDBCompositeDataType(StoneDBDataType.FLOAT, 8).getPrimitiveDataType());
-                return aliasArgs(Arrays.asList(sum, count));
-            default:
-                throw new AssertionError(aggregate.getFunc());
+        case COUNT:
+        case MAX:
+        case MIN:
+        case SUM:
+            return aliasArgs(List.of(aggregate));
+        case AVG:
+            NewFunctionNode<StoneDBExpression, StoneDBAggregateFunction> sum = new NewFunctionNode<>(
+                    aggregate.getArgs(), StoneDBAggregateFunction.SUM);
+            count = new StoneDBCastOperation(new NewFunctionNode<>(aggregate.getArgs(), StoneDBAggregateFunction.COUNT),
+                    new StoneDBCompositeDataType(StoneDBDataType.FLOAT, 8).getPrimitiveDataType());
+            return aliasArgs(Arrays.asList(sum, count));
+        default:
+            throw new AssertionError(aggregate.getFunc());
         }
     }
 
@@ -144,17 +144,17 @@ public class StoneDBQueryPartitioningAggregateTester extends StoneDBQueryPartiti
 
     private String getOuterAggregateFunction(NewFunctionNode<StoneDBExpression, StoneDBAggregateFunction> aggregate) {
         switch (aggregate.getFunc()) {
-            case AVG:
-                return "SUM(agg0)/SUM(agg1)";
-            case COUNT:
-                return StoneDBAggregateFunction.SUM + "(agg0)";
-            default:
-                return aggregate.getFunc().toString() + "(agg0)";
+        case AVG:
+            return "SUM(agg0)/SUM(agg1)";
+        case COUNT:
+            return StoneDBAggregateFunction.SUM + "(agg0)";
+        default:
+            return aggregate.getFunc().toString() + "(agg0)";
         }
     }
 
     private StoneDBSelect getSelect(List<Node<StoneDBExpression>> aggregates, List<Node<StoneDBExpression>> fromList,
-                                    Node<StoneDBExpression> whereClause, List<Node<StoneDBExpression>> joinList) {
+            Node<StoneDBExpression> whereClause, List<Node<StoneDBExpression>> joinList) {
         StoneDBSelect select = new StoneDBSelect();
         select.setFetchColumns(aggregates);
         select.setFromList(fromList);

@@ -1,5 +1,9 @@
 package sqlancer.stonedb.oracle;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.ColumnReferenceNode;
 import sqlancer.common.ast.newast.Node;
@@ -16,10 +20,6 @@ import sqlancer.stonedb.ast.StoneDBExpression;
 import sqlancer.stonedb.ast.StoneDBJoin;
 import sqlancer.stonedb.ast.StoneDBSelect;
 import sqlancer.stonedb.gen.StoneDBExpressionGenerator;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class StoneDBQueryPartitioningBase
         extends TernaryLogicPartitioningOracleBase<Node<StoneDBExpression>, StoneDBGlobalState>
