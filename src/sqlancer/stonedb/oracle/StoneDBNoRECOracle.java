@@ -11,6 +11,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.common.ast.newast.ColumnReferenceNode;
+import sqlancer.common.ast.newast.NewBinaryOperatorNode;
 import sqlancer.common.ast.newast.NewPostfixTextNode;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.ast.newast.TableReferenceNode;
@@ -29,6 +30,7 @@ import sqlancer.stonedb.ast.StoneDBExpression;
 import sqlancer.stonedb.ast.StoneDBJoin;
 import sqlancer.stonedb.ast.StoneDBSelect;
 import sqlancer.stonedb.gen.StoneDBExpressionGenerator;
+import sqlancer.stonedb.gen.StoneDBExpressionGenerator.StoneDBBinaryLogicalOperator;
 import sqlancer.stonedb.gen.StoneDBExpressionGenerator.StoneDBCastOperation;
 
 public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements TestOracle<StoneDBGlobalState> {
@@ -65,14 +67,16 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
     private int getUnoptimizedQueryCount(List<Node<StoneDBExpression>> tableList,
             Node<StoneDBExpression> randomWhereCondition, List<Node<StoneDBExpression>> joins) throws SQLException {
         StoneDBSelect select = new StoneDBSelect();
-        Node<StoneDBExpression> asText = new NewPostfixTextNode<>(new StoneDBCastOperation(
-                new NewPostfixTextNode<>(randomWhereCondition,
-                        " IS NOT NULL AND " + StoneDBToStringVisitor.asString(randomWhereCondition)),
-                StoneDBDataType.INT), "as count");
+        Node<StoneDBExpression> asText = new NewPostfixTextNode<>(
+                new StoneDBCastOperation(
+                        new NewBinaryOperatorNode<>(new NewPostfixTextNode<>(randomWhereCondition, " IS NOT NULL "),
+                                randomWhereCondition, StoneDBBinaryLogicalOperator.AND),
+                        StoneDBDataType.INT),
+                " as count");
         select.setFetchColumns(List.of(asText));
         select.setFromList(tableList);
         select.setJoinList(joins);
-        unoptimizedQueryString = "SELECT SUM(count) FROM (" + StoneDBToStringVisitor.asString(select) + ") as res";
+        unoptimizedQueryString = "SELECT SUM(count) FROM (" + StoneDBToStringVisitor.asString(select) + ") as res;";
         SQLQueryAdapter q = new SQLQueryAdapter(unoptimizedQueryString, errors);
         SQLancerResultSet rs;
         try {
@@ -104,14 +108,16 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
             select.setOrderByExpressions(new StoneDBExpressionGenerator(state).setColumns(columns).generateOrderBys());
         }
         select.setJoinList(joins);
-        int firstCount;
+        int firstCount = 0;
         try (Statement stat = con.createStatement()) {
             optimizedQueryString = StoneDBToStringVisitor.asString(select);
             if (options.logEachSelect()) {
                 logger.writeCurrent(optimizedQueryString);
             }
             try (ResultSet rs = stat.executeQuery(optimizedQueryString)) {
-                firstCount = rs.getFetchSize();
+                while (rs.next()) {
+                    firstCount++;
+                }
             }
         } catch (SQLException e) {
             throw new IgnoreMeException();

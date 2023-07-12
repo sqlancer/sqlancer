@@ -1,12 +1,13 @@
 package sqlancer.stonedb.gen;
 
 import static sqlancer.stonedb.gen.StoneDBTableCreateGenerator.ColumnOptions.PRIMARY_KEY;
-import static sqlancer.stonedb.gen.StoneDBTableCreateGenerator.ColumnOptions.UNIQUE;
+import static sqlancer.stonedb.gen.StoneDBTableCreateGenerator.ColumnOptions.UNIQUE_KEY;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import sqlancer.Randomly;
 import sqlancer.Randomly.StringGenerationStrategy;
@@ -41,7 +42,7 @@ public class StoneDBTableCreateGenerator {
     }
 
     public SQLQueryAdapter getQuery() {
-        sb.append(Randomly.fromOptions("CREATE TABLE ", "CREATE TEMPORARY TABLE "));
+        sb.append(Randomly.fromOptions("CREATE TABLE "/* , "CREATE TEMPORARY TABLE " */));
         if (Randomly.getBoolean()) {
             sb.append("IF NOT EXISTS ");
         }
@@ -52,8 +53,10 @@ public class StoneDBTableCreateGenerator {
             sb.append(schema.getRandomTable().getName());
         } else {
             appendColumns();
-            sb.append(" ");
-            appendTableOptions();
+            if (Randomly.getBoolean()) {
+                sb.append(" ");
+                appendTableOptions();
+            }
         }
         addExpectedErrors();
         return new SQLQueryAdapter(sb.toString(), errors, true);
@@ -71,6 +74,8 @@ public class StoneDBTableCreateGenerator {
         // java.sql.SQLSyntaxErrorException: Column length too big for column 'c1' (max = 16383); use BLOB or TEXT
         // instead
         errors.add("Column length too big for column");
+        // BLOB/TEXT column 'c0' used in key specification without a key length
+        errors.addRegex(Pattern.compile("BLOB/TEXT column 'c.*' used in key specification without a key length"));
     }
 
     private enum TableOptions {
@@ -187,7 +192,7 @@ public class StoneDBTableCreateGenerator {
     }
 
     protected enum ColumnOptions {
-        NULL_OR_NOT_NULL, UNIQUE, COMMENT, COLUMN_FORMAT, STORAGE, PRIMARY_KEY
+        NULL_OR_NOT_NULL, PRIMARY_KEY, UNIQUE_KEY, COMMENT, COLUMN_FORMAT, STORAGE
     }
 
     private void appendColumnOption(StoneDBDataType type) {
@@ -200,13 +205,13 @@ public class StoneDBTableCreateGenerator {
         // tableHasNullableColumn = true;
         // }
         // only use one key, unique key or primary key, but not both
-        if (columnOptions.contains(PRIMARY_KEY) && columnOptions.contains(UNIQUE)) {
-            columnOptions.remove(Randomly.fromOptions(PRIMARY_KEY, UNIQUE));
+        if (columnOptions.contains(PRIMARY_KEY) && columnOptions.contains(UNIQUE_KEY)) {
+            columnOptions.remove(Randomly.fromOptions(PRIMARY_KEY, UNIQUE_KEY));
         }
         if (isTextType) {
             // TODO: restriction due to the limited key length
             columnOptions.remove(PRIMARY_KEY);
-            columnOptions.remove(UNIQUE);
+            columnOptions.remove(UNIQUE_KEY);
         }
         for (ColumnOptions o : columnOptions) {
             sb.append(" ");
@@ -223,7 +228,7 @@ public class StoneDBTableCreateGenerator {
                     sb.append("NOT NULL");
                 }
                 break;
-            case UNIQUE:
+            case UNIQUE_KEY:
                 sb.append("UNIQUE");
                 if (Randomly.getBoolean()) {
                     sb.append(" KEY");
@@ -256,108 +261,6 @@ public class StoneDBTableCreateGenerator {
     }
 
     private void appendType(StoneDBDataType randomType) {
-        switch (randomType) {
-        case TINYINT:
-            sb.append("TINYINT");
-            // sb.append(r.getInteger(-128, 127));
-            break;
-        case SMALLINT:
-            sb.append("SMALLINT");
-            // sb.append(r.getInteger(-32768, 32767));
-            break;
-        case MEDIUMINT:
-            sb.append("MEDIUMINT");
-            // sb.append(r.getInteger(-8388608, 8388607));
-            break;
-        case INT:
-            sb.append("INT");
-            // sb.append(r.getInteger(-2147483647, 2147483647));
-            break;
-        case BIGINT:
-            sb.append("BIGINT");
-            // sb.append(r.getBigInteger(new BigInteger("-9223372036854775806"), new
-            // BigInteger("9223372036854775807")));
-            break;
-        case FLOAT:
-            sb.append("FLOAT");
-            optionallyAddPrecisionAndScale(sb);
-            break;
-        case DOUBLE:
-            sb.append("DOUBLE");
-            optionallyAddPrecisionAndScale(sb);
-            break;
-        case DECIMAL:
-            sb.append("DECIMAL"); // The default value is P(10,0);
-            break;
-        case YEAR:
-            sb.append("YEAR");
-            break;
-        case TIME:
-            sb.append("TIME");
-            break;
-        case DATE:
-            sb.append("DATE");
-            break;
-        case DATETIME:
-            sb.append("DATETIME");
-            break;
-        case TIMESTAMP:
-            sb.append("TIMESTAMP");
-            break;
-        case CHAR:
-            sb.append("CHAR").append(Randomly.fromOptions("", "(" + r.getInteger(0, 255) + ")"));
-            break;
-        case VARCHAR:
-            sb.append("VARCHAR").append("(").append(r.getInteger(0, 65535)).append(")");
-            break;
-        case TINYTEXT:
-            sb.append("TINYTEXT");
-            break;
-        case TEXT:
-            sb.append("TEXT");
-            break;
-        case MEDIUMTEXT:
-            sb.append("MEDIUMTEXT");
-            break;
-        case LONGTEXT:
-            sb.append("LONGTEXT");
-            break;
-        case BINARY:
-            sb.append("BINARY");
-            break;
-        case VARBINARY:
-            sb.append("VARBINARY").append("(").append(r.getInteger(0, 65535)).append(")");
-            break;
-        case TINYBLOB:
-            sb.append("TINYBLOB");
-            break;
-        case BLOB:
-            sb.append("BLOB");
-            break;
-        case MEDIUMBLOB:
-            sb.append("MEDIUMBLOB");
-            break;
-        case LONGBLOB:
-            sb.append("LONGBLOB");
-            break;
-        default:
-            throw new AssertionError();
-        }
-    }
-
-    public static void optionallyAddPrecisionAndScale(StringBuilder sb) {
-        if (Randomly.getBoolean()) {
-            sb.append("(");
-            // The maximum number of digits (M) for DECIMAL is 65
-            long m = Randomly.getNotCachedInteger(1, 65);
-            sb.append(m);
-            sb.append(", ");
-            // The maximum number of supported decimals (D) is 30
-            long nCandidate = Randomly.getNotCachedInteger(1, 30);
-            // For float(M,D), double(M,D) or decimal(M,D), M must be >= D (column 'c0').
-            long n = Math.min(nCandidate, m);
-            sb.append(n);
-            sb.append(")");
-        }
+        sb.append(StoneDBDataType.getTypeAndValue(randomType));
     }
 }

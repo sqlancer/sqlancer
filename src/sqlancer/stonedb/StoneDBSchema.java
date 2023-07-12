@@ -92,6 +92,87 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
             }
             return null;
         }
+
+        public static String getTypeAndValue(StoneDBDataType dataType) {
+            StringBuilder sb = new StringBuilder();
+            switch (dataType) {
+            case TINYINT:
+                return "TINYINT";
+            case SMALLINT:
+                return "SMALLINT";
+            case MEDIUMINT:
+                return "MEDIUMINT";
+            case INT:
+                return "INT";
+            case BIGINT:
+                return "BIGINT";
+            case FLOAT:
+                sb.append("FLOAT");
+                optionallyAddPrecisionAndScale(sb);
+                return sb.toString();
+            case DOUBLE:
+                sb.append("DOUBLE");
+                optionallyAddPrecisionAndScale(sb);
+                return sb.toString();
+            case DECIMAL:
+                return "DECIMAL"; // The default value is P(10,0);
+            case YEAR:
+                return "YEAR";
+            case TIME:
+                return "TIME";
+            case DATE:
+                return "DATE";
+            case DATETIME:
+                return "DATETIME";
+            case TIMESTAMP:
+                return "TIMESTAMP";
+            case CHAR:
+                sb.append("CHAR").append(Randomly.fromOptions("", "(" + new Randomly().getInteger(0, 255) + ")"));
+                return sb.toString();
+            case VARCHAR:
+                sb.append("VARCHAR").append("(").append(new Randomly().getInteger(0, 65535)).append(")");
+                return sb.toString();
+            case TINYTEXT:
+                return "TINYTEXT";
+            case TEXT:
+                return "TEXT";
+            case MEDIUMTEXT:
+                return "MEDIUMTEXT";
+            case LONGTEXT:
+                return "LONGTEXT";
+            case BINARY:
+                return "BINARY";
+            case VARBINARY:
+                sb.append("VARBINARY").append("(").append(new Randomly().getInteger(0, 65535)).append(")");
+                return sb.toString();
+            case TINYBLOB:
+                return "TINYBLOB";
+            case BLOB:
+                return "BLOB";
+            case MEDIUMBLOB:
+                return "MEDIUMBLOB";
+            case LONGBLOB:
+                return "LONGBLOB";
+            default:
+                throw new AssertionError();
+            }
+        }
+
+        private static void optionallyAddPrecisionAndScale(StringBuilder sb) {
+            if (Randomly.getBoolean()) {
+                sb.append("(");
+                // The maximum number of digits (M) for DECIMAL is 65
+                long m = Randomly.getNotCachedInteger(1, 65);
+                sb.append(m);
+                sb.append(", ");
+                // The maximum number of supported decimals (D) is 30
+                long nCandidate = Randomly.getNotCachedInteger(1, 30);
+                // For float(M,D), double(M,D) or decimal(M,D), M must be >= D (column 'c0').
+                long n = Math.min(nCandidate, m);
+                sb.append(n);
+                sb.append(")");
+            }
+        }
     }
 
     public static class StoneDBTable

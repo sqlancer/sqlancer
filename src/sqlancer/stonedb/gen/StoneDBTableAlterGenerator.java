@@ -1,24 +1,29 @@
 package sqlancer.stonedb.gen;
 
+import java.util.List;
+import java.util.regex.Pattern;
+
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema.StoneDBColumn;
-import sqlancer.stonedb.StoneDBSchema.StoneDBCompositeDataType;
+import sqlancer.stonedb.StoneDBSchema.StoneDBDataType;
 import sqlancer.stonedb.StoneDBSchema.StoneDBTable;
 
 public class StoneDBTableAlterGenerator {
     private final StoneDBGlobalState globalState;
     private final StringBuilder sb = new StringBuilder();
+    private final StoneDBTable table;
     ExpectedErrors errors = new ExpectedErrors();
 
     enum Action {
-        ADD_COLUMN, ALTER_COLUMN, DROP_COLUMN, CHANGE_COLUMN, RENAME_COLUMN
+        ADD_COLUMN, ALTER_COLUMN, DROP_COLUMN, CHANGE_COLUMN
     }
 
     public StoneDBTableAlterGenerator(StoneDBGlobalState globalState) {
         this.globalState = globalState;
+        table = globalState.getSchema().getRandomTable(t -> !t.isView());
     }
 
     public static SQLQueryAdapter generate(StoneDBGlobalState globalState) {
@@ -27,19 +32,56 @@ public class StoneDBTableAlterGenerator {
 
     private SQLQueryAdapter getQuery() {
         sb.append("ALTER TABLE ");
-        StoneDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-        StoneDBExpressionGenerator generator = new StoneDBExpressionGenerator(globalState)
-                .setColumns(table.getColumns());
         sb.append(table.getName());
         sb.append(" ");
-        Action action = Randomly.fromOptions(Action.values());
+        appendAlterOptions();
+        addExpectedErrors();
+        return new SQLQueryAdapter(sb.toString(), errors, true);
+    }
+
+    private void addExpectedErrors() {
+        // com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Data too long for column 'c0' at row 2
+        errors.addRegex(Pattern.compile("Data truncation: Data too long for column 'c\\d{1,3}' at row \\d{1,3}"));
+        // java.sql.SQLSyntaxErrorException: Specified key was too long; max key length is 3072 bytes
+        errors.add("Specified key was too long; max key length is 3072 bytes");
+        // java.sql.SQLSyntaxErrorException: You can't delete all columns with ALTER TABLE; use DROP TABLE instead
+        errors.add("You can't delete all columns with ALTER TABLE; use DROP TABLE instead");
+        // java.sql.SQLSyntaxErrorException: Unknown column 'c0' in 't1'
+        errors.addRegex(Pattern.compile("Unknown column 'c\\d{1,3}' in 't\\d{1,3}'"));
+        // java.sql.SQLSyntaxErrorException: BLOB, TEXT, GEOMETRY or JSON column 'c0' can't have a default value
+        errors.addRegex(Pattern.compile("BLOB, TEXT, GEOMETRY or JSON column 'c\\d{1,3}' can't have a default value"));
+        // java.sql.SQLSyntaxErrorException: Column length too big for column 'c91' (max = 16383); use BLOB or TEXT
+        // instead
+        errors.addRegex(Pattern
+                .compile("Column length too big for column 'c\\d{1,3}' \\(max = 16383\\); use BLOB or TEXT instead"));
+    }
+
+    private void appendAlterOptions() {
+        List<Action> actions;
+        if (Randomly.getBooleanWithSmallProbability()) {
+            actions = Randomly.subset(Action.values());
+        } else {
+            actions = List.of(Randomly.fromOptions(Action.values()));
+        }
+        for (Action action : actions) {
+            appendAlterOption(action);
+            sb.append(" ");
+        }
+    }
+
+    private void appendAlterOption(Action action) {
+        StoneDBExpressionGenerator generator = new StoneDBExpressionGenerator(globalState)
+                .setColumns(table.getColumns());
         switch (action) {
         case ADD_COLUMN:
             sb.append("ADD COLUMN ");
             String columnName = table.getFreeColumnName();
-            sb.append(columnName);
-            sb.append(" ");
-            sb.append(StoneDBCompositeDataType.getRandomWithoutNull().getPrimitiveDataType().toString());
+            sb.append(" ").append(columnName).append(" ");
+            sb.append(StoneDBDataType.getTypeAndValue(StoneDBDataType.getRandomWithoutNull()));
+            // java.sql.SQLSyntaxErrorException: Column length too big for column 'c1' (max = 16383); use BLOB or TEXT
+            // instead
+            errors.addRegex(Pattern
+                    .compile("Column length too big for column 'c\\d{1,3}' (max = 16383); use BLOB or TEXT instead"));
             if (Randomly.getBoolean()) {
                 if (Randomly.getBoolean()) {
                     sb.append(" FIRST");
@@ -63,17 +105,17 @@ public class StoneDBTableAlterGenerator {
             } else {
                 sb.append(" DROP DEFAULT");
             }
-            if (Randomly.getBoolean()) {
-                sb.append(" SET ").append(Randomly.fromOptions("VISIBLE", "INVISIBLE"));
-            }
             break;
         case CHANGE_COLUMN:
             sb.append(Randomly.fromOptions("CHANGE COLUMN ", "CHANGE "));
             String oldColumnName = table.getRandomColumn().getName();
             String newColumnName = table.getFreeColumnName();
-            sb.append(oldColumnName).append(" ").append(newColumnName);
-            sb.append(" ");
-            sb.append(StoneDBCompositeDataType.getRandomWithoutNull().getPrimitiveDataType().toString());
+            sb.append(oldColumnName).append(" ").append(newColumnName).append(" ");
+            sb.append(StoneDBDataType.getTypeAndValue(StoneDBDataType.getRandomWithoutNull()));
+            // java.sql.SQLSyntaxErrorException: Column length too big for column 'c1' (max = 16383); use BLOB or TEXT
+            // instead
+            errors.addRegex(Pattern
+                    .compile("Column length too big for column 'c\\d{1,3}' (max = 16383); use BLOB or TEXT instead"));
             if (Randomly.getBoolean()) {
                 if (Randomly.getBoolean()) {
                     sb.append(" FIRST");
@@ -83,21 +125,8 @@ public class StoneDBTableAlterGenerator {
                 }
             }
             break;
-        case RENAME_COLUMN:
-            sb.append("RENAME COLUMN ");
-            sb.append(table.getRandomColumn().getName());
-            sb.append(" TO ");
-            sb.append(table.getFreeColumnName());
-            break;
         default:
             throw new AssertionError(action);
         }
-        addExpectedErrors();
-        return new SQLQueryAdapter(sb.toString(), errors, true);
-    }
-
-    private void addExpectedErrors() {
-        // java.sql.SQLSyntaxErrorException: You can't delete all columns with ALTER TABLE; use DROP TABLE instead
-        errors.add("You can't delete all columns with ALTER TABLE; use DROP TABLE instead");
     }
 }

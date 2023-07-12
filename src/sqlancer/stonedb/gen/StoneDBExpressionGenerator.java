@@ -2,11 +2,14 @@ package sqlancer.stonedb.gen;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
+import sqlancer.common.ast.newast.ColumnReferenceNode;
 import sqlancer.common.ast.newast.NewBetweenOperatorNode;
 import sqlancer.common.ast.newast.NewBinaryOperatorNode;
 import sqlancer.common.ast.newast.NewCaseOperatorNode;
@@ -32,25 +35,35 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
 
     private enum Expression {
         UNARY_PREFIX, UNARY_POSTFIX, BINARY_COMPARISON, BINARY_LOGICAL, BINARY_ARITHMETIC, BINARY_BITWISE, BETWEEN, IN,
-        CASE
+        NOT_IN, CASE
     }
 
-    public static class StoneDBCastOperation extends NewUnaryPostfixOperatorNode<StoneDBExpression> {
+    public static class StoneDBCastOperation implements Node<StoneDBExpression> {
+        Node<StoneDBExpression> expr;
+        StoneDBDataType type;
 
         public StoneDBCastOperation(Node<StoneDBExpression> expr, StoneDBDataType type) {
-            super(expr, () -> "::" + type.toString());
+            this.expr = expr;
+            this.type = type;
         }
 
+        public Node<StoneDBExpression> getExpr() {
+            return expr;
+        }
+
+        public StoneDBDataType getType() {
+            return type;
+        }
     }
 
     @Override
     public Node<StoneDBExpression> negatePredicate(Node<StoneDBExpression> predicate) {
-        return null;
+        return new NewUnaryPrefixOperatorNode<>(predicate, StoneDBUnaryPrefixOperator.NOT);
     }
 
     @Override
     public Node<StoneDBExpression> isNull(Node<StoneDBExpression> expr) {
-        return null;
+        return new NewUnaryPostfixOperatorNode<>(expr, StoneDBUnaryPostfixOperator.IS_NULL);
     }
 
     @Override
@@ -111,6 +124,12 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
         case BINARY_COMPARISON:
             op = StoneDBBinaryComparisonOperator.getRandom();
             return new NewBinaryOperatorNode<>(generateExpression(depth + 1), generateExpression(depth + 1), op);
+        case IN:
+            return new NewInOperatorNode<>(generateExpression(depth + 1),
+                    generateExpressions(Randomly.smallNumber() + 1, depth + 1), false);
+        case NOT_IN:
+            return new NewInOperatorNode<>(generateExpression(depth + 1),
+                    generateExpressions(Randomly.smallNumber() + 1, depth + 1), true);
         case BINARY_LOGICAL:
             op = StoneDBBinaryLogicalOperator.getRandom();
             return new NewBinaryOperatorNode<>(generateExpression(depth + 1), generateExpression(depth + 1), op);
@@ -123,9 +142,6 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
         case BETWEEN:
             return new NewBetweenOperatorNode<>(generateExpression(depth + 1), generateExpression(depth + 1),
                     generateExpression(depth + 1), Randomly.getBoolean());
-        case IN:
-            return new NewInOperatorNode<>(generateExpression(depth + 1),
-                    generateExpressions(Randomly.smallNumber() + 1, depth + 1), Randomly.getBoolean());
         case CASE:
             int nr = Randomly.smallNumber() + 1;
             return new NewCaseOperatorNode<>(generateExpression(depth + 1), generateExpressions(nr, depth + 1),
@@ -137,7 +153,17 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
 
     @Override
     protected Node<StoneDBExpression> generateColumn() {
-        return null;
+        StoneDBColumn column = Randomly.fromList(columns);
+        return new ColumnReferenceNode<>(column);
+    }
+
+    protected List<Node<StoneDBExpression>> generateColumns() {
+        int size = globalState.getRandomly().getInteger(1, columns.size());
+        Set<Node<StoneDBExpression>> set = new HashSet<>();
+        while (set.size() < size) {
+            set.add(generateColumn());
+        }
+        return new ArrayList<>(set);
     }
 
     public enum StoneDBAggregateFunction {
@@ -160,7 +186,7 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
 
     public enum StoneDBUnaryPrefixOperator implements Operator {
 
-        NOT("NOT"), PLUS("+"), MINUS("-");
+        NOT("NOT"), PLUS("+"), MINUS("-"), INVERSION("!");
 
         private final String textRepr;
 
@@ -203,8 +229,7 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
      */
     public enum StoneDBBinaryComparisonOperator implements Operator {
         EQUAL("="), GREATER(">"), LESS("<"), GREATER_EQUAL(">="), LESS_EQUAL("<="),
-        NOT_EQUALS(Randomly.fromList(Arrays.asList("!=", "<>"))), NULL_SAFE_EQUAL("<=>"), IN("IN"), NOT_IN("NOT_IN"),
-        LIKE("LIKE"), IS_NULL("IS NULL"), IS_NOT_NULL("IS NOT NULL");
+        NOT_EQUALS(Randomly.fromList(Arrays.asList("!=", "<>"))), NULL_SAFE_EQUAL("<=>"), LIKE("LIKE");
 
         private final String textRepr;
 
@@ -227,7 +252,7 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
      */
     public enum StoneDBBinaryLogicalOperator implements Operator {
 
-        NOT("NOT"), AND("AND"), OR("OR"), XOR("XOR");
+        AND("AND"), OR("OR"), XOR("XOR");
 
         private final String textRepr;
 
@@ -274,7 +299,7 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
      * Bitwise operators supported by StoneDB: https://stonedb.io/docs/SQL-reference/operators/bitwise-operators
      */
     public enum StoneDBBinaryBitwiseOperator implements Operator {
-        AND("&"), OR("|"), XOR("^"), INVERSION("!"), LEFTSHIFT("<<"), RIGHTSHIFT(">>");
+        AND("&"), OR("|"), XOR("^"), LEFTSHIFT("<<"), RIGHTSHIFT(">>");
 
         private final String textRepr;
 
