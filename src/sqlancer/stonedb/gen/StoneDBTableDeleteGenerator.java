@@ -46,22 +46,17 @@ public final class StoneDBTableDeleteGenerator {
                     .setColumns(randomTable.getColumns()).generateExpression()));
         }
         if (Randomly.getBoolean()) {
-            sb.append(" ORDER BY ");
-            sb.append(String.join(", ", Randomly.fromOptions(
-                    randomTable.getColumns().stream().map(AbstractTableColumn::getName).collect(Collectors.toList())))
-                    .replace('[', '(').replace(']', ')'));
+            if (!StoneDBBugs.bug1933) {
+                sb.append(" ORDER BY ");
+                sb.append(String.join(", ", Randomly.fromOptions(
+                                randomTable.getColumns().stream().map(AbstractTableColumn::getName).collect(Collectors.toList())))
+                        .replace('[', '(').replace(']', ')'));
+            }
         }
         if (Randomly.getBoolean()) {
             sb.append(" LIMIT ");
             sb.append(r.getInteger(0, (int) randomTable.getNrRows(globalState)));
         }
-        addExpectedErrors();
         return new SQLQueryAdapter(sb.toString(), errors);
-    }
-
-    private void addExpectedErrors() {
-        if (StoneDBBugs.bug1933) {
-            errors.add("assert failed on i < m_idx.size() at tianmu_attr.h:387, msg: [bad dpn index 0/0]");
-        }
     }
 }
