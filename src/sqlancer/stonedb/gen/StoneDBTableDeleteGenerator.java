@@ -45,14 +45,11 @@ public final class StoneDBTableDeleteGenerator {
             sb.append(StoneDBToStringVisitor.asString(new StoneDBExpressionGenerator(globalState)
                     .setColumns(randomTable.getColumns()).generateExpression()));
         }
-        if (Randomly.getBoolean()) {
-            if (!StoneDBBugs.bug1933) {
-                sb.append(" ORDER BY ");
-                sb.append(String
-                        .join(", ", Randomly.fromOptions(randomTable.getColumns().stream()
-                                .map(AbstractTableColumn::getName).collect(Collectors.toList())))
-                        .replace('[', '(').replace(']', ')'));
-            }
+        if (!StoneDBBugs.bug1933 && Randomly.getBoolean()) {
+            sb.append(" ORDER BY ");
+            sb.append(String.join(", ", Randomly.fromOptions(
+                    randomTable.getColumns().stream().map(AbstractTableColumn::getName).collect(Collectors.toList())))
+                    .replace('[', '(').replace(']', ')'));
         }
         if (Randomly.getBoolean()) {
             sb.append(" LIMIT ");
