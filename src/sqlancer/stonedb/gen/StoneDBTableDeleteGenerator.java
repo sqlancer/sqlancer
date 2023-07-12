@@ -48,8 +48,9 @@ public final class StoneDBTableDeleteGenerator {
         if (Randomly.getBoolean()) {
             if (!StoneDBBugs.bug1933) {
                 sb.append(" ORDER BY ");
-                sb.append(String.join(", ", Randomly.fromOptions(
-                                randomTable.getColumns().stream().map(AbstractTableColumn::getName).collect(Collectors.toList())))
+                sb.append(String
+                        .join(", ", Randomly.fromOptions(randomTable.getColumns().stream()
+                                .map(AbstractTableColumn::getName).collect(Collectors.toList())))
                         .replace('[', '(').replace(']', ')'));
             }
         }
