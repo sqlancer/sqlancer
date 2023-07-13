@@ -8,6 +8,7 @@ import java.util.Set;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.Randomly.StringGenerationStrategy;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
 import sqlancer.common.ast.newast.ColumnReferenceNode;
 import sqlancer.common.ast.newast.NewBetweenOperatorNode;
@@ -85,7 +86,9 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
         case TIMESTAMP:
             return StoneDBConstant.createTimestampConstant(globalState.getRandomly().getInteger());
         case VARCHAR:
-            return StoneDBConstant.createTextConstant(globalState.getRandomly().getString());
+            StringGenerationStrategy strategy = StringGenerationStrategy.ALPHANUMERIC;
+            String str = strategy.getString(new Randomly());
+            return StoneDBConstant.createTextConstant(str);
         case DOUBLE:
             return StoneDBConstant.createDoubleConstant(globalState.getRandomly().getDouble());
         default:

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import sqlancer.Randomly;
+import sqlancer.Randomly.StringGenerationStrategy;
 import sqlancer.SQLConnection;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.schema.AbstractRelationalTable;
@@ -70,7 +71,9 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
             case TINYTEXT:
                 break;
             case TEXT:
-                return StoneDBConstant.createTextConstant(new Randomly().getString());
+                StringGenerationStrategy strategy = StringGenerationStrategy.ALPHANUMERIC;
+                String str = strategy.getString(new Randomly());
+                return StoneDBConstant.createTextConstant(str);
             case MEDIUMTEXT:
                 break;
             case LONGTEXT:
