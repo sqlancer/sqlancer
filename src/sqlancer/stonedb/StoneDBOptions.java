@@ -36,7 +36,18 @@ public class StoneDBOptions implements DBMSSpecificOptions<StoneDBOracleFactory>
                 return new StoneDBNoRECOracle(globalState);
             }
         },
-
+        QUERY_PARTITIONING {
+            @Override
+            public TestOracle<StoneDBGlobalState> create(StoneDBGlobalState globalState) throws SQLException {
+                List<TestOracle<StoneDBGlobalState>> oracles = new ArrayList<>();
+                oracles.add(new StoneDBQueryPartitioningWhereTester(globalState));
+                oracles.add(new StoneDBQueryPartitioningHavingTester(globalState));
+                oracles.add(new StoneDBQueryPartitioningAggregateTester(globalState));
+                oracles.add(new StoneDBQueryPartitioningDistinctTester(globalState));
+                oracles.add(new StoneDBQueryPartitioningGroupByTester(globalState));
+                return new CompositeTestOracle<>(oracles, globalState);
+            }
+        },
         HAVING {
             @Override
             public TestOracle<StoneDBGlobalState> create(StoneDBGlobalState globalState) throws SQLException {
@@ -68,19 +79,7 @@ public class StoneDBOptions implements DBMSSpecificOptions<StoneDBOracleFactory>
             public TestOracle<StoneDBGlobalState> create(StoneDBGlobalState globalState) throws SQLException {
                 return new StoneDBQueryPartitioningDistinctTester(globalState);
             }
-        },
-        QUERY_PARTITIONING {
-            @Override
-            public TestOracle<StoneDBGlobalState> create(StoneDBGlobalState globalState) throws SQLException {
-                List<TestOracle<StoneDBGlobalState>> oracles = new ArrayList<>();
-                oracles.add(new StoneDBQueryPartitioningWhereTester(globalState));
-                oracles.add(new StoneDBQueryPartitioningHavingTester(globalState));
-                oracles.add(new StoneDBQueryPartitioningAggregateTester(globalState));
-                oracles.add(new StoneDBQueryPartitioningDistinctTester(globalState));
-                oracles.add(new StoneDBQueryPartitioningGroupByTester(globalState));
-                return new CompositeTestOracle<>(oracles, globalState);
-            }
-        };
+        }
     }
 
     @Override
