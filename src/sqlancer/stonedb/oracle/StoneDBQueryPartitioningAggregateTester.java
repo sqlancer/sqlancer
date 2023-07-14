@@ -126,7 +126,7 @@ public class StoneDBQueryPartitioningAggregateTester extends StoneDBQueryPartiti
             NewFunctionNode<StoneDBExpression, StoneDBAggregateFunction> sum = new NewFunctionNode<>(
                     aggregate.getArgs(), StoneDBAggregateFunction.SUM);
             count = new StoneDBCastOperation(new NewFunctionNode<>(aggregate.getArgs(), StoneDBAggregateFunction.COUNT),
-                    new StoneDBCompositeDataType(StoneDBDataType.FLOAT, 8).getPrimitiveDataType());
+                    new StoneDBCompositeDataType(StoneDBDataType.DECIMAL).getPrimitiveDataType());
             return aliasArgs(Arrays.asList(sum, count));
         default:
             throw new AssertionError(aggregate.getFunc());
