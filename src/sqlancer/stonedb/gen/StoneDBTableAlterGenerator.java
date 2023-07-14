@@ -47,7 +47,8 @@ public class StoneDBTableAlterGenerator {
         errors.add("Incorrect datetime value: ");
         // java.sql.SQLSyntaxErrorException: Invalid default value for 'c0'
         errors.add("Invalid default value for ");
-        // com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Out of range value for column 'c0' at row 2
+        // com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Out of range value for column 'c0' at row
+        // 2
         errors.add("Data truncation: Out of range value for column ");
         // java.sql.SQLSyntaxErrorException: Specified key was too long; max key length is 3072 bytes
         errors.add("Specified key was too long; max key length is 3072 bytes");
