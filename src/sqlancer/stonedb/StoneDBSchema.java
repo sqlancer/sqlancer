@@ -144,7 +144,8 @@ public class StoneDBSchema extends AbstractSchema<StoneDBProvider.StoneDBGlobalS
             case LONGTEXT:
                 return "LONGTEXT";
             case BINARY:
-                return "BINARY";
+                sb.append("BINARY").append("(").append(new Randomly().getInteger(0, 255)).append(")");
+                return sb.toString();
             case VARBINARY:
                 sb.append("VARBINARY").append("(").append(new Randomly().getInteger(0, 65535)).append(")");
                 return sb.toString();
