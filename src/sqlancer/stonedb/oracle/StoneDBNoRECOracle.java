@@ -19,7 +19,6 @@ import sqlancer.common.oracle.NoRECBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
-import sqlancer.stonedb.StoneDBErrors;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema;
 import sqlancer.stonedb.StoneDBSchema.StoneDBColumn;
@@ -54,7 +53,6 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
                 .map(t -> new TableReferenceNode<StoneDBExpression, StoneDBTable>(t)).collect(Collectors.toList());
         List<Node<StoneDBExpression>> joins = StoneDBJoin.getJoins(tableList, state);
         // get and check count
-        StoneDBErrors.addExpectedSelectErrors(errors);
         int secondCount = getUnoptimizedQueryCount(new ArrayList<>(tableList), randomWhereCondition, joins);
         int firstCount = getOptimizedQueryCount(con, new ArrayList<>(tableList), columns, randomWhereCondition, joins);
         if (firstCount == -1 || secondCount == -1) {
