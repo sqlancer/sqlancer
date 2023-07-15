@@ -1,5 +1,6 @@
 package sqlancer.stonedb.gen;
 
+import java.util.List;
 import java.util.regex.Pattern;
 
 import sqlancer.Randomly;
@@ -33,7 +34,7 @@ public class StoneDBTableAlterGenerator {
         sb.append("ALTER TABLE ");
         sb.append(table.getName());
         sb.append(" ");
-        appendAlterOption(Randomly.fromOptions(Action.values()));
+        appendAlterOptions();
         addExpectedErrors();
         return new SQLQueryAdapter(sb.toString(), errors, true);
     }
@@ -53,6 +54,19 @@ public class StoneDBTableAlterGenerator {
         // instead
         errors.addRegex(Pattern
                 .compile("Column length too big for column 'c\\d{1,3}' \\(max = 16383\\); use BLOB or TEXT instead"));
+    }
+
+    private void appendAlterOptions() {
+        List<Action> actions;
+        if (Randomly.getBooleanWithSmallProbability()) {
+            actions = Randomly.subset(Action.values());
+        } else {
+            actions = List.of(Randomly.fromOptions(Action.values()));
+        }
+        for (Action action : actions) {
+            appendAlterOption(action);
+            sb.append(" ");
+        }
     }
 
     private void appendAlterOption(Action action) {
