@@ -110,7 +110,8 @@ public class StoneDBTableAlterGenerator {
             // instead
             errors.addRegex(Pattern
                     .compile("Column length too big for column 'c\\d{1,3}' (max = 16383); use BLOB or TEXT instead"));
-            // java.sql.SQLSyntaxErrorException: BLOB column 'c1' can't be used in key specification with the used table type
+            // java.sql.SQLSyntaxErrorException: BLOB column 'c1' can't be used in key specification with the used table
+            // type
             errors.addRegex(Pattern
                     .compile("BLOB column 'c\\d{1,3}' can't be used in key specification with the used table type"));
             if (Randomly.getBoolean()) {
