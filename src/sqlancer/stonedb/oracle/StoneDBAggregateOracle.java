@@ -26,9 +26,9 @@ import sqlancer.stonedb.gen.StoneDBExpressionGenerator.StoneDBCastOperation;
 import sqlancer.stonedb.gen.StoneDBExpressionGenerator.StoneDBUnaryPostfixOperator;
 import sqlancer.stonedb.gen.StoneDBExpressionGenerator.StoneDBUnaryPrefixOperator;
 
-public class StoneDBQueryPartitioningAggregateTester extends StoneDBQueryPartitioningBase {
+public class StoneDBAggregateOracle extends StoneDBQueryPartitioningBase {
 
-    public StoneDBQueryPartitioningAggregateTester(StoneDBGlobalState state) {
+    public StoneDBAggregateOracle(StoneDBGlobalState state) {
         super(state);
     }
 
