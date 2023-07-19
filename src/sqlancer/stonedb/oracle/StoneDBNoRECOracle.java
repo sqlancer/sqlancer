@@ -41,6 +41,7 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
     public StoneDBNoRECOracle(StoneDBGlobalState globalState) {
         super(globalState);
         this.schema = globalState.getSchema();
+        StoneDBErrors.addExpectedExpressionErrors(errors);
     }
 
     @Override
@@ -54,7 +55,6 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
                 .map(t -> new TableReferenceNode<StoneDBExpression, StoneDBTable>(t)).collect(Collectors.toList());
         List<Node<StoneDBExpression>> joins = StoneDBJoin.getJoins(tableList, state);
         // get and check count
-        StoneDBErrors.addExpectedSelectErrors(errors);
         int secondCount = getUnoptimizedQueryCount(new ArrayList<>(tableList), randomWhereCondition, joins);
         int firstCount = getOptimizedQueryCount(con, new ArrayList<>(tableList), columns, randomWhereCondition, joins);
         if (firstCount == -1 || secondCount == -1) {

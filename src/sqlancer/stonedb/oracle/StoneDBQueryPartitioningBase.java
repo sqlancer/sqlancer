@@ -11,6 +11,7 @@ import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
 import sqlancer.common.oracle.TestOracle;
+import sqlancer.stonedb.StoneDBErrors;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema;
 import sqlancer.stonedb.StoneDBSchema.StoneDBColumn;
@@ -32,6 +33,7 @@ public class StoneDBQueryPartitioningBase
 
     public StoneDBQueryPartitioningBase(StoneDBGlobalState state) {
         super(state);
+        StoneDBErrors.addExpectedExpressionErrors(errors);
     }
 
     @Override
