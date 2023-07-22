@@ -46,13 +46,14 @@ public class DorisQueryPartitioningBase extends TernaryLogicPartitioningOracleBa
         s = state.getSchema();
         targetTables = s.getRandomTableNonEmptyTables();
         gen = new DorisNewExpressionGenerator(state).setColumns(targetTables.getColumns());
+        List<DorisColumnValue> allColumnValues = targetTables.getColumns().stream().map(c -> new DorisColumnValue(c, null))
+                .collect(Collectors.toList());
         HashSet<DorisColumnValue> columnOfLeafNode = new HashSet<>();
         gen.setColumnOfLeafNode(columnOfLeafNode);
         initializeTernaryPredicateVariants();
         select = new DorisSelect();
-        columnOfLeafNode.addAll(targetTables.getColumns().stream().map(c -> new DorisColumnValue(c, null))
-                .collect(Collectors.toList()));
-        groupByExpression = new ArrayList<>(columnOfLeafNode);
+        columnOfLeafNode.addAll(allColumnValues);
+        groupByExpression = new ArrayList<>(allColumnValues);
         select.setFetchColumns(generateFetchColumns());
         List<DorisTable> tables = targetTables.getTables();
         List<TableReferenceNode<DorisExpression, DorisTable>> tableList = tables.stream()

@@ -488,22 +488,33 @@ jobs:
       - name: Set up Apache Doris
         run: |
           sudo sysctl -w vm.max_map_count=2000000
-          LATEST_TAG=$(curl -s GET https://api.github.com/repos/apache/doris/releases | jq -r '.[].tag_name' | sed -n 1p)
-          LATEST_TAG_BIG_VERSION=$(echo ${LATEST_TAG} | awk '{split($1, arr, "."); print arr[1]"."arr[2]}')
-          echo "Apache Doris latest version tag: ${LATEST_TAG_BIG_VERSION}, ${LATEST_TAG}"
-          echo -e "Now try to download Apache Doris, including 3 parts: \n -- doris-fe https://www.apache.org/dyn/mirrors/mirrors.cgi?action=download&filename=doris/${LATEST_TAG_BIG_VERSION}/${LATEST_TAG}/apache-doris-fe-${LATEST_TAG}-bin-x86_64.tar.xz \n -- doris-be https://www.apache.org/dyn/mirrors/mirrors.cgi?action=download&filename=doris/${LATEST_TAG_BIG_VERSION}/${LATEST_TAG}/apache-doris-be-${LATEST_TAG}-bin-x86_64.tar.xz \n -- doris-dependencies https://www.apache.org/dyn/mirrors/mirrors.cgi?action=download&filename=doris/${LATEST_TAG_BIG_VERSION}/${LATEST_TAG}/apache-doris-dependencies-${LATEST_TAG}-bin-x86_64.tar.xz"
-          curl -LJO "https://www.apache.org/dyn/mirrors/mirrors.cgi?action=download&filename=doris/${LATEST_TAG_BIG_VERSION}/${LATEST_TAG}/apache-doris-fe-${LATEST_TAG}-bin-x86_64.tar.xz"
-          curl -LJO "https://www.apache.org/dyn/mirrors/mirrors.cgi?action=download&filename=doris/${LATEST_TAG_BIG_VERSION}/${LATEST_TAG}/apache-doris-be-${LATEST_TAG}-bin-x86_64.tar.xz"
-          curl -LJO "https://www.apache.org/dyn/mirrors/mirrors.cgi?action=download&filename=doris/${LATEST_TAG_BIG_VERSION}/${LATEST_TAG}/apache-doris-dependencies-${LATEST_TAG}-bin-x86_64.tar.xz"
-          mkdir ./doris
-          tar -xf apache-doris-fe-${LATEST_TAG}-bin-x86_64.tar.xz -C ./doris && mv doris/apache-doris-fe-${LATEST_TAG}-bin-x86_64 doris/fe
-          tar -xf apache-doris-be-${LATEST_TAG}-bin-x86_64.tar.xz -C ./doris && mv doris/apache-doris-be-${LATEST_TAG}-bin-x86_64 doris/be
-          tar -xf apache-doris-dependencies-${LATEST_TAG}-bin-x86_64.tar.xz -C ./doris && mv doris/apache-doris-dependencies-${LATEST_TAG}-bin-x86_64 doris/dependencies
-          cp doris/dependencies/*.jar doris/be/lib/
-          doris/fe/bin/start_fe.sh --daemon
-          doris/be/bin/start_be.sh --daemon
           sudo apt install libnet-ifconfig-wrapper-perl --assume-yes
           IP=$(ifconfig eth0 | grep inet | grep -v inet6 | awk '{print $2}')
+
+          docker pull apache/doris:2.0.0_alpha-fe-x86_64
+          docker pull apache/doris:2.0.0_alpha-be-x86_64
+
+          docker run -itd \
+          --name=fe \
+          --env FE_SERVERS="fe1:${IP}:9010" \
+          --env FE_ID=1 \
+          -p 8030:8030 \
+          -p 9030:9030 \
+          -v /data/fe/doris-meta:/opt/apache-doris/fe/doris-meta \
+          -v /data/fe/log:/opt/apache-doris/fe/log \
+          --net=host \
+          apache/doris:2.0.0_alpha-fe-x86_64
+
+          docker run -itd \
+          --name=be \
+          --env FE_SERVERS="fe1:${IP}:9010" \
+          --env BE_ADDR="${IP}:9050" \
+          -p 8040:8040 \
+          -v /data/be/storage:/opt/apache-doris/be/storage \
+          -v /data/be/log:/opt/apache-doris/be/log \
+          --net=host \
+          apache/doris:2.0.0_alpha-be-x86_64
+
           mysql -u root -h 127.0.0.1 --port 9030 -e "ALTER SYSTEM ADD BACKEND '${IP}:9050';"
           mysql -u root -h 127.0.0.1 --port 9030 -e "CREATE USER 'sqlancer' IDENTIFIED BY 'sqlancer'; GRANT ALL ON *.* TO sqlancer;"
       - name: Build SQLancer

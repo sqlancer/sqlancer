@@ -57,6 +57,14 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
         private int decimalPrecision;
         private int varcharLength;
 
+        public static DorisDataType getRandomWithoutNull() {
+            DorisDataType dt;
+            do {
+                dt = Randomly.fromOptions(values());
+            } while (dt == DorisDataType.NULL);
+            return dt;
+        }
+
         public static DorisDataType getRandomWithoutNull(DorisOptions options) {
             List<DorisDataType> validTypes = new ArrayList<>();
             if (options.testIntConstants) {

@@ -19,6 +19,8 @@ public final class DorisErrors {
         errors.add("ordinal exceeds number");
         errors.add("items in select list");
         errors.add("java.lang.IllegalStateException: null");
+        errors.add("list expression not");
+        errors.add("missing from");
 
         // Not in line with Doris' logic
         errors.add("Unexpected exception: null");
