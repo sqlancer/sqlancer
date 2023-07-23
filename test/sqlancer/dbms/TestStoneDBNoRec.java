@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import sqlancer.Main;
 
-public class TestStoneDB {
+public class TestStoneDBNoRec {
 
     String stoneDBAvailable = System.getenv("STONEDB_AVAILABLE");
     boolean stoneDBIsAvailable = stoneDBAvailable != null && stoneDBAvailable.equalsIgnoreCase("true");

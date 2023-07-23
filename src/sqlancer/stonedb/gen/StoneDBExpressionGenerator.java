@@ -166,6 +166,7 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
         return new ArrayList<>(set);
     }
 
+    // https://stonedb.io/docs/SQL-reference/functions/aggregate-functions/
     public enum StoneDBAggregateFunction {
         MAX(1), MIN(1), AVG(1), COUNT(1), FIRST(1), SUM(1);
 
@@ -316,5 +317,15 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
             return textRepr;
         }
 
+    }
+
+    public NewFunctionNode<StoneDBExpression, StoneDBAggregateFunction> generateAggregateAndArgs(
+            StoneDBAggregateFunction aggregateFunction) {
+        return new NewFunctionNode<>(generateExpressions(aggregateFunction.getNrArgs()), aggregateFunction);
+    }
+
+    public Node<StoneDBExpression> generateAggregate() {
+        StoneDBAggregateFunction aggrFunc = StoneDBAggregateFunction.getRandom();
+        return generateAggregateAndArgs(aggrFunc);
     }
 }
