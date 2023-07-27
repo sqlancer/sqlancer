@@ -13,8 +13,8 @@ import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.stonedb.StoneDBOptions.StoneDBOracleFactory;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
+import sqlancer.stonedb.oracle.StoneDBAggregateOracle;
 import sqlancer.stonedb.oracle.StoneDBNoRECOracle;
-import sqlancer.stonedb.oracle.StoneDBQueryPartitioningAggregateTester;
 import sqlancer.stonedb.oracle.StoneDBQueryPartitioningDistinctTester;
 import sqlancer.stonedb.oracle.StoneDBQueryPartitioningGroupByTester;
 import sqlancer.stonedb.oracle.StoneDBQueryPartitioningHavingTester;
@@ -42,7 +42,7 @@ public class StoneDBOptions implements DBMSSpecificOptions<StoneDBOracleFactory>
                 List<TestOracle<StoneDBGlobalState>> oracles = new ArrayList<>();
                 oracles.add(new StoneDBQueryPartitioningWhereTester(globalState));
                 oracles.add(new StoneDBQueryPartitioningHavingTester(globalState));
-                oracles.add(new StoneDBQueryPartitioningAggregateTester(globalState));
+                oracles.add(new StoneDBAggregateOracle(globalState));
                 oracles.add(new StoneDBQueryPartitioningDistinctTester(globalState));
                 oracles.add(new StoneDBQueryPartitioningGroupByTester(globalState));
                 return new CompositeTestOracle<>(oracles, globalState);
@@ -70,7 +70,7 @@ public class StoneDBOptions implements DBMSSpecificOptions<StoneDBOracleFactory>
 
             @Override
             public TestOracle<StoneDBGlobalState> create(StoneDBGlobalState globalState) throws SQLException {
-                return new StoneDBQueryPartitioningAggregateTester(globalState);
+                return new StoneDBAggregateOracle(globalState);
             }
 
         },
