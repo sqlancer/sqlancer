@@ -89,7 +89,7 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
             return StoneDBConstant.createTimestampConstant(globalState.getRandomly().getInteger());
         case VARCHAR:
             StringGenerationStrategy strategy = StringGenerationStrategy.ALPHANUMERIC;
-            String str = strategy.getString(new Randomly());
+            String str = strategy.getString(globalState.getRandomly());
             return StoneDBConstant.createTextConstant(str);
         case DOUBLE:
             return StoneDBConstant.createDoubleConstant(globalState.getRandomly().getDouble());
