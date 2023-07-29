@@ -262,7 +262,7 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
      */
     public enum StoneDBBinaryLogicalOperator implements Operator {
 
-        AND("AND"), OR("OR");
+        AND("AND"), OR("OR"), XOR("XOR");
 
         private final String textRepr;
 
