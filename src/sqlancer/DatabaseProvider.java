@@ -5,7 +5,7 @@ import sqlancer.common.log.LoggableFactory;
 public interface DatabaseProvider<G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> {
 
     /**
-     * Gets the the {@link GlobalState} class.
+     * Gets the {@link GlobalState} class.
      *
      * @return the class extending {@link GlobalState}
      */

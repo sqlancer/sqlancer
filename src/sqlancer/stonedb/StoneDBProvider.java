@@ -127,11 +127,7 @@ public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBG
         Connection con = DriverManager.getConnection(url, username, password);
         try (Statement s = con.createStatement()) {
             s.execute("DROP DATABASE IF EXISTS " + databaseName);
-        }
-        try (Statement s = con.createStatement()) {
             s.execute("CREATE DATABASE " + databaseName);
-        }
-        try (Statement s = con.createStatement()) {
             s.execute("USE " + databaseName);
         }
         return new SQLConnection(con);
