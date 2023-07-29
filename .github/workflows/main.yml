@@ -388,7 +388,7 @@ jobs:
           docker run -p 3306:3306 -itd  -e MYSQL_ROOT_PASSWORD='123456'  stoneatom/stonedb
           ContainerID=$(docker ps --filter ancestor=stoneatom/stonedb --format "{{.ID}}") 
           docker exec $ContainerID bash
-          sleep 30s
+          sleep 60s
           docker exec $ContainerID sed -i "s/tianmu_insert_delayed=1/tianmu_insert_delayed=0/" /opt/stonedb57/install/my.cnf
           sleep 3s
           docker exec $ContainerID /opt/stonedb57/install/bin/mysql -uroot -p123456 -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
