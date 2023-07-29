@@ -96,7 +96,7 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
         }
         int secondCount = 0;
         while (bug1953 && rs.next()) {
-            secondCount++;
+            secondCount += rs.getInt(1);
         }
         if (!bug1953 && rs.next()) {
             secondCount = 0;
