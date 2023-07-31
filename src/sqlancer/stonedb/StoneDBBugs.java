@@ -7,6 +7,10 @@ public final class StoneDBBugs {
     public static boolean bug1942 = true;
     // https://github.com/stoneatom/stonedb/issues/1953
     public static boolean bug1953 = true;
+    // CREATE TABLE t0(c0 INT);
+    // INSERT IGNORE INTO t0(c0) VALUE (DEFAULT);
+    // SELECT t0.c0 FROM t0 WHERE 0.4; -- expect 1 but got 0
+    public static boolean bugNotReported1 = true;
 
     private StoneDBBugs() {
     }

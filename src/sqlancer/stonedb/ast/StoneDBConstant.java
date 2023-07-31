@@ -1,5 +1,7 @@
 package sqlancer.stonedb.ast;
 
+import static sqlancer.stonedb.StoneDBBugs.bugNotReported1;
+
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
@@ -85,6 +87,9 @@ public class StoneDBConstant implements Node<StoneDBExpression> {
     }
 
     public static Node<StoneDBExpression> createDoubleConstant(double val) {
+        if (bugNotReported1 && val < 0.5 && val > 0) {
+            return new StoneDBDoubleConstant(0.5);
+        }
         return new StoneDBDoubleConstant(val);
     }
 
