@@ -144,7 +144,7 @@ public class StoneDBConstant implements Node<StoneDBExpression> {
             if (validValue < -30609820800000L) {
                 validValue = -30609820800000L;
             }
-            Timestamp timestamp = new Timestamp(val);
+            Timestamp timestamp = new Timestamp(validValue);
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             textRepr = dateFormat.format(timestamp);
         }
@@ -178,7 +178,7 @@ public class StoneDBConstant implements Node<StoneDBExpression> {
             if (validValue < -30609820800000L) {
                 validValue = -30609820800000L;
             }
-            Timestamp timestamp = new Timestamp(val);
+            Timestamp timestamp = new Timestamp(validValue);
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             textRepr = dateFormat.format(timestamp);
         }
