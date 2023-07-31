@@ -71,7 +71,8 @@ public class StoneDBTableAlterGenerator {
             sb.append("ADD COLUMN ");
             String columnName = table.getFreeColumnName();
             sb.append(" ").append(columnName).append(" ");
-            sb.append(StoneDBDataType.getTypeAndValue(StoneDBDataType.getRandomWithoutNull()));
+            sb.append(
+                    StoneDBDataType.getTypeAndValue(StoneDBDataType.getRandomWithoutNull(), globalState.getRandomly()));
             // java.sql.SQLSyntaxErrorException: Column length too big for column 'c1' (max = 16383); use BLOB or TEXT
             // instead
             errors.addRegex(Pattern
@@ -105,7 +106,8 @@ public class StoneDBTableAlterGenerator {
             String oldColumnName = table.getRandomColumn().getName();
             String newColumnName = table.getFreeColumnName();
             sb.append(oldColumnName).append(" ").append(newColumnName).append(" ");
-            sb.append(StoneDBDataType.getTypeAndValue(StoneDBDataType.getRandomWithoutNull()));
+            sb.append(
+                    StoneDBDataType.getTypeAndValue(StoneDBDataType.getRandomWithoutNull(), globalState.getRandomly()));
             // java.sql.SQLSyntaxErrorException: Column length too big for column 'c1' (max = 16383); use BLOB or TEXT
             // instead
             errors.addRegex(Pattern

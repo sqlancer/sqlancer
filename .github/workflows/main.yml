@@ -390,6 +390,7 @@ jobs:
           docker exec $ContainerID bash
           sleep 60s
           docker exec $ContainerID sed -i "s/tianmu_insert_delayed=1/tianmu_insert_delayed=0/" /opt/stonedb57/install/my.cnf
+          sleep 60s
           docker exec $ContainerID /opt/stonedb57/install/bin/mysql -uroot -p123456 -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
       - name: Set up JDK 11
         uses: actions/setup-java@v1.4.4
