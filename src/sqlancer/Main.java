@@ -19,6 +19,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.JCommander.Builder;
@@ -76,12 +77,16 @@ public final class Main {
         private final File loggerFile;
         private File curFile;
         private File queryPlanFile;
+        private File reduceFile;
         private FileWriter logFileWriter;
         public FileWriter currentFileWriter;
         private FileWriter queryPlanFileWriter;
+        private FileWriter reduceFileWriter;
         private static final List<String> INITIALIZED_PROVIDER_NAMES = new ArrayList<>();
         private final boolean logEachSelect;
         private final boolean logQueryPlan;
+
+        private final boolean useReducer;
         private final DatabaseProvider<?, ?, ?> databaseProvider;
 
         private static final class AlsoWriteToConsoleFileWriter extends FileWriter {
@@ -117,6 +122,14 @@ public final class Main {
             logQueryPlan = options.logQueryPlan();
             if (logQueryPlan) {
                 queryPlanFile = new File(dir, databaseName + "-plan.log");
+            }
+            this.useReducer = options.useReducer();
+            if (useReducer) {
+                File reduceFileDir = new File(dir, "reduce");
+                if (!reduceFileDir.exists()) {
+                    reduceFileDir.mkdir();
+                }
+                this.reduceFile = new File(reduceFileDir, databaseName + "-reduce.log");
             }
             this.databaseProvider = provider;
         }
@@ -183,6 +196,20 @@ public final class Main {
             return queryPlanFileWriter;
         }
 
+        public FileWriter getReduceFileWriter() {
+            if (!useReducer) {
+                throw new UnsupportedOperationException();
+            }
+            if (reduceFileWriter == null) {
+                try {
+                    reduceFileWriter = new FileWriter(reduceFile, false);
+                } catch (IOException e) {
+                    throw new AssertionError(e);
+                }
+            }
+            return reduceFileWriter;
+        }
+
         public void writeCurrent(StateToReproduce state) {
             if (!logEachSelect) {
                 throw new UnsupportedOperationException();
@@ -226,6 +253,27 @@ public final class Main {
                 queryPlanFileWriter.flush();
             } catch (IOException e) {
                 throw new AssertionError();
+            }
+        }
+
+        public void logReduced(StateToReproduce state, String tips) {
+            FileWriter reduceFileWriter = getReduceFileWriter();
+            List<Query<?>> reduced = state.getStatements();
+            try {
+                StringBuilder sb = new StringBuilder();
+                sb.append(tips).append("\n====================\n");
+                sb.append(reduced.stream().map(Query::getQueryString).collect(Collectors.joining("\n")));
+                sb.append("\n====================\n");
+                reduceFileWriter.write(sb.toString());
+
+            } catch (IOException e) {
+                throw new AssertionError(e);
+            } finally {
+                try {
+                    reduceFileWriter.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -395,7 +443,7 @@ public final class Main {
                 }
                 if (reproducer != null && options.useReducer()) {
                     System.out.println("EXPERIMENTAL: Trying to reduce queries using a simple reducer.");
-                    System.out.println("Reduced query will be output to stdout but not logs.");
+                    // System.out.println("Reduced query will be output to stdout but not logs.");
                     G newGlobalState = createGlobalState();
                     newGlobalState.setState(stateToRepro);
                     newGlobalState.setRandomly(r);

@@ -13,6 +13,14 @@ public class StatementReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpec
     private boolean observedChange;
     private int partitionNum;
 
+    private long currentReduceSteps;
+    private long currentReduceTime;
+
+    private long maxReduceSteps;
+    private long maxReduceTime;
+
+    Instant timeOfReductionBegins;
+
     public StatementReducer(DatabaseProvider<G, O, C> provider) {
         this.provider = provider;
     }
@@ -28,25 +36,26 @@ public class StatementReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpec
     @Override
     public void reduce(G state, Reproducer<G> reproducer, G newGlobalState) throws Exception {
 
-        long maxReduceTime = state.getOptions().getMaxStatementReduceTime();
-        long maxReduceSteps = state.getOptions().getMaxStatementReduceSteps();
+        maxReduceTime = state.getOptions().getMaxStatementReduceTime();
+        maxReduceSteps = state.getOptions().getMaxStatementReduceSteps();
 
         List<Query<C>> knownToReproduceBugStatements = new ArrayList<>();
         for (Query<?> stat : state.getState().getStatements()) {
             knownToReproduceBugStatements.add((Query<C>) stat);
         }
 
-        System.out.println("Starting query:");
-        printQueries(knownToReproduceBugStatements);
-        System.out.println();
-
+        // System.out.println("Starting query:");
+        // Main.StateLogger logger = newGlobalState.getLogger();
+        // printQueries(knownToReproduceBugStatements);
+        // System.out.println();
+        state.getLogger().logReduced(newGlobalState.getState(), "Original queries:");
         if (knownToReproduceBugStatements.size() <= 1) {
             return;
         }
 
-        Instant timeOfReductionBegins = Instant.now();
-        long currentReduceSteps = 0;
-        long currentReduceTime = 0;
+        timeOfReductionBegins = Instant.now();
+        currentReduceSteps = 0;
+        currentReduceTime = 0;
         partitionNum = 2;
 
         while (knownToReproduceBugStatements.size() >= 2 && hasNotReachedLimit(currentReduceSteps, maxReduceSteps)
@@ -55,23 +64,20 @@ public class StatementReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpec
 
             knownToReproduceBugStatements = tryReduction(state, reproducer, newGlobalState,
                     knownToReproduceBugStatements);
+
             if (!observedChange) {
                 if (partitionNum == knownToReproduceBugStatements.size()) {
                     break;
                 }
                 // increase the search granularity
                 partitionNum = Math.min(partitionNum * 2, knownToReproduceBugStatements.size());
-
-                currentReduceSteps++;
-                Instant currentInstant = Instant.now();
-                currentReduceTime = Duration.between(currentInstant, timeOfReductionBegins).getSeconds();
             }
-
         }
 
-        System.out.println("Reduced query:");
-        printQueries(knownToReproduceBugStatements);
+        // System.out.println("Reduced query:");
+        // printQueries(knownToReproduceBugStatements);
         newGlobalState.getState().setStatements(new ArrayList<>(knownToReproduceBugStatements));
+        state.getLogger().logReduced(newGlobalState.getState(), "Reduced queries:");
     }
 
     private List<Query<C>> tryReduction(G state, // NOPMD
@@ -102,19 +108,32 @@ public class StatementReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpec
                         observedChange = true;
                         statements = candidateStatements;
                         partitionNum = Math.max(partitionNum - 1, 2);
-                        break;
                         // reproducer.outputHook((SQLite3GlobalState) newGlobalState);
-                        // state.getLogger().logReduced(newGlobalState.getState());
+                        state.getLogger().logReduced(newGlobalState.getState(), "Current reduced result:");
+                        break;
+
                     }
                 } catch (Throwable ignoredException) {
 
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            currentReduceSteps++;
+            Instant currentInstant = Instant.now();
+
+            currentReduceTime = Duration.between(timeOfReductionBegins, currentInstant).getSeconds();
+            if (!hasNotReachedLimit(currentReduceSteps, maxReduceSteps)
+                    || !hasNotReachedLimit(currentReduceTime, maxReduceTime)) {
+                return statements;
             }
             start = start + subLength;
         }
         return statements;
     }
 
+    @SuppressWarnings("unused")
     private void printQueries(List<Query<C>> statements) {
         System.out.println("===============================");
         for (Query<?> q : statements) {
@@ -122,5 +141,4 @@ public class StatementReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpec
         }
         System.out.println("===============================");
     }
-
 }
