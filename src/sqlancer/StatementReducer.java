@@ -93,7 +93,8 @@ public class StatementReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpec
             try (C con2 = provider.createDatabase(newGlobalState)) {
                 newGlobalState.setConnection(con2);
                 List<Query<C>> candidateStatements = new ArrayList<>(statements);
-                candidateStatements.subList(start, start + subLength).clear();
+                int endPoint = Math.min(start + subLength, candidateStatements.size());
+                candidateStatements.subList(start, endPoint).clear();
                 newGlobalState.getState().setStatements(new ArrayList<>(candidateStatements));
 
                 for (Query<C> s : candidateStatements) {

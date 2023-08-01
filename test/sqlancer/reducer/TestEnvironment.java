@@ -103,6 +103,7 @@ public class TestEnvironment {
             newGlobalState = createGlobalState();
             Main.StateLogger newLogger = new Main.StateLogger(databaseName, provider, options);
             newGlobalState.setStateLogger(newLogger);
+            state.setStateLogger(newLogger);
             newGlobalState.setState(stateToReproduce);
             newGlobalState.setDatabaseName(databaseName);
             newGlobalState.setMainOptions(options);
