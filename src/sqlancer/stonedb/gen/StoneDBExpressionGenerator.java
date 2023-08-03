@@ -1,6 +1,7 @@
 package sqlancer.stonedb.gen;
 
 import static sqlancer.stonedb.StoneDBBugs.bug1942;
+import static sqlancer.stonedb.StoneDBBugs.bugNotReported3;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -126,8 +127,10 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
         case UNARY_POSTFIX:
             if (!bug1942) {
                 op = StoneDBUnaryPostfixOperator.getRandom();
-            } else {
+            } else if (!bugNotReported3) {
                 op = StoneDBUnaryPostfixOperator.IS_NULL;
+            } else {
+                throw new IgnoreMeException();
             }
             return new NewUnaryPostfixOperatorNode<>(generateExpression(depth + 1), op);
         case BINARY_COMPARISON:
