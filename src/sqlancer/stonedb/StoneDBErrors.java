@@ -15,6 +15,8 @@ public final class StoneDBErrors {
         errors.add("Incorrect integer value: ");
         // com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Truncated incorrect INTEGER value: '#Q'
         errors.add("Data truncation: Truncated incorrect INTEGER value: ");
+        // com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: BIGINT value is out of range in '-((`database0`.`t0`.`c1` >> (not(`database0`.`t0`.`c1`))))'
+        errors.add("Data truncation: BIGINT value is out of range in ");
     }
 
 }
