@@ -11,8 +11,9 @@ public final class StoneDBBugs {
     // INSERT IGNORE INTO t0(c0) VALUE (DEFAULT);
     // SELECT t0.c0 FROM t0 WHERE 0.4; -- expect 1 but got 0
     public static boolean bugNotReported1 = true;
+    // DELETE statements will result into crash, for example
     // DELETE LOW_PRIORITY FROM t0;
-    // will result into crash
+    // DELETE QUICK IGNORE FROM t0 WHERE -1370759901;
     public static boolean bugNotReported2 = true;
 
     private StoneDBBugs() {

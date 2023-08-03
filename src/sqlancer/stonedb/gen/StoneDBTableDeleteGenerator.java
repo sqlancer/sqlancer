@@ -1,7 +1,5 @@
 package sqlancer.stonedb.gen;
 
-import static sqlancer.stonedb.StoneDBBugs.bugNotReported2;
-
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
@@ -31,7 +29,7 @@ public final class StoneDBTableDeleteGenerator {
     public SQLQueryAdapter getQuery() {
         StoneDBTable randomTable = globalState.getSchema().getRandomTable();
         sb.append("DELETE");
-        if (!bugNotReported2 && Randomly.getBoolean()) {
+        if (Randomly.getBoolean()) {
             sb.append(" LOW_PRIORITY");
         }
         if (Randomly.getBoolean()) {
