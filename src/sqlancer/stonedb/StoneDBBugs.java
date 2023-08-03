@@ -21,6 +21,14 @@ public final class StoneDBBugs {
     // INSERT INTO t0(c0) VALUES (DEFAULT);
     // SELECT t0.c0 FROM t0 WHERE (('OC')>=(((t0.c0) IS NULL))); -- expected empty set but got 1 row
     public static boolean bugNotReported3 = true;
+    // CREATE TABLE t0(c0 CHAR PRIMARY KEY);
+    // INSERT IGNORE INTO t0(c0) VALUE (DEFAULT);
+    // SELECT t0.c0 FROM t0 WHERE (t0.c0 BETWEEN (0) AND t0.c0); -- 1
+    public static boolean bugNotReported4 = true;
+    // CREATE TABLE t0(c0 INT);
+    // INSERT INTO t0(c0) VALUE (DEFAULT);
+    // SELECT * FROM t0 WHERE (('00')>((('')AND(t0.c0)))); -- expected empty set but got 1 row
+    public static boolean bugNotReported5 = true;
 
     private StoneDBBugs() {
     }

@@ -18,6 +18,9 @@ public final class StoneDBErrors {
         // com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: BIGINT value is out of range in
         // '-((`database0`.`t0`.`c1` >> (not(`database0`.`t0`.`c1`))))'
         errors.add("Data truncation: BIGINT value is out of range in ");
+        // com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: BIGINT UNSIGNED value is out of range in
+        // '(`database10`.`t0`.`c0` + (`database10`.`t0`.`c0` & (not(0.5))))'
+        errors.add("Data truncation: BIGINT UNSIGNED value is out of range in ");
     }
 
 }
