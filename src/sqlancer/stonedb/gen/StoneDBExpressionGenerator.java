@@ -2,6 +2,7 @@ package sqlancer.stonedb.gen;
 
 import static sqlancer.stonedb.StoneDBBugs.bug1942;
 import static sqlancer.stonedb.StoneDBBugs.bugNotReported3;
+import static sqlancer.stonedb.StoneDBBugs.bugNotReported6;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -134,7 +135,11 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
             }
             return new NewUnaryPostfixOperatorNode<>(generateExpression(depth + 1), op);
         case BINARY_COMPARISON:
-            op = StoneDBBinaryComparisonOperator.getRandom();
+            if (!bugNotReported6) {
+                op = StoneDBBinaryComparisonOperator.getRandom();
+            } else {
+                throw new IgnoreMeException();
+            }
             return new NewBinaryOperatorNode<>(generateExpression(depth + 1), generateExpression(depth + 1), op);
         case IN:
             return new NewInOperatorNode<>(generateExpression(depth + 1),

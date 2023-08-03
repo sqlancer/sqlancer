@@ -29,6 +29,11 @@ public final class StoneDBBugs {
     // INSERT INTO t0(c0) VALUE (DEFAULT);
     // SELECT * FROM t0 WHERE (('00')>((('')AND(t0.c0)))); -- expected empty set but got 1 row
     public static boolean bugNotReported5 = true;
+    // CREATE TABLE t0(c0 INT) ;
+    // INSERT INTO t0(c0) VALUE (100);
+    // SELECT * FROM t0 WHERE (('Xg')>(t0.c0)); -- expected empty set but got 1 row
+    // SELECT (('Xg')>(t0.c0)) FROM t0;
+    public static boolean bugNotReported6 = true;
 
     private StoneDBBugs() {
     }
