@@ -50,6 +50,7 @@ public class StoneDBFuzzOracle implements TestOracle<StoneDBGlobalState> {
         List<TableReferenceNode<StoneDBExpression, StoneDBTable>> tableList = tables.stream()
                 .map(t -> new TableReferenceNode<StoneDBExpression, StoneDBTable>(t)).collect(Collectors.toList());
         List<Node<StoneDBExpression>> joins = StoneDBJoin.getJoins(tableList, globalState);
+
         StoneDBSelect select = new StoneDBSelect();
         Node<StoneDBExpression> asText = new NewPostfixTextNode<>(
                 new StoneDBCastOperation(

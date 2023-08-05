@@ -21,6 +21,9 @@ public final class StoneDBErrors {
         // com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: BIGINT UNSIGNED value is out of range in
         // '(`database10`.`t0`.`c0` + (`database10`.`t0`.`c0` & (not(0.5))))'
         errors.add("Data truncation: BIGINT UNSIGNED value is out of range in ");
+        // com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Incorrect time value: '0Sly6xqF0' for
+        // column 'c1' at row 1
+        errors.add("Data truncation: Incorrect time value: ");
         // com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: DOUBLE value is out of range in
         // '(`database0`.`t0`.`c0` * `database0`.`t0`.`c0`)'
         errors.add("Data truncation: DOUBLE value is out of range in ");
