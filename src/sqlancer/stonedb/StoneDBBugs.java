@@ -34,6 +34,11 @@ public final class StoneDBBugs {
     // SELECT * FROM t0 WHERE (('Xg')>(t0.c0)); -- expected empty set but got 1 row
     // SELECT (('Xg')>(t0.c0)) FROM t0;
     public static boolean bugNotReported6 = true;
+    // CREATE TABLE t0(c0 VARCHAR(1000));
+    // INSERT INTO t0(c0) VALUE ('GX9vartD');
+    // INSERT INTO t0(c0) VALUE ('16');
+    // SELECT t0.c0 FROM t0 WHERE t0.c0; -- expected 1 row but got 2 rows
+    public static boolean bugNotReported7 = true;
 
     private StoneDBBugs() {
     }
