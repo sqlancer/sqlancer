@@ -1,5 +1,7 @@
 package sqlancer.stonedb.oracle;
 
+import static sqlancer.stonedb.StoneDBOptions.ignoreLogic;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,6 +62,10 @@ public class StoneDBAggregateOracle extends StoneDBQueryPartitioningBase {
         String line4 = "--" + metamorphicResult + ";";
         String output = String.join(System.lineSeparator(), line1, line2, line3, line4);
         state.getState().getLocalState().log(output);
+
+        if (ignoreLogic) {
+            return;
+        }
 
         if (originalResult == null && metamorphicResult != null
                 || originalResult != null && (!originalResult.contentEquals(metamorphicResult)

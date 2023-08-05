@@ -1,6 +1,7 @@
 package sqlancer.stonedb.oracle;
 
 import static sqlancer.stonedb.StoneDBBugs.bug1953;
+import static sqlancer.stonedb.StoneDBOptions.ignoreLogic;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -61,6 +62,9 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
         int firstCount = getOptimizedQueryCount(con, new ArrayList<>(tableList), columns, randomWhereCondition, joins);
         if (firstCount == -1 || secondCount == -1) {
             throw new IgnoreMeException();
+        }
+        if (ignoreLogic) {
+            return;
         }
         if (firstCount != secondCount) {
             throw new AssertionError(optimizedQueryString + "; -- " + firstCount + System.lineSeparator()

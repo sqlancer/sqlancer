@@ -26,6 +26,9 @@ public class StoneDBOptions implements DBMSSpecificOptions<StoneDBOracleFactory>
     public static final String DEFAULT_HOST = "localhost";
     public static final int DEFAULT_PORT = 3306;
 
+    @Parameter(names = "--ignore-logic", description = "Specifies whether or not to compare query result with expectation", arity = 0)
+    public static boolean ignoreLogic;
+
     @Parameter(names = "--oracle")
     public List<StoneDBOracleFactory> oracles = List.of(StoneDBOracleFactory.NOREC);
 
