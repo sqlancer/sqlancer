@@ -400,8 +400,7 @@ jobs:
         run: mvn -B package -DskipTests=true
       - name: StoneDB Tests
         run: |
-          STONEDB_AVAILABLE=true mvn test -Dtest=TestStoneDBNoRec
-          STONEDB_AVAILABLE=true mvn test -Dtest=TestStoneDBTLP
+          STONEDB_AVAILABLE=true mvn test -Dtest=TestStoneDBFuzz
 
   tidb:
     name: DBMS Tests (TiDB)
