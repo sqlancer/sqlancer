@@ -24,6 +24,10 @@ public final class StoneDBErrors {
         // com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: DOUBLE value is out of range in
         // '(`database0`.`t0`.`c0` * `database0`.`t0`.`c0`)'
         errors.add("Data truncation: DOUBLE value is out of range in ");
+        // java.sql.SQLException: Numeric result of an expression is too large and cannot be handled by tianmu.
+        errors.add("Numeric result of an expression is too large and cannot be handled by tianmu.");
+        // java.sql.SQLSyntaxErrorException: Unknown column '1020726100' in 'order clause'
+        errors.add("Unknown column ");
     }
 
 }
