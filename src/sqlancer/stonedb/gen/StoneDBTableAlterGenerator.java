@@ -110,6 +110,8 @@ public class StoneDBTableAlterGenerator {
                     StoneDBDataType.getTypeAndValue(StoneDBDataType.getRandomWithoutNull(), globalState.getRandomly()));
             // java.sql.SQLException: Incorrect integer value: '' for column 'c1' at row 1
             errors.add("Incorrect integer value: ");
+            // java.sql.SQLException: Data truncated for column 'c1' at row 1
+            errors.add("Data truncated for column ");
             // java.sql.SQLSyntaxErrorException: Column length too big for column 'c1' (max = 16383); use BLOB or TEXT
             // instead
             errors.addRegex(Pattern
