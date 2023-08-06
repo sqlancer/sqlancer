@@ -48,7 +48,7 @@ public class StatementReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpec
         // Main.StateLogger logger = newGlobalState.getLogger();
         // printQueries(knownToReproduceBugStatements);
         // System.out.println();
-        state.getLogger().logReduced(newGlobalState.getState(), "Original queries:");
+
         if (knownToReproduceBugStatements.size() <= 1) {
             return;
         }
@@ -77,7 +77,7 @@ public class StatementReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpec
         // System.out.println("Reduced query:");
         // printQueries(knownToReproduceBugStatements);
         newGlobalState.getState().setStatements(new ArrayList<>(knownToReproduceBugStatements));
-        state.getLogger().logReduced(newGlobalState.getState(), "Reduced queries:");
+        newGlobalState.getLogger().logReduced(newGlobalState.getState());
     }
 
     private List<Query<C>> tryReduction(G state, // NOPMD
@@ -110,7 +110,7 @@ public class StatementReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpec
                         statements = candidateStatements;
                         partitionNum = Math.max(partitionNum - 1, 2);
                         // reproducer.outputHook((SQLite3GlobalState) newGlobalState);
-                        state.getLogger().logReduced(newGlobalState.getState(), "Current reduced result:");
+                        newGlobalState.getLogger().logReduced(newGlobalState.getState());
                         break;
 
                     }

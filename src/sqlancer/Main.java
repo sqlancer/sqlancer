@@ -200,14 +200,14 @@ public final class Main {
             if (!useReducer) {
                 throw new UnsupportedOperationException();
             }
-            if (reduceFileWriter == null) {
-                try {
-                    reduceFileWriter = new FileWriter(reduceFile, false);
-                } catch (IOException e) {
-                    throw new AssertionError(e);
-                }
+            FileWriter fileWriter;
+            try {
+                fileWriter = new FileWriter(reduceFile, false);
+            } catch (IOException e) {
+                throw new AssertionError(e);
             }
-            return reduceFileWriter;
+
+            return fileWriter;
         }
 
         public void writeCurrent(StateToReproduce state) {
@@ -256,25 +256,27 @@ public final class Main {
             }
         }
 
-        public void logReduced(StateToReproduce state, String tips) {
+        public void logReduced(StateToReproduce state) {
             FileWriter reduceFileWriter = getReduceFileWriter();
-            List<Query<?>> reduced = state.getStatements();
-            try {
-                StringBuilder sb = new StringBuilder();
-                sb.append(tips).append("\n====================\n");
-                sb.append(reduced.stream().map(Query::getQueryString).collect(Collectors.joining("\n")));
-                sb.append("\n====================\n");
-                reduceFileWriter.write(sb.toString());
 
+            StringBuilder sb = new StringBuilder();
+            for (Query<?> s : state.getStatements()) {
+                sb.append(databaseProvider.getLoggableFactory().createLoggable(s.getLogString()).getLogString());
+            }
+            try {
+                reduceFileWriter.write(sb.toString());
             } catch (IOException e) {
                 throw new AssertionError(e);
-            } finally {
+            }finally {
                 try {
                     reduceFileWriter.flush();
+                    reduceFileWriter.close();
                 } catch (IOException e) {
+                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
+
         }
 
         public void logException(Throwable reduce, StateToReproduce state) {
