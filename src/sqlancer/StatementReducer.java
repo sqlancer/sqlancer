@@ -1,10 +1,5 @@
 package sqlancer;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -83,7 +78,6 @@ public class StatementReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpec
         // printQueries(knownToReproduceBugStatements);
         newGlobalState.getState().setStatements(new ArrayList<>(knownToReproduceBugStatements));
         newGlobalState.getLogger().logReduced(newGlobalState.getState());
-
 
     }
 

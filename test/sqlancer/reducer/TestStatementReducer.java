@@ -75,8 +75,8 @@ public class TestStatementReducer {
 
     @Test
     void testSQLite3WithStatementReducer() {
-        Main.executeMain(new String[] { "--random-seed", "0", "--use-reducer", "--timeout-seconds", "60", "--num-threads", "4", "sqlite3",
-                "--oracle", "NoREC" });
+        Main.executeMain(new String[] { "--random-seed", "0", "--use-reducer", "--timeout-seconds", "60",
+                "--num-threads", "4", "sqlite3", "--oracle", "NoREC" });
     }
 
 }

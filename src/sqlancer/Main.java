@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,7 +20,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.JCommander.Builder;
@@ -83,7 +81,7 @@ public final class Main {
         private FileWriter logFileWriter;
         public FileWriter currentFileWriter;
         private FileWriter queryPlanFileWriter;
-        private FileWriter reduceFileWriter;
+
         private static final List<String> INITIALIZED_PROVIDER_NAMES = new ArrayList<>();
         private final boolean logEachSelect;
         private final boolean logQueryPlan;
@@ -272,7 +270,13 @@ public final class Main {
                 File symbolicLinkToReduceFile = new File(LOG_DIRECTORY, "current-reduce.log");
                 Path reduceFilePath = reduceFile.toPath().toAbsolutePath();
                 Path symbolicPath = symbolicLinkToReduceFile.toPath().toAbsolutePath();
-                if(!Files.readSymbolicLink(symbolicLinkToReduceFile.toPath()).toAbsolutePath().equals(reduceFilePath)) {
+
+                if(symbolicLinkToReduceFile.exists() && !Files.isSymbolicLink(symbolicLinkToReduceFile.toPath())) {
+                    throw new AssertionError("symbolic file conflict");
+                }
+
+                if (!symbolicLinkToReduceFile.exists() || !Files.readSymbolicLink(symbolicLinkToReduceFile.toPath()).toAbsolutePath()
+                        .equals(reduceFilePath)) {
                     Files.deleteIfExists(symbolicPath);
                     Files.createSymbolicLink(symbolicPath, reduceFilePath);
                     System.out.println("Create symbolic link from " + symbolicPath + " linked " + reduceFilePath);
@@ -280,7 +284,7 @@ public final class Main {
 
             } catch (IOException e) {
                 throw new AssertionError(e);
-            }finally {
+            } finally {
                 try {
                     reduceFileWriter.flush();
                     reduceFileWriter.close();
