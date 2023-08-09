@@ -14,6 +14,7 @@ import sqlancer.common.oracle.TestOracle;
 import sqlancer.stonedb.StoneDBOptions.StoneDBOracleFactory;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.oracle.StoneDBAggregateOracle;
+import sqlancer.stonedb.oracle.StoneDBFuzzOracle;
 import sqlancer.stonedb.oracle.StoneDBNoRECOracle;
 import sqlancer.stonedb.oracle.StoneDBQueryPartitioningDistinctTester;
 import sqlancer.stonedb.oracle.StoneDBQueryPartitioningGroupByTester;
@@ -30,6 +31,12 @@ public class StoneDBOptions implements DBMSSpecificOptions<StoneDBOracleFactory>
     public List<StoneDBOracleFactory> oracles = List.of(StoneDBOracleFactory.NOREC);
 
     public enum StoneDBOracleFactory implements OracleFactory<StoneDBGlobalState> {
+        Fuzz {
+            @Override
+            public TestOracle<StoneDBGlobalState> create(StoneDBGlobalState globalState) throws SQLException {
+                return new StoneDBFuzzOracle(globalState);
+            }
+        },
         NOREC {
             @Override
             public TestOracle<StoneDBGlobalState> create(StoneDBGlobalState globalState) throws SQLException {
