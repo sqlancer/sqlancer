@@ -50,6 +50,10 @@ public class StoneDBTableInsertGenerator extends AbstractInsertGenerator<StoneDB
     }
 
     private void addExpectedErrors() {
+        // java.sql.SQLException: Incorrect DATE value: '292278994-08-17'
+        errors.add("Incorrect DATE value: '");
+        // java.sql.SQLIntegrityConstraintViolationException: Duplicate entry '1970-01-14' for key 'PRIMARY'
+        errors.add("Duplicate entry ");
         // com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Out of range value for column 'c0' at row
         errors.add("Data truncation: Out of range value for column ");
         // java.sql.SQLSyntaxErrorException: Unknown column 'c0' in 'field list'

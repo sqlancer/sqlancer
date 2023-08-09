@@ -42,6 +42,14 @@ public class StoneDBTableAlterGenerator {
     private void addExpectedErrors() {
         // com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Data too long for column 'c0' at row 2
         errors.addRegex(Pattern.compile("Data truncation: Data too long for column 'c\\d{1,3}' at row \\d{1,3}"));
+        // com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Incorrect datetime value:
+        // '0.571272522740968' for column 'c1' at row 1
+        errors.add("Incorrect datetime value: ");
+        // java.sql.SQLSyntaxErrorException: Invalid default value for 'c0'
+        errors.add("Invalid default value for ");
+        // com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Out of range value for column 'c0' at row
+        // 2
+        errors.add("Data truncation: Out of range value for column ");
         // java.sql.SQLSyntaxErrorException: Specified key was too long; max key length is 3072 bytes
         errors.add("Specified key was too long; max key length is 3072 bytes");
         // java.sql.SQLSyntaxErrorException: You can't delete all columns with ALTER TABLE; use DROP TABLE instead
@@ -112,10 +120,17 @@ public class StoneDBTableAlterGenerator {
             String newColumnName = table.getFreeColumnName();
             sb.append(oldColumnName).append(" ").append(newColumnName).append(" ");
             sb.append(StoneDBDataType.getTypeAndValue(StoneDBDataType.getRandomWithoutNull()));
+            errors.add("Incorrect integer value: ");
+            // java.sql.SQLException: Data truncated for column 'c1' at row 1
+            errors.add("Data truncated for column ");
             // java.sql.SQLSyntaxErrorException: Column length too big for column 'c1' (max = 16383); use BLOB or TEXT
             // instead
             errors.addRegex(Pattern
                     .compile("Column length too big for column 'c\\d{1,3}' (max = 16383); use BLOB or TEXT instead"));
+            // java.sql.SQLSyntaxErrorException: BLOB column 'c1' can't be used in key specification with the used table
+            // type
+            errors.addRegex(Pattern
+                    .compile("BLOB column 'c\\d{1,3}' can't be used in key specification with the used table type"));
             if (Randomly.getBoolean()) {
                 if (Randomly.getBoolean()) {
                     sb.append(" FIRST");

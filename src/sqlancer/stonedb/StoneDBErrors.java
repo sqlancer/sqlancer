@@ -32,5 +32,4 @@ public final class StoneDBErrors {
         // java.sql.SQLSyntaxErrorException: Unknown column '1020726100' in 'order clause'
         errors.add("Unknown column ");
     }
-
 }
