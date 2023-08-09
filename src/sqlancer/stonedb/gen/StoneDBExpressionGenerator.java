@@ -168,7 +168,7 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
 
     // https://stonedb.io/docs/SQL-reference/functions/aggregate-functions/
     public enum StoneDBAggregateFunction {
-        MAX(1), MIN(1), AVG(1), COUNT(1), FIRST(1), SUM(1);
+        MAX(1), MIN(1), AVG(1), COUNT(1), SUM(1);
 
         private int nrArgs;
 
@@ -253,7 +253,10 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
      */
     public enum StoneDBBinaryLogicalOperator implements Operator {
 
-        AND("AND"), OR("OR"), XOR("XOR");
+        AND("AND"), OR("OR");
+
+        // In some cases, XOR operator will lead to StoneDB crash, so we do not test it
+        // XOR("XOR")
 
         private final String textRepr;
 
@@ -300,7 +303,7 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
      * Bitwise operators supported by StoneDB: https://stonedb.io/docs/SQL-reference/operators/bitwise-operators
      */
     public enum StoneDBBinaryBitwiseOperator implements Operator {
-        AND("&"), OR("|"), XOR("^"), LEFTSHIFT("<<"), RIGHTSHIFT(">>");
+        AND("&"), OR("|"), LEFTSHIFT("<<"), RIGHTSHIFT(">>");
 
         private final String textRepr;
 
