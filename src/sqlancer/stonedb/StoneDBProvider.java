@@ -26,6 +26,7 @@ import sqlancer.stonedb.gen.StoneDBTableCreateGenerator;
 import sqlancer.stonedb.gen.StoneDBTableDeleteGenerator;
 import sqlancer.stonedb.gen.StoneDBTableInsertGenerator;
 import sqlancer.stonedb.gen.StoneDBTableUpdateGenerator;
+import sqlancer.stonedb.gen.StoneDBViewCreateGenerator;
 
 @AutoService(DatabaseProvider.class)
 public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBGlobalState, StoneDBOptions> {
@@ -52,7 +53,12 @@ public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBG
         TABLE_UPDATE(StoneDBTableUpdateGenerator::generate), //
         INDEX_CREATE(StoneDBIndexCreateGenerator::generate), //
         INDEX_DROP(StoneDBIndexDropGenerator::generate), //
-        TABLE_INSERT(StoneDBTableInsertGenerator::generate); //
+        TABLE_INSERT(StoneDBTableInsertGenerator::generate), //
+
+        VIEW_CREATE((g) -> {
+            String viewName = g.getSchema().getFreeViewName();
+            return StoneDBViewCreateGenerator.generate(g, viewName);
+        });
 
         private final SQLQueryProvider<StoneDBGlobalState> sqlQueryProvider;
 
@@ -84,6 +90,8 @@ public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBG
         case INDEX_CREATE:
             return r.getInteger(0, 1);
         case INDEX_DROP:
+            return r.getInteger(0, 1);
+        case VIEW_CREATE:
             return r.getInteger(0, 1);
         default:
             throw new AssertionError(a);
