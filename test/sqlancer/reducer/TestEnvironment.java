@@ -6,6 +6,7 @@ import sqlancer.reducer.VirtualDB.VirtualDBGlobalState;
 import sqlancer.reducer.VirtualDB.VirtualDBProvider;
 import sqlancer.reducer.VirtualDB.VirtualDBQuery;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -88,6 +89,10 @@ public class TestEnvironment {
 
         state.setState(stateToReproduce);
         state.setDatabaseName(databaseName);
+        // A really hacky way to enable reducer...
+        Field field = options.getClass().getDeclaredField("useReducer");
+        field.setAccessible(true);
+        field.set(options, true);
         state.setMainOptions(options);
 
         // Main.StateLogger logger = new Main.StateLogger(databaseName, provider, options);
@@ -96,8 +101,9 @@ public class TestEnvironment {
         try (SQLConnection con = provider.createDatabase(state)) {
             state.setConnection(con);
             newGlobalState = createGlobalState();
-            // Main.StateLogger newLogger = new Main.StateLogger(databaseName, provider, options);
-            // newGlobalState.setStateLogger(newLogger);
+            Main.StateLogger newLogger = new Main.StateLogger(databaseName, provider, options);
+            newGlobalState.setStateLogger(newLogger);
+            state.setStateLogger(newLogger);
             newGlobalState.setState(stateToReproduce);
             newGlobalState.setDatabaseName(databaseName);
             newGlobalState.setMainOptions(options);
