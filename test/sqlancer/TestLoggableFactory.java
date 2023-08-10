@@ -9,7 +9,8 @@ public class TestLoggableFactory {
     public void testLogCreateTable() {
         String query = "CREATE TABLE t1 (c1 INT)";
         SQLLoggableFactory logger = new SQLLoggableFactory();
-        logger.getQueryForStateToReproduce(query);
+        SQLQueryAdapter queryAdapter = logger.getQueryForStateToReproduce(query);
+        assert (queryAdapter.couldAffectSchema());
     }
 
 }
