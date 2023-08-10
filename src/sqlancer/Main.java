@@ -5,7 +5,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -266,21 +265,6 @@ public final class Main {
             }
             try {
                 reduceFileWriter.write(sb.toString());
-
-                File symbolicLinkToReduceFile = new File(LOG_DIRECTORY, "current-reduce.log");
-                Path reduceFilePath = reduceFile.toPath().toAbsolutePath();
-                Path symbolicPath = symbolicLinkToReduceFile.toPath().toAbsolutePath();
-
-                if(symbolicLinkToReduceFile.exists() && !Files.isSymbolicLink(symbolicLinkToReduceFile.toPath())) {
-                    throw new AssertionError("symbolic file conflict");
-                }
-
-                if (!symbolicLinkToReduceFile.exists() || !Files.readSymbolicLink(symbolicLinkToReduceFile.toPath()).toAbsolutePath()
-                        .equals(reduceFilePath)) {
-                    Files.deleteIfExists(symbolicPath);
-                    Files.createSymbolicLink(symbolicPath, reduceFilePath);
-                    System.out.println("Create symbolic link from " + symbolicPath + " linked " + reduceFilePath);
-                }
 
             } catch (IOException e) {
                 throw new AssertionError(e);
