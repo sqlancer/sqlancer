@@ -1,5 +1,7 @@
 package sqlancer.stonedb;
 
+import static sqlancer.stonedb.StoneDBBugs.bugNotReported2;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
@@ -76,6 +78,9 @@ public class StoneDBProvider extends SQLProviderAdapter<StoneDBProvider.StoneDBG
         case TABLE_CREATE:
             return r.getInteger(0, 1);
         case TABLE_DELETE:
+            if (bugNotReported2) {
+                return 0;
+            }
             return r.getInteger(0, 10);
         case TABLE_INSERT:
             return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
