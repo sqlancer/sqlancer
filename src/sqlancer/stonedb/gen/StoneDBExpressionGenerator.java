@@ -26,6 +26,7 @@ import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema.StoneDBColumn;
 import sqlancer.stonedb.StoneDBSchema.StoneDBDataType;
+import sqlancer.stonedb.ast.StoneDBAggregate.StoneDBAggregateFunction;
 import sqlancer.stonedb.ast.StoneDBConstant;
 import sqlancer.stonedb.ast.StoneDBExpression;
 
@@ -178,25 +179,6 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
             set.add(generateColumn());
         }
         return new ArrayList<>(set);
-    }
-
-    // https://stonedb.io/docs/SQL-reference/functions/aggregate-functions/
-    public enum StoneDBAggregateFunction {
-        MAX(1), MIN(1), AVG(1), COUNT(1), FIRST(1), SUM(1);
-
-        private int nrArgs;
-
-        StoneDBAggregateFunction(int nrArgs) {
-            this.nrArgs = nrArgs;
-        }
-
-        public static StoneDBAggregateFunction getRandom() {
-            return Randomly.fromOptions(values());
-        }
-
-        public int getNrArgs() {
-            return nrArgs;
-        }
     }
 
     public enum StoneDBUnaryPrefixOperator implements Operator {
