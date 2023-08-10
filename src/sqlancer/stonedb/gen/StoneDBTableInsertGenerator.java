@@ -1,5 +1,8 @@
 package sqlancer.stonedb.gen;
 
+import static sqlancer.stonedb.StoneDBBugs.bugNotReported4;
+import static sqlancer.stonedb.StoneDBBugs.bugNotReported5;
+
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -38,7 +41,7 @@ public class StoneDBTableInsertGenerator extends AbstractInsertGenerator<StoneDB
             sb.append(" ");
             sb.append(Randomly.fromOptions("LOW_PRIORITY", "DELAYED", "HIGH_PRIORITY"));
         }
-        if (Randomly.getBoolean()) {
+        if (!bugNotReported4 && Randomly.getBoolean()) {
             sb.append(" IGNORE");
         }
         sb.append(" INTO ");
@@ -107,7 +110,7 @@ public class StoneDBTableInsertGenerator extends AbstractInsertGenerator<StoneDB
     // append one column of one row
     @Override
     protected void insertValue(StoneDBColumn column) {
-        if (Randomly.getBooleanWithRatherLowProbability()) {
+        if (!bugNotReported5 && Randomly.getBooleanWithRatherLowProbability()) {
             sb.append("DEFAULT");
         } else {
             sb.append(StoneDBToStringVisitor.asString(new StoneDBExpressionGenerator(globalState)
