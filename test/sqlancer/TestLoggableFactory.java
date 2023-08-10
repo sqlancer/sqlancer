@@ -1,0 +1,15 @@
+package sqlancer;
+
+import org.junit.jupiter.api.Test;
+import sqlancer.common.log.SQLLoggableFactory;
+
+public class TestLoggableFactory {
+
+    @Test
+    public void testLogCreateTable() {
+        String query = "CREATE TABLE t1 (c1 INT)";
+        SQLLoggableFactory logger = new SQLLoggableFactory();
+        logger.getQueryForStateToReproduce(query);
+    }
+
+}
