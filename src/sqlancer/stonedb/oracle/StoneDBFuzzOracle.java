@@ -29,7 +29,6 @@ import sqlancer.stonedb.gen.StoneDBExpressionGenerator.StoneDBBinaryLogicalOpera
 import sqlancer.stonedb.gen.StoneDBExpressionGenerator.StoneDBCastOperation;
 
 public class StoneDBFuzzOracle implements TestOracle<StoneDBGlobalState> {
-
     private final StoneDBGlobalState globalState;
     private final StoneDBSchema schema;
     private final ExpectedErrors errors = new ExpectedErrors();
