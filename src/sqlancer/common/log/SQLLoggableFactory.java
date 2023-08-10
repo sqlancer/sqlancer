@@ -24,7 +24,7 @@ public class SQLLoggableFactory extends LoggableFactory {
 
     @Override
     public SQLQueryAdapter getQueryForStateToReproduce(String queryString) {
-            return new SQLQueryAdapter(queryString);
+        return new SQLQueryAdapter(queryString);
     }
 
     @Override
