@@ -24,11 +24,7 @@ public class SQLLoggableFactory extends LoggableFactory {
 
     @Override
     public SQLQueryAdapter getQueryForStateToReproduce(String queryString) {
-        if (queryString.contains("CREATE TABLE")) {
-            return new SQLQueryAdapter(queryString, true);
-        } else {
             return new SQLQueryAdapter(queryString);
-        }
     }
 
     @Override
