@@ -1,6 +1,7 @@
 package sqlancer.reducer;
 
 import org.junit.jupiter.api.Test;
+import sqlancer.Main;
 import sqlancer.common.query.Query;
 
 import java.util.ArrayList;
@@ -70,6 +71,12 @@ public class TestStatementReducer {
         List<Query<?>> reducedQueries = env.getReducedStatements();
         String queriesString = TestEnvironment.getQueriesString(reducedQueries);
         assertEquals(queriesString, "Statement_2;\nStatement_318;\nStatement_990;");
+    }
+
+    @Test
+    void testSQLite3WithStatementReducer() {
+        Main.executeMain(new String[] { "--random-seed", "0", "--use-reducer", "--timeout-seconds", "60",
+                "--num-threads", "4", "sqlite3", "--oracle", "NoREC" });
     }
 
 }

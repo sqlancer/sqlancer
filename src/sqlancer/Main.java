@@ -76,12 +76,16 @@ public final class Main {
         private final File loggerFile;
         private File curFile;
         private File queryPlanFile;
+        private File reduceFile;
         private FileWriter logFileWriter;
         public FileWriter currentFileWriter;
         private FileWriter queryPlanFileWriter;
+
         private static final List<String> INITIALIZED_PROVIDER_NAMES = new ArrayList<>();
         private final boolean logEachSelect;
         private final boolean logQueryPlan;
+
+        private final boolean useReducer;
         private final DatabaseProvider<?, ?, ?> databaseProvider;
 
         private static final class AlsoWriteToConsoleFileWriter extends FileWriter {
@@ -117,6 +121,15 @@ public final class Main {
             logQueryPlan = options.logQueryPlan();
             if (logQueryPlan) {
                 queryPlanFile = new File(dir, databaseName + "-plan.log");
+            }
+            this.useReducer = options.useReducer();
+            if (useReducer) {
+                File reduceFileDir = new File(dir, "reduce");
+                if (!reduceFileDir.exists()) {
+                    reduceFileDir.mkdir();
+                }
+                this.reduceFile = new File(reduceFileDir, databaseName + "-reduce.log");
+
             }
             this.databaseProvider = provider;
         }
@@ -183,6 +196,20 @@ public final class Main {
             return queryPlanFileWriter;
         }
 
+        public FileWriter getReduceFileWriter() {
+            if (!useReducer) {
+                throw new UnsupportedOperationException();
+            }
+            FileWriter fileWriter;
+            try {
+                fileWriter = new FileWriter(reduceFile, false);
+            } catch (IOException e) {
+                throw new AssertionError(e);
+            }
+
+            return fileWriter;
+        }
+
         public void writeCurrent(StateToReproduce state) {
             if (!logEachSelect) {
                 throw new UnsupportedOperationException();
@@ -227,6 +254,30 @@ public final class Main {
             } catch (IOException e) {
                 throw new AssertionError();
             }
+        }
+
+        public void logReduced(StateToReproduce state) {
+            FileWriter reduceFileWriter = getReduceFileWriter();
+
+            StringBuilder sb = new StringBuilder();
+            for (Query<?> s : state.getStatements()) {
+                sb.append(databaseProvider.getLoggableFactory().createLoggable(s.getLogString()).getLogString());
+            }
+            try {
+                reduceFileWriter.write(sb.toString());
+
+            } catch (IOException e) {
+                throw new AssertionError(e);
+            } finally {
+                try {
+                    reduceFileWriter.flush();
+                    reduceFileWriter.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
         }
 
         public void logException(Throwable reduce, StateToReproduce state) {
@@ -395,7 +446,7 @@ public final class Main {
                 }
                 if (reproducer != null && options.useReducer()) {
                     System.out.println("EXPERIMENTAL: Trying to reduce queries using a simple reducer.");
-                    System.out.println("Reduced query will be output to stdout but not logs.");
+                    // System.out.println("Reduced query will be output to stdout but not logs.");
                     G newGlobalState = createGlobalState();
                     newGlobalState.setState(stateToRepro);
                     newGlobalState.setRandomly(r);
