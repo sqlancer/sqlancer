@@ -15,6 +15,7 @@ import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
+import sqlancer.stonedb.StoneDBErrors;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema.StoneDBCompositeDataType;
 import sqlancer.stonedb.StoneDBSchema.StoneDBDataType;
@@ -30,6 +31,7 @@ public class StoneDBAggregateOracle extends StoneDBQueryPartitioningBase {
 
     public StoneDBAggregateOracle(StoneDBGlobalState state) {
         super(state);
+        StoneDBErrors.addExpectedExpressionErrors(errors);
     }
 
     @Override

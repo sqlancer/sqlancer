@@ -55,6 +55,12 @@ public final class StoneDBTableDeleteGenerator {
             sb.append(" LIMIT ");
             sb.append(r.getInteger(0, (int) randomTable.getNrRows(globalState)));
         }
+        addExpectedErrors();
         return new SQLQueryAdapter(sb.toString(), errors);
+    }
+
+    private void addExpectedErrors() {
+        // java.sql.SQLException: Incorrect string value: '\xBC\xE7\xC9\x91\x05R...' for column 'c1' at row 1
+        errors.add("Incorrect string value: ");
     }
 }

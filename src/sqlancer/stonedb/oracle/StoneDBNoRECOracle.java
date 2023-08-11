@@ -21,6 +21,7 @@ import sqlancer.common.oracle.NoRECBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
+import sqlancer.stonedb.StoneDBErrors;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema;
 import sqlancer.stonedb.StoneDBSchema.StoneDBColumn;
@@ -42,6 +43,7 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
     public StoneDBNoRECOracle(StoneDBGlobalState globalState) {
         super(globalState);
         this.schema = globalState.getSchema();
+        StoneDBErrors.addExpectedExpressionErrors(errors);
     }
 
     @Override
