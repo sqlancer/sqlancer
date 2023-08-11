@@ -1,5 +1,7 @@
 package sqlancer.stonedb.oracle;
 
+import static sqlancer.stonedb.StoneDBBugs.bug1953;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -79,6 +81,9 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
         select.setFromList(tableList);
         select.setJoinList(joins);
         unoptimizedQueryString = "SELECT SUM(count) FROM (" + StoneDBToStringVisitor.asString(select) + ") as res;";
+        if (bug1953) {
+            unoptimizedQueryString = "SELECT * FROM (" + StoneDBToStringVisitor.asString(select) + ") as res;";
+        }
         SQLQueryAdapter q = new SQLQueryAdapter(unoptimizedQueryString, errors);
         SQLancerResultSet rs;
         try {
