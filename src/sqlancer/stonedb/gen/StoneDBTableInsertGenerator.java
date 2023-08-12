@@ -1,5 +1,8 @@
 package sqlancer.stonedb.gen;
 
+import static sqlancer.stonedb.StoneDBBugs.bugNotReported4;
+import static sqlancer.stonedb.StoneDBBugs.bugNotReported5;
+
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -38,7 +41,7 @@ public class StoneDBTableInsertGenerator extends AbstractInsertGenerator<StoneDB
             sb.append(" ");
             sb.append(Randomly.fromOptions("LOW_PRIORITY", "DELAYED", "HIGH_PRIORITY"));
         }
-        if (Randomly.getBoolean()) {
+        if (!bugNotReported4 && Randomly.getBoolean()) {
             sb.append(" IGNORE");
         }
         sb.append(" INTO ");
@@ -50,6 +53,10 @@ public class StoneDBTableInsertGenerator extends AbstractInsertGenerator<StoneDB
     }
 
     private void addExpectedErrors() {
+        // java.sql.SQLException: Incorrect DATE value: '292278994-08-17'
+        errors.add("Incorrect DATE value: '");
+        // java.sql.SQLIntegrityConstraintViolationException: Duplicate entry '1970-01-14' for key 'PRIMARY'
+        errors.add("Duplicate entry ");
         // com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Out of range value for column 'c0' at row
         errors.add("Data truncation: Out of range value for column ");
         // java.sql.SQLSyntaxErrorException: Unknown column 'c0' in 'field list'
@@ -107,7 +114,7 @@ public class StoneDBTableInsertGenerator extends AbstractInsertGenerator<StoneDB
     // append one column of one row
     @Override
     protected void insertValue(StoneDBColumn column) {
-        if (Randomly.getBooleanWithRatherLowProbability()) {
+        if (!bugNotReported5 && Randomly.getBooleanWithRatherLowProbability()) {
             sb.append("DEFAULT");
         } else {
             sb.append(StoneDBToStringVisitor.asString(new StoneDBExpressionGenerator(globalState)
