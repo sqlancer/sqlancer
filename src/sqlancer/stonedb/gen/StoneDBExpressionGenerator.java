@@ -1,5 +1,7 @@
 package sqlancer.stonedb.gen;
 
+import static sqlancer.stonedb.StoneDBBugs.bugNotReportedXOR;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -25,8 +27,6 @@ import sqlancer.stonedb.StoneDBSchema.StoneDBColumn;
 import sqlancer.stonedb.StoneDBSchema.StoneDBDataType;
 import sqlancer.stonedb.ast.StoneDBConstant;
 import sqlancer.stonedb.ast.StoneDBExpression;
-
-import static sqlancer.stonedb.StoneDBBugs.bugNotReportedXOR;
 
 public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<StoneDBExpression>, StoneDBColumn> {
 
