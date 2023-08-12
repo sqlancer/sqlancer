@@ -300,7 +300,7 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
      * Bitwise operators supported by StoneDB: https://stonedb.io/docs/SQL-reference/operators/bitwise-operators
      */
     public enum StoneDBBinaryBitwiseOperator implements Operator {
-        AND("&"), OR("|"), LEFTSHIFT("<<"), RIGHTSHIFT(">>");
+        AND("&"), OR("|"), XOR("^"), LEFTSHIFT("<<"), RIGHTSHIFT(">>");
 
         private final String textRepr;
 
