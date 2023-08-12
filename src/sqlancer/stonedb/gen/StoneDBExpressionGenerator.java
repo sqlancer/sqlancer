@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
@@ -24,6 +25,8 @@ import sqlancer.stonedb.StoneDBSchema.StoneDBColumn;
 import sqlancer.stonedb.StoneDBSchema.StoneDBDataType;
 import sqlancer.stonedb.ast.StoneDBConstant;
 import sqlancer.stonedb.ast.StoneDBExpression;
+
+import static sqlancer.stonedb.StoneDBBugs.bugNotReportedXOR;
 
 public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<StoneDBExpression>, StoneDBColumn> {
 
@@ -131,7 +134,12 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
             return new NewInOperatorNode<>(generateExpression(depth + 1),
                     generateExpressions(Randomly.smallNumber() + 1, depth + 1), true);
         case BINARY_LOGICAL:
-            op = StoneDBBinaryLogicalOperator.getRandom();
+            if (bugNotReportedXOR) {
+                op = Randomly.fromList(Arrays.stream(StoneDBBinaryLogicalOperator.values())
+                        .filter(p -> p != StoneDBBinaryLogicalOperator.XOR).collect(Collectors.toList()));
+            } else {
+                op = StoneDBBinaryLogicalOperator.getRandom();
+            }
             return new NewBinaryOperatorNode<>(generateExpression(depth + 1), generateExpression(depth + 1), op);
         case BINARY_ARITHMETIC:
             op = StoneDBBinaryArithmeticOperator.getRandom();
