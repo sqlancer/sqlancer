@@ -3,6 +3,7 @@ package sqlancer.stonedb.gen;
 import static sqlancer.stonedb.StoneDBBugs.bug1942;
 import static sqlancer.stonedb.StoneDBBugs.bugNotReported3;
 import static sqlancer.stonedb.StoneDBBugs.bugNotReported6;
+import static sqlancer.stonedb.StoneDBBugs.bugNotReportedXOR;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,8 +31,6 @@ import sqlancer.stonedb.StoneDBSchema.StoneDBDataType;
 import sqlancer.stonedb.ast.StoneDBAggregate.StoneDBAggregateFunction;
 import sqlancer.stonedb.ast.StoneDBConstant;
 import sqlancer.stonedb.ast.StoneDBExpression;
-
-import static sqlancer.stonedb.StoneDBBugs.bugNotReportedXOR;
 
 public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<StoneDBExpression>, StoneDBColumn> {
 
