@@ -1,6 +1,5 @@
 package sqlancer.stonedb.gen;
 
-import java.util.List;
 import java.util.regex.Pattern;
 
 import sqlancer.Randomly;
@@ -34,7 +33,7 @@ public class StoneDBTableAlterGenerator {
         sb.append("ALTER TABLE ");
         sb.append(table.getName());
         sb.append(" ");
-        appendAlterOptions();
+        appendAlterOption(Randomly.fromOptions(Action.values()));
         addExpectedErrors();
         return new SQLQueryAdapter(sb.toString(), errors, true);
     }
@@ -56,19 +55,6 @@ public class StoneDBTableAlterGenerator {
                 .compile("Column length too big for column 'c\\d{1,3}' \\(max = 16383\\); use BLOB or TEXT instead"));
     }
 
-    private void appendAlterOptions() {
-        List<Action> actions;
-        if (Randomly.getBooleanWithSmallProbability()) {
-            actions = Randomly.subset(Action.values());
-        } else {
-            actions = List.of(Randomly.fromOptions(Action.values()));
-        }
-        for (Action action : actions) {
-            appendAlterOption(action);
-            sb.append(" ");
-        }
-    }
-
     private void appendAlterOption(Action action) {
         StoneDBExpressionGenerator generator = new StoneDBExpressionGenerator(globalState)
                 .setColumns(table.getColumns());
@@ -77,7 +63,8 @@ public class StoneDBTableAlterGenerator {
             sb.append("ADD COLUMN ");
             String columnName = table.getFreeColumnName();
             sb.append(" ").append(columnName).append(" ");
-            sb.append(StoneDBDataType.getTypeAndValue(StoneDBDataType.getRandomWithoutNull()));
+            sb.append(
+                    StoneDBDataType.getTypeAndValue(StoneDBDataType.getRandomWithoutNull(), globalState.getRandomly()));
             // java.sql.SQLSyntaxErrorException: Column length too big for column 'c1' (max = 16383); use BLOB or TEXT
             // instead
             errors.addRegex(Pattern
@@ -111,7 +98,8 @@ public class StoneDBTableAlterGenerator {
             String oldColumnName = table.getRandomColumn().getName();
             String newColumnName = table.getFreeColumnName();
             sb.append(oldColumnName).append(" ").append(newColumnName).append(" ");
-            sb.append(StoneDBDataType.getTypeAndValue(StoneDBDataType.getRandomWithoutNull()));
+            sb.append(
+                    StoneDBDataType.getTypeAndValue(StoneDBDataType.getRandomWithoutNull(), globalState.getRandomly()));
             // java.sql.SQLSyntaxErrorException: Column length too big for column 'c1' (max = 16383); use BLOB or TEXT
             // instead
             errors.addRegex(Pattern

@@ -261,6 +261,6 @@ public class StoneDBTableCreateGenerator {
     }
 
     private void appendType(StoneDBDataType randomType) {
-        sb.append(StoneDBDataType.getTypeAndValue(randomType));
+        sb.append(StoneDBDataType.getTypeAndValue(randomType, r));
     }
 }
