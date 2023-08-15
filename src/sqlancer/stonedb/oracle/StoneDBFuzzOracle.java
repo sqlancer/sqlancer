@@ -53,21 +53,15 @@ public class StoneDBFuzzOracle implements TestOracle<StoneDBGlobalState> {
                         allColumns, Randomly.subset(allColumns)));
         select.setFromList(new ArrayList<>(tableList));
         select.setJoinList(joins);
-        String queryString = StoneDBToStringVisitor.asString(select);
-        SQLQueryAdapter q = new SQLQueryAdapter(queryString, errors);
-        q.executeAndGetLogged(globalState);
-
-        select = new StoneDBSelect();
-        select.setFetchColumns(allColumns);
-        select.setFromList(new ArrayList<>(tableList));
         select.setWhereClause(randomWhereCondition);
         if (Randomly.getBooleanWithSmallProbability()) {
             select.setOrderByExpressions(
                     new StoneDBExpressionGenerator(globalState).setColumns(columns).generateOrderBys());
         }
         select.setJoinList(joins);
-        queryString = StoneDBToStringVisitor.asString(select);
-        q = new SQLQueryAdapter(queryString, errors);
+
+        String queryString = StoneDBToStringVisitor.asString(select);
+        SQLQueryAdapter q = new SQLQueryAdapter(queryString, errors);
         q.executeAndGetLogged(globalState);
     }
 }
