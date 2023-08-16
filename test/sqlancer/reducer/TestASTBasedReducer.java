@@ -1,5 +1,7 @@
 package sqlancer.reducer;
 
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import org.junit.jupiter.api.Test;
 import sqlancer.common.query.Query;
 
@@ -16,6 +18,11 @@ public class TestASTBasedReducer {
         env.setInitialStatementsFromStrings(List.of(queriesStr));
         env.setBugInducingCondition(statements -> {
             String queriesString = TestEnvironment.getQueriesString(statements);
+            try {
+                CCJSqlParserUtil.parse(queriesString);
+            } catch (JSQLParserException e) {
+                return false;
+            }
             return queriesString.contains("&&");
         });
         env.runReduce();
@@ -33,6 +40,11 @@ public class TestASTBasedReducer {
         env.setInitialStatementsFromStrings(List.of(queriesStr));
         env.setBugInducingCondition(statements -> {
             String queriesString = TestEnvironment.getQueriesString(statements);
+            try {
+                CCJSqlParserUtil.parse(queriesString);
+            } catch (JSQLParserException e) {
+                return false;
+            }
             return queriesString.contains("||");
         });
         env.runReduce();
@@ -47,11 +59,18 @@ public class TestASTBasedReducer {
 
         String[] queriesStrs = {
                 "SELECT DISTINCT row_id, c FROM v0 WHERE ((v0.rowid || (v0.c < 200 && v0.c >= 100) || 114514)OR(((v0.c0)||(1529686005)))) UNION SELECT DISTINCT * FROM v0 WHERE (NOT ((v0.rowid)OR(((v0.c0)||(1529686005))))) UNION SELECT DISTINCT * FROM v0 WHERE ((((v0.rowid)OR(((v0.c0)||(1529686005))))) IS NULL)",
-                "SELECT DISTINCT row_id, c FROM v0 WHERE ((v0.rowid || (v0.c < 200 && v0.c >= 100) || 114514)OR(((v0.c0)||(1529686005)))) UNION SELECT DISTINCT * FROM v0 WHERE (NOT ((v0.rowid)OR(((v0.c0)||(1529686005))))) UNION SELECT DISTINCT * FROM v0 WHERE ((((v0.rowid)OR(((v0.c0)||(1529686005))))) IS NULL)",
-                "SELECT * FROM table_3;" };
+                "SELECT DISTINCT row_id, c FROM v0 WHERE ((v0.rowid || (v0.c < 200 && v0.c >= 100) || 114514)OR(((v0.c0)||(1529686005)))) UNION SELECT DISTINCT * FROM v0 WHERE (NOT ((v0.rowid)OR(((v0.c0)||(1529686005))))) UNION SELECT DISTINCT * FROM v0 WHERE ((((v0.rowid)OR(((v0.c0)||(1529686005))))) IS NULL)" };
         env.setInitialStatementsFromStrings(List.of(queriesStrs));
         env.setBugInducingCondition(statements -> {
             String queriesString = TestEnvironment.getQueriesString(statements);
+            try {
+                for (Query<?> s : statements) {
+                    CCJSqlParserUtil.parse(s.getQueryString());
+                }
+            } catch (JSQLParserException e) {
+                return false;
+            }
+
             return queriesString.toUpperCase().contains("UNION");
         });
         env.runReduce();
@@ -67,6 +86,14 @@ public class TestASTBasedReducer {
         String[] queriesStrs = { "SELECT * FROM t0, t1, t2, t3, t4 Where t2.val = t1.val" };
         env.setInitialStatementsFromStrings(List.of(queriesStrs));
         env.setBugInducingCondition(statements -> {
+            try {
+                for (Query<?> s : statements) {
+                    CCJSqlParserUtil.parse(s.getQueryString());
+                }
+            } catch (JSQLParserException e) {
+                return false;
+            }
+
             String queriesString = TestEnvironment.getQueriesString(statements);
             return queriesString.contains("t1") && queriesString.contains("WHERE");
         });
@@ -77,7 +104,7 @@ public class TestASTBasedReducer {
     }
 
     @Test
-    void testCase() throws Exception {
+    void testComplicated() throws Exception {
         TestEnvironment env = TestEnvironment.getASTBasedReducerEnv();
 
         String[] queriesStrs = {
@@ -85,6 +112,11 @@ public class TestASTBasedReducer {
         env.setInitialStatementsFromStrings(List.of(queriesStrs));
         env.setBugInducingCondition(statements -> {
             String queriesString = TestEnvironment.getQueriesString(statements);
+            try {
+                CCJSqlParserUtil.parse(queriesString);
+            } catch (JSQLParserException e) {
+                return false;
+            }
             return queriesString.toUpperCase().contains("CASE");
         });
         env.runReduce();
@@ -98,9 +130,17 @@ public class TestASTBasedReducer {
         TestEnvironment env = TestEnvironment.getASTBasedReducerEnv();
 
         String[] queriesStrs = {
-                "SELECT STRING_AGG(v0.c2) FROM t0 GROUP BY ( (CASE (t0.rowid) WHEN t0.rowid THEN 0.27742217994251717 ELSE ((v0.c0) IS NOT NULL) END) )" };
+                "SELECT * FROM t0 GROUP BY ( (CASE (t0.rowid) WHEN t0.rowid THEN 27742217994251717 ELSE ((v0.c0) IS NOT NULL) END) )" };
         env.setInitialStatementsFromStrings(List.of(queriesStrs));
         env.setBugInducingCondition(statements -> {
+            try {
+                for (Query<?> s : statements) {
+                    CCJSqlParserUtil.parse(s.getQueryString());
+                }
+            } catch (JSQLParserException e) {
+                return false;
+            }
+
             String queriesString = TestEnvironment.getQueriesString(statements);
             return queriesString.toUpperCase().contains("CASE");
         });
@@ -111,19 +151,51 @@ public class TestASTBasedReducer {
     }
 
     @Test
-    void testFunction() throws Exception {
+    void testSubSelects() throws Exception {
         TestEnvironment env = TestEnvironment.getASTBasedReducerEnv();
 
         String[] queriesStrs = {
-                "SELECT DATE '1970-01-11', false, t1.c1, t1.c1, (t1.c1 NOT IN (((('' LIKE t1.c2 ESCAPE t1.c1)) IS NOT NULL))) FROM t1 WHERE t1.c0 GROUP BY (((('Zlb)' IN (t1.c0)) LIKE t1.c1 ESCAPE (0.6419925594156123 BETWEEN t1.c1 AND ')-'))) ::BOOL) HAVING ((LAST_DAY(1630554083))&(AVG((CASE t1.c0 WHEN t1.c2 THEN DATE '1970-01-09' ELSE '' END )))) LIMIT 714775291;" };
+                // "SELECT AVG(sum_column1) FROM (SELECT SUM(column1) AS sum_column1 FROM t1 GROUP BY column1 LIMIT 32
+                // OFFSET 128) AS t1;",
+                "WITH cte1 AS (SELECT a, b FROM table1), cte2 AS (SELECT c, d FROM table2) SELECT b, d FROM cte1 JOIN cte2 WHERE cte1.a = cte2.c" };
         env.setInitialStatementsFromStrings(List.of(queriesStrs));
         env.setBugInducingCondition(statements -> {
             String queriesString = TestEnvironment.getQueriesString(statements);
-            return queriesString.contains("AVG");
+            try {
+                for (Query<?> s : statements) {
+                    CCJSqlParserUtil.parse(s.getQueryString());
+                }
+            } catch (JSQLParserException e) {
+                return false;
+            }
+            return queriesString.contains("cte2");
         });
         env.runReduce();
         List<Query<?>> reducedResult = env.getReducedStatements();
         System.out.println(Arrays.toString(queriesStrs));
         System.out.println(reducedResult);
     }
+
+    @Test
+    void testInsert() throws Exception {
+        TestEnvironment env = TestEnvironment.getASTBasedReducerEnv();
+
+        String[] queriesStrs = {
+                "INSERT INTO t1(c2, c0) VALUES (1508438260, 2929), (1508438260, TIMESTAMP '1969-12-26 01:57:21'), (0.5347171705591047, 398662142);" };
+        env.setInitialStatementsFromStrings(List.of(queriesStrs));
+        env.setBugInducingCondition(statements -> {
+            String queriesString = TestEnvironment.getQueriesString(statements);
+            try {
+                CCJSqlParserUtil.parse(queriesString);
+            } catch (JSQLParserException e) {
+                return false;
+            }
+            return queriesString.toUpperCase().contains("0.5347171705591047");
+        });
+        env.runReduce();
+        List<Query<?>> reducedResult = env.getReducedStatements();
+        System.out.println(Arrays.toString(queriesStrs));
+        System.out.println(reducedResult);
+    }
+
 }

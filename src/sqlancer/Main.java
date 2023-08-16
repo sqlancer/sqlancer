@@ -459,6 +459,12 @@ public final class Main {
 
                     Reducer<G> reducer = new StatementReducer<>(provider);
                     reducer.reduce(state, reproducer, newGlobalState);
+
+                    if (options.reduceAST()) {
+                        Reducer<G> astBasedReducer = new ASTBasedReducer<>(provider);
+                        astBasedReducer.reduce(state, reproducer, newGlobalState);
+                    }
+
                     throw new AssertionError("Found a potential bug");
                 }
             }
