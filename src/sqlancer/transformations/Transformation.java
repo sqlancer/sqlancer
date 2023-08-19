@@ -16,10 +16,6 @@ public class Transformation {
     protected boolean isChanged;
     String current;
     Statement statement;
-    // public enum StatusCode {
-    // FAIL, SUCCESS, TERMINATE
-    // }
-    // private String name = "";
     private String desc = "";
 
     public Transformation(String desc) {

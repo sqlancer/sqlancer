@@ -1,6 +1,7 @@
 package sqlancer.transformations;
 
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SetOperationList;
@@ -19,21 +20,25 @@ public class RemoveRowsOfInsert extends JSQLParserBasedTransformation {
     @Override
     public void apply() {
         super.apply();
-        if (statement instanceof Insert) {
-            Insert insert = (Insert) statement;
-            SelectBody selectBody = insert.getSelect().getSelectBody();
-            if (selectBody instanceof SetOperationList) {
-                SetOperationList insertingList = (SetOperationList) selectBody;
-                for (SelectBody selBody : insertingList.getSelects()) {
-                    if (selBody instanceof ValuesStatement) {
-                        ValuesStatement valuesStatement = (ValuesStatement) selBody;
-                        if (valuesStatement.getExpressions() instanceof ExpressionList) {
-                            ExpressionList itemsList = (ExpressionList) valuesStatement.getExpressions();
-                            tryRemoveElms(itemsList, itemsList.getExpressions(), ExpressionList::setExpressions);
-                        }
-                    }
-                }
+        if (!(statement instanceof Insert)) {
+            return;
+        }
+        SelectBody selectBody = ((Insert) statement).getSelect().getSelectBody();
+        if (!(selectBody instanceof SetOperationList)) {
+            return;
+        }
+        SetOperationList insertingList = (SetOperationList) selectBody;
+        for (SelectBody selBody : insertingList.getSelects()) {
+            if (!(selBody instanceof ValuesStatement)) {
+                continue;
             }
+            ValuesStatement valuesStatement = (ValuesStatement) selBody;
+            ItemsList itemsList = valuesStatement.getExpressions();
+            if (!(itemsList instanceof ExpressionList)) {
+                continue;
+            }
+            tryRemoveElms((ExpressionList) itemsList, ((ExpressionList) itemsList).getExpressions(),
+                    ExpressionList::setExpressions);
         }
     }
 }

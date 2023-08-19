@@ -14,12 +14,9 @@ import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
 
 /**
- * Shorten the constant of a statement e.g. "a_very_long_str" -> "", 12341234->1;
- * <p>
- * Note: Since the API of JSQLParser may have some problems with double values: when `setValue` is called, it doesn't
- * change the string of the statement, double values are not handled here.
- * <p>
- * TODO: consider more candidate numbers or strings.
+ * Shorten the constant of a statement e.g. "a_very_long_str" -> "", 12341234->1; Note: The API of JSQLParser may have
+ * some problems with double values: `setValue` can't change the literal value of a DoubleValue object. Therefore,
+ * double values are not handled here. TODO: consider more candidate numbers or strings.
  */
 public class SimplifyConstant extends JSQLParserBasedTransformation {
     static class ConstantCollector extends ExpressionDeParser {
@@ -96,7 +93,7 @@ public class SimplifyConstant extends JSQLParserBasedTransformation {
     }
 
     private void simplify(StringValue stringValue) {
-        String variant = "";
+        String variant = "_";
         if (!stringValue.getValue().equals(variant)) {
             tryReplace(stringValue, stringValue.getValue(), variant, StringValue::setValue);
         }

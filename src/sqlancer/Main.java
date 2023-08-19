@@ -444,6 +444,10 @@ public final class Main {
                 } catch (IOException e) {
                     throw new AssertionError(e);
                 }
+
+                if (options.reduceAST() && !options.useReducer()) {
+                    throw new AssertionError("To reduce AST, use-reducer option must be enabled first");
+                }
                 if (reproducer != null && options.useReducer()) {
                     System.out.println("EXPERIMENTAL: Trying to reduce queries using a simple reducer.");
                     // System.out.println("Reduced query will be output to stdout but not logs.");
