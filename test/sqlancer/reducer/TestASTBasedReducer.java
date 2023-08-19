@@ -223,4 +223,26 @@ public class TestASTBasedReducer {
                 TestEnvironment.getQueriesString(reducedResult));
     }
 
+    @Test
+    void testWithSelect() throws Exception {
+        TestEnvironment env = TestEnvironment.getASTBasedReducerEnv();
+
+        String[] queriesStrs = {
+                "WITH cte1 AS (SELECT a, b FROM table1 where a < b), cte2 AS (SELECT c, d FROM table2 where c = d) SELECT b, d FROM cte1 JOIN cte2 WHERE cte1.a = cte2.c;" };
+        env.setInitialStatementsFromStrings(List.of(queriesStrs));
+        env.setBugInducingCondition(statements -> {
+            String queriesString = TestEnvironment.getQueriesString(statements);
+            try {
+                CCJSqlParserUtil.parse(queriesString);
+            } catch (JSQLParserException e) {
+                return false;
+            }
+            return queriesString.contains("table1");
+        });
+        env.runReduce();
+        List<Query<?>> reducedResult = env.getReducedStatements();
+        assertEquals("WITH cte1 AS (SELECT a FROM table1) SELECT b FROM cte1;",
+                TestEnvironment.getQueriesString(reducedResult));
+    }
+
 }

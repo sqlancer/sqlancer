@@ -1,7 +1,11 @@
 package sqlancer.transformations;
 
+import java.util.List;
+
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
 
@@ -39,6 +43,22 @@ public class RemoveColumnsOfSelect extends JSQLParserBasedTransformation {
         if (statement instanceof Select) {
             Select select = (Select) statement;
             select.getSelectBody().accept(remover);
+
+            List<WithItem> withItemsList = select.getWithItemsList();
+            if (withItemsList == null) {
+                return;
+            }
+            for (WithItem withItem : withItemsList) {
+                SubSelect subSelect = withItem.getSubSelect();
+                if (subSelect == null) {
+                    return;
+                }
+
+                if (subSelect.getSelectBody() != null) {
+                    subSelect.getSelectBody().accept(remover);
+                }
+            }
+
         }
     }
 }
