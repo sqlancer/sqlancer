@@ -1,5 +1,7 @@
 package sqlancer;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +49,9 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
         this.newGlobalState = newGlobalState;
         this.reproducer = reproducer;
 
+        long maxReduceTime = state.getOptions().getMaxStatementReduceTime();
+        long maxReduceSteps = state.getOptions().getMaxStatementReduceSteps();
+
         List<Query<?>> initialBugInducingStatements = state.getState().getStatements();
         newGlobalState.getState().setStatements(new ArrayList<>(initialBugInducingStatements));
 
@@ -74,10 +79,23 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
             reducedStatements.add((Query<C>) query);
         }
 
-        do {
+        Instant startTime = Instant.now();
+        reduceProcess: do {
             observeChange = false;
             for (Transformation t : transformations) {
                 for (int i = 0; i < reducedStatements.size(); i++) {
+
+                    Instant currentTime = Instant.now();
+                    if (maxReduceTime != MainOptions.NO_REDUCE_LIMIT
+                            && Duration.between(startTime, currentTime).getSeconds() >= maxReduceTime) {
+                        break reduceProcess;
+                    }
+
+                    if (maxReduceSteps != MainOptions.NO_REDUCE_LIMIT
+                            && Transformation.getReduceSteps() >= maxReduceSteps) {
+                        break reduceProcess;
+                    }
+
                     Query<?> query = reducedStatements.get(i);
                     boolean initFlag = t.init(query.getQueryString());
                     int index = i;

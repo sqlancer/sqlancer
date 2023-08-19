@@ -132,7 +132,13 @@ public class MainOptions {
     @Parameter(names = "--statement-reducer-max-steps", description = "EXPERIMENTAL Maximum steps the statement reducer will do")
     private long maxStatementReduceSteps = NO_REDUCE_LIMIT; // NOPMD
 
-    @Parameter(names = "--statement-reducer-max-time", description = "EXPERIMENTAL Maximum time duration (secs) the statement reducer will do")
+    @Parameter(names = "--statement-reducer-max-time", description = "EXPERIMENTAL Maximum time duration (secs) the AST-based reducer will do")
+    private long maxASTReduceTime = NO_REDUCE_LIMIT; // NOPMD
+
+    @Parameter(names = "--ast-reducer-max-steps", description = "EXPERIMENTAL Maximum steps the AST-based reducer will do")
+    private long maxASTReduceSteps = NO_REDUCE_LIMIT; // NOPMD
+
+    @Parameter(names = "--ast-reducer-max-time", description = "EXPERIMENTAL Maximum time duration (secs) the statement reducer will do")
     private long maxStatementReduceTime = NO_REDUCE_LIMIT; // NOPMD
 
     public int getMaxExpressionDepth() {
@@ -307,4 +313,13 @@ public class MainOptions {
     public long getMaxStatementReduceTime() {
         return maxStatementReduceTime;
     }
+
+    public long getMaxASTReduceSteps() {
+        return maxASTReduceSteps;
+    }
+
+    public long getMaxASTReduceTime() {
+        return maxASTReduceTime;
+    }
+
 }

@@ -13,10 +13,12 @@ import net.sf.jsqlparser.statement.Statement;
 public class Transformation {
 
     private static Supplier<Boolean> bugJudgement;
+    private static long reduceSteps;
+
     protected boolean isChanged;
-    String current;
-    Statement statement;
-    private String desc = "";
+    protected String current;
+    protected Statement statement;
+    protected String desc = "";
 
     public Transformation(String desc) {
         this.desc = desc;
@@ -48,6 +50,7 @@ public class Transformation {
             onStatementChanged();
             return false;
         }
+        reduceSteps++;
         isChanged = true;
         return true;
     }
@@ -60,6 +63,7 @@ public class Transformation {
             onStatementChanged();
             return false;
         }
+        reduceSteps++;
         isChanged = true;
         return true;
     }
@@ -82,6 +86,7 @@ public class Transformation {
             }
             isChanged |= observeChange;
             setter.accept(parent, elms);
+            reduceSteps++;
             onStatementChanged();
         } while (observeChange);
 
@@ -107,6 +112,11 @@ public class Transformation {
         return isChanged;
     }
 
+    public static long getReduceSteps() {
+        return reduceSteps;
+    }
+
     protected void onStatementChanged() {
     }
+
 }
