@@ -1,0 +1,30 @@
+# Test Case Reduction
+SQLancer generates a large number of statements, but not all of them are relevant to the bug. To automatically reduce the test cases, two reducers were implemented: the statement reducer and the AST-based reducer.
+
+## Statement Reducer
+The statement reducer utilizes the delta-debugging technique to remove irrelevant statements. More details of delta-debugging could be found in this paper: [Simplifying and Isolating Failure-Inducing Input](https://www.cs.purdue.edu/homes/xyzhang/fall07/Papers/delta-debugging.pdf). 
+
+Using the statement reducer, SQLancer could effectively reduce the set of statements to a minimal subset that reproduces the bug. 
+
+## AST-Based Reducer
+The AST-based reducer can shorten a statement by applying AST level transformations, including removing unnecessary clauses, irrelevant elements in a list, simplify complicated expressions and etc. The transformations are implemented by JSQLParser, which supports the SQL standard as well as major DBMSs, 
+and works for any SQL dialects that could be parsed by this tool.
+
+## Enable reducers
+test case reduction is disabled by default. The statement reducer could be enabled by passing `--use-reducer` when starting SQLancer. If you wish to further shorten each statements, you need to additionally pass the `--reduce-AST` parameter so that the AST-based reduction would be applied. 
+
+<B>Note: if `--reduce-AST` is set, `--use-reducer` option must be enabled first.</B>
+
+There are also options to define timeout seconds and max steps of reduction for both statement reducer and AST-based reducer.
+
+```
+statement-reducer-max-steps=<steps>
+statement-reducer-max-time=<seconds>
+ast-reducer-max-steps=<steps>
+ast-reducer-max-time=<seconds>
+```
+
+## Reduction logs
+If test case reduction is enabled, each time the reducer performs a reduction step successfully, it would print the reduced result to the log file, overwriting the previous one.
+
+The log files will be stored in the following format: `logs/<DBMS>/reduce/<database>-reduce.log`. For instance, if the tested DBMS is SQLite3 and the current database is named database0, the log file will be located at `logs/sqlite3/reduce/database0-reduce.log`.
