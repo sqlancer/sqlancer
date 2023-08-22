@@ -31,7 +31,7 @@ public class StoneDBOptions implements DBMSSpecificOptions<StoneDBOracleFactory>
     public List<StoneDBOracleFactory> oracles = List.of(StoneDBOracleFactory.NOREC);
 
     public enum StoneDBOracleFactory implements OracleFactory<StoneDBGlobalState> {
-        Fuzz {
+        FUZZER {
             @Override
             public TestOracle<StoneDBGlobalState> create(StoneDBGlobalState globalState) throws SQLException {
                 return new StoneDBFuzzOracle(globalState);
