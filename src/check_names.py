@@ -48,6 +48,7 @@ if __name__ == '__main__':
     name_to_files["MySQL"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "mysql"))
     name_to_files["OceanBase"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "oceanbase"))
     name_to_files["Postgres"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "postgres"))
+    name_to_files["Presto"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "presto"))
     name_to_files["QuestDB"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "questdb"))
     name_to_files["SQLite3"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "sqlite3"))
     name_to_files["TiDB"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "tidb"))
