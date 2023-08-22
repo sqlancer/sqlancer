@@ -28,6 +28,7 @@ import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 import sqlancer.stonedb.StoneDBSchema.StoneDBColumn;
 import sqlancer.stonedb.StoneDBSchema.StoneDBDataType;
+import sqlancer.stonedb.ast.StoneDBAdvancedFunction.StoneDBAdvancedFunc;
 import sqlancer.stonedb.ast.StoneDBAggregate.StoneDBAggregateFunction;
 import sqlancer.stonedb.ast.StoneDBConstant;
 import sqlancer.stonedb.ast.StoneDBExpression;
@@ -117,6 +118,11 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
             allowAggregates = false;
             return new NewFunctionNode<>(generateExpressions(aggregateFunction.getNrArgs(), depth + 1),
                     aggregateFunction);
+        }
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            StoneDBAdvancedFunc advancedFunction = StoneDBAdvancedFunc.getRandom();
+            return new NewFunctionNode<>(generateExpressions(advancedFunction.getNrArgs(), depth + 1),
+                    advancedFunction);
         }
         List<Expression> possibleOptions = new ArrayList<>(Arrays.asList(Expression.values()));
         Expression expr = Randomly.fromList(possibleOptions);
