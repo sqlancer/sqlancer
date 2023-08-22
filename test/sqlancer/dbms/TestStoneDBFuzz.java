@@ -15,7 +15,7 @@ public class TestStoneDBFuzz {
     public void testStoneDB() {
         assumeTrue(stoneDBIsAvailable);
         assertEquals(0, Main.executeMain("--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS, "--num-threads",
-                "1", "--num-queries", TestConfig.NUM_QUERIES, "stonedb", "--oracle", "Fuzz"));
+                "1", "--num-queries", TestConfig.NUM_QUERIES, "stonedb", "--oracle", "FUZZER"));
     }
 
 }
