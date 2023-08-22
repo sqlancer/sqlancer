@@ -32,7 +32,16 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
     }
 
     public SQLQueryAdapter(String query, ExpectedErrors expectedErrors, boolean couldAffectSchema) {
-        this.query = canonicalizeString(query);
+        this(query, expectedErrors, couldAffectSchema, true);
+    }
+
+    public SQLQueryAdapter(String query, ExpectedErrors expectedErrors, boolean couldAffectSchema,
+            boolean canonicalizeString) {
+        if (canonicalizeString) {
+            this.query = canonicalizeString(query);
+        } else {
+            this.query = query;
+        }
         this.expectedErrors = expectedErrors;
         this.couldAffectSchema = couldAffectSchema;
         checkQueryString();

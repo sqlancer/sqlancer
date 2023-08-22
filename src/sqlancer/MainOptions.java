@@ -141,6 +141,12 @@ public class MainOptions {
     @Parameter(names = "--ast-reducer-max-time", description = "EXPERIMENTAL Maximum time duration (secs) the statement reducer will do")
     private long maxStatementReduceTime = NO_REDUCE_LIMIT; // NOPMD
 
+    @Parameter(names = "--validate-result-size-only", description = "Should validate result size only and skip comparing content of the result set ", arity = 1)
+    private boolean validateResultSizeOnly = false; // NOPMD
+
+    @Parameter(names = "--canonicalize-sql-strings", description = "Should canonicalize query string (add ';' at the end", arity = 1)
+    private boolean canonicalizeSqlString = true; // NOPMD
+
     public int getMaxExpressionDepth() {
         return maxExpressionDepth;
     }
@@ -320,6 +326,14 @@ public class MainOptions {
 
     public long getMaxASTReduceTime() {
         return maxASTReduceTime;
+    }
+
+    public boolean validateResultSizeOnly() {
+        return validateResultSizeOnly;
+    }
+
+    public boolean canonicalizeSqlString() {
+        return canonicalizeSqlString;
     }
 
 }
