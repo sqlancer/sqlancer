@@ -3,12 +3,14 @@ package sqlancer.stonedb.gen;
 import static sqlancer.stonedb.StoneDBBugs.bug1942;
 import static sqlancer.stonedb.StoneDBBugs.bugNotReported3;
 import static sqlancer.stonedb.StoneDBBugs.bugNotReported6;
+import static sqlancer.stonedb.StoneDBBugs.bugNotReportedXOR;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
@@ -146,7 +148,12 @@ public class StoneDBExpressionGenerator extends UntypedExpressionGenerator<Node<
             return new NewInOperatorNode<>(generateExpression(depth + 1),
                     generateExpressions(Randomly.smallNumber() + 1, depth + 1), true);
         case BINARY_LOGICAL:
-            op = StoneDBBinaryLogicalOperator.getRandom();
+            if (bugNotReportedXOR) {
+                op = Randomly.fromList(Arrays.stream(StoneDBBinaryLogicalOperator.values())
+                        .filter(p -> p != StoneDBBinaryLogicalOperator.XOR).collect(Collectors.toList()));
+            } else {
+                op = StoneDBBinaryLogicalOperator.getRandom();
+            }
             return new NewBinaryOperatorNode<>(generateExpression(depth + 1), generateExpression(depth + 1), op);
         case BINARY_ARITHMETIC:
             op = StoneDBBinaryArithmeticOperator.getRandom();

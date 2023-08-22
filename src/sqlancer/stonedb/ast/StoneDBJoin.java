@@ -22,7 +22,7 @@ public class StoneDBJoin implements Node<StoneDBExpression> {
     }
 
     public enum NaturalJoinType {
-        FULL, LEFT, RIGHT;
+        LEFT, RIGHT;
 
         public static NaturalJoinType getRandom() {
             return Randomly.fromOptions(values());
