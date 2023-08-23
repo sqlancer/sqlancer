@@ -48,6 +48,7 @@ public class StoneDBTableInsertGenerator extends AbstractInsertGenerator<StoneDB
         sb.append(table.getName());
         appendPartition();
         appendColumnsAndValues(columns);
+        appendOnDuplicateUpdate();
         addExpectedErrors();
         return new SQLQueryAdapter(sb.toString(), errors);
     }
@@ -81,6 +82,14 @@ public class StoneDBTableInsertGenerator extends AbstractInsertGenerator<StoneDB
         sb.append(")");
         sb.append(Randomly.fromOptions(" VALUES ", " VALUE "));
         appendValues();
+    }
+
+    private void appendOnDuplicateUpdate() {
+        sb.append("on duplicate key update ");
+        StoneDBColumn randomColumn = table.getRandomColumn();
+        sb.append(randomColumn.getName());
+        sb.append("=");
+        insertValue(randomColumn);
     }
 
     // append nrRows rows

@@ -50,10 +50,8 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
     }
 
     private void checkQueryString() {
-        if (!couldAffectSchema) {
-            if (guessAffectSchemaFromQuery(query)) {
-                throw new AssertionError("CREATE TABLE statements should set couldAffectSchema to true");
-            }
+        if (!couldAffectSchema && guessAffectSchemaFromQuery(query)) {
+            throw new AssertionError("CREATE TABLE statements should set couldAffectSchema to true");
         }
     }
 
