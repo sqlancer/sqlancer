@@ -10,7 +10,7 @@ import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
 
 /**
- * remove columns of a select: e.g. select a, b, c from t -> select a from t;
+ * remove columns of a select: e.g. select a, b, c from t -> select a from t.
  */
 public class RemoveColumnsOfSelect extends JSQLParserBasedTransformation {
 

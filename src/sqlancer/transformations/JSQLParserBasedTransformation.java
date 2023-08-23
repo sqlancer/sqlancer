@@ -1,7 +1,5 @@
 package sqlancer.transformations;
 
-import java.util.function.Consumer;
-
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 
@@ -12,20 +10,15 @@ import net.sf.jsqlparser.statement.Statement;
 public class JSQLParserBasedTransformation extends Transformation {
 
     protected Statement statement;
-    protected Consumer<Statement> statementChangedHandler;
 
     public JSQLParserBasedTransformation(String desc) {
         super(desc);
     }
 
-    public void setStatementChangedCallBack(Consumer<Statement> statementChangedHandler) {
-        this.statementChangedHandler = statementChangedHandler;
-    }
-
     @Override
     protected void onStatementChanged() {
         if (statementChangedHandler != null) {
-            statementChangedHandler.accept(this.statement);
+            statementChangedHandler.accept(this.statement.toString());
         }
     }
 

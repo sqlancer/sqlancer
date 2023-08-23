@@ -14,9 +14,10 @@ import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
 
 /**
- * Shorten the constant of a statement e.g. "a_very_long_str" -> "", 12341234->1; Note: The API of JSQLParser may have
- * some problems with double values: `setValue` can't change the literal value of a DoubleValue object. Therefore,
- * double values are not handled here. TODO: consider more candidate numbers or strings.
+ * Shorten the constant of a statement e.g. "a_very_long_str" -> "_", 12341234->1.
+ *
+ * Note: The API of JSQLParser may have some problems with double values: `setValue` can't change the literal value of a
+ * DoubleValue object. Therefore, double values are handled at RoundDoubleConstant class.
  */
 public class SimplifyConstant extends JSQLParserBasedTransformation {
     static class ConstantCollector extends ExpressionDeParser {

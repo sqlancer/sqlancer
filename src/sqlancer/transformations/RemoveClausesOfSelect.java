@@ -15,8 +15,9 @@ import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
 
 /**
- * remove clauses of a select, such as join, where, group by, distinct, offset, limit e.g. select * from t where a = b
- * offset 1 limit 1 -> select * from t;
+ * remove clauses of a select, such as join, where, group by, distinct, offset, limit.
+ *
+ * e.g. select * from t where a = b offset 1 limit 1 -> select * from t;
  */
 
 public class RemoveClausesOfSelect extends JSQLParserBasedTransformation {

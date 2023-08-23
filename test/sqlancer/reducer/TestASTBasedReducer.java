@@ -174,7 +174,7 @@ public class TestASTBasedReducer {
         });
         env.runReduce();
         List<Query<?>> reducedResult = env.getReducedStatements();
-        assertEquals("SELECT * FROM t0 WHERE t0.v = 0", TestEnvironment.getQueriesString(reducedResult));
+        assertEquals("SELECT * FROM t0 WHERE t0.v = 0;", TestEnvironment.getQueriesString(reducedResult));
     }
 
     @Test
@@ -243,6 +243,25 @@ public class TestASTBasedReducer {
         List<Query<?>> reducedResult = env.getReducedStatements();
         assertEquals("WITH cte1 AS (SELECT a FROM table1) SELECT b FROM cte1;",
                 TestEnvironment.getQueriesString(reducedResult));
+    }
+
+    @Test
+    void testRoundDouble() throws Exception {
+        TestEnvironment env = TestEnvironment.getASTBasedReducerEnv();
+        String[] queriesStrs = { "SELECT * FROM t0 WHERE (2.1427572639 IS NULL);" };
+        env.setInitialStatementsFromStrings(List.of(queriesStrs));
+        env.setBugInducingCondition(statements -> {
+            String queriesString = TestEnvironment.getQueriesString(statements);
+            try {
+                CCJSqlParserUtil.parse(queriesString);
+            } catch (JSQLParserException e) {
+                return false;
+            }
+            return queriesString.contains("WHERE");
+        });
+        env.runReduce();
+        List<Query<?>> reducedResult = env.getReducedStatements();
+        assertEquals("SELECT * FROM t0 WHERE 2.143 IS NULL;", TestEnvironment.getQueriesString(reducedResult));
     }
 
 }

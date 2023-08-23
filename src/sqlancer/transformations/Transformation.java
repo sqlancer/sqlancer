@@ -3,12 +3,11 @@ package sqlancer.transformations;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import net.sf.jsqlparser.statement.Statement;
-
 /**
- * The base class of transformations Defines APIs to remove, replace, remove elements of a list.
+ * The base class of transformations. Defines APIs to remove, replace, remove elements of a list.
  */
 public class Transformation {
 
@@ -17,8 +16,9 @@ public class Transformation {
 
     protected boolean isChanged;
     protected String current;
-    protected Statement statement;
     protected String desc = "";
+
+    protected Consumer<String> statementChangedHandler;
 
     public Transformation(String desc) {
         this.desc = desc;
@@ -104,10 +104,6 @@ public class Transformation {
         isChanged = false;
     }
 
-    public String getResult() {
-        return statement.toString();
-    }
-
     public boolean changed() {
         return isChanged;
     }
@@ -117,6 +113,10 @@ public class Transformation {
     }
 
     protected void onStatementChanged() {
+    }
+
+    public void setStatementChangedCallBack(Consumer<String> statementChangedHandler) {
+        this.statementChangedHandler = statementChangedHandler;
     }
 
 }

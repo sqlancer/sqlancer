@@ -5,15 +5,14 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.jsqlparser.statement.Statement;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.transformations.JSQLParserBasedTransformation;
 import sqlancer.transformations.RemoveClausesOfSelect;
 import sqlancer.transformations.RemoveColumnsOfSelect;
 import sqlancer.transformations.RemoveElementsOfExpressionList;
 import sqlancer.transformations.RemoveRowsOfInsert;
 import sqlancer.transformations.RemoveUnions;
+import sqlancer.transformations.RoundDoubleConstant;
 import sqlancer.transformations.SimplifyConstant;
 import sqlancer.transformations.SimplifyExpressions;
 import sqlancer.transformations.Transformation;
@@ -36,8 +35,7 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
     }
 
     @SuppressWarnings("unchecked")
-    private void updateStatements(Statement statement, int index) {
-        String queryString = statement.toString();
+    private void updateStatements(String queryString, int index) {
         boolean couldAffectSchema = queryString.contains("CREATE TABLE") || queryString.contains("EXPLAIN");
         reducedStatements.set(index, (Query<C>) new SQLQueryAdapter(queryString, couldAffectSchema));
     }
@@ -64,6 +62,7 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
         transformations.add(new RemoveElementsOfExpressionList());
         transformations.add(new SimplifyExpressions());
         transformations.add(new SimplifyConstant());
+        transformations.add(new RoundDoubleConstant());
 
         Transformation.setBugJudgement(() -> {
             try {
@@ -99,12 +98,10 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
                     Query<?> query = reducedStatements.get(i);
                     boolean initFlag = t.init(query.getQueryString());
                     int index = i;
-                    if (t instanceof JSQLParserBasedTransformation) {
-                        JSQLParserBasedTransformation jt = (JSQLParserBasedTransformation) t;
-                        jt.setStatementChangedCallBack((statement) -> {
-                            updateStatements(statement, index);
-                        });
-                    }
+                    t.setStatementChangedCallBack((statementString) -> {
+                        updateStatements(statementString, index);
+                    });
+
                     if (!initFlag) {
                         System.out.println("Error when parsing the statement at transformer :" + t);
                         continue;
