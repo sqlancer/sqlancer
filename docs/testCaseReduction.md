@@ -12,9 +12,9 @@ The AST-based reducer can shorten a statement by applying AST level transformati
 The transformations are implemented by [JSQLParser](https://github.com/JSQLParser/JSqlParser), a RDBMS agnostic SQL statement parser that can translate SQL statements into a traversable hierarchy of Java classes. JSQLParser provides support for the SQL standard as well as major SQL dialects. The AST-based reducer works for any SQL dialects that can be parsed by this tool.
 
 ## Enable reducers
-Test-case reduction is disabled by default. The statement reducer can be enabled by passing `--use-reducer` when starting SQLancer. If you wish to further shorten each statements, you need to additionally pass the `--reduce-AST` parameter so that the AST-based reduction is applied. 
+Test-case reduction is disabled by default. The statement reducer can be enabled by passing `--use-reducer` when starting SQLancer. If you wish to further shorten each statements, you need to additionally pass the `--reduce-ast` parameter so that the AST-based reduction is applied. 
 
-Note: if `--reduce-AST` is set, `--use-reducer` option must be enabled first.
+Note: if `--reduce-ast` is set, `--use-reducer` option must be enabled first.
 
 There are also options to define timeout seconds and max steps of reduction for both statement reducer and AST-based reducer.
 
