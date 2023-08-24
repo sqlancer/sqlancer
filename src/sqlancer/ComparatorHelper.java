@@ -48,7 +48,8 @@ public final class ComparatorHelper {
                 e.printStackTrace();
             }
         }
-        SQLQueryAdapter q = new SQLQueryAdapter(queryString, errors);
+        boolean canonicalizeString = state.getOptions().canonicalizeSqlString();
+        SQLQueryAdapter q = new SQLQueryAdapter(queryString, errors, true, canonicalizeString);
         List<String> resultSet = new ArrayList<>();
         SQLancerResultSet result = null;
         try {
@@ -106,7 +107,8 @@ public final class ComparatorHelper {
         Set<String> firstHashSet = new HashSet<>(resultSet);
         Set<String> secondHashSet = new HashSet<>(secondResultSet);
 
-        if (!firstHashSet.equals(secondHashSet)) {
+        boolean validateResultSizeOnly = state.getOptions().validateResultSizeOnly();
+        if (!validateResultSizeOnly && !firstHashSet.equals(secondHashSet)) {
             Set<String> firstResultSetMisses = new HashSet<>(firstHashSet);
             firstResultSetMisses.removeAll(secondHashSet);
             Set<String> secondResultSetMisses = new HashSet<>(secondHashSet);
