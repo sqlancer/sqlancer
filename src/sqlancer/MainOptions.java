@@ -126,7 +126,7 @@ public class MainOptions {
     @Parameter(names = "--use-reducer", description = "EXPERIMENTAL Attempt to reduce queries using a simple reducer")
     private boolean useReducer = false; // NOPMD
 
-    @Parameter(names = "--reduce-AST", description = "EXPERIMENTAL perform AST reduction after statement reduction")
+    @Parameter(names = "--reduce-ast", description = "EXPERIMENTAL perform AST reduction after statement reduction")
     private boolean reduceAST = false; // NOPMD
 
     @Parameter(names = "--statement-reducer-max-steps", description = "EXPERIMENTAL Maximum steps the statement reducer will do")
