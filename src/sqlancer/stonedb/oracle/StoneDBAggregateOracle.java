@@ -31,7 +31,7 @@ public class StoneDBAggregateOracle extends StoneDBQueryPartitioningBase {
 
     public StoneDBAggregateOracle(StoneDBGlobalState state) {
         super(state);
-        StoneDBErrors.addExpectedExpressionErrors(errors);
+        StoneDBErrors.addExpectedExpressionErrors(state, errors);
     }
 
     @Override

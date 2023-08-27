@@ -43,7 +43,7 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
     public StoneDBNoRECOracle(StoneDBGlobalState globalState) {
         super(globalState);
         this.schema = globalState.getSchema();
-        StoneDBErrors.addExpectedExpressionErrors(errors);
+        StoneDBErrors.addExpectedExpressionErrors(globalState, errors);
     }
 
     @Override
