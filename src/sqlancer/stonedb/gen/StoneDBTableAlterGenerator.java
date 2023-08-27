@@ -66,6 +66,12 @@ public class StoneDBTableAlterGenerator {
     private void appendAlterOption(Action action) {
         StoneDBExpressionGenerator generator = new StoneDBExpressionGenerator(globalState)
                 .setColumns(table.getColumns());
+        if (globalState.getDbmsSpecificOptions().test80Version && Randomly.getBooleanWithSmallProbability()) {
+            sb.append("RENAME COLUMN ");
+            sb.append(table.getRandomColumn().getName());
+            sb.append(" TO ");
+            sb.append(table.getFreeColumnName());
+        }
         switch (action) {
         case ADD_COLUMN:
             sb.append("ADD COLUMN ");
