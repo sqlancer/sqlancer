@@ -43,6 +43,7 @@ import sqlancer.mongodb.MongoDBProvider;
 import sqlancer.mysql.MySQLProvider;
 import sqlancer.oceanbase.OceanBaseProvider;
 import sqlancer.postgres.PostgresProvider;
+import sqlancer.presto.PrestoProvider;
 import sqlancer.questdb.QuestDBProvider;
 import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.stonedb.StoneDBProvider;
@@ -719,6 +720,7 @@ public final class Main {
             providers.add(new MongoDBProvider());
             providers.add(new MySQLProvider());
             providers.add(new OceanBaseProvider());
+            providers.add(new PrestoProvider());
             providers.add(new PostgresProvider());
             providers.add(new QuestDBProvider());
             providers.add(new SQLite3Provider());

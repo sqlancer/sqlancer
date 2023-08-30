@@ -68,11 +68,13 @@ Since SQL dialects differ widely, each DBMS to be tested requires a separate imp
 | TDEngine                     | Removed     | Untyped                      | We removed the TDEngine implementation since all but one of our bug reports were still unaddressed five months after we reported them.                                                          |
 | OceanBase                    | Working     | Untyped                      |                                                                                                                                                                                                 |
 | YugabyteDB                   | Working     | Typed (YSQL), Untyped (YCQL) | YSQL implementation based on Postgres code. YCQL implementation is primitive for now and uses Cassandra JDBC driver as a proxy interface.                                                       |
-| Databend                    | Working     | Typed                      |  |
-| QuestDB                    | Working     | Untyped, Generic                      | The implementation of QuestDB is still WIP, current version covers very basic data types, operations and SQL keywords. |
+| Databend                     | Working     | Typed                      |  |
+| QuestDB                      | Working     | Untyped, Generic                      | The implementation of QuestDB is still WIP, current version covers very basic data types, operations and SQL keywords. |
 | CnosDB                       |Working      | Typed                        | The implementation of CnosDB currently uses Restful API.                                                                                                                                        |
 | Materialize                  |Working      | Typed                        |
-| Apache Doris                      | Preliminary | Typed                   | This is a preliminary implementation, which only contains the common logic of Doris. We have found some errors through it, and hope to improve it in the future.
+| Apache Doris                 | Preliminary | Typed                   | This is a preliminary implementation, which only contains the common logic of Doris. We have found some errors through it, and hope to improve it in the future.
+| Presto                       | Preliminary | Typed                   | This is a preliminary implementation, only basic types supported. 
+
 
 
 # Using SQLancer
