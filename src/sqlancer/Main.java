@@ -81,6 +81,7 @@ public final class Main {
         private FileWriter logFileWriter;
         public FileWriter currentFileWriter;
         private FileWriter queryPlanFileWriter;
+        private FileWriter reduceFileWriter;
 
         private static final List<String> INITIALIZED_PROVIDER_NAMES = new ArrayList<>();
         private final boolean logEachSelect;
@@ -201,14 +202,14 @@ public final class Main {
             if (!useReducer) {
                 throw new UnsupportedOperationException();
             }
-            FileWriter fileWriter;
-            try {
-                fileWriter = new FileWriter(reduceFile, false);
-            } catch (IOException e) {
-                throw new AssertionError(e);
+            if (reduceFileWriter == null) {
+                try {
+                    reduceFileWriter = new FileWriter(reduceFile, false);
+                } catch (IOException e) {
+                    throw new AssertionError(e);
+                }
             }
-
-            return fileWriter;
+            return reduceFileWriter;
         }
 
         public void writeCurrent(StateToReproduce state) {
