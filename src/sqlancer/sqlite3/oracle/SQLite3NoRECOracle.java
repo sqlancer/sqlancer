@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 import sqlancer.IgnoreMeException;
@@ -38,7 +39,7 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
     private SQLite3ExpressionGenerator gen;
     private Reproducer<SQLite3GlobalState> reproducer;
 
-    private class SQLite3NoRECReproducer implements Reproducer<SQLite3GlobalState> {
+    private static class SQLite3NoRECReproducer implements Reproducer<SQLite3GlobalState> {
         private final Function<SQLite3GlobalState, Integer> optimizedQuery;
         private final Function<SQLite3GlobalState, Integer> unoptimizedQuery;
 
@@ -50,7 +51,7 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
 
         @Override
         public boolean bugStillTriggers(SQLite3GlobalState globalState) {
-            return optimizedQuery.apply(globalState) != unoptimizedQuery.apply(globalState);
+            return !Objects.equals(optimizedQuery.apply(globalState), unoptimizedQuery.apply(globalState));
         }
     }
 
