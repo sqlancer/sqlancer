@@ -12,6 +12,7 @@ import sqlancer.OracleFactory;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.mysql.MySQLOptions.MySQLOracleFactory;
 import sqlancer.mysql.oracle.MySQLCERTOracle;
+import sqlancer.mysql.oracle.MySQLFuzzer;
 import sqlancer.mysql.oracle.MySQLPivotedQuerySynthesisOracle;
 import sqlancer.mysql.oracle.MySQLTLPWhereOracle;
 
@@ -57,6 +58,13 @@ public class MySQLOptions implements DBMSSpecificOptions<MySQLOracleFactory> {
             public boolean requiresAllTablesToContainRows() {
                 return true;
             }
+        },
+        FUZZER {
+            @Override
+            public TestOracle<MySQLGlobalState> create(MySQLGlobalState globalState) throws Exception {
+                return new MySQLFuzzer(globalState);
+            }
+
         };
     }
 

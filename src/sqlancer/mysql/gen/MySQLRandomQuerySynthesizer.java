@@ -11,7 +11,7 @@ import sqlancer.mysql.ast.MySQLExpression;
 import sqlancer.mysql.ast.MySQLSelect;
 import sqlancer.mysql.ast.MySQLTableReference;
 
-public class MySQLRandomQuerySynthesizer {
+public final class MySQLRandomQuerySynthesizer {
 
     private MySQLRandomQuerySynthesizer() {
     }
