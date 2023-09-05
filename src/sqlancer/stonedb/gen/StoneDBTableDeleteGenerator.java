@@ -40,6 +40,10 @@ public final class StoneDBTableDeleteGenerator {
         }
         sb.append(" FROM ");
         sb.append(randomTable.getName());
+        if (globalState.getDbmsSpecificOptions().test80Version) {
+            sb.append(" AS ");
+            sb.append(globalState.getSchema().getFreeTableName());
+        }
         if (Randomly.getBoolean()) {
             sb.append(" WHERE ");
             sb.append(StoneDBToStringVisitor.asString(new StoneDBExpressionGenerator(globalState)
