@@ -1,12 +1,13 @@
 package sqlancer.stonedb;
 
 import sqlancer.common.query.ExpectedErrors;
+import sqlancer.stonedb.StoneDBProvider.StoneDBGlobalState;
 
 public final class StoneDBErrors {
     private StoneDBErrors() {
     }
 
-    public static void addExpectedExpressionErrors(ExpectedErrors errors) {
+    public static void addExpectedExpressionErrors(StoneDBGlobalState globalState, ExpectedErrors errors) {
         // java.sql.SQLException: Incorrect DATE value: '292269055-12-02'
         errors.add("Incorrect DATE value: ");
         // java.sql.SQLException: Incorrect string value: '\xBC\xE7\xC9\x91\x05R...' for column 'c1' at row 1
@@ -31,5 +32,11 @@ public final class StoneDBErrors {
         errors.add("Numeric result of an expression is too large and cannot be handled by tianmu.");
         // java.sql.SQLSyntaxErrorException: Unknown column '1020726100' in 'order clause'
         errors.add("Unknown column ");
+        if (globalState.getDbmsSpecificOptions().test80Version) {
+            // Caused by: java.sql.SQLException: Incorrect DATETIME value: '292269055-12-02 16:47:04'
+            errors.add("Incorrect DATETIME value: ");
+            // Caused by: java.sql.SQLException: Incorrect TIMESTAMP value: '292269055-12-02 16:47:04'
+            errors.add("Incorrect TIMESTAMP value: ");
+        }
     }
 }

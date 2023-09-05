@@ -87,10 +87,6 @@ public class SQLite3Options implements DBMSSpecificOptions<SQLite3OracleFactory>
     public boolean generateDatabase = true;
 
     @Parameter(names = {
-            "--execute-queries" }, description = "Specifies whether the query in the fuzzer should be executed", arity = 1)
-    public boolean executeQuery = true;
-
-    @Parameter(names = {
             "--max-num-tables" }, description = "The maximum number of tables/virtual tables/ rtree tables/ views that can be created")
     public int maxNumTables = 10;
 
