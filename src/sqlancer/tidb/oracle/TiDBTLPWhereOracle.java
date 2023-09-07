@@ -48,10 +48,10 @@ public class TiDBTLPWhereOracle extends TiDBTLPBase {
         reproducer = globalState -> {
             try {
                 List<String> combinedString1 = new ArrayList<>();
-                List<String> secondResultSet1 = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
-                        thirdQueryString, combinedString1, !orderBy, state, errors);
-                ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet1, originalQueryString, combinedString1,
-                        state);
+                List<String> secondResultSet1 = ComparatorHelper.getCombinedResultSet(firstQueryString,
+                        secondQueryString, thirdQueryString, combinedString1, !orderBy, state, errors);
+                ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet1, originalQueryString,
+                        combinedString1, state);
             } catch (SQLException ignored) {
                 return false;
             } catch (AssertionError triggeredError) {
