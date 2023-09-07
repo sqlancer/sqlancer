@@ -273,7 +273,6 @@ public final class Main {
             } finally {
                 try {
                     reduceFileWriter.flush();
-                    reduceFileWriter.close();
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -471,6 +470,13 @@ public final class Main {
                     if (options.reduceAST()) {
                         Reducer<G> astBasedReducer = new ASTBasedReducer<>(provider);
                         astBasedReducer.reduce(state, reproducer, newGlobalState);
+                    }
+
+                    try {
+                        logger.getReduceFileWriter().close();
+                        logger.reduceFileWriter = null;
+                    } catch (IOException e) {
+                        throw new AssertionError(e);
                     }
 
                     throw new AssertionError("Found a potential bug");
