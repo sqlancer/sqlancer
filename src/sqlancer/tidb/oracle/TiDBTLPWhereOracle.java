@@ -52,10 +52,9 @@ public class TiDBTLPWhereOracle extends TiDBTLPBase {
                         secondQueryString, thirdQueryString, combinedString1, !orderBy, state, errors);
                 ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet1, originalQueryString,
                         combinedString1, state);
-            } catch (SQLException ignored) {
-                return false;
             } catch (AssertionError triggeredError) {
                 return true;
+            } catch (SQLException ignored) {
             }
             return false;
         };
