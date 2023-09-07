@@ -120,13 +120,7 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
             logger.writeCurrent(unoptimizedQueryString);
         }
         SQLQueryAdapter q = new SQLQueryAdapter(unoptimizedQueryString, errors);
-        return new Function<SQLite3GlobalState, Integer>() {
-
-            @Override
-            public Integer apply(SQLite3GlobalState state) {
-                return extractCounts(q, state);
-            }
-        };
+        return state -> extractCounts(q, state);
     }
 
     private Function<SQLite3GlobalState, Integer> getOptimizedQuery(SQLite3Select select,
@@ -148,14 +142,7 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
             logger.writeCurrent(optimizedQueryString);
         }
         SQLQueryAdapter q = new SQLQueryAdapter(optimizedQueryString, errors);
-        return new Function<SQLite3GlobalState, Integer>() {
-
-            @Override
-            public Integer apply(SQLite3GlobalState state) {
-                return useAggregate ? extractCounts(q, state) : countRows(q, state);
-            }
-
-        };
+        return state -> useAggregate ? extractCounts(q, state) : countRows(q, state);
     }
 
     private int countRows(SQLQueryAdapter q, SQLite3GlobalState globalState) {
