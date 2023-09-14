@@ -31,7 +31,7 @@ public class StoneDBFuzzOracle implements TestOracle<StoneDBGlobalState> {
     public StoneDBFuzzOracle(StoneDBGlobalState globalState) {
         this.globalState = globalState;
         this.schema = globalState.getSchema();
-        StoneDBErrors.addExpectedExpressionErrors(errors);
+        StoneDBErrors.addExpectedExpressionErrors(globalState, errors);
     }
 
     @Override
