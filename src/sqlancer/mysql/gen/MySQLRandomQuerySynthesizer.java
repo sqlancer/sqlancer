@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLTables;
+import sqlancer.mysql.ast.MySQLConstant;
 import sqlancer.mysql.ast.MySQLExpression;
 import sqlancer.mysql.ast.MySQLSelect;
 import sqlancer.mysql.ast.MySQLTableReference;
@@ -41,10 +42,10 @@ public final class MySQLRandomQuerySynthesizer {
             }
         }
         if (Randomly.getBoolean()) {
-            select.setLimitClause(gen.generateExpression());
-        }
-        if (Randomly.getBoolean()) {
-            select.setOffsetClause(gen.generateExpression());
+            select.setLimitClause(MySQLConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
+            if (Randomly.getBoolean()) {
+                select.setOffsetClause(MySQLConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
+            }
         }
         return select;
     }
