@@ -49,9 +49,9 @@ public class TiDBTLPWhereOracle extends TiDBTLPBase {
             try {
                 List<String> combinedString1 = new ArrayList<>();
                 List<String> secondResultSet1 = ComparatorHelper.getCombinedResultSet(firstQueryString,
-                        secondQueryString, thirdQueryString, combinedString1, !orderBy, state, errors);
+                        secondQueryString, thirdQueryString, combinedString1, !orderBy, globalState, errors);
                 ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet1, originalQueryString,
-                        combinedString1, state);
+                        combinedString1, globalState);
             } catch (AssertionError triggeredError) {
                 return true;
             } catch (SQLException ignored) {
