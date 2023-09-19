@@ -451,7 +451,7 @@ public final class Main {
                 }
                 if (options.useReducer()) {
                     if (reproducer == null) {
-                        logger.getQueryPlanFileWriter().write("current oracle does not support experimental reducer.");
+                        logger.getReduceFileWriter().write("current oracle does not support experimental reducer.");
                         throw new IgnoreMeException();
                     }
                     G newGlobalState = createGlobalState();
