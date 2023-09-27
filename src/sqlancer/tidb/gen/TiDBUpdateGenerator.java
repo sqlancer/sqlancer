@@ -4,7 +4,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import sqlancer.Randomly;
-import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.gen.AbstractUpdateGenerator;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBExpressionGenerator;
@@ -13,32 +13,27 @@ import sqlancer.tidb.TiDBSchema.TiDBColumn;
 import sqlancer.tidb.TiDBSchema.TiDBTable;
 import sqlancer.tidb.visitor.TiDBVisitor;
 
-public final class TiDBUpdateGenerator {
+public final class TiDBUpdateGenerator extends AbstractUpdateGenerator<TiDBColumn> {
 
-    private TiDBUpdateGenerator() {
+    private final TiDBGlobalState globalState;
+    private TiDBExpressionGenerator gen;
+
+    private TiDBUpdateGenerator(TiDBGlobalState globalState) {
+        this.globalState = globalState;
     }
 
     public static SQLQueryAdapter getQuery(TiDBGlobalState globalState) throws SQLException {
-        ExpectedErrors errors = new ExpectedErrors();
+        return new TiDBUpdateGenerator(globalState).generate();
+    }
+
+    private SQLQueryAdapter generate() throws SQLException {
         TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-        TiDBExpressionGenerator gen = new TiDBExpressionGenerator(globalState).setColumns(table.getColumns());
-        StringBuilder sb = new StringBuilder("UPDATE ");
+        List<TiDBColumn> columns = table.getRandomNonEmptyColumnSubset();
+        gen = new TiDBExpressionGenerator(globalState).setColumns(table.getColumns());
+        sb.append("UPDATE ");
         sb.append(table.getName());
         sb.append(" SET ");
-        List<TiDBColumn> columns = table.getRandomNonEmptyColumnSubset();
-        for (int i = 0; i < columns.size(); i++) {
-            if (i != 0) {
-                sb.append(", ");
-            }
-            sb.append(columns.get(i).getName());
-            sb.append("=");
-            if (Randomly.getBoolean()) {
-                sb.append(gen.generateConstant());
-            } else {
-                sb.append(TiDBVisitor.asString(gen.generateExpression()));
-                TiDBErrors.addExpressionErrors(errors);
-            }
-        }
+        updateColumns(columns);
         if (Randomly.getBoolean()) {
             sb.append(" WHERE ");
             TiDBErrors.addExpressionErrors(errors);
@@ -47,6 +42,16 @@ public final class TiDBUpdateGenerator {
         TiDBErrors.addInsertErrors(errors);
 
         return new SQLQueryAdapter(sb.toString(), errors);
+    }
+
+    @Override
+    protected void updateValue(TiDBColumn column) {
+        if (Randomly.getBoolean()) {
+            sb.append(gen.generateConstant());
+        } else {
+            sb.append(TiDBVisitor.asString(gen.generateExpression()));
+            TiDBErrors.addExpressionErrors(errors);
+        }
     }
 
 }

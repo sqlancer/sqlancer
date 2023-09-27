@@ -9,11 +9,7 @@ import sqlancer.tidb.ast.TiDBAggregate.TiDBAggregateFunction;
 public class TiDBAggregate extends FunctionNode<TiDBAggregateFunction, TiDBExpression> implements TiDBExpression {
 
     public enum TiDBAggregateFunction {
-        COUNT(1), //
-        SUM(1), //
-        AVG(1), //
-        MIN(1), //
-        MAX(1);
+        AVG(1), BIT_AND(1), BIT_OR(1), COUNT(1), SUM(1), MIN(1), MAX(1);
 
         private int nrArgs;
 

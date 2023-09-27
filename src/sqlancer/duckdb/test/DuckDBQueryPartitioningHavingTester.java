@@ -14,7 +14,8 @@ import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBToStringVisitor;
 import sqlancer.duckdb.ast.DuckDBExpression;
 
-public class DuckDBQueryPartitioningHavingTester extends DuckDBQueryPartitioningBase implements TestOracle {
+public class DuckDBQueryPartitioningHavingTester extends DuckDBQueryPartitioningBase
+        implements TestOracle<DuckDBGlobalState> {
 
     public DuckDBQueryPartitioningHavingTester(DuckDBGlobalState state) {
         super(state);
@@ -46,7 +47,7 @@ public class DuckDBQueryPartitioningHavingTester extends DuckDBQueryPartitioning
         List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
                 thirdQueryString, combinedString, !orderBy, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
-                state, DuckDBQueryPartitioningBase::canonicalizeResultValue);
+                state, ComparatorHelper::canonicalizeResultValue);
     }
 
     @Override

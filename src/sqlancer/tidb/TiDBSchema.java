@@ -160,11 +160,14 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
 
         private final boolean isPrimaryKey;
         private final boolean isNullable;
+        private final boolean hasDefault;
 
-        public TiDBColumn(String name, TiDBCompositeDataType columnType, boolean isPrimaryKey, boolean isNullable) {
+        public TiDBColumn(String name, TiDBCompositeDataType columnType, boolean isPrimaryKey, boolean isNullable,
+                boolean hasDefault) {
             super(name, null, columnType);
             this.isPrimaryKey = isPrimaryKey;
             this.isNullable = isNullable;
+            this.hasDefault = hasDefault;
         }
 
         public boolean isPrimaryKey() {
@@ -173,6 +176,10 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
 
         public boolean isNullable() {
             return isNullable;
+        }
+
+        public boolean hasDefault() {
+            return hasDefault;
         }
 
     }
@@ -231,6 +238,8 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
                 primitiveType = TiDBDataType.FLOATING;
                 break;
             case "double":
+            case "double(8,6)": // workaround to address https://github.com/sqlancer/sqlancer/issues/669
+            case "double(23,16)":
                 size = 8;
                 primitiveType = TiDBDataType.FLOATING;
                 break;
@@ -264,6 +273,7 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
                 break;
             case "date":
             case "datetime":
+            case "datetime(6)": // workaround to address https://github.com/sqlancer/sqlancer/issues/669
             case "timestamp":
             case "time":
             case "year":
@@ -343,7 +353,9 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
                     String dataType = rs.getString("Type");
                     boolean isNullable = rs.getString("Null").contentEquals("YES");
                     boolean isPrimaryKey = rs.getString("Key").contains("PRI");
-                    TiDBColumn c = new TiDBColumn(columnName, getColumnType(dataType), isPrimaryKey, isNullable);
+                    boolean hasDefault = rs.getString("Default") != null;
+                    TiDBColumn c = new TiDBColumn(columnName, getColumnType(dataType), isPrimaryKey, isNullable,
+                            hasDefault);
                     columns.add(c);
                 }
             }

@@ -3,23 +3,36 @@ package sqlancer.databend.ast;
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode;
 import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
-import sqlancer.common.ast.newast.Node;
+import sqlancer.databend.DatabendExprToNode;
 import sqlancer.databend.DatabendSchema.DatabendDataType;
 
-public class DatabendUnaryPostfixOperation extends NewUnaryPostfixOperatorNode<DatabendExpression> {
+public class DatabendUnaryPostfixOperation extends NewUnaryPostfixOperatorNode<DatabendExpression>
+        implements DatabendExpression {
 
-    // private final Node<DatabendExpression> expr;
-    // private final DatabendUnaryPostfixOperator op;
-    private boolean negate;
-
-    public DatabendUnaryPostfixOperation(Node<DatabendExpression> expr, DatabendUnaryPostfixOperator op,
-            boolean negate) {
-        super(expr, op);
-        setNegate(negate);
+    public DatabendUnaryPostfixOperation(DatabendExpression expr, DatabendUnaryPostfixOperator op) {
+        super(DatabendExprToNode.cast(expr), op);
     }
 
-    public DatabendUnaryPostfixOperation(Node<DatabendExpression> expr, DatabendUnaryPostfixOperator op) {
-        super(expr, op);
+    public DatabendExpression getExpression() {
+        return (DatabendExpression) getExpr();
+    }
+
+    public DatabendUnaryPostfixOperator getOp() {
+        return (DatabendUnaryPostfixOperator) op;
+    }
+
+    @Override
+    public DatabendDataType getExpectedType() {
+        return DatabendDataType.BOOLEAN;
+    }
+
+    @Override
+    public DatabendConstant getExpectedValue() {
+        DatabendConstant expectedValue = getExpression().getExpectedValue();
+        if (expectedValue == null) {
+            return null;
+        }
+        return getOp().apply(expectedValue);
     }
 
     public enum DatabendUnaryPostfixOperator implements BinaryOperatorNode.Operator {
@@ -28,11 +41,21 @@ public class DatabendUnaryPostfixOperation extends NewUnaryPostfixOperatorNode<D
             public DatabendDataType[] getInputDataTypes() {
                 return DatabendDataType.values();
             }
+
+            @Override
+            public DatabendConstant apply(DatabendConstant value) {
+                return DatabendConstant.createBooleanConstant(value.isNull());
+            }
         },
         IS_NOT_NULL("IS NOT NULL") {
             @Override
             public DatabendDataType[] getInputDataTypes() {
                 return DatabendDataType.values();
+            }
+
+            @Override
+            public DatabendConstant apply(DatabendConstant value) {
+                return DatabendConstant.createBooleanConstant(!value.isNull());
             }
         };
         // IS
@@ -54,19 +77,7 @@ public class DatabendUnaryPostfixOperation extends NewUnaryPostfixOperatorNode<D
 
         public abstract DatabendDataType[] getInputDataTypes();
 
-    }
-
-    public boolean isNegated() {
-        return negate;
-    }
-
-    public void setNegate(boolean negate) {
-        this.negate = negate;
-    }
-
-    // @Override
-    public Node<DatabendExpression> getExpression() {
-        return getExpr();
+        public abstract DatabendConstant apply(DatabendConstant value);
     }
 
     @Override
@@ -74,8 +85,4 @@ public class DatabendUnaryPostfixOperation extends NewUnaryPostfixOperatorNode<D
         return this.op.getTextRepresentation();
     }
 
-    // @Override
-    // public OperatorKind getOperatorKind() {
-    // return OperatorKind.POSTFIX;
-    // }
 }

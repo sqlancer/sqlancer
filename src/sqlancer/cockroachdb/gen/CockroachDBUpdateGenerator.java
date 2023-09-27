@@ -9,20 +9,27 @@ import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBDataType;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.CockroachDBVisitor;
-import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.gen.AbstractUpdateGenerator;
 import sqlancer.common.query.SQLQueryAdapter;
 
-public final class CockroachDBUpdateGenerator {
+public final class CockroachDBUpdateGenerator extends AbstractUpdateGenerator<CockroachDBColumn> {
 
-    private CockroachDBUpdateGenerator() {
+    private final CockroachDBGlobalState globalState;
+    private CockroachDBExpressionGenerator gen;
+
+    private CockroachDBUpdateGenerator(CockroachDBGlobalState globalState) {
+        this.globalState = globalState;
     }
 
     public static SQLQueryAdapter gen(CockroachDBGlobalState globalState) {
-        ExpectedErrors errors = new ExpectedErrors();
+        return new CockroachDBUpdateGenerator(globalState).generate();
+    }
+
+    private SQLQueryAdapter generate() {
         CockroachDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<CockroachDBColumn> columns = table.getRandomNonEmptyColumnSubset();
-        CockroachDBExpressionGenerator gen = new CockroachDBExpressionGenerator(globalState).setColumns(columns);
-        StringBuilder sb = new StringBuilder("UPDATE ");
+        gen = new CockroachDBExpressionGenerator(globalState).setColumns(columns);
+        sb.append("UPDATE ");
         sb.append(table.getName());
         if (Randomly.getBoolean()) {
             sb.append("@{FORCE_INDEX=");
@@ -30,15 +37,7 @@ public final class CockroachDBUpdateGenerator {
             sb.append("}");
         }
         sb.append(" SET ");
-        int i = 0;
-        for (CockroachDBColumn c : columns) {
-            if (i++ != 0) {
-                sb.append(", ");
-            }
-            sb.append(c.getName());
-            sb.append("=");
-            sb.append(CockroachDBVisitor.asString(gen.generateExpression(c.getType())));
-        }
+        updateColumns(columns);
         if (Randomly.getBoolean()) {
             sb.append(" WHERE ");
             sb.append(CockroachDBVisitor.asString(gen.generateExpression(CockroachDBDataType.BOOL.get())));
@@ -53,6 +52,11 @@ public final class CockroachDBUpdateGenerator {
         CockroachDBErrors.addExpressionErrors(errors);
         CockroachDBErrors.addTransactionErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors);
+    }
+
+    @Override
+    protected void updateValue(CockroachDBColumn column) {
+        sb.append(CockroachDBVisitor.asString(gen.generateExpression(column.getType())));
     }
 
 }

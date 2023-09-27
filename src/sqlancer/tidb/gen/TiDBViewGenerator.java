@@ -13,6 +13,9 @@ public final class TiDBViewGenerator {
     }
 
     public static SQLQueryAdapter getQuery(TiDBGlobalState globalState) {
+        if (globalState.getSchema().getDatabaseTables().size() > globalState.getDbmsSpecificOptions().maxNumTables) {
+            throw new IgnoreMeException();
+        }
         int nrColumns = Randomly.smallNumber() + 1;
         StringBuilder sb = new StringBuilder("CREATE ");
         if (Randomly.getBoolean()) {

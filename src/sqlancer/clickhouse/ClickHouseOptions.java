@@ -11,6 +11,7 @@ import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
 import sqlancer.clickhouse.ClickHouseOptions.ClickHouseOracleFactory;
 import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
+import sqlancer.clickhouse.oracle.norec.ClickHouseNoRECOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPAggregateOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPDistinctOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPGroupByOracle;
@@ -30,35 +31,44 @@ public class ClickHouseOptions implements DBMSSpecificOptions<ClickHouseOracleFa
     @Parameter(names = { "--test-joins" }, description = "Allow the generation of JOIN clauses", arity = 1)
     public boolean testJoins = true;
 
+    @Parameter(names = { "--analyzer" }, description = "Enable analyzer in ClickHouse", arity = 1)
+    public boolean enableAnalyzer = true;
+
     public enum ClickHouseOracleFactory implements OracleFactory<ClickHouseGlobalState> {
         TLPWhere {
             @Override
-            public TestOracle create(ClickHouseGlobalState globalState) throws SQLException {
+            public TestOracle<ClickHouseGlobalState> create(ClickHouseGlobalState globalState) throws SQLException {
                 return new ClickHouseTLPWhereOracle(globalState);
             }
         },
         TLPDistinct {
             @Override
-            public TestOracle create(ClickHouseGlobalState globalState) throws SQLException {
+            public TestOracle<ClickHouseGlobalState> create(ClickHouseGlobalState globalState) throws SQLException {
                 return new ClickHouseTLPDistinctOracle(globalState);
             }
         },
         TLPGroupBy {
             @Override
-            public TestOracle create(ClickHouseGlobalState globalState) throws SQLException {
+            public TestOracle<ClickHouseGlobalState> create(ClickHouseGlobalState globalState) throws SQLException {
                 return new ClickHouseTLPGroupByOracle(globalState);
             }
         },
         TLPAggregate {
             @Override
-            public TestOracle create(ClickHouseGlobalState globalState) throws SQLException {
+            public TestOracle<ClickHouseGlobalState> create(ClickHouseGlobalState globalState) throws SQLException {
                 return new ClickHouseTLPAggregateOracle(globalState);
             }
         },
         TLPHaving {
             @Override
-            public TestOracle create(ClickHouseGlobalState globalState) throws SQLException {
+            public TestOracle<ClickHouseGlobalState> create(ClickHouseGlobalState globalState) throws SQLException {
                 return new ClickHouseTLPHavingOracle(globalState);
+            }
+        },
+        NoREC {
+            @Override
+            public TestOracle<ClickHouseGlobalState> create(ClickHouseGlobalState globalState) throws SQLException {
+                return new ClickHouseNoRECOracle(globalState);
             }
         };
 

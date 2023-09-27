@@ -13,6 +13,7 @@ import sqlancer.OracleFactory;
 import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.postgres.PostgresOptions.PostgresOracleFactory;
+import sqlancer.postgres.oracle.PostgresFuzzer;
 import sqlancer.postgres.oracle.PostgresNoRECOracle;
 import sqlancer.postgres.oracle.PostgresPivotedQuerySynthesisOracle;
 import sqlancer.postgres.oracle.tlp.PostgresTLPAggregateOracle;
@@ -44,13 +45,13 @@ public class PostgresOptions implements DBMSSpecificOptions<PostgresOracleFactor
     public enum PostgresOracleFactory implements OracleFactory<PostgresGlobalState> {
         NOREC {
             @Override
-            public TestOracle create(PostgresGlobalState globalState) throws SQLException {
+            public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws SQLException {
                 return new PostgresNoRECOracle(globalState);
             }
         },
         PQS {
             @Override
-            public TestOracle create(PostgresGlobalState globalState) throws SQLException {
+            public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws SQLException {
                 return new PostgresPivotedQuerySynthesisOracle(globalState);
             }
 
@@ -62,20 +63,27 @@ public class PostgresOptions implements DBMSSpecificOptions<PostgresOracleFactor
         HAVING {
 
             @Override
-            public TestOracle create(PostgresGlobalState globalState) throws SQLException {
+            public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws SQLException {
                 return new PostgresTLPHavingOracle(globalState);
             }
 
         },
         QUERY_PARTITIONING {
             @Override
-            public TestOracle create(PostgresGlobalState globalState) throws SQLException {
-                List<TestOracle> oracles = new ArrayList<>();
+            public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws SQLException {
+                List<TestOracle<PostgresGlobalState>> oracles = new ArrayList<>();
                 oracles.add(new PostgresTLPWhereOracle(globalState));
                 oracles.add(new PostgresTLPHavingOracle(globalState));
                 oracles.add(new PostgresTLPAggregateOracle(globalState));
-                return new CompositeTestOracle(oracles, globalState);
+                return new CompositeTestOracle<PostgresGlobalState>(oracles, globalState);
             }
+        },
+        FUZZER {
+            @Override
+            public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws Exception {
+                return new PostgresFuzzer(globalState);
+            }
+
         };
 
     }

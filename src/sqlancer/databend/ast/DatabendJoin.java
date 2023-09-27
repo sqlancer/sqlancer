@@ -6,6 +6,7 @@ import java.util.List;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.ast.newast.TableReferenceNode;
+import sqlancer.databend.DatabendExprToNode;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema;
 import sqlancer.databend.DatabendSchema.DatabendColumn;
@@ -83,18 +84,18 @@ public class DatabendJoin implements Node<DatabendExpression> {
             switch (JoinType.getRandom()) {
             case INNER:
                 joinExpressions.add(DatabendJoin.createInnerJoin(leftTable, rightTable,
-                        joinGen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN)));
+                        DatabendExprToNode.cast(joinGen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN))));
                 break;
             case NATURAL:
                 joinExpressions.add(DatabendJoin.createNaturalJoin(leftTable, rightTable, OuterType.getRandom()));
                 break;
             case LEFT:
                 joinExpressions.add(DatabendJoin.createLeftOuterJoin(leftTable, rightTable,
-                        joinGen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN)));
+                        DatabendExprToNode.cast(joinGen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN))));
                 break;
             case RIGHT:
                 joinExpressions.add(DatabendJoin.createRightOuterJoin(leftTable, rightTable,
-                        joinGen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN)));
+                        DatabendExprToNode.cast(joinGen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN))));
                 break;
             default:
                 throw new AssertionError();

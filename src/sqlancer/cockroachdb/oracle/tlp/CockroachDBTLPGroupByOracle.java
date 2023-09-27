@@ -14,6 +14,8 @@ import sqlancer.cockroachdb.ast.CockroachDBExpression;
 
 public class CockroachDBTLPGroupByOracle extends CockroachDBTLPBase {
 
+    private String generatedQueryString;
+
     public CockroachDBTLPGroupByOracle(CockroachDBGlobalState state) {
         super(state);
     }
@@ -24,7 +26,7 @@ public class CockroachDBTLPGroupByOracle extends CockroachDBTLPBase {
         select.setGroupByExpressions(select.getFetchColumns());
         select.setWhereClause(null);
         String originalQueryString = CockroachDBVisitor.asString(select);
-
+        generatedQueryString = originalQueryString;
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         select.setWhereClause(predicate);
@@ -44,6 +46,11 @@ public class CockroachDBTLPGroupByOracle extends CockroachDBTLPBase {
     List<CockroachDBExpression> generateFetchColumns() {
         return Randomly.nonEmptySubset(targetTables.getColumns().stream().map(c -> new CockroachDBColumnReference(c))
                 .collect(Collectors.toList()));
+    }
+
+    @Override
+    public String getLastQueryString() {
+        return generatedQueryString;
     }
 
 }

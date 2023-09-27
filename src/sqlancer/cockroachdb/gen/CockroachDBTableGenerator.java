@@ -29,12 +29,16 @@ public class CockroachDBTableGenerator extends CockroachDBGenerator {
     }
 
     public static SQLQueryAdapter generate(CockroachDBGlobalState globalState) {
+        if (globalState.getSchema().getDatabaseTables().size() > globalState.getDbmsSpecificOptions().maxNumTables) {
+            throw new IgnoreMeException();
+        }
         return new CockroachDBTableGenerator(globalState).getQuery();
     }
 
     @Override
     public void buildStatement() {
         errors.add("and thus is not indexable"); // array types are not indexable
+        errors.add("context-dependent operators are not allowed in STORED COMPUTED COLUMN");
         if (globalState.getDbmsSpecificOptions().testTempTables) {
             errors.add("constraints on temporary tables may reference only temporary tables");
             errors.add("constraints on permanent tables may reference only permanent tables");

@@ -37,7 +37,7 @@ public class YCQLOptions implements DBMSSpecificOptions<YCQLOracleFactory> {
     public enum YCQLOracleFactory implements OracleFactory<YCQLGlobalState> {
         FUZZER {
             @Override
-            public TestOracle create(YCQLGlobalState globalState) throws SQLException {
+            public TestOracle<YCQLGlobalState> create(YCQLGlobalState globalState) throws SQLException {
                 return new YCQLFuzzer(globalState);
             }
 

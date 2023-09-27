@@ -4,20 +4,20 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import ru.yandex.clickhouse.domain.ClickHouseDataType;
+import com.clickhouse.client.ClickHouseDataType;
+
 import sqlancer.Randomly;
 import sqlancer.clickhouse.ClickHouseSchema;
 
 public class ClickHouseAggregate extends ClickHouseExpression {
 
     private final ClickHouseAggregate.ClickHouseAggregateFunction func;
-    private final List<ClickHouseExpression> expr;
+    private final ClickHouseExpression expr;
 
     public enum ClickHouseAggregateFunction {
         AVG(ClickHouseDataType.Int8, ClickHouseDataType.Int16, ClickHouseDataType.Int32, ClickHouseDataType.Int64,
                 ClickHouseDataType.UInt8, ClickHouseDataType.UInt16, ClickHouseDataType.UInt32,
                 ClickHouseDataType.UInt64, ClickHouseDataType.Float32, ClickHouseDataType.Float64),
-        BOOL_AND(ClickHouseDataType.UInt8), BOOL_OR(ClickHouseDataType.UInt8),
         COUNT(ClickHouseDataType.Int8, ClickHouseDataType.Int16, ClickHouseDataType.Int32, ClickHouseDataType.Int64,
                 ClickHouseDataType.UInt8, ClickHouseDataType.UInt16, ClickHouseDataType.UInt32,
                 ClickHouseDataType.UInt64, ClickHouseDataType.Float32, ClickHouseDataType.Float64,
@@ -41,8 +41,8 @@ public class ClickHouseAggregate extends ClickHouseExpression {
             return Randomly.fromOptions(values());
         }
 
-        public List<ClickHouseDataType> getTypes(ClickHouseDataType returnType) {
-            return Arrays.asList(returnType);
+        public ClickHouseDataType getType(ClickHouseDataType returnType) {
+            return returnType;
         }
 
         public boolean supportsReturnType(ClickHouseDataType returnType) {
@@ -65,7 +65,7 @@ public class ClickHouseAggregate extends ClickHouseExpression {
 
     }
 
-    public ClickHouseAggregate(List<ClickHouseExpression> expr, ClickHouseAggregateFunction func) {
+    public ClickHouseAggregate(ClickHouseExpression expr, ClickHouseAggregateFunction func) {
         this.expr = expr;
         this.func = func;
     }
@@ -74,7 +74,7 @@ public class ClickHouseAggregate extends ClickHouseExpression {
         return func;
     }
 
-    public List<ClickHouseExpression> getExpr() {
+    public ClickHouseExpression getExpr() {
         return expr;
     }
 

@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
@@ -44,6 +45,14 @@ public class SQLite3TableGenerator {
         this.tableName = tableName;
         this.globalState = globalState;
         this.existingSchema = globalState.getSchema();
+    }
+
+    public static SQLQueryAdapter createRandomTableStatement(SQLite3GlobalState globalState) {
+        if (globalState.getSchema().getTables().getTables()
+                .size() > globalState.getDbmsSpecificOptions().maxNumTables) {
+            throw new IgnoreMeException();
+        }
+        return createTableStatement(globalState.getSchema().getFreeTableName(), globalState);
     }
 
     public static SQLQueryAdapter createTableStatement(String tableName, SQLite3GlobalState globalState) {

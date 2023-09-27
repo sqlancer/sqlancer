@@ -1,5 +1,6 @@
 package sqlancer.citus.gen;
 
+import sqlancer.citus.CitusBugs;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
@@ -14,6 +15,9 @@ public final class CitusInsertGenerator {
         SQLQueryAdapter insertQuery = PostgresInsertGenerator.insert(globalState);
         ExpectedErrors errors = insertQuery.getExpectedErrors();
         CitusCommon.addCitusErrors(errors);
+        if (CitusBugs.bug6298) {
+            errors.add("columnar_tuple_insert_speculative not implemented");
+        }
         return insertQuery;
     }
 

@@ -19,6 +19,7 @@ import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnar
 public class CockroachDBTLPExtendedWhereOracle extends CockroachDBTLPBase {
 
     private CockroachDBExpression originalPredicate;
+    private String generatedQueryString;
 
     public CockroachDBTLPExtendedWhereOracle(CockroachDBGlobalState state) {
         super(state);
@@ -32,6 +33,7 @@ public class CockroachDBTLPExtendedWhereOracle extends CockroachDBTLPBase {
         originalPredicate = generatePredicate();
         select.setWhereClause(originalPredicate);
         String originalQueryString = CockroachDBVisitor.asString(select);
+        generatedQueryString = originalQueryString;
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         boolean allowOrderBy = Randomly.getBoolean();
@@ -55,5 +57,10 @@ public class CockroachDBTLPExtendedWhereOracle extends CockroachDBTLPBase {
     public CockroachDBExpression combinePredicate(CockroachDBExpression expr) {
         return new CockroachDBBinaryLogicalOperation(originalPredicate, expr, CockroachDBBinaryLogicalOperator.AND);
 
+    }
+
+    @Override
+    public String getLastQueryString() {
+        return generatedQueryString;
     }
 }

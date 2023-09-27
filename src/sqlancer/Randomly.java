@@ -1,8 +1,10 @@
 package sqlancer;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Supplier;
@@ -15,6 +17,7 @@ public final class Randomly {
     private static int cacheSize = 100;
 
     private final List<Long> cachedLongs = new ArrayList<>();
+    private final List<Integer> cachedIntegers = new ArrayList<>();
     private final List<String> cachedStrings = new ArrayList<>();
     private final List<Double> cachedDoubles = new ArrayList<>();
     private final List<byte[]> cachedBytes = new ArrayList<>();
@@ -26,6 +29,12 @@ public final class Randomly {
     private void addToCache(long val) {
         if (useCaching && cachedLongs.size() < cacheSize && !cachedLongs.contains(val)) {
             cachedLongs.add(val);
+        }
+    }
+
+    private void addToCache(int val) {
+        if (useCaching && cachedIntegers.size() < cacheSize && !cachedIntegers.contains(val)) {
+            cachedIntegers.add(val);
         }
     }
 
@@ -46,6 +55,14 @@ public final class Randomly {
             return null;
         } else {
             return Randomly.fromList(cachedLongs);
+        }
+    }
+
+    private Integer getFromIntegerCache() {
+        if (!useCaching || cachedIntegers.isEmpty()) {
+            return null;
+        } else {
+            return Randomly.fromList(cachedIntegers);
         }
     }
 
@@ -118,6 +135,12 @@ public final class Randomly {
         return extractNrRandomColumns(columns, nr);
     }
 
+    public static <T> List<T> nonEmptySubsetLeast(List<T> columns, int min) {
+        int nr = getNextInt(min, columns.size() + 1);
+        assert nr <= columns.size();
+        return extractNrRandomColumns(columns, nr);
+    }
+
     public static <T> List<T> nonEmptySubsetPotentialDuplicates(List<T> columns) {
         List<T> arr = new ArrayList<>();
         for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
@@ -133,17 +156,12 @@ public final class Randomly {
 
     public static <T> List<T> subset(int nr, @SuppressWarnings("unchecked") T... values) {
         List<T> list = new ArrayList<>();
-        for (T val : values) {
-            list.add(val);
-        }
+        Collections.addAll(list, values);
         return extractNrRandomColumns(list, nr);
     }
 
     public static <T> List<T> subset(@SuppressWarnings("unchecked") T... values) {
-        List<T> list = new ArrayList<>();
-        for (T val : values) {
-            list.add(val);
-        }
+        List<T> list = new ArrayList<>(Arrays.asList(values));
         return subset(list);
     }
 
@@ -204,7 +222,6 @@ public final class Randomly {
 
         },
         ALPHANUMERIC {
-
             @Override
             public String getString(Randomly r) {
                 return getStringOfAlphabet(r, ALPHANUMERIC_ALPHABET);
@@ -213,7 +230,6 @@ public final class Randomly {
 
         },
         ALPHANUMERIC_SPECIALCHAR {
-
             @Override
             public String getString(Randomly r) {
                 return getStringOfAlphabet(r, ALPHANUMERIC_SPECIALCHAR_ALPHABET);
@@ -350,7 +366,6 @@ public final class Randomly {
         do {
             value = getInteger();
         } while (value == 0);
-        assert value != 0;
         addToCache(value);
         return value;
     }
@@ -367,6 +382,24 @@ public final class Randomly {
             value = Randomly.fromOptions(0L, Long.MAX_VALUE, 1L);
         } else {
             value = getNextLong(0, Long.MAX_VALUE);
+        }
+        addToCache(value);
+        assert value >= 0;
+        return value;
+    }
+
+    public int getPositiveIntegerInt() {
+        if (cacheProbability()) {
+            Integer value = getFromIntegerCache();
+            if (value != null && value >= 0) {
+                return value;
+            }
+        }
+        int value;
+        if (smallBiasProbability()) {
+            value = Randomly.fromOptions(0, Integer.MAX_VALUE, 1);
+        } else {
+            value = getNextInt(0, Integer.MAX_VALUE);
         }
         addToCache(value);
         assert value >= 0;
@@ -424,8 +457,19 @@ public final class Randomly {
         return getNextLong(left, right);
     }
 
+    public BigInteger getBigInteger(BigInteger left, BigInteger right) {
+        if (left.equals(right)) {
+            return left;
+        }
+        BigInteger result = new BigInteger(String.valueOf(getInteger(left.intValue(), right.intValue())));
+        if (result.compareTo(left) < 0 && result.compareTo(right) > 0) {
+            throw new IgnoreMeException();
+        }
+        return result;
+    }
+
     public BigDecimal getRandomBigDecimal() {
-        return new BigDecimal(getThreadRandom().get().nextDouble());
+        return BigDecimal.valueOf(getThreadRandom().get().nextDouble());
     }
 
     public long getPositiveIntegerNotNull() {
@@ -494,7 +538,7 @@ public final class Randomly {
         if (lower == upper) {
             return lower;
         }
-        return (long) (getThreadRandom().get().longs(lower, upper).findFirst().getAsLong());
+        return getThreadRandom().get().longs(lower, upper).findFirst().getAsLong();
     }
 
     private static int getNextInt(int lower, int upper) {

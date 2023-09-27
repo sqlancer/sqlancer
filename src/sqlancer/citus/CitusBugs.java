@@ -30,6 +30,9 @@ public final class CitusBugs {
     // https://github.com/citusdata/citus/issues/4079
     public static boolean bug4079 = true;
 
+    // https://github.com/citusdata/citus/issues/6298
+    public static boolean bug6298 = true;
+
     private CitusBugs() {
     }
 

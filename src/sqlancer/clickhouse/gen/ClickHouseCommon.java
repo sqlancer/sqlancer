@@ -29,7 +29,7 @@ public final class ClickHouseCommon {
         List<ClickHouseExpression> tableRefs = new ArrayList<>();
         for (ClickHouseSchema.ClickHouseTable t : tables) {
             ClickHouseTableReference tableRef;
-            tableRef = new ClickHouseTableReference(t);
+            tableRef = new ClickHouseTableReference(t, null);
             tableRefs.add(tableRef);
         }
         return tableRefs;

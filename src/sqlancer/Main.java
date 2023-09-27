@@ -23,9 +23,34 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.JCommander.Builder;
 
+import sqlancer.arangodb.ArangoDBProvider;
+import sqlancer.citus.CitusProvider;
+import sqlancer.clickhouse.ClickHouseProvider;
+import sqlancer.cnosdb.CnosDBProvider;
+import sqlancer.cockroachdb.CockroachDBProvider;
 import sqlancer.common.log.Loggable;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLancerResultSet;
+import sqlancer.cosmos.CosmosProvider;
+import sqlancer.databend.DatabendProvider;
+import sqlancer.doris.DorisProvider;
+import sqlancer.duckdb.DuckDBProvider;
+import sqlancer.h2.H2Provider;
+import sqlancer.hsqldb.HSQLDBProvider;
+import sqlancer.mariadb.MariaDBProvider;
+import sqlancer.materialize.MaterializeProvider;
+import sqlancer.mongodb.MongoDBProvider;
+import sqlancer.mysql.MySQLProvider;
+import sqlancer.oceanbase.OceanBaseProvider;
+import sqlancer.postgres.PostgresProvider;
+import sqlancer.presto.PrestoProvider;
+import sqlancer.questdb.QuestDBProvider;
+import sqlancer.sqlite3.SQLite3Provider;
+import sqlancer.stonedb.StoneDBProvider;
+import sqlancer.tidb.TiDBProvider;
+import sqlancer.timescaledb.TimescaleDBProvider;
+import sqlancer.yugabyte.ycql.YCQLProvider;
+import sqlancer.yugabyte.ysql.YSQLProvider;
 
 public final class Main {
 
@@ -38,7 +63,7 @@ public final class Main {
     static boolean progressMonitorStarted;
 
     static {
-        System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "ERROR");
+        System.setProperty(org.slf4j.simple.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "ERROR");
         if (!LOG_DIRECTORY.exists()) {
             LOG_DIRECTORY.mkdir();
         }
@@ -51,10 +76,17 @@ public final class Main {
 
         private final File loggerFile;
         private File curFile;
+        private File queryPlanFile;
+        private File reduceFile;
         private FileWriter logFileWriter;
         public FileWriter currentFileWriter;
+        private FileWriter queryPlanFileWriter;
+
         private static final List<String> INITIALIZED_PROVIDER_NAMES = new ArrayList<>();
         private final boolean logEachSelect;
+        private final boolean logQueryPlan;
+
+        private final boolean useReducer;
         private final DatabaseProvider<?, ?, ?> databaseProvider;
 
         private static final class AlsoWriteToConsoleFileWriter extends FileWriter {
@@ -86,6 +118,19 @@ public final class Main {
             logEachSelect = options.logEachSelect();
             if (logEachSelect) {
                 curFile = new File(dir, databaseName + "-cur.log");
+            }
+            logQueryPlan = options.logQueryPlan();
+            if (logQueryPlan) {
+                queryPlanFile = new File(dir, databaseName + "-plan.log");
+            }
+            this.useReducer = options.useReducer();
+            if (useReducer) {
+                File reduceFileDir = new File(dir, "reduce");
+                if (!reduceFileDir.exists()) {
+                    reduceFileDir.mkdir();
+                }
+                this.reduceFile = new File(reduceFileDir, databaseName + "-reduce.log");
+
             }
             this.databaseProvider = provider;
         }
@@ -138,6 +183,34 @@ public final class Main {
             return currentFileWriter;
         }
 
+        public FileWriter getQueryPlanFileWriter() {
+            if (!logQueryPlan) {
+                throw new UnsupportedOperationException();
+            }
+            if (queryPlanFileWriter == null) {
+                try {
+                    queryPlanFileWriter = new FileWriter(queryPlanFile, true);
+                } catch (IOException e) {
+                    throw new AssertionError(e);
+                }
+            }
+            return queryPlanFileWriter;
+        }
+
+        public FileWriter getReduceFileWriter() {
+            if (!useReducer) {
+                throw new UnsupportedOperationException();
+            }
+            FileWriter fileWriter;
+            try {
+                fileWriter = new FileWriter(reduceFile, false);
+            } catch (IOException e) {
+                throw new AssertionError(e);
+            }
+
+            return fileWriter;
+        }
+
         public void writeCurrent(StateToReproduce state) {
             if (!logEachSelect) {
                 throw new UnsupportedOperationException();
@@ -172,6 +245,42 @@ public final class Main {
             }
         }
 
+        public void writeQueryPlan(String queryPlan) {
+            if (!logQueryPlan) {
+                throw new UnsupportedOperationException();
+            }
+            try {
+                getQueryPlanFileWriter().append(removeNamesFromQueryPlans(queryPlan));
+                queryPlanFileWriter.flush();
+            } catch (IOException e) {
+                throw new AssertionError();
+            }
+        }
+
+        public void logReduced(StateToReproduce state) {
+            FileWriter reduceFileWriter = getReduceFileWriter();
+
+            StringBuilder sb = new StringBuilder();
+            for (Query<?> s : state.getStatements()) {
+                sb.append(databaseProvider.getLoggableFactory().createLoggable(s.getLogString()).getLogString());
+            }
+            try {
+                reduceFileWriter.write(sb.toString());
+
+            } catch (IOException e) {
+                throw new AssertionError(e);
+            } finally {
+                try {
+                    reduceFileWriter.flush();
+                    reduceFileWriter.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
+        }
+
         public void logException(Throwable reduce, StateToReproduce state) {
             Loggable stackTrace = getStackTrace(reduce);
             FileWriter logFileWriter2 = getLogFileWriter();
@@ -201,8 +310,7 @@ public final class Main {
                     .getInfo(state.getDatabaseName(), state.getDatabaseVersion(), state.getSeedValue()).getLogString());
 
             for (Query<?> s : state.getStatements()) {
-                sb.append(s.getLogString());
-                sb.append('\n');
+                sb.append(databaseProvider.getLoggableFactory().createLoggable(s.getLogString()).getLogString());
             }
             try {
                 writer.write(sb.toString());
@@ -211,6 +319,13 @@ public final class Main {
             }
         }
 
+        private String removeNamesFromQueryPlans(String queryPlan) {
+            String result = queryPlan;
+            result = result.replaceAll("t[0-9]+", "t0"); // Avoid duplicate tables
+            result = result.replaceAll("v[0-9]+", "v0"); // Avoid duplicate views
+            result = result.replaceAll("i[0-9]+", "i0"); // Avoid duplicate indexes
+            return result + "\n";
+        }
     }
 
     public static class QueryManager<C extends SQLancerDBConnection> {
@@ -222,10 +337,12 @@ public final class Main {
         }
 
         public boolean execute(Query<C> q, String... fills) throws Exception {
-            globalState.getState().logStatement(q);
             boolean success;
             success = q.execute(globalState, fills);
             Main.nrSuccessfulActions.addAndGet(1);
+            if (globalState.getOptions().loggerPrintFailed() || success) {
+                globalState.getState().logStatement(q);
+            }
             return success;
         }
 
@@ -239,6 +356,10 @@ public final class Main {
 
         public void incrementSelectQueryCount() {
             Main.nrQueries.addAndGet(1);
+        }
+
+        public Long getSelectQueryCount() {
+            return Main.nrQueries.get();
         }
 
         public void incrementCreateDatabase() {
@@ -312,12 +433,44 @@ public final class Main {
                 if (options.logEachSelect()) {
                     logger.writeCurrent(state.getState());
                 }
-                provider.generateAndTestDatabase(state);
+                Reproducer<G> reproducer = null;
+                if (options.enableQPG()) {
+                    provider.generateAndTestDatabaseWithQueryPlanGuidance(state);
+                } else {
+                    reproducer = provider.generateAndTestDatabase(state);
+                }
                 try {
                     logger.getCurrentFileWriter().close();
                     logger.currentFileWriter = null;
                 } catch (IOException e) {
                     throw new AssertionError(e);
+                }
+
+                if (options.reduceAST() && !options.useReducer()) {
+                    throw new AssertionError("To reduce AST, use-reducer option must be enabled first");
+                }
+                if (reproducer != null && options.useReducer()) {
+                    System.out.println("EXPERIMENTAL: Trying to reduce queries using a simple reducer.");
+                    // System.out.println("Reduced query will be output to stdout but not logs.");
+                    G newGlobalState = createGlobalState();
+                    newGlobalState.setState(stateToRepro);
+                    newGlobalState.setRandomly(r);
+                    newGlobalState.setDatabaseName(databaseName);
+                    newGlobalState.setMainOptions(options);
+                    newGlobalState.setDbmsSpecificOptions(command);
+                    QueryManager<C> newManager = new QueryManager<>(newGlobalState);
+                    newGlobalState.setStateLogger(new StateLogger(databaseName, provider, options));
+                    newGlobalState.setManager(newManager);
+
+                    Reducer<G> reducer = new StatementReducer<>(provider);
+                    reducer.reduce(state, reproducer, newGlobalState);
+
+                    if (options.reduceAST()) {
+                        Reducer<G> astBasedReducer = new ASTBasedReducer<>(provider);
+                        astBasedReducer.reduce(state, reproducer, newGlobalState);
+                    }
+
+                    throw new AssertionError("Found a potential bug");
                 }
             }
         }
@@ -542,7 +695,41 @@ public final class Main {
         for (DatabaseProvider<?, ?, ?> provider : loader) {
             providers.add(provider);
         }
+        checkForIssue799(providers);
         return providers;
+    }
+
+    // see https://github.com/sqlancer/sqlancer/issues/799
+    private static void checkForIssue799(List<DatabaseProvider<?, ?, ?>> providers) {
+        if (providers.isEmpty()) {
+            System.err.println(
+                    "No DBMS implementations (i.e., instantiations of the DatabaseProvider class) were found. You likely ran into an issue described in https://github.com/sqlancer/sqlancer/issues/799. As a workaround, I now statically load all supported providers as of June 7, 2023.");
+            providers.add(new ArangoDBProvider());
+            providers.add(new CitusProvider());
+            providers.add(new ClickHouseProvider());
+            providers.add(new CnosDBProvider());
+            providers.add(new CockroachDBProvider());
+            providers.add(new CosmosProvider());
+            providers.add(new DatabendProvider());
+            providers.add(new DorisProvider());
+            providers.add(new DuckDBProvider());
+            providers.add(new H2Provider());
+            providers.add(new HSQLDBProvider());
+            providers.add(new MariaDBProvider());
+            providers.add(new MaterializeProvider());
+            providers.add(new MongoDBProvider());
+            providers.add(new MySQLProvider());
+            providers.add(new OceanBaseProvider());
+            providers.add(new PrestoProvider());
+            providers.add(new PostgresProvider());
+            providers.add(new QuestDBProvider());
+            providers.add(new SQLite3Provider());
+            providers.add(new StoneDBProvider());
+            providers.add(new TiDBProvider());
+            providers.add(new TimescaleDBProvider());
+            providers.add(new YCQLProvider());
+            providers.add(new YSQLProvider());
+        }
     }
 
     private static synchronized void startProgressMonitor() {

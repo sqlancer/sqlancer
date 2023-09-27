@@ -7,7 +7,7 @@ import sqlancer.sqlite3.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
 
 // tries to trigger a crash
-public class SQLite3Fuzzer implements TestOracle {
+public class SQLite3Fuzzer implements TestOracle<SQLite3GlobalState> {
 
     private final SQLite3GlobalState globalState;
 
@@ -20,10 +20,8 @@ public class SQLite3Fuzzer implements TestOracle {
         String s = SQLite3Visitor
                 .asString(SQLite3RandomQuerySynthesizer.generate(globalState, Randomly.smallNumber() + 1)) + ";";
         try {
-            if (globalState.getDbmsSpecificOptions().executeQuery) {
-                globalState.executeStatement(new SQLQueryAdapter(s));
-                globalState.getManager().incrementSelectQueryCount();
-            }
+            globalState.executeStatement(new SQLQueryAdapter(s));
+            globalState.getManager().incrementSelectQueryCount();
         } catch (Error e) {
 
         }

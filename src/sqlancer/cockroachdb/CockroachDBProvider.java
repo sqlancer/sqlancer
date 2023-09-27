@@ -1,5 +1,6 @@
 package sqlancer.cockroachdb;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -18,11 +19,14 @@ import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.SQLGlobalState;
 import sqlancer.SQLProviderAdapter;
+import sqlancer.cockroachdb.CockroachDBOptions.CockroachDBOracleFactory;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.gen.CockroachDBCommentOnGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBCreateStatisticsGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBDeleteGenerator;
+import sqlancer.cockroachdb.gen.CockroachDBDropTableGenerator;
+import sqlancer.cockroachdb.gen.CockroachDBDropViewGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBIndexGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBInsertGenerator;
 import sqlancer.cockroachdb.gen.CockroachDBRandomQuerySynthesizer;
@@ -36,6 +40,7 @@ import sqlancer.cockroachdb.gen.CockroachDBViewGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
+import sqlancer.common.query.SQLancerResultSet;
 
 @AutoService(DatabaseProvider.class)
 public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalState, CockroachDBOptions> {
@@ -45,15 +50,17 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
     }
 
     public enum Action {
-        INSERT(CockroachDBInsertGenerator::insert), //
-        TRUNCATE(CockroachDBTruncateGenerator::truncate), //
-        CREATE_STATISTICS(CockroachDBCreateStatisticsGenerator::create), //
-        SET_SESSION(CockroachDBSetSessionGenerator::create), //
-        CREATE_INDEX(CockroachDBIndexGenerator::create), //
-        UPDATE(CockroachDBUpdateGenerator::gen), //
+        CREATE_TABLE(CockroachDBTableGenerator::generate), CREATE_INDEX(CockroachDBIndexGenerator::create), //
         CREATE_VIEW(CockroachDBViewGenerator::generate), //
+        CREATE_STATISTICS(CockroachDBCreateStatisticsGenerator::create), //
+        INSERT(CockroachDBInsertGenerator::insert), //
+        UPDATE(CockroachDBUpdateGenerator::gen), //
+        SET_SESSION(CockroachDBSetSessionGenerator::create), //
         SET_CLUSTER_SETTING(CockroachDBSetClusterSettingGenerator::create), //
         DELETE(CockroachDBDeleteGenerator::delete), //
+        TRUNCATE(CockroachDBTruncateGenerator::truncate), //
+        DROP_TABLE(CockroachDBDropTableGenerator::drop), //
+        DROP_VIEW(CockroachDBDropViewGenerator::drop), //
         COMMENT_ON(CockroachDBCommentOnGenerator::comment), //
         SHOW(CockroachDBShowGenerator::show), //
         TRANSACTION((g) -> {
@@ -65,8 +72,7 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             ExpectedErrors errors = new ExpectedErrors();
             if (Randomly.getBoolean()) {
                 sb.append("(");
-                sb.append(Randomly.nonEmptySubset("VERBOSE", "TYPES", "OPT", "DISTSQL", "VEC").stream()
-                        .collect(Collectors.joining(", ")));
+                sb.append(Randomly.fromOptions("VERBOSE", "TYPES", "OPT", "DISTSQL", "VEC"));
                 sb.append(") ");
                 errors.add("cannot set EXPLAIN mode more than once");
                 errors.add("unable to vectorize execution plan");
@@ -125,13 +131,13 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
         QueryManager<SQLConnection> manager = globalState.getManager();
         MainOptions options = globalState.getOptions();
         List<String> standardSettings = new ArrayList<>();
-        standardSettings.add("--Don't send automatic bug reports\n"
-                + "SET CLUSTER SETTING debug.panic_on_failed_assertions = true;");
+        standardSettings.add("--Don't send automatic bug reports");
+        standardSettings.add("SET CLUSTER SETTING debug.panic_on_failed_assertions = true;");
         standardSettings.add("SET CLUSTER SETTING diagnostics.reporting.enabled    = false;");
         standardSettings.add("SET CLUSTER SETTING diagnostics.reporting.send_crash_reports = false;");
 
-        standardSettings.add("-- Disable the collection of metrics and hope that it helps performance\n"
-                + "SET CLUSTER SETTING sql.metrics.statement_details.enabled = 'off'");
+        standardSettings.add("-- Disable the collection of metrics and hope that it helps performance");
+        standardSettings.add("SET CLUSTER SETTING sql.metrics.statement_details.enabled = 'off'");
         standardSettings.add("SET CLUSTER SETTING sql.metrics.statement_details.plan_collection.enabled = 'off'");
         standardSettings.add("SET CLUSTER SETTING sql.stats.automatic_collection.enabled = 'off'");
         standardSettings.add("SET CLUSTER SETTING timeseries.storage.enabled = 'off'");
@@ -199,6 +205,9 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
                                   */
                 break;
             case TRANSACTION:
+            case CREATE_TABLE:
+            case DROP_TABLE:
+            case DROP_VIEW:
                 nrPerformed = 0; // r.getInteger(0, 0);
                 break;
             default:
@@ -242,8 +251,15 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             }
             total--;
         }
-        if (globalState.getDbmsSpecificOptions().makeVectorizationMoreLikely && Randomly.getBoolean()) {
-            manager.execute(new SQLQueryAdapter("SET vectorize=on;"));
+
+        if (globalState.getDbmsSpecificOptions().getTestOracleFactory().stream()
+                .anyMatch((o) -> o == CockroachDBOracleFactory.CERT)) {
+            // Enfore statistic collected for all tables
+            ExpectedErrors errors = new ExpectedErrors();
+            CockroachDBErrors.addExpressionErrors(errors);
+            for (CockroachDBTable table : globalState.getSchema().getDatabaseTables()) {
+                globalState.executeStatement(new SQLQueryAdapter("ANALYZE " + table.getName() + ";", errors));
+            }
         }
     }
 
@@ -273,7 +289,7 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             s.execute(createDatabaseCommand);
         }
         con.close();
-        con = DriverManager.getConnection("jdbc:postgresql://localhost:26257/" + databaseName,
+        con = DriverManager.getConnection(String.format("jdbc:postgresql://%s:%d/%s", host, port, databaseName),
                 globalState.getOptions().getUserName(), globalState.getOptions().getPassword());
         return new SQLConnection(con);
     }
@@ -281,6 +297,70 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
     @Override
     public String getDBMSName() {
         return "cockroachdb";
+    }
+
+    @Override
+    public String getQueryPlan(String selectStr, CockroachDBGlobalState globalState) throws Exception {
+        String queryPlan = "";
+        String explainQuery = "EXPLAIN (OPT) " + selectStr;
+        if (globalState.getOptions().logEachSelect()) {
+            globalState.getLogger().writeCurrent(explainQuery);
+            try {
+                globalState.getLogger().getCurrentFileWriter().flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        SQLQueryAdapter q = new SQLQueryAdapter(explainQuery);
+        boolean afterProjection = false; // Remove the concrete expression after each Projection operator
+        try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
+            if (rs != null) {
+                while (rs.next()) {
+                    String targetQueryPlan = rs.getString(1).replace("└──", "").replace("├──", "").replace("│", "")
+                            .trim() + ";"; // Unify format
+                    if (afterProjection) {
+                        afterProjection = false;
+                        continue;
+                    }
+                    if (targetQueryPlan.startsWith("projections")) {
+                        afterProjection = true;
+                    }
+                    // Remove all concrete expressions by keywords
+                    if (targetQueryPlan.contains(">") || targetQueryPlan.contains("<") || targetQueryPlan.contains("=")
+                            || targetQueryPlan.contains("*") || targetQueryPlan.contains("+")
+                            || targetQueryPlan.contains("'")) {
+                        continue;
+                    }
+                    queryPlan += targetQueryPlan;
+                }
+            }
+        } catch (AssertionError e) {
+            throw new AssertionError("Explain failed: " + explainQuery);
+        }
+
+        return queryPlan;
+    }
+
+    @Override
+    protected double[] initializeWeightedAverageReward() {
+        return new double[Action.values().length];
+    }
+
+    @Override
+    protected void executeMutator(int index, CockroachDBGlobalState globalState) throws Exception {
+        SQLQueryAdapter queryMutateTable = Action.values()[index].getQuery(globalState);
+        globalState.executeStatement(queryMutateTable);
+    }
+
+    @Override
+    public boolean addRowsToAllTables(CockroachDBGlobalState globalState) throws Exception {
+        List<CockroachDBTable> tablesNoRow = globalState.getSchema().getDatabaseTables().stream()
+                .filter(t -> t.getNrRows(globalState) == 0).collect(Collectors.toList());
+        for (CockroachDBTable table : tablesNoRow) {
+            SQLQueryAdapter queryAddRows = CockroachDBInsertGenerator.insert(globalState, table);
+            globalState.executeStatement(queryAddRows);
+        }
+        return true;
     }
 
 }

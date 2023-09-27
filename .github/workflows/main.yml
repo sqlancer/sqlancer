@@ -3,10 +3,16 @@ name: ci
 on:
   push:
     branches:
-      - master
+      - main
+    paths:
+      - 'src/**'
+      - '.github/workflows/*.yml'
   pull_request:
     branches:
-      - master
+      - main
+    paths:
+      - 'src/**'
+      - '.github/workflows/*.yml'
 
 jobs:
   misc:
@@ -14,27 +20,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Verify
         run: mvn -B verify -DskipTests=true
       - name: Misc Tests
-        run: mvn -B '-Dtest=!sqlancer.dbms.**' test
+        run: mvn -B '-Dtest=!sqlancer.dbms.**,!sqlancer.qpg.**,!sqlancer.reducer.**' test
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Naming Convention Tests
+        run: python src/check_names.py
 
   citus:
     name: DBMS Tests (Citus)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
@@ -43,9 +55,9 @@ jobs:
         run: |
           echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" | sudo tee  /etc/apt/sources.list.d/pgdg.list
           curl https://install.citusdata.com/community/deb.sh | sudo bash
-          sudo apt-get -y install postgresql-13-citus-10.1
+          sudo apt-get -y install  postgresql-15-citus-11.1
           sudo chown -R $USER:$USER /var/run/postgresql
-          export PATH=/usr/lib/postgresql/13/bin:$PATH
+          export PATH=/usr/lib/postgresql/15/bin:$PATH
           cd ~
           mkdir -p citus/coordinator citus/worker1 citus/worker2
           initdb -D citus/coordinator
@@ -76,70 +88,97 @@ jobs:
     name: DBMS Tests (ClickHouse)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Set up ClickHouse
         run: |
-          docker pull yandex/clickhouse-server:latest
-          docker run --ulimit nofile=262144:262144 --name clickhouse-server -p8123:8123 -d yandex/clickhouse-server:latest
+          docker pull clickhouse/clickhouse-server:head
+          docker run --ulimit nofile=262144:262144 --name clickhouse-server -p8123:8123 -d clickhouse/clickhouse-server:head
           sleep 5
       - name: Run Tests
-        run: CLICKHOUSE_AVAILABLE=true mvn -Dtest=ClickHouseBinaryComparisonOperationTest test
-
+        run: CLICKHOUSE_AVAILABLE=true mvn -Dtest=ClickHouseBinaryComparisonOperationTest,TestClickHouse,ClickHouseOperatorsVisitorTest,ClickHouseToStringVisitorTest test
+      - name: Show fatal errors
+        run: docker exec clickhouse-server grep Fatal /var/log/clickhouse-server/clickhouse-server.log || echo No Fatal Errors found
+      - name: Teardown ClickHouse server
+        run: |
+          docker stop clickhouse-server
+          docker rm clickhouse-server
 
   cockroachdb:
     name: DBMS Tests (CockroachDB)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Set up CockroachDB
         run: |
-          wget -qO- https://binaries.cockroachdb.com/cockroach-v21.1.7.linux-amd64.tgz | tar  xvz
-          cd cockroach-v21.1.7.linux-amd64/ && ./cockroach start-single-node --insecure &
+          wget -qO- https://binaries.cockroachdb.com/cockroach-v23.1.0-beta.2.linux-amd64.tgz | tar  xvz
+          cd  cockroach-v23.1.0-beta.2.linux-amd64/ && ./cockroach start-single-node --insecure &
           sleep 10
       - name: Create SQLancer user
-        run: cd cockroach-v21.1.7.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
+        run: cd cockroach-v23.1.0-beta.2.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
       - name: Run Tests
         run: COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDB test
 
-  databend:
-    name: DBMS Tests (Databend)
+  cockroachdb-qpg:
+    name: QPG Tests (CockroachDB)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
-      - name: Set up Databend
+      - name: Set up CockroachDB
         run: |
-          sudo apt update
-          sudo apt install mysql-client
-          LASTEST_TAG=$(curl -s GET https://api.github.com/repos/datafuselabs/databend/tags\?per_page\=1 | jq -r '.[].name')
-          curl -LJO https://github.com/datafuselabs/databend/releases/download/${LASTEST_TAG}/databend-${LASTEST_TAG}-x86_64-unknown-linux-musl.tar.gz
-          mkdir ./databend && tar xzvf databend-${LASTEST_TAG}-x86_64-unknown-linux-musl.tar.gz -C ./databend
-          ./databend/bin/databend-query &
+          wget -qO- https://binaries.cockroachdb.com/cockroach-v23.1.0-beta.2.linux-amd64.tgz | tar  xvz
+          cd  cockroach-v23.1.0-beta.2.linux-amd64/ && ./cockroach start-single-node --insecure &
+          sleep 10
       - name: Create SQLancer user
-        run: mysql -uroot -h127.0.0.1 -P3307 -e "CREATE USER 'sqlancer' IDENTIFIED BY 'sqlancer'; GRANT ALL ON *.* TO sqlancer;"
+        run: cd cockroach-v23.1.0-beta.2.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
+      - name: Run Tests
+        run: COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBQPG test
+
+  databend:
+    name: DBMS Tests (Databend)
+    runs-on: ubuntu-latest
+    services:
+      databend:
+        image: datafuselabs/databend
+        env:
+          QUERY_DEFAULT_USER: sqlancer
+          QUERY_DEFAULT_PASSWORD: sqlancer
+        ports:
+          - 8000:8000
+          - 3307:3307
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1.4.4
+        with:
+          java-version: 11
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
       - name: Run Tests
         run: |
           DATABEND_AVAILABLE=true mvn -Dtest=TestDatabend test
@@ -149,11 +188,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build
@@ -165,11 +204,11 @@ jobs:
     name: DBMS Tests (H2)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
@@ -179,14 +218,14 @@ jobs:
 
   mariadb:
     name: DBMS Tests (MariaDB)
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
@@ -203,27 +242,72 @@ jobs:
       - name: Run Tests
         run: MARIADB_AVAILABLE=true mvn -Dtest=TestMariaDB test
 
+  materialize:
+    name: DBMS Tests (Materialize)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up Materialize
+        run: |
+          docker pull materialize/materialized:latest
+          docker run -d -p6875:6875 -p6877:6877 -p 26257:26257 materialize/materialized:latest
+          sleep 5
+          # Workaround for https://github.com/cockroachdb/cockroach/issues/93892
+          psql postgres://root@localhost:26257 -c "SET CLUSTER SETTING sql.stats.forecasts.enabled = false"
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1.4.4
+        with:
+          java-version: 11
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Run Tests
+        run: |
+          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterialize
+          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializePQS
+
+  materialize-qpg:
+    name: QPG Tests (Materialize)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up Materialize
+        run: |
+          docker pull materialize/materialized:latest
+          docker run -d -p6875:6875 -p6877:6877 -p 26257:26257 materialize/materialized:latest
+          sleep 5
+          # Workaround for https://github.com/cockroachdb/cockroach/issues/93892
+          psql postgres://root@localhost:26257 -c "SET CLUSTER SETTING sql.stats.forecasts.enabled = false"
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1.4.4
+        with:
+          java-version: 11
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Run Tests
+        run: |
+          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeQPG
+          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeQueryPlan
+
   mysql:
     name: DBMS Tests (MySQL)
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Set up MySQL
         run: |
-          sudo apt-get install libssl-dev libmecab2 libjson-perl mecab-ipadic-utf8
-          sudo apt-get remove mysql-*
-          wget -q https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar
-          tar -xvf mysql-server_8.0.20-1ubuntu18.04_amd64.deb-bundle.tar
-          sudo dpkg -i *.deb
-          sudo systemctl start mysql
+          sudo systemctl start mysql.service # MySQL 8.0.32-0ubuntu0.22.04.2
       - name: Create SQLancer user
         run: mysql -uroot -proot -e "CREATE USER 'sqlancer'@'localhost' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'localhost';"
       - name: Run Tests
@@ -235,11 +319,11 @@ jobs:
     name: DBMS Tests (PostgreSQL)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up PostgreSQL
-        uses: harmon758/postgresql-action@v1
+        uses: harmon758/postgresql-action@v1.0.0
         with:
           postgresql version: '12'
           postgresql user: 'sqlancer'
@@ -259,30 +343,74 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build
         run: mvn -B package -DskipTests=true
       - name: SQLite Tests
-        run:  |
+        run: |
           mvn -Dtest=TestSQLitePQS test
           mvn -Dtest=TestSQLite3 test
 
+  sqlite-qpg:
+    name: QPG Tests (SQLite)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1.4.4
+        with:
+          java-version: 11
+      - name: Build
+        run: mvn -B package -DskipTests=true
+      - name: SQLite Tests for QPG
+        run: |
+          mvn -Dtest=TestSQLiteQPG test
+
+  stonedb:
+    name: DBMS Tests (StoneDB)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up StoneDB
+        run: |
+          docker run -p 3306:3306 -itd  -e MYSQL_ROOT_PASSWORD='123456'  stoneatom/stonedb
+          ContainerID=$(docker ps --filter ancestor=stoneatom/stonedb --format "{{.ID}}") 
+          docker exec $ContainerID bash
+          sleep 60s
+          docker exec $ContainerID sed -i "s/tianmu_insert_delayed=1/tianmu_insert_delayed=0/" /opt/stonedb57/install/my.cnf
+          docker exec $ContainerID /opt/stonedb57/install/bin/mysql -uroot -p123456 -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+          sleep 60s
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1.4.4
+        with:
+          java-version: 11
+      - name: Build
+        run: mvn -B package -DskipTests=true
+      - name: StoneDB Tests
+        run: |
+          STONEDB_AVAILABLE=true mvn test -Dtest=TestStoneDBFuzz
 
   tidb:
     name: DBMS Tests (TiDB)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 11
       - name: Build SQLancer
@@ -297,8 +425,53 @@ jobs:
       - name: Run Tests
         run: TIDB_AVAILABLE=true mvn -Dtest=TestTiDB test
 
+  tidb-qpg:
+    name: QPG Tests (TiDB)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1.4.4
+        with:
+          java-version: 11
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Set up TiDB
+        run: |
+          docker pull pingcap/tidb:latest
+          docker run --name tidb-server -d -p 4000:4000 pingcap/tidb:latest
+          sleep 10
+      - name: Create SQLancer user
+        run: sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+      - name: Run Tests
+        run: TIDB_AVAILABLE=true mvn -Dtest=TestTiDBQPG test
+
   yugabyte:
     name: DBMS Tests (YugabyteDB)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1.4.4
+        with:
+          java-version: 11
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Set up Yugabyte
+        run: |
+          docker pull yugabytedb/yugabyte:latest
+          docker run -d --name yugabyte -p7000:7000 -p9000:9000 -p5433:5433 -p9042:9042 yugabytedb/yugabyte:latest bin/yugabyted start --daemon=false
+          sleep 5
+      - name: Run Tests
+        run: YUGABYTE_AVAILABLE=true mvn -Dtest=TestYugabyte test
+
+
+  doris:
+    name: DBMS Tests (Apache Doris)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -308,26 +481,45 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
+      - name: install mysql client
+        run: |
+          sudo apt update
+          sudo apt install mysql-client --assume-yes
+      - name: Set up Apache Doris
+        run: |
+          sudo sysctl -w vm.max_map_count=2000000
+          LASTEST_TAG=$(curl -s GET https://api.github.com/repos/apache/doris/releases | jq -r '.[].tag_name' | sed -n 1p)
+          LASTEST_TAG_BIG_VERSION=$(echo ${LASTEST_TAG} | awk '{split($1, arr, "."); print arr[1]"."arr[2]}')
+          curl -LJO "https://www.apache.org/dyn/mirrors/mirrors.cgi?action=download&filename=doris/${LASTEST_TAG_BIG_VERSION}/${LASTEST_TAG}/apache-doris-fe-${LASTEST_TAG}-bin-x86_64.tar.xz"
+          curl -LJO "https://www.apache.org/dyn/mirrors/mirrors.cgi?action=download&filename=doris/${LASTEST_TAG_BIG_VERSION}/${LASTEST_TAG}/apache-doris-be-${LASTEST_TAG}-bin-x86_64.tar.xz"
+          curl -LJO "https://www.apache.org/dyn/mirrors/mirrors.cgi?action=download&filename=doris/${LASTEST_TAG_BIG_VERSION}/${LASTEST_TAG}/apache-doris-dependencies-${LASTEST_TAG}-bin-x86_64.tar.xz"
+          mkdir ./doris
+          tar xf apache-doris-fe-${LASTEST_TAG}-bin-x86_64.tar.xz -C ./doris && mv doris/apache-doris-fe-${LASTEST_TAG}-bin-x86_64 doris/fe
+          tar xf apache-doris-be-${LASTEST_TAG}-bin-x86_64.tar.xz -C ./doris && mv doris/apache-doris-be-${LASTEST_TAG}-bin-x86_64 doris/be
+          tar xf apache-doris-dependencies-${LASTEST_TAG}-bin-x86_64.tar.xz -C ./doris && mv doris/apache-doris-dependencies-${LASTEST_TAG}-bin-x86_64 doris/dependencies
+          cp doris/dependencies/*.jar doris/be/lib/
+          doris/fe/bin/start_fe.sh --daemon
+          doris/be/bin/start_be.sh --daemon
+          sudo apt install libnet-ifconfig-wrapper-perl --assume-yes
+          IP=$(ifconfig eth0 | grep inet | grep -v inet6 | awk '{print $2}')
+          mysql -u root -h 127.0.0.1 --port 9030 -e "ALTER SYSTEM ADD BACKEND '${IP}:9050';"
+          mysql -u root -h 127.0.0.1 --port 9030 -e "CREATE USER 'sqlancer' IDENTIFIED BY 'sqlancer'; GRANT ALL ON *.* TO sqlancer;"
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
-      - name: Setup Yugabyte
-        run: |
-          docker pull yugabytedb/yugabyte:latest
-          docker run -d --name yugabyte -p7000:7000 -p9000:9000 -p5433:5433 -p9042:9042 yugabytedb/yugabyte:latest bin/yugabyted start --daemon=false 
-          sleep 5
       - name: Run Tests
-        run: YUGABYTE_AVAILABLE=true mvn -Dtest=TestYugabyte test
+        run: DORIS_AVAILABLE=true mvn -Dtest=TestDoris test
+
 
   java13:
     name: Java 13 Compatibility (DuckDB)
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 13
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 13
       - name: Build
@@ -340,11 +532,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 14
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 14
       - name: Build
@@ -352,20 +544,37 @@ jobs:
       - name: Shortly run DuckDB
         run: cd target && java -jar $(ls | grep -P 'sqlancer-[0-9.]*.jar') --num-threads 4 --timeout-seconds 30 --num-queries 0 duckdb
 
-
   java15:
     name: Java 15 EA Compatibility (DuckDB)
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up JDK 15
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v1.4.4
         with:
           java-version: 15-ea
       - name: Build
         run: mvn -B package -DskipTests=true
       - name: Shortly run DuckDB
         run: cd target && java -jar $(ls | grep -P 'sqlancer-[0-9.]*.jar') --num-threads 4 --timeout-seconds 30 --num-queries 0 duckdb
+
+  reducer:
+    name: Reducer Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1.4.4
+        with:
+          java-version: 11
+      - name: Build
+        run: mvn -B package -DskipTests=true
+      - name: Run Tests
+        run: |
+          mvn -Dtest=TestStatementReducer test

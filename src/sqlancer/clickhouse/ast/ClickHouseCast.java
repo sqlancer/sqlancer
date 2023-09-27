@@ -6,7 +6,9 @@ import java.sql.Statement;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import ru.yandex.clickhouse.domain.ClickHouseDataType;
+import com.clickhouse.client.ClickHouseDataType;
+
+import sqlancer.clickhouse.ast.constant.ClickHouseCreateConstant;
 
 public final class ClickHouseCast extends ClickHouseExpression {
 
@@ -50,18 +52,18 @@ public final class ClickHouseCast extends ClickHouseExpression {
     public static ClickHouseConstant castToInt(ClickHouseConstant cons) {
         switch (cons.getDataType()) {
         case Nothing:
-            return ClickHouseConstant.createNullConstant();
+            return ClickHouseCreateConstant.createNullConstant();
         case Int32:
             return cons;
         case Float64:
-            return ClickHouseConstant.createInt32Constant((long) cons.asDouble());
+            return ClickHouseCreateConstant.createInt32Constant((long) cons.asDouble());
         case String:
             String asString = cons.asString();
             while (startsWithWhitespace(asString)) {
                 asString = asString.substring(1);
             }
             if (!asString.isEmpty() && unprintAbleCharThatLetsBecomeNumberZero(asString)) {
-                return ClickHouseConstant.createInt32Constant(0);
+                return ClickHouseCreateConstant.createInt32Constant(0);
             }
             for (int i = asString.length(); i >= 0; i--) {
                 try {
@@ -79,13 +81,13 @@ public final class ClickHouseCast extends ClickHouseExpression {
                                 result = Long.MAX_VALUE;
                             }
                         }
-                        return ClickHouseConstant.createInt32Constant(result);
+                        return ClickHouseCreateConstant.createInt32Constant(result);
                     }
                 } catch (Exception e) {
 
                 }
             }
-            return ClickHouseConstant.createInt32Constant(0);
+            return ClickHouseCreateConstant.createInt32Constant(0);
         default:
             throw new AssertionError();
         }
@@ -95,7 +97,7 @@ public final class ClickHouseCast extends ClickHouseExpression {
     public static ClickHouseConstant castToReal(ClickHouseConstant cons) {
         ClickHouseConstant numericValue = castToNumeric(cons);
         if (numericValue.getDataType() == ClickHouseDataType.Int32) {
-            return ClickHouseConstant.createFloat64Constant(numericValue.asInt());
+            return ClickHouseCreateConstant.createFloat64Constant(numericValue.asInt());
         } else {
             return numericValue;
         }
@@ -120,7 +122,7 @@ public final class ClickHouseCast extends ClickHouseExpression {
             boolean noNumIsRealZero, boolean convertIntToReal) throws AssertionError {
         switch (value.getDataType()) {
         case Nothing:
-            return ClickHouseConstant.createNullConstant();
+            return ClickHouseCreateConstant.createNullConstant();
         case Int32:
         case Float64:
             return value;
@@ -130,11 +132,11 @@ public final class ClickHouseCast extends ClickHouseExpression {
                 asString = asString.substring(1);
             }
             if (!asString.isEmpty() && unprintAbleCharThatLetsBecomeNumberZero(asString)) {
-                return ClickHouseConstant.createInt32Constant(0);
+                return ClickHouseCreateConstant.createInt32Constant(0);
             }
             if (asString.toLowerCase().startsWith("-infinity") || asString.toLowerCase().startsWith("infinity")
                     || asString.startsWith("NaN")) {
-                return ClickHouseConstant.createInt32Constant(0);
+                return ClickHouseCreateConstant.createInt32Constant(0);
             }
             for (int i = asString.length(); i >= 0; i--) {
                 try {
@@ -151,17 +153,17 @@ public final class ClickHouseCast extends ClickHouseExpression {
                     boolean isInteger = !isFloatingPointNumber && first.compareTo(second) == 0;
                     if (doubleShouldBeConvertedToInt || isInteger && !convertIntToReal) {
                         // see https://www.sqlite.org/src/tktview/afdc5a29dc
-                        return ClickHouseConstant.createInt32Constant(first.longValue());
+                        return ClickHouseCreateConstant.createInt32Constant(first.longValue());
                     } else {
-                        return ClickHouseConstant.createFloat64Constant(d);
+                        return ClickHouseCreateConstant.createFloat64Constant(d);
                     }
                 } catch (Exception e) {
                 }
             }
             if (noNumIsRealZero) {
-                return ClickHouseConstant.createFloat64Constant(0.0);
+                return ClickHouseCreateConstant.createFloat64Constant(0.0);
             } else {
-                return ClickHouseConstant.createInt32Constant(0);
+                return ClickHouseCreateConstant.createInt32Constant(0);
             }
         default:
             throw new AssertionError(value);
@@ -222,14 +224,14 @@ public final class ClickHouseCast extends ClickHouseExpression {
         }
         if (cons.getDataType() == ClickHouseDataType.Float64) {
             if (cons.asDouble() == Double.POSITIVE_INFINITY) {
-                return ClickHouseConstant.createStringConstant("Inf");
+                return ClickHouseCreateConstant.createStringConstant("Inf");
             } else if (cons.asDouble() == Double.NEGATIVE_INFINITY) {
-                return ClickHouseConstant.createStringConstant("-Inf");
+                return ClickHouseCreateConstant.createStringConstant("-Inf");
             }
             return castRealToText(cons);
         }
         if (cons.getDataType() == ClickHouseDataType.Int32) {
-            return ClickHouseConstant.createStringConstant(String.valueOf(cons.asInt()));
+            return ClickHouseCreateConstant.createStringConstant(String.valueOf(cons.asInt()));
         }
         return null;
     }
@@ -237,7 +239,7 @@ public final class ClickHouseCast extends ClickHouseExpression {
     private static synchronized ClickHouseConstant castRealToText(ClickHouseConstant cons) throws AssertionError {
         try (Statement s = castDatabase.createStatement()) {
             String castResult = s.executeQuery("SELECT CAST(" + cons.asDouble() + " AS TEXT)").getString(1);
-            return ClickHouseConstant.createStringConstant(castResult);
+            return ClickHouseCreateConstant.createStringConstant(castResult);
         } catch (Exception e) {
             throw new AssertionError(e);
         }
@@ -246,9 +248,9 @@ public final class ClickHouseCast extends ClickHouseExpression {
     public static ClickHouseConstant asBoolean(ClickHouseConstant val) {
         Optional<Boolean> boolVal = isTrue(val);
         if (boolVal.isPresent()) {
-            return ClickHouseConstant.createBoolean(boolVal.get());
+            return ClickHouseCreateConstant.createBoolean(boolVal.get());
         } else {
-            return ClickHouseConstant.createNullConstant();
+            return ClickHouseCreateConstant.createNullConstant();
         }
     }
 

@@ -2,6 +2,7 @@ package sqlancer.sqlite3.gen.ddl;
 
 import java.sql.SQLException;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
@@ -29,9 +30,13 @@ public final class SQLite3ViewGenerator {
     }
 
     public static SQLQueryAdapter generate(SQLite3GlobalState globalState) throws SQLException {
+        if (globalState.getSchema().getTables().getTables()
+                .size() >= globalState.getDbmsSpecificOptions().maxNumTables) {
+            throw new IgnoreMeException();
+        }
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE");
-        if (Randomly.getBoolean()) {
+        if (globalState.getDbmsSpecificOptions().testTempTables && Randomly.getBoolean()) {
             sb.append(" ");
             sb.append(Randomly.fromOptions("TEMP", "TEMPORARY"));
         }

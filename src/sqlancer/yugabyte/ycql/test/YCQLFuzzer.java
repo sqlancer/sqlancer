@@ -11,7 +11,7 @@ import sqlancer.yugabyte.ycql.YCQLProvider;
 import sqlancer.yugabyte.ycql.YCQLToStringVisitor;
 import sqlancer.yugabyte.ycql.gen.YCQLRandomQuerySynthesizer;
 
-public class YCQLFuzzer implements TestOracle {
+public class YCQLFuzzer implements TestOracle<YCQLProvider.YCQLGlobalState> {
     private final YCQLProvider.YCQLGlobalState globalState;
     private final List<Query> testQueries;
     private final ExpectedErrors errors = new ExpectedErrors();

@@ -27,7 +27,7 @@ import sqlancer.mariadb.ast.MariaDBText;
 import sqlancer.mariadb.ast.MariaDBVisitor;
 import sqlancer.mariadb.gen.MariaDBExpressionGenerator;
 
-public class MariaDBNoRECOracle extends NoRECBase<MariaDBGlobalState> implements TestOracle {
+public class MariaDBNoRECOracle extends NoRECBase<MariaDBGlobalState> implements TestOracle<MariaDBGlobalState> {
 
     private final MariaDBSchema s;
     private static final int NOT_FOUND = -1;

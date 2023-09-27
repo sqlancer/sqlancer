@@ -28,7 +28,7 @@ import sqlancer.oceanbase.ast.OceanBaseUnaryPostfixOperation;
 import sqlancer.oceanbase.ast.OceanBaseUnaryPrefixOperation;
 import sqlancer.oceanbase.gen.OceanBaseExpressionGenerator;
 
-public class OceanBaseNoRECOracle extends NoRECBase<OceanBaseGlobalState> implements TestOracle {
+public class OceanBaseNoRECOracle extends NoRECBase<OceanBaseGlobalState> implements TestOracle<OceanBaseGlobalState> {
 
     // SELECT COUNT(*) FROM t0 WHERE <cond>;
     // SELECT SUM(count) FROM (SELECT <cond> IS TRUE as count FROM t0);

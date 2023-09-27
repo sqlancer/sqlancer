@@ -4,27 +4,34 @@ import java.util.List;
 
 import sqlancer.GlobalState;
 
-public class CompositeTestOracle implements TestOracle {
+public class CompositeTestOracle<G extends GlobalState<?, ?, ?>> implements TestOracle<G> {
 
-    private final TestOracle[] oracles;
-    private final GlobalState<?, ?, ?> globalState;
+    private final List<TestOracle<G>> oracles;
+    private final G globalState;
     private int i;
+    private int iLast;
 
-    public CompositeTestOracle(List<TestOracle> oracles, GlobalState<?, ?, ?> globalState) {
+    public CompositeTestOracle(List<TestOracle<G>> oracles, G globalState) {
         this.globalState = globalState;
-        this.oracles = oracles.toArray(new TestOracle[oracles.size()]);
+        this.oracles = oracles;
     }
 
     @Override
     public void check() throws Exception {
         try {
-            oracles[i].check();
-            boolean lastOracleIndex = i == oracles.length - 1;
+            oracles.get(i).check();
+            iLast = i;
+            boolean lastOracleIndex = i == oracles.size() - 1;
             if (!lastOracleIndex) {
                 globalState.getManager().incrementSelectQueryCount();
             }
         } finally {
-            i = (i + 1) % oracles.length;
+            i = (i + 1) % oracles.size();
         }
+    }
+
+    @Override
+    public String getLastQueryString() {
+        return oracles.get(iLast).getLastQueryString();
     }
 }

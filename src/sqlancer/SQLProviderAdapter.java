@@ -10,7 +10,7 @@ import sqlancer.common.schema.AbstractTable;
 
 public abstract class SQLProviderAdapter<G extends SQLGlobalState<O, ? extends AbstractSchema<G, ?>>, O extends DBMSSpecificOptions<? extends OracleFactory<G>>>
         extends ProviderAdapter<G, O, SQLConnection> {
-    public SQLProviderAdapter(Class<G> globalClass, Class<O> optionClass) {
+    protected SQLProviderAdapter(Class<G> globalClass, Class<O> optionClass) {
         super(globalClass, optionClass);
     }
 

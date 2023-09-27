@@ -19,7 +19,8 @@ public final class CockroachDBErrors {
         }
 
         errors.add("exceeds supported timestamp bounds");
-
+        errors.add("expected STORED COMPUTED COLUMN expression to have type bytes");
+        errors.add("volatile functions are not allowed in STORED COMPUTED COLUMN");
         errors.add("cannot cast negative integer to bit varying with unbounded width");
 
         errors.add("negative value for LIMIT");
@@ -74,6 +75,10 @@ public final class CockroachDBErrors {
         errors.add(" unsupported comparison operator: <string> NOT LIKE <collatedstring{");
         errors.add("unsupported comparison operator: <string> != <bytes>");
         errors.add("expected DEFAULT expression to have type bytes");
+        errors.add("expected DEFAULT (in CREATE TABLE) expression to have type bytes");
+        errors.add("expected DEFAULT (in CREATE VIEW) expression to have type bytes");
+        errors.add("expected DEFAULT (in SET DEFAULT) expression to have type bytes");
+        errors.add("expected DEFAULT (in ADD COLUMN) expression to have type bytes");
         errors.add("value type string doesn't match type bytes of column");
         errors.add("as decimal, found type: int");
         errors.add("to be of type decimal, found type float");
@@ -186,6 +191,9 @@ public final class CockroachDBErrors {
         if (CockroachDBBugs.bug85499) {
             errors.add("estimated row count must be non-zero");
         }
+        if (CockroachDBBugs.bug88037) {
+            errors.add("expected required columns to be a subset of output columns");
+        }
 
         errors.add("unable to vectorize execution plan"); // SET vectorize=experimental_always;
         errors.add(" mismatched physical types at index"); // SET vectorize=experimental_always;
@@ -203,6 +211,7 @@ public final class CockroachDBErrors {
         errors.add("ERROR: for SELECT DISTINCT, ORDER BY expressions must appear in select list");
 
         addArrayErrors(errors);
+        addComputedColumnErrors(errors);
     }
 
     private static void addArrayErrors(ExpectedErrors errors) {
@@ -306,6 +315,11 @@ public final class CockroachDBErrors {
 
     public static void addTransactionErrors(ExpectedErrors errors) {
         errors.add("current transaction is aborted");
+    }
+
+    private static void addComputedColumnErrors(ExpectedErrors errors) {
+        // computed columns
+        errors.add("computed column expressions cannot reference computed columns");
     }
 
 }

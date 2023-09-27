@@ -28,20 +28,20 @@ public class OceanBaseOptions implements DBMSSpecificOptions<OceanBaseOracleFact
 
         TLP_WHERE {
             @Override
-            public TestOracle create(OceanBaseGlobalState globalState) throws SQLException {
+            public TestOracle<OceanBaseGlobalState> create(OceanBaseGlobalState globalState) throws SQLException {
                 return new OceanBaseTLPWhereOracle(globalState);
             }
         },
         NoREC {
             @Override
-            public TestOracle create(OceanBaseGlobalState globalState) throws SQLException {
+            public TestOracle<OceanBaseGlobalState> create(OceanBaseGlobalState globalState) throws SQLException {
                 return new OceanBaseNoRECOracle(globalState);
             }
         },
         PQS {
 
             @Override
-            public TestOracle create(OceanBaseGlobalState globalState) throws SQLException {
+            public TestOracle<OceanBaseGlobalState> create(OceanBaseGlobalState globalState) throws SQLException {
                 return new OceanBasePivotedQuerySynthesisOracle(globalState);
             }
 

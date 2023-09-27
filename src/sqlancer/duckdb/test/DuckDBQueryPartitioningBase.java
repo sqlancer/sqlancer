@@ -3,7 +3,6 @@ package sqlancer.duckdb.test;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
@@ -25,7 +24,8 @@ import sqlancer.duckdb.ast.DuckDBSelect;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator;
 
 public class DuckDBQueryPartitioningBase
-        extends TernaryLogicPartitioningOracleBase<Node<DuckDBExpression>, DuckDBGlobalState> implements TestOracle {
+        extends TernaryLogicPartitioningOracleBase<Node<DuckDBExpression>, DuckDBGlobalState>
+        implements TestOracle<DuckDBGlobalState> {
 
     DuckDBSchema s;
     DuckDBTables targetTables;
@@ -35,15 +35,6 @@ public class DuckDBQueryPartitioningBase
     public DuckDBQueryPartitioningBase(DuckDBGlobalState state) {
         super(state);
         DuckDBErrors.addExpressionErrors(errors);
-    }
-
-    public static String canonicalizeResultValue(String value) {
-        // Rule: -0.0 should be canonicalized to 0.0
-        if (Objects.equals(value, "-0.0")) {
-            return "0.0";
-        }
-
-        return value;
     }
 
     @Override

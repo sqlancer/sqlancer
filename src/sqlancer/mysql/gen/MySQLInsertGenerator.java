@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
@@ -19,16 +20,21 @@ public class MySQLInsertGenerator {
     private final ExpectedErrors errors = new ExpectedErrors();
     private final MySQLGlobalState globalState;
 
-    public MySQLInsertGenerator(MySQLGlobalState globalState) {
+    public MySQLInsertGenerator(MySQLGlobalState globalState, MySQLTable table) {
         this.globalState = globalState;
-        table = globalState.getSchema().getRandomTable();
+        this.table = table;
     }
 
     public static SQLQueryAdapter insertRow(MySQLGlobalState globalState) throws SQLException {
+        MySQLTable table = globalState.getSchema().getRandomTable();
+        return insertRow(globalState, table);
+    }
+
+    public static SQLQueryAdapter insertRow(MySQLGlobalState globalState, MySQLTable table) throws SQLException {
         if (Randomly.getBoolean()) {
-            return new MySQLInsertGenerator(globalState).generateInsert();
+            return new MySQLInsertGenerator(globalState, table).generateInsert();
         } else {
-            return new MySQLInsertGenerator(globalState).generateReplace();
+            return new MySQLInsertGenerator(globalState, table).generateReplace();
         }
     }
 
@@ -83,14 +89,7 @@ public class MySQLInsertGenerator {
             }
             sb.append(")");
         }
-        errors.add("doesn't have a default value");
-        errors.add("Data truncation");
-        errors.add("Incorrect integer value");
-        errors.add("Duplicate entry");
-        errors.add("Data truncated for functional index");
-        errors.add("Data truncated for column");
-        errors.add("cannot be null");
-        errors.add("Incorrect decimal value");
+        MySQLErrors.addInsertUpdateErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors);
     }
 

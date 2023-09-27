@@ -1,7 +1,10 @@
 package sqlancer.clickhouse;
 
+import java.util.List;
+
 import sqlancer.clickhouse.ast.ClickHouseAggregate;
-import sqlancer.clickhouse.ast.ClickHouseBinaryComparisonOperation;
+import sqlancer.clickhouse.ast.ClickHouseAliasOperation;
+import sqlancer.clickhouse.ast.ClickHouseBinaryFunctionOperation;
 import sqlancer.clickhouse.ast.ClickHouseBinaryLogicalOperation;
 import sqlancer.clickhouse.ast.ClickHouseCastOperation;
 import sqlancer.clickhouse.ast.ClickHouseColumnReference;
@@ -18,17 +21,6 @@ public class ClickHouseToStringVisitor extends ToStringVisitor<ClickHouseExpress
     @Override
     public void visitSpecific(ClickHouseExpression expr) {
         ClickHouseVisitor.super.visit(expr);
-    }
-
-    @Override
-    public void visit(ClickHouseBinaryComparisonOperation op) {
-        sb.append("(");
-        visit(op.getLeft());
-        sb.append(") ");
-        sb.append(op.getOperator().getTextRepresentation());
-        sb.append(" (");
-        visit(op.getRight());
-        sb.append(")");
     }
 
     @Override
@@ -82,8 +74,17 @@ public class ClickHouseToStringVisitor extends ToStringVisitor<ClickHouseExpress
         }
 
         visit(select.getFetchColumns());
-        sb.append(" FROM ");
-        visit(select.getFromList());
+        ClickHouseExpression fromClause = select.getFromClause();
+        if (fromClause != null) {
+            sb.append(" FROM ");
+            visit(fromClause);
+        }
+        List<ClickHouseExpression.ClickHouseJoin> joins = select.getJoinClauses();
+        if (!joins.isEmpty()) {
+            for (ClickHouseExpression.ClickHouseJoin join : joins) {
+                visit(join);
+            }
+        }
         if (select.getWhereClause() != null) {
             sb.append(" WHERE ");
             visit(select.getWhereClause());
@@ -107,7 +108,12 @@ public class ClickHouseToStringVisitor extends ToStringVisitor<ClickHouseExpress
 
     @Override
     public void visit(ClickHouseTableReference tableReference) {
-        sb.append(tableReference.getTable().getName());
+        sb.append(tableReference.getTable().getName()); // Original name, not alias.
+        String alias = tableReference.getAlias();
+        if (alias != null) {
+            sb.append(" AS " + alias);
+        }
+
     }
 
     @Override
@@ -129,16 +135,70 @@ public class ClickHouseToStringVisitor extends ToStringVisitor<ClickHouseExpress
 
     @Override
     public void visit(ClickHouseExpression.ClickHouseJoin join) {
-
+        ClickHouseExpression.ClickHouseJoin.JoinType type = join.getType();
+        if (type == ClickHouseExpression.ClickHouseJoin.JoinType.CROSS) {
+            sb.append(" JOIN ");
+            visit(join.getRightTable());
+        } else if (type == ClickHouseExpression.ClickHouseJoin.JoinType.INNER) {
+            sb.append(" INNER JOIN ");
+            visit(join.getRightTable());
+        } else if (type == ClickHouseExpression.ClickHouseJoin.JoinType.LEFT_OUTER) {
+            sb.append(" LEFT OUTER JOIN ");
+            visit(join.getRightTable());
+        } else if (type == ClickHouseExpression.ClickHouseJoin.JoinType.RIGHT_OUTER) {
+            sb.append(" RIGHT OUTER JOIN ");
+            visit(join.getRightTable());
+        } else if (type == ClickHouseExpression.ClickHouseJoin.JoinType.FULL_OUTER) {
+            sb.append(" FULL OUTER JOIN ");
+            visit(join.getRightTable());
+        } else if (type == ClickHouseExpression.ClickHouseJoin.JoinType.LEFT_ANTI) {
+            sb.append(" LEFT ANTI JOIN ");
+            visit(join.getRightTable());
+        } else if (type == ClickHouseExpression.ClickHouseJoin.JoinType.RIGHT_ANTI) {
+            sb.append(" RIGHT ANTI JOIN ");
+            visit(join.getRightTable());
+        } else {
+            throw new UnsupportedOperationException();
+        }
+        ClickHouseExpression onClause = join.getOnClause();
+        if (onClause != null) {
+            sb.append(" ON ");
+            visit(onClause);
+        }
     }
 
     @Override
     public void visit(ClickHouseColumnReference c) {
-        if (c.getColumn().getTable() == null) {
+        if (c.getTableAlias() != null) {
+            sb.append(c.getTableAlias());
+            sb.append(".");
+            sb.append(c.getColumn().getName());
+        } else if (c.getColumn().getTable() == null) {
             sb.append(c.getColumn().getName());
         } else {
             sb.append(c.getColumn().getFullQualifiedName());
         }
+        if (c.getAlias() != null) {
+            sb.append(" AS " + c.getAlias());
+        }
+    }
+
+    @Override
+    public void visit(ClickHouseBinaryFunctionOperation func) {
+        sb.append(func.getOperatorRepresentation());
+        sb.append("(");
+        visit(func.getLeft());
+        sb.append(",");
+        visit(func.getRight());
+        sb.append(")");
+    }
+
+    @Override
+    public void visit(ClickHouseAliasOperation alias) {
+        visit(alias.getExpression());
+        sb.append(" AS `");
+        sb.append(alias.getAlias());
+        sb.append("`");
     }
 
     public static String asString(ClickHouseExpression expr) {
