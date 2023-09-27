@@ -9,6 +9,7 @@ public final class YSQLErrors {
 
     public static void addCommonFetchErrors(ExpectedErrors errors) {
         errors.add("Operation failed. Try again");
+        errors.add("could not serialize access due to concurrent update");
         errors.add("Value write after transaction start");
 
         errors.add("An I/O error occurred while sending to the backend");
