@@ -18,7 +18,7 @@ import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresVisitor;
 import sqlancer.postgres.PostgresSchema.PostgresTables;
 import sqlancer.postgres.ast.PostgresBinaryLogicalOperation;
-import sqlancer.postgres.ast.PostgresColumnValue;
+import sqlancer.postgres.ast.PostgresColumnReference;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresTableReference;
@@ -30,7 +30,6 @@ public class PostgresCERT extends CERTOracleBase<PostgresGlobalState> implements
 
     public PostgresCERT(PostgresGlobalState globalState){
         super(globalState);
-        // PostgresError?
     }
 
     @Override
@@ -43,7 +42,7 @@ public class PostgresCERT extends CERTOracleBase<PostgresGlobalState> implements
         gen = new PostgresExpressionGenerator(state).setColumns(tables.getColumns());
         List<PostgresExpression> fetchColumns = new ArrayList<>();
         fetchColumns.addAll(Randomly.nonEmptySubset(tables.getColumns()).stream()
-        .map(c -> new PostgresColumnValue(c, null)).collect(Collectors.toList()));
+        .map(c -> new PostgresColumnReference(c)).collect(Collectors.toList()));
         List<PostgresExpression> tableList = tables.getTables().stream().map(t -> new PostgresTableReference(t))
                 .collect(Collectors.toList());
         
