@@ -13,7 +13,7 @@ import sqlancer.OracleFactory;
 import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.postgres.PostgresOptions.PostgresOracleFactory;
-import sqlancer.postgres.oracle.PostgresCERT;
+import sqlancer.postgres.oracle.PostgresCERTOracle;
 import sqlancer.postgres.oracle.PostgresFuzzer;
 import sqlancer.postgres.oracle.PostgresNoRECOracle;
 import sqlancer.postgres.oracle.PostgresPivotedQuerySynthesisOracle;
@@ -79,10 +79,10 @@ public class PostgresOptions implements DBMSSpecificOptions<PostgresOracleFactor
                 return new CompositeTestOracle<PostgresGlobalState>(oracles, globalState);
             }
         },
-        CERT{
+        CERT {
             @Override
             public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws SQLException {
-                return new PostgresCERT(globalState);
+                return new PostgresCERTOracle(globalState);
             }
 
             @Override

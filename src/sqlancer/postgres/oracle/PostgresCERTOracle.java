@@ -14,22 +14,27 @@ import sqlancer.common.oracle.CERTOracleBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
+import sqlancer.postgres.PostgresErrors;
 import sqlancer.postgres.PostgresGlobalState;
-import sqlancer.postgres.PostgresVisitor;
+import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTables;
+import sqlancer.postgres.PostgresVisitor;
 import sqlancer.postgres.ast.PostgresBinaryLogicalOperation;
+import sqlancer.postgres.ast.PostgresBinaryLogicalOperation.BinaryLogicalOperator;
 import sqlancer.postgres.ast.PostgresColumnReference;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresTableReference;
+// import sqlancer.postgres.ast.PostgresBinaryArithmeticOperation.PostgresBinaryOperator;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
-public class PostgresCERT extends CERTOracleBase<PostgresGlobalState> implements TestOracle<PostgresGlobalState> {
+public class PostgresCERTOracle extends CERTOracleBase<PostgresGlobalState> implements TestOracle<PostgresGlobalState> {
     private PostgresExpressionGenerator gen;
     private PostgresSelect select;
 
-    public PostgresCERT(PostgresGlobalState globalState){
+    public PostgresCERTOracle(PostgresGlobalState globalState) {
         super(globalState);
+        PostgresErrors.addExpressionErrors(errors);
     }
 
     @Override
@@ -42,22 +47,22 @@ public class PostgresCERT extends CERTOracleBase<PostgresGlobalState> implements
         gen = new PostgresExpressionGenerator(state).setColumns(tables.getColumns());
         List<PostgresExpression> fetchColumns = new ArrayList<>();
         fetchColumns.addAll(Randomly.nonEmptySubset(tables.getColumns()).stream()
-        .map(c -> new PostgresColumnReference(c)).collect(Collectors.toList()));
+                .map(c -> new PostgresColumnReference(c)).collect(Collectors.toList()));
         List<PostgresExpression> tableList = tables.getTables().stream().map(t -> new PostgresTableReference(t))
                 .collect(Collectors.toList());
-        
+
         select = new PostgresSelect();
         select.setFetchColumns(fetchColumns);
         select.setFromList(tableList);
 
         select.setSelectType(Randomly.fromOptions(PostgresSelect.SelectType.values()));
         if (Randomly.getBoolean()) {
-            select.setWhereClause(gen.generateExpression(0));
+            select.setWhereClause(gen.generateExpression(0, PostgresDataType.BOOLEAN));
         }
         if (Randomly.getBoolean()) {
             select.setGroupByExpressions(fetchColumns);
             if (Randomly.getBoolean()) {
-                select.setWhereClause(gen.generateExpression(0));
+                select.setWhereClause(gen.generateExpression(0, PostgresDataType.BOOLEAN));
             }
         }
 
@@ -65,21 +70,23 @@ public class PostgresCERT extends CERTOracleBase<PostgresGlobalState> implements
         String queryString1 = PostgresVisitor.asString(select);
         int rowCount1 = getRow(state, queryString1, queryPlan1Sequences);
 
+        // JOIN and LIMIT mutations not added
         boolean increase = mutate(Mutator.JOIN, Mutator.LIMIT);
+        // boolean increase = mutate();
 
         // Second Query row count
         String queryString2 = PostgresVisitor.asString(select);
         int rowCount2 = getRow(state, queryString2, queryPlan2Sequences);
 
         // Check query plan equivalence
-        if (DBMSCommon.editDistance(queryPlan1Sequences, queryPlan2Sequences) > 1){
+        if (DBMSCommon.editDistance(queryPlan1Sequences, queryPlan2Sequences) > 1) {
             return;
         }
 
         // Check results
         if (increase && rowCount1 > rowCount2 || !increase && rowCount1 < rowCount2) {
             throw new AssertionError("Inconsistent result for query: EXPLAIN " + queryString1 + "; --" + rowCount1
-            + "\nEXPLAIN " + queryString2 + "; --" + rowCount2);
+                    + "\nEXPLAIN " + queryString2 + "; --" + rowCount2);
         }
     }
 
@@ -101,7 +108,7 @@ public class PostgresCERT extends CERTOracleBase<PostgresGlobalState> implements
         if (increase) {
             select.setWhereClause(null);
         } else {
-            select.setWhereClause(gen.generateExpression(0));
+            select.setWhereClause(gen.generateExpression(0, PostgresDataType.BOOLEAN));
         }
         return increase;
     }
@@ -121,11 +128,11 @@ public class PostgresCERT extends CERTOracleBase<PostgresGlobalState> implements
     protected boolean mutateHaving() {
         if (select.getGroupByExpressions().size() == 0) {
             select.setGroupByExpressions(select.getFetchColumns());
-            select.setHavingClause(gen.generateExpression(0));
+            select.setHavingClause(gen.generateExpression(0, PostgresDataType.BOOLEAN));
             return false;
         } else {
             if (select.getHavingClause() == null) {
-                select.setHavingClause(gen.generateExpression(0));
+                select.setHavingClause(gen.generateExpression(0, PostgresDataType.BOOLEAN));
                 return false;
             } else {
                 select.setHavingClause(null);
@@ -137,10 +144,10 @@ public class PostgresCERT extends CERTOracleBase<PostgresGlobalState> implements
     @Override
     protected boolean mutateAnd() {
         if (select.getWhereClause() == null) {
-            select.setWhereClause(gen.generateExpression(0));
+            select.setWhereClause(gen.generateExpression(0, PostgresDataType.BOOLEAN));
         } else {
             PostgresExpression newWhere = new PostgresBinaryLogicalOperation(select.getWhereClause(),
-                    gen.generateExpression(0), PostgresBinaryLogicalOperation.BinaryLogicalOperator.AND);
+                    gen.generateExpression(0, PostgresDataType.BOOLEAN), BinaryLogicalOperator.AND);
             select.setWhereClause(newWhere);
         }
         return false;
@@ -149,26 +156,26 @@ public class PostgresCERT extends CERTOracleBase<PostgresGlobalState> implements
     @Override
     protected boolean mutateOr() {
         if (select.getWhereClause() == null) {
-            select.setWhereClause(gen.generateExpression(0));
+            select.setWhereClause(gen.generateExpression(0, PostgresDataType.BOOLEAN));
             return false;
         } else {
             PostgresExpression newWhere = new PostgresBinaryLogicalOperation(select.getWhereClause(),
-                    gen.generateExpression(0), PostgresBinaryLogicalOperation.BinaryLogicalOperator.OR);
+                    gen.generateExpression(0, PostgresDataType.BOOLEAN), BinaryLogicalOperator.OR);
             select.setWhereClause(newWhere);
             return true;
         }
     }
 
     private int getRow(SQLGlobalState<?, ?> globalState, String selectStr, List<String> queryPlanSequences)
-            throws AssertionError, SQLException{
+            throws AssertionError, SQLException {
         int row = -1;
         String explainQuery = "EXPLAIN " + selectStr;
 
         if (globalState.getOptions().logEachSelect()) {
             globalState.getLogger().writeCurrent(explainQuery);
-            try{
+            try {
                 globalState.getLogger().getCurrentFileWriter().flush();
-            }catch (IOException e){
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -178,18 +185,30 @@ public class PostgresCERT extends CERTOracleBase<PostgresGlobalState> implements
         try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
             if (rs != null) {
                 while (rs.next()) {
-                    int estRows = rs.getInt(10);
-                    if (row == -1) {
-                        row = estRows;
+                    String content = rs.getString(1).trim();
+                    if (content.contains("rows")) {
+                        try {
+                            int ind = content.indexOf("rows=");
+                            if (ind == -1) {
+                                throw new AssertionError();
+                            }
+                            int number = Integer.parseInt(content.substring(ind + 5).split(" ")[0]);
+                            if (row == -1) {
+                                row = number;
+                            }
+                        } catch (Exception e) {
+                        }
                     }
-                    String operation = rs.getString(2);
-                    queryPlanSequences.add(operation);
+                    // Proper Formatting TBD
+                    String[] planPart = content.split("-> ");
+                    String plan = planPart[planPart.length - 1];
+                    queryPlanSequences.add(plan.split("  ")[0].trim());
                 }
             }
         } catch (Exception e) {
             throw new AssertionError(q.getQueryString(), e);
         }
-        if(row == -1){
+        if (row == -1) {
             throw new IgnoreMeException();
         }
         return row;
