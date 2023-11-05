@@ -1,15 +1,15 @@
 package sqlancer.tidb.oracle;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
 import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
 import sqlancer.Reproducer;
 import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.visitor.TiDBVisitor;
-
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class TiDBTLPWhereOracle extends TiDBTLPBase {
 
@@ -29,7 +29,8 @@ public class TiDBTLPWhereOracle extends TiDBTLPBase {
         final List<String> resultSet;
         final boolean orderBy;
 
-        TiDBTLPWhereReproducer(String firstQueryString, String secondQueryString, String thirdQueryString, String originalQueryString, List<String> resultSet, boolean orderBy) {
+        TiDBTLPWhereReproducer(String firstQueryString, String secondQueryString, String thirdQueryString,
+                String originalQueryString, List<String> resultSet, boolean orderBy) {
             this.firstQueryString = firstQueryString;
             this.secondQueryString = secondQueryString;
             this.thirdQueryString = thirdQueryString;
@@ -78,7 +79,8 @@ public class TiDBTLPWhereOracle extends TiDBTLPBase {
                 thirdQueryString, combinedString, !orderBy, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
-        reproducer = new TiDBTLPWhereReproducer(firstQueryString, secondQueryString, thirdQueryString, originalQueryString, resultSet, orderBy);
+        reproducer = new TiDBTLPWhereReproducer(firstQueryString, secondQueryString, thirdQueryString,
+                originalQueryString, resultSet, orderBy);
     }
 
     @Override
