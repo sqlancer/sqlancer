@@ -258,6 +258,26 @@ public final class Main {
             }
         }
 
+        public void logReducer(String reducerLog) {
+            FileWriter reduceFileWriter = getReduceFileWriter();
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("[reducer log] ");
+            sb.append(reducerLog);
+            try {
+                reduceFileWriter.write(sb.toString());
+            } catch (IOException e) {
+                throw new AssertionError(e);
+            } finally {
+                try {
+                    reduceFileWriter.flush();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+
         public void logReduced(StateToReproduce state) {
             FileWriter reduceFileWriter = getReduceFileWriter();
 
@@ -293,7 +313,6 @@ public final class Main {
                 try {
                     logFileWriter2.flush();
                 } catch (IOException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
@@ -479,7 +498,7 @@ public final class Main {
                         throw new AssertionError(e);
                     }
 
-                    throw new AssertionError("Found a potential bug");
+                    throw new AssertionError("Found a potential bug, please check reducer log for detail.");
                 }
             }
         }
