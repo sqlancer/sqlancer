@@ -81,6 +81,7 @@ public final class Main {
         private FileWriter logFileWriter;
         public FileWriter currentFileWriter;
         private FileWriter queryPlanFileWriter;
+        private FileWriter reduceFileWriter;
 
         private static final List<String> INITIALIZED_PROVIDER_NAMES = new ArrayList<>();
         private final boolean logEachSelect;
@@ -201,14 +202,14 @@ public final class Main {
             if (!useReducer) {
                 throw new UnsupportedOperationException();
             }
-            FileWriter fileWriter;
-            try {
-                fileWriter = new FileWriter(reduceFile, false);
-            } catch (IOException e) {
-                throw new AssertionError(e);
+            if (reduceFileWriter == null) {
+                try {
+                    reduceFileWriter = new FileWriter(reduceFile, false);
+                } catch (IOException e) {
+                    throw new AssertionError(e);
+                }
             }
-
-            return fileWriter;
+            return reduceFileWriter;
         }
 
         public void writeCurrent(StateToReproduce state) {
@@ -257,6 +258,26 @@ public final class Main {
             }
         }
 
+        public void logReducer(String reducerLog) {
+            FileWriter reduceFileWriter = getReduceFileWriter();
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("[reducer log] ");
+            sb.append(reducerLog);
+            try {
+                reduceFileWriter.write(sb.toString());
+            } catch (IOException e) {
+                throw new AssertionError(e);
+            } finally {
+                try {
+                    reduceFileWriter.flush();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+
         public void logReduced(StateToReproduce state) {
             FileWriter reduceFileWriter = getReduceFileWriter();
 
@@ -272,7 +293,6 @@ public final class Main {
             } finally {
                 try {
                     reduceFileWriter.flush();
-                    reduceFileWriter.close();
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -293,7 +313,6 @@ public final class Main {
                 try {
                     logFileWriter2.flush();
                 } catch (IOException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
@@ -449,9 +468,11 @@ public final class Main {
                 if (options.reduceAST() && !options.useReducer()) {
                     throw new AssertionError("To reduce AST, use-reducer option must be enabled first");
                 }
-                if (reproducer != null && options.useReducer()) {
-                    System.out.println("EXPERIMENTAL: Trying to reduce queries using a simple reducer.");
-                    // System.out.println("Reduced query will be output to stdout but not logs.");
+                if (options.useReducer()) {
+                    if (reproducer == null) {
+                        logger.getReduceFileWriter().write("current oracle does not support experimental reducer.");
+                        throw new IgnoreMeException();
+                    }
                     G newGlobalState = createGlobalState();
                     newGlobalState.setState(stateToRepro);
                     newGlobalState.setRandomly(r);
@@ -470,7 +491,14 @@ public final class Main {
                         astBasedReducer.reduce(state, reproducer, newGlobalState);
                     }
 
-                    throw new AssertionError("Found a potential bug");
+                    try {
+                        logger.getReduceFileWriter().close();
+                        logger.reduceFileWriter = null;
+                    } catch (IOException e) {
+                        throw new AssertionError(e);
+                    }
+
+                    throw new AssertionError("Found a potential bug, please check reducer log for detail.");
                 }
             }
         }
