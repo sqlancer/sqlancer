@@ -52,7 +52,6 @@ public class PostgresJoin implements PostgresExpression {
 
     public static PostgresJoin createJoin(PostgresExpression left, PostgresExpression right, PostgresJoinType type,
             PostgresExpression onClause) {
-        // System.out.println(left + "\n" + right);
         if (type == PostgresJoinType.CROSS) {
             return new PostgresJoin(left, right, type, null);
         } else {
