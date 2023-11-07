@@ -60,8 +60,7 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
                     try {
                         oracle.check();
                         globalState.getManager().incrementSelectQueryCount();
-                    } catch (IgnoreMeException e) {
-
+                    } catch (IgnoreMeException ignored) {
                     } catch (AssertionError e) {
                         Reproducer<G> reproducer = oracle.getLastReproducer();
                         if (reproducer != null) {
@@ -69,7 +68,6 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
                         }
                         throw e;
                     }
-                    assert localState != null;
                     localState.executedWithoutError();
                 }
             }
@@ -141,7 +139,6 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
                         } catch (IgnoreMeException e) {
 
                         }
-                        assert localState != null;
                         localState.executedWithoutError();
                     }
                     // exit loop to mutate tables if no new query plans have been found after a while

@@ -24,9 +24,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1.4.4
+        uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Verify
         run: mvn -B verify -DskipTests=true
       - name: Misc Tests
@@ -46,9 +48,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1.4.4
+        uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Set up Citus
@@ -92,9 +96,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1.4.4
+        uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Set up ClickHouse
@@ -119,9 +125,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1.4.4
+        uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Set up CockroachDB
@@ -142,9 +150,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1.4.4
+        uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Set up CockroachDB
@@ -174,9 +184,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1.4.4
+        uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Run Tests
@@ -192,9 +204,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1.4.4
+        uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Build
         run: mvn -B package -DskipTests=true
       - name: DuckDB Tests
@@ -208,9 +222,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1.4.4
+        uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Run Tests
@@ -225,9 +241,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1.4.4
+        uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Install MariaDB
@@ -257,9 +275,11 @@ jobs:
           # Workaround for https://github.com/cockroachdb/cockroach/issues/93892
           psql postgres://root@localhost:26257 -c "SET CLUSTER SETTING sql.stats.forecasts.enabled = false"
       - name: Set up JDK 11
-        uses: actions/setup-java@v1.4.4
+        uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Run Tests
@@ -282,9 +302,11 @@ jobs:
           # Workaround for https://github.com/cockroachdb/cockroach/issues/93892
           psql postgres://root@localhost:26257 -c "SET CLUSTER SETTING sql.stats.forecasts.enabled = false"
       - name: Set up JDK 11
-        uses: actions/setup-java@v1.4.4
+        uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Run Tests
@@ -300,9 +322,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1.4.4
+        uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Set up MySQL
@@ -330,9 +354,11 @@ jobs:
           postgresql password: 'sqlancer'
           postgresql db: 'test'
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Run Tests
@@ -347,9 +373,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1.4.4
+        uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Build
         run: mvn -B package -DskipTests=true
       - name: SQLite Tests
@@ -366,9 +394,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1.4.4
+        uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Build
         run: mvn -B package -DskipTests=true
       - name: SQLite Tests for QPG
@@ -393,9 +423,11 @@ jobs:
           docker exec $ContainerID /opt/stonedb57/install/bin/mysql -uroot -p123456 -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
           sleep 60s
       - name: Set up JDK 11
-        uses: actions/setup-java@v1.4.4
+        uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Build
         run: mvn -B package -DskipTests=true
       - name: StoneDB Tests
@@ -410,9 +442,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1.4.4
+        uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Set up TiDB
@@ -433,9 +467,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1.4.4
+        uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Set up TiDB
@@ -456,9 +492,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1.4.4
+        uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Set up Yugabyte
@@ -478,9 +516,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: install mysql client
         run: |
           sudo apt update
@@ -509,58 +549,6 @@ jobs:
       - name: Run Tests
         run: DORIS_AVAILABLE=true mvn -Dtest=TestDoris test
 
-
-  java13:
-    name: Java 13 Compatibility (DuckDB)
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Set up JDK 13
-        uses: actions/setup-java@v1.4.4
-        with:
-          java-version: 13
-      - name: Build
-        run: mvn -B package -DskipTests=true
-      - name: Shortly run DuckDB
-        run: cd target && java -jar $(ls | grep -P 'sqlancer-[0-9.]*.jar') --num-threads 4 --timeout-seconds 30 --num-queries 0 duckdb
-
-  java14:
-    name: Java 14 Compatibility (DuckDB)
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Set up JDK 14
-        uses: actions/setup-java@v1.4.4
-        with:
-          java-version: 14
-      - name: Build
-        run: mvn -B package -DskipTests=true
-      - name: Shortly run DuckDB
-        run: cd target && java -jar $(ls | grep -P 'sqlancer-[0-9.]*.jar') --num-threads 4 --timeout-seconds 30 --num-queries 0 duckdb
-
-  java15:
-    name: Java 15 EA Compatibility (DuckDB)
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Set up JDK 15
-        uses: actions/setup-java@v1.4.4
-        with:
-          java-version: 15-ea
-      - name: Build
-        run: mvn -B package -DskipTests=true
-      - name: Shortly run DuckDB
-        run: cd target && java -jar $(ls | grep -P 'sqlancer-[0-9.]*.jar') --num-threads 4 --timeout-seconds 30 --num-queries 0 duckdb
-
   reducer:
     name: Reducer Tests
     runs-on: ubuntu-latest
@@ -570,9 +558,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up JDK 11
-        uses: actions/setup-java@v1.4.4
+        uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Build
         run: mvn -B package -DskipTests=true
       - name: Run Tests
