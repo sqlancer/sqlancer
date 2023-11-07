@@ -14,18 +14,21 @@ import sqlancer.common.oracle.CERTOracleBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
-import sqlancer.postgres.PostgresErrors;
 import sqlancer.postgres.PostgresGlobalState;
+import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTables;
 import sqlancer.postgres.PostgresVisitor;
 import sqlancer.postgres.ast.PostgresBinaryLogicalOperation;
 import sqlancer.postgres.ast.PostgresBinaryLogicalOperation.BinaryLogicalOperator;
 import sqlancer.postgres.ast.PostgresColumnReference;
+import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.ast.PostgresExpression;
+import sqlancer.postgres.ast.PostgresJoin;
+import sqlancer.postgres.ast.PostgresJoin.PostgresJoinType;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresTableReference;
-// import sqlancer.postgres.ast.PostgresBinaryArithmeticOperation.PostgresBinaryOperator;
+import sqlancer.postgres.gen.PostgresCommon;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
 public class PostgresCERTOracle extends CERTOracleBase<PostgresGlobalState> implements TestOracle<PostgresGlobalState> {
@@ -34,7 +37,11 @@ public class PostgresCERTOracle extends CERTOracleBase<PostgresGlobalState> impl
 
     public PostgresCERTOracle(PostgresGlobalState globalState) {
         super(globalState);
-        PostgresErrors.addExpressionErrors(errors);
+        PostgresCommon.addCommonExpressionErrors(errors);
+        PostgresCommon.addCommonInsertUpdateErrors(errors);
+        PostgresCommon.addGroupingErrors(errors);
+        PostgresCommon.addCommonInsertUpdateErrors(errors);
+        PostgresCommon.addCommonRangeExpressionErrors(errors);
     }
 
     @Override
@@ -44,16 +51,18 @@ public class PostgresCERTOracle extends CERTOracleBase<PostgresGlobalState> impl
 
         // Generate Random Query
         PostgresTables tables = state.getSchema().getRandomTableNonEmptyTables();
+        List<PostgresExpression> tableList = tables.getTables().stream().map(t -> new PostgresTableReference(t))
+                .collect(Collectors.toList());
         gen = new PostgresExpressionGenerator(state).setColumns(tables.getColumns());
         List<PostgresExpression> fetchColumns = new ArrayList<>();
         fetchColumns.addAll(Randomly.nonEmptySubset(tables.getColumns()).stream()
                 .map(c -> new PostgresColumnReference(c)).collect(Collectors.toList()));
-        List<PostgresExpression> tableList = tables.getTables().stream().map(t -> new PostgresTableReference(t))
-                .collect(Collectors.toList());
 
         select = new PostgresSelect();
         select.setFetchColumns(fetchColumns);
         select.setFromList(tableList);
+        List<PostgresExpression> joins = PostgresJoin.getJoins(tableList, state);
+        select.setJoinList(joins);
 
         select.setSelectType(Randomly.fromOptions(PostgresSelect.SelectType.values()));
         if (Randomly.getBoolean()) {
@@ -71,8 +80,7 @@ public class PostgresCERTOracle extends CERTOracleBase<PostgresGlobalState> impl
         int rowCount1 = getRow(state, queryString1, queryPlan1Sequences);
 
         // JOIN and LIMIT mutations not added
-        boolean increase = mutate(Mutator.JOIN, Mutator.LIMIT);
-        // boolean increase = mutate();
+        boolean increase = mutate(Mutator.LIMIT);
 
         // Second Query row count
         String queryString2 = PostgresVisitor.asString(select);
@@ -84,10 +92,40 @@ public class PostgresCERTOracle extends CERTOracleBase<PostgresGlobalState> impl
         }
 
         // Check results
-        if (increase && rowCount1 > rowCount2 || !increase && rowCount1 < rowCount2) {
+        if (increase && rowCount1 > (rowCount2 + 1) || !increase && (rowCount1 + 1) < rowCount2) {
             throw new AssertionError("Inconsistent result for query: EXPLAIN " + queryString1 + "; --" + rowCount1
                     + "\nEXPLAIN " + queryString2 + "; --" + rowCount2);
         }
+    }
+
+    @Override
+    protected boolean mutateJoin() {
+        if (select.getJoinList().isEmpty()) {
+            return false;
+        }
+        PostgresJoin join = (PostgresJoin) Randomly.fromList(select.getJoinList());
+
+        // Exclude CROSS for on condition
+        if (join.getType() == PostgresJoinType.CROSS) {
+            List<PostgresColumn> columns = new ArrayList<>();
+            columns.addAll(((PostgresTableReference) join.getLeftTable()).getTable().getColumns());
+            columns.addAll(((PostgresTableReference) join.getRightTable()).getTable().getColumns());
+            PostgresExpressionGenerator joinGen2 = new PostgresExpressionGenerator(state).setColumns(columns);
+            join.setOnClause(joinGen2.generateExpression(0, PostgresDataType.BOOLEAN));
+        }
+
+        PostgresJoinType newJoinType = PostgresJoinType.INNER;
+        if (join.getType() == PostgresJoinType.LEFT || join.getType() == PostgresJoinType.RIGHT) {
+            newJoinType = PostgresJoinType.getRandomExcept(PostgresJoinType.LEFT, PostgresJoinType.RIGHT);
+        } else {
+            newJoinType = PostgresJoinType.getRandomExcept(join.getType());
+        }
+        boolean increase = join.getType().ordinal() < newJoinType.ordinal();
+        join.setType(newJoinType);
+        if (newJoinType == PostgresJoinType.CROSS) {
+            join.setOnClause(null);
+        }
+        return increase;
     }
 
     @Override
@@ -166,6 +204,18 @@ public class PostgresCERTOracle extends CERTOracleBase<PostgresGlobalState> impl
         }
     }
 
+    @Override
+    protected boolean mutateLimit() {
+        boolean increase = select.getLimitClause() != null;
+        if (increase) {
+            select.setLimitClause(null);
+        } else {
+            Randomly r = new Randomly();
+            select.setLimitClause(PostgresConstant.createIntConstant((int) Math.abs(r.getInteger())));
+        }
+        return increase;
+    }
+
     private int getRow(SQLGlobalState<?, ?> globalState, String selectStr, List<String> queryPlanSequences)
             throws AssertionError, SQLException {
         int row = -1;
@@ -186,15 +236,13 @@ public class PostgresCERTOracle extends CERTOracleBase<PostgresGlobalState> impl
             if (rs != null) {
                 while (rs.next()) {
                     String content = rs.getString(1).trim();
-                    if (content.contains("rows")) {
+                    if (content.contains("rows=")) {
                         try {
                             int ind = content.indexOf("rows=");
-                            if (ind == -1) {
-                                throw new AssertionError();
-                            }
                             int number = Integer.parseInt(content.substring(ind + 5).split(" ")[0]);
                             if (row == -1) {
                                 row = number;
+
                             }
                         } catch (Exception e) {
                         }
@@ -204,6 +252,7 @@ public class PostgresCERTOracle extends CERTOracleBase<PostgresGlobalState> impl
                     String plan = planPart[planPart.length - 1];
                     queryPlanSequences.add(plan.split("  ")[0].trim());
                 }
+
             }
         } catch (Exception e) {
             throw new AssertionError(q.getQueryString(), e);
@@ -212,5 +261,6 @@ public class PostgresCERTOracle extends CERTOracleBase<PostgresGlobalState> impl
             throw new IgnoreMeException();
         }
         return row;
+
     }
 }
