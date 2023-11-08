@@ -134,6 +134,7 @@ public final class PostgresCommon {
 
     public static void addCommonInsertUpdateErrors(ExpectedErrors errors) {
         errors.add("value too long for type character");
+        errors.add("cannot insert a non-DEFAULT value into column");
         errors.add("not found in view targetlist");
     }
 
