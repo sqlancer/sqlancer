@@ -42,7 +42,7 @@ public class TiDBTLPWhereOracle extends TiDBTLPBase {
         public boolean bugStillTriggers(TiDBGlobalState globalState) {
             try {
                 List<String> origResultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString,
-                        errors, state);
+                        errors, globalState);
 
                 List<String> combinedString1 = new ArrayList<>();
                 List<String> secondResultSet1 = ComparatorHelper.getCombinedResultSet(firstQueryString,
