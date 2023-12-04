@@ -475,6 +475,7 @@ public final class Main {
                     }
                     G newGlobalState = createGlobalState();
                     newGlobalState.setState(stateToRepro);
+                    newGlobalState.getState().getLocalState().executeInReproducer();
                     newGlobalState.setRandomly(r);
                     newGlobalState.setDatabaseName(databaseName);
                     newGlobalState.setMainOptions(options);
