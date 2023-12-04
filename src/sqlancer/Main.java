@@ -204,7 +204,7 @@ public final class Main {
             }
             if (reduceFileWriter == null) {
                 try {
-                    reduceFileWriter = new FileWriter(reduceFile, false);
+                    reduceFileWriter = new FileWriter(reduceFile, true);
                 } catch (IOException e) {
                     throw new AssertionError(e);
                 }
