@@ -26,26 +26,27 @@ public class TiDBTLPWhereOracle extends TiDBTLPBase {
         final String secondQueryString;
         final String thirdQueryString;
         final String originalQueryString;
-        final List<String> resultSet;
+        //        final List<String> resultSet;
         final boolean orderBy;
 
         TiDBTLPWhereReproducer(String firstQueryString, String secondQueryString, String thirdQueryString,
-                String originalQueryString, List<String> resultSet, boolean orderBy) {
+                               String originalQueryString, boolean orderBy) {
             this.firstQueryString = firstQueryString;
             this.secondQueryString = secondQueryString;
             this.thirdQueryString = thirdQueryString;
             this.originalQueryString = originalQueryString;
-            this.resultSet = resultSet;
             this.orderBy = orderBy;
         }
 
         @Override
         public boolean bugStillTriggers(TiDBGlobalState globalState) {
             try {
+                List<String> origResultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
+
                 List<String> combinedString1 = new ArrayList<>();
                 List<String> secondResultSet1 = ComparatorHelper.getCombinedResultSet(firstQueryString,
                         secondQueryString, thirdQueryString, combinedString1, !orderBy, globalState, errors);
-                ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet1, originalQueryString,
+                ComparatorHelper.assumeResultSetsAreEqual(origResultSet, secondResultSet1, originalQueryString,
                         combinedString1, globalState);
             } catch (AssertionError triggeredError) {
                 return true;
@@ -80,7 +81,7 @@ public class TiDBTLPWhereOracle extends TiDBTLPBase {
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
         reproducer = new TiDBTLPWhereReproducer(firstQueryString, secondQueryString, thirdQueryString,
-                originalQueryString, resultSet, orderBy);
+                originalQueryString, orderBy);
     }
 
     @Override
