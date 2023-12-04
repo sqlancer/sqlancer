@@ -26,11 +26,11 @@ public class TiDBTLPWhereOracle extends TiDBTLPBase {
         final String secondQueryString;
         final String thirdQueryString;
         final String originalQueryString;
-        //        final List<String> resultSet;
+        // final List<String> resultSet;
         final boolean orderBy;
 
         TiDBTLPWhereReproducer(String firstQueryString, String secondQueryString, String thirdQueryString,
-                               String originalQueryString, boolean orderBy) {
+                String originalQueryString, boolean orderBy) {
             this.firstQueryString = firstQueryString;
             this.secondQueryString = secondQueryString;
             this.thirdQueryString = thirdQueryString;
@@ -41,7 +41,8 @@ public class TiDBTLPWhereOracle extends TiDBTLPBase {
         @Override
         public boolean bugStillTriggers(TiDBGlobalState globalState) {
             try {
-                List<String> origResultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
+                List<String> origResultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString,
+                        errors, state);
 
                 List<String> combinedString1 = new ArrayList<>();
                 List<String> secondResultSet1 = ComparatorHelper.getCombinedResultSet(firstQueryString,
