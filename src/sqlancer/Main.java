@@ -204,7 +204,7 @@ public final class Main {
             }
             if (reduceFileWriter == null) {
                 try {
-                    reduceFileWriter = new FileWriter(reduceFile, true);
+                    reduceFileWriter = new FileWriter(reduceFile, false);
                 } catch (IOException e) {
                     throw new AssertionError(e);
                 }
@@ -493,8 +493,8 @@ public final class Main {
                     }
 
                     try {
-                        logger.getReduceFileWriter().close();
-                        logger.reduceFileWriter = null;
+                        newGlobalState.getLogger().getReduceFileWriter().close();
+                        newGlobalState.getLogger().reduceFileWriter = null;
                     } catch (IOException e) {
                         throw new AssertionError(e);
                     }
