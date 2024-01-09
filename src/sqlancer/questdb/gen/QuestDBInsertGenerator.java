@@ -11,7 +11,7 @@ import sqlancer.questdb.QuestDBErrors;
 import sqlancer.questdb.QuestDBProvider.QuestDBGlobalState;
 import sqlancer.questdb.QuestDBSchema.QuestDBColumn;
 import sqlancer.questdb.QuestDBSchema.QuestDBTable;
-import sqlancer.questdb.QuestDBToStringVisitor;
+import sqlancer.questdb.ast.QuestDBConstants;
 
 public class QuestDBInsertGenerator extends AbstractInsertGenerator<QuestDBColumn> {
 
@@ -27,11 +27,10 @@ public class QuestDBInsertGenerator extends AbstractInsertGenerator<QuestDBColum
         sb.append("INSERT INTO ");
         QuestDBTable table = globalState.getSchema().getRandomTable();
         List<QuestDBColumn> columns = table.getRandomNonEmptyColumnSubset();
-        sb.append(table.getName());
-        sb.append("(");
+        sb.append('\'').append(table.getName()).append('\'');
+        sb.append(" (");
         sb.append(columns.stream().map(AbstractTableColumn::getName).collect(Collectors.joining(", ")));
-        sb.append(")");
-        sb.append(" VALUES ");
+        sb.append(") VALUES ");
         insertColumns(columns);
         QuestDBErrors.addInsertErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors);
@@ -43,18 +42,18 @@ public class QuestDBInsertGenerator extends AbstractInsertGenerator<QuestDBColum
 
     @Override
     protected void insertColumns(List<QuestDBColumn> columns) {
-        sb.append("(");
-        for (int nrColumn = 0; nrColumn < columns.size(); nrColumn++) {
-            if (nrColumn != 0) {
+        sb.append('(');
+        for (int nrColumn = 0, n = columns.size(); nrColumn < n; nrColumn++) {
+            insertValue(columns.get(nrColumn));
+            if (nrColumn + 1 < n) {
                 sb.append(", ");
             }
-            insertValue(columns.get(nrColumn));
         }
-        sb.append(")");
+        sb.append(')');
     }
 
     @Override
     protected void insertValue(QuestDBColumn questDBColumn) {
-        sb.append(QuestDBToStringVisitor.asString(new QuestDBExpressionGenerator(globalState).generateConstant()));
+        sb.append(QuestDBConstants.createRandomQuestDBConstant(globalState.getRandomly()));
     }
 }

@@ -424,8 +424,8 @@ public final class Main {
 
         public void testConnection() throws Exception {
             G state = getInitializedGlobalState(options.getRandomSeed());
-            try (SQLancerDBConnection con = provider.createDatabase(state)) {
-                return;
+            try (SQLancerDBConnection ignore = provider.createDatabase(state)) {
+                // no op
             }
         }
 

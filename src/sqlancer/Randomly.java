@@ -112,7 +112,6 @@ public final class Randomly {
         return list.get((int) getNextLong(0, list.size()));
     }
 
-    @SafeVarargs
     public static <T> T fromOptions(T... options) {
         return options[getNextInt(0, options.length)];
     }
