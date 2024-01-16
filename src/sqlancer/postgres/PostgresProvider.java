@@ -340,10 +340,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
                 sb.append(" TEMPLATE template0");
             }
         } else {
-            sb.append("WITH ENCODING '");
-            sb.append(Randomly.fromOptions("utf8"));
-            sb.append("' ");
-            sb.append(" TEMPLATE template0");
+            sb.append("WITH ENCODING 'UTF8' TEMPLATE template0");
         }
         return sb.toString();
     }
