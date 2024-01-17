@@ -103,7 +103,8 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
                     });
 
                     if (!initFlag) {
-                        System.out.println("Error when parsing the statement at transformer :" + t);
+                        newGlobalState.getLogger()
+                                .logReducer("warning: failed parsing the statement at transformer : " + t);
                         continue;
                     }
                     t.apply();

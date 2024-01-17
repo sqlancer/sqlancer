@@ -13,6 +13,7 @@ import sqlancer.OracleFactory;
 import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.postgres.PostgresOptions.PostgresOracleFactory;
+import sqlancer.postgres.oracle.PostgresCERTOracle;
 import sqlancer.postgres.oracle.PostgresFuzzer;
 import sqlancer.postgres.oracle.PostgresNoRECOracle;
 import sqlancer.postgres.oracle.PostgresPivotedQuerySynthesisOracle;
@@ -76,6 +77,17 @@ public class PostgresOptions implements DBMSSpecificOptions<PostgresOracleFactor
                 oracles.add(new PostgresTLPHavingOracle(globalState));
                 oracles.add(new PostgresTLPAggregateOracle(globalState));
                 return new CompositeTestOracle<PostgresGlobalState>(oracles, globalState);
+            }
+        },
+        CERT {
+            @Override
+            public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws SQLException {
+                return new PostgresCERTOracle(globalState);
+            }
+
+            @Override
+            public boolean requiresAllTablesToContainRows() {
+                return true;
             }
         },
         FUZZER {

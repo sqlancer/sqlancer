@@ -53,7 +53,7 @@ This paper describes TLP, a metamorphic testing approach that can detect various
 
 ## Testing Database Engines via Query Plan Guidance
 
-This paper describes Query Plan Guidance (QPG), a test case generation method guided by query plan coverage. This method can be paired with above three testing methods. A preprint is available [here](http://jinshengba.me/assets/pdf/qpg_icse23.pdf).
+This paper describes Query Plan Guidance (QPG), a test case generation method guided by query plan coverage. This method can be paired with above three testing methods. A preprint is available [here](http://bajinsheng.github.io/assets/pdf/qpg_icse23.pdf).
 
 ```
 @inproceedings{Ba2023QPG,

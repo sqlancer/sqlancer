@@ -208,7 +208,7 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
             }
         }
 
-        SQLQueryAdapter q = new SQLQueryAdapter("EXPLAIN " + selectStr);
+        SQLQueryAdapter q = new SQLQueryAdapter("EXPLAIN FORMAT=brief " + selectStr);
         try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
             if (rs != null) {
                 while (rs.next()) {

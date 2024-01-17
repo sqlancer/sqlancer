@@ -9,6 +9,7 @@ import sqlancer.postgres.ast.PostgresBetweenOperation;
 import sqlancer.postgres.ast.PostgresBinaryLogicalOperation;
 import sqlancer.postgres.ast.PostgresCastOperation;
 import sqlancer.postgres.ast.PostgresCollate;
+import sqlancer.postgres.ast.PostgresColumnReference;
 import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.ast.PostgresExpression;
@@ -24,6 +25,7 @@ import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
 import sqlancer.postgres.ast.PostgresSimilarTo;
+import sqlancer.postgres.ast.PostgresTableReference;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
 public interface PostgresVisitor {
@@ -33,6 +35,10 @@ public interface PostgresVisitor {
     void visit(PostgresPostfixOperation op);
 
     void visit(PostgresColumnValue c);
+
+    void visit(PostgresColumnReference c);
+
+    void visit(PostgresTableReference tb);
 
     void visit(PostgresPrefixOperation op);
 
@@ -103,6 +109,10 @@ public interface PostgresVisitor {
             visit((PostgresSubquery) expression);
         } else if (expression instanceof PostgresLikeOperation) {
             visit((PostgresLikeOperation) expression);
+        } else if (expression instanceof PostgresColumnReference) {
+            visit((PostgresColumnReference) expression);
+        } else if (expression instanceof PostgresTableReference) {
+            visit((PostgresTableReference) expression);
         } else {
             throw new AssertionError(expression);
         }
