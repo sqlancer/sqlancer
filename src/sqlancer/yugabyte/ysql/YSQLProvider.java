@@ -217,7 +217,8 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
                     con.close();
                     break;
                 } catch (Exception e) {
-                    if (e.getMessage().contains("Catalog Version Mismatch") && counter < 9) {
+                    if ((e.getMessage().contains("Catalog Version Mismatch") || e.getMessage().contains("Restart read required"))
+                            && counter < 9) {
                         counter++;
                         exceptionLessSleep(500);
                     } else {
