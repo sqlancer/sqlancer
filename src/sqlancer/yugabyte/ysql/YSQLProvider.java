@@ -196,20 +196,31 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
     // for some reason yugabyte unable to create few databases simultaneously
     private void createDatabaseSync(YSQLGlobalState globalState, String entryDatabaseName) throws SQLException {
         synchronized (DDL_LOCK) {
-            exceptionLessSleep(5000);
-
-            Connection con = createConnectionSafely(entryURL, username, password);
-            globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
-            globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
-            createDatabaseCommand = getCreateDatabaseCommand(globalState);
-            globalState.getState().logStatement(createDatabaseCommand);
-            try (Statement s = con.createStatement()) {
-                s.execute("DROP DATABASE IF EXISTS " + databaseName);
+            int counter = 0;
+            while (true) {
+                try {
+                    Connection con = createConnectionSafely(entryURL, username, password);
+                    globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
+                    globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
+                    createDatabaseCommand = getCreateDatabaseCommand(globalState);
+                    globalState.getState().logStatement(createDatabaseCommand);
+                    try (Statement s = con.createStatement()) {
+                        s.execute("DROP DATABASE IF EXISTS " + databaseName);
+                    }
+                    try (Statement s = con.createStatement()) {
+                        s.execute(createDatabaseCommand);
+                    }
+                    con.close();
+                    break;
+                } catch (Exception e) {
+                    if (e.getMessage().contains("Catalog Version Mismatch") && counter < 9) {
+                        counter++;
+                        exceptionLessSleep(500);
+                    } else {
+                        throw e;
+                    }
+                }
             }
-            try (Statement s = con.createStatement()) {
-                s.execute(createDatabaseCommand);
-            }
-            con.close();
         }
     }
 
