@@ -143,4 +143,9 @@ public class AbstractSchema<G extends GlobalState<?, ?, ?>, A extends AbstractTa
         return databaseTables.stream().anyMatch(t -> t.getNrRows(globalState) == 0);
     }
 
+    public <C extends AbstractTableColumn<?, ?>> AbstractTables<? extends A, C> getRandomTableNonEmptyTables() {
+        throw new IgnoreMeException();
+    }
+
+
 }
