@@ -41,6 +41,8 @@ public final class YSQLErrors {
     }
 
     public static void addCommonExpressionErrors(ExpectedErrors errors) {
+        errors.add("Catalog Version Mismatch");
+
         errors.add("syntax error at or near \"(\"");
         errors.add("encoding conversion from");
         errors.add("does not exist");

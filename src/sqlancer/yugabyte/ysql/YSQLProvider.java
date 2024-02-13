@@ -7,6 +7,8 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import com.google.auto.service.AutoService;
 
@@ -22,6 +24,7 @@ import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
+import sqlancer.sqlite3.gen.ddl.SQLite3CreateVirtualFTSTableGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLAlterTableGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLAnalyzeGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLCommentGenerator;
@@ -71,49 +74,49 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
         Randomly r = globalState.getRandomly();
         int nrPerformed;
         switch (a) {
-        case CREATE_INDEX:
-            nrPerformed = r.getInteger(0, 3);
-            break;
-        case DISCARD:
-        case DROP_INDEX:
-            nrPerformed = r.getInteger(0, 5);
-            break;
-        case COMMIT:
-            nrPerformed = r.getInteger(0, 0);
-            break;
-        case ALTER_TABLE:
-            nrPerformed = r.getInteger(0, 5);
-            break;
-        case RESET:
-            nrPerformed = r.getInteger(0, 3);
-            break;
-        case ANALYZE:
-            nrPerformed = r.getInteger(0, 3);
-            break;
-        case DELETE:
-        case RESET_ROLE:
-        case VACUUM:
-        case SET_CONSTRAINTS:
-        case SET:
-        case COMMENT_ON:
-        case NOTIFY:
-        case LISTEN:
-        case UNLISTEN:
-        case CREATE_SEQUENCE:
-        case TRUNCATE:
-            nrPerformed = r.getInteger(0, 2);
-            break;
-        case CREATE_VIEW:
-            nrPerformed = r.getInteger(0, 2);
-            break;
-        case UPDATE:
-            nrPerformed = r.getInteger(0, 10);
-            break;
-        case INSERT:
-            nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
-            break;
-        default:
-            throw new AssertionError(a);
+            case CREATE_INDEX:
+                nrPerformed = r.getInteger(0, 3);
+                break;
+            case DISCARD:
+            case DROP_INDEX:
+                nrPerformed = r.getInteger(0, 5);
+                break;
+            case COMMIT:
+                nrPerformed = r.getInteger(0, 0);
+                break;
+            case ALTER_TABLE:
+                nrPerformed = r.getInteger(0, 5);
+                break;
+            case RESET:
+                nrPerformed = r.getInteger(0, 3);
+                break;
+            case ANALYZE:
+                nrPerformed = r.getInteger(0, 3);
+                break;
+            case DELETE:
+            case RESET_ROLE:
+            case VACUUM:
+            case SET_CONSTRAINTS:
+            case SET:
+            case COMMENT_ON:
+            case NOTIFY:
+            case LISTEN:
+            case UNLISTEN:
+            case CREATE_SEQUENCE:
+            case TRUNCATE:
+                nrPerformed = r.getInteger(0, 15);
+                break;
+            case CREATE_VIEW:
+                nrPerformed = r.getInteger(0, 2);
+                break;
+            case UPDATE:
+                nrPerformed = r.getInteger(0, 10);
+                break;
+            case INSERT:
+                nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
+                break;
+            default:
+                throw new AssertionError(a);
         }
         return nrPerformed;
 
@@ -124,6 +127,7 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
         readFunctions(globalState);
         createTables(globalState, Randomly.fromOptions(4, 5, 6));
         prepareTables(globalState);
+
     }
 
     @Override
@@ -286,10 +290,10 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
     protected void prepareTables(YSQLGlobalState globalState) throws Exception {
         StatementExecutor<YSQLGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
                 YSQLProvider::mapActions, (q) -> {
-                    if (globalState.getSchema().getDatabaseTables().isEmpty()) {
-                        throw new IgnoreMeException();
-                    }
-                });
+            if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+                throw new IgnoreMeException();
+            }
+        });
         se.executeStatements();
         globalState.executeStatement(new SQLQueryAdapter("COMMIT", true));
         globalState.executeStatement(new SQLQueryAdapter("SET SESSION statement_timeout = 15000;\n"));
@@ -351,9 +355,9 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
         RESET_ROLE((g) -> new SQLQueryAdapter("RESET ROLE")), //
         COMMENT_ON(YSQLCommentGenerator::generate), //
         RESET((g) -> new SQLQueryAdapter("RESET ALL") /*
-                                                       * https://www.postgres.org/docs/devel/sql-reset.html TODO: also
-                                                       * configuration parameter
-                                                       */), //
+         * https://www.postgres.org/docs/devel/sql-reset.html TODO: also
+         * configuration parameter
+         */), //
         NOTIFY(YSQLNotifyGenerator::createNotify), //
         LISTEN((g) -> YSQLNotifyGenerator.createListen()), //
         UNLISTEN((g) -> YSQLNotifyGenerator.createUnlisten()), //

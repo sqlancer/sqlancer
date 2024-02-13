@@ -57,6 +57,7 @@ public final class YSQLSetGenerator {
                 (r) -> Randomly.fromOptions(1, 0.9, 0.8, 0.7, 0.6)),
         YB_FORMAT_FUNCS_INCLUDE_YB_METADATA("yb_format_funcs_include_yb_metadata",
                 (r) -> Randomly.fromOptions("false", "true")),
+        YB_ENABLE_BASE_SCANS_COST_MODEL("yb_enable_base_scans_cost_model", (r) -> Randomly.fromOptions("false", "true")),
         YB_ENABLE_GEOLOCATION_COSTING("yb_enable_geolocation_costing", (r) -> Randomly.fromOptions("false", "true")),
         YB_BINARY_RESTORE("yb_binary_restore", (r) -> Randomly.fromOptions("false", "true")),
         YB_TEST_SYSTEM_CATALOGS_CREATION("yb_test_system_catalogs_creation",
@@ -71,6 +72,10 @@ public final class YSQLSetGenerator {
                 (r) -> Randomly.fromOptions("false", "true")),
         YB_INDEX_STATE_FLAGS_UPDATE_DELAY("yb_index_state_flags_update_delay",
                 (r) -> Randomly.getNotCachedInteger(200, 1000)),
+        YB_BNL_BATCH_SIZE("yb_bnl_batch_size", (r) -> Randomly.fromOptions(1, 512, 1024, 10000)),
+        YB_PARALLEL_RANGE_ROWS("yb_parallel_range_rows", (r) -> Randomly.fromOptions(1, 512, 1024, 10000)),
+        YB_FETCH_ROW_LIMIT("yb_fetch_row_limit", (r) -> Randomly.fromOptions(0, 1, 5, 10)),
+        YB_USE_HASH_SPLITTING_BY_DEFAULT("yb_use_hash_splitting_by_default", (r) -> Randomly.fromOptions("false", "true")),
         YB_TEST_PLANNER_CUSTOM_PLAN_THRESHOLD("yb_test_planner_custom_plan_threshold",
                 (r) -> Randomly.getNotCachedInteger(1, Integer.MAX_VALUE)),
         // YSQL values
