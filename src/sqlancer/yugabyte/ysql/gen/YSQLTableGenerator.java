@@ -35,6 +35,7 @@ public class YSQLTableGenerator {
         table = new YSQLTable(tableName, columnsToBeAdded, null, null, null, false, false);
         // YB catalog specific messages
         errors.add("The catalog snapshot used for this transaction has been invalidated");
+        errors.add("Timed out waiting for Create Table");
 
         errors.add("PRIMARY KEY containing column of type");
         errors.add("specified value cannot be cast to type boolean for column");

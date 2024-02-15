@@ -34,6 +34,7 @@ public final class YSQLSetGenerator {
         // todo avoiding props that are not represented in YSQL
         ExpectedErrors errors = new ExpectedErrors();
         errors.add("unrecognized configuration parameter");
+        errors.add("value not set when in binary upgrade mode");
         errors.add("cannot be changed");
 
         return new SQLQueryAdapter(sb.toString(), errors);
