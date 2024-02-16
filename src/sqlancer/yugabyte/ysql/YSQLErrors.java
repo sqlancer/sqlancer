@@ -13,6 +13,7 @@ public final class YSQLErrors {
         errors.add("Value write after transaction start");
 
         errors.add("An I/O error occurred while sending to the backend");
+        errors.add("RPC");
         errors.add("Conflicts with committed transaction");
         errors.add("cannot be changed");
         errors.add("SET TRANSACTION ISOLATION LEVEL must be called before any query");
