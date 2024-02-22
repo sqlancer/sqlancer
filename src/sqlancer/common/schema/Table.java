@@ -7,7 +7,7 @@ public interface Table<U> extends Comparable<Table<U>> {
 
     String getName();
 
-    List<TableIndex> getIndexes();
+    List<TableIndex<U>> getIndexes();
 
     List<TableColumn<U>> getColumns();
 
@@ -19,7 +19,7 @@ public interface Table<U> extends Comparable<Table<U>> {
 
     boolean hasIndexes();
 
-    TableIndex getRandomIndex();
+    TableIndex<U> getRandomIndex();
 
     List<TableColumn<U>> getRandomNonEmptyColumnSubset();
 
@@ -29,11 +29,11 @@ public interface Table<U> extends Comparable<Table<U>> {
 
     String getFreeColumnName();
 
-    void recomputeCount() ;
+    void recomputeCount();
 
     String getFullyQualifiedColumnName(TableColumn<U> column);
 
-    long getNrRows(G globalState);
+    // long getNrRows(G globalState);
 
     @Override
     String toString();

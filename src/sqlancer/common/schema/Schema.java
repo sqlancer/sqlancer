@@ -37,7 +37,7 @@ public interface Schema<U> {
 
     String getFreeViewName();
 
-    boolean containsTableWithZeroRows(G globalState);
+    // boolean containsTableWithZeroRows(G globalState);
 
     TableGroup<U> getRandomTableNonEmptyTables();
 

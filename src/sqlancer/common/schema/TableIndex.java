@@ -1,6 +1,6 @@
 package sqlancer.common.schema;
 
-public class TableIndex {
+public class TableIndex<U> {
 
     private final String indexName;
 
@@ -8,8 +8,8 @@ public class TableIndex {
         this.indexName = indexName;
     }
 
-    public static TableIndex create(String indexName) {
-        return new TableIndex(indexName);
+    public static <U> TableIndex<U> create(String indexName) {
+        return new TableIndex<U>(indexName);
     }
 
     public String getIndexName() {
