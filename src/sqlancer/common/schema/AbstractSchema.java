@@ -6,32 +6,33 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 
-public class AbstractSchema<U> implements Schema<U> {
+public class AbstractSchema<G extends GlobalState<?, ?, ?>, A extends AbstractTable<?, ?, G>> {
 
-    private final List<? extends Table<U>> databaseTables;
+    private final List<A> databaseTables;
 
-    public AbstractSchema(List<? extends Table<U>> databaseTables) {
+    public AbstractSchema(List<A> databaseTables) {
         this.databaseTables = Collections.unmodifiableList(databaseTables);
     }
 
     @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
-        for (Table<U> t : getDatabaseTables()) {
+        for (A t : getDatabaseTables()) {
             sb.append(t);
             sb.append("\n");
         }
         return sb.toString();
     }
 
-    public Table<U> getRandomTable() {
+    public A getRandomTable() {
         return Randomly.fromList(getDatabaseTables());
     }
 
-    public Table<U> getRandomTableOrBailout() {
+    public A getRandomTableOrBailout() {
         if (databaseTables.isEmpty()) {
             throw new IgnoreMeException();
         } else {
@@ -39,43 +40,43 @@ public class AbstractSchema<U> implements Schema<U> {
         }
     }
 
-    public Table<U> getRandomTable(Predicate<Table<U>> predicate) {
+    public A getRandomTable(Predicate<A> predicate) {
         return Randomly.fromList(getDatabaseTables().stream().filter(predicate).collect(Collectors.toList()));
     }
 
-    public Table<U> getRandomTableOrBailout(Function<Table<U>, Boolean> f) {
-        List<Table<U>> relevantTables = databaseTables.stream().filter(f::apply).collect(Collectors.toList());
+    public A getRandomTableOrBailout(Function<A, Boolean> f) {
+        List<A> relevantTables = databaseTables.stream().filter(f::apply).collect(Collectors.toList());
         if (relevantTables.isEmpty()) {
             throw new IgnoreMeException();
         }
         return Randomly.fromList(relevantTables);
     }
 
-    public List<? extends Table<U>> getDatabaseTables() {
+    public List<A> getDatabaseTables() {
         return databaseTables;
     }
 
-    public List<? extends Table<U>> getTables(Predicate<Table<U>> predicate) {
+    public List<A> getTables(Predicate<A> predicate) {
         return databaseTables.stream().filter(predicate).collect(Collectors.toList());
     }
 
-    public List<? extends Table<U>> getDatabaseTablesRandomSubsetNotEmpty() {
+    public List<A> getDatabaseTablesRandomSubsetNotEmpty() {
         return Randomly.nonEmptySubset(databaseTables);
     }
 
-    public Table<U> getDatabaseTable(String name) {
+    public A getDatabaseTable(String name) {
         return databaseTables.stream().filter(t -> t.getName().equals(name)).findAny().orElse(null);
     }
 
-    public List<? extends Table<U>> getViews() {
+    public List<A> getViews() {
         return databaseTables.stream().filter(t -> t.isView()).collect(Collectors.toList());
     }
 
-    public List<? extends Table<U>> getDatabaseTablesWithoutViews() {
+    public List<A> getDatabaseTablesWithoutViews() {
         return databaseTables.stream().filter(t -> !t.isView()).collect(Collectors.toList());
     }
 
-    public Table<U> getRandomViewOrBailout() {
+    public A getRandomViewOrBailout() {
         if (getViews().isEmpty()) {
             throw new IgnoreMeException();
         } else {
@@ -83,8 +84,8 @@ public class AbstractSchema<U> implements Schema<U> {
         }
     }
 
-    public Table<U> getRandomTableNoViewOrBailout() {
-        List<? extends Table<U>> databaseTablesWithoutViews = getDatabaseTablesWithoutViews();
+    public A getRandomTableNoViewOrBailout() {
+        List<A> databaseTablesWithoutViews = getDatabaseTablesWithoutViews();
         if (databaseTablesWithoutViews.isEmpty()) {
             throw new IgnoreMeException();
         }
@@ -99,7 +100,7 @@ public class AbstractSchema<U> implements Schema<U> {
         do {
             String indexName = String.format("i%d", i++);
             boolean indexNameFound = false;
-            for (Table<U> table : databaseTables) {
+            for (A table : databaseTables) {
                 if (table.getIndexes().stream().anyMatch(ind -> ind.getIndexName().contentEquals(indexName))) {
                     indexNameFound = true;
                     break;
@@ -138,12 +139,13 @@ public class AbstractSchema<U> implements Schema<U> {
         } while (true);
     }
 
-    // public boolean containsTableWithZeroRows(G globalState) {
-    // return databaseTables.stream().anyMatch(t -> t.getNrRows(globalState) == 0);
-    // }
+    public boolean containsTableWithZeroRows(G globalState) {
+        return databaseTables.stream().anyMatch(t -> t.getNrRows(globalState) == 0);
+    }
 
-    public TableGroup<U> getRandomTableNonEmptyTables() {
+    public <C extends AbstractTableColumn<?, ?>> AbstractTables<? extends A, C> getRandomTableNonEmptyTables() {
         throw new IgnoreMeException();
     }
+
 
 }

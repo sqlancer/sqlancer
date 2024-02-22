@@ -5,15 +5,15 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class AbstractTables<U> implements TableGroup<U> {
+public class AbstractTables<T extends AbstractTable<C, ?, ?>, C extends AbstractTableColumn<?, ?>> {
 
-    private final List<? extends Table<U>> tables;
-    private final List<TableColumn<U>> columns;
+    private final List<T> tables;
+    private final List<C> columns;
 
-    public AbstractTables(List<? extends Table<U>> tables) {
+    public AbstractTables(List<T> tables) {
         this.tables = tables;
         columns = new ArrayList<>();
-        for (Table<U> t : tables) {
+        for (T t : tables) {
             columns.addAll(t.getColumns());
         }
     }
@@ -22,15 +22,15 @@ public class AbstractTables<U> implements TableGroup<U> {
         return tables.stream().map(t -> t.getName()).collect(Collectors.joining(", "));
     }
 
-    public List<? extends Table<U>> getTables() {
+    public List<T> getTables() {
         return tables;
     }
 
-    public List<? extends TableColumn<U>> getColumns() {
+    public List<C> getColumns() {
         return columns;
     }
 
-    public String columnNamesAsString(Function<TableColumn<U>, String> function) {
+    public String columnNamesAsString(Function<C, String> function) {
         return getColumns().stream().map(function).collect(Collectors.joining(", "));
     }
 

@@ -5,20 +5,21 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 
-public abstract class AbstractTable<U> implements Table<U> {
+public abstract class AbstractTable<C extends AbstractTableColumn<?, ?>, I extends TableIndex, G extends GlobalState<?, ?, ?>>
+        implements Comparable<AbstractTable<?, ?, ?>> {
 
     protected static final int NO_ROW_COUNT_AVAILABLE = -1;
     protected final String name;
-    private final List<? extends TableColumn<U>> columns;
-    private final List<? extends TableIndex<U>> indexes;
+    private final List<C> columns;
+    private final List<I> indexes;
     private final boolean isView;
     protected long rowCount = NO_ROW_COUNT_AVAILABLE;
 
-    protected AbstractTable(String name, List<? extends TableColumn<U>> columns, List<? extends TableIndex<U>> indexes,
-            boolean isView) {
+    protected AbstractTable(String name, List<C> columns, List<I> indexes, boolean isView) {
         this.name = name;
         this.indexes = indexes;
         this.isView = isView;
@@ -30,7 +31,7 @@ public abstract class AbstractTable<U> implements Table<U> {
     }
 
     @Override
-    public int compareTo(Table<U> o) {
+    public int compareTo(AbstractTable<?, ?, ?> o) {
         return o.getName().compareTo(getName());
     }
 
@@ -39,17 +40,17 @@ public abstract class AbstractTable<U> implements Table<U> {
         StringBuffer sb = new StringBuffer();
         sb.append(getName());
         sb.append("\n");
-        for (TableColumn<U> c : columns) {
+        for (C c : columns) {
             sb.append("\t").append(c).append("\n");
         }
         return sb.toString();
     }
 
-    public List<? extends TableIndex<U>> getIndexes() {
+    public List<I> getIndexes() {
         return indexes;
     }
 
-    public List<? extends TableColumn<U>> getColumns() {
+    public List<C> getColumns() {
         return columns;
     }
 
@@ -57,12 +58,12 @@ public abstract class AbstractTable<U> implements Table<U> {
         return columns.stream().map(c -> c.getName()).collect(Collectors.joining(", "));
     }
 
-    public TableColumn<U> getRandomColumn() {
+    public C getRandomColumn() {
         return Randomly.fromList(columns);
     }
 
-    public TableColumn<U> getRandomColumnOrBailout(Predicate<TableColumn<U>> predicate) {
-        List<TableColumn<U>> relevantColumns = columns.stream().filter(predicate).collect(Collectors.toList());
+    public C getRandomColumnOrBailout(Predicate<C> predicate) {
+        List<C> relevantColumns = columns.stream().filter(predicate).collect(Collectors.toList());
         if (relevantColumns.isEmpty()) {
             throw new IgnoreMeException();
         }
@@ -74,15 +75,15 @@ public abstract class AbstractTable<U> implements Table<U> {
         return !indexes.isEmpty();
     }
 
-    public TableIndex<U> getRandomIndex() {
+    public TableIndex getRandomIndex() {
         return Randomly.fromList(indexes);
     }
 
-    public List<? extends TableColumn<U>> getRandomNonEmptyColumnSubset() {
+    public List<C> getRandomNonEmptyColumnSubset() {
         return Randomly.nonEmptySubset(getColumns());
     }
 
-    public List<? extends TableColumn<U>> getRandomNonEmptyColumnSubset(int size) {
+    public List<C> getRandomNonEmptyColumnSubset(int size) {
         return Randomly.nonEmptySubset(getColumns(), size);
     }
 
@@ -108,5 +109,5 @@ public abstract class AbstractTable<U> implements Table<U> {
         rowCount = NO_ROW_COUNT_AVAILABLE;
     }
 
-    // public abstract long getNrRows(G globalState);
+    public abstract long getNrRows(G globalState);
 }
