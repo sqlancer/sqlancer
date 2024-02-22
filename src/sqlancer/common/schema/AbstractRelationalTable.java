@@ -4,7 +4,7 @@ import java.util.List;
 
 public abstract class AbstractRelationalTable<U> extends AbstractTable<U> implements RelationalTable<U> {
 
-    public AbstractRelationalTable(String name, List<TableColumn<U>> columns,
+    public AbstractRelationalTable(String name, List<? extends TableColumn<U>> columns,
             List<TableIndex<U>> indexes, boolean isView) {
         super(name, columns, indexes, isView);
     }

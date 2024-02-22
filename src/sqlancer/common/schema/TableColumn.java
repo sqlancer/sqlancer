@@ -9,6 +9,8 @@ public interface TableColumn<U> extends Comparable<TableColumn<U>> {
 
     Table<U> getTable();
 
+    boolean isPrimaryKey();
+
     U getType();
 
     @Override

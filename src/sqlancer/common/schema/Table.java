@@ -19,6 +19,8 @@ public interface Table<U> extends Comparable<Table<U>> {
 
     boolean hasIndexes();
 
+    boolean hasWithoutRowid();
+
     TableIndex<U> getRandomIndex();
 
     List<? extends TableColumn<U>> getRandomNonEmptyColumnSubset();
@@ -27,11 +29,11 @@ public interface Table<U> extends Comparable<Table<U>> {
 
     boolean isView();
 
+    boolean isVirtual();
+
     String getFreeColumnName();
 
     void recomputeCount();
-
-    String getFullyQualifiedColumnName(TableColumn<U> column);
 
     // long getNrRows(G globalState);
 
