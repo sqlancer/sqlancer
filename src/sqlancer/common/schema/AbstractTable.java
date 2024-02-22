@@ -5,21 +5,19 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import sqlancer.GlobalState;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 
-public abstract class AbstractTable<C extends AbstractTableColumn<?, ?>, I extends TableIndex, G extends GlobalState<?, ?, ?>>
-        implements Comparable<AbstractTable<?, ?, ?>> {
+public abstract class AbstractTable<U> implements Table<U> {
 
     protected static final int NO_ROW_COUNT_AVAILABLE = -1;
     protected final String name;
-    private final List<C> columns;
-    private final List<I> indexes;
+    private final List<TableColumn<U>> columns;
+    private final List<TableIndex<U>> indexes;
     private final boolean isView;
     protected long rowCount = NO_ROW_COUNT_AVAILABLE;
 
-    protected AbstractTable(String name, List<C> columns, List<I> indexes, boolean isView) {
+    protected AbstractTable(String name, List<TableColumn<U>> columns, List<TableIndex<U>> indexes, boolean isView) {
         this.name = name;
         this.indexes = indexes;
         this.isView = isView;
@@ -31,7 +29,7 @@ public abstract class AbstractTable<C extends AbstractTableColumn<?, ?>, I exten
     }
 
     @Override
-    public int compareTo(AbstractTable<?, ?, ?> o) {
+    public int compareTo(Table<U> o) {
         return o.getName().compareTo(getName());
     }
 
@@ -40,17 +38,17 @@ public abstract class AbstractTable<C extends AbstractTableColumn<?, ?>, I exten
         StringBuffer sb = new StringBuffer();
         sb.append(getName());
         sb.append("\n");
-        for (C c : columns) {
+        for (TableColumn<U> c : columns) {
             sb.append("\t").append(c).append("\n");
         }
         return sb.toString();
     }
 
-    public List<I> getIndexes() {
+    public List<TableIndex<U>> getIndexes() {
         return indexes;
     }
 
-    public List<C> getColumns() {
+    public List<TableColumn<U>> getColumns() {
         return columns;
     }
 
@@ -58,12 +56,12 @@ public abstract class AbstractTable<C extends AbstractTableColumn<?, ?>, I exten
         return columns.stream().map(c -> c.getName()).collect(Collectors.joining(", "));
     }
 
-    public C getRandomColumn() {
+    public TableColumn<U> getRandomColumn() {
         return Randomly.fromList(columns);
     }
 
-    public C getRandomColumnOrBailout(Predicate<C> predicate) {
-        List<C> relevantColumns = columns.stream().filter(predicate).collect(Collectors.toList());
+    public TableColumn<U> getRandomColumnOrBailout(Predicate<TableColumn<U>> predicate) {
+        List<TableColumn<U>> relevantColumns = columns.stream().filter(predicate).collect(Collectors.toList());
         if (relevantColumns.isEmpty()) {
             throw new IgnoreMeException();
         }
@@ -75,15 +73,15 @@ public abstract class AbstractTable<C extends AbstractTableColumn<?, ?>, I exten
         return !indexes.isEmpty();
     }
 
-    public TableIndex getRandomIndex() {
+    public TableIndex<U> getRandomIndex() {
         return Randomly.fromList(indexes);
     }
 
-    public List<C> getRandomNonEmptyColumnSubset() {
+    public List<TableColumn<U>> getRandomNonEmptyColumnSubset() {
         return Randomly.nonEmptySubset(getColumns());
     }
 
-    public List<C> getRandomNonEmptyColumnSubset(int size) {
+    public List<TableColumn<U>> getRandomNonEmptyColumnSubset(int size) {
         return Randomly.nonEmptySubset(getColumns(), size);
     }
 
@@ -109,5 +107,5 @@ public abstract class AbstractTable<C extends AbstractTableColumn<?, ?>, I exten
         rowCount = NO_ROW_COUNT_AVAILABLE;
     }
 
-    public abstract long getNrRows(G globalState);
+    // public abstract long getNrRows(G globalState);
 }

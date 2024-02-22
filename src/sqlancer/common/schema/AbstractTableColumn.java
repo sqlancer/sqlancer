@@ -1,12 +1,12 @@
 package sqlancer.common.schema;
 
-public class AbstractTableColumn<T extends AbstractTable<?, ?, ?>, U> implements Comparable<AbstractTableColumn<T, U>> {
+public class AbstractTableColumn<U> implements TableColumn<U> {
 
     private final String name;
     private final U type;
-    private T table;
+    private Table<U> table;
 
-    public AbstractTableColumn(String name, T table, U type) {
+    public AbstractTableColumn(String name, Table<U> table, U type) {
         this.name = name;
         this.table = table;
         this.type = type;
@@ -24,11 +24,11 @@ public class AbstractTableColumn<T extends AbstractTable<?, ?, ?>, U> implements
         }
     }
 
-    public void setTable(T table) {
+    public void setTable(Table<U> table) {
         this.table = table;
     }
 
-    public T getTable() {
+    public Table<U> getTable() {
         return table;
     }
 
@@ -51,7 +51,7 @@ public class AbstractTableColumn<T extends AbstractTable<?, ?, ?>, U> implements
             return false;
         } else {
             @SuppressWarnings("unchecked")
-            AbstractTableColumn<T, U> c = (AbstractTableColumn<T, U>) obj;
+            TableColumn<U> c = (TableColumn<U>) obj;
             if (c.getTable() == null) {
                 return getName().equals(c.getName());
             }
@@ -65,7 +65,7 @@ public class AbstractTableColumn<T extends AbstractTable<?, ?, ?>, U> implements
     }
 
     @Override
-    public int compareTo(AbstractTableColumn<T, U> o) {
+    public int compareTo(TableColumn<U> o) {
         if (o.getTable().equals(this.getTable())) {
             return getName().compareTo(o.getName());
         } else {
