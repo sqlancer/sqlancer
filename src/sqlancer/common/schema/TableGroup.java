@@ -6,9 +6,9 @@ import java.util.function.Function;
 public interface TableGroup<U> {
     String tableNamesAsString();
 
-    List<Table<U>> getTables();
+    List<? extends Table<U>> getTables();
 
-    List<TableColumn<U>> getColumns();
+    List<? extends TableColumn<U>> getColumns();
 
     String columnNamesAsString(Function<TableColumn<U>, String> function);
 }

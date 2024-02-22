@@ -12,12 +12,13 @@ public abstract class AbstractTable<U> implements Table<U> {
 
     protected static final int NO_ROW_COUNT_AVAILABLE = -1;
     protected final String name;
-    private final List<TableColumn<U>> columns;
-    private final List<TableIndex<U>> indexes;
+    private final List<? extends TableColumn<U>> columns;
+    private final List<? extends TableIndex<U>> indexes;
     private final boolean isView;
     protected long rowCount = NO_ROW_COUNT_AVAILABLE;
 
-    protected AbstractTable(String name, List<TableColumn<U>> columns, List<TableIndex<U>> indexes, boolean isView) {
+    protected AbstractTable(String name, List<? extends TableColumn<U>> columns, List<? extends TableIndex<U>> indexes,
+            boolean isView) {
         this.name = name;
         this.indexes = indexes;
         this.isView = isView;
@@ -44,11 +45,11 @@ public abstract class AbstractTable<U> implements Table<U> {
         return sb.toString();
     }
 
-    public List<TableIndex<U>> getIndexes() {
+    public List<? extends TableIndex<U>> getIndexes() {
         return indexes;
     }
 
-    public List<TableColumn<U>> getColumns() {
+    public List<? extends TableColumn<U>> getColumns() {
         return columns;
     }
 
@@ -77,11 +78,11 @@ public abstract class AbstractTable<U> implements Table<U> {
         return Randomly.fromList(indexes);
     }
 
-    public List<TableColumn<U>> getRandomNonEmptyColumnSubset() {
+    public List<? extends TableColumn<U>> getRandomNonEmptyColumnSubset() {
         return Randomly.nonEmptySubset(getColumns());
     }
 
-    public List<TableColumn<U>> getRandomNonEmptyColumnSubset(int size) {
+    public List<? extends TableColumn<U>> getRandomNonEmptyColumnSubset(int size) {
         return Randomly.nonEmptySubset(getColumns(), size);
     }
 

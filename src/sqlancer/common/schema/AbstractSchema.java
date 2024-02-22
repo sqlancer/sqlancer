@@ -11,9 +11,9 @@ import sqlancer.Randomly;
 
 public class AbstractSchema<U> implements Schema<U> {
 
-    private final List<Table<U>> databaseTables;
+    private final List<? extends Table<U>> databaseTables;
 
-    public AbstractSchema(List<Table<U>> databaseTables) {
+    public AbstractSchema(List<? extends Table<U>> databaseTables) {
         this.databaseTables = Collections.unmodifiableList(databaseTables);
     }
 
@@ -51,15 +51,15 @@ public class AbstractSchema<U> implements Schema<U> {
         return Randomly.fromList(relevantTables);
     }
 
-    public List<Table<U>> getDatabaseTables() {
+    public List<? extends Table<U>> getDatabaseTables() {
         return databaseTables;
     }
 
-    public List<Table<U>> getTables(Predicate<Table<U>> predicate) {
+    public List<? extends Table<U>> getTables(Predicate<Table<U>> predicate) {
         return databaseTables.stream().filter(predicate).collect(Collectors.toList());
     }
 
-    public List<Table<U>> getDatabaseTablesRandomSubsetNotEmpty() {
+    public List<? extends Table<U>> getDatabaseTablesRandomSubsetNotEmpty() {
         return Randomly.nonEmptySubset(databaseTables);
     }
 
@@ -67,11 +67,11 @@ public class AbstractSchema<U> implements Schema<U> {
         return databaseTables.stream().filter(t -> t.getName().equals(name)).findAny().orElse(null);
     }
 
-    public List<Table<U>> getViews() {
+    public List<? extends Table<U>> getViews() {
         return databaseTables.stream().filter(t -> t.isView()).collect(Collectors.toList());
     }
 
-    public List<Table<U>> getDatabaseTablesWithoutViews() {
+    public List<? extends Table<U>> getDatabaseTablesWithoutViews() {
         return databaseTables.stream().filter(t -> !t.isView()).collect(Collectors.toList());
     }
 
@@ -84,7 +84,7 @@ public class AbstractSchema<U> implements Schema<U> {
     }
 
     public Table<U> getRandomTableNoViewOrBailout() {
-        List<Table<U>> databaseTablesWithoutViews = getDatabaseTablesWithoutViews();
+        List<? extends Table<U>> databaseTablesWithoutViews = getDatabaseTablesWithoutViews();
         if (databaseTablesWithoutViews.isEmpty()) {
             throw new IgnoreMeException();
         }

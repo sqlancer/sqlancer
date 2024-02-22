@@ -7,9 +7,9 @@ public interface Table<U> extends Comparable<Table<U>> {
 
     String getName();
 
-    List<TableIndex<U>> getIndexes();
+    List<? extends TableIndex<U>> getIndexes();
 
-    List<TableColumn<U>> getColumns();
+    List<? extends TableColumn<U>> getColumns();
 
     String getColumnsAsString();
 
@@ -21,9 +21,9 @@ public interface Table<U> extends Comparable<Table<U>> {
 
     TableIndex<U> getRandomIndex();
 
-    List<TableColumn<U>> getRandomNonEmptyColumnSubset();
+    List<? extends TableColumn<U>> getRandomNonEmptyColumnSubset();
 
-    List<TableColumn<U>> getRandomNonEmptyColumnSubset(int size);
+    List<? extends TableColumn<U>> getRandomNonEmptyColumnSubset(int size);
 
     boolean isView();
 

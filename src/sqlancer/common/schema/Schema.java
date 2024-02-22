@@ -15,17 +15,17 @@ public interface Schema<U> {
 
     Table<U> getRandomTableOrBailout(Function<Table<U>, Boolean> f);
 
-    List<Table<U>> getDatabaseTables();
+    List<? extends Table<U>> getDatabaseTables();
 
-    List<Table<U>> getTables(Predicate<Table<U>> predicate);
+    List<? extends Table<U>> getTables(Predicate<Table<U>> predicate);
 
-    List<Table<U>> getDatabaseTablesRandomSubsetNotEmpty();
+    List<? extends Table<U>> getDatabaseTablesRandomSubsetNotEmpty();
 
     Table<U> getDatabaseTable(String name);
 
-    List<Table<U>> getViews();
+    List<? extends Table<U>> getViews();
 
-    List<Table<U>> getDatabaseTablesWithoutViews();
+    List<? extends Table<U>> getDatabaseTablesWithoutViews();
 
     Table<U> getRandomViewOrBailout();
 
@@ -40,6 +40,5 @@ public interface Schema<U> {
     // boolean containsTableWithZeroRows(G globalState);
 
     TableGroup<U> getRandomTableNonEmptyTables();
-
 
 }

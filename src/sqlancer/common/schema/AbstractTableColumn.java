@@ -1,6 +1,6 @@
 package sqlancer.common.schema;
 
-public class AbstractTableColumn<U> implements TableColumn<U> {
+public abstract class AbstractTableColumn<U> implements TableColumn<U> {
 
     private final String name;
     private final U type;
