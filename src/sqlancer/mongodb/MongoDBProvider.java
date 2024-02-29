@@ -72,7 +72,7 @@ public class MongoDBProvider
             if (success && getOptions().printSucceedingStatements()) {
                 System.out.println(q.getLogString());
             }
-            if (logExecutionTime) {
+            if (getOptions().logEachSelect() && logExecutionTime) {
                 getLogger().writeCurrent("// " + timer.end().asString());
             }
             if (q.couldAffectSchema()) {
