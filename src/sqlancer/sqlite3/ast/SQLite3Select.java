@@ -4,9 +4,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import sqlancer.common.ast.newast.Select;
+import sqlancer.sqlite3.SQLite3Visitor;
+import sqlancer.sqlite3.ast.SQLite3Expression.Join;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 
-public class SQLite3Select extends SQLite3Expression {
+public class SQLite3Select extends SQLite3Expression
+        implements Select<Join, SQLite3Expression, SQLite3Table, SQLite3Column> {
 
     private SelectType fromOptions = SelectType.ALL;
     private List<SQLite3Expression> fromList = Collections.emptyList();
@@ -131,6 +137,10 @@ public class SQLite3Select extends SQLite3Expression {
     public SQLite3Expression getHavingClause() {
         assert orderByClause != null;
         return havingClause;
+    }
+
+    public String asString() {
+        return SQLite3Visitor.asString(this);
     }
 
 }
