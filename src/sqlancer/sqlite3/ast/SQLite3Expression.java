@@ -161,10 +161,12 @@ public abstract class SQLite3Expression implements Expression<SQLite3Column> {
             this.type = type;
         }
 
+        @Override
         public SQLite3Table getTable() {
             return table;
         }
 
+        @Override
         public SQLite3Expression getOnClause() {
             return onClause;
         }
@@ -178,6 +180,7 @@ public abstract class SQLite3Expression implements Expression<SQLite3Column> {
             return null;
         }
 
+        @Override
         public void setOnClause(SQLite3Expression onClause) {
             this.onClause = onClause;
         }

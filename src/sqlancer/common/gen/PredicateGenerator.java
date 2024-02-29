@@ -1,7 +1,7 @@
 package sqlancer.common.gen;
 
-import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.ast.newast.Expression;
+import sqlancer.common.schema.AbstractTableColumn;
 
 public interface PredicateGenerator<E extends Expression<C>, C extends AbstractTableColumn<?, ?>> {
     /**

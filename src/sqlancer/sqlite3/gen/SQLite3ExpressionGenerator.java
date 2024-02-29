@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.gen.TLPGenerator;
+import sqlancer.common.schema.AbstractTables;
 import sqlancer.sqlite3.SQLite3GlobalState;
 import sqlancer.sqlite3.ast.SQLite3Aggregate;
 import sqlancer.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
@@ -31,8 +32,8 @@ import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm.Ordering;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3TableReference;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3TableReference;
 import sqlancer.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation.BinaryOperator;
 import sqlancer.sqlite3.ast.SQLite3Expression.TypeLiteral;
@@ -47,7 +48,6 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3RowValue;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
-import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Tables;
 
 public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Expression>,
         TLPGenerator<Join, SQLite3Expression, SQLite3Table, SQLite3Column> {
@@ -56,7 +56,7 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
     private final SQLite3GlobalState globalState;
     private boolean tryToGenerateKnownResult;
     private List<SQLite3Column> columns = Collections.emptyList();
-    private SQLite3Tables targetTables;
+    private List<SQLite3Table> targetTables;
     private final Randomly r;
     private boolean deterministicOnly;
     private boolean allowMatchClause;
@@ -99,6 +99,7 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         return gen;
     }
 
+    @Override
     public SQLite3ExpressionGenerator setColumns(List<SQLite3Column> columns) {
         SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(this);
         gen.columns = new ArrayList<>(columns);
@@ -133,6 +134,7 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         return new SQLite3ExpressionGenerator(globalState).getRandomLiteralValueInternal(globalState.getRandomly());
     }
 
+    @Override
     public List<SQLite3Expression> generateOrderBys() {
         List<SQLite3Expression> expressions = new ArrayList<>();
         for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
@@ -141,8 +143,9 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         return expressions;
     }
 
+    @Override
     public List<Join> getRandomJoinClauses() {
-        return getRandomJoinClauses(targetTables.getTables());
+        return getRandomJoinClauses(targetTables);
     }
 
     public List<Join> getRandomJoinClauses(List<SQLite3Table> tables) {
@@ -171,7 +174,6 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
                 Join j = new SQLite3Expression.Join(table, joinClause, selectedOption);
                 joinStatements.add(j);
             }
-
         }
         return joinStatements;
     }
@@ -335,7 +337,8 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
     public SQLite3Expression getAggregateFunction(boolean asWindowFunction) {
         SQLite3AggregateFunction random = SQLite3AggregateFunction.getRandom();
         if (asWindowFunction) {
-            while (/* random == SQLite3AggregateFunction.ZIPFILE || */random == SQLite3AggregateFunction.MAX
+            while (
+            /* random == SQLite3AggregateFunction.ZIPFILE || */ random == SQLite3AggregateFunction.MAX
                     || random == SQLite3AggregateFunction.MIN) {
                 // ZIPFILE() may not be used as a window function
                 random = SQLite3AggregateFunction.getRandom();
@@ -573,7 +576,6 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
             return new SQLite3Expression.Function(randomFunction.toString(),
                     expressions.toArray(new SQLite3Expression[0]));
         }
-
     }
 
     protected SQLite3Expression getRandomSingleCharString() {
@@ -713,9 +715,10 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         return expr;
     }
 
-    public SQLite3ExpressionGenerator setTables(SQLite3Tables targetTables) {
+    @Override
+    public SQLite3ExpressionGenerator setTablesAndColumns(AbstractTables<SQLite3Table, SQLite3Column> targetTables) {
         SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(this);
-        gen.targetTables = targetTables;
+        gen.targetTables = targetTables.getTables();
         gen.columns = targetTables.getColumns();
         return gen;
     }
@@ -723,7 +726,7 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
     @Override
     public List<SQLite3Expression> getTableRefs() {
         List<SQLite3Expression> tableRefs = new ArrayList<>();
-        for (SQLite3Table t : targetTables.getTables()) {
+        for (SQLite3Table t : targetTables) {
             SQLite3TableReference tableRef;
             if (Randomly.getBooleanWithSmallProbability() && !globalState.getSchema().getIndexNames().isEmpty()) {
                 tableRef = new SQLite3TableReference(globalState.getSchema().getRandomIndexOrBailout(), t);
@@ -733,7 +736,6 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
             tableRefs.add(tableRef);
         }
         return tableRefs;
-
     }
 
     @Override
@@ -748,10 +750,10 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         return columns;
     }
 
+    @Override
     public SQLite3Select generateSelect() {
         SQLite3Select select = new SQLite3Select();
         select.setSelectType(SQLite3Select.SelectType.DISTINCT);
         return new SQLite3Select();
     }
-
 }
