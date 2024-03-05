@@ -158,6 +158,11 @@ public class SQLite3Select extends SQLite3Expression
     }
 
     @Override
+    public void setDistinct() {
+        setSelectType(SelectType.DISTINCT);
+    }
+
+    @Override
     public String asString() {
         return SQLite3Visitor.asString(this);
     }
