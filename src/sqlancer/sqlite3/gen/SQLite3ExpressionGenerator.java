@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.gen.TLPGenerator;
+import sqlancer.common.gen.TLPHavingGenerator;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.sqlite3.SQLite3GlobalState;
 import sqlancer.sqlite3.ast.SQLite3Aggregate;
@@ -50,7 +51,8 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3RowValue;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Expression>,
-        TLPGenerator<Join, SQLite3Expression, SQLite3Table, SQLite3Column> {
+        TLPGenerator<Join, SQLite3Expression, SQLite3Table, SQLite3Column>,
+        TLPHavingGenerator<Join, SQLite3Expression, SQLite3Table, SQLite3Column> {
 
     private SQLite3RowValue rw;
     private final SQLite3GlobalState globalState;
@@ -687,6 +689,7 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         return new SQLite3UnaryOperation(unaryOperation, subExpression);
     }
 
+    @Override
     public SQLite3Expression getHavingClause() {
         allowAggreates = true;
         return generateExpression();
