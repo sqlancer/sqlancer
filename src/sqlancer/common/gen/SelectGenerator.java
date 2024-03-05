@@ -12,7 +12,7 @@ public interface SelectGenerator<J extends Join<E, T, C>, E extends Expression<C
 
     Select<J, E, T, C> generateSelect();
 
-    List<E> generateFetchColumns();
+    List<E> generateFetchColumns(boolean shouldCreateDummy);
 
     List<E> generateOrderBys();
 

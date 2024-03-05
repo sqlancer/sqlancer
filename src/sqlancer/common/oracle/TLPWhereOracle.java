@@ -15,6 +15,7 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractTable;
 import sqlancer.common.schema.AbstractTableColumn;
+import sqlancer.common.schema.AbstractTables;
 
 public class TLPWhereOracle<J extends Join<E, T, C>, E extends Expression<C>, S extends AbstractSchema<?, T>, T extends AbstractTable<C, ?, ?>, C extends AbstractTableColumn<?, ?>, G extends SQLGlobalState<?, S>>
         implements TestOracle<G> {
@@ -26,29 +27,34 @@ public class TLPWhereOracle<J extends Join<E, T, C>, E extends Expression<C>, S 
 
     private String generatedQueryString;
 
-    public TLPWhereOracle(G state, TLPGenerator<J, E, T, C> gen) {
+    public TLPWhereOracle(G state, TLPGenerator<J, E, T, C> gen, ExpectedErrors expectedErrors) {
         this.state = state;
         this.gen = gen;
-        this.errors = new ExpectedErrors();
+        this.errors = expectedErrors;
     }
 
     @Override
     public void check() throws SQLException {
-        gen = TestOracleUtils.initializeGenerator(state, gen);
+        S s = state.getSchema();
+        AbstractTables<T, C> targetTables = TestOracleUtils.getRandomTableNonEmptyTables(s);
+        gen = gen.setTablesAndColumns(targetTables);
 
         Select<J, E, T, C> select = gen.generateSelect();
 
-        select.setFetchColumns(gen.generateFetchColumns());
+        boolean shouldCreateDummy = true;
+        select.setFetchColumns(gen.generateFetchColumns(shouldCreateDummy));
         select.setJoinClauses(gen.getRandomJoinClauses());
-        select.setFromTables(gen.getTableRefs());
+        select.setFromList(gen.getTableRefs());
         select.setWhereClause(null);
 
         String originalQueryString = select.asString();
         generatedQueryString = originalQueryString;
+        List<String> firstResultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
+                state);
 
         boolean orderBy = Randomly.getBooleanWithSmallProbability();
         if (orderBy) {
-            select.setOrderByExpressions(gen.generateOrderBys());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
 
         TestOracleUtils.PredicateVariants<E, C> predicates = TestOracleUtils.initializeTernaryPredicateVariants(gen);
@@ -59,8 +65,6 @@ public class TLPWhereOracle<J extends Join<E, T, C>, E extends Expression<C>, S 
         select.setWhereClause(predicates.isNullPredicate);
         String thirdQueryString = select.asString();
 
-        List<String> firstResultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state);
         List<String> combinedString = new ArrayList<>();
         List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
                 thirdQueryString, combinedString, !orderBy, state, errors);

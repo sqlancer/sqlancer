@@ -2,9 +2,10 @@ package sqlancer.sqlite3.oracle.tlp;
 
 import java.sql.SQLException;
 
-import sqlancer.common.gen.TLPGenerator;
 import sqlancer.common.oracle.TLPWhereOracle;
 import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3GlobalState;
 import sqlancer.sqlite3.ast.SQLite3Expression;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
@@ -17,9 +18,10 @@ public class SQLite3TLPWhereOracle implements TestOracle<SQLite3GlobalState> {
     private final TLPWhereOracle<SQLite3Expression.Join, SQLite3Expression, SQLite3Schema, SQLite3Table, SQLite3Column, SQLite3GlobalState> oracle;
 
     public SQLite3TLPWhereOracle(SQLite3GlobalState state) {
-        TLPGenerator<SQLite3Expression.Join, SQLite3Expression, SQLite3Table, SQLite3Column> gen = new SQLite3ExpressionGenerator(
-                state);
-        this.oracle = new TLPWhereOracle<>(state, gen);
+        SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(state);
+        ExpectedErrors expectedErrors = ExpectedErrors.newErrors()
+                .with(SQLite3Errors.getExpectedExpressionErrors().toArray(new String[0])).build();
+        this.oracle = new TLPWhereOracle<>(state, gen, expectedErrors);
     }
 
     @Override

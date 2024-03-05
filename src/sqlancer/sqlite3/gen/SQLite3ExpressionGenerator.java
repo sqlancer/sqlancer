@@ -739,9 +739,9 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
     }
 
     @Override
-    public List<SQLite3Expression> generateFetchColumns() {
+    public List<SQLite3Expression> generateFetchColumns(boolean shouldCreateDummy) {
         List<SQLite3Expression> columns = new ArrayList<>();
-        if (Randomly.getBoolean()) {
+        if (shouldCreateDummy && Randomly.getBoolean()) {
             columns.add(new SQLite3ColumnName(SQLite3Column.createDummy("*"), null));
         } else {
             columns = Randomly.nonEmptySubset(this.columns).stream().map(c -> new SQLite3ColumnName(c, null))
