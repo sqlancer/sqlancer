@@ -127,10 +127,6 @@ public class OceanBaseExpressionGenerator extends UntypedExpressionGenerator<Oce
 
     private enum ConstantType {
         INT, NULL, STRING, DOUBLE;
-
-        public static ConstantType[] valuesPQS() {
-            return new ConstantType[] { INT, NULL, STRING };
-        }
     }
 
     @Override
