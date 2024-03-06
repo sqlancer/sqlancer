@@ -30,11 +30,7 @@ public class MySQLSchema extends AbstractSchema<MySQLGlobalState, MySQLTable> {
         INT, VARCHAR, FLOAT, DOUBLE, DECIMAL;
 
         public static MySQLDataType getRandom(MySQLGlobalState globalState) {
-            if (globalState.usesPQS()) {
-                return Randomly.fromOptions(MySQLDataType.INT, MySQLDataType.VARCHAR);
-            } else {
-                return Randomly.fromOptions(values());
-            }
+            return Randomly.fromOptions(values());
         }
 
         public boolean isNumeric() {

@@ -12,7 +12,6 @@ import sqlancer.OracleFactory;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.oceanbase.OceanBaseOptions.OceanBaseOracleFactory;
 import sqlancer.oceanbase.oracle.OceanBaseNoRECOracle;
-import sqlancer.oceanbase.oracle.OceanBasePivotedQuerySynthesisOracle;
 import sqlancer.oceanbase.oracle.OceanBaseTLPWhereOracle;
 
 @Parameters(separators = "=", commandDescription = "OceanBase (default port: " + OceanBaseOptions.DEFAULT_PORT
@@ -36,18 +35,6 @@ public class OceanBaseOptions implements DBMSSpecificOptions<OceanBaseOracleFact
             @Override
             public TestOracle<OceanBaseGlobalState> create(OceanBaseGlobalState globalState) throws SQLException {
                 return new OceanBaseNoRECOracle(globalState);
-            }
-        },
-        PQS {
-
-            @Override
-            public TestOracle<OceanBaseGlobalState> create(OceanBaseGlobalState globalState) throws SQLException {
-                return new OceanBasePivotedQuerySynthesisOracle(globalState);
-            }
-
-            @Override
-            public boolean requiresAllTablesToContainRows() {
-                return true;
             }
         }
     }

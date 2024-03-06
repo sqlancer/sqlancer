@@ -135,12 +135,7 @@ public class OceanBaseExpressionGenerator extends UntypedExpressionGenerator<Oce
 
     @Override
     public OceanBaseExpression generateConstant() {
-        ConstantType[] values;
-        if (state.usesPQS()) {
-            values = ConstantType.valuesPQS();
-        } else {
-            values = ConstantType.values();
-        }
+        ConstantType[] values = ConstantType.values();
         OceanBaseConstant constant;
         switch (Randomly.fromOptions(values)) {
         case INT:

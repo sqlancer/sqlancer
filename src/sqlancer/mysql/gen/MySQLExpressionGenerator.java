@@ -131,19 +131,11 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
     private enum ConstantType {
         INT, NULL, STRING, DOUBLE;
 
-        public static ConstantType[] valuesPQS() {
-            return new ConstantType[] { INT, NULL, STRING };
-        }
     }
 
     @Override
     public MySQLExpression generateConstant() {
-        ConstantType[] values;
-        if (state.usesPQS()) {
-            values = ConstantType.valuesPQS();
-        } else {
-            values = ConstantType.values();
-        }
+        ConstantType[] values = ConstantType.values();
         switch (Randomly.fromOptions(values)) {
         case INT:
             return MySQLConstant.createIntConstant((int) state.getRandomly().getInteger());

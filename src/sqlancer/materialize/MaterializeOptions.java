@@ -14,7 +14,6 @@ import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.materialize.MaterializeOptions.MaterializeOracleFactory;
 import sqlancer.materialize.oracle.MaterializeNoRECOracle;
-import sqlancer.materialize.oracle.MaterializePivotedQuerySynthesisOracle;
 import sqlancer.materialize.oracle.tlp.MaterializeTLPAggregateOracle;
 import sqlancer.materialize.oracle.tlp.MaterializeTLPHavingOracle;
 import sqlancer.materialize.oracle.tlp.MaterializeTLPWhereOracle;
@@ -51,17 +50,6 @@ public class MaterializeOptions implements DBMSSpecificOptions<MaterializeOracle
             @Override
             public TestOracle<MaterializeGlobalState> create(MaterializeGlobalState globalState) throws SQLException {
                 return new MaterializeNoRECOracle(globalState);
-            }
-        },
-        PQS {
-            @Override
-            public TestOracle<MaterializeGlobalState> create(MaterializeGlobalState globalState) throws SQLException {
-                return new MaterializePivotedQuerySynthesisOracle(globalState);
-            }
-
-            @Override
-            public boolean requiresAllTablesToContainRows() {
-                return true;
             }
         },
         HAVING {

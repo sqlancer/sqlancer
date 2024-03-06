@@ -16,7 +16,6 @@ import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresOptions;
-import sqlancer.postgres.oracle.PostgresPivotedQuerySynthesisOracle;
 
 public class CitusOptions extends PostgresOptions {
 
@@ -32,12 +31,6 @@ public class CitusOptions extends PostgresOptions {
             public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws SQLException {
                 CitusGlobalState citusGlobalState = (CitusGlobalState) globalState;
                 return new CitusNoRECOracle(citusGlobalState);
-            }
-        },
-        PQS {
-            @Override
-            public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws SQLException {
-                return new PostgresPivotedQuerySynthesisOracle(globalState);
             }
         },
         HAVING {

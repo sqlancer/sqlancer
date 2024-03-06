@@ -16,7 +16,6 @@ import sqlancer.postgres.PostgresOptions.PostgresOracleFactory;
 import sqlancer.postgres.oracle.PostgresCERTOracle;
 import sqlancer.postgres.oracle.PostgresFuzzer;
 import sqlancer.postgres.oracle.PostgresNoRECOracle;
-import sqlancer.postgres.oracle.PostgresPivotedQuerySynthesisOracle;
 import sqlancer.postgres.oracle.tlp.PostgresTLPAggregateOracle;
 import sqlancer.postgres.oracle.tlp.PostgresTLPHavingOracle;
 import sqlancer.postgres.oracle.tlp.PostgresTLPWhereOracle;
@@ -48,17 +47,6 @@ public class PostgresOptions implements DBMSSpecificOptions<PostgresOracleFactor
             @Override
             public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws SQLException {
                 return new PostgresNoRECOracle(globalState);
-            }
-        },
-        PQS {
-            @Override
-            public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws SQLException {
-                return new PostgresPivotedQuerySynthesisOracle(globalState);
-            }
-
-            @Override
-            public boolean requiresAllTablesToContainRows() {
-                return true;
             }
         },
         HAVING {

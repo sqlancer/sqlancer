@@ -15,7 +15,6 @@ import sqlancer.common.oracle.TestOracle;
 import sqlancer.doris.DorisOptions.DorisOracleFactory;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
 import sqlancer.doris.oracle.DorisNoRECOracle;
-import sqlancer.doris.oracle.DorisPivotedQuerySynthesisOracle;
 import sqlancer.doris.oracle.tlp.DorisQueryPartitioningAggregateTester;
 import sqlancer.doris.oracle.tlp.DorisQueryPartitioningDistinctTester;
 import sqlancer.doris.oracle.tlp.DorisQueryPartitioningGroupByTester;
@@ -163,12 +162,6 @@ public class DorisOptions implements DBMSSpecificOptions<DorisOracleFactory> {
                 return new CompositeTestOracle<DorisGlobalState>(oracles, globalState);
             }
         },
-        PQS {
-            @Override
-            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws Exception {
-                return new DorisPivotedQuerySynthesisOracle(globalState);
-            }
-        },
         ALL {
             @Override
             public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws Exception {
@@ -179,7 +172,6 @@ public class DorisOptions implements DBMSSpecificOptions<DorisOracleFactory> {
                 oracles.add(new DorisQueryPartitioningAggregateTester(globalState));
                 oracles.add(new DorisQueryPartitioningDistinctTester(globalState));
                 oracles.add(new DorisQueryPartitioningGroupByTester(globalState));
-                oracles.add(new DorisPivotedQuerySynthesisOracle(globalState));
                 return new CompositeTestOracle<DorisGlobalState>(oracles, globalState);
             }
         }

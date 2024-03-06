@@ -13,7 +13,6 @@ import sqlancer.common.oracle.TestOracle;
 import sqlancer.mysql.MySQLOptions.MySQLOracleFactory;
 import sqlancer.mysql.oracle.MySQLCERTOracle;
 import sqlancer.mysql.oracle.MySQLFuzzer;
-import sqlancer.mysql.oracle.MySQLPivotedQuerySynthesisOracle;
 import sqlancer.mysql.oracle.MySQLTLPWhereOracle;
 
 @Parameters(separators = "=", commandDescription = "MySQL (default port: " + MySQLOptions.DEFAULT_PORT
@@ -32,19 +31,6 @@ public class MySQLOptions implements DBMSSpecificOptions<MySQLOracleFactory> {
             @Override
             public TestOracle<MySQLGlobalState> create(MySQLGlobalState globalState) throws SQLException {
                 return new MySQLTLPWhereOracle(globalState);
-            }
-
-        },
-        PQS {
-
-            @Override
-            public TestOracle<MySQLGlobalState> create(MySQLGlobalState globalState) throws SQLException {
-                return new MySQLPivotedQuerySynthesisOracle(globalState);
-            }
-
-            @Override
-            public boolean requiresAllTablesToContainRows() {
-                return true;
             }
 
         },

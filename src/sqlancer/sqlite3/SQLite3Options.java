@@ -15,7 +15,6 @@ import sqlancer.common.oracle.TestOracle;
 import sqlancer.sqlite3.SQLite3Options.SQLite3OracleFactory;
 import sqlancer.sqlite3.oracle.SQLite3Fuzzer;
 import sqlancer.sqlite3.oracle.SQLite3NoRECOracle;
-import sqlancer.sqlite3.oracle.SQLite3PivotedQuerySynthesisOracle;
 import sqlancer.sqlite3.oracle.tlp.SQLite3TLPAggregateOracle;
 import sqlancer.sqlite3.oracle.tlp.SQLite3TLPDistinctOracle;
 import sqlancer.sqlite3.oracle.tlp.SQLite3TLPGroupByOracle;
@@ -94,18 +93,6 @@ public class SQLite3Options implements DBMSSpecificOptions<SQLite3OracleFactory>
     public int maxNumIndexes = 20;
 
     public enum SQLite3OracleFactory implements OracleFactory<SQLite3GlobalState> {
-        PQS {
-            @Override
-            public TestOracle<SQLite3GlobalState> create(SQLite3GlobalState globalState) throws SQLException {
-                return new SQLite3PivotedQuerySynthesisOracle(globalState);
-            }
-
-            @Override
-            public boolean requiresAllTablesToContainRows() {
-                return true;
-            }
-
-        },
         NoREC {
             @Override
             public TestOracle<SQLite3GlobalState> create(SQLite3GlobalState globalState) throws SQLException {

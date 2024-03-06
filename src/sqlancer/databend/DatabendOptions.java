@@ -15,7 +15,6 @@ import sqlancer.common.oracle.TestOracle;
 import sqlancer.databend.DatabendOptions.DatabendOracleFactory;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.test.DatabendNoRECOracle;
-import sqlancer.databend.test.DatabendPivotedQuerySynthesisOracle;
 import sqlancer.databend.test.tlp.DatabendQueryPartitioningAggregateTester;
 import sqlancer.databend.test.tlp.DatabendQueryPartitioningDistinctTester;
 import sqlancer.databend.test.tlp.DatabendQueryPartitioningGroupByTester;
@@ -149,13 +148,6 @@ public class DatabendOptions implements DBMSSpecificOptions<DatabendOracleFactor
                 return new CompositeTestOracle<DatabendGlobalState>(oracles, globalState);
             }
         },
-        PQS {
-            @Override
-            public TestOracle<DatabendGlobalState> create(DatabendGlobalState globalState) throws Exception {
-                return new DatabendPivotedQuerySynthesisOracle(globalState);
-            }
-        }
-
     }
 
     @Override

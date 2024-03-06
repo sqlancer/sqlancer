@@ -359,7 +359,7 @@ public class MySQLTableGenerator {
             if (Randomly.getBoolean() && randomType != MySQLDataType.INT && !MySQLBugs.bug99127) {
                 sb.append(" UNSIGNED");
             }
-            if (!globalState.usesPQS() && Randomly.getBoolean()) {
+            if (Randomly.getBoolean()) {
                 sb.append(" ZEROFILL");
             }
         }

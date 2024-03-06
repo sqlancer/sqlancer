@@ -29,11 +29,7 @@ public class OceanBaseSchema extends AbstractSchema<OceanBaseGlobalState, OceanB
         INT, VARCHAR, FLOAT, DOUBLE, DECIMAL;
 
         public static OceanBaseDataType getRandom(OceanBaseGlobalState globalState) {
-            if (globalState.usesPQS()) {
-                return Randomly.fromOptions(OceanBaseDataType.INT, OceanBaseDataType.VARCHAR);
-            } else {
-                return Randomly.fromOptions(values());
-            }
+            return Randomly.fromOptions(values());
         }
 
         public boolean isNumeric() {
