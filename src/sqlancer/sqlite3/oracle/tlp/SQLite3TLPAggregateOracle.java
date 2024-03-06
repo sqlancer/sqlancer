@@ -36,8 +36,10 @@ public class SQLite3TLPAggregateOracle implements TestOracle<SQLite3GlobalState>
     private String generatedQueryString;
 
     public SQLite3TLPAggregateOracle(SQLite3GlobalState state) {
-        this.state = state;
-        SQLite3Errors.addExpectedExpressionErrors(errors);
+        SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(state);
+        ExpectedErrors expectedErrors = ExpectedErrors.newErrors()
+                .with(SQLite3Errors.getExpectedExpressionErrors().toArray(new String[0])).build();
+        this.oracle = new TLPAggregateOracle<>(state, gen, expectedErrors);
     }
 
     @Override
@@ -67,7 +69,8 @@ public class SQLite3TLPAggregateOracle implements TestOracle<SQLite3GlobalState>
         SQLite3Select middleSelect = getSelect(aggregate, from, negatedClause);
         SQLite3Select rightSelect = getSelect(aggregate, from, notNullClause);
         String aggreateMethod = aggregate.getFunc() == SQLite3AggregateFunction.COUNT_ALL
-                ? SQLite3AggregateFunction.COUNT.toString() : aggregate.getFunc().toString();
+                ? SQLite3AggregateFunction.COUNT.toString()
+                : aggregate.getFunc().toString();
         String metamorphicText = "SELECT " + aggreateMethod + "(aggr) FROM (";
         metamorphicText += SQLite3Visitor.asString(leftSelect) + " UNION ALL " + SQLite3Visitor.asString(middleSelect)
                 + " UNION ALL " + SQLite3Visitor.asString(rightSelect);
