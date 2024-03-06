@@ -48,7 +48,6 @@ import sqlancer.questdb.QuestDBProvider;
 import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.stonedb.StoneDBProvider;
 import sqlancer.tidb.TiDBProvider;
-import sqlancer.timescaledb.TimescaleDBProvider;
 import sqlancer.yugabyte.ycql.YCQLProvider;
 import sqlancer.yugabyte.ysql.YSQLProvider;
 
@@ -754,7 +753,6 @@ public final class Main {
             providers.add(new SQLite3Provider());
             providers.add(new StoneDBProvider());
             providers.add(new TiDBProvider());
-            providers.add(new TimescaleDBProvider());
             providers.add(new YCQLProvider());
             providers.add(new YSQLProvider());
         }
