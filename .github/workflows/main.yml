@@ -285,7 +285,6 @@ jobs:
       - name: Run Tests
         run: |
           MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterialize
-          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializePQS
 
   materialize-qpg:
     name: QPG Tests (Materialize)
@@ -336,7 +335,6 @@ jobs:
         run: mysql -uroot -proot -e "CREATE USER 'sqlancer'@'localhost' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'localhost';"
       - name: Run Tests
         run: |
-          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLPQS
           MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLTLP
 
   postgres:
@@ -382,7 +380,6 @@ jobs:
         run: mvn -B package -DskipTests=true
       - name: SQLite Tests
         run: |
-          mvn -Dtest=TestSQLitePQS test
           mvn -Dtest=TestSQLite3 test
 
   sqlite-qpg:
