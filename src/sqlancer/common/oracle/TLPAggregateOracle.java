@@ -48,7 +48,7 @@ public class TLPAggregateOracle<A extends Aggregate<E, C>, E extends Expression<
         select.setFromList(from);
 
         if (Randomly.getBoolean()) {
-            select.setOrderByExpressions(gen.generateOrderBys());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
 
         String originalQuery = select.asString();

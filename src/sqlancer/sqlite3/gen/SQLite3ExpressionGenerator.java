@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.gen.ExpressionGenerator;
+import sqlancer.common.gen.TLPAggregateGenerator;
 import sqlancer.common.gen.TLPGenerator;
 import sqlancer.common.gen.TLPHavingGenerator;
 import sqlancer.common.schema.AbstractTables;
@@ -52,7 +53,8 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Expression>,
         TLPGenerator<Join, SQLite3Expression, SQLite3Table, SQLite3Column>,
-        TLPHavingGenerator<Join, SQLite3Expression, SQLite3Table, SQLite3Column> {
+        TLPHavingGenerator<Join, SQLite3Expression, SQLite3Table, SQLite3Column>,
+        TLPAggregateGenerator<SQLite3Aggregate, Join, SQLite3Expression, SQLite3Table, SQLite3Column> {
 
     private SQLite3RowValue rw;
     private final SQLite3GlobalState globalState;
@@ -229,10 +231,12 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         MATCH, AGGREGATE_FUNCTION, ROW_VALUE_COMPARISON, AND_OR_CHAIN
     }
 
+    @Override
     public SQLite3Expression generateExpression() {
         return getRandomExpression(0);
     }
 
+    @Override
     public List<SQLite3Expression> getRandomExpressions(int size) {
         List<SQLite3Expression> expressions = new ArrayList<>();
         for (int i = 0; i < size; i++) {
@@ -757,4 +761,20 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
     public SQLite3Select generateSelect() {
         return new SQLite3Select();
     }
+
+    @Override
+    public SQLite3Aggregate generateAggregate() {
+        SQLite3AggregateFunction windowFunction = Randomly.fromOptions(SQLite3Aggregate.SQLite3AggregateFunction.MIN,
+                SQLite3Aggregate.SQLite3AggregateFunction.MAX, SQLite3AggregateFunction.SUM,
+                SQLite3AggregateFunction.TOTAL);
+
+        return new SQLite3Aggregate(getRandomExpressions(1), windowFunction);
+    }
+
+    @Override
+    public List<SQLite3Expression> aliasAggregates(List<SQLite3Aggregate> aggregates) {
+        return aggregates.stream().map(aggregate -> new SQLite3PostfixText(aggregate, " as aggr", null))
+                .collect(Collectors.toList());
+    }
+
 }
