@@ -755,8 +755,6 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
 
     @Override
     public SQLite3Select generateSelect() {
-        SQLite3Select select = new SQLite3Select();
-        select.setSelectType(SQLite3Select.SelectType.DISTINCT);
         return new SQLite3Select();
     }
 }
