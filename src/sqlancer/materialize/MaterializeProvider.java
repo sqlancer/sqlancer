@@ -25,6 +25,7 @@ import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
+import sqlancer.materialize.MaterializeOptions.MaterializeOracleFactory;
 import sqlancer.materialize.gen.MaterializeDeleteGenerator;
 import sqlancer.materialize.gen.MaterializeDropIndexGenerator;
 import sqlancer.materialize.gen.MaterializeIndexGenerator;
@@ -135,6 +136,11 @@ public class MaterializeProvider extends SQLProviderAdapter<MaterializeGlobalSta
 
     @Override
     public SQLConnection createDatabase(MaterializeGlobalState globalState) throws SQLException {
+        if (globalState.getDbmsSpecificOptions().getTestOracleFactory().stream()
+                .anyMatch((o) -> o == MaterializeOracleFactory.PQS)) {
+            generateOnlyKnown = true;
+        }
+
         username = globalState.getOptions().getUserName();
         password = globalState.getOptions().getPassword();
         host = globalState.getOptions().getHost();
