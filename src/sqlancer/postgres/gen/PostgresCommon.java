@@ -188,7 +188,7 @@ public final class PostgresCommon {
         errors.add("result of range union would not be contiguous");
 
         return errors;
-    }
+   }
 
     public static void addCommonRangeExpressionErrors(ExpectedErrors errors) {
         errors.addAll(getCommonRangeExpressionErrors());
