@@ -161,7 +161,6 @@ public abstract class SQLite3Expression implements Expression<SQLite3Column> {
             this.type = type;
         }
 
-        @Override
         public SQLite3Table getTable() {
             return table;
         }
