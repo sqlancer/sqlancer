@@ -383,7 +383,8 @@ jobs:
       - name: SQLite Tests
         run: |
           mvn -Dtest=TestSQLitePQS test
-          mvn -Dtest=TestSQLite3 test
+          mvn -Dtest=TestSQLiteTLP test
+          mvn -Dtest=TestSQLiteNoREC test
 
   sqlite-qpg:
     name: QPG Tests (SQLite)
