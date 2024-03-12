@@ -25,6 +25,7 @@ import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresSchema.PostgresTables;
 import sqlancer.postgres.ast.PostgresAggregate;
 import sqlancer.postgres.ast.PostgresAggregate.PostgresAggregateFunction;
+import sqlancer.postgres.ast.PostgresAlias;
 import sqlancer.postgres.ast.PostgresBetweenOperation;
 import sqlancer.postgres.ast.PostgresBinaryArithmeticOperation;
 import sqlancer.postgres.ast.PostgresBinaryArithmeticOperation.PostgresBinaryOperator;
@@ -174,8 +175,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         case POSTFIX_OPERATOR:
             PostfixOperator random = PostfixOperator.getRandom();
             return PostgresPostfixOperation
-                    .create(generateExpression(depth + 1, Randomly.fromOptions(random.getInputDataTypes())),
-                            random);
+                    .create(generateExpression(depth + 1, Randomly.fromOptions(random.getInputDataTypes())), random);
         case IN_OPERATION:
             return inOperation(depth + 1);
         case NOT:
@@ -355,7 +355,10 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             return PostgresCompoundDataType.create(type);
         case TEXT: // TODO
         case BIT:
-            if (Randomly.getBoolean() || PostgresProvider.generateOnlyKnown /* The PQS implementation does not check for size specifications */) {
+            if (Randomly.getBoolean() || PostgresProvider.generateOnlyKnown /*
+                                                                             * The PQS implementation does not check for
+                                                                             * size specifications
+                                                                             */) {
                 return PostgresCompoundDataType.create(type);
             } else {
                 return PostgresCompoundDataType.create(type, (int) Randomly.getNotCachedInteger(1, 1000));
@@ -553,6 +556,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
 
     }
 
+    @Override
     public List<PostgresExpression> generateExpressions(int nr) {
         List<PostgresExpression> expressions = new ArrayList<>();
         for (int i = 0; i < nr; i++) {
@@ -563,6 +567,11 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
 
     public PostgresExpression generateExpression(PostgresDataType dataType) {
         return generateExpression(0, dataType);
+    }
+
+    @Override
+    public PostgresExpression generateBooleanExpression() {
+        return generateBooleanExpression(0);
     }
 
     public PostgresExpressionGenerator setGlobalState(PostgresGlobalState globalState) {
@@ -577,11 +586,17 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         return expression;
     }
 
-    public PostgresExpression generateAggregate() {
-        return getAggregate(PostgresDataType.getRandomType());
+    @Override
+    public PostgresAggregate generateAggregate() {
+        PostgresAggregateFunction aggregateFunction = Randomly.fromOptions(PostgresAggregateFunction.MAX,
+                PostgresAggregateFunction.MIN, PostgresAggregateFunction.SUM, PostgresAggregateFunction.BIT_AND,
+                PostgresAggregateFunction.BIT_OR, PostgresAggregateFunction.BOOL_AND, PostgresAggregateFunction.BOOL_OR,
+                PostgresAggregateFunction.COUNT);
+
+        return generateArgsForAggregate(aggregateFunction.getRandomReturnType(), aggregateFunction);
     }
 
-    private PostgresExpression getAggregate(PostgresDataType dataType) {
+    private PostgresAggregate getAggregate(PostgresDataType dataType) {
         List<PostgresAggregateFunction> aggregates = PostgresAggregateFunction.getAggregates(dataType);
         PostgresAggregateFunction agg = Randomly.fromList(aggregates);
         return generateArgsForAggregate(dataType, agg);
@@ -734,6 +749,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
                 // PostgresBinaryArithmeticOperation(sum, count,
                 // PostgresBinaryArithmeticOperator.DIV);
                 // return aliasArgs(Arrays.asList(sum, count));
+                break;
             default:
                 throw new AssertionError(aggregate.getFunction());
             }

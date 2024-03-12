@@ -195,14 +195,27 @@ public final class ComparatorHelper {
     }
 
     public static String runQuery(String queryString, ExpectedErrors errors, GlobalState<?, ?, SQLConnection> state) {
+        if (state.getOptions().logEachSelect()) {
+            // TODO: refactor me
+            state.getLogger().writeCurrent(queryString);
+            try {
+                state.getLogger().getCurrentFileWriter().flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         SQLQueryAdapter query = new SQLQueryAdapter(queryString, errors);
         try (SQLancerResultSet result = query.executeAndGet(state)) {
             if (result == null) {
                 throw new IgnoreMeException();
             }
+            if (!result.next()) {
+                return null;
+            }
             return result.getString(1);
-        } catch (Exception e) {
-            throw new IgnoreMeException();
+        } catch (SQLException e) {
+            throw new AssertionError(queryString, e);
         }
     }
 

@@ -3,7 +3,6 @@ package sqlancer.common.oracle;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
@@ -32,12 +31,6 @@ public class TLPWhereOracle<J extends Join<E, T, C>, E extends Expression<C>, S 
         this.state = state;
         this.gen = gen;
         this.errors = expectedErrors;
-    }
-
-    public TLPWhereOracle(G state, TLPGenerator<J, E, T, C> gen, List<String> expectedErrors,
-            List<Pattern> expectedErrorsRegex) {
-        this(state, gen, expectedErrors);
-        this.errors.addAllRegexes(expectedErrorsRegex);
     }
 
     @Override

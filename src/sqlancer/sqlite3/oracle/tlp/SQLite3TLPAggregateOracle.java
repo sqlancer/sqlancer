@@ -4,6 +4,7 @@ import java.sql.SQLException;
 
 import sqlancer.common.oracle.TLPAggregateOracle;
 import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3GlobalState;
 import sqlancer.sqlite3.ast.SQLite3Aggregate;
@@ -21,7 +22,7 @@ public class SQLite3TLPAggregateOracle implements TestOracle<SQLite3GlobalState>
         SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(state);
         ExpectedErrors expectedErrors = ExpectedErrors.newErrors()
                 .with(SQLite3Errors.getExpectedExpressionErrors().toArray(new String[0])).build();
-        this.oracle = new TLPAggregateOracle<>(state, gen, expectedErrors);
+        this.oracle = new TLPAggregateOracle<>(state, gen, expectedErrors, true);
     }
 
     @Override
