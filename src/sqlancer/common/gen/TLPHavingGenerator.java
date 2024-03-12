@@ -9,7 +9,7 @@ import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.AbstractTables;
 
 public interface TLPHavingGenerator<J extends Join<E, T, C>, E extends Expression<C>, T extends AbstractTable<C, ?, ?>, C extends AbstractTableColumn<?, ?>>
-        extends SelectGenerator<J, E, T, C>, HavingClauseGenerator<E, C> {
+        extends SelectGenerator<J, E, T, C>, HavingClauseGenerator<E, C>, TypeExpressionGenerator<E, T, C> {
 
     TLPHavingGenerator<J, E, T, C> setColumns(List<C> columns);
 

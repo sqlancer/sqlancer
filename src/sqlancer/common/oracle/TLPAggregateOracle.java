@@ -55,7 +55,7 @@ public class TLPAggregateOracle<A extends Aggregate<E, C>, E extends Expression<
         generatedQueryString = originalQuery;
         String firstResult = ComparatorHelper.runQuery(originalQuery, errors, state);
 
-        E whereClause = gen.generateExpression();
+        E whereClause = gen.generateBooleanExpression();
         E negatedClause = gen.negatePredicate(whereClause);
         E notNullClause = gen.isNull(whereClause);
 

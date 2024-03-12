@@ -231,12 +231,10 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         MATCH, AGGREGATE_FUNCTION, ROW_VALUE_COMPARISON, AND_OR_CHAIN
     }
 
-    @Override
     public SQLite3Expression generateExpression() {
         return getRandomExpression(0);
     }
 
-    @Override
     public List<SQLite3Expression> getRandomExpressions(int size) {
         List<SQLite3Expression> expressions = new ArrayList<>();
         for (int i = 0; i < size; i++) {
@@ -777,4 +775,13 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public SQLite3Expression generateBooleanExpression() {
+        return generateExpression();
+    }
+
+    @Override
+    public List<SQLite3Expression> generateExpressions(int size) {
+        return getRandomExpressions(size);
+    }
 }
