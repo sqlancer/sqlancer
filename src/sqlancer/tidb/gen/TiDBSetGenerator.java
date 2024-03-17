@@ -43,7 +43,9 @@ public final class TiDBSetGenerator {
 
         TIDB_ENABLE_WINDOW_FUNCTION("tidb_enable_window_function", (r) -> Randomly.fromOptions(0, 1)),
 
-        TIDB_ENABLE_FAST_ANALYZE("tidb_enable_fast_analyze", (r) -> Randomly.fromOptions(0, 1)), //
+        // TIDB_ENABLE_FAST_ANALYZE("tidb_enable_fast_analyze", (r) -> Randomly.fromOptions(0, 1)), //
+        // java.sql.SQLException: Fast analyze hasn't reached General Availability and only support analyze version 1
+        // currently
         TIDB_WAIT_SPLIT_REGION_FINISH("tidb_wait_split_region_finish", (r) -> Randomly.fromOptions(0, 1)),
         TIDB_SCATTER_REGION("global.tidb_scatter_region", (r) -> Randomly.fromOptions(0, 1)),
         TIDB_ENABLE_STMT_SUMMARY("global.tidb_enable_stmt_summary", (r) -> Randomly.fromOptions(0, 1)), //

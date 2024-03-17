@@ -25,9 +25,12 @@ public final class TiDBErrors {
         errors.add("is not valid for CHARACTER SET");
         errors.add("DOUBLE value is out of range");
 
-        errors.add("Data truncation: %s value is out of range in '%s'");
+        errors.add("Data truncat");
         errors.add("Truncated incorrect FLOAT value");
         errors.add("Bad Number");
+        errors.add("strconv.Atoi: parsing");
+        errors.add("expected integer");
+        errors.add("Duplicate entry");
 
         // regex
         errors.add("error parsing regexp");
