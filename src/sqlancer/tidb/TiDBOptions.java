@@ -36,6 +36,9 @@ public class TiDBOptions implements DBMSSpecificOptions<TiDBOracleFactory> {
     @Parameter(names = "--enable-non-prepared-plan-cache")
     public boolean nonPreparePlanCache;
 
+    @Parameter(names = { "--tiflash" }, description = "Enable TiFlash")
+    public boolean tiflash;
+
     public enum TiDBOracleFactory implements OracleFactory<TiDBGlobalState> {
         HAVING {
             @Override
