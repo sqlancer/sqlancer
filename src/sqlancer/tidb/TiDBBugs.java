@@ -17,6 +17,21 @@ public final class TiDBBugs {
     // https://github.com/pingcap/tidb/issues/44747
     public static boolean bug44747 = true;
 
+    // https://github.com/pingcap/tidb/issues/46556
+    public static boolean bug46556 = true;
+
+    // https://github.com/pingcap/tidb/issues/46591
+    public static boolean bug46591 = true;
+
+    // https://github.com/pingcap/tidb/issues/46598
+    public static boolean bug46598 = true;
+
+    // https://github.com/pingcap/tidb/issues/47346
+    public static boolean bug47346 = true;
+
+    // https://github.com/pingcap/tidb/issues/47348
+    public static boolean bug47348 = true;
+
     private TiDBBugs() {
     }
 
