@@ -1,5 +1,7 @@
 package sqlancer.mysql.gen;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -7,6 +9,7 @@ import java.util.stream.Collectors;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.mysql.MySQLBugs;
 import sqlancer.mysql.MySQLGlobalState;
 
 public class MySQLSetGenerator {
@@ -131,11 +134,13 @@ public class MySQLSetGenerator {
         private static String getOptimizerSwitchConfiguration(Randomly r) {
             StringBuilder sb = new StringBuilder();
             sb.append("'");
-            String[] options = { "batched_key_access", "block_nested_loop", "condition_fanout_filter", "derived_merge",
-                    "engine_condition_pushdown", "index_condition_pushdown", "use_index_extensions", "index_merge",
-                    "index_merge_intersection", "index_merge_sort_union", "index_merge_union", "use_invisible_indexes",
-                    "mrr", "mrr_cost_based", "skip_scan", "semijoin", "duplicateweedout", "firstmatch", "loosescan",
-                    "materialization", "subquery_materialization_cost_based" };
+            String[] options = { "index_merge", "index_merge_union", "index_merge_sort_union",
+                    "index_merge_intersection", "engine_condition_pushdown", "index_condition_pushdown", "mrr",
+                    "mrr_cost_based", "block_nested_loop", "batched_key_access", "materialization", "semijoin",
+                    "loosescan", "firstmatch", "duplicateweedout", "subquery_materialization_cost_based",
+                    "use_index_extensions", "condition_fanout_filter", "derived_merge", "use_invisible_indexes",
+                    "skip_scan", "hash_join", "subquery_to_derived", "prefer_ordering_index",
+                    "derived_condition_pushdown" };
             List<String> optionSubset = Randomly.nonEmptySubset(options);
             sb.append(optionSubset.stream().map(s -> s + "=" + Randomly.fromOptions("on", "off"))
                     .collect(Collectors.joining(",")));
@@ -186,6 +191,48 @@ public class MySQLSetGenerator {
         sb.append(" = ");
         sb.append(a.prod.apply(r));
         return new SQLQueryAdapter(sb.toString());
+    }
+
+    public static SQLQueryAdapter resetOptimizer() {
+        return new SQLQueryAdapter("SET optimizer_switch='default'");
+    }
+
+    public static List<SQLQueryAdapter> getAllOptimizer(MySQLGlobalState globalState) {
+        List<SQLQueryAdapter> result = new ArrayList<>();
+        String[] options = { "index_merge", "index_merge_union", "index_merge_sort_union", "index_merge_intersection",
+                "engine_condition_pushdown", "index_condition_pushdown", "mrr", "mrr_cost_based", "block_nested_loop",
+                "batched_key_access", "materialization", "semijoin", "loosescan", "firstmatch", "duplicateweedout",
+                "subquery_materialization_cost_based", "use_index_extensions", "condition_fanout_filter",
+                "derived_merge", "use_invisible_indexes", "skip_scan", "hash_join", "subquery_to_derived",
+                "prefer_ordering_index", "derived_condition_pushdown" };
+
+        List<String> availableOptions = new ArrayList<>(Arrays.asList(options));
+        if (MySQLBugs.bug112242) {
+            availableOptions.remove("use_invisible_indexes");
+        }
+        if (MySQLBugs.bug112243) {
+            availableOptions.remove("subquery_to_derived");
+        }
+        if (MySQLBugs.bug112264) {
+            availableOptions.remove("block_nested_loop");
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("SET ");
+        if (globalState.getOptions().getNumberConcurrentThreads() == 1 && Randomly.getBoolean()) {
+            sb.append("GLOBAL");
+        } else {
+            sb.append("SESSION");
+        }
+        sb.append(" optimizer_switch = '%s'");
+
+        for (String option : availableOptions) {
+            result.add(new SQLQueryAdapter(String.format(sb.toString(), option + "=on")));
+            result.add(new SQLQueryAdapter(String.format(sb.toString(), option + "=off")));
+            result.add(new SQLQueryAdapter(String.format(sb.toString(), option + "=default")));
+        }
+
+        return result;
     }
 
 }
