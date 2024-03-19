@@ -27,7 +27,7 @@ public class MariaDBStringVisitor extends MariaDBVisitor {
 
     @Override
     public void visit(MariaDBColumnName c) {
-        sb.append(c.getColumn().getName());
+        sb.append(c.getColumn().getFullQualifiedName());
     }
 
     @Override
@@ -42,12 +42,16 @@ public class MariaDBStringVisitor extends MariaDBVisitor {
         }
         sb.append(" FROM ");
         sb.append(s.getTables().stream().map(t -> t.getName()).collect(Collectors.joining(", ")));
+
+        for (MariaDBExpression j : s.getJoinList()) {
+            visit(j);
+        }
         if (s.getWhereCondition() != null) {
             sb.append(" WHERE ");
             visit(s.getWhereCondition());
         }
         if (s.getGroupBys().size() != 0) {
-            sb.append(" GROUP BY");
+            sb.append(" GROUP BY ");
             for (i = 0; i < s.getGroupBys().size(); i++) {
                 if (i != 0) {
                     sb.append(", ");
@@ -131,4 +135,36 @@ public class MariaDBStringVisitor extends MariaDBVisitor {
         }
     }
 
+    @Override
+    public void visit(MariaDBJoin join) {
+        sb.append(" ");
+        switch (join.getType()) {
+        case NATURAL:
+            sb.append("NATURAL ");
+            break;
+        case INNER:
+            sb.append("INNER ");
+            break;
+        case STRAIGHT:
+            sb.append("STRAIGHT_");
+            break;
+        case LEFT:
+            sb.append("LEFT ");
+            break;
+        case RIGHT:
+            sb.append("RIGHT ");
+            break;
+        case CROSS:
+            sb.append("CROSS ");
+            break;
+        default:
+            throw new AssertionError(join.getType());
+        }
+        sb.append("JOIN ");
+        sb.append(join.getTable().getName());
+        if (join.getOnClause() != null) {
+            sb.append(" ON ");
+            visit(join.getOnClause());
+        }
+    }
 }

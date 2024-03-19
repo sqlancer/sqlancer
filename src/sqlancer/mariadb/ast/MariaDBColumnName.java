@@ -2,7 +2,7 @@ package sqlancer.mariadb.ast;
 
 import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;
 
-public class MariaDBColumnName extends MariaDBExpression {
+public class MariaDBColumnName implements MariaDBExpression {
 
     private final MariaDBColumn column;
 
