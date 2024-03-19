@@ -2,7 +2,7 @@ package sqlancer.mariadb.ast;
 
 import sqlancer.Randomly;
 
-public class MariaDBUnaryPrefixOperation extends MariaDBExpression {
+public class MariaDBUnaryPrefixOperation implements MariaDBExpression {
 
     private MariaDBExpression expr;
     private MariaDBUnaryPrefixOperator op;

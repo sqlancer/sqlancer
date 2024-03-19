@@ -3,12 +3,13 @@ package sqlancer.mariadb.ast;
 import java.util.ArrayList;
 import java.util.List;
 
+import sqlancer.common.ast.SelectBase;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 
-public class MariaDBSelectStatement extends MariaDBExpression {
+public class MariaDBSelectStatement extends SelectBase<MariaDBExpression> implements MariaDBExpression {
 
     public enum MariaDBSelectType {
-        ALL
+        ALL, DISTINCT, DISTINCTROW;
     }
 
     private List<MariaDBExpression> groupBys = new ArrayList<>();
@@ -21,6 +22,7 @@ public class MariaDBSelectStatement extends MariaDBExpression {
         this.groupBys = groupBys;
     }
 
+    @Override
     public void setFetchColumns(List<MariaDBExpression> columns) {
         this.columns = columns;
 
@@ -34,6 +36,7 @@ public class MariaDBSelectStatement extends MariaDBExpression {
         this.selectType = selectType;
     }
 
+    @Override
     public void setWhereClause(MariaDBExpression whereCondition) {
         this.whereCondition = whereCondition;
     }

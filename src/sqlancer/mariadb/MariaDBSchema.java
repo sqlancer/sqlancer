@@ -242,4 +242,8 @@ public class MariaDBSchema extends AbstractSchema<MariaDBGlobalState, MariaDBTab
         super(databaseTables);
     }
 
+    public MariaDBTables getRandomTableNonEmptyTables() {
+        return new MariaDBTables(Randomly.nonEmptySubset(getDatabaseTables()));
+    }
+
 }

@@ -1,6 +1,9 @@
 package sqlancer.mariadb.ast;
 
-public class MariaDBConstant extends MariaDBExpression {
+public class MariaDBConstant implements MariaDBExpression {
+
+    private MariaDBConstant() {
+    }
 
     public static class MariaDBNullConstant extends MariaDBConstant {
 

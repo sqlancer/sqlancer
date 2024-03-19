@@ -1,6 +1,6 @@
 package sqlancer.mariadb.ast;
 
-public class MariaDBText extends MariaDBExpression {
+public class MariaDBText implements MariaDBExpression {
 
     private final MariaDBExpression expr;
     private final String text;

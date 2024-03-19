@@ -2,7 +2,7 @@ package sqlancer.mariadb.ast;
 
 import sqlancer.Randomly;
 
-public class MariaDBPostfixUnaryOperation extends MariaDBExpression {
+public class MariaDBPostfixUnaryOperation implements MariaDBExpression {
 
     private MariaDBPostfixUnaryOperator operator;
     private MariaDBExpression randomWhereCondition;

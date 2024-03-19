@@ -22,6 +22,8 @@ public abstract class MariaDBVisitor {
 
     public abstract void visit(MariaDBInOperation op);
 
+    public abstract void visit(MariaDBJoin join);
+
     public void visit(MariaDBExpression expr) {
         if (expr instanceof MariaDBConstant) {
             visit((MariaDBConstant) expr);
@@ -43,6 +45,8 @@ public abstract class MariaDBVisitor {
             visit((MariaDBFunction) expr);
         } else if (expr instanceof MariaDBInOperation) {
             visit((MariaDBInOperation) expr);
+        } else if (expr instanceof MariaDBJoin) {
+            visit((MariaDBJoin) expr);
         } else {
             throw new AssertionError(expr.getClass());
         }

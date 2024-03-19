@@ -2,7 +2,7 @@ package sqlancer.mariadb.ast;
 
 import sqlancer.Randomly;
 
-public class MariaDBBinaryOperator extends MariaDBExpression {
+public class MariaDBBinaryOperator implements MariaDBExpression {
 
     private MariaDBExpression left;
     private MariaDBExpression right;
