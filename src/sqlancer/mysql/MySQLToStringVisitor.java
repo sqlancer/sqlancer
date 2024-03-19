@@ -38,6 +38,11 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
     @Override
     public void visit(MySQLSelect s) {
         sb.append("SELECT ");
+        if (s.getHint() != null) {
+            sb.append("/*+ ");
+            visit(s.getHint());
+            sb.append("*/ ");
+        }
         switch (s.getFromOptions()) {
         case DISTINCT:
             sb.append("DISTINCT ");

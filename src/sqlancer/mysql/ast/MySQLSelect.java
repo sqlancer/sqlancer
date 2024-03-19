@@ -9,6 +9,7 @@ public class MySQLSelect extends SelectBase<MySQLExpression> implements MySQLExp
 
     private SelectType fromOptions = SelectType.ALL;
     private List<String> modifiers = Collections.emptyList();
+    private MySQLText hint;
 
     public enum SelectType {
         DISTINCT, ALL, DISTINCTROW;
@@ -37,6 +38,14 @@ public class MySQLSelect extends SelectBase<MySQLExpression> implements MySQLExp
     @Override
     public MySQLConstant getExpectedValue() {
         return null;
+    }
+
+    public void setHint(MySQLText hint) {
+        this.hint = hint;
+    }
+
+    public MySQLText getHint() {
+        return hint;
     }
 
 }
