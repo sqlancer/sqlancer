@@ -12,6 +12,7 @@ import sqlancer.OracleFactory;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.mariadb.MariaDBOptions.MariaDBOracleFactory;
 import sqlancer.mariadb.MariaDBProvider.MariaDBGlobalState;
+import sqlancer.mariadb.oracle.MariaDBDQPOracle;
 import sqlancer.mariadb.oracle.MariaDBNoRECOracle;
 
 @Parameters(separators = "=", commandDescription = "MariaDB (default port: " + MariaDBOptions.DEFAULT_PORT
@@ -32,6 +33,12 @@ public class MariaDBOptions implements DBMSSpecificOptions<MariaDBOracleFactory>
                 return new MariaDBNoRECOracle(globalState);
             }
 
+        },
+        DQP {
+            @Override
+            public TestOracle<MariaDBGlobalState> create(MariaDBGlobalState globalState) throws SQLException {
+                return new MariaDBDQPOracle(globalState);
+            }
         }
     }
 

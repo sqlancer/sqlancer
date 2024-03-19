@@ -57,7 +57,8 @@ public final class MariaDBTableAdminCommandGenerator {
         MariaDBCommon.addWaitClause(sb);
         return checkForMsgText(sb,
                 s -> s.equals("OK") || s.equals("Table does not support optimize, doing recreate + analyze instead")
-                        || s.contentEquals("Table is already up to date"));
+                        || s.contentEquals("Table is already up to date") || s.contains("Lock wait timeout")
+                        || s.contains("Operation failed"));
     }
 
     private static SQLQueryAdapter checkForMsgText(StringBuilder sb, Function<String, Boolean> checker) {
