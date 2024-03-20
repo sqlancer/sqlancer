@@ -65,6 +65,37 @@ This paper describes Query Plan Guidance (QPG), a test case generation method gu
 }
 ```
 
+## CERT: Finding Performance Issues in Database Systems Through the Lens of Cardinality Estimation
+
+This paper describes CERT, a testing approach to find performance issues by inspecting inconsistent estimated cardinalities. A preprint is available [here](https://bajinsheng.github.io/assets/pdf/cert_icse24.pdf).
+
+```
+@inproceedings{cert,
+  author = {Ba, Jinsheng and Rigger, Manuel},
+  title = {CERT: Finding Performance Issues in Database Systems Through the Lens of Cardinality Estimation},
+  booktitle = {The 46th International Conference on Software Engineering (ICSE'24)},
+  year = {2024},
+  month = apr,
+}
+```
+
+## Keep It Simple: Testing Databases via Differential Query Plans
+
+This paper describes DQP, a testing approach to find logic bugs in database systems by comparing the query plans of different database systems. A preprint is available [here](https://bajinsheng.github.io/assets/pdf/dqp_sigmod24.pdf).
+
+```
+@article{dqp,
+  author = {Ba, Jinsheng and Rigger, Manuel},
+  title = {Keep It Simple: Testing Databases via Differential Query Plans},
+  year = {2024},
+  issue_date = {June 2024},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  journal = {Proceeding of ACM Management of Data (SIGMOD'24)},
+  month = jun
+}
+```
+
 # Comparing SQLancer With Other Tools that Find Logic Bugs
 
 If you want to fairly compare other tools with SQLancer, we would be glad to provide feedback (e.g., feel free to send an email to manuel.rigger@inf.ethz.ch). We have the following general recommendations and comments:
