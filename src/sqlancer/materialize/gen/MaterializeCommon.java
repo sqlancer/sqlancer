@@ -1,5 +1,6 @@
 package sqlancer.materialize.gen;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -21,7 +22,9 @@ public final class MaterializeCommon {
     private MaterializeCommon() {
     }
 
-    public static void addCommonFetchErrors(ExpectedErrors errors) {
+    public static List<String> getCommonFetchErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("FULL JOIN is only supported with merge-joinable or hash-joinable join conditions");
         errors.add("but it cannot be referenced from this part of the query");
         errors.add("missing FROM-clause entry for table");
@@ -36,14 +39,30 @@ public final class MaterializeCommon {
         errors.add("does not exist");
         errors.add("aggregate functions are not allowed in");
         errors.add("is only defined for finite arguments");
+
+        return errors;
+    }
+
+    public static void addCommonFetchErrors(ExpectedErrors errors) {
+        errors.addAll(getCommonFetchErrors());
+    }
+
+    public static List<String> getCommonTableErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
+        errors.add("is not commutative"); // exclude
+        errors.add("operator requires run-time type coercion"); // exclude
+
+        return errors;
     }
 
     public static void addCommonTableErrors(ExpectedErrors errors) {
-        errors.add("is not commutative"); // exclude
-        errors.add("operator requires run-time type coercion"); // exclude
+        errors.addAll(getCommonTableErrors());
     }
 
-    public static void addCommonExpressionErrors(ExpectedErrors errors) {
+    public static List<String> getCommonExpressionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("You might need to add explicit type casts");
         errors.add("invalid regular expression");
         errors.add("could not determine which collation to use");
@@ -77,14 +96,22 @@ public final class MaterializeCommon {
         errors.add("aggregate functions are not allowed in");
         errors.add("only defined for finite arguments");
         errors.add("unable to parse column reference in GROUP BY clause"); // TODO
-        addToCharFunctionErrors(errors);
-        addBitStringOperationErrors(errors);
-        addFunctionErrors(errors);
-        addCommonRangeExpressionErrors(errors);
-        addCommonRegexExpressionErrors(errors);
+        errors.addAll(getToCharFunctionErrors());
+        errors.addAll(getBitStringOperationErrors());
+        errors.addAll(getFunctionErrors());
+        errors.addAll(getCommonRangeExpressionErrors());
+        errors.addAll(getCommonRegexExpressionErrors());
+
+        return errors;
     }
 
-    private static void addToCharFunctionErrors(ExpectedErrors errors) {
+    public static void addCommonExpressionErrors(ExpectedErrors errors) {
+        errors.addAll(getCommonExpressionErrors());
+    }
+
+    private static List<String> getToCharFunctionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("multiple decimal points");
         errors.add("and decimal point together");
         errors.add("multiple decimal points");
@@ -96,16 +123,24 @@ public final class MaterializeCommon {
         errors.add("cannot use \"S\" and \"PL\" together");
         errors.add("cannot use \"PR\" and \"S\"/\"PL\"/\"MI\"/\"SG\" together");
         errors.add("is not a number");
+
+        return errors;
     }
 
-    private static void addBitStringOperationErrors(ExpectedErrors errors) {
+    private static List<String> getBitStringOperationErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("cannot XOR bit strings of different sizes");
         errors.add("cannot AND bit strings of different sizes");
         errors.add("cannot OR bit strings of different sizes");
         errors.add("must be type boolean, not type text");
+
+        return errors;
     }
 
-    private static void addFunctionErrors(ExpectedErrors errors) {
+    private static List<String> getFunctionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("out of valid range"); // get_bit/get_byte
         errors.add("cannot take logarithm of a negative number");
         errors.add("cannot take logarithm of zero");
@@ -117,24 +152,62 @@ public final class MaterializeCommon {
         errors.add("encoding conversion from UTF8 to ASCII not supported"); // to_ascii
         errors.add("negative substring length not allowed"); // substr
         errors.add("invalid mask length"); // set_masklen
+
+        return errors;
     }
 
-    private static void addCommonRegexExpressionErrors(ExpectedErrors errors) {
+    private static List<String> getCommonRegexExpressionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("is not a valid hexadecimal digit");
+
+        return errors;
     }
 
-    public static void addCommonRangeExpressionErrors(ExpectedErrors errors) {
+    public static List<String> getCommonRangeExpressionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("range lower bound must be less than or equal to range upper bound");
         errors.add("result of range difference would not be contiguous");
         errors.add("out of range");
         errors.add("malformed range literal");
         errors.add("result of range union would not be contiguous");
+
+        return errors;
     }
 
-    public static void addCommonInsertUpdateErrors(ExpectedErrors errors) {
+    public static void addCommonRangeExpressionErrors(ExpectedErrors errors) {
+        errors.addAll(getCommonExpressionErrors());
+    }
+
+    public static List<String> getCommonInsertUpdateErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("value too long for type character");
         errors.add("not found in view targetlist");
         errors.add("CAST does not support casting from");
+
+        return errors;
+    }
+
+    public static void addCommonInsertUpdateErrors(ExpectedErrors errors) {
+        errors.addAll(getCommonExpressionErrors());
+    }
+
+    public static List<String> getGroupingErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
+        errors.add("non-integer constant in GROUP BY"); // TODO
+        errors.add("unable to parse column reference in GROUP BY clause"); // TODO
+        errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
+        errors.add("is not in select list");
+        errors.add("aggregate functions are not allowed in");
+
+        return errors;
+    }
+
+    public static void addGroupingErrors(ExpectedErrors errors) {
+        errors.addAll(getGroupingErrors());
     }
 
     public static boolean appendDataType(MaterializeDataType type, StringBuilder sb, boolean allowSerial,
@@ -330,14 +403,6 @@ public final class MaterializeCommon {
 
     private static void deleteOrUpdateAction(StringBuilder sb) {
         sb.append(Randomly.fromOptions("NO ACTION", "RESTRICT", "CASCADE", "SET NULL", "SET DEFAULT"));
-    }
-
-    public static void addGroupingErrors(ExpectedErrors errors) {
-        errors.add("non-integer constant in GROUP BY"); // TODO
-        errors.add("unable to parse column reference in GROUP BY clause"); // TODO
-        errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
-        errors.add("is not in select list");
-        errors.add("aggregate functions are not allowed in");
     }
 
     public static String getFreeIndexName(MaterializeSchema s) {

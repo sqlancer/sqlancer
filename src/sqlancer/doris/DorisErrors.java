@@ -1,5 +1,8 @@
 package sqlancer.doris;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import sqlancer.common.query.ExpectedErrors;
 
 public final class DorisErrors {
@@ -7,7 +10,9 @@ public final class DorisErrors {
     private DorisErrors() {
     }
 
-    public static void addExpressionErrors(ExpectedErrors errors) {
+    public static List<String> getExpressionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         // SQL syntax error
         errors.add("Syntax error");
         errors.add("Please check your sql, we meet an error when parsing");
@@ -52,13 +57,27 @@ public final class DorisErrors {
         if (DorisBugs.bug19611) {
             errors.add("Duplicated inline view column alias");
         }
+
+        return errors;
     }
 
-    public static void addInsertErrors(ExpectedErrors errors) {
+    public static void addExpressionErrors(ExpectedErrors errors) {
+        errors.addAll(getExpressionErrors());
+    }
+
+    public static List<String> getInsertErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("Insert has filtered data in strict mode");
         errors.add("Only value columns of unique table could be updated");
         errors.add("Only unique olap table could be updated");
         errors.add("Number out of range");
+
+        return errors;
+    }
+
+    public static void addInsertErrors(ExpectedErrors errors) {
+        errors.addAll(getInsertErrors());
     }
 
 }

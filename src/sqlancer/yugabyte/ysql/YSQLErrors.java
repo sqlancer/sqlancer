@@ -1,5 +1,8 @@
 package sqlancer.yugabyte.ysql;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import sqlancer.common.query.ExpectedErrors;
 
 public final class YSQLErrors {
@@ -7,7 +10,9 @@ public final class YSQLErrors {
     private YSQLErrors() {
     }
 
-    public static void addCommonFetchErrors(ExpectedErrors errors) {
+    public static List<String> getCommonFetchErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("An I/O error occurred while sending to the backend");
         errors.add("Conflicts with committed transaction");
         errors.add("cannot be changed");
@@ -22,9 +27,17 @@ public final class YSQLErrors {
         errors.add("non-integer constant in");
         errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
         errors.add("GROUP BY position");
+
+        return errors;
     }
 
-    public static void addCommonTableErrors(ExpectedErrors errors) {
+    public static void addCommonFetchErrors(ExpectedErrors errors) {
+        errors.addAll(getCommonFetchErrors());
+    }
+
+    public static List<String> getCommonTableErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("PRIMARY KEY containing column of type 'INET' not yet supported");
         errors.add("PRIMARY KEY containing column of type 'VARBIT' not yet supported");
         errors.add("PRIMARY KEY containing column of type 'INT4RANGE' not yet supported");
@@ -34,9 +47,17 @@ public final class YSQLErrors {
         errors.add("is not commutative"); // exclude
         errors.add("cannot be changed");
         errors.add("operator requires run-time type coercion"); // exclude
+
+        return errors;
     }
 
-    public static void addCommonExpressionErrors(ExpectedErrors errors) {
+    public static void addCommonTableErrors(ExpectedErrors errors) {
+        errors.addAll(getCommonTableErrors());
+    }
+
+    public static List<String> getCommonExpressionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("syntax error at or near \"(\"");
         errors.add("does not exist");
         errors.add("is not unique");
@@ -69,14 +90,22 @@ public final class YSQLErrors {
         errors.add("a negative number raised to a non-integer power yields a complex result");
         errors.add("could not determine polymorphic type because input has type unknown");
 
-        addToCharFunctionErrors(errors);
-        addBitStringOperationErrors(errors);
-        addFunctionErrors(errors);
-        addCommonRangeExpressionErrors(errors);
-        addCommonRegexExpressionErrors(errors);
+        errors.addAll(getToCharFunctionErrors());
+        errors.addAll(getBitStringOperationErrors());
+        errors.addAll(getFunctionErrors());
+        errors.addAll(getCommonRangeExpressionErrors());
+        errors.addAll(getCommonRegexExpressionErrors());
+
+        return errors;
     }
 
-    public static void addToCharFunctionErrors(ExpectedErrors errors) {
+    public static void addCommonExpressionErrors(ExpectedErrors errors) {
+        errors.addAll(getCommonExpressionErrors());
+    }
+
+    public static List<String> getToCharFunctionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("multiple decimal points");
         errors.add("and decimal point together");
         errors.add("multiple decimal points");
@@ -88,16 +117,32 @@ public final class YSQLErrors {
         errors.add("cannot use \"S\" and \"PL\" together");
         errors.add("cannot use \"PR\" and \"S\"/\"PL\"/\"MI\"/\"SG\" together");
         errors.add("is not a number");
+
+        return errors;
     }
 
-    public static void addBitStringOperationErrors(ExpectedErrors errors) {
+    public static void addToCharFunctionErrors(ExpectedErrors errors) {
+        errors.addAll(getToCharFunctionErrors());
+    }
+
+    public static List<String> getBitStringOperationErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("cannot XOR bit strings of different sizes");
         errors.add("cannot AND bit strings of different sizes");
         errors.add("cannot OR bit strings of different sizes");
         errors.add("must be type boolean, not type text");
+
+        return errors;
     }
 
-    public static void addFunctionErrors(ExpectedErrors errors) {
+    public static void addBitStringOperationErrors(ExpectedErrors errors) {
+        errors.addAll(getBitStringOperationErrors());
+    }
+
+    public static List<String> getFunctionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("out of valid range"); // get_bit/get_byte
         errors.add("cannot take logarithm of a negative number");
         errors.add("cannot take logarithm of zero");
@@ -109,18 +154,40 @@ public final class YSQLErrors {
         errors.add("encoding conversion from UTF8 to ASCII not supported"); // to_ascii
         errors.add("negative substring length not allowed"); // substr
         errors.add("invalid mask length"); // set_masklen
+
+        return errors;
+    }
+
+    public static void addFunctionErrors(ExpectedErrors errors) {
+        errors.addAll(getFunctionErrors());
+    }
+
+    public static List<String> getCommonRegexExpressionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
+        errors.add("is not a valid hexadecimal digit");
+
+        return errors;
     }
 
     public static void addCommonRegexExpressionErrors(ExpectedErrors errors) {
-        errors.add("is not a valid hexadecimal digit");
+        errors.addAll(getCommonRangeExpressionErrors());
     }
 
-    public static void addCommonRangeExpressionErrors(ExpectedErrors errors) {
+    public static List<String> getCommonRangeExpressionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("range lower bound must be less than or equal to range upper bound");
         errors.add("result of range difference would not be contiguous");
         errors.add("out of range");
         errors.add("malformed range literal");
         errors.add("result of range union would not be contiguous");
+
+        return errors;
+    }
+
+    public static void addCommonRangeExpressionErrors(ExpectedErrors errors) {
+        errors.addAll(getCommonRangeExpressionErrors());
     }
 
     public static void addCommonInsertUpdateErrors(ExpectedErrors errors) {
@@ -128,14 +195,24 @@ public final class YSQLErrors {
         errors.add("not found in view targetlist");
     }
 
-    public static void addGroupingErrors(ExpectedErrors errors) {
+    public static List<String> getGroupingErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("non-integer constant in GROUP BY"); // TODO
         errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
         errors.add("is not in select list");
         errors.add("aggregate functions are not allowed in GROUP BY");
+
+        return errors;
     }
 
-    public static void addViewErrors(ExpectedErrors errors) {
+    public static void addGroupingErrors(ExpectedErrors errors) {
+        errors.addAll(getGroupingErrors());
+    }
+
+    public static List<String> getViewErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("already exists");
         errors.add("cannot drop columns from view");
         errors.add("non-integer constant in ORDER BY"); // TODO
@@ -147,5 +224,11 @@ public final class YSQLErrors {
         errors.add("is not a view");
         errors.add("non-integer constant in DISTINCT ON");
         errors.add("SELECT DISTINCT ON expressions must match initial ORDER BY expressions");
+
+        return errors;
+    }
+
+    public static void addViewErrors(ExpectedErrors errors) {
+        errors.addAll(getViewErrors());
     }
 }

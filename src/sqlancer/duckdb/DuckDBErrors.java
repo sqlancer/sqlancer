@@ -1,5 +1,8 @@
 package sqlancer.duckdb;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import sqlancer.common.query.ExpectedErrors;
 
 public final class DuckDBErrors {
@@ -7,7 +10,9 @@ public final class DuckDBErrors {
     private DuckDBErrors() {
     }
 
-    public static void addExpressionErrors(ExpectedErrors errors) {
+    public static List<String> getExpressionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("with non-constant precision is not supported");
         errors.add("Like pattern must not end with escape character");
         errors.add("Could not convert string");
@@ -27,9 +32,9 @@ public final class DuckDBErrors {
 
         errors.add("GROUP BY clause cannot contain aggregates!"); // investigate
 
-        addRegexErrors(errors);
+        errors.addAll(getRegexErrors());
 
-        addFunctionErrors(errors);
+        errors.addAll(getFunctionErrors());
 
         errors.add("Overflow in multiplication");
         errors.add("Out of Range");
@@ -52,9 +57,17 @@ public final class DuckDBErrors {
         // timestamp
         errors.add("Cannot subtract infinite timestamps");
         errors.add("Timestamp difference is out of bounds");
+
+        return errors;
     }
 
-    private static void addRegexErrors(ExpectedErrors errors) {
+    public static void addExpressionErrors(ExpectedErrors errors) {
+        errors.addAll(getExpressionErrors());
+    }
+
+    private static List<String> getRegexErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("missing ]");
         errors.add("missing )");
         errors.add("invalid escape sequence");
@@ -64,9 +77,13 @@ public final class DuckDBErrors {
         errors.add("invalid perl operator");
         errors.add("invalid character class range");
         errors.add("width is not integer");
+
+        return errors;
     }
 
-    private static void addFunctionErrors(ExpectedErrors errors) {
+    private static List<String> getFunctionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("SUBSTRING cannot handle negative lengths");
         errors.add("is undefined outside [-1,1]"); // ACOS etc
         errors.add("invalid type specifier"); // PRINTF
@@ -85,11 +102,15 @@ public final class DuckDBErrors {
         errors.add("Could not choose a best candidate function for the function call"); // monthname
         errors.add("expected a numeric precision field"); // ROUND
         errors.add("with non-constant precision is not supported"); // ROUND
+
+        return errors;
     }
 
-    public static void addInsertErrors(ExpectedErrors errors) {
-        addRegexErrors(errors);
-        addFunctionErrors(errors);
+    public static List<String> getInsertErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
+        errors.addAll(getRegexErrors());
+        errors.addAll(getFunctionErrors());
 
         errors.add("NOT NULL constraint failed");
         errors.add("PRIMARY KEY or UNIQUE constraint violated");
@@ -105,11 +126,25 @@ public final class DuckDBErrors {
         errors.add("Could not cast value");
         errors.add("create unique index, table contains duplicate data");
         errors.add("Failed to cast");
+
+        return errors;
+    }
+
+    public static void addInsertErrors(ExpectedErrors errors) {
+        errors.addAll(getInsertErrors());
+    }
+
+    public static List<String> getGroupByErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
+        errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
+        errors.add("GROUP BY term out of range");
+
+        return errors;
     }
 
     public static void addGroupByErrors(ExpectedErrors errors) {
-        errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
-        errors.add("GROUP BY term out of range");
+        errors.addAll(getGroupByErrors());
     }
 
 }
