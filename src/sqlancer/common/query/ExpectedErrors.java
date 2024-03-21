@@ -1,9 +1,8 @@
 package sqlancer.common.query;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -14,8 +13,18 @@ import java.util.regex.Pattern;
  */
 public class ExpectedErrors {
 
-    private final Set<String> errors = new HashSet<>();
-    private final List<Pattern> regexes = new ArrayList<>();
+    private final Set<String> errors;
+    private final Set<Pattern> regexes;
+
+    public ExpectedErrors() {
+        this.errors = new HashSet<>();
+        this.regexes = new HashSet<>();
+    }
+
+    public ExpectedErrors(Collection<String> errors, Collection<Pattern> regexErrors) {
+        this.errors = new HashSet<>(errors);
+        this.regexes = new HashSet<>(regexErrors);
+    }
 
     public ExpectedErrors add(String error) {
         if (error == null) {
@@ -33,6 +42,11 @@ public class ExpectedErrors {
         return this;
     }
 
+    public ExpectedErrors addRegexString(String errorPattern) {
+        regexes.add(Pattern.compile(errorPattern));
+        return this;
+    }
+
     public ExpectedErrors addAll(Collection<String> list) {
         errors.addAll(list);
         return this;
@@ -46,12 +60,19 @@ public class ExpectedErrors {
         return this;
     }
 
-    public static ExpectedErrors from(String... errors) {
-        ExpectedErrors expectedErrors = new ExpectedErrors();
-        for (String error : errors) {
-            expectedErrors.add(error);
+    public ExpectedErrors addAllRegexStrings(Collection<String> list) {
+        for (String error : list) {
+            regexes.add(Pattern.compile(error));
         }
-        return expectedErrors;
+        return this;
+    }
+
+    public static ExpectedErrors from(String... errors) {
+        return newErrors().with(errors).build();
+    }
+
+    public static ExpectedErrorsBuilder newErrors() {
+        return new ExpectedErrorsBuilder();
     }
 
     /**
@@ -80,4 +101,29 @@ public class ExpectedErrors {
         return false;
     }
 
+    public static class ExpectedErrorsBuilder {
+        private final Set<String> errors = new HashSet<>();
+        private final Set<Pattern> regexes = new HashSet<>();
+
+        public ExpectedErrorsBuilder with(String... list) {
+            errors.addAll(Arrays.asList(list));
+            return this;
+        }
+
+        public ExpectedErrorsBuilder with(Pattern... list) {
+            regexes.addAll(Arrays.asList(list));
+            return this;
+        }
+
+        public ExpectedErrorsBuilder withRegex(String... list) {
+            for (String error : list) {
+                regexes.add(Pattern.compile(error));
+            }
+            return this;
+        }
+
+        public ExpectedErrors build() {
+            return new ExpectedErrors(errors, regexes);
+        }
+    }
 }
