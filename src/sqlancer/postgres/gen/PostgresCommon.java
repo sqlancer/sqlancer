@@ -146,6 +146,9 @@ public final class PostgresCommon {
         errors.add("requested length too large"); // repeat
         errors.add("invalid memory alloc request size"); // repeat
 
+        errors.add("negative substring length not allowed"); // substr
+        errors.add("invalid mask length"); // set_masklen
+
         return errors;
     }
 
