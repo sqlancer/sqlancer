@@ -64,8 +64,4 @@ public final class TestOracleUtils {
         AbstractTables<T, C> targetTables = TestOracleUtils.getRandomTableNonEmptyTables(s);
         return gen.setTablesAndColumns(targetTables);
     }
-
-    public static String combineQueryStrings(String combineOperation, String... queryStrings) {
-        return String.join(combineOperation, queryStrings);
-    }
 }

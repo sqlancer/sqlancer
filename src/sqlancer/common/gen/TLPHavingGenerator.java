@@ -14,4 +14,6 @@ public interface TLPHavingGenerator<J extends Join<E, T, C>, E extends Expressio
     TLPHavingGenerator<J, E, T, C> setColumns(List<C> columns);
 
     TLPHavingGenerator<J, E, T, C> setTablesAndColumns(AbstractTables<T, C> tables);
+
+    String combineQueryStrings(String... queryStrings);
 }

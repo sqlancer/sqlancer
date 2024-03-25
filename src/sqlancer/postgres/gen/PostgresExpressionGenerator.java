@@ -636,11 +636,13 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         if (shouldCreateDummy && Randomly.getBooleanWithRatherLowProbability()) {
             return Arrays.asList(new PostgresColumnValue(PostgresColumn.createDummy("*"), null));
         }
+        allowAggregateFunctions = true;
         List<PostgresExpression> fetchColumns = new ArrayList<>();
         List<PostgresColumn> targetColumns = Randomly.nonEmptySubset(columns);
         for (PostgresColumn c : targetColumns) {
             fetchColumns.add(new PostgresColumnValue(c, null));
         }
+        allowAggregateFunctions = false;
         return fetchColumns;
     }
 
@@ -755,5 +757,15 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             }
         }
         return args;
+    }
+
+    @Override
+    public List<PostgresExpression> generateGroupBys() {
+        return generateExpressions(Randomly.smallNumber() + 1);
+    }
+
+    @Override
+    public String combineQueryStrings(String... queryStrings) {
+        return String.join(" UNION ALL ", queryStrings);
     }
 }

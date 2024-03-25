@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.gen.TLPAggregateGenerator;
@@ -783,5 +784,19 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
     @Override
     public List<SQLite3Expression> generateExpressions(int size) {
         return getRandomExpressions(size);
+    }
+
+    @Override
+    public List<SQLite3Expression> generateGroupBys() {
+        return generateExpressions(Randomly.smallNumber() + 1);
+    }
+
+    @Override
+    public String combineQueryStrings(String... queryStrings) {
+        String combinedString = String.join(" UNION ALL ", queryStrings);
+        if (combinedString.contains("EXIST")) {
+            throw new IgnoreMeException();
+        }
+        return combinedString;
     }
 }

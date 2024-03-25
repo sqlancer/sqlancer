@@ -1,11 +1,10 @@
 package sqlancer.common.oracle;
 
 import java.sql.SQLException;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.ComparatorHelper;
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLGlobalState;
 import sqlancer.common.ast.newast.Expression;
@@ -26,12 +25,17 @@ public class TLPHavingOracle<J extends Join<E, T, C>, E extends Expression<C>, S
     private TLPHavingGenerator<J, E, T, C> gen;
     private final ExpectedErrors errors;
 
+    private final boolean hasIndependentGroupBys;
+    private final boolean shouldGenerateWhereClause;
     private String generatedQueryString;
 
-    public TLPHavingOracle(G state, TLPHavingGenerator<J, E, T, C> gen, ExpectedErrors expectedErrors) {
+    public TLPHavingOracle(G state, TLPHavingGenerator<J, E, T, C> gen, ExpectedErrors expectedErrors,
+            boolean hasIndependentGroupBys, boolean shouldGenerateWhereClause) {
         this.state = state;
         this.gen = gen;
         this.errors = expectedErrors;
+        this.hasIndependentGroupBys = hasIndependentGroupBys;
+        this.shouldGenerateWhereClause = shouldGenerateWhereClause;
     }
 
     @Override
@@ -48,8 +52,17 @@ public class TLPHavingOracle<J extends Join<E, T, C>, E extends Expression<C>, S
         select.setFetchColumns(fetchColumns);
         select.setJoinClauses(gen.getRandomJoinClauses());
         select.setFromList(gen.getTableRefs());
-        select.setGroupByClause(fetchColumns);
+
+        if (hasIndependentGroupBys) {
+            select.setGroupByClause(gen.generateGroupBys());
+        } else {
+            select.setGroupByClause(fetchColumns);
+        }
+
         select.setHavingClause(null);
+        if (shouldGenerateWhereClause && Randomly.getBoolean()) {
+            select.setWhereClause(gen.generateBooleanExpression());
+        }
 
         String originalQueryString = select.asString();
         generatedQueryString = originalQueryString;
@@ -68,22 +81,12 @@ public class TLPHavingOracle<J extends Join<E, T, C>, E extends Expression<C>, S
         String secondQueryString = select.asString();
         select.setHavingClause(gen.isNull(predicate));
         String thirdQueryString = select.asString();
-        String combinedString = TestOracleUtils.combineQueryStrings(" UNION ALL ", firstQueryString, secondQueryString,
-                thirdQueryString);
+        List<String> combinedString = new ArrayList<>();
+        List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
+                thirdQueryString, combinedString, !orderBy, state, errors);
 
-        if (combinedString.contains("EXIST")) {
-            throw new IgnoreMeException();
-        }
-
-        List<String> secondResultSet = ComparatorHelper.getResultSetFirstColumnAsString(combinedString, errors, state);
-        if (state.getOptions().logEachSelect()) {
-            state.getLogger().writeCurrent(originalQueryString);
-            state.getLogger().writeCurrent(combinedString);
-        }
-
-        if (new HashSet<>(firstResultSet).size() != new HashSet<>(secondResultSet).size()) {
-            throw new AssertionError(originalQueryString + ";\n" + combinedString + ";");
-        }
+        ComparatorHelper.assumeResultSetsAreEqual(firstResultSet, secondResultSet, originalQueryString, combinedString,
+                state);
     }
 
     @Override

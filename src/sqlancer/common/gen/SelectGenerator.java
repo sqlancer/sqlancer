@@ -14,6 +14,8 @@ public interface SelectGenerator<J extends Join<E, T, C>, E extends Expression<C
 
     List<E> generateFetchColumns(boolean shouldCreateDummy);
 
+    List<E> generateGroupBys();
+
     List<E> generateOrderBys();
 
     List<J> getRandomJoinClauses();

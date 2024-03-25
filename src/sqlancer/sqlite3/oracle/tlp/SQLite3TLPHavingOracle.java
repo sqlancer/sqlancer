@@ -25,7 +25,7 @@ public class SQLite3TLPHavingOracle implements TestOracle<SQLite3GlobalState> {
                                                                                                                  // why?
                         "ON clause references tables to its right")
                 .build();
-        oracle = new TLPHavingOracle<>(state, gen, expectedErrors);
+        oracle = new TLPHavingOracle<>(state, gen, expectedErrors, false, true);
     }
 
     @Override
