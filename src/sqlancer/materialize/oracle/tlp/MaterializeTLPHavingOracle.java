@@ -36,7 +36,8 @@ public class MaterializeTLPHavingOracle extends MaterializeTLPBase {
         generatedQueryString = originalQueryString;
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
-        // See https://github.com/MaterializeInc/materialize/issues/18346, have to check if predicate errors by putting
+        // See https://github.com/MaterializeInc/materialize/issues/18346, have to check
+        // if predicate errors by putting
         // it in SELECT first
         List<MaterializeExpression> originalColumns = select.getFetchColumns();
         List<MaterializeExpression> checkColumns = new ArrayList<>();
@@ -48,7 +49,7 @@ public class MaterializeTLPHavingOracle extends MaterializeTLPBase {
 
         boolean orderBy = Randomly.getBoolean();
         if (orderBy) {
-            select.setOrderByExpressions(gen.generateOrderBy());
+            select.setOrderByClauses(gen.generateOrderBy());
         }
         select.setHavingClause(predicate);
         String firstQueryString = MaterializeVisitor.asString(select);

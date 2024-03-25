@@ -36,7 +36,7 @@ public class DorisQueryPartitioningHavingTester extends DorisQueryPartitioningBa
             List<Node<DorisExpression>> constants = new ArrayList<>();
             constants.add(
                     new DorisConstant.DorisIntConstant(Randomly.smallNumber() % select.getFetchColumns().size() + 1));
-            select.setOrderByExpressions(constants);
+            select.setOrderByClauses(constants);
         }
         select.setGroupByExpressions(groupByExpression);
         select.setHavingClause(null);

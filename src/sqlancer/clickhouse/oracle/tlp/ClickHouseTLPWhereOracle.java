@@ -23,7 +23,7 @@ public class ClickHouseTLPWhereOracle extends ClickHouseTLPBase {
     public void check() throws SQLException {
         super.check();
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByExpressions(IntStream.range(0, 1 + Randomly.smallNumber())
+            select.setOrderByClauses(IntStream.range(0, 1 + Randomly.smallNumber())
                     .mapToObj(i -> gen.generateExpressionWithColumns(columns, 5)).collect(Collectors.toList()));
         }
         String originalQueryString = ClickHouseVisitor.asString(select);
@@ -31,7 +31,7 @@ public class ClickHouseTLPWhereOracle extends ClickHouseTLPBase {
 
         boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
         if (orderBy) {
-            select.setOrderByExpressions(IntStream.range(0, 1 + Randomly.smallNumber())
+            select.setOrderByClauses(IntStream.range(0, 1 + Randomly.smallNumber())
                     .mapToObj(i -> gen.generateExpressionWithColumns(columns, 5)).collect(Collectors.toList()));
         }
 

@@ -114,7 +114,7 @@ public class DorisNoRECOracle extends NoRECBase<DorisGlobalState> implements Tes
             List<Node<DorisExpression>> constants = new ArrayList<>();
             constants.add(
                     new DorisConstant.DorisIntConstant(Randomly.smallNumber() % select.getFetchColumns().size() + 1));
-            select.setOrderByExpressions(constants);
+            select.setOrderByClauses(constants);
         }
         select.setJoinList(joins);
         int firstCount = 0;

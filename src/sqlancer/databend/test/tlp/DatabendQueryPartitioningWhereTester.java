@@ -28,7 +28,7 @@ public class DatabendQueryPartitioningWhereTester extends DatabendQueryPartition
         // boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
         boolean orderBy = false;
         // if (orderBy) { //TODO 待开启
-        // select.setOrderByExpressions(gen.generateOrderBys());
+        // select.setOrderByClauses(gen.generateOrderBys());
         // }
         select.setWhereClause(DatabendExprToNode.cast(predicate));
         String firstQueryString = DatabendToStringVisitor.asString(select);

@@ -56,7 +56,7 @@ public final class CockroachDBRandomQuerySynthesizer {
             select.setWhereClause(gen.generateExpression(CockroachDBDataType.BOOL.get()));
         }
         if (Randomly.getBoolean()) {
-            select.setOrderByExpressions(gen.getOrderingTerms());
+            select.setOrderByClauses(gen.getOrderingTerms());
         }
         if (Randomly.getBoolean()) {
             select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));

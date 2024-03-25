@@ -60,7 +60,7 @@ public class StoneDBViewCreateGenerator {
         select.setJoinList(new ArrayList<>(joins));
         select.setFromList(new ArrayList<>(tableReferenceNodeList));
         select.setWhereClause(gen.generateExpression());
-        select.setOrderByExpressions(gen.generateOrderBys());
+        select.setOrderByClauses(gen.generateOrderBys());
         select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
     }
 

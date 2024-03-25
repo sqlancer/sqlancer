@@ -80,7 +80,7 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
         List<Join> joinStatements = gen.getRandomJoinClauses(tables);
         List<SQLite3Expression> tableRefs = SQLite3Common.getTableRefs(tables, s);
         SQLite3Select select = new SQLite3Select();
-        select.setFromTables(tableRefs);
+        select.setFromList(tableRefs);
         select.setJoinClauses(joinStatements);
 
         Function<SQLite3GlobalState, Integer> optimizedQuery = getOptimizedQuery(select, randomWhereCondition);
@@ -127,7 +127,7 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
             SQLite3Expression randomWhereCondition) throws SQLException {
         boolean useAggregate = Randomly.getBoolean();
         if (Randomly.getBoolean()) {
-            select.setOrderByExpressions(gen.generateOrderBys());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         if (useAggregate) {
             select.setFetchColumns(Arrays.asList(new SQLite3Aggregate(Collections.emptyList(),

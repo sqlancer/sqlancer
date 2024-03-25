@@ -25,7 +25,7 @@ public class ClickHouseTLPAggregateOracle extends ClickHouseTLPBase {
     public void check() throws SQLException {
         super.check();
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByExpressions(IntStream.range(0, 1 + Randomly.smallNumber())
+            select.setOrderByClauses(IntStream.range(0, 1 + Randomly.smallNumber())
                     .mapToObj(i -> gen.generateExpressionWithColumns(columns, 5)).collect(Collectors.toList()));
         }
 
@@ -49,7 +49,7 @@ public class ClickHouseTLPAggregateOracle extends ClickHouseTLPBase {
                     .mapToObj(i -> gen.generateExpressionWithColumns(columns, 5)).collect(Collectors.toList()));
         }
         if (Randomly.getBoolean()) {
-            select.setOrderByExpressions(IntStream.range(0, 1 + Randomly.smallNumber())
+            select.setOrderByClauses(IntStream.range(0, 1 + Randomly.smallNumber())
                     .mapToObj(i -> gen.generateExpressionWithColumns(columns, 5)).collect(Collectors.toList()));
         }
 

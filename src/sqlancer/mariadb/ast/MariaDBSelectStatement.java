@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.common.ast.SelectBase;
-import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 
 public class MariaDBSelectStatement extends SelectBase<MariaDBExpression> implements MariaDBExpression {
 
@@ -14,7 +13,6 @@ public class MariaDBSelectStatement extends SelectBase<MariaDBExpression> implem
 
     private List<MariaDBExpression> groupBys = new ArrayList<>();
     private List<MariaDBExpression> columns = new ArrayList<>();
-    private List<MariaDBTable> tables = new ArrayList<>();
     private MariaDBSelectType selectType = MariaDBSelectType.ALL;
     private MariaDBExpression whereCondition;
 
@@ -26,10 +24,6 @@ public class MariaDBSelectStatement extends SelectBase<MariaDBExpression> implem
     public void setFetchColumns(List<MariaDBExpression> columns) {
         this.columns = columns;
 
-    }
-
-    public void setFromTables(List<MariaDBTable> tables) {
-        this.tables = tables;
     }
 
     public void setSelectType(MariaDBSelectType selectType) {
@@ -51,10 +45,6 @@ public class MariaDBSelectStatement extends SelectBase<MariaDBExpression> implem
 
     public MariaDBSelectType getSelectType() {
         return selectType;
-    }
-
-    public List<MariaDBTable> getTables() {
-        return tables;
     }
 
     public MariaDBExpression getWhereCondition() {

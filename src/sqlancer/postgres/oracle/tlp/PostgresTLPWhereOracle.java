@@ -24,12 +24,12 @@ public class PostgresTLPWhereOracle extends PostgresTLPBase {
 
     protected void whereCheck() throws SQLException {
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByExpressions(gen.generateOrderBy());
+            select.setOrderByClauses(gen.generateOrderBy());
         }
         String originalQueryString = PostgresVisitor.asString(select);
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
-        select.setOrderByExpressions(Collections.emptyList());
+        select.setOrderByClauses(Collections.emptyList());
         select.setWhereClause(predicate);
         String firstQueryString = PostgresVisitor.asString(select);
         select.setWhereClause(negatedPredicate);

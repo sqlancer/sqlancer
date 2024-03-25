@@ -36,7 +36,7 @@ public final class H2RandomQuerySynthesizer {
             select.setWhereClause(gen.generateExpression());
         }
         if (Randomly.getBoolean()) {
-            select.setOrderByExpressions(gen.generateOrderBys());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         if (Randomly.getBoolean()) {
             select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));

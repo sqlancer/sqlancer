@@ -148,9 +148,9 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
             sb.append(" HAVING ");
             visit(s.getHavingClause());
         }
-        if (!s.getOrderByClause().isEmpty()) {
+        if (!s.getOrderByClauses().isEmpty()) {
             sb.append(" ORDER BY ");
-            visit(s.getOrderByClause());
+            visit(s.getOrderByClauses());
         }
         if (s.getLimitClause() != null) {
             sb.append(" LIMIT ");

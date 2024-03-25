@@ -56,7 +56,7 @@ public class CnosDBTLPAggregateOracle extends CnosDBTLPBase implements TestOracl
         }
         select.setFetchColumns(fetchColumns);
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByExpressions(gen.generateOrderBy());
+            select.setOrderByClauses(gen.generateOrderBy());
         }
         originalQuery = CnosDBVisitor.asString(select);
         firstResult = getAggregateResult(originalQuery);

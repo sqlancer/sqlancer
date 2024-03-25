@@ -45,7 +45,7 @@ public final class PostgresRandomQueryGenerator {
             }
         }
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByExpressions(gen.generateOrderBy());
+            select.setOrderByClauses(gen.generateOrderBy());
         }
         if (Randomly.getBoolean()) {
             select.setLimitClause(PostgresConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));

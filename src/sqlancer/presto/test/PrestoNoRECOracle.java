@@ -114,8 +114,7 @@ public class PrestoNoRECOracle extends NoRECBase<PrestoGlobalState> implements T
         select.setFromList(tableList);
         select.setWhereClause(randomWhereCondition);
         if (Randomly.getBooleanWithSmallProbability()) {
-            select.setOrderByExpressions(
-                    new PrestoTypedExpressionGenerator(state).setColumns(columns).generateOrderBys());
+            select.setOrderByClauses(new PrestoTypedExpressionGenerator(state).setColumns(columns).generateOrderBys());
         }
         select.setJoinList(joins);
         int firstCount = 0;

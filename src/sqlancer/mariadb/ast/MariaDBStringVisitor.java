@@ -1,7 +1,6 @@
 package sqlancer.mariadb.ast;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class MariaDBStringVisitor extends MariaDBVisitor {
 
@@ -41,8 +40,13 @@ public class MariaDBStringVisitor extends MariaDBVisitor {
             visit(column);
         }
         sb.append(" FROM ");
-        sb.append(s.getTables().stream().map(t -> t.getName()).collect(Collectors.joining(", ")));
 
+        for (int j = 0; j < s.getFromList().size(); j++) {
+            if (j != 0) {
+                sb.append(", ");
+            }
+            visit(s.getFromList().get(j));
+        }
         for (MariaDBExpression j : s.getJoinList()) {
             visit(j);
         }
@@ -166,5 +170,10 @@ public class MariaDBStringVisitor extends MariaDBVisitor {
             sb.append(" ON ");
             visit(join.getOnClause());
         }
+    }
+
+    @Override
+    public void visit(MariaDBTableReference ref) {
+        sb.append(ref.getTable().getName());
     }
 }

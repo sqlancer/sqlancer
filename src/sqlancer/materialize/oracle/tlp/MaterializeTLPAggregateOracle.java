@@ -63,7 +63,7 @@ public class MaterializeTLPAggregateOracle extends MaterializeTLPBase implements
         }
         select.setFetchColumns(Arrays.asList(aggregate));
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByExpressions(gen.generateOrderBy());
+            select.setOrderByClauses(gen.generateOrderBy());
         }
         originalQuery = MaterializeVisitor.asString(select);
         generatedQueryString = originalQuery;

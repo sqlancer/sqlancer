@@ -113,8 +113,8 @@ public class DatabendNoRECOracle extends NoRECBase<DatabendGlobalState> implemen
         select.setFromList(tableList);
         select.setWhereClause(randomWhereCondition);
         if (Randomly.getBooleanWithSmallProbability()) {
-            select.setOrderByExpressions(new DatabendNewExpressionGenerator(state).setColumns(columns)
-                    .generateOrderBys().stream().map(DatabendExprToNode::cast).collect(Collectors.toList()));
+            select.setOrderByClauses(new DatabendNewExpressionGenerator(state).setColumns(columns).generateOrderBys()
+                    .stream().map(DatabendExprToNode::cast).collect(Collectors.toList()));
         }
         select.setJoinList(joins);
         int firstCount = 0;

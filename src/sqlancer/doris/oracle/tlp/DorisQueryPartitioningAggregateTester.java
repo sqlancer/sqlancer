@@ -65,7 +65,7 @@ public class DorisQueryPartitioningAggregateTester extends DorisQueryPartitionin
             List<Node<DorisExpression>> constants = new ArrayList<>();
             constants.add(
                     new DorisConstant.DorisIntConstant(Randomly.smallNumber() % select.getFetchColumns().size() + 1));
-            select.setOrderByExpressions(constants);
+            select.setOrderByClauses(constants);
         }
         originalQuery = DorisToStringVisitor.asString(select);
         firstResult = getAggregateResult(originalQuery);

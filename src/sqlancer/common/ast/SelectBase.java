@@ -59,14 +59,14 @@ public class SelectBase<T> {
         return groupByExpressions;
     }
 
-    public void setOrderByExpressions(List<T> orderByExpressions) {
+    public void setOrderByClauses(List<T> orderByExpressions) {
         if (orderByExpressions == null) {
             throw new IllegalArgumentException();
         }
         this.orderByExpressions = orderByExpressions;
     }
 
-    public List<T> getOrderByExpressions() {
+    public List<T> getOrderByClauses() {
         assert orderByExpressions != null;
         return orderByExpressions;
     }

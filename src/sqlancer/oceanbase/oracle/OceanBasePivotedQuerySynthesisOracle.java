@@ -71,7 +71,7 @@ public class OceanBasePivotedQuerySynthesisOracle
             selectStatement.setOffsetClause(offsetClause);
         }
         List<OceanBaseExpression> orderBy = generateOrderBy(columns);
-        selectStatement.setOrderByExpressions(orderBy);
+        selectStatement.setOrderByClauses(orderBy);
 
         return new SQLQueryAdapter(OceanBaseVisitor.asString(selectStatement), errors);
     }

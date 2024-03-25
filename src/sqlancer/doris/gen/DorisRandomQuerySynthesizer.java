@@ -62,7 +62,7 @@ public final class DorisRandomQuerySynthesizer {
         List<Node<DorisExpression>> noExprColumns = new ArrayList<>(columnOfLeafNode);
 
         if (Randomly.getBoolean()) {
-            select.setOrderByExpressions(Randomly.nonEmptySubset(noExprColumns));
+            select.setOrderByClauses(Randomly.nonEmptySubset(noExprColumns));
         }
         if (Randomly.getBoolean()) {
             select.setGroupByExpressions(noExprColumns);

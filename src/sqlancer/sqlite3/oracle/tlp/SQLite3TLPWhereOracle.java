@@ -27,7 +27,7 @@ public class SQLite3TLPWhereOracle extends SQLite3TLPBase {
 
         boolean orderBy = Randomly.getBooleanWithSmallProbability();
         if (orderBy) {
-            select.setOrderByExpressions(gen.generateOrderBys());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         select.setWhereClause(predicate);
         String firstQueryString = SQLite3Visitor.asString(select);

@@ -342,7 +342,7 @@ public final class PrestoTypedExpressionGenerator extends
         Node<PrestoExpression> predicate = typedExpressionGenerator.generatePredicate();
         select.setWhereClause(predicate);
         if (Randomly.getBooleanWithSmallProbability()) {
-            select.setOrderByExpressions(typedExpressionGenerator.generateOrderBys());
+            select.setOrderByClauses(typedExpressionGenerator.generateOrderBys());
         }
         List<Node<PrestoExpression>> joins = PrestoJoin.getJoins(tableList, globalState);
         select.setJoinList(joins);
@@ -741,7 +741,8 @@ public final class PrestoTypedExpressionGenerator extends
             case ARRAY:
             case INTERVAL_YEAR_TO_MONTH:
             case INTERVAL_DAY_TO_SECOND:
-                // return Randomly.fromOptions(EQUALS, NOT_EQUALS, NOT_EQUALS_ALT, IS_DISTINCT_FROM,
+                // return Randomly.fromOptions(EQUALS, NOT_EQUALS, NOT_EQUALS_ALT,
+                // IS_DISTINCT_FROM,
                 // IS_NOT_DISTINCT_FROM);
             default:
                 return Randomly.fromOptions(EQUALS, NOT_EQUALS, NOT_EQUALS_ALT, IS_DISTINCT_FROM, IS_NOT_DISTINCT_FROM);

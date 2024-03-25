@@ -100,14 +100,14 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
             sb.append(" HAVING ");
             visit(s.getHavingClause());
         }
-        if (!s.getOrderByExpressions().isEmpty()) {
+        if (!s.getOrderByClauses().isEmpty()) {
             sb.append(" ORDER BY ");
-            List<OceanBaseExpression> orderBys = s.getOrderByExpressions();
+            List<OceanBaseExpression> orderBys = s.getOrderByClauses();
             for (int i = 0; i < orderBys.size(); i++) {
                 if (i != 0) {
                     sb.append(", ");
                 }
-                visit(s.getOrderByExpressions().get(i));
+                visit(s.getOrderByClauses().get(i));
             }
         }
         if (s.getLimitClause() != null) {

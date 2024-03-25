@@ -55,7 +55,7 @@ public class StoneDBFuzzOracle implements TestOracle<StoneDBGlobalState> {
         select.setJoinList(joins);
         select.setWhereClause(randomWhereCondition);
         if (Randomly.getBooleanWithSmallProbability()) {
-            select.setOrderByExpressions(
+            select.setOrderByClauses(
                     new StoneDBExpressionGenerator(globalState).setColumns(columns).generateOrderBys());
         }
         select.setJoinList(joins);

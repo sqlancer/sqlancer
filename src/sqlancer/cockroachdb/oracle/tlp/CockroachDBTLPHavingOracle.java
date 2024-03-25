@@ -28,7 +28,7 @@ public class CockroachDBTLPHavingOracle extends CockroachDBTLPBase {
         }
         boolean orderBy = Randomly.getBoolean();
         if (orderBy) {
-            select.setOrderByExpressions(gen.generateOrderBys());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
         select.setHavingClause(null);

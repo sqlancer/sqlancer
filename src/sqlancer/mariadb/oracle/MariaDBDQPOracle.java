@@ -17,6 +17,7 @@ import sqlancer.mariadb.ast.MariaDBColumnName;
 import sqlancer.mariadb.ast.MariaDBExpression;
 import sqlancer.mariadb.ast.MariaDBJoin;
 import sqlancer.mariadb.ast.MariaDBSelectStatement;
+import sqlancer.mariadb.ast.MariaDBTableReference;
 import sqlancer.mariadb.ast.MariaDBVisitor;
 import sqlancer.mariadb.gen.MariaDBExpressionGenerator;
 import sqlancer.mariadb.gen.MariaDBSetGenerator;
@@ -60,7 +61,8 @@ public class MariaDBDQPOracle implements TestOracle<MariaDBGlobalState> {
         select.setJoinList(joinExpressions.stream().map(j -> (MariaDBExpression) j).collect(Collectors.toList()));
 
         // Set the from clause from the tables that are not used in the join.
-        select.setFromTables(tables.getTables());
+        select.setFromList(
+                tables.getTables().stream().map(t -> new MariaDBTableReference(t)).collect(Collectors.toList()));
 
         // Get the result of the first query
         String originalQueryString = MariaDBVisitor.asString(select);

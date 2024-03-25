@@ -23,6 +23,7 @@ import sqlancer.mariadb.ast.MariaDBPostfixUnaryOperation;
 import sqlancer.mariadb.ast.MariaDBPostfixUnaryOperation.MariaDBPostfixUnaryOperator;
 import sqlancer.mariadb.ast.MariaDBSelectStatement;
 import sqlancer.mariadb.ast.MariaDBSelectStatement.MariaDBSelectType;
+import sqlancer.mariadb.ast.MariaDBTableReference;
 import sqlancer.mariadb.ast.MariaDBText;
 import sqlancer.mariadb.ast.MariaDBVisitor;
 import sqlancer.mariadb.gen.MariaDBExpressionGenerator;
@@ -76,7 +77,7 @@ public class MariaDBNoRECOracle extends NoRECBase<MariaDBGlobalState> implements
                 randomWhereCondition);
         MariaDBText asText = new MariaDBText(isTrue, " as count", false);
         select.setFetchColumns(Arrays.asList(asText));
-        select.setFromTables(Arrays.asList(randomTable));
+        select.setFromList(Arrays.asList(new MariaDBTableReference(randomTable)));
         select.setSelectType(MariaDBSelectType.ALL);
         int secondCount = 0;
 
@@ -103,7 +104,7 @@ public class MariaDBNoRECOracle extends NoRECBase<MariaDBGlobalState> implements
                 new MariaDBColumnName(new MariaDBColumn("*", MariaDBDataType.INT, false, 0)),
                 MariaDBAggregateFunction.COUNT);
         select.setFetchColumns(Arrays.asList(aggr));
-        select.setFromTables(Arrays.asList(randomTable));
+        select.setFromList(Arrays.asList(new MariaDBTableReference(randomTable)));
         select.setWhereClause(randomWhereCondition);
         select.setSelectType(MariaDBSelectType.ALL);
         int firstCount;

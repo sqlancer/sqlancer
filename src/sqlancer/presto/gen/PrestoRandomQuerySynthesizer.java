@@ -50,7 +50,7 @@ public final class PrestoRandomQuerySynthesizer {
             select.setWhereClause(gen.generateExpression(PrestoSchema.PrestoCompositeDataType.getRandomWithoutNull()));
         }
         if (Randomly.getBoolean()) {
-            select.setOrderByExpressions(gen.generateOrderBys());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         if (Randomly.getBoolean()) {
             select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
@@ -61,7 +61,8 @@ public final class PrestoRandomQuerySynthesizer {
         }
         // if (Randomly.getBoolean()) {
         // select.setOffsetClause(
-        // PrestoConstant.createIntConstant(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)));
+        // PrestoConstant.createIntConstant(Randomly.getNotCachedInteger(0,
+        // Integer.MAX_VALUE)));
         // }
         if (Randomly.getBoolean()) {
             select.setHavingClause(gen.generateHavingClause());
