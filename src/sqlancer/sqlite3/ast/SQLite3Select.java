@@ -46,10 +46,6 @@ public class SQLite3Select extends SQLite3Expression {
         this.setFromOptions(fromOptions);
     }
 
-    public void setFromTables(List<SQLite3Expression> fromTables) {
-        this.setFromList(fromTables);
-    }
-
     public SelectType getFromOptions() {
         return fromOptions;
     }

@@ -48,7 +48,7 @@ public class SQLite3TLPBase extends TernaryLogicPartitioningOracleBase<SQLite3Ex
         List<Join> joinStatements = gen.getRandomJoinClauses(tables);
         List<SQLite3Expression> tableRefs = SQLite3Common.getTableRefs(tables, s);
         select.setJoinClauses(joinStatements.stream().collect(Collectors.toList()));
-        select.setFromTables(tableRefs);
+        select.setFromList(tableRefs);
         select.setWhereClause(null);
     }
 

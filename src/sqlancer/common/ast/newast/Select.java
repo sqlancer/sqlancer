@@ -8,8 +8,6 @@ import sqlancer.common.schema.AbstractTableColumn;
 public interface Select<J extends Join<E, T, C>, E extends Expression<C>, T extends AbstractTable<C, ?, ?>, C extends AbstractTableColumn<?, ?>>
         extends Expression<C> {
 
-    void setFromTables(List<E> fromTables);
-
     List<E> getFromList();
 
     void setFromList(List<E> fromList);

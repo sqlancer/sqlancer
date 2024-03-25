@@ -75,7 +75,7 @@ public class SQLite3PivotedQuerySynthesisOracle
                 .filter(c -> !SQLite3Schema.ROWID_STRINGS.contains(c.getName())).collect(Collectors.toList());
         List<Join> joinStatements = getJoinStatements(globalState, tables, columnsWithoutRowid);
         selectStatement.setJoinClauses(joinStatements);
-        selectStatement.setFromTables(SQLite3Common.getTableRefs(tables, globalState.getSchema()));
+        selectStatement.setFromList(SQLite3Common.getTableRefs(tables, globalState.getSchema()));
 
         fetchColumns = Randomly.nonEmptySubset(columnsWithoutRowid);
         List<SQLite3Table> allTables = new ArrayList<>();
