@@ -83,56 +83,7 @@ public final class SQLite3Errors {
     }
 
     public static void addExpectedExpressionErrors(ExpectedErrors errors) {
-        errors.add("[SQLITE_BUSY]  The database file is locked");
-        errors.add("FTS expression tree is too large");
-        errors.add("String or BLOB exceeds size limit");
-        errors.add("[SQLITE_ERROR] SQL error or missing database (integer overflow)");
-        errors.add("ORDER BY term out of range");
-        errors.add("GROUP BY term out of range");
-        errors.add("not authorized"); // load_extension
-        errors.add("aggregate functions are not allowed in the GROUP BY clause");
-        errors.add("parser stack overflow");
-
-        // nested query
-        errors.add("misuse of aggregate");
-        errors.add("second argument to nth_value must be a positive integer");
-        errors.add("parser stack overflow");
-
-        // window functions
-        errors.add("RANGE with offset PRECEDING/FOLLOWING requires one ORDER BY expression");
-        errors.add("frame starting offset must be a non-negative integer");
-        errors.add("frame starting offset must be a non-negative number");
-        errors.add("unsupported frame specification");
-        errors.add("frame ending offset must be a non-negative integer");
-        errors.add("frame ending offset must be a non-negative number");
-        errors.add("argument of ntile must be a positive integer");
-
-        errors.add("malformed JSON");
-        errors.add("JSON cannot hold BLOB values");
-        errors.add("JSON path error");
-        errors.add("json_insert() needs an odd number of arguments");
-        errors.add("json_object() labels must be TEXT");
-        errors.add("json_object() requires an even number of arguments");
-        errors.add("argument of ntile must be a positive integer");
-
-        // fts5 functions
-        errors.add("unable to use function highlight in the requested context");
-        errors.add("no such cursor");
-
-        // INDEXED BY
-        errors.add("no query solution");
-        errors.add("no such index");
-
-        // UNION/INTERSECT ...
-        errors.add("ORDER BY term does not match any column in the result set");
-        errors.add("ORDER BY clause should come after");
-        errors.add("LIMIT clause should come after");
-
-        errors.add("unsafe use of load_extension");
-        errors.add("table does not support scanning");
-        errors.add("circularly defined");
-        errors.add("[SQLITE_ERROR] SQL error or missing database"); // A possible delay in the execution of DROP TABLE
-                                                                    // statement.
+        errors.addAll(getExpectedExpressionErrors());
     }
 
     public static List<String> getMatchQueryErrors() {
