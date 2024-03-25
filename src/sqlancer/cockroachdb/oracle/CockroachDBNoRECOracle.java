@@ -89,7 +89,7 @@ public class CockroachDBNoRECOracle extends NoRECBase<CockroachDBGlobalState>
         select.setWhereClause(whereCondition);
         select.setJoinList(joinExpressions);
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByExpressions(gen.getOrderingTerms());
+            select.setOrderByClauses(gen.getOrderingTerms());
         }
         String s = CockroachDBVisitor.asString(select);
         if (state.getOptions().logEachSelect()) {

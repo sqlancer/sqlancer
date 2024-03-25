@@ -147,9 +147,9 @@ public class DorisToStringVisitor extends NewToStringVisitor<DorisExpression> {
             sb.append(" HAVING ");
             visit(select.getHavingClause());
         }
-        if (!select.getOrderByExpressions().isEmpty()) {
+        if (!select.getOrderByClauses().isEmpty()) {
             sb.append(" ORDER BY ");
-            visit(select.getOrderByExpressions());
+            visit(select.getOrderByClauses());
         }
         if (select.getLimitClause() != null) {
             sb.append(" LIMIT ");

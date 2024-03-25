@@ -99,7 +99,7 @@ public class SQLite3PivotedQuerySynthesisOracle
         }
         /* PQS does not check for ordering, so we can generate any ORDER BY clause */
         List<SQLite3Expression> orderBy = new SQLite3ExpressionGenerator(globalState).generateOrderBys();
-        selectStatement.setOrderByExpressions(orderBy);
+        selectStatement.setOrderByClauses(orderBy);
         if (!groupByClause.isEmpty() && Randomly.getBoolean()) {
             selectStatement.setHavingClause(generateRectifiedExpression(columns, pivotRow, true));
         }

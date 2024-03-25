@@ -35,7 +35,7 @@ public class CnosDBTLPHavingOracle extends CnosDBTLPBase {
 
         boolean orderBy = Randomly.getBoolean();
         if (orderBy) {
-            select.setOrderByExpressions(gen.generateOrderBy());
+            select.setOrderByClauses(gen.generateOrderBy());
         }
         select.setHavingClause(predicate);
         String firstQueryString = CnosDBVisitor.asString(select);

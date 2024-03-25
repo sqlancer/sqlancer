@@ -25,9 +25,9 @@ public class MySQLTLPWhereOracle extends MySQLQueryPartitioningBase {
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         if (Randomly.getBoolean()) {
-            select.setOrderByExpressions(gen.generateOrderBys());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
-        select.setOrderByExpressions(Collections.emptyList());
+        select.setOrderByClauses(Collections.emptyList());
         select.setWhereClause(predicate);
         String firstQueryString = MySQLVisitor.asString(select);
         select.setWhereClause(negatedPredicate);

@@ -170,9 +170,9 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
             visit(s.getHavingClause());
 
         }
-        if (!s.getOrderByExpressions().isEmpty()) {
+        if (!s.getOrderByClauses().isEmpty()) {
             sb.append(" ORDER BY ");
-            visit(s.getOrderByExpressions());
+            visit(s.getOrderByClauses());
         }
         if (s.getLimitClause() != null) {
             sb.append(" LIMIT ");

@@ -102,7 +102,8 @@ public final class SQLite3RandomQuerySynthesizer {
         select.setFromList(SQLite3Common.getTableRefs(tables, s));
         // TODO: no values are referenced from this sub query yet
         // if (Randomly.getBooleanWithSmallProbability()) {
-        // select.getFromList().add(SQLite3RandomQuerySynthesizer.generate(globalState, Randomly.smallNumber() + 1));
+        // select.getFromList().add(SQLite3RandomQuerySynthesizer.generate(globalState,
+        // Randomly.smallNumber() + 1));
         // }
 
         // WHERE
@@ -121,7 +122,7 @@ public final class SQLite3RandomQuerySynthesizer {
         boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
         if (orderBy) {
             // ORDER BY
-            select.setOrderByExpressions(gen.generateOrderBys());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         if (Randomly.getBooleanWithRatherLowProbability()) {
             // LIMIT

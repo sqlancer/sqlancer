@@ -144,7 +144,7 @@ public class PostgresNoRECOracle extends NoRECBase<PostgresGlobalState> implemen
         select.setFromList(randomTables);
         select.setWhereClause(randomWhereCondition);
         if (Randomly.getBooleanWithSmallProbability()) {
-            select.setOrderByExpressions(new PostgresExpressionGenerator(state).setColumns(columns).generateOrderBy());
+            select.setOrderByClauses(new PostgresExpressionGenerator(state).setColumns(columns).generateOrderBy());
         }
         select.setSelectType(SelectType.ALL);
         select.setJoinClauses(joinStatements);

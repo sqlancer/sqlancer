@@ -127,7 +127,7 @@ public class SQLite3NoRECOracle extends NoRECBase<SQLite3GlobalState> implements
             SQLite3Expression randomWhereCondition) throws SQLException {
         boolean useAggregate = Randomly.getBoolean();
         if (Randomly.getBoolean()) {
-            select.setOrderByExpressions(gen.generateOrderBys());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         if (useAggregate) {
             select.setFetchColumns(Arrays.asList(new SQLite3Aggregate(Collections.emptyList(),

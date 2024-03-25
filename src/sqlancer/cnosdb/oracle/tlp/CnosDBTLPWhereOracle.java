@@ -24,13 +24,13 @@ public class CnosDBTLPWhereOracle extends CnosDBTLPBase {
 
     protected void whereCheck() throws Exception {
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByExpressions(gen.generateOrderBy());
+            select.setOrderByClauses(gen.generateOrderBy());
         }
         String originalQueryString = CnosDBVisitor.asString(select);
         List<String> resultSet = CnosDBComparatorHelper.getResultSetFirstColumnAsString(originalQueryString,
                 CnosDBExpectedError.expectedErrors(), state);
 
-        select.setOrderByExpressions(Collections.emptyList());
+        select.setOrderByClauses(Collections.emptyList());
         select.setWhereClause(predicate);
         String firstQueryString = CnosDBVisitor.asString(select);
         select.setWhereClause(negatedPredicate);

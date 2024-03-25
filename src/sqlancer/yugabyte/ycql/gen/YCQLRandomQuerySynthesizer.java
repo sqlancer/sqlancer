@@ -38,7 +38,7 @@ public final class YCQLRandomQuerySynthesizer {
             select.setWhereClause(gen.generateExpression());
         }
         if (Randomly.getBoolean()) {
-            select.setOrderByExpressions(gen.generateOrderBys());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         if (Randomly.getBoolean()) {
             select.setGroupByExpressions(Randomly.nonEmptySubset(select.getFetchColumns()));

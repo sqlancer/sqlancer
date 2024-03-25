@@ -46,7 +46,7 @@ public final class MaterializeRandomQueryGenerator {
             }
         }
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByExpressions(gen.generateOrderBy());
+            select.setOrderByClauses(gen.generateOrderBy());
         }
         if (Randomly.getBoolean()) {
             select.setLimitClause(MaterializeConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));

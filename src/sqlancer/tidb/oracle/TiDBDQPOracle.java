@@ -54,7 +54,7 @@ public class TiDBDQPOracle implements TestOracle<TiDBGlobalState> {
             select.setWhereClause(gen.generateExpression());
         }
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByExpressions(gen.generateOrderBys());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         if (Randomly.getBoolean()) {
             select.setLimitClause(gen.generateExpression());

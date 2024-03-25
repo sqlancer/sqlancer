@@ -141,7 +141,7 @@ public class YSQLNoRECOracle extends NoRECBase<YSQLGlobalState> implements TestO
         select.setFromList(randomTables);
         select.setWhereClause(randomWhereCondition);
         if (Randomly.getBooleanWithSmallProbability()) {
-            select.setOrderByExpressions(new YSQLExpressionGenerator(state).setColumns(columns).generateOrderBy());
+            select.setOrderByClauses(new YSQLExpressionGenerator(state).setColumns(columns).generateOrderBy());
         }
         select.setSelectType(YSQLSelect.SelectType.ALL);
         select.setJoinClauses(joinStatements);

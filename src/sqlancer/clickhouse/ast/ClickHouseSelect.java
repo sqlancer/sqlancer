@@ -64,11 +64,11 @@ public class ClickHouseSelect extends ClickHouseExpression {
         return limitClause;
     }
 
-    public List<ClickHouseExpression> getOrderByClause() {
+    public List<ClickHouseExpression> getOrderByClauses() {
         return orderByClause;
     }
 
-    public void setOrderByExpressions(List<ClickHouseExpression> orderBy) {
+    public void setOrderByClauses(List<ClickHouseExpression> orderBy) {
         this.orderByClause = orderBy;
     }
 

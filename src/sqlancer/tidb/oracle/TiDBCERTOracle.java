@@ -63,7 +63,7 @@ public class TiDBCERTOracle extends CERTOracleBase<TiDBGlobalState> implements T
             select.setWhereClause(gen.generateExpression());
         }
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByExpressions(gen.generateOrderBys());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         if (Randomly.getBoolean()) {
             select.setGroupByExpressions(select.getFetchColumns());
@@ -115,7 +115,8 @@ public class TiDBCERTOracle extends CERTOracleBase<TiDBGlobalState> implements T
         TiDBJoin join = (TiDBJoin) Randomly.fromList(select.getJoinList());
 
         // CROSS does not need ON Condition, while other joins do
-        // To avoid Null pointer, generating a new new condition when mutating CROSS to other joins
+        // To avoid Null pointer, generating a new new condition when mutating CROSS to
+        // other joins
         if (join.getJoinType() == JoinType.CROSS) {
             List<TiDBColumn> columns = new ArrayList<>();
             columns.addAll(((TiDBTableReference) join.getLeftTable()).getTable().getColumns());

@@ -97,9 +97,9 @@ public class ClickHouseToStringVisitor extends ToStringVisitor<ClickHouseExpress
             sb.append(" HAVING ");
             visit(select.getHavingClause());
         }
-        if (!select.getOrderByClause().isEmpty()) {
+        if (!select.getOrderByClauses().isEmpty()) {
             sb.append(" ORDER BY ");
-            visit(select.getOrderByClause());
+            visit(select.getOrderByClauses());
         }
         if (inner) {
             sb.append(")");

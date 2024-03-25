@@ -101,14 +101,14 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
                 visit(groupBys.get(i));
             }
         }
-        if (!s.getOrderByExpressions().isEmpty()) {
+        if (!s.getOrderByClauses().isEmpty()) {
             sb.append(" ORDER BY ");
-            List<MySQLExpression> orderBys = s.getOrderByExpressions();
+            List<MySQLExpression> orderBys = s.getOrderByClauses();
             for (int i = 0; i < orderBys.size(); i++) {
                 if (i != 0) {
                     sb.append(", ");
                 }
-                visit(s.getOrderByExpressions().get(i));
+                visit(s.getOrderByClauses().get(i));
             }
         }
         if (s.getLimitClause() != null) {

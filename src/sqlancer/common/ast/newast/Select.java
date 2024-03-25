@@ -24,9 +24,9 @@ public interface Select<J extends Join<E, T, C>, E extends Expression<C>, T exte
 
     Expression<C> getLimitClause();
 
-    List<E> getOrderByClause();
+    List<E> getOrderByClauses();
 
-    void setOrderByExpressions(List<E> orderBy);
+    void setOrderByClauses(List<E> orderBy);
 
     void setOffsetClause(E offsetClause);
 

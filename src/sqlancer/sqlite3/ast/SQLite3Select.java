@@ -86,11 +86,11 @@ public class SQLite3Select extends SQLite3Expression {
         return limitClause;
     }
 
-    public List<SQLite3Expression> getOrderByClause() {
+    public List<SQLite3Expression> getOrderByClauses() {
         return orderByClause;
     }
 
-    public void setOrderByExpressions(List<SQLite3Expression> orderBy) {
+    public void setOrderByClauses(List<SQLite3Expression> orderBy) {
         this.orderByClause = orderBy;
     }
 

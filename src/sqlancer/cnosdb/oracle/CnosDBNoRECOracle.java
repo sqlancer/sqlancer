@@ -141,7 +141,7 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
         select.setFromList(randomTables);
         select.setWhereClause(randomWhereCondition);
         if (Randomly.getBooleanWithSmallProbability()) {
-            select.setOrderByExpressions(new CnosDBExpressionGenerator(state).setColumns(columns).generateOrderBy());
+            select.setOrderByClauses(new CnosDBExpressionGenerator(state).setColumns(columns).generateOrderBy());
         }
         select.setSelectType(SelectType.ALL);
         select.setJoinClauses(joinStatements);

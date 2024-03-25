@@ -58,7 +58,7 @@ public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartition
         }
         select.setFetchColumns(Arrays.asList(aggregate));
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByExpressions(gen.generateOrderBys());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         originalQuery = DuckDBToStringVisitor.asString(select);
         firstResult = getAggregateResult(originalQuery);

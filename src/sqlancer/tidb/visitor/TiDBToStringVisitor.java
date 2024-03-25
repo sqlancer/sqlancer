@@ -74,9 +74,9 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
             sb.append(" HAVING ");
             visit(select.getHavingClause());
         }
-        if (!select.getOrderByExpressions().isEmpty()) {
+        if (!select.getOrderByClauses().isEmpty()) {
             sb.append(" ORDER BY ");
-            visit(select.getOrderByExpressions());
+            visit(select.getOrderByClauses());
         }
     }
 
