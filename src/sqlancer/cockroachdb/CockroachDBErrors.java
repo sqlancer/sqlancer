@@ -1,5 +1,8 @@
 package sqlancer.cockroachdb;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import sqlancer.common.query.ExpectedErrors;
 
 public final class CockroachDBErrors {
@@ -7,7 +10,9 @@ public final class CockroachDBErrors {
     private CockroachDBErrors() {
     }
 
-    public static void addExpressionErrors(ExpectedErrors errors) {
+    public static List<String> getExpressionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add(" non-streaming operator encountered when vectorize=auto");
 
         if (CockroachDBBugs.bug46915) {
@@ -105,10 +110,10 @@ public final class CockroachDBErrors {
         errors.add("as type time");
         errors.add("as TimeTZ");
         errors.add("as type decimal");
-        addIntervalTypeErrors(errors);
-        addFunctionErrors(errors);
-        addGroupByErrors(errors);
-        addJoinTypes(errors);
+        errors.addAll(getIntervalTypeErrors());
+        errors.addAll(getFunctionErrors());
+        errors.addAll(getGroupByErrors());
+        errors.addAll(getJoinTypes());
         errors.add("as int4, found type: decimal");
         errors.add("to be of type int2, found type decimal");
         errors.add("to be of type int, found type decimal"); // arithmetic overflows
@@ -210,11 +215,19 @@ public final class CockroachDBErrors {
         errors.add("argument of OFFSET must be type int, not type decimal");
         errors.add("ERROR: for SELECT DISTINCT, ORDER BY expressions must appear in select list");
 
-        addArrayErrors(errors);
-        addComputedColumnErrors(errors);
+        errors.addAll(getArrayErrors());
+        errors.addAll(getComputedColumnErrors());
+
+        return errors;
     }
 
-    private static void addArrayErrors(ExpectedErrors errors) {
+    public static void addExpressionErrors(ExpectedErrors errors) {
+        errors.addAll(getExpressionErrors());
+    }
+
+    private static List<String> getArrayErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         // arrays
         errors.add("cannot determine type of empty array");
         errors.add("unknown signature: max(unknown[])");
@@ -260,18 +273,29 @@ public final class CockroachDBErrors {
         errors.add("to be of type int[], found type decimal[]");
 
         errors.add("to be of type unknown[]"); // IF with null array
+
+        return errors;
     }
 
-    private static void addIntervalTypeErrors(ExpectedErrors errors) {
+    private static List<String> getIntervalTypeErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("overflow during Encode");
         errors.add("type interval");
+
+        return errors;
     }
 
-    private static void addJoinTypes(ExpectedErrors errors) {
+    private static List<String> getJoinTypes() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("JOIN/USING types");
+
+        return errors;
     }
 
-    private static void addGroupByErrors(ExpectedErrors errors) {
+    private static List<String> getGroupByErrors() {
+        ArrayList<String> errors = new ArrayList<>();
         errors.add("non-integer constant in GROUP BY");
 
         // https://github.com/cockroachdb/cockroach/pull/46649 -> aggregates on NULL are
@@ -293,9 +317,11 @@ public final class CockroachDBErrors {
         errors.add("unknown signature: abs(string)");
         errors.add("unknown signature: acos(string)");
 
+        return errors;
     }
 
-    private static void addFunctionErrors(ExpectedErrors errors) {
+    private static List<String> getFunctionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
         // functions
         errors.add("abs of min integer value (-9223372036854775808) not defined"); // ABS
         errors.add("the input string must not be empty"); // ASCII
@@ -311,15 +337,29 @@ public final class CockroachDBErrors {
         errors.add("substring(): negative substring length"); // substring
         errors.add("negative substring length"); // substring
         errors.add("must be greater than zero"); // split_part
+
+        return errors;
+    }
+
+    public static List<String> getTransactionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
+        errors.add("current transaction is aborted");
+
+        return errors;
     }
 
     public static void addTransactionErrors(ExpectedErrors errors) {
-        errors.add("current transaction is aborted");
+        errors.addAll(getTransactionErrors());
     }
 
-    private static void addComputedColumnErrors(ExpectedErrors errors) {
+    private static List<String> getComputedColumnErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         // computed columns
         errors.add("computed column expressions cannot reference computed columns");
+
+        return errors;
     }
 
 }

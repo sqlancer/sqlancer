@@ -1,5 +1,8 @@
 package sqlancer.databend;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import sqlancer.common.query.ExpectedErrors;
 
 public final class DatabendErrors {
@@ -7,7 +10,9 @@ public final class DatabendErrors {
     private DatabendErrors() {
     }
 
-    public static void addExpressionErrors(ExpectedErrors errors) {
+    public static List<String> getExpressionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("Division by zero");
         errors.add("divided by zero");
         errors.add("/ by zero");
@@ -45,20 +50,42 @@ public final class DatabendErrors {
          * ('067596','19'), ('', '87');
          */
         errors.add("Can't cast column from null into non-nullable type");
+
+        return errors;
     }
 
-    public static void addInsertErrors(ExpectedErrors errors) {
+    public static void addExpressionErrors(ExpectedErrors errors) {
+        errors.addAll(getExpressionErrors());
+    }
+
+    public static List<String> getInsertErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("Division by zero");
         errors.add("/ by zero");
         errors.add("Can't cast column from null into non-nullable type");
         errors.add("number overflowed while evaluating function `"); // 不能在int16类型column上插入int64的数据
+
+        return errors;
     }
 
-    public static void addGroupByErrors(ExpectedErrors errors) {
+    public static void addInsertErrors(ExpectedErrors errors) {
+        errors.addAll(getInsertErrors());
+    }
+
+    public static List<String> getGroupByErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("Division by zero");
         errors.add("/ by zero");
         errors.add("Can't cast column from null into non-nullable type");
         errors.add("GROUP BY position");
+
+        return errors;
+    }
+
+    public static void addGroupByErrors(ExpectedErrors errors) {
+        errors.addAll(getGroupByErrors());
     }
 
 }

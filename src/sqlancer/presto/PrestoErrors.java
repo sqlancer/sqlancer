@@ -1,5 +1,8 @@
 package sqlancer.presto;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import sqlancer.common.query.ExpectedErrors;
 
 public final class PrestoErrors {
@@ -7,7 +10,9 @@ public final class PrestoErrors {
     private PrestoErrors() {
     }
 
-    public static void addExpressionErrors(ExpectedErrors errors) {
+    public static List<String> getExpressionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         // Presto errors
         errors.add("cannot be applied to");
         errors.add("LIKE expression must evaluate to a varchar");
@@ -57,9 +62,17 @@ public final class PrestoErrors {
 
         // ARRAY
         errors.add("Unknown type: ARRAY");
+
+        return errors;
     }
 
-    private static void addRegexErrors(ExpectedErrors errors) {
+    public static void addExpressionErrors(ExpectedErrors errors) {
+        errors.addAll(getExpressionErrors());
+    }
+
+    private static List<String> getRegexErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("missing ]");
         errors.add("missing )");
         errors.add("invalid escape sequence");
@@ -69,9 +82,13 @@ public final class PrestoErrors {
         errors.add("invalid perl operator");
         errors.add("invalid character class range");
         errors.add("width is not integer");
+
+        return errors;
     }
 
-    private static void addFunctionErrors(ExpectedErrors errors) {
+    private static List<String> getFunctionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("SUBSTRING cannot handle negative lengths");
         errors.add("is undefined outside [-1,1]"); // ACOS etc
         errors.add("invalid type specifier"); // PRINTF
@@ -90,12 +107,16 @@ public final class PrestoErrors {
         errors.add("Could not choose a best candidate function for the function call"); // monthname
         errors.add("expected a numeric precision field"); // ROUND
         errors.add("with non-constant precision is not supported"); // ROUND
+
+        return errors;
     }
 
     // TODO: cover presto error
-    public static void addInsertErrors(ExpectedErrors errors) {
-        addRegexErrors(errors);
-        addFunctionErrors(errors);
+    public static List<String> getInsertErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
+        errors.addAll(getRegexErrors());
+        errors.addAll(getFunctionErrors());
 
         errors.add("NOT NULL constraint failed");
         errors.add("PRIMARY KEY or UNIQUE constraint violated");
@@ -118,10 +139,23 @@ public final class PrestoErrors {
         errors.add("Values rows have mismatched types");
         errors.add("Invalid numeric literal");
 
+        return errors;
+    }
+
+    public static void addInsertErrors(ExpectedErrors errors) {
+        errors.addAll(getInsertErrors());
+    }
+
+    public static List<String> getGroupByErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
+        errors.add("must be an aggregate expression or appear in GROUP BY clause");
+
+        return errors;
     }
 
     public static void addGroupByErrors(ExpectedErrors errors) {
-        errors.add("must be an aggregate expression or appear in GROUP BY clause");
+        errors.addAll(getGroupByErrors());
     }
 
 }
