@@ -7,12 +7,14 @@ on:
     paths:
       - 'src/**'
       - '.github/workflows/*.yml'
+      - 'pom.xml'
   pull_request:
     branches:
       - main
     paths:
       - 'src/**'
       - '.github/workflows/*.yml'
+      - 'pom.xml'
 
 jobs:
   misc:
