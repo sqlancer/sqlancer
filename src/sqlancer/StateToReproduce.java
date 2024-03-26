@@ -104,6 +104,7 @@ public class StateToReproduce {
         private final List<Query<?>> statements = new ArrayList<>();
 
         private boolean success;
+        private boolean reproducer;
 
         public OracleRunReproductionState() {
             StateToReproduce.this.localState = this;
@@ -113,8 +114,16 @@ public class StateToReproduce {
             this.success = true;
         }
 
+        public void executeInReproducer() {
+            this.reproducer = true;
+        }
+
         public void log(String s) {
-            statements.add(databaseProvider.getLoggableFactory().getQueryForStateToReproduce(s));
+            // When running reproducer, original logger is closed. We do not want to re-create it and overwrite existing
+            // file.
+            if (!this.reproducer) {
+                statements.add(databaseProvider.getLoggableFactory().getQueryForStateToReproduce(s));
+            }
         }
 
         @Override

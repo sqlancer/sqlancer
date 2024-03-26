@@ -472,6 +472,7 @@ public final class Main {
                     }
                     G newGlobalState = createGlobalState();
                     newGlobalState.setState(stateToRepro);
+                    newGlobalState.getState().getLocalState().executeInReproducer();
                     newGlobalState.setRandomly(r);
                     newGlobalState.setDatabaseName(databaseName);
                     newGlobalState.setMainOptions(options);
@@ -489,8 +490,8 @@ public final class Main {
                     }
 
                     try {
-                        logger.getReduceFileWriter().close();
-                        logger.reduceFileWriter = null;
+                        newGlobalState.getLogger().getReduceFileWriter().close();
+                        newGlobalState.getLogger().reduceFileWriter = null;
                     } catch (IOException e) {
                         throw new AssertionError(e);
                     }
