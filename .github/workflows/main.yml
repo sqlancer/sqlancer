@@ -8,6 +8,7 @@ on:
       - 'src/**'
       - 'test/**'
       - '.github/workflows/*.yml'
+      - 'pom.xml'
   pull_request:
     branches:
       - main
@@ -15,6 +16,7 @@ on:
       - 'src/**'
       - 'test/**'
       - '.github/workflows/*.yml'
+      - 'pom.xml'
 
 jobs:
   misc:
@@ -214,7 +216,9 @@ jobs:
       - name: Build
         run: mvn -B package -DskipTests=true
       - name: DuckDB Tests
-        run: mvn -Dtest=TestDuckDB test
+        run: |
+          mvn -Dtest=TestDuckDBTLP test
+          mvn -Dtest=TestDuckDBNoREC test
 
   h2:
     name: DBMS Tests (H2)
