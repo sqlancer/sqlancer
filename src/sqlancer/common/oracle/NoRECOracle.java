@@ -57,7 +57,7 @@ public class NoRECOracle<J extends Join<E, T, C>, E extends Expression<C>, S ext
 
         int optimizedCount = shouldUseAggregate ? extractCounts(optimizedQueryString, errors, state)
                 : countRows(optimizedQueryString, errors, state);
-        int unoptimizedCount = extractCounts(optimizedQueryString, errors, state);
+        int unoptimizedCount = extractCounts(unoptimizedQueryString, errors, state);
 
         if (optimizedCount == -1 || unoptimizedCount == -1) {
             throw new IgnoreMeException();
