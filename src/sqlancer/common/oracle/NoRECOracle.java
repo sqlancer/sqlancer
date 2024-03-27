@@ -29,6 +29,9 @@ public class NoRECOracle<J extends Join<E, T, C>, E extends Expression<C>, S ext
     private String lastQueryString;
 
     public NoRECOracle(G state, NoRECGenerator<J, E, T, C> gen, ExpectedErrors expectedErrors) {
+        if (state == null || gen == null || expectedErrors == null) {
+            throw new IllegalArgumentException("Null variables used to initialize test oracle.");
+        }
         this.state = state;
         this.gen = gen;
         this.errors = expectedErrors;
