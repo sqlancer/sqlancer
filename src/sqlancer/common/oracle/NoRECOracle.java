@@ -52,8 +52,14 @@ public class NoRECOracle<J extends Join<E, T, C>, E extends Expression<C>, S ext
         String optimizedQueryString = gen.generateOptimizedQueryString(select, randomWhereCondition,
                 shouldUseAggregate);
         lastQueryString = optimizedQueryString;
+        if (state.getOptions().logEachSelect()) {
+            state.getLogger().writeCurrent(optimizedQueryString);
+        }
 
         String unoptimizedQueryString = gen.generateUnoptimizedQueryString(select, randomWhereCondition);
+        if (state.getOptions().logEachSelect()) {
+            state.getLogger().writeCurrent(unoptimizedQueryString);
+        }
 
         int optimizedCount = shouldUseAggregate ? extractCounts(optimizedQueryString, errors, state)
                 : countRows(optimizedQueryString, errors, state);
