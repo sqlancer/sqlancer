@@ -44,7 +44,5 @@ public interface Select<J extends Join<E, T, C>, E extends Expression<C>, T exte
 
     Expression<C> getHavingClause();
 
-    Expression<C> toSum();
-
     String asString();
 }

@@ -21,7 +21,29 @@ public interface NoRECGenerator<J extends Join<E, T, C>, E extends Expression<C>
 
     List<E> getTableRefs();
 
-    E generateOptimizedFetchColumn(boolean shouldUseAggregate);
+    /**
+     * Generates a query string that is likely to be optimized by the DBMS.
+     *
+     * @param select
+     *            the base select expression used to generate the query
+     * @param whereCondition
+     *            a condition where records will be checked with
+     * @param shouldUseAggregate
+     *            whether to aggregate the record counts (`true`) or display records as is (`false`)
+     *
+     * @return a query string to be executed
+     */
+    String generateOptimizedQueryString(Select<J, E, T, C> select, E whereCondition, boolean shouldUseAggregate);
 
-    E generateUnoptimizedFetchColumn(E whereCondition);
+    /**
+     * Generates a query string that is unlikely to be optimized by the DBMS.
+     *
+     * @param select
+     *            the base select expression used to generate the query
+     * @param whereCondition
+     *            the condition each record will be checked with
+     *
+     * @return a query string to be executed
+     */
+    String generateUnoptimizedQueryString(Select<J, E, T, C> select, E whereCondition);
 }

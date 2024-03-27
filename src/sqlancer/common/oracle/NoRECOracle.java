@@ -1,7 +1,6 @@
 package sqlancer.common.oracle;
 
 import java.sql.SQLException;
-import java.util.Arrays;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
@@ -50,14 +49,11 @@ public class NoRECOracle<J extends Join<E, T, C>, E extends Expression<C>, S ext
         E randomWhereCondition = gen.generateBooleanExpression();
 
         boolean shouldUseAggregate = Randomly.getBoolean();
-        select.setFetchColumns(Arrays.asList(gen.generateOptimizedFetchColumn(shouldUseAggregate)));
-        select.setWhereClause(randomWhereCondition);
-        String optimizedQueryString = select.asString();
+        String optimizedQueryString = gen.generateOptimizedQueryString(select, randomWhereCondition,
+                shouldUseAggregate);
         lastQueryString = optimizedQueryString;
 
-        select.setFetchColumns(Arrays.asList(gen.generateUnoptimizedFetchColumn(randomWhereCondition)));
-        select.setWhereClause(null);
-        String unoptimizedQueryString = select.toSum().toString();
+        String unoptimizedQueryString = gen.generateUnoptimizedQueryString(select, randomWhereCondition);
 
         int optimizedCount = shouldUseAggregate ? extractCounts(optimizedQueryString, errors, state)
                 : countRows(optimizedQueryString, errors, state);
