@@ -6,14 +6,17 @@ import java.util.List;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.common.ast.newast.Aggregate;
 import sqlancer.sqlite3.SQLite3Provider;
+import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.schema.SQLite3DataType;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 
 /**
  * @see <a href="https://www.sqlite.org/lang_aggfunc.html">Built-in Aggregate Functions</a>
  */
-public class SQLite3Aggregate extends SQLite3Expression {
+public class SQLite3Aggregate extends SQLite3Expression implements Aggregate<SQLite3Expression, SQLite3Column> {
 
     private final SQLite3AggregateFunction func;
     private final List<SQLite3Expression> expr;
@@ -127,6 +130,22 @@ public class SQLite3Aggregate extends SQLite3Expression {
         assert !SQLite3Provider.mustKnowResult;
         return null;
         // return func.apply(expr.getExpectedValue());
+    }
+
+    @Override
+    public SQLite3Expression asExpression() {
+        return this;
+    }
+
+    @Override
+    public String asString() {
+        return SQLite3Visitor.asString(this);
+    }
+
+    @Override
+    public String asAggregatedString(String... from) {
+        String combinedFrom = String.join(" UNION ALL ", from);
+        return "SELECT " + asString() + "(aggr) FROM (" + combinedFrom + ")";
     }
 
 }

@@ -5,33 +5,18 @@ import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.SelectBase;
+import sqlancer.common.ast.newast.Select;
+import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
+import sqlancer.postgres.PostgresVisitor;
 
-public class PostgresSelect extends SelectBase<PostgresExpression> implements PostgresExpression {
+public class PostgresSelect extends SelectBase<PostgresExpression>
+        implements PostgresExpression, Select<PostgresJoin, PostgresExpression, PostgresTable, PostgresColumn> {
 
     private SelectType selectOption = SelectType.ALL;
     private List<PostgresJoin> joinClauses = Collections.emptyList();
     private PostgresExpression distinctOnClause;
-    private ForClause forClause;
-
-    public enum ForClause {
-        UPDATE("UPDATE"), NO_KEY_UPDATE("NO KEY UPDATE"), SHARE("SHARE"), KEY_SHARE("KEY SHARE");
-
-        private final String textRepresentation;
-
-        ForClause(String textRepresentation) {
-            this.textRepresentation = textRepresentation;
-        }
-
-        public String getTextRepresentation() {
-            return textRepresentation;
-        }
-
-        public static ForClause getRandom() {
-            return Randomly.fromOptions(values());
-        }
-    }
 
     public static class PostgresFromTable implements PostgresExpression {
         private final PostgresTable t;
@@ -98,6 +83,11 @@ public class PostgresSelect extends SelectBase<PostgresExpression> implements Po
         this.distinctOnClause = distinctOnClause;
     }
 
+    @Override
+    public void setDistinct() {
+        this.selectOption = SelectType.DISTINCT;
+    }
+
     public SelectType getSelectOption() {
         return selectOption;
     }
@@ -111,11 +101,13 @@ public class PostgresSelect extends SelectBase<PostgresExpression> implements Po
         return null;
     }
 
+    @Override
     public void setJoinClauses(List<PostgresJoin> joinStatements) {
         this.joinClauses = joinStatements;
 
     }
 
+    @Override
     public List<PostgresJoin> getJoinClauses() {
         return joinClauses;
     }
@@ -124,12 +116,8 @@ public class PostgresSelect extends SelectBase<PostgresExpression> implements Po
         return distinctOnClause;
     }
 
-    public void setForClause(ForClause forClause) {
-        this.forClause = forClause;
+    @Override
+    public String asString() {
+        return PostgresVisitor.asString(this);
     }
-
-    public ForClause getForClause() {
-        return forClause;
-    }
-
 }

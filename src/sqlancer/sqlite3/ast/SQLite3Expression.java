@@ -6,6 +6,7 @@ import java.util.Optional;
 import sqlancer.IgnoreMeException;
 import sqlancer.LikeImplementationHelper;
 import sqlancer.Randomly;
+import sqlancer.common.ast.newast.Expression;
 import sqlancer.common.visitor.BinaryOperation;
 import sqlancer.common.visitor.UnaryOperation;
 import sqlancer.sqlite3.SQLite3CollateHelper;
@@ -18,7 +19,7 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
-public abstract class SQLite3Expression {
+public abstract class SQLite3Expression implements Expression<SQLite3Column> {
 
     public static class SQLite3TableReference extends SQLite3Expression {
 
@@ -128,7 +129,8 @@ public abstract class SQLite3Expression {
 
     }
 
-    public static class Join extends SQLite3Expression {
+    public static class Join extends SQLite3Expression
+            implements sqlancer.common.ast.newast.Join<SQLite3Expression, SQLite3Table, SQLite3Column> {
 
         public enum JoinType {
             INNER, CROSS, OUTER, NATURAL, RIGHT, FULL;
@@ -163,6 +165,7 @@ public abstract class SQLite3Expression {
             return table;
         }
 
+        @Override
         public SQLite3Expression getOnClause() {
             return onClause;
         }
@@ -176,6 +179,7 @@ public abstract class SQLite3Expression {
             return null;
         }
 
+        @Override
         public void setOnClause(SQLite3Expression onClause) {
             this.onClause = onClause;
         }
@@ -183,7 +187,6 @@ public abstract class SQLite3Expression {
         public void setType(JoinType type) {
             this.type = type;
         }
-
     }
 
     public static class Subquery extends SQLite3Expression {

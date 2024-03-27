@@ -29,10 +29,12 @@ public class OceanBaseSelect extends SelectBase<OceanBaseExpression> implements 
         this.fromOptions = fromOptions;
     }
 
+    @Override
     public void setGroupByClause(List<OceanBaseExpression> groupBys) {
         this.groupBys = groupBys;
     }
 
+    @Override
     public List<OceanBaseExpression> getGroupByClause() {
         return this.groupBys;
     }

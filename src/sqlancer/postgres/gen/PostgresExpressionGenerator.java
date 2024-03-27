@@ -11,14 +11,21 @@ import java.util.stream.Stream;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.gen.ExpressionGenerator;
+import sqlancer.common.gen.TLPAggregateGenerator;
+import sqlancer.common.gen.TLPGenerator;
+import sqlancer.common.gen.TLPHavingGenerator;
+import sqlancer.common.schema.AbstractTables;
 import sqlancer.postgres.PostgresCompoundDataType;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresProvider;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresRowValue;
+import sqlancer.postgres.PostgresSchema.PostgresTable;
+import sqlancer.postgres.PostgresSchema.PostgresTables;
 import sqlancer.postgres.ast.PostgresAggregate;
 import sqlancer.postgres.ast.PostgresAggregate.PostgresAggregateFunction;
+import sqlancer.postgres.ast.PostgresAlias;
 import sqlancer.postgres.ast.PostgresBetweenOperation;
 import sqlancer.postgres.ast.PostgresBinaryArithmeticOperation;
 import sqlancer.postgres.ast.PostgresBinaryArithmeticOperation.PostgresBinaryOperator;
@@ -40,6 +47,8 @@ import sqlancer.postgres.ast.PostgresFunction;
 import sqlancer.postgres.ast.PostgresFunction.PostgresFunctionWithResult;
 import sqlancer.postgres.ast.PostgresFunctionWithUnknownResult;
 import sqlancer.postgres.ast.PostgresInOperation;
+import sqlancer.postgres.ast.PostgresJoin;
+import sqlancer.postgres.ast.PostgresJoin.PostgresJoinType;
 import sqlancer.postgres.ast.PostgresLikeOperation;
 import sqlancer.postgres.ast.PostgresOrderByTerm;
 import sqlancer.postgres.ast.PostgresOrderByTerm.PostgresOrder;
@@ -49,15 +58,23 @@ import sqlancer.postgres.ast.PostgresPostfixOperation;
 import sqlancer.postgres.ast.PostgresPostfixOperation.PostfixOperator;
 import sqlancer.postgres.ast.PostgresPrefixOperation;
 import sqlancer.postgres.ast.PostgresPrefixOperation.PrefixOperator;
+import sqlancer.postgres.ast.PostgresSelect;
+import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
+import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 
-public class PostgresExpressionGenerator implements ExpressionGenerator<PostgresExpression> {
+public class PostgresExpressionGenerator implements ExpressionGenerator<PostgresExpression>,
+        TLPGenerator<PostgresJoin, PostgresExpression, PostgresTable, PostgresColumn>,
+        TLPHavingGenerator<PostgresJoin, PostgresExpression, PostgresTable, PostgresColumn>,
+        TLPAggregateGenerator<PostgresAggregate, PostgresJoin, PostgresExpression, PostgresTable, PostgresColumn> {
 
     private final int maxDepth;
 
     private final Randomly r;
 
     private List<PostgresColumn> columns;
+
+    private List<PostgresTable> targetTables;
 
     private PostgresRowValue rw;
 
@@ -79,6 +96,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         this.allowedFunctionTypes = globalState.getAllowedFunctionTypes();
     }
 
+    @Override
     public PostgresExpressionGenerator setColumns(List<PostgresColumn> columns) {
         this.columns = columns;
         return this;
@@ -538,6 +556,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
 
     }
 
+    @Override
     public List<PostgresExpression> generateExpressions(int nr) {
         List<PostgresExpression> expressions = new ArrayList<>();
         for (int i = 0; i < nr; i++) {
@@ -548,6 +567,11 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
 
     public PostgresExpression generateExpression(PostgresDataType dataType) {
         return generateExpression(0, dataType);
+    }
+
+    @Override
+    public PostgresExpression generateBooleanExpression() {
+        return generateBooleanExpression(0);
     }
 
     public PostgresExpressionGenerator setGlobalState(PostgresGlobalState globalState) {
@@ -562,11 +586,17 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         return expression;
     }
 
-    public PostgresExpression generateAggregate() {
-        return getAggregate(PostgresDataType.getRandomType());
+    @Override
+    public PostgresAggregate generateAggregate() {
+        PostgresAggregateFunction aggregateFunction = Randomly.fromOptions(PostgresAggregateFunction.MAX,
+                PostgresAggregateFunction.MIN, PostgresAggregateFunction.SUM, PostgresAggregateFunction.BIT_AND,
+                PostgresAggregateFunction.BIT_OR, PostgresAggregateFunction.BOOL_AND, PostgresAggregateFunction.BOOL_OR,
+                PostgresAggregateFunction.COUNT);
+
+        return generateArgsForAggregate(aggregateFunction.getRandomReturnType(), aggregateFunction);
     }
 
-    private PostgresExpression getAggregate(PostgresDataType dataType) {
+    private PostgresAggregate getAggregate(PostgresDataType dataType) {
         List<PostgresAggregateFunction> aggregates = PostgresAggregateFunction.getAggregates(dataType);
         PostgresAggregateFunction agg = Randomly.fromList(aggregates);
         return generateArgsForAggregate(dataType, agg);
@@ -601,4 +631,141 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         return new PostgresPostfixOperation(expr, PostfixOperator.IS_NULL);
     }
 
+    @Override
+    public List<PostgresExpression> generateFetchColumns(boolean shouldCreateDummy) {
+        if (shouldCreateDummy && Randomly.getBooleanWithRatherLowProbability()) {
+            return Arrays.asList(new PostgresColumnValue(PostgresColumn.createDummy("*"), null));
+        }
+        allowAggregateFunctions = true;
+        List<PostgresExpression> fetchColumns = new ArrayList<>();
+        List<PostgresColumn> targetColumns = Randomly.nonEmptySubset(columns);
+        for (PostgresColumn c : targetColumns) {
+            fetchColumns.add(new PostgresColumnValue(c, null));
+        }
+        allowAggregateFunctions = false;
+        return fetchColumns;
+    }
+
+    @Override
+    public PostgresSelect generateSelect() {
+        return new PostgresSelect();
+    }
+
+    public static PostgresSubquery createSubquery(PostgresGlobalState globalState, String name, PostgresTables tables) {
+        List<PostgresExpression> columns = new ArrayList<>();
+        PostgresExpressionGenerator gen = new PostgresExpressionGenerator(globalState).setColumns(tables.getColumns());
+        for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
+            columns.add(gen.generateExpression(0));
+        }
+        PostgresSelect select = new PostgresSelect();
+        select.setFromList(tables.getTables().stream().map(t -> new PostgresFromTable(t, Randomly.getBoolean()))
+                .collect(Collectors.toList()));
+        select.setFetchColumns(columns);
+        if (Randomly.getBoolean()) {
+            select.setWhereClause(gen.generateExpression(0, PostgresDataType.BOOLEAN));
+        }
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            select.setOrderByClauses(gen.generateOrderBy());
+        }
+        if (Randomly.getBoolean()) {
+            select.setLimitClause(PostgresConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
+            if (Randomly.getBoolean()) {
+                select.setOffsetClause(
+                        PostgresConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
+            }
+        }
+        return new PostgresSubquery(select, name);
+    }
+
+    @Override
+    public List<PostgresJoin> getRandomJoinClauses() {
+        List<PostgresJoin> joinStatements = new ArrayList<>();
+        for (int i = 1; i < targetTables.size(); i++) {
+            PostgresExpression joinClause = generateExpression(PostgresDataType.BOOLEAN);
+            PostgresTable table = Randomly.fromList(targetTables);
+            targetTables.remove(table);
+            PostgresJoinType options = PostgresJoinType.getRandom();
+            PostgresJoin j = new PostgresJoin(new PostgresFromTable(table, Randomly.getBoolean()), joinClause, options);
+            joinStatements.add(j);
+        }
+        // JOIN subqueries
+        for (int i = 0; i < Randomly.smallNumber(); i++) {
+            PostgresTables subqueryTables = globalState.getSchema().getRandomTableNonEmptyTables();
+            PostgresSubquery subquery = createSubquery(globalState, String.format("sub%d", i), subqueryTables);
+            PostgresExpression joinClause = generateExpression(PostgresDataType.BOOLEAN);
+            PostgresJoinType options = PostgresJoinType.getRandom();
+            PostgresJoin j = new PostgresJoin(subquery, joinClause, options);
+            joinStatements.add(j);
+        }
+        return joinStatements;
+    }
+
+    @Override
+    public List<PostgresExpression> getTableRefs() {
+        return targetTables.stream().map(t -> new PostgresFromTable(t, Randomly.getBoolean()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public PostgresExpressionGenerator setTablesAndColumns(AbstractTables<PostgresTable, PostgresColumn> targetTables) {
+        this.targetTables = targetTables.getTables();
+        this.columns = targetTables.getColumns();
+        return this;
+    }
+
+    @Override
+    public List<PostgresExpression> generateOrderBys() {
+        return generateOrderBy();
+    }
+
+    @Override
+    public PostgresExpression getHavingClause() {
+        return generateHavingClause();
+    }
+
+    @Override
+    public List<PostgresExpression> aliasAggregates(List<PostgresAggregate> originalAggregateArgs) {
+        List<PostgresExpression> args = new ArrayList<>();
+        int i = 0;
+        for (PostgresAggregate aggregate : originalAggregateArgs) {
+            switch (aggregate.getFunction()) {
+            case SUM:
+            case COUNT:
+            case BIT_AND:
+            case BIT_OR:
+            case BOOL_AND:
+            case BOOL_OR:
+            case MAX:
+            case MIN:
+                args.add(new PostgresAlias(aggregate, "agg" + i++));
+                // case AVG:
+                //// List<PostgresExpression> arg = Arrays.asList(new
+                // PostgresCast(aggregate.getExpr().get(0),
+                // PostgresDataType.DECIMAL.get()));
+                // PostgresAggregate sum = new PostgresAggregate(PostgresAggregateFunction.SUM,
+                // aggregate.getExpr());
+                // PostgresCast count = new PostgresCast(
+                // new PostgresAggregate(PostgresAggregateFunction.COUNT, aggregate.getExpr()),
+                // PostgresDataType.DECIMAL.get());
+                //// PostgresBinaryArithmeticOperation avg = new
+                // PostgresBinaryArithmeticOperation(sum, count,
+                // PostgresBinaryArithmeticOperator.DIV);
+                // return aliasArgs(Arrays.asList(sum, count));
+                break;
+            default:
+                throw new AssertionError(aggregate.getFunction());
+            }
+        }
+        return args;
+    }
+
+    @Override
+    public List<PostgresExpression> generateGroupBys() {
+        return generateExpressions(Randomly.smallNumber() + 1);
+    }
+
+    @Override
+    public String combineQueryStrings(String... queryStrings) {
+        return String.join(" UNION ALL ", queryStrings);
+    }
 }

@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.FunctionNode;
+import sqlancer.common.ast.newast.Aggregate;
+import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.ast.PostgresAggregate.PostgresAggregateFunction;
 
@@ -13,7 +15,7 @@ import sqlancer.postgres.ast.PostgresAggregate.PostgresAggregateFunction;
  * @see <a href="https://www.sqlite.org/lang_aggfunc.html">Built-in Aggregate Functions</a>
  */
 public class PostgresAggregate extends FunctionNode<PostgresAggregateFunction, PostgresExpression>
-        implements PostgresExpression {
+        implements PostgresExpression, Aggregate<PostgresExpression, PostgresColumn> {
 
     public enum PostgresAggregateFunction {
         AVG(PostgresDataType.INT, PostgresDataType.FLOAT, PostgresDataType.REAL, PostgresDataType.DECIMAL),
@@ -54,6 +56,29 @@ public class PostgresAggregate extends FunctionNode<PostgresAggregateFunction, P
 
     public PostgresAggregate(List<PostgresExpression> args, PostgresAggregateFunction func) {
         super(func, args);
+    }
+
+    @Override
+    public PostgresExpression asExpression() {
+        return this;
+    }
+
+    @Override
+    public String asString() {
+        switch (getFunction()) {
+        // case AVG:
+        // return "SUM(agg0::DECIMAL)/SUM(agg1)::DECIMAL";
+        case COUNT:
+            return PostgresAggregateFunction.SUM.toString();
+        default:
+            return getFunction().toString();
+        }
+    }
+
+    @Override
+    public String asAggregatedString(String... from) {
+        String combinedFrom = String.join(" UNION ALL ", from);
+        return "SELECT " + asString() + " (agg0) FROM (" + combinedFrom + ") as asdf";
     }
 
 }

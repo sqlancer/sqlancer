@@ -44,5 +44,7 @@ public interface Select<J extends Join<E, T, C>, E extends Expression<C>, T exte
 
     Expression<C> getHavingClause();
 
+    void setDistinct();
+
     String asString();
 }
