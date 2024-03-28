@@ -10,6 +10,7 @@ import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3GlobalState;
 import sqlancer.sqlite3.ast.SQLite3Expression;
 import sqlancer.sqlite3.ast.SQLite3Expression.Join;
+import sqlancer.sqlite3.ast.SQLite3Select;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
@@ -17,7 +18,7 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class SQLite3NoRECOracle implements TestOracle<SQLite3GlobalState> {
 
-    NoRECOracle<Join, SQLite3Expression, SQLite3Schema, SQLite3Table, SQLite3Column, SQLite3GlobalState> oracle;
+    NoRECOracle<SQLite3Select, Join, SQLite3Expression, SQLite3Schema, SQLite3Table, SQLite3Column, SQLite3GlobalState> oracle;
 
     public SQLite3NoRECOracle(SQLite3GlobalState globalState) {
         SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(globalState);

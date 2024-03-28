@@ -9,13 +9,13 @@ import sqlancer.common.schema.AbstractTable;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.AbstractTables;
 
-public interface NoRECGenerator<J extends Join<E, T, C>, E extends Expression<C>, T extends AbstractTable<C, ?, ?>, C extends AbstractTableColumn<?, ?>> {
+public interface NoRECGenerator<S extends Select<J, E, T, C>, J extends Join<E, T, C>, E extends Expression<C>, T extends AbstractTable<C, ?, ?>, C extends AbstractTableColumn<?, ?>> {
 
-    NoRECGenerator<J, E, T, C> setTablesAndColumns(AbstractTables<T, C> tables);
+    NoRECGenerator<S, J, E, T, C> setTablesAndColumns(AbstractTables<T, C> tables);
 
     E generateBooleanExpression();
 
-    Select<J, E, T, C> generateSelect();
+    S generateSelect();
 
     List<J> getRandomJoinClauses();
 
@@ -33,7 +33,7 @@ public interface NoRECGenerator<J extends Join<E, T, C>, E extends Expression<C>
      *
      * @return a query string to be executed
      */
-    String generateOptimizedQueryString(Select<J, E, T, C> select, E whereCondition, boolean shouldUseAggregate);
+    String generateOptimizedQueryString(S select, E whereCondition, boolean shouldUseAggregate);
 
     /**
      * Generates a query string that is unlikely to be optimized by the DBMS.
@@ -45,5 +45,5 @@ public interface NoRECGenerator<J extends Join<E, T, C>, E extends Expression<C>
      *
      * @return a query string to be executed
      */
-    String generateUnoptimizedQueryString(Select<J, E, T, C> select, E whereCondition);
+    String generateUnoptimizedQueryString(S select, E whereCondition);
 }
