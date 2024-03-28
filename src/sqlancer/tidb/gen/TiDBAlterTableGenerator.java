@@ -33,6 +33,7 @@ public final class TiDBAlterTableGenerator {
         errors.add("A PRIMARY must include all columns in the table's partitioning function");
         errors.add("key was too long");
         errors.add("Duplicate entry");
+        errors.add("has a partitioning function dependency and cannot be dropped or renamed");
         StringBuilder sb = new StringBuilder("ALTER TABLE ");
         TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         TiDBColumn column = table.getRandomColumn();
