@@ -368,7 +368,10 @@ jobs:
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Run Tests
-        run: POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgres test
+        run: |
+          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresPQS test
+          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresTLP test
+          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresNoREC test
 
   sqlite:
     name: DBMS Tests (SQLite)
