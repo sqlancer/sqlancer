@@ -65,6 +65,33 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
             return dt;
         }
 
+        public static DorisDataType getRandomWithoutNull(DorisOptions options) {
+            List<DorisDataType> validTypes = new ArrayList<>();
+            if (options.testIntConstants) {
+                validTypes.add(DorisDataType.INT);
+            }
+            if (options.testFloatConstants) {
+                validTypes.add(DorisDataType.FLOAT);
+            }
+            if (options.testDecimalConstants) {
+                validTypes.add(DorisDataType.DECIMAL);
+            }
+            if (options.testDateConstants) {
+                validTypes.add(DorisDataType.DATE);
+            }
+            if (options.testDateTimeConstants) {
+                validTypes.add(DorisDataType.DATETIME);
+            }
+            if (options.testStringConstants) {
+                validTypes.add(DorisDataType.VARCHAR);
+            }
+            if (options.testBooleanConstants) {
+                validTypes.add(DorisDataType.BOOLEAN);
+            }
+
+            return Randomly.fromList(validTypes);
+        }
+
         public int getDecimalScale() {
             return decimalScale;
         }
@@ -112,8 +139,8 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
             return size;
         }
 
-        public static DorisCompositeDataType getRandomWithoutNull() {
-            DorisDataType type = DorisDataType.getRandomWithoutNull();
+        public static DorisCompositeDataType getRandomWithoutNull(DorisGlobalState globalState) {
+            DorisDataType type = DorisDataType.getRandomWithoutNull(globalState.getDbmsSpecificOptions());
             int size = -1;
             switch (type) {
             case INT:

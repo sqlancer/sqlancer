@@ -81,7 +81,7 @@ public class DorisTableGenerator {
         List<DorisColumn> columns = new ArrayList<>();
         for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
             String columnName = String.format("c%d", i);
-            DorisCompositeDataType columnType = DorisCompositeDataType.getRandomWithoutNull();
+            DorisCompositeDataType columnType = DorisCompositeDataType.getRandomWithoutNull(globalState);
             columnType.initColumnArgs(); // set decimalAndVarchar
 
             boolean iskey = columnType.canBeKey() && Randomly.getBoolean();

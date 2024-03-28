@@ -40,7 +40,7 @@ public class DorisQueryPartitioningGroupByTester extends DorisQueryPartitioningB
         select.setWhereClause(DorisExprToNode.cast(isNullPredicate));
         String thirdQueryString = DorisToStringVisitor.asString(select);
         List<String> combinedString = new ArrayList<>();
-        List<String> secondResultSet = ComparatorHelper.getCombinedResultSetNoDuplicates(firstQueryString,
+        List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString,
                 secondQueryString, thirdQueryString, combinedString, true, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state, ComparatorHelper::canonicalizeResultValue);

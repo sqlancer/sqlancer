@@ -17,6 +17,7 @@ import sqlancer.common.ast.newast.Node;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
+import sqlancer.databend.DatabendExprToNode;
 import sqlancer.doris.DorisErrors;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
 import sqlancer.doris.DorisSchema.DorisCompositeDataType;
@@ -186,7 +187,9 @@ public class DorisQueryPartitioningAggregateTester extends DorisQueryPartitionin
         leftSelect.setWhereClause(whereClause);
         leftSelect.setJoinList(joinList);
         if (Randomly.getBooleanWithSmallProbability()) {
-            leftSelect.setGroupByExpressions(groupByExpression);
+            //leftSelect.setGroupByExpressions(groupByExpression);    // todo: something maybe error in here
+            DorisConstant groupByColumn = DorisConstant.createIntConstant(state.getRandomly().getInteger(1, targetTables.getColumns().size()));
+            leftSelect.setGroupByExpressions(List.of(DorisExprToNode.cast(groupByColumn)));
         }
         return leftSelect;
     }

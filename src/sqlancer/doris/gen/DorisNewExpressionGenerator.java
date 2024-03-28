@@ -117,7 +117,7 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
                 return function.getCall(type, this, depth + 1);
             }
         }
-        if (globalState.getDbmsSpecificOptions().testCasts && Randomly.getBooleanWithRatherLowProbability()) {
+        if (type != DorisDataType.NULL && globalState.getDbmsSpecificOptions().testCasts && Randomly.getBooleanWithRatherLowProbability()) {
             return new DorisCastOperation(DorisExprToNode.cast(generateExpression(getRandomType(), depth + 1)), type);
         }
         if (globalState.getDbmsSpecificOptions().testCase && Randomly.getBooleanWithRatherLowProbability()) {
@@ -306,7 +306,9 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
     }
 
     public DorisExpression generateConstant(DorisDataType type, boolean isNullable) {
-        if (isNullable && Randomly.getBooleanWithSmallProbability()) {
+        if (!isNullable) {
+            return createConstantWithoutNull(type);
+        } else if (isNullable && Randomly.getBooleanWithSmallProbability()) {
             createConstant(DorisDataType.NULL);
         }
         return createConstant(type);
@@ -318,6 +320,19 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
             return DorisConstant.createNullConstant();
         }
         return createConstant(type);
+    }
+
+    public DorisExpression createConstantWithoutNull(DorisDataType type) {
+        DorisExpression constant = createConstant(type);
+        int loopCount = 0;
+        while (constant instanceof DorisConstant.DorisNullConstant && loopCount < 1000) {
+            constant = createConstant(type);
+            loopCount++;
+        }
+        if (constant instanceof DorisConstant.DorisNullConstant) {
+            throw new RuntimeException("Error occur in generate constantWithoutNull");
+        }
+        return constant;
     }
 
     public DorisExpression createConstant(DorisDataType type) {
