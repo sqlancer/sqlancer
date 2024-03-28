@@ -11,12 +11,16 @@ import java.util.stream.Stream;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.gen.ExpressionGenerator;
+import sqlancer.common.gen.NoRECGenerator;
+import sqlancer.common.schema.AbstractTables;
 import sqlancer.postgres.PostgresCompoundDataType;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresProvider;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresRowValue;
+import sqlancer.postgres.PostgresSchema.PostgresTable;
+import sqlancer.postgres.PostgresSchema.PostgresTables;
 import sqlancer.postgres.ast.PostgresAggregate;
 import sqlancer.postgres.ast.PostgresAggregate.PostgresAggregateFunction;
 import sqlancer.postgres.ast.PostgresBetweenOperation;
@@ -40,6 +44,8 @@ import sqlancer.postgres.ast.PostgresFunction;
 import sqlancer.postgres.ast.PostgresFunction.PostgresFunctionWithResult;
 import sqlancer.postgres.ast.PostgresFunctionWithUnknownResult;
 import sqlancer.postgres.ast.PostgresInOperation;
+import sqlancer.postgres.ast.PostgresJoin;
+import sqlancer.postgres.ast.PostgresJoin.PostgresJoinType;
 import sqlancer.postgres.ast.PostgresLikeOperation;
 import sqlancer.postgres.ast.PostgresOrderByTerm;
 import sqlancer.postgres.ast.PostgresOrderByTerm.PostgresOrder;
@@ -47,17 +53,26 @@ import sqlancer.postgres.ast.PostgresPOSIXRegularExpression;
 import sqlancer.postgres.ast.PostgresPOSIXRegularExpression.POSIXRegex;
 import sqlancer.postgres.ast.PostgresPostfixOperation;
 import sqlancer.postgres.ast.PostgresPostfixOperation.PostfixOperator;
+import sqlancer.postgres.ast.PostgresPostfixText;
 import sqlancer.postgres.ast.PostgresPrefixOperation;
 import sqlancer.postgres.ast.PostgresPrefixOperation.PrefixOperator;
+import sqlancer.postgres.ast.PostgresSelect;
+import sqlancer.postgres.ast.PostgresSelect.ForClause;
+import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
+import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
+import sqlancer.postgres.ast.PostgresSelect.SelectType;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 
-public class PostgresExpressionGenerator implements ExpressionGenerator<PostgresExpression> {
+public class PostgresExpressionGenerator implements ExpressionGenerator<PostgresExpression>,
+        NoRECGenerator<PostgresSelect, PostgresJoin, PostgresExpression, PostgresTable, PostgresColumn> {
 
     private final int maxDepth;
 
     private final Randomly r;
 
     private List<PostgresColumn> columns;
+
+    private List<PostgresTable> targetTables;
 
     private PostgresRowValue rw;
 
@@ -586,6 +601,35 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         return this;
     }
 
+    public static PostgresSubquery createSubquery(PostgresGlobalState globalState, String name, PostgresTables tables) {
+        List<PostgresExpression> columns = new ArrayList<>();
+        PostgresExpressionGenerator gen = new PostgresExpressionGenerator(globalState).setColumns(tables.getColumns());
+        for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
+            columns.add(gen.generateExpression(0));
+        }
+        PostgresSelect select = new PostgresSelect();
+        select.setFromList(tables.getTables().stream().map(t -> new PostgresFromTable(t, Randomly.getBoolean()))
+                .collect(Collectors.toList()));
+        select.setFetchColumns(columns);
+        if (Randomly.getBoolean()) {
+            select.setWhereClause(gen.generateExpression(0, PostgresDataType.BOOLEAN));
+        }
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            select.setOrderByClauses(gen.generateOrderBy());
+        }
+        if (Randomly.getBoolean()) {
+            select.setLimitClause(PostgresConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
+            if (Randomly.getBoolean()) {
+                select.setOffsetClause(
+                        PostgresConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
+            }
+        }
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            select.setForClause(ForClause.getRandom());
+        }
+        return new PostgresSubquery(select, name);
+    }
+
     @Override
     public PostgresExpression generatePredicate() {
         return generateExpression(PostgresDataType.BOOLEAN);
@@ -601,4 +645,80 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         return new PostgresPostfixOperation(expr, PostfixOperator.IS_NULL);
     }
 
+    @Override
+    public PostgresExpressionGenerator setTablesAndColumns(AbstractTables<PostgresTable, PostgresColumn> targetTables) {
+        this.targetTables = targetTables.getTables();
+        this.columns = targetTables.getColumns();
+        return this;
+    }
+
+    @Override
+    public PostgresExpression generateBooleanExpression() {
+        return generateExpression(PostgresDataType.BOOLEAN);
+    }
+
+    @Override
+    public PostgresSelect generateSelect() {
+        return new PostgresSelect();
+    }
+
+    @Override
+    public List<PostgresJoin> getRandomJoinClauses() {
+        List<PostgresJoin> joinStatements = new ArrayList<>();
+        for (int i = 1; i < targetTables.size(); i++) {
+            PostgresExpression joinClause = generateExpression(PostgresDataType.BOOLEAN);
+            PostgresTable table = Randomly.fromList(targetTables);
+            targetTables.remove(table);
+            PostgresJoinType options = PostgresJoinType.getRandom();
+            PostgresJoin j = new PostgresJoin(new PostgresFromTable(table, Randomly.getBoolean()), joinClause, options);
+            joinStatements.add(j);
+        }
+        // JOIN subqueries
+        for (int i = 0; i < Randomly.smallNumber(); i++) {
+            PostgresTables subqueryTables = globalState.getSchema().getRandomTableNonEmptyTables();
+            PostgresSubquery subquery = createSubquery(globalState, String.format("sub%d", i), subqueryTables);
+            PostgresExpression joinClause = generateExpression(PostgresDataType.BOOLEAN);
+            PostgresJoinType options = PostgresJoinType.getRandom();
+            PostgresJoin j = new PostgresJoin(subquery, joinClause, options);
+            joinStatements.add(j);
+        }
+        return joinStatements;
+    }
+
+    @Override
+    public List<PostgresExpression> getTableRefs() {
+        return targetTables.stream().map(t -> new PostgresFromTable(t, Randomly.getBoolean()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public String generateOptimizedQueryString(PostgresSelect select, PostgresExpression whereCondition,
+            boolean shouldUseAggregate) {
+        PostgresColumnValue allColumns = new PostgresColumnValue(PostgresColumn.createDummy("*"), null);
+        if (shouldUseAggregate) {
+            select.setFetchColumns(
+                    Arrays.asList(new PostgresAggregate(List.of(allColumns), PostgresAggregateFunction.COUNT)));
+        } else {
+            select.setFetchColumns(Arrays.asList(allColumns));
+        }
+        select.setWhereClause(whereCondition);
+        if (Randomly.getBooleanWithSmallProbability()) {
+            select.setOrderByClauses(generateOrderBy());
+        }
+        select.setSelectType(SelectType.ALL);
+        return select.asString();
+    }
+
+    @Override
+    public String generateUnoptimizedQueryString(PostgresSelect select, PostgresExpression whereCondition) {
+        PostgresCastOperation isTrue = new PostgresCastOperation(whereCondition,
+                PostgresCompoundDataType.create(PostgresDataType.INT));
+        PostgresPostfixText asText = new PostgresPostfixText(isTrue, " as count", null, PostgresDataType.INT);
+        select.setFetchColumns(Arrays.asList(asText));
+        select.setWhereClause(null);
+        select.setOrderByClauses(List.of());
+        select.setSelectType(SelectType.ALL);
+
+        return "SELECT SUM(count) FROM (" + select.asString() + ") as res";
+    }
 }
