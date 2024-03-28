@@ -1,9 +1,12 @@
 package sqlancer.common.oracle;
 
 import java.sql.SQLException;
+import java.util.Objects;
+import java.util.function.Function;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.Reproducer;
 import sqlancer.SQLGlobalState;
 import sqlancer.common.ast.newast.Expression;
 import sqlancer.common.ast.newast.Join;
@@ -25,7 +28,23 @@ public class NoRECOracle<J extends Join<E, T, C>, E extends Expression<C>, S ext
     private NoRECGenerator<J, E, T, C> gen;
     private final ExpectedErrors errors;
 
+    private Reproducer<G> reproducer;
     private String lastQueryString;
+
+    private static class NoRECReproducer<G extends SQLGlobalState<?, ?>> implements Reproducer<G> {
+        private final Function<G, Integer> optimizedQuery;
+        private final Function<G, Integer> unoptimizedQuery;
+
+        NoRECReproducer(Function<G, Integer> optimizedQuery, Function<G, Integer> unoptimizedQuery) {
+            this.optimizedQuery = optimizedQuery;
+            this.unoptimizedQuery = unoptimizedQuery;
+        }
+
+        @Override
+        public boolean bugStillTriggers(G globalState) {
+            return !Objects.equals(optimizedQuery.apply(globalState), unoptimizedQuery.apply(globalState));
+        }
+    }
 
     public NoRECOracle(G state, NoRECGenerator<J, E, T, C> gen, ExpectedErrors expectedErrors) {
         if (state == null || gen == null || expectedErrors == null) {
@@ -34,10 +53,12 @@ public class NoRECOracle<J extends Join<E, T, C>, E extends Expression<C>, S ext
         this.state = state;
         this.gen = gen;
         this.errors = expectedErrors;
+        this.reproducer = null;
     }
 
     @Override
     public void check() throws SQLException {
+        reproducer = null;
         S schema = state.getSchema();
         AbstractTables<T, C> targetTables = TestOracleUtils.getRandomTableNonEmptyTables(schema);
         gen = gen.setTablesAndColumns(targetTables);
@@ -52,18 +73,31 @@ public class NoRECOracle<J extends Join<E, T, C>, E extends Expression<C>, S ext
         String optimizedQueryString = gen.generateOptimizedQueryString(select, randomWhereCondition,
                 shouldUseAggregate);
         lastQueryString = optimizedQueryString;
+        if (state.getOptions().logEachSelect()) {
+            state.getLogger().writeCurrent(optimizedQueryString);
+        }
 
         String unoptimizedQueryString = gen.generateUnoptimizedQueryString(select, randomWhereCondition);
+        if (state.getOptions().logEachSelect()) {
+            state.getLogger().writeCurrent(unoptimizedQueryString);
+        }
 
         int optimizedCount = shouldUseAggregate ? extractCounts(optimizedQueryString, errors, state)
                 : countRows(optimizedQueryString, errors, state);
-        int unoptimizedCount = extractCounts(optimizedQueryString, errors, state);
+        int unoptimizedCount = extractCounts(unoptimizedQueryString, errors, state);
 
         if (optimizedCount == -1 || unoptimizedCount == -1) {
             throw new IgnoreMeException();
         }
 
         if (unoptimizedCount != optimizedCount) {
+            Function<G, Integer> optimizedQuery = state -> shouldUseAggregate
+                    ? extractCounts(optimizedQueryString, errors, state)
+                    : countRows(optimizedQueryString, errors, state);
+
+            Function<G, Integer> unoptimizedQuery = state -> extractCounts(unoptimizedQueryString, errors, state);
+            reproducer = new NoRECReproducer<>(optimizedQuery, unoptimizedQuery);
+
             String queryFormatString = "-- %s;\n-- count: %d";
             String firstQueryStringWithCount = String.format(queryFormatString, optimizedQueryString, optimizedCount);
             String secondQueryStringWithCount = String.format(queryFormatString, unoptimizedQueryString,
@@ -79,6 +113,11 @@ public class NoRECOracle<J extends Join<E, T, C>, E extends Expression<C>, S ext
     @Override
     public String getLastQueryString() {
         return lastQueryString;
+    }
+
+    @Override
+    public Reproducer<G> getLastReproducer() {
+        return reproducer;
     }
 
     private int countRows(String queryString, ExpectedErrors errors, SQLGlobalState<?, ?> state) {
