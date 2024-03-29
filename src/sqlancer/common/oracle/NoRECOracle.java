@@ -20,12 +20,12 @@ import sqlancer.common.schema.AbstractTable;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.AbstractTables;
 
-public class NoRECOracle<J extends Join<E, T, C>, E extends Expression<C>, S extends AbstractSchema<?, T>, T extends AbstractTable<C, ?, ?>, C extends AbstractTableColumn<?, ?>, G extends SQLGlobalState<?, S>>
+public class NoRECOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, E extends Expression<C>, S extends AbstractSchema<?, T>, T extends AbstractTable<C, ?, ?>, C extends AbstractTableColumn<?, ?>, G extends SQLGlobalState<?, S>>
         implements TestOracle<G> {
 
     private final G state;
 
-    private NoRECGenerator<J, E, T, C> gen;
+    private NoRECGenerator<Z, J, E, T, C> gen;
     private final ExpectedErrors errors;
 
     private Reproducer<G> reproducer;
@@ -46,7 +46,7 @@ public class NoRECOracle<J extends Join<E, T, C>, E extends Expression<C>, S ext
         }
     }
 
-    public NoRECOracle(G state, NoRECGenerator<J, E, T, C> gen, ExpectedErrors expectedErrors) {
+    public NoRECOracle(G state, NoRECGenerator<Z, J, E, T, C> gen, ExpectedErrors expectedErrors) {
         if (state == null || gen == null || expectedErrors == null) {
             throw new IllegalArgumentException("Null variables used to initialize test oracle.");
         }
@@ -63,7 +63,7 @@ public class NoRECOracle<J extends Join<E, T, C>, E extends Expression<C>, S ext
         AbstractTables<T, C> targetTables = TestOracleUtils.getRandomTableNonEmptyTables(schema);
         gen = gen.setTablesAndColumns(targetTables);
 
-        Select<J, E, T, C> select = gen.generateSelect();
+        Z select = gen.generateSelect();
         select.setJoinClauses(gen.getRandomJoinClauses());
         select.setFromList(gen.getTableRefs());
 

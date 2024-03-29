@@ -5,12 +5,14 @@ import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.newast.Join;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
+import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
-public class PostgresJoin implements PostgresExpression {
+public class PostgresJoin implements PostgresExpression, Join<PostgresExpression, PostgresTable, PostgresColumn> {
 
     public enum PostgresJoinType {
         INNER, LEFT, RIGHT, FULL, CROSS;
@@ -77,6 +79,7 @@ public class PostgresJoin implements PostgresExpression {
         return joinExpressions;
     }
 
+    @Override
     public void setOnClause(PostgresExpression clause) {
         this.onClause = clause;
     }
@@ -97,6 +100,7 @@ public class PostgresJoin implements PostgresExpression {
         return rightTable;
     }
 
+    @Override
     public PostgresExpression getOnClause() {
         return onClause;
     }

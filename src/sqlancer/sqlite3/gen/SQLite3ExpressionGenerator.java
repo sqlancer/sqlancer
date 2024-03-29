@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Select;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.gen.NoRECGenerator;
 import sqlancer.common.schema.AbstractTables;
@@ -51,7 +50,7 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3RowValue;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Expression>,
-        NoRECGenerator<Join, SQLite3Expression, SQLite3Table, SQLite3Column> {
+        NoRECGenerator<SQLite3Select, Join, SQLite3Expression, SQLite3Table, SQLite3Column> {
 
     private SQLite3RowValue rw;
     private final SQLite3GlobalState globalState;
@@ -749,8 +748,8 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
     }
 
     @Override
-    public String generateOptimizedQueryString(Select<Join, SQLite3Expression, SQLite3Table, SQLite3Column> select,
-            SQLite3Expression whereCondition, boolean shouldUseAggregate) {
+    public String generateOptimizedQueryString(SQLite3Select select, SQLite3Expression whereCondition,
+            boolean shouldUseAggregate) {
         if (Randomly.getBoolean()) {
             select.setOrderByClauses(generateOrderBys());
         }
@@ -767,8 +766,7 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
     }
 
     @Override
-    public String generateUnoptimizedQueryString(Select<Join, SQLite3Expression, SQLite3Table, SQLite3Column> select,
-            SQLite3Expression whereCondition) {
+    public String generateUnoptimizedQueryString(SQLite3Select select, SQLite3Expression whereCondition) {
         SQLite3PostfixUnaryOperation isTrue = new SQLite3PostfixUnaryOperation(PostfixUnaryOperator.IS_TRUE,
                 whereCondition);
         SQLite3PostfixText asText = new SQLite3PostfixText(isTrue, " as count", null);

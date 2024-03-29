@@ -5,10 +5,14 @@ import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.SelectBase;
+import sqlancer.common.ast.newast.Select;
+import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
+import sqlancer.postgres.PostgresVisitor;
 
-public class PostgresSelect extends SelectBase<PostgresExpression> implements PostgresExpression {
+public class PostgresSelect extends SelectBase<PostgresExpression>
+        implements PostgresExpression, Select<PostgresJoin, PostgresExpression, PostgresTable, PostgresColumn> {
 
     private SelectType selectOption = SelectType.ALL;
     private List<PostgresJoin> joinClauses = Collections.emptyList();
@@ -111,11 +115,13 @@ public class PostgresSelect extends SelectBase<PostgresExpression> implements Po
         return null;
     }
 
+    @Override
     public void setJoinClauses(List<PostgresJoin> joinStatements) {
         this.joinClauses = joinStatements;
 
     }
 
+    @Override
     public List<PostgresJoin> getJoinClauses() {
         return joinClauses;
     }
@@ -132,4 +138,8 @@ public class PostgresSelect extends SelectBase<PostgresExpression> implements Po
         return forClause;
     }
 
+    @Override
+    public String asString() {
+        return PostgresVisitor.asString(this);
+    }
 }

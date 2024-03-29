@@ -16,6 +16,7 @@ public class MariaDBSelectStatement extends SelectBase<MariaDBExpression> implem
     private MariaDBSelectType selectType = MariaDBSelectType.ALL;
     private MariaDBExpression whereCondition;
 
+    @Override
     public void setGroupByClause(List<MariaDBExpression> groupBys) {
         this.groupBys = groupBys;
     }
