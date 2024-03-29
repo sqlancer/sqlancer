@@ -29,6 +29,7 @@ public final class TiDBErrors {
         errors.add("doesn't have a default value"); // default
         errors.add("is not valid for CHARACTER SET");
         errors.add("DOUBLE value is out of range");
+        errors.add("Result of space() was larger than max_allowed_packet");
 
         errors.add("Data truncat");
         errors.add("Truncated incorrect FLOAT value");
@@ -105,6 +106,8 @@ public final class TiDBErrors {
         errors.add("Incorrect decimal value");
         errors.add("error parsing regexp");
         errors.add("is not valid for CHARACTER SET");
+        errors.add("for function inet_aton");
+        errors.add("'Empty pattern is invalid' from regexp");
 
         return errors;
     }
