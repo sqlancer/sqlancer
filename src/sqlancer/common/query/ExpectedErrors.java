@@ -110,16 +110,28 @@ public class ExpectedErrors {
             return this;
         }
 
-        public ExpectedErrorsBuilder with(Pattern... list) {
+        public ExpectedErrorsBuilder with(Collection<String> list) {
+            return with(list.toArray(new String[0]));
+        }
+
+        public ExpectedErrorsBuilder withRegex(Pattern... list) {
             regexes.addAll(Arrays.asList(list));
             return this;
         }
 
-        public ExpectedErrorsBuilder withRegex(String... list) {
+        public ExpectedErrorsBuilder withRegex(Collection<Pattern> list) {
+            return withRegex(list.toArray(new Pattern[0]));
+        }
+
+        public ExpectedErrorsBuilder withRegexString(String... list) {
             for (String error : list) {
                 regexes.add(Pattern.compile(error));
             }
             return this;
+        }
+
+        public ExpectedErrorsBuilder withRegexString(Collection<String> list) {
+            return withRegexString(list.toArray(new String[0]));
         }
 
         public ExpectedErrors build() {

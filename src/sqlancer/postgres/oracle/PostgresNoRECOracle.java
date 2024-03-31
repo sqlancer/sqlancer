@@ -3,7 +3,6 @@ package sqlancer.postgres.oracle;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import sqlancer.Randomly;
 import sqlancer.Reproducer;
@@ -32,10 +31,9 @@ public class PostgresNoRECOracle implements TestOracle<PostgresGlobalState> {
 
     public PostgresNoRECOracle(PostgresGlobalState globalState) {
         PostgresExpressionGenerator gen = new PostgresExpressionGenerator(globalState);
-        ExpectedErrors errors = ExpectedErrors.newErrors()
-                .with(PostgresCommon.getCommonExpressionErrors().toArray(new String[0]))
-                .with(PostgresCommon.getCommonFetchErrors().toArray(new String[0]))
-                .with(PostgresCommon.getCommonExpressionRegexErrors().toArray(new Pattern[0])).build();
+        ExpectedErrors errors = ExpectedErrors.newErrors().with(PostgresCommon.getCommonExpressionErrors())
+                .with(PostgresCommon.getCommonFetchErrors()).withRegex(PostgresCommon.getCommonExpressionRegexErrors())
+                .build();
         this.oracle = new NoRECOracle<>(globalState, gen, errors);
     }
 

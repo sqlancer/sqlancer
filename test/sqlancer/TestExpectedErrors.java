@@ -118,14 +118,38 @@ public class TestExpectedErrors {
         assertTrue(errors.errorIsExpected("aa"));
         assertFalse(errors.errorIsExpected("d"));
 
-        errors = ExpectedErrors.newErrors().withRegex("a\\d", "b\\D").with("c").build();
+        errors = ExpectedErrors.newErrors().with(List.of("a", "b", "c")).build();
+
+        assertTrue(errors.errorIsExpected("a"));
+        assertTrue(errors.errorIsExpected("b"));
+        assertTrue(errors.errorIsExpected("c"));
+        assertTrue(errors.errorIsExpected("aa"));
+        assertFalse(errors.errorIsExpected("d"));
+
+        errors = ExpectedErrors.newErrors().withRegexString("a\\d", "b\\D").with("c").build();
 
         assertTrue(errors.errorIsExpected("a0"));
         assertTrue(errors.errorIsExpected("bb"));
         assertTrue(errors.errorIsExpected("c"));
         assertFalse(errors.errorIsExpected("aa"));
 
-        errors = ExpectedErrors.newErrors().with(Pattern.compile("a\\d"), Pattern.compile("b\\D")).with("c").build();
+        errors = ExpectedErrors.newErrors().withRegexString(List.of("a\\d", "b\\D")).with("c").build();
+
+        assertTrue(errors.errorIsExpected("a0"));
+        assertTrue(errors.errorIsExpected("bb"));
+        assertTrue(errors.errorIsExpected("c"));
+        assertFalse(errors.errorIsExpected("aa"));
+
+        errors = ExpectedErrors.newErrors().withRegex(Pattern.compile("a\\d"), Pattern.compile("b\\D")).with("c")
+                .build();
+
+        assertTrue(errors.errorIsExpected("a0"));
+        assertTrue(errors.errorIsExpected("bb"));
+        assertTrue(errors.errorIsExpected("c"));
+        assertFalse(errors.errorIsExpected("aa"));
+
+        errors = ExpectedErrors.newErrors().withRegex(List.of(Pattern.compile("a\\d"), Pattern.compile("b\\D")))
+                .with("c").build();
 
         assertTrue(errors.errorIsExpected("a0"));
         assertTrue(errors.errorIsExpected("bb"));
