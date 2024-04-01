@@ -22,10 +22,8 @@ public class SQLite3NoRECOracle implements TestOracle<SQLite3GlobalState> {
 
     public SQLite3NoRECOracle(SQLite3GlobalState globalState) {
         SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(globalState);
-        ExpectedErrors errors = ExpectedErrors.newErrors()
-                .with(SQLite3Errors.getExpectedExpressionErrors().toArray(new String[0]))
-                .with(SQLite3Errors.getMatchQueryErrors().toArray(new String[0]))
-                .with(SQLite3Errors.getQueryErrors().toArray(new String[0]))
+        ExpectedErrors errors = ExpectedErrors.newErrors().with(SQLite3Errors.getExpectedExpressionErrors())
+                .with(SQLite3Errors.getMatchQueryErrors()).with(SQLite3Errors.getQueryErrors())
                 .with("misuse of aggregate", "misuse of window function",
                         "second argument to nth_value must be a positive integer", "no such table", "no query solution",
                         "unable to use function MATCH in the requested context")

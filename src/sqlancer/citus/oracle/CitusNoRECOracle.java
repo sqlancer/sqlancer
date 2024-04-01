@@ -1,7 +1,6 @@
 package sqlancer.citus.oracle;
 
 import java.sql.SQLException;
-import java.util.regex.Pattern;
 
 import sqlancer.Reproducer;
 import sqlancer.citus.gen.CitusCommon;
@@ -23,10 +22,8 @@ public class CitusNoRECOracle implements TestOracle<PostgresGlobalState> {
 
     public CitusNoRECOracle(PostgresGlobalState globalState) {
         PostgresExpressionGenerator gen = new PostgresExpressionGenerator(globalState);
-        ExpectedErrors errors = ExpectedErrors.newErrors()
-                .with(PostgresCommon.getCommonExpressionErrors().toArray(new String[0]))
-                .with(PostgresCommon.getCommonFetchErrors().toArray(new String[0]))
-                .with(PostgresCommon.getCommonExpressionRegexErrors().toArray(new Pattern[0]))
+        ExpectedErrors errors = ExpectedErrors.newErrors().with(PostgresCommon.getCommonExpressionErrors())
+                .with(PostgresCommon.getCommonFetchErrors()).withRegex(PostgresCommon.getCommonExpressionRegexErrors())
                 .with(CitusCommon.getCitusErrors().toArray(new String[0])).build();
         this.oracle = new NoRECOracle<>(globalState, gen, errors);
     }
