@@ -31,6 +31,12 @@ public final class MySQLBugs {
     // https://bugs.mysql.com/bug.php?id=112264
     public static boolean bug112264 = true;
 
+    // https://bugs.mysql.com/bug.php?id=114533
+    public static boolean bug114533 = true;
+
+    // https://bugs.mysql.com/bug.php?id=114534
+    public static boolean bug114534 = true;
+
     private MySQLBugs() {
     }
 
