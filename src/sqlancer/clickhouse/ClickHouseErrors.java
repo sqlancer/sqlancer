@@ -34,9 +34,8 @@ public final class ClickHouseErrors {
                 "is not under aggregate function and not in GROUP BY", "is not under aggregate function",
                 "is violated at row 1. Expression:", // TODO: check constraint on table creation
                 "is violated, because it is a constant expression returning 0. It is most likely an error in table definition",
-                "there are only columns", "there are columns", "in block. (NOT_FOUND_COLUMN_IN_BLOCK)",
-                "Missing columns", "Ambiguous column",
-                "Must be one unsigned integer type. (ILLEGAL_TYPE_OF_COLUMN_FOR_FILTER)",
+                "there are only columns", "there are columns", "(NOT_FOUND_COLUMN_IN_BLOCK)", "Missing columns",
+                "Ambiguous column", "Must be one unsigned integer type. (ILLEGAL_TYPE_OF_COLUMN_FOR_FILTER)",
                 "Floating point partition key is not supported", "Cannot get JOIN keys from JOIN ON section",
                 "ILLEGAL_DIVISION", "DECIMAL_OVERFLOW",
                 "Cannot convert out of range floating point value to integer type",
