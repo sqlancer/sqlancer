@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.gen.NoRECGenerator;
+import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.sqlite3.SQLite3GlobalState;
 import sqlancer.sqlite3.ast.SQLite3Aggregate;
@@ -50,7 +51,8 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3RowValue;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Expression>,
-        NoRECGenerator<SQLite3Select, Join, SQLite3Expression, SQLite3Table, SQLite3Column> {
+        NoRECGenerator<SQLite3Select, Join, SQLite3Expression, SQLite3Table, SQLite3Column>,
+        TLPWhereGenerator<SQLite3Select, Join, SQLite3Expression, SQLite3Table, SQLite3Column> {
 
     private SQLite3RowValue rw;
     private final SQLite3GlobalState globalState;
@@ -133,6 +135,7 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         return new SQLite3ExpressionGenerator(globalState).getRandomLiteralValueInternal(globalState.getRandomly());
     }
 
+    @Override
     public List<SQLite3Expression> generateOrderBys() {
         List<SQLite3Expression> expressions = new ArrayList<>();
         for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
@@ -745,6 +748,18 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
             tableRefs.add(tableRef);
         }
         return tableRefs;
+    }
+
+    @Override
+    public List<SQLite3Expression> generateFetchColumns(boolean shouldCreateDummy) {
+        List<SQLite3Expression> columns = new ArrayList<>();
+        if (shouldCreateDummy && Randomly.getBoolean()) {
+            columns.add(new SQLite3ColumnName(SQLite3Column.createDummy("*"), null));
+        } else {
+            columns = Randomly.nonEmptySubset(this.columns).stream().map(c -> new SQLite3ColumnName(c, null))
+                    .collect(Collectors.toList());
+        }
+        return columns;
     }
 
     @Override
