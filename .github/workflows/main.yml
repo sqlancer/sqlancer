@@ -323,6 +323,14 @@ jobs:
   mysql:
     name: DBMS Tests (MySQL)
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0.36
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=10
     steps:
       - uses: actions/checkout@v3
         with:
@@ -335,11 +343,8 @@ jobs:
           cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
-      - name: Set up MySQL
-        run: |
-          sudo systemctl start mysql.service # MySQL 8.0.32-0ubuntu0.22.04.2
       - name: Create SQLancer user
-        run: mysql -uroot -proot -e "CREATE USER 'sqlancer'@'localhost' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'localhost';"
+        run: mysql -h 127.0.0.1  -uroot -proot -e "CREATE USER 'sqlancer'@'%' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'%';"
       - name: Run Tests
         run: |
           MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLPQS
