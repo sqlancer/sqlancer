@@ -42,6 +42,9 @@ public final class DatabendErrors {
         if (DatabendBugs.bug9806) {
             errors.add("segment pruning failure");
         }
+        if (DatabendBugs.bug15568) {
+            errors.add("Decimal overflow at line : 723 while evaluating function `to_decimal");
+        }
 
         /*
          * TODO column为not null 时，注意default不能为null DROP DATABASE IF EXISTS databend2; CREATE DATABASE databend2; USE

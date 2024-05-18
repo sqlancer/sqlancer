@@ -15,6 +15,7 @@ public final class DatabendBugs {
     public static boolean bug9236 = true; // https://github.com/datafuselabs/databend/issues/9236
     public static boolean bug9264 = true; // https://github.com/datafuselabs/databend/issues/9264
     public static boolean bug9806 = true; // https://github.com/datafuselabs/databend/issues/9806
+    public static boolean bug15568 = true; // https://github.com/datafuselabs/databend/issues/15568
 
     private DatabendBugs() {
     }
