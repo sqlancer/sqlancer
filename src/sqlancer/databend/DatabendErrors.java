@@ -63,7 +63,7 @@ public final class DatabendErrors {
 
         errors.add("Division by zero");
         errors.add("/ by zero");
-        errors.add("Can't cast column from null into non-nullable type");
+        errors.add("violates not-null constraint");
         errors.add("number overflowed while evaluating function `"); // 不能在int16类型column上插入int64的数据
 
         return errors;
