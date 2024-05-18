@@ -167,6 +167,9 @@ public class DatabendNewExpressionGenerator
             validOptions.remove(BooleanExpression.BETWEEN);
             validOptions.remove(BooleanExpression.BINARY_COMPARISON);
         }
+        if (DatabendBugs.bug15572) {
+            validOptions.remove(BooleanExpression.NOT);
+        }
         BooleanExpression option = Randomly.fromList(validOptions);
         switch (option) {
         case POSTFIX_OPERATOR:
