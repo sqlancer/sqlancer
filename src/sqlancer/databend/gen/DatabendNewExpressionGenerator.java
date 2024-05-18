@@ -11,6 +11,7 @@ import sqlancer.Randomly;
 import sqlancer.common.ast.newast.NewOrderingTerm;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.TypedExpressionGenerator;
+import sqlancer.databend.DatabendBugs;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema.DatabendColumn;
 import sqlancer.databend.DatabendSchema.DatabendDataType;
@@ -160,6 +161,12 @@ public class DatabendNewExpressionGenerator
             allowAggregateFunctions = false;
         }
         List<BooleanExpression> validOptions = new ArrayList<>(Arrays.asList(BooleanExpression.values()));
+        if (DatabendBugs.bug15570) {
+            validOptions.remove(BooleanExpression.LIKE);
+            validOptions.remove(BooleanExpression.IN_OPERATION);
+            validOptions.remove(BooleanExpression.BETWEEN);
+            validOptions.remove(BooleanExpression.BINARY_COMPARISON);
+        }
         BooleanExpression option = Randomly.fromList(validOptions);
         switch (option) {
         case POSTFIX_OPERATOR:
