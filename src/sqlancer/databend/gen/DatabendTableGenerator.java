@@ -7,6 +7,7 @@ import sqlancer.Randomly;
 import sqlancer.common.gen.TypedExpressionGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.databend.DatabendErrors;
 import sqlancer.databend.DatabendExprToNode;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema.DatabendColumn;
@@ -19,6 +20,7 @@ public class DatabendTableGenerator {
 
     public SQLQueryAdapter getQuery(DatabendGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
+        DatabendErrors.addExpressionErrors(errors);
         StringBuilder sb = new StringBuilder();
         String tableName = globalState.getSchema().getFreeTableName();
         sb.append("CREATE TABLE ");
