@@ -21,6 +21,8 @@ public final class DatabendErrors {
         errors.add("no overload satisfies `not(Float64 NULL)`"); // TODO databend不允许出现not(float)，而a/b为float
         errors.add("no overload satisfies `not(Float64)`");
         errors.add("number overflowed while evaluating function"); // 表达式数值溢出
+        errors.add("Unable to get field named");
+        errors.add("no overload satisfies `and_filters");
         if (DatabendBugs.bug9162) {
             errors.add("downcast column error");
         }
@@ -83,6 +85,7 @@ public final class DatabendErrors {
         errors.add("/ by zero");
         errors.add("Can't cast column from null into non-nullable type");
         errors.add("GROUP BY position");
+        errors.add("GROUP BY items can't contain aggregate functions or window functions");
 
         return errors;
     }
