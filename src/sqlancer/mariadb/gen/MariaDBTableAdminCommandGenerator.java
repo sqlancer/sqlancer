@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryResultCheckAdapter;
+import sqlancer.mariadb.MariaDBBugs;
 import sqlancer.mariadb.MariaDBSchema;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 
@@ -54,7 +55,9 @@ public final class MariaDBTableAdminCommandGenerator {
 
     public static SQLQueryAdapter optimizeTable(MariaDBSchema newSchema) {
         StringBuilder sb = addCommandAndTables(newSchema, "OPTIMIZE TABLE");
-        MariaDBCommon.addWaitClause(sb);
+        if (!MariaDBBugs.bug33893) {
+            MariaDBCommon.addWaitClause(sb);
+        }
         return checkForMsgText(sb,
                 s -> s.equals("OK") || s.equals("Table does not support optimize, doing recreate + analyze instead")
                         || s.contentEquals("Table is already up to date") || s.contains("Lock wait timeout")
