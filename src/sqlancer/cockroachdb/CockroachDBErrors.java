@@ -100,11 +100,7 @@ public final class CockroachDBErrors {
         errors.add("LOOKUP can only be used with INNER or LEFT joins"); // TODO
 
         errors.add("ambiguous binary operator: <unknown> || <unknown>");
-        errors.add(" ERROR: unsupported binary operator: <string> || <string> (desired <bytes>)");
-        errors.add("unsupported binary operator: <unknown> || <string> (desired <bytes>)");
-        errors.add("incompatible value type: unsupported binary operator: <string> || <unknown> (desired <bytes>)");
-        errors.add("unsupported binary operator: <string> || <unknown> (desired <bytes>)");
-        errors.add("unsupported binary operator: <string> || <string> (desired <bytes>)");
+        errors.add("unsupported binary operator");
         errors.add("parsing as type timestamp: empty or blank input");
         errors.add("parsing as type timestamp: field");
         errors.add("as type time");
@@ -121,7 +117,6 @@ public final class CockroachDBErrors {
         errors.add("numeric constant out of int64 range");
         errors.add("unknown signature: overlay");
         errors.add("unknown signature: substring");
-        errors.add("unsupported binary operator: <unknown> + <decimal> (desired <int>)");
         errors.add("unsupported comparison operator");
         errors.add("unknown signature: chr(decimal) (desired <string>)");
         errors.add("unknown signature: to_english(decimal) (desired <string>)");
@@ -136,7 +131,6 @@ public final class CockroachDBErrors {
         errors.add("has type decimal");
         errors.add("to be of type decimal, found type int");
         errors.add("value type decimal doesn't match type int");
-        errors.add("unsupported binary operator: <int> / <int> (desired <int4>)");
         errors.add("(desired <int>)");
         errors.add("(desired <int2>)");
         errors.add("(desired <int4>)");
