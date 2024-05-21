@@ -146,10 +146,7 @@ public final class CockroachDBErrors {
 
         errors.add("exists but is not a directory"); // TODO
 
-        errors.add("could not parse JSON: trailing characters after JSON document");
-        errors.add("could not parse JSON: unable to decode JSON: invalid character");
-        errors.add("could not parse JSON: unable to decode JSON: EOF");
-        errors.add("could not parse JSON: unable to decode JSON: unexpected EOF");
+        errors.add("could not parse JSON");
         errors.add("can't order by column type jsonb");
         errors.add("odd length hex string");
 
