@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.NewOrderingTerm;
 import sqlancer.common.ast.newast.Node;
@@ -306,8 +307,11 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
     }
 
     public DorisExpression generateConstant(DorisDataType type, boolean isNullable) {
-        if (isNullable && Randomly.getBooleanWithSmallProbability()) {
-            createConstant(DorisDataType.NULL);
+        if (!isNullable) {
+            return createConstantWithoutNull(type);
+        }
+        if (Randomly.getBooleanWithSmallProbability()) {
+            return createConstant(DorisDataType.NULL);
         }
         return createConstant(type);
     }
@@ -318,6 +322,19 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
             return DorisConstant.createNullConstant();
         }
         return createConstant(type);
+    }
+
+    public DorisExpression createConstantWithoutNull(DorisDataType type) {
+        DorisExpression constant = createConstant(type);
+        int loopCount = 0;
+        while (constant instanceof DorisConstant.DorisNullConstant && loopCount < 1000) {
+            constant = createConstant(type);
+            loopCount++;
+        }
+        if (constant instanceof DorisConstant.DorisNullConstant) {
+            throw new IgnoreMeException();
+        }
+        return constant;
     }
 
     public DorisExpression createConstant(DorisDataType type) {
