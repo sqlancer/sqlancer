@@ -27,7 +27,7 @@ public class DorisQueryPartitioningGroupByTester extends DorisQueryPartitioningB
     @Override
     public void check() throws SQLException {
         super.check();
-        select.setGroupByExpressions(groupByExpression);
+        select.setGroupByExpressions(select.getFetchColumns());
         select.setWhereClause(null);
         String originalQueryString = DorisToStringVisitor.asString(select);
 

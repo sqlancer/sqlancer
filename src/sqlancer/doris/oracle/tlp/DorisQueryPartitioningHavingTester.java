@@ -31,6 +31,7 @@ public class DorisQueryPartitioningHavingTester extends DorisQueryPartitioningBa
         if (Randomly.getBoolean()) {
             select.setWhereClause(DorisExprToNode.cast(gen.generateExpression(DorisSchema.DorisDataType.BOOLEAN)));
         }
+        select.setFetchColumns(groupByExpression);
         boolean orderBy = Randomly.getBoolean();
         if (orderBy) {
             List<Node<DorisExpression>> constants = new ArrayList<>();
