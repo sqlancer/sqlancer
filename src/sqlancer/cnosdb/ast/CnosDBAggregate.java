@@ -1,12 +1,8 @@
 package sqlancer.cnosdb.ast;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import sqlancer.Randomly;
-import sqlancer.cnosdb.CnosDBBugs;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
 import sqlancer.cnosdb.ast.CnosDBAggregate.CnosDBAggregateFunction;
 import sqlancer.common.ast.FunctionNode;
@@ -19,95 +15,49 @@ public class CnosDBAggregate extends FunctionNode<CnosDBAggregateFunction, CnosD
     }
 
     public enum CnosDBAggregateFunction {
-        AVG(CnosDBDataType.DOUBLE),
-        MAX(CnosDBDataType.DOUBLE, CnosDBDataType.INT, CnosDBDataType.STRING, CnosDBDataType.TIMESTAMP,
-                CnosDBDataType.UINT),
-        MIN(CnosDBDataType.DOUBLE, CnosDBDataType.INT, CnosDBDataType.STRING, CnosDBDataType.TIMESTAMP,
-                CnosDBDataType.UINT),
-        COUNT(CnosDBDataType.INT) {
-            @Override
-            public CnosDBDataType[] getArgsTypes(CnosDBDataType returnType) {
-                return new CnosDBDataType[] { CnosDBDataType.getRandomType() };
-            }
-        },
-        SUM(CnosDBDataType.INT, CnosDBDataType.DOUBLE, CnosDBDataType.UINT), APPROX_MEDIAN(CnosDBDataType.DOUBLE),
+        // the first argument is the arg num of the aggregate function, the rest are the types of the arguments if limited
+        // TODO: Add more supported aggregate functions, now only a few are supported(min max sum)
 
-        VAR(CnosDBDataType.DOUBLE), VAR_SAMP(CnosDBDataType.DOUBLE), VAR_POP(CnosDBDataType.DOUBLE),
-        STDDEV(CnosDBDataType.DOUBLE), STDDEV_SAMP(CnosDBDataType.DOUBLE), STDDEV_POP(CnosDBDataType.DOUBLE),
-        COVAR(CnosDBDataType.DOUBLE) {
-            @Override
-            public CnosDBDataType[] getArgsTypes(CnosDBDataType returnType) {
-                return new CnosDBDataType[] { CnosDBDataType.DOUBLE, CnosDBDataType.DOUBLE };
-            }
-        },
-        COVAR_SAMP(CnosDBDataType.DOUBLE) {
-            @Override
-            public CnosDBDataType[] getArgsTypes(CnosDBDataType returnType) {
-                return new CnosDBDataType[] { CnosDBDataType.DOUBLE, CnosDBDataType.INT };
-            }
-        },
-        CORR(CnosDBDataType.DOUBLE) {
-            @Override
-            public CnosDBDataType[] getArgsTypes(CnosDBDataType returnType) {
-                return new CnosDBDataType[] { CnosDBDataType.DOUBLE, CnosDBDataType.DOUBLE };
-            }
-        },
-        COVAR_POP(CnosDBDataType.DOUBLE) {
-            @Override
-            public CnosDBDataType[] getArgsTypes(CnosDBDataType returnType) {
-                return new CnosDBDataType[] { CnosDBDataType.DOUBLE, CnosDBDataType.DOUBLE };
-            }
-        },
+        // comman
+        MAX(1), MIN(1), SUM(1, CnosDBDataType.INT, CnosDBDataType.DOUBLE) ,COUNT(1), MEAN(1),  MEDIAN(1), 
+        AVG(1), 
+        // order
+        ARRAY_AGG(1), FIRST_VALUE(1), FISRT(2), LAST_VALUE(1), LAST(2), MODE(1), INCREASE(2),
+        
+        // statistics
+        CORR(2), COVAR(2), COVAR_SAMP(2), COVAR_POP(2), 
+        STDDEV(1), STDDEV_SAMP(1), STDDEV_POP(1),
+        VAR(1), VAR_SAMP(1), VAR_POP(1),
 
-        APPROX_PERCENTILE_CONT(CnosDBDataType.DOUBLE) {
-            @Override
-            public CnosDBDataType[] getArgsTypes(CnosDBDataType returnType) {
-                return new CnosDBDataType[] { CnosDBDataType.DOUBLE, CnosDBDataType.DOUBLE };
-            }
-        },
-        APPROX_PERCENTILE_CONT_WITH_WEIGHT(CnosDBDataType.DOUBLE) {
-            @Override
-            public CnosDBDataType[] getArgsTypes(CnosDBDataType returnType) {
-                return new CnosDBDataType[] { CnosDBDataType.DOUBLE, CnosDBDataType.DOUBLE, CnosDBDataType.DOUBLE };
-            }
-        },
-        APPROX_DISTINCT(CnosDBDataType.UINT), GROUPING(CnosDBDataType.INT), ARRAY_AGG(CnosDBDataType.STRING);
+        // approximate
+        APPROX_MEDIAN(1),
+        APPROX_PERCENTILE_CONT(3),
+        APPROX_PERCENTILE_CONT_WITH_WEIGHT(3), APPROX_DISTINCT(1), SAMPLE(2);
 
-        private final CnosDBDataType[] supportedReturnTypes;
 
-        CnosDBAggregateFunction(CnosDBDataType... supportedReturnTypes) {
-            this.supportedReturnTypes = supportedReturnTypes.clone();
+        private int nrArgs;
+        private CnosDBDataType[] supportedTypes;
+        
+        CnosDBAggregateFunction(int nrArgs, CnosDBDataType... supportedTypes) {
+            this.nrArgs = nrArgs;
+            this.supportedTypes = supportedTypes;
         }
 
-        public static List<CnosDBAggregateFunction> getAggregates(CnosDBDataType type) {
-            List<CnosDBAggregateFunction> res = Stream.of(values()).filter(p -> p.supportsReturnType(type))
-                    .collect(Collectors.toList());
-            if (CnosDBBugs.BUG786) {
-                res.removeAll(List.of(VAR, VAR_POP, VAR_SAMP, STDDEV, STDDEV_POP, STDDEV_SAMP, CORR, COVAR, COVAR_POP,
-                        COVAR_SAMP, APPROX_PERCENTILE_CONT_WITH_WEIGHT, APPROX_DISTINCT, APPROX_PERCENTILE_CONT,
-                        APPROX_PERCENTILE_CONT_WITH_WEIGHT, GROUPING, ARRAY_AGG));
-            }
-
-            return res;
-        }
-
-        public CnosDBDataType[] getArgsTypes(CnosDBDataType returnType) {
-            return new CnosDBDataType[] { returnType };
-        }
-
-        public boolean supportsReturnType(CnosDBDataType returnType) {
-            return Arrays.stream(supportedReturnTypes).anyMatch(t -> t == returnType)
-                    || supportedReturnTypes.length == 0;
-        }
-
-        public CnosDBDataType getRandomReturnType() {
-            if (supportedReturnTypes.length == 0) {
-                return Randomly.fromOptions(CnosDBDataType.getRandomType());
-            } else {
-                return Randomly.fromOptions(supportedReturnTypes);
+        public CnosDBDataType getRandomType() {
+            if(supportedTypes.length == 0) {
+                return Randomly.fromOptions(CnosDBDataType.values());
+            }else{
+                return Randomly.fromOptions(supportedTypes);
             }
         }
 
+        public static CnosDBAggregateFunction getRandom() {
+            return Randomly.fromOptions(values());
+        }
+
+        public int getNrArgs() {
+            return nrArgs;
+        }
     }
 
 }

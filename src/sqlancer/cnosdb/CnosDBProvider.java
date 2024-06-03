@@ -21,30 +21,33 @@ import sqlancer.common.log.LoggableFactory;
 @AutoService(DatabaseProvider.class)
 public class CnosDBProvider extends ProviderAdapter<CnosDBGlobalState, CnosDBOptions, CnosDBConnection> {
 
-    protected String username;
-    protected String password;
-    protected String host;
-    protected int port;
-    protected String databaseName;
-
     public CnosDBProvider() {
         super(CnosDBGlobalState.class, CnosDBOptions.class);
     }
 
-    protected CnosDBProvider(Class<CnosDBGlobalState> globalClass, Class<CnosDBOptions> optionClass) {
-        super(globalClass, optionClass);
+    public enum Action implements AbstractAction<CnosDBGlobalState> {
+        INSERT(CnosDBInsertGenerator::getQuery);
+
+        private final CnosDBQueryProvider<CnosDBGlobalState> sqlQueryProvider;
+
+        Action(CnosDBQueryProvider<CnosDBGlobalState> sqlQueryProvider) {
+            this.sqlQueryProvider = sqlQueryProvider;
+        }
+
+        @Override
+        public CnosDBOtherQuery getQuery(CnosDBGlobalState state) throws Exception {
+            return new CnosDBOtherQuery(sqlQueryProvider.getQuery(state).getQueryString(),
+                    CnosDBExpectedError.expectedErrors());
+        }
     }
 
     protected static int mapActions(CnosDBGlobalState globalState, Action a) {
         Randomly r = globalState.getRandomly();
-        int nrPerformed;
         if (Objects.requireNonNull(a) == Action.INSERT) {
-            nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
+            return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
         } else {
             throw new AssertionError(a);
         }
-        return nrPerformed;
-
     }
 
     @Override
@@ -61,11 +64,11 @@ public class CnosDBProvider extends ProviderAdapter<CnosDBGlobalState, CnosDBOpt
     @Override
     public CnosDBConnection createDatabase(CnosDBGlobalState globalState) throws Exception {
 
-        username = globalState.getOptions().getUserName();
-        password = globalState.getOptions().getPassword();
-        host = globalState.getOptions().getHost();
-        port = globalState.getOptions().getPort();
-        databaseName = globalState.getDatabaseName();
+        String username = globalState.getOptions().getUserName();
+        String password = globalState.getOptions().getPassword();
+        String host = globalState.getOptions().getHost();
+        int port = globalState.getOptions().getPort();
+        String databaseName = globalState.getDatabaseName();
         CnosDBClient client = new CnosDBClient(host, port, username, password, databaseName);
         CnosDBConnection connection = new CnosDBConnection(client);
         client.execute("DROP DATABASE IF EXISTS " + databaseName);
@@ -103,21 +106,4 @@ public class CnosDBProvider extends ProviderAdapter<CnosDBGlobalState, CnosDBOpt
     public LoggableFactory getLoggableFactory() {
         return new CnosDBLoggableFactory();
     }
-
-    public enum Action implements AbstractAction<CnosDBGlobalState> {
-        INSERT(CnosDBInsertGenerator::insert);
-
-        private final CnosDBQueryProvider<CnosDBGlobalState> sqlQueryProvider;
-
-        Action(CnosDBQueryProvider<CnosDBGlobalState> sqlQueryProvider) {
-            this.sqlQueryProvider = sqlQueryProvider;
-        }
-
-        @Override
-        public CnosDBOtherQuery getQuery(CnosDBGlobalState state) throws Exception {
-            return new CnosDBOtherQuery(sqlQueryProvider.getQuery(state).getQueryString(),
-                    CnosDBExpectedError.expectedErrors());
-        }
-    }
-
 }

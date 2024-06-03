@@ -7,15 +7,11 @@ import sqlancer.common.ast.BinaryOperatorNode.Operator;
 public class CnosDBPostfixOperation implements CnosDBExpression {
 
     private final CnosDBExpression expr;
-    private final String operatorTextRepresentation;
+    private final Operator op;
 
     public CnosDBPostfixOperation(CnosDBExpression expr, PostfixOperator op) {
         this.expr = expr;
-        this.operatorTextRepresentation = Randomly.fromOptions(op.textRepresentations);
-    }
-
-    public static CnosDBExpression create(CnosDBExpression expr, PostfixOperator op) {
-        return new CnosDBPostfixOperation(expr, op);
+        this.op = op;
     }
 
     @Override
@@ -23,8 +19,8 @@ public class CnosDBPostfixOperation implements CnosDBExpression {
         return CnosDBDataType.BOOLEAN;
     }
 
-    public String getOperatorTextRepresentation() {
-        return operatorTextRepresentation;
+    public PostfixOperator getOp() {
+        return (PostfixOperator) op;
     }
 
     public CnosDBExpression getExpression() {
@@ -39,13 +35,6 @@ public class CnosDBPostfixOperation implements CnosDBExpression {
             }
 
         },
-        IS_UNKNOWN("IS UNKNOWN") {
-            @Override
-            public CnosDBDataType[] getInputDataTypes() {
-                return new CnosDBDataType[] { CnosDBDataType.BOOLEAN };
-            }
-        },
-
         IS_NOT_NULL("IS NOT NULL"/* "NOTNULL" */) {
 
             @Override
@@ -54,13 +43,7 @@ public class CnosDBPostfixOperation implements CnosDBExpression {
             }
 
         },
-        IS_NOT_UNKNOWN("IS NOT UNKNOWN") {
-
-            @Override
-            public CnosDBDataType[] getInputDataTypes() {
-                return new CnosDBDataType[] { CnosDBDataType.BOOLEAN };
-            }
-        },
+  
         IS_TRUE("IS TRUE") {
             @Override
             public CnosDBDataType[] getInputDataTypes() {
@@ -76,10 +59,10 @@ public class CnosDBPostfixOperation implements CnosDBExpression {
 
         };
 
-        private final String[] textRepresentations;
+        private final String textRepresentations;
 
-        PostfixOperator(String... textRepresentations) {
-            this.textRepresentations = textRepresentations.clone();
+        PostfixOperator(String text) {
+            this.textRepresentations = text;
         }
 
         public static PostfixOperator getRandom() {
@@ -90,8 +73,12 @@ public class CnosDBPostfixOperation implements CnosDBExpression {
 
         @Override
         public String getTextRepresentation() {
-            return toString();
+            return textRepresentations;
         }
+    }
+
+    public String getOperatorRepresentation(){
+        return op.getTextRepresentation();
     }
 
 }

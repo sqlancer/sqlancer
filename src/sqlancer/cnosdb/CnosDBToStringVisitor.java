@@ -17,9 +17,8 @@ import sqlancer.cnosdb.ast.CnosDBPostfixOperation;
 import sqlancer.cnosdb.ast.CnosDBPostfixText;
 import sqlancer.cnosdb.ast.CnosDBPrefixOperation;
 import sqlancer.cnosdb.ast.CnosDBSelect;
-import sqlancer.cnosdb.ast.CnosDBSelect.CnosDBFromTable;
-import sqlancer.cnosdb.ast.CnosDBSelect.CnosDBSubquery;
-import sqlancer.cnosdb.ast.CnosDBSimilarTo;
+// import sqlancer.cnosdb.ast.CnosDBSelect.CnosDBSubquery;
+import sqlancer.cnosdb.ast.CnosDBTableReference;
 import sqlancer.common.visitor.BinaryOperation;
 import sqlancer.common.visitor.ToStringVisitor;
 
@@ -46,7 +45,7 @@ public final class CnosDBToStringVisitor extends ToStringVisitor<CnosDBExpressio
         visit(op.getExpression());
         sb.append(")");
         sb.append(" ");
-        sb.append(op.getOperatorTextRepresentation());
+        sb.append(op.getOperatorRepresentation());
     }
 
     @Override
@@ -63,29 +62,24 @@ public final class CnosDBToStringVisitor extends ToStringVisitor<CnosDBExpressio
     }
 
     @Override
-    public void visit(CnosDBFromTable from) {
+    public void visit(CnosDBTableReference from) {
         sb.append(from.getTable().getName());
     }
 
-    @Override
-    public void visit(CnosDBSubquery subquery) {
-        sb.append("(");
-        visit(subquery.getSelect());
-        sb.append(") AS ");
-        sb.append(subquery.getName());
-    }
+    // @Override
+    // public void visit(CnosDBSubquery subquery) {
+    //     sb.append("(");
+    //     visit(subquery.getSelect());
+    //     sb.append(") AS ");
+    //     sb.append(subquery.getName());
+    // }
 
     @Override
     public void visit(CnosDBSelect s) {
         sb.append("SELECT ");
-        switch (s.getSelectOption()) {
+        switch (s.getSelectType()) {
         case DISTINCT:
             sb.append("DISTINCT ");
-            if (s.getDistinctOnClause() != null) {
-                sb.append("ON (");
-                visit(s.getDistinctOnClause());
-                sb.append(") ");
-            }
             break;
         case ALL:
             sb.append(Randomly.fromOptions("ALL ", ""));
@@ -101,43 +95,15 @@ public final class CnosDBToStringVisitor extends ToStringVisitor<CnosDBExpressio
         sb.append(" FROM ");
         visit(s.getFromList());
 
-        for (CnosDBJoin j : s.getJoinClauses()) {
-            sb.append(" ");
-            switch (j.getType()) {
-            case INNER:
-                if (Randomly.getBoolean()) {
-                    sb.append("INNER ");
-                }
-                sb.append("JOIN");
-                break;
-            case LEFT:
-                sb.append("LEFT OUTER JOIN");
-                break;
-            case RIGHT:
-                sb.append("RIGHT OUTER JOIN");
-                break;
-            case FULL:
-                sb.append("FULL OUTER JOIN");
-                break;
-            // case CROSS:
-            // sb.append("CROSS JOIN");
-            // break;
-            default:
-                throw new AssertionError(j.getType());
-            }
-            sb.append(" ");
-            visit(j.getTableReference());
-            // if (j.getType() != CnosDBJoinType.CROSS) {
-            sb.append(" ON ");
-            visit(j.getOnClause());
-            // }
+        if(!s.getJoinList().isEmpty()){
+            visit(s.getJoinList());
         }
 
         if (s.getWhereClause() != null) {
             sb.append(" WHERE ");
             visit(s.getWhereClause());
         }
-        if (s.getGroupByExpressions().size() > 0) {
+        if (!s.getGroupByExpressions().isEmpty()) {
             sb.append(" GROUP BY ");
             visit(s.getGroupByExpressions());
         }
@@ -257,12 +223,32 @@ public final class CnosDBToStringVisitor extends ToStringVisitor<CnosDBExpressio
     }
 
     @Override
-    public void visit(CnosDBSimilarTo op) {
-        sb.append("(");
-        visit(op.getString());
-        sb.append(" SIMILAR TO ");
-        visit(op.getSimilarTo());
-        sb.append(")");
+    public void visit(CnosDBJoin op){
+            sb.append(" ");
+            visit(op.getLeftTable());
+            sb.append(" ");
+            switch (op.getJoinType()) {
+            case INNER:
+                if (Randomly.getBoolean()) {
+                    sb.append("INNER ");
+                }
+                sb.append("JOIN ");
+                break;
+            case LEFT:
+                sb.append("LEFT OUTER JOIN ");
+                break;
+            case RIGHT:
+                sb.append("RIGHT OUTER JOIN ");
+                break;
+            case FULL:
+                sb.append("FULL OUTER JOIN ");
+                break;
+            default:
+                throw new AssertionError(op.getJoinType());
+            }
+            visit(op.getRightTable());
+            sb.append(" ON ");
+            visit(op.getOnCondition());
     }
 
     @Override

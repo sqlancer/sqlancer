@@ -15,10 +15,17 @@ import sqlancer.common.schema.AbstractTableColumn;
 
 public final class CnosDBInsertGenerator {
 
-    private CnosDBInsertGenerator() {
+    private final CnosDBGlobalState globalState;
+
+    public CnosDBInsertGenerator(CnosDBGlobalState globalState) {
+        this.globalState = globalState;
+    }   
+
+    public static CnosDBOtherQuery getQuery(CnosDBGlobalState globalState){
+        return new CnosDBInsertGenerator(globalState).generate();
     }
 
-    public static CnosDBOtherQuery insert(CnosDBGlobalState globalState) {
+    private CnosDBOtherQuery generate() {
         CnosDBTable table = globalState.getSchema().getRandomTable();
         ExpectedErrors errors = new ExpectedErrors();
         errors.add("Column time cannot be null.");
@@ -36,21 +43,21 @@ public final class CnosDBInsertGenerator {
             if (i != 0) {
                 sb.append(", ");
             }
-            insertRow(globalState, sb, columns);
+            insertRow(sb, columns);
         }
 
         // error
         return new CnosDBOtherQuery(sb.toString(), errors);
     }
 
-    private static void insertRow(CnosDBGlobalState globalState, StringBuilder sb, List<CnosDBColumn> columns) {
+    private void insertRow(StringBuilder sb, List<CnosDBColumn> columns) {
+        CnosDBExpressionGenerator gen = new CnosDBExpressionGenerator(globalState);
         sb.append("(");
         for (int i = 0; i < columns.size(); i++) {
             if (i > 0) {
                 sb.append(", ");
             }
-            CnosDBExpression generateConstant = CnosDBExpressionGenerator.generateConstant(globalState.getRandomly(),
-                    columns.get(i).getType());
+            CnosDBExpression generateConstant = gen.generateConstant(columns.get(i).getType());
             sb.append(CnosDBVisitor.asString(generateConstant));
         }
         sb.append(")");

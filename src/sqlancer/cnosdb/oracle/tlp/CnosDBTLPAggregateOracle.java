@@ -3,7 +3,6 @@ package sqlancer.cnosdb.oracle.tlp;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
@@ -16,7 +15,6 @@ import sqlancer.cnosdb.ast.CnosDBAggregate;
 import sqlancer.cnosdb.ast.CnosDBAggregate.CnosDBAggregateFunction;
 import sqlancer.cnosdb.ast.CnosDBAlias;
 import sqlancer.cnosdb.ast.CnosDBExpression;
-import sqlancer.cnosdb.ast.CnosDBJoin;
 import sqlancer.cnosdb.ast.CnosDBPostfixOperation;
 import sqlancer.cnosdb.ast.CnosDBPostfixOperation.PostfixOperator;
 import sqlancer.cnosdb.ast.CnosDBPrefixOperation;
@@ -24,6 +22,7 @@ import sqlancer.cnosdb.ast.CnosDBPrefixOperation.PrefixOperator;
 import sqlancer.cnosdb.ast.CnosDBSelect;
 import sqlancer.cnosdb.client.CnosDBResultSet;
 import sqlancer.cnosdb.query.CnosDBSelectQuery;
+import sqlancer.common.ast.FunctionNode;
 import sqlancer.common.oracle.TestOracle;
 
 public class CnosDBTLPAggregateOracle extends CnosDBTLPBase implements TestOracle<CnosDBGlobalState> {
@@ -47,8 +46,7 @@ public class CnosDBTLPAggregateOracle extends CnosDBTLPBase implements TestOracl
         CnosDBAggregateFunction aggregateFunction = Randomly.fromOptions(CnosDBAggregateFunction.MAX,
                 CnosDBAggregateFunction.MIN, CnosDBAggregateFunction.SUM);
 
-        CnosDBAggregate aggregate = gen.generateArgsForAggregate(aggregateFunction.getRandomReturnType(),
-                aggregateFunction);
+        CnosDBAggregate aggregate = (CnosDBAggregate) gen.generateArgsForAggregate(aggregateFunction);
         List<CnosDBExpression> fetchColumns = new ArrayList<>();
         fetchColumns.add(aggregate);
         while (Randomly.getBooleanWithRatherLowProbability()) {
@@ -56,7 +54,7 @@ public class CnosDBTLPAggregateOracle extends CnosDBTLPBase implements TestOracl
         }
         select.setFetchColumns(fetchColumns);
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByClauses(gen.generateOrderBy());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         originalQuery = CnosDBVisitor.asString(select);
         firstResult = getAggregateResult(originalQuery);
@@ -79,16 +77,16 @@ public class CnosDBTLPAggregateOracle extends CnosDBTLPBase implements TestOracl
         }
     }
 
-    private String createMetamorphicUnionQuery(CnosDBSelect select, CnosDBAggregate aggregate,
+    private String createMetamorphicUnionQuery(CnosDBSelect select, FunctionNode<CnosDBAggregateFunction, CnosDBExpression> aggregate,
             List<CnosDBExpression> from) {
         String metamorphicQuery;
         CnosDBExpression whereClause = gen.generateExpression(CnosDBDataType.BOOLEAN);
         CnosDBExpression negatedClause = new CnosDBPrefixOperation(whereClause, PrefixOperator.NOT);
         CnosDBExpression notNullClause = new CnosDBPostfixOperation(whereClause, PostfixOperator.IS_NULL);
-        List<CnosDBExpression> mappedAggregate = mapped(aggregate);
-        CnosDBSelect leftSelect = getSelect(mappedAggregate, from, whereClause, select.getJoinClauses());
-        CnosDBSelect middleSelect = getSelect(mappedAggregate, from, negatedClause, select.getJoinClauses());
-        CnosDBSelect rightSelect = getSelect(mappedAggregate, from, notNullClause, select.getJoinClauses());
+        List<CnosDBExpression> mappedAggregate = mapped((CnosDBAggregate)aggregate);
+        CnosDBSelect leftSelect = getSelect(mappedAggregate, from, whereClause, select.getJoinList());
+        CnosDBSelect middleSelect = getSelect(mappedAggregate, from, negatedClause, select.getJoinList());
+        CnosDBSelect rightSelect = getSelect(mappedAggregate, from, notNullClause, select.getJoinList());
         metamorphicQuery = "SELECT " + getOuterAggregateFunction(aggregate) + " FROM (";
         metamorphicQuery += CnosDBVisitor.asString(leftSelect) + " UNION ALL " + CnosDBVisitor.asString(middleSelect)
                 + " UNION ALL " + CnosDBVisitor.asString(rightSelect);
@@ -153,20 +151,22 @@ public class CnosDBTLPAggregateOracle extends CnosDBTLPBase implements TestOracl
         return args;
     }
 
-    private String getOuterAggregateFunction(CnosDBAggregate aggregate) {
-        if (Objects.requireNonNull(aggregate.getFunction()) == CnosDBAggregateFunction.COUNT) {
-            return CnosDBAggregateFunction.SUM + "(agg0)";
+    private String getOuterAggregateFunction(FunctionNode<CnosDBAggregateFunction, CnosDBExpression> aggregate) {
+        switch(aggregate.getFunction()) {
+            case COUNT:
+                return CnosDBAggregateFunction.SUM+ "(agg0)";
+            default:
+                return aggregate.getFunction().toString() + "(agg0)";
         }
-        return aggregate.getFunction() + "(agg0)";
     }
 
     private CnosDBSelect getSelect(List<CnosDBExpression> aggregates, List<CnosDBExpression> from,
-            CnosDBExpression whereClause, List<CnosDBJoin> joinList) {
+            CnosDBExpression whereClause, List<CnosDBExpression> joinList) {
         CnosDBSelect leftSelect = new CnosDBSelect();
         leftSelect.setFetchColumns(aggregates);
         leftSelect.setFromList(from);
         leftSelect.setWhereClause(whereClause);
-        leftSelect.setJoinClauses(joinList);
+        leftSelect.setJoinList(joinList);
         if (Randomly.getBooleanWithSmallProbability()) {
             leftSelect.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
         }
