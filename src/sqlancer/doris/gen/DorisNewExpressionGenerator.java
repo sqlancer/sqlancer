@@ -12,6 +12,7 @@ import sqlancer.Randomly;
 import sqlancer.common.ast.newast.NewOrderingTerm;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.TypedExpressionGenerator;
+import sqlancer.doris.DorisBugs;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
 import sqlancer.doris.DorisSchema.DorisColumn;
 import sqlancer.doris.DorisSchema.DorisDataType;
@@ -118,10 +119,12 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
                 return function.getCall(type, this, depth + 1);
             }
         }
-        if (globalState.getDbmsSpecificOptions().testCasts && Randomly.getBooleanWithRatherLowProbability()) {
+        if (!DorisBugs.bug36070 && type != DorisDataType.NULL && globalState.getDbmsSpecificOptions().testCasts
+                && Randomly.getBooleanWithRatherLowProbability()) {
             return new DorisCastOperation(DorisExprToNode.cast(generateExpression(getRandomType(), depth + 1)), type);
         }
-        if (globalState.getDbmsSpecificOptions().testCase && Randomly.getBooleanWithRatherLowProbability()) {
+        if (!DorisBugs.bug36070 && globalState.getDbmsSpecificOptions().testCase
+                && Randomly.getBooleanWithRatherLowProbability()) {
             DorisExpression expr = generateExpression(DorisDataType.BOOLEAN, depth + 1);
             List<DorisExpression> conditions = new ArrayList<>();
             List<DorisExpression> cases = new ArrayList<>();
@@ -202,7 +205,7 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
         if (!globalState.getDbmsSpecificOptions().testBinaryComparisons) {
             validOptions.remove(BooleanExpression.BINARY_COMPARISON);
         }
-        if (!globalState.getDbmsSpecificOptions().testBetween) {
+        if (DorisBugs.bug36070 || !globalState.getDbmsSpecificOptions().testBetween) {
             validOptions.remove(BooleanExpression.BETWEEN);
         }
 

@@ -39,6 +39,10 @@ public final class DorisBugs {
     // Wrong result when value like column from table_join
     public static boolean bug19614 = true;
 
+    // https://github.com/apache/doris/issues/36070
+    // Expression evaluate to NULL but is treated as FALSE in where clause
+    public static boolean bug36070 = true;
+
     private DorisBugs() {
 
     }
