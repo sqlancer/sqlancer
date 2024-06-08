@@ -43,6 +43,10 @@ public final class DorisBugs {
     // Expression evaluate to NULL but is treated as FALSE in where clause
     public static boolean bug36070 = true;
 
+    // https://github.com/apache/doris/issues/36072
+    // SELECT DISTINCT does not work with aggregate key column
+    public static boolean bug36072 = true;
+
     private DorisBugs() {
 
     }

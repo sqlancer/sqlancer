@@ -30,6 +30,9 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
         UNIQUE, AGGREGATE, DUPLICATE;
 
         public static DorisTableDataModel getRandom() {
+            if (DorisBugs.bug36072) {
+                return Randomly.fromOptions(UNIQUE, DUPLICATE);
+            }
             return Randomly.fromOptions(values());
         }
     }
