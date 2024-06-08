@@ -57,6 +57,7 @@ public final class DorisErrors {
         if (DorisBugs.bug19611) {
             errors.add("Duplicated inline view column alias");
         }
+        errors.add("Arithmetic overflow");
 
         return errors;
     }
