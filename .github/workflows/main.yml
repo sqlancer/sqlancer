@@ -543,9 +543,9 @@ jobs:
       - name: Set up Apache Doris
         run: |
           sudo sysctl -w vm.max_map_count=2000000
-          wget -q https://apache-doris-releases.oss-accelerate.aliyuncs.com/apache-doris-2.0.3-bin-x64.tar.gz
-          tar zxf apache-doris-2.0.3-bin-x64.tar.gz
-          mv apache-doris-2.0.3-bin-x64 apache-doris
+          wget -q https://apache-doris-releases.oss-accelerate.aliyuncs.com/apache-doris-2.1.3-bin-x64.tar.gz
+          tar zxf apache-doris-2.1.3-bin-x64.tar.gz
+          mv apache-doris-2.1.3-bin-x64 apache-doris
           sudo swapoff -a
           cd apache-doris/fe
           ./bin/start_fe.sh --daemon
