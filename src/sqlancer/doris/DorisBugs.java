@@ -55,6 +55,10 @@ public final class DorisBugs {
     // Wrong result with SELECT DISTINCT and UNIQUE model
     public static boolean bug36343 = true;
 
+    // https://github.com/apache/doris/issues/36346
+    // Wrong result with LEFT JOIN SELECT DISTINCT and IN operation
+    public static boolean bug36346 = true;
+
     private DorisBugs() {
 
     }

@@ -196,7 +196,7 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
             allowAggregateFunctions = false;
         }
         List<BooleanExpression> validOptions = new ArrayList<>(Arrays.asList(BooleanExpression.values()));
-        if (!globalState.getDbmsSpecificOptions().testIn) {
+        if (DorisBugs.bug36346 || !globalState.getDbmsSpecificOptions().testIn) {
             validOptions.remove(BooleanExpression.IN_OPERATION);
         }
         if (!globalState.getDbmsSpecificOptions().testBinaryLogicals) {
