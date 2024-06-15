@@ -47,6 +47,10 @@ public final class DorisBugs {
     // SELECT DISTINCT does not work with aggregate key column
     public static boolean bug36072 = true;
 
+    // https://github.com/apache/doris/issues/36342
+    // Wrong result with INNER JOIN and CURRENT_TIMESTAMP
+    public static boolean bug36342 = true;
+
     private DorisBugs() {
 
     }

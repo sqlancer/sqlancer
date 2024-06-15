@@ -388,6 +388,9 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
             if (globalState.getDbmsSpecificOptions().testDateTimeConstants) {
                 // [1970-01-01 08:00:00, 3000-01-01 00:00:00]
                 timestamp = globalState.getRandomly().getLong(0, 32503651200L);
+                if (DorisBugs.bug36342) {
+                    return DorisConstant.createDatetimeConstant(timestamp);
+                }
                 return Randomly.fromOptions(DorisConstant.createDatetimeConstant(timestamp),
                         DorisConstant.createDatetimeConstant());
             }
