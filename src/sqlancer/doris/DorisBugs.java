@@ -51,6 +51,10 @@ public final class DorisBugs {
     // Wrong result with INNER JOIN and CURRENT_TIMESTAMP
     public static boolean bug36342 = true;
 
+    // https://github.com/apache/doris/issues/36343
+    // Wrong result with SELECT DISTINCT and UNIQUE model
+    public static boolean bug36343 = true;
+
     private DorisBugs() {
 
     }
