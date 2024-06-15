@@ -559,7 +559,10 @@ jobs:
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Run Tests
-        run: DORIS_AVAILABLE=true mvn -Dtest=TestDoris test
+        run: |
+          DORIS_AVAILABLE=true mvn -Dtest=TestDorisNoREC test
+          DORIS_AVAILABLE=true mvn -Dtest=TestDorisPQS test
+          DORIS_AVAILABLE=true mvn -Dtest=TestDorisTLP test
 
   reducer:
     name: Reducer Tests
