@@ -35,6 +35,10 @@ public final class DorisBugs {
     // Wrong result with LEFT JOIN SELECT DISTINCT and IN operation
     public static boolean bug36346 = true;
 
+    // https://github.com/apache/doris/issues/36351
+    // Wrong result with TINYINT column with value -1049190528
+    public static boolean bug36351 = true;
+
     private DorisBugs() {
 
     }

@@ -346,6 +346,10 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
         switch (type) {
         case INT:
             if (globalState.getDbmsSpecificOptions().testIntConstants) {
+                long number = r.getInteger();
+                if (DorisBugs.bug36351 && number == -1049190528) {
+                    number = 0;
+                }
                 return DorisConstant.createIntConstant(r.getInteger());
             }
             return DorisConstant.createNullConstant();
