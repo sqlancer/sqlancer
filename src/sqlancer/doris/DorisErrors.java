@@ -57,6 +57,7 @@ public final class DorisErrors {
         if (DorisBugs.bug19611) {
             errors.add("Duplicated inline view column alias");
         }
+        errors.add("Arithmetic overflow");
 
         return errors;
     }
@@ -72,6 +73,7 @@ public final class DorisErrors {
         errors.add("Only value columns of unique table could be updated");
         errors.add("Only unique olap table could be updated");
         errors.add("Number out of range");
+        errors.add("Arithmetic overflow");
 
         return errors;
     }

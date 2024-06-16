@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +31,14 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
         UNIQUE, AGGREGATE, DUPLICATE;
 
         public static DorisTableDataModel getRandom() {
-            return Randomly.fromOptions(values());
+            List<DorisTableDataModel> validOptions = new ArrayList<>(Arrays.asList(values()));
+            if (DorisBugs.bug36072) {
+                validOptions.remove(AGGREGATE);
+            }
+            if (DorisBugs.bug36343) {
+                validOptions.remove(UNIQUE);
+            }
+            return Randomly.fromList(validOptions);
         }
     }
 

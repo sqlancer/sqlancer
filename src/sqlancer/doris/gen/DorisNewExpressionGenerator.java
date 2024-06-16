@@ -7,10 +7,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.NewOrderingTerm;
 import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.TypedExpressionGenerator;
+import sqlancer.doris.DorisBugs;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
 import sqlancer.doris.DorisSchema.DorisColumn;
 import sqlancer.doris.DorisSchema.DorisDataType;
@@ -117,10 +119,12 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
                 return function.getCall(type, this, depth + 1);
             }
         }
-        if (globalState.getDbmsSpecificOptions().testCasts && Randomly.getBooleanWithRatherLowProbability()) {
+        if (!DorisBugs.bug36070 && type != DorisDataType.NULL && globalState.getDbmsSpecificOptions().testCasts
+                && Randomly.getBooleanWithRatherLowProbability()) {
             return new DorisCastOperation(DorisExprToNode.cast(generateExpression(getRandomType(), depth + 1)), type);
         }
-        if (globalState.getDbmsSpecificOptions().testCase && Randomly.getBooleanWithRatherLowProbability()) {
+        if (!DorisBugs.bug36070 && globalState.getDbmsSpecificOptions().testCase
+                && Randomly.getBooleanWithRatherLowProbability()) {
             DorisExpression expr = generateExpression(DorisDataType.BOOLEAN, depth + 1);
             List<DorisExpression> conditions = new ArrayList<>();
             List<DorisExpression> cases = new ArrayList<>();
@@ -192,7 +196,7 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
             allowAggregateFunctions = false;
         }
         List<BooleanExpression> validOptions = new ArrayList<>(Arrays.asList(BooleanExpression.values()));
-        if (!globalState.getDbmsSpecificOptions().testIn) {
+        if (DorisBugs.bug36346 || !globalState.getDbmsSpecificOptions().testIn) {
             validOptions.remove(BooleanExpression.IN_OPERATION);
         }
         if (!globalState.getDbmsSpecificOptions().testBinaryLogicals) {
@@ -201,7 +205,7 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
         if (!globalState.getDbmsSpecificOptions().testBinaryComparisons) {
             validOptions.remove(BooleanExpression.BINARY_COMPARISON);
         }
-        if (!globalState.getDbmsSpecificOptions().testBetween) {
+        if (DorisBugs.bug36070 || !globalState.getDbmsSpecificOptions().testBetween) {
             validOptions.remove(BooleanExpression.BETWEEN);
         }
 
@@ -306,8 +310,11 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
     }
 
     public DorisExpression generateConstant(DorisDataType type, boolean isNullable) {
-        if (isNullable && Randomly.getBooleanWithSmallProbability()) {
-            createConstant(DorisDataType.NULL);
+        if (!isNullable) {
+            return createConstantWithoutNull(type);
+        }
+        if (Randomly.getBooleanWithSmallProbability()) {
+            return createConstant(DorisDataType.NULL);
         }
         return createConstant(type);
     }
@@ -320,12 +327,29 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
         return createConstant(type);
     }
 
+    public DorisExpression createConstantWithoutNull(DorisDataType type) {
+        DorisExpression constant = createConstant(type);
+        int loopCount = 0;
+        while (constant instanceof DorisConstant.DorisNullConstant && loopCount < 1000) {
+            constant = createConstant(type);
+            loopCount++;
+        }
+        if (constant instanceof DorisConstant.DorisNullConstant) {
+            throw new IgnoreMeException();
+        }
+        return constant;
+    }
+
     public DorisExpression createConstant(DorisDataType type) {
         Randomly r = globalState.getRandomly();
         long timestamp;
         switch (type) {
         case INT:
             if (globalState.getDbmsSpecificOptions().testIntConstants) {
+                long number = r.getInteger();
+                if (DorisBugs.bug36351 && number == -1049190528) {
+                    number = 0;
+                }
                 return DorisConstant.createIntConstant(r.getInteger());
             }
             return DorisConstant.createNullConstant();
@@ -368,6 +392,9 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
             if (globalState.getDbmsSpecificOptions().testDateTimeConstants) {
                 // [1970-01-01 08:00:00, 3000-01-01 00:00:00]
                 timestamp = globalState.getRandomly().getLong(0, 32503651200L);
+                if (DorisBugs.bug36342) {
+                    return DorisConstant.createDatetimeConstant(timestamp);
+                }
                 return Randomly.fromOptions(DorisConstant.createDatetimeConstant(timestamp),
                         DorisConstant.createDatetimeConstant());
             }

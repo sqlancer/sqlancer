@@ -544,26 +544,26 @@ jobs:
       - name: Set up Apache Doris
         run: |
           sudo sysctl -w vm.max_map_count=2000000
-          LASTEST_TAG=$(curl -s GET https://api.github.com/repos/apache/doris/releases | jq -r '.[].tag_name' | sed -n 1p)
-          LASTEST_TAG_BIG_VERSION=$(echo ${LASTEST_TAG} | awk '{split($1, arr, "."); print arr[1]"."arr[2]}')
-          curl -LJO "https://www.apache.org/dyn/mirrors/mirrors.cgi?action=download&filename=doris/${LASTEST_TAG_BIG_VERSION}/${LASTEST_TAG}/apache-doris-fe-${LASTEST_TAG}-bin-x86_64.tar.xz"
-          curl -LJO "https://www.apache.org/dyn/mirrors/mirrors.cgi?action=download&filename=doris/${LASTEST_TAG_BIG_VERSION}/${LASTEST_TAG}/apache-doris-be-${LASTEST_TAG}-bin-x86_64.tar.xz"
-          curl -LJO "https://www.apache.org/dyn/mirrors/mirrors.cgi?action=download&filename=doris/${LASTEST_TAG_BIG_VERSION}/${LASTEST_TAG}/apache-doris-dependencies-${LASTEST_TAG}-bin-x86_64.tar.xz"
-          mkdir ./doris
-          tar xf apache-doris-fe-${LASTEST_TAG}-bin-x86_64.tar.xz -C ./doris && mv doris/apache-doris-fe-${LASTEST_TAG}-bin-x86_64 doris/fe
-          tar xf apache-doris-be-${LASTEST_TAG}-bin-x86_64.tar.xz -C ./doris && mv doris/apache-doris-be-${LASTEST_TAG}-bin-x86_64 doris/be
-          tar xf apache-doris-dependencies-${LASTEST_TAG}-bin-x86_64.tar.xz -C ./doris && mv doris/apache-doris-dependencies-${LASTEST_TAG}-bin-x86_64 doris/dependencies
-          cp doris/dependencies/*.jar doris/be/lib/
-          doris/fe/bin/start_fe.sh --daemon
-          doris/be/bin/start_be.sh --daemon
-          sudo apt install libnet-ifconfig-wrapper-perl --assume-yes
-          IP=$(ifconfig eth0 | grep inet | grep -v inet6 | awk '{print $2}')
+          wget -q https://apache-doris-releases.oss-accelerate.aliyuncs.com/apache-doris-2.1.4-bin-x64.tar.gz
+          tar zxf apache-doris-2.1.4-bin-x64.tar.gz
+          mv apache-doris-2.1.4-bin-x64 apache-doris
+          sudo swapoff -a
+          cd apache-doris/fe
+          ./bin/start_fe.sh --daemon
+          cd ../be
+          ./bin/start_be.sh --daemon
+
+          sleep 30
+          IP=$(hostname -I | awk '{print $1}')
           mysql -u root -h 127.0.0.1 --port 9030 -e "ALTER SYSTEM ADD BACKEND '${IP}:9050';"
           mysql -u root -h 127.0.0.1 --port 9030 -e "CREATE USER 'sqlancer' IDENTIFIED BY 'sqlancer'; GRANT ALL ON *.* TO sqlancer;"
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Run Tests
-        run: DORIS_AVAILABLE=true mvn -Dtest=TestDoris test
+        run: |
+          DORIS_AVAILABLE=true mvn -Dtest=TestDorisNoREC test
+          DORIS_AVAILABLE=true mvn -Dtest=TestDorisPQS test
+          DORIS_AVAILABLE=true mvn -Dtest=TestDorisTLP test
 
   reducer:
     name: Reducer Tests
