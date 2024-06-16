@@ -26,6 +26,9 @@ public final class MariaDBBugs {
     // https://jira.mariadb.org/browse/MDEV-32143
     public static boolean bug32143 = true;
 
+    // https://jira.mariadb.org/browse/MDEV-33893
+    public static boolean bug33893 = true;
+
     private MariaDBBugs() {
     }
 

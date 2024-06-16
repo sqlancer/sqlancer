@@ -122,15 +122,14 @@ public class MariaDBSetGenerator {
             StringBuilder sb = new StringBuilder();
             sb.append("'");
             String[] options = { "condition_pushdown_for_derived", "condition_pushdown_for_subquery",
-                    "condition_pushdown_from_having", "derived_merge", "derived_with_keys", "engine_condition_pushdown",
-                    "exists_to_in", "extended_keys", "firstmatch", "index_condition_pushdown", "hash_join_cardinality",
-                    "index_merge", "index_merge_intersection", "index_merge_sort_intersection",
-                    "index_merge_sort_union", "index_merge_union", "in_to_exists", "join_cache_bka",
-                    "join_cache_hashed", "join_cache_incremental", "loosescan", "materialization", "mrr",
-                    "mrr_cost_based", "mrr_sort_keys", "not_null_range_scan", "optimize_join_buffer_size",
-                    "orderby_uses_equalities", "outer_join_with_cache", "partial_match_rowid_merge",
-                    "partial_match_table_scan", "rowid_filter", "semijoin", "semijoin_with_cache", "split_materialized",
-                    "subquery_cache", "table_elimination" };
+                    "condition_pushdown_from_having", "derived_merge", "derived_with_keys", "exists_to_in",
+                    "extended_keys", "firstmatch", "index_condition_pushdown", "hash_join_cardinality", "index_merge",
+                    "index_merge_intersection", "index_merge_sort_intersection", "index_merge_sort_union",
+                    "index_merge_union", "in_to_exists", "join_cache_bka", "join_cache_hashed",
+                    "join_cache_incremental", "loosescan", "materialization", "mrr", "mrr_cost_based", "mrr_sort_keys",
+                    "not_null_range_scan", "optimize_join_buffer_size", "orderby_uses_equalities",
+                    "outer_join_with_cache", "partial_match_rowid_merge", "partial_match_table_scan", "rowid_filter",
+                    "semijoin", "semijoin_with_cache", "split_materialized", "subquery_cache", "table_elimination" };
             List<String> optionSubset = Arrays.asList(Randomly.fromOptions(options));
             sb.append(optionSubset.stream().map(s -> s + "=" + Randomly.fromOptions("on", "off"))
                     .collect(Collectors.joining(",")));
@@ -191,9 +190,9 @@ public class MariaDBSetGenerator {
     public static List<SQLQueryAdapter> getAllOptimizer(MariaDBGlobalState globalState) {
         List<SQLQueryAdapter> result = new ArrayList<>();
         String[] options = { "condition_pushdown_for_derived", "condition_pushdown_for_subquery",
-                "condition_pushdown_from_having", "derived_merge", "derived_with_keys", "engine_condition_pushdown",
-                "exists_to_in", "extended_keys", "firstmatch", "index_condition_pushdown", "hash_join_cardinality",
-                "index_merge", "index_merge_intersection", "index_merge_sort_intersection", "index_merge_sort_union",
+                "condition_pushdown_from_having", "derived_merge", "derived_with_keys", "exists_to_in", "extended_keys",
+                "firstmatch", "index_condition_pushdown", "hash_join_cardinality", "index_merge",
+                "index_merge_intersection", "index_merge_sort_intersection", "index_merge_sort_union",
                 "index_merge_union", "in_to_exists", "join_cache_bka", "join_cache_hashed", "join_cache_incremental",
                 "loosescan", "materialization", "mrr", "mrr_cost_based", "mrr_sort_keys", "not_null_range_scan",
                 "optimize_join_buffer_size", "orderby_uses_equalities", "outer_join_with_cache",

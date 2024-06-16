@@ -135,12 +135,11 @@ public class MySQLSetGenerator {
             StringBuilder sb = new StringBuilder();
             sb.append("'");
             String[] options = { "index_merge", "index_merge_union", "index_merge_sort_union",
-                    "index_merge_intersection", "engine_condition_pushdown", "index_condition_pushdown", "mrr",
-                    "mrr_cost_based", "block_nested_loop", "batched_key_access", "materialization", "semijoin",
-                    "loosescan", "firstmatch", "duplicateweedout", "subquery_materialization_cost_based",
-                    "use_index_extensions", "condition_fanout_filter", "derived_merge", "use_invisible_indexes",
-                    "skip_scan", "hash_join", "subquery_to_derived", "prefer_ordering_index",
-                    "derived_condition_pushdown" };
+                    "index_merge_intersection", "index_condition_pushdown", "mrr", "mrr_cost_based",
+                    "block_nested_loop", "batched_key_access", "materialization", "semijoin", "loosescan", "firstmatch",
+                    "duplicateweedout", "subquery_materialization_cost_based", "use_index_extensions",
+                    "condition_fanout_filter", "derived_merge", "use_invisible_indexes", "skip_scan", "hash_join",
+                    "subquery_to_derived", "prefer_ordering_index", "derived_condition_pushdown" };
             List<String> optionSubset = Randomly.nonEmptySubset(options);
             sb.append(optionSubset.stream().map(s -> s + "=" + Randomly.fromOptions("on", "off"))
                     .collect(Collectors.joining(",")));
