@@ -89,13 +89,15 @@ public enum CnosDBFunctionWithUnknownResult {
         return t == returnType;
     }
 
-    public CnosDBExpression[] getArguments(CnosDBDataType ignore, CnosDBExpressionGenerator gen, int depth) {
+    public CnosDBExpression[] getArguments(CnosDBExpressionGenerator gen, int depth) {
         CnosDBExpression[] args = new CnosDBExpression[argTypes.length];
         for (int i = 0; i < args.length; i++) {
-            args[i] = gen.generateExpression(depth, argTypes[i]);
+            args[i] = gen.generateExpression(argTypes[i], depth);
         }
         return args;
     }
+
+
 
     public String getName() {
         return functionName;

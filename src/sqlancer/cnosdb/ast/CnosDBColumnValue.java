@@ -3,25 +3,31 @@ package sqlancer.cnosdb.ast;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBColumn;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
 
-public class CnosDBColumnValue implements CnosDBExpression {
+public class CnosDBColumnValue extends CnosDBColumnReference implements CnosDBExpression {
 
-    private final CnosDBColumn c;
+    private CnosDBConstant expectedValue;
 
-    public CnosDBColumnValue(CnosDBColumn c) {
-        this.c = c;
+    public CnosDBColumnValue(CnosDBColumn c, CnosDBConstant value) {
+        super(c);
+        this.expectedValue = value;
+    
     }
 
-    public static CnosDBColumnValue create(CnosDBColumn c) {
-        return new CnosDBColumnValue(c);
+
+
+    @Override
+    public CnosDBConstant getExpectedValue() {
+        return expectedValue;
     }
 
     @Override
     public CnosDBDataType getExpressionType() {
-        return c.getType();
+        return getColumn().getType();
     }
 
-    public CnosDBColumn getColumn() {
-        return c;
+    public static CnosDBColumnValue create(CnosDBColumn c, CnosDBConstant value) {
+        return new CnosDBColumnValue(c, value);
     }
+
 
 }

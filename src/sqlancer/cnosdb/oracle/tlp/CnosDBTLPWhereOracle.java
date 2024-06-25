@@ -24,7 +24,7 @@ public class CnosDBTLPWhereOracle extends CnosDBTLPBase {
 
     protected void whereCheck() throws Exception {
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByClauses(gen.generateOrderBy());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         String originalQueryString = CnosDBVisitor.asString(select);
         List<String> resultSet = CnosDBComparatorHelper.getResultSetFirstColumnAsString(originalQueryString,

@@ -9,15 +9,15 @@ import sqlancer.cnosdb.ast.CnosDBConstant;
 import sqlancer.cnosdb.ast.CnosDBExpression;
 import sqlancer.cnosdb.ast.CnosDBFunction;
 import sqlancer.cnosdb.ast.CnosDBInOperation;
+import sqlancer.cnosdb.ast.CnosDBJoin;
 import sqlancer.cnosdb.ast.CnosDBLikeOperation;
 import sqlancer.cnosdb.ast.CnosDBOrderByTerm;
 import sqlancer.cnosdb.ast.CnosDBPostfixOperation;
 import sqlancer.cnosdb.ast.CnosDBPostfixText;
 import sqlancer.cnosdb.ast.CnosDBPrefixOperation;
 import sqlancer.cnosdb.ast.CnosDBSelect;
-import sqlancer.cnosdb.ast.CnosDBSelect.CnosDBFromTable;
-import sqlancer.cnosdb.ast.CnosDBSelect.CnosDBSubquery;
-import sqlancer.cnosdb.ast.CnosDBSimilarTo;
+// import sqlancer.cnosdb.ast.CnosDBSelect.CnosDBSubquery;
+import sqlancer.cnosdb.ast.CnosDBTableReference;
 
 public interface CnosDBVisitor {
 
@@ -51,15 +51,15 @@ public interface CnosDBVisitor {
 
     void visit(CnosDBAggregate op);
 
-    void visit(CnosDBFromTable from);
+    void visit(CnosDBTableReference from);
 
-    void visit(CnosDBSubquery subquery);
+    // void visit(CnosDBSubquery subquery);
 
     void visit(CnosDBBinaryLogicalOperation op);
 
     void visit(CnosDBLikeOperation op);
 
-    void visit(CnosDBSimilarTo op);
+    void visit(CnosDBJoin op);
 
     default void visit(CnosDBExpression expression) {
         if (expression instanceof CnosDBConstant) {
@@ -86,12 +86,10 @@ public interface CnosDBVisitor {
             visit((CnosDBAggregate) expression);
         } else if (expression instanceof CnosDBPostfixText) {
             visit((CnosDBPostfixText) expression);
-        } else if (expression instanceof CnosDBSimilarTo) {
-            visit((CnosDBSimilarTo) expression);
-        } else if (expression instanceof CnosDBFromTable) {
-            visit((CnosDBFromTable) expression);
-        } else if (expression instanceof CnosDBSubquery) {
-            visit((CnosDBSubquery) expression);
+        }else if (expression instanceof CnosDBJoin) {
+            visit((CnosDBJoin) expression);
+        } else if (expression instanceof CnosDBTableReference) {
+            visit((CnosDBTableReference) expression);
         } else if (expression instanceof CnosDBLikeOperation) {
             visit((CnosDBLikeOperation) expression);
         } else {

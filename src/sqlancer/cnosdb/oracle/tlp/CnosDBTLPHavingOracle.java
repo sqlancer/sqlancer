@@ -35,7 +35,7 @@ public class CnosDBTLPHavingOracle extends CnosDBTLPBase {
 
         boolean orderBy = Randomly.getBoolean();
         if (orderBy) {
-            select.setOrderByClauses(gen.generateOrderBy());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         select.setHavingClause(predicate);
         String firstQueryString = CnosDBVisitor.asString(select);
@@ -57,8 +57,9 @@ public class CnosDBTLPHavingOracle extends CnosDBTLPBase {
 
     @Override
     List<CnosDBExpression> generateFetchColumns() {
-        List<CnosDBExpression> expressions = gen.allowAggregates(true).generateExpressions(Randomly.smallNumber() + 1);
-        gen.allowAggregates(false);
+        gen.setAllowAggregates(true);
+        List<CnosDBExpression> expressions = gen.generateExpressions(Randomly.smallNumber() + 1);
+        gen.setAllowAggregates(false);
         return expressions;
     }
 

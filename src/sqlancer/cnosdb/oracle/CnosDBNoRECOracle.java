@@ -1,6 +1,5 @@
 package sqlancer.cnosdb.oracle;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,15 +18,13 @@ import sqlancer.cnosdb.ast.CnosDBCastOperation;
 import sqlancer.cnosdb.ast.CnosDBColumnValue;
 import sqlancer.cnosdb.ast.CnosDBExpression;
 import sqlancer.cnosdb.ast.CnosDBJoin;
-import sqlancer.cnosdb.ast.CnosDBJoin.CnosDBJoinType;
+// import sqlancer.cnosdb.ast.CnosDBJoin.CnosDBJoinType;
 import sqlancer.cnosdb.ast.CnosDBPostfixText;
 import sqlancer.cnosdb.ast.CnosDBSelect;
-import sqlancer.cnosdb.ast.CnosDBSelect.CnosDBFromTable;
-import sqlancer.cnosdb.ast.CnosDBSelect.CnosDBSubquery;
+import sqlancer.cnosdb.ast.CnosDBTableReference;
 import sqlancer.cnosdb.ast.CnosDBSelect.SelectType;
 import sqlancer.cnosdb.client.CnosDBResultSet;
 import sqlancer.cnosdb.gen.CnosDBExpressionGenerator;
-import sqlancer.cnosdb.oracle.tlp.CnosDBTLPBase;
 import sqlancer.cnosdb.query.CnosDBSelectQuery;
 import sqlancer.common.oracle.TestOracle;
 
@@ -40,43 +37,21 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
         this.s = globalState.getSchema();
     }
 
-    public static List<CnosDBJoin> getJoinStatements(CnosDBGlobalState globalState, List<CnosDBColumn> columns,
-            List<CnosDBTable> tables) {
-        List<CnosDBJoin> joinStatements = new ArrayList<>();
-        CnosDBExpressionGenerator gen = new CnosDBExpressionGenerator(globalState).setColumns(columns);
-        for (int i = 1; i < tables.size(); i++) {
-            CnosDBExpression joinClause = gen.generateExpression(CnosDBDataType.BOOLEAN);
-            CnosDBTable table = Randomly.fromList(tables);
-            tables.remove(table);
-            CnosDBJoinType options = CnosDBJoinType.getRandom();
-            CnosDBJoin j = new CnosDBJoin(new CnosDBFromTable(table), joinClause, options);
-            joinStatements.add(j);
-        }
-        // JOIN subqueries
-        for (int i = 0; i < Randomly.smallNumber(); i++) {
-            CnosDBTables subqueryTables = globalState.getSchema().getRandomTableNonEmptyTables();
-            CnosDBSubquery subquery = CnosDBTLPBase.createSubquery(globalState, String.format("sub%d", i),
-                    subqueryTables);
-            CnosDBExpression joinClause = gen.generateExpression(CnosDBDataType.BOOLEAN);
-            CnosDBJoinType options = CnosDBJoinType.getRandom();
-            CnosDBJoin j = new CnosDBJoin(subquery, joinClause, options);
-            joinStatements.add(j);
-        }
-        return joinStatements;
-    }
-
     @Override
     public void check() throws Exception {
         CnosDBTables randomTables = s.getRandomTableNonEmptyTables();
         List<CnosDBColumn> columns = randomTables.getColumns();
-        CnosDBExpression randomWhereCondition = getRandomWhereCondition(columns);
+
+        CnosDBExpressionGenerator gen = new CnosDBExpressionGenerator(state).setColumns(columns);
+        CnosDBExpression randomWhereCondition = gen.generateExpression(CnosDBDataType.BOOLEAN);
+
         List<CnosDBTable> tables = randomTables.getTables();
 
-        List<CnosDBJoin> joinStatements = getJoinStatements(state, columns, tables);
-        List<CnosDBExpression> fromTables = tables.stream().map(CnosDBFromTable::new).collect(Collectors.toList());
-        int secondCount = getUnoptimizedQueryCount(fromTables, randomWhereCondition, joinStatements);
-        int firstCount = getOptimizedQueryCount(fromTables, List.of(CnosDBColumn.createDummy("f0")),
-                randomWhereCondition, joinStatements);
+        List<CnosDBExpression> tableList = tables.stream().map(t -> new CnosDBTableReference(t)).collect(Collectors.toList());
+        List<CnosDBExpression> joins = CnosDBJoin.getJoins(tableList, state);
+        int secondCount = getUnoptimizedQueryCount(tableList, randomWhereCondition, joins);
+        int firstCount = getOptimizedQueryCount(tableList, List.of(CnosDBColumn.createDummy("f0")),
+                randomWhereCondition, joins);
         if (firstCount == -1 || secondCount == -1) {
             throw new IgnoreMeException();
         }
@@ -92,20 +67,17 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
         }
     }
 
-    private CnosDBExpression getRandomWhereCondition(List<CnosDBColumn> columns) {
-        return new CnosDBExpressionGenerator(state).setColumns(columns).generateExpression(CnosDBDataType.BOOLEAN);
-    }
 
-    private int getUnoptimizedQueryCount(List<CnosDBExpression> fromTables, CnosDBExpression randomWhereCondition,
-            List<CnosDBJoin> joinStatements) throws Exception {
+    private int getUnoptimizedQueryCount(List<CnosDBExpression> tableList, CnosDBExpression randomWhereCondition,
+            List<CnosDBExpression> joinStatements) throws Exception {
         CnosDBSelect select = new CnosDBSelect();
         CnosDBCastOperation isTrue = new CnosDBCastOperation(randomWhereCondition,
                 CnosDBCompoundDataType.create(CnosDBDataType.INT));
         CnosDBPostfixText asText = new CnosDBPostfixText(isTrue, " as count", CnosDBDataType.INT);
         select.setFetchColumns(List.of(asText));
-        select.setFromList(fromTables);
+        select.setFromList(tableList);
         select.setSelectType(SelectType.ALL);
-        select.setJoinClauses(joinStatements);
+        select.setJoinList(joinStatements);
         int secondCount = 0;
         unoptimizedQueryString = "SELECT SUM(count) FROM (" + CnosDBVisitor.asString(select) + ") as res";
         if (options.logEachSelect()) {
@@ -133,18 +105,18 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
         return secondCount;
     }
 
-    private int getOptimizedQueryCount(List<CnosDBExpression> randomTables, List<CnosDBColumn> columns,
-            CnosDBExpression randomWhereCondition, List<CnosDBJoin> joinStatements) {
+    private int getOptimizedQueryCount(List<CnosDBExpression> tableLists, List<CnosDBColumn> columns,
+            CnosDBExpression randomWhereCondition, List<CnosDBExpression> joinStatements) {
         CnosDBSelect select = new CnosDBSelect();
-        CnosDBColumnValue allColumns = new CnosDBColumnValue(Randomly.fromList(columns));
+        CnosDBColumnValue allColumns = new CnosDBColumnValue(Randomly.fromList(columns), null);
         select.setFetchColumns(List.of(allColumns));
-        select.setFromList(randomTables);
+        select.setFromList(tableLists);
         select.setWhereClause(randomWhereCondition);
         if (Randomly.getBooleanWithSmallProbability()) {
-            select.setOrderByClauses(new CnosDBExpressionGenerator(state).setColumns(columns).generateOrderBy());
+            select.setOrderByClauses(new CnosDBExpressionGenerator(state).setColumns(columns).generateOrderBys());
         }
         select.setSelectType(SelectType.ALL);
-        select.setJoinClauses(joinStatements);
+        select.setJoinList(joinStatements);
         int firstCount = 0;
         optimizedQueryString = CnosDBVisitor.asString(select);
         if (options.logEachSelect()) {
