@@ -73,9 +73,16 @@ public final class CnosDBExpectedError {
         return errors;
     }
 
+    public static List<String> getExpectedPatterns() {
+        ArrayList<String> patterns = new ArrayList<>();
+        // usage : patterns.add("")
+        return patterns;
+    } 
+
     public static ExpectedErrors expectedErrors() {
         ExpectedErrors res = new ExpectedErrors();
         res.addAll(getExpectedErrors());
+        res.addAllRegexStrings(getExpectedPatterns());
         return res;
     }
 
