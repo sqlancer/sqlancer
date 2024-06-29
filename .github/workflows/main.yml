@@ -176,7 +176,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       databend:
-        image: datafuselabs/databend:v1.2.452
+        image: datafuselabs/databend:v1.2.542-nightly
         env:
           QUERY_DEFAULT_USER: sqlancer
           QUERY_DEFAULT_PASSWORD: sqlancer
