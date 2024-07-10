@@ -325,18 +325,22 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
     private String getCreateDatabaseCommand(PostgresGlobalState state) {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE DATABASE " + databaseName + " ");
-        if (Randomly.getBoolean() && ((PostgresOptions) state.getDbmsSpecificOptions()).testCollations) {
+        if (((PostgresOptions) state.getDbmsSpecificOptions()).testCollations) {
             if (Randomly.getBoolean()) {
-                sb.append("WITH ENCODING '");
-                sb.append(Randomly.fromOptions("utf8"));
-                sb.append("' ");
-            }
-            for (String lc : Arrays.asList("LC_COLLATE", "LC_CTYPE")) {
-                if (!state.getCollates().isEmpty() && Randomly.getBoolean()) {
-                    sb.append(String.format(" %s = '%s'", lc, Randomly.fromList(state.getCollates())));
+                if (Randomly.getBoolean()) {
+                    sb.append("WITH ENCODING '");
+                    sb.append(Randomly.fromOptions("utf8"));
+                    sb.append("' ");
                 }
+                for (String lc : Arrays.asList("LC_COLLATE", "LC_CTYPE")) {
+                    if (!state.getCollates().isEmpty() && Randomly.getBoolean()) {
+                        sb.append(String.format(" %s = '%s'", lc, Randomly.fromList(state.getCollates())));
+                    }
+                }
+                sb.append(" TEMPLATE template0");
             }
-            sb.append(" TEMPLATE template0");
+        } else {
+            sb.append("WITH ENCODING 'UTF8' TEMPLATE template0");
         }
         return sb.toString();
     }

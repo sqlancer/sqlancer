@@ -1,6 +1,6 @@
 package sqlancer.mariadb.ast;
 
-public class MariaDBAggregate extends MariaDBExpression {
+public class MariaDBAggregate implements MariaDBExpression {
 
     private final MariaDBExpression expr;
     private final MariaDBAggregateFunction aggr;

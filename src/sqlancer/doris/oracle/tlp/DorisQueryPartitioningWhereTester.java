@@ -35,7 +35,7 @@ public class DorisQueryPartitioningWhereTester extends DorisQueryPartitioningBas
             List<Node<DorisExpression>> constants = new ArrayList<>();
             constants.add(
                     new DorisConstant.DorisIntConstant(Randomly.smallNumber() % select.getFetchColumns().size() + 1));
-            select.setOrderByExpressions(constants);
+            select.setOrderByClauses(constants);
         }
         select.setWhereClause(DorisExprToNode.cast(predicate));
         String firstQueryString = DorisToStringVisitor.asString(select);

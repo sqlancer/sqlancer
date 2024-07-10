@@ -67,9 +67,9 @@ public class H2ToStringVisitor extends NewToStringVisitor<H2Expression> {
             sb.append(" HAVING ");
             visit(select.getHavingClause());
         }
-        if (!select.getOrderByExpressions().isEmpty()) {
+        if (!select.getOrderByClauses().isEmpty()) {
             sb.append(" ORDER BY ");
-            visit(select.getOrderByExpressions());
+            visit(select.getOrderByClauses());
         }
         if (select.getLimitClause() != null) {
             sb.append(" LIMIT ");

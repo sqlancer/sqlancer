@@ -154,6 +154,21 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
                 }
             }
         }
+
+        // TiFlash replication settings
+        if (globalState.getDbmsSpecificOptions().tiflash) {
+            ExpectedErrors errors = new ExpectedErrors();
+            TiDBErrors.addExpressionErrors(errors);
+            for (TiDBTable table : globalState.getSchema().getDatabaseTables()) {
+                if (!table.isView()) {
+                    globalState.executeStatement(
+                            new SQLQueryAdapter("ALTER TABLE " + table.getName() + " SET TIFLASH REPLICA 1;", errors));
+                }
+            }
+            if (Randomly.getBoolean()) {
+                globalState.executeStatement(new SQLQueryAdapter("set @@tidb_enforce_mpp=1;"));
+            }
+        }
     }
 
     @Override
@@ -208,7 +223,7 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
             }
         }
 
-        SQLQueryAdapter q = new SQLQueryAdapter("EXPLAIN " + selectStr);
+        SQLQueryAdapter q = new SQLQueryAdapter("EXPLAIN FORMAT=brief " + selectStr);
         try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
             if (rs != null) {
                 while (rs.next()) {

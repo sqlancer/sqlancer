@@ -23,7 +23,7 @@ public class HSQLDBQueryPartitioningWhereTester extends HSQLDBQueryPartitioningB
 
         boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
         if (orderBy) {
-            select.setOrderByExpressions(expressionGenerator.generateOrderBys());
+            select.setOrderByClauses(expressionGenerator.generateOrderBys());
         }
         select.setWhereClause(predicate);
         String firstQueryString = HSQLDBToStringVisitor.asString(select);

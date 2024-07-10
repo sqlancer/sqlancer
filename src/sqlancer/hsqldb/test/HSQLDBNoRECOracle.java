@@ -101,7 +101,7 @@ public class HSQLDBNoRECOracle extends NoRECBase<HSQLDBGlobalState> implements T
         select.setFromList(tableList);
         select.setWhereClause(randomWhereCondition);
         if (Randomly.getBooleanWithSmallProbability()) {
-            select.setOrderByExpressions(new HSQLDBExpressionGenerator(state).setColumns(columns).generateOrderBys());
+            select.setOrderByClauses(new HSQLDBExpressionGenerator(state).setColumns(columns).generateOrderBys());
         }
         select.setJoinList(joins);
         int firstCount = 0;

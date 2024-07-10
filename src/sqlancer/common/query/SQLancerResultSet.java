@@ -35,7 +35,11 @@ public class SQLancerResultSet implements Closeable {
     }
 
     public String getString(int i) throws SQLException {
-        return rs.getString(i);
+        try {
+            return rs.getString(i);
+        } catch (NumberFormatException e) {
+            throw new SQLException(e);
+        }
     }
 
     public boolean isClosed() throws SQLException {

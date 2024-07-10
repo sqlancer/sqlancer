@@ -24,12 +24,12 @@ public class YSQLTLPWhereOracle extends YSQLTLPBase {
 
     protected void whereCheck() throws SQLException {
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByExpressions(gen.generateOrderBy());
+            select.setOrderByClauses(gen.generateOrderBy());
         }
         String originalQueryString = YSQLVisitor.asString(select);
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
-        select.setOrderByExpressions(Collections.emptyList());
+        select.setOrderByClauses(Collections.emptyList());
         select.setWhereClause(predicate);
         String firstQueryString = YSQLVisitor.asString(select);
         select.setWhereClause(negatedPredicate);

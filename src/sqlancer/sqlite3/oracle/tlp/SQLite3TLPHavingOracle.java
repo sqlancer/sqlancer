@@ -57,7 +57,7 @@ public class SQLite3TLPHavingOracle implements TestOracle<SQLite3GlobalState> {
         List<SQLite3Expression> from = SQLite3Common.getTableRefs(tables, state.getSchema());
         select.setJoinClauses(joinStatements);
         select.setSelectType(SelectType.ALL);
-        select.setFromTables(from);
+        select.setFromList(from);
         // TODO order by?
         select.setGroupByClause(groupByColumns);
         select.setHavingClause(null);

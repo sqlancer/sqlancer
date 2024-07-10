@@ -64,7 +64,7 @@ public class PostgresPivotedQuerySynthesisOracle
         }
         List<PostgresExpression> orderBy = new PostgresExpressionGenerator(globalState).setColumns(columns)
                 .generateOrderBy();
-        selectStatement.setOrderByExpressions(orderBy);
+        selectStatement.setOrderByClauses(orderBy);
         return new SQLQueryAdapter(PostgresVisitor.asString(selectStatement));
     }
 

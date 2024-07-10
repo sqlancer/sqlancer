@@ -53,7 +53,7 @@ public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, Mari
     public void generateDatabase(MariaDBGlobalState globalState) throws Exception {
         MainOptions options = globalState.getOptions();
 
-        while (globalState.getSchema().getDatabaseTables().size() < Randomly.smallNumber() + 1) {
+        while (globalState.getSchema().getDatabaseTables().size() < Randomly.getNotCachedInteger(1, 3)) {
             String tableName = DBMSCommon.createTableName(globalState.getSchema().getDatabaseTables().size());
             SQLQueryAdapter createTable = MariaDBTableGenerator.generate(tableName, globalState.getRandomly(),
                     globalState.getSchema());

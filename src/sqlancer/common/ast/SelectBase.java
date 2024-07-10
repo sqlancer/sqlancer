@@ -36,6 +36,10 @@ public class SelectBase<T> {
         this.fromList = fromList;
     }
 
+    public void setFromTables(List<T> tables) {
+        setFromList(tables);
+    }
+
     public List<T> getFromList() {
         if (fromList == null) {
             throw new IllegalStateException();
@@ -59,14 +63,14 @@ public class SelectBase<T> {
         return groupByExpressions;
     }
 
-    public void setOrderByExpressions(List<T> orderByExpressions) {
+    public void setOrderByClauses(List<T> orderByExpressions) {
         if (orderByExpressions == null) {
             throw new IllegalArgumentException();
         }
         this.orderByExpressions = orderByExpressions;
     }
 
-    public List<T> getOrderByExpressions() {
+    public List<T> getOrderByClauses() {
         assert orderByExpressions != null;
         return orderByExpressions;
     }
@@ -115,4 +119,11 @@ public class SelectBase<T> {
         this.joinList = joinList;
     }
 
+    public List<T> getGroupByClause() {
+        return getGroupByExpressions();
+    }
+
+    public void setGroupByClause(List<T> groupByExpressions) {
+        setGroupByExpressions(groupByExpressions);
+    }
 }

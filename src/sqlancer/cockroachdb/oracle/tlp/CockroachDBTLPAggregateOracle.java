@@ -76,7 +76,7 @@ public class CockroachDBTLPAggregateOracle implements TestOracle<CockroachDBGlob
         }
         select.setFromList(from);
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByExpressions(gen.getOrderingTerms());
+            select.setOrderByClauses(gen.getOrderingTerms());
         }
         originalQuery = CockroachDBVisitor.asString(select);
         firstResult = getAggregateResult(originalQuery);
@@ -147,13 +147,15 @@ public class CockroachDBTLPAggregateOracle implements TestOracle<CockroachDBGlob
         case MIN:
             return aliasArgs(Arrays.asList(aggregate));
         case AVG:
-            // List<CockroachDBExpression> arg = Arrays.asList(new CockroachDBCast(aggregate.getExpr().get(0),
+            // List<CockroachDBExpression> arg = Arrays.asList(new
+            // CockroachDBCast(aggregate.getExpr().get(0),
             // CockroachDBDataType.DECIMAL.get()));
             CockroachDBAggregate sum = new CockroachDBAggregate(CockroachDBAggregateFunction.SUM, aggregate.getExpr());
             CockroachDBCast count = new CockroachDBCast(
                     new CockroachDBAggregate(CockroachDBAggregateFunction.COUNT, aggregate.getExpr()),
                     CockroachDBDataType.DECIMAL.get());
-            // CockroachDBBinaryArithmeticOperation avg = new CockroachDBBinaryArithmeticOperation(sum, count,
+            // CockroachDBBinaryArithmeticOperation avg = new
+            // CockroachDBBinaryArithmeticOperation(sum, count,
             // CockroachDBBinaryArithmeticOperator.DIV);
             return aliasArgs(Arrays.asList(sum, count));
         default:

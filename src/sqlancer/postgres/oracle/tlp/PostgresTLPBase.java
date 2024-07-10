@@ -103,7 +103,7 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
             select.setWhereClause(gen.generateExpression(0, PostgresDataType.BOOLEAN));
         }
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByExpressions(gen.generateOrderBy());
+            select.setOrderByClauses(gen.generateOrderBy());
         }
         if (Randomly.getBoolean()) {
             select.setLimitClause(PostgresConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));

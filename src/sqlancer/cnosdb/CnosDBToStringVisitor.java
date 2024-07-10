@@ -146,9 +146,9 @@ public final class CnosDBToStringVisitor extends ToStringVisitor<CnosDBExpressio
             visit(s.getHavingClause());
 
         }
-        if (!s.getOrderByExpressions().isEmpty()) {
+        if (!s.getOrderByClauses().isEmpty()) {
             sb.append(" ORDER BY ");
-            visit(s.getOrderByExpressions());
+            visit(s.getOrderByClauses());
         }
         if (s.getLimitClause() != null) {
             sb.append(" LIMIT ");

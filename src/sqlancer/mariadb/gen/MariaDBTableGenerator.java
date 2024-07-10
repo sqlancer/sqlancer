@@ -142,6 +142,7 @@ public class MariaDBTableGenerator {
             sb.append("IF NOT EXISTS ");
         }
         sb.append(tableName);
+        errors.add("Specified key was too long; max key length is");
     }
 
 }

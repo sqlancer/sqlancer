@@ -25,13 +25,13 @@ public class MaterializeTLPWhereOracle extends MaterializeTLPBase {
 
     protected void whereCheck() throws SQLException {
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByExpressions(gen.generateOrderBy());
+            select.setOrderByClauses(gen.generateOrderBy());
         }
         String originalQueryString = MaterializeVisitor.asString(select);
         generatedQueryString = originalQueryString;
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
-        select.setOrderByExpressions(Collections.emptyList());
+        select.setOrderByClauses(Collections.emptyList());
         select.setWhereClause(predicate);
         String firstQueryString = MaterializeVisitor.asString(select);
         select.setWhereClause(negatedPredicate);

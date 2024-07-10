@@ -1,50 +1,37 @@
 package sqlancer.sqlite3.oracle.tlp;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
-import sqlancer.ComparatorHelper;
-import sqlancer.Randomly;
+import sqlancer.common.oracle.TLPWhereOracle;
+import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3GlobalState;
-import sqlancer.sqlite3.SQLite3Visitor;
+import sqlancer.sqlite3.ast.SQLite3Expression;
+import sqlancer.sqlite3.ast.SQLite3Select;
+import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
+import sqlancer.sqlite3.schema.SQLite3Schema;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
-public class SQLite3TLPWhereOracle extends SQLite3TLPBase {
+public class SQLite3TLPWhereOracle implements TestOracle<SQLite3GlobalState> {
 
-    private String generatedQueryString;
+    private final TLPWhereOracle<SQLite3Select, SQLite3Expression.Join, SQLite3Expression, SQLite3Schema, SQLite3Table, SQLite3Column, SQLite3GlobalState> oracle;
 
     public SQLite3TLPWhereOracle(SQLite3GlobalState state) {
-        super(state);
+        SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(state);
+        ExpectedErrors expectedErrors = ExpectedErrors.newErrors().with(SQLite3Errors.getExpectedExpressionErrors())
+                .build();
+        this.oracle = new TLPWhereOracle<>(state, gen, expectedErrors);
     }
 
     @Override
     public void check() throws SQLException {
-        super.check();
-        select.setWhereClause(null);
-        String originalQueryString = SQLite3Visitor.asString(select);
-        generatedQueryString = originalQueryString;
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
-
-        boolean orderBy = Randomly.getBooleanWithSmallProbability();
-        if (orderBy) {
-            select.setOrderByExpressions(gen.generateOrderBys());
-        }
-        select.setWhereClause(predicate);
-        String firstQueryString = SQLite3Visitor.asString(select);
-        select.setWhereClause(negatedPredicate);
-        String secondQueryString = SQLite3Visitor.asString(select);
-        select.setWhereClause(isNullPredicate);
-        String thirdQueryString = SQLite3Visitor.asString(select);
-        List<String> combinedString = new ArrayList<>();
-        List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
-                thirdQueryString, combinedString, !orderBy, state, errors);
-        ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
-                state);
+        oracle.check();
     }
 
     @Override
     public String getLastQueryString() {
-        return generatedQueryString;
+        return oracle.getLastQueryString();
     }
-
 }

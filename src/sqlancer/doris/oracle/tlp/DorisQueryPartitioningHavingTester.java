@@ -31,12 +31,13 @@ public class DorisQueryPartitioningHavingTester extends DorisQueryPartitioningBa
         if (Randomly.getBoolean()) {
             select.setWhereClause(DorisExprToNode.cast(gen.generateExpression(DorisSchema.DorisDataType.BOOLEAN)));
         }
+        select.setFetchColumns(groupByExpression);
         boolean orderBy = Randomly.getBoolean();
         if (orderBy) {
             List<Node<DorisExpression>> constants = new ArrayList<>();
             constants.add(
                     new DorisConstant.DorisIntConstant(Randomly.smallNumber() % select.getFetchColumns().size() + 1));
-            select.setOrderByExpressions(constants);
+            select.setOrderByClauses(constants);
         }
         select.setGroupByExpressions(groupByExpression);
         select.setHavingClause(null);

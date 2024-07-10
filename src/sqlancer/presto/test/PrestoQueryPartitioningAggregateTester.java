@@ -54,7 +54,7 @@ public class PrestoQueryPartitioningAggregateTester extends PrestoQueryPartition
                 aggregateFunction);
         select.setFetchColumns(List.of(aggregate));
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByExpressions(gen.generateOrderBys());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         originalQuery = PrestoToStringVisitor.asString(select);
         firstResult = getAggregateResult(originalQuery);

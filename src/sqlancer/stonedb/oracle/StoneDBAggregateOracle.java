@@ -31,7 +31,7 @@ public class StoneDBAggregateOracle extends StoneDBQueryPartitioningBase {
 
     public StoneDBAggregateOracle(StoneDBGlobalState state) {
         super(state);
-        StoneDBErrors.addExpectedExpressionErrors(errors);
+        StoneDBErrors.addExpectedExpressionErrors(state, errors);
     }
 
     @Override
@@ -47,7 +47,7 @@ public class StoneDBAggregateOracle extends StoneDBQueryPartitioningBase {
         select.setFetchColumns(fetchColumns);
 
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByExpressions(gen.generateOrderBys());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
 
         String originalQuery = StoneDBToStringVisitor.asString(select);

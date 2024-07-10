@@ -3,37 +3,35 @@ package sqlancer.mariadb.ast;
 import java.util.ArrayList;
 import java.util.List;
 
-import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
+import sqlancer.common.ast.SelectBase;
 
-public class MariaDBSelectStatement extends MariaDBExpression {
+public class MariaDBSelectStatement extends SelectBase<MariaDBExpression> implements MariaDBExpression {
 
     public enum MariaDBSelectType {
-        ALL
+        ALL, DISTINCT, DISTINCTROW;
     }
 
     private List<MariaDBExpression> groupBys = new ArrayList<>();
     private List<MariaDBExpression> columns = new ArrayList<>();
-    private List<MariaDBTable> tables = new ArrayList<>();
     private MariaDBSelectType selectType = MariaDBSelectType.ALL;
     private MariaDBExpression whereCondition;
 
+    @Override
     public void setGroupByClause(List<MariaDBExpression> groupBys) {
         this.groupBys = groupBys;
     }
 
+    @Override
     public void setFetchColumns(List<MariaDBExpression> columns) {
         this.columns = columns;
 
-    }
-
-    public void setFromTables(List<MariaDBTable> tables) {
-        this.tables = tables;
     }
 
     public void setSelectType(MariaDBSelectType selectType) {
         this.selectType = selectType;
     }
 
+    @Override
     public void setWhereClause(MariaDBExpression whereCondition) {
         this.whereCondition = whereCondition;
     }
@@ -48,10 +46,6 @@ public class MariaDBSelectStatement extends MariaDBExpression {
 
     public MariaDBSelectType getSelectType() {
         return selectType;
-    }
-
-    public List<MariaDBTable> getTables() {
-        return tables;
     }
 
     public MariaDBExpression getWhereCondition() {

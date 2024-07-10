@@ -1,6 +1,8 @@
 package sqlancer.mariadb.gen;
 
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.mariadb.MariaDBErrors;
 import sqlancer.mariadb.MariaDBSchema;
 
 public final class MariaDBTruncateGenerator {
@@ -13,7 +15,9 @@ public final class MariaDBTruncateGenerator {
         sb.append(s.getRandomTable().getName());
         sb.append(" ");
         MariaDBCommon.addWaitClause(sb);
-        return new SQLQueryAdapter(sb.toString());
+        ExpectedErrors errors = new ExpectedErrors();
+        MariaDBErrors.addCommonErrors(errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
 }

@@ -1,5 +1,8 @@
 package sqlancer.citus.gen;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import sqlancer.citus.CitusBugs;
 import sqlancer.common.query.ExpectedErrors;
 
@@ -8,8 +11,9 @@ public final class CitusCommon {
     private CitusCommon() {
     }
 
-    public static void addCitusErrors(ExpectedErrors errors) {
+    public static List<String> getCitusErrors() {
         // not supported by Citus
+        ArrayList<String> errors = new ArrayList<>();
         errors.add("failed to evaluate partition key in insert");
         errors.add("cannot perform an INSERT without a partition column value");
         errors.add("cannot perform an INSERT with NULL in the partition column");
@@ -74,6 +78,11 @@ public final class CitusCommon {
         if (CitusBugs.bug4079) {
             errors.add("aggregate function calls cannot be nested");
         }
+
+        return errors;
     }
 
+    public static void addCitusErrors(ExpectedErrors errors) {
+        errors.addAll(getCitusErrors());
+    }
 }

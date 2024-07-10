@@ -65,7 +65,7 @@ public class DorisQueryPartitioningAggregateTester extends DorisQueryPartitionin
             List<Node<DorisExpression>> constants = new ArrayList<>();
             constants.add(
                     new DorisConstant.DorisIntConstant(Randomly.smallNumber() % select.getFetchColumns().size() + 1));
-            select.setOrderByExpressions(constants);
+            select.setOrderByClauses(constants);
         }
         originalQuery = DorisToStringVisitor.asString(select);
         firstResult = getAggregateResult(originalQuery);
@@ -74,9 +74,21 @@ public class DorisQueryPartitioningAggregateTester extends DorisQueryPartitionin
 
         state.getState().getLocalState().log(
                 "--" + originalQuery + ";\n--" + metamorphicQuery + "\n-- " + firstResult + "\n-- " + secondResult);
-        if (firstResult == null && secondResult != null
-                || firstResult != null && (!firstResult.contentEquals(secondResult)
-                        && !ComparatorHelper.isEqualDouble(firstResult, secondResult))) {
+        if (firstResult == null && secondResult == null) {
+            return;
+        }
+        if (firstResult == null) {
+            throw new AssertionError();
+        }
+        firstResult = firstResult.replace("\0", "");
+        if (firstResult.contentEquals("0") && secondResult == null) {
+            return;
+        }
+        if (secondResult == null) {
+            throw new AssertionError();
+        }
+        secondResult = secondResult.replace("\0", "");
+        if (!firstResult.contentEquals(secondResult) && !ComparatorHelper.isEqualDouble(firstResult, secondResult)) {
             throw new AssertionError();
         }
 
@@ -94,6 +106,11 @@ public class DorisQueryPartitioningAggregateTester extends DorisQueryPartitionin
         DorisSelect leftSelect = getSelect(mappedAggregate, from, whereClause, select.getJoinList());
         DorisSelect middleSelect = getSelect(mappedAggregate, from, negatedClause, select.getJoinList());
         DorisSelect rightSelect = getSelect(mappedAggregate, from, notNullClause, select.getJoinList());
+        if (Randomly.getBooleanWithSmallProbability()) {
+            leftSelect.setGroupByExpressions(groupByExpression);
+            middleSelect.setGroupByExpressions(groupByExpression);
+            rightSelect.setGroupByExpressions(groupByExpression);
+        }
         metamorphicQuery = "SELECT " + getOuterAggregateFunction(aggregate) + " FROM (";
         metamorphicQuery += DorisToStringVisitor.asString(leftSelect) + " UNION ALL "
                 + DorisToStringVisitor.asString(middleSelect) + " UNION ALL "
@@ -185,9 +202,6 @@ public class DorisQueryPartitioningAggregateTester extends DorisQueryPartitionin
         leftSelect.setFromList(from);
         leftSelect.setWhereClause(whereClause);
         leftSelect.setJoinList(joinList);
-        if (Randomly.getBooleanWithSmallProbability()) {
-            leftSelect.setGroupByExpressions(groupByExpression);
-        }
         return leftSelect;
     }
 

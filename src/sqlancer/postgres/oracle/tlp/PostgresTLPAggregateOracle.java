@@ -61,7 +61,7 @@ public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestO
         }
         select.setFetchColumns(Arrays.asList(aggregate));
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByExpressions(gen.generateOrderBy());
+            select.setOrderByClauses(gen.generateOrderBy());
         }
         originalQuery = PostgresVisitor.asString(select);
         firstResult = getAggregateResult(originalQuery);

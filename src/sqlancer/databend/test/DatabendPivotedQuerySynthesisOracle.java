@@ -67,7 +67,7 @@ public class DatabendPivotedQuerySynthesisOracle
         DatabendNewExpressionGenerator gen = new DatabendNewExpressionGenerator(globalState).setColumns(columns);
         if (!isDistinct) {
             List<Node<DatabendExpression>> orderBys = gen.generateOrderBy();
-            selectStatement.setOrderByExpressions(orderBys);
+            selectStatement.setOrderByClauses(orderBys);
         }
         return new SQLQueryAdapter(DatabendToStringVisitor.asString(selectStatement), errors);
     }

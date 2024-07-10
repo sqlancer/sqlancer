@@ -43,7 +43,7 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
     public StoneDBNoRECOracle(StoneDBGlobalState globalState) {
         super(globalState);
         this.schema = globalState.getSchema();
-        StoneDBErrors.addExpectedExpressionErrors(errors);
+        StoneDBErrors.addExpectedExpressionErrors(globalState, errors);
     }
 
     @Override
@@ -112,7 +112,7 @@ public class StoneDBNoRECOracle extends NoRECBase<StoneDBGlobalState> implements
         select.setFromList(tableList);
         select.setWhereClause(randomWhereCondition);
         if (Randomly.getBooleanWithSmallProbability()) {
-            select.setOrderByExpressions(new StoneDBExpressionGenerator(state).setColumns(columns).generateOrderBys());
+            select.setOrderByClauses(new StoneDBExpressionGenerator(state).setColumns(columns).generateOrderBys());
         }
         select.setJoinList(joins);
         int firstCount = 0;

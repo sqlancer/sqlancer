@@ -24,7 +24,7 @@ public class H2QueryPartitioningWhereTester extends H2QueryPartitioningBase {
 
         boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
         if (orderBy) {
-            select.setOrderByExpressions(gen.generateOrderBys());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         select.setWhereClause(predicate);
         String firstQueryString = H2ToStringVisitor.asString(select);

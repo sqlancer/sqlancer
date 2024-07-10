@@ -27,6 +27,9 @@ public class StoneDBOptions implements DBMSSpecificOptions<StoneDBOracleFactory>
     public static final String DEFAULT_HOST = "localhost";
     public static final int DEFAULT_PORT = 3306;
 
+    @Parameter(names = "--test-8-version", description = "Let SQLancer test the StoneDB 8.0, otherwise, SQLancer will test the StoneDB 5.7", arity = 1)
+    public boolean test80Version = true;
+
     @Parameter(names = "--oracle")
     public List<StoneDBOracleFactory> oracles = List.of(StoneDBOracleFactory.NOREC);
 

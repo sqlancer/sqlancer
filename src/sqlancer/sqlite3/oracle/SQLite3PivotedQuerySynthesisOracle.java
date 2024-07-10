@@ -75,7 +75,7 @@ public class SQLite3PivotedQuerySynthesisOracle
                 .filter(c -> !SQLite3Schema.ROWID_STRINGS.contains(c.getName())).collect(Collectors.toList());
         List<Join> joinStatements = getJoinStatements(globalState, tables, columnsWithoutRowid);
         selectStatement.setJoinClauses(joinStatements);
-        selectStatement.setFromTables(SQLite3Common.getTableRefs(tables, globalState.getSchema()));
+        selectStatement.setFromList(SQLite3Common.getTableRefs(tables, globalState.getSchema()));
 
         fetchColumns = Randomly.nonEmptySubset(columnsWithoutRowid);
         List<SQLite3Table> allTables = new ArrayList<>();
@@ -99,7 +99,7 @@ public class SQLite3PivotedQuerySynthesisOracle
         }
         /* PQS does not check for ordering, so we can generate any ORDER BY clause */
         List<SQLite3Expression> orderBy = new SQLite3ExpressionGenerator(globalState).generateOrderBys();
-        selectStatement.setOrderByExpressions(orderBy);
+        selectStatement.setOrderByClauses(orderBy);
         if (!groupByClause.isEmpty() && Randomly.getBoolean()) {
             selectStatement.setHavingClause(generateRectifiedExpression(columns, pivotRow, true));
         }

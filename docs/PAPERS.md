@@ -53,7 +53,7 @@ This paper describes TLP, a metamorphic testing approach that can detect various
 
 ## Testing Database Engines via Query Plan Guidance
 
-This paper describes Query Plan Guidance (QPG), a test case generation method guided by query plan coverage. This method can be paired with above three testing methods. A preprint is available [here](http://jinshengba.me/assets/pdf/qpg_icse23.pdf).
+This paper describes Query Plan Guidance (QPG), a test case generation method guided by query plan coverage. This method can be paired with above three testing methods. A preprint is available [here](http://bajinsheng.github.io/assets/pdf/qpg_icse23.pdf).
 
 ```
 @inproceedings{Ba2023QPG,
@@ -62,6 +62,37 @@ This paper describes Query Plan Guidance (QPG), a test case generation method gu
   booktitle = {The 45th International Conference on Software Engineering (ICSE'23)},
   year = {2023},
   month = may
+}
+```
+
+## CERT: Finding Performance Issues in Database Systems Through the Lens of Cardinality Estimation
+
+This paper describes CERT, a testing approach to find performance issues by inspecting inconsistent estimated cardinalities. A preprint is available [here](https://bajinsheng.github.io/assets/pdf/cert_icse24.pdf).
+
+```
+@inproceedings{cert,
+  author = {Ba, Jinsheng and Rigger, Manuel},
+  title = {CERT: Finding Performance Issues in Database Systems Through the Lens of Cardinality Estimation},
+  booktitle = {The 46th International Conference on Software Engineering (ICSE'24)},
+  year = {2024},
+  month = apr,
+}
+```
+
+## Keep It Simple: Testing Databases via Differential Query Plans
+
+This paper describes DQP, a testing approach to find logic bugs in database systems by comparing the query plans of different database systems. A preprint is available [here](https://bajinsheng.github.io/assets/pdf/dqp_sigmod24.pdf).
+
+```
+@article{dqp,
+  author = {Ba, Jinsheng and Rigger, Manuel},
+  title = {Keep It Simple: Testing Databases via Differential Query Plans},
+  year = {2024},
+  issue_date = {June 2024},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  journal = {Proceeding of ACM Management of Data (SIGMOD'24)},
+  month = jun
 }
 ```
 

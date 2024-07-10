@@ -1,5 +1,7 @@
 package sqlancer.tidb.gen;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,12 +24,13 @@ public class TiDBHintGenerator {
         INL_HASH_JOIN, //
         INL_MERGE_JOIN, //
         HASH_JOIN, //
+        READ_FROM_TIKV, //
+        READ_FROM_TIFLASH, //
         HASH_AGG, //
         STREAM_AGG, //
         USE_INDEX, //
         IGNORE_INDEX, //
         AGG_TO_COP, //
-        // READ_FROM_STORAGE
         USE_INDEX_MERGE, //
         NO_INDEX_MERGE, //
         USE_TOJA, //
@@ -46,13 +49,40 @@ public class TiDBHintGenerator {
     }
 
     public static void generateHints(TiDBSelect select, List<TiDBTable> tables) {
-        new TiDBHintGenerator(select, tables).generate();
-
+        new TiDBHintGenerator(select, tables).randomHint();
     }
 
-    private void generate() {
+    public static List<TiDBText> generateAllHints(TiDBSelect select, List<TiDBTable> tables) {
+        TiDBHintGenerator generator = new TiDBHintGenerator(select, tables);
+        return generator.allHints();
+    }
+
+    private void randomHint() {
         TiDBTable table = Randomly.fromList(tables);
-        switch (Randomly.fromOptions(IndexHint.values())) {
+        IndexHint chosenhint = Randomly.fromOptions(IndexHint.values());
+        generate(table, chosenhint);
+    }
+
+    private List<TiDBText> allHints() {
+        List<TiDBText> results = new ArrayList<>();
+        IndexHint[] values = IndexHint.values();
+        List<IndexHint> availableHints = new ArrayList<>(Arrays.asList(values));
+
+        for (IndexHint hint : availableHints) {
+            try {
+                TiDBText generatedHint = generate(Randomly.fromList(tables), hint);
+                results.add(generatedHint);
+            } catch (IgnoreMeException e) {
+                continue;
+            }
+        }
+        return results;
+    }
+
+    private TiDBText generate(TiDBTable table, IndexHint chosenhint) {
+        sb.setLength(0);
+
+        switch (chosenhint) {
         case MERGE_JOIN:
             tablesHint("MERGE_JOIN");
             break;
@@ -67,6 +97,12 @@ public class TiDBHintGenerator {
             break;
         case HASH_JOIN:
             tablesHint("HASH_JOIN");
+            break;
+        case READ_FROM_TIKV:
+            storageHint("READ_FROM_STORAGE(TIKV");
+            break;
+        case READ_FROM_TIFLASH:
+            storageHint("READ_FROM_STORAGE(TIFLASH");
             break;
         case HASH_AGG:
             sb.append("HASH_AGG()");
@@ -126,7 +162,9 @@ public class TiDBHintGenerator {
         default:
             throw new AssertionError();
         }
-        select.setHint(new TiDBText(sb.toString()));
+        TiDBText hint = new TiDBText(sb.toString());
+        select.setHint(hint);
+        return hint;
     }
 
     private void indexesHint(String string) {
@@ -150,6 +188,13 @@ public class TiDBHintGenerator {
         sb.append("(");
         appendTables();
         sb.append(")");
+    }
+
+    private void storageHint(String string) {
+        sb.append(string);
+        sb.append("[");
+        appendTables();
+        sb.append("])");
     }
 
     private void twoTablesHint(String string, TiDBTable table) {

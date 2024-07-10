@@ -113,7 +113,7 @@ public class DuckDBNoRECOracle extends NoRECBase<DuckDBGlobalState> implements T
         select.setFromList(tableList);
         select.setWhereClause(randomWhereCondition);
         if (Randomly.getBooleanWithSmallProbability()) {
-            select.setOrderByExpressions(new DuckDBExpressionGenerator(state).setColumns(columns).generateOrderBys());
+            select.setOrderByClauses(new DuckDBExpressionGenerator(state).setColumns(columns).generateOrderBys());
         }
         // select.setSelectType(SelectType.ALL);
         select.setJoinList(joins);

@@ -58,7 +58,7 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
         }
         select.setFetchColumns(Arrays.asList(aggregate));
         // if (Randomly.getBooleanWithRatherLowProbability()) {
-        // select.setOrderByExpressions(gen.generateOrderBys());
+        // select.setOrderByClauses(gen.generateOrderBys());
         // }
         originalQuery = DatabendToStringVisitor.asString(select);
         firstResult = getAggregateResult(originalQuery);

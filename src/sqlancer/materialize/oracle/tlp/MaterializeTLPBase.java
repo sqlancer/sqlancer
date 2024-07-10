@@ -106,7 +106,7 @@ public class MaterializeTLPBase
             select.setWhereClause(gen.generateExpression(0, MaterializeDataType.BOOLEAN));
         }
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByExpressions(gen.generateOrderBy());
+            select.setOrderByClauses(gen.generateOrderBy());
         }
         if (Randomly.getBoolean()) {
             select.setLimitClause(MaterializeConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));

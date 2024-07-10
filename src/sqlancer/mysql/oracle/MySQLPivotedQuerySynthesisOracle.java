@@ -68,7 +68,7 @@ public class MySQLPivotedQuerySynthesisOracle
         selectStatement.setModifiers(modifiers);
         List<MySQLExpression> orderBy = new MySQLExpressionGenerator(globalState).setColumns(columns)
                 .generateOrderBys();
-        selectStatement.setOrderByExpressions(orderBy);
+        selectStatement.setOrderByClauses(orderBy);
 
         return new SQLQueryAdapter(MySQLVisitor.asString(selectStatement), errors);
     }

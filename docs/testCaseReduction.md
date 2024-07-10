@@ -11,7 +11,26 @@ The AST-based reducer can shorten a statement by applying AST level transformati
 
 The transformations are implemented by [JSQLParser](https://github.com/JSQLParser/JSqlParser), a RDBMS agnostic SQL statement parser that can translate SQL statements into a traversable hierarchy of Java classes. JSQLParser provides support for the SQL standard as well as major SQL dialects. The AST-based reducer works for any SQL dialects that can be parsed by this tool.
 
-## Enable reducers
+## Implementing reproducer
+Determining whether a bug persists after reducing statements
+is an undecidable task for general transformations.
+In practice, reducers use the [reproducer](../src/sqlancer/Reproducer.java) to determine
+if a bug remains after statements have been removed or modified.
+The reducer's responsibility is to verify if the current state,
+formed by the pared-down statements,
+continues to yield incorrect results for specific queries.
+
+Different oracles have distinct logic for determination,
+meaning a universal reproducer doesn't exist.
+Each oracle type needs its own reproducer implementation.
+If reproducer is not implemented for specific oracle,
+test case reduction is not available while using the oracle.
+
+Oracles for which reproducers have currently been implemented include:
+1. for [`SQLite3NoRECOracle`](../src/sqlancer/sqlite3/oracle/SQLite3NoRECOracle.java)
+2. for [`TiDBTLPWhereOracle`](../src/sqlancer/tidb/oracle/TiDBTLPWhereOracle.java)
+
+## Using reducers
 Test-case reduction is disabled by default. The statement reducer can be enabled by passing `--use-reducer` when starting SQLancer. If you wish to further shorten each statements, you need to additionally pass the `--reduce-ast` parameter so that the AST-based reduction is applied. 
 
 Note: if `--reduce-ast` is set, `--use-reducer` option must be enabled first.

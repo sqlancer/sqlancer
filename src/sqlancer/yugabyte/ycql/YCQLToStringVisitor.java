@@ -41,9 +41,9 @@ public class YCQLToStringVisitor extends NewToStringVisitor<YCQLExpression> {
             sb.append(" WHERE ");
             visit(select.getWhereClause());
         }
-        if (!select.getOrderByExpressions().isEmpty()) {
+        if (!select.getOrderByClauses().isEmpty()) {
             sb.append(" ORDER BY ");
-            visit(select.getOrderByExpressions());
+            visit(select.getOrderByClauses());
         }
         if (select.getLimitClause() != null) {
             sb.append(" LIMIT ");

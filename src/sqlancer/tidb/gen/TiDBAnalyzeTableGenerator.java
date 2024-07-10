@@ -17,11 +17,7 @@ public final class TiDBAnalyzeTableGenerator {
         ExpectedErrors errors = new ExpectedErrors();
         TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         boolean analyzeIndex = !table.getIndexes().isEmpty() && Randomly.getBoolean();
-        StringBuilder sb = new StringBuilder("ANALYZE ");
-        if (analyzeIndex && Randomly.getBoolean()) {
-            sb.append("INCREMENTAL ");
-        }
-        sb.append("TABLE ");
+        StringBuilder sb = new StringBuilder("ANALYZE TABLE ");
         sb.append(table.getName());
         if (analyzeIndex) {
             sb.append(" INDEX ");

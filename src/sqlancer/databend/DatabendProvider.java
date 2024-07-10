@@ -133,6 +133,13 @@ public class DatabendProvider extends SQLProviderAdapter<DatabendGlobalState, Da
             s.execute("USE " + databaseName);
             globalState.getState().logStatement("USE " + databaseName);
         }
+        if (DatabendBugs.bug15569) {
+            con.close();
+            String urlWithRetry = String.format(
+                    "jdbc:mysql://%s:%d/%s?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true&autoReconnect=true",
+                    host, port, databaseName);
+            con = DriverManager.getConnection(urlWithRetry, username, password);
+        }
 
         return new SQLConnection(con);
     }

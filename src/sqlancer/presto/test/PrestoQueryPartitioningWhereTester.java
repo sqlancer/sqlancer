@@ -28,7 +28,7 @@ public class PrestoQueryPartitioningWhereTester extends PrestoQueryPartitioningB
 
         boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
         if (orderBy) {
-            select.setOrderByExpressions(gen.generateOrderBys());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         select.setWhereClause(predicate);
         String firstQueryString = PrestoToStringVisitor.asString(select);

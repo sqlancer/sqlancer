@@ -2,7 +2,7 @@ package sqlancer.mariadb.ast;
 
 import java.util.List;
 
-public class MariaDBInOperation extends MariaDBExpression {
+public class MariaDBInOperation implements MariaDBExpression {
 
     private final MariaDBExpression expr;
     private final List<MariaDBExpression> list;

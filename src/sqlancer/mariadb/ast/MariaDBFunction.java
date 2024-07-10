@@ -2,7 +2,7 @@ package sqlancer.mariadb.ast;
 
 import java.util.List;
 
-public class MariaDBFunction extends MariaDBExpression {
+public class MariaDBFunction implements MariaDBExpression {
 
     private final MariaDBFunctionName func;
     private final List<MariaDBExpression> args;

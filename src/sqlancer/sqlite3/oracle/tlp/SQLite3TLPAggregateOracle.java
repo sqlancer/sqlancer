@@ -54,7 +54,7 @@ public class SQLite3TLPAggregateOracle implements TestOracle<SQLite3GlobalState>
         List<SQLite3Expression> from = SQLite3Common.getTableRefs(targetTables.getTables(), s);
         select.setFromList(from);
         if (Randomly.getBoolean()) {
-            select.setOrderByExpressions(gen.generateOrderBys());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         String originalQuery = SQLite3Visitor.asString(select);
         generatedQueryString = originalQuery;
@@ -120,7 +120,7 @@ public class SQLite3TLPAggregateOracle implements TestOracle<SQLite3GlobalState>
             leftSelect.setGroupByClause(gen.getRandomExpressions(Randomly.smallNumber() + 1));
         }
         if (Randomly.getBoolean()) {
-            leftSelect.setOrderByExpressions(gen.generateOrderBys());
+            leftSelect.setOrderByClauses(gen.generateOrderBys());
         }
         return leftSelect;
     }

@@ -147,8 +147,7 @@ public class MaterializeNoRECOracle extends NoRECBase<MaterializeGlobalState>
         select.setFromList(randomTables);
         select.setWhereClause(randomWhereCondition);
         if (Randomly.getBooleanWithSmallProbability()) {
-            select.setOrderByExpressions(
-                    new MaterializeExpressionGenerator(state).setColumns(columns).generateOrderBy());
+            select.setOrderByClauses(new MaterializeExpressionGenerator(state).setColumns(columns).generateOrderBy());
         }
         select.setSelectType(SelectType.ALL);
         select.setJoinClauses(joinStatements);

@@ -15,6 +15,7 @@ import sqlancer.common.oracle.TestOracle;
 import sqlancer.tidb.TiDBOptions.TiDBOracleFactory;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.oracle.TiDBCERTOracle;
+import sqlancer.tidb.oracle.TiDBDQPOracle;
 import sqlancer.tidb.oracle.TiDBTLPHavingOracle;
 import sqlancer.tidb.oracle.TiDBTLPWhereOracle;
 
@@ -35,6 +36,9 @@ public class TiDBOptions implements DBMSSpecificOptions<TiDBOracleFactory> {
 
     @Parameter(names = "--enable-non-prepared-plan-cache")
     public boolean nonPreparePlanCache;
+
+    @Parameter(names = { "--tiflash" }, description = "Enable TiFlash")
+    public boolean tiflash;
 
     public enum TiDBOracleFactory implements OracleFactory<TiDBGlobalState> {
         HAVING {
@@ -67,6 +71,12 @@ public class TiDBOptions implements DBMSSpecificOptions<TiDBOracleFactory> {
             @Override
             public boolean requiresAllTablesToContainRows() {
                 return true;
+            }
+        },
+        DQP {
+            @Override
+            public TestOracle<TiDBGlobalState> create(TiDBGlobalState globalState) throws SQLException {
+                return new TiDBDQPOracle(globalState);
             }
         };
 

@@ -71,7 +71,7 @@ public class DorisPivotedQuerySynthesisOracle
             List<Node<DorisExpression>> constants = new ArrayList<>();
             constants.add(new DorisConstant.DorisIntConstant(
                     Randomly.smallNumber() % selectStatement.getFetchColumns().size() + 1));
-            selectStatement.setOrderByExpressions(constants);
+            selectStatement.setOrderByClauses(constants);
         }
         return new SQLQueryAdapter(DorisToStringVisitor.asString(selectStatement), errors);
     }

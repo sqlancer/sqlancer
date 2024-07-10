@@ -17,11 +17,13 @@ import sqlancer.mysql.ast.MySQLConstant;
 import sqlancer.mysql.ast.MySQLExists;
 import sqlancer.mysql.ast.MySQLExpression;
 import sqlancer.mysql.ast.MySQLInOperation;
+import sqlancer.mysql.ast.MySQLJoin;
 import sqlancer.mysql.ast.MySQLOrderByTerm;
 import sqlancer.mysql.ast.MySQLOrderByTerm.MySQLOrder;
 import sqlancer.mysql.ast.MySQLSelect;
 import sqlancer.mysql.ast.MySQLStringExpression;
 import sqlancer.mysql.ast.MySQLTableReference;
+import sqlancer.mysql.ast.MySQLText;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
 
 public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> implements MySQLVisitor {
@@ -36,6 +38,11 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
     @Override
     public void visit(MySQLSelect s) {
         sb.append("SELECT ");
+        if (s.getHint() != null) {
+            sb.append("/*+ ");
+            visit(s.getHint());
+            sb.append("*/ ");
+        }
         switch (s.getFromOptions()) {
         case DISTINCT:
             sb.append("DISTINCT ");
@@ -94,14 +101,14 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
                 visit(groupBys.get(i));
             }
         }
-        if (!s.getOrderByExpressions().isEmpty()) {
+        if (!s.getOrderByClauses().isEmpty()) {
             sb.append(" ORDER BY ");
-            List<MySQLExpression> orderBys = s.getOrderByExpressions();
+            List<MySQLExpression> orderBys = s.getOrderByClauses();
             for (int i = 0; i < orderBys.size(); i++) {
                 if (i != 0) {
                     sb.append(", ");
                 }
-                visit(s.getOrderByExpressions().get(i));
+                visit(s.getOrderByClauses().get(i));
             }
         }
         if (s.getLimitClause() != null) {
@@ -278,4 +285,41 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
         sb.append(")");
     }
 
+    @Override
+    public void visit(MySQLJoin join) {
+        sb.append(" ");
+        switch (join.getType()) {
+        case NATURAL:
+            sb.append("NATURAL ");
+            break;
+        case INNER:
+            sb.append("INNER ");
+            break;
+        case STRAIGHT:
+            sb.append("STRAIGHT_");
+            break;
+        case LEFT:
+            sb.append("LEFT ");
+            break;
+        case RIGHT:
+            sb.append("RIGHT ");
+            break;
+        case CROSS:
+            sb.append("CROSS ");
+            break;
+        default:
+            throw new AssertionError(join.getType());
+        }
+        sb.append("JOIN ");
+        sb.append(join.getTable().getName());
+        if (join.getOnClause() != null) {
+            sb.append(" ON ");
+            visit(join.getOnClause());
+        }
+    }
+
+    @Override
+    public void visit(MySQLText text) {
+        sb.append(text.getText());
+    }
 }

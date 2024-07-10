@@ -1,5 +1,8 @@
 package sqlancer.tidb;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import sqlancer.common.query.ExpectedErrors;
 
 public final class TiDBErrors {
@@ -7,7 +10,9 @@ public final class TiDBErrors {
     private TiDBErrors() {
     }
 
-    public static void addExpressionErrors(ExpectedErrors errors) {
+    public static List<String> getExpressionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("DECIMAL value is out of range");
         errors.add("error parsing regexp");
         errors.add("BIGINT UNSIGNED value is out of range");
@@ -24,10 +29,14 @@ public final class TiDBErrors {
         errors.add("doesn't have a default value"); // default
         errors.add("is not valid for CHARACTER SET");
         errors.add("DOUBLE value is out of range");
+        errors.add("Result of space() was larger than max_allowed_packet");
 
-        errors.add("Data truncation: %s value is out of range in '%s'");
+        errors.add("Data truncat");
         errors.add("Truncated incorrect FLOAT value");
         errors.add("Bad Number");
+        errors.add("strconv.Atoi: parsing");
+        errors.add("expected integer");
+        errors.add("Duplicate entry");
 
         // regex
         errors.add("error parsing regexp");
@@ -55,14 +64,30 @@ public final class TiDBErrors {
         if (TiDBBugs.bug44747) {
             errors.add("index out of range");
         }
+
+        return errors;
+    }
+
+    public static void addExpressionErrors(ExpectedErrors errors) {
+        errors.addAll(getExpressionErrors());
+    }
+
+    public static List<String> getExpressionHavingErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
+        errors.add("is not in GROUP BY clause and contains nonaggregated column");
+        errors.add("Unknown column");
+
+        return errors;
     }
 
     public static void addExpressionHavingErrors(ExpectedErrors errors) {
-        errors.add("is not in GROUP BY clause and contains nonaggregated column");
-        errors.add("Unknown column");
+        errors.addAll(getExpressionHavingErrors());
     }
 
-    public static void addInsertErrors(ExpectedErrors errors) {
+    public static List<String> getInsertErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
         errors.add("Duplicate entry");
         errors.add("cannot be null");
         errors.add("doesn't have a default value");
@@ -81,6 +106,14 @@ public final class TiDBErrors {
         errors.add("Incorrect decimal value");
         errors.add("error parsing regexp");
         errors.add("is not valid for CHARACTER SET");
+        errors.add("for function inet_aton");
+        errors.add("'Empty pattern is invalid' from regexp");
+
+        return errors;
+    }
+
+    public static void addInsertErrors(ExpectedErrors errors) {
+        errors.addAll(getInsertErrors());
     }
 
 }
