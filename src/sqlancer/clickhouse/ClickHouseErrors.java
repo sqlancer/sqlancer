@@ -45,8 +45,8 @@ public final class ClickHouseErrors {
                 "Positional argument numeric constant expression is not representable as",
                 "Positional argument must be constant with numeric type", " is out of bounds. Expected in range",
                 "with constants is not supported. (INVALID_JOIN_ON_EXPRESSION)",
-                "Unexpected inf or nan to integer conversion", "Unsigned type must not contain",
-                "Unexpected inf or nan to integer conversion",
+                "Cannot get JOIN keys from JOIN ON section", "Unexpected inf or nan to integer conversion",
+                "Unsigned type must not contain", "Unexpected inf or nan to integer conversion",
 
                 // The way we generate JOINs we can have ambiguous left table column without
                 // alias
