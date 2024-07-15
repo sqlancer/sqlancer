@@ -113,7 +113,9 @@ public class PostgresTableGenerator {
         generateInherits();
         generatePartitionBy();
         generateUsing();
-        PostgresCommon.generateWith(sb, globalState, errors);
+        if (!isPartitionedTable) {
+            PostgresCommon.generateWith(sb, globalState, errors);
+        }
         if (Randomly.getBoolean() && isTemporaryTable) {
             sb.append(" ON COMMIT ");
             sb.append(Randomly.fromOptions("PRESERVE ROWS", "DELETE ROWS", "DROP"));
