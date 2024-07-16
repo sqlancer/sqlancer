@@ -38,6 +38,7 @@ if __name__ == '__main__':
     name_to_files["CnosDB"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "cnosdb"))
     name_to_files["CockroachDB"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "cockroachdb"))
     name_to_files["Databend"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "databend"))
+    name_to_files["DataFusion"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "datafusion"))
     name_to_files["DuckDB"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "duckdb"))
     name_to_files["H2"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "h2"))
     name_to_files["HSQLDB"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "hsqldb"))
