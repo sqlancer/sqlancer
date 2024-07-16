@@ -214,7 +214,7 @@ jobs:
       - name: Run DataFusion Server
         run: |
           cd src/sqlancer/datafusion/server/datafusion_server
-          cargo run --features "datafusion_stable" & sleep 300
+          cargo run & sleep 300
       - name: Set up JDK 11
         uses: actions/setup-java@v3
         with:

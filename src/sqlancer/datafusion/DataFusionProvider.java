@@ -1,7 +1,7 @@
 package sqlancer.datafusion;
 
-import static java.lang.System.exit;
 import static sqlancer.datafusion.DataFusionUtil.DataFusionLogger.DataFusionLogType.DML;
+import static sqlancer.datafusion.DataFusionUtil.dfAssert;
 import static sqlancer.datafusion.DataFusionUtil.displayTables;
 
 import java.sql.Connection;
@@ -52,13 +52,12 @@ public class DataFusionProvider extends SQLProviderAdapter<DataFusionGlobalState
         List<DataFusionTable> allTables = globalState.getSchema().getDatabaseTables();
         List<String> allTablesName = allTables.stream().map(t -> t.getName()).collect(Collectors.toList());
         if (allTablesName.isEmpty()) {
-            System.out.println("Generate database failed");
-            exit(1);
+            dfAssert(false, "Generate Database failed.");
         }
 
         // Randomly insert some data into existing tables
         for (DataFusionTable table : allTables) {
-            int nInsertQuery = globalState.getRandomly().getInteger(0, 8); // [0, 10)
+            int nInsertQuery = globalState.getRandomly().getInteger(0, globalState.getOptions().getMaxNumberInserts());
 
             for (int i = 0; i < nInsertQuery; i++) {
                 SQLQueryAdapter insertQuery = null;

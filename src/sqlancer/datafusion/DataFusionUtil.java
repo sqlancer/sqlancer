@@ -1,7 +1,5 @@
 package sqlancer.datafusion;
 
-import static java.lang.System.exit;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -66,11 +64,15 @@ public final class DataFusionUtil {
         return resultStringBuilder.toString();
     }
 
+    // During development, you might want to manually let this function call exit(1) to fail fast
     public static void dfAssert(boolean condition, String message) {
         if (!condition) {
-            String methodName = Thread.currentThread().getStackTrace()[2].getMethodName();
-            System.err.println("DataFusion assertion failed in function '" + methodName + "': " + message);
-            exit(1);
+            // // Development mode assertion failure
+            // String methodName = Thread.currentThread().getStackTrace()[2]// .getMethodName();
+            // System.err.println("DataFusion assertion failed in function '" + methodName + "': " + message);
+            // exit(1);
+
+            throw new AssertionError(message);
         }
     }
 
@@ -149,9 +151,7 @@ public final class DataFusionUtil {
                 try {
                     logFileWriter = new FileWriter(errorLogFile, true);
                 } catch (IOException e) {
-                    System.out.println("Failed to create FileWriter for errorLogFIle");
-                    e.printStackTrace();
-                    exit(1);
+                    dfAssert(false, "Failed to create FileWriter for errorLogFIle");
                 }
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 String formattedDateTime = LocalDateTime.now().format(formatter);
@@ -175,14 +175,11 @@ public final class DataFusionUtil {
                     logFileWriter.write(logContent);
                     logFileWriter.flush();
                 } catch (IOException e) {
-                    System.out.println("Failed to write to " + logType + " log: " + e.getMessage());
-                    e.printStackTrace();
-                    exit(1);
+                    String err = "Failed to write to " + logType + " log: " + e.getMessage();
+                    dfAssert(false, err);
                 }
             } else {
-                System.out.println("appending to log failed");
-                Thread.currentThread().getStackTrace();
-                exit(1);
+                dfAssert(false, "appending to log failed");
             }
         }
 

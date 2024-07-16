@@ -1,8 +1,3 @@
-#[cfg(feature = "datafusion_dev")]
-extern crate datafusion_dev as datafusion;
-#[cfg(feature = "datafusion_stable")]
-extern crate datafusion_stable as datafusion;
-
 use arrow::array::{ArrayRef, StringArray};
 use arrow::ipc::writer::IpcWriteOptions;
 use arrow::record_batch::RecordBatch;
@@ -21,8 +16,8 @@ use arrow_flight::{
 };
 use arrow_schema::{DataType, Field, Schema};
 use dashmap::DashMap;
-use datafusion_stable::logical_expr::LogicalPlan;
-use datafusion_stable::prelude::{DataFrame, ParquetReadOptions, SessionConfig, SessionContext};
+use datafusion::logical_expr::LogicalPlan;
+use datafusion::prelude::{DataFrame, ParquetReadOptions, SessionConfig, SessionContext};
 use futures::{Stream, StreamExt, TryStreamExt};
 use log::info;
 use mimalloc::MiMalloc;
