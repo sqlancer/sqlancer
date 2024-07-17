@@ -207,7 +207,7 @@ public class PostgresTableGenerator {
     }
 
     private void generateInherits() {
-        if (Randomly.getBoolean() && !newSchema.getDatabaseTables().isEmpty()) {
+        if (Randomly.getBoolean() && !newSchema.getDatabaseTablesWithoutViews().isEmpty()) {
             sb.append(" INHERITS(");
             sb.append(newSchema.getDatabaseTablesRandomSubsetNotEmpty().stream().map(t -> t.getName())
                     .collect(Collectors.joining(", ")));
