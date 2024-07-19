@@ -21,7 +21,7 @@ public class TestMaterializeQueryPlan {
         boolean materializeIsAvailable = materialize != null && materialize.equalsIgnoreCase("true");
         assumeTrue(materializeIsAvailable);
 
-        String databaseName = "materialize";
+        String databaseName = "queryplan";
         MaterializeProvider provider = new MaterializeProvider();
         MaterializeGlobalState state = provider.getGlobalStateClass().getDeclaredConstructor().newInstance();
         MaterializeOptions materializeOption = provider.getOptionClass().getDeclaredConstructor().newInstance();
@@ -42,7 +42,7 @@ public class TestMaterializeQueryPlan {
         String queryPlan = provider.getQueryPlan("SELECT * FROM t1 RIGHT JOIN t2 ON a<>0;", state);
 
         assertEquals(
-                "Return;Union;Get l0;Project (#2, #3, #0);Union;Negate;Project (#2);Get materialize.public.t2;Get materialize.public.t2;With;Get materialize.public.t1;Get materialize.public.t2;;Source materialize.public.t1;",
+                "Return // { arity: 3 };Union // { arity: 3 };Get l0 // { arity: 3 };Project (#2{c}, #3, #0) // { arity: 3 };Union // { arity: 1 };Negate // { arity: 1 };Project (#2) // { arity: 1 };ReadStorage queryplan.public.t2 // { arity: 1 };ReadStorage queryplan.public.t2 // { arity: 1 };With;ReadStorage queryplan.public.t1 // { arity: 2 };ReadStorage queryplan.public.t2 // { arity: 1 };;Source queryplan.public.t1;Source queryplan.public.t2;;Target cluster: quickstart;",
                 queryPlan);
     }
 
