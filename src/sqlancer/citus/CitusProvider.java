@@ -371,6 +371,7 @@ public class CitusProvider extends PostgresProvider {
             globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
             globalState.getState().logStatement(createDatabaseCommand);
             try (Statement s = con.createStatement()) {
+                s.execute("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = '" + databaseName + "' AND pid <> pg_backend_pid()");
                 s.execute("DROP DATABASE IF EXISTS " + databaseName);
             }
             try (Statement s = con.createStatement()) {
