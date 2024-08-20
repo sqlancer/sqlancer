@@ -5,12 +5,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.newast.Join;
 import sqlancer.mariadb.MariaDBProvider.MariaDBGlobalState;
 import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 import sqlancer.mariadb.gen.MariaDBExpressionGenerator;
 
-public class MariaDBJoin implements MariaDBExpression {
+public class MariaDBJoin implements MariaDBExpression, Join<MariaDBExpression, MariaDBTable, MariaDBColumn> {
 
     public enum JoinType {
         NATURAL, INNER, STRAIGHT, LEFT, RIGHT, CROSS;
@@ -36,6 +37,7 @@ public class MariaDBJoin implements MariaDBExpression {
         return table;
     }
 
+    @Override
     public MariaDBExpression getOnClause() {
         return onClause;
     }
@@ -44,6 +46,7 @@ public class MariaDBJoin implements MariaDBExpression {
         return type;
     }
 
+    @Override
     public void setOnClause(MariaDBExpression onClause) {
         this.onClause = onClause;
     }
