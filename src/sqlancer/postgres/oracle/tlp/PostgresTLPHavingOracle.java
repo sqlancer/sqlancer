@@ -36,7 +36,7 @@ public class PostgresTLPHavingOracle extends PostgresTLPBase {
 
         boolean orderBy = Randomly.getBoolean();
         if (orderBy) {
-            select.setOrderByClauses(gen.generateOrderBy());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         select.setHavingClause(predicate);
         String firstQueryString = PostgresVisitor.asString(select);

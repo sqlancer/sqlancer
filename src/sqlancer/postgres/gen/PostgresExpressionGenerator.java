@@ -12,6 +12,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.gen.NoRECGenerator;
+import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.postgres.PostgresCompoundDataType;
 import sqlancer.postgres.PostgresGlobalState;
@@ -64,7 +65,8 @@ import sqlancer.postgres.ast.PostgresSelect.SelectType;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 
 public class PostgresExpressionGenerator implements ExpressionGenerator<PostgresExpression>,
-        NoRECGenerator<PostgresSelect, PostgresJoin, PostgresExpression, PostgresTable, PostgresColumn> {
+        NoRECGenerator<PostgresSelect, PostgresJoin, PostgresExpression, PostgresTable, PostgresColumn>,
+        TLPWhereGenerator<PostgresSelect, PostgresJoin, PostgresExpression, PostgresTable, PostgresColumn> {
 
     private final int maxDepth;
 
@@ -108,7 +110,8 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         return generateExpression(depth, PostgresDataType.getRandomType());
     }
 
-    public List<PostgresExpression> generateOrderBy() {
+    @Override
+    public List<PostgresExpression> generateOrderBys() {
         List<PostgresExpression> orderBys = new ArrayList<>();
         for (int i = 0; i < Randomly.smallNumber(); i++) {
             orderBys.add(new PostgresOrderByTerm(PostgresColumnValue.create(Randomly.fromList(columns), null),
@@ -615,7 +618,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             select.setWhereClause(gen.generateExpression(0, PostgresDataType.BOOLEAN));
         }
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByClauses(gen.generateOrderBy());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         if (Randomly.getBoolean()) {
             select.setLimitClause(PostgresConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
@@ -692,6 +695,21 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     }
 
     @Override
+    public List<PostgresExpression> generateFetchColumns(boolean shouldCreateDummy) {
+        if (shouldCreateDummy && Randomly.getBooleanWithRatherLowProbability()) {
+            return Arrays.asList(new PostgresColumnValue(PostgresColumn.createDummy("*"), null));
+        }
+        allowAggregateFunctions = true;
+        List<PostgresExpression> fetchColumns = new ArrayList<>();
+        List<PostgresColumn> targetColumns = Randomly.nonEmptySubset(columns);
+        for (PostgresColumn c : targetColumns) {
+            fetchColumns.add(new PostgresColumnValue(c, null));
+        }
+        allowAggregateFunctions = false;
+        return fetchColumns;
+    }
+
+    @Override
     public String generateOptimizedQueryString(PostgresSelect select, PostgresExpression whereCondition,
             boolean shouldUseAggregate) {
         PostgresColumnValue allColumns = new PostgresColumnValue(PostgresColumn.createDummy("*"), null);
@@ -703,7 +721,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         }
         select.setWhereClause(whereCondition);
         if (Randomly.getBooleanWithSmallProbability()) {
-            select.setOrderByClauses(generateOrderBy());
+            select.setOrderByClauses(generateOrderBys());
         }
         select.setSelectType(SelectType.ALL);
         return select.asString();
