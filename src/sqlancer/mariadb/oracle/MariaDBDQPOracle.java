@@ -56,8 +56,8 @@ public class MariaDBDQPOracle implements TestOracle<MariaDBGlobalState> {
         }
 
         // Set the join.
-        List<MariaDBJoin> joinExpressions = MariaDBJoin.getRandomJoinClauses(tables.getTables(), state);
-        select.setJoinList(joinExpressions.stream().map(j -> (MariaDBExpression) j).collect(Collectors.toList()));
+        List<MariaDBJoin> joinExpressions = MariaDBJoin.getRandomJoinClauses(tables.getTables(), state.getRandomly());
+        select.setJoinClauses(joinExpressions);
 
         // Set the from clause from the tables that are not used in the join.
         select.setFromList(

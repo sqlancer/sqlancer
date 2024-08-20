@@ -6,7 +6,6 @@ import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Join;
-import sqlancer.mariadb.MariaDBProvider.MariaDBGlobalState;
 import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 import sqlancer.mariadb.gen.MariaDBExpressionGenerator;
@@ -55,7 +54,7 @@ public class MariaDBJoin implements MariaDBExpression, Join<MariaDBExpression, M
         this.type = type;
     }
 
-    public static List<MariaDBJoin> getRandomJoinClauses(List<MariaDBTable> tables, MariaDBGlobalState globalState) {
+    public static List<MariaDBJoin> getRandomJoinClauses(List<MariaDBTable> tables, Randomly r) {
         List<MariaDBJoin> joinStatements = new ArrayList<>();
         List<JoinType> options = new ArrayList<>(Arrays.asList(JoinType.values()));
         List<MariaDBColumn> columns = new ArrayList<>();
@@ -71,8 +70,7 @@ public class MariaDBJoin implements MariaDBExpression, Join<MariaDBExpression, M
                 MariaDBTable table = Randomly.fromList(tables);
                 tables.remove(table);
                 columns.addAll(table.getColumns());
-                MariaDBExpressionGenerator joinGen = new MariaDBExpressionGenerator(globalState.getRandomly())
-                        .setColumns(columns);
+                MariaDBExpressionGenerator joinGen = new MariaDBExpressionGenerator(r).setColumns(columns);
                 MariaDBExpression joinClause = joinGen.getRandomExpression();
                 JoinType selectedOption = Randomly.fromList(options);
                 if (selectedOption == JoinType.NATURAL) {

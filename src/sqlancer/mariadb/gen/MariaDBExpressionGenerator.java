@@ -177,7 +177,7 @@ public class MariaDBExpressionGenerator
 
     @Override
     public List<MariaDBJoin> getRandomJoinClauses() {
-        return new ArrayList<>();
+        return MariaDBJoin.getRandomJoinClauses(targetTables, r);
     }
 
     @Override
