@@ -38,8 +38,7 @@ public class MariaDBDQPOracle implements TestOracle<MariaDBGlobalState> {
     @Override
     public void check() throws Exception {
         MariaDBTables tables = s.getRandomTableNonEmptyTables();
-        gen = new MariaDBExpressionGenerator(state.getRandomly()).setColumns(tables.getColumns())
-                .setCon(state.getConnection()).setState(state.getState());
+        gen = new MariaDBExpressionGenerator(state.getRandomly()).setColumns(tables.getColumns());
 
         List<MariaDBExpression> fetchColumns = new ArrayList<>();
         fetchColumns.addAll(Randomly.nonEmptySubset(tables.getColumns()).stream().map(c -> new MariaDBColumnName(c))
