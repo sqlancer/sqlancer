@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -27,8 +26,8 @@ public class DuckDBTableGenerator {
         sb.append(tableName);
         sb.append("(");
         List<DuckDBColumn> columns = getNewColumns();
-        UntypedExpressionGenerator<Node<DuckDBExpression>, DuckDBColumn> gen = new DuckDBExpressionGenerator(
-                globalState).setColumns(columns);
+        UntypedExpressionGenerator<DuckDBExpression, DuckDBColumn> gen = new DuckDBExpressionGenerator(globalState)
+                .setColumns(columns);
         for (int i = 0; i < columns.size(); i++) {
             if (i != 0) {
                 sb.append(", ");

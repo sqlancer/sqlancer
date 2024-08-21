@@ -10,10 +10,6 @@ import java.util.stream.Collectors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
-import sqlancer.common.ast.newast.ColumnReferenceNode;
-import sqlancer.common.ast.newast.NewPostfixTextNode;
-import sqlancer.common.ast.newast.Node;
-import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.common.oracle.NoRECBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -27,9 +23,12 @@ import sqlancer.duckdb.DuckDBSchema.DuckDBDataType;
 import sqlancer.duckdb.DuckDBSchema.DuckDBTable;
 import sqlancer.duckdb.DuckDBSchema.DuckDBTables;
 import sqlancer.duckdb.DuckDBToStringVisitor;
+import sqlancer.duckdb.ast.DuckDBColumnReference;
 import sqlancer.duckdb.ast.DuckDBExpression;
 import sqlancer.duckdb.ast.DuckDBJoin;
+import sqlancer.duckdb.ast.DuckDBPostFixText;
 import sqlancer.duckdb.ast.DuckDBSelect;
+import sqlancer.duckdb.ast.DuckDBTableReference;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator.DuckDBCastOperation;
 
@@ -48,11 +47,11 @@ public class DuckDBNoRECOracle extends NoRECBase<DuckDBGlobalState> implements T
         DuckDBTables randomTables = s.getRandomTableNonEmptyTables();
         List<DuckDBColumn> columns = randomTables.getColumns();
         DuckDBExpressionGenerator gen = new DuckDBExpressionGenerator(state).setColumns(columns);
-        Node<DuckDBExpression> randomWhereCondition = gen.generateExpression();
+        DuckDBExpression randomWhereCondition = gen.generateExpression();
         List<DuckDBTable> tables = randomTables.getTables();
-        List<TableReferenceNode<DuckDBExpression, DuckDBTable>> tableList = tables.stream()
-                .map(t -> new TableReferenceNode<DuckDBExpression, DuckDBTable>(t)).collect(Collectors.toList());
-        List<Node<DuckDBExpression>> joins = DuckDBJoin.getJoins(tableList, state);
+        List<DuckDBTableReference> tableList = tables.stream().map(t -> new DuckDBTableReference(t))
+                .collect(Collectors.toList());
+        List<DuckDBExpression> joins = DuckDBJoin.getJoins(tableList, state);
         int secondCount = getSecondQuery(tableList.stream().collect(Collectors.toList()), randomWhereCondition, joins);
         int firstCount = getFirstQueryCount(con, tableList.stream().collect(Collectors.toList()), columns,
                 randomWhereCondition, joins);
@@ -65,14 +64,14 @@ public class DuckDBNoRECOracle extends NoRECBase<DuckDBGlobalState> implements T
         }
     }
 
-    private int getSecondQuery(List<Node<DuckDBExpression>> tableList, Node<DuckDBExpression> randomWhereCondition,
-            List<Node<DuckDBExpression>> joins) throws SQLException {
+    private int getSecondQuery(List<DuckDBExpression> tableList, DuckDBExpression randomWhereCondition,
+            List<DuckDBExpression> joins) throws SQLException {
         DuckDBSelect select = new DuckDBSelect();
         // select.setGroupByClause(groupBys);
         // DuckDBExpression isTrue = DuckDBPostfixOperation.create(randomWhereCondition,
         // PostfixOperator.IS_TRUE);
-        Node<DuckDBExpression> asText = new NewPostfixTextNode<>(new DuckDBCastOperation(
-                new NewPostfixTextNode<DuckDBExpression>(randomWhereCondition,
+        DuckDBExpression asText = new DuckDBPostFixText(new DuckDBCastOperation(
+                new DuckDBPostFixText(randomWhereCondition,
                         " IS NOT NULL AND " + DuckDBToStringVisitor.asString(randomWhereCondition)),
                 new DuckDBCompositeDataType(DuckDBDataType.INT, 8)), "as count");
         select.setFetchColumns(Arrays.asList(asText));
@@ -99,14 +98,13 @@ public class DuckDBNoRECOracle extends NoRECBase<DuckDBGlobalState> implements T
         return secondCount;
     }
 
-    private int getFirstQueryCount(SQLConnection con, List<Node<DuckDBExpression>> tableList,
-            List<DuckDBColumn> columns, Node<DuckDBExpression> randomWhereCondition, List<Node<DuckDBExpression>> joins)
-            throws SQLException {
+    private int getFirstQueryCount(SQLConnection con, List<DuckDBExpression> tableList, List<DuckDBColumn> columns,
+            DuckDBExpression randomWhereCondition, List<DuckDBExpression> joins) throws SQLException {
         DuckDBSelect select = new DuckDBSelect();
         // select.setGroupByClause(groupBys);
         // DuckDBAggregate aggr = new DuckDBAggregate(
-        List<Node<DuckDBExpression>> allColumns = columns.stream()
-                .map((c) -> new ColumnReferenceNode<DuckDBExpression, DuckDBColumn>(c)).collect(Collectors.toList());
+        List<DuckDBExpression> allColumns = columns.stream().map((c) -> new DuckDBColumnReference(c))
+                .collect(Collectors.toList());
         // DuckDBAggregateFunction.COUNT);
         // select.setFetchColumns(Arrays.asList(aggr));
         select.setFetchColumns(allColumns);

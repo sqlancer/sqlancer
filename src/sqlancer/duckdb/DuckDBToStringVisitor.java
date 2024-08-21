@@ -1,7 +1,7 @@
 package sqlancer.duckdb;
 
 import sqlancer.common.ast.newast.NewToStringVisitor;
-import sqlancer.common.ast.newast.Node;
+import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.duckdb.ast.DuckDBConstant;
 import sqlancer.duckdb.ast.DuckDBExpression;
 import sqlancer.duckdb.ast.DuckDBJoin;
@@ -10,7 +10,7 @@ import sqlancer.duckdb.ast.DuckDBSelect;
 public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> {
 
     @Override
-    public void visitSpecific(Node<DuckDBExpression> expr) {
+    public void visitSpecific(DuckDBExpression expr) {
         if (expr instanceof DuckDBConstant) {
             visit((DuckDBConstant) expr);
         } else if (expr instanceof DuckDBSelect) {
@@ -23,7 +23,7 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
     }
 
     private void visit(DuckDBJoin join) {
-        visit(join.getLeftTable());
+        visit((TableReferenceNode<DuckDBExpression, DuckDBSchema.DuckDBTable>) join.getLeftTable());
         sb.append(" ");
         sb.append(join.getJoinType());
         sb.append(" ");
@@ -31,7 +31,7 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
             sb.append(join.getOuterType());
         }
         sb.append(" JOIN ");
-        visit(join.getRightTable());
+        visit((TableReferenceNode<DuckDBExpression, DuckDBSchema.DuckDBTable>) join.getRightTable());
         if (join.getOnCondition() != null) {
             sb.append(" ON ");
             visit(join.getOnCondition());
@@ -82,7 +82,7 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
         }
     }
 
-    public static String asString(Node<DuckDBExpression> expr) {
+    public static String asString(DuckDBExpression expr) {
         DuckDBToStringVisitor visitor = new DuckDBToStringVisitor();
         visitor.visit(expr);
         return visitor.get();

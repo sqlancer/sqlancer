@@ -1,5 +1,7 @@
 package sqlancer.duckdb.ast;
 
-public interface DuckDBExpression {
+import sqlancer.common.ast.newast.Expression;
+import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
 
+public interface DuckDBExpression extends Expression<DuckDBColumn> {
 }

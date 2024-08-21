@@ -3,9 +3,7 @@ package sqlancer.duckdb.ast;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
-import sqlancer.common.ast.newast.Node;
-
-public class DuckDBConstant implements Node<DuckDBExpression> {
+public class DuckDBConstant implements DuckDBExpression {
 
     private DuckDBConstant() {
     }
@@ -161,31 +159,31 @@ public class DuckDBConstant implements Node<DuckDBExpression> {
 
     }
 
-    public static Node<DuckDBExpression> createStringConstant(String text) {
+    public static DuckDBExpression createStringConstant(String text) {
         return new DuckDBTextConstant(text);
     }
 
-    public static Node<DuckDBExpression> createFloatConstant(double val) {
+    public static DuckDBExpression createFloatConstant(double val) {
         return new DuckDBDoubleConstant(val);
     }
 
-    public static Node<DuckDBExpression> createIntConstant(long val) {
+    public static DuckDBExpression createIntConstant(long val) {
         return new DuckDBIntConstant(val);
     }
 
-    public static Node<DuckDBExpression> createNullConstant() {
+    public static DuckDBExpression createNullConstant() {
         return new DuckDBNullConstant();
     }
 
-    public static Node<DuckDBExpression> createBooleanConstant(boolean val) {
+    public static DuckDBExpression createBooleanConstant(boolean val) {
         return new DuckDBBooleanConstant(val);
     }
 
-    public static Node<DuckDBExpression> createDateConstant(long integer) {
+    public static DuckDBExpression createDateConstant(long integer) {
         return new DuckDBDateConstant(integer);
     }
 
-    public static Node<DuckDBExpression> createTimestampConstant(long integer) {
+    public static DuckDBExpression createTimestampConstant(long integer) {
         return new DuckDBTimestampConstant(integer);
     }
 

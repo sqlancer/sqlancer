@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Node;
-import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBTable;
 import sqlancer.duckdb.DuckDBSchema.DuckDBTables;
@@ -14,6 +12,7 @@ import sqlancer.duckdb.ast.DuckDBConstant;
 import sqlancer.duckdb.ast.DuckDBExpression;
 import sqlancer.duckdb.ast.DuckDBJoin;
 import sqlancer.duckdb.ast.DuckDBSelect;
+import sqlancer.duckdb.ast.DuckDBTableReference;
 
 public final class DuckDBRandomQuerySynthesizer {
 
@@ -28,10 +27,10 @@ public final class DuckDBRandomQuerySynthesizer {
         // TODO: distinct
         // select.setDistinct(Randomly.getBoolean());
         // boolean allowAggregates = Randomly.getBooleanWithSmallProbability();
-        List<Node<DuckDBExpression>> columns = new ArrayList<>();
+        List<DuckDBExpression> columns = new ArrayList<>();
         for (int i = 0; i < nrColumns; i++) {
             // if (allowAggregates && Randomly.getBoolean()) {
-            Node<DuckDBExpression> expression = gen.generateExpression();
+            DuckDBExpression expression = gen.generateExpression();
             columns.add(expression);
             // } else {
             // columns.add(gen());
@@ -39,9 +38,9 @@ public final class DuckDBRandomQuerySynthesizer {
         }
         select.setFetchColumns(columns);
         List<DuckDBTable> tables = targetTables.getTables();
-        List<TableReferenceNode<DuckDBExpression, DuckDBTable>> tableList = tables.stream()
-                .map(t -> new TableReferenceNode<DuckDBExpression, DuckDBTable>(t)).collect(Collectors.toList());
-        List<Node<DuckDBExpression>> joins = DuckDBJoin.getJoins(tableList, globalState);
+        List<DuckDBTableReference> tableList = tables.stream().map(t -> new DuckDBTableReference(t))
+                .collect(Collectors.toList());
+        List<DuckDBExpression> joins = DuckDBJoin.getJoins(tableList, globalState);
         select.setJoinList(joins.stream().collect(Collectors.toList()));
         select.setFromList(tableList.stream().collect(Collectors.toList()));
         if (Randomly.getBoolean()) {
