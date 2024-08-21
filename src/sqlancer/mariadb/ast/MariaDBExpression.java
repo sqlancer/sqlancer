@@ -1,5 +1,8 @@
 package sqlancer.mariadb.ast;
 
-public interface MariaDBExpression {
+import sqlancer.common.ast.newast.Expression;
+import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;
+
+public interface MariaDBExpression extends Expression<MariaDBColumn> {
 
 }

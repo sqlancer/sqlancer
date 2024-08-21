@@ -4,8 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.common.ast.SelectBase;
+import sqlancer.common.ast.newast.Select;
+import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;
+import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 
-public class MariaDBSelectStatement extends SelectBase<MariaDBExpression> implements MariaDBExpression {
+public class MariaDBSelectStatement extends SelectBase<MariaDBExpression>
+        implements MariaDBExpression, Select<MariaDBJoin, MariaDBExpression, MariaDBTable, MariaDBColumn> {
 
     public enum MariaDBSelectType {
         ALL, DISTINCT, DISTINCTROW;
@@ -13,6 +17,7 @@ public class MariaDBSelectStatement extends SelectBase<MariaDBExpression> implem
 
     private List<MariaDBExpression> groupBys = new ArrayList<>();
     private List<MariaDBExpression> columns = new ArrayList<>();
+    private List<MariaDBJoin> joinClauses = new ArrayList<>();
     private MariaDBSelectType selectType = MariaDBSelectType.ALL;
     private MariaDBExpression whereCondition;
 
@@ -52,4 +57,18 @@ public class MariaDBSelectStatement extends SelectBase<MariaDBExpression> implem
         return whereCondition;
     }
 
+    @Override
+    public List<MariaDBJoin> getJoinClauses() {
+        return joinClauses;
+    }
+
+    @Override
+    public void setJoinClauses(List<MariaDBJoin> joinClauses) {
+        this.joinClauses = joinClauses;
+    }
+
+    @Override
+    public String asString() {
+        return MariaDBVisitor.asString(this);
+    }
 }

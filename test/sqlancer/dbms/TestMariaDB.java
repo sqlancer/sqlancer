@@ -39,11 +39,9 @@ public class TestMariaDB {
 
     @Test
     public void testMariaDB() {
-        String mariaDBAvailable = System.getenv("MARIADB_AVAILABLE");
-        boolean mariaDBIsAvailable = mariaDBAvailable != null && mariaDBAvailable.equalsIgnoreCase("true");
-        assumeTrue(mariaDBIsAvailable);
+        assumeTrue(TestConfig.isEnvironmentTrue(TestConfig.MARIADB_ENV));
         assertEquals(0, Main.executeMain(new String[] { "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS,
-                "--num-queries", "0", "mariadb" }));
+                "--num-queries", TestConfig.NUM_QUERIES, "mariadb" }));
     }
 
 }

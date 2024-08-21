@@ -47,7 +47,7 @@ public class MariaDBStringVisitor extends MariaDBVisitor {
             }
             visit(s.getFromList().get(j));
         }
-        for (MariaDBExpression j : s.getJoinList()) {
+        for (MariaDBExpression j : s.getJoinClauses()) {
             visit(j);
         }
         if (s.getWhereCondition() != null) {

@@ -55,6 +55,10 @@ public class MariaDBSchema extends AbstractSchema<MariaDBGlobalState, MariaDBTab
             return isPrimaryKey;
         }
 
+        public static MariaDBColumn createDummy(String name) {
+            return new MariaDBColumn(name, MariaDBDataType.INT, false, 1);
+        }
+
     }
 
     public static class MariaDBTables {

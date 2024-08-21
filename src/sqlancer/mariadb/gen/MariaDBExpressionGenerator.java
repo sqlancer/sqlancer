@@ -5,11 +5,14 @@ import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.Randomly;
-import sqlancer.SQLConnection;
-import sqlancer.StateToReproduce;
+import sqlancer.common.gen.NoRECGenerator;
+import sqlancer.common.schema.AbstractTables;
 import sqlancer.mariadb.MariaDBProvider;
 import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;
 import sqlancer.mariadb.MariaDBSchema.MariaDBDataType;
+import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
+import sqlancer.mariadb.ast.MariaDBAggregate;
+import sqlancer.mariadb.ast.MariaDBAggregate.MariaDBAggregateFunction;
 import sqlancer.mariadb.ast.MariaDBBinaryOperator;
 import sqlancer.mariadb.ast.MariaDBBinaryOperator.MariaDBBinaryComparisonOperator;
 import sqlancer.mariadb.ast.MariaDBColumnName;
@@ -18,14 +21,21 @@ import sqlancer.mariadb.ast.MariaDBExpression;
 import sqlancer.mariadb.ast.MariaDBFunction;
 import sqlancer.mariadb.ast.MariaDBFunctionName;
 import sqlancer.mariadb.ast.MariaDBInOperation;
+import sqlancer.mariadb.ast.MariaDBJoin;
 import sqlancer.mariadb.ast.MariaDBPostfixUnaryOperation;
 import sqlancer.mariadb.ast.MariaDBPostfixUnaryOperation.MariaDBPostfixUnaryOperator;
+import sqlancer.mariadb.ast.MariaDBSelectStatement;
+import sqlancer.mariadb.ast.MariaDBSelectStatement.MariaDBSelectType;
+import sqlancer.mariadb.ast.MariaDBTableReference;
+import sqlancer.mariadb.ast.MariaDBText;
 import sqlancer.mariadb.ast.MariaDBUnaryPrefixOperation;
 import sqlancer.mariadb.ast.MariaDBUnaryPrefixOperation.MariaDBUnaryPrefixOperator;
 
-public class MariaDBExpressionGenerator {
+public class MariaDBExpressionGenerator
+        implements NoRECGenerator<MariaDBSelectStatement, MariaDBJoin, MariaDBExpression, MariaDBTable, MariaDBColumn> {
 
     private final Randomly r;
+    private List<MariaDBTable> targetTables = new ArrayList<>();
     private List<MariaDBColumn> columns = new ArrayList<>();
 
     public MariaDBExpressionGenerator(Randomly r) {
@@ -63,14 +73,6 @@ public class MariaDBExpressionGenerator {
 
     public MariaDBExpressionGenerator setColumns(List<MariaDBColumn> columns) {
         this.columns = columns;
-        return this;
-    }
-
-    public MariaDBExpressionGenerator setCon(SQLConnection con) {
-        return this;
-    }
-
-    public MariaDBExpressionGenerator setState(StateToReproduce state) {
         return this;
     }
 
@@ -146,4 +148,64 @@ public class MariaDBExpressionGenerator {
         return getRandomExpression(0);
     }
 
+    @Override
+    public MariaDBExpressionGenerator setTablesAndColumns(AbstractTables<MariaDBTable, MariaDBColumn> targetTables) {
+        this.targetTables = targetTables.getTables();
+        this.columns = targetTables.getColumns();
+        return this;
+    }
+
+    @Override
+    public List<MariaDBExpression> getTableRefs() {
+        List<MariaDBExpression> tableRefs = new ArrayList<>();
+        for (MariaDBTable t : targetTables) {
+            MariaDBTableReference tableRef = new MariaDBTableReference(t);
+            tableRefs.add(tableRef);
+        }
+        return tableRefs;
+    }
+
+    @Override
+    public MariaDBExpression generateBooleanExpression() {
+        return getRandomExpression();
+    }
+
+    @Override
+    public MariaDBSelectStatement generateSelect() {
+        return new MariaDBSelectStatement();
+    }
+
+    @Override
+    public List<MariaDBJoin> getRandomJoinClauses() {
+        return MariaDBJoin.getRandomJoinClauses(targetTables, r);
+    }
+
+    @Override
+    public String generateOptimizedQueryString(MariaDBSelectStatement select, MariaDBExpression whereCondition,
+            boolean shouldUseAggregate) {
+        if (shouldUseAggregate) {
+            MariaDBAggregate aggr = new MariaDBAggregate(
+                    new MariaDBColumnName(new MariaDBColumn("*", MariaDBDataType.INT, false, 0)),
+                    MariaDBAggregateFunction.COUNT);
+            select.setFetchColumns(Arrays.asList(aggr));
+        } else {
+            MariaDBColumnName aggr = new MariaDBColumnName(MariaDBColumn.createDummy("*"));
+            select.setFetchColumns(Arrays.asList(aggr));
+        }
+
+        select.setWhereClause(whereCondition);
+        select.setSelectType(MariaDBSelectType.ALL);
+        return select.asString();
+    }
+
+    @Override
+    public String generateUnoptimizedQueryString(MariaDBSelectStatement select, MariaDBExpression whereCondition) {
+        MariaDBPostfixUnaryOperation isTrue = new MariaDBPostfixUnaryOperation(MariaDBPostfixUnaryOperator.IS_TRUE,
+                whereCondition);
+        MariaDBText asText = new MariaDBText(isTrue, " as count", false);
+        select.setFetchColumns(Arrays.asList(asText));
+        select.setSelectType(MariaDBSelectType.ALL);
+
+        return "SELECT SUM(count) FROM (" + select.asString() + ") as asdf";
+    }
 }

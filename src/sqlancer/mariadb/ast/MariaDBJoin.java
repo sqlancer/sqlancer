@@ -5,12 +5,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.Randomly;
-import sqlancer.mariadb.MariaDBProvider.MariaDBGlobalState;
+import sqlancer.common.ast.newast.Join;
 import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 import sqlancer.mariadb.gen.MariaDBExpressionGenerator;
 
-public class MariaDBJoin implements MariaDBExpression {
+public class MariaDBJoin implements MariaDBExpression, Join<MariaDBExpression, MariaDBTable, MariaDBColumn> {
 
     public enum JoinType {
         NATURAL, INNER, STRAIGHT, LEFT, RIGHT, CROSS;
@@ -36,6 +36,7 @@ public class MariaDBJoin implements MariaDBExpression {
         return table;
     }
 
+    @Override
     public MariaDBExpression getOnClause() {
         return onClause;
     }
@@ -44,6 +45,7 @@ public class MariaDBJoin implements MariaDBExpression {
         return type;
     }
 
+    @Override
     public void setOnClause(MariaDBExpression onClause) {
         this.onClause = onClause;
     }
@@ -52,7 +54,7 @@ public class MariaDBJoin implements MariaDBExpression {
         this.type = type;
     }
 
-    public static List<MariaDBJoin> getRandomJoinClauses(List<MariaDBTable> tables, MariaDBGlobalState globalState) {
+    public static List<MariaDBJoin> getRandomJoinClauses(List<MariaDBTable> tables, Randomly r) {
         List<MariaDBJoin> joinStatements = new ArrayList<>();
         List<JoinType> options = new ArrayList<>(Arrays.asList(JoinType.values()));
         List<MariaDBColumn> columns = new ArrayList<>();
@@ -68,8 +70,7 @@ public class MariaDBJoin implements MariaDBExpression {
                 MariaDBTable table = Randomly.fromList(tables);
                 tables.remove(table);
                 columns.addAll(table.getColumns());
-                MariaDBExpressionGenerator joinGen = new MariaDBExpressionGenerator(globalState.getRandomly())
-                        .setColumns(columns);
+                MariaDBExpressionGenerator joinGen = new MariaDBExpressionGenerator(r).setColumns(columns);
                 MariaDBExpression joinClause = joinGen.getRandomExpression();
                 JoinType selectedOption = Randomly.fromList(options);
                 if (selectedOption == JoinType.NATURAL) {
