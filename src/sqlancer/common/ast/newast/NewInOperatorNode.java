@@ -4,21 +4,21 @@ import java.util.List;
 
 public class NewInOperatorNode<T> implements Node<T> {
 
-    private final Node<T> left;
-    private final List<Node<T>> right;
+    private final T left;
+    private final List<T> right;
     private final boolean isNegated;
 
-    public NewInOperatorNode(Node<T> left, List<Node<T>> right, boolean isNegated) {
+    public NewInOperatorNode(T left, List<T> right, boolean isNegated) {
         this.left = left;
         this.right = right;
         this.isNegated = isNegated;
     }
 
-    public Node<T> getLeft() {
+    public T getLeft() {
         return left;
     }
 
-    public List<Node<T>> getRight() {
+    public List<T> getRight() {
         return right;
     }
 

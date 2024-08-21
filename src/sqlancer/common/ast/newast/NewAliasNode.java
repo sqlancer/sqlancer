@@ -2,15 +2,15 @@ package sqlancer.common.ast.newast;
 
 public class NewAliasNode<E> implements Node<E> {
 
-    private final Node<E> expr;
+    private final E expr;
     private final String alias;
 
-    public NewAliasNode(Node<E> expr, String alias) {
+    public NewAliasNode(E expr, String alias) {
         this.expr = expr;
         this.alias = alias;
     }
 
-    public Node<E> getExpr() {
+    public E getExpr() {
         return expr;
     }
 

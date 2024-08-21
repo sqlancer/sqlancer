@@ -7,7 +7,7 @@ public abstract class NewToStringVisitor<E> {
     protected final StringBuilder sb = new StringBuilder();
 
     @SuppressWarnings("unchecked")
-    public void visit(Node<E> expr) {
+    public void visit(E expr) {
         assert expr != null;
         if (expr instanceof ColumnReferenceNode<?, ?>) {
             sb.append(((ColumnReferenceNode<?, ?>) expr).getColumn().getFullQualifiedName());
@@ -40,7 +40,7 @@ public abstract class NewToStringVisitor<E> {
         }
     }
 
-    public void visit(List<Node<E>> expressions) {
+    public void visit(List<E> expressions) {
         for (int i = 0; i < expressions.size(); i++) {
             if (i != 0) {
                 sb.append(", ");
@@ -165,6 +165,6 @@ public abstract class NewToStringVisitor<E> {
         return sb.toString();
     }
 
-    public abstract void visitSpecific(Node<E> expr);
+    public abstract void visitSpecific(E expr);
 
 }
