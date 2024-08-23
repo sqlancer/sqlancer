@@ -3,10 +3,9 @@ package sqlancer.databend.ast;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
-import sqlancer.common.ast.newast.Node;
 import sqlancer.databend.DatabendSchema.DatabendDataType;
 
-public abstract class DatabendConstant implements Node<DatabendExpression>, DatabendExpression {
+public abstract class DatabendConstant implements DatabendExpression {
 
     private DatabendConstant() {
     }

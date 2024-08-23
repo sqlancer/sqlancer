@@ -2,60 +2,57 @@ package sqlancer.databend;
 
 import java.util.List;
 
-import sqlancer.common.ast.newast.ColumnReferenceNode;
-import sqlancer.common.ast.newast.NewAliasNode;
-import sqlancer.common.ast.newast.NewBetweenOperatorNode;
-import sqlancer.common.ast.newast.NewBinaryOperatorNode;
-import sqlancer.common.ast.newast.NewFunctionNode;
-import sqlancer.common.ast.newast.NewInOperatorNode;
-import sqlancer.common.ast.newast.NewOrderingTerm;
-import sqlancer.common.ast.newast.NewPostfixTextNode;
-import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
-import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
-import sqlancer.common.ast.newast.Node;
-import sqlancer.common.ast.newast.TableReferenceNode;
-import sqlancer.databend.DatabendSchema.DatabendColumn;
+import sqlancer.databend.ast.DatabendAlias;
+import sqlancer.databend.ast.DatabendBetweenOperation;
+import sqlancer.databend.ast.DatabendBinaryOperation;
+import sqlancer.databend.ast.DatabendColumnReference;
 import sqlancer.databend.ast.DatabendConstant;
 import sqlancer.databend.ast.DatabendExpression;
+import sqlancer.databend.ast.DatabendFunctionOperation;
+import sqlancer.databend.ast.DatabendInOperation;
 import sqlancer.databend.ast.DatabendJoin;
+import sqlancer.databend.ast.DatabendOrderByTerm;
+import sqlancer.databend.ast.DatabendPostFixText;
 import sqlancer.databend.ast.DatabendSelect;
+import sqlancer.databend.ast.DatabendTableReference;
+import sqlancer.databend.ast.DatabendUnaryPostfixOperation;
+import sqlancer.databend.ast.DatabendUnaryPrefixOperation;
 
 public class DatabendExpectedValueVisitor {
 
     protected final StringBuilder sb = new StringBuilder();
 
-    private void print(Node<DatabendExpression> expr) {
+    private void print(DatabendExpression expr) {
         sb.append(DatabendToStringVisitor.asString(expr));
         sb.append(" -- ");
-        sb.append(((DatabendExpression) expr).getExpectedValue());
+        sb.append((expr).getExpectedValue());
         sb.append("\n");
     }
 
-    @SuppressWarnings("unchecked")
-    public void visit(Node<DatabendExpression> expr) {
+    public void visit(DatabendExpression expr) {
         assert expr != null;
-        if (expr instanceof ColumnReferenceNode<?, ?>) {
-            visit((ColumnReferenceNode<DatabendExpression, DatabendColumn>) expr);
-        } else if (expr instanceof NewUnaryPostfixOperatorNode<?>) {
-            visit((NewUnaryPostfixOperatorNode<DatabendExpression>) expr);
-        } else if (expr instanceof NewUnaryPrefixOperatorNode<?>) {
-            visit((NewUnaryPrefixOperatorNode<DatabendExpression>) expr);
-        } else if (expr instanceof NewBinaryOperatorNode<?>) {
-            visit((NewBinaryOperatorNode<DatabendExpression>) expr);
-        } else if (expr instanceof TableReferenceNode<?, ?>) {
-            visit((TableReferenceNode<DatabendExpression, ?>) expr);
-        } else if (expr instanceof NewFunctionNode<?, ?>) {
-            visit((NewFunctionNode<DatabendExpression, ?>) expr);
-        } else if (expr instanceof NewBetweenOperatorNode<?>) {
-            visit((NewBetweenOperatorNode<DatabendExpression>) expr);
-        } else if (expr instanceof NewInOperatorNode<?>) {
-            visit((NewInOperatorNode<DatabendExpression>) expr);
-        } else if (expr instanceof NewOrderingTerm<?>) {
-            visit((NewOrderingTerm<DatabendExpression>) expr);
-        } else if (expr instanceof NewAliasNode<?>) {
-            visit((NewAliasNode<DatabendExpression>) expr);
-        } else if (expr instanceof NewPostfixTextNode<?>) {
-            visit((NewPostfixTextNode<DatabendExpression>) expr);
+        if (expr instanceof DatabendColumnReference) {
+            visit((DatabendColumnReference) expr);
+        } else if (expr instanceof DatabendUnaryPostfixOperation) {
+            visit((DatabendUnaryPostfixOperation) expr);
+        } else if (expr instanceof DatabendUnaryPrefixOperation) {
+            visit((DatabendUnaryPrefixOperation) expr);
+        } else if (expr instanceof DatabendBinaryOperation) {
+            visit((DatabendBinaryOperation) expr);
+        } else if (expr instanceof DatabendTableReference) {
+            visit((DatabendTableReference) expr);
+        } else if (expr instanceof DatabendFunctionOperation<?>) {
+            visit((DatabendFunctionOperation<?>) expr);
+        } else if (expr instanceof DatabendBetweenOperation) {
+            visit((DatabendBetweenOperation) expr);
+        } else if (expr instanceof DatabendInOperation) {
+            visit((DatabendInOperation) expr);
+        } else if (expr instanceof DatabendOrderByTerm) {
+            visit((DatabendOrderByTerm) expr);
+        } else if (expr instanceof DatabendAlias) {
+            visit((DatabendAlias) expr);
+        } else if (expr instanceof DatabendPostFixText) {
+            visit((DatabendPostFixText) expr);
         } else if (expr instanceof DatabendConstant) {
             visit((DatabendConstant) expr);
         } else if (expr instanceof DatabendSelect) {
@@ -67,65 +64,65 @@ public class DatabendExpectedValueVisitor {
         }
     }
 
-    public void visit(ColumnReferenceNode<DatabendExpression, DatabendColumn> c) {
+    public void visit(DatabendColumnReference c) {
         print(c);
     }
 
-    public void visit(NewUnaryPostfixOperatorNode<DatabendExpression> op) {
+    public void visit(DatabendUnaryPostfixOperation op) {
         print(op);
         visit(op.getExpr());
     }
 
-    public void visit(NewUnaryPrefixOperatorNode<DatabendExpression> op) {
+    public void visit(DatabendUnaryPrefixOperation op) {
         print(op);
         visit(op.getExpr());
     }
 
-    public void visit(NewBinaryOperatorNode<DatabendExpression> op) {
+    public void visit(DatabendBinaryOperation op) {
         print(op);
         visit(op.getLeft());
         visit(op.getRight());
     }
 
-    public void visit(TableReferenceNode<DatabendExpression, ?> t) {
+    public void visit(DatabendTableReference t) {
         print(t);
     }
 
-    public void visit(NewFunctionNode<DatabendExpression, ?> fun) {
+    public void visit(DatabendFunctionOperation<?> fun) {
         print(fun);
         visit(fun.getArgs());
     }
 
-    public void visit(List<Node<DatabendExpression>> expressions) {
-        for (Node<DatabendExpression> expression : expressions) {
+    public void visit(List<DatabendExpression> expressions) {
+        for (DatabendExpression expression : expressions) {
             visit(expression);
         }
     }
 
-    public void visit(NewBetweenOperatorNode<DatabendExpression> op) {
+    public void visit(DatabendBetweenOperation op) {
         print(op);
         visit(op.getLeft());
         visit(op.getMiddle());
         visit(op.getRight());
     }
 
-    public void visit(NewInOperatorNode<DatabendExpression> op) {
+    public void visit(DatabendInOperation op) {
         print(op);
         visit(op.getLeft());
         visit(op.getRight());
     }
 
-    public void visit(NewOrderingTerm<DatabendExpression> op) {
+    public void visit(DatabendOrderByTerm op) {
         print(op);
         visit(op.getExpr());
     }
 
-    public void visit(NewAliasNode<DatabendExpression> op) {
+    public void visit(DatabendAlias op) {
         print(op);
         visit(op.getExpr());
     }
 
-    public void visit(NewPostfixTextNode<DatabendExpression> postFixText) {
+    public void visit(DatabendPostFixText postFixText) {
         print(postFixText);
         visit(postFixText.getExpr());
     }
@@ -146,7 +143,7 @@ public class DatabendExpectedValueVisitor {
         return sb.toString();
     }
 
-    public static String asExpectedValues(Node<DatabendExpression> expr) {
+    public static String asExpectedValues(DatabendExpression expr) {
         DatabendExpectedValueVisitor v = new DatabendExpectedValueVisitor();
         v.visit(expr);
         return v.get();

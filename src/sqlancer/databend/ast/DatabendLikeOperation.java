@@ -4,13 +4,12 @@ import sqlancer.LikeImplementationHelper;
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode;
 import sqlancer.common.ast.newast.NewBinaryOperatorNode;
-import sqlancer.databend.DatabendExprToNode;
 import sqlancer.databend.DatabendSchema.DatabendDataType;
 
 public class DatabendLikeOperation extends NewBinaryOperatorNode<DatabendExpression> implements DatabendExpression {
 
     public DatabendLikeOperation(DatabendExpression left, DatabendExpression right, DatabendLikeOperator op) {
-        super(DatabendExprToNode.cast(left), DatabendExprToNode.cast(right), op);
+        super(left, right, op);
     }
 
     @Override
@@ -19,11 +18,11 @@ public class DatabendLikeOperation extends NewBinaryOperatorNode<DatabendExpress
     }
 
     public DatabendExpression getLeftExpr() {
-        return (DatabendExpression) super.getLeft();
+        return super.getLeft();
     }
 
     public DatabendExpression getRightExpr() {
-        return (DatabendExpression) super.getRight();
+        return super.getRight();
     }
 
     public DatabendLikeOperator getOp() {

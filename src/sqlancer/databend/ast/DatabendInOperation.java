@@ -3,7 +3,6 @@ package sqlancer.databend.ast;
 import java.util.List;
 
 import sqlancer.common.ast.newast.NewInOperatorNode;
-import sqlancer.databend.DatabendExprToNode;
 import sqlancer.databend.DatabendSchema;
 
 public class DatabendInOperation extends NewInOperatorNode<DatabendExpression> implements DatabendExpression {
@@ -12,7 +11,7 @@ public class DatabendInOperation extends NewInOperatorNode<DatabendExpression> i
     private final List<DatabendExpression> rightExpr;
 
     public DatabendInOperation(DatabendExpression left, List<DatabendExpression> right, boolean isNegated) {
-        super(DatabendExprToNode.cast(left), DatabendExprToNode.casts(right), isNegated);
+        super(left, right, isNegated);
         this.leftExpr = left;
         this.rightExpr = right;
     }

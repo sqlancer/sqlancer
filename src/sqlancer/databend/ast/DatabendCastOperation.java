@@ -2,7 +2,6 @@ package sqlancer.databend.ast;
 
 import sqlancer.common.ast.BinaryOperatorNode;
 import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.databend.DatabendSchema.DatabendCompositeDataType;
 import sqlancer.databend.DatabendSchema.DatabendDataType;
 
@@ -11,7 +10,7 @@ public class DatabendCastOperation extends NewUnaryPostfixOperatorNode<DatabendE
 
     DatabendDataType type;
 
-    public DatabendCastOperation(Node<DatabendExpression> expr, DatabendCompositeDataType type) {
+    public DatabendCastOperation(DatabendExpression expr, DatabendCompositeDataType type) {
         super(expr, new BinaryOperatorNode.Operator() {
             @Override
             public String getTextRepresentation() {

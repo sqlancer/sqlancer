@@ -1,7 +1,6 @@
 package sqlancer.databend;
 
 import sqlancer.common.ast.newast.NewToStringVisitor;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.databend.ast.DatabendConstant;
 import sqlancer.databend.ast.DatabendExpression;
 import sqlancer.databend.ast.DatabendJoin;
@@ -10,7 +9,7 @@ import sqlancer.databend.ast.DatabendSelect;
 public class DatabendToStringVisitor extends NewToStringVisitor<DatabendExpression> {
 
     @Override
-    public void visitSpecific(Node<DatabendExpression> expr) {
+    public void visitSpecific(DatabendExpression expr) {
         if (expr instanceof DatabendConstant) {
             visit((DatabendConstant) expr);
         } else if (expr instanceof DatabendSelect) {
@@ -91,7 +90,7 @@ public class DatabendToStringVisitor extends NewToStringVisitor<DatabendExpressi
         }
     }
 
-    public static String asString(Node<DatabendExpression> expr) {
+    public static String asString(DatabendExpression expr) {
         DatabendToStringVisitor visitor = new DatabendToStringVisitor();
         visitor.visit(expr);
         return visitor.get();

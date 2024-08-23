@@ -3,15 +3,12 @@ package sqlancer.databend.ast;
 import java.util.List;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.NewFunctionNode;
-import sqlancer.databend.DatabendExprToNode;
 import sqlancer.databend.DatabendSchema;
 
-public class DatabendAggregateOperation
-        extends NewFunctionNode<DatabendExpression, DatabendAggregateOperation.DatabendAggregateFunction>
-        implements DatabendExpression {
+public class DatabendAggregateOperation extends
+        DatabendFunctionOperation<DatabendAggregateOperation.DatabendAggregateFunction> implements DatabendExpression {
     public DatabendAggregateOperation(List<DatabendExpression> args, DatabendAggregateFunction func) {
-        super(DatabendExprToNode.casts(args), func);
+        super(args, func);
     }
 
     public enum DatabendAggregateFunction {

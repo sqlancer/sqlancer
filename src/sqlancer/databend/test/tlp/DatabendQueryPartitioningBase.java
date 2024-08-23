@@ -7,9 +7,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.ColumnReferenceNode;
-import sqlancer.common.ast.newast.Node;
-import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
 import sqlancer.common.oracle.TestOracle;
@@ -20,10 +17,12 @@ import sqlancer.databend.DatabendSchema;
 import sqlancer.databend.DatabendSchema.DatabendColumn;
 import sqlancer.databend.DatabendSchema.DatabendTable;
 import sqlancer.databend.DatabendSchema.DatabendTables;
+import sqlancer.databend.ast.DatabendColumnReference;
 import sqlancer.databend.ast.DatabendColumnValue;
 import sqlancer.databend.ast.DatabendExpression;
 import sqlancer.databend.ast.DatabendJoin;
 import sqlancer.databend.ast.DatabendSelect;
+import sqlancer.databend.ast.DatabendTableReference;
 import sqlancer.databend.gen.DatabendNewExpressionGenerator;
 
 public class DatabendQueryPartitioningBase
@@ -35,7 +34,7 @@ public class DatabendQueryPartitioningBase
     DatabendNewExpressionGenerator gen;
     DatabendSelect select;
 
-    List<Node<DatabendExpression>> groupByExpression;
+    List<DatabendExpression> groupByExpression;
 
     public DatabendQueryPartitioningBase(DatabendGlobalState state) {
         super(state);
@@ -57,33 +56,33 @@ public class DatabendQueryPartitioningBase
                 .addAll(randomColumn.stream().map(c -> new DatabendColumnValue(c, null)).collect(Collectors.toList()));
         groupByExpression = new ArrayList<>(columnOfLeafNode);
 
-        select.setFetchColumns(randomColumn.stream()
-                .map(c -> new ColumnReferenceNode<DatabendExpression, DatabendColumn>(c)).collect(Collectors.toList()));
+        select.setFetchColumns(
+                randomColumn.stream().map(c -> new DatabendColumnReference(c)).collect(Collectors.toList()));
         List<DatabendTable> tables = targetTables.getTables();
-        List<TableReferenceNode<DatabendExpression, DatabendTable>> tableList = tables.stream()
-                .map(t -> new TableReferenceNode<DatabendExpression, DatabendTable>(t)).collect(Collectors.toList());
+        List<DatabendTableReference> tableList = tables.stream().map(t -> new DatabendTableReference(t))
+                .collect(Collectors.toList());
         if (!DatabendBugs.bug9236) {
-            List<Node<DatabendExpression>> joins = DatabendJoin.getJoins(tableList, state);
+            List<DatabendExpression> joins = DatabendJoin.getJoins(tableList, state);
             select.setJoinList(joins.stream().collect(Collectors.toList()));
         }
         select.setFromList(tableList.stream().collect(Collectors.toList()));
         select.setWhereClause(null);
     }
 
-    List<Node<DatabendExpression>> generateFetchColumns() {
-        List<Node<DatabendExpression>> columns = new ArrayList<>();
+    List<DatabendExpression> generateFetchColumns() {
+        List<DatabendExpression> columns = new ArrayList<>();
         if (Randomly.getBoolean()) {
-            columns.add(new ColumnReferenceNode<>(new DatabendColumn("*", null, false, false)));
+            columns.add(new DatabendColumnReference(new DatabendColumn("*", null, false, false)));
         } else {
             columns = generateRandomColumns();
         }
         return columns;
     }
 
-    List<Node<DatabendExpression>> generateRandomColumns() {
-        List<Node<DatabendExpression>> columns;
-        columns = Randomly.nonEmptySubset(targetTables.getColumns()).stream()
-                .map(c -> new ColumnReferenceNode<DatabendExpression, DatabendColumn>(c)).collect(Collectors.toList());
+    List<DatabendExpression> generateRandomColumns() {
+        List<DatabendExpression> columns;
+        columns = Randomly.nonEmptySubset(targetTables.getColumns()).stream().map(c -> new DatabendColumnReference(c))
+                .collect(Collectors.toList());
         return columns;
     }
 

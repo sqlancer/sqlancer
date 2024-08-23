@@ -3,14 +3,13 @@ package sqlancer.databend.ast;
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode;
 import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
-import sqlancer.databend.DatabendExprToNode;
 import sqlancer.databend.DatabendSchema.DatabendDataType;
 
 public class DatabendUnaryPrefixOperation extends NewUnaryPrefixOperatorNode<DatabendExpression>
         implements DatabendExpression {
 
     public DatabendUnaryPrefixOperation(DatabendExpression expr, DatabendUnaryPrefixOperator op) {
-        super(DatabendExprToNode.cast(expr), op);
+        super(expr, op);
     }
 
     public DatabendExpression getExpression() {

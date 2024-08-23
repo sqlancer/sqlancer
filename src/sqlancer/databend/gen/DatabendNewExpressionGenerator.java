@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.NewOrderingTerm;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.TypedExpressionGenerator;
 import sqlancer.databend.DatabendBugs;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
@@ -93,7 +92,7 @@ public class DatabendNewExpressionGenerator
         return DatabendColumnValue.create(column, value);
     }
 
-    public List<Node<DatabendExpression>> generateOrderBy() {
+    public List<DatabendExpression> generateOrderBy() {
         List<DatabendColumn> randomColumns = Randomly.subset(columns);
         return randomColumns.stream().map(
                 c -> new DatabendOrderByTerm(new DatabendColumnValue(c, null), NewOrderingTerm.Ordering.getRandom()))
