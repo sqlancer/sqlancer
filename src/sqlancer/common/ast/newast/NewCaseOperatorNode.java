@@ -2,7 +2,7 @@ package sqlancer.common.ast.newast;
 
 import java.util.List;
 
-public class NewCaseOperatorNode<T> implements Node<T> {
+public class NewCaseOperatorNode<T> {
 
     private final List<T> conditions;
     private final List<T> expressions;

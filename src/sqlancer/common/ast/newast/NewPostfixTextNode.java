@@ -1,6 +1,6 @@
 package sqlancer.common.ast.newast;
 
-public class NewPostfixTextNode<T> implements Node<T> {
+public class NewPostfixTextNode<T> {
 
     private final T expr;
     private final String text;

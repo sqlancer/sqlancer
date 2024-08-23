@@ -2,7 +2,7 @@ package sqlancer.common.ast.newast;
 
 import java.util.List;
 
-public class NewInOperatorNode<T> implements Node<T> {
+public class NewInOperatorNode<T> {
 
     private final T left;
     private final List<T> right;

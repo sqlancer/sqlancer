@@ -1,6 +1,6 @@
 package sqlancer.common.ast.newast;
 
-public class NewTernaryNode<T> implements Node<T> {
+public class NewTernaryNode<T> {
 
     protected final T left;
     protected final T middle;

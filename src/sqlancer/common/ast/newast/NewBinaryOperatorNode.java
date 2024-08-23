@@ -2,7 +2,7 @@ package sqlancer.common.ast.newast;
 
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
 
-public class NewBinaryOperatorNode<T> implements Node<T> {
+public class NewBinaryOperatorNode<T> {
 
     protected final Operator op;
     protected final T left;

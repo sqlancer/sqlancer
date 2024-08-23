@@ -2,7 +2,7 @@ package sqlancer.common.ast.newast;
 
 import sqlancer.Randomly;
 
-public class NewOrderingTerm<T> implements Node<T> {
+public class NewOrderingTerm<T> {
 
     private final T expr;
     private final Ordering ordering;

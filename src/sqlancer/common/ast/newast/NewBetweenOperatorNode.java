@@ -1,6 +1,6 @@
 package sqlancer.common.ast.newast;
 
-public class NewBetweenOperatorNode<T> implements Node<T> {
+public class NewBetweenOperatorNode<T> {
 
     protected T left;
     protected T middle;
