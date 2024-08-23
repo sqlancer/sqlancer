@@ -43,7 +43,6 @@ import sqlancer.postgres.PostgresProvider;
 import sqlancer.presto.PrestoProvider;
 import sqlancer.questdb.QuestDBProvider;
 import sqlancer.sqlite3.SQLite3Provider;
-import sqlancer.stonedb.StoneDBProvider;
 import sqlancer.tidb.TiDBProvider;
 import sqlancer.timescaledb.TimescaleDBProvider;
 import sqlancer.yugabyte.ycql.YCQLProvider;
@@ -746,7 +745,6 @@ public final class Main {
             providers.add(new PostgresProvider());
             providers.add(new QuestDBProvider());
             providers.add(new SQLite3Provider());
-            providers.add(new StoneDBProvider());
             providers.add(new TiDBProvider());
             providers.add(new TimescaleDBProvider());
             providers.add(new YCQLProvider());
