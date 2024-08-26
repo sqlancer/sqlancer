@@ -77,6 +77,16 @@ Since SQL dialects differ widely, each DBMS to be tested requires a separate imp
 | Presto                       | Preliminary | Typed                        | This is a preliminary implementation, only basic types supported.                                                                                                                               |
 | DataFusion                   | Preliminary | Typed                        | Only basic SQL features are supported.                                                                                                                                                          |
 
+## Previously Supported DBMS
+
+Some DBMS were once supported but subsequently removed.
+
+| DBMS       | Description                                                                                                                                              |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ArangoDB   | This implementation was removed because ArangoDB is a NoSQL DBMS, while the majority were SQL DBMSs, which resulted in difficulty refactoring SQLancer.  |
+| Cosmos     | This implementation was removed because Cosmos is a NoSQL DBMS, while the majority were SQL DBMSs, which resulted in difficulty refactoring SQLancer.    |
+| MongoDB    | This implementation was removed because MongoDB is a NoSQL DBMS, while the majority were SQL DBMSs, which resulted in difficulty refactoring SQLancer.   |
+| StoneDB    | This implementation was removed because development of StoneDB stopped.                                                                                       |
 
 
 # Using SQLancer
