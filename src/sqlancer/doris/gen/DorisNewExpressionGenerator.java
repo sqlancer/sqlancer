@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.NewOrderingTerm;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.TypedExpressionGenerator;
 import sqlancer.doris.DorisBugs;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
@@ -39,7 +38,6 @@ import sqlancer.doris.ast.DorisUnaryPostfixOperation;
 import sqlancer.doris.ast.DorisUnaryPostfixOperation.DorisUnaryPostfixOperator;
 import sqlancer.doris.ast.DorisUnaryPrefixOperation;
 import sqlancer.doris.ast.DorisUnaryPrefixOperation.DorisUnaryPrefixOperator;
-import sqlancer.doris.visitor.DorisExprToNode;
 
 public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisExpression, DorisColumn, DorisDataType> {
 
@@ -97,7 +95,7 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
         return DorisColumnValue.create(column, value);
     }
 
-    public List<Node<DorisExpression>> generateOrderBy() {
+    public List<DorisExpression> generateOrderBy() {
         List<DorisColumn> randomColumns = Randomly.subset(columns);
         return randomColumns.stream()
                 .map(c -> new DorisOrderByTerm(new DorisColumnValue(c, null), NewOrderingTerm.Ordering.getRandom()))
@@ -121,7 +119,7 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
         }
         if (!DorisBugs.bug36070 && type != DorisDataType.NULL && globalState.getDbmsSpecificOptions().testCasts
                 && Randomly.getBooleanWithRatherLowProbability()) {
-            return new DorisCastOperation(DorisExprToNode.cast(generateExpression(getRandomType(), depth + 1)), type);
+            return new DorisCastOperation(generateExpression(getRandomType(), depth + 1), type);
         }
         if (!DorisBugs.bug36070 && globalState.getDbmsSpecificOptions().testCase
                 && Randomly.getBooleanWithRatherLowProbability()) {

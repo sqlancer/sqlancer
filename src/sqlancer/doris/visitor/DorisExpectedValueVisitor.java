@@ -2,60 +2,57 @@ package sqlancer.doris.visitor;
 
 import java.util.List;
 
-import sqlancer.common.ast.newast.ColumnReferenceNode;
-import sqlancer.common.ast.newast.NewAliasNode;
-import sqlancer.common.ast.newast.NewBetweenOperatorNode;
-import sqlancer.common.ast.newast.NewBinaryOperatorNode;
-import sqlancer.common.ast.newast.NewFunctionNode;
-import sqlancer.common.ast.newast.NewInOperatorNode;
-import sqlancer.common.ast.newast.NewOrderingTerm;
-import sqlancer.common.ast.newast.NewPostfixTextNode;
-import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
-import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
-import sqlancer.common.ast.newast.Node;
-import sqlancer.common.ast.newast.TableReferenceNode;
-import sqlancer.doris.DorisSchema.DorisColumn;
+import sqlancer.doris.ast.DorisAlias;
+import sqlancer.doris.ast.DorisBetweenOperation;
+import sqlancer.doris.ast.DorisBinaryOperation;
+import sqlancer.doris.ast.DorisColumnReference;
 import sqlancer.doris.ast.DorisConstant;
 import sqlancer.doris.ast.DorisExpression;
+import sqlancer.doris.ast.DorisFunction;
+import sqlancer.doris.ast.DorisInOperation;
 import sqlancer.doris.ast.DorisJoin;
+import sqlancer.doris.ast.DorisOrderByTerm;
+import sqlancer.doris.ast.DorisPostfixText;
 import sqlancer.doris.ast.DorisSelect;
+import sqlancer.doris.ast.DorisTableReference;
+import sqlancer.doris.ast.DorisUnaryPostfixOperation;
+import sqlancer.doris.ast.DorisUnaryPrefixOperation;
 
 public class DorisExpectedValueVisitor {
 
     protected final StringBuilder sb = new StringBuilder();
 
-    private void print(Node<DorisExpression> expr) {
+    private void print(DorisExpression expr) {
         sb.append(DorisToStringVisitor.asString(expr));
         sb.append(" -- ");
         sb.append(((DorisExpression) expr).getExpectedValue());
         sb.append("\n");
     }
 
-    @SuppressWarnings("unchecked")
-    public void visit(Node<DorisExpression> expr) {
+    public void visit(DorisExpression expr) {
         assert expr != null;
-        if (expr instanceof ColumnReferenceNode<?, ?>) {
-            visit((ColumnReferenceNode<DorisExpression, DorisColumn>) expr);
-        } else if (expr instanceof NewUnaryPostfixOperatorNode<?>) {
-            visit((NewUnaryPostfixOperatorNode<DorisExpression>) expr);
-        } else if (expr instanceof NewUnaryPrefixOperatorNode<?>) {
-            visit((NewUnaryPrefixOperatorNode<DorisExpression>) expr);
-        } else if (expr instanceof NewBinaryOperatorNode<?>) {
-            visit((NewBinaryOperatorNode<DorisExpression>) expr);
-        } else if (expr instanceof TableReferenceNode<?, ?>) {
-            visit((TableReferenceNode<DorisExpression, ?>) expr);
-        } else if (expr instanceof NewFunctionNode<?, ?>) {
-            visit((NewFunctionNode<DorisExpression, ?>) expr);
-        } else if (expr instanceof NewBetweenOperatorNode<?>) {
-            visit((NewBetweenOperatorNode<DorisExpression>) expr);
-        } else if (expr instanceof NewInOperatorNode<?>) {
-            visit((NewInOperatorNode<DorisExpression>) expr);
-        } else if (expr instanceof NewOrderingTerm<?>) {
-            visit((NewOrderingTerm<DorisExpression>) expr);
-        } else if (expr instanceof NewAliasNode<?>) {
-            visit((NewAliasNode<DorisExpression>) expr);
-        } else if (expr instanceof NewPostfixTextNode<?>) {
-            visit((NewPostfixTextNode<DorisExpression>) expr);
+        if (expr instanceof DorisColumnReference) {
+            visit((DorisColumnReference) expr);
+        } else if (expr instanceof DorisUnaryPostfixOperation) {
+            visit((DorisUnaryPostfixOperation) expr);
+        } else if (expr instanceof DorisUnaryPrefixOperation) {
+            visit((DorisUnaryPrefixOperation) expr);
+        } else if (expr instanceof DorisBinaryOperation) {
+            visit((DorisBinaryOperation) expr);
+        } else if (expr instanceof DorisTableReference) {
+            visit((DorisTableReference) expr);
+        } else if (expr instanceof DorisFunction<?>) {
+            visit((DorisFunction<?>) expr);
+        } else if (expr instanceof DorisBetweenOperation) {
+            visit((DorisBetweenOperation) expr);
+        } else if (expr instanceof DorisInOperation) {
+            visit((DorisInOperation) expr);
+        } else if (expr instanceof DorisOrderByTerm) {
+            visit((DorisOrderByTerm) expr);
+        } else if (expr instanceof DorisAlias) {
+            visit((DorisAlias) expr);
+        } else if (expr instanceof DorisPostfixText) {
+            visit((DorisPostfixText) expr);
         } else if (expr instanceof DorisConstant) {
             visit((DorisConstant) expr);
         } else if (expr instanceof DorisSelect) {
@@ -67,65 +64,64 @@ public class DorisExpectedValueVisitor {
         }
     }
 
-    public void visit(ColumnReferenceNode<DorisExpression, DorisColumn> c) {
+    public void visit(DorisColumnReference c) {
         print(c);
     }
 
-    public void visit(NewUnaryPostfixOperatorNode<DorisExpression> op) {
+    public void visit(DorisUnaryPostfixOperation op) {
         print(op);
         visit(op.getExpr());
     }
 
-    public void visit(NewUnaryPrefixOperatorNode<DorisExpression> op) {
+    public void visit(DorisUnaryPrefixOperation op) {
         print(op);
         visit(op.getExpr());
     }
 
-    public void visit(NewBinaryOperatorNode<DorisExpression> op) {
-        print(op);
+    public void visit(DorisBinaryOperation op) {
         visit(op.getLeft());
         visit(op.getRight());
     }
 
-    public void visit(TableReferenceNode<DorisExpression, ?> t) {
+    public void visit(DorisTableReference t) {
         print(t);
     }
 
-    public void visit(NewFunctionNode<DorisExpression, ?> fun) {
+    public void visit(DorisFunction<?> fun) {
         print(fun);
         visit(fun.getArgs());
     }
 
-    public void visit(List<Node<DorisExpression>> expressions) {
-        for (Node<DorisExpression> expression : expressions) {
+    public void visit(List<DorisExpression> expressions) {
+        for (DorisExpression expression : expressions) {
             visit(expression);
         }
     }
 
-    public void visit(NewBetweenOperatorNode<DorisExpression> op) {
+    public void visit(DorisBetweenOperation op) {
         print(op);
         visit(op.getLeft());
         visit(op.getMiddle());
         visit(op.getRight());
     }
 
-    public void visit(NewInOperatorNode<DorisExpression> op) {
+    public void visit(DorisInOperation op) {
         print(op);
         visit(op.getLeft());
         visit(op.getRight());
     }
 
-    public void visit(NewOrderingTerm<DorisExpression> op) {
+    public void visit(DorisOrderByTerm op) {
         print(op);
         visit(op.getExpr());
     }
 
-    public void visit(NewAliasNode<DorisExpression> op) {
+    public void visit(DorisAlias op) {
         print(op);
         visit(op.getExpr());
     }
 
-    public void visit(NewPostfixTextNode<DorisExpression> postFixText) {
+    public void visit(DorisPostfixText postFixText) {
         print(postFixText);
         visit(postFixText.getExpr());
     }
@@ -146,7 +142,7 @@ public class DorisExpectedValueVisitor {
         return sb.toString();
     }
 
-    public static String asExpectedValues(Node<DorisExpression> expr) {
+    public static String asExpectedValues(DorisExpression expr) {
         DorisExpectedValueVisitor v = new DorisExpectedValueVisitor();
         v.visit(expr);
         return v.get();

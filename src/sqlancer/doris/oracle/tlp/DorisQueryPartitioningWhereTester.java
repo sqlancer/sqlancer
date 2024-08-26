@@ -6,12 +6,10 @@ import java.util.List;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.doris.DorisErrors;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
 import sqlancer.doris.ast.DorisConstant;
 import sqlancer.doris.ast.DorisExpression;
-import sqlancer.doris.visitor.DorisExprToNode;
 import sqlancer.doris.visitor.DorisToStringVisitor;
 
 public class DorisQueryPartitioningWhereTester extends DorisQueryPartitioningBase {
@@ -32,16 +30,16 @@ public class DorisQueryPartitioningWhereTester extends DorisQueryPartitioningBas
 
         boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
         if (orderBy) {
-            List<Node<DorisExpression>> constants = new ArrayList<>();
+            List<DorisExpression> constants = new ArrayList<>();
             constants.add(
                     new DorisConstant.DorisIntConstant(Randomly.smallNumber() % select.getFetchColumns().size() + 1));
             select.setOrderByClauses(constants);
         }
-        select.setWhereClause(DorisExprToNode.cast(predicate));
+        select.setWhereClause(predicate);
         String firstQueryString = DorisToStringVisitor.asString(select);
-        select.setWhereClause(DorisExprToNode.cast(negatedPredicate));
+        select.setWhereClause(negatedPredicate);
         String secondQueryString = DorisToStringVisitor.asString(select);
-        select.setWhereClause(DorisExprToNode.cast(isNullPredicate));
+        select.setWhereClause(isNullPredicate);
         String thirdQueryString = DorisToStringVisitor.asString(select);
         List<String> combinedString = new ArrayList<>();
         List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,

@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Node;
-import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
 import sqlancer.doris.DorisSchema;
 import sqlancer.doris.DorisSchema.DorisTable;
@@ -17,7 +15,7 @@ import sqlancer.doris.ast.DorisConstant;
 import sqlancer.doris.ast.DorisExpression;
 import sqlancer.doris.ast.DorisJoin;
 import sqlancer.doris.ast.DorisSelect;
-import sqlancer.doris.visitor.DorisExprToNode;
+import sqlancer.doris.ast.DorisTableReference;
 
 public final class DorisRandomQuerySynthesizer {
 
@@ -33,33 +31,33 @@ public final class DorisRandomQuerySynthesizer {
         gen.setColumnOfLeafNode(columnOfLeafNode);
         int freeColumns = targetColumns.size();
         select.setDistinct(DorisSelect.DorisSelectDistinctType.getRandomWithoutNull());
-        List<Node<DorisExpression>> columns = new ArrayList<>();
+        List<DorisExpression> columns = new ArrayList<>();
         for (int i = 0; i < nrColumns; i++) {
-            Node<DorisExpression> column = null;
+            DorisExpression column = null;
             if (freeColumns > 0 && Randomly.getBoolean()) {
                 column = new DorisColumnValue(targetColumns.get(freeColumns - 1), null);
                 freeColumns -= 1;
                 columnOfLeafNode.add((DorisColumnValue) column);
             } else {
-                column = DorisExprToNode.cast(gen.generateExpression(DorisSchema.DorisDataType.BOOLEAN));
+                column = gen.generateExpression(DorisSchema.DorisDataType.BOOLEAN);
             }
             columns.add(column);
         }
         select.setFetchColumns(columns);
         List<DorisTable> tables = targetTables.getTables();
-        List<TableReferenceNode<DorisExpression, DorisTable>> tableList = tables.stream()
-                .map(t -> new TableReferenceNode<DorisExpression, DorisTable>(t)).collect(Collectors.toList());
-        List<Node<DorisExpression>> joins = DorisJoin.getJoins(tableList, globalState);
+        List<DorisTableReference> tableList = tables.stream().map(t -> new DorisTableReference(t))
+                .collect(Collectors.toList());
+        List<DorisExpression> joins = DorisJoin.getJoins(tableList, globalState);
         select.setJoinList(joins.stream().collect(Collectors.toList()));
         select.setFromList(tableList.stream().collect(Collectors.toList()));
         if (Randomly.getBoolean()) {
-            select.setHavingClause(DorisExprToNode.cast(gen.generateHavingClause()));
+            select.setHavingClause(gen.generateHavingClause());
         }
         if (Randomly.getBoolean()) {
-            select.setWhereClause(DorisExprToNode.cast(gen.generateExpression(DorisSchema.DorisDataType.BOOLEAN)));
+            select.setWhereClause(gen.generateExpression(DorisSchema.DorisDataType.BOOLEAN));
         }
 
-        List<Node<DorisExpression>> noExprColumns = new ArrayList<>(columnOfLeafNode);
+        List<DorisExpression> noExprColumns = new ArrayList<>(columnOfLeafNode);
 
         if (Randomly.getBoolean()) {
             select.setOrderByClauses(Randomly.nonEmptySubset(noExprColumns));

@@ -11,7 +11,6 @@ import sqlancer.doris.DorisSchema;
 import sqlancer.doris.DorisSchema.DorisColumn;
 import sqlancer.doris.DorisSchema.DorisTable;
 import sqlancer.doris.ast.DorisExpression;
-import sqlancer.doris.visitor.DorisExprToNode;
 import sqlancer.doris.visitor.DorisToStringVisitor;
 
 public final class DorisUpdateGenerator extends AbstractUpdateGenerator<DorisColumn> {
@@ -45,7 +44,7 @@ public final class DorisUpdateGenerator extends AbstractUpdateGenerator<DorisCol
     protected void updateValue(DorisColumn column) {
         if (Randomly.getBooleanWithSmallProbability()) {
             DorisExpression expr = gen.generateExpression(column.getType().getPrimitiveDataType());
-            sb.append(DorisToStringVisitor.asString(DorisExprToNode.cast(expr)));
+            sb.append(DorisToStringVisitor.asString(expr));
         } else {
             DorisExpression expr = gen.generateConstant(column.getType().getPrimitiveDataType(), column.isNullable());
             sb.append(DorisToStringVisitor.asString(expr));

@@ -3,14 +3,12 @@ package sqlancer.doris.ast;
 import java.util.List;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.NewFunctionNode;
-import sqlancer.doris.visitor.DorisExprToNode;
 
-public class DorisAggregateOperation extends
-        NewFunctionNode<DorisExpression, DorisAggregateOperation.DorisAggregateFunction> implements DorisExpression {
+public class DorisAggregateOperation extends DorisFunction<DorisAggregateOperation.DorisAggregateFunction>
+        implements DorisExpression {
 
     public DorisAggregateOperation(List<DorisExpression> args, DorisAggregateFunction func) {
-        super(DorisExprToNode.casts(args), func);
+        super(args, func);
     }
 
     public enum DorisAggregateFunction {

@@ -2,9 +2,8 @@ package sqlancer.doris.ast;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.SelectBase;
-import sqlancer.common.ast.newast.Node;
 
-public class DorisSelect extends SelectBase<Node<DorisExpression>> implements Node<DorisExpression> {
+public class DorisSelect extends SelectBase<DorisExpression> implements DorisExpression {
 
     public enum DorisSelectDistinctType {
 

@@ -4,7 +4,6 @@ import java.util.List;
 
 import sqlancer.common.ast.newast.NewInOperatorNode;
 import sqlancer.doris.DorisSchema;
-import sqlancer.doris.visitor.DorisExprToNode;
 
 public class DorisInOperation extends NewInOperatorNode<DorisExpression> implements DorisExpression {
 
@@ -12,7 +11,7 @@ public class DorisInOperation extends NewInOperatorNode<DorisExpression> impleme
     private final List<DorisExpression> rightExpr;
 
     public DorisInOperation(DorisExpression left, List<DorisExpression> right, boolean isNegated) {
-        super(DorisExprToNode.cast(left), DorisExprToNode.casts(right), isNegated);
+        super(left, right, isNegated);
         this.leftExpr = left;
         this.rightExpr = right;
     }

@@ -11,7 +11,6 @@ import sqlancer.doris.DorisErrors;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
 import sqlancer.doris.DorisSchema.DorisColumn;
 import sqlancer.doris.DorisSchema.DorisTable;
-import sqlancer.doris.visitor.DorisExprToNode;
 import sqlancer.doris.visitor.DorisToStringVisitor;
 
 public class DorisInsertGenerator extends AbstractInsertGenerator<DorisColumn> {
@@ -46,9 +45,8 @@ public class DorisInsertGenerator extends AbstractInsertGenerator<DorisColumn> {
         if (column.hasDefaultValue() && Randomly.getBooleanWithRatherLowProbability()) {
             sb.append("DEFAULT");
         } else {
-            String value = DorisToStringVisitor
-                    .asString(DorisExprToNode.cast(new DorisNewExpressionGenerator(globalState)
-                            .generateConstant(column.getType().getPrimitiveDataType(), column.isNullable()))); // 生成一个与column相同的常量类型
+            String value = DorisToStringVisitor.asString(new DorisNewExpressionGenerator(globalState)
+                    .generateConstant(column.getType().getPrimitiveDataType(), column.isNullable())); // 生成一个与column相同的常量类型
             sb.append(value);
         }
     }

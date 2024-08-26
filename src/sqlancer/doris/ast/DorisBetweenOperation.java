@@ -2,23 +2,22 @@ package sqlancer.doris.ast;
 
 import sqlancer.common.ast.newast.NewBetweenOperatorNode;
 import sqlancer.doris.DorisSchema;
-import sqlancer.doris.visitor.DorisExprToNode;
 
 public class DorisBetweenOperation extends NewBetweenOperatorNode<DorisExpression> implements DorisExpression {
     public DorisBetweenOperation(DorisExpression left, DorisExpression middle, DorisExpression right, boolean isTrue) {
-        super(DorisExprToNode.cast(left), DorisExprToNode.cast(middle), DorisExprToNode.cast(right), isTrue);
+        super(left, middle, right, isTrue);
     }
 
     public DorisExpression getLeftExpr() {
-        return (DorisExpression) left;
+        return left;
     }
 
     public DorisExpression getMiddleExpr() {
-        return (DorisExpression) middle;
+        return middle;
     }
 
     public DorisExpression getRightExpr() {
-        return (DorisExpression) right;
+        return right;
     }
 
     @Override

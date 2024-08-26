@@ -7,7 +7,6 @@ import java.util.List;
 import sqlancer.ComparatorHelper;
 import sqlancer.doris.DorisErrors;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
-import sqlancer.doris.visitor.DorisExprToNode;
 import sqlancer.doris.visitor.DorisToStringVisitor;
 
 public class DorisQueryPartitioningDistinctTester extends DorisQueryPartitioningBase {
@@ -26,11 +25,11 @@ public class DorisQueryPartitioningDistinctTester extends DorisQueryPartitioning
         String originalQueryString = DorisToStringVisitor.asString(select);
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
-        select.setWhereClause(DorisExprToNode.cast(predicate));
+        select.setWhereClause(predicate);
         String firstQueryString = DorisToStringVisitor.asString(select);
-        select.setWhereClause(DorisExprToNode.cast(negatedPredicate));
+        select.setWhereClause(negatedPredicate);
         String secondQueryString = DorisToStringVisitor.asString(select);
-        select.setWhereClause(DorisExprToNode.cast(isNullPredicate));
+        select.setWhereClause(isNullPredicate);
         String thirdQueryString = DorisToStringVisitor.asString(select);
         List<String> combinedString = new ArrayList<>();
 

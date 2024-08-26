@@ -5,12 +5,11 @@ import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode;
 import sqlancer.common.ast.newast.NewBinaryOperatorNode;
 import sqlancer.doris.DorisSchema.DorisDataType;
-import sqlancer.doris.visitor.DorisExprToNode;
 
 public class DorisLikeOperation extends NewBinaryOperatorNode<DorisExpression> implements DorisExpression {
 
     public DorisLikeOperation(DorisExpression left, DorisExpression right, DorisLikeOperator op) {
-        super(DorisExprToNode.cast(left), DorisExprToNode.cast(right), op);
+        super(left, right, op);
     }
 
     @Override
@@ -19,11 +18,11 @@ public class DorisLikeOperation extends NewBinaryOperatorNode<DorisExpression> i
     }
 
     public DorisExpression getLeftExpr() {
-        return (DorisExpression) super.getLeft();
+        return super.getLeft();
     }
 
     public DorisExpression getRightExpr() {
-        return (DorisExpression) super.getRight();
+        return super.getRight();
     }
 
     public DorisLikeOperator getOp() {
