@@ -12,22 +12,22 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
-import sqlancer.common.ast.newast.ColumnReferenceNode;
-import sqlancer.common.ast.newast.NewBinaryOperatorNode;
-import sqlancer.common.ast.newast.NewFunctionNode;
 import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
-import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.TypedExpressionGenerator;
 import sqlancer.datafusion.DataFusionProvider.DataFusionGlobalState;
 import sqlancer.datafusion.DataFusionSchema.DataFusionColumn;
 import sqlancer.datafusion.DataFusionSchema.DataFusionDataType;
+import sqlancer.datafusion.ast.DataFusionBinaryOperation;
+import sqlancer.datafusion.ast.DataFusionColumnReference;
 import sqlancer.datafusion.ast.DataFusionExpression;
+import sqlancer.datafusion.ast.DataFusionFunction;
+import sqlancer.datafusion.ast.DataFusionUnaryPostfixOperation;
+import sqlancer.datafusion.ast.DataFusionUnaryPrefixOperation;
 import sqlancer.datafusion.gen.DataFusionBaseExpr.ArgumentType;
 import sqlancer.datafusion.gen.DataFusionBaseExpr.DataFusionBaseExprType;
 
 public final class DataFusionExpressionGenerator
-        extends TypedExpressionGenerator<Node<DataFusionExpression>, DataFusionColumn, DataFusionDataType> {
+        extends TypedExpressionGenerator<DataFusionExpression, DataFusionColumn, DataFusionDataType> {
 
     private final DataFusionGlobalState globalState;
 
@@ -51,7 +51,7 @@ public final class DataFusionExpressionGenerator
     }
 
     @Override
-    protected Node<DataFusionExpression> generateExpression(DataFusionDataType type, int depth) {
+    protected DataFusionExpression generateExpression(DataFusionDataType type, int depth) {
         if (depth >= globalState.getOptions().getMaxExpressionDepth() || Randomly.getBoolean()) {
             DataFusionDataType expectedType = type;
             if (Randomly.getBooleanWithRatherLowProbability()) { // ~10%
@@ -85,8 +85,7 @@ public final class DataFusionExpressionGenerator
                 argType = type;
             }
 
-            return new NewUnaryPrefixOperatorNode<DataFusionExpression>(generateExpression(argType, depth + 1),
-                    randomExpr);
+            return new DataFusionUnaryPrefixOperation(generateExpression(argType, depth + 1), randomExpr);
         case UNARY_POSTFIX:
             dfAssert(randomExpr.argTypes.size() == 1 && randomExpr.nArgs == 1,
                     "Unary expression should only have 1 argument" + randomExpr.argTypes);
@@ -97,8 +96,7 @@ public final class DataFusionExpressionGenerator
                 argType = type;
             }
 
-            return new NewUnaryPostfixOperatorNode<DataFusionExpression>(generateExpression(argType, depth + 1),
-                    randomExpr);
+            return new DataFusionUnaryPostfixOperation(generateExpression(argType, depth + 1), randomExpr);
         case BINARY:
             dfAssert(randomExpr.argTypes.size() == 2 && randomExpr.nArgs == 2,
                     "Binrary expression should only have 2 argument" + randomExpr.argTypes);
@@ -119,7 +117,7 @@ public final class DataFusionExpressionGenerator
                 }
             }
 
-            return new NewBinaryOperatorNode<DataFusionExpression>(generateExpression(argTypeList.get(0), depth + 1),
+            return new DataFusionBinaryOperation(generateExpression(argTypeList.get(0), depth + 1),
                     generateExpression(argTypeList.get(1), depth + 1), randomExpr);
         case AGGREGATE:
             // Fall through
@@ -133,13 +131,13 @@ public final class DataFusionExpressionGenerator
         return null;
     }
 
-    public Node<DataFusionExpression> generateFunctionExpression(DataFusionDataType type, int depth,
+    public DataFusionExpression generateFunctionExpression(DataFusionDataType type, int depth,
             DataFusionBaseExpr exprType) {
         if (exprType.isVariadic || Randomly.getBooleanWithSmallProbability()) {
             // TODO(datafusion) maybe add possible types. e.g. some function have signature variadic(INT/DOUBLE), then
             // only randomly pick from INT and DOUBLE
             int nArgs = Randomly.smallNumber(); // 0, 2, 4, ... smaller one is more likely
-            return new NewFunctionNode<DataFusionExpression, DataFusionBaseExpr>(generateExpressions(nArgs), exprType);
+            return new DataFusionFunction<DataFusionBaseExpr>(generateExpressions(nArgs), exprType);
         }
 
         List<DataFusionDataType> funcArgTypeList = new ArrayList<>(); // types of current expression's input arguments
@@ -161,13 +159,13 @@ public final class DataFusionExpressionGenerator
             i++;
         }
 
-        List<Node<DataFusionExpression>> argExpressions = new ArrayList<>();
+        List<DataFusionExpression> argExpressions = new ArrayList<>();
 
         for (DataFusionDataType dataType : funcArgTypeList) {
             argExpressions.add(generateExpression(dataType, depth + 1));
         }
 
-        return new NewFunctionNode<DataFusionExpression, DataFusionBaseExpr>(argExpressions, exprType);
+        return new DataFusionFunction<DataFusionBaseExpr>(argExpressions, exprType);
     }
 
     List<DataFusionColumn> filterColumns(DataFusionDataType type) {
@@ -179,7 +177,7 @@ public final class DataFusionExpressionGenerator
     }
 
     @Override
-    protected Node<DataFusionExpression> generateColumn(DataFusionDataType type) {
+    protected DataFusionExpression generateColumn(DataFusionDataType type) {
         // HACK: if no col of such type exist, generate constant value instead
         List<DataFusionColumn> colsOfType = filterColumns(type);
         if (colsOfType.isEmpty()) {
@@ -187,32 +185,32 @@ public final class DataFusionExpressionGenerator
         }
 
         DataFusionColumn column = Randomly.fromList(colsOfType);
-        return new ColumnReferenceNode<DataFusionExpression, DataFusionColumn>(column);
+        return new DataFusionColumnReference(column);
     }
 
     @Override
-    public Node<DataFusionExpression> generateConstant(DataFusionDataType type) {
+    public DataFusionExpression generateConstant(DataFusionDataType type) {
         return type.getRandomConstant(globalState);
     }
 
     @Override
-    public Node<DataFusionExpression> generatePredicate() {
+    public DataFusionExpression generatePredicate() {
         return generateExpression(DataFusionDataType.BOOLEAN, 0);
     }
 
     @Override
-    public Node<DataFusionExpression> negatePredicate(Node<DataFusionExpression> predicate) {
-        return new NewUnaryPrefixOperatorNode<>(predicate, createExpr(DataFusionBaseExprType.NOT));
+    public DataFusionExpression negatePredicate(DataFusionExpression predicate) {
+        return new DataFusionUnaryPrefixOperation(predicate, createExpr(DataFusionBaseExprType.NOT));
     }
 
     @Override
-    public Node<DataFusionExpression> isNull(Node<DataFusionExpression> expr) {
-        return new NewUnaryPostfixOperatorNode<>(expr, createExpr(DataFusionBaseExprType.IS_NULL));
+    public DataFusionExpression isNull(DataFusionExpression expr) {
+        return new DataFusionUnaryPostfixOperation(expr, createExpr(DataFusionBaseExprType.IS_NULL));
     }
 
     public static class DataFusionCastOperation extends NewUnaryPostfixOperatorNode<DataFusionExpression> {
 
-        public DataFusionCastOperation(Node<DataFusionExpression> expr, DataFusionDataType type) {
+        public DataFusionCastOperation(DataFusionExpression expr, DataFusionDataType type) {
             super(expr, new Operator() {
 
                 @Override
