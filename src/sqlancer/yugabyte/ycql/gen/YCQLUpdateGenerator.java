@@ -3,7 +3,6 @@ package sqlancer.yugabyte.ycql.gen;
 import java.util.List;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.AbstractUpdateGenerator;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.yugabyte.ycql.YCQLErrors;
@@ -47,7 +46,7 @@ public final class YCQLUpdateGenerator extends AbstractUpdateGenerator<YCQLColum
 
     @Override
     protected void updateValue(YCQLColumn column) {
-        Node<YCQLExpression> expr;
+        YCQLExpression expr;
         if (Randomly.getBooleanWithSmallProbability()) {
             expr = gen.generateExpression();
             YCQLErrors.addExpressionErrors(errors);

@@ -1,12 +1,11 @@
 package sqlancer.yugabyte.ycql.ast;
 
 import sqlancer.common.ast.newast.ColumnReferenceNode;
-import sqlancer.questdb.QuestDBSchema;
-import sqlancer.questdb.ast.QuestDBExpression;
+import sqlancer.yugabyte.ycql.YCQLSchema;
 
-public class QuestDBColumnReference extends ColumnReferenceNode<QuestDBExpression, QuestDBSchema.QuestDBColumn>
-        implements QuestDBExpression {
-    public QuestDBColumnReference(QuestDBSchema.QuestDBColumn column) {
+public class YCQLColumnReference extends ColumnReferenceNode<YCQLExpression, YCQLSchema.YCQLColumn>
+        implements YCQLExpression {
+    public YCQLColumnReference(YCQLSchema.YCQLColumn column) {
         super(column);
     }
 

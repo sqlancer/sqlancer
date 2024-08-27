@@ -3,10 +3,9 @@ package sqlancer.yugabyte.ycql.ast;
 import java.util.List;
 
 import sqlancer.common.ast.newast.NewFunctionNode;
-import sqlancer.duckdb.ast.DuckDBExpression;
 
-public class DuckDBFunction<F> extends NewFunctionNode<DuckDBExpression, F> implements DuckDBExpression {
-    public DuckDBFunction(List<DuckDBExpression> args, F func) {
+public class YCQLFunction<F> extends NewFunctionNode<YCQLExpression, F> implements YCQLExpression {
+    public YCQLFunction(List<YCQLExpression> args, F func) {
         super(args, func);
     }
 }

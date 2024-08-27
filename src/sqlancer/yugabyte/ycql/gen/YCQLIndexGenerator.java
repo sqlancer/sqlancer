@@ -3,7 +3,6 @@ package sqlancer.yugabyte.ycql.gen;
 import java.util.List;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.yugabyte.ycql.YCQLProvider.YCQLGlobalState;
@@ -41,7 +40,7 @@ public final class YCQLIndexGenerator {
         sb.append(")");
         if (Randomly.getBoolean()) {
             sb.append(" WHERE ");
-            Node<YCQLExpression> expr = new YCQLExpressionGenerator(globalState).setColumns(table.getColumns())
+            YCQLExpression expr = new YCQLExpressionGenerator(globalState).setColumns(table.getColumns())
                     .generateExpression();
             sb.append(YCQLToStringVisitor.asString(expr));
         }

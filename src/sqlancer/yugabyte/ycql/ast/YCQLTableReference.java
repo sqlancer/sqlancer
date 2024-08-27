@@ -1,12 +1,11 @@
 package sqlancer.yugabyte.ycql.ast;
 
 import sqlancer.common.ast.newast.TableReferenceNode;
-import sqlancer.questdb.QuestDBSchema;
-import sqlancer.questdb.ast.QuestDBExpression;
+import sqlancer.yugabyte.ycql.YCQLSchema;
 
-public class QuestDBTableReference extends TableReferenceNode<QuestDBExpression, QuestDBSchema.QuestDBTable>
-        implements QuestDBExpression {
-    public QuestDBTableReference(QuestDBSchema.QuestDBTable table) {
+public class YCQLTableReference extends TableReferenceNode<YCQLExpression, YCQLSchema.YCQLTable>
+        implements YCQLExpression {
+    public YCQLTableReference(YCQLSchema.YCQLTable table) {
         super(table);
     }
 }

@@ -1,9 +1,8 @@
 package sqlancer.yugabyte.ycql.ast;
 
 import sqlancer.common.ast.SelectBase;
-import sqlancer.common.ast.newast.Node;
 
-public class YCQLSelect extends SelectBase<Node<YCQLExpression>> implements Node<YCQLExpression> {
+public class YCQLSelect extends SelectBase<YCQLExpression> implements YCQLExpression {
 
     private boolean isDistinct;
 
