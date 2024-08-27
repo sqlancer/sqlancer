@@ -1,7 +1,6 @@
 package sqlancer.presto;
 
 import sqlancer.common.ast.newast.NewToStringVisitor;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.presto.ast.PrestoAtTimeZoneOperator;
 import sqlancer.presto.ast.PrestoCastFunction;
 import sqlancer.presto.ast.PrestoConstant;
@@ -14,14 +13,14 @@ import sqlancer.presto.ast.PrestoSelect;
 
 public class PrestoToStringVisitor extends NewToStringVisitor<PrestoExpression> {
 
-    public static String asString(Node<PrestoExpression> expr) {
+    public static String asString(PrestoExpression expr) {
         PrestoToStringVisitor visitor = new PrestoToStringVisitor();
         visitor.visit(expr);
         return visitor.get();
     }
 
     @Override
-    public void visitSpecific(Node<PrestoExpression> expr) {
+    public void visitSpecific(PrestoExpression expr) {
         if (expr instanceof PrestoConstant) {
             visit((PrestoConstant) expr);
         } else if (expr instanceof PrestoSelect) {
@@ -44,7 +43,7 @@ public class PrestoToStringVisitor extends NewToStringVisitor<PrestoExpression> 
     }
 
     private void visit(PrestoJoin join) {
-        visit(join.getLeftTable());
+        visit((PrestoExpression) join.getLeftTable());
         sb.append(" ");
         sb.append(join.getJoinType());
         sb.append(" ");
@@ -52,7 +51,7 @@ public class PrestoToStringVisitor extends NewToStringVisitor<PrestoExpression> 
             sb.append(join.getOuterType());
         }
         sb.append(" JOIN ");
-        visit(join.getRightTable());
+        visit((PrestoExpression) join.getRightTable());
         if (join.getOnCondition() != null) {
             sb.append(" ON ");
             visit(join.getOnCondition());

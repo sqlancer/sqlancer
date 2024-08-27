@@ -10,10 +10,6 @@ import java.util.stream.Collectors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
-import sqlancer.common.ast.newast.ColumnReferenceNode;
-import sqlancer.common.ast.newast.NewPostfixTextNode;
-import sqlancer.common.ast.newast.Node;
-import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.common.oracle.NoRECBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -28,9 +24,12 @@ import sqlancer.presto.PrestoSchema.PrestoTable;
 import sqlancer.presto.PrestoSchema.PrestoTables;
 import sqlancer.presto.PrestoToStringVisitor;
 import sqlancer.presto.ast.PrestoCastFunction;
+import sqlancer.presto.ast.PrestoColumnReference;
 import sqlancer.presto.ast.PrestoExpression;
 import sqlancer.presto.ast.PrestoJoin;
+import sqlancer.presto.ast.PrestoPostfixText;
 import sqlancer.presto.ast.PrestoSelect;
+import sqlancer.presto.ast.PrestoTableReference;
 import sqlancer.presto.gen.PrestoTypedExpressionGenerator;
 
 public class PrestoNoRECOracle extends NoRECBase<PrestoGlobalState> implements TestOracle<PrestoGlobalState> {
@@ -50,12 +49,12 @@ public class PrestoNoRECOracle extends NoRECBase<PrestoGlobalState> implements T
 
         List<PrestoTable> tables = randomTables.getTables();
 
-        List<TableReferenceNode<PrestoExpression, PrestoTable>> tableList = tables.stream()
-                .map(t -> new TableReferenceNode<PrestoExpression, PrestoTable>(t)).collect(Collectors.toList());
-        List<Node<PrestoExpression>> joins = PrestoJoin.getJoins(tableList, state);
+        List<PrestoTableReference> tableList = tables.stream().map(t -> new PrestoTableReference(t))
+                .collect(Collectors.toList());
+        List<PrestoExpression> joins = PrestoJoin.getJoins(tableList, state);
 
         PrestoTypedExpressionGenerator gen = new PrestoTypedExpressionGenerator(state).setColumns(columns);
-        Node<PrestoExpression> randomWhereCondition = gen.generatePredicate();
+        PrestoExpression randomWhereCondition = gen.generatePredicate();
         int secondCount = getSecondQuery(new ArrayList<>(tableList), randomWhereCondition, joins);
 
         int firstCount = getFirstQueryCount(con, new ArrayList<>(tableList), columns, randomWhereCondition, joins);
@@ -68,14 +67,14 @@ public class PrestoNoRECOracle extends NoRECBase<PrestoGlobalState> implements T
         }
     }
 
-    private int getSecondQuery(List<Node<PrestoExpression>> tableList, Node<PrestoExpression> randomWhereCondition,
-            List<Node<PrestoExpression>> joins) throws SQLException {
+    private int getSecondQuery(List<PrestoExpression> tableList, PrestoExpression randomWhereCondition,
+            List<PrestoExpression> joins) throws SQLException {
         PrestoSelect select = new PrestoSelect();
 
-        Node<PrestoExpression> asText = new NewPostfixTextNode<>(
+        PrestoExpression asText = new PrestoPostfixText(
 
                 new PrestoCastFunction(
-                        new NewPostfixTextNode<>(randomWhereCondition,
+                        new PrestoPostfixText(randomWhereCondition,
                                 " IS NOT NULL AND " + PrestoToStringVisitor.asString(randomWhereCondition)),
                         new PrestoCompositeDataType(PrestoDataType.INT, 8, 0)),
                 "as count");
@@ -104,12 +103,11 @@ public class PrestoNoRECOracle extends NoRECBase<PrestoGlobalState> implements T
         return secondCount;
     }
 
-    private int getFirstQueryCount(SQLConnection con, List<Node<PrestoExpression>> tableList,
-            List<PrestoColumn> columns, Node<PrestoExpression> randomWhereCondition,
-            List<Node<PrestoExpression>> joins) {
+    private int getFirstQueryCount(SQLConnection con, List<PrestoExpression> tableList, List<PrestoColumn> columns,
+            PrestoExpression randomWhereCondition, List<PrestoExpression> joins) {
         PrestoSelect select = new PrestoSelect();
-        List<Node<PrestoExpression>> allColumns = columns.stream()
-                .map((c) -> new ColumnReferenceNode<PrestoExpression, PrestoColumn>(c)).collect(Collectors.toList());
+        List<PrestoExpression> allColumns = columns.stream().map((c) -> new PrestoColumnReference(c))
+                .collect(Collectors.toList());
         select.setFetchColumns(allColumns);
         select.setFromList(tableList);
         select.setWhereClause(randomWhereCondition);

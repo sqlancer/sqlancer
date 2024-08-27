@@ -3,7 +3,6 @@ package sqlancer.presto.gen;
 import java.util.List;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.AbstractUpdateGenerator;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.presto.PrestoErrors;
@@ -40,7 +39,7 @@ public final class PrestoUpdateGenerator extends AbstractUpdateGenerator<PrestoC
 
     @Override
     protected void updateValue(PrestoColumn column) {
-        Node<PrestoExpression> expr;
+        PrestoExpression expr;
         if (Randomly.getBooleanWithSmallProbability()) {
             expr = gen.generateExpression(column.getType());
             PrestoErrors.addExpressionErrors(errors);

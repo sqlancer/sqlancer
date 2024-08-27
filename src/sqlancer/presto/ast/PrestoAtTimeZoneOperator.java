@@ -1,22 +1,20 @@
 package sqlancer.presto.ast;
 
-import sqlancer.common.ast.newast.Node;
+public class PrestoAtTimeZoneOperator implements PrestoExpression {
 
-public class PrestoAtTimeZoneOperator implements Node<PrestoExpression> {
+    private final PrestoExpression expr;
+    private final PrestoExpression timeZone;
 
-    private final Node<PrestoExpression> expr;
-    private final Node<PrestoExpression> timeZone;
-
-    public PrestoAtTimeZoneOperator(Node<PrestoExpression> expr, Node<PrestoExpression> timeZone) {
+    public PrestoAtTimeZoneOperator(PrestoExpression expr, PrestoExpression timeZone) {
         this.expr = expr;
         this.timeZone = timeZone;
     }
 
-    public Node<PrestoExpression> getExpr() {
+    public PrestoExpression getExpr() {
         return expr;
     }
 
-    public Node<PrestoExpression> getTimeZone() {
+    public PrestoExpression getTimeZone() {
         return timeZone;
     }
 }

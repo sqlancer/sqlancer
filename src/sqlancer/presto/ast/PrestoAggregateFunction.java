@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.presto.PrestoSchema;
 import sqlancer.presto.PrestoSchema.PrestoCompositeDataType;
 import sqlancer.presto.PrestoSchema.PrestoDataType;
@@ -37,7 +36,7 @@ public enum PrestoAggregateFunction implements PrestoFunction {
         }
 
         @Override
-        public List<Node<PrestoExpression>> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
+        public List<PrestoExpression> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
                 PrestoCompositeDataType returnType, boolean orderable) {
             PrestoCompositeDataType returnTypeLocal = Objects.requireNonNullElseGet(returnType,
                     () -> PrestoCompositeDataType.fromDataType(getReturnType()));
@@ -131,7 +130,7 @@ public enum PrestoAggregateFunction implements PrestoFunction {
         }
 
         @Override
-        public List<Node<PrestoExpression>> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
+        public List<PrestoExpression> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
                 PrestoCompositeDataType returnType, boolean orderable) {
             PrestoCompositeDataType returnTypeLocal = Objects.requireNonNullElseGet(returnType,
                     () -> PrestoCompositeDataType.fromDataType(getReturnType()));
@@ -165,7 +164,7 @@ public enum PrestoAggregateFunction implements PrestoFunction {
         }
 
         @Override
-        public List<Node<PrestoExpression>> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
+        public List<PrestoExpression> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
                 PrestoCompositeDataType returnType, boolean orderable) {
             PrestoCompositeDataType returnTypeLocal = Objects.requireNonNullElseGet(returnType,
                     () -> PrestoCompositeDataType.fromDataType(getReturnType()));
@@ -211,7 +210,7 @@ public enum PrestoAggregateFunction implements PrestoFunction {
         }
 
         @Override
-        public List<Node<PrestoExpression>> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
+        public List<PrestoExpression> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
                 PrestoCompositeDataType returnType, boolean orderable) {
             PrestoCompositeDataType returnTypeLocal = Objects.requireNonNullElseGet(returnType,
                     () -> PrestoCompositeDataType.fromDataType(getReturnType()));
@@ -248,7 +247,7 @@ public enum PrestoAggregateFunction implements PrestoFunction {
         }
 
         @Override
-        public List<Node<PrestoExpression>> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
+        public List<PrestoExpression> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
                 PrestoCompositeDataType returnType, boolean orderable) {
             PrestoCompositeDataType returnTypeLocal = Objects.requireNonNullElseGet(returnType,
                     () -> PrestoCompositeDataType.fromDataType(getReturnType()));
@@ -338,7 +337,7 @@ public enum PrestoAggregateFunction implements PrestoFunction {
         }
 
         @Override
-        public List<Node<PrestoExpression>> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
+        public List<PrestoExpression> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
                 PrestoCompositeDataType returnType, boolean orderable) {
             PrestoCompositeDataType returnTypeLocal = Objects.requireNonNullElseGet(returnType,
                     () -> PrestoCompositeDataType.fromDataType(getReturnType()));
@@ -427,9 +426,9 @@ public enum PrestoAggregateFunction implements PrestoFunction {
         }
 
         @Override
-        public List<Node<PrestoExpression>> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
+        public List<PrestoExpression> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
                 PrestoDataType[] argumentTypes2, PrestoCompositeDataType returnType2) {
-            List<Node<PrestoExpression>> arguments = new ArrayList<>();
+            List<PrestoExpression> arguments = new ArrayList<>();
             arguments.add(gen.generateExpression(returnType2, depth + 1));
             arguments.add(new PrestoConstant.PrestoFloatConstant(Randomly.getPercentage()));
             return arguments;
@@ -441,7 +440,7 @@ public enum PrestoAggregateFunction implements PrestoFunction {
         }
 
         @Override
-        public List<Node<PrestoExpression>> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
+        public List<PrestoExpression> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
                 PrestoCompositeDataType returnType, boolean orderable) {
             PrestoCompositeDataType returnTypeLocal = Objects.requireNonNullElseGet(returnType,
                     () -> PrestoCompositeDataType.fromDataType(getReturnType()));
@@ -467,9 +466,9 @@ public enum PrestoAggregateFunction implements PrestoFunction {
         }
 
         @Override
-        public List<Node<PrestoExpression>> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
+        public List<PrestoExpression> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
                 PrestoDataType[] argumentTypes2, PrestoCompositeDataType returnType2) {
-            List<Node<PrestoExpression>> arguments = new ArrayList<>();
+            List<PrestoExpression> arguments = new ArrayList<>();
             arguments.add(gen.generateExpression(returnType2, depth + 1));
             arguments.add(new PrestoConstant.PrestoFloatConstant(Randomly.getPercentage()));
             if (Randomly.getBooleanWithRatherLowProbability()) {
@@ -486,7 +485,7 @@ public enum PrestoAggregateFunction implements PrestoFunction {
         }
 
         @Override
-        public List<Node<PrestoExpression>> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
+        public List<PrestoExpression> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
                 PrestoCompositeDataType returnType, boolean orderable) {
             PrestoCompositeDataType returnTypeLocal = Objects.requireNonNullElseGet(returnType,
                     () -> PrestoCompositeDataType
@@ -523,9 +522,9 @@ public enum PrestoAggregateFunction implements PrestoFunction {
         }
 
         @Override
-        public List<Node<PrestoExpression>> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
+        public List<PrestoExpression> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
                 PrestoDataType[] argumentTypes2, PrestoCompositeDataType returnType2) {
-            List<Node<PrestoExpression>> arguments = new ArrayList<>();
+            List<PrestoExpression> arguments = new ArrayList<>();
             arguments.add(gen.generateExpression(returnType2, depth + 1));
             arguments.add(new PrestoConstant.PrestoFloatConstant(Randomly.getPercentage()));
             if (Randomly.getBooleanWithRatherLowProbability()) {
@@ -542,7 +541,7 @@ public enum PrestoAggregateFunction implements PrestoFunction {
         }
 
         @Override
-        public List<Node<PrestoExpression>> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
+        public List<PrestoExpression> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
                 PrestoCompositeDataType returnType, boolean orderable) {
             PrestoCompositeDataType returnTypeLocal = Objects.requireNonNullElseGet(returnType,
                     () -> PrestoCompositeDataType
@@ -566,9 +565,9 @@ public enum PrestoAggregateFunction implements PrestoFunction {
         }
 
         @Override
-        public List<Node<PrestoExpression>> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
+        public List<PrestoExpression> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
                 PrestoDataType[] argumentTypes2, PrestoCompositeDataType returnType2) {
-            List<Node<PrestoExpression>> arguments = new ArrayList<>();
+            List<PrestoExpression> arguments = new ArrayList<>();
             arguments.add(gen.generateExpression(returnType2, depth + 1));
             if (Randomly.getBooleanWithRatherLowProbability()) {
                 arguments.add(new PrestoConstant.PrestoIntConstant(1));
@@ -590,7 +589,7 @@ public enum PrestoAggregateFunction implements PrestoFunction {
         }
 
         @Override
-        public List<Node<PrestoExpression>> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
+        public List<PrestoExpression> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
                 PrestoCompositeDataType returnType, boolean orderable) {
             PrestoCompositeDataType returnTypeLocal = Objects.requireNonNullElseGet(returnType,
                     () -> PrestoCompositeDataType

@@ -4,11 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.presto.PrestoSchema;
 import sqlancer.presto.gen.PrestoTypedExpressionGenerator;
 
-public interface PrestoFunction {
+public interface PrestoFunction extends PrestoExpression {
 
     String getFunctionName();
 
@@ -16,10 +15,10 @@ public interface PrestoFunction {
 
     PrestoSchema.PrestoDataType[] getArgumentTypes(PrestoSchema.PrestoCompositeDataType returnType);
 
-    default List<Node<PrestoExpression>> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
+    default List<PrestoExpression> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
             PrestoSchema.PrestoDataType[] argumentTypes, PrestoSchema.PrestoCompositeDataType returnType) {
 
-        List<Node<PrestoExpression>> arguments = new ArrayList<>();
+        List<PrestoExpression> arguments = new ArrayList<>();
 
         // This is a workaround based on the assumption that array types should refer to
         // the same element type.
@@ -56,17 +55,17 @@ public interface PrestoFunction {
                 } else {
                     dataType = PrestoSchema.PrestoCompositeDataType.fromDataType(arg);
                 }
-                Node<PrestoExpression> expression = gen.generateExpression(dataType, depth + 1);
+                PrestoExpression expression = gen.generateExpression(dataType, depth + 1);
                 arguments.add(expression);
             }
         }
         return arguments;
     }
 
-    default List<Node<PrestoExpression>> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
+    default List<PrestoExpression> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
             PrestoSchema.PrestoCompositeDataType returnType, boolean orderable) {
 
-        List<Node<PrestoExpression>> arguments = new ArrayList<>();
+        List<PrestoExpression> arguments = new ArrayList<>();
 
         // This is a workaround based on the assumption that array types should refer to
         // the same element type.
@@ -105,7 +104,7 @@ public interface PrestoFunction {
                 } else {
                     compositeDataType = PrestoSchema.PrestoCompositeDataType.fromDataType(dataType);
                 }
-                Node<PrestoExpression> expression = gen.generateExpression(compositeDataType, depth + 1);
+                PrestoExpression expression = gen.generateExpression(compositeDataType, depth + 1);
                 arguments.add(expression);
             }
         }

@@ -3,7 +3,6 @@ package sqlancer.presto.gen;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.AbstractInsertGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -43,7 +42,7 @@ public class PrestoInsertGenerator extends AbstractInsertGenerator<PrestoColumn>
 
     @Override
     protected void insertValue(PrestoColumn prestoColumn) {
-        Node<PrestoExpression> constant = new PrestoTypedExpressionGenerator(globalState)
+        PrestoExpression constant = new PrestoTypedExpressionGenerator(globalState)
                 .generateInsertConstant(prestoColumn.getType());
         sb.append(PrestoToStringVisitor.asString(constant));
 

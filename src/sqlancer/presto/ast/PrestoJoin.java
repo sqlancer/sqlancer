@@ -4,37 +4,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Node;
-import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.presto.PrestoGlobalState;
 import sqlancer.presto.PrestoSchema;
 import sqlancer.presto.PrestoSchema.PrestoColumn;
-import sqlancer.presto.PrestoSchema.PrestoTable;
 import sqlancer.presto.gen.PrestoTypedExpressionGenerator;
 
-public class PrestoJoin implements Node<PrestoExpression> {
+public class PrestoJoin implements PrestoExpression {
 
-    private final TableReferenceNode<PrestoExpression, PrestoTable> leftTable;
-    private final TableReferenceNode<PrestoExpression, PrestoTable> rightTable;
+    private final PrestoTableReference leftTable;
+    private final PrestoTableReference rightTable;
     private final JoinType joinType;
-    private final Node<PrestoExpression> onCondition;
+    private final PrestoExpression onCondition;
     private OuterType outerType;
 
-    public PrestoJoin(TableReferenceNode<PrestoExpression, PrestoTable> leftTable,
-            TableReferenceNode<PrestoExpression, PrestoTable> rightTable, JoinType joinType,
-            Node<PrestoExpression> whereCondition) {
+    public PrestoJoin(PrestoTableReference leftTable, PrestoTableReference rightTable, JoinType joinType,
+            PrestoExpression whereCondition) {
         this.leftTable = leftTable;
         this.rightTable = rightTable;
         this.joinType = joinType;
         this.onCondition = whereCondition;
     }
 
-    public static List<Node<PrestoExpression>> getJoins(
-            List<TableReferenceNode<PrestoExpression, PrestoTable>> tableList, PrestoGlobalState globalState) {
-        List<Node<PrestoExpression>> joinExpressions = new ArrayList<>();
+    public static List<PrestoExpression> getJoins(List<PrestoTableReference> tableList, PrestoGlobalState globalState) {
+        List<PrestoExpression> joinExpressions = new ArrayList<>();
         while (tableList.size() >= 2 && Randomly.getBooleanWithRatherLowProbability()) {
-            TableReferenceNode<PrestoExpression, PrestoTable> leftTable = tableList.remove(0);
-            TableReferenceNode<PrestoExpression, PrestoTable> rightTable = tableList.remove(0);
+            PrestoTableReference leftTable = tableList.remove(0);
+            PrestoTableReference rightTable = tableList.remove(0);
             List<PrestoColumn> columns = new ArrayList<>(leftTable.getTable().getColumns());
             columns.addAll(rightTable.getTable().getColumns());
             PrestoTypedExpressionGenerator joinGen = new PrestoTypedExpressionGenerator(globalState)
@@ -59,26 +54,26 @@ public class PrestoJoin implements Node<PrestoExpression> {
         return joinExpressions;
     }
 
-    public static PrestoJoin createRightOuterJoin(TableReferenceNode<PrestoExpression, PrestoTable> left,
-            TableReferenceNode<PrestoExpression, PrestoTable> right, Node<PrestoExpression> predicate) {
+    public static PrestoJoin createRightOuterJoin(PrestoTableReference left, PrestoTableReference right,
+            PrestoExpression predicate) {
         return new PrestoJoin(left, right, JoinType.RIGHT, predicate);
     }
 
-    public static PrestoJoin createLeftOuterJoin(TableReferenceNode<PrestoExpression, PrestoTable> left,
-            TableReferenceNode<PrestoExpression, PrestoTable> right, Node<PrestoExpression> predicate) {
+    public static PrestoJoin createLeftOuterJoin(PrestoTableReference left, PrestoTableReference right,
+            PrestoExpression predicate) {
         return new PrestoJoin(left, right, JoinType.LEFT, predicate);
     }
 
-    public static PrestoJoin createInnerJoin(TableReferenceNode<PrestoExpression, PrestoTable> left,
-            TableReferenceNode<PrestoExpression, PrestoTable> right, Node<PrestoExpression> predicate) {
+    public static PrestoJoin createInnerJoin(PrestoTableReference left, PrestoTableReference right,
+            PrestoExpression predicate) {
         return new PrestoJoin(left, right, JoinType.INNER, predicate);
     }
 
-    public TableReferenceNode<PrestoExpression, PrestoTable> getLeftTable() {
+    public PrestoTableReference getLeftTable() {
         return leftTable;
     }
 
-    public TableReferenceNode<PrestoExpression, PrestoTable> getRightTable() {
+    public PrestoTableReference getRightTable() {
         return rightTable;
     }
 
@@ -86,7 +81,7 @@ public class PrestoJoin implements Node<PrestoExpression> {
         return joinType;
     }
 
-    public Node<PrestoExpression> getOnCondition() {
+    public PrestoExpression getOnCondition() {
         return onCondition;
     }
 
