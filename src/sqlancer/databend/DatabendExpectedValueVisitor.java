@@ -25,7 +25,7 @@ public class DatabendExpectedValueVisitor {
     private void print(DatabendExpression expr) {
         sb.append(DatabendToStringVisitor.asString(expr));
         sb.append(" -- ");
-        sb.append((expr).getExpectedValue());
+        sb.append(expr.getExpectedValue());
         sb.append("\n");
     }
 

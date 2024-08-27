@@ -36,7 +36,6 @@ public class MariaDBJoin implements MariaDBExpression, Join<MariaDBExpression, M
         return table;
     }
 
-    @Override
     public MariaDBExpression getOnClause() {
         return onClause;
     }
