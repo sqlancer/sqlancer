@@ -81,12 +81,12 @@ Since SQL dialects differ widely, each DBMS to be tested requires a separate imp
 
 Some DBMS were once supported but subsequently removed.
 
-| DBMS       | Description                                                                                                                                              |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ArangoDB   | This implementation was removed because ArangoDB is a NoSQL DBMS, while the majority were SQL DBMSs, which resulted in difficulty refactoring SQLancer.  |
-| Cosmos     | This implementation was removed because Cosmos is a NoSQL DBMS, while the majority were SQL DBMSs, which resulted in difficulty refactoring SQLancer.    |
-| MongoDB    | This implementation was removed because MongoDB is a NoSQL DBMS, while the majority were SQL DBMSs, which resulted in difficulty refactoring SQLancer.   |
-| StoneDB    | This implementation was removed because development of StoneDB stopped.                                                                                       |
+| DBMS       | Pull Request                                    | Description                                                                                                                                              |
+| ---------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ArangoDB   | [#915](https://github.com/sqlancer/sqlancer/pull/915) | This implementation was removed because ArangoDB is a NoSQL DBMS, while the majority were SQL DBMSs, which resulted in difficulty refactoring SQLancer.  |
+| Cosmos     | [#915](https://github.com/sqlancer/sqlancer/pull/915) | This implementation was removed because Cosmos is a NoSQL DBMS, while the majority were SQL DBMSs, which resulted in difficulty refactoring SQLancer.    |
+| MongoDB    | [#915](https://github.com/sqlancer/sqlancer/pull/915) | This implementation was removed because MongoDB is a NoSQL DBMS, while the majority were SQL DBMSs, which resulted in difficulty refactoring SQLancer.   |
+| StoneDB    | [#963](https://github.com/sqlancer/sqlancer/pull/963) | This implementation was removed because development of StoneDB stopped.                                                                                  |
 
 
 # Using SQLancer
