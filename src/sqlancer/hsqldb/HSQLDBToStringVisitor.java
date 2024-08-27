@@ -1,7 +1,6 @@
 package sqlancer.hsqldb;
 
 import sqlancer.common.ast.newast.NewToStringVisitor;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.hsqldb.ast.HSQLDBConstant;
 import sqlancer.hsqldb.ast.HSQLDBExpression;
 import sqlancer.hsqldb.ast.HSQLDBJoin;
@@ -10,7 +9,7 @@ import sqlancer.hsqldb.ast.HSQLDBSelect;
 public class HSQLDBToStringVisitor extends NewToStringVisitor<HSQLDBExpression> {
 
     @Override
-    public void visitSpecific(Node<HSQLDBExpression> expr) {
+    public void visitSpecific(HSQLDBExpression expr) {
         if (expr instanceof HSQLDBConstant) {
             visit((HSQLDBConstant) expr);
         } else if (expr instanceof HSQLDBSelect) {
@@ -22,14 +21,14 @@ public class HSQLDBToStringVisitor extends NewToStringVisitor<HSQLDBExpression> 
         }
     }
 
-    public static String asString(Node<HSQLDBExpression> expr) {
+    public static String asString(HSQLDBExpression expr) {
         HSQLDBToStringVisitor visitor = new HSQLDBToStringVisitor();
         visitor.visit(expr);
         return visitor.get();
     }
 
     private void visit(HSQLDBJoin join) {
-        visit(join.getLeftTable());
+        visit((HSQLDBExpression) join.getLeftTable());
         sb.append(" ");
         sb.append(join.getJoinType());
         sb.append(" ");
@@ -37,7 +36,7 @@ public class HSQLDBToStringVisitor extends NewToStringVisitor<HSQLDBExpression> 
             sb.append(join.getOuterType());
         }
         sb.append(" JOIN ");
-        visit(join.getRightTable());
+        visit((HSQLDBExpression) join.getRightTable());
         if (join.getOnCondition() != null) {
             sb.append(" ON ");
             visit(join.getOnCondition());

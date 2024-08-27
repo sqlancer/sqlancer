@@ -7,11 +7,10 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode;
-import sqlancer.common.ast.newast.NewBinaryOperatorNode;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.TypedExpressionGenerator;
 import sqlancer.hsqldb.HSQLDBProvider;
 import sqlancer.hsqldb.HSQLDBSchema;
+import sqlancer.hsqldb.ast.HSQLDBBinaryOperation;
 import sqlancer.hsqldb.ast.HSQLDBColumnReference;
 import sqlancer.hsqldb.ast.HSQLDBConstant;
 import sqlancer.hsqldb.ast.HSQLDBExpression;
@@ -19,7 +18,7 @@ import sqlancer.hsqldb.ast.HSQLDBUnaryPostfixOperation;
 import sqlancer.hsqldb.ast.HSQLDBUnaryPrefixOperation;
 
 public final class HSQLDBExpressionGenerator extends
-        TypedExpressionGenerator<Node<HSQLDBExpression>, HSQLDBSchema.HSQLDBColumn, HSQLDBSchema.HSQLDBCompositeDataType> {
+        TypedExpressionGenerator<HSQLDBExpression, HSQLDBSchema.HSQLDBColumn, HSQLDBSchema.HSQLDBCompositeDataType> {
 
     private enum Expression {
         BINARY_LOGICAL, BINARY_COMPARISON, BINARY_ARITHMETIC;
@@ -32,23 +31,23 @@ public final class HSQLDBExpressionGenerator extends
     }
 
     @Override
-    public Node<HSQLDBExpression> generatePredicate() {
+    public HSQLDBExpression generatePredicate() {
         return generateExpression(
                 HSQLDBSchema.HSQLDBCompositeDataType.getRandomWithType(HSQLDBSchema.HSQLDBDataType.BOOLEAN));
     }
 
     @Override
-    public Node<HSQLDBExpression> negatePredicate(Node<HSQLDBExpression> predicate) {
+    public HSQLDBExpression negatePredicate(HSQLDBExpression predicate) {
         return new HSQLDBUnaryPrefixOperation(HSQLDBUnaryPrefixOperation.HSQLDBUnaryPrefixOperator.NOT, predicate);
     }
 
     @Override
-    public Node<HSQLDBExpression> isNull(Node<HSQLDBExpression> expr) {
+    public HSQLDBExpression isNull(HSQLDBExpression expr) {
         return new HSQLDBUnaryPostfixOperation(expr, HSQLDBUnaryPostfixOperation.HSQLDBUnaryPostfixOperator.IS_NULL);
     }
 
     @Override
-    public Node<HSQLDBExpression> generateConstant(HSQLDBSchema.HSQLDBCompositeDataType type) {
+    public HSQLDBExpression generateConstant(HSQLDBSchema.HSQLDBCompositeDataType type) {
         switch (type.getType()) {
         case NULL:
             return HSQLDBConstant.createNullConstant();
@@ -82,7 +81,7 @@ public final class HSQLDBExpressionGenerator extends
     }
 
     @Override
-    protected Node<HSQLDBExpression> generateExpression(HSQLDBSchema.HSQLDBCompositeDataType type, int depth) {
+    protected HSQLDBExpression generateExpression(HSQLDBSchema.HSQLDBCompositeDataType type, int depth) {
         if (depth >= hsqldbGlobalState.getOptions().getMaxExpressionDepth()
                 || Randomly.getBooleanWithSmallProbability()) {
             return generateLeafNode(type);
@@ -105,13 +104,12 @@ public final class HSQLDBExpressionGenerator extends
             throw new AssertionError();
         }
 
-        return new NewBinaryOperatorNode<>(generateExpression(type, depth + 1), generateExpression(type, depth + 1),
-                op);
+        return new HSQLDBBinaryOperation(generateExpression(type, depth + 1), generateExpression(type, depth + 1), op);
 
     }
 
     @Override
-    protected Node<HSQLDBExpression> generateColumn(HSQLDBSchema.HSQLDBCompositeDataType type) {
+    protected HSQLDBExpression generateColumn(HSQLDBSchema.HSQLDBCompositeDataType type) {
         HSQLDBSchema.HSQLDBColumn column = Randomly
                 .fromList(columns.stream().filter(c -> c.getType() == type).collect(Collectors.toList()));
         return new HSQLDBColumnReference(column);
@@ -183,8 +181,8 @@ public final class HSQLDBExpressionGenerator extends
     }
 
     @Override
-    public List<Node<HSQLDBExpression>> generateOrderBys() {
-        List<Node<HSQLDBExpression>> expressions = new ArrayList<>();
+    public List<HSQLDBExpression> generateOrderBys() {
+        List<HSQLDBExpression> expressions = new ArrayList<>();
         int nr = Randomly.smallNumber() + 1;
         ArrayList<HSQLDBSchema.HSQLDBColumn> hsqldbColumns = new ArrayList<>(columns);
         for (int i = 0; i < nr && !hsqldbColumns.isEmpty(); i++) {

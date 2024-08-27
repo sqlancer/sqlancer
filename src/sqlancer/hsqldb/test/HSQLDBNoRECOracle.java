@@ -10,9 +10,6 @@ import java.util.stream.Collectors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
-import sqlancer.common.ast.newast.ColumnReferenceNode;
-import sqlancer.common.ast.newast.Node;
-import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.common.oracle.NoRECBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -29,6 +26,7 @@ import sqlancer.hsqldb.ast.HSQLDBColumnReference;
 import sqlancer.hsqldb.ast.HSQLDBExpression;
 import sqlancer.hsqldb.ast.HSQLDBJoin;
 import sqlancer.hsqldb.ast.HSQLDBSelect;
+import sqlancer.hsqldb.ast.HSQLDBTableReference;
 import sqlancer.hsqldb.gen.HSQLDBExpressionGenerator;
 
 public class HSQLDBNoRECOracle extends NoRECBase<HSQLDBGlobalState> implements TestOracle<HSQLDBGlobalState> {
@@ -47,12 +45,12 @@ public class HSQLDBNoRECOracle extends NoRECBase<HSQLDBGlobalState> implements T
         List<HSQLDBColumn> columns = tables.stream().flatMap(t -> t.getColumns().stream()).collect(Collectors.toList());
         HSQLDBExpressionGenerator gen = new HSQLDBExpressionGenerator(state).setColumns(columns);
 
-        Node<HSQLDBExpression> randomWhereCondition = gen
+        HSQLDBExpression randomWhereCondition = gen
                 .generateExpression(HSQLDBCompositeDataType.getRandomWithType(HSQLDBDataType.BOOLEAN));
 
-        List<TableReferenceNode<HSQLDBExpression, HSQLDBTable>> tableList = tables.stream()
-                .map(t -> new TableReferenceNode<HSQLDBExpression, HSQLDBTable>(t)).collect(Collectors.toList());
-        List<Node<HSQLDBExpression>> joins = HSQLDBJoin.getJoins(tableList, state);
+        List<HSQLDBTableReference> tableList = tables.stream().map(t -> new HSQLDBTableReference(t))
+                .collect(Collectors.toList());
+        List<HSQLDBExpression> joins = HSQLDBJoin.getJoins(tableList, state);
         int secondCount = getSecondQuery(new ArrayList<>(tableList), randomWhereCondition, joins); // 禁用优化
         int firstCount = getFirstQueryCount(con, new ArrayList<>(tableList), columns, randomWhereCondition, joins);
         if (firstCount == -1 || secondCount == -1) {
@@ -64,8 +62,8 @@ public class HSQLDBNoRECOracle extends NoRECBase<HSQLDBGlobalState> implements T
         }
     }
 
-    private int getSecondQuery(List<Node<HSQLDBExpression>> tableList, Node<HSQLDBExpression> randomWhereCondition,
-            List<Node<HSQLDBExpression>> joins) throws SQLException {
+    private int getSecondQuery(List<HSQLDBExpression> tableList, HSQLDBExpression randomWhereCondition,
+            List<HSQLDBExpression> joins) throws SQLException {
         HSQLDBSelect select = new HSQLDBSelect();
         HSQLDBColumn c = new HSQLDBColumn("COUNT(*)", null, null);
         select.setFetchColumns(List.of(new HSQLDBColumnReference(c)));
@@ -91,12 +89,11 @@ public class HSQLDBNoRECOracle extends NoRECBase<HSQLDBGlobalState> implements T
         return secondCount;
     }
 
-    private int getFirstQueryCount(SQLConnection con, List<Node<HSQLDBExpression>> tableList,
-            List<HSQLDBColumn> columns, Node<HSQLDBExpression> randomWhereCondition, List<Node<HSQLDBExpression>> joins)
-            throws SQLException {
+    private int getFirstQueryCount(SQLConnection con, List<HSQLDBExpression> tableList, List<HSQLDBColumn> columns,
+            HSQLDBExpression randomWhereCondition, List<HSQLDBExpression> joins) throws SQLException {
         HSQLDBSelect select = new HSQLDBSelect();
-        List<Node<HSQLDBExpression>> allColumns = columns.stream()
-                .map((c) -> new ColumnReferenceNode<HSQLDBExpression, HSQLDBColumn>(c)).collect(Collectors.toList());
+        List<HSQLDBExpression> allColumns = columns.stream().map((c) -> new HSQLDBColumnReference(c))
+                .collect(Collectors.toList());
         select.setFetchColumns(allColumns);
         select.setFromList(tableList);
         select.setWhereClause(randomWhereCondition);

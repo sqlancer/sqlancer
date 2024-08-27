@@ -2,12 +2,12 @@ package sqlancer.hsqldb.ast;
 
 import sqlancer.common.ast.BinaryOperatorNode;
 import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.hsqldb.HSQLDBSchema;
 
-public class HSQLDBUnaryPrefixOperation extends NewUnaryPrefixOperatorNode<HSQLDBExpression> {
+public class HSQLDBUnaryPrefixOperation extends NewUnaryPrefixOperatorNode<HSQLDBExpression>
+        implements HSQLDBExpression {
 
-    public HSQLDBUnaryPrefixOperation(HSQLDBUnaryPrefixOperator operation, Node<HSQLDBExpression> expression) {
+    public HSQLDBUnaryPrefixOperation(HSQLDBUnaryPrefixOperator operation, HSQLDBExpression expression) {
         super(expression, operation);
     }
 

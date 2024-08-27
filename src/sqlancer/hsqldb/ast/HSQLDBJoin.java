@@ -4,19 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Node;
-import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.hsqldb.HSQLDBProvider.HSQLDBGlobalState;
 import sqlancer.hsqldb.HSQLDBSchema;
-import sqlancer.hsqldb.HSQLDBSchema.HSQLDBTable;
 import sqlancer.hsqldb.gen.HSQLDBExpressionGenerator;
 
-public class HSQLDBJoin implements Node<HSQLDBExpression> {
+public class HSQLDBJoin implements HSQLDBExpression {
 
-    private final TableReferenceNode<HSQLDBExpression, HSQLDBTable> leftTable;
-    private final TableReferenceNode<HSQLDBExpression, HSQLDBTable> rightTable;
+    private final HSQLDBTableReference leftTable;
+    private final HSQLDBTableReference rightTable;
     private final JoinType joinType;
-    private final Node<HSQLDBExpression> onCondition;
+    private final HSQLDBExpression onCondition;
     private OuterType outerType;
 
     public enum JoinType {
@@ -35,20 +32,19 @@ public class HSQLDBJoin implements Node<HSQLDBExpression> {
         }
     }
 
-    public HSQLDBJoin(TableReferenceNode<HSQLDBExpression, HSQLDBTable> leftTable,
-            TableReferenceNode<HSQLDBExpression, HSQLDBTable> rightTable, JoinType joinType,
-            Node<HSQLDBExpression> whereCondition) {
+    public HSQLDBJoin(HSQLDBTableReference leftTable, HSQLDBTableReference rightTable, JoinType joinType,
+            HSQLDBExpression whereCondition) {
         this.leftTable = leftTable;
         this.rightTable = rightTable;
         this.joinType = joinType;
         this.onCondition = whereCondition;
     }
 
-    public TableReferenceNode<HSQLDBExpression, HSQLDBTable> getLeftTable() {
+    public HSQLDBTableReference getLeftTable() {
         return leftTable;
     }
 
-    public TableReferenceNode<HSQLDBExpression, HSQLDBTable> getRightTable() {
+    public HSQLDBTableReference getRightTable() {
         return rightTable;
     }
 
@@ -56,7 +52,7 @@ public class HSQLDBJoin implements Node<HSQLDBExpression> {
         return joinType;
     }
 
-    public Node<HSQLDBExpression> getOnCondition() {
+    public HSQLDBExpression getOnCondition() {
         return onCondition;
     }
 
@@ -68,12 +64,11 @@ public class HSQLDBJoin implements Node<HSQLDBExpression> {
         return outerType;
     }
 
-    public static List<Node<HSQLDBExpression>> getJoins(
-            List<TableReferenceNode<HSQLDBExpression, HSQLDBTable>> tableList, HSQLDBGlobalState globalState) {
-        List<Node<HSQLDBExpression>> joinExpressions = new ArrayList<>();
+    public static List<HSQLDBExpression> getJoins(List<HSQLDBTableReference> tableList, HSQLDBGlobalState globalState) {
+        List<HSQLDBExpression> joinExpressions = new ArrayList<>();
         while (tableList.size() >= 2 && Randomly.getBooleanWithRatherLowProbability()) {
-            TableReferenceNode<HSQLDBExpression, HSQLDBTable> leftTable = tableList.remove(0);
-            TableReferenceNode<HSQLDBExpression, HSQLDBTable> rightTable = tableList.remove(0);
+            HSQLDBTableReference leftTable = tableList.remove(0);
+            HSQLDBTableReference rightTable = tableList.remove(0);
             List<HSQLDBSchema.HSQLDBColumn> columns = new ArrayList<>(leftTable.getTable().getColumns());
             columns.addAll(rightTable.getTable().getColumns());
             HSQLDBExpressionGenerator joinGen = new HSQLDBExpressionGenerator(globalState).setColumns(columns);
@@ -100,23 +95,23 @@ public class HSQLDBJoin implements Node<HSQLDBExpression> {
         return joinExpressions;
     }
 
-    public static HSQLDBJoin createRightOuterJoin(TableReferenceNode<HSQLDBExpression, HSQLDBTable> left,
-            TableReferenceNode<HSQLDBExpression, HSQLDBTable> right, Node<HSQLDBExpression> predicate) {
+    public static HSQLDBJoin createRightOuterJoin(HSQLDBTableReference left, HSQLDBTableReference right,
+            HSQLDBExpression predicate) {
         return new HSQLDBJoin(left, right, JoinType.RIGHT, predicate);
     }
 
-    public static HSQLDBJoin createLeftOuterJoin(TableReferenceNode<HSQLDBExpression, HSQLDBTable> left,
-            TableReferenceNode<HSQLDBExpression, HSQLDBSchema.HSQLDBTable> right, Node<HSQLDBExpression> predicate) {
+    public static HSQLDBJoin createLeftOuterJoin(HSQLDBTableReference left, HSQLDBTableReference right,
+            HSQLDBExpression predicate) {
         return new HSQLDBJoin(left, right, JoinType.LEFT, predicate);
     }
 
-    public static HSQLDBJoin createInnerJoin(TableReferenceNode<HSQLDBExpression, HSQLDBSchema.HSQLDBTable> left,
-            TableReferenceNode<HSQLDBExpression, HSQLDBTable> right, Node<HSQLDBExpression> predicate) {
+    public static HSQLDBJoin createInnerJoin(HSQLDBTableReference left, HSQLDBTableReference right,
+            HSQLDBExpression predicate) {
         return new HSQLDBJoin(left, right, JoinType.INNER, predicate);
     }
 
-    public static Node<HSQLDBExpression> createNaturalJoin(TableReferenceNode<HSQLDBExpression, HSQLDBTable> left,
-            TableReferenceNode<HSQLDBExpression, HSQLDBTable> right, OuterType naturalJoinType) {
+    public static HSQLDBExpression createNaturalJoin(HSQLDBTableReference left, HSQLDBTableReference right,
+            OuterType naturalJoinType) {
         HSQLDBJoin join = new HSQLDBJoin(left, right, JoinType.NATURAL, null);
         join.setOuterType(naturalJoinType);
         return join;
