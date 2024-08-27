@@ -1,21 +1,19 @@
-package sqlancer.h2;
+package sqlancer.h2.ast;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Node;
-import sqlancer.common.ast.newast.TableReferenceNode;
+import sqlancer.h2.H2ExpressionGenerator;
 import sqlancer.h2.H2Provider.H2GlobalState;
 import sqlancer.h2.H2Schema.H2Column;
-import sqlancer.h2.H2Schema.H2Table;
 
-public class H2Join implements Node<H2Expression> {
+public class H2Join implements H2Expression {
 
-    private final TableReferenceNode<H2Expression, H2Table> leftTable;
-    private final TableReferenceNode<H2Expression, H2Table> rightTable;
+    private final H2TableReference leftTable;
+    private final H2TableReference rightTable;
     private final JoinType joinType;
-    private final Node<H2Expression> onCondition;
+    private final H2Expression onCondition;
 
     public enum JoinType {
         INNER, CROSS, NATURAL, LEFT, RIGHT;
@@ -25,20 +23,19 @@ public class H2Join implements Node<H2Expression> {
         }
     }
 
-    public H2Join(TableReferenceNode<H2Expression, H2Table> leftTable,
-            TableReferenceNode<H2Expression, H2Table> rightTable, JoinType joinType,
-            Node<H2Expression> whereCondition) {
+    public H2Join(H2TableReference leftTable, H2TableReference rightTable, JoinType joinType,
+            H2Expression whereCondition) {
         this.leftTable = leftTable;
         this.rightTable = rightTable;
         this.joinType = joinType;
         this.onCondition = whereCondition;
     }
 
-    public TableReferenceNode<H2Expression, H2Table> getLeftTable() {
+    public H2TableReference getLeftTable() {
         return leftTable;
     }
 
-    public TableReferenceNode<H2Expression, H2Table> getRightTable() {
+    public H2TableReference getRightTable() {
         return rightTable;
     }
 
@@ -46,16 +43,15 @@ public class H2Join implements Node<H2Expression> {
         return joinType;
     }
 
-    public Node<H2Expression> getOnCondition() {
+    public H2Expression getOnCondition() {
         return onCondition;
     }
 
-    public static List<Node<H2Expression>> getJoins(List<TableReferenceNode<H2Expression, H2Table>> tableList,
-            H2GlobalState globalState) {
-        List<Node<H2Expression>> joinExpressions = new ArrayList<>();
+    public static List<H2Expression> getJoins(List<H2TableReference> tableList, H2GlobalState globalState) {
+        List<H2Expression> joinExpressions = new ArrayList<>();
         while (tableList.size() >= 2 && Randomly.getBooleanWithRatherLowProbability()) {
-            TableReferenceNode<H2Expression, H2Table> leftTable = tableList.remove(0);
-            TableReferenceNode<H2Expression, H2Table> rightTable = tableList.remove(0);
+            H2TableReference leftTable = tableList.remove(0);
+            H2TableReference rightTable = tableList.remove(0);
             List<H2Column> columns = new ArrayList<>(leftTable.getTable().getColumns());
             columns.addAll(rightTable.getTable().getColumns());
             H2ExpressionGenerator joinGen = new H2ExpressionGenerator(globalState).setColumns(columns);
@@ -83,23 +79,19 @@ public class H2Join implements Node<H2Expression> {
         return joinExpressions;
     }
 
-    public static H2Join createRightOuterJoin(TableReferenceNode<H2Expression, H2Table> left,
-            TableReferenceNode<H2Expression, H2Table> right, Node<H2Expression> predicate) {
+    public static H2Join createRightOuterJoin(H2TableReference left, H2TableReference right, H2Expression predicate) {
         return new H2Join(left, right, JoinType.RIGHT, predicate);
     }
 
-    public static H2Join createLeftOuterJoin(TableReferenceNode<H2Expression, H2Table> left,
-            TableReferenceNode<H2Expression, H2Table> right, Node<H2Expression> predicate) {
+    public static H2Join createLeftOuterJoin(H2TableReference left, H2TableReference right, H2Expression predicate) {
         return new H2Join(left, right, JoinType.LEFT, predicate);
     }
 
-    public static H2Join createInnerJoin(TableReferenceNode<H2Expression, H2Table> left,
-            TableReferenceNode<H2Expression, H2Table> right, Node<H2Expression> predicate) {
+    public static H2Join createInnerJoin(H2TableReference left, H2TableReference right, H2Expression predicate) {
         return new H2Join(left, right, JoinType.INNER, predicate);
     }
 
-    public static Node<H2Expression> createNaturalJoin(TableReferenceNode<H2Expression, H2Table> left,
-            TableReferenceNode<H2Expression, H2Table> right) {
+    public static H2Expression createNaturalJoin(H2TableReference left, H2TableReference right) {
         return new H2Join(left, right, JoinType.NATURAL, null);
     }
 

@@ -5,11 +5,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Node;
-import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.h2.H2Provider.H2GlobalState;
 import sqlancer.h2.H2Schema.H2Table;
 import sqlancer.h2.H2Schema.H2Tables;
+import sqlancer.h2.ast.H2Constant;
+import sqlancer.h2.ast.H2Expression;
+import sqlancer.h2.ast.H2Join;
+import sqlancer.h2.ast.H2Select;
+import sqlancer.h2.ast.H2TableReference;
 
 public final class H2RandomQuerySynthesizer {
 
@@ -20,16 +23,16 @@ public final class H2RandomQuerySynthesizer {
         H2Tables targetTables = globalState.getSchema().getRandomTableNonEmptyTables();
         H2ExpressionGenerator gen = new H2ExpressionGenerator(globalState).setColumns(targetTables.getColumns());
         H2Select select = new H2Select();
-        List<Node<H2Expression>> columns = new ArrayList<>();
+        List<H2Expression> columns = new ArrayList<>();
         for (int i = 0; i < nrColumns; i++) {
-            Node<H2Expression> expression = gen.generateExpression();
+            H2Expression expression = gen.generateExpression();
             columns.add(expression);
         }
         select.setFetchColumns(columns);
         List<H2Table> tables = targetTables.getTables();
-        List<TableReferenceNode<H2Expression, H2Table>> tableList = tables.stream()
-                .map(t -> new TableReferenceNode<H2Expression, H2Table>(t)).collect(Collectors.toList());
-        List<Node<H2Expression>> joins = H2Join.getJoins(tableList, globalState);
+        List<H2TableReference> tableList = tables.stream().map(t -> new H2TableReference(t))
+                .collect(Collectors.toList());
+        List<H2Expression> joins = H2Join.getJoins(tableList, globalState);
         select.setJoinList(joins.stream().collect(Collectors.toList()));
         select.setFromList(tableList.stream().collect(Collectors.toList()));
         if (Randomly.getBoolean()) {

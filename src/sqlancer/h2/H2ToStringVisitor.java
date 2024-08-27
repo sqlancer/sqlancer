@@ -1,12 +1,16 @@
 package sqlancer.h2;
 
 import sqlancer.common.ast.newast.NewToStringVisitor;
-import sqlancer.common.ast.newast.Node;
+import sqlancer.h2.ast.H2CastNode;
+import sqlancer.h2.ast.H2Constant;
+import sqlancer.h2.ast.H2Expression;
+import sqlancer.h2.ast.H2Join;
+import sqlancer.h2.ast.H2Select;
 
 public class H2ToStringVisitor extends NewToStringVisitor<H2Expression> {
 
     @Override
-    public void visitSpecific(Node<H2Expression> expr) {
+    public void visitSpecific(H2Expression expr) {
         if (expr instanceof H2Constant) {
             visit((H2Constant) expr);
         } else if (expr instanceof H2Select) {
@@ -33,11 +37,11 @@ public class H2ToStringVisitor extends NewToStringVisitor<H2Expression> {
     }
 
     private void visit(H2Join join) {
-        visit(join.getLeftTable());
+        visit((H2Expression) join.getLeftTable());
         sb.append(" ");
         sb.append(join.getJoinType());
         sb.append(" JOIN ");
-        visit(join.getRightTable());
+        visit((H2Expression) join.getRightTable());
         if (join.getOnCondition() != null) {
             sb.append(" ON ");
             visit(join.getOnCondition());
@@ -81,7 +85,7 @@ public class H2ToStringVisitor extends NewToStringVisitor<H2Expression> {
         }
     }
 
-    public static String asString(Node<H2Expression> expr) {
+    public static String asString(H2Expression expr) {
         H2ToStringVisitor visitor = new H2ToStringVisitor();
         visitor.visit(expr);
         return visitor.get();

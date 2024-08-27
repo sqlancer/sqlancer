@@ -1,4 +1,4 @@
-package sqlancer.h2;
+package sqlancer.h2.ast;
 
 public interface H2Expression {
 
