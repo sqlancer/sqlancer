@@ -40,7 +40,7 @@ public final class DuckDBRandomQuerySynthesizer {
         List<DuckDBTable> tables = targetTables.getTables();
         List<DuckDBTableReference> tableList = tables.stream().map(t -> new DuckDBTableReference(t))
                 .collect(Collectors.toList());
-        List<DuckDBExpression> joins = DuckDBJoin.getJoins(tableList, globalState);
+        List<DuckDBJoin> joins = DuckDBJoin.getJoins(tableList, globalState);
         select.setJoinList(joins.stream().collect(Collectors.toList()));
         select.setFromList(tableList.stream().collect(Collectors.toList()));
         if (Randomly.getBoolean()) {
