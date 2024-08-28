@@ -3,12 +3,12 @@ package sqlancer.presto.ast;
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode;
 import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.presto.PrestoSchema;
 
-public class PrestoUnaryPrefixOperation extends NewUnaryPrefixOperatorNode<PrestoExpression> {
+public class PrestoUnaryPrefixOperation extends NewUnaryPrefixOperatorNode<PrestoExpression>
+        implements PrestoExpression {
 
-    public PrestoUnaryPrefixOperation(PrestoUnaryPrefixOperator operation, Node<PrestoExpression> expression) {
+    public PrestoUnaryPrefixOperation(PrestoExpression expression, BinaryOperatorNode.Operator operation) {
         super(expression, operation);
     }
 

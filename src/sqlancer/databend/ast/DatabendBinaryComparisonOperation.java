@@ -2,7 +2,6 @@ package sqlancer.databend.ast;
 
 import sqlancer.common.ast.BinaryOperatorNode;
 import sqlancer.common.ast.newast.NewBinaryOperatorNode;
-import sqlancer.databend.DatabendExprToNode;
 import sqlancer.databend.DatabendSchema.DatabendDataType;
 
 public class DatabendBinaryComparisonOperation extends NewBinaryOperatorNode<DatabendExpression>
@@ -10,15 +9,15 @@ public class DatabendBinaryComparisonOperation extends NewBinaryOperatorNode<Dat
 
     public DatabendBinaryComparisonOperation(DatabendExpression left, DatabendExpression right,
             DatabendBinaryComparisonOperator op) {
-        super(DatabendExprToNode.cast(left), DatabendExprToNode.cast(right), op);
+        super(left, right, op);
     }
 
     public DatabendExpression getLeftExpression() {
-        return (DatabendExpression) super.getLeft();
+        return super.getLeft();
     }
 
     public DatabendExpression getRightExpression() {
-        return (DatabendExpression) super.getRight();
+        return super.getRight();
     }
 
     public DatabendBinaryComparisonOperator getOp() {

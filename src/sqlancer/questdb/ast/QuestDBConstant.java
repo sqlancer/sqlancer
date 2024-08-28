@@ -1,8 +1,6 @@
 package sqlancer.questdb.ast;
 
-import sqlancer.common.ast.newast.Node;
-
-public class QuestDBConstant implements Node<QuestDBExpression> {
+public class QuestDBConstant implements QuestDBExpression {
     private QuestDBConstant() {
     }
 
@@ -67,7 +65,7 @@ public class QuestDBConstant implements Node<QuestDBExpression> {
         }
     }
 
-    public static Node<QuestDBExpression> createIntConstant(long val) {
+    public static QuestDBExpression createIntConstant(long val) {
         return new QuestDBIntConstant(val);
     }
 
@@ -95,19 +93,19 @@ public class QuestDBConstant implements Node<QuestDBExpression> {
 
     }
 
-    public static Node<QuestDBExpression> createBooleanConstant(boolean val) {
+    public static QuestDBExpression createBooleanConstant(boolean val) {
         return new QuestDBBooleanConstant(val);
     }
 
-    public static Node<QuestDBExpression> createNullConstant() {
+    public static QuestDBExpression createNullConstant() {
         return new QuestDBNullConstant();
     }
 
-    public static Node<QuestDBExpression> createFloatConstant(double val) {
+    public static QuestDBExpression createFloatConstant(double val) {
         return new QuestDBDoubleConstant(val);
     }
 
-    public static Node<QuestDBExpression> createSymbolConstant(String val) {
+    public static QuestDBExpression createSymbolConstant(String val) {
         return new QuestDBSymbolConstant(val);
     }
 }

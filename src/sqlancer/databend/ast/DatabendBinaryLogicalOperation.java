@@ -3,7 +3,6 @@ package sqlancer.databend.ast;
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode;
 import sqlancer.common.ast.newast.NewBinaryOperatorNode;
-import sqlancer.databend.DatabendExprToNode;
 import sqlancer.databend.DatabendSchema.DatabendDataType;
 
 public class DatabendBinaryLogicalOperation extends NewBinaryOperatorNode<DatabendExpression>
@@ -11,15 +10,15 @@ public class DatabendBinaryLogicalOperation extends NewBinaryOperatorNode<Databe
 
     public DatabendBinaryLogicalOperation(DatabendExpression left, DatabendExpression right,
             DatabendBinaryLogicalOperator op) {
-        super(DatabendExprToNode.cast(left), DatabendExprToNode.cast(right), op);
+        super(left, right, op);
     }
 
     public DatabendExpression getLeftExpr() {
-        return (DatabendExpression) super.getLeft();
+        return super.getLeft();
     }
 
     public DatabendExpression getRightExpr() {
-        return (DatabendExpression) super.getRight();
+        return super.getRight();
     }
 
     public DatabendBinaryLogicalOperator getOp() {

@@ -3,9 +3,7 @@ package sqlancer.hsqldb.ast;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
-import sqlancer.common.ast.newast.Node;
-
-public class HSQLDBConstant implements Node<HSQLDBExpression> {
+public class HSQLDBConstant implements HSQLDBExpression {
 
     private HSQLDBConstant() {
     }
@@ -190,39 +188,39 @@ public class HSQLDBConstant implements Node<HSQLDBExpression> {
 
     }
 
-    public static Node<HSQLDBExpression> createStringConstant(String text, int size) {
+    public static HSQLDBExpression createStringConstant(String text, int size) {
         return new HSQLDBTextConstant(text, size);
     }
 
-    public static Node<HSQLDBExpression> createFloatConstant(double val) {
+    public static HSQLDBExpression createFloatConstant(double val) {
         return new HSQLDBDoubleConstant(val);
     }
 
-    public static Node<HSQLDBExpression> createIntConstant(long val) {
+    public static HSQLDBExpression createIntConstant(long val) {
         return new HSQLDBIntConstant(val);
     }
 
-    public static Node<HSQLDBExpression> createNullConstant() {
+    public static HSQLDBExpression createNullConstant() {
         return new HSQLDBNullConstant();
     }
 
-    public static Node<HSQLDBExpression> createBooleanConstant(boolean val) {
+    public static HSQLDBExpression createBooleanConstant(boolean val) {
         return new HSQLDBBooleanConstant(val);
     }
 
-    public static Node<HSQLDBExpression> createDateConstant(long integer) {
+    public static HSQLDBExpression createDateConstant(long integer) {
         return new HSQLDBDateConstant(integer);
     }
 
-    public static Node<HSQLDBExpression> createTimeConstant(long integer, int size) {
+    public static HSQLDBExpression createTimeConstant(long integer, int size) {
         return new HSQLDBTimeConstant(integer);
     }
 
-    public static Node<HSQLDBExpression> createTimestampConstant(long integer, int size) {
+    public static HSQLDBExpression createTimestampConstant(long integer, int size) {
         return new HSQLDBTimestampConstant(integer);
     }
 
-    public static Node<HSQLDBExpression> createBinaryConstant(long nonCachedInteger, int size) {
+    public static HSQLDBExpression createBinaryConstant(long nonCachedInteger, int size) {
         return new HSQLDBBinaryConstant(nonCachedInteger, size);
     }
 

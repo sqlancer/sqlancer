@@ -3,12 +3,12 @@ package sqlancer.hsqldb.ast;
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode;
 import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.hsqldb.HSQLDBSchema;
 
-public class HSQLDBUnaryPostfixOperation extends NewUnaryPostfixOperatorNode<HSQLDBExpression> {
+public class HSQLDBUnaryPostfixOperation extends NewUnaryPostfixOperatorNode<HSQLDBExpression>
+        implements HSQLDBExpression {
 
-    public HSQLDBUnaryPostfixOperation(Node<HSQLDBExpression> expr, HSQLDBUnaryPostfixOperator op) {
+    public HSQLDBUnaryPostfixOperation(HSQLDBExpression expr, HSQLDBUnaryPostfixOperator op) {
         super(expr, op);
     }
 
@@ -45,7 +45,7 @@ public class HSQLDBUnaryPostfixOperation extends NewUnaryPostfixOperatorNode<HSQ
 
     }
 
-    public Node<HSQLDBExpression> getExpression() {
+    public HSQLDBExpression getExpression() {
         return getExpr();
     }
 

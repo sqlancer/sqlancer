@@ -7,7 +7,6 @@ import java.util.List;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.presto.PrestoErrors;
 import sqlancer.presto.PrestoGlobalState;
@@ -52,12 +51,12 @@ public class PrestoQueryPartitioningHavingTester extends PrestoQueryPartitioning
     }
 
     @Override
-    protected Node<PrestoExpression> generatePredicate() {
+    protected PrestoExpression generatePredicate() {
         return gen.generateHavingClause();
     }
 
     @Override
-    List<Node<PrestoExpression>> generateFetchColumns() {
+    List<PrestoExpression> generateFetchColumns() {
         return Collections.singletonList(gen.generateHavingClause());
     }
 

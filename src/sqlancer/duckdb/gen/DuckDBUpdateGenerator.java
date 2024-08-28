@@ -3,7 +3,6 @@ package sqlancer.duckdb.gen;
 import java.util.List;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.AbstractUpdateGenerator;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.duckdb.DuckDBErrors;
@@ -40,7 +39,7 @@ public final class DuckDBUpdateGenerator extends AbstractUpdateGenerator<DuckDBC
 
     @Override
     protected void updateValue(DuckDBColumn column) {
-        Node<DuckDBExpression> expr;
+        DuckDBExpression expr;
         if (Randomly.getBooleanWithSmallProbability()) {
             expr = gen.generateExpression();
             DuckDBErrors.addExpressionErrors(errors);

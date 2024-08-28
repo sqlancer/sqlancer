@@ -3,7 +3,6 @@ package sqlancer.presto.gen;
 import java.util.List;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.presto.PrestoGlobalState;
@@ -46,7 +45,7 @@ public final class PrestoIndexGenerator {
         sb.append(")");
         if (Randomly.getBoolean()) {
             sb.append(" WHERE ");
-            Node<PrestoExpression> expr = new PrestoTypedExpressionGenerator(globalState).setColumns(table.getColumns())
+            PrestoExpression expr = new PrestoTypedExpressionGenerator(globalState).setColumns(table.getColumns())
                     .generateExpression(PrestoSchema.PrestoCompositeDataType.getRandomWithoutNull());
             sb.append(PrestoToStringVisitor.asString(expr));
         }

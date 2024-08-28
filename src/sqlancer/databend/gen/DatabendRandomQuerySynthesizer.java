@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Node;
-import sqlancer.common.ast.newast.TableReferenceNode;
-import sqlancer.databend.DatabendExprToNode;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema;
 import sqlancer.databend.DatabendSchema.DatabendColumn;
@@ -19,6 +16,7 @@ import sqlancer.databend.ast.DatabendConstant;
 import sqlancer.databend.ast.DatabendExpression;
 import sqlancer.databend.ast.DatabendJoin;
 import sqlancer.databend.ast.DatabendSelect;
+import sqlancer.databend.ast.DatabendTableReference;
 
 public final class DatabendRandomQuerySynthesizer {
 
@@ -30,19 +28,19 @@ public final class DatabendRandomQuerySynthesizer {
         List<DatabendColumn> targetColumns = targetTables.getColumns();
         DatabendNewExpressionGenerator gen = new DatabendNewExpressionGenerator(globalState).setColumns(targetColumns);
         // boolean allowAggregates = Randomly.getBooleanWithSmallProbability();
-        List<Node<DatabendExpression>> columns = new ArrayList<>();
+        List<DatabendExpression> columns = new ArrayList<>();
         HashSet<DatabendColumnValue> columnOfLeafNode = new HashSet<>();
         gen.setColumnOfLeafNode(columnOfLeafNode);
         int freeColumns = targetColumns.size();
         for (int i = 0; i < nrColumns; i++) {
             // if (allowAggregates && Randomly.getBoolean()) {
-            Node<DatabendExpression> column = null;
+            DatabendExpression column = null;
             if (freeColumns > 0 && Randomly.getBoolean()) {
                 column = new DatabendColumnValue(targetColumns.get(freeColumns - 1), null);
                 freeColumns -= 1;
                 columnOfLeafNode.add((DatabendColumnValue) column);
             } else {
-                column = DatabendExprToNode.cast(gen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN));
+                column = gen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN);
             }
             columns.add(column);
         }
@@ -51,17 +49,16 @@ public final class DatabendRandomQuerySynthesizer {
         select.setDistinct(isDistinct);
         select.setFetchColumns(columns);
         List<DatabendTable> tables = targetTables.getTables();
-        List<TableReferenceNode<DatabendExpression, DatabendTable>> tableList = tables.stream()
-                .map(t -> new TableReferenceNode<DatabendExpression, DatabendTable>(t)).collect(Collectors.toList());
-        List<Node<DatabendExpression>> joins = DatabendJoin.getJoins(tableList, globalState);
+        List<DatabendTableReference> tableList = tables.stream().map(t -> new DatabendTableReference(t))
+                .collect(Collectors.toList());
+        List<DatabendExpression> joins = DatabendJoin.getJoins(tableList, globalState);
         select.setJoinList(joins);
         select.setFromList(tableList.stream().collect(Collectors.toList()));
         if (Randomly.getBoolean()) {
-            select.setWhereClause(
-                    DatabendExprToNode.cast(gen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN)));
+            select.setWhereClause(gen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN));
         }
 
-        List<Node<DatabendExpression>> noExprColumns = new ArrayList<>(columnOfLeafNode);
+        List<DatabendExpression> noExprColumns = new ArrayList<>(columnOfLeafNode);
 
         if (Randomly.getBoolean() && !noExprColumns.isEmpty() && !isDistinct) {
             select.setOrderByClauses(Randomly.nonEmptySubset(noExprColumns));
@@ -71,7 +68,7 @@ public final class DatabendRandomQuerySynthesizer {
         }
 
         if (Randomly.getBoolean()) { // 可能产生新的column叶子结点
-            select.setHavingClause(DatabendExprToNode.cast(gen.generateHavingClause()));
+            select.setHavingClause(gen.generateHavingClause());
         }
 
         noExprColumns = new ArrayList<>(columnOfLeafNode);

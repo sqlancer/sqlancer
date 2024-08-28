@@ -7,8 +7,6 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
-import sqlancer.common.ast.newast.Node;
-import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -17,17 +15,16 @@ import sqlancer.doris.DorisProvider.DorisGlobalState;
 import sqlancer.doris.DorisSchema.DorisColumn;
 import sqlancer.doris.DorisSchema.DorisDataType;
 import sqlancer.doris.DorisSchema.DorisRowValue;
-import sqlancer.doris.DorisSchema.DorisTable;
 import sqlancer.doris.DorisSchema.DorisTables;
 import sqlancer.doris.ast.DorisColumnValue;
 import sqlancer.doris.ast.DorisConstant;
 import sqlancer.doris.ast.DorisExpression;
 import sqlancer.doris.ast.DorisSelect;
+import sqlancer.doris.ast.DorisTableReference;
 import sqlancer.doris.ast.DorisUnaryPostfixOperation;
 import sqlancer.doris.ast.DorisUnaryPrefixOperation;
 import sqlancer.doris.gen.DorisNewExpressionGenerator;
 import sqlancer.doris.visitor.DorisExpectedValueVisitor;
-import sqlancer.doris.visitor.DorisExprToNode;
 import sqlancer.doris.visitor.DorisToStringVisitor;
 
 public class DorisPivotedQuerySynthesisOracle
@@ -53,22 +50,22 @@ public class DorisPivotedQuerySynthesisOracle
         selectStatement.setFetchColumns(fetchColumns.stream()
                 .map(c -> new DorisColumnValue(getFetchValueAliasedColumn(c), pivotRow.getValues().get(c)))
                 .collect(Collectors.toList()));
-        selectStatement.setFromList(randomTables.getTables().stream()
-                .map(t -> new TableReferenceNode<DorisExpression, DorisTable>(t)).collect(Collectors.toList()));
+        selectStatement.setFromList(
+                randomTables.getTables().stream().map(t -> new DorisTableReference(t)).collect(Collectors.toList()));
         DorisExpression whereClause = generateRectifiedExpression(columns, pivotRow);
-        selectStatement.setWhereClause(DorisExprToNode.cast(whereClause));
-        List<Node<DorisExpression>> groupByClause = generateGroupByClause(columns, pivotRow);
+        selectStatement.setWhereClause(whereClause);
+        List<DorisExpression> groupByClause = generateGroupByClause(columns, pivotRow);
         selectStatement.setGroupByExpressions(groupByClause);
-        Node<DorisExpression> limitClause = generateLimit();
+        DorisExpression limitClause = generateLimit();
         selectStatement.setLimitClause(limitClause);
         if (limitClause != null) {
-            Node<DorisExpression> offsetClause = generateOffset();
+            DorisExpression offsetClause = generateOffset();
             selectStatement.setOffsetClause(offsetClause);
         }
         DorisNewExpressionGenerator gen = new DorisNewExpressionGenerator(globalState);
         gen.setColumns(columns);
         if (!isDistinct) {
-            List<Node<DorisExpression>> constants = new ArrayList<>();
+            List<DorisExpression> constants = new ArrayList<>();
             constants.add(new DorisConstant.DorisIntConstant(
                     Randomly.smallNumber() % selectStatement.getFetchColumns().size() + 1));
             selectStatement.setOrderByClauses(constants);
@@ -124,10 +121,10 @@ public class DorisPivotedQuerySynthesisOracle
 
     @Override
     protected String getExpectedValues(DorisExpression expr) {
-        return DorisExpectedValueVisitor.asExpectedValues(DorisExprToNode.cast(expr));
+        return DorisExpectedValueVisitor.asExpectedValues(expr);
     }
 
-    private List<Node<DorisExpression>> generateGroupByClause(List<DorisColumn> columns, DorisRowValue rowValue) {
+    private List<DorisExpression> generateGroupByClause(List<DorisColumn> columns, DorisRowValue rowValue) {
         if (Randomly.getBoolean()) {
             return columns.stream().map(c -> new DorisColumnValue(c, rowValue.getValues().get(c)))
                     .collect(Collectors.toList());
@@ -136,7 +133,7 @@ public class DorisPivotedQuerySynthesisOracle
         }
     }
 
-    private Node<DorisExpression> generateLimit() {
+    private DorisExpression generateLimit() {
         if (Randomly.getBoolean()) {
             return DorisConstant.createIntConstant(Integer.MAX_VALUE);
         } else {
@@ -144,7 +141,7 @@ public class DorisPivotedQuerySynthesisOracle
         }
     }
 
-    private Node<DorisExpression> generateOffset() {
+    private DorisExpression generateOffset() {
         if (Randomly.getBoolean()) {
             return DorisConstant.createIntConstant(0);
         } else {

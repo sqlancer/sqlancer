@@ -1,9 +1,8 @@
 package sqlancer.duckdb.ast;
 
 import sqlancer.common.ast.SelectBase;
-import sqlancer.common.ast.newast.Node;
 
-public class DuckDBSelect extends SelectBase<Node<DuckDBExpression>> implements Node<DuckDBExpression> {
+public class DuckDBSelect extends SelectBase<DuckDBExpression> implements DuckDBExpression {
 
     private boolean isDistinct;
 

@@ -1,9 +1,8 @@
 package sqlancer.presto.ast;
 
-import sqlancer.common.ast.newast.Node;
 import sqlancer.presto.PrestoSchema;
 
-public class PrestoFunctionWithoutParenthesis implements Node<PrestoExpression> {
+public class PrestoFunctionWithoutParenthesis implements PrestoExpression {
 
     private final PrestoSchema.PrestoCompositeDataType type;
     private final String expr;

@@ -6,16 +6,12 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.SelectBase;
-import sqlancer.common.ast.newast.ColumnReferenceNode;
-import sqlancer.common.ast.newast.Node;
-import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.datafusion.DataFusionProvider.DataFusionGlobalState;
 import sqlancer.datafusion.DataFusionSchema;
-import sqlancer.datafusion.DataFusionSchema.DataFusionColumn;
 import sqlancer.datafusion.DataFusionSchema.DataFusionTable;
 import sqlancer.datafusion.gen.DataFusionExpressionGenerator;
 
-public class DataFusionSelect extends SelectBase<Node<DataFusionExpression>> implements Node<DataFusionExpression> {
+public class DataFusionSelect extends SelectBase<DataFusionExpression> implements DataFusionExpression {
     public Optional<String> fetchColumnsString = Optional.empty(); // When available, override `fetchColumns` in base
     // class's `Node` representation (for display)
     public DataFusionExpressionGenerator exprGen;
@@ -37,16 +33,14 @@ public class DataFusionSelect extends SelectBase<Node<DataFusionExpression>> imp
         // And generate a random expression which might contain those columns
         List<DataFusionSchema.DataFusionColumn> randomColumns = DataFusionTable.getRandomColumns(randomTables);
         randomSelect.exprGen = new DataFusionExpressionGenerator(state).setColumns(randomColumns);
-        Node<DataFusionExpression> whereExpr = randomSelect.exprGen
+        DataFusionExpression whereExpr = randomSelect.exprGen
                 .generateExpression(DataFusionSchema.DataFusionDataType.BOOLEAN);
 
         // Constructing result
-        List<Node<DataFusionExpression>> randomTableNodes = randomTables.stream()
-                .map(t -> new TableReferenceNode<DataFusionExpression, DataFusionTable>(t))
+        List<DataFusionExpression> randomTableNodes = randomTables.stream().map(t -> new DataFusionTableReference(t))
                 .collect(Collectors.toList());
-        List<Node<DataFusionExpression>> randomColumnNodes = randomColumns.stream()
-                .map((c) -> new ColumnReferenceNode<DataFusionExpression, DataFusionColumn>(c))
-                .collect(Collectors.toList());
+        List<DataFusionExpression> randomColumnNodes = randomColumns.stream()
+                .map((c) -> new DataFusionColumnReference(c)).collect(Collectors.toList());
 
         randomSelect.setFetchColumns(randomColumnNodes);
         randomSelect.setFromList(randomTableNodes);

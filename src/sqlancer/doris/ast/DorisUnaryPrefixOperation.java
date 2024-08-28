@@ -4,16 +4,15 @@ import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode;
 import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
 import sqlancer.doris.DorisSchema.DorisDataType;
-import sqlancer.doris.visitor.DorisExprToNode;
 
 public class DorisUnaryPrefixOperation extends NewUnaryPrefixOperatorNode<DorisExpression> implements DorisExpression {
 
     public DorisUnaryPrefixOperation(DorisExpression expr, DorisUnaryPrefixOperator op) {
-        super(DorisExprToNode.cast(expr), op);
+        super(expr, op);
     }
 
     public DorisExpression getExpression() {
-        return (DorisExpression) getExpr();
+        return getExpr();
     }
 
     public DorisUnaryPrefixOperator getOp() {

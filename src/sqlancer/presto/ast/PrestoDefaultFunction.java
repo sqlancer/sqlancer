@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.presto.PrestoSchema;
 import sqlancer.presto.PrestoSchema.PrestoCompositeDataType;
 import sqlancer.presto.PrestoSchema.PrestoDataType;
@@ -75,7 +74,7 @@ public enum PrestoDefaultFunction implements PrestoFunction {
         }
 
         @Override
-        public List<Node<PrestoExpression>> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
+        public List<PrestoExpression> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
                 PrestoDataType[] argumentTypes, PrestoCompositeDataType returnType) {
             return super.getArgumentsForReturnType(gen, depth, argumentTypes, returnType);
         }
@@ -177,9 +176,9 @@ public enum PrestoDefaultFunction implements PrestoFunction {
     }
 
     @Override
-    public List<Node<PrestoExpression>> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
+    public List<PrestoExpression> getArgumentsForReturnType(PrestoTypedExpressionGenerator gen, int depth,
             PrestoDataType[] argumentTypes, PrestoCompositeDataType returnType) {
-        List<Node<PrestoExpression>> arguments = new ArrayList<>();
+        List<PrestoExpression> arguments = new ArrayList<>();
 
         // This is a workaround based on the assumption that array types should refer to the same element type.
         PrestoCompositeDataType savedArrayType = null;

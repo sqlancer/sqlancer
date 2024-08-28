@@ -165,7 +165,6 @@ public abstract class SQLite3Expression implements Expression<SQLite3Column> {
             return table;
         }
 
-        @Override
         public SQLite3Expression getOnClause() {
             return onClause;
         }

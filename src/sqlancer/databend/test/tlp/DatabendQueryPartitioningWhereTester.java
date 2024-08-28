@@ -6,7 +6,6 @@ import java.util.List;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.databend.DatabendErrors;
-import sqlancer.databend.DatabendExprToNode;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendToStringVisitor;
 
@@ -30,11 +29,11 @@ public class DatabendQueryPartitioningWhereTester extends DatabendQueryPartition
         // if (orderBy) { //TODO 待开启
         // select.setOrderByClauses(gen.generateOrderBys());
         // }
-        select.setWhereClause(DatabendExprToNode.cast(predicate));
+        select.setWhereClause(predicate);
         String firstQueryString = DatabendToStringVisitor.asString(select);
-        select.setWhereClause(DatabendExprToNode.cast(negatedPredicate));
+        select.setWhereClause(negatedPredicate);
         String secondQueryString = DatabendToStringVisitor.asString(select);
-        select.setWhereClause(DatabendExprToNode.cast(isNullPredicate));
+        select.setWhereClause(isNullPredicate);
         String thirdQueryString = DatabendToStringVisitor.asString(select);
         List<String> combinedString = new ArrayList<>();
         List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,

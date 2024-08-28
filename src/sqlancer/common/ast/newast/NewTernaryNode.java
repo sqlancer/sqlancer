@@ -1,14 +1,14 @@
 package sqlancer.common.ast.newast;
 
-public class NewTernaryNode<T> implements Node<T> {
+public class NewTernaryNode<T> {
 
-    protected final Node<T> left;
-    protected final Node<T> middle;
-    protected final Node<T> right;
+    protected final T left;
+    protected final T middle;
+    protected final T right;
     private final String leftStr;
     private final String rightStr;
 
-    public NewTernaryNode(Node<T> left, Node<T> middle, Node<T> right, String leftStr, String rightStr) {
+    public NewTernaryNode(T left, T middle, T right, String leftStr, String rightStr) {
         this.left = left;
         this.middle = middle;
         this.right = right;
@@ -16,15 +16,15 @@ public class NewTernaryNode<T> implements Node<T> {
         this.rightStr = rightStr;
     }
 
-    public Node<T> getLeft() {
+    public T getLeft() {
         return left;
     }
 
-    public Node<T> getMiddle() {
+    public T getMiddle() {
         return middle;
     }
 
-    public Node<T> getRight() {
+    public T getRight() {
         return right;
     }
 

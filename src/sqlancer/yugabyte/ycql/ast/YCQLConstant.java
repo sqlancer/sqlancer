@@ -3,9 +3,7 @@ package sqlancer.yugabyte.ycql.ast;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
-import sqlancer.common.ast.newast.Node;
-
-public class YCQLConstant implements Node<YCQLExpression> {
+public class YCQLConstant implements YCQLExpression {
 
     private YCQLConstant() {
     }
@@ -142,31 +140,31 @@ public class YCQLConstant implements Node<YCQLExpression> {
 
     }
 
-    public static Node<YCQLExpression> createStringConstant(String text) {
+    public static YCQLExpression createStringConstant(String text) {
         return new YCQLTextConstant(text);
     }
 
-    public static Node<YCQLExpression> createFloatConstant(double val) {
+    public static YCQLExpression createFloatConstant(double val) {
         return new YCQLDoubleConstant(val);
     }
 
-    public static Node<YCQLExpression> createIntConstant(long val) {
+    public static YCQLExpression createIntConstant(long val) {
         return new YCQLIntConstant(val);
     }
 
-    public static Node<YCQLExpression> createNullConstant() {
+    public static YCQLExpression createNullConstant() {
         return new YCQLNullConstant();
     }
 
-    public static Node<YCQLExpression> createBooleanConstant(boolean val) {
+    public static YCQLExpression createBooleanConstant(boolean val) {
         return new YCQLBooleanConstant(val);
     }
 
-    public static Node<YCQLExpression> createDateConstant(long integer) {
+    public static YCQLExpression createDateConstant(long integer) {
         return new YCQLDateConstant(integer);
     }
 
-    public static Node<YCQLExpression> createTimestampConstant(long integer) {
+    public static YCQLExpression createTimestampConstant(long integer) {
         return new YCQLTimestampConstant(integer);
     }
 

@@ -2,9 +2,7 @@ package sqlancer.doris.ast;
 
 import java.util.List;
 
-import sqlancer.common.ast.newast.Node;
-
-public class DorisCaseOperation implements Node<DorisExpression>, DorisExpression {
+public class DorisCaseOperation implements DorisExpression {
 
     private final DorisExpression expr;
     private final List<DorisExpression> conditions;

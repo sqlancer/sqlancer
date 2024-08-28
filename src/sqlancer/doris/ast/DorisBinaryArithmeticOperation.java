@@ -5,12 +5,11 @@ import java.util.function.BinaryOperator;
 import sqlancer.common.ast.BinaryOperatorNode;
 import sqlancer.common.ast.newast.NewBinaryOperatorNode;
 import sqlancer.doris.DorisSchema.DorisDataType;
-import sqlancer.doris.visitor.DorisExprToNode;
 
 public class DorisBinaryArithmeticOperation extends NewBinaryOperatorNode<DorisExpression> implements DorisExpression {
 
     public DorisBinaryArithmeticOperation(DorisExpression left, DorisExpression right, BinaryOperatorNode.Operator op) {
-        super(DorisExprToNode.cast(left), DorisExprToNode.cast(right), op);
+        super(left, right, op);
     }
 
     public enum DorisBinaryArithmeticOperator implements BinaryOperatorNode.Operator {
@@ -114,11 +113,11 @@ public class DorisBinaryArithmeticOperation extends NewBinaryOperatorNode<DorisE
     }
 
     public DorisExpression getLeftExpr() {
-        return (DorisExpression) super.getLeft();
+        return super.getLeft();
     }
 
     public DorisExpression getRightExpr() {
-        return (DorisExpression) super.getRight();
+        return super.getRight();
     }
 
     public DorisBinaryArithmeticOperator getOp() {

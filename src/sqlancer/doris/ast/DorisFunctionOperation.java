@@ -6,11 +6,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.doris.DorisSchema.DorisDataType;
 import sqlancer.doris.gen.DorisNewExpressionGenerator;
 
-public class DorisFunctionOperation implements Node<DorisExpression>, DorisExpression {
+public class DorisFunctionOperation implements DorisExpression {
 
     private DorisFunction function;
     private List<DorisExpression> args;

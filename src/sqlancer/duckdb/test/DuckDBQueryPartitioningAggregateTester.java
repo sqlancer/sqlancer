@@ -8,12 +8,7 @@ import java.util.List;
 import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.NewAliasNode;
-import sqlancer.common.ast.newast.NewBinaryOperatorNode;
 import sqlancer.common.ast.newast.NewFunctionNode;
-import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
-import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
@@ -22,7 +17,10 @@ import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBCompositeDataType;
 import sqlancer.duckdb.DuckDBSchema.DuckDBDataType;
 import sqlancer.duckdb.DuckDBToStringVisitor;
+import sqlancer.duckdb.ast.DuckDBAlias;
+import sqlancer.duckdb.ast.DuckDBBinaryOperator;
 import sqlancer.duckdb.ast.DuckDBExpression;
+import sqlancer.duckdb.ast.DuckDBFunction;
 import sqlancer.duckdb.ast.DuckDBSelect;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator.DuckDBAggregateFunction;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator.DuckDBBinaryArithmeticOperator;
@@ -49,9 +47,8 @@ public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartition
         DuckDBAggregateFunction aggregateFunction = Randomly.fromOptions(DuckDBAggregateFunction.MAX,
                 DuckDBAggregateFunction.MIN, DuckDBAggregateFunction.SUM, DuckDBAggregateFunction.COUNT,
                 DuckDBAggregateFunction.AVG/* , DuckDBAggregateFunction.STDDEV_POP */);
-        NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> aggregate = gen
-                .generateArgsForAggregate(aggregateFunction);
-        List<Node<DuckDBExpression>> fetchColumns = new ArrayList<>();
+        DuckDBFunction<DuckDBAggregateFunction> aggregate = gen.generateArgsForAggregate(aggregateFunction);
+        List<DuckDBExpression> fetchColumns = new ArrayList<>();
         fetchColumns.add(aggregate);
         while (Randomly.getBooleanWithRatherLowProbability()) {
             fetchColumns.add(gen.generateAggregate());
@@ -78,15 +75,15 @@ public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartition
 
     }
 
-    private String createMetamorphicUnionQuery(DuckDBSelect select,
-            NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> aggregate, List<Node<DuckDBExpression>> from) {
+    private String createMetamorphicUnionQuery(DuckDBSelect select, DuckDBFunction<DuckDBAggregateFunction> aggregate,
+            List<DuckDBExpression> from) {
         String metamorphicQuery;
-        Node<DuckDBExpression> whereClause = gen.generateExpression();
-        Node<DuckDBExpression> negatedClause = new NewUnaryPrefixOperatorNode<>(whereClause,
+        DuckDBExpression whereClause = gen.generateExpression();
+        DuckDBExpression negatedClause = new sqlancer.duckdb.ast.DuckDBUnaryPrefixOperator(whereClause,
                 DuckDBUnaryPrefixOperator.NOT);
-        Node<DuckDBExpression> notNullClause = new NewUnaryPostfixOperatorNode<>(whereClause,
+        DuckDBExpression notNullClause = new sqlancer.duckdb.ast.DuckDBUnaryPostfixOperator(whereClause,
                 DuckDBUnaryPostfixOperator.IS_NULL);
-        List<Node<DuckDBExpression>> mappedAggregate = mapped(aggregate);
+        List<DuckDBExpression> mappedAggregate = mapped(aggregate);
         DuckDBSelect leftSelect = getSelect(mappedAggregate, from, whereClause, select.getJoinList());
         DuckDBSelect middleSelect = getSelect(mappedAggregate, from, negatedClause, select.getJoinList());
         DuckDBSelect rightSelect = getSelect(mappedAggregate, from, notNullClause, select.getJoinList());
@@ -120,7 +117,7 @@ public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartition
         }
     }
 
-    private List<Node<DuckDBExpression>> mapped(NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> aggregate) {
+    private List<DuckDBExpression> mapped(DuckDBFunction<DuckDBAggregateFunction> aggregate) {
         DuckDBCastOperation count;
         switch (aggregate.getFunc()) {
         case COUNT:
@@ -129,21 +126,19 @@ public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartition
         case SUM:
             return aliasArgs(Arrays.asList(aggregate));
         case AVG:
-            NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> sum = new NewFunctionNode<>(aggregate.getArgs(),
+            DuckDBFunction<DuckDBAggregateFunction> sum = new DuckDBFunction<>(aggregate.getArgs(),
                     DuckDBAggregateFunction.SUM);
-            count = new DuckDBCastOperation(new NewFunctionNode<>(aggregate.getArgs(), DuckDBAggregateFunction.COUNT),
+            count = new DuckDBCastOperation(new DuckDBFunction<>(aggregate.getArgs(), DuckDBAggregateFunction.COUNT),
                     new DuckDBCompositeDataType(DuckDBDataType.FLOAT, 8));
             return aliasArgs(Arrays.asList(sum, count));
         case STDDEV_POP:
-            NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> sumSquared = new NewFunctionNode<>(
-                    Arrays.asList(new NewBinaryOperatorNode<>(aggregate.getArgs().get(0), aggregate.getArgs().get(0),
+            DuckDBFunction<DuckDBAggregateFunction> sumSquared = new DuckDBFunction<>(
+                    Arrays.asList(new DuckDBBinaryOperator(aggregate.getArgs().get(0), aggregate.getArgs().get(0),
                             DuckDBBinaryArithmeticOperator.MULT)),
                     DuckDBAggregateFunction.SUM);
-            count = new DuckDBCastOperation(
-                    new NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction>(aggregate.getArgs(),
-                            DuckDBAggregateFunction.COUNT),
+            count = new DuckDBCastOperation(new DuckDBFunction<>(aggregate.getArgs(), DuckDBAggregateFunction.COUNT),
                     new DuckDBCompositeDataType(DuckDBDataType.FLOAT, 8));
-            NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> avg = new NewFunctionNode<>(aggregate.getArgs(),
+            DuckDBFunction<DuckDBAggregateFunction> avg = new DuckDBFunction<>(aggregate.getArgs(),
                     DuckDBAggregateFunction.AVG);
             return aliasArgs(Arrays.asList(sumSquared, count, avg));
         default:
@@ -151,11 +146,11 @@ public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartition
         }
     }
 
-    private List<Node<DuckDBExpression>> aliasArgs(List<Node<DuckDBExpression>> originalAggregateArgs) {
-        List<Node<DuckDBExpression>> args = new ArrayList<>();
+    private List<DuckDBExpression> aliasArgs(List<DuckDBExpression> originalAggregateArgs) {
+        List<DuckDBExpression> args = new ArrayList<>();
         int i = 0;
-        for (Node<DuckDBExpression> expr : originalAggregateArgs) {
-            args.add(new NewAliasNode<DuckDBExpression>(expr, "agg" + i++));
+        for (DuckDBExpression expr : originalAggregateArgs) {
+            args.add(new DuckDBAlias(expr, "agg" + i++));
         }
         return args;
     }
@@ -173,8 +168,8 @@ public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartition
         }
     }
 
-    private DuckDBSelect getSelect(List<Node<DuckDBExpression>> aggregates, List<Node<DuckDBExpression>> from,
-            Node<DuckDBExpression> whereClause, List<Node<DuckDBExpression>> joinList) {
+    private DuckDBSelect getSelect(List<DuckDBExpression> aggregates, List<DuckDBExpression> from,
+            DuckDBExpression whereClause, List<DuckDBExpression> joinList) {
         DuckDBSelect leftSelect = new DuckDBSelect();
         leftSelect.setFetchColumns(aggregates);
         leftSelect.setFromList(from);

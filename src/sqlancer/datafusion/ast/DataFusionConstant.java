@@ -1,17 +1,15 @@
 package sqlancer.datafusion.ast;
 
-import sqlancer.common.ast.newast.Node;
-
-public class DataFusionConstant implements Node<DataFusionExpression> {
+public class DataFusionConstant implements DataFusionExpression {
 
     private DataFusionConstant() {
     }
 
-    public static Node<DataFusionExpression> createIntConstant(long val) {
+    public static DataFusionExpression createIntConstant(long val) {
         return new DataFusionIntConstant(val);
     }
 
-    public static Node<DataFusionExpression> createNullConstant() {
+    public static DataFusionExpression createNullConstant() {
         return new DataFusionNullConstant();
     }
 

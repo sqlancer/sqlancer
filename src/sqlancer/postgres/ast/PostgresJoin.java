@@ -100,7 +100,6 @@ public class PostgresJoin implements PostgresExpression, Join<PostgresExpression
         return rightTable;
     }
 
-    @Override
     public PostgresExpression getOnClause() {
         return onClause;
     }

@@ -1,8 +1,6 @@
-package sqlancer.h2;
+package sqlancer.h2.ast;
 
-import sqlancer.common.ast.newast.Node;
-
-public class H2Constant implements Node<H2Expression> {
+public class H2Constant implements H2Expression {
 
     private H2Constant() {
     }
@@ -108,27 +106,27 @@ public class H2Constant implements Node<H2Expression> {
 
     }
 
-    public static Node<H2Expression> createIntConstant(long val) {
+    public static H2Expression createIntConstant(long val) {
         return new H2IntConstant(val);
     }
 
-    public static Node<H2Expression> createNullConstant() {
+    public static H2Expression createNullConstant() {
         return new H2NullConstant();
     }
 
-    public static Node<H2Expression> createBoolConstant(boolean val) {
+    public static H2Expression createBoolConstant(boolean val) {
         return new H2BoolConstant(val);
     }
 
-    public static Node<H2Expression> createStringConstant(String val) {
+    public static H2Expression createStringConstant(String val) {
         return new H2StringConstant(val);
     }
 
-    public static Node<H2Expression> createDoubleConstant(double val) {
+    public static H2Expression createDoubleConstant(double val) {
         return new H2DoubleConstant(val);
     }
 
-    public static Node<H2Expression> createBinaryConstant(long val) {
+    public static H2Expression createBinaryConstant(long val) {
         return new H2BinaryConstant(val);
     }
 

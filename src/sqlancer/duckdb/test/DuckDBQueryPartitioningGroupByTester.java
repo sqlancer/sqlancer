@@ -7,12 +7,10 @@ import java.util.stream.Collectors;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.ColumnReferenceNode;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
-import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
 import sqlancer.duckdb.DuckDBToStringVisitor;
+import sqlancer.duckdb.ast.DuckDBColumnReference;
 import sqlancer.duckdb.ast.DuckDBExpression;
 
 public class DuckDBQueryPartitioningGroupByTester extends DuckDBQueryPartitioningBase {
@@ -45,9 +43,9 @@ public class DuckDBQueryPartitioningGroupByTester extends DuckDBQueryPartitionin
     }
 
     @Override
-    List<Node<DuckDBExpression>> generateFetchColumns() {
-        return Randomly.nonEmptySubset(targetTables.getColumns()).stream()
-                .map(c -> new ColumnReferenceNode<DuckDBExpression, DuckDBColumn>(c)).collect(Collectors.toList());
+    List<DuckDBExpression> generateFetchColumns() {
+        return Randomly.nonEmptySubset(targetTables.getColumns()).stream().map(c -> new DuckDBColumnReference(c))
+                .collect(Collectors.toList());
     }
 
 }

@@ -2,7 +2,6 @@ package sqlancer.doris.visitor;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.NewToStringVisitor;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.doris.ast.DorisCaseOperation;
 import sqlancer.doris.ast.DorisCastOperation;
 import sqlancer.doris.ast.DorisConstant;
@@ -14,7 +13,7 @@ import sqlancer.doris.ast.DorisSelect;
 public class DorisToStringVisitor extends NewToStringVisitor<DorisExpression> {
 
     @Override
-    public void visitSpecific(Node<DorisExpression> expr) {
+    public void visitSpecific(DorisExpression expr) {
         if (expr instanceof DorisConstant) {
             visit((DorisConstant) expr);
         } else if (expr instanceof DorisSelect) {
@@ -34,7 +33,7 @@ public class DorisToStringVisitor extends NewToStringVisitor<DorisExpression> {
 
     private void visit(DorisJoin join) {
         sb.append(" ");
-        visit(join.getLeftTable());
+        visit((DorisExpression) join.getLeftTable());
         sb.append(" ");
         switch (join.getJoinType()) {
         case INNER:
@@ -65,7 +64,7 @@ public class DorisToStringVisitor extends NewToStringVisitor<DorisExpression> {
         default:
             throw new AssertionError();
         }
-        visit(join.getRightTable());
+        visit((DorisExpression) join.getRightTable());
         sb.append(" ");
         if (join.getOnCondition() != null) {
             sb.append("ON ");
@@ -91,7 +90,7 @@ public class DorisToStringVisitor extends NewToStringVisitor<DorisExpression> {
 
         if (func.getArgs() != null) {
             for (int i = 0; i < func.getArgs().size(); i++) {
-                visit(DorisExprToNode.cast(func.getArgs().get(i)));
+                visit(func.getArgs().get(i));
                 if (i != func.getArgs().size() - 1) {
                     sb.append(",");
                 }
@@ -102,20 +101,20 @@ public class DorisToStringVisitor extends NewToStringVisitor<DorisExpression> {
 
     private void visit(DorisCaseOperation cases) {
         sb.append("CASE ");
-        visit(DorisExprToNode.cast(cases.getExpr()));
+        visit(cases.getExpr());
         sb.append(" ");
         for (int i = 0; i < cases.getConditions().size(); i++) {
             DorisExpression predicate = cases.getConditions().get(i);
             DorisExpression then = cases.getThenClauses().get(i);
             sb.append(" WHEN ");
-            visit(DorisExprToNode.cast(predicate));
+            visit(predicate);
             sb.append(" THEN ");
-            visit(DorisExprToNode.cast(then));
+            visit(then);
             sb.append(" ");
         }
         if (cases.getElseClause() != null) {
             sb.append("ELSE ");
-            visit(DorisExprToNode.cast(cases.getElseClause()));
+            visit(cases.getElseClause());
             sb.append(" ");
         }
         sb.append("END ");
@@ -161,15 +160,9 @@ public class DorisToStringVisitor extends NewToStringVisitor<DorisExpression> {
         }
     }
 
-    public static String asString(Node<DorisExpression> expr) {
-        DorisToStringVisitor visitor = new DorisToStringVisitor();
-        visitor.visit(expr);
-        return visitor.get();
-    }
-
     public static String asString(DorisExpression expr) {
         DorisToStringVisitor visitor = new DorisToStringVisitor();
-        visitor.visit(DorisExprToNode.cast(expr));
+        visitor.visit(expr);
         return visitor.get();
     }
 }

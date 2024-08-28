@@ -15,7 +15,6 @@ import sqlancer.doris.DorisProvider.DorisGlobalState;
 import sqlancer.doris.DorisSchema;
 import sqlancer.doris.DorisSchema.DorisColumn;
 import sqlancer.doris.DorisSchema.DorisCompositeDataType;
-import sqlancer.doris.visitor.DorisExprToNode;
 import sqlancer.doris.visitor.DorisToStringVisitor;
 
 public class DorisTableGenerator {
@@ -101,9 +100,8 @@ public class DorisTableGenerator {
                     && !isHllOrBitmap;
             String defaultValue = "";
             if (hasDefaultValue) {
-                defaultValue = DorisToStringVisitor
-                        .asString(DorisExprToNode.cast(new DorisNewExpressionGenerator(globalState)
-                                .generateConstant(columnType.getPrimitiveDataType(), isNullable)));
+                defaultValue = DorisToStringVisitor.asString(new DorisNewExpressionGenerator(globalState)
+                        .generateConstant(columnType.getPrimitiveDataType(), isNullable));
             }
             columns.add(new DorisColumn(columnName, columnType, iskey, isNullable, aggrType, hasDefaultValue,
                     defaultValue));

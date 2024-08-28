@@ -3,16 +3,14 @@ package sqlancer.presto.ast;
 import java.util.ArrayList;
 import java.util.List;
 
-import sqlancer.common.ast.newast.Node;
+public class PrestoMultiValuedComparison implements PrestoExpression {
 
-public class PrestoMultiValuedComparison implements Node<PrestoExpression> {
-
-    private final Node<PrestoExpression> left;
-    private final List<Node<PrestoExpression>> right;
+    private final PrestoExpression left;
+    private final List<PrestoExpression> right;
     private final PrestoMultiValuedComparisonType type;
     private final PrestoMultiValuedComparisonOperator op;
 
-    public PrestoMultiValuedComparison(Node<PrestoExpression> left, List<Node<PrestoExpression>> right,
+    public PrestoMultiValuedComparison(PrestoExpression left, List<PrestoExpression> right,
             PrestoMultiValuedComparisonType type, PrestoMultiValuedComparisonOperator op) {
         this.left = left;
         this.right = new ArrayList<>(right);
@@ -20,7 +18,7 @@ public class PrestoMultiValuedComparison implements Node<PrestoExpression> {
         this.op = op;
     }
 
-    public Node<PrestoExpression> getLeft() {
+    public PrestoExpression getLeft() {
         return left;
     }
 
@@ -28,7 +26,7 @@ public class PrestoMultiValuedComparison implements Node<PrestoExpression> {
         return op;
     }
 
-    public List<Node<PrestoExpression>> getRight() {
+    public List<PrestoExpression> getRight() {
         return new ArrayList<>(right);
     }
 

@@ -2,9 +2,9 @@ package sqlancer.common.ast.newast;
 
 import sqlancer.Randomly;
 
-public class NewOrderingTerm<T> implements Node<T> {
+public class NewOrderingTerm<T> {
 
-    private final Node<T> expr;
+    private final T expr;
     private final Ordering ordering;
 
     public enum Ordering {
@@ -15,12 +15,12 @@ public class NewOrderingTerm<T> implements Node<T> {
         }
     }
 
-    public NewOrderingTerm(Node<T> expr, Ordering ordering) {
+    public NewOrderingTerm(T expr, Ordering ordering) {
         this.expr = expr;
         this.ordering = ordering;
     }
 
-    public Node<T> getExpr() {
+    public T getExpr() {
         return expr;
     }
 

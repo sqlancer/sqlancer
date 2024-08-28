@@ -2,7 +2,6 @@ package sqlancer.datafusion.test;
 
 import java.sql.SQLException;
 
-import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
 import sqlancer.common.oracle.TestOracle;
@@ -12,7 +11,7 @@ import sqlancer.datafusion.ast.DataFusionSelect;
 import sqlancer.datafusion.gen.DataFusionExpressionGenerator;
 
 public class DataFusionQueryPartitioningBase
-        extends TernaryLogicPartitioningOracleBase<Node<DataFusionExpression>, DataFusionGlobalState>
+        extends TernaryLogicPartitioningOracleBase<DataFusionExpression, DataFusionGlobalState>
         implements TestOracle<DataFusionGlobalState> {
     DataFusionGlobalState state;
     DataFusionExpressionGenerator gen;
@@ -31,7 +30,7 @@ public class DataFusionQueryPartitioningBase
     }
 
     @Override
-    protected ExpressionGenerator<Node<DataFusionExpression>> getGen() {
+    protected ExpressionGenerator<DataFusionExpression> getGen() {
         return gen;
     }
 

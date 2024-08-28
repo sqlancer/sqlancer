@@ -1,9 +1,8 @@
 package sqlancer.hsqldb.ast;
 
 import sqlancer.common.ast.SelectBase;
-import sqlancer.common.ast.newast.Node;
 
-public class HSQLDBSelect extends SelectBase<Node<HSQLDBExpression>> implements Node<HSQLDBExpression> {
+public class HSQLDBSelect extends SelectBase<HSQLDBExpression> implements HSQLDBExpression {
 
     private boolean isDistinct;
 

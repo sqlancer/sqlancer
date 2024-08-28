@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.ColumnReferenceNode;
-import sqlancer.common.ast.newast.Node;
-import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
 import sqlancer.common.oracle.TestOracle;
@@ -17,12 +14,14 @@ import sqlancer.questdb.QuestDBProvider.QuestDBGlobalState;
 import sqlancer.questdb.QuestDBSchema;
 import sqlancer.questdb.QuestDBSchema.QuestDBColumn;
 import sqlancer.questdb.QuestDBSchema.QuestDBTable;
+import sqlancer.questdb.ast.QuestDBColumnReference;
 import sqlancer.questdb.ast.QuestDBExpression;
 import sqlancer.questdb.ast.QuestDBSelect;
+import sqlancer.questdb.ast.QuestDBTableReference;
 import sqlancer.questdb.gen.QuestDBExpressionGenerator;
 
 public class QuestDBQueryPartitioningBase
-        extends TernaryLogicPartitioningOracleBase<Node<QuestDBExpression>, QuestDBGlobalState>
+        extends TernaryLogicPartitioningOracleBase<QuestDBExpression, QuestDBGlobalState>
         implements TestOracle<QuestDBGlobalState> {
 
     QuestDBSchema s;
@@ -35,20 +34,19 @@ public class QuestDBQueryPartitioningBase
         QuestDBErrors.addExpressionErrors(errors);
     }
 
-    List<Node<QuestDBExpression>> generateFetchColumns() {
-        List<Node<QuestDBExpression>> columns = new ArrayList<>();
+    List<QuestDBExpression> generateFetchColumns() {
+        List<QuestDBExpression> columns = new ArrayList<>();
         if (Randomly.getBoolean()) {
-            columns.add(new ColumnReferenceNode<>(new QuestDBColumn("*", null, false)));
+            columns.add(new QuestDBColumnReference(new QuestDBColumn("*", null, false)));
         } else {
-            columns = Randomly.nonEmptySubset(targetTable.getColumns()).stream()
-                    .map(c -> new ColumnReferenceNode<QuestDBExpression, QuestDBColumn>(c))
+            columns = Randomly.nonEmptySubset(targetTable.getColumns()).stream().map(c -> new QuestDBColumnReference(c))
                     .collect(Collectors.toList());
         }
         return columns;
     }
 
     @Override
-    protected ExpressionGenerator<Node<QuestDBExpression>> getGen() {
+    protected ExpressionGenerator<QuestDBExpression> getGen() {
         return gen;
     }
 
@@ -64,8 +62,8 @@ public class QuestDBQueryPartitioningBase
         select.setFetchColumns(generateFetchColumns());
         List<QuestDBTable> tables = new ArrayList<>();
         tables.add(targetTable);
-        List<TableReferenceNode<QuestDBExpression, QuestDBTable>> tableList = tables.stream()
-                .map(t -> new TableReferenceNode<QuestDBExpression, QuestDBTable>(t)).collect(Collectors.toList());
+        List<QuestDBTableReference> tableList = tables.stream().map(t -> new QuestDBTableReference(t))
+                .collect(Collectors.toList());
         // Ignore JOINs for now
         select.setFromList(new ArrayList<>(tableList));
         select.setWhereClause(null);

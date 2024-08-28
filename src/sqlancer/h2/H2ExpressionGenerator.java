@@ -2,22 +2,23 @@ package sqlancer.h2;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
-import sqlancer.common.ast.newast.ColumnReferenceNode;
-import sqlancer.common.ast.newast.NewBetweenOperatorNode;
-import sqlancer.common.ast.newast.NewBinaryOperatorNode;
-import sqlancer.common.ast.newast.NewCaseOperatorNode;
-import sqlancer.common.ast.newast.NewFunctionNode;
-import sqlancer.common.ast.newast.NewInOperatorNode;
-import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
-import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.h2.H2Provider.H2GlobalState;
 import sqlancer.h2.H2Schema.H2Column;
 import sqlancer.h2.H2Schema.H2CompositeDataType;
 import sqlancer.h2.H2Schema.H2DataType;
+import sqlancer.h2.ast.H2BetweenOperation;
+import sqlancer.h2.ast.H2BinaryOperation;
+import sqlancer.h2.ast.H2CaseOperation;
+import sqlancer.h2.ast.H2CastNode;
+import sqlancer.h2.ast.H2ColumnReference;
+import sqlancer.h2.ast.H2Constant;
+import sqlancer.h2.ast.H2Expression;
+import sqlancer.h2.ast.H2InOperation;
+import sqlancer.h2.ast.H2UnaryPostfixOperation;
+import sqlancer.h2.ast.H2UnaryPrefixOperation;
 
-public class H2ExpressionGenerator extends UntypedExpressionGenerator<Node<H2Expression>, H2Column> {
+public class H2ExpressionGenerator extends UntypedExpressionGenerator<H2Expression, H2Column> {
 
     private final H2GlobalState globalState;
 
@@ -31,7 +32,7 @@ public class H2ExpressionGenerator extends UntypedExpressionGenerator<Node<H2Exp
     }
 
     @Override
-    protected Node<H2Expression> generateExpression(int depth) {
+    protected H2Expression generateExpression(int depth) {
         if (depth >= globalState.getOptions().getMaxExpressionDepth() || Randomly.getBoolean()) {
             return generateLeafNode();
         }
@@ -39,37 +40,33 @@ public class H2ExpressionGenerator extends UntypedExpressionGenerator<Node<H2Exp
         switch (expr) {
         case BINARY_COMPARISON:
             Operator op = H2BinaryComparisonOperator.getRandom();
-            return new NewBinaryOperatorNode<H2Expression>(generateExpression(depth + 1), generateExpression(depth + 1),
-                    op);
+            return new H2BinaryOperation(generateExpression(depth + 1), generateExpression(depth + 1), op);
         case BINARY_LOGICAL:
             op = H2BinaryLogicalOperator.getRandom();
-            return new NewBinaryOperatorNode<H2Expression>(generateExpression(depth + 1), generateExpression(depth + 1),
-                    op);
+            return new H2BinaryOperation(generateExpression(depth + 1), generateExpression(depth + 1), op);
         case UNARY_POSTFIX:
             op = H2UnaryPostfixOperator.getRandom();
-            return new NewUnaryPostfixOperatorNode<H2Expression>(generateExpression(depth + 1), op);
+            return new H2UnaryPostfixOperation(generateExpression(depth + 1), op);
         case UNARY_PREFIX:
-            return new NewUnaryPrefixOperatorNode<H2Expression>(generateExpression(depth + 1),
-                    H2UnaryPrefixOperator.getRandom());
+            return new H2UnaryPrefixOperation(generateExpression(depth + 1), H2UnaryPrefixOperator.getRandom());
         case IN:
-            return new NewInOperatorNode<H2Expression>(generateExpression(depth + 1),
+            return new H2InOperation(generateExpression(depth + 1),
                     generateExpressions(Randomly.smallNumber() + 1, depth + 1), Randomly.getBoolean());
         case BETWEEN:
-            return new NewBetweenOperatorNode<H2Expression>(generateExpression(depth + 1),
-                    generateExpression(depth + 1), generateExpression(depth + 1), Randomly.getBoolean());
+            return new H2BetweenOperation(generateExpression(depth + 1), generateExpression(depth + 1),
+                    generateExpression(depth + 1), Randomly.getBoolean());
         case CASE:
             int nr = Randomly.smallNumber() + 1;
-            return new NewCaseOperatorNode<H2Expression>(generateExpression(depth + 1),
-                    generateExpressions(nr, depth + 1), generateExpressions(nr, depth + 1),
-                    generateExpression(depth + 1));
+            return new H2CaseOperation(generateExpression(depth + 1), generateExpressions(nr, depth + 1),
+                    generateExpressions(nr, depth + 1), generateExpression(depth + 1));
         case BINARY_ARITHMETIC:
-            return new NewBinaryOperatorNode<H2Expression>(generateExpression(depth + 1), generateExpression(depth + 1),
+            return new H2BinaryOperation(generateExpression(depth + 1), generateExpression(depth + 1),
                     H2BinaryArithmeticOperator.getRandom());
         case CAST:
             return new H2CastNode(generateExpression(depth + 1), H2CompositeDataType.getRandom());
         case FUNCTION:
             H2Function func = H2Function.getRandom();
-            return new NewFunctionNode<H2Expression, H2Function>(generateExpressions(func.getNrArgs()), func);
+            return new sqlancer.h2.ast.H2Function<>(generateExpressions(func.getNrArgs()), func);
         default:
             throw new AssertionError();
         }
@@ -203,12 +200,12 @@ public class H2ExpressionGenerator extends UntypedExpressionGenerator<Node<H2Exp
     }
 
     @Override
-    protected Node<H2Expression> generateColumn() {
-        return new ColumnReferenceNode<H2Expression, H2Column>(Randomly.fromList(columns));
+    protected H2Expression generateColumn() {
+        return new H2ColumnReference(Randomly.fromList(columns));
     }
 
     @Override
-    public Node<H2Expression> generateConstant() {
+    public H2Expression generateConstant() {
         if (Randomly.getBooleanWithSmallProbability()) {
             return H2Constant.createNullConstant();
         }
@@ -330,13 +327,13 @@ public class H2ExpressionGenerator extends UntypedExpressionGenerator<Node<H2Exp
     }
 
     @Override
-    public Node<H2Expression> negatePredicate(Node<H2Expression> predicate) {
-        return new NewUnaryPrefixOperatorNode<>(predicate, H2UnaryPrefixOperator.NOT);
+    public H2Expression negatePredicate(H2Expression predicate) {
+        return new H2UnaryPrefixOperation(predicate, H2UnaryPrefixOperator.NOT);
     }
 
     @Override
-    public Node<H2Expression> isNull(Node<H2Expression> expr) {
-        return new NewUnaryPostfixOperatorNode<>(expr, H2UnaryPostfixOperator.IS_NULL);
+    public H2Expression isNull(H2Expression expr) {
+        return new H2UnaryPostfixOperation(expr, H2UnaryPostfixOperator.IS_NULL);
     }
 
 }

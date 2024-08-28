@@ -5,9 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.common.ast.newast.ColumnReferenceNode;
-import sqlancer.common.ast.newast.Node;
-import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
 import sqlancer.common.oracle.TestOracle;
@@ -15,8 +12,13 @@ import sqlancer.h2.H2Provider.H2GlobalState;
 import sqlancer.h2.H2Schema.H2Column;
 import sqlancer.h2.H2Schema.H2Table;
 import sqlancer.h2.H2Schema.H2Tables;
+import sqlancer.h2.ast.H2ColumnReference;
+import sqlancer.h2.ast.H2Expression;
+import sqlancer.h2.ast.H2Join;
+import sqlancer.h2.ast.H2Select;
+import sqlancer.h2.ast.H2TableReference;
 
-public class H2QueryPartitioningBase extends TernaryLogicPartitioningOracleBase<Node<H2Expression>, H2GlobalState>
+public class H2QueryPartitioningBase extends TernaryLogicPartitioningOracleBase<H2Expression, H2GlobalState>
         implements TestOracle<H2GlobalState> {
 
     H2Schema s;
@@ -38,22 +40,22 @@ public class H2QueryPartitioningBase extends TernaryLogicPartitioningOracleBase<
         select = new H2Select();
         select.setFetchColumns(generateFetchColumns());
         List<H2Table> tables = targetTables.getTables();
-        List<TableReferenceNode<H2Expression, H2Table>> tableList = tables.stream()
-                .map(t -> new TableReferenceNode<H2Expression, H2Table>(t)).collect(Collectors.toList());
-        List<Node<H2Expression>> joins = H2Join.getJoins(tableList, state);
+        List<H2TableReference> tableList = tables.stream().map(t -> new H2TableReference(t))
+                .collect(Collectors.toList());
+        List<H2Expression> joins = H2Join.getJoins(tableList, state);
         select.setJoinList(joins.stream().collect(Collectors.toList()));
         select.setFromList(tableList.stream().collect(Collectors.toList()));
         select.setWhereClause(null);
     }
 
-    List<Node<H2Expression>> generateFetchColumns() {
-        List<Node<H2Expression>> columns = new ArrayList<>();
-        columns.add(new ColumnReferenceNode<>(new H2Column("*", null)));
+    List<H2Expression> generateFetchColumns() {
+        List<H2Expression> columns = new ArrayList<>();
+        columns.add(new H2ColumnReference(new H2Column("*", null)));
         return columns;
     }
 
     @Override
-    protected ExpressionGenerator<Node<H2Expression>> getGen() {
+    protected ExpressionGenerator<H2Expression> getGen() {
         return gen;
     }
 

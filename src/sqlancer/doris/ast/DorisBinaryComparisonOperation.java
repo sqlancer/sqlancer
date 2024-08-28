@@ -3,21 +3,20 @@ package sqlancer.doris.ast;
 import sqlancer.common.ast.BinaryOperatorNode;
 import sqlancer.common.ast.newast.NewBinaryOperatorNode;
 import sqlancer.doris.DorisSchema.DorisDataType;
-import sqlancer.doris.visitor.DorisExprToNode;
 
 public class DorisBinaryComparisonOperation extends NewBinaryOperatorNode<DorisExpression> implements DorisExpression {
 
     public DorisBinaryComparisonOperation(DorisExpression left, DorisExpression right,
             DorisBinaryComparisonOperator op) {
-        super(DorisExprToNode.cast(left), DorisExprToNode.cast(right), op);
+        super(left, right, op);
     }
 
     public DorisExpression getLeftExpression() {
-        return (DorisExpression) super.getLeft();
+        return super.getLeft();
     }
 
     public DorisExpression getRightExpression() {
-        return (DorisExpression) super.getRight();
+        return super.getRight();
     }
 
     public DorisBinaryComparisonOperator getOp() {

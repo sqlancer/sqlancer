@@ -1,9 +1,8 @@
 package sqlancer.presto.ast;
 
 import sqlancer.common.ast.SelectBase;
-import sqlancer.common.ast.newast.Node;
 
-public class PrestoSelect extends SelectBase<Node<PrestoExpression>> implements Node<PrestoExpression> {
+public class PrestoSelect extends SelectBase<PrestoExpression> implements PrestoExpression {
 
     private boolean isDistinct;
 

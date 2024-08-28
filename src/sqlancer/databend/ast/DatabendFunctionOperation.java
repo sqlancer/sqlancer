@@ -1,4 +1,11 @@
 package sqlancer.databend.ast;
 
-public class DatabendFunctionOperation { // TODO add databend function
+import java.util.List;
+
+import sqlancer.common.ast.newast.NewFunctionNode;
+
+public class DatabendFunctionOperation<F> extends NewFunctionNode<DatabendExpression, F> implements DatabendExpression {
+    public DatabendFunctionOperation(List<DatabendExpression> args, F func) {
+        super(args, func);
+    }
 }

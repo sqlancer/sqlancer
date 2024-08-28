@@ -7,13 +7,10 @@ import java.util.stream.Collectors;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.ColumnReferenceNode;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.doris.DorisErrors;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
-import sqlancer.doris.DorisSchema.DorisColumn;
+import sqlancer.doris.ast.DorisColumnReference;
 import sqlancer.doris.ast.DorisExpression;
-import sqlancer.doris.visitor.DorisExprToNode;
 import sqlancer.doris.visitor.DorisToStringVisitor;
 
 public class DorisQueryPartitioningGroupByTester extends DorisQueryPartitioningBase {
@@ -33,11 +30,11 @@ public class DorisQueryPartitioningGroupByTester extends DorisQueryPartitioningB
 
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
-        select.setWhereClause(DorisExprToNode.cast(predicate));
+        select.setWhereClause(predicate);
         String firstQueryString = DorisToStringVisitor.asString(select);
-        select.setWhereClause(DorisExprToNode.cast(negatedPredicate));
+        select.setWhereClause(negatedPredicate);
         String secondQueryString = DorisToStringVisitor.asString(select);
-        select.setWhereClause(DorisExprToNode.cast(isNullPredicate));
+        select.setWhereClause(isNullPredicate);
         String thirdQueryString = DorisToStringVisitor.asString(select);
         List<String> combinedString = new ArrayList<>();
         List<String> secondResultSet = ComparatorHelper.getCombinedResultSetNoDuplicates(firstQueryString,
@@ -47,9 +44,9 @@ public class DorisQueryPartitioningGroupByTester extends DorisQueryPartitioningB
     }
 
     @Override
-    List<Node<DorisExpression>> generateFetchColumns() {
-        return Randomly.nonEmptySubset(targetTables.getColumns()).stream()
-                .map(c -> new ColumnReferenceNode<DorisExpression, DorisColumn>(c)).collect(Collectors.toList());
+    List<DorisExpression> generateFetchColumns() {
+        return Randomly.nonEmptySubset(targetTables.getColumns()).stream().map(c -> new DorisColumnReference(c))
+                .collect(Collectors.toList());
     }
 
 }

@@ -1,10 +1,9 @@
 package sqlancer.doris.ast;
 
-import sqlancer.common.ast.newast.Node;
 import sqlancer.doris.DorisSchema.DorisDataType;
 import sqlancer.doris.utils.DorisNumberUtils;
 
-public abstract class DorisConstant implements Node<DorisExpression>, DorisExpression {
+public abstract class DorisConstant implements DorisExpression {
 
     private DorisConstant() {
     }

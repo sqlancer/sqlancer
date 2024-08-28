@@ -4,7 +4,6 @@ import java.util.function.BinaryOperator;
 
 import sqlancer.common.ast.BinaryOperatorNode;
 import sqlancer.common.ast.newast.NewBinaryOperatorNode;
-import sqlancer.databend.DatabendExprToNode;
 import sqlancer.databend.DatabendSchema.DatabendDataType;
 
 public class DatabendBinaryArithmeticOperation extends NewBinaryOperatorNode<DatabendExpression>
@@ -12,7 +11,7 @@ public class DatabendBinaryArithmeticOperation extends NewBinaryOperatorNode<Dat
 
     public DatabendBinaryArithmeticOperation(DatabendExpression left, DatabendExpression right,
             BinaryOperatorNode.Operator op) {
-        super(DatabendExprToNode.cast(left), DatabendExprToNode.cast(right), op);
+        super(left, right, op);
     }
 
     public enum DatabendBinaryArithmeticOperator implements BinaryOperatorNode.Operator {
@@ -72,11 +71,11 @@ public class DatabendBinaryArithmeticOperation extends NewBinaryOperatorNode<Dat
     }
 
     public DatabendExpression getLeftExpr() {
-        return (DatabendExpression) super.getLeft();
+        return super.getLeft();
     }
 
     public DatabendExpression getRightExpr() {
-        return (DatabendExpression) super.getRight();
+        return super.getRight();
     }
 
     public DatabendBinaryArithmeticOperator getOp() {

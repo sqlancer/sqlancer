@@ -7,27 +7,25 @@ import java.util.List;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
-import sqlancer.common.ast.newast.ColumnReferenceNode;
-import sqlancer.common.ast.newast.NewBetweenOperatorNode;
-import sqlancer.common.ast.newast.NewBinaryOperatorNode;
-import sqlancer.common.ast.newast.NewCaseOperatorNode;
-import sqlancer.common.ast.newast.NewFunctionNode;
-import sqlancer.common.ast.newast.NewInOperatorNode;
-import sqlancer.common.ast.newast.NewOrderingTerm;
 import sqlancer.common.ast.newast.NewOrderingTerm.Ordering;
-import sqlancer.common.ast.newast.NewTernaryNode;
 import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
-import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
 import sqlancer.duckdb.DuckDBSchema.DuckDBCompositeDataType;
 import sqlancer.duckdb.DuckDBSchema.DuckDBDataType;
+import sqlancer.duckdb.ast.DuckDBBetweenOperator;
+import sqlancer.duckdb.ast.DuckDBBinaryOperator;
+import sqlancer.duckdb.ast.DuckDBCaseOperator;
+import sqlancer.duckdb.ast.DuckDBColumnReference;
 import sqlancer.duckdb.ast.DuckDBConstant;
 import sqlancer.duckdb.ast.DuckDBExpression;
+import sqlancer.duckdb.ast.DuckDBFunction;
+import sqlancer.duckdb.ast.DuckDBInOperator;
+import sqlancer.duckdb.ast.DuckDBOrderingTerm;
+import sqlancer.duckdb.ast.DuckDBTernary;
 
-public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<Node<DuckDBExpression>, DuckDBColumn> {
+public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<DuckDBExpression, DuckDBColumn> {
 
     private final DuckDBGlobalState globalState;
 
@@ -41,14 +39,14 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
     }
 
     @Override
-    protected Node<DuckDBExpression> generateExpression(int depth) {
+    protected DuckDBExpression generateExpression(int depth) {
         if (depth >= globalState.getOptions().getMaxExpressionDepth() || Randomly.getBoolean()) {
             return generateLeafNode();
         }
         if (allowAggregates && Randomly.getBoolean()) {
             DuckDBAggregateFunction aggregate = DuckDBAggregateFunction.getRandom();
             allowAggregates = false;
-            return new NewFunctionNode<>(generateExpressions(aggregate.getNrArgs(), depth + 1), aggregate);
+            return new DuckDBFunction<>(generateExpressions(aggregate.getNrArgs(), depth + 1), aggregate);
         }
         List<Expression> possibleOptions = new ArrayList<>(Arrays.asList(Expression.values()));
         if (!globalState.getDbmsSpecificOptions().testCollate) {
@@ -78,44 +76,41 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
         Expression expr = Randomly.fromList(possibleOptions);
         switch (expr) {
         case COLLATE:
-            return new NewUnaryPostfixOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
+            return new sqlancer.duckdb.ast.DuckDBUnaryPostfixOperator(generateExpression(depth + 1),
                     DuckDBCollate.getRandom());
         case UNARY_PREFIX:
-            return new NewUnaryPrefixOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
+            return new sqlancer.duckdb.ast.DuckDBUnaryPrefixOperator(generateExpression(depth + 1),
                     DuckDBUnaryPrefixOperator.getRandom());
         case UNARY_POSTFIX:
-            return new NewUnaryPostfixOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
+            return new sqlancer.duckdb.ast.DuckDBUnaryPostfixOperator(generateExpression(depth + 1),
                     DuckDBUnaryPostfixOperator.getRandom());
         case BINARY_COMPARISON:
             Operator op = DuckDBBinaryComparisonOperator.getRandom();
-            return new NewBinaryOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
-                    generateExpression(depth + 1), op);
+            return new DuckDBBinaryOperator(generateExpression(depth + 1), generateExpression(depth + 1), op);
         case BINARY_LOGICAL:
             op = DuckDBBinaryLogicalOperator.getRandom();
-            return new NewBinaryOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
-                    generateExpression(depth + 1), op);
+            return new DuckDBBinaryOperator(generateExpression(depth + 1), generateExpression(depth + 1), op);
         case BINARY_ARITHMETIC:
-            return new NewBinaryOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
-                    generateExpression(depth + 1), DuckDBBinaryArithmeticOperator.getRandom());
+            return new DuckDBBinaryOperator(generateExpression(depth + 1), generateExpression(depth + 1),
+                    DuckDBBinaryArithmeticOperator.getRandom());
         case CAST:
             return new DuckDBCastOperation(generateExpression(depth + 1),
                     DuckDBCompositeDataType.getRandomWithoutNull());
         case FUNC:
             DBFunction func = DBFunction.getRandom();
-            return new NewFunctionNode<DuckDBExpression, DBFunction>(generateExpressions(func.getNrArgs()), func);
+            return new DuckDBFunction<>(generateExpressions(func.getNrArgs()), func);
         case BETWEEN:
-            return new NewBetweenOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
-                    generateExpression(depth + 1), generateExpression(depth + 1), Randomly.getBoolean());
+            return new DuckDBBetweenOperator(generateExpression(depth + 1), generateExpression(depth + 1),
+                    generateExpression(depth + 1), Randomly.getBoolean());
         case IN:
-            return new NewInOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
+            return new DuckDBInOperator(generateExpression(depth + 1),
                     generateExpressions(Randomly.smallNumber() + 1, depth + 1), Randomly.getBoolean());
         case CASE:
             int nr = Randomly.smallNumber() + 1;
-            return new NewCaseOperatorNode<DuckDBExpression>(generateExpression(depth + 1),
-                    generateExpressions(nr, depth + 1), generateExpressions(nr, depth + 1),
-                    generateExpression(depth + 1));
+            return new DuckDBCaseOperator(generateExpression(depth + 1), generateExpressions(nr, depth + 1),
+                    generateExpressions(nr, depth + 1), generateExpression(depth + 1));
         case LIKE_ESCAPE:
-            return new NewTernaryNode<DuckDBExpression>(generateExpression(depth + 1), generateExpression(depth + 1),
+            return new DuckDBTernary(generateExpression(depth + 1), generateExpression(depth + 1),
                     generateExpression(depth + 1), "LIKE", "ESCAPE");
         default:
             throw new AssertionError();
@@ -123,13 +118,13 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
     }
 
     @Override
-    protected Node<DuckDBExpression> generateColumn() {
+    protected DuckDBExpression generateColumn() {
         DuckDBColumn column = Randomly.fromList(columns);
-        return new ColumnReferenceNode<DuckDBExpression, DuckDBColumn>(column);
+        return new DuckDBColumnReference(column);
     }
 
     @Override
-    public Node<DuckDBExpression> generateConstant() {
+    public DuckDBExpression generateConstant() {
         if (Randomly.getBooleanWithSmallProbability()) {
             return DuckDBConstant.createNullConstant();
         }
@@ -171,21 +166,22 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
     }
 
     @Override
-    public List<Node<DuckDBExpression>> generateOrderBys() {
-        List<Node<DuckDBExpression>> expr = super.generateOrderBys();
-        List<Node<DuckDBExpression>> newExpr = new ArrayList<>(expr.size());
-        for (Node<DuckDBExpression> curExpr : expr) {
+    public List<DuckDBExpression> generateOrderBys() {
+        List<DuckDBExpression> expr = super.generateOrderBys();
+        List<DuckDBExpression> newExpr = new ArrayList<>(expr.size());
+        for (DuckDBExpression curExpr : expr) {
             if (Randomly.getBoolean()) {
-                curExpr = new NewOrderingTerm<>(curExpr, Ordering.getRandom());
+                curExpr = new DuckDBOrderingTerm(curExpr, Ordering.getRandom());
             }
             newExpr.add(curExpr);
         }
         return newExpr;
     };
 
-    public static class DuckDBCastOperation extends NewUnaryPostfixOperatorNode<DuckDBExpression> {
+    public static class DuckDBCastOperation extends NewUnaryPostfixOperatorNode<DuckDBExpression>
+            implements DuckDBExpression {
 
-        public DuckDBCastOperation(Node<DuckDBExpression> expr, DuckDBCompositeDataType type) {
+        public DuckDBCastOperation(DuckDBExpression expr, DuckDBCompositeDataType type) {
             super(expr, new Operator() {
 
                 @Override
@@ -422,25 +418,23 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
 
     }
 
-    public NewFunctionNode<DuckDBExpression, DuckDBAggregateFunction> generateArgsForAggregate(
-            DuckDBAggregateFunction aggregateFunction) {
-        return new NewFunctionNode<DuckDBExpression, DuckDBExpressionGenerator.DuckDBAggregateFunction>(
-                generateExpressions(aggregateFunction.getNrArgs()), aggregateFunction);
+    public DuckDBFunction<DuckDBAggregateFunction> generateArgsForAggregate(DuckDBAggregateFunction aggregateFunction) {
+        return new DuckDBFunction<>(generateExpressions(aggregateFunction.getNrArgs()), aggregateFunction);
     }
 
-    public Node<DuckDBExpression> generateAggregate() {
+    public DuckDBExpression generateAggregate() {
         DuckDBAggregateFunction aggrFunc = DuckDBAggregateFunction.getRandom();
         return generateArgsForAggregate(aggrFunc);
     }
 
     @Override
-    public Node<DuckDBExpression> negatePredicate(Node<DuckDBExpression> predicate) {
-        return new NewUnaryPrefixOperatorNode<>(predicate, DuckDBUnaryPrefixOperator.NOT);
+    public DuckDBExpression negatePredicate(DuckDBExpression predicate) {
+        return new sqlancer.duckdb.ast.DuckDBUnaryPrefixOperator(predicate, DuckDBUnaryPrefixOperator.NOT);
     }
 
     @Override
-    public Node<DuckDBExpression> isNull(Node<DuckDBExpression> expr) {
-        return new NewUnaryPostfixOperatorNode<>(expr, DuckDBUnaryPostfixOperator.IS_NULL);
+    public DuckDBExpression isNull(DuckDBExpression expr) {
+        return new sqlancer.duckdb.ast.DuckDBUnaryPostfixOperator(expr, DuckDBUnaryPostfixOperator.IS_NULL);
     }
 
 }

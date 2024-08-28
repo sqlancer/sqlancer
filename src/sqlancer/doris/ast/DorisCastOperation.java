@@ -1,29 +1,28 @@
 package sqlancer.doris.ast;
 
-import sqlancer.common.ast.newast.Node;
 import sqlancer.doris.DorisSchema.DorisCompositeDataType;
 import sqlancer.doris.DorisSchema.DorisDataType;
 
-public class DorisCastOperation implements Node<DorisExpression>, DorisExpression {
-    Node<DorisExpression> expr;
+public class DorisCastOperation implements DorisExpression {
+    DorisExpression expr;
     DorisDataType type;
 
-    public DorisCastOperation(Node<DorisExpression> expr, DorisCompositeDataType type) {
+    public DorisCastOperation(DorisExpression expr, DorisCompositeDataType type) {
         this.expr = expr;
         this.type = type.getPrimitiveDataType();
     }
 
-    public DorisCastOperation(Node<DorisExpression> expr, DorisDataType type) {
+    public DorisCastOperation(DorisExpression expr, DorisDataType type) {
         this.expr = expr;
         this.type = type;
     }
 
-    public Node<DorisExpression> getExpr() {
+    public DorisExpression getExpr() {
         return expr;
     }
 
     public DorisExpression getExpression() {
-        return (DorisExpression) expr;
+        return expr;
     }
 
     public DorisDataType getType() {

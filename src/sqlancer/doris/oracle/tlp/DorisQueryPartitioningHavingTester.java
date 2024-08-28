@@ -6,14 +6,12 @@ import java.util.List;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.doris.DorisErrors;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
 import sqlancer.doris.DorisSchema;
 import sqlancer.doris.ast.DorisConstant;
 import sqlancer.doris.ast.DorisExpression;
-import sqlancer.doris.visitor.DorisExprToNode;
 import sqlancer.doris.visitor.DorisToStringVisitor;
 
 public class DorisQueryPartitioningHavingTester extends DorisQueryPartitioningBase
@@ -29,12 +27,12 @@ public class DorisQueryPartitioningHavingTester extends DorisQueryPartitioningBa
     public void check() throws SQLException {
         super.check();
         if (Randomly.getBoolean()) {
-            select.setWhereClause(DorisExprToNode.cast(gen.generateExpression(DorisSchema.DorisDataType.BOOLEAN)));
+            select.setWhereClause(gen.generateExpression(DorisSchema.DorisDataType.BOOLEAN));
         }
         select.setFetchColumns(groupByExpression);
         boolean orderBy = Randomly.getBoolean();
         if (orderBy) {
-            List<Node<DorisExpression>> constants = new ArrayList<>();
+            List<DorisExpression> constants = new ArrayList<>();
             constants.add(
                     new DorisConstant.DorisIntConstant(Randomly.smallNumber() % select.getFetchColumns().size() + 1));
             select.setOrderByClauses(constants);
@@ -44,11 +42,11 @@ public class DorisQueryPartitioningHavingTester extends DorisQueryPartitioningBa
         String originalQueryString = DorisToStringVisitor.asString(select);
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
-        select.setHavingClause(DorisExprToNode.cast(predicate));
+        select.setHavingClause(predicate);
         String firstQueryString = DorisToStringVisitor.asString(select);
-        select.setHavingClause(DorisExprToNode.cast(negatedPredicate));
+        select.setHavingClause(negatedPredicate);
         String secondQueryString = DorisToStringVisitor.asString(select);
-        select.setHavingClause(DorisExprToNode.cast(isNullPredicate));
+        select.setHavingClause(isNullPredicate);
         String thirdQueryString = DorisToStringVisitor.asString(select);
         List<String> combinedString = new ArrayList<>();
         List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
@@ -63,10 +61,9 @@ public class DorisQueryPartitioningHavingTester extends DorisQueryPartitioningBa
     }
 
     @Override
-    List<Node<DorisExpression>> generateFetchColumns() {
+    List<DorisExpression> generateFetchColumns() {
         gen.setAllowAggregateFunctions(true);
-        List<Node<DorisExpression>> expressions = DorisExprToNode
-                .casts(gen.generateExpressions(Randomly.smallNumber() + 1));
+        List<DorisExpression> expressions = gen.generateExpressions(Randomly.smallNumber() + 1);
         gen.setAllowAggregateFunctions(false);
         return expressions;
     }

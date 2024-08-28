@@ -9,11 +9,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.presto.PrestoConstantUtils;
 import sqlancer.presto.PrestoSchema;
 
-public abstract class PrestoConstant implements Node<PrestoExpression>, PrestoExpression {
+public abstract class PrestoConstant implements PrestoExpression {
 
     private static final String[] TIME_ZONES = { "Africa/Abidjan", "Africa/Accra", "Africa/Addis_Ababa",
             "Africa/Algiers", "Africa/Asmara", "Africa/Asmera", "Africa/Bamako", "Africa/Bangui", "Africa/Banjul",
@@ -127,44 +126,44 @@ public abstract class PrestoConstant implements Node<PrestoExpression>, PrestoEx
     private PrestoConstant() {
     }
 
-    public static Node<PrestoExpression> createStringConstant(String text) {
+    public static PrestoExpression createStringConstant(String text) {
         return new PrestoTextConstant(text);
     }
 
-    public static Node<PrestoExpression> createStringConstant(String text, int size) {
+    public static PrestoExpression createStringConstant(String text, int size) {
         return new PrestoTextConstant(text, size);
     }
 
-    public static Node<PrestoExpression> createJsonConstant() {
+    public static PrestoExpression createJsonConstant() {
         return new PrestoJsonConstant();
     }
 
-    public static Node<PrestoExpression> createFloatConstant(PrestoSchema.PrestoCompositeDataType type, double val) {
+    public static PrestoExpression createFloatConstant(PrestoSchema.PrestoCompositeDataType type, double val) {
         assert type.getSize() == 4;
         float floatValue = (float) val;
         return new PrestoFloatConstant(floatValue);
     }
 
-    public static Node<PrestoExpression> createFloatConstant(double val) {
+    public static PrestoExpression createFloatConstant(double val) {
         return new PrestoFloatConstant(val);
     }
 
-    public static Node<PrestoExpression> createDecimalConstant(double val) {
+    public static PrestoExpression createDecimalConstant(double val) {
         return new PrestoDecimalConstant(val);
     }
 
-    public static Node<PrestoExpression> createDecimalConstant(PrestoSchema.PrestoCompositeDataType type, double val) {
+    public static PrestoExpression createDecimalConstant(PrestoSchema.PrestoCompositeDataType type, double val) {
         int scale = type.getScale();
         int precision = type.getSize();
         BigDecimal finalBD = PrestoConstantUtils.getDecimal(val, scale, precision);
         return new PrestoDecimalConstant(finalBD.doubleValue());
     }
 
-    public static Node<PrestoExpression> createIntConstant(long val) {
+    public static PrestoExpression createIntConstant(long val) {
         return new PrestoIntConstant(val);
     }
 
-    public static Node<PrestoExpression> createIntConstant(PrestoSchema.PrestoCompositeDataType type, long val,
+    public static PrestoExpression createIntConstant(PrestoSchema.PrestoCompositeDataType type, long val,
             boolean castInteger) {
         PrestoIntConstant intConstant;
         assert List.of(1, 2, 4, 8).contains(type.getSize());
@@ -188,56 +187,56 @@ public abstract class PrestoConstant implements Node<PrestoExpression>, PrestoEx
         }
     }
 
-    public static Node<PrestoExpression> createNullConstant() {
+    public static PrestoExpression createNullConstant() {
         return new PrestoNullConstant();
     }
 
-    public static Node<PrestoExpression> createBooleanConstant(boolean val) {
+    public static PrestoExpression createBooleanConstant(boolean val) {
         return new PrestoBooleanConstant(val);
     }
 
-    public static Node<PrestoExpression> createDateConstant(long integer) {
+    public static PrestoExpression createDateConstant(long integer) {
         return new PrestoDateConstant(integer);
     }
 
-    public static Node<PrestoExpression> createTimeConstant(long integer) {
+    public static PrestoExpression createTimeConstant(long integer) {
         return new PrestoTimeConstant(integer);
     }
 
-    public static Node<PrestoExpression> createTimeWithTimeZoneConstant(long integer) {
+    public static PrestoExpression createTimeWithTimeZoneConstant(long integer) {
         return new PrestoTimeWithTimeZoneConstant(integer);
     }
 
-    public static Node<PrestoExpression> createTimestampWithTimeZoneConstant(long integer) {
+    public static PrestoExpression createTimestampWithTimeZoneConstant(long integer) {
         return new PrestoTimestampWithTimezoneConstant(integer);
     }
 
-    public static Node<PrestoExpression> createIntervalDayToSecond(long integer) {
+    public static PrestoExpression createIntervalDayToSecond(long integer) {
         return new PrestoIntervalDayToSecondConstant();
     }
 
-    public static Node<PrestoExpression> createIntervalYearToMonth(long integer) {
+    public static PrestoExpression createIntervalYearToMonth(long integer) {
         return new PrestoIntervalYearToMonthConstant();
     }
 
-    public static Node<PrestoExpression> createTimestampConstant(long integer) {
+    public static PrestoExpression createTimestampConstant(long integer) {
         return new PrestoTimestampConstant(integer);
     }
 
-    public static Node<PrestoExpression> createVarbinaryConstant(String string) {
+    public static PrestoExpression createVarbinaryConstant(String string) {
         return new PrestoVarbinaryConstant(string);
     }
 
-    public static Node<PrestoExpression> createTimezoneConstant() {
+    public static PrestoExpression createTimezoneConstant() {
         String string = Randomly.fromOptions(TIME_ZONES);
         return new PrestoTextConstant(string);
     }
 
-    public static Node<PrestoExpression> createArrayConstant(PrestoSchema.PrestoCompositeDataType type) {
+    public static PrestoExpression createArrayConstant(PrestoSchema.PrestoCompositeDataType type) {
         PrestoSchema.PrestoCompositeDataType elementType = type.getElementType();
         long size = Randomly.getNotCachedInteger(0, 10);
 
-        List<Node<PrestoExpression>> elements = new ArrayList<>();
+        List<PrestoExpression> elements = new ArrayList<>();
         for (int i = 0; i <= size; i++) {
             if (elementType.getPrimitiveDataType() == PrestoSchema.PrestoDataType.ARRAY) {
                 elements.add(createArrayConstant(elementType));
@@ -248,11 +247,11 @@ public abstract class PrestoConstant implements Node<PrestoExpression>, PrestoEx
         return new PrestoArrayConstant(elements);
     }
 
-    public static Node<PrestoExpression> createMapConstant(PrestoSchema.PrestoCompositeDataType type) {
+    public static PrestoExpression createMapConstant(PrestoSchema.PrestoCompositeDataType type) {
         PrestoSchema.PrestoCompositeDataType elementType = type.getElementType();
         long size = Randomly.getNotCachedInteger(0, 10);
 
-        List<Node<PrestoExpression>> elements = new ArrayList<>();
+        List<PrestoExpression> elements = new ArrayList<>();
         for (int i = 0; i <= size; i++) {
             if (elementType.getPrimitiveDataType() == PrestoSchema.PrestoDataType.ARRAY) {
                 elements.add(createArrayConstant(elementType));
@@ -263,8 +262,7 @@ public abstract class PrestoConstant implements Node<PrestoExpression>, PrestoEx
         return new PrestoArrayConstant(elements);
     }
 
-    public static Node<PrestoExpression> generateConstant(PrestoSchema.PrestoCompositeDataType type,
-            boolean castInteger) {
+    public static PrestoExpression generateConstant(PrestoSchema.PrestoCompositeDataType type, boolean castInteger) {
         Randomly randomly = new Randomly();
         switch (type.getPrimitiveDataType()) {
         case ARRAY:
@@ -789,9 +787,9 @@ public abstract class PrestoConstant implements Node<PrestoExpression>, PrestoEx
 
     public static class PrestoArrayConstant extends PrestoConstant {
 
-        private final List<Node<PrestoExpression>> elements;
+        private final List<PrestoExpression> elements;
 
-        public PrestoArrayConstant(List<Node<PrestoExpression>> elements) {
+        public PrestoArrayConstant(List<PrestoExpression> elements) {
             this.elements = new ArrayList<>(elements);
         }
 

@@ -2,12 +2,12 @@ package sqlancer.common.ast.newast;
 
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
 
-public class NewUnaryPrefixOperatorNode<T> implements Node<T> {
+public class NewUnaryPrefixOperatorNode<T> {
 
     protected final Operator op;
-    private final Node<T> expr;
+    private final T expr;
 
-    public NewUnaryPrefixOperatorNode(Node<T> expr, Operator op) {
+    public NewUnaryPrefixOperatorNode(T expr, Operator op) {
         this.expr = expr;
         this.op = op;
     }
@@ -16,7 +16,7 @@ public class NewUnaryPrefixOperatorNode<T> implements Node<T> {
         return op.getTextRepresentation();
     }
 
-    public Node<T> getExpr() {
+    public T getExpr() {
         return expr;
     }
 

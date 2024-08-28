@@ -1,23 +1,21 @@
 package sqlancer.presto.ast;
 
-import sqlancer.common.ast.newast.Node;
+public class PrestoQuantifiedComparison implements PrestoExpression {
 
-public class PrestoQuantifiedComparison implements Node<PrestoExpression> {
-
-    private final Node<PrestoExpression> left;
+    private final PrestoExpression left;
     private final PrestoSelect right;
     private final PrestoMultiValuedComparisonType type;
     private final PrestoMultiValuedComparisonOperator op;
 
-    public PrestoQuantifiedComparison(Node<PrestoExpression> left, PrestoSelect right,
-            PrestoMultiValuedComparisonType type, PrestoMultiValuedComparisonOperator op) {
+    public PrestoQuantifiedComparison(PrestoExpression left, PrestoSelect right, PrestoMultiValuedComparisonType type,
+            PrestoMultiValuedComparisonOperator op) {
         this.left = left;
         this.right = right;
         this.type = type;
         this.op = op;
     }
 
-    public Node<PrestoExpression> getLeft() {
+    public PrestoExpression getLeft() {
         return left;
     }
 
@@ -25,7 +23,7 @@ public class PrestoQuantifiedComparison implements Node<PrestoExpression> {
         return op;
     }
 
-    public Node<PrestoExpression> getRight() {
+    public PrestoExpression getRight() {
         return right;
     }
 

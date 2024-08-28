@@ -1,25 +1,24 @@
 package sqlancer.databend.ast;
 
 import sqlancer.common.ast.newast.NewBetweenOperatorNode;
-import sqlancer.databend.DatabendExprToNode;
 import sqlancer.databend.DatabendSchema;
 
 public class DatabendBetweenOperation extends NewBetweenOperatorNode<DatabendExpression> implements DatabendExpression {
     public DatabendBetweenOperation(DatabendExpression left, DatabendExpression middle, DatabendExpression right,
             boolean isTrue) {
-        super(DatabendExprToNode.cast(left), DatabendExprToNode.cast(middle), DatabendExprToNode.cast(right), isTrue);
+        super(left, middle, right, isTrue);
     }
 
     public DatabendExpression getLeftExpr() {
-        return (DatabendExpression) left;
+        return left;
     }
 
     public DatabendExpression getMiddleExpr() {
-        return (DatabendExpression) middle;
+        return middle;
     }
 
     public DatabendExpression getRightExpr() {
-        return (DatabendExpression) right;
+        return right;
     }
 
     @Override

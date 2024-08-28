@@ -2,15 +2,14 @@ package sqlancer.common.ast.newast;
 
 import java.util.List;
 
-public class NewCaseOperatorNode<T> implements Node<T> {
+public class NewCaseOperatorNode<T> {
 
-    private final List<Node<T>> conditions;
-    private final List<Node<T>> expressions;
-    private final Node<T> elseExpr;
-    private final Node<T> switchCondition;
+    private final List<T> conditions;
+    private final List<T> expressions;
+    private final T elseExpr;
+    private final T switchCondition;
 
-    public NewCaseOperatorNode(Node<T> switchCondition, List<Node<T>> conditions, List<Node<T>> expressions,
-            Node<T> elseExpr) {
+    public NewCaseOperatorNode(T switchCondition, List<T> conditions, List<T> expressions, T elseExpr) {
         this.switchCondition = switchCondition;
         this.conditions = conditions;
         this.expressions = expressions;
@@ -20,19 +19,19 @@ public class NewCaseOperatorNode<T> implements Node<T> {
         }
     }
 
-    public Node<T> getSwitchCondition() {
+    public T getSwitchCondition() {
         return switchCondition;
     }
 
-    public List<Node<T>> getConditions() {
+    public List<T> getConditions() {
         return conditions;
     }
 
-    public List<Node<T>> getExpressions() {
+    public List<T> getExpressions() {
         return expressions;
     }
 
-    public Node<T> getElseExpr() {
+    public T getElseExpr() {
         return elseExpr;
     }
 

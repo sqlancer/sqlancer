@@ -3,7 +3,6 @@ package sqlancer.hsqldb.gen;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.AbstractInsertGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -41,8 +40,7 @@ public class HSQLDBInsertGenerator extends AbstractInsertGenerator<HSQLDBSchema.
 
     @Override
     protected void insertValue(HSQLDBSchema.HSQLDBColumn column) {
-        Node<HSQLDBExpression> expression = new HSQLDBExpressionGenerator(globalState)
-                .generateConstant(column.getType());
+        HSQLDBExpression expression = new HSQLDBExpressionGenerator(globalState).generateConstant(column.getType());
         String s = HSQLDBToStringVisitor.asString(expression);
         sb.append(s);
     }

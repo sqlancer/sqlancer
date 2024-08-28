@@ -3,7 +3,6 @@ package sqlancer.datafusion;
 import java.util.List;
 
 import sqlancer.common.ast.newast.NewToStringVisitor;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.datafusion.ast.DataFusionConstant;
 import sqlancer.datafusion.ast.DataFusionExpression;
 import sqlancer.datafusion.ast.DataFusionJoin;
@@ -11,20 +10,20 @@ import sqlancer.datafusion.ast.DataFusionSelect;
 
 public class DataFusionToStringVisitor extends NewToStringVisitor<DataFusionExpression> {
 
-    public static String asString(Node<DataFusionExpression> expr) {
+    public static String asString(DataFusionExpression expr) {
         DataFusionToStringVisitor visitor = new DataFusionToStringVisitor();
         visitor.visit(expr);
         return visitor.get();
     }
 
-    public static String asString(List<Node<DataFusionExpression>> exprs) {
+    public static String asString(List<DataFusionExpression> exprs) {
         DataFusionToStringVisitor visitor = new DataFusionToStringVisitor();
         visitor.visit(exprs);
         return visitor.get();
     }
 
     @Override
-    public void visitSpecific(Node<DataFusionExpression> expr) {
+    public void visitSpecific(DataFusionExpression expr) {
         if (expr instanceof DataFusionConstant) {
             visit((DataFusionConstant) expr);
         } else if (expr instanceof DataFusionSelect) {
@@ -37,13 +36,13 @@ public class DataFusionToStringVisitor extends NewToStringVisitor<DataFusionExpr
     }
 
     private void visit(DataFusionJoin join) {
-        visit(join.getLeftTable());
+        visit((DataFusionExpression) join.getLeftTable());
         sb.append(" ");
         sb.append(join.getJoinType());
         sb.append(" ");
 
         sb.append(" JOIN ");
-        visit(join.getRightTable());
+        visit((DataFusionExpression) join.getRightTable());
         if (join.getOnCondition() != null) {
             sb.append(" ON ");
             visit(join.getOnCondition());

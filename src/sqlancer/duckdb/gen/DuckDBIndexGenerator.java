@@ -3,7 +3,6 @@ package sqlancer.duckdb.gen;
 import java.util.List;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
@@ -45,7 +44,7 @@ public final class DuckDBIndexGenerator {
         sb.append(")");
         if (Randomly.getBoolean()) {
             sb.append(" WHERE ");
-            Node<DuckDBExpression> expr = new DuckDBExpressionGenerator(globalState).setColumns(table.getColumns())
+            DuckDBExpression expr = new DuckDBExpressionGenerator(globalState).setColumns(table.getColumns())
                     .generateExpression();
             sb.append(DuckDBToStringVisitor.asString(expr));
         }

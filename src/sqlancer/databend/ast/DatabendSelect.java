@@ -1,9 +1,8 @@
 package sqlancer.databend.ast;
 
 import sqlancer.common.ast.SelectBase;
-import sqlancer.common.ast.newast.Node;
 
-public class DatabendSelect extends SelectBase<Node<DatabendExpression>> implements Node<DatabendExpression> {
+public class DatabendSelect extends SelectBase<DatabendExpression> implements DatabendExpression {
 
     private boolean isDistinct;
 

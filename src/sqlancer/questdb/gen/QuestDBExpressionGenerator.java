@@ -7,20 +7,19 @@ import java.util.List;
 import sqlancer.Randomly;
 import sqlancer.Randomly.StringGenerationStrategy;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
-import sqlancer.common.ast.newast.ColumnReferenceNode;
-import sqlancer.common.ast.newast.NewBinaryOperatorNode;
-import sqlancer.common.ast.newast.NewInOperatorNode;
-import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
-import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.questdb.QuestDBProvider.QuestDBGlobalState;
 import sqlancer.questdb.QuestDBSchema.QuestDBColumn;
 import sqlancer.questdb.QuestDBSchema.QuestDBDataType;
+import sqlancer.questdb.ast.QuestDBBinaryOperation;
+import sqlancer.questdb.ast.QuestDBColumnReference;
 import sqlancer.questdb.ast.QuestDBConstant;
 import sqlancer.questdb.ast.QuestDBExpression;
+import sqlancer.questdb.ast.QuestDBInOperation;
+import sqlancer.questdb.ast.QuestDBUnaryPostfixOperation;
+import sqlancer.questdb.ast.QuestDBUnaryPrefixOperation;
 
-public class QuestDBExpressionGenerator extends UntypedExpressionGenerator<Node<QuestDBExpression>, QuestDBColumn> {
+public class QuestDBExpressionGenerator extends UntypedExpressionGenerator<QuestDBExpression, QuestDBColumn> {
 
     private final QuestDBGlobalState globalState;
 
@@ -33,17 +32,17 @@ public class QuestDBExpressionGenerator extends UntypedExpressionGenerator<Node<
     }
 
     @Override
-    public Node<QuestDBExpression> negatePredicate(Node<QuestDBExpression> predicate) {
-        return new NewUnaryPrefixOperatorNode<>(predicate, QuestDBUnaryPrefixOperator.NOT);
+    public QuestDBExpression negatePredicate(QuestDBExpression predicate) {
+        return new QuestDBUnaryPrefixOperation(predicate, QuestDBUnaryPrefixOperator.NOT);
     }
 
     @Override
-    public Node<QuestDBExpression> isNull(Node<QuestDBExpression> expr) {
-        return new NewUnaryPostfixOperatorNode<>(expr, QuestDBUnaryPostfixOperator.IS_NULL);
+    public QuestDBExpression isNull(QuestDBExpression expr) {
+        return new QuestDBUnaryPostfixOperation(expr, QuestDBUnaryPostfixOperator.IS_NULL);
     }
 
     @Override
-    public Node<QuestDBExpression> generateConstant() {
+    public QuestDBExpression generateConstant() {
         if (Randomly.getBooleanWithSmallProbability()) {
             return QuestDBConstant.createNullConstant();
         }
@@ -68,7 +67,7 @@ public class QuestDBExpressionGenerator extends UntypedExpressionGenerator<Node<
     }
 
     @Override
-    protected Node<QuestDBExpression> generateExpression(int depth) {
+    protected QuestDBExpression generateExpression(int depth) {
         if (depth >= globalState.getOptions().getMaxExpressionDepth() || Randomly.getBoolean()) {
             return generateLeafNode();
         }
@@ -78,22 +77,22 @@ public class QuestDBExpressionGenerator extends UntypedExpressionGenerator<Node<
 
         switch (expr) {
         case UNARY_PREFIX:
-            return new NewUnaryPrefixOperatorNode<>(generateExpression(depth + 1),
+            return new QuestDBUnaryPrefixOperation(generateExpression(depth + 1),
                     QuestDBUnaryPrefixOperator.getRandom());
         case UNARY_POSTFIX:
-            return new NewUnaryPostfixOperatorNode<>(generateExpression(depth + 1),
+            return new QuestDBUnaryPostfixOperation(generateExpression(depth + 1),
                     QuestDBUnaryPostfixOperator.getRandom());
         case BINARY_COMPARISON:
-            return new NewBinaryOperatorNode<>(generateExpression(depth + 1), generateExpression(depth + 1),
+            return new QuestDBBinaryOperation(generateExpression(depth + 1), generateExpression(depth + 1),
                     QuestDBBinaryComparisonOperator.getRandom());
         case BINARY_ARITHMETIC:
-            return new NewBinaryOperatorNode<>(generateExpression(depth + 1), generateExpression(depth + 1),
+            return new QuestDBBinaryOperation(generateExpression(depth + 1), generateExpression(depth + 1),
                     QuestDBBinaryArithmeticOperator.getRandom());
         case BINARY_LOGICAL:
-            return new NewBinaryOperatorNode<>(generateExpression(depth + 1), generateExpression(depth + 1),
+            return new QuestDBBinaryOperation(generateExpression(depth + 1), generateExpression(depth + 1),
                     QuestDBBinaryLogicalOperator.getRandom());
         case IN:
-            return new NewInOperatorNode<>(generateExpression(depth + 1),
+            return new QuestDBInOperation(generateExpression(depth + 1),
                     generateExpressions(Randomly.smallNumber() + 1, depth + 1), Randomly.getBoolean());
         default:
             throw new AssertionError("Expression generation failed, depth=" + depth);
@@ -101,9 +100,9 @@ public class QuestDBExpressionGenerator extends UntypedExpressionGenerator<Node<
     }
 
     @Override
-    protected Node<QuestDBExpression> generateColumn() {
+    protected QuestDBExpression generateColumn() {
         QuestDBColumn column = Randomly.fromList(columns);
-        return new ColumnReferenceNode<>(column);
+        return new QuestDBColumnReference(column);
     }
 
     public enum QuestDBUnaryPostfixOperator implements Operator {

@@ -3,16 +3,16 @@ package sqlancer.presto.ast;
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode;
 import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.presto.PrestoSchema;
 
-public class PrestoUnaryPostfixOperation extends NewUnaryPostfixOperatorNode<PrestoExpression> {
+public class PrestoUnaryPostfixOperation extends NewUnaryPostfixOperatorNode<PrestoExpression>
+        implements PrestoExpression {
 
-    public PrestoUnaryPostfixOperation(Node<PrestoExpression> expr, PrestoUnaryPostfixOperator op) {
+    public PrestoUnaryPostfixOperation(PrestoExpression expr, PrestoUnaryPostfixOperator op) {
         super(expr, op);
     }
 
-    public Node<PrestoExpression> getExpression() {
+    public PrestoExpression getExpression() {
         return getExpr();
     }
 

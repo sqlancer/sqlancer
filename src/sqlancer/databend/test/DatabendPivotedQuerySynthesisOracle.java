@@ -6,25 +6,22 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
-import sqlancer.common.ast.newast.Node;
-import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.databend.DatabendErrors;
 import sqlancer.databend.DatabendExpectedValueVisitor;
-import sqlancer.databend.DatabendExprToNode;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema.DatabendColumn;
 import sqlancer.databend.DatabendSchema.DatabendDataType;
 import sqlancer.databend.DatabendSchema.DatabendRowValue;
-import sqlancer.databend.DatabendSchema.DatabendTable;
 import sqlancer.databend.DatabendSchema.DatabendTables;
 import sqlancer.databend.DatabendToStringVisitor;
 import sqlancer.databend.ast.DatabendColumnValue;
 import sqlancer.databend.ast.DatabendConstant;
 import sqlancer.databend.ast.DatabendExpression;
 import sqlancer.databend.ast.DatabendSelect;
+import sqlancer.databend.ast.DatabendTableReference;
 import sqlancer.databend.ast.DatabendUnaryPostfixOperation;
 import sqlancer.databend.ast.DatabendUnaryPrefixOperation;
 import sqlancer.databend.gen.DatabendNewExpressionGenerator;
@@ -52,21 +49,21 @@ public class DatabendPivotedQuerySynthesisOracle
         selectStatement.setFetchColumns(fetchColumns.stream()
                 .map(c -> new DatabendColumnValue(getFetchValueAliasedColumn(c), pivotRow.getValues().get(c)))
                 .collect(Collectors.toList()));
-        selectStatement.setFromList(randomTables.getTables().stream()
-                .map(t -> new TableReferenceNode<DatabendExpression, DatabendTable>(t)).collect(Collectors.toList()));
+        selectStatement.setFromList(
+                randomTables.getTables().stream().map(t -> new DatabendTableReference(t)).collect(Collectors.toList()));
         DatabendExpression whereClause = generateRectifiedExpression(columns, pivotRow);
-        selectStatement.setWhereClause(DatabendExprToNode.cast(whereClause));
-        List<Node<DatabendExpression>> groupByClause = generateGroupByClause(columns, pivotRow);
+        selectStatement.setWhereClause(whereClause);
+        List<DatabendExpression> groupByClause = generateGroupByClause(columns, pivotRow);
         selectStatement.setGroupByExpressions(groupByClause);
-        Node<DatabendExpression> limitClause = generateLimit();
+        DatabendExpression limitClause = generateLimit();
         selectStatement.setLimitClause(limitClause);
         if (limitClause != null) {
-            Node<DatabendExpression> offsetClause = generateOffset();
+            DatabendExpression offsetClause = generateOffset();
             selectStatement.setOffsetClause(offsetClause);
         }
         DatabendNewExpressionGenerator gen = new DatabendNewExpressionGenerator(globalState).setColumns(columns);
         if (!isDistinct) {
-            List<Node<DatabendExpression>> orderBys = gen.generateOrderBy();
+            List<DatabendExpression> orderBys = gen.generateOrderBy();
             selectStatement.setOrderByClauses(orderBys);
         }
         return new SQLQueryAdapter(DatabendToStringVisitor.asString(selectStatement), errors);
@@ -122,11 +119,10 @@ public class DatabendPivotedQuerySynthesisOracle
 
     @Override
     protected String getExpectedValues(DatabendExpression expr) {
-        return DatabendExpectedValueVisitor.asExpectedValues(DatabendExprToNode.cast(expr));
+        return DatabendExpectedValueVisitor.asExpectedValues(expr);
     }
 
-    private List<Node<DatabendExpression>> generateGroupByClause(List<DatabendColumn> columns,
-            DatabendRowValue rowValue) {
+    private List<DatabendExpression> generateGroupByClause(List<DatabendColumn> columns, DatabendRowValue rowValue) {
         if (Randomly.getBoolean()) {
             return columns.stream().map(c -> new DatabendColumnValue(c, rowValue.getValues().get(c)))
                     .collect(Collectors.toList());
@@ -135,7 +131,7 @@ public class DatabendPivotedQuerySynthesisOracle
         }
     }
 
-    private Node<DatabendExpression> generateLimit() {
+    private DatabendExpression generateLimit() {
         if (Randomly.getBoolean()) {
             return DatabendConstant.createIntConstant(Integer.MAX_VALUE);
         } else {
@@ -143,7 +139,7 @@ public class DatabendPivotedQuerySynthesisOracle
         }
     }
 
-    private Node<DatabendExpression> generateOffset() {
+    private DatabendExpression generateOffset() {
         if (Randomly.getBoolean()) {
             return DatabendConstant.createIntConstant(0);
         } else {

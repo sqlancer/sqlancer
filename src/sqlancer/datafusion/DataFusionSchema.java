@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
-import sqlancer.common.ast.newast.Node;
 import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractTable;
@@ -123,7 +122,7 @@ public class DataFusionSchema extends AbstractSchema<DataFusionGlobalState, Data
         }
 
         // TODO(datafusion) lots of hack here, should build our own Randomly later
-        public Node<DataFusionExpression> getRandomConstant(DataFusionGlobalState state) {
+        public DataFusionExpression getRandomConstant(DataFusionGlobalState state) {
             if (Randomly.getBooleanWithSmallProbability()) {
                 return DataFusionConstant.createNullConstant();
             }

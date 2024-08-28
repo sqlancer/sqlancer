@@ -8,7 +8,6 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.databend.DatabendErrors;
-import sqlancer.databend.DatabendExprToNode;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema.DatabendColumn;
 import sqlancer.databend.DatabendSchema.DatabendTable;
@@ -49,9 +48,8 @@ public class DatabendInsertGenerator extends AbstractInsertGenerator<DatabendCol
         // } else {
         // sb.append(DatabendToStringVisitor.asString(new DatabendExpressionGenerator(globalState).generateConstant()));
         // }
-        String value = DatabendToStringVisitor
-                .asString(DatabendExprToNode.cast(new DatabendNewExpressionGenerator(globalState)
-                        .generateConstant(column.getType().getPrimitiveDataType(), column.isNullable()))); // 生成一个与column相同的常量类型
+        String value = DatabendToStringVisitor.asString(new DatabendNewExpressionGenerator(globalState)
+                .generateConstant(column.getType().getPrimitiveDataType(), column.isNullable())); // 生成一个与column相同的常量类型
         sb.append(value);
 
     }
