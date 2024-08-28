@@ -471,7 +471,9 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
     public List<DuckDBJoin> getRandomJoinClauses() {
         List<DuckDBTableReference> tableList = tables.stream().map(t -> new DuckDBTableReference(t))
                 .collect(Collectors.toList());
-        return DuckDBJoin.getJoins(tableList, globalState);
+        List<DuckDBJoin> joins = DuckDBJoin.getJoins(tableList, globalState);
+        tables = tableList.stream().map(t -> t.getTable()).collect(Collectors.toList());
+        return joins;
     }
 
     @Override
