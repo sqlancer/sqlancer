@@ -66,8 +66,8 @@ public class DuckDBJoin implements DuckDBExpression, Join<DuckDBExpression, Duck
         return outerType;
     }
 
-    public static List<DuckDBExpression> getJoins(List<DuckDBTableReference> tableList, DuckDBGlobalState globalState) {
-        List<DuckDBExpression> joinExpressions = new ArrayList<>();
+    public static List<DuckDBJoin> getJoins(List<DuckDBTableReference> tableList, DuckDBGlobalState globalState) {
+        List<DuckDBJoin> joinExpressions = new ArrayList<>();
         while (tableList.size() >= 2 && Randomly.getBooleanWithRatherLowProbability()) {
             DuckDBTableReference leftTable = tableList.remove(0);
             DuckDBTableReference rightTable = tableList.remove(0);
@@ -111,7 +111,7 @@ public class DuckDBJoin implements DuckDBExpression, Join<DuckDBExpression, Duck
         return new DuckDBJoin(left, right, JoinType.INNER, predicate);
     }
 
-    public static DuckDBExpression createNaturalJoin(DuckDBTableReference left, DuckDBTableReference right,
+    public static DuckDBJoin createNaturalJoin(DuckDBTableReference left, DuckDBTableReference right,
             OuterType naturalJoinType) {
         DuckDBJoin join = new DuckDBJoin(left, right, JoinType.NATURAL, null);
         join.setOuterType(naturalJoinType);

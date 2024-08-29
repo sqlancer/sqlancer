@@ -3,17 +3,22 @@ package sqlancer.duckdb.gen;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
 import sqlancer.common.ast.newast.NewOrderingTerm.Ordering;
 import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
+import sqlancer.common.gen.NoRECGenerator;
 import sqlancer.common.gen.UntypedExpressionGenerator;
+import sqlancer.common.schema.AbstractTables;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
 import sqlancer.duckdb.DuckDBSchema.DuckDBCompositeDataType;
 import sqlancer.duckdb.DuckDBSchema.DuckDBDataType;
+import sqlancer.duckdb.DuckDBSchema.DuckDBTable;
+import sqlancer.duckdb.DuckDBToStringVisitor;
 import sqlancer.duckdb.ast.DuckDBBetweenOperator;
 import sqlancer.duckdb.ast.DuckDBBinaryOperator;
 import sqlancer.duckdb.ast.DuckDBCaseOperator;
@@ -22,12 +27,18 @@ import sqlancer.duckdb.ast.DuckDBConstant;
 import sqlancer.duckdb.ast.DuckDBExpression;
 import sqlancer.duckdb.ast.DuckDBFunction;
 import sqlancer.duckdb.ast.DuckDBInOperator;
+import sqlancer.duckdb.ast.DuckDBJoin;
 import sqlancer.duckdb.ast.DuckDBOrderingTerm;
+import sqlancer.duckdb.ast.DuckDBPostFixText;
+import sqlancer.duckdb.ast.DuckDBSelect;
+import sqlancer.duckdb.ast.DuckDBTableReference;
 import sqlancer.duckdb.ast.DuckDBTernary;
 
-public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<DuckDBExpression, DuckDBColumn> {
+public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<DuckDBExpression, DuckDBColumn>
+        implements NoRECGenerator<DuckDBSelect, DuckDBJoin, DuckDBExpression, DuckDBTable, DuckDBColumn> {
 
     private final DuckDBGlobalState globalState;
+    private List<DuckDBTable> tables;
 
     public DuckDBExpressionGenerator(DuckDBGlobalState globalState) {
         this.globalState = globalState;
@@ -437,4 +448,69 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
         return new sqlancer.duckdb.ast.DuckDBUnaryPostfixOperator(expr, DuckDBUnaryPostfixOperator.IS_NULL);
     }
 
+    @Override
+    public NoRECGenerator<DuckDBSelect, DuckDBJoin, DuckDBExpression, DuckDBTable, DuckDBColumn> setTablesAndColumns(
+            AbstractTables<DuckDBTable, DuckDBColumn> tables) {
+        this.columns = tables.getColumns();
+        this.tables = tables.getTables();
+
+        return this;
+    }
+
+    @Override
+    public DuckDBExpression generateBooleanExpression() {
+        return generateExpression();
+    }
+
+    @Override
+    public DuckDBSelect generateSelect() {
+        return new DuckDBSelect();
+    }
+
+    @Override
+    public List<DuckDBJoin> getRandomJoinClauses() {
+        List<DuckDBTableReference> tableList = tables.stream().map(t -> new DuckDBTableReference(t))
+                .collect(Collectors.toList());
+        List<DuckDBJoin> joins = DuckDBJoin.getJoins(tableList, globalState);
+        tables = tableList.stream().map(t -> t.getTable()).collect(Collectors.toList());
+        return joins;
+    }
+
+    @Override
+    public List<DuckDBExpression> getTableRefs() {
+        return tables.stream().map(t -> new DuckDBTableReference(t)).collect(Collectors.toList());
+    }
+
+    @Override
+    public String generateOptimizedQueryString(DuckDBSelect select, DuckDBExpression whereCondition,
+            boolean shouldUseAggregate) {
+        List<DuckDBExpression> allColumns = columns.stream().map((c) -> new DuckDBColumnReference(c))
+                .collect(Collectors.toList());
+        if (shouldUseAggregate) {
+            DuckDBFunction<DuckDBAggregateFunction> aggr = new DuckDBFunction<>(
+                    Arrays.asList(new DuckDBColumnReference(
+                            new DuckDBColumn("*", new DuckDBCompositeDataType(DuckDBDataType.INT, 0), false, false))),
+                    DuckDBAggregateFunction.COUNT);
+            select.setFetchColumns(Arrays.asList(aggr));
+        } else {
+            select.setFetchColumns(allColumns);
+            if (Randomly.getBooleanWithSmallProbability()) {
+                select.setOrderByClauses(generateOrderBys());
+            }
+        }
+        select.setWhereClause(whereCondition);
+
+        return select.asString();
+    }
+
+    @Override
+    public String generateUnoptimizedQueryString(DuckDBSelect select, DuckDBExpression whereCondition) {
+        DuckDBExpression asText = new DuckDBPostFixText(new DuckDBCastOperation(
+                new DuckDBPostFixText(whereCondition,
+                        " IS NOT NULL AND " + DuckDBToStringVisitor.asString(whereCondition)),
+                new DuckDBCompositeDataType(DuckDBDataType.INT, 8)), "as count");
+        select.setFetchColumns(Arrays.asList(asText));
+
+        return "SELECT SUM(count) FROM (" + select.asString() + ") as res";
+    }
 }

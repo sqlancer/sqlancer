@@ -46,7 +46,7 @@ public class DuckDBQueryPartitioningBase extends TernaryLogicPartitioningOracleB
         List<DuckDBTable> tables = targetTables.getTables();
         List<DuckDBTableReference> tableList = tables.stream().map(t -> new DuckDBTableReference(t))
                 .collect(Collectors.toList());
-        List<DuckDBExpression> joins = DuckDBJoin.getJoins(tableList, state);
+        List<DuckDBJoin> joins = DuckDBJoin.getJoins(tableList, state);
         select.setJoinList(joins.stream().collect(Collectors.toList()));
         select.setFromList(tableList.stream().collect(Collectors.toList()));
         select.setWhereClause(null);
