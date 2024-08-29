@@ -3,7 +3,6 @@
 # SQLancer
 
 
-
 ![SQLancer](media/logo/png/sqlancer_logo_logo_pos_500.png)
 
 SQLancer (Synthesized Query Lancer) is a tool to automatically test Database Management Systems (DBMS) in order to find logic bugs in their implementation. We refer to logic bugs as those bugs that cause the DBMS to fetch an incorrect result set (e.g., by omitting a record).
