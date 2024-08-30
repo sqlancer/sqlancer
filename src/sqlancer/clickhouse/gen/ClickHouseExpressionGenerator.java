@@ -11,13 +11,18 @@ import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
 import sqlancer.clickhouse.ClickHouseSchema;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseColumn;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseLancerDataType;
+import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTable;
 import sqlancer.clickhouse.ast.ClickHouseAggregate;
+import sqlancer.clickhouse.ast.ClickHouseAggregate.ClickHouseAggregateFunction;
+import sqlancer.clickhouse.ast.ClickHouseAliasOperation;
 import sqlancer.clickhouse.ast.ClickHouseBinaryArithmeticOperation;
 import sqlancer.clickhouse.ast.ClickHouseBinaryComparisonOperation;
 import sqlancer.clickhouse.ast.ClickHouseBinaryFunctionOperation;
 import sqlancer.clickhouse.ast.ClickHouseBinaryLogicalOperation;
 import sqlancer.clickhouse.ast.ClickHouseColumnReference;
 import sqlancer.clickhouse.ast.ClickHouseExpression;
+import sqlancer.clickhouse.ast.ClickHouseExpression.ClickHouseJoin;
+import sqlancer.clickhouse.ast.ClickHouseSelect;
 import sqlancer.clickhouse.ast.ClickHouseTableReference;
 import sqlancer.clickhouse.ast.ClickHouseUnaryFunctionOperation;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation;
@@ -25,14 +30,18 @@ import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation.ClickHouseUnaryPo
 import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation.ClickHouseUnaryPrefixOperator;
 import sqlancer.clickhouse.ast.constant.ClickHouseCreateConstant;
+import sqlancer.common.gen.NoRECGenerator;
 import sqlancer.common.gen.TypedExpressionGenerator;
+import sqlancer.common.schema.AbstractTables;
 
 public class ClickHouseExpressionGenerator
-        extends TypedExpressionGenerator<ClickHouseExpression, ClickHouseColumn, ClickHouseLancerDataType> {
+        extends TypedExpressionGenerator<ClickHouseExpression, ClickHouseColumn, ClickHouseLancerDataType> implements
+        NoRECGenerator<ClickHouseSelect, ClickHouseJoin, ClickHouseExpression, ClickHouseTable, ClickHouseColumn> {
 
     private final ClickHouseGlobalState globalState;
     public boolean allowAggregateFunctions;
 
+    private List<ClickHouseTable> tables;
     private final List<ClickHouseColumnReference> columnRefs;
 
     public ClickHouseExpressionGenerator(ClickHouseGlobalState globalState) {
@@ -344,5 +353,85 @@ public class ClickHouseExpressionGenerator
     @Override
     public ClickHouseExpression isNull(ClickHouseExpression expr) {
         return new ClickHouseUnaryPostfixOperation(expr, ClickHouseUnaryPostfixOperator.IS_NULL, false);
+    }
+
+    @Override
+    public NoRECGenerator<ClickHouseSelect, ClickHouseJoin, ClickHouseExpression, ClickHouseTable, ClickHouseColumn> setTablesAndColumns(
+            AbstractTables<ClickHouseTable, ClickHouseColumn> tables) {
+        this.tables = tables.getTables();
+        this.columns = tables.getColumns();
+        return this;
+    }
+
+    @Override
+    public ClickHouseExpression generateBooleanExpression() {
+        List<ClickHouseColumnReference> columnRefs = columns.stream()
+                .map(c -> c.asColumnReference(c.getTable().getName())).collect(Collectors.toList());
+        return generateExpressionWithColumns(columnRefs, 5);
+    }
+
+    @Override
+    public ClickHouseSelect generateSelect() {
+        return new ClickHouseSelect();
+    }
+
+    @Override
+    public List<ClickHouseJoin> getRandomJoinClauses() {
+        List<ClickHouseExpression.ClickHouseJoin> joinStatements = new ArrayList<>();
+        if (globalState.getClickHouseOptions().testJoins && Randomly.getBoolean()) {
+            return joinStatements;
+        }
+        List<ClickHouseTableReference> leftTables = new ArrayList<>();
+        leftTables.add(new ClickHouseTableReference(tables.get(0), null));
+        if (Randomly.getBoolean() && !tables.isEmpty()) {
+            int nrJoinClauses = (int) Randomly.getNotCachedInteger(0, tables.size());
+            for (int i = 0; i < nrJoinClauses; i++) {
+                ClickHouseTableReference leftTable = leftTables
+                        .get((int) Randomly.getNotCachedInteger(0, leftTables.size() - 1));
+                ClickHouseTableReference rightTable = new ClickHouseTableReference(Randomly.fromList(tables),
+                        "right_" + i);
+                ClickHouseExpression.ClickHouseJoinOnClause joinClause = generateJoinClause(leftTable, rightTable);
+                ClickHouseExpression.ClickHouseJoin.JoinType options = Randomly
+                        .fromOptions(ClickHouseExpression.ClickHouseJoin.JoinType.values());
+                ClickHouseExpression.ClickHouseJoin j = new ClickHouseExpression.ClickHouseJoin(leftTable, rightTable,
+                        options, joinClause);
+                joinStatements.add(j);
+                leftTables.add(rightTable);
+            }
+        }
+        return joinStatements;
+    }
+
+    @Override
+    public List<ClickHouseExpression> getTableRefs() {
+        return tables.stream().map(t -> new ClickHouseTableReference(t, null)).collect(Collectors.toList());
+    }
+
+    @Override
+    public String generateOptimizedQueryString(ClickHouseSelect select, ClickHouseExpression whereCondition,
+            boolean shouldUseAggregate) {
+        List<ClickHouseColumn> filteredColumns = Randomly.extractNrRandomColumns(columns,
+                (int) Randomly.getNotCachedInteger(1, columns.size()));
+        if (shouldUseAggregate) {
+            ClickHouseAggregate aggr = new ClickHouseAggregate(
+                    new ClickHouseColumnReference(ClickHouseColumn.createDummy("*", null), null, null),
+                    ClickHouseAggregateFunction.COUNT);
+            select.setFetchColumns(List.of(aggr));
+        } else {
+            select.setFetchColumns(filteredColumns.stream().map(c -> c.asColumnReference(c.getTable().getName()))
+                    .collect(Collectors.toList()));
+        }
+        select.setWhereClause(whereCondition);
+
+        return select.asString();
+    }
+
+    @Override
+    public String generateUnoptimizedQueryString(ClickHouseSelect select, ClickHouseExpression whereCondition) {
+        ClickHouseExpression inner = new ClickHouseAliasOperation(whereCondition, "check");
+
+        select.setFetchColumns(List.of(inner));
+        select.setWhereClause(null);
+        return "SELECT SUM(check <> 0) FROM (" + select.asString() + ") as res";
     }
 }
