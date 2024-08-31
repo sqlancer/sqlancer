@@ -203,7 +203,7 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
         case "TIMESTAMP":
             primitiveType = DuckDBDataType.TIMESTAMP;
             break;
-        case "NULL":
+        case "\"NULL\"":
             primitiveType = DuckDBDataType.NULL;
             break;
         case "INTERVAL":
