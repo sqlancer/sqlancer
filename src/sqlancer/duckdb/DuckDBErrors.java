@@ -114,7 +114,7 @@ public final class DuckDBErrors {
 
         errors.add("NOT NULL constraint failed");
         errors.add("PRIMARY KEY or UNIQUE constraint violated");
-        errors.add("duplicate key");
+        errors.add("Duplicate key");
         errors.add("can't be cast because the value is out of range for the destination type");
         errors.add("Could not convert string");
         errors.add("Unimplemented type for cast");
