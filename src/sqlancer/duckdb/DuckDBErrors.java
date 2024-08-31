@@ -63,6 +63,7 @@ public final class DuckDBErrors {
 
     public static void addExpressionErrors(ExpectedErrors errors) {
         errors.addAll(getExpressionErrors());
+        errors.addRegexString("Binder Error: Cannot mix values of type .* and .* in BETWEEN clause");
     }
 
     private static List<String> getRegexErrors() {
