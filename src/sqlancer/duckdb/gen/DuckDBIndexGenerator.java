@@ -8,8 +8,6 @@ import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
 import sqlancer.duckdb.DuckDBSchema.DuckDBTable;
-import sqlancer.duckdb.DuckDBToStringVisitor;
-import sqlancer.duckdb.ast.DuckDBExpression;
 
 public final class DuckDBIndexGenerator {
 
@@ -42,12 +40,6 @@ public final class DuckDBIndexGenerator {
             }
         }
         sb.append(")");
-        if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
-            DuckDBExpression expr = new DuckDBExpressionGenerator(globalState).setColumns(table.getColumns())
-                    .generateExpression();
-            sb.append(DuckDBToStringVisitor.asString(expr));
-        }
         errors.add("already exists!");
         if (globalState.getDbmsSpecificOptions().testRowid) {
             errors.add("Cannot create an index on the rowid!");
