@@ -131,6 +131,7 @@ public final class DuckDBErrors {
     public static List<String> getGroupByErrors() {
         ArrayList<String> errors = new ArrayList<>();
 
+        errors.add("must appear in the GROUP BY clause or must be part of an aggregate function");
         errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
         errors.add("GROUP BY term out of range");
 
