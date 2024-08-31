@@ -69,15 +69,8 @@ public final class DuckDBErrors {
     private static List<String> getRegexErrors() {
         ArrayList<String> errors = new ArrayList<>();
 
-        errors.add("missing ]");
-        errors.add("missing )");
-        errors.add("invalid escape sequence");
-        errors.add("no argument for repetition operator: ");
-        errors.add("bad repetition operator");
-        errors.add("trailing \\");
-        errors.add("invalid perl operator");
-        errors.add("invalid character class range");
-        errors.add("width is not integer");
+        errors.add("Invalid Input Error:");
+        errors.add("Invalid Input Error:");
 
         return errors;
     }
