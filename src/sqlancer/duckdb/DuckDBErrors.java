@@ -46,9 +46,6 @@ public final class DuckDBErrors {
 
         errors.add("Like pattern must not end with escape character!"); // LIKE
 
-        errors.add("does not have a column named \"rowid\""); // TODO: this can be removed if we can query whether a
-                                                              // table supports rowids
-
         errors.add("does not have a column named"); // TODO: this only happens for views whose underlying table has a
                                                     // removed column
         errors.add("Contents of view were altered: types don't match!");
