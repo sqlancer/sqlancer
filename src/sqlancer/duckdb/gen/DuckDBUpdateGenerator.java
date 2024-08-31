@@ -27,7 +27,7 @@ public final class DuckDBUpdateGenerator extends AbstractUpdateGenerator<DuckDBC
 
     private SQLQueryAdapter generate() {
         DuckDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-        List<DuckDBColumn> columns = table.getRandomNonEmptyColumnSubset();
+        List<DuckDBColumn> columns = table.getRandomNonEmptyColumnSubsetFilter(p -> !p.getName().equals("rowid"));
         gen = new DuckDBExpressionGenerator(globalState).setColumns(table.getColumns());
         sb.append("UPDATE ");
         sb.append(table.getName());
