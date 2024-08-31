@@ -62,6 +62,7 @@ public final class DuckDBErrors {
         errors.addAll(getExpressionErrors());
         errors.addRegexString("Binder Error: Cannot mix values of type .* and .* in BETWEEN clause");
         errors.addRegexString("Binder Error: Cannot mix values of type .* and .* in CASE expression");
+        errors.addRegexString("Cannot mix values of type .* and .* in COALESCE operator");
         errors.addRegexString("Cannot compare values of type .* and type .*");
     }
 
