@@ -206,6 +206,8 @@ public final class CockroachDBErrors {
         errors.add("argument of OFFSET must be type int, not type decimal");
         errors.add("ERROR: for SELECT DISTINCT, ORDER BY expressions must appear in select list");
 
+        errors.add("incompatible IF expressions");
+
         errors.addAll(getArrayErrors());
         errors.addAll(getComputedColumnErrors());
 
