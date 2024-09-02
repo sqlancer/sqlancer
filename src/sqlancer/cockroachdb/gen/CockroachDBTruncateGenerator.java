@@ -1,6 +1,7 @@
 package sqlancer.cockroachdb.gen;
 
 import sqlancer.Randomly;
+import sqlancer.cockroachdb.CockroachDBBugs;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -14,6 +15,9 @@ public final class CockroachDBTruncateGenerator {
     public static SQLQueryAdapter truncate(CockroachDBGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         errors.add("is referenced by foreign key");
+        if (CockroachDBBugs.bug85230) {
+            errors.add("found in depended-on-by references, no such index in this relation");
+        }
 
         StringBuilder sb = new StringBuilder();
         sb.append("TRUNCATE");
