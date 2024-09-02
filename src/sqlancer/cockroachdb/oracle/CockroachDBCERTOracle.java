@@ -128,7 +128,7 @@ public class CockroachDBCERTOracle extends CERTOracleBase<CockroachDBGlobalState
             columns.addAll(((CockroachDBTableReference) join.getLeftTable()).getTable().getColumns());
             columns.addAll(((CockroachDBTableReference) join.getRightTable()).getTable().getColumns());
             CockroachDBExpressionGenerator joinGen2 = new CockroachDBExpressionGenerator(state).setColumns(columns);
-            join.setOnCondition(joinGen2.generateExpression(CockroachDBDataType.BOOL.get()));
+            join.setOnClause(joinGen2.generateExpression(CockroachDBDataType.BOOL.get()));
         }
 
         JoinType newJoinType = CockroachDBJoin.JoinType.INNER;

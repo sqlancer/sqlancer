@@ -1,5 +1,8 @@
 package sqlancer.cockroachdb.ast;
 
-public interface CockroachDBExpression {
+import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
+import sqlancer.common.ast.newast.Expression;
+
+public interface CockroachDBExpression extends Expression<CockroachDBColumn> {
 
 }

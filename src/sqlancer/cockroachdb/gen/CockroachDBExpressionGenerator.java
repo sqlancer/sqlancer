@@ -10,6 +10,8 @@ import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBCompositeDataType;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBDataType;
+import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
+import sqlancer.cockroachdb.CockroachDBVisitor;
 import sqlancer.cockroachdb.ast.CockroachDBAggregate;
 import sqlancer.cockroachdb.ast.CockroachDBAggregate.CockroachDBAggregateFunction;
 import sqlancer.cockroachdb.ast.CockroachDBBetweenOperation;
@@ -29,6 +31,7 @@ import sqlancer.cockroachdb.ast.CockroachDBConstant;
 import sqlancer.cockroachdb.ast.CockroachDBExpression;
 import sqlancer.cockroachdb.ast.CockroachDBFunction;
 import sqlancer.cockroachdb.ast.CockroachDBInOperation;
+import sqlancer.cockroachdb.ast.CockroachDBJoin;
 import sqlancer.cockroachdb.ast.CockroachDBMultiValuedComparison;
 import sqlancer.cockroachdb.ast.CockroachDBMultiValuedComparison.MultiValuedComparisonOperator;
 import sqlancer.cockroachdb.ast.CockroachDBMultiValuedComparison.MultiValuedComparisonType;
@@ -36,14 +39,20 @@ import sqlancer.cockroachdb.ast.CockroachDBNotOperation;
 import sqlancer.cockroachdb.ast.CockroachDBOrderingTerm;
 import sqlancer.cockroachdb.ast.CockroachDBRegexOperation;
 import sqlancer.cockroachdb.ast.CockroachDBRegexOperation.CockroachDBRegexOperator;
+import sqlancer.cockroachdb.ast.CockroachDBSelect;
+import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 import sqlancer.cockroachdb.ast.CockroachDBTypeAnnotation;
 import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation;
 import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnaryPostfixOperator;
+import sqlancer.common.gen.NoRECGenerator;
 import sqlancer.common.gen.TypedExpressionGenerator;
+import sqlancer.common.schema.AbstractTables;
 
-public class CockroachDBExpressionGenerator
-        extends TypedExpressionGenerator<CockroachDBExpression, CockroachDBColumn, CockroachDBCompositeDataType> {
+public class CockroachDBExpressionGenerator extends
+        TypedExpressionGenerator<CockroachDBExpression, CockroachDBColumn, CockroachDBCompositeDataType> implements
+        NoRECGenerator<CockroachDBSelect, CockroachDBJoin, CockroachDBExpression, CockroachDBTable, CockroachDBColumn> {
 
+    private List<CockroachDBTable> tables;
     private final CockroachDBGlobalState globalState;
 
     public CockroachDBExpressionGenerator(CockroachDBGlobalState globalState) {
@@ -84,7 +93,8 @@ public class CockroachDBExpressionGenerator
 
     @Override
     public CockroachDBExpression generateExpression(CockroachDBCompositeDataType type, int depth) {
-        // if (type == CockroachDBDataType.FLOAT && Randomly.getBooleanWithRatherLowProbability()) {
+        // if (type == CockroachDBDataType.FLOAT &&
+        // Randomly.getBooleanWithRatherLowProbability()) {
         // type = CockroachDBDataType.INT;
         // }
         if (allowAggregates && Randomly.getBoolean()) {
@@ -358,4 +368,83 @@ public class CockroachDBExpressionGenerator
         return new CockroachDBUnaryPostfixOperation(expr, CockroachDBUnaryPostfixOperator.IS_NULL);
     }
 
+    @Override
+    public NoRECGenerator<CockroachDBSelect, CockroachDBJoin, CockroachDBExpression, CockroachDBTable, CockroachDBColumn> setTablesAndColumns(
+            AbstractTables<CockroachDBTable, CockroachDBColumn> tables) {
+        this.columns = tables.getColumns();
+        this.tables = tables.getTables();
+
+        return this;
+    }
+
+    @Override
+    public CockroachDBExpression generateBooleanExpression() {
+        return generateExpression(CockroachDBDataType.BOOL.get());
+    }
+
+    @Override
+    public CockroachDBSelect generateSelect() {
+        return new CockroachDBSelect();
+    }
+
+    @Override
+    public List<CockroachDBJoin> getRandomJoinClauses() {
+        List<CockroachDBJoin> joinExpressions = new ArrayList<>();
+        List<CockroachDBTableReference> tableReferences = tables.stream().map(t -> new CockroachDBTableReference(t))
+                .collect(Collectors.toList());
+        while (tableReferences.size() >= 2 && Randomly.getBoolean()) {
+            CockroachDBTableReference leftTable = tableReferences.remove(0);
+            CockroachDBTableReference rightTable = tableReferences.remove(0);
+            List<CockroachDBColumn> columns = new ArrayList<>(leftTable.getTable().getColumns());
+            columns.addAll(rightTable.getTable().getColumns());
+            CockroachDBExpressionGenerator joinGen = new CockroachDBExpressionGenerator(globalState)
+                    .setColumns(columns);
+            joinExpressions.add(CockroachDBJoin.createJoin(leftTable, rightTable, CockroachDBJoin.JoinType.getRandom(),
+                    joinGen.generateExpression(CockroachDBDataType.BOOL.get())));
+        }
+
+        tables = tableReferences.stream().map(t -> t.getTable()).collect(Collectors.toList());
+        return joinExpressions;
+    }
+
+    @Override
+    public List<CockroachDBExpression> getTableRefs() {
+        List<CockroachDBTableReference> tableReferences = tables.stream().map(t -> new CockroachDBTableReference(t))
+                .collect(Collectors.toList());
+
+        return CockroachDBCommon.getTableReferences(tableReferences);
+    }
+
+    @Override
+    public String generateOptimizedQueryString(CockroachDBSelect select, CockroachDBExpression whereCondition,
+            boolean shouldUseAggregate) {
+        CockroachDBColumn c = new CockroachDBColumn("COUNT(*)", null, false, false);
+        select.setWhereClause(whereCondition);
+        if (shouldUseAggregate) {
+            CockroachDBAggregate aggr = new CockroachDBAggregate(CockroachDBAggregateFunction.COUNT,
+                    List.of(new CockroachDBColumnReference(new CockroachDBColumn("*",
+                            new CockroachDBCompositeDataType(CockroachDBDataType.INT, 0), false, false))));
+            select.setFetchColumns(List.of(aggr));
+        } else {
+            select.setFetchColumns(List.of(new CockroachDBColumnReference(c)));
+            if (Randomly.getBooleanWithRatherLowProbability()) {
+                select.setOrderByClauses(getOrderingTerms());
+            }
+        }
+        return CockroachDBVisitor.asString(select);
+    }
+
+    @Override
+    public String generateUnoptimizedQueryString(CockroachDBSelect select, CockroachDBExpression whereCondition) {
+        List<CockroachDBExpression> tableList = select.getFromList();
+        List<CockroachDBExpression> joinList = select.getJoinList();
+        String fromString = tableList.stream().map(t -> ((CockroachDBTableReference) t).getTable().getName())
+                .collect(Collectors.joining(", "));
+        if (!tableList.isEmpty() && !joinList.isEmpty()) {
+            fromString += ", ";
+        }
+        return "SELECT SUM(count) FROM (SELECT CAST(" + CockroachDBVisitor.asString(whereCondition)
+                + " IS TRUE AS INT) as count FROM " + fromString + " "
+                + joinList.stream().map(j -> CockroachDBVisitor.asString(j)).collect(Collectors.joining(", ")) + ")";
+    }
 }
