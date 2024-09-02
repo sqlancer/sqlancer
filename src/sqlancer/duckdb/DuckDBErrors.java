@@ -70,8 +70,6 @@ public final class DuckDBErrors {
         ArrayList<String> errors = new ArrayList<>();
 
         errors.add("Invalid Input Error:");
-        errors.add("Invalid Input Error:");
-
         return errors;
     }
 
