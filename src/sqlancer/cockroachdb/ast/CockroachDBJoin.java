@@ -3,8 +3,12 @@ package sqlancer.cockroachdb.ast;
 import java.util.Arrays;
 
 import sqlancer.Randomly;
+import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
+import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
+import sqlancer.common.ast.newast.Join;
 
-public class CockroachDBJoin implements CockroachDBExpression {
+public class CockroachDBJoin
+        implements CockroachDBExpression, Join<CockroachDBExpression, CockroachDBTable, CockroachDBColumn> {
 
     private final CockroachDBExpression leftTable;
     private final CockroachDBExpression rightTable;
@@ -49,7 +53,8 @@ public class CockroachDBJoin implements CockroachDBExpression {
         return joinType;
     }
 
-    public void setOnCondition(CockroachDBExpression onCondition) {
+    @Override
+    public void setOnClause(CockroachDBExpression onCondition) {
         this.onCondition = onCondition;
     }
 
