@@ -5,10 +5,14 @@ import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.SelectBase;
+import sqlancer.common.ast.newast.Select;
+import sqlancer.materialize.MaterializeSchema.MaterializeColumn;
 import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
 import sqlancer.materialize.MaterializeSchema.MaterializeTable;
+import sqlancer.materialize.MaterializeVisitor;
 
-public class MaterializeSelect extends SelectBase<MaterializeExpression> implements MaterializeExpression {
+public class MaterializeSelect extends SelectBase<MaterializeExpression> implements MaterializeExpression,
+        Select<MaterializeJoin, MaterializeExpression, MaterializeTable, MaterializeColumn> {
 
     private SelectType selectOption = SelectType.ALL;
     private List<MaterializeJoin> joinClauses = Collections.emptyList();
@@ -111,11 +115,13 @@ public class MaterializeSelect extends SelectBase<MaterializeExpression> impleme
         return null;
     }
 
+    @Override
     public void setJoinClauses(List<MaterializeJoin> joinStatements) {
         this.joinClauses = joinStatements;
 
     }
 
+    @Override
     public List<MaterializeJoin> getJoinClauses() {
         return joinClauses;
     }
@@ -132,4 +138,8 @@ public class MaterializeSelect extends SelectBase<MaterializeExpression> impleme
         return forClause;
     }
 
+    @Override
+    public String asString() {
+        return MaterializeVisitor.asString(this);
+    }
 }

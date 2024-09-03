@@ -1,9 +1,13 @@
 package sqlancer.materialize.ast;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.newast.Join;
+import sqlancer.materialize.MaterializeSchema.MaterializeColumn;
 import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
+import sqlancer.materialize.MaterializeSchema.MaterializeTable;
 
-public class MaterializeJoin implements MaterializeExpression {
+public class MaterializeJoin
+        implements MaterializeExpression, Join<MaterializeExpression, MaterializeTable, MaterializeColumn> {
 
     public enum MaterializeJoinType {
         INNER, LEFT, RIGHT, FULL, CROSS;
@@ -14,8 +18,8 @@ public class MaterializeJoin implements MaterializeExpression {
 
     }
 
+    private MaterializeExpression onClause;
     private final MaterializeExpression tableReference;
-    private final MaterializeExpression onClause;
     private final MaterializeJoinType type;
 
     public MaterializeJoin(MaterializeExpression tableReference, MaterializeExpression onClause,
@@ -47,4 +51,8 @@ public class MaterializeJoin implements MaterializeExpression {
         throw new AssertionError();
     }
 
+    @Override
+    public void setOnClause(MaterializeExpression onClause) {
+        this.onClause = onClause;
+    }
 }
