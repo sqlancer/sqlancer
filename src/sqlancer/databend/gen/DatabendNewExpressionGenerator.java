@@ -9,12 +9,17 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.NewOrderingTerm;
+import sqlancer.common.gen.NoRECGenerator;
 import sqlancer.common.gen.TypedExpressionGenerator;
+import sqlancer.common.schema.AbstractTables;
 import sqlancer.databend.DatabendBugs;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema.DatabendColumn;
+import sqlancer.databend.DatabendSchema.DatabendCompositeDataType;
 import sqlancer.databend.DatabendSchema.DatabendDataType;
 import sqlancer.databend.DatabendSchema.DatabendRowValue;
+import sqlancer.databend.DatabendSchema.DatabendTable;
+import sqlancer.databend.DatabendToStringVisitor;
 import sqlancer.databend.ast.DatabendAggregateOperation;
 import sqlancer.databend.ast.DatabendAggregateOperation.DatabendAggregateFunction;
 import sqlancer.databend.ast.DatabendBetweenOperation;
@@ -24,21 +29,29 @@ import sqlancer.databend.ast.DatabendBinaryComparisonOperation;
 import sqlancer.databend.ast.DatabendBinaryComparisonOperation.DatabendBinaryComparisonOperator;
 import sqlancer.databend.ast.DatabendBinaryLogicalOperation;
 import sqlancer.databend.ast.DatabendBinaryLogicalOperation.DatabendBinaryLogicalOperator;
+import sqlancer.databend.ast.DatabendCastOperation;
+import sqlancer.databend.ast.DatabendColumnReference;
 import sqlancer.databend.ast.DatabendColumnValue;
 import sqlancer.databend.ast.DatabendConstant;
 import sqlancer.databend.ast.DatabendExpression;
 import sqlancer.databend.ast.DatabendInOperation;
+import sqlancer.databend.ast.DatabendJoin;
 import sqlancer.databend.ast.DatabendLikeOperation;
 import sqlancer.databend.ast.DatabendOrderByTerm;
+import sqlancer.databend.ast.DatabendPostFixText;
+import sqlancer.databend.ast.DatabendSelect;
+import sqlancer.databend.ast.DatabendTableReference;
 import sqlancer.databend.ast.DatabendUnaryPostfixOperation;
 import sqlancer.databend.ast.DatabendUnaryPostfixOperation.DatabendUnaryPostfixOperator;
 import sqlancer.databend.ast.DatabendUnaryPrefixOperation;
 import sqlancer.databend.ast.DatabendUnaryPrefixOperation.DatabendUnaryPrefixOperator;
 
 public class DatabendNewExpressionGenerator
-        extends TypedExpressionGenerator<DatabendExpression, DatabendColumn, DatabendDataType> {
+        extends TypedExpressionGenerator<DatabendExpression, DatabendColumn, DatabendDataType>
+        implements NoRECGenerator<DatabendSelect, DatabendJoin, DatabendExpression, DatabendTable, DatabendColumn> {
 
     private final DatabendGlobalState globalState;
+    private List<DatabendTable> tables;
 
     private final int maxDepth;
     private boolean allowAggregateFunctions;
@@ -248,7 +261,8 @@ public class DatabendNewExpressionGenerator
     }
 
     public DatabendExpression generateExpressionWithExpectedResult(DatabendDataType type) {
-        // DatabendNewExpressionGenerator gen = new DatabendNewExpressionGenerator(globalState).setColumns(columns);
+        // DatabendNewExpressionGenerator gen = new
+        // DatabendNewExpressionGenerator(globalState).setColumns(columns);
         // gen.setRowValue(rowValue);
         DatabendExpression expr;
         do {
@@ -338,6 +352,73 @@ public class DatabendNewExpressionGenerator
         DatabendExpression expression = generateExpression(DatabendDataType.BOOLEAN);
         allowAggregateFunctions = false;
         return expression;
+    }
+
+    @Override
+    public NoRECGenerator<DatabendSelect, DatabendJoin, DatabendExpression, DatabendTable, DatabendColumn> setTablesAndColumns(
+            AbstractTables<DatabendTable, DatabendColumn> tables) {
+        this.columns = tables.getColumns();
+        this.tables = tables.getTables();
+
+        return this;
+    }
+
+    @Override
+    public DatabendExpression generateBooleanExpression() {
+        return generateExpression(DatabendDataType.BOOLEAN);
+    }
+
+    @Override
+    public DatabendSelect generateSelect() {
+        return new DatabendSelect();
+    }
+
+    @Override
+    public List<DatabendJoin> getRandomJoinClauses() {
+        List<DatabendTableReference> tableList = tables.stream().map(t -> new DatabendTableReference(t))
+                .collect(Collectors.toList());
+        List<DatabendJoin> joins = DatabendJoin.getJoins(tableList, globalState);
+        tables = tableList.stream().map(t -> t.getTable()).collect(Collectors.toList());
+        return joins;
+    }
+
+    @Override
+    public List<DatabendExpression> getTableRefs() {
+        return tables.stream().map(t -> new DatabendTableReference(t)).collect(Collectors.toList());
+    }
+
+    @Override
+    public String generateOptimizedQueryString(DatabendSelect select, DatabendExpression whereCondition,
+            boolean shouldUseAggregate) {
+        if (shouldUseAggregate) {
+            DatabendExpression aggr = new DatabendAggregateOperation(
+                    List.of(new DatabendColumnReference(new DatabendColumn("*",
+                            new DatabendCompositeDataType(DatabendDataType.INT, 0), false, false))),
+                    DatabendAggregateFunction.COUNT);
+            select.setFetchColumns(List.of(aggr));
+        } else {
+            List<DatabendExpression> allColumns = columns.stream().map((c) -> new DatabendColumnReference(c))
+                    .collect(Collectors.toList());
+            select.setFetchColumns(allColumns);
+            if (Randomly.getBooleanWithSmallProbability()) {
+                select.setOrderByClauses(generateOrderBys());
+            }
+        }
+        select.setWhereClause(whereCondition);
+
+        return select.asString();
+    }
+
+    @Override
+    public String generateUnoptimizedQueryString(DatabendSelect select, DatabendExpression whereCondition) {
+        DatabendExpression asText = new DatabendPostFixText(new DatabendCastOperation(
+                new DatabendPostFixText(whereCondition,
+                        " IS NOT NULL AND " + DatabendToStringVisitor.asString(whereCondition)),
+                new DatabendCompositeDataType(DatabendDataType.INT, 8)), "as count");
+        select.setFetchColumns(List.of(asText));
+        select.setWhereClause(null);
+
+        return "SELECT SUM(count) FROM (" + select.asString() + ") as res";
     }
 
 }
