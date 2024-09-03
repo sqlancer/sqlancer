@@ -5,10 +5,14 @@ import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.SelectBase;
+import sqlancer.common.ast.newast.Select;
+import sqlancer.yugabyte.ysql.YSQLSchema.YSQLColumn;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLDataType;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTable;
+import sqlancer.yugabyte.ysql.YSQLVisitor;
 
-public class YSQLSelect extends SelectBase<YSQLExpression> implements YSQLExpression {
+public class YSQLSelect extends SelectBase<YSQLExpression>
+        implements YSQLExpression, Select<YSQLJoin, YSQLExpression, YSQLTable, YSQLColumn> {
 
     private SelectType selectOption = SelectType.ALL;
     private List<YSQLJoin> joinClauses = Collections.emptyList();
@@ -32,10 +36,12 @@ public class YSQLSelect extends SelectBase<YSQLExpression> implements YSQLExpres
         return null;
     }
 
+    @Override
     public List<YSQLJoin> getJoinClauses() {
         return joinClauses;
     }
 
+    @Override
     public void setJoinClauses(List<YSQLJoin> joinStatements) {
         this.joinClauses = joinStatements;
 
@@ -132,4 +138,8 @@ public class YSQLSelect extends SelectBase<YSQLExpression> implements YSQLExpres
         }
     }
 
+    @Override
+    public String asString() {
+        return YSQLVisitor.asString(this);
+    }
 }
