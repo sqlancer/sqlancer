@@ -57,7 +57,7 @@ public class DorisQueryPartitioningBase extends TernaryLogicPartitioningOracleBa
         List<DorisTable> tables = targetTables.getTables();
         List<DorisTableReference> tableList = tables.stream().map(t -> new DorisTableReference(t))
                 .collect(Collectors.toList());
-        List<DorisExpression> joins = DorisJoin.getJoins(tableList, state);
+        List<DorisJoin> joins = DorisJoin.getJoins(tableList, state);
         select.setJoinList(joins.stream().collect(Collectors.toList()));
         select.setFromList(tableList.stream().collect(Collectors.toList()));
         select.setWhereClause(null);

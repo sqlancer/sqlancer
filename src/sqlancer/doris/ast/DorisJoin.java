@@ -4,17 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.newast.Join;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
 import sqlancer.doris.DorisSchema;
 import sqlancer.doris.DorisSchema.DorisColumn;
+import sqlancer.doris.DorisSchema.DorisTable;
 import sqlancer.doris.gen.DorisNewExpressionGenerator;
 
-public class DorisJoin implements DorisExpression {
+public class DorisJoin implements DorisExpression, Join<DorisExpression, DorisTable, DorisColumn> {
 
     private final DorisTableReference leftTable;
     private final DorisTableReference rightTable;
     private final JoinType joinType;
-    private final DorisExpression onCondition;
+    private DorisExpression onCondition;
 
     public enum JoinType {
         INNER, STRAIGHT, LEFT, RIGHT;
@@ -48,8 +50,8 @@ public class DorisJoin implements DorisExpression {
         return onCondition;
     }
 
-    public static List<DorisExpression> getJoins(List<DorisTableReference> tableList, DorisGlobalState globalState) {
-        List<DorisExpression> joinExpressions = new ArrayList<>();
+    public static List<DorisJoin> getJoins(List<DorisTableReference> tableList, DorisGlobalState globalState) {
+        List<DorisJoin> joinExpressions = new ArrayList<>();
         while (tableList.size() >= 2 && Randomly.getBooleanWithRatherLowProbability()) {
             DorisTableReference leftTable = tableList.remove(0);
             DorisTableReference rightTable = tableList.remove(0);
@@ -98,5 +100,10 @@ public class DorisJoin implements DorisExpression {
     public static DorisJoin createLeftOuterJoin(DorisTableReference left, DorisTableReference right,
             DorisExpression predicate) {
         return new DorisJoin(left, right, JoinType.LEFT, predicate);
+    }
+
+    @Override
+    public void setOnClause(DorisExpression onClause) {
+        onCondition = onClause;
     }
 }

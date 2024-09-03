@@ -47,7 +47,7 @@ public final class DorisRandomQuerySynthesizer {
         List<DorisTable> tables = targetTables.getTables();
         List<DorisTableReference> tableList = tables.stream().map(t -> new DorisTableReference(t))
                 .collect(Collectors.toList());
-        List<DorisExpression> joins = DorisJoin.getJoins(tableList, globalState);
+        List<DorisJoin> joins = DorisJoin.getJoins(tableList, globalState);
         select.setJoinList(joins.stream().collect(Collectors.toList()));
         select.setFromList(tableList.stream().collect(Collectors.toList()));
         if (Randomly.getBoolean()) {

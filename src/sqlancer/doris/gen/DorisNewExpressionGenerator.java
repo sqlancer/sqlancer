@@ -10,12 +10,16 @@ import java.util.stream.Collectors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.NewOrderingTerm;
+import sqlancer.common.gen.NoRECGenerator;
 import sqlancer.common.gen.TypedExpressionGenerator;
+import sqlancer.common.schema.AbstractTables;
 import sqlancer.doris.DorisBugs;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
 import sqlancer.doris.DorisSchema.DorisColumn;
+import sqlancer.doris.DorisSchema.DorisCompositeDataType;
 import sqlancer.doris.DorisSchema.DorisDataType;
 import sqlancer.doris.DorisSchema.DorisRowValue;
+import sqlancer.doris.DorisSchema.DorisTable;
 import sqlancer.doris.ast.DorisAggregateOperation;
 import sqlancer.doris.ast.DorisAggregateOperation.DorisAggregateFunction;
 import sqlancer.doris.ast.DorisBetweenOperation;
@@ -27,21 +31,29 @@ import sqlancer.doris.ast.DorisBinaryLogicalOperation;
 import sqlancer.doris.ast.DorisBinaryLogicalOperation.DorisBinaryLogicalOperator;
 import sqlancer.doris.ast.DorisCaseOperation;
 import sqlancer.doris.ast.DorisCastOperation;
+import sqlancer.doris.ast.DorisColumnReference;
 import sqlancer.doris.ast.DorisColumnValue;
 import sqlancer.doris.ast.DorisConstant;
 import sqlancer.doris.ast.DorisExpression;
 import sqlancer.doris.ast.DorisFunctionOperation.DorisFunction;
 import sqlancer.doris.ast.DorisInOperation;
+import sqlancer.doris.ast.DorisJoin;
 import sqlancer.doris.ast.DorisLikeOperation;
 import sqlancer.doris.ast.DorisOrderByTerm;
+import sqlancer.doris.ast.DorisPostfixText;
+import sqlancer.doris.ast.DorisSelect;
+import sqlancer.doris.ast.DorisTableReference;
 import sqlancer.doris.ast.DorisUnaryPostfixOperation;
 import sqlancer.doris.ast.DorisUnaryPostfixOperation.DorisUnaryPostfixOperator;
 import sqlancer.doris.ast.DorisUnaryPrefixOperation;
 import sqlancer.doris.ast.DorisUnaryPrefixOperation.DorisUnaryPrefixOperator;
+import sqlancer.doris.visitor.DorisToStringVisitor;
 
-public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisExpression, DorisColumn, DorisDataType> {
+public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisExpression, DorisColumn, DorisDataType>
+        implements NoRECGenerator<DorisSelect, DorisJoin, DorisExpression, DorisTable, DorisColumn> {
 
     private final DorisGlobalState globalState;
+    private List<DorisTable> tables;
 
     private final int maxDepth;
     private boolean allowAggregateFunctions;
@@ -448,5 +460,76 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
 
     public void setAllowAggregateFunctions(boolean allowAggregateFunctions) {
         this.allowAggregateFunctions = allowAggregateFunctions;
+    }
+
+    @Override
+    public NoRECGenerator<DorisSelect, DorisJoin, DorisExpression, DorisTable, DorisColumn> setTablesAndColumns(
+            AbstractTables<DorisTable, DorisColumn> tables) {
+        this.columns = tables.getColumns();
+        this.tables = tables.getTables();
+
+        return this;
+    }
+
+    @Override
+    public DorisExpression generateBooleanExpression() {
+        return generateExpression(DorisDataType.BOOLEAN);
+    }
+
+    @Override
+    public DorisSelect generateSelect() {
+        return new DorisSelect();
+    }
+
+    @Override
+    public List<DorisJoin> getRandomJoinClauses() {
+        List<DorisTableReference> tableList = tables.stream().map(t -> new DorisTableReference(t))
+                .collect(Collectors.toList());
+        List<DorisJoin> joins = DorisJoin.getJoins(tableList, globalState);
+        tables = tableList.stream().map(t -> t.getTable()).collect(Collectors.toList());
+        return joins;
+    }
+
+    @Override
+    public List<DorisExpression> getTableRefs() {
+        return tables.stream().map(t -> new DorisTableReference(t)).collect(Collectors.toList());
+    }
+
+    @Override
+    public String generateOptimizedQueryString(DorisSelect select, DorisExpression whereCondition,
+            boolean shouldUseAggregate) {
+        if (shouldUseAggregate) {
+            DorisExpression aggr = new DorisAggregateOperation(
+                    List.of(new DorisColumnReference(
+                            new DorisColumn("*", new DorisCompositeDataType(DorisDataType.INT, 0), false, false))),
+                    DorisAggregateFunction.COUNT);
+            select.setFetchColumns(List.of(aggr));
+
+        } else {
+            List<DorisExpression> allColumns = columns.stream().map((c) -> new DorisColumnReference(c))
+                    .collect(Collectors.toList());
+            select.setFetchColumns(allColumns);
+            if (Randomly.getBooleanWithSmallProbability()) {
+                List<DorisExpression> constants = new ArrayList<>();
+                constants.add(new DorisConstant.DorisIntConstant(
+                        Randomly.smallNumber() % select.getFetchColumns().size() + 1));
+                select.setOrderByClauses(constants);
+            }
+        }
+        select.setWhereClause(whereCondition);
+
+        return select.asString();
+    }
+
+    @Override
+    public String generateUnoptimizedQueryString(DorisSelect select, DorisExpression whereCondition) {
+        DorisExpression asText = new DorisPostfixText(new DorisCastOperation(
+                new DorisPostfixText(whereCondition,
+                        " IS NOT NULL AND " + DorisToStringVisitor.asString(whereCondition)),
+                new DorisCompositeDataType(DorisDataType.INT, 8)), "as count");
+        select.setFetchColumns(Arrays.asList(asText));
+        select.setWhereClause(null);
+
+        return "SELECT SUM(count) FROM (" + select.asString() + ") as res";
     }
 }
