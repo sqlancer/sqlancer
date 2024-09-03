@@ -323,7 +323,8 @@ jobs:
         run: mvn -B package -DskipTests=true
       - name: Run Tests
         run: |
-          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterialize
+          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeNoREC
+          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeTLP
           MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializePQS
 
   materialize-qpg:
