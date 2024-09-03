@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.newast.Join;
 import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema;
@@ -11,12 +12,12 @@ import sqlancer.databend.DatabendSchema.DatabendColumn;
 import sqlancer.databend.DatabendSchema.DatabendTable;
 import sqlancer.databend.gen.DatabendNewExpressionGenerator;
 
-public class DatabendJoin implements DatabendExpression {
+public class DatabendJoin implements DatabendExpression, Join<DatabendExpression, DatabendTable, DatabendColumn> {
 
     private final DatabendTableReference leftTable;
     private final DatabendTableReference rightTable;
     private final JoinType joinType;
-    private final DatabendExpression onCondition;
+    private DatabendExpression onCondition;
     private OuterType outerType;
 
     public enum JoinType {
@@ -67,9 +68,8 @@ public class DatabendJoin implements DatabendExpression {
         return outerType;
     }
 
-    public static List<DatabendExpression> getJoins(List<DatabendTableReference> tableList,
-            DatabendGlobalState globalState) {
-        List<DatabendExpression> joinExpressions = new ArrayList<>();
+    public static List<DatabendJoin> getJoins(List<DatabendTableReference> tableList, DatabendGlobalState globalState) {
+        List<DatabendJoin> joinExpressions = new ArrayList<>();
         while (tableList.size() >= 2 && Randomly.getBooleanWithRatherLowProbability()) {
             DatabendTableReference leftTable = tableList.remove(0);
             DatabendTableReference rightTable = tableList.remove(0);
@@ -116,11 +116,15 @@ public class DatabendJoin implements DatabendExpression {
         return new DatabendJoin(left, right, JoinType.INNER, predicate);
     }
 
-    public static DatabendExpression createNaturalJoin(DatabendTableReference left, DatabendTableReference right,
+    public static DatabendJoin createNaturalJoin(DatabendTableReference left, DatabendTableReference right,
             OuterType naturalJoinType) {
         DatabendJoin join = new DatabendJoin(left, right, JoinType.NATURAL, null);
         join.setOuterType(naturalJoinType);
         return join;
     }
 
+    @Override
+    public void setOnClause(DatabendExpression onClause) {
+        onCondition = onClause;
+    }
 }

@@ -62,7 +62,7 @@ public class DatabendQueryPartitioningBase
         List<DatabendTableReference> tableList = tables.stream().map(t -> new DatabendTableReference(t))
                 .collect(Collectors.toList());
         if (!DatabendBugs.bug9236) {
-            List<DatabendExpression> joins = DatabendJoin.getJoins(tableList, state);
+            List<DatabendJoin> joins = DatabendJoin.getJoins(tableList, state);
             select.setJoinList(joins.stream().collect(Collectors.toList()));
         }
         select.setFromList(tableList.stream().collect(Collectors.toList()));

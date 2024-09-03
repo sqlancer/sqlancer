@@ -51,8 +51,8 @@ public final class DatabendRandomQuerySynthesizer {
         List<DatabendTable> tables = targetTables.getTables();
         List<DatabendTableReference> tableList = tables.stream().map(t -> new DatabendTableReference(t))
                 .collect(Collectors.toList());
-        List<DatabendExpression> joins = DatabendJoin.getJoins(tableList, globalState);
-        select.setJoinList(joins);
+        List<DatabendJoin> joins = DatabendJoin.getJoins(tableList, globalState);
+        select.setJoinList(joins.stream().collect(Collectors.toList()));
         select.setFromList(tableList.stream().collect(Collectors.toList()));
         if (Randomly.getBoolean()) {
             select.setWhereClause(gen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN));
