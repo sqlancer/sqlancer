@@ -6,12 +6,16 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.SelectBase;
+import sqlancer.common.ast.newast.Select;
 import sqlancer.datafusion.DataFusionProvider.DataFusionGlobalState;
 import sqlancer.datafusion.DataFusionSchema;
+import sqlancer.datafusion.DataFusionSchema.DataFusionColumn;
 import sqlancer.datafusion.DataFusionSchema.DataFusionTable;
+import sqlancer.datafusion.DataFusionToStringVisitor;
 import sqlancer.datafusion.gen.DataFusionExpressionGenerator;
 
-public class DataFusionSelect extends SelectBase<DataFusionExpression> implements DataFusionExpression {
+public class DataFusionSelect extends SelectBase<DataFusionExpression> implements DataFusionExpression,
+        Select<DataFusionJoin, DataFusionExpression, DataFusionTable, DataFusionColumn> {
     public Optional<String> fetchColumnsString = Optional.empty(); // When available, override `fetchColumns` in base
     // class's `Node` representation (for display)
     public DataFusionExpressionGenerator exprGen;
@@ -57,5 +61,22 @@ public class DataFusionSelect extends SelectBase<DataFusionExpression> implement
      */
     public void setFetchColumnsString(String selectExpr) {
         this.fetchColumnsString = Optional.of(selectExpr);
+    }
+
+    @Override
+    public void setJoinClauses(List<DataFusionJoin> joinStatements) {
+        List<DataFusionExpression> expressions = joinStatements.stream().map(e -> (DataFusionExpression) e)
+                .collect(Collectors.toList());
+        setJoinList(expressions);
+    }
+
+    @Override
+    public List<DataFusionJoin> getJoinClauses() {
+        return getJoinList().stream().map(e -> (DataFusionJoin) e).collect(Collectors.toList());
+    }
+
+    @Override
+    public String asString() {
+        return DataFusionToStringVisitor.asString(this);
     }
 }

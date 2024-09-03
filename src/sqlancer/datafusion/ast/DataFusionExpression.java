@@ -1,5 +1,8 @@
 package sqlancer.datafusion.ast;
 
-public interface DataFusionExpression {
+import sqlancer.common.ast.newast.Expression;
+import sqlancer.datafusion.DataFusionSchema.DataFusionColumn;
+
+public interface DataFusionExpression extends Expression<DataFusionColumn> {
 
 }
