@@ -2,6 +2,9 @@ package sqlancer.datafusion;
 
 import static sqlancer.datafusion.DataFusionUtil.dfAssert;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import sqlancer.common.query.ExpectedErrors;
 
 public final class DataFusionErrors {
@@ -17,7 +20,8 @@ public final class DataFusionErrors {
      * Note now it's implemented this way for simplicity This way might cause false negative, because Q1 and Q2 should
      * both succeed or both fail TODO(datafusion): ensure both succeed or both fail
      */
-    public static void registerExpectedExecutionErrors(ExpectedErrors errors) {
+    public static List<String> getExpectedExecutionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
         /*
          * Expected
          */
@@ -40,5 +44,11 @@ public final class DataFusionErrors {
         errors.add("Physical plan does not support logical expression AggregateFunction"); // False positive: when aggr
         // is generated in where
         // clause
+
+        return errors;
+    }
+
+    public static void registerExpectedExecutionErrors(ExpectedErrors errors) {
+        errors.addAll(getExpectedExecutionErrors());
     }
 }
