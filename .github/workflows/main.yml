@@ -524,8 +524,11 @@ jobs:
           docker run -d --name yugabyte -p7000:7000 -p9000:9000 -p5433:5433 -p9042:9042 yugabytedb/yugabyte:latest bin/yugabyted start --daemon=false
           sleep 5
       - name: Run Tests
-        run: YUGABYTE_AVAILABLE=true mvn -Dtest=TestYugabyte test
-
+        run: |
+          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYSQLNoREC test
+          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYSQLTLP test
+          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYSQLPQS test
+          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYCQL test
 
   doris:
     name: DBMS Tests (Apache Doris)

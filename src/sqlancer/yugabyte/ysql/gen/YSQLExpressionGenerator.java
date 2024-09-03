@@ -11,13 +11,18 @@ import java.util.stream.Stream;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.gen.ExpressionGenerator;
+import sqlancer.common.gen.NoRECGenerator;
+import sqlancer.common.schema.AbstractTables;
 import sqlancer.yugabyte.ysql.YSQLCompoundDataType;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLProvider;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLColumn;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLDataType;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLRowValue;
+import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTable;
+import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTables;
 import sqlancer.yugabyte.ysql.ast.YSQLAggregate;
+import sqlancer.yugabyte.ysql.ast.YSQLAggregate.YSQLAggregateFunction;
 import sqlancer.yugabyte.ysql.ast.YSQLBetweenOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLBinaryArithmeticOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLBinaryBitOperation;
@@ -32,13 +37,17 @@ import sqlancer.yugabyte.ysql.ast.YSQLExpression;
 import sqlancer.yugabyte.ysql.ast.YSQLFunction;
 import sqlancer.yugabyte.ysql.ast.YSQLFunctionWithUnknownResult;
 import sqlancer.yugabyte.ysql.ast.YSQLInOperation;
+import sqlancer.yugabyte.ysql.ast.YSQLJoin;
 import sqlancer.yugabyte.ysql.ast.YSQLOrderByTerm;
 import sqlancer.yugabyte.ysql.ast.YSQLPOSIXRegularExpression;
 import sqlancer.yugabyte.ysql.ast.YSQLPostfixOperation;
+import sqlancer.yugabyte.ysql.ast.YSQLPostfixText;
 import sqlancer.yugabyte.ysql.ast.YSQLPrefixOperation;
+import sqlancer.yugabyte.ysql.ast.YSQLSelect;
 import sqlancer.yugabyte.ysql.ast.YSQLSimilarTo;
 
-public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpression> {
+public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpression>,
+        NoRECGenerator<YSQLSelect, YSQLJoin, YSQLExpression, YSQLTable, YSQLColumn> {
 
     private final int maxDepth;
 
@@ -46,6 +55,7 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
     private final Map<String, Character> functionsAndTypes;
     private final List<Character> allowedFunctionTypes;
     private List<YSQLColumn> columns;
+    private List<YSQLTable> tables;
     private YSQLRowValue rw;
     private boolean expectedResult;
     private YSQLGlobalState globalState;
@@ -560,4 +570,110 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
         UNARY_OPERATION, FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION
     }
 
+    public static YSQLSelect.YSQLSubquery createSubquery(YSQLGlobalState globalState, String name, YSQLTables tables) {
+        List<YSQLExpression> columns = new ArrayList<>();
+        YSQLExpressionGenerator gen = new YSQLExpressionGenerator(globalState).setColumns(tables.getColumns());
+        for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
+            columns.add(gen.generateExpression(0));
+        }
+        YSQLSelect select = new YSQLSelect();
+        select.setFromList(tables.getTables().stream().map(t -> new YSQLSelect.YSQLFromTable(t, Randomly.getBoolean()))
+                .collect(Collectors.toList()));
+        select.setFetchColumns(columns);
+        if (Randomly.getBoolean()) {
+            select.setWhereClause(gen.generateExpression(0, YSQLDataType.BOOLEAN));
+        }
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            select.setOrderByClauses(gen.generateOrderBy());
+        }
+        if (Randomly.getBoolean()) {
+            select.setLimitClause(YSQLConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
+            if (Randomly.getBoolean()) {
+                select.setOffsetClause(YSQLConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
+            }
+        }
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            select.setForClause(YSQLSelect.ForClause.getRandom());
+        }
+        return new YSQLSelect.YSQLSubquery(select, name);
+    }
+
+    @Override
+    public NoRECGenerator<YSQLSelect, YSQLJoin, YSQLExpression, YSQLTable, YSQLColumn> setTablesAndColumns(
+            AbstractTables<YSQLTable, YSQLColumn> tables) {
+        this.columns = tables.getColumns();
+        this.tables = tables.getTables();
+
+        return this;
+    }
+
+    @Override
+    public YSQLExpression generateBooleanExpression() {
+        return generateExpression(YSQLDataType.BOOLEAN);
+    }
+
+    @Override
+    public YSQLSelect generateSelect() {
+        return new YSQLSelect();
+    }
+
+    @Override
+    public List<YSQLJoin> getRandomJoinClauses() {
+        List<YSQLJoin> joinStatements = new ArrayList<>();
+        YSQLExpressionGenerator gen = new YSQLExpressionGenerator(globalState).setColumns(columns);
+        for (int i = 1; i < tables.size(); i++) {
+            YSQLExpression joinClause = gen.generateExpression(YSQLDataType.BOOLEAN);
+            YSQLTable table = Randomly.fromList(tables);
+            tables.remove(table);
+            YSQLJoin.YSQLJoinType options = YSQLJoin.YSQLJoinType.getRandom();
+            YSQLJoin j = new YSQLJoin(new YSQLSelect.YSQLFromTable(table, Randomly.getBoolean()), joinClause, options);
+            joinStatements.add(j);
+        }
+        // JOIN subqueries
+        for (int i = 0; i < Randomly.smallNumber(); i++) {
+            YSQLTables subqueryTables = globalState.getSchema().getRandomTableNonEmptyTables();
+            YSQLSelect.YSQLSubquery subquery = createSubquery(globalState, String.format("sub%d", i), subqueryTables);
+            YSQLExpression joinClause = gen.generateExpression(YSQLDataType.BOOLEAN);
+            YSQLJoin.YSQLJoinType options = YSQLJoin.YSQLJoinType.getRandom();
+            YSQLJoin j = new YSQLJoin(subquery, joinClause, options);
+            joinStatements.add(j);
+        }
+        return joinStatements;
+    }
+
+    @Override
+    public List<YSQLExpression> getTableRefs() {
+        return tables.stream().map(t -> new YSQLSelect.YSQLFromTable(t, Randomly.getBoolean()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public String generateOptimizedQueryString(YSQLSelect select, YSQLExpression whereCondition,
+            boolean shouldUseAggregate) {
+        if (shouldUseAggregate) {
+            YSQLAggregate aggr = new YSQLAggregate(List.of(new YSQLColumnValue(YSQLColumn.createDummy("*"), null)),
+                    YSQLAggregateFunction.COUNT);
+            select.setFetchColumns(List.of(aggr));
+        } else {
+            YSQLColumnValue allColumns = new YSQLColumnValue(Randomly.fromList(columns), null);
+            select.setFetchColumns(Arrays.asList(allColumns));
+            if (Randomly.getBooleanWithSmallProbability()) {
+                select.setOrderByClauses(generateOrderBy());
+            }
+            select.setWhereClause(whereCondition);
+        }
+
+        return select.asString();
+    }
+
+    @Override
+    public String generateUnoptimizedQueryString(YSQLSelect select, YSQLExpression whereCondition) {
+        YSQLCastOperation isTrue = new YSQLCastOperation(whereCondition, YSQLCompoundDataType.create(YSQLDataType.INT));
+        YSQLPostfixText asText = new YSQLPostfixText(isTrue, " as count", null, YSQLDataType.INT);
+        select.setFetchColumns(Collections.singletonList(asText));
+        select.setSelectType(YSQLSelect.SelectType.ALL);
+        select.setWhereClause(null);
+
+        return "SELECT SUM(count) FROM (" + select.asString() + ") as res";
+    }
 }

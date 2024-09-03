@@ -1,12 +1,15 @@
 package sqlancer.yugabyte.ysql.ast;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.newast.Join;
+import sqlancer.yugabyte.ysql.YSQLSchema.YSQLColumn;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLDataType;
+import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTable;
 
-public class YSQLJoin implements YSQLExpression {
+public class YSQLJoin implements YSQLExpression, Join<YSQLExpression, YSQLTable, YSQLColumn> {
 
     private final YSQLExpression tableReference;
-    private final YSQLExpression onClause;
+    private YSQLExpression onClause;
     private final YSQLJoinType type;
 
     public YSQLJoin(YSQLExpression tableReference, YSQLExpression onClause, YSQLJoinType type) {
@@ -46,4 +49,8 @@ public class YSQLJoin implements YSQLExpression {
 
     }
 
+    @Override
+    public void setOnClause(YSQLExpression onClause) {
+        this.onClause = onClause;
+    }
 }
