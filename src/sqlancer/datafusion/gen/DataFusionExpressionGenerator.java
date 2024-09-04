@@ -13,22 +13,31 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
 import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
+import sqlancer.common.gen.NoRECGenerator;
 import sqlancer.common.gen.TypedExpressionGenerator;
+import sqlancer.common.schema.AbstractTables;
 import sqlancer.datafusion.DataFusionProvider.DataFusionGlobalState;
 import sqlancer.datafusion.DataFusionSchema.DataFusionColumn;
 import sqlancer.datafusion.DataFusionSchema.DataFusionDataType;
+import sqlancer.datafusion.DataFusionSchema.DataFusionTable;
+import sqlancer.datafusion.DataFusionToStringVisitor;
 import sqlancer.datafusion.ast.DataFusionBinaryOperation;
 import sqlancer.datafusion.ast.DataFusionColumnReference;
 import sqlancer.datafusion.ast.DataFusionExpression;
 import sqlancer.datafusion.ast.DataFusionFunction;
+import sqlancer.datafusion.ast.DataFusionJoin;
+import sqlancer.datafusion.ast.DataFusionSelect;
+import sqlancer.datafusion.ast.DataFusionTableReference;
 import sqlancer.datafusion.ast.DataFusionUnaryPostfixOperation;
 import sqlancer.datafusion.ast.DataFusionUnaryPrefixOperation;
 import sqlancer.datafusion.gen.DataFusionBaseExpr.ArgumentType;
 import sqlancer.datafusion.gen.DataFusionBaseExpr.DataFusionBaseExprType;
 
 public final class DataFusionExpressionGenerator
-        extends TypedExpressionGenerator<DataFusionExpression, DataFusionColumn, DataFusionDataType> {
+        extends TypedExpressionGenerator<DataFusionExpression, DataFusionColumn, DataFusionDataType> implements
+        NoRECGenerator<DataFusionSelect, DataFusionJoin, DataFusionExpression, DataFusionTable, DataFusionColumn> {
 
+    private List<DataFusionTable> tables;
     private final DataFusionGlobalState globalState;
 
     public DataFusionExpressionGenerator(DataFusionGlobalState globalState) {
@@ -100,7 +109,8 @@ public final class DataFusionExpressionGenerator
         case BINARY:
             dfAssert(randomExpr.argTypes.size() == 2 && randomExpr.nArgs == 2,
                     "Binrary expression should only have 2 argument" + randomExpr.argTypes);
-            List<DataFusionDataType> argTypeList = new ArrayList<>(); // types of current expression's input arguments
+            List<DataFusionDataType> argTypeList = new ArrayList<>(); // types of current expression's input
+                                                                      // arguments
             for (ArgumentType argumentType : randomExpr.argTypes) {
                 if (argumentType instanceof ArgumentType.Fixed) {
                     ArgumentType.Fixed possibleArgTypes = (ArgumentType.Fixed) randomExpr.argTypes.get(0);
@@ -134,7 +144,8 @@ public final class DataFusionExpressionGenerator
     public DataFusionExpression generateFunctionExpression(DataFusionDataType type, int depth,
             DataFusionBaseExpr exprType) {
         if (exprType.isVariadic || Randomly.getBooleanWithSmallProbability()) {
-            // TODO(datafusion) maybe add possible types. e.g. some function have signature variadic(INT/DOUBLE), then
+            // TODO(datafusion) maybe add possible types. e.g. some function have signature
+            // variadic(INT/DOUBLE), then
             // only randomly pick from INT and DOUBLE
             int nArgs = Randomly.smallNumber(); // 0, 2, 4, ... smaller one is more likely
             return new DataFusionFunction<DataFusionBaseExpr>(generateExpressions(nArgs), exprType);
@@ -222,4 +233,66 @@ public final class DataFusionExpressionGenerator
 
     }
 
+    @Override
+    public NoRECGenerator<DataFusionSelect, DataFusionJoin, DataFusionExpression, DataFusionTable, DataFusionColumn> setTablesAndColumns(
+            AbstractTables<DataFusionTable, DataFusionColumn> tables) {
+        List<DataFusionTable> randomTables = Randomly.nonEmptySubset(tables.getTables());
+        int maxSize = Randomly.fromOptions(1, 2, 3, 4);
+        if (randomTables.size() > maxSize) {
+            randomTables = randomTables.subList(0, maxSize);
+        }
+        this.columns = DataFusionTable.getAllColumns(randomTables);
+        this.tables = randomTables;
+
+        return this;
+    }
+
+    @Override
+    public DataFusionExpression generateBooleanExpression() {
+        return generateExpression(DataFusionDataType.BOOLEAN);
+    }
+
+    @Override
+    public DataFusionSelect generateSelect() {
+        return new DataFusionSelect();
+    }
+
+    @Override
+    public List<DataFusionJoin> getRandomJoinClauses() {
+        List<DataFusionTableReference> tableList = tables.stream().map(t -> new DataFusionTableReference(t))
+                .collect(Collectors.toList());
+        List<DataFusionJoin> joins = DataFusionJoin.getJoins(tableList, globalState);
+        tables = tableList.stream().map(t -> t.getTable()).collect(Collectors.toList());
+        return joins;
+    }
+
+    @Override
+    public List<DataFusionExpression> getTableRefs() {
+        return tables.stream().map(t -> new DataFusionTableReference(t)).collect(Collectors.toList());
+    }
+
+    @Override
+    public String generateOptimizedQueryString(DataFusionSelect select, DataFusionExpression whereCondition,
+            boolean shouldUseAggregate) {
+        if (shouldUseAggregate) {
+            select.setFetchColumnsString("COUNT(*)");
+        } else {
+            List<DataFusionExpression> allColumns = columns.stream().map((c) -> new DataFusionColumnReference(c))
+                    .collect(Collectors.toList());
+            select.setFetchColumns(allColumns);
+        }
+        select.setWhereClause(whereCondition);
+
+        return select.asString();
+    }
+
+    @Override
+    public String generateUnoptimizedQueryString(DataFusionSelect select, DataFusionExpression whereCondition) {
+        String fetchColumn = String.format("COUNT(CASE WHEN %S THEN 1 ELSE NULL END)",
+                DataFusionToStringVisitor.asString(whereCondition));
+        select.setFetchColumnsString(fetchColumn);
+        select.setWhereClause(null);
+
+        return select.asString();
+    }
 }

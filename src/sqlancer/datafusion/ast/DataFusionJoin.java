@@ -2,9 +2,9 @@ package sqlancer.datafusion.ast;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.newast.Join;
 import sqlancer.datafusion.DataFusionProvider.DataFusionGlobalState;
 import sqlancer.datafusion.DataFusionSchema;
 import sqlancer.datafusion.DataFusionSchema.DataFusionColumn;
@@ -14,12 +14,13 @@ import sqlancer.datafusion.gen.DataFusionExpressionGenerator;
 /*
     NOT IMPLEMENTED YET
  */
-public class DataFusionJoin implements DataFusionExpression {
+public class DataFusionJoin
+        implements DataFusionExpression, Join<DataFusionExpression, DataFusionTable, DataFusionColumn> {
 
     private final DataFusionTableReference leftTable;
     private final DataFusionTableReference rightTable;
     private final JoinType joinType;
-    private final DataFusionExpression onCondition;
+    private DataFusionExpression onCondition;
 
     public DataFusionJoin(DataFusionTableReference leftTable, DataFusionTableReference rightTable, JoinType joinType,
             DataFusionExpression whereCondition) {
@@ -29,11 +30,10 @@ public class DataFusionJoin implements DataFusionExpression {
         this.onCondition = whereCondition;
     }
 
-    public static List<DataFusionExpression> getJoins(List<DataFusionTable> tables, DataFusionGlobalState globalState) {
+    public static List<DataFusionJoin> getJoins(List<DataFusionTableReference> tableList,
+            DataFusionGlobalState globalState) {
         // [t1_join_t2, t1_join_t3, ...]
-        List<DataFusionTableReference> tableList = tables.stream().map(t -> new DataFusionTableReference(t))
-                .collect(Collectors.toList());
-        List<DataFusionExpression> joinExpressions = new ArrayList<>();
+        List<DataFusionJoin> joinExpressions = new ArrayList<>();
         while (tableList.size() >= 2 && Randomly.getBooleanWithRatherLowProbability()) {
             DataFusionTableReference leftTable = tableList.remove(0);
             DataFusionTableReference rightTable = tableList.remove(0);
@@ -84,4 +84,8 @@ public class DataFusionJoin implements DataFusionExpression {
         }
     }
 
+    @Override
+    public void setOnClause(DataFusionExpression onClause) {
+        onCondition = onClause;
+    }
 }
