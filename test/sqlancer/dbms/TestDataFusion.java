@@ -10,9 +10,7 @@ import sqlancer.Main;
 public class TestDataFusion {
     @Test
     public void testDataFusion() {
-        String datafusionAvailable = System.getenv("DATAFUSION_AVAILABLE");
-        boolean datafusionIsAvailable = datafusionAvailable != null && datafusionAvailable.equalsIgnoreCase("true");
-        assumeTrue(datafusionIsAvailable);
+        assumeTrue(TestConfig.isEnvironmentTrue(TestConfig.DATAFUSION_ENV));
 
         assertEquals(0, Main.executeMain("--random-seed", "0", "--num-threads", "1", // TODO(datafusion) update when
                                                                                      // multithread is supported
