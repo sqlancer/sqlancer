@@ -11,12 +11,16 @@ import java.util.stream.Stream;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.gen.ExpressionGenerator;
+import sqlancer.common.gen.NoRECGenerator;
+import sqlancer.common.schema.AbstractTables;
 import sqlancer.materialize.MaterializeCompoundDataType;
 import sqlancer.materialize.MaterializeGlobalState;
 import sqlancer.materialize.MaterializeProvider;
 import sqlancer.materialize.MaterializeSchema.MaterializeColumn;
 import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
 import sqlancer.materialize.MaterializeSchema.MaterializeRowValue;
+import sqlancer.materialize.MaterializeSchema.MaterializeTable;
+import sqlancer.materialize.MaterializeSchema.MaterializeTables;
 import sqlancer.materialize.ast.MaterializeAggregate;
 import sqlancer.materialize.ast.MaterializeAggregate.MaterializeAggregateFunction;
 import sqlancer.materialize.ast.MaterializeBetweenOperation;
@@ -36,6 +40,8 @@ import sqlancer.materialize.ast.MaterializeFunction;
 import sqlancer.materialize.ast.MaterializeFunction.MaterializeFunctionWithResult;
 import sqlancer.materialize.ast.MaterializeFunctionWithUnknownResult;
 import sqlancer.materialize.ast.MaterializeInOperation;
+import sqlancer.materialize.ast.MaterializeJoin;
+import sqlancer.materialize.ast.MaterializeJoin.MaterializeJoinType;
 import sqlancer.materialize.ast.MaterializeLikeOperation;
 import sqlancer.materialize.ast.MaterializeOrderByTerm;
 import sqlancer.materialize.ast.MaterializeOrderByTerm.MaterializeOrder;
@@ -43,16 +49,25 @@ import sqlancer.materialize.ast.MaterializePOSIXRegularExpression;
 import sqlancer.materialize.ast.MaterializePOSIXRegularExpression.POSIXRegex;
 import sqlancer.materialize.ast.MaterializePostfixOperation;
 import sqlancer.materialize.ast.MaterializePostfixOperation.PostfixOperator;
+import sqlancer.materialize.ast.MaterializePostfixText;
 import sqlancer.materialize.ast.MaterializePrefixOperation;
 import sqlancer.materialize.ast.MaterializePrefixOperation.PrefixOperator;
+import sqlancer.materialize.ast.MaterializeSelect;
+import sqlancer.materialize.ast.MaterializeSelect.MaterializeFromTable;
+import sqlancer.materialize.ast.MaterializeSelect.MaterializeSubquery;
+import sqlancer.materialize.ast.MaterializeSelect.SelectType;
+import sqlancer.materialize.oracle.tlp.MaterializeTLPBase;
 
-public class MaterializeExpressionGenerator implements ExpressionGenerator<MaterializeExpression> {
+public class MaterializeExpressionGenerator implements ExpressionGenerator<MaterializeExpression>,
+        NoRECGenerator<MaterializeSelect, MaterializeJoin, MaterializeExpression, MaterializeTable, MaterializeColumn> {
 
     private final int maxDepth;
 
     private final Randomly r;
 
     private List<MaterializeColumn> columns;
+
+    private List<MaterializeTable> tables;
 
     private MaterializeRowValue rw;
 
@@ -514,4 +529,87 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
         return new MaterializePostfixOperation(expr, PostfixOperator.IS_NULL);
     }
 
+    @Override
+    public NoRECGenerator<MaterializeSelect, MaterializeJoin, MaterializeExpression, MaterializeTable, MaterializeColumn> setTablesAndColumns(
+            AbstractTables<MaterializeTable, MaterializeColumn> tables) {
+        this.columns = tables.getColumns();
+        this.tables = tables.getTables();
+
+        return this;
+    }
+
+    @Override
+    public MaterializeExpression generateBooleanExpression() {
+        return generateExpression(MaterializeDataType.BOOLEAN);
+    }
+
+    @Override
+    public MaterializeSelect generateSelect() {
+        return new MaterializeSelect();
+    }
+
+    @Override
+    public List<MaterializeJoin> getRandomJoinClauses() {
+        List<MaterializeJoin> joinStatements = new ArrayList<>();
+        MaterializeExpressionGenerator gen = new MaterializeExpressionGenerator(globalState).setColumns(columns);
+        for (int i = 1; i < tables.size(); i++) {
+            MaterializeExpression joinClause = gen.generateExpression(MaterializeDataType.BOOLEAN);
+            MaterializeTable table = Randomly.fromList(tables);
+            tables.remove(table);
+            MaterializeJoinType options = MaterializeJoinType.getRandom();
+            MaterializeJoin j = new MaterializeJoin(new MaterializeFromTable(table, Randomly.getBoolean()), joinClause,
+                    options);
+            joinStatements.add(j);
+        }
+        // JOIN subqueries
+        for (int i = 0; i < Randomly.smallNumber(); i++) {
+            MaterializeTables subqueryTables = globalState.getSchema().getRandomTableNonEmptyTables();
+            MaterializeSubquery subquery = MaterializeTLPBase.createSubquery(globalState, String.format("sub%d", i),
+                    subqueryTables);
+            MaterializeExpression joinClause = gen.generateExpression(MaterializeDataType.BOOLEAN);
+            MaterializeJoinType options = MaterializeJoinType.getRandom();
+            MaterializeJoin j = new MaterializeJoin(subquery, joinClause, options);
+            joinStatements.add(j);
+        }
+
+        return joinStatements;
+    }
+
+    @Override
+    public List<MaterializeExpression> getTableRefs() {
+        return tables.stream().map(t -> new MaterializeFromTable(t, Randomly.getBoolean()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public String generateOptimizedQueryString(MaterializeSelect select, MaterializeExpression whereCondition,
+            boolean shouldUseAggregate) {
+        if (shouldUseAggregate) {
+            MaterializeAggregate aggr = new MaterializeAggregate(
+                    List.of(new MaterializeColumnValue(MaterializeColumn.createDummy("*"), null)),
+                    MaterializeAggregateFunction.COUNT);
+            select.setFetchColumns(List.of(aggr));
+        } else {
+            MaterializeColumnValue allColumns = new MaterializeColumnValue(Randomly.fromList(columns), null);
+            select.setFetchColumns(List.of(allColumns));
+            if (Randomly.getBooleanWithSmallProbability()) {
+                select.setOrderByClauses(generateOrderBy());
+            }
+            select.setSelectType(SelectType.ALL);
+        }
+
+        return select.asString();
+    }
+
+    @Override
+    public String generateUnoptimizedQueryString(MaterializeSelect select, MaterializeExpression whereCondition) {
+        MaterializeCastOperation isTrue = new MaterializeCastOperation(whereCondition,
+                MaterializeCompoundDataType.create(MaterializeDataType.INT));
+        MaterializePostfixText asText = new MaterializePostfixText(isTrue, " as count", null, MaterializeDataType.INT);
+        select.setFetchColumns(List.of(asText));
+        select.setSelectType(SelectType.ALL);
+        select.setWhereClause(null);
+
+        return "SELECT SUM(count) FROM (" + select.asString() + ") as res";
+    }
 }
