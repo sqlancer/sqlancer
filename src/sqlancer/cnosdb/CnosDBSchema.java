@@ -38,7 +38,7 @@ public class CnosDBSchema extends AbstractSchema<CnosDBGlobalState, CnosDBSchema
         case "bigint unsigned":
         case "unsigned":
             return CnosDBDataType.UINT;
-        case "timestamp":
+        case "timestamp(nanosecond)":
             return CnosDBDataType.TIMESTAMP;
         default:
             throw new AssertionError(typeString);
