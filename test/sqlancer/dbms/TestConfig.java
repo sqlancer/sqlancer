@@ -13,6 +13,7 @@ public class TestConfig {
     public static final String MATERIALIZE_ENV = "MATERIALIZE_AVAILABLE";
     public static final String OCEANBASE_ENV = "OCEANBASE_AVAILABLE";
     public static final String POSTGRES_ENV = "POSTGRES_AVAILABLE";
+    public static final String PRESTO_ENV = "PRESTO_AVAILABLE";
     public static final String YUGABYTE_ENV = "YUGABYTE_AVAILABLE";
 
     public static boolean isEnvironmentTrue(String key) {

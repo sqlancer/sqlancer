@@ -16,7 +16,6 @@ import sqlancer.presto.ast.PrestoExpression;
 public class PrestoInsertGenerator extends AbstractInsertGenerator<PrestoColumn> {
 
     private final PrestoGlobalState globalState;
-    private final ExpectedErrors errors = new ExpectedErrors();
 
     public PrestoInsertGenerator(PrestoGlobalState globalState) {
         this.globalState = globalState;
@@ -36,6 +35,7 @@ public class PrestoInsertGenerator extends AbstractInsertGenerator<PrestoColumn>
         sb.append(")");
         sb.append(" VALUES ");
         insertColumns(columns);
+        ExpectedErrors errors = new ExpectedErrors();
         PrestoErrors.addInsertErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors, false, false);
     }
