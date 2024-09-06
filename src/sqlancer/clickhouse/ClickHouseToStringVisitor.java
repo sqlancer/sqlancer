@@ -74,10 +74,10 @@ public class ClickHouseToStringVisitor extends ToStringVisitor<ClickHouseExpress
         }
 
         visit(select.getFetchColumns());
-        ClickHouseExpression fromClause = select.getFromClause();
-        if (fromClause != null) {
+        List<ClickHouseExpression> fromList = select.getFromList();
+        if (fromList != null) {
             sb.append(" FROM ");
-            visit(fromClause);
+            visit(fromList);
         }
         List<ClickHouseExpression.ClickHouseJoin> joins = select.getJoinClauses();
         if (!joins.isEmpty()) {

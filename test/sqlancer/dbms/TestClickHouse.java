@@ -11,9 +11,7 @@ public class TestClickHouse {
 
     @Test
     public void testClickHouseTLPWhereGroupBy() {
-        String clickHouseAvailable = System.getenv("CLICKHOUSE_AVAILABLE");
-        boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
-        assumeTrue(clickHouseIsAvailable);
+        assumeTrue(TestConfig.isEnvironmentTrue(TestConfig.CLICKHOUSE_ENV));
         assertEquals(0,
                 Main.executeMain("--timeout-seconds", "60", "--num-queries", TestConfig.NUM_QUERIES, "--num-threads",
                         "5", "--username", "default", "--password", "", "--database-prefix", "T1_", "clickhouse",
@@ -22,9 +20,7 @@ public class TestClickHouse {
 
     @Test
     public void testClickHouseTLPWhere() {
-        String clickHouseAvailable = System.getenv("CLICKHOUSE_AVAILABLE");
-        boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
-        assumeTrue(clickHouseIsAvailable);
+        assumeTrue(TestConfig.isEnvironmentTrue(TestConfig.CLICKHOUSE_ENV));
         assertEquals(0,
                 Main.executeMain("--timeout-seconds", "60", "--num-queries", TestConfig.NUM_QUERIES, "--num-threads",
                         "5", "--username", "default", "--password", "", "--database-prefix", "T2_", "clickhouse",
@@ -33,9 +29,7 @@ public class TestClickHouse {
 
     @Test
     public void testClickHouseTLPHaving() {
-        String clickHouseAvailable = System.getenv("CLICKHOUSE_AVAILABLE");
-        boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
-        assumeTrue(clickHouseIsAvailable);
+        assumeTrue(TestConfig.isEnvironmentTrue(TestConfig.CLICKHOUSE_ENV));
         assertEquals(0,
                 Main.executeMain("--log-each-select", "true", "--print-failed", "false", "--timeout-seconds", "60",
                         "--num-queries", TestConfig.NUM_QUERIES, "--num-threads", "1", "--username", "default",
@@ -44,9 +38,7 @@ public class TestClickHouse {
 
     @Test
     public void testClickHouseTLPGroupBy() {
-        String clickHouseAvailable = System.getenv("CLICKHOUSE_AVAILABLE");
-        boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
-        assumeTrue(clickHouseIsAvailable);
+        assumeTrue(TestConfig.isEnvironmentTrue(TestConfig.CLICKHOUSE_ENV));
         assertEquals(0,
                 Main.executeMain("--log-each-select", "true", "--print-failed", "false", "--timeout-seconds", "60",
                         "--num-queries", TestConfig.NUM_QUERIES, "--num-threads", "5", "--username", "default",
@@ -55,9 +47,7 @@ public class TestClickHouse {
 
     @Test
     public void testClickHouseTLPDistinct() {
-        String clickHouseAvailable = System.getenv("CLICKHOUSE_AVAILABLE");
-        boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
-        assumeTrue(clickHouseIsAvailable);
+        assumeTrue(TestConfig.isEnvironmentTrue(TestConfig.CLICKHOUSE_ENV));
         assertEquals(0,
                 Main.executeMain("--log-each-select", "true", "--print-failed", "false", "--timeout-seconds", "60",
                         "--num-queries", TestConfig.NUM_QUERIES, "--num-threads", "5", "--username", "default",
@@ -66,9 +56,7 @@ public class TestClickHouse {
 
     @Test
     public void testClickHouseTLPAggregate() {
-        String clickHouseAvailable = System.getenv("CLICKHOUSE_AVAILABLE");
-        boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
-        assumeTrue(clickHouseIsAvailable);
+        assumeTrue(TestConfig.isEnvironmentTrue(TestConfig.CLICKHOUSE_ENV));
         assertEquals(0,
                 Main.executeMain("--log-each-select", "true", "--print-failed", "false", "--timeout-seconds", "60",
                         "--num-queries", TestConfig.NUM_QUERIES, "--num-threads", "5", "--username", "default",
@@ -77,9 +65,7 @@ public class TestClickHouse {
 
     @Test
     public void testClickHouseNoREC() {
-        String clickHouseAvailable = System.getenv("CLICKHOUSE_AVAILABLE");
-        boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
-        assumeTrue(clickHouseIsAvailable);
+        assumeTrue(TestConfig.isEnvironmentTrue(TestConfig.CLICKHOUSE_ENV));
         assertEquals(0,
                 Main.executeMain("--log-each-select", "true", "--print-failed", "false", "--timeout-seconds", "60",
                         "--num-queries", TestConfig.NUM_QUERIES, "--num-threads", "1", "--username", "default",
@@ -88,9 +74,7 @@ public class TestClickHouse {
 
     @Test
     public void testClickHouseTLPWhereGroupByWithJoins() {
-        String clickHouseAvailable = System.getenv("CLICKHOUSE_AVAILABLE");
-        boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
-        assumeTrue(clickHouseIsAvailable);
+        assumeTrue(TestConfig.isEnvironmentTrue(TestConfig.CLICKHOUSE_ENV));
         assertEquals(0,
                 Main.executeMain("--timeout-seconds", "60", "--num-queries", TestConfig.NUM_QUERIES, "--num-threads",
                         "5", "--username", "default", "--password", "", "--database-prefix", "T8_", "clickhouse",
@@ -99,9 +83,7 @@ public class TestClickHouse {
 
     @Test
     public void testClickHouseTLPWhereWithJoins() {
-        String clickHouseAvailable = System.getenv("CLICKHOUSE_AVAILABLE");
-        boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
-        assumeTrue(clickHouseIsAvailable);
+        assumeTrue(TestConfig.isEnvironmentTrue(TestConfig.CLICKHOUSE_ENV));
         assertEquals(0,
                 Main.executeMain("--timeout-seconds", "60", "--num-queries", TestConfig.NUM_QUERIES, "--num-threads",
                         "5", "--username", "default", "--password", "", "--database-prefix", "T9_", "clickhouse",
@@ -110,9 +92,7 @@ public class TestClickHouse {
 
     @Test
     public void testClickHouseTLPHavingWithJoins() {
-        String clickHouseAvailable = System.getenv("CLICKHOUSE_AVAILABLE");
-        boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
-        assumeTrue(clickHouseIsAvailable);
+        assumeTrue(TestConfig.isEnvironmentTrue(TestConfig.CLICKHOUSE_ENV));
         assertEquals(0,
                 Main.executeMain("--log-each-select", "true", "--print-failed", "false", "--timeout-seconds", "60",
                         "--num-queries", TestConfig.NUM_QUERIES, "--num-threads", "1", "--username", "default",
@@ -121,9 +101,7 @@ public class TestClickHouse {
 
     @Test
     public void testClickHouseTLPGroupByWithJoins() {
-        String clickHouseAvailable = System.getenv("CLICKHOUSE_AVAILABLE");
-        boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
-        assumeTrue(clickHouseIsAvailable);
+        assumeTrue(TestConfig.isEnvironmentTrue(TestConfig.CLICKHOUSE_ENV));
         assertEquals(0,
                 Main.executeMain("--log-each-select", "true", "--print-failed", "false", "--timeout-seconds", "60",
                         "--num-queries", TestConfig.NUM_QUERIES, "--num-threads", "5", "--username", "default",
@@ -132,9 +110,7 @@ public class TestClickHouse {
 
     @Test
     public void testClickHouseTLPDistinctWithJoins() {
-        String clickHouseAvailable = System.getenv("CLICKHOUSE_AVAILABLE");
-        boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
-        assumeTrue(clickHouseIsAvailable);
+        assumeTrue(TestConfig.isEnvironmentTrue(TestConfig.CLICKHOUSE_ENV));
         assertEquals(0,
                 Main.executeMain("--log-each-select", "true", "--print-failed", "false", "--timeout-seconds", "60",
                         "--num-queries", TestConfig.NUM_QUERIES, "--num-threads", "5", "--username", "default",
@@ -143,9 +119,7 @@ public class TestClickHouse {
 
     @Test
     public void testClickHouseTLPAggregateWithJoins() {
-        String clickHouseAvailable = System.getenv("CLICKHOUSE_AVAILABLE");
-        boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
-        assumeTrue(clickHouseIsAvailable);
+        assumeTrue(TestConfig.isEnvironmentTrue(TestConfig.CLICKHOUSE_ENV));
         assertEquals(0,
                 Main.executeMain("--log-each-select", "true", "--print-failed", "false", "--timeout-seconds", "60",
                         "--num-queries", TestConfig.NUM_QUERIES, "--num-threads", "5", "--username", "default",
@@ -154,9 +128,7 @@ public class TestClickHouse {
 
     @Test
     public void testClickHouseNoRECWithJoins() {
-        String clickHouseAvailable = System.getenv("CLICKHOUSE_AVAILABLE");
-        boolean clickHouseIsAvailable = clickHouseAvailable != null && clickHouseAvailable.equalsIgnoreCase("true");
-        assumeTrue(clickHouseIsAvailable);
+        assumeTrue(TestConfig.isEnvironmentTrue(TestConfig.CLICKHOUSE_ENV));
         assertEquals(0,
                 Main.executeMain("--log-each-select", "true", "--print-failed", "false", "--timeout-seconds", "60",
                         "--num-queries", TestConfig.NUM_QUERIES, "--num-threads", "1", "--username", "default",

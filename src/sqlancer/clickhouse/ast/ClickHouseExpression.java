@@ -1,9 +1,13 @@
 package sqlancer.clickhouse.ast;
 
+import sqlancer.clickhouse.ClickHouseSchema.ClickHouseColumn;
+import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTable;
+import sqlancer.common.ast.newast.Expression;
+import sqlancer.common.ast.newast.Join;
 import sqlancer.common.visitor.BinaryOperation;
 import sqlancer.common.visitor.UnaryOperation;
 
-public abstract class ClickHouseExpression {
+public abstract class ClickHouseExpression implements Expression<ClickHouseColumn> {
 
     public ClickHouseConstant getExpectedValue() {
         return null;
@@ -61,7 +65,8 @@ public abstract class ClickHouseExpression {
         }
     }
 
-    public static class ClickHouseJoin extends ClickHouseExpression {
+    public static class ClickHouseJoin extends ClickHouseExpression
+            implements Join<ClickHouseExpression, ClickHouseTable, ClickHouseColumn> {
         // TODO: support ANY, ALL, ASOF modifiers
         // LEFT_SEMI, RIGHT_SEMI are not deterministic as ClickHouse allows to read columns from
         // whitelist table as well
@@ -71,7 +76,7 @@ public abstract class ClickHouseExpression {
 
         private final ClickHouseTableReference leftTable;
         private final ClickHouseTableReference rightTable;
-        private ClickHouseJoinOnClause onClause;
+        private ClickHouseExpression onClause;
         private final ClickHouseJoin.JoinType type;
 
         public ClickHouseJoin(ClickHouseTableReference leftTable, ClickHouseTableReference rightTable,
@@ -109,7 +114,8 @@ public abstract class ClickHouseExpression {
             return type;
         }
 
-        public void setOnClause(ClickHouseJoinOnClause onClause) {
+        @Override
+        public void setOnClause(ClickHouseExpression onClause) {
             this.onClause = onClause;
         }
 

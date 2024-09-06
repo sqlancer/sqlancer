@@ -4,6 +4,7 @@ public class TestConfig {
     public static final String NUM_QUERIES = "1000";
     public static final String SECONDS = "300";
 
+    public static final String CLICKHOUSE_ENV = "CLICKHOUSE_AVAILABLE";
     public static final String COCKROACHDB_ENV = "COCKROACHDB_AVAILABLE";
     public static final String DATABEND_ENV = "DATABEND_AVAILABLE";
     public static final String DATAFUSION_ENV = "DATAFUSION_AVAILABLE";
