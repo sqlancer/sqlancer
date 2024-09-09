@@ -384,6 +384,31 @@ jobs:
           MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLPQS
           MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLTLP
 
+  oceanbase:
+    name: DBMS Tests (OceanBase)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Set up OceanBase
+        run: |
+          docker run -p 2881:2881 --name oceanbase-ce -e MODE=mini -d oceanbase/oceanbase-ce:4.2.1-lts
+          sleep 120
+          mysql -h127.1 -uroot@test -P2881 -Doceanbase -A -e"CREATE USER 'sqlancer'@'%' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'%';"
+      - name: Run Tests
+        run: |
+          OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBaseNoREC
+          OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBasePQS
+          OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBaseTLP
   postgres:
     name: DBMS Tests (PostgreSQL)
     runs-on: ubuntu-latest

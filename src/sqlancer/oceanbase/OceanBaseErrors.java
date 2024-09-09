@@ -20,6 +20,7 @@ public final class OceanBaseErrors {
         errors.add("Truncated incorrect DOUBLE value");
         errors.add("Invalid numeric");
         errors.add("Data truncated for argument");
+        errors.add("Data truncated for column");
 
         return errors;
     }

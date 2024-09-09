@@ -9,12 +9,9 @@ import sqlancer.Main;
 
 public class TestOceanBaseTLP {
 
-    String oceanBaseAvailable = System.getenv("OCEANBASE_AVAILABLE");
-    boolean oceanBaseIsAvailable = oceanBaseAvailable != null && oceanBaseAvailable.equalsIgnoreCase("true");
-
     @Test
     public void testTLP() {
-        assumeTrue(oceanBaseIsAvailable);
+        assumeTrue(TestConfig.isEnvironmentTrue(TestConfig.OCEANBASE_ENV));
         assertEquals(0,
                 Main.executeMain(new String[] { "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS,
                         "--num-threads", "4", "--database-prefix", "tlpdb", "--num-queries", TestConfig.NUM_QUERIES,
