@@ -56,7 +56,7 @@ public class OceanBaseAlterTable {
             case COMPRESSION:
                 sb.append("COMPRESSION ");
                 sb.append("'");
-                sb.append(Randomly.fromOptions("ZLIB_1.0", "LZ4_1.0", "NONE"));
+                sb.append(Randomly.fromOptions("LZ4_1.0", "NONE"));
                 sb.append("'");
                 break;
             default:

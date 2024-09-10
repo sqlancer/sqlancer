@@ -44,7 +44,7 @@ public class OceanBaseDeleteGenerator {
         errors.addAll(Arrays.asList("doesn't have this option", "Truncated incorrect DOUBLE value",
                 "Truncated incorrect INTEGER value", "Truncated incorrect DECIMAL value",
                 "Data truncated for functional index", "Incorrect value", "Out of range value for column",
-                "Data truncation: %s value is out of range in '%s'"));
+                "Data truncation:"));
         return new SQLQueryAdapter(sb.toString(), errors);
     }
 

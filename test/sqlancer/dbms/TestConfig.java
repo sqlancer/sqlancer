@@ -11,6 +11,7 @@ public class TestConfig {
     public static final String DORIS_ENV = "DORIS_AVAILABLE";
     public static final String MARIADB_ENV = "MARIADB_AVAILABLE";
     public static final String MATERIALIZE_ENV = "MATERIALIZE_AVAILABLE";
+    public static final String OCEANBASE_ENV = "OCEANBASE_AVAILABLE";
     public static final String POSTGRES_ENV = "POSTGRES_AVAILABLE";
     public static final String YUGABYTE_ENV = "YUGABYTE_AVAILABLE";
 
