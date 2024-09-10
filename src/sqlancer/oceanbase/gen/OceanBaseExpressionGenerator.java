@@ -3,13 +3,20 @@ package sqlancer.oceanbase.gen;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.common.gen.NoRECGenerator;
 import sqlancer.common.gen.UntypedExpressionGenerator;
+import sqlancer.common.schema.AbstractTables;
 import sqlancer.oceanbase.OceanBaseGlobalState;
 import sqlancer.oceanbase.OceanBaseSchema;
 import sqlancer.oceanbase.OceanBaseSchema.OceanBaseColumn;
+import sqlancer.oceanbase.OceanBaseSchema.OceanBaseDataType;
 import sqlancer.oceanbase.OceanBaseSchema.OceanBaseRowValue;
+import sqlancer.oceanbase.OceanBaseSchema.OceanBaseTable;
+import sqlancer.oceanbase.ast.OceanBaseAggregate;
+import sqlancer.oceanbase.ast.OceanBaseAggregate.OceanBaseAggregateFunction;
 import sqlancer.oceanbase.ast.OceanBaseBinaryComparisonOperation;
 import sqlancer.oceanbase.ast.OceanBaseBinaryComparisonOperation.BinaryComparisonOperator;
 import sqlancer.oceanbase.ast.OceanBaseBinaryLogicalOperation;
@@ -23,15 +30,22 @@ import sqlancer.oceanbase.ast.OceanBaseConstant.OceanBaseDoubleConstant;
 import sqlancer.oceanbase.ast.OceanBaseExists;
 import sqlancer.oceanbase.ast.OceanBaseExpression;
 import sqlancer.oceanbase.ast.OceanBaseInOperation;
+import sqlancer.oceanbase.ast.OceanBaseJoin;
+import sqlancer.oceanbase.ast.OceanBaseSelect;
 import sqlancer.oceanbase.ast.OceanBaseStringExpression;
+import sqlancer.oceanbase.ast.OceanBaseTableReference;
+import sqlancer.oceanbase.ast.OceanBaseText;
 import sqlancer.oceanbase.ast.OceanBaseUnaryPostfixOperation;
 import sqlancer.oceanbase.ast.OceanBaseUnaryPrefixOperation;
 import sqlancer.oceanbase.ast.OceanBaseUnaryPrefixOperation.OceanBaseUnaryPrefixOperator;
 
-public class OceanBaseExpressionGenerator extends UntypedExpressionGenerator<OceanBaseExpression, OceanBaseColumn> {
+public class OceanBaseExpressionGenerator extends UntypedExpressionGenerator<OceanBaseExpression, OceanBaseColumn>
+        implements
+        NoRECGenerator<OceanBaseSelect, OceanBaseJoin, OceanBaseExpression, OceanBaseTable, OceanBaseColumn> {
 
     private OceanBaseGlobalState state;
     private OceanBaseRowValue rowVal;
+    private List<OceanBaseTable> tables;
 
     public OceanBaseExpressionGenerator(OceanBaseGlobalState state) {
         this.state = state;
@@ -208,5 +222,142 @@ public class OceanBaseExpressionGenerator extends UntypedExpressionGenerator<Oce
     public OceanBaseExpression isNull(OceanBaseExpression expr) {
         return new OceanBaseUnaryPostfixOperation(expr, OceanBaseUnaryPostfixOperation.UnaryPostfixOperator.IS_NULL,
                 false);
+    }
+
+    @Override
+    public NoRECGenerator<OceanBaseSelect, OceanBaseJoin, OceanBaseExpression, OceanBaseTable, OceanBaseColumn> setTablesAndColumns(
+            AbstractTables<OceanBaseTable, OceanBaseColumn> tables) {
+        this.columns = tables.getColumns();
+        this.tables = tables.getTables();
+
+        return this;
+    }
+
+    @Override
+    public OceanBaseExpression generateBooleanExpression() {
+        return generateExpression();
+    }
+
+    @Override
+    public OceanBaseSelect generateSelect() {
+        return new OceanBaseSelect();
+    }
+
+    @Override
+    public List<OceanBaseJoin> getRandomJoinClauses() {
+        return List.of();
+    }
+
+    @Override
+    public List<OceanBaseExpression> getTableRefs() {
+        return tables.stream().map(t -> new OceanBaseTableReference(t)).collect(Collectors.toList());
+    }
+
+    @Override
+    public String generateOptimizedQueryString(OceanBaseSelect select, OceanBaseExpression whereCondition,
+            boolean shouldUseAggregate) {
+        if (shouldUseAggregate) {
+            OceanBaseExpression aggr = new OceanBaseAggregate(
+                    new OceanBaseColumnReference(new OceanBaseColumn("*", OceanBaseDataType.INT, false, 0, false),
+                            null),
+                    OceanBaseAggregateFunction.COUNT);
+            select.setFetchColumns(List.of(aggr));
+        } else {
+            List<OceanBaseExpression> allColumns = columns.stream().map((c) -> new OceanBaseColumnReference(c, null))
+                    .collect(Collectors.toList());
+            select.setFetchColumns(allColumns);
+            if (Randomly.getBooleanWithSmallProbability()) {
+                select.setOrderByClauses(generateOrderBys());
+            }
+        }
+        select.setWhereClause(whereCondition);
+
+        return select.asString();
+    }
+
+    @Override
+    public String generateUnoptimizedQueryString(OceanBaseSelect select, OceanBaseExpression whereCondition) {
+        OceanBaseExpression expr = getTrueExpr(whereCondition);
+
+        OceanBaseText asText = new OceanBaseText(expr, " as count", false);
+        select.setFetchColumns(List.of(asText));
+        select.setSelectType(OceanBaseSelect.SelectType.ALL);
+
+        return "SELECT SUM(count) FROM (" + select.asString() + ") as asdf";
+    }
+
+    private enum Option {
+        TRUE, FALSE_NULL, NOT_NOT_TRUE, NOT_FALSE_NOT_NULL, IF, IFNULL, COALESCE
+    };
+
+    private OceanBaseExpression getTrueExpr(OceanBaseExpression randomWhereCondition) {
+        // we can treat "is true" as combinations of "is flase" and "not","is not true" and "not",etc.
+        OceanBaseUnaryPostfixOperation isTrue = new OceanBaseUnaryPostfixOperation(randomWhereCondition,
+                OceanBaseUnaryPostfixOperation.UnaryPostfixOperator.IS_TRUE, false);
+
+        OceanBaseUnaryPostfixOperation isFalse = new OceanBaseUnaryPostfixOperation(randomWhereCondition,
+                OceanBaseUnaryPostfixOperation.UnaryPostfixOperator.IS_FALSE, false);
+
+        OceanBaseUnaryPostfixOperation isNotFalse = new OceanBaseUnaryPostfixOperation(randomWhereCondition,
+                OceanBaseUnaryPostfixOperation.UnaryPostfixOperator.IS_FALSE, true);
+
+        OceanBaseUnaryPostfixOperation isNULL = new OceanBaseUnaryPostfixOperation(randomWhereCondition,
+                OceanBaseUnaryPostfixOperation.UnaryPostfixOperator.IS_NULL, false);
+
+        OceanBaseUnaryPostfixOperation isNotNULL = new OceanBaseUnaryPostfixOperation(randomWhereCondition,
+                OceanBaseUnaryPostfixOperation.UnaryPostfixOperator.IS_NULL, true);
+
+        OceanBaseExpression expr = OceanBaseConstant.createNullConstant();
+        Option a = Randomly.fromOptions(Option.values());
+        switch (a) {
+        case TRUE:
+            expr = isTrue;
+            break;
+        case FALSE_NULL:
+            // not((is false) or (is null))
+            expr = new OceanBaseUnaryPrefixOperation(
+                    new OceanBaseBinaryLogicalOperation(isFalse, isNULL,
+                            OceanBaseBinaryLogicalOperation.OceanBaseBinaryLogicalOperator.OR),
+                    OceanBaseUnaryPrefixOperation.OceanBaseUnaryPrefixOperator.NOT);
+            break;
+        case NOT_NOT_TRUE:
+            // not(not(is true)))
+            expr = new OceanBaseUnaryPrefixOperation(
+                    new OceanBaseUnaryPrefixOperation(isTrue,
+                            OceanBaseUnaryPrefixOperation.OceanBaseUnaryPrefixOperator.NOT),
+                    OceanBaseUnaryPrefixOperation.OceanBaseUnaryPrefixOperator.NOT);
+            break;
+        case NOT_FALSE_NOT_NULL:
+            // (is not false) and (is not null)
+            expr = new OceanBaseBinaryLogicalOperation(isNotFalse, isNotNULL,
+                    OceanBaseBinaryLogicalOperation.OceanBaseBinaryLogicalOperator.AND);
+            break;
+        case IF:
+            // if(1, xx is true, 0)
+            OceanBaseExpression[] args = new OceanBaseExpression[3];
+            args[0] = OceanBaseConstant.createIntConstant(1);
+            args[1] = isTrue;
+            args[2] = OceanBaseConstant.createIntConstant(0);
+            expr = new OceanBaseComputableFunction(OceanBaseFunction.IF, args);
+            break;
+        case IFNULL:
+            // ifnull(null, xx is true)
+            OceanBaseExpression[] ifArgs = new OceanBaseExpression[2];
+            ifArgs[0] = OceanBaseConstant.createNullConstant();
+            ifArgs[1] = isTrue;
+            expr = new OceanBaseComputableFunction(OceanBaseFunction.IFNULL, ifArgs);
+            break;
+        case COALESCE:
+            // coalesce(null, xx is true)
+            OceanBaseExpression[] coalesceArgs = new OceanBaseExpression[2];
+            coalesceArgs[0] = OceanBaseConstant.createNullConstant();
+            coalesceArgs[1] = isTrue;
+            expr = new OceanBaseComputableFunction(OceanBaseFunction.COALESCE, coalesceArgs);
+            break;
+        default:
+            expr = isTrue;
+            break;
+        }
+        return expr;
     }
 }
