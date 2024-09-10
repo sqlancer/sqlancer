@@ -2,6 +2,7 @@ package sqlancer.oceanbase;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import sqlancer.common.query.ExpectedErrors;
 
@@ -21,6 +22,13 @@ public final class OceanBaseErrors {
         errors.add("Invalid numeric");
         errors.add("Data truncated for argument");
         errors.add("Data truncated for column");
+
+        return errors;
+    }
+
+    public static List<Pattern> getExpressionErrorsRegex() {
+        ArrayList<Pattern> errors = new ArrayList<>();
+        errors.add(Pattern.compile("Unknown column '.+' in 'order clause'"));
 
         return errors;
     }
