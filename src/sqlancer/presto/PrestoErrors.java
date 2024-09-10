@@ -73,6 +73,10 @@ public final class PrestoErrors {
         errors.add("All CASE results must be the same type");
         errors.add("Mismatched types");
 
+        if (PrestoBugs.bug23613) {
+            errors.add("at index 1");
+        }
+
         return errors;
     }
 
