@@ -41,7 +41,9 @@ public final class PrestoErrors {
 
         // TODO: check
         errors.add("io.airlift.slice.Slice cannot be cast to java.lang.Number");
-        errors.add("Cannot cast java.lang.Long to io.airlift.slice.Slice");
+        if (PrestoBugs.bug23324) {
+            errors.add("Cannot cast java.lang.Long to io.airlift.slice.Slice");
+        }
         errors.add("Cannot cast java.lang.String to java.util.List");
         errors.add("Unexpected subquery expression in logical plan");
 
