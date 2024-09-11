@@ -151,8 +151,10 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
             primitiveType = PrestoDataType.JSON;
             break;
         case "ARRAY":
+            int bracesEnd = typeString.length() - 1;
             primitiveType = PrestoDataType.ARRAY;
-            break;
+            PrestoCompositeDataType elementType = getColumnType(typeString.substring(bracesStart + 1, bracesEnd));
+            return new PrestoCompositeDataType(primitiveType, elementType);
         case "NULL":
             primitiveType = PrestoDataType.NULL;
             break;

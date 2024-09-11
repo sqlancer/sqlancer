@@ -96,8 +96,16 @@ public class PrestoNoRECOracle extends NoRECBase<PrestoGlobalState> implements T
         if (rs == null) {
             return -1;
         }
-        if (rs.next()) {
-            secondCount += rs.getLong(1);
+        try {
+            if (rs.next()) {
+                secondCount += rs.getLong(1);
+            }
+        } catch (SQLException e) {
+            if (errors.errorIsExpected(e.getMessage())) {
+                throw new IgnoreMeException();
+            } else {
+                throw e;
+            }
         }
         rs.close();
         return secondCount;

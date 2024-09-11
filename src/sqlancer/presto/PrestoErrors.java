@@ -13,6 +13,8 @@ public final class PrestoErrors {
     public static List<String> getExpressionErrors() {
         ArrayList<String> errors = new ArrayList<>();
 
+        errors.addAll(getFunctionErrors());
+
         // Presto errors
         errors.add("cannot be applied to");
         errors.add("LIKE expression must evaluate to a varchar");
@@ -25,6 +27,7 @@ public final class PrestoErrors {
         // -179769313486231570000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.0000)
         // AS BIGINT)as count FROM t0) as res
         errors.add("Decimal overflow");
+        errors.add("long overflow");
         errors.add("multiplication overflow");
         errors.add("addition overflow");
         errors.add("subtraction overflow");
@@ -38,7 +41,10 @@ public final class PrestoErrors {
 
         // TODO: check
         errors.add("io.airlift.slice.Slice cannot be cast to java.lang.Number");
-        errors.add("Cannot cast java.lang.Long to io.airlift.slice.Slice");
+        if (PrestoBugs.bug23324) {
+            errors.add("Cannot cast java.lang.Long to io.airlift.slice.Slice");
+        }
+        errors.add("Cannot cast java.lang.String to java.util.List");
         errors.add("Unexpected subquery expression in logical plan");
 
         // 9223372036854775808
@@ -51,10 +57,6 @@ public final class PrestoErrors {
         errors.add("Cannot add hour, minutes or seconds to a date");
 
         errors.add("DECIMAL scale must be in range");
-        errors.add("multiplication overflow");
-        errors.add("addition overflow");
-        errors.add("subtraction overflow");
-        errors.add("Decimal overflow");
         errors.add("IN value and list items must be the same type");
         errors.add("is not a valid timestamp literal");
         errors.add("Unknown time-zone ID");
@@ -62,6 +64,20 @@ public final class PrestoErrors {
 
         // ARRAY
         errors.add("Unknown type: ARRAY");
+
+        // SELECT
+        errors.add("WHERE clause must evaluate to a boolean");
+        errors.add("HAVING clause must evaluate to a boolean");
+        errors.add("not yet implemented");
+
+        errors.add("Value expression and result of subquery must be of the same type for quantified comparison");
+        errors.add("All IN list values must be the same type");
+        errors.add("All CASE results must be the same type");
+        errors.add("Mismatched types");
+
+        if (PrestoBugs.bug23613) {
+            errors.add("at index 1");
+        }
 
         return errors;
     }
@@ -107,7 +123,12 @@ public final class PrestoErrors {
         errors.add("Could not choose a best candidate function for the function call"); // monthname
         errors.add("expected a numeric precision field"); // ROUND
         errors.add("with non-constant precision is not supported"); // ROUND
-
+        errors.add("Unexpected parameters");
+        errors.add("not registered");
+        errors.add("Expected: least(E) E:orderable");
+        errors.add("Expected: greatest(E) E:orderable");
+        errors.add("Expected: max_by(V, K) K:orderable, V, max_by(V, K, bigint) V, K:orderable");
+        errors.add("Expected: min_by(V, K) K:orderable, V, min_by(V, K, bigint) V, K:orderable");
         return errors;
     }
 
@@ -116,7 +137,7 @@ public final class PrestoErrors {
         ArrayList<String> errors = new ArrayList<>();
 
         errors.addAll(getRegexErrors());
-        errors.addAll(getFunctionErrors());
+        errors.addAll(getExpressionErrors());
 
         errors.add("NOT NULL constraint failed");
         errors.add("PRIMARY KEY or UNIQUE constraint violated");
