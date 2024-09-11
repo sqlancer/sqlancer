@@ -70,6 +70,11 @@ public final class CnosDBExpectedError {
         errors.add(
                 "Coercion from [Utf8, Float64, Utf8] to the signature OneOf([Exact([Utf8, Int64]), Exact([LargeUtf8, Int64]), Exact([Utf8, Int64, Utf8]), Exact([LargeUtf8, Int64, Utf8]), Exact([Utf8, Int64, LargeUtf8]), Exact([LargeUtf8, Int64, LargeUtf8])]) failed.");
         errors.add("Coercion from");
+
+        errors.add("Error parsing timestamp");
+        errors.add("lpad requested length");
+        errors.add("rpad requested length");
+        errors.add("No function matches the given name and argument types");
         return errors;
     }
 

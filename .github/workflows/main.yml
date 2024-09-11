@@ -92,6 +92,32 @@ jobs:
       - name: Run Tests
         run: CITUS_AVAILABLE=true mvn -Dtest=TestCitus test
 
+  cnosdb:
+    name: DBMS Tests (CnosDB)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Set up ClickHouse
+        run: |
+          docker pull cnosdb/cnosdb:community-latest
+          docker run --name cnosdb -p 8902:8902 -d cnosdb/cnosdb:community-latest
+          sleep 5
+      - name: Run Tests
+        run: |
+          CNOSDB_AVAILABLE=true mvn -Dtest=TestCnosDBNoREC test
+          sleep 20
+          CNOSDB_AVAILABLE=true mvn -Dtest=TestCnosDBTLP test
+
   clickhouse:
     name: DBMS Tests (ClickHouse)
     runs-on: ubuntu-latest
