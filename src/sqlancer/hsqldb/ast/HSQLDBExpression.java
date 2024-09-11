@@ -1,4 +1,7 @@
 package sqlancer.hsqldb.ast;
 
-public interface HSQLDBExpression {
+import sqlancer.common.ast.newast.Expression;
+import sqlancer.hsqldb.HSQLDBSchema.HSQLDBColumn;
+
+public interface HSQLDBExpression extends Expression<HSQLDBColumn> {
 }

@@ -7,18 +7,28 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode;
+import sqlancer.common.gen.NoRECGenerator;
 import sqlancer.common.gen.TypedExpressionGenerator;
+import sqlancer.common.schema.AbstractTables;
 import sqlancer.hsqldb.HSQLDBProvider;
 import sqlancer.hsqldb.HSQLDBSchema;
+import sqlancer.hsqldb.HSQLDBSchema.HSQLDBColumn;
+import sqlancer.hsqldb.HSQLDBSchema.HSQLDBTable;
 import sqlancer.hsqldb.ast.HSQLDBBinaryOperation;
 import sqlancer.hsqldb.ast.HSQLDBColumnReference;
 import sqlancer.hsqldb.ast.HSQLDBConstant;
 import sqlancer.hsqldb.ast.HSQLDBExpression;
+import sqlancer.hsqldb.ast.HSQLDBJoin;
+import sqlancer.hsqldb.ast.HSQLDBSelect;
+import sqlancer.hsqldb.ast.HSQLDBTableReference;
 import sqlancer.hsqldb.ast.HSQLDBUnaryPostfixOperation;
 import sqlancer.hsqldb.ast.HSQLDBUnaryPrefixOperation;
 
 public final class HSQLDBExpressionGenerator extends
-        TypedExpressionGenerator<HSQLDBExpression, HSQLDBSchema.HSQLDBColumn, HSQLDBSchema.HSQLDBCompositeDataType> {
+        TypedExpressionGenerator<HSQLDBExpression, HSQLDBSchema.HSQLDBColumn, HSQLDBSchema.HSQLDBCompositeDataType>
+        implements NoRECGenerator<HSQLDBSelect, HSQLDBJoin, HSQLDBExpression, HSQLDBTable, HSQLDBColumn> {
+
+    List<HSQLDBTable> tables;
 
     private enum Expression {
         BINARY_LOGICAL, BINARY_COMPARISON, BINARY_ARITHMETIC;
@@ -192,5 +202,91 @@ public final class HSQLDBExpressionGenerator extends
             expressions.add(columnReference);
         }
         return expressions;
+    }
+
+    @Override
+    public NoRECGenerator<HSQLDBSelect, HSQLDBJoin, HSQLDBExpression, HSQLDBTable, HSQLDBColumn> setTablesAndColumns(
+            AbstractTables<HSQLDBTable, HSQLDBColumn> tables) {
+        this.columns = tables.getColumns();
+        this.tables = tables.getTables();
+
+        return this;
+    }
+
+    @Override
+    public HSQLDBExpression generateBooleanExpression() {
+        return generatePredicate();
+    }
+
+    @Override
+    public HSQLDBSelect generateSelect() {
+        return new HSQLDBSelect();
+    }
+
+    @Override
+    public List<HSQLDBJoin> getRandomJoinClauses() {
+        List<HSQLDBJoin> joinExpressions = new ArrayList<>();
+        while (tables.size() >= 2 && Randomly.getBooleanWithRatherLowProbability()) {
+            HSQLDBTable leftTable = tables.remove(0);
+            HSQLDBTable rightTable = tables.remove(0);
+            List<HSQLDBSchema.HSQLDBColumn> columns = new ArrayList<>(leftTable.getColumns());
+            columns.addAll(rightTable.getColumns());
+            HSQLDBExpressionGenerator joinGen = new HSQLDBExpressionGenerator(hsqldbGlobalState).setColumns(columns);
+            HSQLDBTableReference leftTableRef = new HSQLDBTableReference(leftTable);
+            HSQLDBTableReference rightTableRef = new HSQLDBTableReference(rightTable);
+            switch (HSQLDBJoin.JoinType.getRandom()) {
+            case INNER:
+                joinExpressions.add(HSQLDBJoin.createInnerJoin(leftTableRef, rightTableRef,
+                        joinGen.generateExpression(HSQLDBSchema.HSQLDBCompositeDataType.getRandomWithoutNull())));
+                break;
+            case NATURAL:
+                joinExpressions.add(
+                        HSQLDBJoin.createNaturalJoin(leftTableRef, rightTableRef, HSQLDBJoin.OuterType.getRandom()));
+                break;
+            case LEFT:
+                joinExpressions.add(HSQLDBJoin.createLeftOuterJoin(leftTableRef, rightTableRef,
+                        joinGen.generateExpression(HSQLDBSchema.HSQLDBCompositeDataType.getRandomWithoutNull())));
+                break;
+            case RIGHT:
+                joinExpressions.add(HSQLDBJoin.createRightOuterJoin(leftTableRef, rightTableRef,
+                        joinGen.generateExpression(HSQLDBSchema.HSQLDBCompositeDataType.getRandomWithoutNull())));
+                break;
+            default:
+                throw new AssertionError();
+            }
+        }
+        return joinExpressions;
+    }
+
+    @Override
+    public List<HSQLDBExpression> getTableRefs() {
+        return tables.stream().map(t -> new HSQLDBTableReference(t)).collect(Collectors.toList());
+    }
+
+    @Override
+    public String generateOptimizedQueryString(HSQLDBSelect select, HSQLDBExpression whereCondition,
+            boolean shouldUseAggregate) {
+        if (shouldUseAggregate) {
+            HSQLDBColumn aggr = new HSQLDBColumn("COUNT(*)", null, null);
+            select.setFetchColumns(List.of(new HSQLDBColumnReference(aggr)));
+        } else {
+            List<HSQLDBExpression> allColumns = columns.stream().map((c) -> new HSQLDBColumnReference(c))
+                    .collect(Collectors.toList());
+            select.setFetchColumns(allColumns);
+            if (Randomly.getBooleanWithSmallProbability()) {
+                select.setOrderByClauses(generateOrderBys());
+            }
+        }
+        select.setWhereClause(whereCondition);
+
+        return select.asString();
+    }
+
+    @Override
+    public String generateUnoptimizedQueryString(HSQLDBSelect select, HSQLDBExpression whereCondition) {
+        HSQLDBColumn c = new HSQLDBColumn("COUNT(*) as count", null, null);
+        select.setFetchColumns(List.of(new HSQLDBColumnReference(c)));
+        select.setWhereClause(null);
+        return "SELECT SUM(count) FROM (" + select.asString() + ") as res";
     }
 }
