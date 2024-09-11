@@ -1,5 +1,8 @@
 package sqlancer.tidb.ast;
 
-public interface TiDBExpression {
+import sqlancer.common.ast.newast.Expression;
+import sqlancer.tidb.TiDBSchema.TiDBColumn;
+
+public interface TiDBExpression extends Expression<TiDBColumn> {
 
 }

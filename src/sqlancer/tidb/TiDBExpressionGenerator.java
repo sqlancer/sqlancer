@@ -3,13 +3,18 @@ package sqlancer.tidb;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.UntypedExpressionGenerator;
+import sqlancer.common.schema.AbstractTables;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
+import sqlancer.tidb.TiDBSchema.TiDBCompositeDataType;
 import sqlancer.tidb.TiDBSchema.TiDBDataType;
+import sqlancer.tidb.TiDBSchema.TiDBTable;
 import sqlancer.tidb.ast.TiDBAggregate;
 import sqlancer.tidb.ast.TiDBAggregate.TiDBAggregateFunction;
 import sqlancer.tidb.ast.TiDBBinaryBitOperation;
@@ -25,17 +30,22 @@ import sqlancer.tidb.ast.TiDBConstant;
 import sqlancer.tidb.ast.TiDBExpression;
 import sqlancer.tidb.ast.TiDBFunctionCall;
 import sqlancer.tidb.ast.TiDBFunctionCall.TiDBFunction;
+import sqlancer.tidb.ast.TiDBJoin;
 import sqlancer.tidb.ast.TiDBOrderingTerm;
 import sqlancer.tidb.ast.TiDBRegexOperation;
 import sqlancer.tidb.ast.TiDBRegexOperation.TiDBRegexOperator;
+import sqlancer.tidb.ast.TiDBSelect;
+import sqlancer.tidb.ast.TiDBTableReference;
 import sqlancer.tidb.ast.TiDBUnaryPostfixOperation;
 import sqlancer.tidb.ast.TiDBUnaryPostfixOperation.TiDBUnaryPostfixOperator;
 import sqlancer.tidb.ast.TiDBUnaryPrefixOperation;
 import sqlancer.tidb.ast.TiDBUnaryPrefixOperation.TiDBUnaryPrefixOperator;
 
-public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpression, TiDBColumn> {
+public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpression, TiDBColumn>
+        implements TLPWhereGenerator<TiDBSelect, TiDBJoin, TiDBExpression, TiDBTable, TiDBColumn> {
 
     private final TiDBGlobalState globalState;
+    private List<TiDBTable> tables;
 
     public TiDBExpressionGenerator(TiDBGlobalState globalState) {
         this.globalState = globalState;
@@ -188,4 +198,46 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
         }
     }
 
+    @Override
+    public TLPWhereGenerator<TiDBSelect, TiDBJoin, TiDBExpression, TiDBTable, TiDBColumn> setTablesAndColumns(
+            AbstractTables<TiDBTable, TiDBColumn> tables) {
+        this.columns = tables.getColumns();
+        this.tables = tables.getTables();
+
+        return this;
+    }
+
+    @Override
+    public TiDBExpression generateBooleanExpression() {
+        return generateExpression();
+    }
+
+    @Override
+    public TiDBSelect generateSelect() {
+        return new TiDBSelect();
+    }
+
+    @Override
+    public List<TiDBJoin> getRandomJoinClauses() {
+        List<TiDBExpression> tableList = tables.stream().map(t -> new TiDBTableReference(t))
+                .collect(Collectors.toList());
+        List<TiDBJoin> joins = TiDBJoin.getJoins(tableList, globalState);
+        tables = tableList.stream().map(t -> ((TiDBTableReference) t).getTable()).collect(Collectors.toList());
+        return joins;
+    }
+
+    @Override
+    public List<TiDBExpression> getTableRefs() {
+        return tables.stream().map(t -> new TiDBTableReference(t)).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TiDBExpression> generateFetchColumns(boolean shouldCreateDummy) {
+        if (shouldCreateDummy && Randomly.getBoolean()) {
+            return List.of(new TiDBColumnReference(
+                    new TiDBColumn("*", new TiDBCompositeDataType(TiDBDataType.INT), false, false, false)));
+        }
+        return Randomly.nonEmptySubset(this.columns).stream().map(c -> new TiDBColumnReference(c))
+                .collect(Collectors.toList());
+    }
 }
