@@ -1,42 +1,35 @@
 package sqlancer.h2;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
-import sqlancer.ComparatorHelper;
-import sqlancer.Randomly;
+import sqlancer.common.oracle.TLPWhereOracle;
+import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.h2.H2Provider.H2GlobalState;
+import sqlancer.h2.H2Schema.H2Column;
+import sqlancer.h2.H2Schema.H2Table;
+import sqlancer.h2.ast.H2Expression;
+import sqlancer.h2.ast.H2Join;
+import sqlancer.h2.ast.H2Select;
 
-public class H2QueryPartitioningWhereTester extends H2QueryPartitioningBase {
+public class H2QueryPartitioningWhereTester implements TestOracle<H2GlobalState> {
+
+    private final TLPWhereOracle<H2Select, H2Join, H2Expression, H2Schema, H2Table, H2Column, H2GlobalState> oracle;
 
     public H2QueryPartitioningWhereTester(H2GlobalState state) {
-        super(state);
+        H2ExpressionGenerator gen = new H2ExpressionGenerator(state);
+        ExpectedErrors expectedErrors = ExpectedErrors.newErrors().with(H2Errors.getExpressionErrors()).build();
+
+        this.oracle = new TLPWhereOracle<>(state, gen, expectedErrors);
     }
 
     @Override
     public void check() throws SQLException {
-        super.check();
-        select.setWhereClause(null);
-        String originalQueryString = H2ToStringVisitor.asString(select);
-
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
-
-        boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
-        if (orderBy) {
-            select.setOrderByClauses(gen.generateOrderBys());
-        }
-        select.setWhereClause(predicate);
-        String firstQueryString = H2ToStringVisitor.asString(select);
-        select.setWhereClause(negatedPredicate);
-        String secondQueryString = H2ToStringVisitor.asString(select);
-        select.setWhereClause(isNullPredicate);
-        String thirdQueryString = H2ToStringVisitor.asString(select);
-        List<String> combinedString = new ArrayList<>();
-        List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
-                thirdQueryString, combinedString, !orderBy, state, errors);
-        ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
-                state);
+        oracle.check();
     }
 
+    @Override
+    public String getLastQueryString() {
+        return oracle.getLastQueryString();
+    }
 }
