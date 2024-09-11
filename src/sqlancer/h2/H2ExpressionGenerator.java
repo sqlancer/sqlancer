@@ -1,12 +1,18 @@
 package sqlancer.h2;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
+import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.UntypedExpressionGenerator;
+import sqlancer.common.schema.AbstractTables;
 import sqlancer.h2.H2Provider.H2GlobalState;
 import sqlancer.h2.H2Schema.H2Column;
 import sqlancer.h2.H2Schema.H2CompositeDataType;
 import sqlancer.h2.H2Schema.H2DataType;
+import sqlancer.h2.H2Schema.H2Table;
 import sqlancer.h2.ast.H2BetweenOperation;
 import sqlancer.h2.ast.H2BinaryOperation;
 import sqlancer.h2.ast.H2CaseOperation;
@@ -15,12 +21,17 @@ import sqlancer.h2.ast.H2ColumnReference;
 import sqlancer.h2.ast.H2Constant;
 import sqlancer.h2.ast.H2Expression;
 import sqlancer.h2.ast.H2InOperation;
+import sqlancer.h2.ast.H2Join;
+import sqlancer.h2.ast.H2Select;
+import sqlancer.h2.ast.H2TableReference;
 import sqlancer.h2.ast.H2UnaryPostfixOperation;
 import sqlancer.h2.ast.H2UnaryPrefixOperation;
 
-public class H2ExpressionGenerator extends UntypedExpressionGenerator<H2Expression, H2Column> {
+public class H2ExpressionGenerator extends UntypedExpressionGenerator<H2Expression, H2Column>
+        implements TLPWhereGenerator<H2Select, H2Join, H2Expression, H2Table, H2Column> {
 
     private final H2GlobalState globalState;
+    private List<H2Table> tables;
 
     public H2ExpressionGenerator(H2GlobalState globalState) {
         this.globalState = globalState;
@@ -336,4 +347,45 @@ public class H2ExpressionGenerator extends UntypedExpressionGenerator<H2Expressi
         return new H2UnaryPostfixOperation(expr, H2UnaryPostfixOperator.IS_NULL);
     }
 
+    @Override
+    public TLPWhereGenerator<H2Select, H2Join, H2Expression, H2Table, H2Column> setTablesAndColumns(
+            AbstractTables<H2Table, H2Column> tables) {
+        this.columns = tables.getColumns();
+        this.tables = tables.getTables();
+
+        return this;
+    }
+
+    @Override
+    public H2Expression generateBooleanExpression() {
+        return generateExpression();
+    }
+
+    @Override
+    public H2Select generateSelect() {
+        return new H2Select();
+    }
+
+    @Override
+    public List<H2Join> getRandomJoinClauses() {
+        List<H2TableReference> tableList = tables.stream().map(t -> new H2TableReference(t))
+                .collect(Collectors.toList());
+        List<H2Join> joins = H2Join.getJoins(tableList, globalState);
+        tables = tableList.stream().map(t -> t.getTable()).collect(Collectors.toList());
+        return joins;
+    }
+
+    @Override
+    public List<H2Expression> getTableRefs() {
+        return tables.stream().map(t -> new H2TableReference(t)).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<H2Expression> generateFetchColumns(boolean shouldCreateDummy) {
+        if (shouldCreateDummy && Randomly.getBoolean()) {
+            return List.of(new H2ColumnReference(new H2Column("*", null)));
+        }
+        return Randomly.nonEmptySubset(this.columns).stream().map(c -> new H2ColumnReference(c))
+                .collect(Collectors.toList());
+    }
 }

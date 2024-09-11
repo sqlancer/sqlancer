@@ -32,7 +32,7 @@ public final class H2RandomQuerySynthesizer {
         List<H2Table> tables = targetTables.getTables();
         List<H2TableReference> tableList = tables.stream().map(t -> new H2TableReference(t))
                 .collect(Collectors.toList());
-        List<H2Expression> joins = H2Join.getJoins(tableList, globalState);
+        List<H2Join> joins = H2Join.getJoins(tableList, globalState);
         select.setJoinList(joins.stream().collect(Collectors.toList()));
         select.setFromList(tableList.stream().collect(Collectors.toList()));
         if (Randomly.getBoolean()) {
