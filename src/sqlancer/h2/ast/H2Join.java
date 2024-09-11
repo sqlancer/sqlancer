@@ -4,16 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.newast.Join;
 import sqlancer.h2.H2ExpressionGenerator;
 import sqlancer.h2.H2Provider.H2GlobalState;
 import sqlancer.h2.H2Schema.H2Column;
+import sqlancer.h2.H2Schema.H2Table;
 
-public class H2Join implements H2Expression {
+public class H2Join implements H2Expression, Join<H2Expression, H2Table, H2Column> {
 
     private final H2TableReference leftTable;
     private final H2TableReference rightTable;
     private final JoinType joinType;
-    private final H2Expression onCondition;
+    private H2Expression onCondition;
 
     public enum JoinType {
         INNER, CROSS, NATURAL, LEFT, RIGHT;
@@ -47,8 +49,8 @@ public class H2Join implements H2Expression {
         return onCondition;
     }
 
-    public static List<H2Expression> getJoins(List<H2TableReference> tableList, H2GlobalState globalState) {
-        List<H2Expression> joinExpressions = new ArrayList<>();
+    public static List<H2Join> getJoins(List<H2TableReference> tableList, H2GlobalState globalState) {
+        List<H2Join> joinExpressions = new ArrayList<>();
         while (tableList.size() >= 2 && Randomly.getBooleanWithRatherLowProbability()) {
             H2TableReference leftTable = tableList.remove(0);
             H2TableReference rightTable = tableList.remove(0);
@@ -91,8 +93,13 @@ public class H2Join implements H2Expression {
         return new H2Join(left, right, JoinType.INNER, predicate);
     }
 
-    public static H2Expression createNaturalJoin(H2TableReference left, H2TableReference right) {
+    public static H2Join createNaturalJoin(H2TableReference left, H2TableReference right) {
         return new H2Join(left, right, JoinType.NATURAL, null);
+    }
+
+    @Override
+    public void setOnClause(H2Expression onClause) {
+        onCondition = onClause;
     }
 
 }
