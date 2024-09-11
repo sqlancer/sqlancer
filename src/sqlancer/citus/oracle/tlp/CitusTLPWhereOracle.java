@@ -1,62 +1,42 @@
 package sqlancer.citus.oracle.tlp;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
-import sqlancer.ComparatorHelper;
-import sqlancer.Randomly;
 import sqlancer.citus.CitusGlobalState;
 import sqlancer.citus.gen.CitusCommon;
+import sqlancer.common.oracle.TLPWhereOracle;
+import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.postgres.PostgresGlobalState;
-import sqlancer.postgres.PostgresVisitor;
-import sqlancer.postgres.oracle.tlp.PostgresTLPBase;
+import sqlancer.postgres.PostgresSchema;
+import sqlancer.postgres.PostgresSchema.PostgresColumn;
+import sqlancer.postgres.PostgresSchema.PostgresTable;
+import sqlancer.postgres.ast.PostgresExpression;
+import sqlancer.postgres.ast.PostgresJoin;
+import sqlancer.postgres.ast.PostgresSelect;
+import sqlancer.postgres.gen.PostgresCommon;
+import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
-public class CitusTLPWhereOracle extends PostgresTLPBase {
+public class CitusTLPWhereOracle implements TestOracle<PostgresGlobalState> {
 
-    private final CitusTLPBase citusTLPBase;
+    private final TLPWhereOracle<PostgresSelect, PostgresJoin, PostgresExpression, PostgresSchema, PostgresTable, PostgresColumn, PostgresGlobalState> oracle;
 
     public CitusTLPWhereOracle(CitusGlobalState state) {
-        super(state);
-        CitusCommon.addCitusErrors(errors);
-        citusTLPBase = new CitusTLPBase(state);
+        PostgresExpressionGenerator gen = new PostgresExpressionGenerator(state);
+        ExpectedErrors expectedErrors = ExpectedErrors.newErrors().with(PostgresCommon.getCommonExpressionErrors())
+                .with(PostgresCommon.getCommonFetchErrors()).withRegex(PostgresCommon.getCommonExpressionRegexErrors())
+                .with(CitusCommon.getCitusErrors()).build();
+
+        this.oracle = new TLPWhereOracle<>(state, gen, expectedErrors);
     }
 
     @Override
     public void check() throws SQLException {
-        state.setAllowedFunctionTypes(Arrays.asList(PostgresGlobalState.IMMUTABLE));
-        citusTLPBase.check();
-        s = citusTLPBase.getSchema();
-        targetTables = citusTLPBase.getTargetTables();
-        gen = citusTLPBase.getGenerator();
-        select = citusTLPBase.getSelect();
-        predicate = citusTLPBase.getPredicate();
-        negatedPredicate = citusTLPBase.getNegatedPredicate();
-        isNullPredicate = citusTLPBase.getIsNullPredicate();
-        whereCheck();
-        state.setDefaultAllowedFunctionTypes();
+        oracle.check();
     }
 
-    void whereCheck() throws SQLException {
-        if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByClauses(gen.generateOrderBys());
-        }
-        String originalQueryString = PostgresVisitor.asString(select);
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
-
-        select.setOrderByClauses(Collections.emptyList());
-        select.setWhereClause(predicate);
-        String firstQueryString = PostgresVisitor.asString(select);
-        select.setWhereClause(negatedPredicate);
-        String secondQueryString = PostgresVisitor.asString(select);
-        select.setWhereClause(isNullPredicate);
-        String thirdQueryString = PostgresVisitor.asString(select);
-        List<String> combinedString = new ArrayList<>();
-        List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
-                thirdQueryString, combinedString, Randomly.getBoolean(), state, errors);
-        ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
-                state);
+    @Override
+    public String getLastQueryString() {
+        return oracle.getLastQueryString();
     }
 }
