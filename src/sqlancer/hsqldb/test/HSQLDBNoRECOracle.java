@@ -1,121 +1,43 @@
 package sqlancer.hsqldb.test;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
-import sqlancer.IgnoreMeException;
-import sqlancer.Randomly;
-import sqlancer.SQLConnection;
-import sqlancer.common.oracle.NoRECBase;
+import sqlancer.Reproducer;
+import sqlancer.common.oracle.NoRECOracle;
 import sqlancer.common.oracle.TestOracle;
-import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.common.query.SQLancerResultSet;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.hsqldb.HSQLDBErrors;
 import sqlancer.hsqldb.HSQLDBProvider.HSQLDBGlobalState;
 import sqlancer.hsqldb.HSQLDBSchema;
 import sqlancer.hsqldb.HSQLDBSchema.HSQLDBColumn;
-import sqlancer.hsqldb.HSQLDBSchema.HSQLDBCompositeDataType;
-import sqlancer.hsqldb.HSQLDBSchema.HSQLDBDataType;
 import sqlancer.hsqldb.HSQLDBSchema.HSQLDBTable;
-import sqlancer.hsqldb.HSQLDBToStringVisitor;
-import sqlancer.hsqldb.ast.HSQLDBColumnReference;
 import sqlancer.hsqldb.ast.HSQLDBExpression;
 import sqlancer.hsqldb.ast.HSQLDBJoin;
 import sqlancer.hsqldb.ast.HSQLDBSelect;
-import sqlancer.hsqldb.ast.HSQLDBTableReference;
 import sqlancer.hsqldb.gen.HSQLDBExpressionGenerator;
 
-public class HSQLDBNoRECOracle extends NoRECBase<HSQLDBGlobalState> implements TestOracle<HSQLDBGlobalState> {
+public class HSQLDBNoRECOracle implements TestOracle<HSQLDBGlobalState> {
 
-    private final HSQLDBSchema s;
+    NoRECOracle<HSQLDBSelect, HSQLDBJoin, HSQLDBExpression, HSQLDBSchema, HSQLDBTable, HSQLDBColumn, HSQLDBGlobalState> oracle;
 
     public HSQLDBNoRECOracle(HSQLDBGlobalState globalState) {
-        super(globalState);
-        this.s = globalState.getSchema();
-        HSQLDBErrors.addExpressionErrors(errors);
+        HSQLDBExpressionGenerator gen = new HSQLDBExpressionGenerator(globalState);
+        ExpectedErrors errors = ExpectedErrors.newErrors().with(HSQLDBErrors.getExpressionErrors()).build();
+        this.oracle = new NoRECOracle<>(globalState, gen, errors);
     }
 
     @Override
     public void check() throws SQLException {
-        List<HSQLDBTable> tables = s.getDatabaseTablesRandomSubsetNotEmpty();
-        List<HSQLDBColumn> columns = tables.stream().flatMap(t -> t.getColumns().stream()).collect(Collectors.toList());
-        HSQLDBExpressionGenerator gen = new HSQLDBExpressionGenerator(state).setColumns(columns);
-
-        HSQLDBExpression randomWhereCondition = gen
-                .generateExpression(HSQLDBCompositeDataType.getRandomWithType(HSQLDBDataType.BOOLEAN));
-
-        List<HSQLDBTableReference> tableList = tables.stream().map(t -> new HSQLDBTableReference(t))
-                .collect(Collectors.toList());
-        List<HSQLDBExpression> joins = HSQLDBJoin.getJoins(tableList, state);
-        int secondCount = getSecondQuery(new ArrayList<>(tableList), randomWhereCondition, joins); // 禁用优化
-        int firstCount = getFirstQueryCount(con, new ArrayList<>(tableList), columns, randomWhereCondition, joins);
-        if (firstCount == -1 || secondCount == -1) {
-            throw new IgnoreMeException();
-        }
-        if (firstCount != secondCount) {
-            throw new AssertionError(
-                    optimizedQueryString + "; -- " + firstCount + "\n" + unoptimizedQueryString + " -- " + secondCount);
-        }
+        oracle.check();
     }
 
-    private int getSecondQuery(List<HSQLDBExpression> tableList, HSQLDBExpression randomWhereCondition,
-            List<HSQLDBExpression> joins) throws SQLException {
-        HSQLDBSelect select = new HSQLDBSelect();
-        HSQLDBColumn c = new HSQLDBColumn("COUNT(*)", null, null);
-        select.setFetchColumns(List.of(new HSQLDBColumnReference(c)));
-        select.setFromList(tableList);
-        select.setWhereClause(randomWhereCondition);
-        select.setJoinList(joins);
-        int secondCount = 0;
-        unoptimizedQueryString = "SELECT SUM(count) FROM (" + HSQLDBToStringVisitor.asString(select) + ") as res";
-        SQLQueryAdapter q = new SQLQueryAdapter(unoptimizedQueryString, errors);
-        SQLancerResultSet rs;
-        try {
-            rs = q.executeAndGetLogged(state);
-        } catch (Exception e) {
-            throw new AssertionError(unoptimizedQueryString, e);
-        }
-        if (rs == null) {
-            return -1;
-        }
-        if (rs.next()) {
-            secondCount += rs.getLong(1);
-        }
-        rs.close();
-        return secondCount;
+    @Override
+    public Reproducer<HSQLDBGlobalState> getLastReproducer() {
+        return oracle.getLastReproducer();
     }
 
-    private int getFirstQueryCount(SQLConnection con, List<HSQLDBExpression> tableList, List<HSQLDBColumn> columns,
-            HSQLDBExpression randomWhereCondition, List<HSQLDBExpression> joins) throws SQLException {
-        HSQLDBSelect select = new HSQLDBSelect();
-        List<HSQLDBExpression> allColumns = columns.stream().map((c) -> new HSQLDBColumnReference(c))
-                .collect(Collectors.toList());
-        select.setFetchColumns(allColumns);
-        select.setFromList(tableList);
-        select.setWhereClause(randomWhereCondition);
-        if (Randomly.getBooleanWithSmallProbability()) {
-            select.setOrderByClauses(new HSQLDBExpressionGenerator(state).setColumns(columns).generateOrderBys());
-        }
-        select.setJoinList(joins);
-        int firstCount = 0;
-        try (Statement stat = con.createStatement()) {
-            optimizedQueryString = HSQLDBToStringVisitor.asString(select);
-            if (options.logEachSelect()) {
-                logger.writeCurrent(optimizedQueryString);
-            }
-            try (ResultSet rs = stat.executeQuery(optimizedQueryString)) {
-                while (rs.next()) {
-                    firstCount++;
-                }
-            }
-        } catch (SQLException e) {
-            throw new IgnoreMeException();
-        }
-        return firstCount;
+    @Override
+    public String getLastQueryString() {
+        return oracle.getLastQueryString();
     }
-
 }
