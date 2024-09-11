@@ -110,7 +110,6 @@ public class StatementReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpec
                         observedChange = true;
                         statements = candidateStatements;
                         partitionNum = Math.max(partitionNum - 1, 2);
-                        // reproducer.outputHook((SQLite3GlobalState) newGlobalState);
                         newGlobalState.getLogger().logReduced(newGlobalState.getState());
                         break;
 
