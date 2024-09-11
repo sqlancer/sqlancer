@@ -268,7 +268,7 @@ jobs:
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Run Tests
-        run: H2_AVAILABLE=true mvn -Dtest=TestH2 test
+        run: mvn -Dtest=TestH2 test
 
   hsqldb:
     name: DBMS Tests (HSQLB)
