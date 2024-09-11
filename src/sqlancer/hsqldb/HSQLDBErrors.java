@@ -12,7 +12,15 @@ public final class HSQLDBErrors {
 
     public static List<String> getExpressionErrors() {
         ArrayList<String> errors = new ArrayList<>();
-        errors.add("");
+
+        errors.add("invalid datetime format");
+        errors.add("invalid character value for cast");
+        errors.add("invalid ORDER BY expression");
+        errors.add("data type of expression is not boolean");
+        errors.add("numeric value out of range");
+        errors.add("incompatible data types in combination");
+        errors.add("string data, right truncation");
+
         return errors;
     }
 
@@ -20,27 +28,10 @@ public final class HSQLDBErrors {
         errors.addAll(getExpressionErrors());
     }
 
-    private static List<String> getRegexErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("");
-
-        return errors;
-    }
-
-    private static List<String> getFunctionErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("");
-
-        return errors;
-    }
-
     public static List<String> getInsertErrors() {
         ArrayList<String> errors = new ArrayList<>();
 
-        errors.addAll(getRegexErrors());
-        errors.addAll(getFunctionErrors());
+        errors.addAll(getExpressionErrors());
 
         return errors;
     }

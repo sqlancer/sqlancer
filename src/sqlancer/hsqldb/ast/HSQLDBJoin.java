@@ -1,19 +1,16 @@
 package sqlancer.hsqldb.ast;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import sqlancer.Randomly;
-import sqlancer.hsqldb.HSQLDBProvider.HSQLDBGlobalState;
-import sqlancer.hsqldb.HSQLDBSchema;
-import sqlancer.hsqldb.gen.HSQLDBExpressionGenerator;
+import sqlancer.common.ast.newast.Join;
+import sqlancer.hsqldb.HSQLDBSchema.HSQLDBColumn;
+import sqlancer.hsqldb.HSQLDBSchema.HSQLDBTable;
 
-public class HSQLDBJoin implements HSQLDBExpression {
+public class HSQLDBJoin implements HSQLDBExpression, Join<HSQLDBExpression, HSQLDBTable, HSQLDBColumn> {
 
     private final HSQLDBTableReference leftTable;
     private final HSQLDBTableReference rightTable;
     private final JoinType joinType;
-    private final HSQLDBExpression onCondition;
+    private HSQLDBExpression onCondition;
     private OuterType outerType;
 
     public enum JoinType {
@@ -64,37 +61,6 @@ public class HSQLDBJoin implements HSQLDBExpression {
         return outerType;
     }
 
-    public static List<HSQLDBExpression> getJoins(List<HSQLDBTableReference> tableList, HSQLDBGlobalState globalState) {
-        List<HSQLDBExpression> joinExpressions = new ArrayList<>();
-        while (tableList.size() >= 2 && Randomly.getBooleanWithRatherLowProbability()) {
-            HSQLDBTableReference leftTable = tableList.remove(0);
-            HSQLDBTableReference rightTable = tableList.remove(0);
-            List<HSQLDBSchema.HSQLDBColumn> columns = new ArrayList<>(leftTable.getTable().getColumns());
-            columns.addAll(rightTable.getTable().getColumns());
-            HSQLDBExpressionGenerator joinGen = new HSQLDBExpressionGenerator(globalState).setColumns(columns);
-            switch (HSQLDBJoin.JoinType.getRandom()) {
-            case INNER:
-                joinExpressions.add(HSQLDBJoin.createInnerJoin(leftTable, rightTable,
-                        joinGen.generateExpression(HSQLDBSchema.HSQLDBCompositeDataType.getRandomWithoutNull())));
-                break;
-            case NATURAL:
-                joinExpressions.add(HSQLDBJoin.createNaturalJoin(leftTable, rightTable, OuterType.getRandom()));
-                break;
-            case LEFT:
-                joinExpressions.add(HSQLDBJoin.createLeftOuterJoin(leftTable, rightTable,
-                        joinGen.generateExpression(HSQLDBSchema.HSQLDBCompositeDataType.getRandomWithoutNull())));
-                break;
-            case RIGHT:
-                joinExpressions.add(HSQLDBJoin.createRightOuterJoin(leftTable, rightTable,
-                        joinGen.generateExpression(HSQLDBSchema.HSQLDBCompositeDataType.getRandomWithoutNull())));
-                break;
-            default:
-                throw new AssertionError();
-            }
-        }
-        return joinExpressions;
-    }
-
     public static HSQLDBJoin createRightOuterJoin(HSQLDBTableReference left, HSQLDBTableReference right,
             HSQLDBExpression predicate) {
         return new HSQLDBJoin(left, right, JoinType.RIGHT, predicate);
@@ -110,11 +76,16 @@ public class HSQLDBJoin implements HSQLDBExpression {
         return new HSQLDBJoin(left, right, JoinType.INNER, predicate);
     }
 
-    public static HSQLDBExpression createNaturalJoin(HSQLDBTableReference left, HSQLDBTableReference right,
+    public static HSQLDBJoin createNaturalJoin(HSQLDBTableReference left, HSQLDBTableReference right,
             OuterType naturalJoinType) {
         HSQLDBJoin join = new HSQLDBJoin(left, right, JoinType.NATURAL, null);
         join.setOuterType(naturalJoinType);
         return join;
+    }
+
+    @Override
+    public void setOnClause(HSQLDBExpression onClause) {
+        onCondition = onClause;
     }
 
 }
