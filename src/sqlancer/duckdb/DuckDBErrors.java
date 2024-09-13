@@ -2,6 +2,7 @@ package sqlancer.duckdb;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import sqlancer.common.query.ExpectedErrors;
 
@@ -58,12 +59,20 @@ public final class DuckDBErrors {
         return errors;
     }
 
+    public static List<Pattern> getExpressionErrorsRegex() {
+        ArrayList<Pattern> errors = new ArrayList<>();
+
+        errors.add(Pattern.compile("Binder Error: Cannot mix values of type .* and .* in BETWEEN clause"));
+        errors.add(Pattern.compile("Binder Error: Cannot mix values of type .* and .* in CASE expression"));
+        errors.add(Pattern.compile("Cannot mix values of type .* and .* in COALESCE operator"));
+        errors.add(Pattern.compile("Cannot compare values of type .* and type .*"));
+
+        return errors;
+    }
+
     public static void addExpressionErrors(ExpectedErrors errors) {
         errors.addAll(getExpressionErrors());
-        errors.addRegexString("Binder Error: Cannot mix values of type .* and .* in BETWEEN clause");
-        errors.addRegexString("Binder Error: Cannot mix values of type .* and .* in CASE expression");
-        errors.addRegexString("Cannot mix values of type .* and .* in COALESCE operator");
-        errors.addRegexString("Cannot compare values of type .* and type .*");
+        errors.addAllRegexes(getExpressionErrorsRegex());
     }
 
     private static List<String> getRegexErrors() {

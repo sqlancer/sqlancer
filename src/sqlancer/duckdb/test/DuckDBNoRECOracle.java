@@ -23,7 +23,8 @@ public class DuckDBNoRECOracle implements TestOracle<DuckDBGlobalState> {
     public DuckDBNoRECOracle(DuckDBGlobalState globalState) {
         DuckDBExpressionGenerator gen = new DuckDBExpressionGenerator(globalState);
         ExpectedErrors errors = ExpectedErrors.newErrors().with(DuckDBErrors.getExpressionErrors())
-                .with("canceling statement due to statement timeout").build();
+                .withRegex(DuckDBErrors.getExpressionErrorsRegex()).with("canceling statement due to statement timeout")
+                .build();
         this.oracle = new NoRECOracle<>(globalState, gen, errors);
     }
 
