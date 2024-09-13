@@ -6,6 +6,7 @@ import java.util.List;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
+import sqlancer.Reproducer;
 import sqlancer.SQLGlobalState;
 import sqlancer.common.ast.newast.Expression;
 import sqlancer.common.ast.newast.Join;
@@ -25,7 +26,42 @@ public class TLPWhereOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C
     private TLPWhereGenerator<Z, J, E, T, C> gen;
     private final ExpectedErrors errors;
 
+    private Reproducer<G> reproducer;
     private String generatedQueryString;
+
+    private class TLPWhereReproducer implements Reproducer<G> {
+        final String firstQueryString;
+        final String secondQueryString;
+        final String thirdQueryString;
+        final String originalQueryString;
+        final List<String> resultSet;
+        final boolean orderBy;
+
+        TLPWhereReproducer(String firstQueryString, String secondQueryString, String thirdQueryString,
+                String originalQueryString, List<String> resultSet, boolean orderBy) {
+            this.firstQueryString = firstQueryString;
+            this.secondQueryString = secondQueryString;
+            this.thirdQueryString = thirdQueryString;
+            this.originalQueryString = originalQueryString;
+            this.resultSet = resultSet;
+            this.orderBy = orderBy;
+        }
+
+        @Override
+        public boolean bugStillTriggers(G globalState) {
+            try {
+                List<String> combinedString1 = new ArrayList<>();
+                List<String> secondResultSet1 = ComparatorHelper.getCombinedResultSet(firstQueryString,
+                        secondQueryString, thirdQueryString, combinedString1, !orderBy, globalState, errors);
+                ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet1, originalQueryString,
+                        combinedString1, globalState);
+            } catch (AssertionError triggeredError) {
+                return true;
+            } catch (SQLException ignored) {
+            }
+            return false;
+        }
+    }
 
     public TLPWhereOracle(G state, TLPWhereGenerator<Z, J, E, T, C> gen, ExpectedErrors expectedErrors) {
         if (state == null || gen == null || expectedErrors == null) {
@@ -38,6 +74,7 @@ public class TLPWhereOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C
 
     @Override
     public void check() throws SQLException {
+        reproducer = null;
         S s = state.getSchema();
         AbstractTables<T, C> targetTables = TestOracleUtils.getRandomTableNonEmptyTables(s);
         gen = gen.setTablesAndColumns(targetTables);
@@ -75,6 +112,14 @@ public class TLPWhereOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C
 
         ComparatorHelper.assumeResultSetsAreEqual(firstResultSet, secondResultSet, originalQueryString, combinedString,
                 state);
+
+        reproducer = new TLPWhereReproducer(firstQueryString, secondQueryString, thirdQueryString, originalQueryString,
+                firstResultSet, orderBy);
+    }
+
+    @Override
+    public Reproducer<G> getLastReproducer() {
+        return reproducer;
     }
 
     @Override

@@ -50,7 +50,7 @@ public abstract class TiDBTLPBase extends TernaryLogicPartitioningOracleBase<TiD
 
         List<TiDBExpression> tableList = tables.stream().map(t -> new TiDBTableReference(t))
                 .collect(Collectors.toList());
-        List<TiDBExpression> joins = TiDBJoin.getJoins(tableList, state);
+        List<TiDBExpression> joins = TiDBJoin.getJoins(tableList, state).stream().collect(Collectors.toList());
         select.setJoinList(joins);
         select.setFromList(tableList);
         select.setWhereClause(null);

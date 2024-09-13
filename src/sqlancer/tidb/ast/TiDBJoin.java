@@ -5,11 +5,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.newast.Join;
 import sqlancer.tidb.TiDBExpressionGenerator;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
+import sqlancer.tidb.TiDBSchema.TiDBTable;
 
-public class TiDBJoin implements TiDBExpression {
+public class TiDBJoin implements TiDBExpression, Join<TiDBExpression, TiDBTable, TiDBColumn> {
 
     private final TiDBExpression leftTable;
     private final TiDBExpression rightTable;
@@ -101,8 +103,8 @@ public class TiDBJoin implements TiDBExpression {
         return outerType;
     }
 
-    public static List<TiDBExpression> getJoins(List<TiDBExpression> tableList, TiDBGlobalState globalState) {
-        List<TiDBExpression> joinExpressions = new ArrayList<>();
+    public static List<TiDBJoin> getJoins(List<TiDBExpression> tableList, TiDBGlobalState globalState) {
+        List<TiDBJoin> joinExpressions = new ArrayList<>();
         while (tableList.size() >= 2 && Randomly.getBoolean()) {
             TiDBTableReference leftTable = (TiDBTableReference) tableList.remove(0);
             TiDBTableReference rightTable = (TiDBTableReference) tableList.remove(0);
@@ -172,4 +174,8 @@ public class TiDBJoin implements TiDBExpression {
         this.onCondition = generateExpression;
     }
 
+    @Override
+    public void setOnClause(TiDBExpression onClause) {
+        onCondition = onClause;
+    }
 }

@@ -47,7 +47,7 @@ public class TiDBDQPOracle implements TestOracle<TiDBGlobalState> {
 
         List<TiDBExpression> tableList = tables.getTables().stream().map(t -> new TiDBTableReference(t))
                 .collect(Collectors.toList());
-        List<TiDBExpression> joins = TiDBJoin.getJoins(tableList, state);
+        List<TiDBExpression> joins = TiDBJoin.getJoins(tableList, state).stream().collect(Collectors.toList());
         select.setJoinList(joins);
         select.setFromList(tableList);
         if (Randomly.getBoolean()) {
