@@ -51,6 +51,7 @@ public final class DuckDBErrors {
                                                     // removed column
         errors.add("Contents of view were altered: types don't match!");
         errors.add("Not implemented: ROUND(DECIMAL, INTEGER) with non-constant precision is not supported");
+        errors.add("ORDER BY non-integer literal has no effect");
 
         // timestamp
         errors.add("Cannot subtract infinite timestamps");
