@@ -121,7 +121,7 @@ public class NoRECOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, 
     }
 
     private int countRows(String queryString, ExpectedErrors errors, SQLGlobalState<?, ?> state) {
-        SQLQueryAdapter q = new SQLQueryAdapter(queryString, errors);
+        SQLQueryAdapter q = new SQLQueryAdapter(queryString, errors, false, false);
 
         int count = 0;
         try (SQLancerResultSet rs = q.executeAndGet(state)) {
@@ -146,7 +146,7 @@ public class NoRECOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, 
     }
 
     private int extractCounts(String queryString, ExpectedErrors errors, SQLGlobalState<?, ?> state) {
-        SQLQueryAdapter q = new SQLQueryAdapter(queryString, errors);
+        SQLQueryAdapter q = new SQLQueryAdapter(queryString, errors, false, false);
         int count = 0;
         try (SQLancerResultSet rs = q.executeAndGet(state)) {
             if (rs == null) {
