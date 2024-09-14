@@ -4,17 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.newast.Join;
 import sqlancer.presto.PrestoGlobalState;
 import sqlancer.presto.PrestoSchema;
 import sqlancer.presto.PrestoSchema.PrestoColumn;
+import sqlancer.presto.PrestoSchema.PrestoTable;
 import sqlancer.presto.gen.PrestoTypedExpressionGenerator;
 
-public class PrestoJoin implements PrestoExpression {
+public class PrestoJoin implements PrestoExpression, Join<PrestoExpression, PrestoTable, PrestoColumn> {
 
     private final PrestoTableReference leftTable;
     private final PrestoTableReference rightTable;
     private final JoinType joinType;
-    private final PrestoExpression onCondition;
+    private PrestoExpression onCondition;
     private OuterType outerType;
 
     public PrestoJoin(PrestoTableReference leftTable, PrestoTableReference rightTable, JoinType joinType,
@@ -25,8 +27,8 @@ public class PrestoJoin implements PrestoExpression {
         this.onCondition = whereCondition;
     }
 
-    public static List<PrestoExpression> getJoins(List<PrestoTableReference> tableList, PrestoGlobalState globalState) {
-        List<PrestoExpression> joinExpressions = new ArrayList<>();
+    public static List<PrestoJoin> getJoins(List<PrestoTableReference> tableList, PrestoGlobalState globalState) {
+        List<PrestoJoin> joinExpressions = new ArrayList<>();
         while (tableList.size() >= 2 && Randomly.getBooleanWithRatherLowProbability()) {
             PrestoTableReference leftTable = tableList.remove(0);
             PrestoTableReference rightTable = tableList.remove(0);
@@ -108,6 +110,11 @@ public class PrestoJoin implements PrestoExpression {
         public static OuterType getRandom() {
             return Randomly.fromOptions(values());
         }
+    }
+
+    @Override
+    public void setOnClause(PrestoExpression onClause) {
+        onCondition = onClause;
     }
 
 }
