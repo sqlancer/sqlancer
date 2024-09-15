@@ -63,7 +63,7 @@ public class PrestoQueryPartitioningBase extends TernaryLogicPartitioningOracleB
         List<PrestoTable> tables = targetTables.getTables();
         List<PrestoTableReference> tableList = tables.stream().map(t -> new PrestoTableReference(t))
                 .collect(Collectors.toList());
-        List<PrestoExpression> joins = PrestoJoin.getJoins(tableList, state);
+        List<PrestoExpression> joins = PrestoJoin.getJoins(tableList, state).stream().collect(Collectors.toList());
         select.setJoinList(new ArrayList<>(joins));
         select.setFromList(new ArrayList<>(tableList));
         select.setWhereClause(null);

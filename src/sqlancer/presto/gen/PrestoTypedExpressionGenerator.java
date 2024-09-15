@@ -9,10 +9,17 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode;
+import sqlancer.common.gen.NoRECGenerator;
 import sqlancer.common.gen.TypedExpressionGenerator;
 import sqlancer.common.schema.AbstractTableColumn;
+import sqlancer.common.schema.AbstractTables;
 import sqlancer.presto.PrestoGlobalState;
 import sqlancer.presto.PrestoSchema;
+import sqlancer.presto.PrestoSchema.PrestoColumn;
+import sqlancer.presto.PrestoSchema.PrestoCompositeDataType;
+import sqlancer.presto.PrestoSchema.PrestoDataType;
+import sqlancer.presto.PrestoSchema.PrestoTable;
+import sqlancer.presto.PrestoToStringVisitor;
 import sqlancer.presto.ast.PrestoAggregateFunction;
 import sqlancer.presto.ast.PrestoAtTimeZoneOperator;
 import sqlancer.presto.ast.PrestoBetweenOperation;
@@ -29,6 +36,7 @@ import sqlancer.presto.ast.PrestoJoin;
 import sqlancer.presto.ast.PrestoMultiValuedComparison;
 import sqlancer.presto.ast.PrestoMultiValuedComparisonOperator;
 import sqlancer.presto.ast.PrestoMultiValuedComparisonType;
+import sqlancer.presto.ast.PrestoPostfixText;
 import sqlancer.presto.ast.PrestoQuantifiedComparison;
 import sqlancer.presto.ast.PrestoSelect;
 import sqlancer.presto.ast.PrestoTableReference;
@@ -37,11 +45,13 @@ import sqlancer.presto.ast.PrestoUnaryPostfixOperation;
 import sqlancer.presto.ast.PrestoUnaryPrefixOperation;
 
 public final class PrestoTypedExpressionGenerator extends
-        TypedExpressionGenerator<PrestoExpression, PrestoSchema.PrestoColumn, PrestoSchema.PrestoCompositeDataType> {
+        TypedExpressionGenerator<PrestoExpression, PrestoSchema.PrestoColumn, PrestoSchema.PrestoCompositeDataType>
+        implements NoRECGenerator<PrestoSelect, PrestoJoin, PrestoExpression, PrestoTable, PrestoColumn> {
 
     private final Randomly randomly;
     private final PrestoGlobalState globalState;
     private final int maxDepth;
+    private List<PrestoTable> tables;
 
     public PrestoTypedExpressionGenerator(PrestoGlobalState globalState) {
         this.globalState = globalState;
@@ -338,7 +348,8 @@ public final class PrestoTypedExpressionGenerator extends
         if (Randomly.getBooleanWithSmallProbability()) {
             select.setOrderByClauses(typedExpressionGenerator.generateOrderBys());
         }
-        List<PrestoExpression> joins = PrestoJoin.getJoins(tableList, globalState);
+        List<PrestoExpression> joins = PrestoJoin.getJoins(tableList, globalState).stream()
+                .collect(Collectors.toList());
         select.setJoinList(joins);
         return select;
     }
@@ -791,4 +802,76 @@ public final class PrestoTypedExpressionGenerator extends
         BINARY_LOGICAL, BINARY_COMPARISON, BINARY_ARITHMETIC
     }
 
+    @Override
+    public NoRECGenerator<PrestoSelect, PrestoJoin, PrestoExpression, PrestoTable, PrestoColumn> setTablesAndColumns(
+            AbstractTables<PrestoTable, PrestoColumn> tables) {
+        this.columns = tables.getColumns();
+        this.tables = tables.getTables();
+
+        return this;
+    }
+
+    @Override
+    public PrestoExpression generateBooleanExpression() {
+        return generateExpression(
+                PrestoSchema.PrestoCompositeDataType.fromDataType(PrestoSchema.PrestoDataType.BOOLEAN),
+                randomly.getInteger(0, maxDepth));
+    }
+
+    @Override
+    public PrestoSelect generateSelect() {
+        return new PrestoSelect();
+    }
+
+    @Override
+    public List<PrestoJoin> getRandomJoinClauses() {
+        List<PrestoTableReference> tableList = tables.stream().map(t -> new PrestoTableReference(t))
+                .collect(Collectors.toList());
+        List<PrestoJoin> joins = PrestoJoin.getJoins(tableList, globalState);
+        tables = tableList.stream().map(t -> t.getTable()).collect(Collectors.toList());
+        return joins;
+    }
+
+    @Override
+    public List<PrestoExpression> getTableRefs() {
+        return tables.stream().map(t -> new PrestoTableReference(t)).collect(Collectors.toList());
+    }
+
+    @Override
+    public String generateOptimizedQueryString(PrestoSelect select, PrestoExpression whereCondition,
+            boolean shouldUseAggregate) {
+        if (shouldUseAggregate) {
+            PrestoFunctionNode<PrestoAggregateFunction> aggr = new PrestoFunctionNode<>(
+                    List.of(new PrestoColumnReference(new PrestoColumn("*",
+                            new PrestoCompositeDataType(PrestoDataType.INT, 0, 0), false, false))),
+                    PrestoAggregateFunction.COUNT);
+            select.setFetchColumns(List.of(aggr));
+
+        } else {
+            List<PrestoExpression> allColumns = columns.stream().map((c) -> new PrestoColumnReference(c))
+                    .collect(Collectors.toList());
+            select.setFetchColumns(allColumns);
+            if (Randomly.getBooleanWithSmallProbability()) {
+                select.setOrderByClauses(generateOrderBys());
+            }
+        }
+        select.setWhereClause(whereCondition);
+
+        return select.asString();
+    }
+
+    @Override
+    public String generateUnoptimizedQueryString(PrestoSelect select, PrestoExpression whereCondition) {
+        PrestoExpression asText = new PrestoPostfixText(
+
+                new PrestoCastFunction(
+                        new PrestoPostfixText(whereCondition,
+                                " IS NOT NULL AND " + PrestoToStringVisitor.asString(whereCondition)),
+                        new PrestoCompositeDataType(PrestoDataType.INT, 8, 0)),
+                "as count");
+
+        select.setFetchColumns(List.of(asText));
+        select.setWhereClause(null);
+        return "SELECT SUM(count) FROM (" + PrestoToStringVisitor.asString(select) + ") as res";
+    }
 }

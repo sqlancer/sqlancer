@@ -1,5 +1,8 @@
 package sqlancer.presto.ast;
 
-public interface PrestoExpression {
+import sqlancer.common.ast.newast.Expression;
+import sqlancer.presto.PrestoSchema.PrestoColumn;
+
+public interface PrestoExpression extends Expression<PrestoColumn> {
 
 }
