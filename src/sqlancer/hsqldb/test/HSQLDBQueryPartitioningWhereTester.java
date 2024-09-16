@@ -1,41 +1,38 @@
 package sqlancer.hsqldb.test;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.SQLException;
 
-import sqlancer.ComparatorHelper;
-import sqlancer.Randomly;
+import sqlancer.common.oracle.TLPWhereOracle;
+import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.hsqldb.HSQLDBErrors;
 import sqlancer.hsqldb.HSQLDBProvider.HSQLDBGlobalState;
-import sqlancer.hsqldb.HSQLDBToStringVisitor;
+import sqlancer.hsqldb.HSQLDBSchema;
+import sqlancer.hsqldb.HSQLDBSchema.HSQLDBColumn;
+import sqlancer.hsqldb.HSQLDBSchema.HSQLDBTable;
+import sqlancer.hsqldb.ast.HSQLDBExpression;
+import sqlancer.hsqldb.ast.HSQLDBJoin;
+import sqlancer.hsqldb.ast.HSQLDBSelect;
+import sqlancer.hsqldb.gen.HSQLDBExpressionGenerator;
 
-public class HSQLDBQueryPartitioningWhereTester extends HSQLDBQueryPartitioningBase {
+public class HSQLDBQueryPartitioningWhereTester implements TestOracle<HSQLDBGlobalState> {
+
+    private final TLPWhereOracle<HSQLDBSelect, HSQLDBJoin, HSQLDBExpression, HSQLDBSchema, HSQLDBTable, HSQLDBColumn, HSQLDBGlobalState> oracle;
 
     public HSQLDBQueryPartitioningWhereTester(HSQLDBGlobalState state) {
-        super(state);
+        HSQLDBExpressionGenerator gen = new HSQLDBExpressionGenerator(state);
+        ExpectedErrors expectedErrors = ExpectedErrors.newErrors().with(HSQLDBErrors.getExpressionErrors()).build();
+
+        this.oracle = new TLPWhereOracle<>(state, gen, expectedErrors);
     }
 
     @Override
-    public void check() throws Exception {
-        super.check();
-        String originalQueryString = HSQLDBToStringVisitor.asString(select);
-
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
-
-        boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
-        if (orderBy) {
-            select.setOrderByClauses(expressionGenerator.generateOrderBys());
-        }
-        select.setWhereClause(predicate);
-        String firstQueryString = HSQLDBToStringVisitor.asString(select);
-        select.setWhereClause(negatedPredicate);
-        String secondQueryString = HSQLDBToStringVisitor.asString(select);
-        select.setWhereClause(isNullPredicate);
-        String thirdQueryString = HSQLDBToStringVisitor.asString(select);
-        List<String> combinedString = new ArrayList<>();
-        List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
-                thirdQueryString, combinedString, !orderBy, state, errors);
-        ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
-                state);
+    public void check() throws SQLException {
+        oracle.check();
     }
 
+    @Override
+    public String getLastQueryString() {
+        return oracle.getLastQueryString();
+    }
 }
