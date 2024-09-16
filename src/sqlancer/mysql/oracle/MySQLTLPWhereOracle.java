@@ -1,44 +1,45 @@
 package sqlancer.mysql.oracle;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
-import sqlancer.ComparatorHelper;
-import sqlancer.Randomly;
+import sqlancer.Reproducer;
+import sqlancer.common.oracle.TLPWhereOracle;
+import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLGlobalState;
-import sqlancer.mysql.MySQLVisitor;
+import sqlancer.mysql.MySQLSchema;
+import sqlancer.mysql.MySQLSchema.MySQLColumn;
+import sqlancer.mysql.MySQLSchema.MySQLTable;
+import sqlancer.mysql.ast.MySQLExpression;
+import sqlancer.mysql.ast.MySQLJoin;
+import sqlancer.mysql.ast.MySQLSelect;
+import sqlancer.mysql.gen.MySQLExpressionGenerator;
 
-public class MySQLTLPWhereOracle extends MySQLQueryPartitioningBase {
+public class MySQLTLPWhereOracle implements TestOracle<MySQLGlobalState> {
+
+    private final TLPWhereOracle<MySQLSelect, MySQLJoin, MySQLExpression, MySQLSchema, MySQLTable, MySQLColumn, MySQLGlobalState> oracle;
 
     public MySQLTLPWhereOracle(MySQLGlobalState state) {
-        super(state);
+        MySQLExpressionGenerator gen = new MySQLExpressionGenerator(state);
+        ExpectedErrors expectedErrors = ExpectedErrors.newErrors().with(MySQLErrors.getExpressionErrors())
+                .withRegex(MySQLErrors.getExpressionRegexErrors()).build();
+
+        this.oracle = new TLPWhereOracle<>(state, gen, expectedErrors);
     }
 
     @Override
     public void check() throws SQLException {
-        super.check();
-        select.setWhereClause(null);
-        String originalQueryString = MySQLVisitor.asString(select);
-
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
-
-        if (Randomly.getBoolean()) {
-            select.setOrderByClauses(gen.generateOrderBys());
-        }
-        select.setOrderByClauses(Collections.emptyList());
-        select.setWhereClause(predicate);
-        String firstQueryString = MySQLVisitor.asString(select);
-        select.setWhereClause(negatedPredicate);
-        String secondQueryString = MySQLVisitor.asString(select);
-        select.setWhereClause(isNullPredicate);
-        String thirdQueryString = MySQLVisitor.asString(select);
-        List<String> combinedString = new ArrayList<>();
-        List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
-                thirdQueryString, combinedString, Randomly.getBoolean(), state, errors);
-        ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
-                state);
+        oracle.check();
     }
 
+    @Override
+    public String getLastQueryString() {
+        return oracle.getLastQueryString();
+    }
+
+    @Override
+    public Reproducer<MySQLGlobalState> getLastReproducer() {
+        return oracle.getLastReproducer();
+    }
 }
