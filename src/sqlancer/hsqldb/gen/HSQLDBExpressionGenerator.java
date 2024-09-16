@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode;
 import sqlancer.common.gen.NoRECGenerator;
+import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.TypedExpressionGenerator;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.hsqldb.HSQLDBProvider;
@@ -26,7 +27,8 @@ import sqlancer.hsqldb.ast.HSQLDBUnaryPrefixOperation;
 
 public final class HSQLDBExpressionGenerator extends
         TypedExpressionGenerator<HSQLDBExpression, HSQLDBSchema.HSQLDBColumn, HSQLDBSchema.HSQLDBCompositeDataType>
-        implements NoRECGenerator<HSQLDBSelect, HSQLDBJoin, HSQLDBExpression, HSQLDBTable, HSQLDBColumn> {
+        implements NoRECGenerator<HSQLDBSelect, HSQLDBJoin, HSQLDBExpression, HSQLDBTable, HSQLDBColumn>,
+        TLPWhereGenerator<HSQLDBSelect, HSQLDBJoin, HSQLDBExpression, HSQLDBTable, HSQLDBColumn> {
 
     List<HSQLDBTable> tables;
 
@@ -205,8 +207,7 @@ public final class HSQLDBExpressionGenerator extends
     }
 
     @Override
-    public NoRECGenerator<HSQLDBSelect, HSQLDBJoin, HSQLDBExpression, HSQLDBTable, HSQLDBColumn> setTablesAndColumns(
-            AbstractTables<HSQLDBTable, HSQLDBColumn> tables) {
+    public HSQLDBExpressionGenerator setTablesAndColumns(AbstractTables<HSQLDBTable, HSQLDBColumn> tables) {
         this.columns = tables.getColumns();
         this.tables = tables.getTables();
 
@@ -288,5 +289,14 @@ public final class HSQLDBExpressionGenerator extends
         select.setFetchColumns(List.of(new HSQLDBColumnReference(c)));
         select.setWhereClause(null);
         return "SELECT SUM(count) FROM (" + select.asString() + ") as res";
+    }
+
+    @Override
+    public List<HSQLDBExpression> generateFetchColumns(boolean shouldCreateDummy) {
+        if (shouldCreateDummy) {
+            return List.of(new HSQLDBColumnReference(new HSQLDBSchema.HSQLDBColumn("*", null, null)));
+        }
+        return Randomly
+                .nonEmptySubset(columns.stream().map(c -> new HSQLDBColumnReference(c)).collect(Collectors.toList()));
     }
 }
