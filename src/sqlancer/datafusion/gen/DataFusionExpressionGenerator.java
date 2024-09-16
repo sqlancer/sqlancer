@@ -14,6 +14,7 @@ import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
 import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
 import sqlancer.common.gen.NoRECGenerator;
+import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.TypedExpressionGenerator;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.datafusion.DataFusionProvider.DataFusionGlobalState;
@@ -35,7 +36,8 @@ import sqlancer.datafusion.gen.DataFusionBaseExpr.DataFusionBaseExprType;
 
 public final class DataFusionExpressionGenerator
         extends TypedExpressionGenerator<DataFusionExpression, DataFusionColumn, DataFusionDataType> implements
-        NoRECGenerator<DataFusionSelect, DataFusionJoin, DataFusionExpression, DataFusionTable, DataFusionColumn> {
+        NoRECGenerator<DataFusionSelect, DataFusionJoin, DataFusionExpression, DataFusionTable, DataFusionColumn>,
+        TLPWhereGenerator<DataFusionSelect, DataFusionJoin, DataFusionExpression, DataFusionTable, DataFusionColumn> {
 
     private List<DataFusionTable> tables;
     private final DataFusionGlobalState globalState;
@@ -234,8 +236,7 @@ public final class DataFusionExpressionGenerator
     }
 
     @Override
-    public NoRECGenerator<DataFusionSelect, DataFusionJoin, DataFusionExpression, DataFusionTable, DataFusionColumn> setTablesAndColumns(
-            AbstractTables<DataFusionTable, DataFusionColumn> tables) {
+    public DataFusionExpressionGenerator setTablesAndColumns(AbstractTables<DataFusionTable, DataFusionColumn> tables) {
         List<DataFusionTable> randomTables = Randomly.nonEmptySubset(tables.getTables());
         int maxSize = Randomly.fromOptions(1, 2, 3, 4);
         if (randomTables.size() > maxSize) {
@@ -294,5 +295,11 @@ public final class DataFusionExpressionGenerator
         select.setWhereClause(null);
 
         return select.asString();
+    }
+
+    @Override
+    public List<DataFusionExpression> generateFetchColumns(boolean shouldCreateDummy) {
+        List<DataFusionColumn> randomColumns = DataFusionTable.getRandomColumns(tables);
+        return randomColumns.stream().map((c) -> new DataFusionColumnReference(c)).collect(Collectors.toList());
     }
 }
