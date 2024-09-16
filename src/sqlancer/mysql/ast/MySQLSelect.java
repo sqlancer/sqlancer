@@ -2,10 +2,16 @@ package sqlancer.mysql.ast;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import sqlancer.common.ast.SelectBase;
+import sqlancer.common.ast.newast.Select;
+import sqlancer.mysql.MySQLSchema.MySQLColumn;
+import sqlancer.mysql.MySQLSchema.MySQLTable;
+import sqlancer.mysql.MySQLVisitor;
 
-public class MySQLSelect extends SelectBase<MySQLExpression> implements MySQLExpression {
+public class MySQLSelect extends SelectBase<MySQLExpression>
+        implements MySQLExpression, Select<MySQLJoin, MySQLExpression, MySQLTable, MySQLColumn> {
 
     private SelectType fromOptions = SelectType.ALL;
     private List<String> modifiers = Collections.emptyList();
@@ -48,4 +54,20 @@ public class MySQLSelect extends SelectBase<MySQLExpression> implements MySQLExp
         return hint;
     }
 
+    @Override
+    public void setJoinClauses(List<MySQLJoin> joinStatements) {
+        List<MySQLExpression> expressions = joinStatements.stream().map(e -> (MySQLExpression) e)
+                .collect(Collectors.toList());
+        setJoinList(expressions);
+    }
+
+    @Override
+    public List<MySQLJoin> getJoinClauses() {
+        return getJoinList().stream().map(e -> (MySQLJoin) e).collect(Collectors.toList());
+    }
+
+    @Override
+    public String asString() {
+        return MySQLVisitor.asString(this);
+    }
 }

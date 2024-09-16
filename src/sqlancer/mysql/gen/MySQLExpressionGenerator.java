@@ -2,14 +2,18 @@ package sqlancer.mysql.gen;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.UntypedExpressionGenerator;
+import sqlancer.common.schema.AbstractTables;
 import sqlancer.mysql.MySQLBugs;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLRowValue;
+import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.ast.MySQLBetweenOperation;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation.BinaryComparisonOperator;
@@ -26,17 +30,22 @@ import sqlancer.mysql.ast.MySQLConstant.MySQLDoubleConstant;
 import sqlancer.mysql.ast.MySQLExists;
 import sqlancer.mysql.ast.MySQLExpression;
 import sqlancer.mysql.ast.MySQLInOperation;
+import sqlancer.mysql.ast.MySQLJoin;
 import sqlancer.mysql.ast.MySQLOrderByTerm;
 import sqlancer.mysql.ast.MySQLOrderByTerm.MySQLOrder;
+import sqlancer.mysql.ast.MySQLSelect;
 import sqlancer.mysql.ast.MySQLStringExpression;
+import sqlancer.mysql.ast.MySQLTableReference;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 
-public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLExpression, MySQLColumn> {
+public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLExpression, MySQLColumn>
+        implements TLPWhereGenerator<MySQLSelect, MySQLJoin, MySQLExpression, MySQLTable, MySQLColumn> {
 
     private final MySQLGlobalState state;
     private MySQLRowValue rowVal;
+    private List<MySQLTable> tables;
 
     public MySQLExpressionGenerator(MySQLGlobalState state) {
         this.state = state;
@@ -198,4 +207,37 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
         return newOrderBys;
     }
 
+    @Override
+    public TLPWhereGenerator<MySQLSelect, MySQLJoin, MySQLExpression, MySQLTable, MySQLColumn> setTablesAndColumns(
+            AbstractTables<MySQLTable, MySQLColumn> tables) {
+        this.columns = tables.getColumns();
+        this.tables = tables.getTables();
+
+        return this;
+    }
+
+    @Override
+    public MySQLExpression generateBooleanExpression() {
+        return generateExpression();
+    }
+
+    @Override
+    public MySQLSelect generateSelect() {
+        return new MySQLSelect();
+    }
+
+    @Override
+    public List<MySQLJoin> getRandomJoinClauses() {
+        return List.of();
+    }
+
+    @Override
+    public List<MySQLExpression> getTableRefs() {
+        return tables.stream().map(t -> new MySQLTableReference(t)).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<MySQLExpression> generateFetchColumns(boolean shouldCreateDummy) {
+        return columns.stream().map(c -> new MySQLColumnReference(c, null)).collect(Collectors.toList());
+    }
 }
