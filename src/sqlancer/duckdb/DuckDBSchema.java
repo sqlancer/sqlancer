@@ -203,7 +203,7 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
         case "TIMESTAMP":
             primitiveType = DuckDBDataType.TIMESTAMP;
             break;
-        case "NULL":
+        case "\"NULL\"":
             primitiveType = DuckDBDataType.NULL;
             break;
         case "INTERVAL":
@@ -269,7 +269,7 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
                 }
             }
         }
-        if (columns.stream().noneMatch(c -> c.isPrimaryKey())) {
+        if (columns.stream().noneMatch(c -> c.isPrimaryKey()) && !AbstractSchema.matchesViewName(tableName)) {
             // https://github.com/cwida/duckdb/issues/589
             // https://github.com/cwida/duckdb/issues/588
             // TODO: implement an option to enable/disable rowids

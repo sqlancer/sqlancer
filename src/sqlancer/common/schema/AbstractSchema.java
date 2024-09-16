@@ -126,6 +126,10 @@ public class AbstractSchema<G extends GlobalState<?, ?, ?>, A extends AbstractTa
 
     }
 
+    public static boolean matchesViewName(String relationName) {
+        return relationName.startsWith("v");
+    }
+
     public String getFreeViewName() {
         int i = 0;
         if (Randomly.getBooleanWithRatherLowProbability()) {

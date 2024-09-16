@@ -2,6 +2,7 @@ package sqlancer.duckdb;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import sqlancer.common.query.ExpectedErrors;
 
@@ -46,38 +47,45 @@ public final class DuckDBErrors {
 
         errors.add("Like pattern must not end with escape character!"); // LIKE
 
-        errors.add("does not have a column named \"rowid\""); // TODO: this can be removed if we can query whether a
-                                                              // table supports rowids
-
         errors.add("does not have a column named"); // TODO: this only happens for views whose underlying table has a
                                                     // removed column
         errors.add("Contents of view were altered: types don't match!");
         errors.add("Not implemented: ROUND(DECIMAL, INTEGER) with non-constant precision is not supported");
+        errors.add("ORDER BY non-integer literal has no effect");
 
         // timestamp
         errors.add("Cannot subtract infinite timestamps");
         errors.add("Timestamp difference is out of bounds");
+
+        if (DuckDBBugs.bug13933) {
+            errors.add("INTERNAL Error: Unimplemented type for normalify");
+            errors.add(
+                    "FATAL Error: Failed: database has been invalidated because of a previous fatal error. The database must be restarted prior to being used again");
+        }
+
+        return errors;
+    }
+
+    public static List<Pattern> getExpressionErrorsRegex() {
+        ArrayList<Pattern> errors = new ArrayList<>();
+
+        errors.add(Pattern.compile("Binder Error: Cannot mix values of type .* and .* in BETWEEN clause"));
+        errors.add(Pattern.compile("Binder Error: Cannot mix values of type .* and .* in CASE expression"));
+        errors.add(Pattern.compile("Cannot mix values of type .* and .* in COALESCE operator"));
+        errors.add(Pattern.compile("Cannot compare values of type .* and type .*"));
 
         return errors;
     }
 
     public static void addExpressionErrors(ExpectedErrors errors) {
         errors.addAll(getExpressionErrors());
+        errors.addAllRegexes(getExpressionErrorsRegex());
     }
 
     private static List<String> getRegexErrors() {
         ArrayList<String> errors = new ArrayList<>();
 
-        errors.add("missing ]");
-        errors.add("missing )");
-        errors.add("invalid escape sequence");
-        errors.add("no argument for repetition operator: ");
-        errors.add("bad repetition operator");
-        errors.add("trailing \\");
-        errors.add("invalid perl operator");
-        errors.add("invalid character class range");
-        errors.add("width is not integer");
-
+        errors.add("Invalid Input Error:");
         return errors;
     }
 
@@ -114,7 +122,7 @@ public final class DuckDBErrors {
 
         errors.add("NOT NULL constraint failed");
         errors.add("PRIMARY KEY or UNIQUE constraint violated");
-        errors.add("duplicate key");
+        errors.add("Duplicate key");
         errors.add("can't be cast because the value is out of range for the destination type");
         errors.add("Could not convert string");
         errors.add("Unimplemented type for cast");
@@ -137,6 +145,7 @@ public final class DuckDBErrors {
     public static List<String> getGroupByErrors() {
         ArrayList<String> errors = new ArrayList<>();
 
+        errors.add("must appear in the GROUP BY clause or must be part of an aggregate function");
         errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
         errors.add("GROUP BY term out of range");
 

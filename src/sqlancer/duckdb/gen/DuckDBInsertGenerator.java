@@ -29,7 +29,7 @@ public class DuckDBInsertGenerator extends AbstractInsertGenerator<DuckDBColumn>
     private SQLQueryAdapter generate() {
         sb.append("INSERT INTO ");
         DuckDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-        List<DuckDBColumn> columns = table.getRandomNonEmptyColumnSubset();
+        List<DuckDBColumn> columns = table.getRandomNonEmptyColumnSubsetFilter(p -> !p.getName().equals("rowid"));
         sb.append(table.getName());
         sb.append("(");
         sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
