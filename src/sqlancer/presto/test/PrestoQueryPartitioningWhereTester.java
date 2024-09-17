@@ -1,46 +1,45 @@
 package sqlancer.presto.test;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
-import sqlancer.ComparatorHelper;
-import sqlancer.Randomly;
+import sqlancer.Reproducer;
+import sqlancer.common.oracle.TLPWhereOracle;
+import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.presto.PrestoErrors;
 import sqlancer.presto.PrestoGlobalState;
-import sqlancer.presto.PrestoToStringVisitor;
+import sqlancer.presto.PrestoSchema;
+import sqlancer.presto.PrestoSchema.PrestoColumn;
+import sqlancer.presto.PrestoSchema.PrestoTable;
+import sqlancer.presto.ast.PrestoExpression;
+import sqlancer.presto.ast.PrestoJoin;
+import sqlancer.presto.ast.PrestoSelect;
+import sqlancer.presto.gen.PrestoTypedExpressionGenerator;
 
-public class PrestoQueryPartitioningWhereTester extends PrestoQueryPartitioningBase {
+public class PrestoQueryPartitioningWhereTester implements TestOracle<PrestoGlobalState> {
+
+    private final TLPWhereOracle<PrestoSelect, PrestoJoin, PrestoExpression, PrestoSchema, PrestoTable, PrestoColumn, PrestoGlobalState> oracle;
 
     public PrestoQueryPartitioningWhereTester(PrestoGlobalState state) {
-        super(state);
-        PrestoErrors.addGroupByErrors(errors);
-        PrestoErrors.addExpressionErrors(errors);
+        PrestoTypedExpressionGenerator gen = new PrestoTypedExpressionGenerator(state);
+        ExpectedErrors expectedErrors = ExpectedErrors.newErrors().with(PrestoErrors.getExpressionErrors())
+                .with(PrestoErrors.getGroupByErrors()).build();
+
+        this.oracle = new TLPWhereOracle<>(state, gen, expectedErrors);
     }
 
     @Override
     public void check() throws SQLException {
-        super.check();
-        select.setWhereClause(null);
-        String originalQueryString = PrestoToStringVisitor.asString(select);
-
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
-
-        boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
-        if (orderBy) {
-            select.setOrderByClauses(gen.generateOrderBys());
-        }
-        select.setWhereClause(predicate);
-        String firstQueryString = PrestoToStringVisitor.asString(select);
-        select.setWhereClause(negatedPredicate);
-        String secondQueryString = PrestoToStringVisitor.asString(select);
-        select.setWhereClause(isNullPredicate);
-        String thirdQueryString = PrestoToStringVisitor.asString(select);
-        List<String> combinedString = new ArrayList<>();
-        List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
-                thirdQueryString, combinedString, !orderBy, state, errors);
-        ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
-                state, PrestoQueryPartitioningBase::canonicalizeResultValue);
+        oracle.check();
     }
 
+    @Override
+    public String getLastQueryString() {
+        return oracle.getLastQueryString();
+    }
+
+    @Override
+    public Reproducer<PrestoGlobalState> getLastReproducer() {
+        return oracle.getLastReproducer();
+    }
 }
