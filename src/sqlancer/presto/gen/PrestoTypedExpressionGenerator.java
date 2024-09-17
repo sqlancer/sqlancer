@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode;
 import sqlancer.common.gen.NoRECGenerator;
+import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.TypedExpressionGenerator;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.AbstractTables;
@@ -46,7 +47,8 @@ import sqlancer.presto.ast.PrestoUnaryPrefixOperation;
 
 public final class PrestoTypedExpressionGenerator extends
         TypedExpressionGenerator<PrestoExpression, PrestoSchema.PrestoColumn, PrestoSchema.PrestoCompositeDataType>
-        implements NoRECGenerator<PrestoSelect, PrestoJoin, PrestoExpression, PrestoTable, PrestoColumn> {
+        implements NoRECGenerator<PrestoSelect, PrestoJoin, PrestoExpression, PrestoTable, PrestoColumn>,
+        TLPWhereGenerator<PrestoSelect, PrestoJoin, PrestoExpression, PrestoTable, PrestoColumn> {
 
     private final Randomly randomly;
     private final PrestoGlobalState globalState;
@@ -803,8 +805,7 @@ public final class PrestoTypedExpressionGenerator extends
     }
 
     @Override
-    public NoRECGenerator<PrestoSelect, PrestoJoin, PrestoExpression, PrestoTable, PrestoColumn> setTablesAndColumns(
-            AbstractTables<PrestoTable, PrestoColumn> tables) {
+    public PrestoTypedExpressionGenerator setTablesAndColumns(AbstractTables<PrestoTable, PrestoColumn> tables) {
         this.columns = tables.getColumns();
         this.tables = tables.getTables();
 
@@ -873,5 +874,14 @@ public final class PrestoTypedExpressionGenerator extends
         select.setFetchColumns(List.of(asText));
         select.setWhereClause(null);
         return "SELECT SUM(count) FROM (" + PrestoToStringVisitor.asString(select) + ") as res";
+    }
+
+    @Override
+    public List<PrestoExpression> generateFetchColumns(boolean shouldCreateDummy) {
+        if (Randomly.getBoolean()) {
+            return List.of(new PrestoColumnReference(new PrestoColumn("*", null, false, false)));
+        }
+        return Randomly.nonEmptySubset(columns).stream().map(c -> new PrestoColumnReference(c))
+                .collect(Collectors.toList());
     }
 }
