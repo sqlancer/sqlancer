@@ -63,7 +63,7 @@ public class MaterializePivotedQuerySynthesisOracle extends
             selectStatement.setOffsetClause(offsetClause);
         }
         List<MaterializeExpression> orderBy = new MaterializeExpressionGenerator(globalState).setColumns(columns)
-                .generateOrderBy();
+                .generateOrderBys();
         selectStatement.setOrderByClauses(orderBy);
         return new SQLQueryAdapter(MaterializeVisitor.asString(selectStatement));
     }
