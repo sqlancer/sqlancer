@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.gen.NoRECGenerator;
+import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.oceanbase.OceanBaseGlobalState;
@@ -40,8 +41,8 @@ import sqlancer.oceanbase.ast.OceanBaseUnaryPrefixOperation;
 import sqlancer.oceanbase.ast.OceanBaseUnaryPrefixOperation.OceanBaseUnaryPrefixOperator;
 
 public class OceanBaseExpressionGenerator extends UntypedExpressionGenerator<OceanBaseExpression, OceanBaseColumn>
-        implements
-        NoRECGenerator<OceanBaseSelect, OceanBaseJoin, OceanBaseExpression, OceanBaseTable, OceanBaseColumn> {
+        implements NoRECGenerator<OceanBaseSelect, OceanBaseJoin, OceanBaseExpression, OceanBaseTable, OceanBaseColumn>,
+        TLPWhereGenerator<OceanBaseSelect, OceanBaseJoin, OceanBaseExpression, OceanBaseTable, OceanBaseColumn> {
 
     private OceanBaseGlobalState state;
     private OceanBaseRowValue rowVal;
@@ -225,8 +226,7 @@ public class OceanBaseExpressionGenerator extends UntypedExpressionGenerator<Oce
     }
 
     @Override
-    public NoRECGenerator<OceanBaseSelect, OceanBaseJoin, OceanBaseExpression, OceanBaseTable, OceanBaseColumn> setTablesAndColumns(
-            AbstractTables<OceanBaseTable, OceanBaseColumn> tables) {
+    public OceanBaseExpressionGenerator setTablesAndColumns(AbstractTables<OceanBaseTable, OceanBaseColumn> tables) {
         this.columns = tables.getColumns();
         this.tables = tables.getTables();
 
@@ -359,5 +359,10 @@ public class OceanBaseExpressionGenerator extends UntypedExpressionGenerator<Oce
             break;
         }
         return expr;
+    }
+
+    @Override
+    public List<OceanBaseExpression> generateFetchColumns(boolean shouldCreateDummy) {
+        return columns.stream().map(c -> new OceanBaseColumnReference(c, null)).collect(Collectors.toList());
     }
 }
