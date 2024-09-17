@@ -1,45 +1,45 @@
 package sqlancer.duckdb.test;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
-import sqlancer.ComparatorHelper;
-import sqlancer.Randomly;
+import sqlancer.Reproducer;
+import sqlancer.common.oracle.TLPWhereOracle;
+import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
-import sqlancer.duckdb.DuckDBToStringVisitor;
+import sqlancer.duckdb.DuckDBSchema;
+import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
+import sqlancer.duckdb.DuckDBSchema.DuckDBTable;
+import sqlancer.duckdb.ast.DuckDBExpression;
+import sqlancer.duckdb.ast.DuckDBJoin;
+import sqlancer.duckdb.ast.DuckDBSelect;
+import sqlancer.duckdb.gen.DuckDBExpressionGenerator;
 
-public class DuckDBQueryPartitioningWhereTester extends DuckDBQueryPartitioningBase {
+public class DuckDBQueryPartitioningWhereTester implements TestOracle<DuckDBGlobalState> {
+
+    private final TLPWhereOracle<DuckDBSelect, DuckDBJoin, DuckDBExpression, DuckDBSchema, DuckDBTable, DuckDBColumn, DuckDBGlobalState> oracle;
 
     public DuckDBQueryPartitioningWhereTester(DuckDBGlobalState state) {
-        super(state);
-        DuckDBErrors.addGroupByErrors(errors);
+        DuckDBExpressionGenerator gen = new DuckDBExpressionGenerator(state);
+        ExpectedErrors expectedErrors = ExpectedErrors.newErrors().with(DuckDBErrors.getExpressionErrors())
+                .with(DuckDBErrors.getGroupByErrors()).withRegex(DuckDBErrors.getExpressionErrorsRegex()).build();
+
+        this.oracle = new TLPWhereOracle<>(state, gen, expectedErrors);
     }
 
     @Override
     public void check() throws SQLException {
-        super.check();
-        select.setWhereClause(null);
-        String originalQueryString = DuckDBToStringVisitor.asString(select);
-
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
-
-        boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
-        if (orderBy) {
-            select.setOrderByClauses(gen.generateOrderBys());
-        }
-        select.setWhereClause(predicate);
-        String firstQueryString = DuckDBToStringVisitor.asString(select);
-        select.setWhereClause(negatedPredicate);
-        String secondQueryString = DuckDBToStringVisitor.asString(select);
-        select.setWhereClause(isNullPredicate);
-        String thirdQueryString = DuckDBToStringVisitor.asString(select);
-        List<String> combinedString = new ArrayList<>();
-        List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
-                thirdQueryString, combinedString, !orderBy, state, errors);
-        ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
-                state, ComparatorHelper::canonicalizeResultValue);
+        oracle.check();
     }
 
+    @Override
+    public String getLastQueryString() {
+        return oracle.getLastQueryString();
+    }
+
+    @Override
+    public Reproducer<DuckDBGlobalState> getLastReproducer() {
+        return oracle.getLastReproducer();
+    }
 }
