@@ -3,6 +3,7 @@ package sqlancer.clickhouse.gen;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import com.clickhouse.client.ClickHouseDataType;
 
@@ -31,12 +32,14 @@ import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation.ClickHouseUnaryPrefixOperator;
 import sqlancer.clickhouse.ast.constant.ClickHouseCreateConstant;
 import sqlancer.common.gen.NoRECGenerator;
+import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.TypedExpressionGenerator;
 import sqlancer.common.schema.AbstractTables;
 
 public class ClickHouseExpressionGenerator
         extends TypedExpressionGenerator<ClickHouseExpression, ClickHouseColumn, ClickHouseLancerDataType> implements
-        NoRECGenerator<ClickHouseSelect, ClickHouseJoin, ClickHouseExpression, ClickHouseTable, ClickHouseColumn> {
+        NoRECGenerator<ClickHouseSelect, ClickHouseJoin, ClickHouseExpression, ClickHouseTable, ClickHouseColumn>,
+        TLPWhereGenerator<ClickHouseSelect, ClickHouseJoin, ClickHouseExpression, ClickHouseTable, ClickHouseColumn> {
 
     private final ClickHouseGlobalState globalState;
     public boolean allowAggregateFunctions;
@@ -356,8 +359,7 @@ public class ClickHouseExpressionGenerator
     }
 
     @Override
-    public NoRECGenerator<ClickHouseSelect, ClickHouseJoin, ClickHouseExpression, ClickHouseTable, ClickHouseColumn> setTablesAndColumns(
-            AbstractTables<ClickHouseTable, ClickHouseColumn> tables) {
+    public ClickHouseExpressionGenerator setTablesAndColumns(AbstractTables<ClickHouseTable, ClickHouseColumn> tables) {
         this.tables = tables.getTables();
         this.columns = tables.getColumns();
         return this;
@@ -433,5 +435,16 @@ public class ClickHouseExpressionGenerator
         select.setFetchColumns(List.of(inner));
         select.setWhereClause(null);
         return "SELECT SUM(check <> 0) FROM (" + select.asString() + ") as res";
+    }
+
+    @Override
+    public List<ClickHouseExpression> generateFetchColumns(boolean shouldCreateDummy) {
+        if (shouldCreateDummy) {
+            return List.of(new ClickHouseColumnReference(ClickHouseColumn.createDummy("*", null), null, null));
+        }
+        List<ClickHouseColumnReference> columnReferences = columns.stream()
+                .map(c -> c.asColumnReference(c.getTable().getName())).collect(Collectors.toList());
+        return IntStream.range(0, 1 + Randomly.smallNumber())
+                .mapToObj(i -> generateExpressionWithColumns(columnReferences, 5)).collect(Collectors.toList());
     }
 }
