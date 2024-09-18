@@ -284,7 +284,7 @@ public class QuestDBSchema extends AbstractSchema<QuestDBGlobalState, QuestDBTab
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery("SHOW TABLES;")) {
                 while (rs.next()) {
-                    String tName = rs.getString("table");
+                    String tName = rs.getString("table_name");
                     // exclude reserved tables for testing
                     if (!QuestDBTables.RESERVED_TABLES.contains(tName)) {
                         tableNames.add(tName);
