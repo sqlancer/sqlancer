@@ -12,6 +12,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.gen.NoRECGenerator;
+import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.materialize.MaterializeCompoundDataType;
 import sqlancer.materialize.MaterializeGlobalState;
@@ -59,7 +60,8 @@ import sqlancer.materialize.ast.MaterializeSelect.SelectType;
 import sqlancer.materialize.oracle.tlp.MaterializeTLPBase;
 
 public class MaterializeExpressionGenerator implements ExpressionGenerator<MaterializeExpression>,
-        NoRECGenerator<MaterializeSelect, MaterializeJoin, MaterializeExpression, MaterializeTable, MaterializeColumn> {
+        NoRECGenerator<MaterializeSelect, MaterializeJoin, MaterializeExpression, MaterializeTable, MaterializeColumn>,
+        TLPWhereGenerator<MaterializeSelect, MaterializeJoin, MaterializeExpression, MaterializeTable, MaterializeColumn> {
 
     private final int maxDepth;
 
@@ -103,7 +105,8 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
         return generateExpression(depth, MaterializeDataType.getRandomType());
     }
 
-    public List<MaterializeExpression> generateOrderBy() {
+    @Override
+    public List<MaterializeExpression> generateOrderBys() {
         List<MaterializeExpression> orderBys = new ArrayList<>();
         for (int i = 0; i < Randomly.smallNumber(); i++) {
             orderBys.add(new MaterializeOrderByTerm(MaterializeColumnValue.create(Randomly.fromList(columns), null),
@@ -530,7 +533,7 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
     }
 
     @Override
-    public NoRECGenerator<MaterializeSelect, MaterializeJoin, MaterializeExpression, MaterializeTable, MaterializeColumn> setTablesAndColumns(
+    public MaterializeExpressionGenerator setTablesAndColumns(
             AbstractTables<MaterializeTable, MaterializeColumn> tables) {
         this.columns = tables.getColumns();
         this.tables = tables.getTables();
@@ -593,7 +596,7 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
             MaterializeColumnValue allColumns = new MaterializeColumnValue(Randomly.fromList(columns), null);
             select.setFetchColumns(List.of(allColumns));
             if (Randomly.getBooleanWithSmallProbability()) {
-                select.setOrderByClauses(generateOrderBy());
+                select.setOrderByClauses(generateOrderBys());
             }
             select.setSelectType(SelectType.ALL);
         }
@@ -611,5 +614,18 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
         select.setWhereClause(null);
 
         return "SELECT SUM(count) FROM (" + select.asString() + ") as res";
+    }
+
+    @Override
+    public List<MaterializeExpression> generateFetchColumns(boolean shouldCreateDummy) {
+        if (shouldCreateDummy) {
+            return List.of(new MaterializeColumnValue(MaterializeColumn.createDummy("*"), null));
+        }
+        List<MaterializeExpression> fetchColumns = new ArrayList<>();
+        List<MaterializeColumn> targetColumns = Randomly.nonEmptySubset(columns);
+        for (MaterializeColumn c : targetColumns) {
+            fetchColumns.add(new MaterializeColumnValue(c, null));
+        }
+        return fetchColumns;
     }
 }

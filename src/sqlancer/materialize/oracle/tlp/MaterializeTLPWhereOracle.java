@@ -1,52 +1,45 @@
 package sqlancer.materialize.oracle.tlp;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
-import sqlancer.ComparatorHelper;
-import sqlancer.Randomly;
+import sqlancer.Reproducer;
+import sqlancer.common.oracle.TLPWhereOracle;
+import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.materialize.MaterializeGlobalState;
-import sqlancer.materialize.MaterializeVisitor;
+import sqlancer.materialize.MaterializeSchema;
+import sqlancer.materialize.MaterializeSchema.MaterializeColumn;
+import sqlancer.materialize.MaterializeSchema.MaterializeTable;
+import sqlancer.materialize.ast.MaterializeExpression;
+import sqlancer.materialize.ast.MaterializeJoin;
+import sqlancer.materialize.ast.MaterializeSelect;
+import sqlancer.materialize.gen.MaterializeCommon;
+import sqlancer.materialize.gen.MaterializeExpressionGenerator;
 
-public class MaterializeTLPWhereOracle extends MaterializeTLPBase {
-    private String generatedQueryString;
+public class MaterializeTLPWhereOracle implements TestOracle<MaterializeGlobalState> {
+
+    private final TLPWhereOracle<MaterializeSelect, MaterializeJoin, MaterializeExpression, MaterializeSchema, MaterializeTable, MaterializeColumn, MaterializeGlobalState> oracle;
 
     public MaterializeTLPWhereOracle(MaterializeGlobalState state) {
-        super(state);
+        MaterializeExpressionGenerator gen = new MaterializeExpressionGenerator(state);
+        ExpectedErrors expectedErrors = ExpectedErrors.newErrors().with(MaterializeCommon.getCommonExpressionErrors())
+                .with(MaterializeCommon.getCommonFetchErrors()).build();
+
+        this.oracle = new TLPWhereOracle<>(state, gen, expectedErrors);
     }
 
     @Override
     public void check() throws SQLException {
-        super.check();
-        whereCheck();
-    }
-
-    protected void whereCheck() throws SQLException {
-        if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByClauses(gen.generateOrderBy());
-        }
-        String originalQueryString = MaterializeVisitor.asString(select);
-        generatedQueryString = originalQueryString;
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
-
-        select.setOrderByClauses(Collections.emptyList());
-        select.setWhereClause(predicate);
-        String firstQueryString = MaterializeVisitor.asString(select);
-        select.setWhereClause(negatedPredicate);
-        String secondQueryString = MaterializeVisitor.asString(select);
-        select.setWhereClause(isNullPredicate);
-        String thirdQueryString = MaterializeVisitor.asString(select);
-        List<String> combinedString = new ArrayList<>();
-        List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
-                thirdQueryString, combinedString, Randomly.getBoolean(), state, errors);
-        ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
-                state);
+        oracle.check();
     }
 
     @Override
     public String getLastQueryString() {
-        return generatedQueryString;
+        return oracle.getLastQueryString();
+    }
+
+    @Override
+    public Reproducer<MaterializeGlobalState> getLastReproducer() {
+        return oracle.getLastReproducer();
     }
 }

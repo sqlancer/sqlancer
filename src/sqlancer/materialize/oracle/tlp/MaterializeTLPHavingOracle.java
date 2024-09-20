@@ -49,7 +49,7 @@ public class MaterializeTLPHavingOracle extends MaterializeTLPBase {
 
         boolean orderBy = Randomly.getBoolean();
         if (orderBy) {
-            select.setOrderByClauses(gen.generateOrderBy());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         select.setHavingClause(predicate);
         String firstQueryString = MaterializeVisitor.asString(select);
