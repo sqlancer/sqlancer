@@ -1,45 +1,45 @@
 package sqlancer.databend.test.tlp;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
-import sqlancer.ComparatorHelper;
+import sqlancer.Reproducer;
+import sqlancer.common.oracle.TLPWhereOracle;
+import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.databend.DatabendErrors;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
-import sqlancer.databend.DatabendToStringVisitor;
+import sqlancer.databend.DatabendSchema;
+import sqlancer.databend.DatabendSchema.DatabendColumn;
+import sqlancer.databend.DatabendSchema.DatabendTable;
+import sqlancer.databend.ast.DatabendExpression;
+import sqlancer.databend.ast.DatabendJoin;
+import sqlancer.databend.ast.DatabendSelect;
+import sqlancer.databend.gen.DatabendNewExpressionGenerator;
 
-public class DatabendQueryPartitioningWhereTester extends DatabendQueryPartitioningBase {
+public class DatabendQueryPartitioningWhereTester implements TestOracle<DatabendGlobalState> {
+
+    private final TLPWhereOracle<DatabendSelect, DatabendJoin, DatabendExpression, DatabendSchema, DatabendTable, DatabendColumn, DatabendGlobalState> oracle;
 
     public DatabendQueryPartitioningWhereTester(DatabendGlobalState state) {
-        super(state);
-        DatabendErrors.addGroupByErrors(errors);
+        DatabendNewExpressionGenerator gen = new DatabendNewExpressionGenerator(state);
+        ExpectedErrors expectedErrors = ExpectedErrors.newErrors().with(DatabendErrors.getExpressionErrors())
+                .with(DatabendErrors.getGroupByErrors()).build();
+
+        this.oracle = new TLPWhereOracle<>(state, gen, expectedErrors);
     }
 
     @Override
     public void check() throws SQLException {
-        super.check();
-        select.setWhereClause(null);
-        String originalQueryString = DatabendToStringVisitor.asString(select);
-
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
-
-        // boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
-        boolean orderBy = false;
-        // if (orderBy) { //TODO 待开启
-        // select.setOrderByClauses(gen.generateOrderBys());
-        // }
-        select.setWhereClause(predicate);
-        String firstQueryString = DatabendToStringVisitor.asString(select);
-        select.setWhereClause(negatedPredicate);
-        String secondQueryString = DatabendToStringVisitor.asString(select);
-        select.setWhereClause(isNullPredicate);
-        String thirdQueryString = DatabendToStringVisitor.asString(select);
-        List<String> combinedString = new ArrayList<>();
-        List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
-                thirdQueryString, combinedString, !orderBy, state, errors);
-        ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
-                state, ComparatorHelper::canonicalizeResultValue);
+        oracle.check();
     }
 
+    @Override
+    public String getLastQueryString() {
+        return oracle.getLastQueryString();
+    }
+
+    @Override
+    public Reproducer<DatabendGlobalState> getLastReproducer() {
+        return oracle.getLastReproducer();
+    }
 }

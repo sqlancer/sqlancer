@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.NewOrderingTerm;
 import sqlancer.common.gen.NoRECGenerator;
+import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.TypedExpressionGenerator;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.databend.DatabendBugs;
@@ -48,7 +49,8 @@ import sqlancer.databend.ast.DatabendUnaryPrefixOperation.DatabendUnaryPrefixOpe
 
 public class DatabendNewExpressionGenerator
         extends TypedExpressionGenerator<DatabendExpression, DatabendColumn, DatabendDataType>
-        implements NoRECGenerator<DatabendSelect, DatabendJoin, DatabendExpression, DatabendTable, DatabendColumn> {
+        implements NoRECGenerator<DatabendSelect, DatabendJoin, DatabendExpression, DatabendTable, DatabendColumn>,
+        TLPWhereGenerator<DatabendSelect, DatabendJoin, DatabendExpression, DatabendTable, DatabendColumn> {
 
     private final DatabendGlobalState globalState;
     private List<DatabendTable> tables;
@@ -355,8 +357,7 @@ public class DatabendNewExpressionGenerator
     }
 
     @Override
-    public NoRECGenerator<DatabendSelect, DatabendJoin, DatabendExpression, DatabendTable, DatabendColumn> setTablesAndColumns(
-            AbstractTables<DatabendTable, DatabendColumn> tables) {
+    public DatabendNewExpressionGenerator setTablesAndColumns(AbstractTables<DatabendTable, DatabendColumn> tables) {
         this.columns = tables.getColumns();
         this.tables = tables.getTables();
 
@@ -421,4 +422,11 @@ public class DatabendNewExpressionGenerator
         return "SELECT SUM(count) FROM (" + select.asString() + ") as res";
     }
 
+    @Override
+    public List<DatabendExpression> generateFetchColumns(boolean shouldCreateDummy) {
+        if (shouldCreateDummy) {
+            return List.of(new DatabendColumnReference(new DatabendColumn("*", null, false, false)));
+        }
+        return columns.stream().map(c -> new DatabendColumnReference(c)).collect(Collectors.toList());
+    }
 }
