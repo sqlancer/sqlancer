@@ -45,12 +45,14 @@ import sqlancer.cockroachdb.ast.CockroachDBTypeAnnotation;
 import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation;
 import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnaryPostfixOperator;
 import sqlancer.common.gen.NoRECGenerator;
+import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.TypedExpressionGenerator;
 import sqlancer.common.schema.AbstractTables;
 
 public class CockroachDBExpressionGenerator extends
         TypedExpressionGenerator<CockroachDBExpression, CockroachDBColumn, CockroachDBCompositeDataType> implements
-        NoRECGenerator<CockroachDBSelect, CockroachDBJoin, CockroachDBExpression, CockroachDBTable, CockroachDBColumn> {
+        NoRECGenerator<CockroachDBSelect, CockroachDBJoin, CockroachDBExpression, CockroachDBTable, CockroachDBColumn>,
+        TLPWhereGenerator<CockroachDBSelect, CockroachDBJoin, CockroachDBExpression, CockroachDBTable, CockroachDBColumn> {
 
     private List<CockroachDBTable> tables;
     private final CockroachDBGlobalState globalState;
@@ -369,7 +371,7 @@ public class CockroachDBExpressionGenerator extends
     }
 
     @Override
-    public NoRECGenerator<CockroachDBSelect, CockroachDBJoin, CockroachDBExpression, CockroachDBTable, CockroachDBColumn> setTablesAndColumns(
+    public CockroachDBExpressionGenerator setTablesAndColumns(
             AbstractTables<CockroachDBTable, CockroachDBColumn> tables) {
         this.columns = tables.getColumns();
         this.tables = tables.getTables();
@@ -446,5 +448,14 @@ public class CockroachDBExpressionGenerator extends
         return "SELECT SUM(count) FROM (SELECT CAST(" + CockroachDBVisitor.asString(whereCondition)
                 + " IS TRUE AS INT) as count FROM " + fromString + " "
                 + joinList.stream().map(j -> CockroachDBVisitor.asString(j)).collect(Collectors.joining(", ")) + ")";
+    }
+
+    @Override
+    public List<CockroachDBExpression> generateFetchColumns(boolean shouldCreateDummy) {
+        if (shouldCreateDummy || columns.size() == 0) {
+            return List.of(new CockroachDBColumnReference(new CockroachDBColumn("*", null, false, false)));
+        }
+        return Randomly.nonEmptySubset(columns).stream().map(c -> new CockroachDBColumnReference(c))
+                .collect(Collectors.toList());
     }
 }

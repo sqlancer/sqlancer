@@ -1,55 +1,45 @@
 package sqlancer.cockroachdb.oracle.tlp;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
-import sqlancer.ComparatorHelper;
-import sqlancer.Randomly;
+import sqlancer.Reproducer;
+import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
-import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBDataType;
-import sqlancer.cockroachdb.CockroachDBVisitor;
+import sqlancer.cockroachdb.CockroachDBSchema;
+import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
+import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.ast.CockroachDBExpression;
-import sqlancer.cockroachdb.ast.CockroachDBNotOperation;
-import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation;
-import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnaryPostfixOperator;
+import sqlancer.cockroachdb.ast.CockroachDBJoin;
+import sqlancer.cockroachdb.ast.CockroachDBSelect;
+import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
+import sqlancer.common.oracle.TLPWhereOracle;
+import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.ExpectedErrors;
 
-public class CockroachDBTLPWhereOracle extends CockroachDBTLPBase {
+public class CockroachDBTLPWhereOracle implements TestOracle<CockroachDBGlobalState> {
 
-    private String generatedQueryString;
+    private final TLPWhereOracle<CockroachDBSelect, CockroachDBJoin, CockroachDBExpression, CockroachDBSchema, CockroachDBTable, CockroachDBColumn, CockroachDBGlobalState> oracle;
 
     public CockroachDBTLPWhereOracle(CockroachDBGlobalState state) {
-        super(state);
-        errors.add("GROUP BY term out of range");
+        CockroachDBExpressionGenerator gen = new CockroachDBExpressionGenerator(state);
+        ExpectedErrors expectedErrors = ExpectedErrors.newErrors().with(CockroachDBErrors.getExpressionErrors())
+                .with("GROUP BY term out of range").build();
+
+        this.oracle = new TLPWhereOracle<>(state, gen, expectedErrors);
     }
 
     @Override
     public void check() throws SQLException {
-        super.check();
-        String originalQueryString = CockroachDBVisitor.asString(select);
-        generatedQueryString = originalQueryString;
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
-
-        boolean allowOrderBy = Randomly.getBoolean();
-        if (allowOrderBy) {
-            select.setOrderByClauses(gen.getOrderingTerms());
-        }
-        CockroachDBExpression predicate = gen.generateExpression(CockroachDBDataType.BOOL.get());
-        select.setWhereClause(predicate);
-        String firstQueryString = CockroachDBVisitor.asString(select);
-        select.setWhereClause(new CockroachDBNotOperation(predicate));
-        String secondQueryString = CockroachDBVisitor.asString(select);
-        select.setWhereClause(new CockroachDBUnaryPostfixOperation(predicate, CockroachDBUnaryPostfixOperator.IS_NULL));
-        String thirdQueryString = CockroachDBVisitor.asString(select);
-        List<String> combinedString = new ArrayList<>();
-        List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
-                thirdQueryString, combinedString, !allowOrderBy, state, errors);
-        ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
-                state);
+        oracle.check();
     }
 
     @Override
     public String getLastQueryString() {
-        return generatedQueryString;
+        return oracle.getLastQueryString();
+    }
+
+    @Override
+    public Reproducer<CockroachDBGlobalState> getLastReproducer() {
+        return oracle.getLastReproducer();
     }
 }
