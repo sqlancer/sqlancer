@@ -11,6 +11,7 @@ import sqlancer.common.ast.BinaryOperatorNode.Operator;
 import sqlancer.common.ast.newast.NewOrderingTerm.Ordering;
 import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
 import sqlancer.common.gen.NoRECGenerator;
+import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
@@ -35,7 +36,8 @@ import sqlancer.duckdb.ast.DuckDBTableReference;
 import sqlancer.duckdb.ast.DuckDBTernary;
 
 public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<DuckDBExpression, DuckDBColumn>
-        implements NoRECGenerator<DuckDBSelect, DuckDBJoin, DuckDBExpression, DuckDBTable, DuckDBColumn> {
+        implements NoRECGenerator<DuckDBSelect, DuckDBJoin, DuckDBExpression, DuckDBTable, DuckDBColumn>,
+        TLPWhereGenerator<DuckDBSelect, DuckDBJoin, DuckDBExpression, DuckDBTable, DuckDBColumn> {
 
     private final DuckDBGlobalState globalState;
     private List<DuckDBTable> tables;
@@ -449,8 +451,7 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
     }
 
     @Override
-    public NoRECGenerator<DuckDBSelect, DuckDBJoin, DuckDBExpression, DuckDBTable, DuckDBColumn> setTablesAndColumns(
-            AbstractTables<DuckDBTable, DuckDBColumn> tables) {
+    public DuckDBExpressionGenerator setTablesAndColumns(AbstractTables<DuckDBTable, DuckDBColumn> tables) {
         this.columns = tables.getColumns();
         this.tables = tables.getTables();
 
@@ -512,5 +513,14 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
         select.setFetchColumns(Arrays.asList(asText));
 
         return "SELECT SUM(count) FROM (" + select.asString() + ") as res";
+    }
+
+    @Override
+    public List<DuckDBExpression> generateFetchColumns(boolean shouldCreateDummy) {
+        if (Randomly.getBoolean()) {
+            return List.of(new DuckDBColumnReference(new DuckDBColumn("*", null, false, false)));
+        }
+        return Randomly.nonEmptySubset(columns).stream().map(c -> new DuckDBColumnReference(c))
+                .collect(Collectors.toList());
     }
 }
