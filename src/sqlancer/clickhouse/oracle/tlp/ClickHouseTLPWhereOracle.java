@@ -1,50 +1,45 @@
 package sqlancer.clickhouse.oracle.tlp;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
-import sqlancer.ComparatorHelper;
-import sqlancer.Randomly;
+import sqlancer.Reproducer;
 import sqlancer.clickhouse.ClickHouseErrors;
-import sqlancer.clickhouse.ClickHouseProvider;
-import sqlancer.clickhouse.ClickHouseVisitor;
+import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
+import sqlancer.clickhouse.ClickHouseSchema;
+import sqlancer.clickhouse.ClickHouseSchema.ClickHouseColumn;
+import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTable;
+import sqlancer.clickhouse.ast.ClickHouseExpression;
+import sqlancer.clickhouse.ast.ClickHouseExpression.ClickHouseJoin;
+import sqlancer.clickhouse.ast.ClickHouseSelect;
+import sqlancer.clickhouse.gen.ClickHouseExpressionGenerator;
+import sqlancer.common.oracle.TLPWhereOracle;
+import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.ExpectedErrors;
 
-public class ClickHouseTLPWhereOracle extends ClickHouseTLPBase {
+public class ClickHouseTLPWhereOracle implements TestOracle<ClickHouseGlobalState> {
 
-    public ClickHouseTLPWhereOracle(ClickHouseProvider.ClickHouseGlobalState state) {
-        super(state);
-        ClickHouseErrors.addExpectedExpressionErrors(errors);
+    private final TLPWhereOracle<ClickHouseSelect, ClickHouseJoin, ClickHouseExpression, ClickHouseSchema, ClickHouseTable, ClickHouseColumn, ClickHouseGlobalState> oracle;
+
+    public ClickHouseTLPWhereOracle(ClickHouseGlobalState state) {
+        ClickHouseExpressionGenerator gen = new ClickHouseExpressionGenerator(state);
+        ExpectedErrors expectedErrors = ExpectedErrors.newErrors().with(ClickHouseErrors.getExpectedExpressionErrors())
+                .build();
+
+        this.oracle = new TLPWhereOracle<>(state, gen, expectedErrors);
     }
 
     @Override
     public void check() throws SQLException {
-        super.check();
-        if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByClauses(IntStream.range(0, 1 + Randomly.smallNumber())
-                    .mapToObj(i -> gen.generateExpressionWithColumns(columns, 5)).collect(Collectors.toList()));
-        }
-        String originalQueryString = ClickHouseVisitor.asString(select);
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
+        oracle.check();
+    }
 
-        boolean orderBy = Randomly.getBooleanWithRatherLowProbability();
-        if (orderBy) {
-            select.setOrderByClauses(IntStream.range(0, 1 + Randomly.smallNumber())
-                    .mapToObj(i -> gen.generateExpressionWithColumns(columns, 5)).collect(Collectors.toList()));
-        }
+    @Override
+    public String getLastQueryString() {
+        return oracle.getLastQueryString();
+    }
 
-        select.setWhereClause(predicate);
-        String firstQueryString = ClickHouseVisitor.asString(select);
-        select.setWhereClause(negatedPredicate);
-        String secondQueryString = ClickHouseVisitor.asString(select);
-        select.setWhereClause(isNullPredicate);
-        String thirdQueryString = ClickHouseVisitor.asString(select);
-        List<String> combinedString = new ArrayList<>();
-        List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
-                thirdQueryString, combinedString, !orderBy, state, errors);
-        ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
-                state);
+    @Override
+    public Reproducer<ClickHouseGlobalState> getLastReproducer() {
+        return oracle.getLastReproducer();
     }
 }
