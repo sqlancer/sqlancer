@@ -9,12 +9,9 @@ import sqlancer.Main;
 
 public class TestMySQLPQS {
 
-    String mysqlAvailable = System.getenv("MYSQL_AVAILABLE");
-    boolean mysqlIsAvailable = mysqlAvailable != null && mysqlAvailable.equalsIgnoreCase("true");
-
     @Test
     public void testPQS() {
-        assumeTrue(mysqlIsAvailable);
+        assumeTrue(TestConfig.isEnvironmentTrue(TestConfig.MYSQL_ENV));
         assertEquals(0,
                 Main.executeMain(new String[] { "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS,
                         "--num-threads", "4", "--random-string-generation", "ALPHANUMERIC", "--database-prefix",

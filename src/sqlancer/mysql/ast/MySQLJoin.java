@@ -5,12 +5,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.newast.Join;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.gen.MySQLExpressionGenerator;
 
-public class MySQLJoin implements MySQLExpression {
+public class MySQLJoin implements MySQLExpression, Join<MySQLExpression, MySQLTable, MySQLColumn> {
 
     public enum JoinType {
         NATURAL, INNER, STRAIGHT, LEFT, RIGHT, CROSS;
@@ -44,6 +45,7 @@ public class MySQLJoin implements MySQLExpression {
         return type;
     }
 
+    @Override
     public void setOnClause(MySQLExpression onClause) {
         this.onClause = onClause;
     }
