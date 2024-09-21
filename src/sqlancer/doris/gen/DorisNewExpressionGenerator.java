@@ -11,6 +11,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.NewOrderingTerm;
 import sqlancer.common.gen.NoRECGenerator;
+import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.TypedExpressionGenerator;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.doris.DorisBugs;
@@ -50,7 +51,8 @@ import sqlancer.doris.ast.DorisUnaryPrefixOperation.DorisUnaryPrefixOperator;
 import sqlancer.doris.visitor.DorisToStringVisitor;
 
 public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisExpression, DorisColumn, DorisDataType>
-        implements NoRECGenerator<DorisSelect, DorisJoin, DorisExpression, DorisTable, DorisColumn> {
+        implements NoRECGenerator<DorisSelect, DorisJoin, DorisExpression, DorisTable, DorisColumn>,
+        TLPWhereGenerator<DorisSelect, DorisJoin, DorisExpression, DorisTable, DorisColumn> {
 
     private final DorisGlobalState globalState;
     private List<DorisTable> tables;
@@ -463,8 +465,7 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
     }
 
     @Override
-    public NoRECGenerator<DorisSelect, DorisJoin, DorisExpression, DorisTable, DorisColumn> setTablesAndColumns(
-            AbstractTables<DorisTable, DorisColumn> tables) {
+    public DorisNewExpressionGenerator setTablesAndColumns(AbstractTables<DorisTable, DorisColumn> tables) {
         this.columns = tables.getColumns();
         this.tables = tables.getTables();
 
@@ -531,5 +532,14 @@ public class DorisNewExpressionGenerator extends TypedExpressionGenerator<DorisE
         select.setWhereClause(null);
 
         return "SELECT SUM(count) FROM (" + select.asString() + ") as res";
+    }
+
+    @Override
+    public List<DorisExpression> generateFetchColumns(boolean shouldCreateDummy) {
+        if (shouldCreateDummy) {
+            return List.of(new DorisColumnReference(new DorisColumn("*", null, false, false)));
+        }
+        return Randomly.nonEmptySubset(columns).stream().map(c -> new DorisColumnReference(c))
+                .collect(Collectors.toList());
     }
 }
