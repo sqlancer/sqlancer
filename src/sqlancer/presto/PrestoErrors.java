@@ -41,6 +41,7 @@ public final class PrestoErrors {
 
         // TODO: check
         errors.add("io.airlift.slice.Slice cannot be cast to java.lang.Number");
+        errors.add("class io.airlift.slice.Slice cannot be cast to class java.lang.Number");
         if (PrestoBugs.bug23324) {
             errors.add("Cannot cast java.lang.Long to io.airlift.slice.Slice");
         }
@@ -74,6 +75,11 @@ public final class PrestoErrors {
         errors.add("All IN list values must be the same type");
         errors.add("All CASE results must be the same type");
         errors.add("Mismatched types");
+        errors.add("CASE operand type does not match WHEN clause operand type");
+        errors.add("Subquery result type must be orderable");
+        errors.add("Escape character must be followed by '%', '_' or the escape character itself");
+        errors.add("Types are not comparable with NULLIF");
+        errors.add("not of the same type");
 
         if (PrestoBugs.bug23613) {
             errors.add("at index 1");
