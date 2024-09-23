@@ -54,6 +54,12 @@ public final class CitusCommon {
         errors.add("unlogged columnar tables are not supported");
         errors.add("UPDATE and CTID scans not supported for ColumnarScan");
         errors.add("indexes not supported for columnar tables");
+        errors.add("invalid byte sequence for encoding \"UTF8\": 0x00");
+        errors.add("columnar_tuple_insert_speculative not implemented");
+        errors.add("row field count is 1, expected 2");
+        errors.add("incorrect binary data format");
+        errors.add("invalid sign in external \"numeric\" value");
+        errors.add("Foreign keys and AFTER ROW triggers are not supported for columnar tables");
 
         // current errors in Citus (to be removed once fixed)
         if (CitusBugs.bug3957) {
@@ -78,7 +84,6 @@ public final class CitusCommon {
         if (CitusBugs.bug4079) {
             errors.add("aggregate function calls cannot be nested");
         }
-
         return errors;
     }
 
