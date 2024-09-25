@@ -1,7 +1,5 @@
 package sqlancer.databend;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -9,18 +7,6 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
 import sqlancer.DBMSSpecificOptions;
-import sqlancer.OracleFactory;
-import sqlancer.common.oracle.CompositeTestOracle;
-import sqlancer.common.oracle.TestOracle;
-import sqlancer.databend.DatabendOptions.DatabendOracleFactory;
-import sqlancer.databend.DatabendProvider.DatabendGlobalState;
-import sqlancer.databend.test.DatabendNoRECOracle;
-import sqlancer.databend.test.DatabendPivotedQuerySynthesisOracle;
-import sqlancer.databend.test.tlp.DatabendQueryPartitioningAggregateTester;
-import sqlancer.databend.test.tlp.DatabendQueryPartitioningDistinctTester;
-import sqlancer.databend.test.tlp.DatabendQueryPartitioningGroupByTester;
-import sqlancer.databend.test.tlp.DatabendQueryPartitioningHavingTester;
-import sqlancer.databend.test.tlp.DatabendQueryPartitioningWhereTester;
 
 @Parameters(commandDescription = "Databend")
 public class DatabendOptions implements DBMSSpecificOptions<DatabendOracleFactory> {
@@ -95,68 +81,6 @@ public class DatabendOptions implements DBMSSpecificOptions<DatabendOracleFactor
 
     @Parameter(names = "--oracle")
     public List<DatabendOracleFactory> oracles = Arrays.asList(DatabendOracleFactory.QUERY_PARTITIONING);
-
-    public enum DatabendOracleFactory implements OracleFactory<DatabendGlobalState> {
-        NOREC {
-
-            @Override
-            public TestOracle<DatabendGlobalState> create(DatabendGlobalState globalState) throws SQLException {
-                return new DatabendNoRECOracle(globalState);
-            }
-
-        },
-        HAVING {
-            @Override
-            public TestOracle<DatabendGlobalState> create(DatabendGlobalState globalState) throws SQLException {
-                return new DatabendQueryPartitioningHavingTester(globalState);
-            }
-        },
-        WHERE {
-            @Override
-            public TestOracle<DatabendGlobalState> create(DatabendGlobalState globalState) throws SQLException {
-                return new DatabendQueryPartitioningWhereTester(globalState);
-            }
-        },
-        GROUP_BY {
-            @Override
-            public TestOracle<DatabendGlobalState> create(DatabendGlobalState globalState) throws SQLException {
-                return new DatabendQueryPartitioningGroupByTester(globalState);
-            }
-        },
-        AGGREGATE {
-
-            @Override
-            public TestOracle<DatabendGlobalState> create(DatabendGlobalState globalState) throws SQLException {
-                return new DatabendQueryPartitioningAggregateTester(globalState);
-            }
-
-        },
-        DISTINCT {
-            @Override
-            public TestOracle<DatabendGlobalState> create(DatabendGlobalState globalState) throws SQLException {
-                return new DatabendQueryPartitioningDistinctTester(globalState);
-            }
-        },
-        QUERY_PARTITIONING {
-            @Override
-            public TestOracle<DatabendGlobalState> create(DatabendGlobalState globalState) throws SQLException {
-                List<TestOracle<DatabendGlobalState>> oracles = new ArrayList<>();
-                oracles.add(new DatabendQueryPartitioningWhereTester(globalState));
-                oracles.add(new DatabendQueryPartitioningHavingTester(globalState));
-                oracles.add(new DatabendQueryPartitioningAggregateTester(globalState));
-                oracles.add(new DatabendQueryPartitioningDistinctTester(globalState));
-                oracles.add(new DatabendQueryPartitioningGroupByTester(globalState));
-                return new CompositeTestOracle<DatabendGlobalState>(oracles, globalState);
-            }
-        },
-        PQS {
-            @Override
-            public TestOracle<DatabendGlobalState> create(DatabendGlobalState globalState) throws Exception {
-                return new DatabendPivotedQuerySynthesisOracle(globalState);
-            }
-        }
-
-    }
 
     @Override
     public List<DatabendOracleFactory> getTestOracleFactory() {

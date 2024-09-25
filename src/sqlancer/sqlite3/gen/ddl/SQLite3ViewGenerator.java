@@ -9,7 +9,7 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3GlobalState;
-import sqlancer.sqlite3.SQLite3Options.SQLite3OracleFactory;
+import sqlancer.sqlite3.SQLite3OracleFactory;
 import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.ast.SQLite3Expression;
 import sqlancer.sqlite3.ast.SQLite3Select;

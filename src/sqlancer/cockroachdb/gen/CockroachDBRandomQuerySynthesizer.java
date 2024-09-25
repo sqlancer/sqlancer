@@ -13,7 +13,7 @@ import sqlancer.cockroachdb.CockroachDBVisitor;
 import sqlancer.cockroachdb.ast.CockroachDBExpression;
 import sqlancer.cockroachdb.ast.CockroachDBSelect;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
-import sqlancer.cockroachdb.oracle.CockroachDBNoRECOracle;
+import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPBase;
 import sqlancer.common.query.SQLQueryAdapter;
 
 public final class CockroachDBRandomQuerySynthesizer {
@@ -49,7 +49,7 @@ public final class CockroachDBRandomQuerySynthesizer {
                 .map(t -> new CockroachDBTableReference(t)).collect(Collectors.toList());
         List<CockroachDBExpression> updatedTableList = CockroachDBCommon.getTableReferences(tableList);
         if (Randomly.getBoolean()) {
-            select.setJoinList(CockroachDBNoRECOracle.getJoins(updatedTableList, globalState));
+            select.setJoinList(CockroachDBTLPBase.getJoins(updatedTableList, globalState));
         }
         select.setFromList(updatedTableList);
         if (Randomly.getBoolean()) {

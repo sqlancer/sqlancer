@@ -1,7 +1,5 @@
 package sqlancer.doris;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -9,18 +7,6 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
 import sqlancer.DBMSSpecificOptions;
-import sqlancer.OracleFactory;
-import sqlancer.common.oracle.CompositeTestOracle;
-import sqlancer.common.oracle.TestOracle;
-import sqlancer.doris.DorisOptions.DorisOracleFactory;
-import sqlancer.doris.DorisProvider.DorisGlobalState;
-import sqlancer.doris.oracle.DorisNoRECOracle;
-import sqlancer.doris.oracle.DorisPivotedQuerySynthesisOracle;
-import sqlancer.doris.oracle.tlp.DorisQueryPartitioningAggregateTester;
-import sqlancer.doris.oracle.tlp.DorisQueryPartitioningDistinctTester;
-import sqlancer.doris.oracle.tlp.DorisQueryPartitioningGroupByTester;
-import sqlancer.doris.oracle.tlp.DorisQueryPartitioningHavingTester;
-import sqlancer.doris.oracle.tlp.DorisQueryPartitioningWhereTester;
 
 @Parameters(commandDescription = "Apache Doris (default port: " + DorisOptions.DEFAULT_PORT + ", default host: "
         + DorisOptions.DEFAULT_HOST + ")")
@@ -111,80 +97,6 @@ public class DorisOptions implements DBMSSpecificOptions<DorisOracleFactory> {
 
     @Parameter(names = "--oracle")
     public List<DorisOracleFactory> oracles = Arrays.asList(DorisOracleFactory.NOREC);
-
-    public enum DorisOracleFactory implements OracleFactory<DorisGlobalState> {
-        NOREC {
-            @Override
-            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws SQLException {
-                return new DorisNoRECOracle(globalState);
-            }
-
-        },
-        HAVING {
-            @Override
-            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws SQLException {
-                return new DorisQueryPartitioningHavingTester(globalState);
-            }
-        },
-        WHERE {
-            @Override
-            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws SQLException {
-                return new DorisQueryPartitioningWhereTester(globalState);
-            }
-        },
-        GROUP_BY {
-            @Override
-            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws SQLException {
-                return new DorisQueryPartitioningGroupByTester(globalState);
-            }
-        },
-        AGGREGATE {
-            @Override
-            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws SQLException {
-                return new DorisQueryPartitioningAggregateTester(globalState);
-            }
-
-        },
-        DISTINCT {
-            @Override
-            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws SQLException {
-                return new DorisQueryPartitioningDistinctTester(globalState);
-            }
-        },
-        QUERY_PARTITIONING {
-            @Override
-            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws SQLException {
-                List<TestOracle<DorisGlobalState>> oracles = new ArrayList<>();
-                oracles.add(new DorisQueryPartitioningWhereTester(globalState));
-                oracles.add(new DorisQueryPartitioningHavingTester(globalState));
-                oracles.add(new DorisQueryPartitioningAggregateTester(globalState));
-                oracles.add(new DorisQueryPartitioningDistinctTester(globalState));
-                oracles.add(new DorisQueryPartitioningGroupByTester(globalState));
-                return new CompositeTestOracle<DorisGlobalState>(oracles, globalState);
-            }
-        },
-        PQS {
-            @Override
-            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws Exception {
-                return new DorisPivotedQuerySynthesisOracle(globalState);
-            }
-        },
-        ALL {
-            @Override
-            public TestOracle<DorisGlobalState> create(DorisGlobalState globalState) throws Exception {
-                List<TestOracle<DorisGlobalState>> oracles = new ArrayList<>();
-                oracles.add(new DorisNoRECOracle(globalState));
-                oracles.add(new DorisQueryPartitioningWhereTester(globalState));
-                oracles.add(new DorisQueryPartitioningHavingTester(globalState));
-                oracles.add(new DorisQueryPartitioningAggregateTester(globalState));
-                oracles.add(new DorisQueryPartitioningDistinctTester(globalState));
-                oracles.add(new DorisQueryPartitioningGroupByTester(globalState));
-                oracles.add(new DorisPivotedQuerySynthesisOracle(globalState));
-                return new CompositeTestOracle<DorisGlobalState>(oracles, globalState);
-            }
-        }
-
-    }
 
     @Override
     public List<DorisOracleFactory> getTestOracleFactory() {

@@ -25,7 +25,6 @@ import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
-import sqlancer.materialize.MaterializeOptions.MaterializeOracleFactory;
 import sqlancer.materialize.gen.MaterializeDeleteGenerator;
 import sqlancer.materialize.gen.MaterializeDropIndexGenerator;
 import sqlancer.materialize.gen.MaterializeIndexGenerator;

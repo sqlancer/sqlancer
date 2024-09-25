@@ -22,7 +22,6 @@ import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
-import sqlancer.postgres.PostgresOptions.PostgresOracleFactory;
 import sqlancer.postgres.gen.PostgresAlterTableGenerator;
 import sqlancer.postgres.gen.PostgresAnalyzeGenerator;
 import sqlancer.postgres.gen.PostgresClusterGenerator;
