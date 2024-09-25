@@ -45,7 +45,7 @@ public final class YSQLRandomQueryGenerator {
             }
         }
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByClauses(gen.generateOrderBy());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         if (Randomly.getBoolean()) {
             select.setLimitClause(YSQLConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));

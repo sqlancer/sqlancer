@@ -1,45 +1,45 @@
 package sqlancer.yugabyte.ysql.oracle.tlp;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
-import sqlancer.ComparatorHelper;
-import sqlancer.Randomly;
+import sqlancer.Reproducer;
+import sqlancer.common.oracle.TLPWhereOracle;
+import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
-import sqlancer.yugabyte.ysql.YSQLVisitor;
+import sqlancer.yugabyte.ysql.YSQLSchema;
+import sqlancer.yugabyte.ysql.YSQLSchema.YSQLColumn;
+import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTable;
+import sqlancer.yugabyte.ysql.ast.YSQLExpression;
+import sqlancer.yugabyte.ysql.ast.YSQLJoin;
+import sqlancer.yugabyte.ysql.ast.YSQLSelect;
+import sqlancer.yugabyte.ysql.gen.YSQLExpressionGenerator;
 
-public class YSQLTLPWhereOracle extends YSQLTLPBase {
+public class YSQLTLPWhereOracle implements TestOracle<YSQLGlobalState> {
+
+    private final TLPWhereOracle<YSQLSelect, YSQLJoin, YSQLExpression, YSQLSchema, YSQLTable, YSQLColumn, YSQLGlobalState> oracle;
 
     public YSQLTLPWhereOracle(YSQLGlobalState state) {
-        super(state);
+        YSQLExpressionGenerator gen = new YSQLExpressionGenerator(state);
+        ExpectedErrors expectedErrors = ExpectedErrors.newErrors().with(YSQLErrors.getCommonExpressionErrors())
+                .with(YSQLErrors.getCommonFetchErrors()).build();
+
+        this.oracle = new TLPWhereOracle<>(state, gen, expectedErrors);
     }
 
     @Override
     public void check() throws SQLException {
-        super.check();
-        whereCheck();
+        oracle.check();
     }
 
-    protected void whereCheck() throws SQLException {
-        if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByClauses(gen.generateOrderBy());
-        }
-        String originalQueryString = YSQLVisitor.asString(select);
-        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
+    @Override
+    public String getLastQueryString() {
+        return oracle.getLastQueryString();
+    }
 
-        select.setOrderByClauses(Collections.emptyList());
-        select.setWhereClause(predicate);
-        String firstQueryString = YSQLVisitor.asString(select);
-        select.setWhereClause(negatedPredicate);
-        String secondQueryString = YSQLVisitor.asString(select);
-        select.setWhereClause(isNullPredicate);
-        String thirdQueryString = YSQLVisitor.asString(select);
-        List<String> combinedString = new ArrayList<>();
-        List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
-                thirdQueryString, combinedString, Randomly.getBoolean(), state, errors);
-        ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
-                state);
+    @Override
+    public Reproducer<YSQLGlobalState> getLastReproducer() {
+        return oracle.getLastReproducer();
     }
 }
