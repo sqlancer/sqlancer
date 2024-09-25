@@ -61,7 +61,7 @@ public class YSQLTLPAggregateOracle extends YSQLTLPBase implements TestOracle<YS
         }
         select.setFetchColumns(Arrays.asList(aggregate));
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByClauses(gen.generateOrderBy());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         originalQuery = YSQLVisitor.asString(select);
         firstResult = getAggregateResult(originalQuery);

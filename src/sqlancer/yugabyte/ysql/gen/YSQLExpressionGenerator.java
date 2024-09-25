@@ -12,6 +12,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.gen.NoRECGenerator;
+import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.yugabyte.ysql.YSQLCompoundDataType;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
@@ -47,7 +48,8 @@ import sqlancer.yugabyte.ysql.ast.YSQLSelect;
 import sqlancer.yugabyte.ysql.ast.YSQLSimilarTo;
 
 public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpression>,
-        NoRECGenerator<YSQLSelect, YSQLJoin, YSQLExpression, YSQLTable, YSQLColumn> {
+        NoRECGenerator<YSQLSelect, YSQLJoin, YSQLExpression, YSQLTable, YSQLColumn>,
+        TLPWhereGenerator<YSQLSelect, YSQLJoin, YSQLExpression, YSQLTable, YSQLColumn> {
 
     private final int maxDepth;
 
@@ -182,7 +184,8 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
         return generateExpression(depth, YSQLDataType.getRandomType());
     }
 
-    public List<YSQLExpression> generateOrderBy() {
+    @Override
+    public List<YSQLExpression> generateOrderBys() {
         List<YSQLExpression> orderBys = new ArrayList<>();
         for (int i = 0; i < Randomly.smallNumber(); i++) {
             orderBys.add(new YSQLOrderByTerm(YSQLColumnValue.create(Randomly.fromList(columns), null),
@@ -584,7 +587,7 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
             select.setWhereClause(gen.generateExpression(0, YSQLDataType.BOOLEAN));
         }
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByClauses(gen.generateOrderBy());
+            select.setOrderByClauses(gen.generateOrderBys());
         }
         if (Randomly.getBoolean()) {
             select.setLimitClause(YSQLConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
@@ -599,8 +602,7 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
     }
 
     @Override
-    public NoRECGenerator<YSQLSelect, YSQLJoin, YSQLExpression, YSQLTable, YSQLColumn> setTablesAndColumns(
-            AbstractTables<YSQLTable, YSQLColumn> tables) {
+    public YSQLExpressionGenerator setTablesAndColumns(AbstractTables<YSQLTable, YSQLColumn> tables) {
         this.columns = tables.getColumns();
         this.tables = tables.getTables();
 
@@ -658,7 +660,7 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
             YSQLColumnValue allColumns = new YSQLColumnValue(Randomly.fromList(columns), null);
             select.setFetchColumns(Arrays.asList(allColumns));
             if (Randomly.getBooleanWithSmallProbability()) {
-                select.setOrderByClauses(generateOrderBy());
+                select.setOrderByClauses(generateOrderBys());
             }
             select.setWhereClause(whereCondition);
         }
@@ -675,5 +677,13 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
         select.setWhereClause(null);
 
         return "SELECT SUM(count) FROM (" + select.asString() + ") as res";
+    }
+
+    @Override
+    public List<YSQLExpression> generateFetchColumns(boolean shouldCreateDummy) {
+        if (shouldCreateDummy && Randomly.getBooleanWithRatherLowProbability()) {
+            return List.of(new YSQLColumnValue(YSQLColumn.createDummy("*"), null));
+        }
+        return columns.stream().map(c -> new YSQLColumnValue(c, null)).collect(Collectors.toList());
     }
 }
