@@ -4,7 +4,6 @@ package sqlancer.oceanbase;
 import java.sql.SQLException;
 
 import sqlancer.SQLGlobalState;
-import sqlancer.oceanbase.OceanBaseOptions.OceanBaseOracleFactory;
 
 public class OceanBaseGlobalState extends SQLGlobalState<OceanBaseOptions, OceanBaseSchema> {
 

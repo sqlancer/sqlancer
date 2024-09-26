@@ -29,7 +29,6 @@ import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation;
 import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnaryPostfixOperator;
 import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
-import sqlancer.cockroachdb.oracle.CockroachDBNoRECOracle;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -72,7 +71,7 @@ public class CockroachDBTLPAggregateOracle implements TestOracle<CockroachDBGlob
                 .map(t -> new CockroachDBTableReference(t)).collect(Collectors.toList());
         List<CockroachDBExpression> from = CockroachDBCommon.getTableReferences(tableList);
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setJoinList(CockroachDBNoRECOracle.getJoins(from, state));
+            select.setJoinList(CockroachDBTLPBase.getJoins(from, state));
         }
         select.setFromList(from);
         if (Randomly.getBooleanWithRatherLowProbability()) {

@@ -1,7 +1,5 @@
 package sqlancer.duckdb;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -9,17 +7,6 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
 import sqlancer.DBMSSpecificOptions;
-import sqlancer.OracleFactory;
-import sqlancer.common.oracle.CompositeTestOracle;
-import sqlancer.common.oracle.TestOracle;
-import sqlancer.duckdb.DuckDBOptions.DuckDBOracleFactory;
-import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
-import sqlancer.duckdb.test.DuckDBNoRECOracle;
-import sqlancer.duckdb.test.DuckDBQueryPartitioningAggregateTester;
-import sqlancer.duckdb.test.DuckDBQueryPartitioningDistinctTester;
-import sqlancer.duckdb.test.DuckDBQueryPartitioningGroupByTester;
-import sqlancer.duckdb.test.DuckDBQueryPartitioningHavingTester;
-import sqlancer.duckdb.test.DuckDBQueryPartitioningWhereTester;
 
 @Parameters(commandDescription = "DuckDB")
 public class DuckDBOptions implements DBMSSpecificOptions<DuckDBOracleFactory> {
@@ -92,62 +79,6 @@ public class DuckDBOptions implements DBMSSpecificOptions<DuckDBOracleFactory> {
 
     @Parameter(names = "--oracle")
     public List<DuckDBOracleFactory> oracles = Arrays.asList(DuckDBOracleFactory.QUERY_PARTITIONING);
-
-    public enum DuckDBOracleFactory implements OracleFactory<DuckDBGlobalState> {
-        NOREC {
-
-            @Override
-            public TestOracle<DuckDBGlobalState> create(DuckDBGlobalState globalState) throws SQLException {
-                return new DuckDBNoRECOracle(globalState);
-            }
-
-        },
-        HAVING {
-            @Override
-            public TestOracle<DuckDBGlobalState> create(DuckDBGlobalState globalState) throws SQLException {
-                return new DuckDBQueryPartitioningHavingTester(globalState);
-            }
-        },
-        WHERE {
-            @Override
-            public TestOracle<DuckDBGlobalState> create(DuckDBGlobalState globalState) throws SQLException {
-                return new DuckDBQueryPartitioningWhereTester(globalState);
-            }
-        },
-        GROUP_BY {
-            @Override
-            public TestOracle<DuckDBGlobalState> create(DuckDBGlobalState globalState) throws SQLException {
-                return new DuckDBQueryPartitioningGroupByTester(globalState);
-            }
-        },
-        AGGREGATE {
-
-            @Override
-            public TestOracle<DuckDBGlobalState> create(DuckDBGlobalState globalState) throws SQLException {
-                return new DuckDBQueryPartitioningAggregateTester(globalState);
-            }
-
-        },
-        DISTINCT {
-            @Override
-            public TestOracle<DuckDBGlobalState> create(DuckDBGlobalState globalState) throws SQLException {
-                return new DuckDBQueryPartitioningDistinctTester(globalState);
-            }
-        },
-        QUERY_PARTITIONING {
-            @Override
-            public TestOracle<DuckDBGlobalState> create(DuckDBGlobalState globalState) throws SQLException {
-                List<TestOracle<DuckDBGlobalState>> oracles = new ArrayList<>();
-                oracles.add(new DuckDBQueryPartitioningWhereTester(globalState));
-                oracles.add(new DuckDBQueryPartitioningHavingTester(globalState));
-                oracles.add(new DuckDBQueryPartitioningAggregateTester(globalState));
-                oracles.add(new DuckDBQueryPartitioningDistinctTester(globalState));
-                oracles.add(new DuckDBQueryPartitioningGroupByTester(globalState));
-                return new CompositeTestOracle<DuckDBGlobalState>(oracles, globalState);
-            }
-        };
-
-    }
 
     @Override
     public List<DuckDBOracleFactory> getTestOracleFactory() {

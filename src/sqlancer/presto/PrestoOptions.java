@@ -1,24 +1,14 @@
 package sqlancer.presto;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
 import sqlancer.DBMSSpecificOptions;
-import sqlancer.OracleFactory;
-import sqlancer.common.oracle.CompositeTestOracle;
-import sqlancer.common.oracle.TestOracle;
-import sqlancer.presto.test.PrestoNoRECOracle;
-import sqlancer.presto.test.PrestoQueryPartitioningAggregateTester;
-import sqlancer.presto.test.PrestoQueryPartitioningDistinctTester;
-import sqlancer.presto.test.PrestoQueryPartitioningGroupByTester;
-import sqlancer.presto.test.PrestoQueryPartitioningHavingTester;
-import sqlancer.presto.test.PrestoQueryPartitioningWhereTester;
 
 @Parameters(commandDescription = "Presto")
-public class PrestoOptions implements DBMSSpecificOptions<PrestoOptions.PrestoOracleFactory> {
+public class PrestoOptions implements DBMSSpecificOptions<PrestoOracleFactory> {
 
     public static final String DEFAULT_HOST = "localhost";
     public static final int DEFAULT_PORT = 8080;
@@ -107,60 +97,6 @@ public class PrestoOptions implements DBMSSpecificOptions<PrestoOptions.PrestoOr
     @Override
     public List<PrestoOracleFactory> getTestOracleFactory() {
         return oracles;
-    }
-
-    public enum PrestoOracleFactory implements OracleFactory<PrestoGlobalState> {
-        NOREC {
-            @Override
-            public TestOracle<PrestoGlobalState> create(PrestoGlobalState globalState) {
-                return new PrestoNoRECOracle(globalState);
-            }
-
-        },
-        HAVING {
-            @Override
-            public TestOracle<PrestoGlobalState> create(PrestoGlobalState globalState) {
-                return new PrestoQueryPartitioningHavingTester(globalState);
-            }
-        },
-        WHERE {
-            @Override
-            public TestOracle<PrestoGlobalState> create(PrestoGlobalState globalState) {
-                return new PrestoQueryPartitioningWhereTester(globalState);
-            }
-        },
-        GROUP_BY {
-            @Override
-            public TestOracle<PrestoGlobalState> create(PrestoGlobalState globalState) {
-                return new PrestoQueryPartitioningGroupByTester(globalState);
-            }
-        },
-        AGGREGATE {
-            @Override
-            public TestOracle<PrestoGlobalState> create(PrestoGlobalState globalState) {
-                return new PrestoQueryPartitioningAggregateTester(globalState);
-            }
-
-        },
-        DISTINCT {
-            @Override
-            public TestOracle<PrestoGlobalState> create(PrestoGlobalState globalState) {
-                return new PrestoQueryPartitioningDistinctTester(globalState);
-            }
-        },
-        QUERY_PARTITIONING {
-            @Override
-            public TestOracle<PrestoGlobalState> create(PrestoGlobalState globalState) {
-                List<TestOracle<PrestoGlobalState>> oracles = new ArrayList<>();
-                oracles.add(new PrestoQueryPartitioningWhereTester(globalState));
-                oracles.add(new PrestoQueryPartitioningHavingTester(globalState));
-                oracles.add(new PrestoQueryPartitioningAggregateTester(globalState));
-                oracles.add(new PrestoQueryPartitioningDistinctTester(globalState));
-                oracles.add(new PrestoQueryPartitioningGroupByTester(globalState));
-                return new CompositeTestOracle<>(oracles, globalState);
-            }
-        }
-
     }
 
 }

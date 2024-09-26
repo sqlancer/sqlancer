@@ -1,7 +1,5 @@
 package sqlancer.postgres;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -9,17 +7,6 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
 import sqlancer.DBMSSpecificOptions;
-import sqlancer.OracleFactory;
-import sqlancer.common.oracle.CompositeTestOracle;
-import sqlancer.common.oracle.TestOracle;
-import sqlancer.postgres.PostgresOptions.PostgresOracleFactory;
-import sqlancer.postgres.oracle.PostgresCERTOracle;
-import sqlancer.postgres.oracle.PostgresFuzzer;
-import sqlancer.postgres.oracle.PostgresNoRECOracle;
-import sqlancer.postgres.oracle.PostgresPivotedQuerySynthesisOracle;
-import sqlancer.postgres.oracle.tlp.PostgresTLPAggregateOracle;
-import sqlancer.postgres.oracle.tlp.PostgresTLPHavingOracle;
-import sqlancer.postgres.oracle.tlp.PostgresTLPWhereOracle;
 
 @Parameters(separators = "=", commandDescription = "PostgreSQL (default port: " + PostgresOptions.DEFAULT_PORT
         + ", default host: " + PostgresOptions.DEFAULT_HOST + ")")
@@ -42,63 +29,6 @@ public class PostgresOptions implements DBMSSpecificOptions<PostgresOracleFactor
 
     @Parameter(names = "--extensions", description = "Specifies a comma-separated list of extension names to be created in each test database", arity = 1)
     public String extensions = "";
-
-    public enum PostgresOracleFactory implements OracleFactory<PostgresGlobalState> {
-        NOREC {
-            @Override
-            public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws SQLException {
-                return new PostgresNoRECOracle(globalState);
-            }
-        },
-        PQS {
-            @Override
-            public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws SQLException {
-                return new PostgresPivotedQuerySynthesisOracle(globalState);
-            }
-
-            @Override
-            public boolean requiresAllTablesToContainRows() {
-                return true;
-            }
-        },
-        HAVING {
-
-            @Override
-            public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws SQLException {
-                return new PostgresTLPHavingOracle(globalState);
-            }
-
-        },
-        QUERY_PARTITIONING {
-            @Override
-            public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws SQLException {
-                List<TestOracle<PostgresGlobalState>> oracles = new ArrayList<>();
-                oracles.add(new PostgresTLPWhereOracle(globalState));
-                oracles.add(new PostgresTLPHavingOracle(globalState));
-                oracles.add(new PostgresTLPAggregateOracle(globalState));
-                return new CompositeTestOracle<PostgresGlobalState>(oracles, globalState);
-            }
-        },
-        CERT {
-            @Override
-            public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws SQLException {
-                return new PostgresCERTOracle(globalState);
-            }
-
-            @Override
-            public boolean requiresAllTablesToContainRows() {
-                return true;
-            }
-        },
-        FUZZER {
-            @Override
-            public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws Exception {
-                return new PostgresFuzzer(globalState);
-            }
-
-        };
-
-    }
 
     @Override
     public List<PostgresOracleFactory> getTestOracleFactory() {

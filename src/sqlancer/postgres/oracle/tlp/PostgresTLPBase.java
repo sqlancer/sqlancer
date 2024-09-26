@@ -20,13 +20,13 @@ import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresJoin;
+import sqlancer.postgres.ast.PostgresJoin.PostgresJoinType;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.ForClause;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
 import sqlancer.postgres.gen.PostgresCommon;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
-import sqlancer.postgres.oracle.PostgresNoRECOracle;
 
 public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<PostgresExpression, PostgresGlobalState>
         implements TestOracle<PostgresGlobalState> {
@@ -53,8 +53,27 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
 
     protected List<PostgresJoin> getJoinStatements(PostgresGlobalState globalState, List<PostgresColumn> columns,
             List<PostgresTable> tables) {
-        return PostgresNoRECOracle.getJoinStatements(state, columns, tables);
-        // TODO joins
+        List<PostgresJoin> joinStatements = new ArrayList<>();
+        PostgresExpressionGenerator gen = new PostgresExpressionGenerator(globalState).setColumns(columns);
+        for (int i = 1; i < tables.size(); i++) {
+            PostgresExpression joinClause = gen.generateExpression(PostgresDataType.BOOLEAN);
+            PostgresTable table = Randomly.fromList(tables);
+            tables.remove(table);
+            PostgresJoinType options = PostgresJoinType.getRandom();
+            PostgresJoin j = new PostgresJoin(new PostgresFromTable(table, Randomly.getBoolean()), joinClause, options);
+            joinStatements.add(j);
+        }
+        // JOIN subqueries
+        for (int i = 0; i < Randomly.smallNumber(); i++) {
+            PostgresTables subqueryTables = globalState.getSchema().getRandomTableNonEmptyTables();
+            PostgresSubquery subquery = PostgresTLPBase.createSubquery(globalState, String.format("sub%d", i),
+                    subqueryTables);
+            PostgresExpression joinClause = gen.generateExpression(PostgresDataType.BOOLEAN);
+            PostgresJoinType options = PostgresJoinType.getRandom();
+            PostgresJoin j = new PostgresJoin(subquery, joinClause, options);
+            joinStatements.add(j);
+        }
+        return joinStatements;
     }
 
     protected void generateSelectBase(List<PostgresTable> tables, List<PostgresJoin> joins) {
