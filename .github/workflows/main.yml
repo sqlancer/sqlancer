@@ -482,6 +482,7 @@ jobs:
           POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresPQS test
           POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresTLP test
           POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresNoREC test
+          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresCERT test
 
   presto:
     name: DBMS Tests (Presto)
