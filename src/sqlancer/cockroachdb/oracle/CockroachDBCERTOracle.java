@@ -132,11 +132,14 @@ public class CockroachDBCERTOracle extends CERTOracleBase<CockroachDBGlobalState
         }
 
         JoinType newJoinType = CockroachDBJoin.JoinType.INNER;
-        if (join.getJoinType() == JoinType.LEFT || join.getJoinType() == JoinType.RIGHT) { // No invarient relation
+        if (join.getJoinType() == JoinType.LEFT || join.getJoinType() == JoinType.RIGHT) { // No invariant relation
                                                                                            // between LEFT and RIGHT
                                                                                            // join
-            newJoinType = CockroachDBJoin.JoinType.getRandomExcept(JoinType.NATURAL, JoinType.LEFT, JoinType.RIGHT);
-        } else {
+            newJoinType = CockroachDBJoin.JoinType.getRandomExcept(JoinType.NATURAL, JoinType.CROSS, JoinType.LEFT,
+                    JoinType.RIGHT);
+        } else if (join.getJoinType() == JoinType.FULL) {
+            newJoinType = CockroachDBJoin.JoinType.getRandomExcept(JoinType.NATURAL, JoinType.CROSS);
+        } else if (join.getJoinType() != JoinType.CROSS) {
             newJoinType = CockroachDBJoin.JoinType.getRandomExcept(JoinType.NATURAL, join.getJoinType());
         }
         assert newJoinType != JoinType.NATURAL; // Natural Join is not supported for CERT
@@ -230,7 +233,7 @@ public class CockroachDBCERTOracle extends CERTOracleBase<CockroachDBGlobalState
     private int getRow(SQLGlobalState<?, ?> globalState, String selectStr, List<String> queryPlanSequences)
             throws AssertionError, SQLException {
         int row = -1;
-        String explainQuery = "EXPLAIN (VERBOSE) " + selectStr;
+        String explainQuery = "EXPLAIN " + selectStr;
 
         // Log the query
         if (globalState.getOptions().logEachSelect()) {
