@@ -173,6 +173,7 @@ jobs:
         run: |
           COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBNoREC test
           COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBTLP test
+          COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBCERT test
 
   cockroachdb-qpg:
     name: QPG Tests (CockroachDB)
