@@ -14,6 +14,7 @@ import sqlancer.common.oracle.CERTOracleBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
+import sqlancer.tidb.TiDBBugs;
 import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBExpressionGenerator;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
@@ -82,8 +83,16 @@ public class TiDBCERTOracle extends CERTOracleBase<TiDBGlobalState> implements T
         String queryString1 = TiDBVisitor.asString(select);
         double rowCount1 = getRow(state, queryString1, queryPlan1Sequences);
 
+        List<Mutator> excludes = new ArrayList<>();
+        excludes.add(Mutator.DISTINCT);
+        if (TiDBBugs.bug51525) {
+            excludes.add(Mutator.OR);
+        }
+        if (TiDBBugs.bug38319) {
+            excludes.add(Mutator.GROUPBY);
+        }
         // Mutate the query
-        boolean increase = mutate(Mutator.DISTINCT);
+        boolean increase = mutate(excludes.toArray(new Mutator[0]));
 
         // Get the result of the second query
         String queryString2 = TiDBVisitor.asString(select);
