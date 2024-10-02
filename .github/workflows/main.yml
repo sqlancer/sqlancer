@@ -574,7 +574,9 @@ jobs:
       - name: Create SQLancer user
         run: sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
       - name: Run Tests
-        run: TIDB_AVAILABLE=true mvn -Dtest=TestTiDB test
+        run: |
+          TIDB_AVAILABLE=true mvn -Dtest=TestTiDBTLP test
+          TIDB_AVAILABLE=true mvn -Dtest=TestTiDBCERT test
 
   tidb-qpg:
     name: QPG Tests (TiDB)
