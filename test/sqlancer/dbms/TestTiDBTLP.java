@@ -7,13 +7,11 @@ import org.junit.jupiter.api.Test;
 
 import sqlancer.Main;
 
-public class TestTiDB {
+public class TestTiDBTLP {
 
     @Test
-    public void testMySQL() {
-        String tiDB = System.getenv("TIDB_AVAILABLE");
-        boolean tiDBIsAvailable = tiDB != null && tiDB.equalsIgnoreCase("true");
-        assumeTrue(tiDBIsAvailable);
+    public void testTLP() {
+        assumeTrue(TestConfig.isEnvironmentTrue(TestConfig.TIDB_ENV));
         assertEquals(0, Main.executeMain(new String[] { "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS,
                 "--num-queries", "0", "tidb" }));
     }

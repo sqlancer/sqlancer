@@ -4,8 +4,10 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.tidb.TiDBBugs;
 import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
+import sqlancer.tidb.ast.TiDBSelect;
 
 public final class TiDBViewGenerator {
 
@@ -37,7 +39,11 @@ public final class TiDBViewGenerator {
             sb.append(i);
         }
         sb.append(") AS ");
-        sb.append(TiDBRandomQuerySynthesizer.generate(globalState, nrColumns).getQueryString());
+        TiDBSelect select = TiDBRandomQuerySynthesizer.generateSelect(globalState, nrColumns);
+        if (TiDBBugs.bug38319 && !select.getGroupByExpressions().isEmpty()) {
+            throw new IgnoreMeException();
+        }
+        sb.append(select.asString());
         ExpectedErrors errors = new ExpectedErrors();
         TiDBErrors.addExpressionErrors(errors);
         errors.add(
