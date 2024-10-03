@@ -14,6 +14,7 @@ import sqlancer.common.oracle.CERTOracleBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
+import sqlancer.postgres.PostgresBugs;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
@@ -77,14 +78,19 @@ public class PostgresCERTOracle extends CERTOracleBase<PostgresGlobalState> impl
 
         // First query row count
         String queryString1 = PostgresVisitor.asString(select);
-        int rowCount1 = getRow(state, queryString1, queryPlan1Sequences);
+        long rowCount1 = getRow(state, queryString1, queryPlan1Sequences);
 
         // JOIN and LIMIT mutations not added
-        boolean increase = mutate(Mutator.LIMIT);
+        boolean increase;
+        if (PostgresBugs.bug18643) {
+            increase = mutate(Mutator.LIMIT, Mutator.OR, Mutator.AND);
+        } else {
+            increase = mutate(Mutator.LIMIT);
+        }
 
         // Second Query row count
         String queryString2 = PostgresVisitor.asString(select);
-        int rowCount2 = getRow(state, queryString2, queryPlan2Sequences);
+        long rowCount2 = getRow(state, queryString2, queryPlan2Sequences);
 
         // Check query plan equivalence
         if (DBMSCommon.editDistance(queryPlan1Sequences, queryPlan2Sequences) > 1) {
@@ -216,9 +222,9 @@ public class PostgresCERTOracle extends CERTOracleBase<PostgresGlobalState> impl
         return increase;
     }
 
-    private int getRow(SQLGlobalState<?, ?> globalState, String selectStr, List<String> queryPlanSequences)
+    private long getRow(SQLGlobalState<?, ?> globalState, String selectStr, List<String> queryPlanSequences)
             throws AssertionError, SQLException {
-        int row = -1;
+        long row = -1;
         String explainQuery = "EXPLAIN " + selectStr;
 
         if (globalState.getOptions().logEachSelect()) {
@@ -239,7 +245,7 @@ public class PostgresCERTOracle extends CERTOracleBase<PostgresGlobalState> impl
                     if (content.contains("rows=")) {
                         try {
                             int ind = content.indexOf("rows=");
-                            int number = Integer.parseInt(content.substring(ind + 5).split(" ")[0]);
+                            long number = Long.parseLong(content.substring(ind + 5).split(" ")[0]);
                             if (row == -1) {
                                 row = number;
 
