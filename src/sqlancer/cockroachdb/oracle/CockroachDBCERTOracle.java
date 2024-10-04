@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLGlobalState;
+import sqlancer.cockroachdb.CockroachDBBugs;
 import sqlancer.cockroachdb.CockroachDBCommon;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
@@ -76,9 +77,17 @@ public class CockroachDBCERTOracle extends CERTOracleBase<CockroachDBGlobalState
         String queryString1 = CockroachDBVisitor.asString(select);
         int rowCount1 = getRow(state, queryString1, queryPlan1Sequences);
 
-        // Mutate the query
+        List<Mutator> excludes = new ArrayList<>();
         // Disable limit due to its false positive
-        boolean increase = mutate();
+        excludes.add(Mutator.LIMIT);
+        if (CockroachDBBugs.bug131640) {
+            excludes.add(Mutator.OR);
+        }
+        if (CockroachDBBugs.bug131647) {
+            excludes.add(Mutator.JOIN);
+        }
+        // Mutate the query
+        boolean increase = mutate(excludes.toArray(new Mutator[0]));
 
         // Get the result of the second query
         String queryString2 = CockroachDBVisitor.asString(select);
@@ -262,10 +271,15 @@ public class CockroachDBCERTOracle extends CERTOracleBase<CockroachDBGlobalState
                     }
                     if (content.contains("• ")) {
                         String operation = content.split("• ")[1].split(" ")[0];
+                        if (CockroachDBBugs.bug131875 && (operation.equals("distinct") || operation.equals("limit"))) {
+                            throw new IgnoreMeException();
+                        }
                         queryPlanSequences.add(operation);
                     }
                 }
             }
+        } catch (IgnoreMeException e) {
+            throw new IgnoreMeException();
         } catch (Exception e) {
             throw new AssertionError(q.getQueryString(), e);
         }
