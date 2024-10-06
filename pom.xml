@@ -81,6 +81,21 @@
           </execution>
         </executions>
       </plugin>
+        <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.0.0</version>
+        <configuration>
+          <executable>java</executable>
+          <arguments>
+            <argument>-cp</argument>
+            <classpath />
+            <argument>com.mycompany.MyClass</argument>
+            <argument>--driver</argument>
+            <argument>path/to/driver.jar</argument>
+          </arguments>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
