@@ -82,7 +82,7 @@ public enum PostgresOracleFactory implements OracleFactory<PostgresGlobalState> 
                     .with(PostgresCommon.getCommonRangeExpressionErrors()).build();
             CERTOracle.CheckedFunction<SQLancerResultSet, Optional<Long>> rowCountParser = (rs) -> {
                 String content = rs.getString(1).trim();
-                if (content.contains("rows=")) {
+                if (content.contains("Result") && content.contains("rows=")) {
                     try {
                         int ind = content.indexOf("rows=");
                         long number = Long.parseLong(content.substring(ind + 5).split(" ")[0]);
