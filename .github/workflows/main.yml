@@ -429,6 +429,7 @@ jobs:
         run: |
           MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLPQS
           MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLTLP
+          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLCERT
 
   oceanbase:
     name: DBMS Tests (OceanBase)
