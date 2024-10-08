@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLGlobalState;
+import sqlancer.cockroachdb.CockroachDBBugs;
 import sqlancer.cockroachdb.CockroachDBCommon;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
@@ -76,9 +77,17 @@ public class CockroachDBCERTOracle extends CERTOracleBase<CockroachDBGlobalState
         String queryString1 = CockroachDBVisitor.asString(select);
         int rowCount1 = getRow(state, queryString1, queryPlan1Sequences);
 
-        // Mutate the query
+        List<Mutator> excludes = new ArrayList<>();
         // Disable limit due to its false positive
-        boolean increase = mutate();
+        excludes.add(Mutator.LIMIT);
+        if (CockroachDBBugs.bug131640) {
+            excludes.add(Mutator.OR);
+        }
+        if (CockroachDBBugs.bug131647) {
+            excludes.add(Mutator.JOIN);
+        }
+        // Mutate the query
+        boolean increase = mutate(excludes.toArray(new Mutator[0]));
 
         // Get the result of the second query
         String queryString2 = CockroachDBVisitor.asString(select);
@@ -132,11 +141,14 @@ public class CockroachDBCERTOracle extends CERTOracleBase<CockroachDBGlobalState
         }
 
         JoinType newJoinType = CockroachDBJoin.JoinType.INNER;
-        if (join.getJoinType() == JoinType.LEFT || join.getJoinType() == JoinType.RIGHT) { // No invarient relation
+        if (join.getJoinType() == JoinType.LEFT || join.getJoinType() == JoinType.RIGHT) { // No invariant relation
                                                                                            // between LEFT and RIGHT
                                                                                            // join
-            newJoinType = CockroachDBJoin.JoinType.getRandomExcept(JoinType.NATURAL, JoinType.LEFT, JoinType.RIGHT);
-        } else {
+            newJoinType = CockroachDBJoin.JoinType.getRandomExcept(JoinType.NATURAL, JoinType.CROSS, JoinType.LEFT,
+                    JoinType.RIGHT);
+        } else if (join.getJoinType() == JoinType.FULL) {
+            newJoinType = CockroachDBJoin.JoinType.getRandomExcept(JoinType.NATURAL, JoinType.CROSS);
+        } else if (join.getJoinType() != JoinType.CROSS) {
             newJoinType = CockroachDBJoin.JoinType.getRandomExcept(JoinType.NATURAL, join.getJoinType());
         }
         assert newJoinType != JoinType.NATURAL; // Natural Join is not supported for CERT
@@ -230,7 +242,7 @@ public class CockroachDBCERTOracle extends CERTOracleBase<CockroachDBGlobalState
     private int getRow(SQLGlobalState<?, ?> globalState, String selectStr, List<String> queryPlanSequences)
             throws AssertionError, SQLException {
         int row = -1;
-        String explainQuery = "EXPLAIN (VERBOSE) " + selectStr;
+        String explainQuery = "EXPLAIN " + selectStr;
 
         // Log the query
         if (globalState.getOptions().logEachSelect()) {
@@ -259,10 +271,15 @@ public class CockroachDBCERTOracle extends CERTOracleBase<CockroachDBGlobalState
                     }
                     if (content.contains("• ")) {
                         String operation = content.split("• ")[1].split(" ")[0];
+                        if (CockroachDBBugs.bug131875 && (operation.equals("distinct") || operation.equals("limit"))) {
+                            throw new IgnoreMeException();
+                        }
                         queryPlanSequences.add(operation);
                     }
                 }
             }
+        } catch (IgnoreMeException e) {
+            throw new IgnoreMeException();
         } catch (Exception e) {
             throw new AssertionError(q.getQueryString(), e);
         }
