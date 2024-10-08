@@ -5,15 +5,18 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.common.gen.CERTGenerator;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.gen.NoRECGenerator;
 import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.schema.AbstractTables;
+import sqlancer.postgres.PostgresBugs;
 import sqlancer.postgres.PostgresCompoundDataType;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresProvider;
@@ -63,10 +66,12 @@ import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
 import sqlancer.postgres.ast.PostgresSelect.SelectType;
 import sqlancer.postgres.ast.PostgresSimilarTo;
+import sqlancer.postgres.ast.PostgresTableReference;
 
 public class PostgresExpressionGenerator implements ExpressionGenerator<PostgresExpression>,
         NoRECGenerator<PostgresSelect, PostgresJoin, PostgresExpression, PostgresTable, PostgresColumn>,
-        TLPWhereGenerator<PostgresSelect, PostgresJoin, PostgresExpression, PostgresTable, PostgresColumn> {
+        TLPWhereGenerator<PostgresSelect, PostgresJoin, PostgresExpression, PostgresTable, PostgresColumn>,
+        CERTGenerator<PostgresSelect, PostgresJoin, PostgresExpression, PostgresTable, PostgresColumn> {
 
     private final int maxDepth;
 
@@ -738,5 +743,138 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         select.setSelectType(SelectType.ALL);
 
         return "SELECT SUM(count) FROM (" + select.asString() + ") as res";
+    }
+
+    @Override
+    public String generateExplainQuery(PostgresSelect select) {
+        return "EXPLAIN " + select.asString();
+    }
+
+    @Override
+    public boolean mutate(PostgresSelect select) {
+        List<Function<PostgresSelect, Boolean>> mutators = new ArrayList<>();
+
+        mutators.add(this::mutateJoin);
+        mutators.add(this::mutateWhere);
+        mutators.add(this::mutateGroupBy);
+        mutators.add(this::mutateHaving);
+        if (!PostgresBugs.bug18643) {
+            mutators.add(this::mutateAnd);
+            mutators.add(this::mutateOr);
+        }
+        // mutators.add(this::mutateLimit);
+        mutators.add(this::mutateDistinct);
+
+        return Randomly.fromList(mutators).apply(select);
+    }
+
+    boolean mutateJoin(PostgresSelect select) {
+        if (select.getJoinList().isEmpty()) {
+            return false;
+        }
+        PostgresJoin join = (PostgresJoin) Randomly.fromList(select.getJoinList());
+
+        // Exclude CROSS for on condition
+        if (join.getType() == PostgresJoinType.CROSS) {
+            List<PostgresColumn> columns = new ArrayList<>();
+            columns.addAll(((PostgresTableReference) join.getLeftTable()).getTable().getColumns());
+            columns.addAll(((PostgresTableReference) join.getRightTable()).getTable().getColumns());
+            PostgresExpressionGenerator joinGen2 = new PostgresExpressionGenerator(globalState).setColumns(columns);
+            join.setOnClause(joinGen2.generateExpression(0, PostgresDataType.BOOLEAN));
+        }
+
+        PostgresJoinType newJoinType = PostgresJoinType.INNER;
+        if (join.getType() == PostgresJoinType.LEFT || join.getType() == PostgresJoinType.RIGHT) {
+            newJoinType = PostgresJoinType.getRandomExcept(PostgresJoinType.LEFT, PostgresJoinType.RIGHT);
+        } else {
+            newJoinType = PostgresJoinType.getRandomExcept(join.getType());
+        }
+        boolean increase = join.getType().ordinal() < newJoinType.ordinal();
+        join.setType(newJoinType);
+        if (newJoinType == PostgresJoinType.CROSS) {
+            join.setOnClause(null);
+        }
+        return increase;
+    }
+
+    boolean mutateDistinct(PostgresSelect select) {
+        PostgresSelect.SelectType selectType = select.getSelectOption();
+        if (selectType != PostgresSelect.SelectType.ALL) {
+            select.setSelectType(PostgresSelect.SelectType.ALL);
+            return true;
+        } else {
+            select.setSelectType(PostgresSelect.SelectType.DISTINCT);
+            return false;
+        }
+    }
+
+    boolean mutateWhere(PostgresSelect select) {
+        boolean increase = select.getWhereClause() != null;
+        if (increase) {
+            select.setWhereClause(null);
+        } else {
+            select.setWhereClause(generateExpression(0, PostgresDataType.BOOLEAN));
+        }
+        return increase;
+    }
+
+    boolean mutateGroupBy(PostgresSelect select) {
+        boolean increase = select.getGroupByExpressions().size() > 0;
+        if (increase) {
+            select.clearGroupByExpressions();
+        } else {
+            select.setGroupByExpressions(select.getFetchColumns());
+        }
+        return increase;
+    }
+
+    boolean mutateHaving(PostgresSelect select) {
+        if (select.getGroupByExpressions().size() == 0) {
+            select.setGroupByExpressions(select.getFetchColumns());
+            select.setHavingClause(generateExpression(0, PostgresDataType.BOOLEAN));
+            return false;
+        } else {
+            if (select.getHavingClause() == null) {
+                select.setHavingClause(generateExpression(0, PostgresDataType.BOOLEAN));
+                return false;
+            } else {
+                select.setHavingClause(null);
+                return true;
+            }
+        }
+    }
+
+    boolean mutateAnd(PostgresSelect select) {
+        if (select.getWhereClause() == null) {
+            select.setWhereClause(generateExpression(0, PostgresDataType.BOOLEAN));
+        } else {
+            PostgresExpression newWhere = new PostgresBinaryLogicalOperation(select.getWhereClause(),
+                    generateExpression(0, PostgresDataType.BOOLEAN), BinaryLogicalOperator.AND);
+            select.setWhereClause(newWhere);
+        }
+        return false;
+    }
+
+    boolean mutateOr(PostgresSelect select) {
+        if (select.getWhereClause() == null) {
+            select.setWhereClause(generateExpression(0, PostgresDataType.BOOLEAN));
+            return false;
+        } else {
+            PostgresExpression newWhere = new PostgresBinaryLogicalOperation(select.getWhereClause(),
+                    generateExpression(0, PostgresDataType.BOOLEAN), BinaryLogicalOperator.OR);
+            select.setWhereClause(newWhere);
+            return true;
+        }
+    }
+
+    boolean mutateLimit(PostgresSelect select) {
+        boolean increase = select.getLimitClause() != null;
+        if (increase) {
+            select.setLimitClause(null);
+        } else {
+            Randomly r = new Randomly();
+            select.setLimitClause(PostgresConstant.createIntConstant((int) Math.abs(r.getInteger())));
+        }
+        return increase;
     }
 }
