@@ -351,6 +351,7 @@ public final class CockroachDBErrors {
 
         // computed columns
         errors.add("computed column expressions cannot reference computed columns");
+        errors.add("STORED COMPUTED COLUMN expression cannot reference computed columns");
 
         return errors;
     }

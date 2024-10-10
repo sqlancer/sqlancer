@@ -13,7 +13,7 @@ public class TestCockroachDBCERT {
     public void testCockroachDBCERT() {
         assumeTrue(TestConfig.isEnvironmentTrue(TestConfig.COCKROACHDB_ENV));
         assertEquals(0, Main.executeMain(new String[] { "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS,
-                "--num-queries", TestConfig.NUM_QUERIES, "cockroachdb", "--oracle", "CERT" }));
+                "--num-threads", "4", "--num-queries", TestConfig.NUM_QUERIES, "cockroachdb", "--oracle", "CERT" }));
     }
 
 }

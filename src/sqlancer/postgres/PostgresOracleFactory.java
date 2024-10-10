@@ -3,16 +3,18 @@ package sqlancer.postgres;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import sqlancer.OracleFactory;
+import sqlancer.common.oracle.CERTOracle;
 import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.NoRECOracle;
 import sqlancer.common.oracle.TLPWhereOracle;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.postgres.gen.PostgresCommon;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
-import sqlancer.postgres.oracle.PostgresCERTOracle;
 import sqlancer.postgres.oracle.PostgresFuzzer;
 import sqlancer.postgres.oracle.PostgresPivotedQuerySynthesisOracle;
 import sqlancer.postgres.oracle.tlp.PostgresTLPAggregateOracle;
@@ -72,7 +74,31 @@ public enum PostgresOracleFactory implements OracleFactory<PostgresGlobalState> 
     CERT {
         @Override
         public TestOracle<PostgresGlobalState> create(PostgresGlobalState globalState) throws SQLException {
-            return new PostgresCERTOracle(globalState);
+            PostgresExpressionGenerator gen = new PostgresExpressionGenerator(globalState);
+            ExpectedErrors errors = ExpectedErrors.newErrors().with(PostgresCommon.getCommonExpressionErrors())
+                    .withRegex(PostgresCommon.getCommonExpressionRegexErrors())
+                    .with(PostgresCommon.getCommonFetchErrors()).with(PostgresCommon.getCommonInsertUpdateErrors())
+                    .with(PostgresCommon.getGroupingErrors()).with(PostgresCommon.getCommonInsertUpdateErrors())
+                    .with(PostgresCommon.getCommonRangeExpressionErrors()).build();
+            CERTOracle.CheckedFunction<SQLancerResultSet, Optional<Long>> rowCountParser = (rs) -> {
+                String content = rs.getString(1).trim();
+                if (content.contains("Result") && content.contains("rows=")) {
+                    try {
+                        int ind = content.indexOf("rows=");
+                        long number = Long.parseLong(content.substring(ind + 5).split(" ")[0]);
+                        return Optional.of(number);
+                    } catch (Exception e) {
+                    }
+                }
+                return Optional.empty();
+            };
+            CERTOracle.CheckedFunction<SQLancerResultSet, Optional<String>> queryPlanParser = (rs) -> {
+                String content = rs.getString(1).trim();
+                String[] planPart = content.split("-> ");
+                String plan = planPart[planPart.length - 1];
+                return Optional.of(plan.split("  ")[0].trim());
+            };
+            return new CERTOracle<>(globalState, gen, errors, rowCountParser, queryPlanParser);
         }
 
         @Override

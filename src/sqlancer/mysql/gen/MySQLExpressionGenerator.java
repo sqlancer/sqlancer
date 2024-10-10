@@ -2,10 +2,12 @@ package sqlancer.mysql.gen;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.common.gen.CERTGenerator;
 import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.common.schema.AbstractTables;
@@ -41,7 +43,8 @@ import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 
 public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLExpression, MySQLColumn>
-        implements TLPWhereGenerator<MySQLSelect, MySQLJoin, MySQLExpression, MySQLTable, MySQLColumn> {
+        implements TLPWhereGenerator<MySQLSelect, MySQLJoin, MySQLExpression, MySQLTable, MySQLColumn>,
+        CERTGenerator<MySQLSelect, MySQLJoin, MySQLExpression, MySQLTable, MySQLColumn> {
 
     private final MySQLGlobalState state;
     private MySQLRowValue rowVal;
@@ -208,8 +211,7 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
     }
 
     @Override
-    public TLPWhereGenerator<MySQLSelect, MySQLJoin, MySQLExpression, MySQLTable, MySQLColumn> setTablesAndColumns(
-            AbstractTables<MySQLTable, MySQLColumn> tables) {
+    public MySQLExpressionGenerator setTablesAndColumns(AbstractTables<MySQLTable, MySQLColumn> tables) {
         this.columns = tables.getColumns();
         this.tables = tables.getTables();
 
@@ -239,5 +241,94 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
     @Override
     public List<MySQLExpression> generateFetchColumns(boolean shouldCreateDummy) {
         return columns.stream().map(c -> new MySQLColumnReference(c, null)).collect(Collectors.toList());
+    }
+
+    @Override
+    public String generateExplainQuery(MySQLSelect select) {
+        return "EXPLAIN " + select.asString();
+    }
+
+    @Override
+    public boolean mutate(MySQLSelect select) {
+        List<Function<MySQLSelect, Boolean>> mutators = new ArrayList<>();
+
+        mutators.add(this::mutateWhere);
+        mutators.add(this::mutateGroupBy);
+        mutators.add(this::mutateHaving);
+        mutators.add(this::mutateAnd);
+        mutators.add(this::mutateOr);
+        mutators.add(this::mutateDistinct);
+
+        return Randomly.fromList(mutators).apply(select);
+    }
+
+    boolean mutateDistinct(MySQLSelect select) {
+        MySQLSelect.SelectType selectType = select.getFromOptions();
+        if (selectType != MySQLSelect.SelectType.ALL) {
+            select.setSelectType(MySQLSelect.SelectType.ALL);
+            return true;
+        } else {
+            select.setSelectType(MySQLSelect.SelectType.DISTINCT);
+            return false;
+        }
+    }
+
+    boolean mutateWhere(MySQLSelect select) {
+        boolean increase = select.getWhereClause() != null;
+        if (increase) {
+            select.setWhereClause(null);
+        } else {
+            select.setWhereClause(generateExpression());
+        }
+        return increase;
+    }
+
+    boolean mutateGroupBy(MySQLSelect select) {
+        boolean increase = select.getGroupByExpressions().size() > 0;
+        if (increase) {
+            select.clearGroupByExpressions();
+        } else {
+            select.setGroupByExpressions(select.getFetchColumns());
+        }
+        return increase;
+    }
+
+    boolean mutateHaving(MySQLSelect select) {
+        if (select.getGroupByExpressions().size() == 0) {
+            select.setGroupByExpressions(select.getFetchColumns());
+            select.setHavingClause(generateExpression());
+            return false;
+        } else {
+            if (select.getHavingClause() == null) {
+                select.setHavingClause(generateExpression());
+                return false;
+            } else {
+                select.setHavingClause(null);
+                return true;
+            }
+        }
+    }
+
+    boolean mutateAnd(MySQLSelect select) {
+        if (select.getWhereClause() == null) {
+            select.setWhereClause(generateExpression());
+        } else {
+            MySQLExpression newWhere = new MySQLBinaryLogicalOperation(select.getWhereClause(), generateExpression(),
+                    MySQLBinaryLogicalOperator.AND);
+            select.setWhereClause(newWhere);
+        }
+        return false;
+    }
+
+    boolean mutateOr(MySQLSelect select) {
+        if (select.getWhereClause() == null) {
+            select.setWhereClause(generateExpression());
+            return false;
+        } else {
+            MySQLExpression newWhere = new MySQLBinaryLogicalOperation(select.getWhereClause(), generateExpression(),
+                    MySQLBinaryLogicalOperator.OR);
+            select.setWhereClause(newWhere);
+            return true;
+        }
     }
 }
