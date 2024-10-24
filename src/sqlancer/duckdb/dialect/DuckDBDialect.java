@@ -40,11 +40,11 @@ public class DuckDBDialect implements Dialect {
             new Timestamp(), new Varchar());
     static List<Class<? extends Expression>> legalExpressions = List.of(Between.class, BinaryArithmetic.class,
             BinaryComparison.class, BinaryLogical.class, Case.class, Cast.class, Collate.class, ColumnName.class,
-            Constant.class, In.class, IsNull.class, Like.class, Not.class, PrefixSign.class,
+            Constant.class, DuckDBFunction.class, In.class, IsNull.class, Like.class, Not.class, PrefixSign.class,
             SimilarTo.class);
 
     public static <T> boolean isOneOfClass(Class<? extends T> clazz, List<Class<? extends T>> clazzes) {
-return clazzes.contains(clazz);
+        return clazzes.contains(clazz);
     }
 
     @Override
