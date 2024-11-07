@@ -50,6 +50,9 @@ public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?, C>, 
         if (!pivotRowIsContained) {
             reportMissingPivotRow(pivotRowQuery);
         }
+        else{
+            System.out.println(isContainedQuery.getQueryString());
+        }
     }
 
     /**
