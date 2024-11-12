@@ -1,8 +1,7 @@
 package sqlancer.influxdb.test;
 
 import java.sql.SQLException;
-import sqlancer.common.oracle.TestOracle;
-import sqlancer.influxdb.InfluxDBProvider.InfluxDBGlobalState;
+
 import sqlancer.influxdb.errors.InfluxDBErrors;
 
 public class InfluxDBQueryPartitioningWhereTester extends InfluxDBQueryPartitioningBase {
