@@ -1,0 +1,525 @@
+[33mcommit 954f8bc7a0152aa1810a0cd2b1863f9998eb521b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mlearningTool[m[33m)[m
+Author: Tim <timmy.panta@gmail.com>
+Date:   Thu Nov 7 17:50:49 2024 +0800
+
+    test branch 3nd time
+
+[33mcommit fef49513fe4c133f22e0ce92ab35b1c371740625[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m
+Merge: ec740239 8a873758
+Author: timbytimmy <141701474+timbytimmy@users.noreply.github.com>
+Date:   Thu Nov 7 17:45:42 2024 +0800
+
+    Merge pull request #2 from timbytimmy/testingTool
+    
+    Testing tool
+
+[33mcommit 8a8737589c49246267fd97b05695c0dfacffcb23[m[33m ([m[1;32mtestingTool[m[33m)[m
+Author: Tim <timmy.panta@gmail.com>
+Date:   Thu Nov 7 17:43:21 2024 +0800
+
+    test branch 2nd time
+
+[33mcommit 0b7567057dbf826ee1cbc3a6581527634b38eb7e[m
+Author: Tim <timmy.panta@gmail.com>
+Date:   Thu Nov 7 17:41:04 2024 +0800
+
+    test branch
+
+[33mcommit ec7402395888186b73580df257436d50ee384ab0[m
+Merge: 04f0b49c 38e31492
+Author: timbytimmy <141701474+timbytimmy@users.noreply.github.com>
+Date:   Thu Nov 7 17:05:48 2024 +0800
+
+    Merge pull request #1 from timbytimmy/setForMysql
+    
+    set SQLancer for local MySQL test
+
+[33mcommit 38e31492348be48bfc3eed240de59744d271e15a[m
+Author: Tim <timmy.panta@gmail.com>
+Date:   Thu Nov 7 17:02:22 2024 +0800
+
+    set SQLancer for local MySQL test
+
+[33mcommit 04f0b49ccbcee1054ef93f27b0055f2aa976ca05[m
+Merge: d0d13d5e 32867af3
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Thu Oct 10 19:02:23 2024 +0200
+
+    Merge pull request #1019 from sqlancer/dependabot/maven/org.junit.jupiter-junit-jupiter-engine-5.11.2
+    
+    Bump org.junit.jupiter:junit-jupiter-engine from 5.9.1 to 5.11.2
+
+[33mcommit d0d13d5e8922c5de64d69a9881ab583cd0868764[m
+Merge: 91b6f86a 0d70f35b
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Thu Oct 10 19:00:23 2024 +0200
+
+    Merge pull request #1021 from malwaregarry/cert-common
+    
+    Common CERT oracle
+
+[33mcommit 0d70f35b97e5b10e482437350c45999bc153fa7c[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Wed Oct 9 20:46:40 2024 +0800
+
+    [CockroachDB] Use common CERT oracle
+
+[33mcommit 2d54f09b1a3b375fded60d5e9b28ddf6a5f985b0[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Oct 8 15:36:56 2024 +0800
+
+    [MySQL] Use common CERT oracle
+
+[33mcommit 856259c49ba2e88330dba5ad98d12ac91f549aea[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Oct 8 15:22:45 2024 +0800
+
+    [Postgres] Use common CERT oracle
+
+[33mcommit 62a22d7bf80c41fcc9331f03f7c63916c1b7e2c9[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Oct 8 14:14:01 2024 +0800
+
+    [TiDB] Use common CERT oracle
+
+[33mcommit 7fa58055f394f4511bb0e333686e03c460a7b781[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Oct 8 14:13:30 2024 +0800
+
+    Add common CERT oracle
+
+[33mcommit 91b6f86a2a65771ed4f8746775d58abec4f8c0b3[m
+Merge: 582902db b0f16c9a
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Tue Oct 8 15:13:52 2024 +0200
+
+    Merge pull request #1020 from malwaregarry/cert-mysql
+    
+    [MySQL] Add CERT test
+
+[33mcommit 582902db3122eb8848242a2f60b1eed328a6d21e[m
+Merge: 425e67cc 012f4582
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Tue Oct 8 15:13:03 2024 +0200
+
+    Merge pull request #1014 from malwaregarry/cert
+    
+    [CockroachDB] Add CERT tests
+
+[33mcommit b0f16c9ab63b4178390cc1a711e3792dae6fec26[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Oct 8 09:55:04 2024 +0800
+
+    [MySQL] Add CERT test
+
+[33mcommit 32867af3c551ad02a16619d05385cb4f0e304cc4[m
+Author: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+Date:   Mon Oct 7 09:45:12 2024 +0000
+
+    Bump org.junit.jupiter:junit-jupiter-engine from 5.9.1 to 5.11.2
+    
+    Bumps [org.junit.jupiter:junit-jupiter-engine](https://github.com/junit-team/junit5) from 5.9.1 to 5.11.2.
+    - [Release notes](https://github.com/junit-team/junit5/releases)
+    - [Commits](https://github.com/junit-team/junit5/compare/r5.9.1...r5.11.2)
+    
+    ---
+    updated-dependencies:
+    - dependency-name: org.junit.jupiter:junit-jupiter-engine
+      dependency-type: direct:development
+      update-type: version-update:semver-minor
+    ...
+    
+    Signed-off-by: dependabot[bot] <support@github.com>
+
+[33mcommit 012f4582a97de0119b314d4e35256b394306a270[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Fri Oct 4 14:12:14 2024 +0800
+
+    [CockroachDB] Add bugs 131640, 131647 and 131875
+
+[33mcommit fb3deab1b537402e6bfea33373caa474fafc5d79[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Oct 1 14:24:19 2024 +0800
+
+    [CockroachDB] Update CERT oracle
+
+[33mcommit 880ec6f3f26985ade2217606a591ee9a2cbe4e47[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Oct 1 14:23:42 2024 +0800
+
+    [CockroachDB] Add CERT test
+
+[33mcommit 425e67ccbdcbf485e52a6ebb3b84987a954e46cc[m
+Merge: d81edf61 bd45822b
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Thu Oct 3 14:02:48 2024 +0200
+
+    Merge pull request #1016 from malwaregarry/cert-tidb
+    
+    [TiDB] Add CERT tests
+
+[33mcommit d81edf6151a47dadfbec2009d13da373249a5b07[m
+Merge: 5d0210b6 eefcde54
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Thu Oct 3 13:56:58 2024 +0200
+
+    Merge pull request #1015 from malwaregarry/cert-postgres
+    
+    [Postgres] Add CERT tests
+
+[33mcommit bd45822bc8d6083a0bdb6569f91d625de6fba074[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Wed Oct 2 11:56:54 2024 +0800
+
+    [TiDB] Add bugs 38319 and 51525
+
+[33mcommit 648bc945b2bdf2b169740aa7b950d211d9f6b2b2[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Wed Oct 2 11:56:25 2024 +0800
+
+    [TiDB] Handle expected errors
+
+[33mcommit 4f3a92659203e547f1dc0ff52b182ad04df4d4c5[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Wed Oct 2 11:55:51 2024 +0800
+
+    [TiDB] Add CERT test
+
+[33mcommit eefcde54c4ec9df85ce0d20c934cdc93067a7ae8[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Oct 1 16:26:43 2024 +0800
+
+    [Postgres] Add bug 18643
+
+[33mcommit e0d072bec939074cc2ee0ab0ddaded5d563fd075[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Oct 1 16:12:46 2024 +0800
+
+    [Postgres] Add CERT test
+
+[33mcommit 5d0210b6f202311f8b4f5fc1a4b99bef9ce25201[m
+Merge: 13ea3e84 0e514c14
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Thu Sep 26 10:59:13 2024 +0200
+
+    Merge pull request #1002 from malwaregarry/oracle-factory
+    
+    Refactor test oracle creation
+
+[33mcommit 13ea3e844c0662b694215964a2be7a271c9e1b22[m
+Merge: fd05a489 3131e3f3
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Wed Sep 25 09:39:40 2024 +0200
+
+    Merge pull request #998 from malwaregarry/tlp-presto
+    
+    [Presto] Use common TLP-where oracle
+
+[33mcommit fd05a48976ae920a80d6de6b7ff067fec9f66ef6[m
+Merge: d96e49fa 510df57e
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Wed Sep 25 09:38:22 2024 +0200
+
+    Merge pull request #1003 from malwaregarry/tlp-ysql
+    
+    [YSQL] Use common TLP-where oracle
+
+[33mcommit 510df57e895e16ced536a0466e1e8014e7a95130[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Wed Sep 25 12:09:28 2024 +0800
+
+    [YSQL] Use common TLP-where oracle
+
+[33mcommit aed8cc1c317e31fe26a4643276b44126f1825ac7[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Wed Sep 25 12:09:10 2024 +0800
+
+    [YSQL] Implement TLP-where expression generator interface
+
+[33mcommit 0e514c14e5c8da12667fb318f45faa57c971a511[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Wed Sep 25 11:47:17 2024 +0800
+
+    Refactor test oracle factory
+
+[33mcommit d96e49fa835c2ee34e7d84d76d8eb100521da71c[m
+Merge: de77ce21 c234b11a
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Mon Sep 23 10:08:19 2024 +0200
+
+    Merge pull request #1000 from malwaregarry/tlp-citus
+    
+    [Citus] Use common TLP Where oracle
+
+[33mcommit 3131e3f34d2a27f1a63b5f9213c73b98cbbc40b3[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Sat Sep 21 16:05:27 2024 +0800
+
+    [Presto] Update expected errors
+
+[33mcommit c234b11a15d9048348e31b7951c81217560e3258[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Sat Sep 21 16:09:32 2024 +0800
+
+    [Citus] Update expected errors
+
+[33mcommit de77ce21e622fc99aaf9503b208d46484f0ac9da[m
+Merge: a6d643fb 37c4963d
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Sat Sep 21 21:08:59 2024 +0800
+
+    Merge pull request #995 from malwaregarry/tlp-doris
+    
+    [Doris] Use common TLP-where oracle
+
+[33mcommit a6d643fbb669437d1c56759a008b716b7609f8b2[m
+Merge: b32fd62f a736f323
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Sat Sep 21 04:37:35 2024 +0800
+
+    Merge pull request #997 from malwaregarry/tlp-materialize
+    
+    [Materialize] Use common TLP-where oracle
+
+[33mcommit b32fd62f50ad020077db766a5a27e142a410d5dd[m
+Merge: 2385dd97 85281e2b
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Sat Sep 21 04:36:49 2024 +0800
+
+    Merge pull request #996 from malwaregarry/tlp-duckdb
+    
+    [DuckDB] Use common TLP-where oracle
+
+[33mcommit 2385dd975d6f01c9804f866c9b2c9efe7b8f50e4[m
+Merge: 505b0ea1 98d40769
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Fri Sep 20 19:27:07 2024 +0800
+
+    Merge pull request #994 from malwaregarry/tlp-databend
+    
+    [Databend] Use commont TLP-where oracle
+
+[33mcommit 505b0ea1b27ea1fee36273801fd0d9df630b74f8[m
+Merge: fdfc1ce4 e6d31efb
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Fri Sep 20 19:26:12 2024 +0800
+
+    Merge pull request #993 from malwaregarry/tlp-cockroach
+    
+    [CockroachDB] Use common TLP-where oracle
+
+[33mcommit fdfc1ce4ef930a7c6710cfb33562d114e66f5a4e[m
+Merge: f6e87c62 33707784
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Fri Sep 20 19:24:45 2024 +0800
+
+    Merge pull request #992 from malwaregarry/tlp-clickhouse
+    
+    [ClickHouse] Use common TLP-where oracle
+
+[33mcommit f6e87c62a68b3804b09ea5b628ebb08a480414d8[m
+Merge: 7c1b4251 1fef4a3b
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Fri Sep 20 19:23:06 2024 +0800
+
+    Merge pull request #988 from malwaregarry/tlp-mysql
+    
+    [MySQL] Use common TLP-where oracle
+
+[33mcommit 7c1b4251a7425642150f555d5093faa05ded3467[m
+Merge: d2f455c3 6709c8a8
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Fri Sep 20 19:22:28 2024 +0800
+
+    Merge pull request #991 from malwaregarry/tlp-oceanbase
+    
+    [OceanBase] Use common TLP-where oracle
+
+[33mcommit 9b509a744bebf227d38e9ae35580d7e671630a58[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Wed Sep 11 14:23:15 2024 +0800
+
+    [Citus] Use common TLP Where oracle
+
+[33mcommit 3d3bc2c128b29e7fd0031ecb32d906a4f96f61d3[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Sep 17 14:59:04 2024 +0800
+
+    [Presto] Use common TLP-where oracle
+
+[33mcommit 2dd43a25e6c600401bee04a0469f6434a5724c0f[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Sep 17 14:58:47 2024 +0800
+
+    [Presto] Implement TLP-where expression generator interfaces
+
+[33mcommit a736f3233a4969c530378f4530433040078dee96[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Sep 17 14:51:47 2024 +0800
+
+    [Materialize] Use common TLP-where oracle
+
+[33mcommit e486f85fbc6a7131d1eca35f2df3c69a8b8da869[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Sep 17 14:51:20 2024 +0800
+
+    [Materialize] Implement TLP-where expression generator interface
+
+[33mcommit 85281e2b1ff840446d89571c17ce0ef3186450da[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Sep 17 14:36:03 2024 +0800
+
+    [DuckDB] Use common TLP-where oracle
+
+[33mcommit 8a32ad7ed2116113953fcbf8caebd338183a4c6f[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Sep 17 14:35:20 2024 +0800
+
+    [DuckDB] Implement TLP-where expression generator interface
+
+[33mcommit 37c4963d340a58df013d87504ee0f3d2f44daace[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Sep 17 14:25:35 2024 +0800
+
+    [Doris] Use common TLP-where oracle
+
+[33mcommit eadad7b6784f5ac5aa66ef17c36ef91629c4fcf9[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Sep 17 14:25:14 2024 +0800
+
+    [Doris] Implement TLP-where expression generator interfaces
+
+[33mcommit 98d40769b4932e9c9284ee48afa0307271e336b0[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Sep 17 14:16:18 2024 +0800
+
+    [Databend] Use common TLP-where oracle
+
+[33mcommit 6f0a07ed46a2302ee1a43b859c9d976a9e66d116[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Sep 17 14:15:57 2024 +0800
+
+    [Databend] Implement TLP-where expression generator interface
+
+[33mcommit e6d31efbd120f156a8c3055a108f2a65da98af62[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Sep 17 11:48:58 2024 +0800
+
+    [CockroachdB] Use common TLP-where oracle
+
+[33mcommit 84278c8f17fad4390f0f2d999ca84b674b03aefc[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Sep 17 11:48:33 2024 +0800
+
+    [CockroachDB] Implement TLP-where expression generator interface
+
+[33mcommit 33707784baed2cc113c29b56e306fb51f0716a11[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Sep 17 11:33:45 2024 +0800
+
+    [ClickHouse] Use common TLP-where oracle
+
+[33mcommit 276c2b7a1818ffe0f58c935125ca33031ec1ddb4[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Sep 17 11:33:28 2024 +0800
+
+    [ClickHouse] Implemenet TLP-where expression generator interface
+
+[33mcommit 6709c8a8b30507630a4772c053a484ced79f865d[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Sep 17 11:09:37 2024 +0800
+
+    [OceanBase] Use common TLP-where oracle
+
+[33mcommit df714f1df7a119c2a479261aeb0ef37eee8122e3[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Tue Sep 17 11:09:11 2024 +0800
+
+    [OceanBase] Implement TLP-where expression generator interface
+
+[33mcommit d2f455c34ebaf12aa21d2c91701b3a1b056ac960[m
+Merge: 17da5fbc 41df4fbb
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Mon Sep 16 23:20:52 2024 +0800
+
+    Merge pull request #968 from sqlancer/partial-indexes
+    
+    Update the DuckDB version to 1.1.0
+
+[33mcommit 17da5fbcd5df251e2bdc0b5bae435c6ae057e115[m
+Merge: cad94706 848f96c1
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Mon Sep 16 23:19:45 2024 +0800
+
+    Merge pull request #990 from malwaregarry/tlp-datafusion
+    
+    [DataFusion] Use common TLP-where oracle
+
+[33mcommit cad947067af29119a174ac0785af2ab70932a775[m
+Merge: 49b276cc f41e801b
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Mon Sep 16 23:19:07 2024 +0800
+
+    Merge pull request #989 from malwaregarry/tlp-hsql
+    
+    [HSQLDB] Use common TLP-where oracle
+
+[33mcommit 848f96c1bea253b5cbb0c5bceb5d9e130e4da5c9[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Mon Sep 16 18:07:58 2024 +0800
+
+    [DataFusion] Use common TLP-where oracle
+
+[33mcommit 045117e4a80ccbc9e0777b3c870a6dd2f614b5ad[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Mon Sep 16 18:07:40 2024 +0800
+
+    [DataFusion] Implement TLP-where expression generator interface
+
+[33mcommit 1fef4a3b4c313548b52cd573f4a42d4d31ff0be8[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Mon Sep 16 17:48:46 2024 +0800
+
+    [MySQL] Refactor environment check in test
+
+[33mcommit 1e41016068b0b17883adfcb0490fc32f3370e60e[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Mon Sep 16 16:47:23 2024 +0800
+
+    [MySQL] Use common TLP-where oracle
+
+[33mcommit 393c531124ca5a041838ad6a5bbddffb120481aa[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Mon Sep 16 16:47:01 2024 +0800
+
+    [MySQL] Implement TLP-where expression generator interfaces
+
+[33mcommit f41e801bb76217ce2f12253fae1e875d33c4d79f[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Mon Sep 16 17:13:55 2024 +0800
+
+    [HSQLDB] Use common TLP-where oracle
+
+[33mcommit fab83b92b14dba5896015a1266c1565beff064b7[m
+Author: malwaregarry <malwaregarry@gmail.com>
+Date:   Mon Sep 16 17:13:03 2024 +0800
+
+    [HSQLDB] Implement TLP-where generator interface
+
+[33mcommit 49b276cc7a7ea894d93f0af319c76379377d5a6e[m
+Merge: 8ef865b9 21689fc7
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Mon Sep 16 03:47:42 2024 +0800
+
+    Merge pull request #986 from jhohm/sqlite-3.46.1
+    
+    Bump SQLite3 to version 3.46.1.0, recognize new bad JSON path error
+
+[33mcommit 8ef865b9f78d4983c98f6ff7a796bca7eb00b27e[m
+Merge: fa65a3e8 b5c5d710
+Author: Manuel Rigger <rigger@nus.edu.sg>
+Date:   Mon Sep 16 03:46:53 2024 +0800
+
+    Merge pull request #987 from malwaregarry/norec-presto
+    
+    [Presto] Use common NoREC oracle

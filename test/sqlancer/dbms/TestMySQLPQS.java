@@ -23,8 +23,4 @@ public class TestMySQLPQS {
 
 }
 
-//testing for testingTool
-//test one more time
-//test the learningTool branch
-//test commit
 
