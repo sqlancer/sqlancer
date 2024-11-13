@@ -378,6 +378,13 @@
       <artifactId>flight-sql-jdbc-driver</artifactId>
       <version>16.1.0</version>
     </dependency>
+    <!--add new dependency-->
+    <dependency>
+      <groupId>org.influxdb</groupId>
+      <artifactId>influxdb-java</artifactId>
+      <version>2.21</version>
+    </dependency>
+    <!--find out why it cannot resolve-->
   </dependencies>
   <reporting>
     <plugins>
