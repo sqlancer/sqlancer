@@ -62,7 +62,6 @@ public class InfluxDBSchema extends AbstractSchema<SQLConnection, InfluxDBSchema
 
     public InfluxDBSchema(List<InfluxDBTable> databaseTables, List<String> databaseMeasurements) {
         super(databaseTables);
-        this.databaseMeasurements = this.databaseMeasurements;
     }
 
     private static InfluxDBDataType getColumnType(String typeString) {

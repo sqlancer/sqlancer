@@ -147,6 +147,10 @@ public class MainOptions {
     @Parameter(names = "--canonicalize-sql-strings", description = "Should canonicalize query string (add ';' at the end", arity = 1)
     private boolean canonicalizeSqlString = true; // NOPMD
 
+    //add for maxNumberWrites
+    @Parameter(names = "--max-number-writes", description = "Specifies the maximum number of write operations")
+    private int getMaxNumberWrites = 100; // Default value
+
     public int getMaxExpressionDepth() {
         return maxExpressionDepth;
     }
@@ -336,4 +340,5 @@ public class MainOptions {
         return canonicalizeSqlString;
     }
 
+    public int getMaxNumberWrites() { return getMaxNumberWrites;    }
 }
