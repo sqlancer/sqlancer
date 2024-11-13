@@ -1,11 +1,13 @@
 package sqlancer;
 
+import sqlancer.common.schema.AbstractSchema;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class SQLConnection implements SQLancerDBConnection {
+public class SQLConnection extends GlobalState<DBMSSpecificOptions, AbstractSchema, SQLancerDBConnection> implements SQLancerDBConnection {
 
     private final Connection connection;
 

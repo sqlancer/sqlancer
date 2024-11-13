@@ -62,7 +62,7 @@ public class InfluxDBProvider extends SQLProviderAdapter<InfluxDBGlobalState, In
         for (int i = 0; i < Randomly.fromOptions(1, 2); i++) {
             boolean success;
             do {
-                SQLQueryAdapter qt = new InfluxDBWritePointGenerator().getQuery(globalState);
+                SQLQueryAdapter qt = new influxdb.gen.InfluxDBWritePointGenerator().getQuery(globalState);
                 success = globalState.executeStatement(qt);
             } while (!success);
         }

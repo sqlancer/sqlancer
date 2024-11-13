@@ -1,7 +1,7 @@
 package sqlancer.influxdb;
 
 import java.util.*;
-import okhttp3.OkHttpClient;
+
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Query;
@@ -13,6 +13,8 @@ import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.AbstractRelationalTable;
 
 public class InfluxDBSchema extends AbstractSchema<SQLConnection, InfluxDBSchema.InfluxDBTable> {
+
+    private List<String> databaseMeasurements; // field to hold measurements
 
     public enum InfluxDBDataType {
         INTEGER, FLOAT, STRING, BOOLEAN, TIME;
@@ -58,8 +60,9 @@ public class InfluxDBSchema extends AbstractSchema<SQLConnection, InfluxDBSchema
         }
     }
 
-    public InfluxDBSchema(List<InfluxDBTable> databaseTables) {
+    public InfluxDBSchema(List<InfluxDBTable> databaseTables, List<String> databaseMeasurements) {
         super(databaseTables);
+        this.databaseMeasurements = this.databaseMeasurements;
     }
 
     private static InfluxDBDataType getColumnType(String typeString) {
@@ -98,7 +101,24 @@ public class InfluxDBSchema extends AbstractSchema<SQLConnection, InfluxDBSchema
             InfluxDBTable table = new InfluxDBTable(tableName, columns);
             databaseTables.add(table);
         }
+        List<String> databaseMeasurements = fetchMeasurementsFromDatabase(influxDB, databaseName);
 
-        return new InfluxDBSchema(databaseTables);
+        return new InfluxDBSchema(databaseTables, databaseMeasurements);
+    }
+    private static List<String> fetchMeasurementsFromDatabase(InfluxDB influxDB, String databaseName) {
+        List<String> measurements = new ArrayList<>();
+        Query query = new Query("SHOW MEASUREMENTS", databaseName);
+        QueryResult result = influxDB.query(query);
+        for (QueryResult.Series series : result.getResults().get(0).getSeries()) {
+            for (List<Object> values : series.getValues()) {
+                measurements.add((String) values.get(0));
+            }
+        }
+        return measurements;
+    }
+
+    // New method to get database measurements
+    public List<String> getDatabaseMeasurements() {
+        return databaseMeasurements;
     }
 }
