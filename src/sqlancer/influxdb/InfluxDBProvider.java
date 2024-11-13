@@ -21,8 +21,8 @@ public class InfluxDBProvider extends SQLProviderAdapter<InfluxDBGlobalState, In
     }
 
     public enum Action implements AbstractAction<InfluxDBGlobalState> {
-        WRITE_POINT(InfluxDBWritePointGenerator::getQuery), 
-        CREATE_DATABASE(InfluxDBCreateDatabaseGenerator::getQuery);
+        WRITE_POINT(influxdb.gen.InfluxDBWritePointGenerator::getQuery),
+        CREATE_DATABASE(influxdb.gen.InfluxDBCreateDatabaseGenerator::getQuery);
 
         private final SQLQueryProvider<InfluxDBGlobalState> sqlQueryProvider;
 
