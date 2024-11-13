@@ -6,6 +6,7 @@ import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.influxdb.InfluxDBProvider.InfluxDBGlobalState;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 import org.influxdb.InfluxDB;
@@ -95,7 +96,7 @@ public class InfluxDBProvider extends SQLProviderAdapter<InfluxDBGlobalState, In
         String createDatabaseQuery = String.format("CREATE DATABASE \"%s\"", databaseName);
         influxDB.query(new Query(createDatabaseQuery));
 
-        return new SQLConnection(influxDB);
+        return new SQLConnection((Connection) influxDB);
     }
 
     @Override
