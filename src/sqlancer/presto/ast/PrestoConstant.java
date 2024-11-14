@@ -275,20 +275,20 @@ public abstract class PrestoConstant implements PrestoExpression {
             return PrestoConstant.PrestoTextConstant.createStringConstant(randomly.getString(), type.getSize());
         case VARBINARY:
             return PrestoConstant.createVarbinaryConstant(randomly.getString());
-        case JSON:
+        /*case JSON:
             return PrestoConstant.PrestoJsonConstant.createJsonConstant();
         case TIME:
             return PrestoConstant.createTimeConstant(randomly.getLong(0, System.currentTimeMillis()));
         case TIME_WITH_TIME_ZONE:
-            return PrestoConstant.createTimeWithTimeZoneConstant(randomly.getLong(0, System.currentTimeMillis()));
+            return PrestoConstant.createTimeWithTimeZoneConstant(randomly.getLong(0, System.currentTimeMillis()));*/
         case TIMESTAMP:
             return PrestoConstant.createTimestampConstant(randomly.getLong(0, System.currentTimeMillis()));
-        case TIMESTAMP_WITH_TIME_ZONE:
+        /*case TIMESTAMP_WITH_TIME_ZONE:
             return PrestoConstant.createTimestampWithTimeZoneConstant(randomly.getLong(0, System.currentTimeMillis()));
         case INTERVAL_YEAR_TO_MONTH:
             return PrestoConstant.createIntervalYearToMonth(randomly.getLong(0, System.currentTimeMillis()));
         case INTERVAL_DAY_TO_SECOND:
-            return PrestoConstant.createIntervalDayToSecond(randomly.getLong(0, System.currentTimeMillis()));
+            return PrestoConstant.createIntervalDayToSecond(randomly.getLong(0, System.currentTimeMillis()));*/
         case INT:
             return PrestoConstant.PrestoIntConstant.createIntConstant(type, Randomly.getNonCachedInteger(),
                     castInteger);

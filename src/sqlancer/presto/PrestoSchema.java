@@ -129,14 +129,14 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
         case "DATE":
             primitiveType = PrestoDataType.DATE;
             break;
-        case "TIME":
+        case "TIMESTAMP":
+            primitiveType = PrestoDataType.TIMESTAMP;
+            break;
+/*        case "TIME":
             primitiveType = PrestoDataType.TIME;
             break;
         case "TIME WITH TIME ZONE":
             primitiveType = PrestoDataType.TIME_WITH_TIME_ZONE;
-            break;
-        case "TIMESTAMP":
-            primitiveType = PrestoDataType.TIMESTAMP;
             break;
         case "TIMESTAMP WITH TIME ZONE":
             primitiveType = PrestoDataType.TIMESTAMP_WITH_TIME_ZONE;
@@ -149,7 +149,7 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
             break;
         case "JSON":
             primitiveType = PrestoDataType.JSON;
-            break;
+            break;*/
         case "ARRAY":
             int bracesEnd = typeString.length() - 1;
             primitiveType = PrestoDataType.ARRAY;
@@ -169,8 +169,9 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
     }
 
     public enum PrestoDataType {
-        BOOLEAN, INT, FLOAT, DECIMAL, VARCHAR, CHAR, VARBINARY, JSON, DATE, TIME, TIMESTAMP, TIME_WITH_TIME_ZONE,
-        TIMESTAMP_WITH_TIME_ZONE, INTERVAL_YEAR_TO_MONTH, INTERVAL_DAY_TO_SECOND, ARRAY,
+        BOOLEAN, INT, FLOAT, DECIMAL, VARCHAR, CHAR, VARBINARY, DATE, TIMESTAMP, ARRAY,
+        // TIME, TIME_WITH_TIME_ZONE,
+        // TIMESTAMP_WITH_TIME_ZONE, INTERVAL_YEAR_TO_MONTH, INTERVAL_DAY_TO_SECOND, JSON, ARRAY,
         // MAP,
         // ROW,
         // IPADDRESS,
@@ -192,20 +193,25 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
         }
 
         public static List<PrestoDataType> getNumericTypes() {
-            return Arrays.asList(INT, FLOAT, DECIMAL, DATE, TIME, TIMESTAMP, TIME_WITH_TIME_ZONE,
-                    TIMESTAMP_WITH_TIME_ZONE);
+            return Arrays.asList(INT, FLOAT, DECIMAL, DATE, TIMESTAMP
+                    // ,TIME_WITH_TIME_ZONE, TIME,
+                    // TIMESTAMP_WITH_TIME_ZONE
+            );
         }
 
         public static List<PrestoDataType> getComparableTypes() {
-            return Arrays.asList(BOOLEAN, INT, FLOAT, DECIMAL, VARCHAR, CHAR, VARBINARY, JSON, DATE, TIME, TIMESTAMP,
-                    TIME_WITH_TIME_ZONE, TIMESTAMP_WITH_TIME_ZONE, INTERVAL_YEAR_TO_MONTH, INTERVAL_DAY_TO_SECOND);
+            return Arrays.asList(BOOLEAN, INT, FLOAT, DECIMAL, VARCHAR, CHAR, VARBINARY, DATE, TIMESTAMP
+                    //  ,TIME, JSON,TIME_WITH_TIME_ZONE, TIMESTAMP_WITH_TIME_ZONE,
+                    //  INTERVAL_YEAR_TO_MONTH, INTERVAL_DAY_TO_SECOND
+            );
         }
 
         public static List<PrestoDataType> getOrderableTypes() {
-            return Arrays.asList(BOOLEAN, INT, FLOAT, DECIMAL, VARCHAR, CHAR, VARBINARY,
+            return Arrays.asList(BOOLEAN, INT, FLOAT, DECIMAL, VARCHAR, CHAR, VARBINARY,DATE, TIMESTAMP, ARRAY
                     // JSON,
-                    DATE, TIME, TIMESTAMP, TIME_WITH_TIME_ZONE, TIMESTAMP_WITH_TIME_ZONE, INTERVAL_YEAR_TO_MONTH,
-                    INTERVAL_DAY_TO_SECOND, ARRAY);
+                    // TIME,  TIME_WITH_TIME_ZONE, TIMESTAMP_WITH_TIME_ZONE, INTERVAL_YEAR_TO_MONTH,
+                    //INTERVAL_DAY_TO_SECOND
+            );
         }
 
         public static List<PrestoDataType> getNumberTypes() {
@@ -213,15 +219,16 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
         }
 
         public static List<PrestoDataType> getTemporalTypes() {
-            return Arrays.asList(DATE, TIME, TIMESTAMP, TIME_WITH_TIME_ZONE, TIMESTAMP_WITH_TIME_ZONE);
+            return Arrays.asList(DATE,TIMESTAMP//, TIME,  TIME_WITH_TIME_ZONE, TIMESTAMP_WITH_TIME_ZONE
+                     );
         }
 
         public static List<PrestoDataType> getIntervalTypes() {
-            return Arrays.asList(INTERVAL_YEAR_TO_MONTH, INTERVAL_DAY_TO_SECOND);
+            return Arrays.asList(/*INTERVAL_YEAR_TO_MONTH, INTERVAL_DAY_TO_SECOND*/);
         }
 
         public static List<PrestoDataType> getTextTypes() {
-            return Arrays.asList(VARCHAR, CHAR, VARBINARY, JSON);
+            return Arrays.asList(VARCHAR, CHAR, VARBINARY /*,JSON*/);
         }
 
         public boolean isNumeric() {
@@ -287,7 +294,7 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
                 scale = Math.toIntExact(4);
                 break;
             case VARBINARY:
-            case JSON:
+           //case JSON:
             case VARCHAR:
             case CHAR:
                 size = Math.toIntExact(Randomly.getNotCachedInteger(10, 250));
@@ -296,12 +303,12 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
                 return new PrestoCompositeDataType(type, PrestoCompositeDataType.getRandomWithoutNull());
             case BOOLEAN:
             case DATE:
-            case TIME:
-            case TIME_WITH_TIME_ZONE:
             case TIMESTAMP:
+            /*case TIME:
+            case TIME_WITH_TIME_ZONE:
             case TIMESTAMP_WITH_TIME_ZONE:
             case INTERVAL_DAY_TO_SECOND:
-            case INTERVAL_YEAR_TO_MONTH:
+            case INTERVAL_YEAR_TO_MONTH:*/
                 size = 0;
                 break;
             default:
@@ -325,7 +332,7 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
                 size = Math.toIntExact(8);
                 scale = Math.toIntExact(4);
                 break;
-            case JSON:
+            //case JSON:
             case VARCHAR:
             case CHAR:
                 size = Math.toIntExact(Randomly.getNotCachedInteger(10, 250));
@@ -335,12 +342,12 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
             case BOOLEAN:
             case VARBINARY:
             case DATE:
-            case TIME:
             case TIMESTAMP:
+            /*case TIME:
             case TIMESTAMP_WITH_TIME_ZONE:
             case TIME_WITH_TIME_ZONE:
             case INTERVAL_DAY_TO_SECOND:
-            case INTERVAL_YEAR_TO_MONTH:
+            case INTERVAL_YEAR_TO_MONTH:*/
                 size = 0;
                 break;
             default:
@@ -386,8 +393,8 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
                 }
             case VARBINARY:
                 return "VARBINARY";
-            case JSON:
-                return "JSON";
+            /*case JSON:
+                return "JSON";*/
             case VARCHAR:
                 return "VARCHAR" + "(" + size + ")";
             case CHAR:
@@ -405,20 +412,20 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
                 return "DECIMAL" + "(" + size + ", " + scale + ")";
             case BOOLEAN:
                 return "BOOLEAN";
-            case TIMESTAMP_WITH_TIME_ZONE:
-                return "TIMESTAMP WITH TIME ZONE";
+            /*case TIMESTAMP_WITH_TIME_ZONE:
+                return "TIMESTAMP WITH TIME ZONE";*/
             case TIMESTAMP:
                 return "TIMESTAMP";
-            case INTERVAL_YEAR_TO_MONTH:
+           /* case INTERVAL_YEAR_TO_MONTH:
                 return "INTERVAL YEAR TO MONTH";
             case INTERVAL_DAY_TO_SECOND:
-                return "INTERVAL DAY TO SECOND";
+                return "INTERVAL DAY TO SECOND";*/
             case DATE:
                 return "DATE";
-            case TIME:
+            /*case TIME:
                 return "TIME";
             case TIME_WITH_TIME_ZONE:
-                return "TIME WITH TIME ZONE";
+                return "TIME WITH TIME ZONE";*/
             case ARRAY:
                 return "ARRAY(" + elementType + ")";
             case NULL:

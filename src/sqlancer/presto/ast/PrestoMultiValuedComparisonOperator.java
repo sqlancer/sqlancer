@@ -26,10 +26,7 @@ public enum PrestoMultiValuedComparisonOperator {
         case FLOAT:
         case DECIMAL:
         case DATE:
-        case TIME:
         case TIMESTAMP:
-        case TIME_WITH_TIME_ZONE:
-        case TIMESTAMP_WITH_TIME_ZONE:
             return getRandom();
         default:
             return Randomly.fromOptions(EQUALS, NOT_EQUALS, NOT_EQUALS_ALT);

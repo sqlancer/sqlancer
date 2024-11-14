@@ -10,10 +10,10 @@ public enum PrestoDateFunction implements PrestoFunction {
     CURRENT_DATE("current_date", PrestoDataType.DATE),
 
     // Returns the current time as of the start of the query.
-    CURRENT_TIME("current_time", PrestoDataType.TIME_WITH_TIME_ZONE),
+//    CURRENT_TIME("current_time", PrestoDataType.TIME_WITH_TIME_ZONE),
 
     // Returns the current timestamp as of the start of the query.
-    CURRENT_TIMESTAMP("current_timestamp", PrestoDataType.TIMESTAMP_WITH_TIME_ZONE),
+//    CURRENT_TIMESTAMP("current_timestamp", PrestoDataType.TIMESTAMP_WITH_TIME_ZONE),
 
     // Returns the current time zone in the format defined by IANA (e.g., America/Los_Angeles) or as fixed offset from
     // UTC (e.g., +08:35)
@@ -26,17 +26,13 @@ public enum PrestoDateFunction implements PrestoFunction {
     LAST_DAY_OF_MONTH("last_day_of_month", PrestoDataType.DATE, PrestoDataType.DATE),
 
     // Parses the ISO 8601 formatted string into a timestamp with time zone.
-    FROM_ISO8601_TIMESTAMP("from_iso8601_timestamp", PrestoDataType.TIMESTAMP_WITH_TIME_ZONE, PrestoDataType.VARCHAR),
+//    FROM_ISO8601_TIMESTAMP("from_iso8601_timestamp", PrestoDataType.TIMESTAMP_WITH_TIME_ZONE, PrestoDataType.VARCHAR),
 
     // Parses the ISO 8601 formatted string into a date.
     FROM_ISO8601_DATE("from_iso8601_date", PrestoDataType.DATE, PrestoDataType.VARCHAR),
 
     // Returns the UNIX timestamp unixtime as a timestamp.
-    FROM_UNIXTIME("from_unixtime", PrestoDataType.TIMESTAMP, PrestoDataType.INT),
-
-    // Returns the UNIX timestamp unixtime as a timestamp with time zone using string for the time zone.
-    FROM_UNIXTIME_TIMEZONE("from_unixtime", PrestoDataType.TIMESTAMP_WITH_TIME_ZONE, PrestoDataType.INT,
-            PrestoDataType.VARCHAR) {
+    FROM_UNIXTIME("from_unixtime", PrestoDataType.TIMESTAMP, PrestoDataType.INT) {
         @Override
         public boolean shouldPreserveOrderOfArguments() {
             return true;
@@ -45,34 +41,34 @@ public enum PrestoDateFunction implements PrestoFunction {
 
     // Returns the UNIX timestamp unixtime as a timestamp with time zone using hours and minutes for the time zone
     // offset.
-    FROM_UNIXTIME_HOURS_MINUTES("from_unixtime", PrestoDataType.TIMESTAMP_WITH_TIME_ZONE, PrestoDataType.INT,
-            PrestoDataType.INT) {
-        @Override
-        public boolean shouldPreserveOrderOfArguments() {
-            return true;
-        }
-    },
+//    FROM_UNIXTIME_HOURS_MINUTES("from_unixtime", PrestoDataType.TIMESTAMP_WITH_TIME_ZONE, PrestoDataType.INT,
+//            PrestoDataType.INT) {
+//        @Override
+//        public boolean shouldPreserveOrderOfArguments() {
+//            return true;
+//        }
+//    },
 
     // Returns the current time as of the start of the query. -> time
-    LOCALTIME("localtime", PrestoDataType.TIME),
+//    LOCALTIME("localtime", PrestoDataType.TIME),
 
     // Returns the current timestamp as of the start of the query. -> timestamp
     LOCALTIMESTAMP("localtimestamp", PrestoDataType.TIMESTAMP),
 
     // This is an alias for current_timestamp. → timestamp with time zone#
-    NOW("now", PrestoDataType.TIMESTAMP_WITH_TIME_ZONE),
+//    NOW("now", PrestoDataType.TIMESTAMP_WITH_TIME_ZONE),
 
     // Formats x as an ISO 8601 string. x can be date, timestamp, or timestamp with time zone. → varchar#
-    TO_ISO8601("to_iso8601", PrestoDataType.VARCHAR, PrestoDataType.DATE, PrestoDataType.TIMESTAMP,
-            PrestoDataType.TIMESTAMP_WITH_TIME_ZONE),
+//    TO_ISO8601("to_iso8601", PrestoDataType.VARCHAR, PrestoDataType.DATE, PrestoDataType.TIMESTAMP,
+//            PrestoDataType.TIMESTAMP_WITH_TIME_ZONE),
 
     // Returns the day-to-second interval as milliseconds. → bigint#
-    TO_MILLISECONDS("to_milliseconds", PrestoDataType.INT, PrestoDataType.INTERVAL_DAY_TO_SECOND),
-    TO_MILLISECONDS_2("to_milliseconds", PrestoDataType.INT, PrestoDataType.INTERVAL_YEAR_TO_MONTH),
+//    TO_MILLISECONDS("to_milliseconds", PrestoDataType.INT, PrestoDataType.INTERVAL_DAY_TO_SECOND),
+//    TO_MILLISECONDS_2("to_milliseconds", PrestoDataType.INT, PrestoDataType.INTERVAL_YEAR_TO_MONTH),
 
     // Returns timestamp as a UNIX timestamp. → double#
     TO_UNIXTIME("to_unixtime", PrestoDataType.FLOAT, PrestoDataType.TIMESTAMP),
-    TO_UNIXTIME_2("to_unixtime", PrestoDataType.FLOAT, PrestoDataType.TIMESTAMP_WITH_TIME_ZONE),
+//    TO_UNIXTIME_2("to_unixtime", PrestoDataType.FLOAT, PrestoDataType.TIMESTAMP_WITH_TIME_ZONE),
 
     // The following SQL-standard functions do not use parenthesis:
     CURRENT_DATE_NA("current_date", PrestoDataType.DATE) {
@@ -82,12 +78,12 @@ public enum PrestoDateFunction implements PrestoFunction {
         }
     },
 
-    CURRENT_TIME_NA("current_time", PrestoDataType.TIME) {
-        @Override
-        public boolean isStandardFunction() {
-            return false;
-        }
-    },
+//    CURRENT_TIME_NA("current_time", PrestoDataType.TIME) {
+//        @Override
+//        public boolean isStandardFunction() {
+//            return false;
+//        }
+//    },
 
     CURRENT_TIMESTAMP_NA("current_timestamp", PrestoDataType.TIMESTAMP) {
         @Override
@@ -96,12 +92,12 @@ public enum PrestoDateFunction implements PrestoFunction {
         }
     },
 
-    LOCALTIME_NA("localtime", PrestoDataType.TIME) {
-        @Override
-        public boolean isStandardFunction() {
-            return false;
-        }
-    },
+//    LOCALTIME_NA("localtime", PrestoDataType.TIME) {
+//        @Override
+//        public boolean isStandardFunction() {
+//            return false;
+//        }
+//    },
 
     LOCALTIMESTAMP_NA("localtimestamp", PrestoDataType.TIMESTAMP) {
         @Override
@@ -113,10 +109,10 @@ public enum PrestoDateFunction implements PrestoFunction {
     // Truncation Function
     // date_trunc(unit, x) → [same as input]
     DATE_TRUNC_1("date_trunc", PrestoDataType.TIMESTAMP, PrestoDataType.VARCHAR, PrestoDataType.TIMESTAMP),
-    DATE_TRUNC_2("date_trunc", PrestoDataType.TIMESTAMP_WITH_TIME_ZONE, PrestoDataType.VARCHAR,
-            PrestoDataType.TIMESTAMP_WITH_TIME_ZONE),
-    DATE_TRUNC_3("date_trunc", PrestoDataType.DATE, PrestoDataType.VARCHAR, PrestoDataType.DATE),
-    DATE_TRUNC_4("date_trunc", PrestoDataType.TIME, PrestoDataType.VARCHAR, PrestoDataType.TIME);
+//    DATE_TRUNC_2("date_trunc", PrestoDataType.TIMESTAMP_WITH_TIME_ZONE, PrestoDataType.VARCHAR,
+//            PrestoDataType.TIMESTAMP_WITH_TIME_ZONE),
+    DATE_TRUNC_3("date_trunc", PrestoDataType.DATE, PrestoDataType.VARCHAR, PrestoDataType.DATE);
+//    DATE_TRUNC_4("date_trunc", PrestoDataType.TIME, PrestoDataType.VARCHAR, PrestoDataType.TIME);
 
     /*
      *

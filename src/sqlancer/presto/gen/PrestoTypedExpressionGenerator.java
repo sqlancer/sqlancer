@@ -135,16 +135,16 @@ public final class PrestoTypedExpressionGenerator extends
             case FLOAT:
                 return generateNumericExpression(depth);
             case DATE:
-            case TIME:
+//            case TIME:
             case TIMESTAMP:
-            case TIME_WITH_TIME_ZONE:
-            case TIMESTAMP_WITH_TIME_ZONE:
-                return generateTemporalExpression(type, depth);
-            case INTERVAL_YEAR_TO_MONTH:
-            case INTERVAL_DAY_TO_SECOND:
-                return generateIntervalExpression(type, depth);
-            case JSON:
-                return generateJsonExpression(type);
+//            case TIME_WITH_TIME_ZONE:
+//            case TIMESTAMP_WITH_TIME_ZONE:
+//                return generateTemporalExpression(type, depth);
+//            case INTERVAL_YEAR_TO_MONTH:
+//            case INTERVAL_DAY_TO_SECOND:
+//                return generateIntervalExpression(type, depth);
+//            case JSON:
+//                return generateJsonExpression(type);
             case VARBINARY:
             case ARRAY:
                 // case MAP:
@@ -383,7 +383,7 @@ public final class PrestoTypedExpressionGenerator extends
         // timestamp at time zone
         if (Randomly.getBooleanWithSmallProbability()
                 && (type.getPrimitiveDataType() == PrestoSchema.PrestoDataType.TIMESTAMP
-                        || type.getPrimitiveDataType() == PrestoSchema.PrestoDataType.TIMESTAMP_WITH_TIME_ZONE)) {
+                        /*|| type.getPrimitiveDataType() == PrestoSchema.PrestoDataType.TIMESTAMP_WITH_TIME_ZONE*/)) {
             return new PrestoAtTimeZoneOperator(generateExpression(type, depth + 1),
                     PrestoConstant.createTimezoneConstant());
         }
@@ -737,18 +737,18 @@ public final class PrestoTypedExpressionGenerator extends
             case FLOAT:
             case DECIMAL:
             case DATE:
-            case TIME:
+            //case TIME:
             case TIMESTAMP:
-            case TIME_WITH_TIME_ZONE:
-            case TIMESTAMP_WITH_TIME_ZONE:
+//            case TIME_WITH_TIME_ZONE:
+//            case TIMESTAMP_WITH_TIME_ZONE:
                 return getRandom();
             case VARCHAR:
             case CHAR:
             case VARBINARY:
-            case JSON:
+           // case JSON:
             case ARRAY:
-            case INTERVAL_YEAR_TO_MONTH:
-            case INTERVAL_DAY_TO_SECOND:
+//            case INTERVAL_YEAR_TO_MONTH:
+//            case INTERVAL_DAY_TO_SECOND:
                 // return Randomly.fromOptions(EQUALS, NOT_EQUALS, NOT_EQUALS_ALT,
                 // IS_DISTINCT_FROM,
                 // IS_NOT_DISTINCT_FROM);

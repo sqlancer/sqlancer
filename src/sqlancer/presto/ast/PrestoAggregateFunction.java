@@ -61,8 +61,8 @@ public enum PrestoAggregateFunction implements PrestoFunction {
     },
     // avg(time interval type) → time interval type#
     // Returns the average interval length of all input values.
-    AVG_INTERVAL_YM("avg", PrestoDataType.INTERVAL_YEAR_TO_MONTH, PrestoDataType.INTERVAL_YEAR_TO_MONTH),
-    AVG_INTERVAL_DS("avg", PrestoDataType.INTERVAL_DAY_TO_SECOND, PrestoDataType.INTERVAL_DAY_TO_SECOND),
+//    AVG_INTERVAL_YM("avg", PrestoDataType.INTERVAL_YEAR_TO_MONTH, PrestoDataType.INTERVAL_YEAR_TO_MONTH),
+//    AVG_INTERVAL_DS("avg", PrestoDataType.INTERVAL_DAY_TO_SECOND, PrestoDataType.INTERVAL_DAY_TO_SECOND),
 
     // bool_and(boolean) → boolean#
     // Returns TRUE if every input value is TRUE, otherwise FALSE.
@@ -346,8 +346,8 @@ public enum PrestoAggregateFunction implements PrestoFunction {
     },
     // sum(time interval type) → time interval type#
     // Returns the average interval length of all input values.
-    SUM_INTERVAL_YM("sum", PrestoDataType.INTERVAL_YEAR_TO_MONTH, PrestoDataType.INTERVAL_YEAR_TO_MONTH),
-    SUM_INTERVAL_DS("sum", PrestoDataType.INTERVAL_DAY_TO_SECOND, PrestoDataType.INTERVAL_DAY_TO_SECOND),
+//    SUM_INTERVAL_YM("sum", PrestoDataType.INTERVAL_YEAR_TO_MONTH, PrestoDataType.INTERVAL_YEAR_TO_MONTH),
+//    SUM_INTERVAL_DS("sum", PrestoDataType.INTERVAL_DAY_TO_SECOND, PrestoDataType.INTERVAL_DAY_TO_SECOND),
 
     // Bitwise Aggregate Functions#
 
@@ -662,9 +662,9 @@ public enum PrestoAggregateFunction implements PrestoFunction {
     }
 
     public static PrestoAggregateFunction getRandomMetamorphicOracle() {
-        return Randomly.fromOptions(ARBITRARY, AVG, AVG_INTERVAL_YM, AVG_INTERVAL_DS, BOOL_AND, BOOL_OR, CHECKSUM,
+        return Randomly.fromOptions(ARBITRARY, AVG, BOOL_AND, BOOL_OR, CHECKSUM,
                 COUNT_ALL, COUNT_NOARGS, COUNT, COUNT_IF, EVERY, GEOMETRIC_MEAN, MAX_BY, MIN_BY, MAX, MIN, SUM,
-                SUM_INTERVAL_YM, SUM_INTERVAL_DS, BITWISE_AND_AGG, BITWISE_OR_AGG);
+                 BITWISE_AND_AGG, BITWISE_OR_AGG);
     }
 
     public static PrestoAggregateFunction getRandom() {
