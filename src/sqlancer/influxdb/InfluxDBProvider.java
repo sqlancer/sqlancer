@@ -1,29 +1,31 @@
 package sqlancer.influxdb;
 
 import com.google.auto.service.AutoService;
-import sqlancer.*;
-import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.common.query.SQLQueryProvider;
-import sqlancer.influxdb.InfluxDBProvider.InfluxDBGlobalState;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Properties;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
+import sqlancer.*;
+import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.common.query.SQLQueryProvider;
+import sqlancer.influxdb.gen.InfluxDBCreateDatabaseGenerator;
+import sqlancer.influxdb.gen.InfluxDBWritePointGenerator;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Properties;
 
 @AutoService(DatabaseProvider.class)
-public class InfluxDBProvider extends SQLProviderAdapter<InfluxDBGlobalState, InfluxDBOptions> {
+public class InfluxDBProvider extends SQLProviderAdapter<InfluxDBProvider.InfluxDBGlobalState, InfluxDBOptions> {
 
     public InfluxDBProvider() {
         super(InfluxDBGlobalState.class, InfluxDBOptions.class);
     }
 
     public enum Action implements AbstractAction<InfluxDBGlobalState> {
-        WRITE_POINT(influxdb.gen.InfluxDBWritePointGenerator::getQuery),
-        CREATE_DATABASE(influxdb.gen.InfluxDBCreateDatabaseGenerator::getQuery);
+        WRITE_POINT(sqlancer.influxdb.gen.InfluxDBInsertGenerator::getQuery),
+        CREATE_DATABASE(sqlancer.influxdb.gen.InfluxDBInsertGenerator::getQuery),
+        InfluxDBWritePointGenerator();
 
         private final SQLQueryProvider<InfluxDBGlobalState> sqlQueryProvider;
 
@@ -43,7 +45,7 @@ public class InfluxDBProvider extends SQLProviderAdapter<InfluxDBGlobalState, In
             case WRITE_POINT:
                 return r.getInteger(0, globalState.getOptions().getMaxNumberWrites());
             case CREATE_DATABASE:
-                return 1;  // Typically, a create database action is called once.
+                return r.getInteger(0, 2);
             default:
                 throw new AssertionError("Unknown action: " + a);
         }
@@ -52,8 +54,6 @@ public class InfluxDBProvider extends SQLProviderAdapter<InfluxDBGlobalState, In
     public static class InfluxDBGlobalState extends SQLGlobalState<InfluxDBOptions, InfluxDBSchema> {
         @Override
         protected InfluxDBSchema readSchema() throws SQLException {
-            // Implement method to read InfluxDB schema
-            // This might involve querying the database for measurement names, field keys, etc.
             return InfluxDBSchema.fromConnection(getConnection(), getDatabaseName());
         }
     }
@@ -63,19 +63,19 @@ public class InfluxDBProvider extends SQLProviderAdapter<InfluxDBGlobalState, In
         for (int i = 0; i < Randomly.fromOptions(1, 2); i++) {
             boolean success;
             do {
-                SQLQueryAdapter qt = new influxdb.gen.InfluxDBWritePointGenerator().getQuery(globalState);
+                SQLQueryAdapter qt = new sqlancer.influxdb.gen.InfluxDBInsertGenerator().getQuery(globalState, null);
                 success = globalState.executeStatement(qt);
             } while (!success);
         }
-        if (globalState.getSchema().getDatabaseMeasurements().isEmpty()) {
+        if (globalState.getSchema().getDatabaseTables().isEmpty()) {
             throw new IgnoreMeException();
         }
         StatementExecutor<InfluxDBGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
                 InfluxDBProvider::mapActions, (q) -> {
-                    if (globalState.getSchema().getDatabaseMeasurements().isEmpty()) {
-                        throw new IgnoreMeException();
-                    }
-                });
+            if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+                throw new IgnoreMeException();
+            }
+        });
         se.executeStatements();
     }
 
@@ -83,20 +83,26 @@ public class InfluxDBProvider extends SQLProviderAdapter<InfluxDBGlobalState, In
     public SQLConnection createDatabase(InfluxDBGlobalState globalState) throws Exception {
         String host = globalState.getOptions().getHost();
         int port = globalState.getOptions().getPort();
-        String databaseName = globalState.getDatabaseName();
+        if (host == null) {
+            host = InfluxDBOptions.DEFAULT_HOST;
+        }
+        if (port == sqlancer.MainOptions.NO_SET_PORT) {
+            port = InfluxDBOptions.DEFAULT_PORT;
+        }
 
+        String databaseName = "influxdb_sqlancer_test";
         String url = String.format("http://%s:%d", host, port);
-        Properties properties = new Properties();
-        properties.setProperty("user", globalState.getDbmsSpecificOptions().getUserName());
-        properties.setProperty("password", globalState.getDbmsSpecificOptions().getPassword());
 
-        InfluxDB influxDB = InfluxDBFactory.connect(url, properties.getProperty("user"), properties.getProperty("password"));
+        // Create InfluxDB Connection
+        InfluxDB influxDB = InfluxDBFactory.connect(url);
+        globalState.setConnection(new SQLConnection(influxDB));
 
-        // Create database if not exists
-        String createDatabaseQuery = String.format("CREATE DATABASE \"%s\"", databaseName);
-        influxDB.query(new Query(createDatabaseQuery));
+        // Create database if it does not exist
+        String query = String.format("CREATE DATABASE %s", databaseName);
+        QueryResult result = influxDB.query(new Query(query));
+        globalState.getState().logStatement(query);
 
-        return new SQLConnection((Connection) influxDB);
+        return new SQLConnection(influxDB);
     }
 
     @Override
