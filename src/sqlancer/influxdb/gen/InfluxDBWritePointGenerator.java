@@ -1,7 +1,6 @@
-package influxdb.gen;
+package sqlancer.influxdb.gen;
 
 import influxdb.InfluxDBGlobalState;
-import sql.SQLQueryAdapter;
 import java.util.Map;
 import java.util.List;
 import java.util.stream.Collectors;
