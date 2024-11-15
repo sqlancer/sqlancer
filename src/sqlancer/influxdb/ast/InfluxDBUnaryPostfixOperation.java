@@ -6,7 +6,7 @@ import sqlancer.common.ast.newast.NewUnaryPostfixOperatorNode;
 public class InfluxDBUnaryPostfixOperation extends NewUnaryPostfixOperatorNode<InfluxDBExpression>
         implements InfluxDBExpression {
 
-    public InfluxDBUnaryPostfixOperation(InfluxDBExpression expr, BinaryOperatorNode op) {
-        super(expr, BinaryOperatorNode);
+    public InfluxDBUnaryPostfixOperation(InfluxDBExpression expr, BinaryOperatorNode.Operator op) {
+        super(expr, op);
     }
 }
