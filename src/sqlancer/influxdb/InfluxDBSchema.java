@@ -1,7 +1,6 @@
 package sqlancer.influxdb;
 
 import java.util.*;
-
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Query;
@@ -14,10 +13,13 @@ import sqlancer.common.schema.AbstractRelationalTable;
 
 public class InfluxDBSchema extends AbstractSchema<SQLConnection, InfluxDBSchema.InfluxDBTable> {
 
-    private List<String> databaseMeasurements; // field to hold measurements
+    private static final String SHOW_FIELD_KEYS_QUERY = "SHOW FIELD KEYS";
+    private static final String SHOW_MEASUREMENTS_QUERY = "SHOW MEASUREMENTS";
+
+    private List<String> databaseMeasurements;
 
     public enum InfluxDBDataType {
-        INTEGER, FLOAT, STRING, BOOLEAN, TIME;
+        INTEGER, FLOAT, STRING, BOOLEAN, TIMESTAMP, TAG, FIELD;
 
         public static InfluxDBDataType getRandomWithoutTime() {
             return Randomly.fromOptions(INTEGER, FLOAT, STRING, BOOLEAN);
@@ -62,6 +64,7 @@ public class InfluxDBSchema extends AbstractSchema<SQLConnection, InfluxDBSchema
 
     public InfluxDBSchema(List<InfluxDBTable> databaseTables, List<String> databaseMeasurements) {
         super(databaseTables);
+        this.databaseMeasurements = databaseMeasurements;
     }
 
     private static InfluxDBDataType getColumnType(String typeString) {
@@ -75,7 +78,7 @@ public class InfluxDBSchema extends AbstractSchema<SQLConnection, InfluxDBSchema
             case "boolean":
                 return InfluxDBDataType.BOOLEAN;
             case "time":
-                return InfluxDBDataType.TIME;
+                return InfluxDBDataType.TIMESTAMP;
             default:
                 throw new AssertionError(typeString);
         }
@@ -83,13 +86,20 @@ public class InfluxDBSchema extends AbstractSchema<SQLConnection, InfluxDBSchema
 
     public static InfluxDBSchema fromConnection(SQLConnection con, String databaseName) {
         InfluxDB influxDB = InfluxDBFactory.connect("http://localhost:8086", "root", "root");
-        Query query = new Query("SHOW FIELD KEYS", databaseName);
-        QueryResult result = influxDB.query(query);
+        List<InfluxDBTable> databaseTables = fetchDatabaseTables(influxDB, databaseName);
+        List<String> databaseMeasurements = getMeasurementsFromDatabase(influxDB, databaseName);
+        return new InfluxDBSchema(databaseTables, databaseMeasurements);
+    }
 
+    private static List<InfluxDBTable> fetchDatabaseTables(InfluxDB influxDB, String databaseName) {
+        Query query = new Query(SHOW_FIELD_KEYS_QUERY, databaseName);
+        QueryResult result = influxDB.query(query);
         List<InfluxDBTable> databaseTables = new ArrayList<>();
+
         for (QueryResult.Series series : result.getResults().get(0).getSeries()) {
             String tableName = series.getName();
             List<InfluxDBColumn> columns = new ArrayList<>();
+
             for (List<Object> values : series.getValues()) {
                 String columnName = (String) values.get(0);
                 String columnTypeString = (String) values.get(1);
@@ -97,26 +107,28 @@ public class InfluxDBSchema extends AbstractSchema<SQLConnection, InfluxDBSchema
                 InfluxDBColumn column = new InfluxDBColumn(columnName, columnType, false);
                 columns.add(column);
             }
+
             InfluxDBTable table = new InfluxDBTable(tableName, columns);
             databaseTables.add(table);
         }
-        List<String> databaseMeasurements = fetchMeasurementsFromDatabase(influxDB, databaseName);
 
-        return new InfluxDBSchema(databaseTables, databaseMeasurements);
+        return databaseTables;
     }
-    private static List<String> fetchMeasurementsFromDatabase(InfluxDB influxDB, String databaseName) {
+
+    private static List<String> getMeasurementsFromDatabase(InfluxDB influxDB, String databaseName) {
         List<String> measurements = new ArrayList<>();
-        Query query = new Query("SHOW MEASUREMENTS", databaseName);
+        Query query = new Query(SHOW_MEASUREMENTS_QUERY, databaseName);
         QueryResult result = influxDB.query(query);
+
         for (QueryResult.Series series : result.getResults().get(0).getSeries()) {
             for (List<Object> values : series.getValues()) {
                 measurements.add((String) values.get(0));
             }
         }
+
         return measurements;
     }
 
-    // New method to get database measurements
     public List<String> getDatabaseMeasurements() {
         return databaseMeasurements;
     }
