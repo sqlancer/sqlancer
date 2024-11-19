@@ -10,11 +10,9 @@ public class InfluxDBSelect extends SelectBase<InfluxDBExpression> implements In
         // Initialization if needed
     }
 
-
     public void setDistinct(boolean distinct) {
         isDistinct = distinct;
     }
-
 
     public boolean isDistinct() {
         return isDistinct;
@@ -24,10 +22,8 @@ public class InfluxDBSelect extends SelectBase<InfluxDBExpression> implements In
         return measurement;
     }
 
-
     public void setMeasurement(String measurement) {
         this.measurement = measurement;
     }
-
     // Additional InfluxDB specific methods can be added here
 }
