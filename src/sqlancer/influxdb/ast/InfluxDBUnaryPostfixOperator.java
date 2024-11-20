@@ -10,8 +10,5 @@ public class InfluxDBUnaryPostfixOperator extends NewUnaryPostfixOperatorNode<In
         super(expr, op);
     }
     
-    @Override
-    public String toString() {
-        return getExpression().toString() + " " + getOp().getTextRepresentation();
-    }
+
 }

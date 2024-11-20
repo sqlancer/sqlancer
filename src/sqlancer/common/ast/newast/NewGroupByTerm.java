@@ -11,4 +11,6 @@ public abstract class NewGroupByTerm<E> {
     public E getExpression() {
         return expr;
     }
+
+    public abstract String asString();
 }

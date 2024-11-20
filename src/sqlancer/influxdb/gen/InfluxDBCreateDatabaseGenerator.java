@@ -1,4 +1,4 @@
-package influxdb.gen;
+package sqlancer.influxdb.gen;
 
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -22,7 +22,20 @@ public class InfluxDBCreateDatabaseGenerator {
         ExpectedErrors errors = new ExpectedErrors();
         errors.add("database already exists");
 
-        // Return new SQLQueryAdapter instance with
-
-    public static RET getQuery(ARG0 arg0) {
+        // Return new SQLQueryAdapter instance with the constructed query and expected errors
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
+
+    public static void main(String[] args) {
+        // Example usage for testing
+        try {
+            InfluxDBGlobalState globalState = new InfluxDBGlobalState();
+            String dbName = "testDatabase";
+
+            SQLQueryAdapter queryAdapter = InfluxDBCreateDatabaseGenerator.getQuery(globalState, dbName);
+            System.out.println("Generated Query: " + queryAdapter);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
