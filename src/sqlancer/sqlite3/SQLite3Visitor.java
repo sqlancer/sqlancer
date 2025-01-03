@@ -13,14 +13,21 @@ import sqlancer.sqlite3.ast.SQLite3Expression.Function;
 import sqlancer.sqlite3.ast.SQLite3Expression.InOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.Join;
 import sqlancer.sqlite3.ast.SQLite3Expression.MatchOperation;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Alias;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Exist;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ExpressionBag;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3TableAndColumnRef;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3TableReference;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ResultMap;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Text;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Typeof;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Values;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3WithClasure;
 import sqlancer.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.Subquery;
 import sqlancer.sqlite3.ast.SQLite3Expression.TypeLiteral;
@@ -130,6 +137,21 @@ public interface SQLite3Visitor {
 
     void visit(SQLite3WindowFunctionFrameSpecBetween between);
 
+    
+    void visit(SQLite3Alias alias);
+
+    void visit(SQLite3WithClasure withClasure);
+
+    void visit(SQLite3TableAndColumnRef tableAndColumnRef);
+
+    void visit(SQLite3Values values);
+
+    void visit(SQLite3ExpressionBag expr);
+
+    void visit(SQLite3Typeof expr);
+
+    void visit(SQLite3ResultMap tableSummary);
+
     default void visit(SQLite3Expression expr) {
         if (expr instanceof Sqlite3BinaryOperation) {
             visit((Sqlite3BinaryOperation) expr);
@@ -193,6 +215,20 @@ public interface SQLite3Visitor {
             visit((SQLite3TableReference) expr);
         } else if (expr instanceof SQLite3SetClause) {
             visit((SQLite3SetClause) expr);
+        } else if (expr instanceof SQLite3Alias) {
+            visit((SQLite3Alias) expr);
+        } else if (expr instanceof SQLite3WithClasure) {
+            visit((SQLite3WithClasure) expr);
+        } else if (expr instanceof SQLite3TableAndColumnRef) {
+            visit((SQLite3TableAndColumnRef) expr);
+        } else if (expr instanceof SQLite3Values) {
+            visit((SQLite3Values) expr);
+        } else if (expr instanceof SQLite3ExpressionBag) {
+            visit((SQLite3ExpressionBag) expr);
+        } else if (expr instanceof SQLite3Typeof) {
+            visit((SQLite3Typeof) expr);
+        } else if (expr instanceof SQLite3ResultMap) {
+            visit((SQLite3ResultMap) expr);
         } else {
             throw new AssertionError(expr);
         }

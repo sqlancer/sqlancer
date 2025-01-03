@@ -1,7 +1,11 @@
 package sqlancer.sqlite3;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.sqlite3.ast.SQLite3Aggregate;
@@ -11,6 +15,7 @@ import sqlancer.sqlite3.ast.SQLite3Case.SQLite3CaseWithBaseExpression;
 import sqlancer.sqlite3.ast.SQLite3Case.SQLite3CaseWithoutBaseExpression;
 import sqlancer.sqlite3.ast.SQLite3Cast;
 import sqlancer.sqlite3.ast.SQLite3Constant;
+import sqlancer.sqlite3.ast.SQLite3Constant.SQLite3NullConstant;
 import sqlancer.sqlite3.ast.SQLite3Expression;
 import sqlancer.sqlite3.ast.SQLite3Expression.BetweenOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.Cast;
@@ -19,12 +24,19 @@ import sqlancer.sqlite3.ast.SQLite3Expression.Function;
 import sqlancer.sqlite3.ast.SQLite3Expression.InOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.Join;
 import sqlancer.sqlite3.ast.SQLite3Expression.MatchOperation;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Alias;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Exist;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ExpressionBag;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3TableAndColumnRef;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3TableReference;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ResultMap;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Text;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Typeof;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Values;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3WithClasure;
 import sqlancer.sqlite3.ast.SQLite3Expression.Subquery;
 import sqlancer.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import sqlancer.sqlite3.ast.SQLite3Function;
@@ -35,6 +47,7 @@ import sqlancer.sqlite3.ast.SQLite3WindowFunction;
 import sqlancer.sqlite3.ast.SQLite3WindowFunctionExpression;
 import sqlancer.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecBetween;
 import sqlancer.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecTerm;
+import sqlancer.sqlite3.schema.SQLite3DataType;
 
 public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> implements SQLite3Visitor {
 
@@ -98,6 +111,10 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
     public void visit(SQLite3Select s, boolean inner) {
         if (inner) {
             sb.append("(");
+        }
+        if (s.getWithClasure() != null) {
+            visit(s.getWithClasure());
+            sb.append(" ");
         }
         sb.append("SELECT ");
         switch (s.getFromOptions()) {
@@ -288,13 +305,20 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
         sb.append("(");
         visit(op.getLeft());
         sb.append(" IN ");
-        sb.append("(");
         if (op.getRightExpressionList() != null) {
+            sb.append("(");
             visit(op.getRightExpressionList());
+            sb.append(")");
         } else {
-            visit(op.getRightSelect());
+            if (op.getRightSelect() instanceof SQLite3Expression.SQLite3TableReference) {
+                visit(op.getRightSelect());
+            } else {
+                sb.append("(");
+                visit(op.getRightSelect());
+                sb.append(")");
+            }
         }
-        sb.append(")");
+        
         sb.append(")");
     }
 
@@ -305,6 +329,9 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 
     @Override
     public void visit(SQLite3Exist exist) {
+        if (exist.getNegated()) {
+            sb.append(" NOT");
+        }
         sb.append(" EXISTS ");
         if (exist.getExpression() instanceof SQLite3SetClause) {
             sb.append("(");
@@ -482,4 +509,129 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
         sb.append(SQLite3Visitor.asString(set.getRight()));
     }
 
+    @Override
+    public void visit(SQLite3Alias alias) {
+        sb.append("(");
+        visit(alias.getOrigonalExpression());
+        sb.append(")");
+        sb.append(" AS ");
+        visit(alias.getAliasExpression());
+    }
+
+    @Override
+    public void visit(SQLite3WithClasure withClasure) {
+        sb.append("WITH ");
+        visit(withClasure.getLeft());
+        sb.append(" AS ");
+        visit(withClasure.getRight());
+    }
+
+    @Override
+    public void visit(SQLite3TableAndColumnRef tableAndColumnRef) {
+        sb.append(tableAndColumnRef.getString());
+    }
+
+    @Override
+    public void visit(SQLite3Values values) {
+        Map<String, List<SQLite3Constant>> vs = values.getValues();
+        int size = vs.get(vs.keySet().iterator().next()).size();
+        List<String> columnNames = values.getColumns().stream().map(c->c.getName()).collect(Collectors.toList());
+        sb.append("(VALUES ");
+        for (int i = 0; i < size; i++) {
+            sb.append("(");
+            for (String name : columnNames) {
+                if (vs.get(name).get(i).getDataType() == SQLite3DataType.NULL) {
+                    visit(vs.get(name).get(i));
+                } else {
+                    sb.append("(CAST(");
+                    visit(vs.get(name).get(i));
+                    sb.append(" AS ");
+                    switch(vs.get(name).get(i).getDataType()) {
+                    case BINARY:
+                        sb.append("BLOB))");
+                        break;
+                    case INT:
+                        sb.append("INT))");
+                        break;
+                    case TEXT:
+                        sb.append("TEXT))");
+                        break;
+                    case REAL:
+                        sb.append("REAL))");
+                        break;
+                    default:
+                        throw new IgnoreMeException();
+                    }
+                }
+                
+                sb.append(", ");
+            }
+            sb.deleteCharAt(sb.length() - 1);
+            sb.deleteCharAt(sb.length() - 1);
+            sb.append("), ");
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append(")");
+    }
+
+    @Override
+    public void visit(SQLite3ExpressionBag expr) {
+        visit(expr.getInnerExpr());
+    }
+
+    @Override
+    public void visit(SQLite3Typeof expr) {
+        sb.append("typeof(");
+        visit(expr.getInnerExpr());
+        sb.append(")");
+    }
+
+    @Override
+    public void visit(SQLite3ResultMap tableSummary) {
+        // we utlize CASE WHEN THEN END here
+        SQLite3Values values = tableSummary.getValues();
+        List<SQLite3ColumnName> columnRefs = tableSummary.getColumns();
+        List<SQLite3Constant> summary = tableSummary.getSummary();
+
+        Map<String, List<SQLite3Constant>> vs = values.getValues();
+        int size = vs.get(vs.keySet().iterator().next()).size();
+        if (size == 0) {
+            sb.append("(");
+            for (int j = 0; j < columnRefs.size(); ++j) {
+                visit(columnRefs.get(j));
+                sb.append(" IS NULL AND ");
+            }
+            sb.deleteCharAt(sb.length() - 1);
+            sb.deleteCharAt(sb.length() - 1);
+            sb.deleteCharAt(sb.length() - 1);
+            sb.deleteCharAt(sb.length() - 1);
+            sb.deleteCharAt(sb.length() - 1);
+            sb.append(")");
+            return;
+        }
+        List<String> columnNames = values.getColumns().stream().map(c->c.getName()).collect(Collectors.toList());
+        sb.append(" CASE ");
+        for (int i = 0; i < size; i++) {
+            sb.append("WHEN ");
+            for (int j = 0; j < columnNames.size(); ++j) {
+                visit(columnRefs.get(j));
+                if (vs.get(columnNames.get(j)).get(i) instanceof SQLite3NullConstant) {
+                    sb.append(" IS NULL");
+                } else {
+                    sb.append(" = ");
+                    sb.append(vs.get(columnNames.get(j)).get(i).toString());
+                }
+                sb.append(" AND ");
+            }
+            sb.deleteCharAt(sb.length() - 1);
+            sb.deleteCharAt(sb.length() - 1);
+            sb.deleteCharAt(sb.length() - 1);
+            sb.deleteCharAt(sb.length() - 1);
+            sb.append("THEN ");
+            visit(summary.get(i));
+            sb.append(" ");
+        }
+        sb.append("END ");
+    }
 }

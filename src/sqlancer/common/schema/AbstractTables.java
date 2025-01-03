@@ -34,4 +34,28 @@ public class AbstractTables<T extends AbstractTable<C, ?, ?>, C extends Abstract
         return getColumns().stream().map(function).collect(Collectors.joining(", "));
     }
 
+
+    public void addTable(T table) {
+        if (!this.tables.contains(table)) {
+            this.tables.add(table);
+            columns.addAll(table.getColumns());
+        }
+    }
+
+    public void removeTable(T table) {
+        if (this.tables.contains(table)) {
+            this.tables.remove(table);
+            for (C c : table.getColumns()) {
+                columns.remove(c);
+            }
+        }
+    }
+
+    public Boolean isContained(T table) {
+        return this.tables.contains(table);
+    }
+
+    public int getSize() {
+        return this.tables.size();
+    }
 }

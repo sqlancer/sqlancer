@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.common.ast.newast.Select;
 import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.ast.SQLite3Expression.Join;
@@ -24,6 +25,7 @@ public class SQLite3Select extends SQLite3Expression
     private List<SQLite3Expression> fetchColumns = Collections.emptyList();
     private List<Join> joinStatements = Collections.emptyList();
     private SQLite3Expression havingClause;
+    private SQLite3WithClasure withClause = null;
 
     public SQLite3Select() {
     }
@@ -42,6 +44,7 @@ public class SQLite3Select extends SQLite3Expression
             joinStatements.add(new Join(j));
         }
         havingClause = other.havingClause;
+        withClause = other.withClause;
     }
 
     public enum SelectType {
@@ -160,5 +163,34 @@ public class SQLite3Select extends SQLite3Expression
     @Override
     public String asString() {
         return SQLite3Visitor.asString(this);
+    }
+
+    public void setWithClasure(SQLite3WithClasure withClasure) {
+        this.withClause = withClasure;
+    }
+
+    public void updateWithClasureRight(SQLite3Expression withClasureRight) {
+        this.withClause.updateRight(withClasureRight);
+    }
+
+    public SQLite3Expression getWithClasure() {
+        return this.withClause;
+    }
+
+    public void replaceFromTable(String tableName, SQLite3Expression newFromExpression) {
+        int replaceIdx = -1;
+        for (int i = 0; i < fromList.size(); ++i) {
+            SQLite3Expression f = fromList.get(i);
+            if (f instanceof SQLite3TableReference) {
+                SQLite3TableReference tableRef = (SQLite3TableReference) f;
+                if (tableRef.getTable().getName() == tableName) {
+                    replaceIdx = i;
+                }
+            }
+        }
+        if (replaceIdx == -1) {
+            throw new IgnoreMeException();
+        }
+        fromList.set(replaceIdx, newFromExpression);
     }
 }
