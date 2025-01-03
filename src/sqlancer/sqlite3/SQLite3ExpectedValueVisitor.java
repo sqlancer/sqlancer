@@ -14,14 +14,21 @@ import sqlancer.sqlite3.ast.SQLite3Expression.Function;
 import sqlancer.sqlite3.ast.SQLite3Expression.InOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.Join;
 import sqlancer.sqlite3.ast.SQLite3Expression.MatchOperation;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Alias;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Exist;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ExpressionBag;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3TableAndColumnRef;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3TableReference;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ResultMap;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Text;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Typeof;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Values;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3WithClasure;
 import sqlancer.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.Subquery;
 import sqlancer.sqlite3.ast.SQLite3Expression.TypeLiteral;
@@ -303,4 +310,43 @@ public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
         visit(set.getRight());
     }
 
+        @Override
+    public void visit(SQLite3Alias alias) {
+        print(alias);
+        print(alias.getOrigonalExpression());
+        print(alias.getAliasExpression());
+    }
+
+    @Override
+    public void visit(SQLite3WithClasure withClasure) {
+        print(withClasure);
+        print(withClasure.getLeft());
+        print(withClasure.getRight());
+    }
+
+    @Override
+    public void visit(SQLite3TableAndColumnRef tableAndColumnRef) {
+        print(tableAndColumnRef);
+    }
+
+    @Override
+    public void visit(SQLite3Values values) {
+        print(values);
+    }
+
+    @Override
+    public void visit(SQLite3ExpressionBag expr) {
+        print(expr);
+        print(expr.getInnerExpr());
+    }
+
+    @Override
+    public void visit(SQLite3Typeof expr) {
+        print(expr);
+        print(expr.getInnerExpr());
+    }
+
+    @Override
+    public void visit(SQLite3ResultMap tableSummary) {
+    }
 }

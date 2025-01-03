@@ -2,6 +2,7 @@ package sqlancer.sqlite3.ast;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.LikeImplementationHelper;
@@ -113,9 +114,19 @@ public abstract class SQLite3Expression implements Expression<SQLite3Column> {
     public static class SQLite3Exist extends SQLite3Expression {
 
         private final SQLite3Expression select;
+        private boolean negated = false;
 
-        public SQLite3Exist(SQLite3Expression select) {
+        public SQLite3Exist(SQLite3Expression select, boolean negated) {
             this.select = select;
+            this.negated = negated;
+        }
+
+        public void setNegated(boolean negated) {
+            this.negated = negated;
+        }
+
+        public boolean getNegated() {
+            return this.negated;
         }
 
         public SQLite3Expression getExpression() {
@@ -1552,4 +1563,192 @@ public abstract class SQLite3Expression implements Expression<SQLite3Column> {
         }
     }
 
+    public static class SQLite3WithClasure extends SQLite3Expression {
+
+        private SQLite3Expression left;
+        private SQLite3Expression right;
+
+        public SQLite3WithClasure(SQLite3Expression left, SQLite3Expression right) {
+            this.left = left;
+            this.right = right;
+        }
+
+        public SQLite3Expression getLeft() {
+            return this.left;
+        }
+
+        public SQLite3Expression getRight() {
+            return this.right;
+        }
+
+        public void updateRight(SQLite3Expression right) {
+            this.right = right;
+        }
+
+        @Override
+        public SQLite3CollateSequence getExplicitCollateSequence() {
+            return null;
+        }
+    }
+
+    public static class SQLite3Alias extends SQLite3Expression {
+
+        private SQLite3Expression origonalExpression;
+        private SQLite3Expression aliasExpression;
+    
+        public SQLite3Alias(SQLite3Expression origonalExpression, SQLite3Expression aliasExpression) {
+            this.origonalExpression = origonalExpression;
+            this.aliasExpression = aliasExpression;
+        }
+    
+        @Override
+        public SQLite3CollateSequence getExplicitCollateSequence() {
+            return null;
+        }
+        
+        public SQLite3Expression getOrigonalExpression() {
+            return origonalExpression;
+        }
+    
+        public SQLite3Expression getAliasExpression() {
+            return aliasExpression;
+        }
+    }
+
+    public static class SQLite3TableAndColumnRef extends SQLite3Expression {
+
+        private final SQLite3Table table;
+
+        public SQLite3TableAndColumnRef(SQLite3Table table) {
+            this.table = table;
+        }
+
+        public SQLite3Table getTable() {
+            return this.table;
+        }
+
+        public String getString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append(table.getName());
+            sb.append("(");
+            for (SQLite3Column c : this.table.getColumns()) {
+                sb.append(c.getName());
+                sb.append(", ");
+            }
+            sb.deleteCharAt(sb.length() - 1);
+            sb.deleteCharAt(sb.length() - 1);
+            sb.append(")");
+            return sb.toString();
+        }
+
+        @Override
+        public SQLite3CollateSequence getExplicitCollateSequence() {
+            return null;
+        }
+    }
+
+    public static class SQLite3Values extends SQLite3Expression {
+
+        private final Map<String, List<SQLite3Constant>> values;
+        private final List<SQLite3Column> columns;
+
+        public SQLite3Values(Map<String, List<SQLite3Constant>> values, List<SQLite3Column> columns) {
+            this.values = values;
+            this.columns = columns;
+        }
+
+        public Map<String, List<SQLite3Constant>> getValues() {
+            return this.values;
+        }
+
+        public List<SQLite3Column> getColumns() {
+            return this.columns;
+        }
+
+        @Override
+        public SQLite3CollateSequence getExplicitCollateSequence() {
+            return null;
+        }
+    }
+
+    public static class SQLite3ExpressionBag extends SQLite3Expression {
+        private SQLite3Expression innerExpr;
+
+        public SQLite3ExpressionBag(SQLite3Expression innerExpr) {
+            this.innerExpr = innerExpr;
+        }
+
+        public void updateInnerExpr(SQLite3Expression innerExpr) {
+            this.innerExpr = innerExpr;
+        }
+
+        public SQLite3Expression getInnerExpr() {
+            return innerExpr;
+        }
+
+        @Override
+        public SQLite3CollateSequence getExplicitCollateSequence() {
+            return null;
+        }
+
+    }
+
+    public static class SQLite3Typeof extends SQLite3Expression {
+        private SQLite3Expression innerExpr;
+
+        public SQLite3Typeof(SQLite3Expression innerExpr) {
+            this.innerExpr = innerExpr;
+        }
+
+        public SQLite3Expression getInnerExpr() {
+            return innerExpr;
+        }
+
+        @Override
+        public SQLite3CollateSequence getExplicitCollateSequence() {
+            return null;
+        }
+        
+    }
+
+    public static class SQLite3ResultMap extends SQLite3Expression {
+        private final SQLite3Values values;
+        private final List<SQLite3ColumnName> columns;
+        private final List<SQLite3Constant> summary;
+        private final SQLite3DataType summaryDataType;
+
+        public SQLite3ResultMap(SQLite3Values values, List<SQLite3ColumnName> columns, List<SQLite3Constant> summary, SQLite3DataType summaryDataType) {
+            this.values = values;
+            this.columns = columns;
+            this.summary = summary;
+            this.summaryDataType = summaryDataType;
+
+            Map<String, List<SQLite3Constant>> vs = values.getValues();
+            if (vs.get(vs.keySet().iterator().next()).size() != summary.size()) {
+                throw new AssertionError();
+            }
+        }
+
+        public SQLite3Values getValues() {
+            return this.values;
+        }
+
+        public List<SQLite3ColumnName> getColumns() {
+            return this.columns;
+        }
+
+        public List<SQLite3Constant> getSummary() {
+            return this.summary;
+        }
+
+        public SQLite3DataType getSummaryDataType() {
+            return this.summaryDataType;
+        }
+
+        @Override
+        public SQLite3CollateSequence getExplicitCollateSequence() {
+            return null;
+        }
+        
+    }
 }

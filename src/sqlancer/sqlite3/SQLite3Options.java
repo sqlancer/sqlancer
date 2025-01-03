@@ -79,6 +79,9 @@ public class SQLite3Options implements DBMSSpecificOptions<SQLite3OracleFactory>
     @Parameter(names = { "--max-num-indexes" }, description = "The maximum number of indexes that can be created")
     public int maxNumIndexes = 20;
 
+    @Parameter(names = { "--coddtest-model" }, description = "Apply CODDTest on expression, subquery, or random")
+    public String coddTestModel = "random";
+
     @Override
     public List<SQLite3OracleFactory> getTestOracleFactory() {
         return Arrays.asList(oracles);
