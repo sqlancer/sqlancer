@@ -1593,11 +1593,11 @@ public abstract class SQLite3Expression implements Expression<SQLite3Column> {
 
     public static class SQLite3Alias extends SQLite3Expression {
 
-        private SQLite3Expression origonalExpression;
+        private SQLite3Expression originalExpression;
         private SQLite3Expression aliasExpression;
     
-        public SQLite3Alias(SQLite3Expression origonalExpression, SQLite3Expression aliasExpression) {
-            this.origonalExpression = origonalExpression;
+        public SQLite3Alias(SQLite3Expression originalExpression, SQLite3Expression aliasExpression) {
+            this.originalExpression = originalExpression;
             this.aliasExpression = aliasExpression;
         }
     
@@ -1606,8 +1606,8 @@ public abstract class SQLite3Expression implements Expression<SQLite3Column> {
             return null;
         }
         
-        public SQLite3Expression getOrigonalExpression() {
-            return origonalExpression;
+        public SQLite3Expression getOriginalExpression() {
+            return originalExpression;
         }
     
         public SQLite3Expression getAliasExpression() {

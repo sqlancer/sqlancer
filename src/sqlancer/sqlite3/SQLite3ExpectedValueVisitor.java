@@ -313,7 +313,7 @@ public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
         @Override
     public void visit(SQLite3Alias alias) {
         print(alias);
-        print(alias.getOrigonalExpression());
+        print(alias.getOriginalExpression());
         print(alias.getAliasExpression());
     }
 

@@ -100,7 +100,7 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         SQLite3Select auxiliaryQuery = null;
         if (useSubqueryAsFoldedExpr) {
             if (useCorrelatedSubqueryAsFoldedExpr) {
-                auxiliaryQuery = genSelectWithCorrelatedSubquery(null, null);
+                auxiliaryQuery = genSelectWithCorrelatedSubquery();
                 auxiliaryQueryString = SQLite3Visitor.asString(auxiliaryQuery);
 
                 auxiliaryQueryResult.putAll(selectResult);
@@ -110,7 +110,7 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
                 auxiliaryQueryResult = getQueryResult(auxiliaryQueryString, state);
             }
         } else {
-            auxiliaryQuery = genSimpleSelect(null, null);
+            auxiliaryQuery = genSimpleSelect();
             auxiliaryQueryString = SQLite3Visitor.asString(auxiliaryQuery);
 
             auxiliaryQueryResult.putAll(selectResult);
@@ -334,40 +334,18 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
     }
 
     // For expression test
-    private SQLite3Select genSimpleSelect(SQLite3Table tempTable, SQLite3Expression specificCondition) {
+    private SQLite3Select genSimpleSelect() {
         SQLite3Tables randomTables = s.getRandomTableNonEmptyTables();
-        if (tempTable != null) {
-            randomTables.addTable(tempTable);
-        }
-        if (!useSubqueryAsFoldedExpr) {
-            for (SQLite3Table t : this.tablesFromOuterContext) {
-                randomTables.addTable(t);
-            }
-            if (this.joinsInExpr != null) {
-                for (Join j : this.joinsInExpr) {
-                    SQLite3Table t = j.getTable();
-                    randomTables.removeTable(t);
-                }
-            }
-        }
-
         List<SQLite3Column> columns = randomTables.getColumns();
-        if (!useSubqueryAsFoldedExpr && this.joinsInExpr != null) {
-            for (Join j : this.joinsInExpr) {
-                SQLite3Table t = j.getTable();
-                columns.addAll(t.getColumns());
-            }
-        }
+
         gen = new SQLite3ExpressionGenerator(state).setColumns(columns);
         List<SQLite3Table> tables = randomTables.getTables();
         tablesFromOuterContext = randomTables.getTables();
 
-        if (joinsInExpr == null) {
-            if (Randomly.getBooleanWithRatherLowProbability()) {
-                joinsInExpr = genJoinExpression(gen, tables, null, true);
-            } else {
-                joinsInExpr = new ArrayList<Join>();
-            }
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            joinsInExpr = genJoinExpression(gen, tables, null, true);
+        } else {
+            joinsInExpr = new ArrayList<Join>();
         }
 
         List<SQLite3Expression> tableRefs = SQLite3Common.getTableRefs(tables, s);
@@ -378,10 +356,6 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         }
 
         SQLite3Expression whereCondition = gen.generateExpression();
-        if (specificCondition != null) {
-            BinaryOperator operator = BinaryOperator.getRandomOperator();
-            whereCondition = new SQLite3Expression.Sqlite3BinaryOperation(whereCondition, specificCondition, operator);
-        }
         this.foldedExpr = whereCondition;
 
         List<SQLite3Expression> fetchColumns = new ArrayList<>();
@@ -401,11 +375,9 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
 
         select.setFetchColumns(fetchColumns);
 
-        originalQueryString = SQLite3Visitor.asString(select);
-
         Map<String, List<SQLite3Constant>> queryRes = null;
         try {
-            queryRes = getQueryResult(originalQueryString, state);
+            queryRes = getQueryResult(SQLite3Visitor.asString(select), state);
         } catch (SQLException e) {
             if (errors.errorIsExpected(e.getMessage())) {
                 throw new IgnoreMeException();
@@ -429,7 +401,7 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         for (int i = 0; i < fetchColumns.size() - 1; ++i) {
             // do not put the last fetch column to values
             SQLite3Alias cAlias = (SQLite3Alias) fetchColumns.get(i);
-            SQLite3ColumnName cRef = (SQLite3ColumnName) cAlias.getOrigonalExpression();
+            SQLite3ColumnName cRef = (SQLite3ColumnName) cAlias.getOriginalExpression();
             SQLite3Column column = cRef.getColumn();
             String columnName = SQLite3Visitor.asString(cAlias.getAliasExpression());
             SQLite3Column newColumn = new SQLite3Column(columnName, column.getType(), false, false, null);
@@ -448,16 +420,9 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         return select;
     }
 
-    private SQLite3Select genSelectWithCorrelatedSubquery(SQLite3Table selectedTable, SQLite3Expression specificCondition) {
-        // do not support join now
-        this.joinsInExpr = new ArrayList<Join>();
-
+    private SQLite3Select genSelectWithCorrelatedSubquery() {
         SQLite3Tables outerQueryRandomTables = s.getRandomTableNonEmptyTables();
         SQLite3Tables innerQueryRandomTables = s.getRandomTableNonEmptyTables();
-
-        if (selectedTable != null) {
-            innerQueryRandomTables.addTable(selectedTable);
-        }
 
         List<SQLite3Expression> innerQueryFromTables = new ArrayList<>();
         for (SQLite3Table t : innerQueryRandomTables.getTables()) {
@@ -494,10 +459,6 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         innerQuery.setFromList(innerQueryFromTables);
 
         SQLite3Expression innerQueryWhereCondition = gen.generateExpression();
-        if (specificCondition != null) {
-            BinaryOperator operator = BinaryOperator.getRandomOperator();
-            innerQueryWhereCondition = new SQLite3Expression.Sqlite3BinaryOperation(innerQueryWhereCondition, specificCondition, operator);
-        }
         innerQuery.setWhereClause(innerQueryWhereCondition);
 
         // use aggregate function in fetch column
@@ -506,10 +467,10 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         SQLite3Expression innerQueryAggrName = new SQLite3Aggregate(Arrays.asList(innerQueryAggr), SQLite3Aggregate.SQLite3AggregateFunction.getRandom());
         innerQuery.setFetchColumns(Arrays.asList(innerQueryAggrName));
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            List<SQLite3Expression> groupByClause = genGroupByClause(innerQueryColumns, specificCondition);
+            List<SQLite3Expression> groupByClause = genGroupByClause(innerQueryColumns, null);
             innerQuery.setGroupByClause(groupByClause);
             if (groupByClause.size() > 0 && Randomly.getBooleanWithRatherLowProbability()) {
-                innerQuery.setHavingClause(genHavingClause(innerQueryColumns, specificCondition));
+                innerQuery.setHavingClause(genHavingClause(innerQueryColumns, null));
             }
         }
 
@@ -566,7 +527,7 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         for (int i = 0; i < outerQueryFetchColumns.size() - 1; ++i) {
             // do not put the last fetch column to values
             SQLite3Alias cAlias = (SQLite3Alias) outerQueryFetchColumns.get(i);
-            SQLite3ColumnName cRef = (SQLite3ColumnName) cAlias.getOrigonalExpression();
+            SQLite3ColumnName cRef = (SQLite3ColumnName) cAlias.getOriginalExpression();
             SQLite3Column column = cRef.getColumn();
             String columnName = SQLite3Visitor.asString(cAlias.getAliasExpression());
             SQLite3Column newColumn = new SQLite3Column(columnName, column.getType(), false, false, null);
@@ -930,7 +891,7 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         for(SQLite3Expression column : fetchColumns) {
             newFetchColumns.add(column);
             SQLite3Alias columnAlias = (SQLite3Alias) column;
-            SQLite3Expression typeofColumn = new SQLite3Typeof(columnAlias.getOrigonalExpression());
+            SQLite3Expression typeofColumn = new SQLite3Typeof(columnAlias.getOriginalExpression());
             newFetchColumns.add(typeofColumn);
         }
         SQLite3Select newSelect = new SQLite3Select(select);
