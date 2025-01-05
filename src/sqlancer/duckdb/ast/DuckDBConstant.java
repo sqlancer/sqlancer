@@ -1,5 +1,6 @@
 package sqlancer.duckdb.ast;
 
+import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
@@ -19,9 +20,9 @@ public class DuckDBConstant implements DuckDBExpression {
 
     public static class DuckDBIntConstant extends DuckDBConstant {
 
-        private final long value;
+        private final BigInteger value;
 
-        public DuckDBIntConstant(long value) {
+        public DuckDBIntConstant(BigInteger value) {
             this.value = value;
         }
 
@@ -30,7 +31,7 @@ public class DuckDBConstant implements DuckDBExpression {
             return String.valueOf(value);
         }
 
-        public long getValue() {
+        public BigInteger getValue() {
             return value;
         }
 
@@ -54,6 +55,8 @@ public class DuckDBConstant implements DuckDBExpression {
                 return "'+Inf'";
             } else if (value == Double.NEGATIVE_INFINITY) {
                 return "'-Inf'";
+            } else if (Double.isNaN(value)) {
+                return "'NaN'";
             }
             return String.valueOf(value);
         }
@@ -167,7 +170,7 @@ public class DuckDBConstant implements DuckDBExpression {
         return new DuckDBDoubleConstant(val);
     }
 
-    public static DuckDBExpression createIntConstant(long val) {
+    public static DuckDBExpression createIntConstant(BigInteger val) {
         return new DuckDBIntConstant(val);
     }
 
