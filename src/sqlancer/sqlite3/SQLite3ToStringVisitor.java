@@ -512,7 +512,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
     @Override
     public void visit(SQLite3Alias alias) {
         sb.append("(");
-        visit(alias.getOrigonalExpression());
+        visit(alias.getOriginalExpression());
         sb.append(")");
         sb.append(" AS ");
         visit(alias.getAliasExpression());
