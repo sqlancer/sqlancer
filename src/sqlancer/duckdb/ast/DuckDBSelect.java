@@ -38,4 +38,18 @@ public class DuckDBSelect extends SelectBase<DuckDBExpression>
     public String asString() {
         return DuckDBToStringVisitor.asString(this);
     }
+
+    public DuckDBSelect() {}
+    public DuckDBSelect(DuckDBSelect oldSelect) {
+        this.setWithClause(oldSelect.getWithClause());
+        this.setFetchColumns(oldSelect.getFetchColumns());
+        this.setFromList(oldSelect.getFromList());
+        this.setJoinList(oldSelect.getJoinList());
+        this.setWhereClause(oldSelect.getWhereClause());
+        this.setOrderByClauses(oldSelect.getOrderByClauses());
+        this.setGroupByExpressions(oldSelect.getGroupByExpressions());
+        this.setHavingClause(oldSelect.getHavingClause());
+        this.setLimitClause(oldSelect.getLimitClause());
+        this.setOffsetClause(oldSelect.getOffsetClause());
+    } 
 }

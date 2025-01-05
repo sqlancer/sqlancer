@@ -57,6 +57,15 @@ public final class DuckDBErrors {
         errors.add("Cannot subtract infinite timestamps");
         errors.add("Timestamp difference is out of bounds");
 
+
+        // added by CODDTest
+        errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
+        errors.add("must appear in the GROUP BY clause or must be part of an aggregate function");
+        errors.add("GROUP BY term out of range - should be between");
+        errors.add("INTERNAL Error: Failed to bind column reference");
+        errors.add("Binder Error: Aggregate with only constant parameters has to be bound in the root subquery");
+
+
         return errors;
     }
 
@@ -68,6 +77,9 @@ public final class DuckDBErrors {
         errors.add(Pattern.compile("Cannot mix values of type .* and .* in COALESCE operator"));
         errors.add(Pattern.compile("Cannot compare values of type .* and type .*"));
 
+        // added by CODDTest
+        // https://github.com/duckdb/duckdb/issues/15554
+        errors.add(Pattern.compile("Binder Error: Referenced table \"(.+?)\" not found!"));
         return errors;
     }
 
@@ -89,7 +101,9 @@ public final class DuckDBErrors {
         errors.add("SUBSTRING cannot handle negative lengths");
         errors.add("is undefined outside [-1,1]"); // ACOS etc
         errors.add("invalid type specifier"); // PRINTF
+        errors.add("Invalid type specifier"); // PRINTF
         errors.add("argument index out of range"); // PRINTF
+        errors.add("Argument index \"0\" out of range"); // PRINTF
         errors.add("invalid format string"); // PRINTF
         errors.add("number is too big"); // PRINTF
         errors.add("Like pattern must not end with escape character!"); // LIKE
@@ -128,6 +142,12 @@ public final class DuckDBErrors {
         errors.add("Could not cast value");
         errors.add("create unique index, table contains duplicate data");
         errors.add("Failed to cast");
+
+        // added by CODDTest
+        errors.add("violates primary key constraint");
+        errors.add("Referenced update column rowid not found in table");
+        errors.add("does not have a column with name \"rowid\"");
+        errors.add("violates unique constraint");
 
         return errors;
     }
