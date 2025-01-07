@@ -1,6 +1,4 @@
 [![Build Status](https://github.com/sqlancer/sqlancer/workflows/ci/badge.svg)](https://github.com/sqlancer/sqlancer/actions)
-[![Twitter](https://img.shields.io/twitter/follow/sqlancer_dbms?style=social)](https://twitter.com/sqlancer_dbms)
-# SQLancer
 
 
 ![SQLancer](media/logo/png/sqlancer_logo_logo_pos_500.png)
