@@ -380,7 +380,7 @@ public class ClickHouseExpressionGenerator
     @Override
     public List<ClickHouseJoin> getRandomJoinClauses() {
         List<ClickHouseExpression.ClickHouseJoin> joinStatements = new ArrayList<>();
-        if (!globalState.getClickHouseOptions().testJoins || Randomly.getBoolean()) {
+        if (globalState.getClickHouseOptions().testJoins && Randomly.getBoolean()) {
             return joinStatements;
         }
         List<ClickHouseTableReference> leftTables = new ArrayList<>();
