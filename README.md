@@ -11,12 +11,11 @@ SQLancer tackles two essential challenges when automatically testing the DBMSs:
 
 # Getting Started
 
-Requirements:
+Minimum Requirements:
 * Java 11 or above
-* [Maven](https://maven.apache.org/) (`sudo apt install maven` on Ubuntu)
-* The DBMS that you want to test (embedded DBMSs such as DuckDB, H2, and SQLite do not require a setup)
+* [Maven](https://maven.apache.org/)
 
-The following commands clone SQLancer, create a JAR, and start SQLancer to test SQLite using Non-optimizing Reference Engine Construction (NoREC):
+The following commands clone SQLancer, create a JAR, and start SQLancer to test SQLite using [Non-optimizing Reference Engine Construction (NoREC)](https://arxiv.org/abs/2007.08292):
 
 ```
 git clone https://github.com/sqlancer/sqlancer
@@ -26,9 +25,12 @@ cd target
 java -jar sqlancer-*.jar --num-threads 4 sqlite3 --oracle NoREC
 ```
 
-If the execution prints progress information every five seconds, then the tool works as expected. Note that SQLancer might find bugs in SQLite. Before reporting these, be sure to check that they can still be reproduced when using the latest development version. The shortcut CTRL+C can be used to terminate SQLancer manually. If SQLancer does not find any bugs, it executes infinitely. The option `--num-tries` can be used to control after how many bugs SQLancer terminates. Alternatively, the option `--timeout-seconds` can be used to specify the maximum duration that SQLancer is allowed to run.
+**Running and terminating.** If the execution prints progress information every five seconds, then the tool works as expected. The shortcut CTRL+C can be used to terminate SQLancer manually. If SQLancer does not find any bugs, it executes infinitely. The option `--num-tries` can be used to control after how many bugs SQLancer terminates. Alternatively, the option `--timeout-seconds` can be used to specify the maximum duration that SQLancer is allowed to run.
 
-If you launch SQLancer without parameters, available options and commands are displayed. Note that general options that are supported by all DBMS-testing implementations (e.g., `--num-threads`) need to precede the name of DBMS to be tested (e.g., `sqlite3`). Options that are supported only for specific DBMS (e.g., `--test-rtree` for SQLite3), or options for which each testing implementation provides different values (e.g. `--oracle NoREC`) need to go after the DBMS name.
+**Parameters.** If you launch SQLancer without parameters, available options and commands are displayed. Note that general options that are supported by all DBMS-testing implementations (e.g., `--num-threads`) need to precede the name of the DBMS to be tested (e.g., `sqlite3`). Options that are supported only for specific DBMS (e.g., `--test-rtree` for SQLite3), or options for which each testing implementation provides different values (e.g. `--oracle NoREC`) need to go after the DBMS name.
+
+**DBMSs.** To run SQLancer on SQLite, it was not necessary to install and set up a DBMS. The reason for this is that embedded DBMSs run in the same process as the application and thus require no separate installation or setup. Embedded DBMSs supported by SQLancer include DuckDB, H2, and SQLite. Their binaries are included as [JAR dependencies](https://github.com/sqlancer/sqlancer/blob/main/pom.xml). Note that any crashes in these systems will also cause a crash in the JVM on which SQLancer runs.
+
 
 # Testing Approaches
 
@@ -97,6 +99,8 @@ SQLancer stores logs in the `target/logs` subdirectory. By default, the option `
 After finding a bug, it is useful to produce a minimal test case before reporting the bug, to save the DBMS developers' time and effort. For many test cases, [C-Reduce](https://embed.cs.utah.edu/creduce/) does a great job.
 
 ## Found Bugs
+
+For most DBMSs, SQLancer supports only a previous *release* version. Thus, potential bugs that SQLancer finds could be already fixed in the latest *development* version of the DBMS. If you are not a developer of the DBMS that you are testing, we would like to encourage you to validate that the bug can still be reproduced before reporting it.
 
 We would appreciate it if you mention SQLancer when you report bugs found by it. We would also be excited to know if you are using SQLancer to find bugs, or if you have extended it to test another DBMS (also if you do not plan to contribute it to this project). SQLancer has found over 400 bugs in widely-used DBMS, which are listed [here](https://www.manuelrigger.at/dbms-bugs/).
 
