@@ -1,25 +1,21 @@
 [![Build Status](https://github.com/sqlancer/sqlancer/workflows/ci/badge.svg)](https://github.com/sqlancer/sqlancer/actions)
-[![Twitter](https://img.shields.io/twitter/follow/sqlancer_dbms?style=social)](https://twitter.com/sqlancer_dbms)
-# SQLancer
 
 
 ![SQLancer](media/logo/png/sqlancer_logo_logo_pos_500.png)
 
-SQLancer (Synthesized Query Lancer) is a tool to automatically test Database Management Systems (DBMS) in order to find logic bugs in their implementation. We refer to logic bugs as those bugs that cause the DBMS to fetch an incorrect result set (e.g., by omitting a record).
+SQLancer is a tool to automatically test Database Management Systems (DBMSs) in order to find bugs in their implementation. That is, it finds bugs in the code of the DBMS implementation, rather than in queries written by the user. SQLancer has found hundreds of bugs in mature and widely-known DBMSs.
 
-SQLancer operates in the following two phases:
-
-1. Database generation: The goal of this phase is to create a populated database, and stress the DBMS to increase the probability of causing an inconsistent database state that could be detected subsequently. First, random tables are created. Then, randomly SQL statements are chosen to generate, modify, and delete data. Also other statements, such as those to create indexes as well as views and to set DBMS-specific options are sent to the DBMS.
-2. Testing: The goal of this phase is to detect the logic bugs based on the generated database. See Testing Approaches below. **News: we support Differential Query Plans (DQP) oracle now. See Testing Approaches below.**
+SQLancer tackles two essential challenges when automatically testing the DBMSs:
+1. **Test input generation**: SQLancer implements approaches for automatically generating SQL statements. It contains various hand-written SQL generators that operate in multiple phases. First, a database schema is created, which refers to a set of tables and their columns. Then, data is inserted into these tables, along with creating various other kinds of database states such as indexes, views, or database-specific options. Finally, queries are generated, which can be validated using one of multiple result validators (also called *test oracles*) that SQLancer provides. Besides the standard approach of creating the statements in an unguided way, SQLancer also supports a test input-generation approach that is feedback-guided and aims to exercise as many unique query plans as possible based on the intuition that doing so would exercise many interesting behaviors in the database system [[ICSE '23]](https://arxiv.org/pdf/2312.17510).
+2. **Test oracles**: A key innovation in SQLancer is that it provides ways to find deep kinds of bugs in DBMSs. As a main focus, it can find logic bugs, which are bugs that cause the DBMS to fetch an incorrect result set (e.g., by omitting a record). We have proposed multiple complementary test oracles such as *Ternary Logic Partitioning (TLP)* [[OOPSLA '20]](https://dl.acm.org/doi/pdf/10.1145/3428279), *Non-optimizing Reference Engine Construction (NoREC)* [[ESEC/FSE 2020]](https://arxiv.org/abs/2007.08292), *Pivoted Query Synthesis (PQS)* [[OSDI '20]](https://www.usenix.org/system/files/osdi20-rigger.pdf), *Differential Query Plans (DQP)* [[SIGMOD '24]](https://dl.acm.org/doi/pdf/10.1145/3654991), and *Constant Optimization Driven Database System Testing (CODDTest)* [SIGMOD '25].  It can also find specific categories of performance issues, which refer to cases where a DBMS could reasonably be expected to produce its result more efficiently using a technique called *Cardinality Estimation Restriction Testing (CERT)* [[ICSE '24]](https://arxiv.org/pdf/2306.00355). SQLancer can detect unexpected internal errors (e.g., an error that the database is corrupted) by declaring all potential errors that might be returned by a DBMS for a given query. Finally, SQLancer can find crash bugs, which are bugs that cause the DBMS process to terminate. For this, it uses an implicit test oracle.
 
 # Getting Started
 
-Requirements:
+Minimum Requirements:
 * Java 11 or above
-* [Maven](https://maven.apache.org/) (`sudo apt install maven` on Ubuntu)
-* The DBMS that you want to test (embedded DBMSs such as DuckDB, H2, and SQLite do not require a setup)
+* [Maven](https://maven.apache.org/)
 
-The following commands clone SQLancer, create a JAR, and start SQLancer to test SQLite using Non-optimizing Reference Engine Construction (NoREC):
+The following commands clone SQLancer, create a JAR, and start SQLancer to test SQLite using [Non-optimizing Reference Engine Construction (NoREC)](https://arxiv.org/abs/2007.08292):
 
 ```
 git clone https://github.com/sqlancer/sqlancer
@@ -29,9 +25,47 @@ cd target
 java -jar sqlancer-*.jar --num-threads 4 sqlite3 --oracle NoREC
 ```
 
-If the execution prints progress information every five seconds, then the tool works as expected. Note that SQLancer might find bugs in SQLite. Before reporting these, be sure to check that they can still be reproduced when using the latest development version. The shortcut CTRL+C can be used to terminate SQLancer manually. If SQLancer does not find any bugs, it executes infinitely. The option `--num-tries` can be used to control after how many bugs SQLancer terminates. Alternatively, the option `--timeout-seconds` can be used to specify the maximum duration that SQLancer is allowed to run.
+**Running and terminating.** If the execution prints progress information every five seconds, then the tool works as expected. The shortcut CTRL+C can be used to terminate SQLancer manually. If SQLancer does not find any bugs, it executes infinitely. The option `--num-tries` can be used to control after how many bugs SQLancer terminates. Alternatively, the option `--timeout-seconds` can be used to specify the maximum duration that SQLancer is allowed to run.
 
-If you launch SQLancer without parameters, available options and commands are displayed. Note that general options that are supported by all DBMS-testing implementations (e.g., `--num-threads`) need to precede the name of DBMS to be tested (e.g., `sqlite3`). Options that are supported only for specific DBMS (e.g., `--test-rtree` for SQLite3), or options for which each testing implementation provides different values (e.g. `--oracle NoREC`) need to go after the DBMS name.
+**Parameters.** If you launch SQLancer without parameters, available options and commands are displayed. Note that general options that are supported by all DBMS-testing implementations (e.g., `--num-threads`) need to precede the name of the DBMS to be tested (e.g., `sqlite3`). Options that are supported only for specific DBMS (e.g., `--test-rtree` for SQLite3), or options for which each testing implementation provides different values (e.g. `--oracle NoREC`) need to go after the DBMS name.
+
+**DBMSs.** To run SQLancer on SQLite, it was not necessary to install and set up a DBMS. The reason for this is that embedded DBMSs run in the same process as the application and thus require no separate installation or setup. Embedded DBMSs supported by SQLancer include DuckDB, H2, and SQLite. Their binaries are included as [JAR dependencies](https://github.com/sqlancer/sqlancer/blob/main/pom.xml). Note that any crashes in these systems will also cause a crash in the JVM on which SQLancer runs.
+
+
+# Using SQLancer
+
+**Logs.** SQLancer stores logs in the `target/logs` subdirectory. By default, the option `--log-each-select` is enabled, which results in every SQL statement that is sent to the DBMS being logged. The corresponding file names are postfixed with `-cur.log`. In addition, if SQLancer detects a logic bug, it creates a file with the extension `.log`, in which the statements to reproduce the bug are logged, including only the last query that was executed along with the other statements to set up the database state.
+
+**Reducing bugs.** After finding a bug-inducing test input, the input typically needs to be reduced to be further analyzed, as it might contain many SQL statements that are redundant to reproduce the bug. One option is to do this manually, by removing a statement or feature at a time, replaying the bug-inducing statements, and applying the test oracle (e.g., for test oracles like TLP or NoREC, this would require checking that both queries still produce a different result). This process can be automated using a so-called [delta-debugging approach](https://www.debuggingbook.org/html/DeltaDebugger.html). SQLancer includes an experimental implementation of a delta debugging approach, which can be enabled using `--use-reducer`. In the past, we have successfully used [C-Reduce](https://embed.cs.utah.edu/creduce/), which requires specifying the test oracle in a script that can be executed by C-Reduce.
+
+**Testing the latest DBMS version.** For most DBMSs, SQLancer supports only a previous *release* version. Thus, potential bugs that SQLancer finds could be already fixed in the latest *development* version of the DBMS. If you are not a developer of the DBMS that you are testing, we would like to encourage you to validate that the bug can still be reproduced before reporting it. We would appreciate it if you could mention SQLancer when you report bugs found by it. We would also be excited to hear about your experience using SQLancer or related use cases or extensions.
+
+**Options.** SQLancer provides many options that you can use to customize its behavior. Executing `java -jar sqlancer-*.jar --help` will list them and should print output such as the following:
+```
+Usage: SQLancer [options] [command] [command options]
+  Options:
+    --ast-reducer-max-steps
+      EXPERIMENTAL Maximum steps the AST-based reducer will do
+      Default: -1
+    --ast-reducer-max-time
+      EXPERIMENTAL Maximum time duration (secs) the statement reducer will do
+      Default: -1
+    --canonicalize-sql-strings
+      Should canonicalize query string (add ';' at the end
+      Default: true
+    --constant-cache-size
+      Specifies the size of the constant cache. This option only takes effect
+      when constant caching is enabled
+      Default: 100
+...
+```
+
+**Which SQLancer version to use.** The recommended way to use SQLancer is to use its latest source version on GitHub. Infrequent and irregular official releases are also available on the following platforms:
+* [GitHub](https://github.com/sqlancer/sqlancer/releases)
+* [Maven Central](https://search.maven.org/artifact/com.sqlancer/sqlancer)
+* [DockerHub](https://hub.docker.com/r/mrigger/sqlancer)
+
+**Understanding SQL generation.** To analyze bug-inducing statements, it is helpful to understand the characteristics of SQLancer. First, SQLancer is expected to always generate SQL statements that are syntactically valid for the DBMS under test. Thus, you should never observe any syntax errors. Second, SQLancer might generate statements that are semantically invalid. For example, SQLancer might attempt to insert duplicate values into a column with a `UNIQUE` constraint, as completely avoiding such semantic errors is challenging. Third, any bug reported by SQLancer is expected to be a real bug, except those reported by CERT (as performance issues are not as clearly defined as other kinds of bugs). If you observe any bugs indicated by SQLancer that you do not consider bugs, something is likely wrong with your setup. Finally, related to the aforementioned point, SQLancer is specific to a version of the DBMS, and you can find the version against which we are tested in our [GitHub Actions workflow](https://github.com/sqlancer/sqlancer/blob/documentation/.github/workflows/main.yml). If you are testing against another version, you might observe various false alarms (e.g., caused by syntax errors). While we would always like for SQLancer to be up-to-date with the latest development version of each DBMS, we lack the resources to achieve this.
 
 # Testing Approaches
 
@@ -89,21 +123,6 @@ Some DBMS were once supported but subsequently removed.
 | StoneDB    | [#963](https://github.com/sqlancer/sqlancer/pull/963) | This implementation was removed because development of StoneDB stopped.                                                                                  |
 
 
-# Using SQLancer
-
-## Logs
-
-SQLancer stores logs in the `target/logs` subdirectory. By default, the option `--log-each-select` is enabled, which results in every SQL statement that is sent to the DBMS being logged. The corresponding file names are postfixed with `-cur.log`. In addition, if SQLancer detects a logic bug, it creates a file with the extension `.log`, in which the statements to reproduce the bug are logged.
-
-## Reducing a Bug
-
-After finding a bug, it is useful to produce a minimal test case before reporting the bug, to save the DBMS developers' time and effort. For many test cases, [C-Reduce](https://embed.cs.utah.edu/creduce/) does a great job.
-
-## Found Bugs
-
-We would appreciate it if you mention SQLancer when you report bugs found by it. We would also be excited to know if you are using SQLancer to find bugs, or if you have extended it to test another DBMS (also if you do not plan to contribute it to this project). SQLancer has found over 400 bugs in widely-used DBMS, which are listed [here](https://www.manuelrigger.at/dbms-bugs/).
-
-
 # Community
 
 We have created a [Slack workspace](https://join.slack.com/t/sqlancer/shared_invite/zt-eozrcao4-ieG29w1LNaBDMF7OB_~ACg) to discuss SQLancer, and DBMS testing in general. SQLancer's official Twitter handle is [@sqlancer_dbms](https://twitter.com/sqlancer_dbms).
@@ -124,13 +143,6 @@ For some DBMSs, SQLancer expects that a database "test" exists, which it then us
 
 * [Contributing to SQLancer](CONTRIBUTING.md)
 * [Papers and .bib entries](docs/PAPERS.md)
-
-# Releases
-
-Official release are available on:
-* [GitHub](https://github.com/sqlancer/sqlancer/releases)
-* [Maven Central](https://search.maven.org/artifact/com.sqlancer/sqlancer)
-* [DockerHub](https://hub.docker.com/r/mrigger/sqlancer)
 
 # Additional Resources
 
