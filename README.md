@@ -32,6 +32,41 @@ java -jar sqlancer-*.jar --num-threads 4 sqlite3 --oracle NoREC
 **DBMSs.** To run SQLancer on SQLite, it was not necessary to install and set up a DBMS. The reason for this is that embedded DBMSs run in the same process as the application and thus require no separate installation or setup. Embedded DBMSs supported by SQLancer include DuckDB, H2, and SQLite. Their binaries are included as [JAR dependencies](https://github.com/sqlancer/sqlancer/blob/main/pom.xml). Note that any crashes in these systems will also cause a crash in the JVM on which SQLancer runs.
 
 
+# Using SQLancer
+
+**Logs.** SQLancer stores logs in the `target/logs` subdirectory. By default, the option `--log-each-select` is enabled, which results in every SQL statement that is sent to the DBMS being logged. The corresponding file names are postfixed with `-cur.log`. In addition, if SQLancer detects a logic bug, it creates a file with the extension `.log`, in which the statements to reproduce the bug are logged, including only the last query that was executed along with the other statements to set up the database state.
+
+**Reducing bugs.** After finding a bug-inducing test input, the input typically needs to be reduced to be further analyzed, as it might contain many SQL statements that are redundant to reproduce the bug. One option is to do this manually, by removing a statement or feature at a time, replaying the bug-inducing statements, and applying the test oracle (e.g., for test oracles like TLP or NoREC, this would require checking that both queries still produce a different result). This process can be automated using a so-called [delta-debugging approach](https://www.debuggingbook.org/html/DeltaDebugger.html). SQLancer includes an experimental implementation of a delta debugging approach, which can be enabled using `--use-reducer`. In the past, we have successfully used [C-Reduce](https://embed.cs.utah.edu/creduce/), which requires specifying the test oracle in a script that can be executed by C-Reduce.
+
+**Testing the latest DBMS version.** For most DBMSs, SQLancer supports only a previous *release* version. Thus, potential bugs that SQLancer finds could be already fixed in the latest *development* version of the DBMS. If you are not a developer of the DBMS that you are testing, we would like to encourage you to validate that the bug can still be reproduced before reporting it. We would appreciate it if you could mention SQLancer when you report bugs found by it. We would also be excited to hear about your experience using SQLancer or related use cases or extensions.
+
+**Options.** SQLancer provides many options that you can use to customize its behavior. Executing `java -jar sqlancer-*.jar --help` will list them and should print output such as the following:
+```
+Usage: SQLancer [options] [command] [command options]
+  Options:
+    --ast-reducer-max-steps
+      EXPERIMENTAL Maximum steps the AST-based reducer will do
+      Default: -1
+    --ast-reducer-max-time
+      EXPERIMENTAL Maximum time duration (secs) the statement reducer will do
+      Default: -1
+    --canonicalize-sql-strings
+      Should canonicalize query string (add ';' at the end
+      Default: true
+    --constant-cache-size
+      Specifies the size of the constant cache. This option only takes effect
+      when constant caching is enabled
+      Default: 100
+...
+```
+
+**Which SQLancer version to use.** The recommended way to use SQLancer is to use its latest source version on GitHub. Infrequent and irregular official releases are also available on the following platforms:
+* [GitHub](https://github.com/sqlancer/sqlancer/releases)
+* [Maven Central](https://search.maven.org/artifact/com.sqlancer/sqlancer)
+* [DockerHub](https://hub.docker.com/r/mrigger/sqlancer)
+
+**Understanding SQL generation.** To analyze bug-inducing statements, it is helpful to understand the characteristics of SQLancer. First, SQLancer is expected to always generate SQL statements that are syntactically valid for the DBMS under test. Thus, you should never observe any syntax errors. Second, SQLancer might generate statements that are semantically invalid. For example, SQLancer might attempt to insert duplicate values into a column with a `UNIQUE` constraint, as completely avoiding such semantic errors is challenging. Third, any bug reported by SQLancer is expected to be a real bug, except those reported by CERT (as performance issues are not as clearly defined as other kinds of bugs). If you observe any bugs indicated by SQLancer that you do not consider bugs, something is likely wrong with your setup. Finally, related to the aforementioned point, SQLancer is specific to a version of the DBMS, and you can find the version against which we are tested in our [GitHub Actions workflow](https://github.com/sqlancer/sqlancer/blob/documentation/.github/workflows/main.yml). If you are testing against another version, you might observe various false alarms (e.g., caused by syntax errors). While we would always like for SQLancer to be up-to-date with the latest development version of each DBMS, we lack the resources to achieve this.
+
 # Testing Approaches
 
 | Approach                                             | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
@@ -88,23 +123,6 @@ Some DBMS were once supported but subsequently removed.
 | StoneDB    | [#963](https://github.com/sqlancer/sqlancer/pull/963) | This implementation was removed because development of StoneDB stopped.                                                                                  |
 
 
-# Using SQLancer
-
-## Logs
-
-SQLancer stores logs in the `target/logs` subdirectory. By default, the option `--log-each-select` is enabled, which results in every SQL statement that is sent to the DBMS being logged. The corresponding file names are postfixed with `-cur.log`. In addition, if SQLancer detects a logic bug, it creates a file with the extension `.log`, in which the statements to reproduce the bug are logged.
-
-## Reducing a Bug
-
-After finding a bug, it is useful to produce a minimal test case before reporting the bug, to save the DBMS developers' time and effort. For many test cases, [C-Reduce](https://embed.cs.utah.edu/creduce/) does a great job.
-
-## Found Bugs
-
-For most DBMSs, SQLancer supports only a previous *release* version. Thus, potential bugs that SQLancer finds could be already fixed in the latest *development* version of the DBMS. If you are not a developer of the DBMS that you are testing, we would like to encourage you to validate that the bug can still be reproduced before reporting it.
-
-We would appreciate it if you mention SQLancer when you report bugs found by it. We would also be excited to know if you are using SQLancer to find bugs, or if you have extended it to test another DBMS (also if you do not plan to contribute it to this project). SQLancer has found over 400 bugs in widely-used DBMS, which are listed [here](https://www.manuelrigger.at/dbms-bugs/).
-
-
 # Community
 
 We have created a [Slack workspace](https://join.slack.com/t/sqlancer/shared_invite/zt-eozrcao4-ieG29w1LNaBDMF7OB_~ACg) to discuss SQLancer, and DBMS testing in general. SQLancer's official Twitter handle is [@sqlancer_dbms](https://twitter.com/sqlancer_dbms).
@@ -125,13 +143,6 @@ For some DBMSs, SQLancer expects that a database "test" exists, which it then us
 
 * [Contributing to SQLancer](CONTRIBUTING.md)
 * [Papers and .bib entries](docs/PAPERS.md)
-
-# Releases
-
-Official release are available on:
-* [GitHub](https://github.com/sqlancer/sqlancer/releases)
-* [Maven Central](https://search.maven.org/artifact/com.sqlancer/sqlancer)
-* [DockerHub](https://hub.docker.com/r/mrigger/sqlancer)
 
 # Additional Resources
 
