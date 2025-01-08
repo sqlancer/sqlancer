@@ -16,6 +16,7 @@ import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLRowValue;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
+import sqlancer.mysql.ast.MySQLAggregate;
 import sqlancer.mysql.ast.MySQLBetweenOperation;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation.BinaryComparisonOperator;
@@ -40,6 +41,7 @@ import sqlancer.mysql.ast.MySQLStringExpression;
 import sqlancer.mysql.ast.MySQLTableReference;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
+import sqlancer.mysql.ast.MySQLAggregate.MySQLAggregateFunction;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 
 public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLExpression, MySQLColumn>
@@ -246,6 +248,12 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
     @Override
     public String generateExplainQuery(MySQLSelect select) {
         return "EXPLAIN " + select.asString();
+    }
+
+    public MySQLAggregate generateAggregate() {
+        MySQLAggregateFunction func = Randomly.fromOptions(MySQLAggregateFunction.values());
+        MySQLExpression expr = generateExpression();
+        return new MySQLAggregate(expr, func);
     }
 
     @Override
