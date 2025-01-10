@@ -139,14 +139,19 @@ For some DBMSs, SQLancer expects that a database "test" exists, which it then us
 
 # Links
 
-Documentation:
+Documentation and resources:
 
 * [Contributing to SQLancer](CONTRIBUTING.md)
 * [Papers and .bib entries](docs/PAPERS.md)
-
-Other resources:
-
-* A talk on Ternary Logic Partitioning (TLP) and SQLancer is available on [YouTube](https://www.youtube.com/watch?v=Np46NQ6lqP8).
-* An (older) Pivoted Query Synthesis (PQS) talk is available on [YouTube](https://www.youtube.com/watch?v=yzENTaWe7qg).
-* PingCAP has implemented PQS, NoREC, and TLP in a tool called [go-sqlancer](https://github.com/chaos-mesh/go-sqlancer).
 * More information on our DBMS testing efforts and the bugs we found is available [here](https://www.manuelrigger.at/dbms-bugs/).
+
+Videos:
+* [SQLancer Tutorial Playlist](https://www.youtube.com/playlist?list=PLm7ofmclym1E2LwBeSer_AAhzBSxBYDci)
+* [SQLancer Talks](https://youtube.com/playlist?list=PLm7ofmclym1E9-AbYy-PkrMfHpB9VdlZJ)
+
+Closely related tools:
+* [go-sqlancer](https://github.com/chaos-mesh/go-sqlancer): re-implementation of some of SQLancer's approaches in Go by PingCAP
+* [Jepsen](https://github.com/jepsen-io): testing of distributed (database) systems
+* [SQLRight](https://github.com/PSU-Security-Universe/sqlright): coverage-guided DBMS fuzzer, also supporting NoREC and TLP
+* [SQLsmith](https://github.com/anse1/sqlsmith): random SQL query generator used for fuzzing
+* [Squirrel](https://github.com/s3team/Squirrel): coverage-guided DBMS fuzzer
