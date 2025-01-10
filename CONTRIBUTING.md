@@ -1,6 +1,6 @@
 # Development
 
-## Working with Eclipse
+## Working with Eclipse [[Video Guide]](https://www.youtube.com/watch?v=KsuGrOLKb9Q)
 
 Developing SQLancer using Eclipse is expected to work well. You can import SQLancer with a single step:
 

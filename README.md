@@ -11,7 +11,7 @@ SQLancer tackles two essential challenges when automatically testing the DBMSs:
 
 **Community.** We have a [Slack workspace](https://join.slack.com/t/sqlancer/shared_invite/zt-eozrcao4-ieG29w1LNaBDMF7OB_~ACg) to discuss SQLancer, and DBMS testing in general. Previously, SQLancer had an account on Twitter/X [@sqlancer_dbms](https://twitter.com/sqlancer_dbms), which is no longer maintained. We have a [blog](https://sqlancer.github.io/posts/), which, as of now, contains only posts by contributors of the [Google Summer of Code project](https://summerofcode.withgoogle.com/archive/2023/organizations/sqlancer).
 
-# Getting Started
+# Getting Started [[Video Guide]](https://www.youtube.com/watch?v=lcZ6LixPH1Y)
 
 Minimum Requirements:
 * Java 11 or above
