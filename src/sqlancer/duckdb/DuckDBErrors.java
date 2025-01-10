@@ -57,12 +57,6 @@ public final class DuckDBErrors {
         errors.add("Cannot subtract infinite timestamps");
         errors.add("Timestamp difference is out of bounds");
 
-        if (DuckDBBugs.bug13933) {
-            errors.add("INTERNAL Error: Unimplemented type for normalify");
-            errors.add(
-                    "FATAL Error: Failed: database has been invalidated because of a previous fatal error. The database must be restarted prior to being used again");
-        }
-
         return errors;
     }
 
