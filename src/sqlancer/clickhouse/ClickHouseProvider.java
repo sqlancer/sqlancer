@@ -87,7 +87,7 @@ public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState
 
     @Override
     public void generateDatabase(ClickHouseGlobalState globalState) throws Exception {
-        for (int i = 0; i < Randomly.fromOptions(5); i++) {
+        for (int i = 0; i < Randomly.fromOptions(1, 2, 3, 4, 5); i++) {
             boolean success;
             do {
                 String tableName = ClickHouseCommon.createTableName(i);
