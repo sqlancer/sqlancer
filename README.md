@@ -9,6 +9,8 @@ SQLancer tackles two essential challenges when automatically testing the DBMSs:
 1. **Test input generation**: SQLancer implements approaches for automatically generating SQL statements. It contains various hand-written SQL generators that operate in multiple phases. First, a database schema is created, which refers to a set of tables and their columns. Then, data is inserted into these tables, along with creating various other kinds of database states such as indexes, views, or database-specific options. Finally, queries are generated, which can be validated using one of multiple result validators (also called *test oracles*) that SQLancer provides. Besides the standard approach of creating the statements in an unguided way, SQLancer also supports a test input-generation approach that is feedback-guided and aims to exercise as many unique query plans as possible based on the intuition that doing so would exercise many interesting behaviors in the database system [[ICSE '23]](https://arxiv.org/pdf/2312.17510).
 2. **Test oracles**: A key innovation in SQLancer is that it provides ways to find deep kinds of bugs in DBMSs. As a main focus, it can find logic bugs, which are bugs that cause the DBMS to fetch an incorrect result set (e.g., by omitting a record). We have proposed multiple complementary test oracles such as *Ternary Logic Partitioning (TLP)* [[OOPSLA '20]](https://dl.acm.org/doi/pdf/10.1145/3428279), *Non-optimizing Reference Engine Construction (NoREC)* [[ESEC/FSE 2020]](https://arxiv.org/abs/2007.08292), *Pivoted Query Synthesis (PQS)* [[OSDI '20]](https://www.usenix.org/system/files/osdi20-rigger.pdf), *Differential Query Plans (DQP)* [[SIGMOD '24]](https://dl.acm.org/doi/pdf/10.1145/3654991), and *Constant Optimization Driven Database System Testing (CODDTest)* [SIGMOD '25].  It can also find specific categories of performance issues, which refer to cases where a DBMS could reasonably be expected to produce its result more efficiently using a technique called *Cardinality Estimation Restriction Testing (CERT)* [[ICSE '24]](https://arxiv.org/pdf/2306.00355). SQLancer can detect unexpected internal errors (e.g., an error that the database is corrupted) by declaring all potential errors that might be returned by a DBMS for a given query. Finally, SQLancer can find crash bugs, which are bugs that cause the DBMS process to terminate. For this, it uses an implicit test oracle.
 
+**Community.** We have a [Slack workspace](https://join.slack.com/t/sqlancer/shared_invite/zt-eozrcao4-ieG29w1LNaBDMF7OB_~ACg) to discuss SQLancer, and DBMS testing in general. Previously, SQLancer had an account on Twitter/X [@sqlancer_dbms](https://twitter.com/sqlancer_dbms), which is no longer maintained. We have a [blog](https://sqlancer.github.io/posts/), which, as of now, contains only posts by contributors of the [Google Summer of Code project](https://summerofcode.withgoogle.com/archive/2023/organizations/sqlancer).
+
 # Getting Started
 
 Minimum Requirements:
@@ -119,11 +121,6 @@ Some DBMS were once supported but subsequently removed.
 | Cosmos     | [#915](https://github.com/sqlancer/sqlancer/pull/915) | This implementation was removed because Cosmos is a NoSQL DBMS, while the majority were SQL DBMSs, which resulted in difficulty refactoring SQLancer.    |
 | MongoDB    | [#915](https://github.com/sqlancer/sqlancer/pull/915) | This implementation was removed because MongoDB is a NoSQL DBMS, while the majority were SQL DBMSs, which resulted in difficulty refactoring SQLancer.   |
 | StoneDB    | [#963](https://github.com/sqlancer/sqlancer/pull/963) | This implementation was removed because development of StoneDB stopped.                                                                                  |
-
-
-# Community
-
-We have created a [Slack workspace](https://join.slack.com/t/sqlancer/shared_invite/zt-eozrcao4-ieG29w1LNaBDMF7OB_~ACg) to discuss SQLancer, and DBMS testing in general. SQLancer's official Twitter handle is [@sqlancer_dbms](https://twitter.com/sqlancer_dbms).
 
 # FAQ
 
