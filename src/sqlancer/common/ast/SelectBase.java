@@ -1,5 +1,6 @@
 package sqlancer.common.ast;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -14,6 +15,21 @@ public class SelectBase<T> {
     T havingClause;
     T limitClause;
     T offsetClause;
+    T withClause;
+
+    public SelectBase(){}
+    public SelectBase(SelectBase<T> other) {
+        fetchColumns = new ArrayList<>(other.fetchColumns);
+        groupByExpressions = new ArrayList<>(other.groupByExpressions);
+        orderByExpressions = new ArrayList<>(other.orderByExpressions);
+        joinList = new ArrayList<>(other.joinList);
+        fromList = new ArrayList<>(other.fromList);
+        whereClause = other.whereClause;
+        havingClause = other.havingClause;
+        limitClause = other.limitClause;
+        offsetClause = other.offsetClause;
+        withClause = other.withClause;
+    }
 
     public void setFetchColumns(List<T> fetchColumns) {
         if (fetchColumns == null || fetchColumns.isEmpty()) {
@@ -38,6 +54,13 @@ public class SelectBase<T> {
 
     public void setFromTables(List<T> tables) {
         setFromList(tables);
+    }
+
+    public void addToFromList(T fromNode) {
+        if (fromNode == null) {
+            throw new IllegalArgumentException();
+        }
+        this.fromList.add(fromNode);
     }
 
     public List<T> getFromList() {
@@ -125,5 +148,13 @@ public class SelectBase<T> {
 
     public void setGroupByClause(List<T> groupByExpressions) {
         setGroupByExpressions(groupByExpressions);
+    }
+
+    public void setWithClause(T withClause) {
+        this.withClause = withClause;
+    }
+
+    public T getWithClause() {
+        return this.withClause;
     }
 }
