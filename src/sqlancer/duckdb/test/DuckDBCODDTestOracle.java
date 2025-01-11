@@ -897,13 +897,13 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
     }
 
     public boolean testCommonTableExpression() {
-        return false;
+        return true;
     }
     public boolean testDerivedTable() {
         return true;
     }
     public boolean testInsert() {
-        return false;
+        return true;
     }
 
     @Override
