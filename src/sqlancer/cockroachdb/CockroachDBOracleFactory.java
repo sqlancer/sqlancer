@@ -7,7 +7,9 @@ import java.util.Optional;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.OracleFactory;
+import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
+import sqlancer.cockroachdb.oracle.CockroachDBCODDTestOracle;
 import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPAggregateOracle;
 import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPDistinctOracle;
 import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPExtendedWhereOracle;
@@ -132,6 +134,12 @@ public enum CockroachDBOracleFactory implements OracleFactory<CockroachDBProvide
         @Override
         public boolean requiresAllTablesToContainRows() {
             return true;
+        }
+    },
+    CODDTest {
+        @Override
+        public TestOracle<CockroachDBGlobalState> create(CockroachDBGlobalState globalState) throws SQLException {
+            return new CockroachDBCODDTestOracle(globalState);
         }
     };
 
