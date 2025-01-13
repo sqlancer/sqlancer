@@ -69,6 +69,7 @@ public final class DuckDBErrors {
         errors.add("GROUP BY term out of range - should be between");
         errors.add("INTERNAL Error: Failed to bind column reference");
         errors.add("Binder Error: Aggregate with only constant parameters has to be bound in the root subquery");
+        errors.add("COLLATE can only be applied to varchar columns");
 
 
         return errors;
