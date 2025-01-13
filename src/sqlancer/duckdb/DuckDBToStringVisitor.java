@@ -127,6 +127,14 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
                 visit(columnRef);
                 if (dbstate.get(columnRef).get(i) instanceof DuckDBNullConstant) {
                     sb.append(" IS NULL");
+                } else if (dbstate.get(columnRef).get(i) instanceof DuckDBConstantWithType) {
+                    DuckDBConstantWithType ct = (DuckDBConstantWithType) dbstate.get(columnRef).get(i);
+                    if (ct.getConstant() instanceof DuckDBNullConstant) {
+                        sb.append(" IS NULL");
+                    } else {
+                        sb.append(" = ");
+                        visit(dbstate.get(columnRef).get(i));
+                    }
                 } else {
                     sb.append(" = ");
                     visit(dbstate.get(columnRef).get(i));
