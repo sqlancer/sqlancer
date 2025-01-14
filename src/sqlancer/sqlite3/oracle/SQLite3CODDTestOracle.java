@@ -94,6 +94,9 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
     public void check() throws SQLException {
         reproducer = null;
 
+        joinsInExpr = null;
+        tablesFromOuterContext.clear();
+
         useSubqueryAsFoldedExpr = useSubquery();
         useCorrelatedSubqueryAsFoldedExpr = useCorrelatedSubquery();
 
@@ -168,8 +171,7 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
             foldedResult = getQueryResult(foldedQueryString, state);
         }
         // one column
-        else if (auxiliaryQueryResult.size() == 1 && Randomly.getBooleanWithRatherLowProbability()) {
-        // else if (auxiliaryQueryResult.size() == 1 && false) {
+        else if (auxiliaryQueryResult.size() == 1 && Randomly.getBooleanWithRatherLowProbability() && testInOperator()) {
             // original query
             List<SQLite3Column> columns = s.getRandomTableNonEmptyTables().getColumns();
             SQLite3ColumnName selectedColumn = new SQLite3ColumnName(Randomly.fromList(columns), null);
@@ -277,9 +279,11 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         gen = new SQLite3ExpressionGenerator(state).setColumns(columns);
         List<SQLite3Table> tables = randomTables.getTables();
         List<Join> joinStatements = new ArrayList<>();
-        if ((!useSubqueryAsFoldedExpr || (useSubqueryAsFoldedExpr && useCorrelatedSubqueryAsFoldedExpr)) && this.joinsInExpr != null) {
-            joinStatements.addAll(this.joinsInExpr);
-            this.joinsInExpr = null;
+        if (!useSubqueryAsFoldedExpr || (useSubqueryAsFoldedExpr && useCorrelatedSubqueryAsFoldedExpr)) {
+            if (this.joinsInExpr != null) {
+                joinStatements.addAll(this.joinsInExpr);
+                this.joinsInExpr = null;
+            }
         }
         else if (Randomly.getBoolean()) {
             joinStatements = genJoinExpression(gen, tables, Randomly.getBooleanWithRatherLowProbability() ? specificCondition : null, false);
@@ -948,6 +952,9 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         return true;
     }
     public boolean testInsert() {
+        return false;
+    }
+    public boolean testInOperator() {
         return false;
     }
 
