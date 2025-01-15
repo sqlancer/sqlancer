@@ -29,8 +29,7 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
 
     public enum DatabendDataType {
 
-        INT, VARCHAR, BOOLEAN, FLOAT, NULL;
-        // , DATE, TIMESTAMP
+        INT, VARCHAR, BOOLEAN, FLOAT, NULL, DATE, TIMESTAMP;
 
         public static DatabendDataType getRandomWithoutNull() {
             DatabendDataType dt;
@@ -84,8 +83,8 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
                 break;
             case BOOLEAN:
             case VARCHAR:
-                // case DATE:
-                // case TIMESTAMP:
+            case DATE:
+            case TIMESTAMP:
                 size = 0;
                 break;
             default:
@@ -124,10 +123,10 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
                 }
             case BOOLEAN:
                 return Randomly.fromOptions("BOOLEAN", "BOOL");
-            // case TIMESTAMP:
-            // return Randomly.fromOptions("TIMESTAMP", "DATETIME");
-            // case DATE:
-            // return Randomly.fromOptions("DATE");
+            case DATE:
+                return Randomly.fromOptions("DATE");
+            case TIMESTAMP:
+                return Randomly.fromOptions("TIMESTAMP", "DATETIME");
             case NULL:
                 return Randomly.fromOptions("NULL");
             default:
@@ -194,6 +193,11 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
                         case VARCHAR:
                             constant = DatabendConstant.createStringConstant(rs.getString(columnIndex));
                             break;
+                        case DATE:
+                            constant = DatabendConstant.createDateConstant(rs.getLong(columnIndex));
+                            break;
+                        case TIMESTAMP:
+                            constant = DatabendConstant.createTimestampConstant(rs.getLong(columnIndex));
                         default:
                             throw new IgnoreMeException();
                         }
@@ -281,12 +285,12 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
             primitiveType = DatabendDataType.FLOAT;
             size = 8;
             break;
-        // case "DATE":
-        // primitiveType = DatabendDataType.DATE;
-        // break;
-        // case "TIMESTAMP":
-        // primitiveType = DatabendDataType.TIMESTAMP;
-        // break;
+        case "DATE":
+            primitiveType = DatabendDataType.DATE;
+            break;
+        case "TIMESTAMP":
+            primitiveType = DatabendDataType.TIMESTAMP;
+            break;
         case "VARCHAR":
         case "STRING":
             primitiveType = DatabendDataType.VARCHAR;

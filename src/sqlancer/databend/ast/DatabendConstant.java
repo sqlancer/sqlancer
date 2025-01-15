@@ -123,6 +123,10 @@ public abstract class DatabendConstant implements DatabendExpression {
                 return this;
             case VARCHAR:
                 return new DatabendStringConstant(String.valueOf(value));
+            case DATE:
+                return new DatabendDateConstant(value);
+            case TIMESTAMP:
+                return new DatabendTimestampConstant(value);
             default:
                 return null;
             }
