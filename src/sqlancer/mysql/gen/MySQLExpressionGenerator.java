@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
@@ -252,13 +253,16 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
 
     public MySQLAggregate generateAggregate() {
         MySQLAggregateFunction func = Randomly.fromOptions(MySQLAggregateFunction.values());
-        MySQLExpression expr = generateExpression();
 
-        if (Randomly.getBoolean() && func.getOptions().size() > 0) {
-            String option = Randomly.fromList(func.getOptions());
-            return new MySQLAggregate(expr, func, option);
+        if (func.isVariadic()) {
+            int nrExprs = Randomly.smallNumber() + 1;
+            List<MySQLExpression> exprs = IntStream.range(0, nrExprs)
+                .mapToObj(index -> generateExpression())
+                .collect(Collectors.toList());
+            
+            return new MySQLAggregate(exprs, func);
         } else {
-            return new MySQLAggregate(expr, func, null);
+            return new MySQLAggregate(List.of(generateExpression()), func);
         }
     }
 

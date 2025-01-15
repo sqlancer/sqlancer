@@ -169,6 +169,7 @@ public class MySQLExpectedValueVisitor implements MySQLVisitor {
 
     @Override
     public void visit(MySQLAggregate aggr) {
+        // do nothing
     }
 
 }

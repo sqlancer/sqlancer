@@ -6,44 +6,54 @@ public class MySQLAggregate implements MySQLExpression {
     
     public enum MySQLAggregateFunction {
         // See https://dev.mysql.com/doc/refman/8.4/en/aggregate-functions.html#function_count.
-        COUNT("DISTINCT"),
+        COUNT("COUNT", null, false),
+        COUNT_DISTINCT("COUNT", "DISTINCT", true),
         // See https://dev.mysql.com/doc/refman/8.4/en/aggregate-functions.html#function_sum.
-        SUM("DISTINCT"),
+        SUM("SUM", null, false),
+        SUM_DISTINCT("SUM", "DISTINCT", false),
         // See https://dev.mysql.com/doc/refman/8.4/en/aggregate-functions.html#function_min.
-        MIN("DISTINCT"),
+        MIN("MIN", null, false),
+        MIN_DISTINCT("MIN", "DISTINCT", false),
         // See https://dev.mysql.com/doc/refman/8.4/en/aggregate-functions.html#function_max.
-        MAX("DISTINCT");
+        MAX("MAX", null, false),
+        MAX_DISTINCT("MAX", "DISTINCT", false);
 
-        private final List<String> options;
+        private final String name;
+        private final String option;
+        private final boolean isVariadic;
 
-        private MySQLAggregateFunction(String... options) {
-            this.options = List.of(options);
+        private MySQLAggregateFunction(String name, String option, boolean isVariadic) {
+            this.name = name;
+            this.option = option;
+            this.isVariadic = isVariadic;
         }
 
-        public List<String> getOptions() {
-            return options;
+        public String getName() {
+            return this.name;
+        }
+
+        public String getOption() {
+            return option;
+        }
+
+        public boolean isVariadic() {
+            return this.isVariadic;
         }
     }
 
-    private final MySQLExpression expr;
+    private final List<MySQLExpression> exprs;
     private final MySQLAggregateFunction func;
-    private final String option;
 
-    public MySQLAggregate(MySQLExpression expr, MySQLAggregateFunction func, String option) {
-        this.expr = expr;
+    public MySQLAggregate(List<MySQLExpression> exprs, MySQLAggregateFunction func) {
+        this.exprs = exprs;
         this.func = func;
-        this.option = option;
     }
 
-    public MySQLExpression getExpr() {
-        return expr;
+    public List<MySQLExpression> getExprs() {
+        return exprs;
     }
 
     public MySQLAggregateFunction getFunc() {
         return func;
-    }
-
-    public String getOption() {
-        return option;
     }
 }
