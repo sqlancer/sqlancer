@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.mysql.ast.MySQLAggregate;
+import sqlancer.mysql.ast.MySQLAggregate.MySQLAggregateFunction;
 import sqlancer.mysql.ast.MySQLBetweenOperation;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
@@ -26,7 +27,6 @@ import sqlancer.mysql.ast.MySQLStringExpression;
 import sqlancer.mysql.ast.MySQLTableReference;
 import sqlancer.mysql.ast.MySQLText;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
-import sqlancer.mysql.ast.MySQLAggregate.MySQLAggregateFunction;
 
 public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> implements MySQLVisitor {
 

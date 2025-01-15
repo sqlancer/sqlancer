@@ -3,26 +3,22 @@ package sqlancer.mysql.ast;
 import java.util.List;
 
 public class MySQLAggregate implements MySQLExpression {
-    
+
     public enum MySQLAggregateFunction {
         // See https://dev.mysql.com/doc/refman/8.4/en/aggregate-functions.html#function_count.
-        COUNT("COUNT", null, false),
-        COUNT_DISTINCT("COUNT", "DISTINCT", true),
+        COUNT("COUNT", null, false), COUNT_DISTINCT("COUNT", "DISTINCT", true),
         // See https://dev.mysql.com/doc/refman/8.4/en/aggregate-functions.html#function_sum.
-        SUM("SUM", null, false),
-        SUM_DISTINCT("SUM", "DISTINCT", false),
+        SUM("SUM", null, false), SUM_DISTINCT("SUM", "DISTINCT", false),
         // See https://dev.mysql.com/doc/refman/8.4/en/aggregate-functions.html#function_min.
-        MIN("MIN", null, false),
-        MIN_DISTINCT("MIN", "DISTINCT", false),
+        MIN("MIN", null, false), MIN_DISTINCT("MIN", "DISTINCT", false),
         // See https://dev.mysql.com/doc/refman/8.4/en/aggregate-functions.html#function_max.
-        MAX("MAX", null, false),
-        MAX_DISTINCT("MAX", "DISTINCT", false);
+        MAX("MAX", null, false), MAX_DISTINCT("MAX", "DISTINCT", false);
 
         private final String name;
         private final String option;
         private final boolean isVariadic;
 
-        private MySQLAggregateFunction(String name, String option, boolean isVariadic) {
+        MySQLAggregateFunction(String name, String option, boolean isVariadic) {
             this.name = name;
             this.option = option;
             this.isVariadic = isVariadic;
