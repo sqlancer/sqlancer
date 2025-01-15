@@ -25,6 +25,8 @@ public final class MySQLRandomQuerySynthesizer {
         List<MySQLExpression> allColumns = new ArrayList<>();
         List<MySQLExpression> columnsWithoutAggregations = new ArrayList<>();
 
+        boolean hasGeneratedAggregate = false;
+
         select.setSelectType(Randomly.fromOptions(MySQLSelect.SelectType.values()));
         for (int i = 0; i < nrColumns; i++) {
             if (Randomly.getBoolean()) {
@@ -33,6 +35,7 @@ public final class MySQLRandomQuerySynthesizer {
                 columnsWithoutAggregations.add(expression);
             } else {
                 allColumns.add(gen.generateAggregate());
+                hasGeneratedAggregate = true;
             }
         }
         select.setFetchColumns(allColumns);
@@ -46,7 +49,7 @@ public final class MySQLRandomQuerySynthesizer {
         if (Randomly.getBooleanWithRatherLowProbability()) {
             select.setOrderByClauses(gen.generateOrderBys());
         }
-        if (Randomly.getBoolean()) {
+        if (hasGeneratedAggregate || Randomly.getBoolean()) {
             select.setGroupByExpressions(columnsWithoutAggregations);
             if (Randomly.getBoolean()) {
                 select.setHavingClause(gen.generateHavingClause());
