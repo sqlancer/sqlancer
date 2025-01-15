@@ -1,6 +1,7 @@
 package sqlancer.mysql;
 
 import sqlancer.IgnoreMeException;
+import sqlancer.mysql.ast.MySQLAggregate;
 import sqlancer.mysql.ast.MySQLBetweenOperation;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
@@ -164,6 +165,11 @@ public class MySQLExpectedValueVisitor implements MySQLVisitor {
     @Override
     public void visit(MySQLText text) {
         print(text);
+    }
+
+    @Override
+    public void visit(MySQLAggregate aggr) {
+        // do nothing
     }
 
 }

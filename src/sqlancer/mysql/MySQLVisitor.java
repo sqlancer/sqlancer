@@ -1,5 +1,6 @@
 package sqlancer.mysql;
 
+import sqlancer.mysql.ast.MySQLAggregate;
 import sqlancer.mysql.ast.MySQLBetweenOperation;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
@@ -58,6 +59,8 @@ public interface MySQLVisitor {
 
     void visit(MySQLText text);
 
+    void visit(MySQLAggregate aggregate);
+
     default void visit(MySQLExpression expr) {
         if (expr instanceof MySQLConstant) {
             visit((MySQLConstant) expr);
@@ -95,6 +98,8 @@ public interface MySQLVisitor {
             visit((MySQLCollate) expr);
         } else if (expr instanceof MySQLText) {
             visit((MySQLText) expr);
+        } else if (expr instanceof MySQLAggregate) {
+            visit((MySQLAggregate) expr);
         } else {
             throw new AssertionError(expr);
         }
