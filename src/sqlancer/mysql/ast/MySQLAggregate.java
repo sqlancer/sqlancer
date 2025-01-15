@@ -1,6 +1,6 @@
 package sqlancer.mysql.ast;
 
-import sqlancer.Randomly;
+import java.util.List;
 
 public class MySQLAggregate implements MySQLExpression {
     
@@ -14,27 +14,25 @@ public class MySQLAggregate implements MySQLExpression {
         // See https://dev.mysql.com/doc/refman/8.4/en/aggregate-functions.html#function_max.
         MAX("DISTINCT");
 
-        private final String[] options;
+        private final List<String> options;
 
         private MySQLAggregateFunction(String... options) {
-            this.options = options.clone();
+            this.options = List.of(options);
         }
 
-        public String getRandomOption() {
-            if (options.length == 0 || Randomly.getBoolean()) {
-                return "";
-            }
-
-            return Randomly.fromOptions(options);
+        public List<String> getOptions() {
+            return options;
         }
     }
 
     private final MySQLExpression expr;
     private final MySQLAggregateFunction func;
+    private final String option;
 
-    public MySQLAggregate(MySQLExpression expr, MySQLAggregateFunction func) {
+    public MySQLAggregate(MySQLExpression expr, MySQLAggregateFunction func, String option) {
         this.expr = expr;
         this.func = func;
+        this.option = option;
     }
 
     public MySQLExpression getExpr() {
@@ -43,5 +41,9 @@ public class MySQLAggregate implements MySQLExpression {
 
     public MySQLAggregateFunction getFunc() {
         return func;
+    }
+
+    public String getOption() {
+        return option;
     }
 }

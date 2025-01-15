@@ -328,10 +328,14 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
     @Override
     public void visit(MySQLAggregate aggr) {
         MySQLAggregateFunction func = aggr.getFunc();
+        String option = aggr.getOption();
 
         sb.append(func);
         sb.append("(");
-        sb.append(func.getRandomOption());
+        if (option != null) {
+            sb.append(option);
+            sb.append(" ");
+        }
         visit(aggr.getExpr());
         sb.append(")");
     }

@@ -253,7 +253,13 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
     public MySQLAggregate generateAggregate() {
         MySQLAggregateFunction func = Randomly.fromOptions(MySQLAggregateFunction.values());
         MySQLExpression expr = generateExpression();
-        return new MySQLAggregate(expr, func);
+
+        if (Randomly.getBoolean() && func.getOptions().size() > 0) {
+            String option = Randomly.fromList(func.getOptions());
+            return new MySQLAggregate(expr, func, option);
+        } else {
+            return new MySQLAggregate(expr, func, null);
+        }
     }
 
     @Override

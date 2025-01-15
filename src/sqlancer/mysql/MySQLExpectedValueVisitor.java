@@ -169,8 +169,6 @@ public class MySQLExpectedValueVisitor implements MySQLVisitor {
 
     @Override
     public void visit(MySQLAggregate aggr) {
-        print(aggr);
-        visit(aggr.getExpr());
     }
 
 }
