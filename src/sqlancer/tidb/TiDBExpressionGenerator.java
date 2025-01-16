@@ -1,5 +1,6 @@
 package sqlancer.tidb;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -73,7 +74,7 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
         }
         switch (type) {
         case INT:
-            return TiDBConstant.createIntConstant(globalState.getRandomly().getInteger());
+            return TiDBConstant.createIntConstant(BigInteger.valueOf(globalState.getRandomly().getInteger()));
         case BLOB:
         case TEXT:
             return TiDBConstant.createStringConstant(globalState.getRandomly().getString());
@@ -85,7 +86,7 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
             return TiDBConstant.createStringConstant(globalState.getRandomly().getChar());
         case DECIMAL:
         case NUMERIC:
-            return TiDBConstant.createIntConstant(globalState.getRandomly().getInteger());
+            return TiDBConstant.createIntConstant(BigInteger.valueOf(globalState.getRandomly().getInteger()));
         default:
             throw new AssertionError();
         }
@@ -121,7 +122,7 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
         }
         switch (type) {
         case INT:
-            return TiDBConstant.createIntConstant(globalState.getRandomly().getInteger());
+            return TiDBConstant.createIntConstant(BigInteger.valueOf(globalState.getRandomly().getInteger()));
         case BLOB:
         case TEXT:
             return TiDBConstant.createStringConstant(globalState.getRandomly().getString());
@@ -133,7 +134,7 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
             return TiDBConstant.createStringConstant(globalState.getRandomly().getChar());
         case DECIMAL:
         case NUMERIC:
-            return TiDBConstant.createIntConstant(globalState.getRandomly().getInteger());
+            return TiDBConstant.createIntConstant(BigInteger.valueOf(globalState.getRandomly().getInteger()));
         default:
             throw new AssertionError();
         }

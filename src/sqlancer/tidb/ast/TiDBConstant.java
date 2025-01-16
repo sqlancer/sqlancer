@@ -1,5 +1,7 @@
 package sqlancer.tidb.ast;
 
+import java.math.BigInteger;
+
 public class TiDBConstant implements TiDBExpression {
 
     private TiDBConstant() {
@@ -16,9 +18,9 @@ public class TiDBConstant implements TiDBExpression {
 
     public static class TiDBIntConstant extends TiDBConstant {
 
-        private final long value;
+        private final BigInteger value;
 
-        public TiDBIntConstant(long value) {
+        public TiDBIntConstant(BigInteger value) {
             this.value = value;
         }
 
@@ -27,7 +29,7 @@ public class TiDBConstant implements TiDBExpression {
             return String.valueOf(value);
         }
 
-        public long getValue() {
+        public BigInteger getValue() {
             return value;
         }
 
@@ -122,7 +124,7 @@ public class TiDBConstant implements TiDBExpression {
         return new TiDBDoubleConstant(val);
     }
 
-    public static TiDBIntConstant createIntConstant(long val) {
+    public static TiDBIntConstant createIntConstant(BigInteger val) {
         return new TiDBIntConstant(val);
     }
 
@@ -132,6 +134,10 @@ public class TiDBConstant implements TiDBExpression {
 
     public static TiDBConstant createBooleanConstant(boolean val) {
         return new TiDBBooleanConstant(val);
+    }
+
+    public static TiDBBitConstant createBitConstant(long val) {
+        return new TiDBBitConstant(val);
     }
 
 }
