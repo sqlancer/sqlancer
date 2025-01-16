@@ -397,11 +397,11 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
             throw new IgnoreMeException();
         }
 
-        for (DuckDBTable t : outerQueryRandomTables.getTables()) {
-            if (!innerQueryRandomTables.isContained(t)) {
-                tablesFromOuterContext.add(t);
-            }
-        }
+        // for (DuckDBTable t : outerQueryRandomTables.getTables()) {
+        //     if (!innerQueryRandomTables.isContained(t)) {
+        //         tablesFromOuterContext.add(t);
+        //     }
+        // }
 
         List<DuckDBColumn> innerQueryColumns = new ArrayList<>();
         innerQueryColumns.addAll(innerQueryRandomTables.getColumns());
