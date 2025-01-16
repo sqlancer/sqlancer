@@ -366,21 +366,13 @@ public class CockroachDBCODDTestOracle extends CODDTestBase<CockroachDBGlobalSta
     
     private CockroachDBSelect genSelectExpression(CockroachDBExpressionBag tempTableRefBag, CockroachDBExpression specificCondition, CockroachDBCompositeDataType conditionType) {
         CockroachDBTables randomTables = s.getRandomTableNonEmptyTables();
-        logger.writeCurrent("1");
         if (!useSubqueryAsFoldedExpr || (useSubqueryAsFoldedExpr && useCorrelatedSubqueryAsFoldedExpr)) {
-            logger.writeCurrent("2");
             for (CockroachDBTable t : this.tablesFromOuterContext) {
                 randomTables.addTable(t);
             }
             if (this.joinsInExpr != null) {
-                logger.writeCurrent("3");
                 for (CockroachDBJoin j : this.joinsInExpr) {
-                    logger.writeCurrent("4");
                     CockroachDBTableReference lt = (CockroachDBTableReference) j.getLeftTable();
-                    if (lt == j.getLeftTable()) 
-                        logger.writeCurrent("lt is same with j.getLeftTable()");
-                    else 
-                        logger.writeCurrent("lt is not same with j.getLeftTable()");
                     randomTables.addTable(lt.getTable());
                     CockroachDBTableReference rt = (CockroachDBTableReference) j.getRightTable();
                     randomTables.addTable(rt.getTable());
