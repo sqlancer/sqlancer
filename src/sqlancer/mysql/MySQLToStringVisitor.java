@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.visitor.ToStringVisitor;
+import sqlancer.mysql.ast.MySQLAggregate;
+import sqlancer.mysql.ast.MySQLAggregate.MySQLAggregateFunction;
 import sqlancer.mysql.ast.MySQLBetweenOperation;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
@@ -321,5 +323,26 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
     @Override
     public void visit(MySQLText text) {
         sb.append(text.getText());
+    }
+
+    @Override
+    public void visit(MySQLAggregate aggr) {
+        MySQLAggregateFunction func = aggr.getFunc();
+        String option = func.getOption();
+        List<MySQLExpression> exprs = aggr.getExprs();
+
+        sb.append(func.getName());
+        sb.append("(");
+        if (option != null) {
+            sb.append(option);
+            sb.append(" ");
+        }
+        for (int i = 0; i < exprs.size(); i++) {
+            if (i != 0) {
+                sb.append(", ");
+            }
+            visit(exprs.get(i));
+        }
+        sb.append(")");
     }
 }
