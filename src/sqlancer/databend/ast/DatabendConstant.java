@@ -322,7 +322,8 @@ public abstract class DatabendConstant implements DatabendExpression {
         public String textRepr;
 
         public DatabendDateConstant(long val) {
-            Timestamp timestamp = new Timestamp(val);
+            long t = val % 250000000000000l;
+            Timestamp timestamp = new Timestamp(t);
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             textRepr = dateFormat.format(timestamp);
         }
@@ -357,7 +358,8 @@ public abstract class DatabendConstant implements DatabendExpression {
         public String textRepr;
 
         public DatabendTimestampConstant(long val) {
-            Timestamp timestamp = new Timestamp(val);
+            long t = val % 250000000000000l;
+            Timestamp timestamp = new Timestamp(t);
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             textRepr = dateFormat.format(timestamp);
         }
