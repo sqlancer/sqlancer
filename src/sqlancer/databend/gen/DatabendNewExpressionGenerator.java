@@ -127,6 +127,8 @@ public class DatabendNewExpressionGenerator
             return generateIntExpression(depth);
         case FLOAT:
         case VARCHAR:
+        case DATE:
+        case TIMESTAMP:
         case NULL:
             return generateConstant(type);
         default:
@@ -318,6 +320,10 @@ public class DatabendNewExpressionGenerator
             return DatabendConstant.createStringConstant(r.getString());
         case NULL:
             return DatabendConstant.createNullConstant();
+        case DATE:
+            return DatabendConstant.createDateConstant(r.getInteger());
+        case TIMESTAMP:
+            return DatabendConstant.createTimestampConstant(r.getInteger());
         default:
             throw new AssertionError(type);
         }
