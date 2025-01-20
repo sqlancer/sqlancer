@@ -322,7 +322,9 @@ public abstract class DatabendConstant implements DatabendExpression {
         public String textRepr;
 
         public DatabendDateConstant(long val) {
-            long t = val % 250000000000000l;
+            // Databend supports `date` type where the year cannot exceed `9999`,
+            // the value is truncated to ensure generate legitimate `date` value.
+            long t = val % 253380000000000L;
             Timestamp timestamp = new Timestamp(t);
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             textRepr = dateFormat.format(timestamp);
@@ -358,7 +360,9 @@ public abstract class DatabendConstant implements DatabendExpression {
         public String textRepr;
 
         public DatabendTimestampConstant(long val) {
-            long t = val % 250000000000000l;
+            // Databend supports `timestamp` type where the year cannot exceed `9999`,
+            // the value is truncated to ensure generate legitimate `timestamp` value.
+            long t = val % 253380000000000L;
             Timestamp timestamp = new Timestamp(t);
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             textRepr = dateFormat.format(timestamp);
