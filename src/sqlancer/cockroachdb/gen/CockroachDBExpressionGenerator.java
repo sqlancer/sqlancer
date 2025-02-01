@@ -26,7 +26,6 @@ import sqlancer.cockroachdb.ast.CockroachDBBinaryLogicalOperation;
 import sqlancer.cockroachdb.ast.CockroachDBBinaryLogicalOperation.CockroachDBBinaryLogicalOperator;
 import sqlancer.cockroachdb.ast.CockroachDBCaseOperation;
 import sqlancer.cockroachdb.ast.CockroachDBCast;
-import sqlancer.cockroachdb.ast.CockroachDBCollate;
 import sqlancer.cockroachdb.ast.CockroachDBColumnReference;
 import sqlancer.cockroachdb.ast.CockroachDBConcatOperation;
 import sqlancer.cockroachdb.ast.CockroachDBConstant;
@@ -151,18 +150,21 @@ public class CockroachDBExpressionGenerator extends
             case STRING:
             case BYTES: // TODO split
                 CockroachDBExpression stringExpr = generateStringExpression(depth);
-                if (Randomly.getBoolean()) {
-                    stringExpr = new CockroachDBCollate(stringExpr, CockroachDBCommon.getRandomCollate());
-                }
+                // disable collate until https://github.com/cockroachdb/cockroach/issues/110322 is fixed
+                // if (Randomly.getBoolean()) {
+                //     stringExpr = new CockroachDBCollate(stringExpr, CockroachDBCommon.getRandomCollate());
+                // }
                 return stringExpr; // TODO
             case FLOAT:
             case VARBIT:
             case BIT:
-            case INTERVAL:
             case TIMESTAMP:
             case DECIMAL:
             case TIMESTAMPTZ:
-            case JSONB:
+            // INTERVAL and JSONB can trigger a number of known issues, e.g., [1], so we skip them.
+            // [1] https://github.com/cockroachdb/cockroach/issues/45993
+            //case INTERVAL:
+            // case JSONB:
             case TIME:
             case TIMETZ:
             case ARRAY:
@@ -339,9 +341,10 @@ public class CockroachDBExpressionGenerator extends
     private CockroachDBExpression getStringConstant() {
         CockroachDBExpression strConst = CockroachDBConstant
                 .createStringConstant(globalState.getRandomly().getString());
-        if (Randomly.getBooleanWithRatherLowProbability()) {
-            strConst = new CockroachDBCollate(strConst, CockroachDBCommon.getRandomCollate());
-        }
+        // disable collate until https://github.com/cockroachdb/cockroach/issues/110322 is fixed
+        // if (Randomly.getBooleanWithRatherLowProbability()) {
+        //     strConst = new CockroachDBCollate(strConst, CockroachDBCommon.getRandomCollate());
+        // }
         return strConst;
     }
 
@@ -354,9 +357,10 @@ public class CockroachDBExpressionGenerator extends
         CockroachDBColumn column = Randomly
                 .fromList(columns.stream().filter(c -> c.getType() == type).collect(Collectors.toList()));
         CockroachDBExpression columnReference = new CockroachDBColumnReference(column);
-        if (column.getType().isString() && Randomly.getBooleanWithRatherLowProbability()) {
-            columnReference = new CockroachDBCollate(columnReference, CockroachDBCommon.getRandomCollate());
-        }
+        // disable collate until https://github.com/cockroachdb/cockroach/issues/110322 is fixed
+        // if (column.getType().isString() && Randomly.getBooleanWithRatherLowProbability()) {
+        //     columnReference = new CockroachDBCollate(columnReference, CockroachDBCommon.getRandomCollate());
+        // }
         return columnReference;
     }
 
