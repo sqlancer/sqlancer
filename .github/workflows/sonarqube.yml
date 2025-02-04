@@ -23,5 +23,7 @@ jobs:
         run: |
           mvn sonar:sonar \
             -Dsonar.projectKey=my_project \
-            -Dsonar.host.url=http://localhost:9000 \
+            -Dsonar.organization=my_org \
+            -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
