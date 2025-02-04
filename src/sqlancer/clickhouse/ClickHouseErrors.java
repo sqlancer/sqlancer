@@ -55,6 +55,7 @@ public final class ClickHouseErrors {
                 // AST generation logic
                 "MULTIPLE_EXPRESSIONS_FOR_ALIAS", "AMBIGUOUS_IDENTIFIER", // https://github.com/ClickHouse/ClickHouse/issues/45389
                 "AMBIGUOUS_COLUMN_NAME", // same https://github.com/ClickHouse/ClickHouse/issues/45389
+                "No equality condition found in JOIN ON expression",
                 "Cannot parse number with multiple sign");
     }
 
