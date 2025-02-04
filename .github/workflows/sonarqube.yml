@@ -4,32 +4,27 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
-  sonarqube:
+  sonar:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
 
-      - name: Set up JDK 11
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
         uses: actions/setup-java@v2
         with:
-          java-version: '11'
+          distribution: 'temurin'  # Use 'zulu', 'adopt', or another if needed
+          java-version: '17'
 
-      - name: Cache SonarQube Scanner
-        uses: actions/cache@v2
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar-cache
-          restore-keys: |
-            ${{ runner.os }}-sonar-cache
+      - name: Build project with Maven
+        run: mvn clean package
 
-      - name: Run SonarQube Scanner
-        uses: sonarsource/sonarcloud-github-action@v2
-        with:
-          sonar-token: ${{ secrets.SONAR_TOKEN }}
-          sonar-host-url: 'http://localhost:9000'
+      - name: Run SonarQube analysis
+        run: |
+          mvn sonar:sonar \
+            -Dsonar.projectKey=my_project \
+            -Dsonar.host.url=http://localhost:9000 \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
