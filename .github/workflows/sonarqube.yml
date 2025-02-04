@@ -19,12 +19,11 @@ jobs:
           distribution: 'temurin'  # Use 'zulu', 'adopt', or another if needed
           java-version: '17'
 
-      - name: Build project with Maven
-        run: mvn clean package
-
       - name: Run SonarQube analysis
         run: |
           mvn sonar:sonar \
             -Dsonar.projectKey=my_project \
-            -Dsonar.host.url=http://localhost:9000 \
+            -Dsonar.organization=my_org \
+            -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
